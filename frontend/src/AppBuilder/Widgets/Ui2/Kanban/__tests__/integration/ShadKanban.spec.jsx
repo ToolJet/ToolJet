@@ -265,6 +265,28 @@ describe('UI 2.0 Kanban', () => {
     expect(exposed().updatedCardData.map((c) => c.ref)).toEqual(['D2']);
   });
 
+  // The card's content is positioned (it anchors the clamp fade), so a delete button painted before it without a
+  // z-index sat under the title: a real mouse click selected the card instead. jsdom does not hit-test, so check
+  // the stacking the browser uses: the button carries a z-index or comes after the content.
+  test('[ShadKanban-PROP-016] the delete button paints above the card content, so a click deletes and selects nothing', async () => {
+    render({ properties: deals({ allowDelete: binding('{{true}}') }) });
+    widget.setEvents([
+      ...setVariableOn(ID, 'onCardRemoved', { value: '{{components.board1.lastRemovedCard.name}}' }),
+      ...countInvocationsOn(ID, 'onCardSelected'),
+    ]);
+
+    const button = (await screen.findAllByRole('button', { name: 'Delete card' }))[0];
+    const content = card('Northstar').querySelector(':scope > .tw-relative');
+    const stacked =
+      /(^|\s)tw-z-/.test(button.className) ||
+      Boolean(button.compareDocumentPosition(content) & Node.DOCUMENT_POSITION_PRECEDING);
+    expect(stacked).toBe(true);
+    fireEvent.click(button);
+    await waitFor(() => expect(widget.variables().seen).toBe('Northstar'));
+    expect(widget.variables().calls).toBeUndefined();
+    expect(exposed().lastSelectedCard ?? {}).toEqual({});
+  });
+
   test('[ShadKanban-PROP-011] emptyText fills a column with no cards', async () => {
     render({ properties: deals({ data: binding('{{[]}}'), emptyText: binding('Nothing here') }) });
 

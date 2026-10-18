@@ -259,6 +259,7 @@ export const KanbanCard = ({
       )}
     >
       {onDelete ? (
+        // z-10: the content below is positioned and comes later, so without it the title would take the click.
         <button
           type="button"
           aria-label="Delete card"
@@ -268,7 +269,7 @@ export const KanbanCard = ({
             e.stopPropagation();
             onDelete(card);
           }}
-          className="tw-absolute tw-right-1.5 tw-top-1.5 tw-rounded-ui2-md tw-p-1 tw-text-ui2-muted-foreground tw-opacity-0 tw-transition-opacity hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 group-hover/card:tw-opacity-100"
+          className="tw-absolute tw-right-1.5 tw-top-1.5 tw-z-10 tw-rounded-ui2-md tw-p-1 tw-text-ui2-muted-foreground tw-opacity-0 tw-transition-opacity hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 group-hover/card:tw-opacity-100"
         >
           <X className="tw-h-3.5 tw-w-3.5" />
         </button>
