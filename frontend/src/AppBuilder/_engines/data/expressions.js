@@ -2,7 +2,6 @@ import moment from 'moment';
 import _ from 'lodash';
 import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 import { extractAndReplaceReferencesFromString as referencesWithIds } from '@/AppBuilder/_stores/ast';
-import { isFeatureEnabled } from '../features';
 
 /**
  * `{{ }}` templates: how one is read (which `{{ }}` parts it has, whether it is JavaScript), and each expression
@@ -16,7 +15,6 @@ import { isFeatureEnabled } from '../features';
 const CACHE_LIMIT = 20000;
 
 const remember = (cache, key, make) => {
-  if (!isFeatureEnabled('expressions')) return make();
   if (cache.has(key)) return cache.get(key);
   const value = make();
   if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value);

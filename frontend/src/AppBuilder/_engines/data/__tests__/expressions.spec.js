@@ -152,21 +152,4 @@ describe('expressions: compiled once', () => {
       global.Function = original;
     }
   });
-
-  test('the expressions switch compiles on every resolution, as before', () => {
-    window.public_config = { DISABLE_BACKGROUND_DATA: 'expressions' };
-    const original = global.Function;
-    let compiles = 0;
-    global.Function = function (...args) {
-      compiles += 1;
-      return original(...args);
-    };
-    try {
-      for (let i = 0; i < 5; i++) engine.resolveDynamicValues('{{variables.count * 2000 + 7}}', state);
-      expect(compiles).toBe(5);
-    } finally {
-      global.Function = original;
-      delete window.public_config;
-    }
-  });
 });

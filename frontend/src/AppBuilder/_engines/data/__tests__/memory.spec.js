@@ -6,7 +6,6 @@ const setMemory = (memory) => Object.defineProperty(performance, 'memory', { val
 describe('memory', () => {
   afterEach(() => {
     delete performance.memory;
-    delete window.public_config;
   });
 
   test('nothing is refused where the browser does not report memory', () => {
@@ -23,12 +22,6 @@ describe('memory', () => {
     expect(canAllocate(0.6 * GB)).toBe(false);
     expect(() => ensure(2 * GB, 'a copy of queries.q')).toThrow(MemoryBudgetError);
     expect(() => ensure(2 * GB, 'a copy of queries.q')).toThrow(/a copy of queries.q needs about 2.0 GB/);
-  });
-
-  test('the memory switch turns refusals off', () => {
-    setMemory({ jsHeapSizeLimit: 4 * GB, usedJSHeapSize: 3.9 * GB });
-    window.public_config = { DISABLE_BACKGROUND_DATA: 'memory' };
-    expect(canAllocate(10 * GB)).toBe(true);
   });
 
   test('estimates a 21-key row of short strings at roughly what it takes', () => {

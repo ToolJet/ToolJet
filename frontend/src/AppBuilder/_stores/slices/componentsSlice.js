@@ -10,7 +10,6 @@ import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast'
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { cloneDeep, merge, set as lodashSet, isEmpty } from 'lodash';
 import { deepFreeze } from '@/AppBuilder/_engines/data/freeze';
-import { isFeatureEnabled } from '@/AppBuilder/_engines/features';
 import { readsNothingRowScoped } from '@/AppBuilder/_engines/data/expressions';
 import {
   computeComponentName,
@@ -3083,7 +3082,6 @@ export const createComponentsSlice = (set, get) => ({
     };
     const updates = [];
     if (
-      isFeatureEnabled('listview-store') &&
       !isLazy &&
       readsNothingRowScoped(
         unResolvedValue,

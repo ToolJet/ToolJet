@@ -116,7 +116,6 @@ How the App Builder handles data of any size without blocking the page or runnin
 - Scripts (RunJS, transformations, Python) get `lazyCopies` of the queries, `page` and `variables` (`clone.js`): a value is copied when first read. A copy that wouldn't fit in the tab's memory throws a `MemoryBudgetError` naming it (`memory.js`) instead of crashing the tab. A RunJS result is checked for cycles in slices (`cycles.js`)
 - A ListView/Kanban child property that reads nothing row-scoped (`readsNothingRowScoped`) resolves once, not once per row
 - Large query responses are parsed in a worker (`transport.js`); debugger logs keep the newest 1,000 entries and bounded snapshots of logged values (`bounded.js`)
-- Kill switches: `_engines/features.js` (`DISABLE_BACKGROUND_DATA`)
 
 ### Rendering engine (`src/AppBuilder/_engines/rendering/`)
 

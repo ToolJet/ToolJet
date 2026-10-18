@@ -1,5 +1,4 @@
 import { runSliced } from './slices';
-import { isFeatureEnabled } from '../features';
 
 // Values known to hold no cycle (parsed from JSON, or already checked): not walked again.
 const acyclic = new WeakSet();
@@ -74,7 +73,6 @@ export const hasCycle = (value, maxObjects = Infinity) => {
  * promise of it. A value found to hold no cycle is remembered (`markAcyclic`).
  */
 export const hasCycleInSlices = (value) => {
-  if (!isFeatureEnabled('sliced-checks')) return hasCycle(value);
   const { step, result } = createWalk(value);
   const answer = () => {
     if (!result.cyclic) markAcyclic(value);

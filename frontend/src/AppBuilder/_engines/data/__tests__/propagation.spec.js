@@ -55,14 +55,6 @@ describe('createPropagationScheduler', () => {
     expect(commits.length).toBeGreaterThan(1);
   });
 
-  test('without slicing (kill switch) a large change resolves at once', () => {
-    const count = INLINE_DEPENDENTS * 4;
-    const { state, set, get } = fakeStore({ a: names('d', count) });
-    const scheduler = createPropagationScheduler({ set, get, now: clock(), isSliced: () => false });
-    expect(scheduler.propagate(['a'])).toBeNull();
-    expect(state.resolved).toHaveLength(count);
-  });
-
   test('a dependent of several changed paths resolves once', () => {
     const { state, set, get } = fakeStore({ a: ['x', 'y'], b: ['y', 'z'] });
     createPropagationScheduler({ set, get, now: clock() }).propagate(['a', 'b']);

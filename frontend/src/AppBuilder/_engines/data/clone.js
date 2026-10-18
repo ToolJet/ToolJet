@@ -1,5 +1,4 @@
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { isFeatureEnabled } from '../features';
 import { footprintOf } from './freeze';
 import { ensure } from './memory';
 
@@ -22,7 +21,6 @@ const copyCost = (value) => {
  */
 export const lazyCopies = (obj, label) => {
   if (!obj || typeof obj !== 'object') return obj;
-  if (!isFeatureEnabled('user-copies')) return deepClone(obj);
   const copy = {};
   for (const key of Object.keys(obj)) {
     let value;

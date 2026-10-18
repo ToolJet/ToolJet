@@ -50,7 +50,6 @@ export class ConfigService implements IConfigService {
       'SSO_HUBSPOT_FORM_ID',
       'ENABLE_OTEL_FRONTEND',
       'OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS',
-      'DISABLE_BACKGROUND_DATA',
     ];
   }
 

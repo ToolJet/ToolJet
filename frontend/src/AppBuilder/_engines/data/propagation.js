@@ -18,7 +18,6 @@ export const INLINE_DEPENDENTS = 64;
 export function createPropagationScheduler({
   set,
   get,
-  isSliced = () => true,
   now = () => performance.now(),
   queue = null,
   onError = (error) => console.error(error), // eslint-disable-line no-console
@@ -105,7 +104,7 @@ export function createPropagationScheduler({
   };
 
   const run = () => {
-    if (drain(isSliced() ? SLICE_MS : Infinity)) {
+    if (drain(SLICE_MS)) {
       continuation?.close();
       continuation = null;
       settle();

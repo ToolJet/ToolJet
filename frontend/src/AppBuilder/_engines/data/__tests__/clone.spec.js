@@ -9,7 +9,6 @@ describe('lazyCopies', () => {
 
   afterEach(() => {
     delete performance.memory;
-    delete window.public_config;
   });
 
   test('reads like a deep copy, and changing it never touches the source', () => {
@@ -57,13 +56,5 @@ describe('lazyCopies', () => {
     const copy = lazyCopies(queries, 'queries');
     expect(() => copy.big).toThrow(MemoryBudgetError);
     expect(() => copy.big).toThrow(/queries.big/);
-  });
-
-  test('the user-copies switch copies everything at once, as before', () => {
-    window.public_config = { DISABLE_BACKGROUND_DATA: 'user-copies' };
-    const original = source();
-    const copy = lazyCopies(original, 'queries');
-    expect(Object.getOwnPropertyDescriptor(copy, 'q1').get).toBeUndefined();
-    expect(copy).toEqual(original);
   });
 });

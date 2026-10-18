@@ -2,11 +2,9 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { getActiveBranchId } from '@/_helpers/active-branch';
 import { readJsonResponse } from '@/AppBuilder/_engines/data/transport';
-import { isFeatureEnabled } from '@/AppBuilder/_engines/features';
 
-// A query result can be large: parsed off the main thread (handleResponse for errors, or with the kill switch on).
-const handleQueryResult = (response) =>
-  isFeatureEnabled('transport') ? readJsonResponse(response, handleResponse) : handleResponse(response);
+// A query result can be large: parsed off the main thread (handleResponse for errors).
+const handleQueryResult = (response) => readJsonResponse(response, handleResponse);
 
 export const dataqueryService = {
   create,

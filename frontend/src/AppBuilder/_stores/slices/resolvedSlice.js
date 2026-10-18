@@ -2,7 +2,6 @@ import { resolveDynamicValues, registerResetter } from '../utils';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
 import { createPropagationScheduler } from '@/AppBuilder/_engines/data/propagation';
-import { isFeatureEnabled } from '@/AppBuilder/_engines/features';
 import { ROW_SCOPED_WIDGET_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import _ from 'lodash';
 import { deepFreeze } from '@/AppBuilder/_engines/data/freeze';
@@ -89,7 +88,7 @@ export const createResolvedSlice = (set, get) => {
   // _engines/data/propagation.js). The implicit microtask batch — setVariable / setExposedValue calls outside an explicit
   // window coalescing into one pass — is its `defer` mode. Writes stay synchronous (reads work immediately in the same
   // runJS context); only the dependents' resolution is deferred.
-  const _propagation = createPropagationScheduler({ set, get, isSliced: () => isFeatureEnabled('propagation') });
+  const _propagation = createPropagationScheduler({ set, get });
   registerResetter(() => _propagation.reset());
 
   const scheduleDependencyUpdate = (depPath, moduleId) => {

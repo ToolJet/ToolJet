@@ -1,5 +1,3 @@
-import { isFeatureEnabled } from '../features';
-
 /**
  * How much memory the tab has left, so work that would run it out (a copy of a 3 GB dataset, a row of state for each of
  * millions of rows) is refused with a message instead of crashing the tab ("Aw, Snap!"). Chrome caps a tab's JavaScript
@@ -26,7 +24,7 @@ export const estimateBytes = ({ objects = 0, slots = 0, chars = 0 }) => objects 
 /** Bytes that can still be allocated before the tab gets near its limit; Infinity when it can't be told. */
 export const headroom = () => {
   const info = memoryInfo();
-  if (!info || !isFeatureEnabled('memory')) return Infinity;
+  if (!info) return Infinity;
   return info.jsHeapSizeLimit - reserveFor(info.jsHeapSizeLimit) - info.usedJSHeapSize;
 };
 
