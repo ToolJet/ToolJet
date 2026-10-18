@@ -5,6 +5,7 @@ import { hasSize } from './mapIcons';
 import type { MutableRefObject } from 'react';
 import type { LeafletMap } from 'leaflet';
 import type { LatLng, MapLive, Place } from './mapTypes';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 const SEARCH_DELAY_MS = 600;
 
@@ -117,8 +118,8 @@ export const MapSearch = ({
         aria-label={placeholder || 'Search for an address'}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' && results[0]) choosePlace(results[0]);
-          else if (e.key === 'Enter' && !typeAhead) setSubmitted(query.trim());
+          if (isEnter(e) && results[0]) choosePlace(results[0]);
+          else if (isEnter(e) && !typeAhead) setSubmitted(query.trim());
           if (e.key === 'Escape') setResults([]);
         }}
       />

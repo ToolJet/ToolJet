@@ -489,6 +489,26 @@ describe('UI 2.0 Map', () => {
       expect(exposed().pickedLocation).toEqual({ lat: 10, lng: 20, address: 'Beta result' });
     }, 10000);
 
+    test('[ShadMap-IME-001] the Enter that ends an IME composition in the search picks nothing', async () => {
+      // Release audit round 2: the Enter that confirms composed characters chose the first place.
+      fetchMock.mockImplementation(answerByQuery);
+      render({
+        properties: {
+          showSearch: binding('{{true}}'),
+          pickLocation: binding('{{true}}'),
+          geocoderUrl: binding('https://geo.example/ime-001/search?q={query}'),
+        },
+      });
+      const input = await screen.findByRole('searchbox');
+      fireEvent.change(input, { target: { value: 'とうきょう' } });
+      await screen.findByRole('button', { name: 'とうきょう result' }, { timeout: 4000 });
+      fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+      fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 });
+      expect(exposed().pickedLocation).toEqual({});
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(exposed().pickedLocation).toEqual({ lat: 10, lng: 20, address: 'とうきょう result' });
+    }, 10000);
+
     test('[ShadMap-ACT-005] an address lookup still running when the map unmounts writes nothing, not even into a new mount', async () => {
       // Release audit 43: the old mount's answer arrived after a remount and wrote its address into the new map.
       let answer;

@@ -13,6 +13,7 @@ export const isEnter = (e: KeyboardEvent<Element>): boolean => e.key === 'Enter'
 export const onKeyActivate =
   <E extends Element>(handler: (e: KeyboardEvent<E>) => void) =>
   (e: KeyboardEvent<E>) => {
+    if (isComposing(e)) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handler(e);

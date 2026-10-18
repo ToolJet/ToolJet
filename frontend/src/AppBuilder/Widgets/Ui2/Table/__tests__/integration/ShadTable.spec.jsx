@@ -397,6 +397,23 @@ describe('UI 2.0 Table', () => {
     expect(screen.getByText('1 row changed')).toBeInTheDocument();
   });
 
+  test('[ShadTable-IME-001] the Enter that ends an IME composition in a cell editor does not commit it', async () => {
+    // Release audit round 2: the Enter that confirms composed characters committed the cell (and closed the editor).
+    render({ properties: { columns: binding(EDITABLE) } });
+    await waitFor(() => expect(rows().length).toBeGreaterThan(0));
+    fireEvent.click(rows()[0].querySelector('td'));
+    await waitFor(() => expect(rows()[0].querySelector('input')).not.toBeNull());
+    const input = rows()[0].querySelector('input');
+    fireEvent.change(input, { target: { value: 'とう' } });
+    fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 });
+    await settle();
+    expect(exposed().changeSet ?? {}).toEqual({});
+    expect(rows()[0].querySelector('input')).not.toBeNull();
+    fireEvent.keyDown(rows()[0].querySelector('input'), { key: 'Enter' });
+    await waitFor(() => expect(exposed().changeSet).toEqual({ 0: { name: 'とう' } }));
+  });
+
   test('[ShadTable-EVT-012] new data drops the edits, and the published changeSet, dataUpdates and updatedData with them', async () => {
     render({ properties: { columns: binding(EDITABLE) } });
     widget.setEvents(on('onCellValueChanged', 'edited', 'changes'));

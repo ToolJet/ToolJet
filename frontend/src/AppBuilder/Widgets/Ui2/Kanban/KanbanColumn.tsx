@@ -7,6 +7,7 @@ import { KanbanCard, SECONDARY_TEXT } from './KanbanCard';
 import type { KanbanLook } from './KanbanCard';
 import type { BoardCard, BoardColumn } from './kanbanBoard';
 import { ShowMore } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
+import { isComposing, isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // Column title and count colours: the columnTitleColor and count styles, else the theme's.
 const COLUMN_TITLE = 'tw-text-[color:var(--kb-col-title,var(--sc-foreground))]';
@@ -108,7 +109,7 @@ export const KanbanColumn = ({
         title={`Expand ${column.title}`}
         aria-label={`Expand ${column.title}`}
         onClick={() => onCollapse?.(column.id)}
-        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onCollapse?.(column.id)}
+        onKeyDown={(e) => (isEnter(e) || (e.key === ' ' && !isComposing(e))) && onCollapse?.(column.id)}
         style={{ ...look.column, width: 152, flex: '0 0 152px' }}
         className={cn(
           'group/col tw-relative tw-flex tw-cursor-pointer tw-flex-col tw-gap-2 tw-p-3 tw-transition-shadow hover:tw-ring-1 hover:tw-ring-ui2-border focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring',

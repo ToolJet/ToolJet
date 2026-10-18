@@ -11,6 +11,7 @@ import { badgeLook, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/ka
 import { cardClamp, cardDateLabel, cardDetails } from './kanbanBoard';
 import type { BoardCard } from './kanbanBoard';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 export type KanbanLook = ReturnType<typeof kanbanLook>;
 
@@ -238,7 +239,7 @@ export const KanbanCard = ({
       // (KANBAN_KEYS). While a card is being moved, Enter drops it instead.
       onKeyDown={(e) => {
         drag.listeners?.onKeyDown?.(e);
-        if (e.key === 'Enter' && !drag.isDragging && e.target === e.currentTarget) {
+        if (isEnter(e) && !drag.isDragging && e.target === e.currentTarget) {
           e.preventDefault();
           onSelect(card);
         }

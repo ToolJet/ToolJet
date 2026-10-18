@@ -33,6 +33,7 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 /** A rule between the options and the selection's own commands: drawn only, since a list of options may hold only
  *  options and groups (cmdk's Separator is role="separator"). */
@@ -178,7 +179,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
             {...controlAria(props, check.error)}
             onKeyDown={(e) => {
               if (disabled) return;
-              if (['Enter', ' ', 'ArrowDown'].includes(e.key)) {
+              if (!isComposing(e) && ['Enter', ' ', 'ArrowDown'].includes(e.key)) {
                 e.preventDefault();
                 menuChange(true);
               } else if (e.key === 'Backspace' && selectedOptions.length) {
