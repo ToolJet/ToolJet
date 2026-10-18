@@ -22,6 +22,7 @@ import {
   calendarSelection,
   disabledMatchers,
   shownMonth,
+  shownMonthCount,
   markersByDay,
   toDate,
   visiblePeriod,
@@ -286,5 +287,14 @@ describe('carousel logic', () => {
     expect(at('2026-11-20T00:00', 2, '2026-10-01', '2026-12-31')).toBe('2026-11-01');
     expect(at('2026-11-01T00:00', 3, '2026-11-01', '2026-11-30')).toBe('2026-11-01');
     expect(at('2025-01-01T00:00', 1, '', '')).toBe('2025-01-01');
+  });
+
+  // Audit round 2: the months drawn, when maxDate allows fewer than asked for.
+  it('counts the months drawn from the first one shown up to maxDate', () => {
+    const start = new Date(2026, 9, 1);
+    expect(shownMonthCount(start, 3, '2026-10-31')).toBe(1);
+    expect(shownMonthCount(start, 3, '2026-11-15')).toBe(2);
+    expect(shownMonthCount(start, 2, '2027-05-01')).toBe(2);
+    expect(shownMonthCount(start, 3, '')).toBe(3);
   });
 });

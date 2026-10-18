@@ -447,4 +447,37 @@ describe('UI 2.0 Schedule', () => {
       expect(widget.variables().slotClicks).toBe(1);
     });
   });
+
+  // Audit round 2: malformed dates were placed on another day or dropped without a trace. The Schedule places none
+  // of them and says so; a date property that is not a date is said too (the schedule shows today).
+  describe('malformed dates', () => {
+    const malformed = [
+      { ref: 'J-1', van: 'Van 1', job: 'Boiler service', from: '2026-10-20 09:00', to: '2026-10-20 11:00' },
+      { ref: 'J-2', van: 'Van 1', job: 'Leak repair', from: '2026-02-30 13:00', to: '' },
+      { ref: 'J-3', van: 'Van 1', job: 'Gas check', from: '2026-10-20 15:00', to: '2026-10-20 14:00' },
+    ];
+
+    test('[ShadSchedule-PROP-015] bookings with malformed dates are not placed, and the schedule says which', async () => {
+      render({ properties: vans({ bookings: binding(`{{${JSON.stringify(malformed)}}}`) }) });
+
+      await waitFor(() => expect(booking('J-1')).not.toBeNull());
+      expect(booking('J-2')).toBeNull();
+      expect(booking('J-3')).toBeNull();
+      const note = document.querySelector('[data-schedule-problems]');
+      expect(note).toHaveTextContent('2 bookings not shown: their dates are not valid');
+      expect(note).toHaveAttribute(
+        'title',
+        'Leak repair (J-2): its start is not a date\nGas check (J-3): it ends before it starts'
+      );
+    });
+
+    test('[ShadSchedule-PROP-016] a date that is not a date is said, not quietly replaced by today', async () => {
+      render({ properties: vans({ date: binding('2026-13-45') }) });
+
+      await waitFor(() => expect(document.querySelector('[data-schedule-problems]')).not.toBeNull());
+      expect(document.querySelector('[data-schedule-problems]')).toHaveTextContent(
+        'The date "2026-13-45" is not a date; showing today'
+      );
+    });
+  });
 });

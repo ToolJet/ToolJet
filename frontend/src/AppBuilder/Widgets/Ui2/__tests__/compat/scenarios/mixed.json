@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "release": "scenarios",
+  "widget": "ShadDatePicker",
+  "pages": [
+    {
+      "id": "a598e6a1-f2e0-5f51-aebd-b699f5030dc8",
+      "appVersionId": "90efff50-d579-5070-a3ce-247ef183e457",
+      "name": "Home",
+      "handle": "home"
+    }
+  ],
+  "components": [
+    {
+      "id": "3f1088c4-4ed4-5789-a644-44b00859ca33",
+      "name": "datePicker1",
+      "type": "ShadDatePicker",
+      "pageId": "a598e6a1-f2e0-5f51-aebd-b699f5030dc8",
+      "parent": null,
+      "properties": {
+        "label": {
+          "value": "Due"
+        },
+        "defaultValue": {
+          "value": "2026-10-15"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 0,
+          "left": 0,
+          "width": 20,
+          "height": 64
+        }
+      }
+    },
+    {
+      "id": "beb26a7d-f9c1-5b54-a049-05cea4485643",
+      "name": "textinput1",
+      "type": "TextInput",
+      "pageId": "a598e6a1-f2e0-5f51-aebd-b699f5030dc8",
+      "parent": null,
+      "properties": {
+        "label": {
+          "value": "Due (native)"
+        },
+        "value": {
+          "value": "{{components.datePicker1.selectedDate}}"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 70,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "d9bd90fe-4f27-52e9-ae8c-e50b056aab47",
+      "name": "button1",
+      "type": "Button",
+      "pageId": "a598e6a1-f2e0-5f51-aebd-b699f5030dc8",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Push the date"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 110,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "7bdfaed3-d26f-5989-aa5f-7a105701803a",
+      "name": "text1",
+      "type": "ShadText",
+      "pageId": "a598e6a1-f2e0-5f51-aebd-b699f5030dc8",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "{{components.textinput1.value}}"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 150,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "4f9d3e52-6121-50c6-aa91-639c0414aebc",
+      "name": "onClick",
+      "index": 0,
+      "sourceId": "d9bd90fe-4f27-52e9-ae8c-e50b056aab47",
+      "target": "component",
+      "appVersionId": "90efff50-d579-5070-a3ce-247ef183e457",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "3f1088c4-4ed4-5789-a644-44b00859ca33",
+        "componentSpecificActionHandle": "setDate",
+        "componentSpecificActionParams": [
+          {
+            "handle": "date",
+            "value": "2026-10-20"
+          },
+          {
+            "handle": "format",
+            "value": "YYYY-MM-DD"
+          }
+        ]
+      }
+    }
+  ],
+  "dataQueries": [
+    {
+      "id": "f2c637dc-e03e-59bb-afca-7208d8bb545b",
+      "name": "nativeCalls",
+      "kind": "runjs",
+      "appVersionId": "90efff50-d579-5070-a3ce-247ef183e457",
+      "options": {
+        "code": "await components.textinput1.disable(true);\nreturn 'called';",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    }
+  ]
+}

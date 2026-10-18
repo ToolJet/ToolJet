@@ -1,0 +1,26 @@
+{
+  "knownFailing": "W1, import and RenameUi2PackNames: rewriteStringsDeep copies with out[key] = value, which sets the copy's prototype for '__proto__' and drops the app's own key",
+  "ownKeys": [
+    {
+      "component": "table1",
+      "path": "properties.data.value.0",
+      "key": "__proto__",
+      "equals": "kept"
+    },
+    {
+      "query": "withBody",
+      "path": "options.body",
+      "key": "__proto__",
+      "equals": {
+        "isAdmin": true
+      }
+    }
+  ],
+  "resolved": [
+    {
+      "component": "rowCount",
+      "property": "text",
+      "equals": "2"
+    }
+  ]
+}

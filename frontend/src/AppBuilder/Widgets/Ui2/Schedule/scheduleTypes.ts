@@ -91,3 +91,11 @@ export interface SlotSelection {
   endTime: string;
   label: string;
 }
+
+/** A booking left off the schedule because of its dates, and why. */
+export interface BookingProblem {
+  index: number;
+  id: unknown;
+  title: string;
+  problem: string;
+}
