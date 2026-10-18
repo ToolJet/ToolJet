@@ -87,10 +87,13 @@ export class RetuneShippedThemeNeutrals1792170000000 implements MigrationInterfa
       first: firstShippedDefinition(theme.name),
       next: theme.definition,
     }));
+    // The new definitions go in as json, keys in the order written: the column is json, and the app's theme loader
+    // depends on that order (border.radius before border.colors; through jsonb, colors came first and the radius pass
+    // set --cc-default-border to "undefined"). The match compares as jsonb, which ignores key order.
     await queryRunner.query(
       `UPDATE organization_themes AS t
-          SET definition = v.next::json, updated_at = now()
-         FROM jsonb_to_recordset($1::jsonb) AS v(name text, first jsonb, next jsonb)
+          SET definition = v.next, updated_at = now()
+         FROM json_to_recordset($1::json) AS v(name text, first jsonb, next json)
         WHERE t.name = v.name AND t.definition::jsonb = v.first`,
       [JSON.stringify(themes.filter((theme) => theme.first))]
     );
