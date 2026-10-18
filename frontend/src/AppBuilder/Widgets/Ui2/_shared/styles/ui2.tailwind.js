@@ -54,6 +54,9 @@ module.exports = {
     },
   },
   borderRadius: {
+    // A 16px box (check box, option tick or icon, flag): ui2-sm follows the theme, and at a 12px theme radius it is
+    // 8px, which draws the box as a circle.
+    'ui2-xs': 'min(4px, calc(var(--sc-radius) - 4px))',
     'ui2-sm': 'calc(var(--sc-radius) - 4px)',
     'ui2-md': 'calc(var(--sc-radius) - 2px)',
     'ui2-lg': 'var(--sc-radius)',

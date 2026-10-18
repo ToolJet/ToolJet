@@ -119,7 +119,7 @@ CommandItem.displayName = 'CommandItem';
 export const OptionIcon = ({ icon }: { icon: unknown }) => {
   if (typeof icon !== 'string' || !icon.trim()) return null;
   if (/^(https?:|data:image\/|\/)/.test(icon)) {
-    return <img src={icon} alt="" className="tw-h-4 tw-w-4 tw-shrink-0 tw-rounded-ui2-sm tw-object-cover" />;
+    return <img src={icon} alt="" className="tw-h-4 tw-w-4 tw-shrink-0 tw-rounded-ui2-xs tw-object-cover" />;
   }
   if (/^Icon[A-Z0-9]/.test(icon)) {
     return <TablerIcon iconName={icon} style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.7 }} stroke={1.75} />;
@@ -273,7 +273,7 @@ export const OptionsMenu = ({
                       {multiple ? (
                         <span
                           className={cn(
-                            'tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border tw-border-[color:var(--sc-primary)]',
+                            'tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-xs tw-border tw-border-[color:var(--sc-primary)]',
                             on
                               ? 'tw-bg-[color:var(--sc-primary)] tw-text-[color:var(--sc-primary-foreground)]'
                               : 'tw-opacity-50'
