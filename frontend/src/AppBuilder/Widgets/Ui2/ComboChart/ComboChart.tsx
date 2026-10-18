@@ -5,7 +5,9 @@ import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/pa
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
   curveOf,
+  fieldNote,
   hasValues,
+  hiddenNote,
   seriesRows,
   resolveChartFields,
   seriesLabel,
@@ -30,7 +32,7 @@ import {
   useValueFormat,
   withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
-import { clamp, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { clamp, isRecord, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 export const ShadComboChart = (props: WidgetProps) => {
@@ -49,6 +51,7 @@ export const ShadComboChart = (props: WidgetProps) => {
     xField,
     series,
     rows,
+    notes,
     empty,
     names,
     fills,
@@ -63,8 +66,12 @@ export const ShadComboChart = (props: WidgetProps) => {
     tipFormat,
   } = useMemo(() => {
     const named = comboSeries(barFields, lineFields, rightAxisFields);
-    const { x: xField } = resolveChartFields(list(bound), isSet(p.xField) ? String(p.xField) : undefined, []);
-    const series = named.filter((s) => list(bound).some((row) => row && typeof row === 'object' && s.field in row));
+    // The fields are read from the rows drawn, the first MAX_BARS.
+    const drawn = list(bound).filter(isRecord).slice(0, MAX_BARS);
+    const fields = resolveChartFields(drawn, isSet(p.xField) ? String(p.xField) : undefined, []);
+    const xField = fields.x;
+    const lacking = named.filter((s) => !drawn.some((row) => s.field in row)).map((s) => s.field);
+    const series = named.filter((s) => !lacking.includes(s.field));
     const rows = seriesRows(
       bound,
       xField,
@@ -102,6 +109,10 @@ export const ShadComboChart = (props: WidgetProps) => {
       xField,
       series,
       rows,
+      notes: [
+        fieldNote({ missing: [...fields.missing, ...lacking], substitutes: fields.substitutes }),
+        hiddenNote(list(bound).filter(isRecord).length - rows.length, 'row'),
+      ],
       empty:
         !series.length ||
         !hasValues(
@@ -142,7 +153,7 @@ export const ShadComboChart = (props: WidgetProps) => {
   const compact = isCompactChart(props.height);
   const curve = curveOf(p.curve);
   return (
-    <SafeFrame props={props} empty={empty}>
+    <SafeFrame props={props} empty={empty} notes={notes}>
       {(onDatum) => (
         <ComposedChart
           data={rows}

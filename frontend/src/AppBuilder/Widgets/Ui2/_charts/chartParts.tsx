@@ -140,21 +140,6 @@ const ChartArea = ({ label, children }: { label: string; children: React.ReactNo
   </div>
 );
 
-/** The frame of a Recharts chart: SafeFrame with its defaults (a click on a datum exposes it and fires onClick). */
-export const ChartFrame = ({
-  props,
-  empty,
-  children,
-}: {
-  props: WidgetProps;
-  empty: boolean;
-  children: ChartRender;
-}) => (
-  <SafeFrame props={props} empty={empty}>
-    {children}
-  </SafeFrame>
-);
-
 /** A value axis as wide as its longest tick label (a suffix such as " seats" or a currency needs more than a fixed
  *  48px, or the labels wrap and the top one clips). The top tick is the max rounded up the way the axis rounds it. */
 const niceCeil = (v: number): number => {
@@ -238,6 +223,20 @@ export class ChartBoundary extends React.Component<ChartBoundaryProps, { failed:
   }
 }
 
+/** The notes under a chart on what it leaves out, one line each (the full text on hover when the line is cut). */
+export const ChartNotes = ({ notes }: { notes: (string | null | undefined)[] }) => {
+  const shown = notes.filter((n): n is string => !!n);
+  return shown.length ? (
+    <div className="tw-shrink-0 tw-pt-1.5 tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">
+      {shown.map((note) => (
+        <div key={note} data-chart-note="" className="tw-truncate" title={note}>
+          {note}
+        </div>
+      ))}
+    </div>
+  ) : null;
+};
+
 /** What a chart that threw while drawing shows: not the empty state, which says there is no data. */
 const ChartError = () => (
   <div
@@ -293,10 +292,21 @@ interface SafeFrameProps {
   small?: boolean;
   exposed?: Record<string, unknown>;
   clickable?: boolean;
+  /** What the chart leaves out (rows past its cap, a configured field the data lacks), shown under it. */
+  notes?: (string | null)[];
   children: ChartRender;
 }
 
-export const SafeFrame = ({ props, empty, label, small, exposed = {}, clickable = true, children }: SafeFrameProps) => {
+export const SafeFrame = ({
+  props,
+  empty,
+  label,
+  small,
+  exposed = {},
+  clickable = true,
+  notes = [],
+  children,
+}: SafeFrameProps) => {
   const { properties, setExposedVariables, height } = props;
   const click = useClickedDatum(props);
   useExposed(setExposedVariables, properties, clickable ? { ...click.exposed, ...exposed } : exposed);
@@ -313,19 +323,27 @@ export const SafeFrame = ({ props, empty, label, small, exposed = {}, clickable 
         onClick={clickable ? undefined : click.onClick}
         onDoubleClick={click.onDoubleClick}
       >
-        {empty ? (
-          emptyView
-        ) : (
-          <ChartArea label={label || chartName(props.componentType)}>
-            <ResponsiveContainer width="100%" height="100%">
-              {children(onDatum)}
-            </ResponsiveContainer>
-          </ChartArea>
-        )}
+        <div className="tw-flex tw-h-full tw-w-full tw-flex-col">
+          <div className="tw-min-h-0 tw-w-full tw-flex-1">
+            {empty ? (
+              emptyView
+            ) : (
+              <ChartArea label={label || chartName(props.componentType)}>
+                <ResponsiveContainer width="100%" height="100%">
+                  {children(onDatum)}
+                </ResponsiveContainer>
+              </ChartArea>
+            )}
+          </div>
+          <ChartNotes notes={notes} />
+        </div>
       </div>
     </Shell>
   );
 };
+
+/** The frame of a Recharts chart (Bar, Area, Pie): SafeFrame, under the name those charts were written against. */
+export const ChartFrame = SafeFrame;
 
 export const AXIS_FILL = AXIS.tick.fill;
 /** Charts animate their entrance unless turned off, and only up to this many points: every animation frame redraws

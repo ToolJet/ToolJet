@@ -10,6 +10,7 @@ import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import type { Bound, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import {
   drawnLabelMap,
+  fieldNote,
   resolveChartFields,
   seriesLabel,
   seriesSlots,
@@ -32,6 +33,8 @@ export interface SeriesSetup {
   yWidth: number;
   allowDecimals: boolean;
   ticks: ReturnType<typeof wholeTicks>;
+  /** The configured fields the data lacks, and what is drawn in their place (fieldNote), or null. */
+  fieldNote: string | null;
 }
 
 /** What a chart's properties name for its series, as bound. */
@@ -71,6 +74,7 @@ export const seriesSetup = (rows: Bound[], props: SeriesProps): SeriesSetup => {
     yWidth: valueAxisWidth(rows, fields.series, tick, stacked),
     allowDecimals: !wholeNumbers(rows, fields.series),
     ticks: wholeTicks(rows, fields.series, stacked),
+    fieldNote: fieldNote(fields),
   };
 };
 
