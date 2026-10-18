@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Check, Pipette } from 'lucide-react';
 import { CONTROL, Field, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
@@ -189,12 +189,27 @@ export const ShadColorPicker = (props: WidgetProps) => {
   const opaque = M.rgbaToHex(M.hsvToRgb(hsva), false);
   const Dropper = typeof window !== 'undefined' ? (window as Window & EyeDropperWindow).EyeDropper : undefined;
   const canEyeDrop = typeof Dropper === 'function';
+  // The EyeDropper answers when the user clicks somewhere on screen, which can be long after this click. The answer is
+  // this picker's only while it is mounted and no later pick has started (an unmounted picker's answer reached a new
+  // picker with the same id through the store), and it is checked against the picker as it is when the answer comes
+  // (latest pickHex: disabled, loading, hidden, or in a panel that takes no input refuse it).
+  const latestPick = useLatest(pickHex);
+  const latestAlpha = useLatest(alpha);
+  const dropping = useRef(0);
+  useEffect(() => {
+    const operations = dropping;
+    return () => {
+      operations.current += 1;
+    };
+  }, []);
   const eyeDrop = async () => {
     if (!Dropper) return;
+    const operation = (dropping.current += 1);
     try {
       const result = await new Dropper().open();
-      const hex = M.normalizeHex(result?.sRGBHex, alpha);
-      if (hex) pickHex(hex);
+      if (operation !== dropping.current) return;
+      const hex = M.normalizeHex(result?.sRGBHex, latestAlpha.current);
+      if (hex) latestPick.current(hex);
     } catch {
       // cancelled
     }
