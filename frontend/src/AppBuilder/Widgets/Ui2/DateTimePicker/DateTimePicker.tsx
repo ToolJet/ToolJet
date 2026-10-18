@@ -96,9 +96,9 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
     setTs(readDefault());
   }
   // The popup is open only while the picker takes choices (usePickerPopup): disabling, loading or hiding it closes it.
-  const popup = usePickerPopup(properties);
-  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
+  const { open } = popup;
   const focus = useFocusEvents(fireEvent);
   const date = ts === null ? null : dayjs(ts);
   const exposed = M.dateTimeExposed(date, displayFormat);

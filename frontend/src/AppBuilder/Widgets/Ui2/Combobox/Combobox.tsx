@@ -36,9 +36,9 @@ export const ShadCombobox = (props: WidgetProps) => {
   const initial = M.initialKey(properties.defaultValue);
   const [key, setKey] = useState(initial);
   useEffect(() => setKey(initial), [initial]);
-  const popup = usePickerPopup(properties);
-  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
+  const { open } = popup;
   const focus = useFocusEvents(fireEvent);
   const [search, onSearch] = useSearch(props);
   const [selected] = useKeptSelection(options, key === null ? [] : [key], properties.serverSideSearch === true) as [

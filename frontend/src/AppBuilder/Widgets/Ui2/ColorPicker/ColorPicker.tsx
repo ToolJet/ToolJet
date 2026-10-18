@@ -84,14 +84,14 @@ export const ShadColorPicker = (props: WidgetProps) => {
   const initial = M.normalizeHex(properties.defaultValue, alpha) || '';
   const [value, setValue] = useState(initial);
   useEffect(() => setValue(initial), [initial]);
-  const popup = usePickerPopup(properties);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
   const { open } = popup;
   const [hsva, setHsvaState] = useState(() => toHsva(initial));
   const hsvaRef = useRef(hsva);
   const [draft, setDraft] = useState(initial);
   const alphaRef = useRef(alpha);
   alphaRef.current = alpha;
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   // value is the hex (what a Form collects); the other forms keep the native Color picker's names.
   const colorExposed = (hex: string) => {

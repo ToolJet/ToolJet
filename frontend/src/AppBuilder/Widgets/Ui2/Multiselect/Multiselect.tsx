@@ -45,7 +45,7 @@ const MenuRule = () => <div aria-hidden="true" className="-tw-mx-1 tw-h-px tw-bg
  *  click, Enter, Space or ArrowDown; a click on it while open closes the menu instead of reopening it. */
 const useAnchoredMenu = (properties: WidgetProps['properties'], onClose?: () => void) => {
   const anchorRef = useRef<HTMLDivElement>(null);
-  const popup = usePickerPopup(properties);
+  const popup = usePickerPopup(properties, anchorRef);
   const { open } = popup;
   const disabled = busy(properties);
   const change = (next: boolean) => {
@@ -55,7 +55,9 @@ const useAnchoredMenu = (properties: WidgetProps['properties'], onClose?: () => 
   };
   return {
     open,
-    blocked: popup.blocked,
+    get blocked() {
+      return popup.blocked;
+    },
     blurAway: () => popup.blurAway(anchorRef.current),
     change,
     anchorRef,

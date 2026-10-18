@@ -35,9 +35,9 @@ export const ShadSelect = (props: WidgetProps) => {
   // Radix mounts every item even while closed, so a 10k-option binding froze the page: the list shows the first
   // MAX_SELECT_OPTIONS (and the selected one, wherever it is); actions still reach every option.
   const shown = shownOptions(options, byKey.get(key), MAX_SELECT_OPTIONS);
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
-  const popup = usePickerPopup(properties);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
   useExposed(setExposedVariables, properties, {
     value: selectedOption.value ?? '',
     selectedOption,
