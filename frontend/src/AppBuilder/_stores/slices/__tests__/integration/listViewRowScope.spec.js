@@ -304,4 +304,90 @@ describe('the shadcn List view keeps data as its records', () => {
     expect(exposedComponents()[LV].children[0]).toEqual({ text1: { text: 'One', id: TEXT_INPUT } });
     expect(exposedComponents()[LV].data).toEqual(RECORDS);
   });
+
+  // Its rows mount, publish and move many at a time, and each row's own derive was a store update re-running every
+  // mounted widget's selectors: rows written together derive together, in one update.
+  describe('rows written together derive in one store update', () => {
+    let derives;
+    beforeEach(() => {
+      derives = [];
+      const derive = useStore.getState().deriveListviewExposedData;
+      useStore.setState({
+        deriveListviewExposedData: (...args) => {
+          derives.push([].concat(args[1]));
+          return derive(...args);
+        },
+      });
+    });
+    const rows = (count) => Array.from({ length: count }, (_, i) => i);
+
+    it('outside a batch (rows whose widgets mount late, after a lazy load)', async () => {
+      const { setExposedValuesPerRow } = useStore.getState();
+      rows(50).forEach((row) => setExposedValuesPerRow(TEXT_INPUT, { text: `Row ${row}` }, [row], 'canvas'));
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(derives).toEqual([rows(50)]);
+      expect(exposedComponents()[LV].children[49]).toEqual({ text1: { text: 'Row 49', id: TEXT_INPUT } });
+      expect(exposedComponents()[LV].data).toEqual(RECORDS);
+    });
+
+    it('in a batch, resets included, once the batch lands', () => {
+      const {
+        startExposedValueBatch,
+        flushExposedValueBatch,
+        setExposedValuesPerRow,
+        resetComponentExposedValuesPerRow,
+      } = useStore.getState();
+      seedExposedComponents({
+        [LV]: { data: RECORDS },
+        [TEXT_INPUT]: rows(4).map((row) => ({ id: TEXT_INPUT, text: `Old ${row}` })),
+      });
+      let before;
+      startExposedValueBatch();
+      try {
+        resetComponentExposedValuesPerRow(TEXT_INPUT, [0], 'canvas');
+        resetComponentExposedValuesPerRow(TEXT_INPUT, [1], 'canvas');
+        setExposedValuesPerRow(TEXT_INPUT, { text: 'New 2' }, [2], 'canvas');
+        before = { row: exposedComponents()[TEXT_INPUT][0], derives: [...derives] };
+      } finally {
+        flushExposedValueBatch();
+      }
+      expect(before).toEqual({ row: { id: TEXT_INPUT, text: 'Old 0' }, derives: [] });
+      expect(derives).toEqual([[0, 1, 2]]);
+      expect(exposedComponents()[TEXT_INPUT].slice(0, 3)).toEqual([
+        { id: TEXT_INPUT },
+        { id: TEXT_INPUT },
+        { id: TEXT_INPUT, text: 'New 2' },
+      ]);
+      expect(exposedComponents()[LV].children[1]).toEqual({ text1: { id: TEXT_INPUT } });
+      expect(exposedComponents()[LV].children[2]).toEqual({ text1: { text: 'New 2', id: TEXT_INPUT } });
+    });
+  });
+});
+
+describe('the native ListView derives each row on its own', () => {
+  beforeEach(() => {
+    seedPage({
+      [LV]: component('listview1', 'Listview'),
+      [TEXT_INPUT]: component('textinput1', 'TextInput', LV),
+    });
+    seedChildrenMapping({ [LV]: [TEXT_INPUT], canvas: [LV] });
+  });
+
+  it('one derive per row written, and data follows the rows', async () => {
+    const derives = [];
+    const derive = useStore.getState().deriveListviewExposedData;
+    useStore.setState({
+      deriveListviewExposedData: (...args) => {
+        derives.push(args[1]);
+        return derive(...args);
+      },
+    });
+    const { setExposedValuesPerRow } = useStore.getState();
+    [0, 1, 2].forEach((row) => setExposedValuesPerRow(TEXT_INPUT, { value: `v${row}` }, [row], 'canvas'));
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(derives).toEqual([0, 1, 2]);
+    expect(exposedComponents()[LV].data[2]).toEqual({ textinput1: { value: 'v2', id: TEXT_INPUT } });
+  });
 });
