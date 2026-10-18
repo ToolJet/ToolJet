@@ -14,22 +14,21 @@ npx @apidevtools/swagger-cli validate <spec-path>
 Invalid spec: show the errors and stop. Swagger 2.0 input: convert to OpenAPI 3 first (for
 example `npx swagger2openapi <in> -o <out>.yaml`) and validate the result.
 
-OpenAPI 3.1 ships as-is: the query editor only resolves `$ref`s
-(`frontend/src/_services/openapi.service.js`), and `aftership`, `clickup` and `microsoft_graph`
-ship 3.1.0 specs. swagger-cli rejects 3.1 patch versions above 3.1.1 ("Unsupported OpenAPI
-version"); validate a temp copy with the version line set to `3.1.1`. The widget does need a
-single string `type` on parameter schemas and top-level body properties
-(`frontend/src/_components/ApiEndpointInput.jsx`, `paramType`); run every shipped file through
-`scripts/split-spec.mjs` (section 3), which collapses `type: [X, "null"]` to `X`.
+OpenAPI 3.1 ships as-is (the query editor only resolves `$ref`s,
+`frontend/src/_services/openapi.service.js`; `aftership`, `clickup`, `microsoft_graph` ship
+3.1.0). swagger-cli rejects 3.1 patch versions above 3.1.1 ("Unsupported OpenAPI version");
+validate a temp copy with the version set to `3.1.1`. The widget needs a single string `type` on
+parameter schemas and top-level body properties (`frontend/src/_components/ApiEndpointInput.jsx`,
+`paramType`): run every shipped file through `scripts/split-spec.mjs` (section 3), which
+collapses `type: [X, "null"]` to `X`.
 
 ## 2. Extract
 
 - **Operations**: one per `paths[path][method]`: `operationId`, `summary`, method, path, and
-  parameters. Record them in `operations[]` (`name` = `operationId`, or a `<method>_<path>` slug
-  when the spec has none,
-  `method`, `path`, `parameters: []`). The schema wants `{name, type}` objects in `parameters`
-  only for hand-written mode; the api-endpoint widget reads them from the shipped spec. The list
-  drives the user gate and the backend, not the query form.
+  parameters. Record in `operations[]` (`name` = `operationId`, or a `<method>_<path>` slug when
+  absent; `method`, `path`, `parameters: []`). `{name, type}` parameter objects are only for
+  hand-written mode; the api-endpoint widget reads them from the shipped spec. The list drives
+  the user gate and the backend, not the query form.
 - **Auth**: from `components.securitySchemes` and top-level `security`:
 
   | securityScheme               | plugin-spec `auth.type`                                                          |
@@ -41,29 +40,28 @@ single string `type` on parameter schemas and top-level body properties
   | none declared                | `none`, but confirm with the user: many specs omit auth that the API requires    |
   | anything else                | `custom`                                                                         |
 
-  Several schemes: model the one the user picks (ask if unsure), say which were dropped, and warn
-  that operations needing a dropped scheme will fail with 401. Several OAuth2 flows: use
-  `authorizationCode` and ignore `implicit`. Take the token URL from the provider's OAuth docs
-  when it differs from the spec's (Google: `https://oauth2.googleapis.com/token`, as
-  `googlecalendar` uses). An optional credential: see
+  Several schemes: model the one the user picks (ask if unsure), name the dropped ones, warn
+  that operations needing them will 401. Several OAuth2 flows: use `authorizationCode`, ignore
+  `implicit`. Prefer the provider's OAuth docs token URL when it differs (Google:
+  `https://oauth2.googleapis.com/token`, as `googlecalendar` uses). Optional credential:
   `manifest-and-operations.md`, Rules.
 
-- **Base URL**: `servers[0].url` into `metadata.baseUrl`. Note any server variables. If it is
-  relative (`/api/v3`) or absent, add a `base_url` text field to the manifest (default = the
-  full URL) and read it in `run()`.
+- **Base URL**: `servers[0].url` → `metadata.baseUrl`; note server variables. Relative
+  (`/api/v3`) or absent → add a `base_url` manifest text field (default = full URL), read in
+  `run()`.
 
 ## 3. Split large specs
 
 Split when the operation dropdown would be long: more than about 50 operations, or several
-unrelated resources. Otherwise keep one file (a string `specUrl`). Each group becomes one self-contained file, and `specUrl` becomes an object
-whose keys label the Entity dropdown (`hubspot` ships 35 files this way, `xero` 11):
+unrelated resources; otherwise one file (string `specUrl`). Each group becomes a self-contained
+file, and `specUrl` an object whose keys label the Entity dropdown (`hubspot`, `xero`):
 
 ```json
 "specUrl": { "Emails": "@spec/<id>/emails", "Contacts": "@spec/<id>/contacts" }
 ```
 
-Group by the spec's `tags`, merging small related tags; decide the groups here and show them at
-the user gate. The frontend job runs the split from `marketplace/` once the plugin is scaffolded:
+Group by spec `tags`, merging small related ones; show the groups at the user gate. The
+frontend job runs the split from `marketplace/` after scaffolding:
 
 ```bash
 node ../.agents/skills/create-plugin/scripts/split-spec.mjs <spec> plugins/<id>/openapi-specs \
@@ -83,7 +81,7 @@ pick one type by hand. Validate every output file (section 1).
 ## 4. Place the spec
 
 After scaffolding, write each file to `marketplace/plugins/<id>/openapi-specs/<name>.yaml`
-(`.yaml` preferred; `.json` works). Naming:
+(`.json` also works). Naming:
 
 - The file name without extension is the `@spec/<id>/<name>` suffix, exactly.
 - Name the API group (`accounting.yaml`), not the plugin (`<id>-accounting.yaml`). A single-group
