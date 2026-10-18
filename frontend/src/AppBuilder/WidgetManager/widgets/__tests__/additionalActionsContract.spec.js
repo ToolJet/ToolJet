@@ -29,6 +29,7 @@ const CONTRACT = {
   RangeSliderV2: ['visibility', 'disabledState', 'loadingState'],
   Divider: ['visibility'],
   VerticalDivider: ['visibility'],
+  Steps: ['visibility', 'disabledState'],
 };
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);

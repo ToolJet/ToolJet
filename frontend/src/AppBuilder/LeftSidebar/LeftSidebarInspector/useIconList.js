@@ -137,6 +137,20 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         ];
       }
 
+      if (!isEmpty(component) && component.component === 'Steps' && componentExposedVariables?.setDisabled) {
+        return [
+          {
+            iconName: 'setDisabled',
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
+            isInfoIcon: true,
+          },
+        ];
+      }
+
       if (!isEmpty(component) && component.component === 'FilePicker' && componentExposedVariables?.file) {
         return [
           {

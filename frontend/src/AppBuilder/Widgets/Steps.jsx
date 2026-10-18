@@ -152,6 +152,9 @@ export const Steps = function Steps({
 
     setExposedVariable('setStep', (stepId) => setActiveStepId(stepId));
     setExposedVariable('setVisibility', (visibility) => setIsVisible(!!visibility));
+    setExposedVariable('setDisable', (disabled) => setIsDisabled(!!disabled));
+
+    // Deprecated alias of setDisable, kept so saved actions and RunJS calls keep working.
     setExposedVariable('setDisabled', (disabled) => setIsDisabled(!!disabled));
   }, [isVisible, isDisabled, activeStepId, stepsArr]);
 
