@@ -3,7 +3,7 @@ import isEqual from 'lodash/isEqual';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { ShowMoreBar, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
@@ -91,7 +91,9 @@ export const ShadAccordion = (props: WidgetProps) => {
     : { type: 'single' as const, collapsible: true, value: open[0] ?? '', onValueChange: change };
   return (
     <Shell {...props} innerRef={ref}>
-      <Accordion {...rootProps} className="tw-w-full">
+      {/* Disabled or loading, the sections take no clicks (Radix disables every trigger); the actions still work, as on
+          the native Accordion. */}
+      <Accordion {...rootProps} disabled={busy(properties)} className="tw-w-full">
         {items.map((item, i) => (
           <AccordionItem key={i} value={String(i)} className="tw-border-[color:var(--lk-border,var(--sc-border))]">
             <AccordionTrigger className="tw-text-[color:var(--lk-title,var(--sc-foreground))] [&>svg]:tw-text-[color:var(--lk-icon,var(--sc-muted-foreground))]">
