@@ -278,7 +278,8 @@ describe('UI 2.0 List view', () => {
     await waitFor(() => expect(items()).toHaveLength(100));
     fireEvent.click(screen.getByText('Show 100 more of 150'));
     await waitFor(() => expect(items()).toHaveLength(200));
-  });
+    // Draws 200 real rows through the store: about 4 s on a loaded CI runner, so it gets more than jest's 5 s default.
+  }, 20000);
 
   // The rows' {{listItem}} values were written to the store during the list's render: React warned that another
   // component updated while this one rendered, and it risked a render loop.
