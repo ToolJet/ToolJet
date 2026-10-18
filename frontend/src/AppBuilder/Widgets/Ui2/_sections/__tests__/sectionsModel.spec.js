@@ -480,3 +480,30 @@ describe('meta fields given as a list', () => {
     expect(JSON.stringify(record.meta)).toContain('4 seats left');
   });
 });
+
+describe('formatValue reuses its number formats', () => {
+  // A 10,000-row currency progress list built 30,000 Intl.NumberFormat objects (release audit round 2).
+  it('builds one Intl.NumberFormat per set of options, however many values it formats', () => {
+    const Native = Intl.NumberFormat;
+    let built = 0;
+    const spy = jest.spyOn(Intl, 'NumberFormat').mockImplementation((...args) => {
+      built += 1;
+      return new Native(...args);
+    });
+    try {
+      for (let i = 0; i < 10000; i += 1) {
+        formatValue(123.45 + i, 'currency', 'USD');
+        formatValue(500, 'currency', 'USD');
+        formatValue(i, 'number');
+      }
+      expect(built).toBeLessThanOrEqual(4);
+      expect(formatValue(123.45, 'currency', 'USD')).toBe('$123.45');
+      expect(formatValue(500, 'currency', 'USD')).toBe('$500');
+      expect(formatValue(386.5, 'currency', 'KWD')).toBe(
+        new Native(undefined, { style: 'currency', currency: 'KWD', minimumFractionDigits: 2 }).format(386.5)
+      );
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});

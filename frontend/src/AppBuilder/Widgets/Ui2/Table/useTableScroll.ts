@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import type { Virtualizer } from '@tanstack/react-virtual';
 import type { Entry } from './types';
 
 interface UseTableScrollArgs {
@@ -8,6 +9,29 @@ interface UseTableScrollArgs {
   visibleRows: Entry[];
   rowHeight: number;
 }
+
+/** virtual-core's element offset observer, with its isScrolling reset timer cleared on cleanup: the library's own
+ *  starts that 150 ms timer on its first read and its cleanup removes the scroll listener but not the timer, so every
+ *  unmounted Table left one behind. */
+const observeOffset = (
+  instance: Virtualizer<HTMLDivElement, Element>,
+  cb: (offset: number, isScrolling: boolean) => void
+) => {
+  const el = instance.scrollElement;
+  if (!el) return undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const onScroll = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => cb(el.scrollTop, false), instance.options.isScrollingResetDelay);
+    cb(el.scrollTop, true);
+  };
+  cb(el.scrollTop, false);
+  el.addEventListener('scroll', onScroll, { passive: true });
+  return () => {
+    clearTimeout(timer);
+    el.removeEventListener('scroll', onScroll);
+  };
+};
 
 /** The scroll box: the fades that show more rows below or columns to the right, and virtualised rows. */
 export const useTableScroll = ({ fixedHeight, virtual, visibleRows, rowHeight }: UseTableScrollArgs) => {
@@ -41,6 +65,7 @@ export const useTableScroll = ({ fixedHeight, virtual, visibleRows, rowHeight }:
     getScrollElement: () => scrollRef.current,
     estimateSize: () => rowHeight,
     overscan: 10,
+    observeElementOffset: observeOffset,
   });
   const virtualItems = virtual ? virtualizer.getVirtualItems() : [];
   const padTop = virtual && virtualItems.length ? virtualItems[0].start : 0;

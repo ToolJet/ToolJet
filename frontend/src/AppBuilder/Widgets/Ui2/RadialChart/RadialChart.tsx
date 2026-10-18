@@ -4,7 +4,13 @@ import { Cell, PolarAngleAxis, RadialBar, RadialBarChart, Tooltip } from 'rechar
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { arcAngles, arcBox, radialRows } from './radialModel';
-import { LegendContent, SafeFrame, animated, chartName } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import {
+  LegendContent,
+  SafeFrame,
+  animated,
+  chartName,
+  withChartRecovery,
+} from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -195,4 +201,4 @@ export const ShadRadialChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadRadialChart);
+export default withControlState(withChartRecovery(ShadRadialChart));

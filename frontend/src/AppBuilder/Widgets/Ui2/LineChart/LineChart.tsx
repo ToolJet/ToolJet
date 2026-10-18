@@ -6,6 +6,8 @@ import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
   curveOf,
   fieldList,
+  fieldNote,
+  hiddenNote,
   hasValues,
   seriesRows,
   resolveChartFields,
@@ -25,9 +27,10 @@ import {
   isCompactChart,
   scaled,
   useValueFormat,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { tooltipAndLegend, useSeriesInputs, valueAxis } from '@/AppBuilder/Widgets/Ui2/_charts/cartesianParts';
-import { clamp, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { clamp, isRecord, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 export const ShadLineChart = (props: WidgetProps) => {
@@ -38,7 +41,7 @@ export const ShadLineChart = (props: WidgetProps) => {
   const target = num(p.referenceValue);
   // Rows, series, colours and the value axis are worked out again only when what they read changes, not on every
   // render of the widget (a hover, a sibling's exposed value).
-  const { rows, xField, series, empty, dashed, names, fills, tick, full, yWidth, allowDecimals, ticks, xTicks } =
+  const { rows, xField, series, empty, notes, dashed, names, fills, tick, full, yWidth, allowDecimals, ticks, xTicks } =
     useMemo(() => {
       const fields = resolveChartFields(
         list(bound),
@@ -63,6 +66,7 @@ export const ShadLineChart = (props: WidgetProps) => {
         xField: fields.x,
         series: fields.series,
         empty: !fields.series.length || !hasValues(plotted, fields.series),
+        notes: [fieldNote(fields), hiddenNote(list(bound).filter(isRecord).length - plotted.length, 'row')],
         dashed: fieldList(dashedFields),
         names: fields.series.map((s) => seriesLabel(s, labels)),
         fills: fields.series.map((_, i) => seriesColor(colors, slots[i])),
@@ -83,7 +87,7 @@ export const ShadLineChart = (props: WidgetProps) => {
   const curve = curveOf(p.curve);
   const refColor = 'var(--lk-ref, var(--sc-muted-foreground))';
   return (
-    <SafeFrame props={props} empty={empty}>
+    <SafeFrame props={props} empty={empty} notes={notes}>
       {(onDatum) => (
         <LineChart
           data={rows}
@@ -132,4 +136,4 @@ export const ShadLineChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadLineChart);
+export default withControlState(withChartRecovery(ShadLineChart));

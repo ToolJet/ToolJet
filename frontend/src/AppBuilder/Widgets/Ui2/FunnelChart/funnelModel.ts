@@ -1,5 +1,5 @@
 // ToolJet UI 2.0: the pure logic of the Funnel chart. Every function takes whatever the author bound and never throws.
-import { fieldList, MAX_ROWS, resolveChartFields, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { fieldList, fieldNote, resolveChartFields, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { axisLabel } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isRecord, isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
@@ -20,26 +20,32 @@ export interface FunnelStage {
   row: Row;
 }
 
-export const funnelStages = (data: unknown, stageField: unknown, valueField: unknown): FunnelStage[] => {
-  const rows = (Array.isArray(data) ? data : []).filter(isRecord).slice(0, MAX_ROWS);
-  if (!rows.length) return [];
-  const { x, series } = resolveChartFields(
-    rows,
-    isSet(stageField) ? String(stageField) : undefined,
-    fieldList(valueField)
-  );
-  const field = series[0];
+/** A funnel as drawn: its first MAX_STAGES stages, scaled against each other (a hidden 25th stage set the scale, and
+ *  every drawn bar sat at the 6% floor), the count of the stages past them, and the note on a configured field the
+ *  data lacks (fieldNote). The fields are read from the drawn stages too. */
+export interface Funnel {
+  stages: FunnelStage[];
+  hidden: number;
+  fieldNote: string | null;
+}
+
+export const funnel = (data: unknown, stageField: unknown, valueField: unknown): Funnel => {
+  const all = (Array.isArray(data) ? data : []).filter(isRecord);
+  const rows = all.slice(0, MAX_STAGES);
+  if (!rows.length) return { stages: [], hidden: 0, fieldNote: null };
+  const fields = resolveChartFields(rows, isSet(stageField) ? String(stageField) : undefined, fieldList(valueField));
+  const field = fields.series[0];
   const values = rows.map((row) => {
     const n = num(row[field]);
     return n === null ? null : Math.max(0, n);
   });
   const max = Math.max(0, ...values.filter((v): v is number => v !== null));
   const first = values[0];
-  return rows.map((row, i) => {
+  const stages = rows.map((row, i) => {
     const value = values[i];
     const prev = i > 0 ? values[i - 1] : null;
     return {
-      label: axisLabel(row[String(x)]),
+      label: axisLabel(row[String(fields.x)]),
       value,
       width: max > 0 && value !== null ? value / max : 0,
       ofFirst: first !== null && first > 0 && value !== null ? round1((value / first) * 100) : null,
@@ -47,4 +53,9 @@ export const funnelStages = (data: unknown, stageField: unknown, valueField: unk
       row,
     };
   });
+  return { stages, hidden: all.length - rows.length, fieldNote: fieldNote(fields) };
 };
+
+/** The drawn stages of a funnel (see funnel). */
+export const funnelStages = (data: unknown, stageField: unknown, valueField: unknown): FunnelStage[] =>
+  funnel(data, stageField, valueField).stages;

@@ -9,7 +9,7 @@ import {
   trendOf,
   type SparkPoint,
 } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
-import { SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { SafeFrame, animated, withChartRecovery } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { clamp } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
@@ -122,4 +122,4 @@ export const ShadSparkline = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadSparkline);
+export default withControlState(withChartRecovery(ShadSparkline));

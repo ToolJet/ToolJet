@@ -80,6 +80,30 @@ describe('UI 2.0 Accordion transitions', () => {
     expect(widget.exposed().openIndexes).toEqual([0]);
   });
 
+  test.each([[[-1]], [[0.5]], [['']], [[null]], [['x']]])(
+    '[ShadAccordion-STATE-006] defaultOpen %j opens nothing and reports nothing open',
+    async (defaults) => {
+      await mount(defaults, true);
+      coherent();
+      expect(widget.exposed()).toMatchObject({ openIndexes: [], isExpanded: false });
+    }
+  );
+
+  test('[ShadAccordion-STATE-007] "01" reads as section 1, as expand("01") does, in defaults and in actions', async () => {
+    await mount(['01'], true);
+    await waitFor(() => expect(drawnOpen()).toEqual([1]));
+    coherent();
+    await widget.act('collapse', '01');
+    coherent();
+    expect(widget.exposed().openIndexes).toEqual([]);
+  });
+
+  test('[ShadAccordion-STATE-008] an invalid first default does not displace a valid single-open choice', async () => {
+    await mount([-1, 2], false);
+    await waitFor(() => expect(drawnOpen()).toEqual([2]));
+    coherent();
+  });
+
   test('[ShadAccordion-LIM-001] sections past the first 200 are behind Show more, and an open one is drawn', async () => {
     const many = Array.from({ length: 201 }, (_, i) => ({ title: `Section ${i}`, content: `Body ${i}` }));
     await mount([], true, many);

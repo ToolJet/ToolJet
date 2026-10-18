@@ -6,15 +6,17 @@ import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
   fieldList,
+  fieldNote,
   hasValues,
+  hiddenNote,
   seriesRows,
   resolveChartFields,
   seriesLabel,
   drawnLabelMap,
   seriesSlots,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { AXIS_FILL, GRID, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
-import { clamp, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { AXIS_FILL, GRID, SafeFrame, animated, withChartRecovery } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { clamp, isRecord, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 // A radar past this many axes is unreadable, and every axis is a spoke, a grid vertex and a label: 2,000 rows (MAX_ROWS)
@@ -25,9 +27,10 @@ export const ShadRadarChart = (props: WidgetProps) => {
   const p = props.properties;
   const { bound, yFields, seriesLabels, colors } = useSeriesInputs(p);
   // Rows, series and colours are worked out again only when what they read changes, not on every render.
-  const { category, series, plotted, empty, names, fills } = useMemo(() => {
+  const { category, series, plotted, empty, notes, names, fills } = useMemo(() => {
+    // The fields are read from the rows drawn, the first MAX_AXES.
     const fields = resolveChartFields(
-      list(bound),
+      list(bound).filter(isRecord).slice(0, MAX_AXES),
       isSet(p.categoryField) ? String(p.categoryField) : undefined,
       fieldList(yFields)
     );
@@ -40,6 +43,7 @@ export const ShadRadarChart = (props: WidgetProps) => {
       // A missing score sits at the centre rather than breaking the polygon.
       plotted: rows.map((r) => ({ ...r, ...Object.fromEntries(fields.series.map((s) => [s, r[s] ?? 0])) })),
       empty: !fields.series.length || !hasValues(rows, fields.series),
+      notes: [fieldNote(fields), hiddenNote(list(bound).filter(isRecord).length - rows.length, 'axis', 'axes')],
       names: fields.series.map((s) => seriesLabel(s, labels)),
       fills: fields.series.map((_, i) => seriesColor(colors, slots[i])),
     };
@@ -48,7 +52,7 @@ export const ShadRadarChart = (props: WidgetProps) => {
   const opacity = clamp(p.fillOpacity, 0, 1, 0.5);
   const full = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
   return (
-    <SafeFrame props={props} empty={empty}>
+    <SafeFrame props={props} empty={empty} notes={notes}>
       {(onDatum) => (
         <RadarChart
           data={plotted}
@@ -86,4 +90,4 @@ export const ShadRadarChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadRadarChart);
+export default withControlState(withChartRecovery(ShadRadarChart));

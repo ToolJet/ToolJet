@@ -2,8 +2,9 @@ import { isScalar, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 // ToolJet UI 2.0 Questionnaire (Questionnaire.tsx): items, answers and validation, kept free of React so they can be
 // tested. An answer is held as { selected, other, otherOn, text } and exposed as one value per item name.
 
-export const MAX_ITEMS = 100;
-export const MAX_CHOICES = 50;
+/** A question draws this many choices, and this many more per press of Show more (every item and choice is kept: a
+ *  required 101st question was dropped and never blocked the submit). */
+export const CHOICES_PER_STEP = 50;
 export const TYPES: readonly string[] = ['single', 'multiple', 'text'];
 
 /** A choice's value as bound: text, a number or a boolean. */
@@ -58,7 +59,6 @@ const toChoices = (choices: unknown): Choice[] => {
   const seen = new Set<string>();
   const out: Choice[] = [];
   for (const c of Array.isArray(choices) ? (choices as unknown[]) : []) {
-    if (out.length >= MAX_CHOICES) break;
     let choice: Choice;
     if (isScalar(c)) choice = { label: String(c), value: c, description: '' };
     else if (c && typeof c === 'object' && !Array.isArray(c)) {
@@ -84,14 +84,13 @@ const toOther = (other: unknown): OtherSpec | null => {
   return null;
 };
 
-/** The items as questions to draw: objects only (up to MAX_ITEMS), a unique name (else question1, question2, ...),
+/** The items as questions to draw: objects only (all of them, one drawn at a time), a unique name (else question1, question2, ...),
  *  a known type (choices make an unset type single, no choices make it text), and choices as { label, value,
  *  description } with duplicates and blanks dropped. A choice question with no choices and no Other becomes text. */
 export const normalizeItems = (items: unknown): QuestionItem[] => {
   const names = new Set<string>();
   const out: QuestionItem[] = [];
   for (const raw of Array.isArray(items) ? (items as Record<string, unknown>[]) : []) {
-    if (out.length >= MAX_ITEMS) break;
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue;
     let name = toText(raw.name).trim() || `question${out.length + 1}`;
     if (names.has(name)) {
@@ -216,6 +215,14 @@ export const isPicked = (item: QuestionItem, answer: Answer, value: ChoiceValue)
   item.type === 'multiple'
     ? chosen(answer).some((v) => sameValue(v, value))
     : !answer.otherOn && answer.selected !== null && sameValue(answer.selected, value);
+
+/** How many of a question's choices to draw when `shown` are asked for (CHOICES_PER_STEP, and one more step per Show
+ *  more): whole steps, reaching the last picked choice (a default answer past the first step is drawn, not hidden). */
+export const choicesToDraw = (item: QuestionItem, answer: Answer | null, shown: number): number => {
+  const last = answer ? item.choices.reduce((at, c, i) => (isPicked(item, answer, c.value) ? i : at), -1) : -1;
+  const base = Math.max(CHOICES_PER_STEP, Math.ceil((last + 1) / CHOICES_PER_STEP) * CHOICES_PER_STEP);
+  return Math.min(item.choices.length, base + Math.max(0, shown - CHOICES_PER_STEP));
+};
 
 /** The shortcut shown on the answer at `index`: A..Z (letters) or 1..9 (numbers); none past those or when off. */
 export const shortcutKey = (index: number, mode: string): string | null => {
