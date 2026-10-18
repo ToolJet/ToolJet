@@ -6,9 +6,11 @@ import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { isSet, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const ShadButton = (props: WidgetProps) => {
-  const { styles, setExposedVariables, fireEvent } = props;
+  const { styles, setExposedVariables, fireEvent, id } = props;
+  const moduleId = useModuleId();
   // setText changes the label until the Label property itself changes, like the native Button's.
   const [properties, override] = useOverrides(props.properties);
   const latest = useRef(properties);
@@ -47,7 +49,14 @@ export const ShadButton = (props: WidgetProps) => {
         // label's line (20px); it keeps the height it was drawn at.
         style={Number(props.height) > 0 ? { minHeight: Number(props.height) } : undefined}
         disabled={!!properties.disabledState || !!properties.loadingState}
-        onClick={() => fireEvent('onClick')}
+        onClick={() => {
+          // As the native Button: a click announces itself to a Form whose submit button (buttonToSubmit) this is, and
+          // the Form submits. The click action fires onClick only, as the native one does.
+          document.dispatchEvent(
+            new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } })
+          );
+          fireEvent('onClick');
+        }}
         onMouseEnter={() => fireEvent('onHover')}
       >
         {properties.loadingState ? (

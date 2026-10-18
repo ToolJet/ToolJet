@@ -64,9 +64,9 @@ export const ShadDatePicker = (props: WidgetProps) => {
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
   // The popup is open only while the picker takes choices (usePickerPopup): disabling, loading or hiding it closes it.
-  const popup = usePickerPopup(properties);
-  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
+  const { open } = popup;
   const focus = useFocusEvents(fireEvent);
   const shown = (d: Date | undefined) => (d ? dayjs(d).format(format) : '');
   const unix = (d: Date | undefined) => (d ? dayjs(d).valueOf() : null);

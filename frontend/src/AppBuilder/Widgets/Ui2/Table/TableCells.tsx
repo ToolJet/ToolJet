@@ -22,6 +22,7 @@ import { matchesCondition, readCell } from './tableModel';
 import type { OnAction, Resolve, Row, TableColumn } from './types';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isSet, safeImageUrl, safeUrl } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // An HTML cell is the row's data: DOMPurify's defaults keep <style> (which restyles the whole page) and forms (a
 // password box in a cell), so both are dropped too.
@@ -324,7 +325,7 @@ export const CellEditor = ({ column, value, onCommit, onCancel }: CellEditorProp
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => commit(draft)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') commit(draft);
+        if (isEnter(e)) commit(draft);
         if (e.key === 'Escape') onCancel();
       }}
     />

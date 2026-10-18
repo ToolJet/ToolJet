@@ -11,6 +11,7 @@ import {
   shownOptions,
 } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 
 export const ShadToggleGroup = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
@@ -24,7 +25,7 @@ export const ShadToggleGroup = (props: WidgetProps) => {
   // clear() leaves none picked.
   const keysRef = useRef(byKey);
   keysRef.current = byKey;
-  const [key, change] = useValue(
+  const [key, change, setKey] = useValue(
     props,
     initial,
     (set) => ({
@@ -35,6 +36,13 @@ export const ShadToggleGroup = (props: WidgetProps) => {
       clear: async () => set(''),
     }),
     (k) => byKey.get(k)?.value ?? ''
+  );
+  // An option that is removed takes its choice with it, so it does not come back picked when the option does.
+  useDropRemovedChoices(
+    options.map((o) => choiceKey(o.value)),
+    key ? [key] : [],
+    () => setKey(''),
+    false
   );
   // A Form's clearForm leaves none picked, as the native Button group.
   useFormClearNow(() => change(''));
@@ -48,12 +56,14 @@ export const ShadToggleGroup = (props: WidgetProps) => {
           'tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-bg-[color:var(--lk-bg,var(--sc-muted))] tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
           properties.fullWidth === true && 'tw-flex tw-w-full'
         )}
-        onValueChange={(next) => next && change(next)}
+        // A disabled option takes no click (the item is disabled too).
+        onValueChange={(next) => next && !byKey.get(next)?.disabled && change(next)}
       >
         {shownOptions(options, byKey.get(key), MAX_CHOICES).map((o) => (
           <ToggleGroupItem
             key={String(o.value)}
             value={choiceKey(o.value)}
+            disabled={o.disabled === true}
             className="tw-rounded-[calc(var(--lk-radius,var(--sc-radius))*0.8)] data-[state=on]:tw-bg-[color:var(--lk-on-bg,var(--sc-background))] data-[state=on]:tw-text-[color:var(--lk-on-fg,var(--sc-foreground))]"
           >
             {o.label}

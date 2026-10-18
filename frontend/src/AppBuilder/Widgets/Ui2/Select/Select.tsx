@@ -10,9 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } fro
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { CONTROL, FormField, HELP, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import {
+  CONTROL,
+  controlAria,
+  fieldIdOf,
+  fieldName,
+  FormField,
+  HELP,
+  requiredAria,
+} from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import { useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -30,14 +39,21 @@ export const ShadSelect = (props: WidgetProps) => {
   const byKey = optionsByKey(options);
   const initial = defaultKey(properties.defaultValue);
   const [key, setKey] = useState(initial);
+  // An option that is removed takes its choice with it, so it does not come back selected when it reappears.
+  useDropRemovedChoices(
+    options.map((o) => optionKey(o.value)),
+    key ? [key] : [],
+    () => setKey(''),
+    false
+  );
   useEffect(() => setKey(initial), [initial]);
   const selectedOption: Partial<Option> = byKey.get(key) || {};
   // Radix mounts every item even while closed, so a 10k-option binding froze the page: the list shows the first
   // MAX_SELECT_OPTIONS (and the selected one, wherever it is); actions still reach every option.
   const shown = shownOptions(options, byKey.get(key), MAX_SELECT_OPTIONS);
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
-  const popup = usePickerPopup(properties);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
   useExposed(setExposedVariables, properties, {
     value: selectedOption.value ?? '',
     selectedOption,
@@ -55,7 +71,14 @@ export const ShadSelect = (props: WidgetProps) => {
     },
     clear: async () => setKey(''),
     setFocus: async () => triggerRef.current?.focus(),
-    setBlur: async () => triggerRef.current?.blur(),
+    // Closes an open popup too (focus is in it then), the way the popup's own close does: touched, onBlur once.
+    setBlur: async () => {
+      const wasOpen = popup.open;
+      popup.blurAway(triggerRef.current);
+      if (!wasOpen) return;
+      focus.opened(false);
+      check.touch();
+    },
   });
   // A picked option counts even when its value is false, 0 or '' (an "All" choice); only no pick is empty.
   const check = useValidation(
@@ -96,13 +119,14 @@ export const ShadSelect = (props: WidgetProps) => {
           // role="combobox" takes no name from its content: without a label, the placeholder names it.
           aria-label={fieldName(props, 'Select')}
           {...controlAria(props, check.error)}
+          {...requiredAria(props)}
           {...focus.handlers}
           className={cn(CONTROL, 'data-[placeholder]:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]')}
         >
           <SelectValue placeholder={String(properties.placeholder ?? '')} />
         </SelectTrigger>
         {/* The list opens in the pack's portal root, outside the widget: it takes the widget's style variables itself. */}
-        <SelectContent style={lookVars(props.componentType, props.styles)}>
+        <SelectContent style={lookVars(props.componentType, props.styles)} onCloseAutoFocus={popup.onCloseAutoFocus}>
           {shown.map((o) => (
             <SelectItem key={optionKey(o.value)} value={optionKey(o.value)}>
               {o.label}

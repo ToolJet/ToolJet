@@ -182,9 +182,9 @@ export const ShadTimePicker = (props: WidgetProps) => {
   const [minutes, setMinutes] = useState(initial);
   useEffect(() => setMinutes(initial), [initial]);
   // The popup is open only while the picker takes choices (usePickerPopup): disabling, loading or hiding it closes it.
-  const popup = usePickerPopup(properties);
-  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
+  const { open } = popup;
   const focus = useFocusEvents(fireEvent);
   const exposed = (m: number | null) => ({ value: M.toHHmm(m), formattedValue: M.formatTime(m, use24) });
   const setTime = (t: unknown, format: unknown) => {

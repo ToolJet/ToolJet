@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { CONTROL } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from './dateModel';
+import { parseNumber } from './inputsModel';
 import { runNow, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { numericText } from './inputsModel';
@@ -27,6 +28,20 @@ export const withRule = <P extends Pick<WidgetProps, 'validate'>>(props: P, rule
     return typeof props.validate === 'function' ? props.validate(value) : { isValid: true };
   },
 });
+
+/** A number field's minimum and maximum (the Validation section), with the shared check's messages. The shared check
+ *  reads a bound of 0 as no bound (`resolveValue(minValue) || undefined`), so a Number or Currency input with minimum 0
+ *  took -5; this rule runs first (withRule) and reads 0 as 0. An empty value is left to the shared check. */
+export const numberBounds =
+  (validation: WidgetProps['validation']) =>
+  (value: unknown): string => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return '';
+    const lo = parseNumber(validation?.minValue);
+    const hi = parseNumber(validation?.maxValue);
+    if (lo !== null && value < lo) return `Minimum value is ${lo}`;
+    if (hi !== null && value > hi) return `Maximum value is ${hi}`;
+    return '';
+  };
 
 // A text box made of parts (sign, input, buttons) in one bordered box: ShadInput's size and focus ring, CONTROL's
 // colours (background, text, border, radius, error border).

@@ -7,6 +7,7 @@ import { KanbanCard, SECONDARY_TEXT } from './KanbanCard';
 import type { KanbanLook } from './KanbanCard';
 import type { BoardCard, BoardColumn } from './kanbanBoard';
 import { ShowMore } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
+import { isComposing, isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // Column title and count colours: the columnTitleColor and count styles, else the theme's.
 const COLUMN_TITLE = 'tw-text-[color:var(--kb-col-title,var(--sc-foreground))]';
@@ -112,7 +113,7 @@ export const KanbanColumn = ({
             title: `Expand ${column.title}`,
             'aria-label': `Expand ${column.title}`,
             onClick: toggle,
-            onKeyDown: (e: React.KeyboardEvent) => (e.key === 'Enter' || e.key === ' ') && toggle(),
+            onKeyDown: (e: React.KeyboardEvent) => (isEnter(e) || (e.key === ' ' && !isComposing(e))) && toggle(),
           }
         : {})}
       // A set column width is the preferred width: columns shrink to fit the board (down to the minimum, or the set

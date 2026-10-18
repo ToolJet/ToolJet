@@ -192,10 +192,60 @@ export const usePublishNow = ({
   );
 };
 
+/** The widget's publishers, with every published function made an owned action (runNow, and nothing once `alive` is
+ *  false). Values pass through as they are. */
+const useOwnedPublish = (
+  props: Pick<WidgetProps, 'setExposedVariables' | 'setExposedVariable'>,
+  alive: MutableRefObject<boolean>
+) => {
+  const { setExposedVariables, setExposedVariable } = props;
+  return useMemo(() => {
+    const owned = (value: unknown) =>
+      typeof value === 'function'
+        ? (...args: unknown[]) => (alive.current ? runNow(() => (value as Action)(...args)) : undefined)
+        : value;
+    return {
+      setExposedVariables: ((values: Record<string, unknown>) =>
+        setExposedVariables(
+          Object.fromEntries(Object.entries(values || {}).map(([key, value]) => [key, owned(value)]))
+        )) as WidgetProps['setExposedVariables'],
+      setExposedVariable: ((key: string, value: unknown) =>
+        setExposedVariable(key, owned(value))) as WidgetProps['setExposedVariable'],
+    };
+  }, [setExposedVariables, setExposedVariable, alive]);
+};
+
+/** Whether the component is still mounted. */
+const useAlive = (): MutableRefObject<boolean> => {
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+  return alive;
+};
+
+/** For the few widgets that keep their control state themselves (Table, List view, Tabs) or draw a native widget that
+ *  publishes its own actions (the Dialog's ModalV2): the same owned actions withControlState gives every other widget,
+ *  so their setLoading / setDisable / setVisibility publish before the awaited call returns, and an unmounted
+ *  instance's actions do nothing. */
+export const withOwnedActions = <P extends WidgetProps>(Widget: React.ComponentType<P>) => {
+  const Owned = (props: P) => {
+    const publish = useOwnedPublish(usePublishNow(props), useAlive());
+    return React.createElement(Widget, { ...props, ...publish });
+  };
+  Owned.displayName = `Owned(${Widget.displayName || Widget.name || 'Widget'})`;
+  return Owned;
+};
+
 export const withControlState = <P extends WidgetProps>(Widget: React.ComponentType<P>) => {
   const Controlled = (props: P) => {
     const { properties } = props;
-    const { setExposedVariables, setExposedVariable } = usePublishNow(props);
+    // Every action this instance publishes runs through runNow and belongs to this instance (useOwnedPublish); in a
+    // List view row or Kanban card its writes land at once (usePublishNow).
+    const { setExposedVariables, setExposedVariable } = useOwnedPublish(usePublishNow(props), useAlive());
     const { isVisible, isLoading, isDisabled } = useExposeState(
       properties.loadingState === true,
       properties.visibility !== false,
