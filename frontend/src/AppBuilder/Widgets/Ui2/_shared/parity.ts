@@ -101,6 +101,24 @@ export const usePickerPopup = (properties: Resolved, anchor?: RefObject<Element>
   useEffect(() => {
     if (blocked) setOpenState(false);
   }, [blocked]);
+  // While open, the panels around the trigger are watched: a tab switched away, disabled or set loading (its panel
+  // hidden, inert or aria-disabled) closes the popup, which is portalled outside that panel and would stay open.
+  useEffect(() => {
+    const el = anchor?.current;
+    if (!open || !el || typeof MutationObserver === 'undefined') return undefined;
+    const check = () => {
+      if (ownerTakesNoInput(el)) setOpenState(false);
+    };
+    const observer = new MutationObserver(check);
+    for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
+      observer.observe(node, {
+        attributes: true,
+        attributeFilter: ['hidden', 'inert', 'aria-disabled', 'style', 'disabled'],
+      });
+    }
+    check();
+    return () => observer.disconnect();
+  }, [open, anchor]);
   const leaving = useRef(false);
   return {
     open: open && !blocked,
