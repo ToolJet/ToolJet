@@ -26,6 +26,20 @@ describe('RetuneShippedThemeNeutrals', () => {
     }
   });
 
+  // The definition column is json, which keeps key order, and the app's theme loader depends on it: it turns every
+  // border entry into a CSS variable, so border.radius after border.colors overwrote --cc-default-border with
+  // "undefined" (18 Oct lifecycle tests: near-white borders in dark mode on every shipped theme). Passing the new
+  // definitions through jsonb sorted their keys; they now go through json, as written.
+  it('writes each new definition with its keys in the order it was written', async () => {
+    const [[sql]] = await run();
+    expect(sql).toMatch(/json_to_recordset\(\$1::json\) AS v\(name text, first jsonb, next json\)/);
+    expect(sql).toMatch(/SET definition = v\.next,/);
+  });
+
+  it('keeps border.radius before border.colors in every shipped definition', () => {
+    for (const theme of shippedThemes) expect(Object.keys(theme.definition.border)).toEqual(['radius', 'colors']);
+  });
+
   it('only retunes themes whose definition changed', () => {
     for (const theme of shippedThemes) expect(firstShippedDefinition(theme.name)).not.toEqual(theme.definition);
   });
