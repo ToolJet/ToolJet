@@ -3,6 +3,7 @@
  * - The header is not rendered again: it measures its text while rendering, which makes the browser lay out the whole
  *   table. Anything else that re-renders the table still re-renders it.
  * - The body's style (the placeholder rows drawn as its background) stays the same: a change restyles the whole body.
+ * - The header sits outside the scrolling body, so the body's scrollbar runs beside the rows only.
  */
 import React from 'react';
 import { fireEvent, waitFor } from '@testing-library/react';
@@ -60,7 +61,7 @@ function renderTable(styles = {}) {
   return session.render(<RenderWidget {...widgetProps('t1', 'Table', { currentMode: 'edit' })} />);
 }
 
-const scroller = () => document.querySelector('.jet-data-table');
+const scroller = () => document.querySelector('.jet-data-table .tj-table-body');
 const body = () => scroller().querySelector('tbody');
 const rowAt = (index) => body().querySelector(`tr[data-index="${index}"]`);
 
@@ -117,6 +118,14 @@ describe('Table scrolling', () => {
     await drain();
     await waitFor(() => expect(rowAt(62).textContent).toContain('renamed 63'));
     expect(headerMeasures).toBeGreaterThan(measuresBefore);
+  });
+
+  test('the header is outside the scrolling body, so the scrollbar runs beside the rows only', async () => {
+    renderTable();
+    await drain();
+    await waitFor(() => expect(rowAt(0)).not.toBeNull());
+    expect(scroller().querySelector('thead')).toBeNull();
+    expect(document.querySelector('.jet-data-table > .tj-table-head thead')).not.toBeNull();
   });
 
   test('the placeholder rows keep the same style while scrolling', async () => {

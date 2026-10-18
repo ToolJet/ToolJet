@@ -6,6 +6,7 @@ import { TableRow } from './_components/TableRow';
 import { TableCellSettingsProvider } from './TableCellSettings';
 import { ExpandedRowContainer } from './_components/ExpandedRowContainer';
 import { useWindow } from '@/AppBuilder/_engines/rendering/useWindow';
+import { useSplitHeader } from '../../_hooks/useSplitHeader';
 import useTableStore from '../../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -180,6 +181,12 @@ export const TableData = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [renderVersion, tableState.columnSizing, tableState.columnPinning, tableState.columnOrder]
   );
+  // The header sits outside the scrolling body, so the body's scrollbar runs beside the rows only: the header follows
+  // the body's horizontal scroll and leaves room for its scrollbar (useSplitHeader). Both tables are as wide as the
+  // columns (or the table, if wider); rows are positioned out of flow, so the body's table gets that width explicitly.
+  const headRef = useRef(null);
+  const gutter = useSplitHeader(headRef, tableBodyRef);
+  const columnsWidth = table.getTotalSize();
 
   // Handles row click for row selection
   const handleRowClick = useCallback(
@@ -246,72 +253,84 @@ export const TableData = (props) => {
 
   return (
     <div
-      className={`table-responsive jet-data-table`}
-      style={{ maxHeight: '100%', position: 'relative' }}
-      ref={tableBodyRef}
+      className="table-responsive jet-data-table tj-table-split"
+      style={{ maxHeight: '100%', position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
     >
       <TableCellSettingsProvider id={id}>
-        <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
-          <thead style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: containerBackgroundColor }}>
-            {renderTableHeader()}
-          </thead>
-          <tbody
-            ref={listRef}
-            style={{
-              position: 'relative',
-              height: `${rowWindow.height}px`,
-              ...placeholderStyle,
-            }}
+        <div className="tj-table-head" ref={headRef} style={{ flex: 'none', overflow: 'hidden', paddingRight: gutter }}>
+          <table
+            className={`table ${rowStyle} ${darkMode && 'table-dark'}`}
+            style={{ minWidth: columnsWidth, backgroundColor: containerBackgroundColor }}
           >
-            {rowWindow.items.map((item) => {
-              const entry = itemAt(item.index);
-              if (!entry) return null;
+            <thead style={{ position: 'relative', zIndex: 10, backgroundColor: containerBackgroundColor }}>
+              {renderTableHeader()}
+            </thead>
+          </table>
+        </div>
+        <div
+          className="tj-table-body"
+          ref={tableBodyRef}
+          style={{ flex: '1 1 auto', minHeight: 0, overflow: 'auto', position: 'relative' }}
+        >
+          <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`} style={{ minWidth: columnsWidth }}>
+            <tbody
+              ref={listRef}
+              style={{
+                position: 'relative',
+                height: `${rowWindow.height}px`,
+                ...placeholderStyle,
+              }}
+            >
+              {rowWindow.items.map((item) => {
+                const entry = itemAt(item.index);
+                if (!entry) return null;
 
-              if (entry.type === 'expansion') {
+                if (entry.type === 'expansion') {
+                  return (
+                    <ExpandedRowContainer
+                      key={`${entry.rowIndex}-expansion`}
+                      tableId={id}
+                      rowIndex={entry.rowIndex}
+                      top={rowWindow.itemTop(item.start)}
+                      darkMode={darkMode}
+                      canvasWidth={canvasWidth}
+                      expansionHeight={expansionHeight}
+                      resizeItem={rowWindow.resizeItem}
+                      virtualItemIndex={item.index}
+                    />
+                  );
+                }
+
+                const row = view.getRow(entry.rowIndex);
                 return (
-                  <ExpandedRowContainer
-                    key={`${entry.rowIndex}-expansion`}
-                    tableId={id}
-                    rowIndex={entry.rowIndex}
+                  <TableRow
+                    id={id}
+                    key={row.id}
+                    row={row}
+                    index={item.index}
                     top={rowWindow.itemTop(item.start)}
-                    darkMode={darkMode}
-                    canvasWidth={canvasWidth}
-                    expansionHeight={expansionHeight}
-                    resizeItem={rowWindow.resizeItem}
-                    virtualItemIndex={item.index}
+                    isSelected={row.getIsSelected()}
+                    tableState={tableState}
+                    renderVersion={renderVersion}
+                    columnPlans={columnPlans}
+                    cellHeight={cellHeight}
+                    getResolvedValue={getResolvedValue}
+                    handleRowClick={handleRowClick}
+                    allowSelection={allowSelection}
+                    contentWrap={contentWrap}
+                    highlightSelectedRow={highlightSelectedRow}
+                    setExposedVariables={setExposedVariables}
+                    fireEvent={fireEvent}
+                    rowStyles={rowStyles}
+                    measureElement={rowWindow.measureElement}
+                    componentName={componentName}
+                    table={table}
                   />
                 );
-              }
-
-              const row = view.getRow(entry.rowIndex);
-              return (
-                <TableRow
-                  id={id}
-                  key={row.id}
-                  row={row}
-                  index={item.index}
-                  top={rowWindow.itemTop(item.start)}
-                  isSelected={row.getIsSelected()}
-                  tableState={tableState}
-                  renderVersion={renderVersion}
-                  columnPlans={columnPlans}
-                  cellHeight={cellHeight}
-                  getResolvedValue={getResolvedValue}
-                  handleRowClick={handleRowClick}
-                  allowSelection={allowSelection}
-                  contentWrap={contentWrap}
-                  highlightSelectedRow={highlightSelectedRow}
-                  setExposedVariables={setExposedVariables}
-                  fireEvent={fireEvent}
-                  rowStyles={rowStyles}
-                  measureElement={rowWindow.measureElement}
-                  componentName={componentName}
-                  table={table}
-                />
-              );
-            })}
-          </tbody>
-        </table>
+              })}
+            </tbody>
+          </table>
+        </div>
       </TableCellSettingsProvider>
     </div>
   );

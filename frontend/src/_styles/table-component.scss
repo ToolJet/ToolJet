@@ -438,7 +438,8 @@
       }
     }
 
-    .jet-data-table>table:not(.table-resizing) {
+    .jet-data-table>table:not(.table-resizing),
+    .jet-data-table>.tj-table-body>table:not(.table-resizing) {
 
       .table-row:hover,
       .table-row:focus {
@@ -1872,5 +1873,42 @@
         opacity: 0;
       }
     }
+  }
+}
+
+// The Table's body scrolls on its own, below the header, so its scrollbar runs beside the rows only (TableData,
+// useSplitHeader). The scrollbar looks as the whole table's did.
+.jet-data-table.tj-table-split {
+  > .tj-table-head > .table {
+    margin-bottom: 0;
+  }
+
+  > .tj-table-body {
+    scrollbar-color: var(--cc-table-scroll-bar-color) transparent;
+
+    &::-webkit-scrollbar {
+      display: unset !important;
+      width: 8px;
+      height: 8px;
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--slate4) !important;
+      border-radius: 8px;
+    }
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  // Hide the scrollbar on touch devices, as for the whole table.
+  .jet-data-table.tj-table-split > .tj-table-body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
   }
 }
