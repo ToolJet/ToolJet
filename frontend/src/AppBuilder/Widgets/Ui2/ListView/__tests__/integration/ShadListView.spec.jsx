@@ -333,21 +333,32 @@ describe('UI 2.0 List view', () => {
   // Each widget in a row publishes its values at once (usePublishNow), and each of those writes re-derived its row's
   // children in a store update of its own: 5 updates a row for two Texts, so 100 rows took seconds to fill (each
   // update re-runs every mounted widget's store selectors). The rows drawn in one go publish inside one batch, which
-  // derives each row once.
+  // derives each row once, and all of them in one store update (a page turn's resets join it too: 3 derives a row).
   describe('rows drawn in one go derive each row once', () => {
     let derived;
+    let derives;
     let derive;
     beforeEach(() => {
       derived = [];
+      derives = 0;
       derive = useStore.getState().deriveListviewExposedData;
       useStore.setState({
         deriveListviewExposedData: (...args) => {
-          derived.push(args[1]);
+          derives += 1;
+          derived.push(...[].concat(args[1]));
           return derive(...args);
         },
       });
     });
     afterEach(() => useStore.setState({ deriveListviewExposedData: derive }));
+    // Store updates from here until the list settles.
+    const countUpdates = () => {
+      const count = { updates: 0 };
+      count.stop = useStore.subscribe(() => {
+        count.updates += 1;
+      });
+      return count;
+    };
     const twoTexts = () => {
       const note = rowText();
       note.id = 'rowNote';
@@ -370,6 +381,40 @@ describe('UI 2.0 List view', () => {
       await waitFor(() => expect(noteAt(129)).toBe('Row 129'));
       await settle();
       expect([...derived].sort((a, b) => a - b)).toEqual(Array.from({ length: 30 }, (_, i) => 100 + i));
+    }, 20000);
+
+    test('[ShadListView-DEF-005] a draw derives its rows together, in a bounded number of store updates', async () => {
+      const count = countUpdates();
+      render({ properties: { data: many(100) }, extraComponents: twoTexts() });
+      await waitFor(() => expect(noteAt(99)).toBe('Row 99'));
+      await settle();
+      count.stop();
+      expect([...new Set(derived)].sort((a, b) => a - b)).toEqual(Array.from({ length: 100 }, (_, i) => i));
+      expect(derives).toBeLessThanOrEqual(3);
+      expect(count.updates).toBeLessThan(50);
+    }, 20000);
+
+    test('[ShadListView-DEF-006] a page turn resets and derives its rows together', async () => {
+      render({
+        properties: { data: many(200), enablePagination: binding('{{true}}'), rowsPerPage: binding('{{100}}') },
+        extraComponents: twoTexts(),
+      });
+      await waitFor(() => expect(noteAt(99)).toBe('Row 99'));
+      await settle();
+      derives = 0;
+      derived.length = 0;
+      const count = countUpdates();
+      await widget.act('setPage', 2);
+      await waitFor(() => expect(noteAt(99)).toBe('Row 199'));
+      await settle();
+      count.stop();
+      expect(noteAt(0)).toBe('Row 100');
+      expect(exposed().children?.[0]?.rowText?.text).toBe('Row 100');
+      // The rows' own values too, not only the list's children: the reset of each row lands before its new values.
+      const values = useStore.getState().resolvedStore.modules.canvas.exposedValues.components;
+      expect([values.rowText[0]?.text, values.rowNote[99]?.text]).toEqual(['Row 100', 'Row 199']);
+      expect(derives).toBeLessThanOrEqual(3);
+      expect(count.updates).toBeLessThan(50);
     }, 20000);
   });
 
