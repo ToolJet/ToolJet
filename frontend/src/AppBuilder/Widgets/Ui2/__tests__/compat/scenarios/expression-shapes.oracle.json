@@ -1,5 +1,4 @@
 {
-  "knownFailing": "W1, import and RenameUi2PackNames: the rewrite misses row references with a computed or dynamic index, a call with a comment before its parentheses and an action taken as a value (an alias), and rewrites text inside string and template literals",
   "static": [
     {
       "query": "rows",

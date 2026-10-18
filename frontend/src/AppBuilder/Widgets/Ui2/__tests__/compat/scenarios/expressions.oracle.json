@@ -1,5 +1,5 @@
 {
-  "knownFailing": "W1, import and RenameUi2PackNames: the rewrite changes text that only mentions a reference (plain text, a string literal) and misses comment-split references; a reference built at run time cannot be rewritten at all (a runtime decision)",
+  "knownFailing": "Case e only: a reference assembled at run time (for example components['date' + 'Picker1']) cannot be renamed by a static rewrite. Plain text, string literals and comment-split references are handled (W1 import rewrite).",
   "static": [
     {
       "component": "plainText",
