@@ -1,7 +1,7 @@
 // Release audit round 2: Codex's fixture reviewCurrentEyeDropperLifecycle, kept as written, as the regression check for a fix made earlier
 // from its description (see the commit that fixed it).
-import React from 'react';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
+import React from 'react';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { binding, setVariableOn } from '@/AppBuilder/Widgets/widgetHarness';
 const w = createWidgetHarness({ componentType: 'ShadColorPicker', id: 'color1', handle: 'color1', widgetWidth: 400 });
