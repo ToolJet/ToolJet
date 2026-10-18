@@ -79,6 +79,14 @@ describe('UI 2.0 Combo chart', () => {
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
 
+  // Drag-and-drop build (18 Oct): bound to a query that had not run yet, the chart showed "No data" and a note that
+  // the data had no spend field. Empty data has no fields to lack; the note is for rows that miss a series.
+  test('[ShadComboChart-DEF-009] empty data shows only the empty state, with no missing-field note', async () => {
+    render({ properties: { data: binding('{{[]}}'), xField: binding('month'), barFields: binding("{{['spend']}}") } });
+    await waitFor(() => expect(screen.getByText('No data')).toBeInTheDocument());
+    expect(screen.queryByText(/The data has no/)).toBeNull();
+  });
+
   test('[ShadComboChart-PROP-001] data, xField, barFields, lineFields and rightAxisFields place each series', async () => {
     render({
       properties: {
