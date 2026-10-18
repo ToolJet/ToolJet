@@ -1,0 +1,40 @@
+{
+  "knownFailing": "W1, import and RenameUi2PackNames: the rewrite misses row references with a computed or dynamic index, a call with a comment before its parentheses and an action taken as a value (an alias), and rewrites text inside string and template literals",
+  "static": [
+    {
+      "query": "rows",
+      "path": "options.code",
+      "equals": "return [components.tags1[0].values, components.tags1[index].values, components.tags1[variables.row].values];"
+    },
+    {
+      "query": "optional",
+      "path": "options.code",
+      "equals": "return components?.['tags1']?.[0]?.values;"
+    },
+    {
+      "query": "literal",
+      "path": "options.code",
+      "equals": "const label = \"components.tags1.tags\"; return components.tags1.values;"
+    },
+    {
+      "query": "template",
+      "path": "options.code",
+      "equals": "return `components.tags1.tags: ${components.tags1.values}`;"
+    },
+    {
+      "query": "comment-call",
+      "path": "options.code",
+      "equals": "return components.tags1.setDisable /* reason */ (true);"
+    },
+    {
+      "query": "alias",
+      "path": "options.code",
+      "equals": "const setDisabled = components.tags1.setDisable; return setDisabled(true);"
+    },
+    {
+      "query": "plain-call",
+      "path": "options.code",
+      "equals": "return components.tags1.setDisable(true);"
+    }
+  ]
+}

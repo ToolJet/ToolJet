@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "release": "scenarios",
+  "widget": "ShadTagsInput",
+  "pages": [
+    {
+      "id": "4071e1fb-9d9e-5b92-a6f2-c3c1fb773180",
+      "appVersionId": "c2fc1c72-7603-5dba-ac4f-2549d2d59aa2",
+      "name": "Home",
+      "handle": "home"
+    }
+  ],
+  "components": [
+    {
+      "id": "3f4be934-7435-5484-a7cc-8923511b59cb",
+      "name": "tags1",
+      "type": "ShadTagsInput",
+      "pageId": "4071e1fb-9d9e-5b92-a6f2-c3c1fb773180",
+      "parent": null,
+      "properties": {
+        "label": {
+          "value": "Tags"
+        },
+        "defaultValue": {
+          "value": "{{['saved']}}"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 0,
+          "left": 0,
+          "width": 20,
+          "height": 64
+        }
+      }
+    }
+  ],
+  "events": [],
+  "dataQueries": [
+    {
+      "id": "cfeeed34-eeae-54e8-afe8-c22b8180d454",
+      "name": "rows",
+      "kind": "runjs",
+      "appVersionId": "c2fc1c72-7603-5dba-ac4f-2549d2d59aa2",
+      "options": {
+        "code": "return [components.tags1[0].tags, components.tags1[index].tags, components.tags1[variables.row].tags];",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    },
+    {
+      "id": "9802fe17-56fe-53dd-ab5b-c18f764f2971",
+      "name": "optional",
+      "kind": "runjs",
+      "appVersionId": "c2fc1c72-7603-5dba-ac4f-2549d2d59aa2",
+      "options": {
+        "code": "return components?.['tags1']?.[0]?.tags;",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    },
+    {
+      "id": "55b0435d-e9e7-539b-a657-0c8dbfd9542f",
+      "name": "literal",
+      "kind": "runjs",
+      "appVersionId": "c2fc1c72-7603-5dba-ac4f-2549d2d59aa2",
+      "options": {
+        "code": "const label = \"components.tags1.tags\"; return components.tags1.tags;",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    },
+    {
+      "id": "86e96d05-830f-546e-a7d0-865afd601bf3",
+      "name": "template",
+      "kind": "runjs",
+      "appVersionId": "c2fc1c72-7603-5dba-ac4f-2549d2d59aa2",
+      "options": {
+        "code": "return `components.tags1.tags: ${components.tags1.tags}`;",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    },
+    {
+      "id": "53a407d7-6972-5564-a560-dce9ae8c16e9",
+      "name": "comment-call",
+      "kind": "runjs",
+      "appVersionId": "c2fc1c72-7603-5dba-ac4f-2549d2d59aa2",
+      "options": {
+        "code": "return components.tags1.disable /* reason */ (true);",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    },
+    {
+      "id": "70326d50-ab7b-5390-a73b-92cf2510af20",
+      "name": "alias",
+      "kind": "runjs",
+      "appVersionId": "c2fc1c72-7603-5dba-ac4f-2549d2d59aa2",
+      "options": {
+        "code": "const setDisabled = components.tags1.disable; return setDisabled(true);",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    },
+    {
+      "id": "6746c53f-6f4e-57cf-a1da-1749cd68bc9f",
+      "name": "plain-call",
+      "kind": "runjs",
+      "appVersionId": "c2fc1c72-7603-5dba-ac4f-2549d2d59aa2",
+      "options": {
+        "code": "return components.tags1.disable(true);",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    }
+  ]
+}

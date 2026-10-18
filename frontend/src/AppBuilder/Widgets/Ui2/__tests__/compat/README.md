@@ -91,6 +91,9 @@ expected result: the saved text afterwards (`static`), keys the app owns (`ownKe
 
 - `expressions`: a pre-rename Date picker read and called through bracket, comment-split, optional and run-time
   references, in bindings and RunJS, beside plain text that only mentions a reference. Known failing.
+- `expression-shapes`: Codex's import edge cases on a pre-rename Tags input, checked as saved code after import: row
+  references with a fixed, dynamic and computed index, optional access, text in string and template literals, a call
+  with a comment before its parentheses, an action taken as a value, and a plain call. Known failing.
 - `proto-key`: own `__proto__` keys in a saved Table row and a query body. Known failing.
 - `mixed`: native TextInput, Button and Text with UI 2.0 widgets, bound to and calling each other.
 

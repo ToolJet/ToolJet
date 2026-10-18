@@ -33,6 +33,17 @@
         "ee"
       ],
       "oracle": "mixed.oracle.json"
+    },
+    "expression-shapes": {
+      "path": "expression-shapes.json",
+      "sha256": "863083eedb115decab649bbbec2301f038d832a5ffba2e6913fa34c2e0a50e85",
+      "schemaVersion": 1,
+      "provenance": "hand-written scenario (UI 2.0 audit round 2, Codex's import edge cases): its expectations are written, not recorded",
+      "applicability": [
+        "ce",
+        "ee"
+      ],
+      "oracle": "expression-shapes.oracle.json"
     }
   }
 }
