@@ -104,8 +104,14 @@ export const ShadCalendar = (props: WidgetProps) => {
   // A new default value or mode resets the selection.
   const defaultValue = useStable(properties.defaultValue);
   const initial = useMemo(() => calendarSelection(defaultValue, mode), [defaultValue, mode]);
+  // Reset during render, not in an effect: an effect left the old selection (a Date, or { from, to }) drawn for one
+  // render in the new mode, and DayPicker's multiple mode threw on it ('selected?.some is not a function').
   const [selected, setSelected] = useState(initial);
-  useEffect(() => setSelected(initial), [initial]);
+  const [selectionFrom, setSelectionFrom] = useState(initial);
+  if (selectionFrom !== initial) {
+    setSelectionFrom(initial);
+    setSelected(initial);
+  }
   // The selection's shape follows the mode.
   const firstSelected =
     mode === 'multiple'
