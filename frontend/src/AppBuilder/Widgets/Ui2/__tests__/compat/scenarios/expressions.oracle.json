@@ -1,0 +1,38 @@
+{
+  "knownFailing": "W1, import and RenameUi2PackNames: the rewrite changes text that only mentions a reference (plain text, a string literal) and misses comment-split references; a reference built at run time cannot be rewritten at all (a runtime decision)",
+  "static": [
+    {
+      "component": "plainText",
+      "path": "properties.text.value",
+      "equals": "Read components.datePicker1.selectedDate in a query."
+    },
+    {
+      "query": "readPicker",
+      "path": "options.code",
+      "contains": "const note = 'components.datePicker1.selectedDate is the due date';"
+    }
+  ],
+  "resolved": [
+    {
+      "component": "withComment",
+      "property": "text",
+      "equals": "2026-10-15"
+    },
+    {
+      "component": "withBrackets",
+      "property": "text",
+      "equals": "2026-10-15"
+    }
+  ],
+  "runJs": {
+    "readPicker": {
+      "a": "2026-10-15",
+      "b": "2026-10-15",
+      "c": "2026-10-15",
+      "d": "2026-10-15",
+      "e": "2026-10-15",
+      "note": "components.datePicker1.selectedDate is the due date"
+    },
+    "readAfter": "2026-10-20"
+  }
+}

@@ -80,6 +80,20 @@ or changed one. If a widget's behaviour changes on purpose, the oracle may be re
 Seeded sets: `pre-rename` (the `staging/ui2-auto` configs before the names were settled; every event and action that
 saved apps on the local copy of staging used on these widgets is in them) and `current`.
 
+### Saved-app scenarios
+
+`scenarios/<name>.json` are hand-written saved apps for shapes the per-widget fixtures do not cover, replayed by
+`integration/savedAppScenarios.spec.jsx` through the same import and migrations. Their `<name>.oracle.json` holds what a
+correct upgrade gives, written by hand rather than recorded, so a rename that misses fails instead of becoming the
+expected result: the saved text afterwards (`static`), keys the app owns (`ownKeys`), and, loaded and rendered, bindings
+(`resolved`), exposed values, RunJS results and fired events. A scenario the product does not pass yet says so with
+`knownFailing` (owner and reason) and runs as `test.failing`, which turns red the day it is fixed.
+
+- `expressions`: a pre-rename Date picker read and called through bracket, comment-split, optional and run-time
+  references, in bindings and RunJS, beside plain text that only mentions a reference. Known failing.
+- `proto-key`: own `__proto__` keys in a saved Table row and a query body. Known failing.
+- `mixed`: native TextInput, Button and Text with UI 2.0 widgets, bound to and calling each other.
+
 ## 3. Visual
 
 `scripts/ui2-visual.js` builds `visual/gallery.jsx` with the app's webpack config (about 90 s the first time, then
