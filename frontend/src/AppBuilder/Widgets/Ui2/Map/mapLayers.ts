@@ -330,9 +330,10 @@ export const geocode = (
   values: Record<string, unknown>,
   signal?: AbortSignal | null
 ): Promise<Place[] | null> => {
+  // A caller that stopped waiting gets null, whether or not the answer is kept (a kept answer came back to it).
+  if (signal?.aborted) return Promise.resolve(null);
   const url = fillUrl(template, values);
   if (CACHE.has(url)) return Promise.resolve(CACHE.get(url) ?? null);
-  if (signal?.aborted) return Promise.resolve(null);
   const shared = IN_FLIGHT.get(url) ?? request(url);
   IN_FLIGHT.set(url, shared);
   shared.waiting += 1;

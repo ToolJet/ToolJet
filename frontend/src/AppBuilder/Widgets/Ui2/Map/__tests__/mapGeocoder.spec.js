@@ -151,3 +151,17 @@ describe('places from an answer', () => {
     expect(parsePlaces([{ lat: '1', lon: '2', display_name: 'Pier 39' }])[0].label).toBe('Pier 39');
   });
 });
+
+describe('a caller that stopped waiting', () => {
+  it('gets null even when the answer is kept, as it does when it is not', async () => {
+    // Release audit round 2: an aborted call returned a kept answer, though an aborted call that would fetch got null.
+    const warm = lookup('Kept');
+    await tick(10);
+    expect((await warm)[0].label).toBe('Kept');
+    const gone = new AbortController();
+    gone.abort();
+    expect(await lookup('Kept', gone.signal)).toBeNull();
+    expect(await lookup('Unkept', gone.signal)).toBeNull();
+    expect(calls).toHaveLength(1);
+  });
+});
