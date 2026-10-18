@@ -28,6 +28,15 @@ export const dividerConfig = {
       },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     // Renders first in the Additional Actions section. Its displayName is the
     // visible "Tooltip" label for the whole pair; the `tooltip` code field below
     // hides its own label via showLabel:false so we don't get a duplicate.
@@ -137,7 +146,16 @@ export const dividerConfig = {
       accordian: 'container',
     },
   },
-  exposedVariables: {},
+  exposedVariables: {
+    isVisible: true,
+  },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -146,6 +164,7 @@ export const dividerConfig = {
     properties: {
       label: { value: '' },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       tooltip: { value: '' },
       tooltipFormat: { value: 'plainText' },
     },

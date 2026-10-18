@@ -27,6 +27,7 @@ const CONTRACT = {
   PopoverMenu: ['visibility', 'disabledState', 'loadingState'],
   ProgressBar: ['visibility', 'loadingState'],
   RangeSliderV2: ['visibility', 'disabledState', 'loadingState'],
+  Divider: ['visibility'],
 };
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);
