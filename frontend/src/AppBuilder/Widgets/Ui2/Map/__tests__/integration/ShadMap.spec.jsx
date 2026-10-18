@@ -11,6 +11,7 @@ import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harne
 import React from 'react';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
 import { binding, countInvocationsOn, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import * as mapLayers from '@/AppBuilder/Widgets/Ui2/Map/mapLayers';
 
 const ID = 'map1';
 const widget = createWidgetHarness({
@@ -368,6 +369,28 @@ describe('UI 2.0 Map', () => {
       await waitFor(() => expect(exposed().mapStyle).toBe('satellite'));
     }
   );
+
+  test('[ShadMap-PROP-015] pin icons that failed to load are tried again, though the map asks for the same ones', async () => {
+    // Release audit round 2: the map asked for its icons only when their names changed, so one failed load left its
+    // pins without icons for good.
+    const real = mapLayers.loadIcons;
+    const load = jest.spyOn(mapLayers, 'loadIcons').mockImplementationOnce(() => Promise.resolve(false));
+    load.mockImplementation((...args) => real(...args));
+    try {
+      render({
+        properties: {
+          iconField: binding('kind'),
+          data: binding("{{[{ id: 1, kind: 'flame', lat: 30.27, lng: -97.74 }]}}"),
+        },
+      });
+      await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+      expect(q('.sc-map-pin-glyph svg')).toBeNull();
+      await waitFor(() => expect(q('.sc-map-pin-glyph svg')).toBeTruthy(), { timeout: 6000 });
+      expect(load).toHaveBeenCalledTimes(2);
+    } finally {
+      load.mockRestore();
+    }
+  }, 10000);
 
   test('[ShadMap-KBD-001] the wheel scrolls the page unless Ctrl is held, or scrollWheelZoom is on', async () => {
     render();

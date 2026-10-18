@@ -50,4 +50,13 @@ describe('pin icon loader', () => {
     expect(downloads).toBe(2);
     jest.dontMock('lucide-react');
   });
+
+  it('keeps at most ICON_CACHE_MAX icons, dropping the oldest', async () => {
+    // Release audit round 2: icons were kept by any name a map's data gave, with no limit.
+    const names = Array.from({ length: loader.ICON_CACHE_MAX + 1 }, (_, i) => `made-up-${i}`);
+    expect(await loader.loadIcons(names)).toBe(true);
+    expect(loader.iconSvg('made-up-0')).toBe('');
+    expect(loader.iconSvg('made-up-1')).toContain('<svg');
+    expect(loader.iconSvg(`made-up-${loader.ICON_CACHE_MAX}`)).toContain('<svg');
+  });
 });

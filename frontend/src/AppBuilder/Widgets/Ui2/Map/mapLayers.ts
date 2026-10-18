@@ -161,6 +161,8 @@ export const useHeatLayer = (
 // ---- Icons -----------------------------------------------------------------------------------------------------------
 
 const ICON_SVG = new Map<string, string>();
+// Icons kept, by name, at most: a map's data can name any icon, and each name it gives is kept (release audit round 2).
+export const ICON_CACHE_MAX = 500;
 // Icons being drawn, by name, so maps asking at once share one drawing (each was drawn again per map).
 const ICON_PENDING = new Map<string, Promise<boolean>>();
 type IconModules = [
@@ -188,13 +190,18 @@ const loadIconModules = (): Promise<IconModules> => {
   return loading;
 };
 
+/** The names a map asks for that loadIcons would load and that are not drawn yet (names that are not text, or are
+ *  over 64 characters, are never loaded). */
+export const missingIcons = (names: unknown[]): string[] =>
+  [...new Set(names.filter((n): n is string => typeof n === 'string' && !!n && n.length <= 64))].filter(
+    (n) => !ICON_SVG.has(n)
+  );
+
 /** Loads lucide and renders each named icon once to SVG text for a pin (white, 14px). Resolves true when icons it
  *  asked for are ready, false when there was nothing to load or the load failed (a later call tries again); names
  *  lucide does not have get its dashed placeholder. */
 export const loadIcons = (names: unknown[]): Promise<boolean> => {
-  const named = [...new Set(names.filter((n): n is string => typeof n === 'string' && !!n && n.length <= 64))].filter(
-    (n) => !ICON_SVG.has(n)
-  );
+  const named = missingIcons(names);
   const fresh = named.filter((n) => !ICON_PENDING.has(n));
   const work = named.filter((n) => ICON_PENDING.has(n)).map((n) => ICON_PENDING.get(n) as Promise<boolean>);
   if (fresh.length) {
@@ -207,6 +214,8 @@ export const loadIcons = (names: unknown[]): Promise<boolean> => {
           React.createElement(Icon, { size: 14, strokeWidth: 2.25, color: '#ffffff', 'aria-hidden': 'true' })
         );
         ICON_SVG.set(name, markup);
+        const oldest = ICON_SVG.keys().next().value;
+        if (ICON_SVG.size > ICON_CACHE_MAX && oldest !== undefined) ICON_SVG.delete(oldest);
       });
       return true;
     });
