@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { missingIsGone, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell } from './tableModel';
 import type { Entry, LiveRef, Paged, WithEdits } from './types';
@@ -53,6 +53,11 @@ export const useTableSelection = ({
   const latest = useLatest({ wanted: properties.defaultSelectedRow, allowSelection, exposeSelection });
   useEffect(() => {
     const { wanted, allowSelection: selectable, exposeSelection: expose } = latest.current;
+    if (!missingIsGone(entries.length)) {
+      // Nothing to show yet: the selection is kept for the rows that come back.
+      expose(new Set(), null);
+      return;
+    }
     const keys = new Set(entries.map((entry) => entry.key));
     const kept = new Set([...live.current.selected].filter((key) => keys.has(key)));
     let focus = live.current.focusKey !== null && keys.has(live.current.focusKey) ? live.current.focusKey : null;

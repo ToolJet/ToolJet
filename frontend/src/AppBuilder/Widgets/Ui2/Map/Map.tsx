@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import { useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { missingIsGone, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import {
   initialView,
   parseCenter,
@@ -248,7 +248,7 @@ export const ShadMap = (props: WidgetProps) => {
   // ---- Markers redraw when their data, grouping, colours or the selection change ----
   useEffect(() => {
     draw();
-    if (selectedKey !== null && !selected) {
+    if (selectedKey !== null && !selected && missingIsGone(points.length)) {
       // The selected row left the data: nothing is selected now.
       setSelectedKey(null);
       closePopup();

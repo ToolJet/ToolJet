@@ -3,7 +3,7 @@ import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { ShowMoreBar } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
-import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { missingIsGone, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import type { ReactNode, Ref } from 'react';
@@ -58,8 +58,8 @@ export const useItemSelection = <T extends { key: string; row?: Resolved }>(
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const selected = selectedKey === null ? null : items.find((item) => item.key === selectedKey) ?? null;
   useEffect(() => {
-    if (selectedKey !== null && !selected) setSelectedKey(null);
-  }, [selectedKey, selected]);
+    if (selectedKey !== null && !selected && missingIsGone(items.length)) setSelectedKey(null);
+  }, [selectedKey, selected, items.length]);
   const idKey = toText(p.idField) || 'id';
   const selection = (row: T | null) => ({
     selectedItem: row?.row ?? {},
