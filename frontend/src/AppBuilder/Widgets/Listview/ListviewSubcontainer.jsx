@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -7,12 +7,14 @@ import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_conte
 import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 // `index` is the row's place in the store: its row, or its slot in a long ListView rendering only some rows (then
-// `rowIndex` is its row, `placement` positions it and `onRowTouched` keeps it rendered once the user touches it).
+// `rowIndex` is its row, `placement` positions it, `onRowTouched` keeps it rendered once the user touches it and
+// `onRowUnmount(slot, row)` is told when it unmounts).
 export const ListviewSubcontainer = ({
   index,
   rowIndex = index,
   placement = null,
   onRowTouched = null,
+  onRowUnmount = null,
   moduleId,
   mode,
   rowHeight,
@@ -46,6 +48,8 @@ export const ListviewSubcontainer = ({
     shallow
   );
   const transformedRowHeight = isDynamicHeightEnabled ? (temporaryLayout?.height ?? rowHeight) : rowHeight;
+
+  useEffect(() => (onRowUnmount ? () => onRowUnmount(index, rowIndex) : undefined), [onRowUnmount, index, rowIndex]);
 
   useDynamicHeight({
     isDynamicHeightEnabled,

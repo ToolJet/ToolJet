@@ -179,8 +179,9 @@ export const createDebuggerSlice = (set, get) => ({
       return newComponent;
     },
 
-    validateProperty: (componentId, type, property, value, moduleId = 'canvas') => {
-      const log = get().debugger.log;
+    // `silent`: coerces without logging (a row resolved on demand, not drawn: _engines/materialize/rows.js).
+    validateProperty: (componentId, type, property, value, moduleId = 'canvas', silent = false) => {
+      const log = silent ? () => {} : get().debugger.log;
 
       const componentDefinition = get().getComponentDefinition(componentId, moduleId);
       // A dependency cascade can reference a component that no longer exists in the current app —

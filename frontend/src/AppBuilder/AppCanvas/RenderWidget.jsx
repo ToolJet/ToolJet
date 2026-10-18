@@ -303,19 +303,27 @@ const RenderWidget = ({
       resolveIndex,
     ]
   );
+  // A row of a long ListView (drawn in a slot, see Widgets/Listview/rowSlots.js) writes its listItem after its widgets'
+  // first render, and a widget's exposed functions (Button's click) keep the fireEvent they mounted with: its events
+  // resolve with the row's custom resolvables as they are when they fire. Any other widget's as its fireEvent has them.
+  const customResolvablesRef = useRef(customResolvables);
+  customResolvablesRef.current = customResolvables;
   const fireEventWrapper = useCallback(
     (eventName, options) => {
+      const inSlot =
+        !!nearestListviewId &&
+        !!useStore.getState().resolvedStore.modules[moduleId]?.listviewSlots?.[nearestListviewId];
       fireEvent(
         eventName,
         id,
         moduleId,
-        customResolvables?.[effectiveSubContainerIndex] ?? {},
+        (inSlot ? customResolvablesRef.current : customResolvables)?.[effectiveSubContainerIndex] ?? {},
         options,
         resolveIndex ?? null
       );
       return Promise.resolve();
     },
-    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId, resolveIndex]
+    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId, resolveIndex, nearestListviewId]
   );
 
   setDefaultExposedValues(id, parentId, componentType, moduleId);

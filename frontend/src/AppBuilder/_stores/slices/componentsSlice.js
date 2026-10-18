@@ -134,27 +134,32 @@ function buildRowScopedState({ get, listviewId, moduleId }) {
 // `{{components.textinput1.value}}` evaluated during validation see the per-row
 // array stored under `components.textinput1` instead of the current row's object.
 // Mirrors the prepareRowScope/updateRowScope pattern used by setAllValueToComponent.
-function buildRowScopedResolver({ get, nearestListviewId, rowIndex, moduleId, customResolveObjects }) {
-  if (nearestListviewId && rowIndex !== undefined && rowIndex !== null) {
-    const { scopeCtx, scopedState } = buildRowScopedState({
+// `rowScope`: the row's scoped state, when the caller built it (a row that isn't drawn: _engines/materialize/rows.js).
+function buildRowScopedResolver({ get, nearestListviewId, rowIndex, moduleId, customResolveObjects, rowScope = null }) {
+  let scopedState = rowScope;
+  if (!scopedState && nearestListviewId && rowIndex !== undefined && rowIndex !== null) {
+    const built = buildRowScopedState({
       get,
       listviewId: nearestListviewId,
       moduleId,
     });
-    if (scopeCtx) {
-      get().updateRowScope(scopeCtx, rowIndex);
-      return (value) => {
-        if (typeof value !== 'string' || !value.includes('{{') || !value.includes('}}')) {
-          return value;
-        }
-        const re = extractAndReplaceReferencesFromString(
-          value,
-          get().modules[moduleId].componentNameIdMapping,
-          get().modules[moduleId].queryNameIdMapping
-        );
-        return resolveDynamicValues(re.valueWithBrackets, scopedState, customResolveObjects, false, []);
-      };
+    if (built.scopeCtx) {
+      get().updateRowScope(built.scopeCtx, rowIndex);
+      scopedState = built.scopedState;
     }
+  }
+  if (scopedState) {
+    return (value) => {
+      if (typeof value !== 'string' || !value.includes('{{') || !value.includes('}}')) {
+        return value;
+      }
+      const re = extractAndReplaceReferencesFromString(
+        value,
+        get().modules[moduleId].componentNameIdMapping,
+        get().modules[moduleId].queryNameIdMapping
+      );
+      return resolveDynamicValues(re.valueWithBrackets, scopedState, customResolveObjects, false, []);
+    };
   }
   return (value) => get().getResolvedValue(value, customResolveObjects, moduleId);
 }
@@ -797,6 +802,7 @@ export const createComponentsSlice = (set, get) => ({
     nearestListviewId,
     rowIndex,
     moduleId = 'canvas',
+    rowScope = null,
   }) => {
     let isValid = true;
     let validationError = null;
@@ -811,6 +817,7 @@ export const createComponentsSlice = (set, get) => ({
       rowIndex,
       moduleId,
       customResolveObjects,
+      rowScope,
     });
 
     const regex = validationObject?.regex?.value ?? validationObject?.regex;

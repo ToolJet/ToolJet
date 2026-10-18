@@ -1,8 +1,33 @@
 import { sameValue } from '@/AppBuilder/_engines/data/equality';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import {
+  actionKindOf,
+  forgetListviewRows,
+  handleOf,
+  hasReplay,
+  holdRowMounted,
+  isRowOf,
+  keepsRow,
+  liveExposure,
+  markRowSettled,
+  nextRowChange,
+  plainArgs,
+  readRow,
+  reconcileSettledRows,
+  recordingAction,
+  resolveRowChildInput as resolveChildInput,
+  rowChangesOf,
+  rowScopeBase,
+  settleRows,
+  uncomputedRowChildren,
+  unsettledRowValues,
+  wrapRowActions,
+  wrapRows,
+} from '@/AppBuilder/_engines/materialize/rows';
+import { exposureOf } from '@/AppBuilder/_engines/materialize/widgets';
 
-export const listViewComponentSlice = (set, get) => {
+export const listViewComponentSlice = (set, get, api) => {
   // Microtask dedup for _deriveListviewChain calls outside an explicit batch window.
   // Multiple setExposedVariables calls for the same (listview, row) in the same JS tick
   // (e.g. TableExposedVariables' ~15 useEffect hooks all firing on mount) collapse into
@@ -43,8 +68,14 @@ export const listViewComponentSlice = (set, get) => {
     return rows;
   };
 
-  // A row's data: each child component's exposed values for that row.
-  const buildRow = ({ listviewId, rowIndex, outerIndices, moduleId }) => {
+  // A row's data: each child component's exposed values for that row. A windowed ListView's (rows drawn in slots, see
+  // slotsOf) are its row's: their functions run the action on that data row (_engines/materialize/rows.js), not on
+  // the widget, which unmounts when the row scrolls away.
+  // A drawn row with changes not yet replayed onto its widgets (just drawn again) shows them already
+  // (rows.js unsettledRowValues): its widgets' first values are their props.
+  const buildRow = ({ listviewId, rowIndex, dataRow, outerIndices, moduleId }) => {
+    const windowed = !!slotsOf(listviewId, outerIndices, moduleId);
+    const unsettled = windowed ? unsettledRowValues(get, listviewId, rowIndex, dataRow, moduleId) : null;
     const { getContainerChildrenMapping, getComponentNameFromId } = get();
     const exposedComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
     const rowData = {};
@@ -61,7 +92,13 @@ export const listViewComponentSlice = (set, get) => {
       }
       // Now childExposed is the array of rows at this nesting level
       if (Array.isArray(childExposed) && childExposed[rowIndex]) {
-        rowData[childName] = { ...childExposed[rowIndex], id: childId };
+        const values = unsettled?.has(childId)
+          ? { ...childExposed[rowIndex], ...unsettled.get(childId) }
+          : childExposed[rowIndex];
+        rowData[childName] = {
+          ...(windowed ? wrapRowActions(get, listviewId, dataRow, childId, values, moduleId, true) : values),
+          id: childId,
+        };
       }
     });
     return { rowData, clonedRowData: removeFunctionObjects(deepClone(rowData)) };
@@ -151,15 +188,161 @@ export const listViewComponentSlice = (set, get) => {
           });
         });
         const written = new Map(level.map((row) => [`${row.moduleId}|${row.listviewId}`, row]));
-        written.forEach(({ listviewId, moduleId }, key) => {
-          updateDependency(`components.${listviewId}.children`, moduleId);
-          updateDependency(`components.${listviewId}.data`, moduleId);
-          if (selected.has(key)) {
-            updateDependency(`components.${listviewId}.selectedRecord`, moduleId);
-            updateDependency(`components.${listviewId}.selectedRow`, moduleId);
-          }
+        written.forEach(({ listviewId, moduleId }, key) => notifyRowsWritten(listviewId, moduleId, selected.has(key)));
+        // A row drawn again gets the changes made to it while it wasn't (once its widgets have mounted).
+        settleRows(get, level);
+      });
+  };
+
+  // Dependents of a ListView's children/data re-resolve (and of its selected row, when that was written).
+  const notifyRowsWritten = (listviewId, moduleId, selectedWritten) => {
+    updateDependency(`components.${listviewId}.children`, moduleId);
+    updateDependency(`components.${listviewId}.data`, moduleId);
+    if (selectedWritten) {
+      updateDependency(`components.${listviewId}.selectedRecord`, moduleId);
+      updateDependency(`components.${listviewId}.selectedRow`, moduleId);
+    }
+  };
+
+  // Keeps the change a state action made to a child of a row of a windowed ListView (rows.js nextRowChange).
+  const recordRowChange = (state, { listviewId, dataRow, childId, change, moduleId }) => {
+    const mod = state.resolvedStore.modules[moduleId];
+    if (!mod.listviewRowChanges) mod.listviewRowChanges = {};
+    const rows = (mod.listviewRowChanges[listviewId] ??= {});
+    (rows[dataRow] ??= {})[childId] = change;
+  };
+
+  // Records the change a state action makes to a drawn row's child (rows.js nextRowChange), before its widget runs it.
+  const recordDrawnRowAction = ({ listviewId, dataRow, slot, childId, action, args, exposure, moduleId }) => {
+    const current = get().resolvedStore.modules[moduleId].exposedValues.components[childId]?.[slot] ?? {};
+    const plain = plainArgs(args);
+    const input = resolveChildInput(get, listviewId, dataRow, childId, moduleId);
+    const initial = exposure.initial(input);
+    const changes = rowChangesOf(get, listviewId, dataRow, moduleId);
+    const patch = exposure.actions[action](current, plain, input);
+    const change = nextRowChange({ exposure, change: changes?.[childId], initial, input, action, args: plain, patch });
+    set((state) => recordRowChange(state, { listviewId, dataRow, childId, change, moduleId }), false, {
+      type: 'runRowAction',
+    });
+    // Its widget shows the change: not to be replayed onto it (unless the row was still to be restored).
+    if (!hasReplay(changes)) markRowSettled(listviewId, slot, dataRow, moduleId);
+  };
+
+  // A drawn row's state actions record what they change whoever runs them (its children wrapper, an event's
+  // control-component action, a script), so the row shows it again once it's drawn again: a windowed ListView's child
+  // exposes them, in its slot, as recordingActions (the widget's own run after the record). Any other values as given.
+  const recordingActions = (componentId, values, indices, moduleId) => {
+    if (indices.length !== 1 || !Object.values(values).some((value) => typeof value === 'function')) return values;
+    const definition = get().getComponentDefinition(componentId, moduleId)?.component;
+    const listviewId = definition?.parent;
+    const slot = indices[0];
+    const dataRow = listviewId ? slotsOf(listviewId, [], moduleId)?.[slot] : undefined;
+    const exposure = dataRow >= 0 ? exposureOf(definition.component) : undefined;
+    if (!exposure) return values;
+    const wrapped = { ...values };
+    Object.keys(exposure.actions).forEach((action) => {
+      const run = values[action];
+      if (typeof run !== 'function') return;
+      wrapped[action] = recordingAction(run, (args) => {
+        const slots = slotsOf(listviewId, [], moduleId);
+        if (!slots) return run(...args);
+        // Its widget is gone (the row left its slot, or its widgets unmounted in it): it runs on the row.
+        if (slots[slot] !== dataRow || !liveExposure(get, listviewId, dataRow, componentId, moduleId))
+          return get().runRowAction(listviewId, dataRow, componentId, action, args, moduleId);
+        recordDrawnRowAction({ listviewId, dataRow, slot, childId: componentId, action, args, exposure, moduleId });
+        return run(...args);
+      });
+    });
+    return wrapped;
+  };
+
+  // State actions on rows that aren't drawn, applied together a microtask after the first: one write records their
+  // changes and one writes their rows into children/data, with one dependency pass per ListView. A write per call
+  // made k calls cost k copies of the children and data maps.
+  let _pendingRowActions = [];
+  const runUndrawnStateAction = (call) =>
+    new Promise((resolve, reject) => {
+      _pendingRowActions.push({ ...call, resolve, reject });
+      if (_pendingRowActions.length === 1) queueMicrotask(flushRowActions);
+    });
+
+  const flushRowActions = () => {
+    const calls = _pendingRowActions;
+    _pendingRowActions = [];
+    const reads = new Map(); // `${moduleId}|${listviewId}|${dataRow}` → { listviewId, dataRow, moduleId, read }
+    const bases = new Map(); // `${moduleId}|${listviewId}` → rowScopeBase: what each undrawn row resolves in
+    const baseOf = (listviewId, moduleId) => {
+      const key = `${moduleId}|${listviewId}`;
+      if (!bases.has(key)) bases.set(key, rowScopeBase(get, listviewId, moduleId));
+      return bases.get(key);
+    };
+    const changes = new Map(); // `${rowKey}|${childId}` → recordRowChange's payload
+    const done = [];
+    calls.forEach((call) => {
+      const { listviewId, dataRow, childId, action, args, moduleId, exposure } = call;
+      try {
+        if (!isRowOf(get, listviewId, dataRow, moduleId)) throw new RangeError(`Row ${dataRow} is not in the list`);
+        const rowKey = `${moduleId}|${listviewId}|${dataRow}`;
+        if (!reads.has(rowKey)) {
+          const read = readRow(get, listviewId, dataRow, moduleId, true, baseOf(listviewId, moduleId));
+          reads.set(rowKey, { listviewId, dataRow, moduleId, read });
+        }
+        const { read } = reads.get(rowKey);
+        // Drawn since it was called: its widget runs it.
+        if (!read.computed?.inputs.has(childId)) {
+          call.resolve(get().runRowAction(listviewId, dataRow, childId, action, args, moduleId));
+          return;
+        }
+        const name = get().getComponentNameFromId(childId, moduleId);
+        const input = read.computed.inputs.get(childId);
+        const initial = read.computed.initials.get(childId);
+        const patch = exposure.actions[action](read.row[name], args, input);
+        // A later call in this flush sees it.
+        read.row[name] = { ...read.row[name], ...patch };
+        const changeKey = `${rowKey}|${childId}`;
+        const change = changes.get(changeKey)?.change ?? rowChangesOf(get, listviewId, dataRow, moduleId)?.[childId];
+        changes.set(changeKey, {
+          listviewId,
+          dataRow,
+          childId,
+          moduleId,
+          change: nextRowChange({ exposure, change, initial, input, action, args, patch }),
+        });
+        done.push(call);
+      } catch (error) {
+        call.reject(error);
+      }
+    });
+    if (!done.length) return;
+    try {
+      set((state) => changes.forEach((payload) => recordRowChange(state, payload)), false, {
+        type: 'runRowAction',
+      });
+      // The rows as they read now: a child reading a changed sibling is computed again (rows.js computeRow).
+      const rows = [...reads.values()].map(({ listviewId, dataRow, moduleId, read }) => {
+        const rowData = read.computed?.dependent
+          ? readRow(get, listviewId, dataRow, moduleId, true, baseOf(listviewId, moduleId)).row
+          : read.row;
+        return { listviewId, dataRow, moduleId, rowData };
+      });
+      const selected = new Map();
+      set((state) => {
+        rows.forEach(({ listviewId, dataRow, moduleId, rowData }) => {
+          const written = writeRow(
+            state,
+            { listviewId, dataRow, outerIndices: [], moduleId },
+            { rowData, clonedRowData: removeFunctionObjects(deepClone(rowData)) }
+          );
+          const key = `${moduleId}|${listviewId}`;
+          selected.set(key, { listviewId, moduleId, written: written || !!selected.get(key)?.written });
         });
       });
+      selected.forEach(({ listviewId, moduleId, written }) => notifyRowsWritten(listviewId, moduleId, written));
+    } catch (error) {
+      done.forEach((call) => call.reject(error));
+      return;
+    }
+    done.forEach((call) => call.resolve());
   };
 
   // Rows written inside an exposed-value batch (a ListView mounting its rows) are derived together once the batch is
@@ -277,6 +460,9 @@ export const listViewComponentSlice = (set, get) => {
     // Per-row exposed value write for ListView children.
     // After writing, derives the parent ListView's children/data directly in the store.
     setExposedValuePerRow: (componentId, property, value, indices, moduleId = 'canvas') => {
+      if (typeof value === 'function') {
+        value = recordingActions(componentId, { [property]: value }, indices, moduleId)[property];
+      }
       if (typeof value !== 'function' && get().isExposedValueBatching()) {
         // Only register a dep path when this is an update to an existing row slot.
         // Brand-new row slots have no downstream dependents yet, so dep traversal is a no-op.
@@ -319,7 +505,8 @@ export const listViewComponentSlice = (set, get) => {
     },
 
     // Batch per-row exposed value write for ListView children.
-    setExposedValuesPerRow: (componentId, values, indices, moduleId = 'canvas') => {
+    setExposedValuesPerRow: (componentId, exposedValues, indices, moduleId = 'canvas') => {
+      const values = recordingActions(componentId, exposedValues, indices, moduleId);
       if (get().isExposedValueBatching()) {
         const existingComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
         const lastIdx = indices[indices.length - 1];
@@ -416,6 +603,9 @@ export const listViewComponentSlice = (set, get) => {
       const { getContainerChildrenMapping } = get();
       const childComponents = getContainerChildrenMapping(listviewId, moduleId);
       let pruned = false;
+      // A windowed ListView's rows past the end lose their changes, settled slots and wrappers: walked only when its rows
+      // were cut shorter since the last write (rows.js forgetListviewRows).
+      const cut = !!slotsOf(listviewId, parentIndices, moduleId) && forgetListviewRows(listviewId, moduleId, keepRows);
       set((state) => {
         const components = state.resolvedStore.modules[moduleId].exposedValues.components;
         childComponents.forEach((childId) => {
@@ -459,6 +649,10 @@ export const listViewComponentSlice = (set, get) => {
         for (const idx of parentIndices) {
           lvExposed = Array.isArray(lvExposed) ? lvExposed[idx] : undefined;
         }
+        const rowChanges = cut && state.resolvedStore.modules[moduleId].listviewRowChanges?.[listviewId];
+        Object.keys(rowChanges || {}).forEach((key) => {
+          if (parseInt(key) >= keepRows) delete rowChanges[key];
+        });
         if (lvExposed && !Array.isArray(lvExposed) && lvExposed.children) {
           Object.keys(lvExposed.children).forEach((key) => {
             if (parseInt(key) >= keepRows) {
@@ -492,11 +686,26 @@ export const listViewComponentSlice = (set, get) => {
      */
     setListviewSlots: (listviewId, slots, resetSlots = [], moduleId = 'canvas') => {
       const childComponents = get().getContainerChildrenMapping(listviewId, moduleId);
+      // Starting to draw its rows in slots: what its children/data hold was written with the functions of widgets that
+      // unmount now. They become its rows' wrappers (rows.js), as buildRow writes them from here on. Nothing is settled
+      // in its slots yet (its rows mount afresh).
+      const entering = !slotsOf(listviewId, [], moduleId);
+      if (entering) forgetListviewRows(listviewId, moduleId);
+      const rewrapped = entering ? wrapRows(get, listviewId, moduleId) : null;
       set(
         (state) => {
           const mod = state.resolvedStore.modules[moduleId];
           if (!mod.listviewSlots) mod.listviewSlots = {};
           mod.listviewSlots[listviewId] = slots;
+          const lvExposed = mod.exposedValues.components[listviewId];
+          if (rewrapped && lvExposed?.children && !Array.isArray(lvExposed)) {
+            Object.assign(lvExposed.children, rewrapped);
+            const selected = rewrapped[lvExposed.selectedRecordId] ?? rewrapped[lvExposed.selectedRowId];
+            if (selected) {
+              lvExposed.selectedRecord = selected;
+              lvExposed.selectedRow = selected;
+            }
+          }
           if (!resetSlots.length) return;
           const exposed = mod.exposedValues.components;
           childComponents.forEach((childId) => {
@@ -510,17 +719,22 @@ export const listViewComponentSlice = (set, get) => {
         false,
         { type: 'setListviewSlots', payload: { listviewId, moduleId } }
       );
+      reconcileSettledRows(listviewId, slots, moduleId);
     },
 
     // `resetRows`: also clear the children's per-row values the slots held (they would be read as data rows).
     clearListviewSlots: (listviewId, moduleId = 'canvas', resetRows = false) => {
       const slots = get().resolvedStore.modules[moduleId]?.listviewSlots?.[listviewId];
+      // The engine's per-row bookkeeping goes with the ListView even when its slots are already gone (the module's
+      // resolved state replaced while it was mounted).
+      forgetListviewRows(listviewId, moduleId);
       if (!slots) return;
       const childComponents = resetRows ? get().getContainerChildrenMapping(listviewId, moduleId) : [];
       set(
         (state) => {
           const mod = state.resolvedStore.modules[moduleId];
           delete mod.listviewSlots[listviewId];
+          if (mod.listviewRowChanges) delete mod.listviewRowChanges[listviewId];
           childComponents.forEach((childId) => {
             const rows = mod.exposedValues.components[childId];
             if (!Array.isArray(rows)) return;
@@ -530,6 +744,98 @@ export const listViewComponentSlice = (set, get) => {
         false,
         { type: 'clearListviewSlots', payload: { listviewId, moduleId } }
       );
+    },
+
+    // ─── Rows on demand (see _engines/materialize/rows.js) ─────────────────────────────────────────────────────────
+
+    /** Replaces a row's changes (rows.js: without what no longer counts), unless they changed since they were `seen`. */
+    replaceListviewRowChanges: (listviewId, dataRow, seen, changes, moduleId = 'canvas') => {
+      if (rowChangesOf(get, listviewId, dataRow, moduleId) !== seen) return;
+      set(
+        (state) => {
+          const rows = state.resolvedStore.modules[moduleId].listviewRowChanges?.[listviewId];
+          if (!rows) return;
+          if (Object.keys(changes).length) rows[dataRow] = changes;
+          else delete rows[dataRow];
+        },
+        false,
+        { type: 'replaceListviewRowChanges', payload: { listviewId, dataRow, moduleId } }
+      );
+    },
+
+    /** A row's data, like `children[dataRow]`, whether or not the row is drawn. */
+    readListviewRow: (listviewId, dataRow, moduleId = 'canvas') => readRow(get, listviewId, dataRow, moduleId).row,
+
+    /**
+     * The ids of the row's children that readListviewRow can't compute (not drawn, and no exposure module): it reads
+     * what they exposed when the row was last drawn, or nothing.
+     */
+    uncomputedRowChildren: (listviewId, dataRow, moduleId = 'canvas') =>
+      uncomputedRowChildren(get, listviewId, dataRow, moduleId),
+
+    /** A row child's input (props, styles, validation, validate) as its widget would receive it in that row. */
+    resolveRowChildInput: (listviewId, dataRow, childId, moduleId = 'canvas') =>
+      resolveChildInput(get, listviewId, dataRow, childId, moduleId),
+
+    /**
+     * Resolves once the row is drawn and its widgets have mounted: a windowed ListView pins it (it stays drawn as a
+     * row the user clicked). Rejects when the row leaves the list or the ListView unmounts first.
+     */
+    ensureRowMounted: (listviewId, dataRow, moduleId = 'canvas') =>
+      holdRowMounted(get, api.subscribe, listviewId, dataRow, moduleId).then((release) => {
+        const handle = handleOf(moduleId, listviewId);
+        if (handle?.windowed) handle.pinRow(dataRow);
+        release();
+      }),
+
+    /**
+     * Runs a child's action on a row, whether or not the row is drawn; resolves to the action's result. A drawn row's
+     * widget runs it (a state action records its change, see recordingActions). On a row that isn't drawn a state action
+     * (one that only changes exposed values) is applied to the row's data and kept for when it's drawn; any other action
+     * draws the row first, and holds it drawn while it runs. In a windowed ListView an action that leaves something
+     * only the widget keeps (TextInput's setText) keeps its row drawn, and one on a child with no exposure module pins
+     * it (as a row the user clicked: nothing would restore what it did). Rejects when the action can't run (the row
+     * left the list, the ListView unmounted, no such action).
+     */
+    runRowAction: (listviewId, dataRow, childId, action, args = [], moduleId = 'canvas') => {
+      const { exposure, isState } = actionKindOf(get, childId, action, moduleId);
+      const windowed = !!slotsOf(listviewId, [], moduleId);
+      const keep = () => {
+        const handle = handleOf(moduleId, listviewId);
+        if (!handle?.windowed) return;
+        if (keepsRow(exposure, action)) handle.keepRow(dataRow);
+        else if (!exposure) handle.pinRow(dataRow);
+      };
+      const live = liveExposure(get, listviewId, dataRow, childId, moduleId);
+
+      if (typeof live?.[action] === 'function') {
+        if (windowed) keep();
+        return Promise.resolve(live[action](...args));
+      }
+      if (windowed && isState && !live) {
+        return runUndrawnStateAction({
+          listviewId,
+          dataRow,
+          childId,
+          action,
+          args: plainArgs(args),
+          moduleId,
+          exposure,
+        });
+      }
+      return holdRowMounted(get, api.subscribe, listviewId, dataRow, moduleId).then(async (release) => {
+        try {
+          const run = liveExposure(get, listviewId, dataRow, childId, moduleId)?.[action];
+          if (typeof run !== 'function') {
+            const name = get().getComponentNameFromId(childId, moduleId) ?? childId;
+            throw new TypeError(`${name} has no action ${action} in row ${dataRow}`);
+          }
+          keep();
+          return await run(...args);
+        } finally {
+          release();
+        }
+      });
     },
 
     // ─── Row-Scoped Component Resolution ───────────────────────────────────────

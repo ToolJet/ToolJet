@@ -6,7 +6,7 @@
  * widget type, and it is the widget's own source of truth: the widget calls the same functions when it mounts and when
  * an action runs, so a drawn and an undrawn row can't disagree.
  *
- * A module is `{ initial, actions, liveActions }`:
+ * A module is `{ initial, actions, liveActions, keepsRow }`:
  * - `initial(input)` → the exposed values (no functions) the widget exposes right after mounting, from
  *   `input = { properties, styles, general, validation, validate }`: the widget's resolved props as it receives them
  *   (after `validateProperty` coercion), and `validate(value)` → `{ isValid, validationError }` (the widget's own
@@ -16,6 +16,8 @@
  *   whose whole effect is a change of exposed values (setVisibility, setLoading …) are here.
  * - `liveActions` → names of the actions that need the drawn widget: DOM, focus, or events they fire (click,
  *   setFocus, and TextInput's setText and clear, which fire onChange).
+ * - `keepsRow` (optional) → the live actions that leave something only the drawn widget keeps (a typed value, focus):
+ *   in a long ListView their row then stays drawn, as a row the user typed in does (the last 50 such rows).
  *
  * Every module has a parity test that mounts the real widget and compares (`__tests__`).
  */

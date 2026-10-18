@@ -26,4 +26,6 @@ export const textInputExposure = {
   },
   // clear and setText fire onChange (setText also shows the validation error): the drawn widget runs them.
   liveActions: ['clear', 'setText', 'setFocus', 'setBlur'],
+  // What they leave (the value typed, focus) only the drawn widget keeps.
+  keepsRow: ['clear', 'setText', 'setFocus'],
 };

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect, useMemo, useCallback, useReducer } from 'react';
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 // import { SubContainer } from '../SubContainer';
@@ -16,6 +16,7 @@ import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
 import { assignSlots, NO_SLOTS } from './rowSlots';
 import { isEditable } from '@/AppBuilder/AppCanvas/interaction/dom';
+import { registerListview, rowWidgetsUnmounted } from '@/AppBuilder/_engines/materialize/rows';
 
 // A ListView rendering more widgets than this (rows × child components) renders only the rows in view (and rows the
 // user has touched), in slots: see rowSlots.js. Smaller lists render every row, as before.
@@ -28,6 +29,12 @@ const NO_SCROLL_ELEMENT = { current: null };
 // Rows the user only clicked stay rendered, at most this many (the longest untouched since is let go first). Rows with
 // a field the user touched stay for good: a row that unmounts re-exposes its defaults when it mounts again.
 const MAX_PINNED_ROWS = 50;
+// Rows an action leaves something in that only their widgets keep (a TextInput's setText: _engines/materialize) stay
+// rendered too, at most this many (the longest untouched since is let go first, and remounts with its props).
+const MAX_KEPT_ROWS = 50;
+// Rows not in view that actions draw while they wait on them and run (_engines/materialize/rows.js), at most this many
+// at a time: the others wait their turn.
+const MAX_HELD_ROWS = 10;
 const lineKey = (line) => line;
 
 export const Listview = function Listview({
@@ -213,18 +220,89 @@ export const Listview = function Listview({
     if (editedRows.current.has(row)) return;
     const pinned = pinnedRows.current;
     pinned.delete(row);
-    if (isEditable(target)) {
+    if (target && isEditable(target)) {
       editedRows.current.add(row);
       return;
     }
     pinned.add(row);
     if (pinned.size > MAX_PINNED_ROWS) pinned.delete(pinned.values().next().value);
   }, []);
+  // Rows that actions draw (see _engines/materialize/rows.js), apart from the rows the user touched: held drawn while an
+  // action waits on them or runs (row → holds; at most MAX_HELD_ROWS rows, the other holds wait in `waitingHolds`), and
+  // kept drawn by an action that leaves something in them (`keptRows`, as `pinnedRows`). The render a handle asks for
+  // comes after the call, never during one.
+  const heldRows = useRef(new Map());
+  const waitingHolds = useRef(new Set());
+  const keptRows = useRef(new Set());
+  const [, renderRows] = useReducer((count) => count + 1, 0);
+  const rowsHandle = useRef(null);
+  if (!rowsHandle.current) {
+    const rerender = () => queueMicrotask(renderRows);
+    const held = heldRows.current;
+    const waiting = waitingHolds.current;
+    const grant = (hold) => {
+      hold.granted = true;
+      held.set(hold.row, (held.get(hold.row) ?? 0) + 1);
+      rerender();
+    };
+    const grantWaiting = () => {
+      for (const hold of waiting) {
+        if (held.size >= MAX_HELD_ROWS && !held.has(hold.row)) return;
+        waiting.delete(hold);
+        grant(hold);
+      }
+    };
+    rowsHandle.current = {
+      pinRow: (row) => {
+        pinRow(row, null);
+        rerender();
+      },
+      keepRow: (row) => {
+        if (editedRows.current.has(row)) return;
+        const kept = keptRows.current;
+        pinnedRows.current.delete(row);
+        kept.delete(row);
+        kept.add(row);
+        if (kept.size > MAX_KEPT_ROWS) kept.delete(kept.values().next().value);
+        rerender();
+      },
+      holdRow: (row) => {
+        const hold = { row, granted: false, released: false };
+        if (held.has(row) || (!waiting.size && held.size < MAX_HELD_ROWS)) grant(hold);
+        else waiting.add(hold);
+        return () => {
+          if (hold.released) return;
+          hold.released = true;
+          if (!hold.granted) return waiting.delete(hold);
+          const holds = held.get(row) - 1;
+          if (holds > 0) held.set(row, holds);
+          else held.delete(row);
+          grantWaiting();
+          rerender();
+        };
+      },
+    };
+  }
+  rowsHandle.current.windowed = windowed;
+  rowsHandle.current.rows = filteredData;
+  // Only a top-level ListView: one nested in another's rows renders once per outer row under the same id, and never
+  // windows (the store's rows-on-demand actions address a top-level ListView's rows).
+  const topLevel = parentIndices.length === 0;
+  useEffect(
+    () => (topLevel ? registerListview(moduleId, id, rowsHandle.current) : undefined),
+    [moduleId, id, topLevel]
+  );
   const slotState = useRef(NO_SLOTS);
   const pendingSlots = useRef(null);
   const prevWindowedRef = useRef(false);
   const windowedChanged = windowed !== prevWindowedRef.current;
   useEffect(() => () => clearListviewSlots(id, moduleId), [id, moduleId, clearListviewSlots]);
+  // A row's widgets unmounted: one that keeps its slot (the loading state shown in place of the rows) has its changes
+  // replayed once it mounts again (rows.js).
+  const onRowUnmount = useCallback(
+    (slot, row) => rowWidgetsUnmounted(useStore.getState, id, slot, row, moduleId),
+    [id, moduleId]
+  );
 
   if (windowed) {
     const rows = [];
@@ -234,13 +312,19 @@ export const Listview = function Listview({
         if (row < rowCount) rows.push(row);
       }
     }
-    const inView = new Set(rows);
-    for (const kept of [editedRows.current, pinnedRows.current]) {
+    const listed = new Set(rows);
+    const list = (row) => {
+      if (!listed.has(row)) rows.push(row);
+      listed.add(row);
+    };
+    for (const kept of [editedRows.current, keptRows.current, pinnedRows.current]) {
       for (const row of kept) {
         if (row >= rowCount) kept.delete(row);
-        else if (!inView.has(row)) rows.push(row);
+        else list(row);
       }
     }
+    // A held row past the end stays held until its action gives up on it (rows.js holdRowMounted).
+    for (const row of heldRows.current.keys()) if (row < rowCount) list(row);
     const assigned = assignSlots(slotState.current, rows);
     if (
       assigned.changed ||
@@ -267,6 +351,7 @@ export const Listview = function Listview({
     slotState.current = NO_SLOTS;
     pinnedRows.current.clear();
     editedRows.current.clear();
+    keptRows.current.clear();
     prevWindowedRef.current = false;
   }
 
@@ -336,8 +421,13 @@ export const Listview = function Listview({
         <Spinner />
       ) : (
         <>
+          {/* Keyed by mode: switching it mounts every row afresh. Their per-row values are reset then (indexed by slot in
+              one mode, by row in the other), and a widget kept mounted wouldn't expose them again; its exposed
+              functions would still write to its old index. What only the DOM held (typed text, focus) is reset with
+              them, as when a row scrolls out of a long list. */}
           {windowed ? (
             <div
+              key="windowed"
               ref={rowsRef}
               className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}
               style={{ position: 'relative', height: rowWindow.height, flex: 'none' }}
@@ -355,6 +445,7 @@ export const Listview = function Listview({
                       left: `${((row % lineColumns) * 100) / lineColumns}%`,
                     }}
                     onRowTouched={pinRow}
+                    onRowUnmount={onRowUnmount}
                     moduleId={moduleId}
                     mode={mode}
                     rowHeight={rowHeight}
@@ -376,7 +467,7 @@ export const Listview = function Listview({
               )}
             </div>
           ) : (
-            <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
+            <div key="all" className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
               {filteredData.map((_listItem, index) => (
                 <ListviewSubcontainer
                   key={index}
