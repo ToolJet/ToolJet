@@ -84,6 +84,9 @@ export const ShadListView = (props: WidgetProps) => {
   useAutoHeight(props, rootRef);
   useDisableInert(rootRef, isDisabled);
   const look = listLook(styles);
+  // Dynamic height off: the widget keeps its drawn height, so the list fills that box and its rows scroll inside it,
+  // the pager staying under them (the rows spilled past the box onto the page). On, the list grows with its rows.
+  const fixed = !fitsContentInView(props.componentType ?? 'ShadListView', properties);
 
   const mode: ListMode = properties.mode === 'grid' ? 'grid' : 'list';
   const columns = mode === 'grid' ? Math.min(24, Math.max(1, Math.floor(Number(properties.columns)) || 1)) : 1;
@@ -233,6 +236,7 @@ export const ShadListView = (props: WidgetProps) => {
         background: look.background,
         padding: look.padding,
         boxShadow: styles?.boxShadow,
+        ...(fixed ? { height: '100%', overflow: 'hidden' } : {}),
         ...look.vars,
       }}
     >
@@ -256,6 +260,8 @@ export const ShadListView = (props: WidgetProps) => {
             display: 'grid',
             gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
             gap: mode === 'list' && properties.showBorder ? 0 : gap,
+            // alignContent: a short list keeps its rows at the top instead of stretching the grid's tracks.
+            ...(fixed ? { flex: '1 1 0', minHeight: 0, overflowY: 'auto', alignContent: 'start' } : {}),
           }}
         >
           {shown.items.map((item, index) => (
@@ -266,7 +272,7 @@ export const ShadListView = (props: WidgetProps) => {
               item={item}
               parentPath={contextPath}
               height={rowHeight}
-              fit={fitsContentInView(props.componentType ?? 'ShadListView', properties) && props.currentMode === 'view'}
+              fit={!fixed && props.currentMode === 'view'}
               currentLayout={props.currentLayout}
               width={itemWidth}
               onPick={(i) => !isDisabled && pick(i)}

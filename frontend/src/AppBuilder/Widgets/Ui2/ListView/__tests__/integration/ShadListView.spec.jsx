@@ -151,6 +151,31 @@ describe('UI 2.0 List view', () => {
     expect(items()[0].style.height).not.toBe('5000px');
   });
 
+  // With dynamic height off the widget keeps its drawn height, but the list never took it: its rows spilled past the
+  // box onto the page. The list now fills the box and its rows scroll inside it, the pager staying under them; with
+  // dynamic height on the list keeps growing with its rows (jsdom has no layout, so the styles that set this are read).
+  test('[ShadListView-PROP-013] with dynamicHeight off the rows scroll inside the box; with it on the list grows', async () => {
+    const { container } = render({
+      properties: people({
+        rowHeight: binding('{{200}}'),
+        dynamicHeight: binding('{{false}}'),
+        enablePagination: binding('{{true}}'),
+        rowsPerPage: binding('{{3}}'),
+      }),
+    });
+    await waitFor(() => expect(items()).toHaveLength(3));
+    const root = container.querySelector('.tj-shadcn');
+    const read = (el, names) => names.map((name) => el.style.getPropertyValue(name));
+    expect(read(root, ['height', 'overflow'])).toEqual(['100%', 'hidden']);
+    expect(read(list(), ['overflow-y', 'min-height', 'align-content'])).toEqual(['auto', '0', 'start']);
+    expect(list().style.flex).toMatch(/^1 1 0/);
+
+    widget.setComponentProperty(ID, 'dynamicHeight', '{{true}}', 'properties');
+    await waitFor(() => expect(list().style.overflowY).toBe(''));
+    expect(root.style.height).toBe('');
+    expect(root.style.overflow).toBe('');
+  });
+
   // The first edit-mode render loads the editor's own modules (about 4s in jest), so this one gets more time.
   test('[ShadListView-PROP-009] in the editor rows keep rowHeight whatever the reflow wrote', async () => {
     render({ currentMode: 'edit', properties: people({ rowHeight: binding('{{72}}') }) });
