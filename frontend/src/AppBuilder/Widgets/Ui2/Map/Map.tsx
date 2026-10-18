@@ -366,6 +366,7 @@ export const ShadMap = (props: WidgetProps) => {
           toggleFullscreen={toggleFullscreen}
           style={style}
           setMapStyle={actions.setMapStyle}
+          disabled={disabled}
         />
         <MapCorner legend={legend} legendShown={legendShown} skipped={skipped} loadingState={p.loadingState} />
         {pickLocation && !picked && !disabled ? (

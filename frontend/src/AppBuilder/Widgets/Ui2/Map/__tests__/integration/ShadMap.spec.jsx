@@ -353,6 +353,22 @@ describe('UI 2.0 Map', () => {
     expect(q('.sc-map-style-switch')).toBeNull();
   });
 
+  test.each(['setDisable', 'setLoading'])(
+    '[ShadMap-ACT-007] after %s the style switch changes nothing, and setMapStyle still does',
+    async (action) => {
+      // Release audit round 2: the Map | Satellite radios sat outside the tools the busy state hides, and still worked.
+      render({ properties: { showStyleSwitch: binding('{{true}}') } });
+      await waitFor(() => expect(exposed().mapStyle).toBe('streets'));
+      await widget.act(action, true);
+      expect(screen.getByRole('radio', { name: 'Satellite' })).toBeDisabled();
+      fireEvent.click(screen.getByRole('radio', { name: 'Satellite' }));
+      await settle();
+      expect(exposed().mapStyle).toBe('streets');
+      await widget.act('setMapStyle', 'satellite');
+      await waitFor(() => expect(exposed().mapStyle).toBe('satellite'));
+    }
+  );
+
   test('[ShadMap-KBD-001] the wheel scrolls the page unless Ctrl is held, or scrollWheelZoom is on', async () => {
     render();
     await waitFor(() => expect(exposed().zoom).toBe(13));

@@ -57,6 +57,7 @@ export const MapTools = ({
   toggleFullscreen,
   style,
   setMapStyle,
+  disabled,
 }: {
   showFullscreen: unknown;
   showStyleSwitch: unknown;
@@ -64,6 +65,9 @@ export const MapTools = ({
   toggleFullscreen: () => void;
   style: string;
   setMapStyle: (style: string) => void;
+  /** Disabled or loading: the style switch sits outside the tools the busy state hides, so its buttons are disabled
+   *  too (release audit round 2). The setMapStyle action still works. */
+  disabled: boolean;
 }) => (
   <>
     {showFullscreen !== false || showStyleSwitch === true ? (
@@ -72,6 +76,8 @@ export const MapTools = ({
           <button
             type="button"
             className="sc-map-tool"
+            // Leaving full screen stays possible: a map that turned busy while expanded would otherwise hold the window.
+            disabled={disabled ? !expanded : false}
             onClick={toggleFullscreen}
             aria-label={expanded ? 'Exit full screen' : 'Full screen'}
             title={expanded ? 'Exit full screen' : 'Full screen'}
@@ -100,6 +106,7 @@ export const MapTools = ({
             role="radio"
             aria-checked={style === s}
             data-active={style === s || undefined}
+            disabled={disabled}
             onClick={() => setMapStyle(s)}
           >
             {s === 'streets' ? 'Map' : 'Satellite'}
