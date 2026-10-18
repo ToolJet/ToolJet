@@ -3,7 +3,7 @@ import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { percentLabel } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
-import { progressItems, type ProgressItem } from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
+import { progressEntries, progressItem, type ProgressEntry } from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import {
   Bar,
@@ -35,22 +35,20 @@ export const ShadProgressList = (props: WidgetProps) => {
   const data = useStable(p.data);
   const { labelField, valueField, targetField, percentField, captionField, statusField } = p;
   const { valueFormat, currency, idField, autoTone } = p;
-  const rows = useMemo(
-    () =>
-      progressItems(data, {
-        labelField,
-        valueField,
-        targetField,
-        percentField,
-        captionField,
-        statusField,
-        valueFormat,
-        currency,
-        idField,
-        autoTone,
-      }),
+  const fields = useMemo(
+    () => ({
+      labelField,
+      valueField,
+      targetField,
+      percentField,
+      captionField,
+      statusField,
+      valueFormat,
+      currency,
+      idField,
+      autoTone,
+    }),
     [
-      data,
       labelField,
       valueField,
       targetField,
@@ -63,9 +61,15 @@ export const ShadProgressList = (props: WidgetProps) => {
       autoTone,
     ]
   );
+  // Every row's key (selection and the count read the whole list); the figures of the drawn rows only.
+  const entries = useMemo(() => progressEntries(data, { idField }), [data, idField]);
   // The first rows and a button for the next ones: a 10,000-row binding froze the page in the other lists.
-  const [shownCount, showMore] = useShownCount(PROGRESS_ROWS_PER_STEP, rows);
-  const { click } = useItemSelection<ProgressItem>(props, 'onItemClicked', rows);
+  const [shownCount, showMore] = useShownCount(PROGRESS_ROWS_PER_STEP, entries);
+  const rows = useMemo(
+    () => entries.slice(0, shownCount).map((entry) => progressItem(entry, fields)),
+    [entries, shownCount, fields]
+  );
+  const { click } = useItemSelection<ProgressEntry>(props, 'onItemClicked', entries);
   const clickable = useHasEvent(id, 'onItemClicked') && !busy(p);
   const barHeight = BAR_HEIGHT[p.barSize] || BAR_HEIGHT.default;
   const card = p.listStyle !== 'plain';
@@ -90,12 +94,12 @@ export const ShadProgressList = (props: WidgetProps) => {
         </div>
       ))}
       emptyFallback="Nothing to track yet"
-      count={rows.length}
+      count={entries.length}
       shown={shownCount}
       step={PROGRESS_ROWS_PER_STEP}
       onMore={showMore}
     >
-      {rows.slice(0, shownCount).map((row) => {
+      {rows.map((row) => {
         const figure = showValues && row.value ? (row.target ? `${row.value} of ${row.target}` : row.value) : '';
         const pct = Number.isFinite(row.pct) ? percentLabel(row.pct) : '';
         return (
