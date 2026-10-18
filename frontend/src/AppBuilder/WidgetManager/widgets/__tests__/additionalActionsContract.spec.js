@@ -18,6 +18,7 @@ const STATE_PROPS = {
 // component → state props it must expose in Additional Actions
 const CONTRACT = {
   AudioRecorder: ['visibility', 'disabledState', 'loadingState'],
+  Camera: ['visibility', 'disabledState'],
 };
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);

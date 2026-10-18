@@ -29,6 +29,12 @@ export const cameraConfig = {
             validation: { schema: { type: 'boolean' } },
             section: 'additionalActions',
         },
+        collapseWhenHidden: {
+            type: 'toggle',
+            displayName: 'Collapse when hidden',
+            validation: { schema: { type: 'boolean' }, defaultValue: false },
+            section: 'additionalActions',
+        },
         disabledState: {
             type: 'toggle',
             displayName: 'Disable',
@@ -144,6 +150,7 @@ export const cameraConfig = {
         properties: {
             content: { value: 'image' },
             visibility: { value: '{{true}}' },
+            collapseWhenHidden: { value: '{{false}}' },
             disabledState: { value: '{{false}}' },
             tooltip: { value: '' },
             tooltipFormat: { value: 'plainText' },
