@@ -147,7 +147,8 @@ export const TableBody = ({
                 ) : null}
                 {shownColumns.map((column) => {
                   const value = readCell(row, column.key);
-                  const isEditing = editing?.key === entry.key && editing?.column === column.id;
+                  const isEditing =
+                    editing?.key === entry.key && editing?.column === column.id && column.editable && !isDisabled;
                   const edited = edits.get(entry.key)?.[column.key] !== undefined;
                   return (
                     <td

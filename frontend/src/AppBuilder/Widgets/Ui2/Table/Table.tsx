@@ -73,6 +73,8 @@ export const ShadTable = (props: WidgetProps) => {
   const live = useRef<Live>({} as Live);
   const { edits, withEdits, editing, setEditing, commitEdit, discard } = useTableEdits({
     data,
+    columns,
+    isDisabled,
     live,
     setExposedVariables,
     fireEvent,
