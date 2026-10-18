@@ -9,7 +9,7 @@ import { shadDialogConfig } from '@/AppBuilder/WidgetManager/widgets/shadDialog'
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadDialog.scss';
-import { withOwnedActions } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useActionFire, withOwnedActions } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // ToolJet UI 2.0: the Dialog is ToolJet's ModalV2 drawn in the pack's look. ModalV2 reads the skin from
 // the component type and adds the classes styled in shadDialog.scss; it keeps its own control state, open/close
@@ -130,7 +130,10 @@ export const ShadDialog = (props: WidgetProps) => {
   );
   const properties = useMemo(() => sanitizeDialog(props.properties, 'properties'), [props.properties]);
   const styles = useMemo(() => sanitizeDialog(props.styles, 'styles'), [props.styles]);
-  return <ModalV2 {...props} properties={properties} styles={styles} />;
+  // ModalV2 fires onOpen and onClose itself: through useActionFire, an event fired while the open or close action runs
+  // waits until the action has published show, so its handler reads the new value.
+  const fireEvent = useActionFire(props.fireEvent);
+  return <ModalV2 {...props} fireEvent={fireEvent} properties={properties} styles={styles} />;
 };
 
 export default withOwnedActions(ShadDialog);

@@ -2,6 +2,7 @@ import React, { useEffect, useId, useMemo, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
 import { flushSync } from 'react-dom';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
@@ -12,6 +13,7 @@ import type { MutableRefObject, RefObject } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { useSubcontainerContext } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
+import type { ContextSegment } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 
 export { stringify };
 
@@ -85,10 +87,17 @@ export const runNow = <T>(action: () => T): T => {
   } finally {
     actionDepth -= 1;
     if (outermost) {
-      flushExposedValueBatch();
       const queued = deferredEvents;
       deferredEvents = [];
-      queued.forEach((fire) => fire());
+      try {
+        flushExposedValueBatch();
+        // What the flush changed re-resolves bindings that read it (a custom validation rule on the widget's own
+        // value): that re-render, and the isValid it publishes, settle before the events fire, so a handler reads the
+        // state the action produced. Not inside a lifecycle, where React refuses flushSync.
+        if (effectDepth === 0) flushSync(() => {});
+      } finally {
+        queued.forEach((fire) => fire());
+      }
     }
   }
   return result;
@@ -192,27 +201,62 @@ export const usePublishNow = ({
   );
 };
 
+/** The component's exposed values as the store holds them now: its own entry, or its row's in a List view row or
+ *  Kanban card (values kept per row). */
+const storedExposed = (moduleId: string, id: string, path: ContextSegment[]): Record<string, unknown> | undefined => {
+  type Store = {
+    resolvedStore?: { modules?: Record<string, { exposedValues?: { components?: Record<string, unknown> } }> };
+  };
+  let own: unknown = (useStore.getState() as unknown as Store).resolvedStore?.modules?.[moduleId]?.exposedValues
+    ?.components?.[id];
+  for (const { index } of path) own = Array.isArray(own) ? own[index] : undefined;
+  return own && typeof own === 'object' ? (own as Record<string, unknown>) : undefined;
+};
+
 /** The widget's publishers, with every published function made an owned action (runNow, and nothing once `alive` is
- *  false). Values pass through as they are. */
+ *  false), and values the component already holds left out. Inside an action's batch the store writes every key it is
+ *  given and updates its dependents, so a click that re-published unchanged keys (isVisible, label) re-ran queries
+ *  bound to them. A key is left out only when both the store and this instance's last write already hold it: inside a
+ *  batch the store lags this instance's writes, and after a reset the store differs from them. */
 const useOwnedPublish = (
   props: Pick<WidgetProps, 'setExposedVariables' | 'setExposedVariable'>,
-  alive: MutableRefObject<boolean>
+  alive: MutableRefObject<boolean>,
+  id: string
 ) => {
   const { setExposedVariables, setExposedVariable } = props;
+  const moduleId = useModuleId();
+  const path = useSubcontainerContext().contextPath;
+  const sent = useRef<Record<string, unknown>>({});
   return useMemo(() => {
     const owned = (value: unknown) =>
       typeof value === 'function'
-        ? (...args: unknown[]) => (alive.current ? runNow(() => (value as Action)(...args)) : undefined)
+        ? (...args: unknown[]) =>
+            alive.current ? runNow(() => (value as Action)(...args)) : Promise.resolve(undefined)
         : value;
+    const changed = (key: string, value: unknown, stored: Record<string, unknown> | undefined) =>
+      typeof value === 'function' ||
+      !stored ||
+      !(key in stored) ||
+      !(key in sent.current) ||
+      !isEqual(sent.current[key], value) ||
+      !isEqual(stored[key], value);
     return {
-      setExposedVariables: ((values: Record<string, unknown>) =>
-        setExposedVariables(
-          Object.fromEntries(Object.entries(values || {}).map(([key, value]) => [key, owned(value)]))
-        )) as WidgetProps['setExposedVariables'],
-      setExposedVariable: ((key: string, value: unknown) =>
-        setExposedVariable(key, owned(value))) as WidgetProps['setExposedVariable'],
+      setExposedVariables: ((values: Record<string, unknown>) => {
+        const stored = storedExposed(moduleId, id, path);
+        const next = Object.entries(values || {}).filter(([key, value]) => changed(key, value, stored));
+        next.forEach(([key, value]) => {
+          if (typeof value !== 'function') sent.current[key] = value;
+        });
+        if (!next.length) return undefined;
+        return setExposedVariables(Object.fromEntries(next.map(([key, value]) => [key, owned(value)])));
+      }) as WidgetProps['setExposedVariables'],
+      setExposedVariable: ((key: string, value: unknown) => {
+        if (!changed(key, value, storedExposed(moduleId, id, path))) return undefined;
+        if (typeof value !== 'function') sent.current[key] = value;
+        return setExposedVariable(key, owned(value));
+      }) as WidgetProps['setExposedVariable'],
     };
-  }, [setExposedVariables, setExposedVariable, alive]);
+  }, [setExposedVariables, setExposedVariable, alive, moduleId, id, path]);
 };
 
 /** Whether the component is still mounted. */
@@ -233,7 +277,7 @@ const useAlive = (): MutableRefObject<boolean> => {
  *  instance's actions do nothing. */
 export const withOwnedActions = <P extends WidgetProps>(Widget: React.ComponentType<P>) => {
   const Owned = (props: P) => {
-    const publish = useOwnedPublish(usePublishNow(props), useAlive());
+    const publish = useOwnedPublish(usePublishNow(props), useAlive(), props.id);
     return React.createElement(Widget, { ...props, ...publish });
   };
   Owned.displayName = `Owned(${Widget.displayName || Widget.name || 'Widget'})`;
@@ -245,7 +289,7 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
     const { properties } = props;
     // Every action this instance publishes runs through runNow and belongs to this instance (useOwnedPublish); in a
     // List view row or Kanban card its writes land at once (usePublishNow).
-    const { setExposedVariables, setExposedVariable } = useOwnedPublish(usePublishNow(props), useAlive());
+    const { setExposedVariables, setExposedVariable } = useOwnedPublish(usePublishNow(props), useAlive(), props.id);
     const { isVisible, isLoading, isDisabled } = useExposeState(
       properties.loadingState === true,
       properties.visibility !== false,

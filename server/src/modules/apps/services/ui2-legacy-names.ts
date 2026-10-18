@@ -335,15 +335,29 @@ export const rewriteBindings = (text: string, renamesByComponentName: Ui2Renames
     const open = text.indexOf('{{', from);
     if (open === -1) break;
     let close = -1;
-    try {
-      const node: any = acornParseExpressionAt(text, open + 2, ACORN_OPTIONS);
-      const after = text.slice(node.end).match(/^\s*\}\}/);
-      if (after) {
-        edits.push(...referenceEdits(node, renamesByComponentName));
-        close = node.end + after[0].length - 2;
+    // The binding is parsed on its own text, from {{ to a }} that ends it (a later one when a }} belongs to an object
+    // inside it): parsing the whole value from an offset made acorn re-read everything before it, quadratic in the
+    // length of one value (8,000 bindings in one string took seconds).
+    for (let end = text.indexOf('}}', open + 2), tries = 0; end !== -1 && tries < 16; tries += 1) {
+      const source = text.slice(open + 2, end);
+      try {
+        const node: any = acornParseExpressionAt(source, 0, ACORN_OPTIONS);
+        if (/^\s*$/.test(source.slice(node.end))) {
+          const base = open + 2;
+          edits.push(
+            ...referenceEdits(node, renamesByComponentName).map((edit) => ({
+              ...edit,
+              start: edit.start + base,
+              end: edit.end + base,
+            }))
+          );
+          close = end;
+          break;
+        }
+      } catch {
+        // not complete yet, or not an expression: try a later }} (then the pattern, below)
       }
-    } catch {
-      // not an expression: handled below
+      end = text.indexOf('}}', end + 1);
     }
     if (close === -1) {
       close = text.indexOf('}}', open + 2);
