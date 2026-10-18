@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, controlAria, fieldIdOf, fieldName, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -110,6 +110,8 @@ export const ShadCombobox = (props: WidgetProps) => {
             <Button
               ref={triggerRef}
               id={fieldIdOf(props)}
+              // Named by its label; without a visible one (empty, or only spaces) by its placeholder or component name.
+              aria-label={fieldName(props, 'Select an option')}
               type="button"
               variant="outline"
               role="combobox"

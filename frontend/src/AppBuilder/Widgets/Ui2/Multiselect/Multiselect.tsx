@@ -175,7 +175,9 @@ export const ShadMultiselect = (props: WidgetProps) => {
             role="combobox"
             aria-controls={menu.open ? menuId : undefined}
             // A div takes no name from <label for>: the label's text, else the placeholder, names it.
-            aria-label={toText(properties.label) || fieldName(props, 'Select options')}
+            // The field is not a labelable element, so it carries its label's text; a label of only spaces names nothing,
+            // so the placeholder or component name does, as for the Select.
+            aria-label={toText(properties.label).trim() || fieldName(props, 'Select options')}
             {...controlAria(props, check.error)}
             onKeyDown={(e) => {
               if (disabled) return;
