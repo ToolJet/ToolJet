@@ -134,4 +134,15 @@ describe('UI 2.0 Tabs state', () => {
       expect(document.querySelector('[activetab="b"]')).toBeInTheDocument();
     });
   });
+
+  describe.each(['pills', 'underline', 'steps'])('the %s strip with its selected tab disabled', (variant) => {
+    test('keeps one tab that can be picked as its keyboard entry', async () => {
+      render(ABC, { variant: binding(variant), linearSteps: binding('{{false}}') });
+      await waitFor(() => expect(exposed().currentTab).toBe('a'));
+      await widget.act('setTabDisable', 'a', true);
+      const stops = screen.getAllByRole('tab').filter((tab) => tab.tabIndex === 0);
+      expect(stops.map((tab) => tab.textContent)).toEqual([expect.stringContaining('Beta')]);
+      expect(stops[0]).not.toBeDisabled();
+    });
+  });
 });

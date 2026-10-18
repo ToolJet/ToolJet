@@ -13,20 +13,32 @@ const TabIcon = ({ tab }: { tab: Tab }) =>
     <TablerIcon iconName={String(tab.icon)} style={{ width: 16, height: 16 }} stroke={1.75} />
   ) : null;
 
-/** A tab in the strip: selected by click, and a Tab stop only while selected (tabKeys moves between tabs). */
+/** A tab in the strip: selected by click, and the strip's one Tab stop when `stop` (tabKeys moves between tabs). */
 interface TabButtonProps {
   widgetId: string;
   /** Whether its panel is in the page (renderOnlyActiveTab draws only the active one). */
   hasPanel: boolean;
   tab: Tab;
   active: boolean;
+  /** The strip's Tab stop: the selected tab, or the first tab that can be picked when the selected one cannot. */
+  stop: boolean;
   disabled: boolean;
   onPick: (tab: Tab) => void;
   className: string;
   children: React.ReactNode;
 }
 
-const TabButton = ({ widgetId, hasPanel, tab, active, disabled, onPick, className, children }: TabButtonProps) => (
+const TabButton = ({
+  widgetId,
+  hasPanel,
+  tab,
+  active,
+  stop,
+  disabled,
+  onPick,
+  className,
+  children,
+}: TabButtonProps) => (
   <button
     type="button"
     role="tab"
@@ -34,7 +46,7 @@ const TabButton = ({ widgetId, hasPanel, tab, active, disabled, onPick, classNam
     aria-controls={hasPanel ? tabIds(widgetId, tab.id).panel : undefined}
     aria-selected={active}
     data-tab-id={tab.id}
-    tabIndex={active ? 0 : -1}
+    tabIndex={stop ? 0 : -1}
     disabled={disabled}
     onClick={() => onPick(tab)}
     className={className}
@@ -44,7 +56,7 @@ const TabButton = ({ widgetId, hasPanel, tab, active, disabled, onPick, classNam
 );
 
 /** The WAI-ARIA tabs keyboard pattern on a tab strip: Left and Right arrows move to the previous or next enabled
- *  tab and select it, Home and End to the first and last. Only the selected tab is a Tab stop (tabIndex below). */
+ *  tab and select it, Home and End to the first and last. Only one tab is a Tab stop (TabButton's stop). */
 const tabKeys =
   (tabs: Tab[], currentTab: TabId | undefined, onPick: (tab: Tab) => void, canPick: (tab: Tab) => boolean) =>
   (event: KeyboardEvent<HTMLDivElement>) => {
@@ -107,6 +119,9 @@ export const TabStrip = ({
   const stretch = align === 'stretch';
   const canPick = (tab: Tab) => !tab.disable && (variant !== 'steps' || !linear || tabs.indexOf(tab) <= stepIndex);
   const onKeyDown = tabKeys(tabs, currentTab, onPick, canPick);
+  // A disabled selected tab cannot take focus: the first tab that can be picked is the Tab stop then, or the strip had
+  // no keyboard entry at all.
+  const stop = tabs.find((tab) => tab.id == currentTab && canPick(tab)) ?? tabs.find(canPick);
   if (variant === 'steps') {
     return (
       <div
@@ -134,6 +149,7 @@ export const TabStrip = ({
                 hasPanel={!onlyActivePanel || active}
                 tab={tab}
                 active={active}
+                stop={tab === stop}
                 disabled={!!tab.disable || !reachable}
                 onPick={onPick}
                 className={cn(
@@ -174,6 +190,7 @@ export const TabStrip = ({
           hasPanel={!onlyActivePanel || active}
           tab={tab}
           active={active}
+          stop={tab === stop}
           disabled={!!tab.disable}
           onPick={onPick}
           className={classes(active)}
