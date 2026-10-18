@@ -123,6 +123,7 @@ export const MapSearch = ({
         aria-label={placeholder || 'Search for an address'}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
+          if (disabled) return;
           if (e.key === 'Enter' && results[0]) choosePlace(results[0]);
           else if (e.key === 'Enter' && !typeAhead) setSubmitted(query.trim());
           if (e.key === 'Escape') setResults([]);
@@ -133,7 +134,10 @@ export const MapSearch = ({
         <ul className="sc-map-search-results" role="listbox">
           {results.map((r, i) => (
             <li key={`${r.lat},${r.lng},${i}`} role="option" aria-selected={false}>
-              <button type="button" onClick={() => choosePlace(r)}>
+              {/* Disabled with the map: a suggestion already open moved the map, set pickedLocation and fired
+                  onLocationPicked once the map was disabled or loading, and Tab then Enter reached it under the
+                  loading veil (release audit round 2). */}
+              <button type="button" disabled={disabled} onClick={() => !disabled && choosePlace(r)}>
                 {r.label}
               </button>
             </li>

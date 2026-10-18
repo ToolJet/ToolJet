@@ -10,7 +10,7 @@
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import React from 'react';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, countInvocationsOn, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'map1';
 const widget = createWidgetHarness({
@@ -499,6 +499,38 @@ describe('UI 2.0 Map', () => {
         }
       );
     }, 10000);
+
+    test.each(['disabledState', 'loadingState'])(
+      '[ShadMap-EVT-006] with %s on, an open search suggestion picks nothing and fires nothing',
+      async (state) => {
+        // Release audit round 2: a suggestion already open still moved the map, set pickedLocation and fired
+        // onLocationPicked once the map was disabled or loading (in a browser, Tab then Enter reached it under the veil).
+        fetchMock.mockImplementation(answerByQuery);
+        render({
+          properties: {
+            showSearch: binding('{{true}}'),
+            pickLocation: binding('{{true}}'),
+            geocoderUrl: binding(`https://geo.example/evt-006-${state}/search?q={query}`),
+          },
+        });
+        const input = await screen.findByRole('searchbox');
+        fireEvent.change(input, { target: { value: 'Alpha' } });
+        const option = await screen.findByRole('button', { name: 'Alpha result' }, { timeout: 4000 });
+        widget.setEvents(countInvocationsOn(ID, 'onLocationPicked', { key: 'picked' }));
+        const center = JSON.stringify(exposed().center);
+        act(() => widget.setComponentProperty(ID, state, '{{true}}', 'properties'));
+        await waitFor(() => expect(input).toBeDisabled());
+        expect(option).toBeDisabled();
+        fireEvent.click(option);
+        await settle();
+        expect([exposed().pickedLocation, JSON.stringify(exposed().center), widget.variables().picked ?? 0]).toEqual([
+          {},
+          center,
+          0,
+        ]);
+      },
+      10000
+    );
 
     test('[ShadMap-EVT-005] Enter on a new query picks nothing from the previous query, then picks the new place', async () => {
       // Release audit 42: Enter during the pause after typing Beta picked Alpha's place and fired onLocationPicked.
