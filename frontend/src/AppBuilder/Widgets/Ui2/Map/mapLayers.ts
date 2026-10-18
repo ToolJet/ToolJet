@@ -161,25 +161,47 @@ export const useHeatLayer = (
 // ---- Icons -----------------------------------------------------------------------------------------------------------
 
 const ICON_SVG = new Map<string, string>();
-let iconsLoading: Promise<boolean> | null = null;
+// Icons being drawn, by name, so maps asking at once share one drawing (each was drawn again per map).
+const ICON_PENDING = new Map<string, Promise<boolean>>();
+type IconModules = [
+  typeof import('lucide-react'),
+  typeof import('react-dom/server'),
+  typeof import('react'),
+  typeof import('@/AppBuilder/Widgets/Ui2/_display/iconModel')
+];
+let iconModules: Promise<IconModules> | null = null;
 
-/** Loads lucide and renders each named icon once to SVG text for a pin (white, 14px). Resolves when ready; names lucide
- *  does not have get its dashed placeholder. */
+/** lucide and the SVG renderer, loaded once. A failed load is forgotten so the next call loads again: it stayed in the
+ *  chain, and no icon loaded until the page was reloaded (release audit 2). */
+const loadIconModules = (): Promise<IconModules> => {
+  if (iconModules) return iconModules;
+  const loading = Promise.all([
+    import('lucide-react'),
+    import('react-dom/server'),
+    import('react'),
+    import('@/AppBuilder/Widgets/Ui2/_display/iconModel'),
+  ]);
+  iconModules = loading;
+  loading.catch(() => {
+    if (iconModules === loading) iconModules = null;
+  });
+  return loading;
+};
+
+/** Loads lucide and renders each named icon once to SVG text for a pin (white, 14px). Resolves true when icons it
+ *  asked for are ready, false when there was nothing to load or the load failed (a later call tries again); names
+ *  lucide does not have get its dashed placeholder. */
 export const loadIcons = (names: unknown[]): Promise<boolean> => {
-  const wanted = [...new Set(names.filter((n): n is string => typeof n === 'string' && !!n && n.length <= 64))].filter(
+  const named = [...new Set(names.filter((n): n is string => typeof n === 'string' && !!n && n.length <= 64))].filter(
     (n) => !ICON_SVG.has(n)
   );
-  if (!wanted.length) return Promise.resolve(false);
-  iconsLoading = (iconsLoading || Promise.resolve()).then(() =>
-    Promise.all([
-      import('lucide-react'),
-      import('react-dom/server'),
-      import('react'),
-      import('@/AppBuilder/Widgets/Ui2/_display/iconModel'),
-    ]).then(([Lucide, Server, React, model]) => {
+  const fresh = named.filter((n) => !ICON_PENDING.has(n));
+  const work = named.filter((n) => ICON_PENDING.has(n)).map((n) => ICON_PENDING.get(n) as Promise<boolean>);
+  if (fresh.length) {
+    const drawing = loadIconModules().then(([Lucide, Server, React, model]) => {
       const maps = [Lucide.icons, Lucide];
       const fallback = Lucide.CircleDashed || Lucide.Circle;
-      wanted.forEach((name) => {
+      fresh.forEach((name) => {
         const Icon = model.resolveIcon(name, maps, fallback);
         const markup = Server.renderToStaticMarkup(
           React.createElement(Icon, { size: 14, strokeWidth: 2.25, color: '#ffffff', 'aria-hidden': 'true' })
@@ -187,9 +209,19 @@ export const loadIcons = (names: unknown[]): Promise<boolean> => {
         ICON_SVG.set(name, markup);
       });
       return true;
-    })
-  );
-  return iconsLoading.catch(() => false);
+    });
+    const settled = drawing.catch(() => false);
+    fresh.forEach((name) => ICON_PENDING.set(name, settled));
+    // Only this drawing's own entries are cleared: a name asked for again after it failed belongs to the new drawing.
+    settled.then(() =>
+      fresh.forEach((name) => {
+        if (ICON_PENDING.get(name) === settled) ICON_PENDING.delete(name);
+      })
+    );
+    work.push(settled);
+  }
+  if (!work.length) return Promise.resolve(false);
+  return Promise.all(work).then((ready) => ready.every(Boolean));
 };
 export const iconSvg = (name: string): string => ICON_SVG.get(name) || '';
 
