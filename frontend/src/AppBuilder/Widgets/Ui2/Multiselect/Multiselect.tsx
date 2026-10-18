@@ -272,7 +272,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
                     <CommandItem value="select-all" onSelect={toggleAll}>
                       <span
                         className={cn(
-                          'tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border tw-border-[color:var(--sc-primary)]',
+                          'tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-xs tw-border tw-border-[color:var(--sc-primary)]',
                           allOn
                             ? 'tw-bg-[color:var(--sc-primary)] tw-text-[color:var(--sc-primary-foreground)]'
                             : 'tw-opacity-50'

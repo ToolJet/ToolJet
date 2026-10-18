@@ -39,7 +39,7 @@ export const COMMAND_ITEM = `tw-relative tw-flex tw-cursor-default tw-select-non
 export const FlagIcon = ({ country, title }: { country: Country; title: string }) => {
   const Flag = flags[country];
   return (
-    <span className="tw-flex tw-h-4 tw-w-6 tw-shrink-0 tw-overflow-hidden tw-rounded-ui2-sm tw-bg-[color:var(--sc-muted)] [&_svg]:tw-h-full [&_svg]:tw-w-full">
+    <span className="tw-flex tw-h-4 tw-w-6 tw-shrink-0 tw-overflow-hidden tw-rounded-ui2-xs tw-bg-[color:var(--sc-muted)] [&_svg]:tw-h-full [&_svg]:tw-w-full">
       {Flag ? <Flag title={title} /> : null}
     </span>
   );

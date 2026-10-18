@@ -6,6 +6,8 @@
 //   passes width, height and boxFit as props, and rows size through the reflow. One exception, an open question for
 //   the app builder team: Stat equalises a row of Stat cards by reading their FlexContainer wrapper (Stat/statRow.ts).
 // - Enter is read through _shared/keyboard.ts (isEnter), never compared directly.
+// - A 16px box (a check box, an option's icon or tick, a flag) takes the capped ui2-xs radius, not the theme-scaled
+//   ui2-sm: at a theme radius of 12px, ui2-sm is 8px and the box draws as a circle, a check box that reads as a radio.
 // - No `react-hooks/exhaustive-deps` suppressions: dependencies are complete (useStable and useLatest in packHooks are
 //   the tools for bound data and latest-value reads).
 import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
@@ -96,6 +98,18 @@ describe('UI 2.0 widget code rules', () => {
       .filter((file) => !file.endsWith('_shared/keyboard.ts'))
       .filter((file) => /\.key\s*===\s*['"]Enter['"]/.test(fs.readFileSync(file, 'utf8')));
     expect(found.map(rel)).toEqual([]);
+  });
+
+  it('keeps 16px boxes on the capped ui2-xs radius', () => {
+    const ui2 = require('@/AppBuilder/Widgets/Ui2/_shared/styles/ui2.tailwind');
+    expect(ui2.borderRadius['ui2-xs']).toBe('min(4px, calc(var(--sc-radius) - 4px))');
+    // Standalone classes only: `[&_svg]:tw-size-4` sizes an icon inside a bigger button.
+    const SMALL_BOX =
+      /(?=[^'"`]*(?:^|[\s'"`])tw-(?:h-4|size-4)(?=[\s'"`]))(?=[^'"`]*(?:^|[\s'"`])tw-rounded-ui2-(?:sm|md|lg|xl)(?=[\s'"`]))[^'"`]*/g;
+    const found = sources.flatMap((file) =>
+      (fs.readFileSync(file, 'utf8').match(SMALL_BOX) || []).map(() => rel(file))
+    );
+    expect(found).toEqual([]);
   });
 
   it('suppresses no react-hooks/exhaustive-deps warnings', () => {
