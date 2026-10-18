@@ -13,6 +13,7 @@ import {
   migrateFlexContainerCardStyle,
   renameEventHandlerRow,
   applyUi2RenamesToImport,
+  rewriteBindings,
 } from '../../../../src/modules/apps/services/ui2-legacy-names';
 
 const LIST_ID = '11111111-1111-4111-8111-111111111111';
@@ -431,5 +432,28 @@ describe('applyUi2RenamesToImport', () => {
     expect(Object.getOwnPropertyDescriptor(out, '__proto__')?.value).toEqual({ value: 'kept' });
     expect(Object.getPrototypeOf(out)).toBe(Object.prototype);
     expect(out.text.value).toBe('{{components.tags1.values}}');
+  });
+});
+
+// Independent review of the release-audit fixes: each binding was parsed from an offset into the whole value, which made
+// acorn re-read everything before it, so one long value cost time quadratic in its length.
+describe('rewriteBindings at scale', () => {
+  it('rewrites a value with 8,000 bindings in linear time', () => {
+    const one = '<li>{{components.orders.selectedRow.name}}</li>';
+    const text = one.repeat(8000);
+    const started = Date.now();
+    const out = rewriteBindings(text, byRef);
+    const elapsed = Date.now() - started;
+    expect(out).toBe('<li>{{components.orders.selectedRecord.name}}</li>'.repeat(8000));
+    expect(elapsed).toBeLessThan(1500);
+  });
+
+  it('still reads a }} that belongs to an object inside the binding', () => {
+    expect(rewriteBindings('a {{ {x: {y: components.orders.selectedRow}} }} b', byRef)).toBe(
+      'a {{ {x: {y: components.orders.selectedRecord}} }} b'
+    );
+    expect(rewriteBindings('{{}} and {{components.orders.selectedRow}}', byRef)).toBe(
+      '{{}} and {{components.orders.selectedRecord}}'
+    );
   });
 });

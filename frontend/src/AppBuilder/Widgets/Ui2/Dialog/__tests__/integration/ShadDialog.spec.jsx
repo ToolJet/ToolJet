@@ -84,6 +84,18 @@ describe('UI 2.0 Dialog', () => {
     expect(body().closest('.modal-content')).toHaveClass('tj-shad-dialog-content');
   });
 
+  // Independent review of the release-audit fixes: open ran inside the action batch, which held ModalV2's show write while
+  // ModalV2 fired onOpen on its own path, so the handler read show false.
+  test('[ShadDialog-EVT-004] the open action fires onOpen, whose handler reads show as true', async () => {
+    render({ properties: { useDefaultButton: binding('{{false}}') } });
+    await handle(setVariableOn(ID, 'onOpen', { value: '{{components.dialog1.show}}' }));
+
+    await widget.act('open');
+
+    await waitFor(() => expect(widget.variables().seen).toBeDefined());
+    expect(widget.variables().seen).toBe(true);
+  });
+
   test('[ShadDialog-EVT-002] the close button closes the dialog and fires onClose', async () => {
     render();
     await handle(setVariableOn(ID, 'onClose'));
