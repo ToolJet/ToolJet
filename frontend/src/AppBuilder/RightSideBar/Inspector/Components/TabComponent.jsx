@@ -573,19 +573,22 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
           {component?.component?.component === 'ShadTabs' &&
             properties
               .filter((property) => !['useDynamicOptions', 'tabs'].includes(property))
-              .map((property) =>
-                renderElement(
-                  component,
-                  componentMeta,
-                  paramUpdated,
-                  dataQueries,
-                  property,
-                  'properties',
-                  currentState,
-                  allComponents,
-                  darkMode
-                )
-              )}
+              .map((property) => (
+                // renderElement's elements carry no key of their own.
+                <React.Fragment key={property}>
+                  {renderElement(
+                    component,
+                    componentMeta,
+                    paramUpdated,
+                    dataQueries,
+                    property,
+                    'properties',
+                    currentState,
+                    allComponents,
+                    darkMode
+                  )}
+                </React.Fragment>
+              ))}
         </>
       ),
     });
