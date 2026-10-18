@@ -11,6 +11,7 @@ Three editions: `ce` (community), `ee` (enterprise), `cloud`. Controlled by `TOO
 - CE code lives in `server/src/modules/` and `frontend/src/`
 - EE/Cloud code lives in git submodules: `server/ee/` and `frontend/ee/`
 - Cloud is a deployment config of EE, not a third code tree: `TOOLJET_EDITION=cloud` runs the same EE submodule code, with cloud-only behavior gated by runtime checks
+- AI is an enterprise feature; its agent context lives in the EE submodule at `server/ee/ai/AGENTS.md`. One-command local AI stack: ToolJet/tooljet-agent, `ai-stack/SETUP.md`
 
 ### Backend (NestJS + TypeORM + PostgreSQL)
 
@@ -92,9 +93,20 @@ An investigation handoff should contain: problem statement, scope/impact, reprod
 
 ## Node version
 
-`server/package.json` `engines` field is the source of truth; root `.nvmrc` / `.node-version` mirror it. Always `nvm use` before running Node commands — required version differs across branch lines.
+`server/package.json` `engines` field is the source of truth; root `.nvmrc` / `.node-version` mirror it. Always `nvm use` before running Node commands — required version differs across branch lines. `tools/tj/bin/tj` switches to the `.nvmrc` Node by itself.
 
 ## Dev commands
+
+Use the dev toolkit `tools/tj/bin/tj` for setup and services. It never prompts without a terminal, `--json` gives a result on stdout, and `tj help --json` lists every command. See `tools/tj/README.md`.
+
+```
+tools/tj/bin/tj doctor                     # prerequisites + fix hints
+tools/tj/bin/tj wt add <branch> [--app]    # worktree with deps, isolated DBs (+ free ports with --app)
+tools/tj/bin/tj start | stop | status      # dev servers in the background, health-checked
+tools/tj/bin/tj db migrate [--test]        # migrations (test DB the way that works)
+```
+
+Underlying commands:
 
 ```
 cd server && npm run start:dev      # start backend (port from .env PORT)
@@ -106,7 +118,7 @@ cd server && npm test               # run tests
 
 ### Plugins build (required for migrations)
 
-`db:migrate` depends on `@tooljet/plugins/dist/server`:
+`db:migrate` depends on `@tooljet/plugins/dist/server` (`tools/tj/bin/tj setup` builds it when needed):
 
 ```
 cd plugins && npm install && npm run build
@@ -120,35 +132,64 @@ cd plugins && npm install && npm run build
 - Backend port reads from `PORT` in `.env`; frontend port via `npm start -- --port <port>`
 - Lint before committing. Pre-commit hooks are in the repo (husky + lint-staged, activated by root `npm install`); the hook only lint-fixes frontend files — backend needs `cd server && npm run lint` manually. CI lints all three folders and blocks the PR on failure. Never `--no-verify` unless the user explicitly asks
 
+## Context efficiency
+
+- Before re-reading a file, check if it was already read earlier in this session. If so, reference that content instead of re-reading it.
+- When reading files over ~200 lines, use the Read tool's `offset`/`limit` arguments to read only the relevant section first. Only read the full file if the targeted read isn't enough.
+- For open-ended exploration (searching for usages, understanding a module, tracing a bug across files), delegate to an `Explore` subagent via the `Agent` tool rather than reading files directly in the main thread.
+
 ## Skills
 
 Procedures live in `.agents/skills/` (symlinked into `.claude/skills/`). Load the one matching the task instead of improvising — ToolJet is a superproject with two submodules, and every git operation has to fan out across all three in a fixed order.
 
-| Task | Skill |
-|---|---|
-| Merge a branch across root + submodules | `merge` |
-| Commit across root + submodules | `commit` |
-| Push and open PRs across root + submodules | `create-pr` |
-| Add, move, or repair a skill | `manage-skills` |
+| Task                                                                     | Skill                                                         |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| Merge a branch across root + submodules                                  | `merge`                                                       |
+| Commit across root + submodules                                          | `commit`                                                      |
+| Push and open PRs across root + submodules                               | `create-pr`                                                   |
+| Take an issue to a plan, sub-issues, stacked branches, and AFK subagents | `kickoff` (uses `decompose-plan`, `grill-me`, `create-issue`) |
+| Review sessions and turn lessons into context/tooling fixes              | `retro`                                                       |
+| Add, move, or repair a skill                                             | `manage-skills`                                               |
+| Create or validate a marketplace plugin                                  | `create-plugin`                                               |
 
-Private skills (`bug-triage`, `page-load-audit`, …) live in the `frontend/ee` submodule and appear at root as symlinks, so they are absent on clones without EE access. Placement rule and symlink layout: `.agents/skills/manage-skills/SKILL.md`. `scripts/sync-skills.sh` reconciles links; pre-commit runs it in `--check` mode. Never create `.claude/` or `.cursor/` inside a submodule.
+When a session involved user corrections, failed approaches, workarounds or stale context, suggest running `retro` (EE checkouts) before it ends. Don't run it unprompted.
+
+Skills live in the `frontend/ee` submodule by default (`bug-triage`, `kickoff`, …); only contributor-facing skills live in the public root. Private skills appear at root as symlinks, so they are absent on clones without EE access. Placement rule and symlink layout: `.agents/skills/manage-skills/SKILL.md`. `scripts/sync-skills.sh` reconciles links; pre-commit runs it in `--check` mode. Never create `.claude/` or `.cursor/` inside a submodule.
 
 ## Context file layout
 
 Context is layered — the closest file to the code you're changing wins:
 
-| File | Scope |
-|---|---|
-| `AGENTS.md` (this file) | Repo-wide architecture, editions, structure |
-| `.agents/context/product-map.md` | Public product capabilities, users, journeys, and business rules |
-| `.agents/context/architecture-map.md` | Public system components, data flows, integrations, and failure modes |
-| `UBIQUITOUS_LANGUAGE.md` | Canonical domain glossary |
-| `server/AGENTS.md` | Backend + testing conventions |
-| `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants |
-| `server/ee/AGENTS.md` | EE-extends-CE rules (in EE submodule) |
-| `frontend/AGENTS.md` | Frontend conventions, App Builder architecture, glossary |
-| `server/docs/testing.md` | Backend testing — what to test, then how to write it |
+| File                                    | Scope                                                                                  |
+| --------------------------------------- | -------------------------------------------------------------------------------------- |
+| `AGENTS.md` (this file)                 | Repo-wide architecture, editions, structure                                            |
+| `.agents/context/product-map.md`        | Public product capabilities, users, journeys, and business rules                       |
+| `.agents/context/architecture-map.md`   | Public system components, data flows, integrations, and failure modes                  |
+| `UBIQUITOUS_LANGUAGE.md`                | Canonical domain glossary                                                              |
+| `server/AGENTS.md`                      | Backend + testing conventions                                                          |
+| `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants                                              |
+| `server/ee/AGENTS.md`                   | EE-extends-CE rules (in EE submodule)                                                  |
+| `server/ee/ai/AGENTS.md`                | AI app-builder backend context (in EE submodule)                                       |
+| `frontend/AGENTS.md`                    | Frontend conventions, App Builder architecture, glossary                               |
+| `marketplace/AGENTS.md`                 | Marketplace plugin layout, registration, build                                         |
+| `tools/tj/README.md`                    | Dev toolkit: worktrees, env files, DBs, dev servers, output contract                   |
+| `server/docs/testing.md`                | Backend testing — what to test, then how to write it                                   |
+| `frontend/src/test/README.md`           | Frontend testing — Jest/RTL/MSW conventions; App Builder layer in `frontend/AGENTS.md` |
 
 **Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature.
 
 Update `.agents/context/product-map.md` when a public capability, user journey, role, or business rule changes. Update `.agents/context/architecture-map.md` when a runtime component, data store, integration boundary, authentication path, deployment topology, or major failure mode changes. Keep evidence links current, preserve explicit inference labels, and review map changes with the same owners as the code. Stale context is worse than no context.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on this repo (`ToolJet/ToolJet`); skills use the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles map to default label strings of the same name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout (`CONTEXT.md` + `docs/adr/` at root); the existing canonical glossary is `UBIQUITOUS_LANGUAGE.md`. See `docs/agents/domain.md`.

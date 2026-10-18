@@ -162,6 +162,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.branchId = await this.resolveBranchId(req, user.organizationId);
         user.isPATLogin = !!payload.isPATLogin;
         user.patAppId = payload.appId;
+        user.patScope = payload.patScope;
         if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
 
         // Track user activity for metrics (every authenticated request)

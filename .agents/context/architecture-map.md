@@ -39,6 +39,7 @@ graph LR
 | `server/src/modules/apps/` | App aggregate, versions/pages/components/events, release, viewer hydration, and import/export. |
 | `server/src/modules/data-sources/` + `data-queries/` | Connector configuration, environment-scoped credentials, template resolution, query execution, throttling, and result status. |
 | `plugins/packages/` | Built-in connector implementations for databases, APIs, storage, email, and SaaS systems. |
+| `marketplace/plugins/` | Installable third-party connector workspaces. See `marketplace/AGENTS.md`. |
 | `server/src/modules/tooljet-db/` | Built-in database schema operations and authenticated PostgREST proxy. |
 | `server/src/modules/workflows/` | Workflow models, schedules, queues, execution records, and edition-extension points. Some CE controller methods are stubs. |
 | `docker/`, `deploy/` | Development/production images and Docker, Kubernetes, Helm, OpenShift deployment definitions. |
@@ -99,6 +100,8 @@ sequenceDiagram
 
 `TooljetDbController` exposes guarded table/column/foreign-key/bulk-upload operations. Row operations enter `/tooljet-db/proxy/*` or `PostgrestProxyService.perform`; the service maps opaque table IDs to workspace tables, creates a scoped Postgres JWT/profile header, validates JSONB input, and calls PostgREST. PostgREST performs the SQL against ToolJet DB PostgreSQL and returns representations/count metadata.
 
+Raw SQL and seed-data migrations (`TooljetDbRawSqlMigrationService`) let an authenticated org member run arbitrary SQL against a table's tenant schema; the SQL commit (tenant DB) and the migration-record commit (main DB) are two independent transactions, so a crash between them is a known, currently-undetected gap (main DB's migration row can end up confirmed for tenant-DB SQL that never committed). Environment promote/replay walks these recorded migrations across environments in sequence.
+
 ### 5. Queue and execute background work
 
 Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Workflow scheduling/execution queues are registered in `server/src/modules/workflows/module.ts`; processors and schedule bootstrap are registered only when `WORKER=true`. `npm run worker:prod` starts the same compiled server entry with that flag. The non-Cloud deployment also exposes Bull Board under `/jobs`, protected by configured basic authentication. **Boundary:** public workflow contracts are present, but some CE webhook methods throw `Method not implemented`, so full behavior is edition-dependent.
@@ -118,6 +121,9 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 ## Deployment and observability
 
 - Development Compose runs frontend, server, plugin watcher, PostgreSQL, Redis, and PostgREST (`docker-compose.yaml`).
+- Local development without Compose runs through the dev toolkit `tools/tj/bin/tj` (`tools/tj/README.md`). It needs PostgreSQL and Redis running.
+  - Per-branch worktrees each get their own DBs (`tooljet_<slug>_<hash>[_test]`) and their own free ports.
+  - Server and frontend run as background processes and are health-checked through `/api/health`.
 - Production assets support CE images plus Docker Compose, Kubernetes, Helm, and OpenShift (`docker/`; `deploy/`). Nest can serve `frontend/build` or run with `SERVE_CLIENT=false`.
 - `/health` and `/api/health` are prefix-exempt health endpoints (`AppController.healthCheck`).
 - Pino supplies structured/redacted HTTP logs and transaction IDs (`AppModuleLoader`).

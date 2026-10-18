@@ -6,6 +6,11 @@ import { ToolTip } from '@/_components';
 import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { ActionTypes } from './ActionTypes';
 import {
+  mergeStaticAndDynamicActions,
+  resolveLibraryComponentActions,
+} from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
+import {
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -73,6 +78,8 @@ export const EventManager = ({
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const components = useStore((state) => state.getCurrentPageComponents());
+  const libraryPins = useStore((state) => state.globalSettings?.customComponentLibraries);
+  const libraryManifests = useCustomComponentLibrariesStore((state) => state.manifests);
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
   );
@@ -232,13 +239,25 @@ export const EventManager = ({
     return componentOptions;
   }
 
+  function resolveComponentActions(componentId, componentDef) {
+    const targetComponentMeta = componentTypes.find(
+      (componentType) => componentDef?.component?.component === componentType.component
+    );
+    const staticActions = targetComponentMeta?.actions ?? [];
+
+    if (componentDef?.component?.component === 'LibraryComponent') {
+      // libraryManifests is real Zustand state, so this re-evaluates (and the open action
+      // picker re-renders) once an in-flight manifest fetch resolves elsewhere.
+      const dynamicActions = resolveLibraryComponentActions(componentDef, libraryManifests, libraryPins);
+      return mergeStaticAndDynamicActions(staticActions, dynamicActions);
+    }
+    return staticActions;
+  }
+
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
-      const targetComponentMeta = componentTypes.find(
-        (componentType) => components[key].component.component === componentType.component
-      );
-      if ((targetComponentMeta?.actions?.length ?? 0) > 0) {
+      if ((resolveComponentActions(key, components[key])?.length ?? 0) > 0) {
         if (componentType === '' || components[key].component.component === componentType) {
           componentOptions.push({
             name: components[key].component.name,
@@ -255,10 +274,7 @@ export const EventManager = ({
     const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
     if (_.isEmpty(filteredComponents)) return [];
     const component = filteredComponents[0][1];
-    const targetComponentMeta = componentTypes.find(
-      (componentType) => component.component.component === componentType.component
-    );
-    const actions = targetComponentMeta.actions;
+    const actions = resolveComponentActions(componentId, component);
 
     const options = (actions || []).map((action) => ({
       name: action?.displayName,
@@ -273,10 +289,7 @@ export const EventManager = ({
     const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
     if (_.isEmpty(filteredComponents)) return {};
     const component = filteredComponents[0][1];
-    const targetComponentMeta = componentTypes.find(
-      (componentType) => component.component.component === componentType.component
-    );
-    const actions = targetComponentMeta.actions;
+    const actions = resolveComponentActions(componentId, component);
     return (actions || []).find((action) => action.handle === actionHandle);
   }
 

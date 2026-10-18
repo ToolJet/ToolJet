@@ -1,2 +1,4 @@
 npx lint-staged --no-stash
 bash scripts/sync-skills.sh --check
+if git diff --cached --name-only | grep -q '^tools/tj/'; then npm run --silent tj:check; fi
+if git diff --cached --name-only | grep -qE '^frontend/src/.*\.(spec|test)\.[jt]sx?$'; then node frontend/scripts/validate-test-layout.js; fi

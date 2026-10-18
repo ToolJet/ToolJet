@@ -11,6 +11,7 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { SearchBox } from '@/_components/SearchBox';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { extractErrorMessage } from '@/_helpers/messages';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import Modal from '@/HomePage/Modal';
 import { Button } from '@/components/ui/Button/Button';
@@ -90,14 +91,18 @@ export const List = ({ updateSelectedDatasource }) => {
     return !!(state.currentBranch?.is_default || state.currentBranch?.isDefault);
   });
 
+  // Wait for branch resolution — an earlier unscoped fetch omits is_synced and can get latched in.
+  const isBranchStoreInitialized = useWorkspaceBranchesStore((state) => state.isInitialized);
+
   useEffect(() => {
     environments?.length &&
+      isBranchStoreInitialized &&
       fetchDataSources(false).catch(() => {
         toast.error('Failed to fetch datasources');
         return;
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [environments]);
+  }, [environments, isBranchStoreInitialized]);
 
   useEffect(() => {
     setFilteredData([...dataSources]);
@@ -236,7 +241,7 @@ export const List = ({ updateSelectedDatasource }) => {
       .catch(({ error }) => {
         setIsDeletingFolder(false);
         setDeletingFolder(null);
-        toast.error(error || 'Could not delete folder');
+        toast.error(extractErrorMessage(error) || 'Could not delete folder');
       });
   };
 

@@ -49,8 +49,7 @@ and only falls back to `run-ci/<uuid>` when unset. (The old static defaults `gsm
 FS readers, branching-tag/target helpers, `git-tree-sha` ls-remote/ls-tree parsing,
 `AppGitFileOperationsUtil` layout resolvers + `validateAppJsonForImport` normalization,
 the whole `GitOperationsUtil` simple-git wrapper — clone/sparseClone/commit/push/branchExists/
-resolveTagToSha argv shaping — and `PlatformGitPushService`'s fs-only meta helpers
-(`deleteAppFromRepo`, `readAppMeta`/`writeAppMeta`)) — plus two host-free guards for the
+resolveTagToSha argv shaping) — plus two host-free guards for the
 **app-open** path (§35): `apps/unit/apps-service-open-no-git-pull.spec.ts` (EE `getOne` hydrates on
 `is_stub` only, never for a materialized draft) and
 `platform-git-sync/unit/hydrate-stale-referenced-modules-gate.spec.ts` (the referenced-module
@@ -823,7 +822,7 @@ the `app_versions` slug triggers).
 | 4 | multi-branch: rejects a feature-branch slug already taken by another app of the same type | app1 takes a slug on the feature branch, app2 tries the same on the same branch → **400** ("… already taken") |
 
 Git-**off** slug rules (uniqueness reject, case-insensitivity, app↔module namespace, delete-frees-slug) are a
-separate host-free spec: `test/modules/apps/e2e/slug-update.e2e-spec.ts`. **Mirrored in
+separate host-free spec: `test/modules/apps/e2e/slug-update.spec.ts`. **Mirrored in
 `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
 
 ## 29. `is_synced` lifecycle invariant (`describe: is_synced lifecycle invariant (in git ⇔ is_synced=true)`)
@@ -938,10 +937,10 @@ endpoint spec, Redis) but not the simulator, so
 
 ---
 
-## 31. External API save/release against a real git host (`test/modules/external-apis/e2e/save-release-gitsync.e2e-spec.ts`)
+## 31. External API save/release against a real git host (`test/modules/external-apis/e2e/save-release-gitsync.spec.ts`)
 
 The External API analog of §24, plus the "auto-release" path §24 doesn't cover. Every other External
-API spec (`save-version.e2e-spec.ts`, `promote-to-next-version.e2e-spec.ts`, `auto-deploy.e2e-spec.ts`)
+API spec (`save-version.spec.ts`, `promote-to-next-version.spec.ts`, `auto-deploy.spec.ts`)
 stubs `SourceControlProviderService` at the boundary — correct for pinning the DB-side publish/promote
 logic deterministically, but it means the actual GitHub App auth → Octokit tag-creation → tag-lookup
 wiring behind `saveAppVersion` and `autoDeployApp`'s "latest tag" auto mode had never run against a

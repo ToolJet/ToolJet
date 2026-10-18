@@ -221,14 +221,14 @@ const EditRowForm = ({
           newInputValues[index].value === null
             ? null
             : newInputValues[index].value === actualDefaultVal
-              ? defaultValue === 'true'
-                ? true
-                : false
-              : newInputValues[index].value === currentValue
-                ? currentValue
-                : currentValue === null && customBooleanVal === false
-                  ? null
-                  : null,
+            ? defaultValue === 'true'
+              ? true
+              : false
+            : newInputValues[index].value === currentValue
+            ? currentValue
+            : currentValue === null && customBooleanVal === false
+            ? null
+            : null,
       });
     } else if (dataType === 'jsonb') {
       setRowData({
@@ -237,12 +237,12 @@ const EditRowForm = ({
           newInputValues[index].value === null
             ? null
             : compareValueInObject(newInputValues[index].value, defaultValue)
-              ? defaultValue
-              : _.isEqual(newInputValues[index].value, currentValue)
-                ? currentValue
-                : currentValue === null && customVal === ''
-                  ? ''
-                  : null,
+            ? defaultValue
+            : _.isEqual(newInputValues[index].value, currentValue)
+            ? currentValue
+            : currentValue === null && customVal === ''
+            ? ''
+            : null,
       });
     } else {
       setRowData({
@@ -251,12 +251,12 @@ const EditRowForm = ({
           newInputValues[index].value === null
             ? null
             : newInputValues[index].value === defaultValue
-              ? defaultValue
-              : newInputValues[index].value === currentValue
-                ? currentValue
-                : currentValue === null && customVal === ''
-                  ? ''
-                  : null,
+            ? defaultValue
+            : newInputValues[index].value === currentValue
+            ? currentValue
+            : currentValue === null && customVal === ''
+            ? ''
+            : null,
       });
     }
   };
@@ -327,7 +327,7 @@ const EditRowForm = ({
     });
 
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
-    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, rowData, query);
+    const { error } = await tooljetDatabaseService.updateRows(selectedTable.id, rowData, query);
     // TODO: Need all of this logic on the backend should ideally just get list of columns with error messages to map over
     if (error) {
       if (error?.code === postgresErrorCode.UniqueViolation) {
@@ -801,14 +801,14 @@ const EditRowForm = ({
                               activeTab[index] === 'Null' && !darkMode
                                 ? 'white'
                                 : activeTab[index] === 'Null' && darkMode
-                                  ? '#242f3c'
-                                  : 'transparent',
+                                ? '#242f3c'
+                                : 'transparent',
                             color:
                               activeTab[index] === 'Null' && !darkMode
                                 ? '#3E63DD'
                                 : activeTab[index] === 'Null' && darkMode
-                                  ? 'white'
-                                  : '#687076',
+                                ? 'white'
+                                : '#687076',
                           }}
                           className="row-tab-content"
                         >
@@ -833,14 +833,14 @@ const EditRowForm = ({
                               activeTab[index] === 'Default' && !darkMode
                                 ? 'white'
                                 : activeTab[index] === 'Default' && darkMode
-                                  ? '#242f3c'
-                                  : 'transparent',
+                                ? '#242f3c'
+                                : 'transparent',
                             color:
                               activeTab[index] === 'Default' && !darkMode
                                 ? '#3E63DD'
                                 : activeTab[index] === 'Default' && darkMode
-                                  ? 'white'
-                                  : '#687076',
+                                ? 'white'
+                                : '#687076',
                           }}
                           className="row-tab-content"
                         >
@@ -865,14 +865,14 @@ const EditRowForm = ({
                               activeTab[index] === 'Custom' && !darkMode
                                 ? 'white'
                                 : activeTab[index] === 'Custom' && darkMode
-                                  ? '#242f3c'
-                                  : 'transparent',
+                                ? '#242f3c'
+                                : 'transparent',
                             color:
                               activeTab[index] === 'Custom' && !darkMode
                                 ? '#3E63DD'
                                 : activeTab[index] === 'Custom' && darkMode
-                                  ? 'white'
-                                  : '#687076',
+                                ? 'white'
+                                : '#687076',
                           }}
                           className="row-tab-content"
                         >
@@ -886,8 +886,8 @@ const EditRowForm = ({
                       isSerialDataTypeColumn
                         ? 'Serial data type values cannot be modified'
                         : constraints_type?.is_primary_key
-                          ? 'Cannot edit primary key values'
-                          : null
+                        ? 'Cannot edit primary key values'
+                        : null
                     }
                     placement="top"
                     tooltipClassName="tootip-table"

@@ -2,18 +2,19 @@ import {
   BadRequestException,
   ForbiddenException,
   GoneException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
-import { User } from '../../entities/user.entity';
+import { User } from '@entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { EntityManager } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { CreateAdminDto, OnboardUserDto, TrialUserDto } from '@modules/onboarding/dto/user.dto';
+import { CreateAdminDto, OnboardUserDto } from '@modules/onboarding/dto/user.dto';
 import { AcceptInviteDto } from '@modules/onboarding/dto/accept-organization-invite.dto';
 import {
   getUserErrorMessages,
@@ -42,7 +43,7 @@ import { ActivateAccountWithTokenDto } from '@modules/onboarding/dto/activate-ac
 import { AppSignupDto } from '@modules/auth/dto';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
 import * as uuid from 'uuid';
-import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
+import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { ResendInviteDto } from '@modules/onboarding/dto/resend-invite.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationRepository } from '@modules/organizations/repository';
@@ -53,6 +54,7 @@ import { OnboardingUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { OrganizationUsersUtilService } from '../organization-users/util.service';
 import { OrganizationUsersRepository } from '../organization-users/repository';
+import { MAX_CLOUD_WORKSPACES_PER_USER } from '../organization-users/constants';
 import { LicenseUserService } from '../licensing/services/user.service';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { MetadataUtilService } from '@modules/meta/util.service';
@@ -195,72 +197,6 @@ export class OnboardingService implements IOnboardingService {
         );
       }
     });
-  }
-
-  async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
-    const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
-      userCreateDto;
-    validatePasswordServer(password);
-    const nameObj = this.onboardingUtilService.splitName(name);
-
-    const result = await dbTransactionWrap(async (manager: EntityManager) => {
-      // Create first organization
-      const organization = await this.organizationRepository.createOne(
-        { name: workspace || 'My workspace', slug: 'my-workspace' },
-        manager
-      );
-
-      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-      const passwordExpiry =
-        password && !isNaN(rawExpiryDays) && rawExpiryDays > 0
-          ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
-          : null;
-
-      const user = await this.onboardingUtilService.createUserWithRole(
-        {
-          email,
-          password,
-          ...(nameObj.firstName && { firstName: nameObj.firstName }),
-          ...(nameObj.lastName && { lastName: nameObj.lastName }),
-          ...getUserStatusAndSource(lifecycleEvents.USER_ADMIN_SETUP),
-          companyName,
-          companySize,
-          role,
-          phoneNumber,
-          ...(passwordExpiry ? { passwordExpiry } : {}),
-        },
-        organization.id,
-        USER_ROLE.ADMIN,
-        manager
-      );
-
-      await this.organizationUsersRepository.createOne(user, organization, false, manager);
-      if (requestedTrial) await this.onboardingUtilService.activateTrialForUser(new TrialUserDto(userCreateDto));
-      await this.instanceSettingsUtilService.updateSystemParams({
-        [INSTANCE_SYSTEM_SETTINGS.ENABLE_WORKSPACE_LOGIN_CONFIGURATION]: false,
-        [INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP]: false,
-      });
-      await this.instanceSettingsUtilService.updateUserParams({
-        settings: [
-          {
-            key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE,
-            value: false,
-          },
-        ],
-      });
-      return this.sessionUtilService.generateLoginResultPayload(
-        response,
-        user,
-        organization,
-        false,
-        true,
-        null,
-        manager
-      );
-    });
-
-    // await this.metadataService.finishOnboarding(new TelemetryDataDto(userCreateDto));
-    return result;
   }
 
   async setupAccountFromInvitationToken(response: Response, userCreateDto: OnboardUserDto) {
@@ -496,6 +432,20 @@ export class OnboardingService implements IOnboardingService {
       await this.userRepository.updateOne(user.id, { defaultOrganizationId: organizationUser.organizationId }, manager);
       const organization = await this.organizationRepository.get(organizationUser.organizationId);
       const activeWorkspacesCount = await this.organizationUsersRepository.getActiveWorkspacesCount(user.id);
+
+      if (getTooljetEdition() === 'cloud') {
+        const activeOrganizationsCount = await this.organizationUsersRepository.countActiveOrganizationsForUser(
+          user.id,
+          manager
+        );
+        if (activeOrganizationsCount >= MAX_CLOUD_WORKSPACES_PER_USER) {
+          throw new HttpException(
+            `You have reached the number of workspaces (${activeOrganizationsCount}/${MAX_CLOUD_WORKSPACES_PER_USER}) which can be created in ToolJet Cloud. Contact us at support@tooljet.com to increase this limit.`,
+            451
+          );
+        }
+      }
+
       await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
       const personalWorkspacesCount = await this.organizationUsersUtilService.personalWorkspaceCount(user.id);
       if (personalWorkspacesCount === 1 && activeWorkspacesCount === 0) {

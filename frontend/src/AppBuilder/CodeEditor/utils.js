@@ -6,6 +6,7 @@ import { generateSchemaFromValidationDefinition, validate } from '@/AppBuilder/_
 import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { removeNestedDoubleCurlyBraces } from '../_stores/utils';
+import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 const acorn = require('acorn');
 
@@ -195,13 +196,13 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
     }
   }
 
+  result = materializeFileHandleRefs(result);
   if (withError) return [result, error];
   return result;
 }
 
 function getDynamicVariables(text) {
-  /* eslint-disable no-useless-escape */
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/gs) || text.match(/%%(.*?)%%/gs);
   return matchedParams;
 }
 const resolveMultiDynamicReferences = (code, lookupTable = {}, queryHasJSCode, customResolvers = {}) => {

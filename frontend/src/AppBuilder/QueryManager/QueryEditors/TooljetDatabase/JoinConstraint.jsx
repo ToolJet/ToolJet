@@ -16,9 +16,10 @@ import useConfirm from './Confirm';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { ToolTip } from '@/_components';
+import { resolveColumnDisplayName, columnIdOf } from './util';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
-  const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo } =
+  const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo, tableInfo } =
     useContext(TooljetDatabaseContext);
   const joinType = data?.joinType;
   const baseTableDetails = (selectedTableId && findTableDetails(selectedTableId)) || {};
@@ -133,6 +134,15 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
     return [];
   }
 
+  // Looks up a column's permanent id by table + column name, from the same tableInfo/column list
+  // used by the manual dropdown paths below - so an auto-filled FK condition carries a columnId
+  // just like a user-picked one, and both survive a column rename identically.
+  function findColumnIdByName(tableId, columnName) {
+    if (!tableId || !columnName) return undefined;
+    const tableDetails = findTableDetails(tableId);
+    return tableInfo[tableDetails?.table_name]?.find((col) => col.Header === columnName)?.column_id;
+  }
+
   function autoFillColumnIfForeignKeyExists(tableId, isChoosingLHStable) {
     const adjacentTableForeignKeyDetails = checkIfAdjacentTableHasForeignKey(isChoosingLHStable, tableId);
     if (isChoosingLHStable) {
@@ -144,13 +154,19 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             leftField: {
               table: tableId,
               type: 'Column',
-              ...(referenced_column_names[0] && { columnName: referenced_column_names[0] }),
+              ...(referenced_column_names[0] && {
+                columnName: referenced_column_names[0],
+                columnId: findColumnIdByName(tableId, referenced_column_names[0]),
+              }),
             },
             operator: '=',
             rightField: {
               table: rightFieldTable,
               type: 'Column',
-              ...(column_names[0] && { columnName: column_names[0] }),
+              ...(column_names[0] && {
+                columnName: column_names[0],
+                columnId: findColumnIdByName(rightFieldTable, column_names[0]),
+              }),
             },
           };
 
@@ -180,13 +196,19 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             leftField: {
               table: leftFieldTable,
               type: 'Column',
-              ...(column_names[0] && { columnName: column_names[0] }),
+              ...(column_names[0] && {
+                columnName: column_names[0],
+                columnId: findColumnIdByName(leftFieldTable, column_names[0]),
+              }),
             },
             operator: '=',
             rightField: {
               table: tableId,
               type: 'Column',
-              ...(referenced_column_names[0] && { columnName: referenced_column_names[0] }),
+              ...(referenced_column_names[0] && {
+                columnName: referenced_column_names[0],
+                columnId: findColumnIdByName(tableId, referenced_column_names[0]),
+              }),
             },
           };
 
@@ -401,21 +423,32 @@ const JoinOn = ({
 }) => {
   const { tableInfo, findTableDetails } = useContext(TooljetDatabaseContext);
   const { operator, leftField, rightField } = condition;
-  const leftFieldColumn = leftField?.columnName;
-  const rightFieldColumn = rightField?.columnName;
+  const leftFieldColumn = resolveColumnDisplayName(
+    tableInfo[findTableDetails(leftFieldTable)?.table_name],
+    leftField?.columnName,
+    leftField?.columnId,
+    'Header'
+  );
+  const rightFieldColumn = resolveColumnDisplayName(
+    tableInfo[findTableDetails(rightFieldTable)?.table_name],
+    rightField?.columnName,
+    rightField?.columnId,
+    'Header'
+  );
 
   const leftFieldTableDetails = (leftFieldTable && findTableDetails(leftFieldTable)) || {};
   const rightFieldTableDetails = (rightFieldTable && findTableDetails(rightFieldTable)) || {};
 
   const leftFieldOptions = leftFieldTableDetails?.table_name
-    ? (tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({
+    ? tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({
         label: col.Header,
         value: col.Header,
         icon: col.dataType,
-      })) ?? [])
+        columnId: col.column_id,
+      })) ?? []
     : [];
   const selectedLeftField = leftFieldTableDetails?.table_name
-    ? (tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? [])
+    ? tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? []
     : {};
 
   const rightFieldOptions = rightFieldTableDetails?.table_name
@@ -430,11 +463,12 @@ const JoinOn = ({
           label: col.Header,
           value: col.Header,
           icon: col.dataType,
+          columnId: col.column_id,
         })) || []
     : [];
 
   const selectedRightField = rightFieldTableDetails?.table_name
-    ? (tableInfo[rightFieldTableDetails.table_name]?.find((col) => col.Header === rightFieldColumn) ?? [])
+    ? tableInfo[rightFieldTableDetails.table_name]?.find((col) => col.Header === rightFieldColumn) ?? []
     : {};
 
   const _operators = [{ label: '=', value: '=' }];
@@ -512,6 +546,7 @@ const JoinOn = ({
                 leftField: {
                   ...condition.leftField,
                   columnName: value?.value,
+                  columnId: columnIdOf(value),
                   type: 'Column',
                   table: leftFieldTable,
                 },
@@ -598,6 +633,7 @@ const JoinOn = ({
                   rightField: {
                     ...condition.rightField,
                     columnName: value?.value,
+                    columnId: columnIdOf(value),
                     type: 'Column',
                     table: rightFieldTable,
                   },

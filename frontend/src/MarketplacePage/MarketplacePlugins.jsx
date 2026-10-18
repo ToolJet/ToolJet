@@ -1,5 +1,6 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 import { MarketplaceCard } from './MarketplaceCard';
 import { pluginsService, marketplaceService } from '@/_services';
 import { SearchBox } from '@/_components';
@@ -7,9 +8,19 @@ import { SearchBox } from '@/_components';
 export const MarketplacePlugins = () => {
   const [installedPlugins, setInstalledPlugins] = React.useState({});
   const [allPlugins, setAllPlugins] = React.useState([]);
-  const [queryString, setQueryString] = React.useState('');
-  const [filteredPlugins, setFilteredPlugins] = React.useState([]);
-  const [suggestingDataSource, setSuggestingDataSource] = React.useState(false);
+  // `?search=HubSpot` lets a link name the plugin it wants — the AI builder sends people here
+  // when a build needs a source whose plugin is not installed yet.
+  const [searchParams] = useSearchParams();
+  const urlSearch = searchParams.get('search') ?? '';
+  const [queryString, setQueryString] = React.useState(urlSearch);
+  React.useEffect(() => setQueryString(urlSearch), [urlSearch]);
+
+  const displayedPlugins = React.useMemo(() => {
+    const term = queryString.trim().toLowerCase();
+    if (!term) return allPlugins;
+    return allPlugins.filter(({ name, description }) => `${name} ${description ?? ''}`.toLowerCase().includes(term));
+  }, [allPlugins, queryString]);
+  const suggestingDataSource = !!queryString.trim() && displayedPlugins.length === 0;
 
   React.useEffect(() => {
     marketplaceService
@@ -43,16 +54,6 @@ export const MarketplacePlugins = () => {
     };
   }, []);
 
-  const handleSearch = (e) => {
-    const searchQuery = e.target.value;
-    setQueryString(searchQuery);
-    const filtered = allPlugins.filter((plugin) => plugin.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    setSuggestingDataSource(filtered.length === 0);
-    setFilteredPlugins(filtered);
-  };
-
-  const displayedPlugins = queryString ? filteredPlugins : allPlugins;
-
   return (
     <div className="col-9 pb-3" style={{ marginLeft: 'auto' }}>
       <div className="marketplace-search-holder">
@@ -61,17 +62,16 @@ export const MarketplacePlugins = () => {
           className="border-0"
           placeholder="Search plugins"
           width="100%"
-          callBack={handleSearch}
-          onClearCallback={() => {
-            setQueryString('');
-            setSuggestingDataSource(false);
-          }}
+          callBack={(e) => setQueryString(e.target.value)}
+          onClearCallback={() => setQueryString('')}
           initialValue={queryString}
         />
       </div>
       {suggestingDataSource ? (
         <center className="marketplace-empty-state">
-          <p className="mt-2 tj-text-lg font-weight-500 tj-text">{`No results for "${queryString}"`}</p>
+          <p className="mt-2 tj-text-lg font-weight-500 tj-text" data-cy="marketplace-no-results">
+            {`No results for "${queryString}"`}
+          </p>
           <img src="assets/images/icons/no-results.svg" width="200" height="200" />
         </center>
       ) : (

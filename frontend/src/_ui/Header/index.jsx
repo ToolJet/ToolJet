@@ -11,6 +11,7 @@ import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import EnvironmentSwitcher from '@/TooljetDatabase/EnvironmentSwitcher';
 import { AlertCircle } from 'lucide-react';
 
 function Header({
@@ -89,6 +90,7 @@ function Header({
     return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules', 'workflows'].includes(parts[1]));
   };
   const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
+  const isDatabasePage = location.pathname.split('/').filter(Boolean).includes('database');
   const isDataSourcesPage = location.pathname.split('/').includes('data-sources');
   const isModulesPage = location.pathname.split('/').includes('modules');
   // Everything isGitSupportedPage covers besides data-sources/modules is the Applications root.
@@ -222,6 +224,7 @@ function Header({
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
+              {isDatabasePage && <EnvironmentSwitcher />}
             </div>
           </div>
         </div>

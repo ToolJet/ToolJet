@@ -1,0 +1,134 @@
+.migration-confirm-modal {
+  .migration-confirm-modal-header {
+    align-items: flex-start;
+    margin-top: 1.125rem;
+  }
+
+  .migration-confirm-modal-subtitle {
+    font-size: 0.875rem;
+    margin-top: 2px;
+  }
+
+  .migration-confirm-title-input {
+    resize: vertical;
+    min-height: 38px;
+  }
+
+  .migration-confirm-modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .migration-changes-list {
+    border: 1px solid var(--borders-disabled-on-white);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .migration-change-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--borders-disabled-on-white);
+    }
+
+    .migration-change-icon-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: 700;
+    }
+
+    &.add .migration-change-icon-chip {
+      background: var(--background-success-weak);
+      color: var(--status-success-strong);
+    }
+
+    &.remove .migration-change-icon-chip {
+      background: var(--background-error-weak);
+      color: var(--status-error-strong);
+    }
+
+    &.edit .migration-change-icon-chip {
+      background: var(--background-accent-weak);
+      color: var(--primary-brand);
+    }
+
+    .migration-change-name-struck {
+      color: var(--text-placeholder);
+      text-decoration: line-through;
+    }
+
+    .migration-change-detail {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-placeholder);
+    }
+  }
+
+  .migration-deps-warning {
+    border: 1px solid var(--status-warning-strong);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .migration-deps-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+
+    .migration-deps-summary-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .migration-deps-warning-icon {
+      color: var(--status-warning-strong);
+      flex-shrink: 0;
+    }
+  }
+
+  .migration-deps-list {
+    margin: 8px 0 0;
+    padding-left: 20px;
+
+    li {
+      display: flex;
+      gap: 8px;
+      padding: 2px 0;
+    }
+
+    .migration-deps-app-name {
+      font-weight: 600;
+    }
+
+    .migration-deps-app-type {
+      color: var(--text-placeholder);
+    }
+  }
+
+  .migration-deps-fk-tables {
+    color: var(--status-warning-strong);
+    font-weight: 500;
+
+    &:not(:first-child) {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--status-warning-strong);
+    }
+  }
+}

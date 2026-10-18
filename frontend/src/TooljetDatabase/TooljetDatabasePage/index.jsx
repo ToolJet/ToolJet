@@ -16,7 +16,7 @@ import { BreadCrumbContext } from '@/App/App';
 import Skeleton from 'react-loading-skeleton';
 
 const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
-  const { organizationId, setSelectedTable, setTables, selectedTable, loadingState, canEditTjdb } =
+  const { organizationId, setSelectedTable, setTables, selectedTable, loadingState, canEditSchema } =
     useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const emptyMessage = "You don't have any tables yet.";
@@ -39,7 +39,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
             <div className="tjdb-create-new-table">
               <ButtonSolid
                 variant={`${darkMode ? 'zBlack' : 'tertiary'}`}
-                disabled={!canEditTjdb}
+                disabled={!canEditSchema}
                 onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
                 size="sm"
                 className="px-1 pe-3 ps-2 gap-0"

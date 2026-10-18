@@ -75,7 +75,11 @@ export class FoldersService implements IFoldersService {
         user.organizationId
       );
       if (isGitSyncEnabled && isMultiBranchingEnabled) {
-        throw new BadRequestException('Folders with git-synced apps cannot be edited');
+        const message =
+          folder.type === DATA_SOURCE_FOLDER_TYPE
+            ? 'Folders with git-synced data sources cannot be renamed'
+            : 'Folders with git-synced apps cannot be edited';
+        throw new BadRequestException(message);
       }
 
       const result = await catchDbException(async () => {

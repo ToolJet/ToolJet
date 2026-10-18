@@ -318,11 +318,15 @@ export class PageService implements IPageService {
         pageComponents.map(async (component) => {
           const newComponentId = componentsIdMap[component.id];
 
+          // Git stores one file per co_relation_id — an inherited one makes the clone overwrite its source on push.
           const newComponent = manager.create(Component, {
             ...component,
             id: newComponentId,
             pageId: clonePageId,
             parent: null,
+            co_relation_id: undefined,
+            createdAt: undefined,
+            updatedAt: undefined,
           });
           Object.assign(newComponent, {
             name: component.name,
@@ -356,6 +360,8 @@ export class PageService implements IPageService {
               ...layout,
               id: undefined, // Let TypeORM generate a new ID
               componentId: newComponent.id,
+              co_relation_id: undefined,
+              updatedAt: undefined,
             })
           );
           newComponentLayouts.push(...clonedLayouts);

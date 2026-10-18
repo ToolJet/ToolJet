@@ -14,7 +14,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { Brackets, EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -41,7 +41,9 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { InternalTable } from '@entities/internal_table.entity';
 import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
+import { tableNamesInSqlQuery } from '@helpers/tooljet_db.helper';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
@@ -1488,15 +1490,20 @@ export class AppsUtilService implements IAppsUtilService {
     return await this.appRepository.findAllOrganizationApps(organizationId, defaultBranchId);
   }
 
-  async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
+  // versionId narrows to one version's data queries (e.g. promote must only ever consider the
+  // version being promoted, never a sibling/abandoned draft's stale references) — optional because
+  // every other caller here (git-sync export, External API export) legitimately wants every version
+  // the app has ever had.
+  async findTooljetDbTables(appId: string, versionId?: string): Promise<{ table_id: string }[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const tooljetDbDataQueries = await manager
+      const query = manager
         .createQueryBuilder(DataQuery, 'data_queries')
         .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
         .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_queries.app_version_id')
         .where('app_versions.app_id = :appId', { appId })
-        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
-        .getMany();
+        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' });
+      if (versionId) query.andWhere('app_versions.id = :versionId', { versionId });
+      const tooljetDbDataQueries = await query.getMany();
 
       const uniqTableIds = new Set();
       tooljetDbDataQueries.forEach((dq) => {
@@ -1523,9 +1530,31 @@ export class AppsUtilService implements IAppsUtilService {
         if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
       });
 
-      return [...uniqTableIds].map((table_id) => {
-        return { table_id };
-      });
+      // A join_table ref's `.name` field is misleadingly named — it holds a table id like
+      // everything else here — but keep this guard: a malformed non-uuid value would otherwise
+      // throw a Postgres cast error on the IN clause below.
+      const ids = [...uniqTableIds].filter((id): id is string => isUUID(id));
+      // SQL-mode queries name tables, not ids; resolved by name in the app's workspace, as the query runner does.
+      const names = [...new Set(tooljetDbDataQueries.flatMap((dq) => tableNamesInSqlQuery(dq.options)))];
+      if (!ids.length && !names.length) return [];
+
+      const live = await manager
+        .createQueryBuilder(InternalTable, 'it')
+        .select('it.id', 'id')
+        .where(
+          new Brackets((qb) => {
+            if (ids.length) qb.orWhere('it.id IN (:...ids)', { ids });
+            if (names.length)
+              qb.orWhere(
+                'it.table_name IN (:...names) AND it.organization_id = (SELECT organization_id FROM apps WHERE id = :appId)',
+                { names, appId }
+              );
+          })
+        )
+        .andWhere('it.deleted_at IS NULL')
+        .getRawMany();
+
+      return live.map(({ id }) => ({ table_id: id }));
     });
   }
 
@@ -1677,23 +1706,37 @@ export class AppsUtilService implements IAppsUtilService {
     return false;
   }
 
-  async checkModuleInUseByApps(moduleApp: App, manager: EntityManager): Promise<void> {
+  async checkModuleInUseByApps(moduleApp: App, manager: EntityManager, branchId?: string): Promise<void> {
     if (!moduleApp?.co_relation_id) return;
     try {
-      // co_relation_id = stable module identity across branches. Self-ref excluded so a
-      // module can reference itself without blocking its own deletion.
-      const consumingApps = await manager
+      // co_relation_id = stable module identity across branches AND git-cloned workspaces.
+      // The delete only removes the module's version on the current branch, so only consumers
+      // on THAT branch would break — scope the check to branchId to match (this also pins the
+      // workspace, since a branch belongs to one). Without it the check swept every branch and
+      // every git-cloned workspace. Fall back to organizationId when no branch is in play.
+      // app.name is the legacy name column — NULL for apps created/pulled after names moved to
+      // app_versions — so read the branch-scoped app_versions.app_name (its NULL dropped only
+      // older apps, listing stale names and silently skipping newer consumers). Self-ref
+      // excluded so a module can reference itself without blocking its own deletion.
+      const query = manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
         .innerJoin('page.appVersion', 'appVersion')
         .innerJoin(App, 'app', 'app.id = appVersion.appId')
-        .select('DISTINCT app.name', 'appName')
+        .select('DISTINCT COALESCE(appVersion.app_name, app.name)', 'appName')
         .where('component.type = :type', { type: 'ModuleViewer' })
         .andWhere(`(component.properties::jsonb -> 'moduleAppId' ->> 'value') = :coRel`, {
           coRel: moduleApp.co_relation_id,
         })
-        .andWhere('app.id != :selfId', { selfId: moduleApp.id })
-        .getRawMany();
+        .andWhere('app.id != :selfId', { selfId: moduleApp.id });
+
+      if (branchId) {
+        query.andWhere('appVersion.branchId = :branchId', { branchId });
+      } else {
+        query.andWhere('app.organizationId = :orgId', { orgId: moduleApp.organizationId });
+      }
+
+      const consumingApps = await query.getRawMany();
 
       const appNames = consumingApps.map((r) => r.appName).filter(Boolean);
       if (appNames.length > 0) {

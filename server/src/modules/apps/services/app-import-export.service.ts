@@ -79,6 +79,12 @@ interface AppResourceMappings {
   versionGitIdMapping: Record<string, string>;
 }
 
+/** The parts of export()'s appV2 that are not App columns: its queries and its modules' exports. */
+interface ExportedAppParts {
+  dataQueries?: { kind?: string; options?: Record<string, unknown> }[];
+  modules?: { appV2: App }[];
+}
+
 type DefaultDataSourceName =
   | 'restapidefault'
   | 'runjsdefault'
@@ -1325,7 +1331,8 @@ export class AppImportExportService {
     tooljetVersion = '',
     cloning = false,
     manager?: EntityManager,
-    branchId?: string
+    branchId?: string,
+    isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
@@ -1389,9 +1396,11 @@ export class AppImportExportService {
         undefined,
         branchId,
         cloning,
-        isGitApp
+        isGitApp,
+        isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -1631,6 +1640,15 @@ export class AppImportExportService {
     }
   }
 
+  // EE-only
+  protected async remapCustomComponentLibraries(
+    manager: EntityManager,
+    organizationId: string,
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    return;
+  }
+
   async createImportedAppForUser(
     //Overrides on EE to set userId to super admin's id
     manager: EntityManager,
@@ -1803,7 +1821,8 @@ export class AppImportExportService {
     createNewVersion?: boolean,
     branchId?: string,
     cloning = false,
-    isGitApp = false
+    isGitApp = false,
+    isTemplateApp = false
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -1916,7 +1935,8 @@ export class AppImportExportService {
       createNewVersion,
       branchId,
       isGitApp || cloning || !!branchId,
-      isGitApp
+      isGitApp,
+      isTemplateApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -3431,6 +3451,11 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  // EE-only
+  protected async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
+    return globalSettings;
+  }
+
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
     let pageSettings = {};
     if (importedVersion.pageSettings) {
@@ -3619,7 +3644,8 @@ export class AppImportExportService {
     createNewVersion?: boolean,
     branchId?: string,
     useBranchVersionType = false,
-    isGitApp = false
+    isGitApp = false,
+    isTemplateApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -3821,7 +3847,10 @@ export class AppImportExportService {
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
-        version.globalSettings = appVersion.globalSettings;
+        // Only templates bring their theme into the workspace; every other import keeps the settings as exported
+        version.globalSettings = isTemplateApp
+          ? await this.importTheme(manager, organization.id, appVersion.globalSettings)
+          : appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation ?? true;
@@ -4209,6 +4238,29 @@ export class AppImportExportService {
     );
   }
 
+  // An export names each ToolJet DB table by its co_relation_id; import maps tables by that id, so the
+  // exported queries must name them the same way. Runs import's remap in reverse, on copies of the options.
+  pointTooljetDbQueriesAtCoRelationIds(
+    definition: { appV2: App },
+    coRelationIdByTableId: Record<string, string>
+  ): void {
+    const mapping = Object.fromEntries(
+      Object.entries(coRelationIdByTableId).map(([tableId, coRelationId]) => [tableId, { id: coRelationId }])
+    );
+    const { dataQueries = [], modules = [] } = definition.appV2 as unknown as ExportedAppParts;
+    for (const dataQuery of dataQueries) {
+      if (dataQuery.kind !== 'tooljetdb' || !dataQuery.options) continue;
+      dataQuery.options = this.replaceTooljetDbTableIds(
+        structuredClone(dataQuery.options),
+        mapping,
+        dataQuery.options.organization_id as string
+      );
+    }
+    for (const module of modules) {
+      this.pointTooljetDbQueriesAtCoRelationIds(module, coRelationIdByTableId);
+    }
+  }
+
   // Entire function should be santised for Undefined values
   replaceTooljetDbTableIds(queryOptions, tooljetDatabaseMapping, organizationId: string) {
     let transformedQueryOptions = { ...queryOptions };
@@ -4306,9 +4358,27 @@ export class AppImportExportService {
       }));
     }
 
+    // Aggregate Section - each aggregate names its table, and group_by is keyed by table id
+    if (joinOptions?.aggregates) {
+      joinOptions.aggregates = Object.fromEntries(
+        Object.entries(joinOptions.aggregates).map(([key, aggregate]: [string, { table_id?: string }]) => [
+          key,
+          { ...aggregate, table_id: tooljetDatabaseMapping[aggregate.table_id]?.id ?? aggregate.table_id },
+        ])
+      );
+    }
+    if (joinOptions?.group_by) {
+      joinOptions.group_by = Object.fromEntries(
+        Object.entries(joinOptions.group_by).map(([tableId, columns]) => [
+          tooljetDatabaseMapping[tableId]?.id ?? tableId,
+          columns,
+        ])
+      );
+    }
+
     return {
       ...queryOptions,
-      table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id,
+      table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id ?? queryOptions.table_id,
       join_table: joinOptions,
       organization_id: organizationId,
     };

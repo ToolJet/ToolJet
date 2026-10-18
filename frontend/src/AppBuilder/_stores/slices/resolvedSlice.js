@@ -121,6 +121,12 @@ export const createResolvedSlice = (set, get) => {
       _exposedValueBatch.flush('flushExposedValueBatch');
     },
 
+    // Discards only moduleId's own buffered entries instead of applying everything —
+    // see cancelBatch() in batchManager.ts.
+    cancelExposedValueBatch: (moduleId = 'canvas') => {
+      _exposedValueBatch.cancelBatch(moduleId);
+    },
+
     // Resolves every pending implicit dep-path recompute early — any component, any path. Never
     // touches _exposedValueBatch (the explicit bracket), so it can't affect an open ListView/Form/
     // page-switch coalescing window. Safe to call unconditionally; no-ops if nothing is pending.
@@ -130,12 +136,12 @@ export const createResolvedSlice = (set, get) => {
 
     isExposedValueBatching: () => _exposedValueBatch.isBatching(),
 
-    bufferExposedValueMutation: (mutation, depPaths) => {
-      _exposedValueBatch.bufferMutation(mutation, depPaths);
+    bufferExposedValueMutation: (mutation, moduleId, depPaths) => {
+      _exposedValueBatch.bufferMutation(mutation, moduleId, depPaths);
     },
 
-    bufferExposedValuePostFlush: (cb, dedupeKey) => {
-      _exposedValueBatch.bufferPostFlushCallback(cb, dedupeKey);
+    bufferExposedValuePostFlush: (cb, moduleId, dedupeKey) => {
+      _exposedValueBatch.bufferPostFlushCallback(cb, moduleId, dedupeKey);
     },
 
     setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
@@ -457,15 +463,24 @@ export const createResolvedSlice = (set, get) => {
             // Write back to state (this replaces any stale array structure)
             current[lastIdx] = componentObj;
           } else {
-            // index is null — component is not inside a ListView/Kanban
-            // If the stored data is still an array (stale from a previous parent), reset it
-            if (Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
-              state.resolvedStore.modules[moduleId].components[componentId] = { ...DEFAULT_COMPONENT_STRUCTURE };
+            // Unindexed write on a row-shaped entry applies to every row. Overwriting it flat here
+            // dropped the rows and left later indexed writes to staple numeric keys back on.
+            const entry = state.resolvedStore.modules[moduleId].components[componentId];
+            if (Array.isArray(entry) && entry.length === 0) {
+              // No rows to write into, so the loop below would drop the value. Go flat and let
+              // updateChildComponentsLength seed the rows from it.
+              state.resolvedStore.modules[moduleId].components[componentId] = {
+                ...DEFAULT_COMPONENT_STRUCTURE,
+                [type]: { ...DEFAULT_COMPONENT_STRUCTURE[type], [property]: value },
+              };
+            } else if (Array.isArray(entry)) {
+              for (let i = 0; i < entry.length; i++) {
+                if (!entry[i]) entry[i] = { ...DEFAULT_COMPONENT_STRUCTURE };
+                entry[i][type] = { ...entry[i][type], [property]: value };
+              }
+            } else {
+              entry[type] = { ...entry[type], [property]: value };
             }
-            state.resolvedStore.modules[moduleId].components[componentId][type] = {
-              ...state.resolvedStore.modules[moduleId].components[componentId][type],
-              [property]: value,
-            };
           }
         },
         false,
@@ -490,12 +505,14 @@ export const createResolvedSlice = (set, get) => {
       const depPaths = typeof value !== 'function' ? [{ path: `components.${componentId}.${property}`, moduleId }] : [];
 
       if (_exposedValueBatch.isBatching()) {
-        _exposedValueBatch.bufferMutation(mutation, depPaths);
+        _exposedValueBatch.bufferMutation(mutation, moduleId, depPaths);
+        get().refreshComponentHintsIfShapeChanged(componentId, moduleId);
         return;
       }
 
       set(mutation, false, { type: 'setExposedValue', payload: { componentId, property, value, moduleId } });
       depPaths.forEach(({ path }) => scheduleDependencyUpdate(path, moduleId));
+      get().refreshComponentHintsIfShapeChanged(componentId, moduleId);
     },
 
     setExposedValues: (id, type, values, moduleId = 'canvas') => {
@@ -506,13 +523,18 @@ export const createResolvedSlice = (set, get) => {
             depPaths.push({ path: `components.${id}.${key}`, moduleId });
           }
         });
-        _exposedValueBatch.bufferMutation((state) => {
-          Object.entries(values).forEach(([key, value]) => {
-            if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
-              state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
-            else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
-          });
-        }, depPaths);
+        _exposedValueBatch.bufferMutation(
+          (state) => {
+            Object.entries(values).forEach(([key, value]) => {
+              if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
+                state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
+              else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+            });
+          },
+          moduleId,
+          depPaths
+        );
+        if (type === 'components') get().refreshComponentHintsIfShapeChanged(id, moduleId);
         return;
       }
 
@@ -549,6 +571,41 @@ export const createResolvedSlice = (set, get) => {
         if (typeof value !== 'function' && !skipKeys.has(key))
           scheduleDependencyUpdate(`components.${id}.${key}`, moduleId);
       });
+      // Nothing written when every value already matched, so hints cannot have gone stale.
+      if (type === 'components' && skipKeys.size !== Object.keys(values).length)
+        get().refreshComponentHintsIfShapeChanged(id, moduleId);
+    },
+
+    // Clears every exposed variable for a component except id
+    // Needed for widgets whose exposed-variable set isn't statically declared and can
+    // shrink at runtime (e.g. a CCL LibraryComponent's manifest losing a `useStateX`
+    // property on a dev-bundle live-reload push) — without this, a removed variable's
+    // last value lingers forever in currentState/the left-sidebar Inspector.
+    resetComponentExposedValues: (componentId, moduleId = 'canvas') => {
+      const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId];
+
+      // ListView-row components store exposed values as a per-row array — resetting
+      // here would blindly overwrite it with a single flat object, clearing every row.
+      // Callers must use resetComponentExposedValuesPerRow for those (RenderWidget
+      // branches on nearestListviewId, mirroring setExposedVariable).
+      if (Array.isArray(existing)) return;
+
+      if (!existing || Object.keys(existing).length === 0) return;
+
+      const { id, ...rest } = existing;
+      const keys = Object.keys(rest);
+
+      if (keys.length === 0) return;
+
+      set(
+        (state) => {
+          state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = id !== undefined ? { id } : {};
+        },
+        false,
+        { type: 'resetComponentExposedValues', payload: { componentId, moduleId } }
+      );
+
+      keys.forEach((key) => scheduleDependencyUpdate(`components.${componentId}.${key}`, moduleId));
     },
 
     setDefaultExposedValues: (id, parentId, componentType, moduleId = 'canvas') => {
@@ -624,19 +681,22 @@ export const createResolvedSlice = (set, get) => {
     },
 
     updateChildComponentsLength: (parentId, length, data = [], moduleId = 'canvas', parentIndices = []) => {
-      const { getContainerChildrenMapping, copyResolvedDataFromFirstIndex } = get();
+      const { getContainerChildrenMapping } = get();
       const childComponents = getContainerChildrenMapping(parentId, moduleId);
       if (parentIndices.length === 0) {
-        // Flat case: set length and copy (existing behavior — kept as single set to preserve
-        // the length-check optimization inside copyResolvedDataFromFirstIndex)
+        // Seed rows in the same set() as the array conversion. A helper opening its own set() from
+        // in here reads pre-draft state and leaves a hybrid { 0: {...}, properties: {...} }.
         set((state) => {
           childComponents.forEach((componentId) => {
-            // Ensure component is an array (might be object if transitioning from non-ListView parent)
-            if (!Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
-              state.resolvedStore.modules[moduleId].components[componentId] = [];
+            const existing = state.resolvedStore.modules[moduleId].components[componentId];
+            const template = Array.isArray(existing) ? existing[0] : existing;
+            const rows = [];
+            for (let i = 0; i < length; i++) {
+              rows[i] =
+                (Array.isArray(existing) && existing[i]) ||
+                (template ? { ...template } : { ...DEFAULT_COMPONENT_STRUCTURE });
             }
-            state.resolvedStore.modules[moduleId].components[componentId].length = length;
-            copyResolvedDataFromFirstIndex(componentId, parentId, data, moduleId);
+            state.resolvedStore.modules[moduleId].components[componentId] = rows;
           });
         });
       } else {
@@ -681,19 +741,6 @@ export const createResolvedSlice = (set, get) => {
       }
     },
 
-    copyResolvedDataFromFirstIndex: (componentId, parentId, data = [], moduleId = 'canvas') => {
-      const dataLength = get().getCustomResolvables(parentId, null, moduleId).length ?? data.length;
-      if (get().resolvedStore.modules[moduleId]['components'][componentId].length === dataLength) return;
-      set((state) => {
-        for (let i = 0; i < dataLength; i++) {
-          if (!state.resolvedStore.modules[moduleId]['components'][componentId][i])
-            state.resolvedStore.modules[moduleId]['components'][componentId][i] = {
-              ...state.resolvedStore.modules[moduleId]['components'][componentId][0],
-            };
-        }
-      });
-    },
-
     getCustomResolvables: (componentId, index = null, moduleId = 'canvas', parentIndices = []) => {
       // Strip any row suffix (e.g., 'listview-0' -> 'listview') to get the actual ListView/Kanban ID
       const baseComponentId = get().getBaseParentId?.(componentId) || componentId;
@@ -734,7 +781,7 @@ export const createResolvedSlice = (set, get) => {
       }
       return data;
     },
-    getExposedValueOfComponent: (componentId, moduleId = 'canvas') => {
+    getExposedValueOfComponent: (componentId, moduleId = 'canvas', subContainerIndex = null) => {
       try {
         const components = get().getCurrentPageComponents(moduleId);
         const {
@@ -749,7 +796,27 @@ export const createResolvedSlice = (set, get) => {
             );
           }
         }
-        return get().resolvedStore.modules[moduleId].exposedValues.components[componentId] || {};
+        const data = get().resolvedStore.modules[moduleId].exposedValues.components[componentId];
+        if (Array.isArray(data)) {
+          // Row-scoped component (e.g. inside a Table's expanded row / ListView) — its exposed
+          // values are stored per-row. Navigate to the row of the component that fired the event,
+          // the same way getResolvedComponent walks subContainerIndex above.
+          const indices =
+            subContainerIndex !== null
+              ? Array.isArray(subContainerIndex)
+                ? subContainerIndex
+                : [subContainerIndex]
+              : [0];
+          let current = data;
+          for (let i = 0; i < indices.length; i++) {
+            if (!Array.isArray(current)) break;
+            const value = current?.[indices[i]];
+            current = value !== undefined ? value : current?.[0];
+            if (current === undefined) break;
+          }
+          return current || {};
+        }
+        return data || {};
       } catch (error) {
         return {};
       }

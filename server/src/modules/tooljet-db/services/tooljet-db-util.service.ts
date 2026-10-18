@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import * as csv from 'fast-csv';
@@ -35,7 +35,9 @@ export class TooljetDbUtilService {
   async bulkUploadCsv(
     internalTableId: string,
     fileBuffer: Buffer,
-    organizationId: string
+    organizationId: string,
+    remainingRowCapacity: number = Infinity,
+    environmentId?: string
   ): Promise<{ processedRows: number }> {
     const rowsToUpsert = [];
     const passThrough = new PassThrough();
@@ -44,9 +46,14 @@ export class TooljetDbUtilService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        environmentId
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -56,6 +63,15 @@ export class TooljetDbUtilService {
     const internalTables = await this.tableOperationsService.findOrFailInternalTableFromTableId(
       tablesInvolvedList,
       organizationId
+    );
+
+    // The physical name the INSERT below writes to. An undefined environmentId (External API v2,
+    // template import) resolves to the workspace's development environment. The FK-referenced
+    // tables aren't resolved eagerly - bulkUpsertRows resolves those lazily, on its error path.
+    const { relation } = await this.tableOperationsService.resolveTableById(
+      organizationId,
+      internalTableId,
+      environmentId
     );
 
     const csvStream = csv.parseString(fileBuffer.toString(), {
@@ -77,7 +93,8 @@ export class TooljetDbUtilService {
           primaryKeyColumnSchema,
           row,
           rowsProcessed,
-          csvStream
+          csvStream,
+          remainingRowCapacity
         )
       )
       .on('data', (row) => {
@@ -105,7 +122,9 @@ export class TooljetDbUtilService {
       })
       .on('error', (error) => {
         csvStream.destroy();
-        passThrough.emit('error', new BadRequestException(error));
+        // Preserve a typed HttpException (e.g. the 451 row-limit signal); only wrap
+        // untyped stream/parse errors as a generic 400.
+        passThrough.emit('error', error instanceof HttpException ? error : new BadRequestException(error));
       })
       .on('end', () => {
         passThrough.emit('end');
@@ -117,10 +136,11 @@ export class TooljetDbUtilService {
       await this.bulkUpsertRows(
         tooljetDbManager,
         rowsToUpsert,
-        internalTableId,
+        relation.id,
         internalTableDatabaseColumn,
         organizationId,
-        internalTables
+        internalTables,
+        environmentId
       );
     });
 
@@ -130,10 +150,11 @@ export class TooljetDbUtilService {
   async bulkUpsertRows(
     tooljetDbManager: EntityManager,
     rowsToUpsert: unknown[],
-    internalTableId: string,
+    relationId: string,
     internalTableDatabaseColumn: TooljetDatabaseColumn[],
     organizationId: string,
-    internalTables: InternalTable[]
+    internalTables: InternalTable[],
+    environmentId?: string
   ) {
     if (isEmpty(rowsToUpsert)) return;
 
@@ -183,7 +204,7 @@ export class TooljetDbUtilService {
     const columnsQuoted = allColumns.map((column) => `"${column}"`);
     const tenantSchema = findTenantSchema(organizationId);
     const queryText =
-      `INSERT INTO "${tenantSchema}"."${internalTableId}" (${columnsQuoted.join(', ')}) ` +
+      `INSERT INTO "${tenantSchema}"."${relationId}" (${columnsQuoted.join(', ')}) ` +
       `VALUES ${allValueSets.join(', ')} ` +
       `ON CONFLICT (${primaryKeyColumnsQuoted.join(', ')}) ` +
       `DO UPDATE SET ${onConflictUpdate};`;
@@ -191,11 +212,31 @@ export class TooljetDbUtilService {
     try {
       await tooljetDbManager.query(queryText, allPlaceholders);
     } catch (error) {
+      // Raw Postgres error text names the physical relation, not the logical table, so translate
+      // internalTables to relation ids here, on the error path, before handing it to
+      // TooljetDatabaseError. Best-effort per table: a translation failure (e.g. no relation for a
+      // referenced table in this environment) falls back to the logical entry rather than replace
+      // the real Postgres error being reported.
+      const relationTaggedTables = await Promise.all(
+        internalTables.map(async (table) => {
+          try {
+            const { relation } = await this.tableOperationsService.resolveTableById(
+              organizationId,
+              table.id,
+              environmentId
+            );
+            return { id: relation.id, tableName: table.tableName };
+          } catch {
+            return { id: table.id, tableName: table.tableName };
+          }
+        })
+      );
+
       throw new TooljetDatabaseError(
         error.message,
         {
           origin: 'bulk_upload',
-          internalTables: internalTables,
+          internalTables: relationTaggedTables,
         },
         error
       );
@@ -214,9 +255,14 @@ export class TooljetDbUtilService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        undefined
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -227,6 +273,9 @@ export class TooljetDbUtilService {
       tablesInvolvedList,
       organizationId
     );
+
+    // See bulkUploadCsv above — same undefined-environment reasoning.
+    const { relation } = await this.tableOperationsService.resolveTableById(organizationId, internalTableId, undefined);
 
     const primaryKeyColumnSchema = internalTableDatabaseColumn.filter(
       (colDetails) => colDetails.keytype === 'PRIMARY KEY'
@@ -301,7 +350,7 @@ export class TooljetDbUtilService {
       return this.bulkUpdateRows(
         tooljetDbManager,
         rowsToUpdate,
-        internalTableId,
+        relation.id,
         primaryKeyColumnsInCsv,
         dataColumnsInCsv,
         organizationId,
@@ -316,7 +365,7 @@ export class TooljetDbUtilService {
   async bulkUpdateRows(
     tooljetDbManager: EntityManager,
     rowsToUpdate: Record<string, any>[],
-    internalTableId: string,
+    relationId: string,
     primaryKeyColumns: string[],
     dataColumns: string[],
     organizationId: string,
@@ -351,7 +400,7 @@ export class TooljetDbUtilService {
     const whereClause = primaryKeyColumns.map((col) => `t."${col}" = v."${col}"`).join(' AND ');
 
     const queryText =
-      `UPDATE "${tenantSchema}"."${internalTableId}" AS t ` +
+      `UPDATE "${tenantSchema}"."${relationId}" AS t ` +
       `SET ${setClause} ` +
       `FROM (VALUES ${allValueSets.join(', ')}) AS v(${valuesColumnsAliased}) ` +
       `WHERE ${whereClause} ` +
@@ -384,9 +433,14 @@ export class TooljetDbUtilService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        undefined
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -397,6 +451,9 @@ export class TooljetDbUtilService {
       tablesInvolvedList,
       organizationId
     );
+
+    // See bulkUploadCsv above — same undefined-environment reasoning.
+    const { relation } = await this.tableOperationsService.resolveTableById(organizationId, internalTableId, undefined);
 
     const primaryKeyColumnSchema = internalTableDatabaseColumn.filter(
       (colDetails) => colDetails.keytype === 'PRIMARY KEY'
@@ -457,7 +514,7 @@ export class TooljetDbUtilService {
       return this.bulkDeleteRows(
         tooljetDbManager,
         rowsToDelete,
-        internalTableId,
+        relation.id,
         primaryKeyColumnsInCsv,
         organizationId,
         internalTables,
@@ -471,7 +528,7 @@ export class TooljetDbUtilService {
   async bulkDeleteRows(
     tooljetDbManager: EntityManager,
     rowsToDelete: Record<string, any>[],
-    internalTableId: string,
+    relationId: string,
     primaryKeyColumns: string[],
     organizationId: string,
     internalTables: InternalTable[],
@@ -499,7 +556,7 @@ export class TooljetDbUtilService {
     }
 
     const queryText =
-      `DELETE FROM "${tenantSchema}"."${internalTableId}" ` +
+      `DELETE FROM "${tenantSchema}"."${relationId}" ` +
       `WHERE (${primaryKeyColumnsQuoted}) IN (VALUES ${allValueSets.join(', ')}) ` +
       `RETURNING "${primaryKeyColumns[0]}";`;
 
@@ -600,10 +657,20 @@ export class TooljetDbUtilService {
     primaryKeyColumnSchema: TooljetDatabaseColumn[],
     row: unknown,
     rowsProcessed: number,
-    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>
+    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>,
+    remainingRowCapacity: number = Infinity
   ) {
     if (rowsProcessed >= this.MAX_ROW_COUNT)
       csvStream.emit('error', `Row count cannot be greater than ${this.MAX_ROW_COUNT}`);
+
+    if (rowsProcessed >= remainingRowCapacity)
+      // 451 (not a generic 400): the workspace hit its licensed row cap. The rest of the
+      // row-limit feature signals this with 451 so the client can prompt an upgrade; the
+      // stream error handler passes HttpExceptions through untouched to preserve it.
+      csvStream.emit(
+        'error',
+        new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451)
+      );
 
     try {
       const columnsInCsv = Object.keys(row);
@@ -638,8 +705,12 @@ export class TooljetDbUtilService {
       case TJDB.bigint:
         return this.convertNumber(columnValue, supportedDataType);
       case TJDB.jsonb:
-        if (typeof columnValue !== 'string') return columnValue;
-        return JSON.parse(columnValue);
+        // Hand jsonb to the driver as JSON text: node-postgres serialises a JS array as a Postgres
+        // array literal ({...}), which a jsonb column rejects. Parsing still validates the cell.
+        if (typeof columnValue !== 'string') return JSON.stringify(columnValue);
+        // A `null` cell stays a database NULL rather than the JSON value null
+        if (JSON.parse(columnValue) === null) return null;
+        return columnValue;
       default:
         return columnValue;
     }
