@@ -4,6 +4,7 @@ import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widget
 import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
 import { parseValueToNumber } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
 import { useObservedWidth } from '@/AppBuilder/_engines/rendering/useObservedWidth';
+import { textInputExposure } from '@/AppBuilder/_engines/materialize/widgets/TextInput';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
   return {
@@ -63,9 +64,10 @@ export const useInput = ({
   const getCurrencyValidationValue = (val) =>
     val === undefined || val === null || val === '' ? '' : String(parseValueToNumber(val, numberFormat));
 
-  const [validationStatus, setValidationStatus] = useState(() =>
-    validate(inputType === 'currency' ? getCurrencyValidationValue(value) : value)
-  );
+  // Validates a value of this input (currency validates its numeric value).
+  const validateInput = (val) => validate(inputType === 'currency' ? getCurrencyValidationValue(val) : val);
+
+  const [validationStatus, setValidationStatus] = useState(() => validateInput(value));
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
   const [isFocused, setIsFocused] = useState(false);
@@ -177,6 +179,15 @@ export const useInput = ({
   }, [inputType, country, decimalPlaces, numberFormat]);
 
   useEffect(() => {
+    // What the input exposes and its state actions come from textInputExposure (the materialization engine computes
+    // undrawn ListView rows with it). A state action applies its patch to the widget's state and exposed values.
+    const setters = { isVisible: setVisibility, isDisabled: setDisable, isLoading: setLoading };
+    const run = (action, args) => {
+      for (const [key, value] of Object.entries(textInputExposure.actions[action](undefined, args))) {
+        setters[key](value);
+        setExposedVariable(key, value);
+      }
+    };
     const exposedVariables = {
       clear: async function () {
         clearValue();
@@ -188,34 +199,28 @@ export const useInput = ({
         inputRef.current.blur();
       },
       setVisibility: async function (state) {
-        setVisibility(!!state);
-        setExposedVariable('isVisible', !!state);
+        run('setVisibility', [state]);
       },
       setDisable: async function (disable) {
-        setDisable(!!disable);
-        setExposedVariable('isDisabled', !!disable);
+        run('setDisable', [disable]);
       },
       setLoading: async function (loading) {
-        setLoading(!!loading);
-        setExposedVariable('isLoading', !!loading);
+        run('setLoading', [loading]);
       },
-      label,
-      isValid,
-      value: properties.value ?? '',
-      isMandatory,
-      isLoading: loading,
-      isVisible: visibility,
-      isDisabled: disable,
+      // The first value's status is the one computed above; validating it again could see a store changed since.
+      ...textInputExposure.initial({
+        properties,
+        validation,
+        validate: (val) => (Object.is(val, value) ? validationStatus : validateInput(val)),
+      }),
     };
 
     if (inputType === 'TextInput') {
       exposedVariables.disable = async function (value) {
-        setDisable(!!value);
-        setExposedVariable('isDisabled', !!value);
+        run('disable', [value]);
       };
       exposedVariables.visibility = async function (value) {
-        setVisibility(!!value);
-        setExposedVariable('isVisible', !!value);
+        run('visibility', [value]);
       };
     }
 

@@ -7,6 +7,9 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { buttonExposure } from '@/AppBuilder/_engines/materialize/widgets/Button';
+
+const { actions } = buttonExposure;
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
@@ -31,17 +34,19 @@ export const Button = function Button(props) {
   const moduleId = useModuleId();
 
   const { loadingState, disabledState } = properties;
-  const [label, setLabel] = useState(typeof properties.text === 'string' ? properties.text : '');
-  const [disable, setDisable] = useState(disabledState || loadingState);
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [loading, setLoading] = useState(loadingState);
+  const exposure = buttonExposure.initial({ properties, styles });
+  const [label, setLabel] = useState(exposure.buttonText ?? '');
+  // Disabled while loading too, until the disabledState effect settles it to exposure.isDisabled.
+  const [disable, setDisable] = useState(exposure.isDisabled || exposure.isLoading);
+  const [visibility, setVisibility] = useState(exposure.isVisible);
+  const [loading, setLoading] = useState(exposure.isLoading);
   const [hovered, setHovered] = useState(false);
   const iconName = styles.icon; // Replace with the name of the icon you want
 
   useEffect(() => {
-    if (typeof properties.text === 'string') {
-      setLabel(properties.text);
-      setExposedVariable('buttonText', properties.text);
+    if ('buttonText' in exposure) {
+      setLabel(exposure.buttonText);
+      setExposedVariable('buttonText', exposure.buttonText);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text]);
@@ -130,17 +135,18 @@ export const Button = function Button(props) {
         }
       },
       setText: async function (text) {
-        setLabel(text);
-        setExposedVariable('buttonText', text);
+        const { buttonText } = actions.setText(undefined, [text]);
+        setLabel(buttonText);
+        setExposedVariable('buttonText', buttonText);
       },
       disable: async function (value) {
-        setDisable(!!value);
+        setDisable(actions.disable(undefined, [value]).isDisabled);
       },
       visibility: async function (value) {
-        setVisibility(!!value);
+        setVisibility(actions.visibility(undefined, [value]).isVisible);
       },
       loading: async function (value) {
-        setLoading(!!value);
+        setLoading(actions.loading(undefined, [value]).isLoading);
       },
     };
 
@@ -151,24 +157,27 @@ export const Button = function Button(props) {
 
   useEffect(() => {
     setExposedVariable('setLoading', async function (loading) {
-      setLoading(!!loading);
-      setExposedVariable('isLoading', !!loading);
+      const { isLoading } = actions.setLoading(undefined, [loading]);
+      setLoading(isLoading);
+      setExposedVariable('isLoading', isLoading);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
   useEffect(() => {
     setExposedVariable('setVisibility', async function (state) {
-      setVisibility(!!state);
-      setExposedVariable('isVisible', !!state);
+      const { isVisible } = actions.setVisibility(undefined, [state]);
+      setVisibility(isVisible);
+      setExposedVariable('isVisible', isVisible);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
     setExposedVariable('setDisable', async function (disable) {
-      setDisable(!!disable);
-      setExposedVariable('isDisabled', !!disable);
+      const { isDisabled } = actions.setDisable(undefined, [disable]);
+      setDisable(isDisabled);
+      setExposedVariable('isDisabled', isDisabled);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);

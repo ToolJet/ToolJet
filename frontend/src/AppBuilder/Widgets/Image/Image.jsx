@@ -9,6 +9,7 @@ import BrokenImage from '@/AppBuilder/Widgets/Image/icons/broken-image.svg';
 import ZoomInImage from '@/AppBuilder/Widgets/Image/icons/zoomin-image.svg';
 import ZoomOutImage from '@/AppBuilder/Widgets/Image/icons/zoomout-image.svg';
 import RotateImage from '@/AppBuilder/Widgets/Image/icons/rotate-image.svg';
+import { imageExposure, imageURLOf } from '@/AppBuilder/_engines/materialize/widgets/Image';
 import './image.scss';
 
 export default function Image({
@@ -44,9 +45,7 @@ export default function Image({
 
   const isInitialRender = useRef(true);
 
-  const computeUrl = () => {
-    return imageFormat === 'imageUrl' ? source : `data:${jsSchema?.type};base64,${jsSchema?.base64Data}`;
-  };
+  const computeUrl = () => imageURLOf({ imageFormat, source, jsSchema });
 
   const [sourceURL, setSourceURL] = useState(computeUrl());
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -140,31 +139,33 @@ export default function Image({
   }, [visibility]);
 
   useEffect(() => {
+    const { actions } = imageExposure;
     const exposedVariables = {
-      imageURL: computeUrl(),
-      alternativeText: alternativeText,
-      isLoading: loadingState,
-      isVisible: properties.visibility,
-      isDisabled: disabledState,
+      ...imageExposure.initial({ properties }),
       setImageURL: async function (value) {
-        setSourceURL(value);
-        setExposedVariable('imageURL', value);
+        const { imageURL } = actions.setImageURL(undefined, [value]);
+        setSourceURL(imageURL);
+        setExposedVariable('imageURL', imageURL);
       },
       clearImage: async function () {
-        setSourceURL('');
-        setExposedVariable('imageURL', '');
+        const { imageURL } = actions.clearImage(undefined, []);
+        setSourceURL(imageURL);
+        setExposedVariable('imageURL', imageURL);
       },
       setVisibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        setVisibility(!!value);
+        const { isVisible } = actions.setVisibility(undefined, [value]);
+        setExposedVariable('isVisible', isVisible);
+        setVisibility(isVisible);
       },
       setLoading: async function (value) {
-        setExposedVariable('isLoading', !!value);
-        setIsLoading(!!value);
+        const { isLoading } = actions.setLoading(undefined, [value]);
+        setExposedVariable('isLoading', isLoading);
+        setIsLoading(isLoading);
       },
       setDisable: async function (value) {
-        setExposedVariable('isDisabled', !!value);
-        setIsDisabled(!!value);
+        const { isDisabled } = actions.setDisable(undefined, [value]);
+        setExposedVariable('isDisabled', isDisabled);
+        setIsDisabled(isDisabled);
       },
     };
     setExposedVariables(exposedVariables);
