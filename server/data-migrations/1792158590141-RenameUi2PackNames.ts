@@ -228,7 +228,7 @@ const rewriteReferencesByPattern = (text: string, renamesByComponentName: Ui2Ren
     if (!renames || !key) continue;
 
     const isCall = CALL_AHEAD.test(text.slice(match.index + whole.length));
-    const target = isCall ? own(renames.actions, key) : own(renames.exposed, key);
+    const target = isCall ? own(renames.actions, key) : (own(renames.exposed, key) ?? own(renames.actions, key));
     if (!target || target === key) continue;
 
     const newMember =
@@ -265,13 +265,13 @@ const staticKey = (node: any, computed: boolean): string | undefined => {
   return undefined;
 };
 
-/** The component a member expression names: `components.<ref>` (or `['<ref>']`), then any List view row index. */
+/** The component a member expression names: `components.<ref>` (or `['<ref>']`), then any List view row index (a number or an expression). */
 const componentRefOf = (node: any): string | undefined => {
   if (node?.type !== 'MemberExpression') return undefined;
   if (node.object.type === 'Identifier' && node.object.name === 'components')
     return staticKey(node.property, node.computed);
-  if (node.computed && node.property.type === 'Literal' && typeof node.property.value === 'number')
-    return componentRefOf(node.object);
+  // A row: `[0]`, `[index]`, `[variables.row]`; any key not known without running the code.
+  if (node.computed && staticKey(node.property, true) === undefined) return componentRefOf(node.object);
   return undefined;
 };
 
@@ -287,7 +287,7 @@ const referenceEdits = (root: any, renamesByComponentName: Ui2RenamesByComponent
       if (key === undefined) return;
       const parent = ancestors[ancestors.length - 2];
       const isCall = parent?.type === 'CallExpression' && parent.callee === node;
-      const target = isCall ? own(renames.actions, key) : own(renames.exposed, key);
+      const target = isCall ? own(renames.actions, key) : (own(renames.exposed, key) ?? own(renames.actions, key));
       if (!target || target === key) return;
       const property = node.property;
       if (!node.computed) {

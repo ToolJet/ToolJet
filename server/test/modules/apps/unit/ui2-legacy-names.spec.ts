@@ -115,11 +115,12 @@ describe('rewriteReferences', () => {
     expect(rewrite('{{components.orders.selectedRowsCount}}')).toBe('{{components.orders.selectedRowsCount}}');
   });
 
-  it('renames actions only where called, exposed names only where not', () => {
+  it('renames actions where called and where read as a function (no key is both an action and an exposed name)', () => {
     expect(rewrite('components.save.disable(true); components.save.loading?.(false)')).toBe(
       'components.save.setDisable(true); components.save.setLoading?.(false)'
     );
-    expect(rewrite('{{components.save.disable}}')).toBe('{{components.save.disable}}');
+    expect(rewrite('{{components.save.disable}}')).toBe('{{components.save.setDisable}}');
+    expect(rewrite('{{components.save.isDisabled}}')).toBe('{{components.save.isDisabled}}');
   });
 
   it('inserts a path target as is', () => {
