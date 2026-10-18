@@ -123,4 +123,15 @@ describe('UI 2.0 Tabs state', () => {
       expect(exposed().currentTab).toBe('c');
     });
   });
+
+  describe('a hidden tab', () => {
+    test('keeps its panel mounted but not as a tab panel, so no panel names a tab that is not drawn', async () => {
+      render(ABC, {}, { field1: inputIn('b') });
+      await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(3));
+      await widget.act('setTabVisibility', 'b', false);
+      const panels = [...document.querySelectorAll('[role="tabpanel"]')];
+      expect(panels.map((panel) => panel.getAttribute('activetab'))).toEqual(['a', 'c']);
+      expect(document.querySelector('[activetab="b"]')).toBeInTheDocument();
+    });
+  });
 });

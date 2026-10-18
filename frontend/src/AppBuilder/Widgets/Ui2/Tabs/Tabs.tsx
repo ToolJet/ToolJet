@@ -53,12 +53,14 @@ const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, backg
   const ref = useRef<HTMLDivElement>(null);
   // A disabled tab's panel blocks the keyboard as it blocks the mouse: inert takes its fields out of the tab order.
   useDisableInert(ref, tab.disable);
+  // A hidden tab has no tab in the strip, so its panel is no tab panel either: no role, id or label pointing at it.
+  const shown = tab.visible !== false;
   return (
     <div
       ref={ref}
-      role="tabpanel"
-      id={tabIds(id, tab.id).panel}
-      aria-labelledby={tabIds(id, tab.id).tab}
+      role={shown ? 'tabpanel' : undefined}
+      id={shown ? tabIds(id, tab.id).panel : undefined}
+      aria-labelledby={shown ? tabIds(id, tab.id).tab : undefined}
       aria-disabled={tab.disable || undefined}
       // activetab is ToolJet's own attribute on a tab pane (as on the native Tabs), not one React's types know.
       {...{ activetab: tab.id }}
