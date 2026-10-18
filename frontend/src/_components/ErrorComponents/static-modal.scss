@@ -5,7 +5,7 @@
 	}
   
 	.modal-header {
-	  border-bottom: none;
+	  border-bottom: none !important;
 	  padding-bottom: 0px;
 	}
 
@@ -46,6 +46,7 @@
     align-items: flex-start;
     gap: 8px;
     padding: 0;
+    background: transparent;
   }
 
   .restricted-access-icon {
@@ -68,10 +69,16 @@
   }
 
   .description {
+    margin: 0;
     font-size: 12px !important;
     line-height: 18px;
     letter-spacing: -0.24px;
     color: #1b1f24;
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
   }
 
   .restricted-access-details {
@@ -113,7 +120,9 @@
   }
 
   .restricted-back-btn,
-  .restricted-copy-btn {
+  .restricted-copy-btn,
+  .contact-support-btn {
+    margin: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -143,6 +152,13 @@
       box-shadow: none;
       color: #4368e3;
     }
+  }
+
+  .contact-support-btn {
+    background: #ffffff;
+    border: 1px solid #f4979e;
+    color: #d72d39;
+    text-decoration: none;
   }
 
   &.dark-mode {
@@ -181,5 +197,15 @@
     .restricted-copy-btn.copied {
       color: #4368e3;
     }
+
+    .contact-support-btn {
+      background: transparent;
+    }
+  }
+}
+
+.restricted-access-modal.workspace-limit-modal {
+  .modal-dialog {
+    max-width: 459px;
   }
 }
