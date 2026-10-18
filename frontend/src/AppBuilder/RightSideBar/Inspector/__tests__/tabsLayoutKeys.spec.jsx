@@ -8,10 +8,10 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 
-jest.mock('../../EventManager', () => ({ EventManager: () => null }));
+jest.mock('../EventManager', () => ({ EventManager: () => null }));
 jest.mock('@/AppBuilder/CodeEditor', () => () => null);
-jest.mock('../../Utils', () => ({
-  ...jest.requireActual('../../Utils'),
+jest.mock('../Utils', () => ({
+  ...jest.requireActual('../Utils'),
   renderElement: (component, meta, updated, queries, param) => <div data-param={param}>{param}</div>,
 }));
 jest.mock('@/AppBuilder/RightSideBar/Inspector/InspectorAccordion', () => ({ items }) => (
@@ -27,7 +27,7 @@ jest.mock('react-beautiful-dnd', () => ({
   Draggable: ({ children }) => children({ innerRef: () => {}, draggableProps: {}, dragHandleProps: {} }, {}),
 }));
 
-import { TabsLayout } from '../../Components/TabComponent';
+import { TabsLayout } from '../Components/TabComponent';
 import { shadTabsConfig } from '@/AppBuilder/WidgetManager/widgets/shadTabs';
 
 const componentMeta = { properties: shadTabsConfig.properties, events: shadTabsConfig.events ?? {} };
