@@ -9,7 +9,7 @@ import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { colorFor, keyValueItems, keyValueText, linkHref } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import type { KeyValueRow } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { clampCoerce, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
-import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { isComposing, isEnter, onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 import { copyText, useCopied } from '@/AppBuilder/Widgets/Ui2/_shared/useCopied';
 
 // ---- Key-value list --------------------------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ export const CopyButton = ({ text }: { text: string }) => {
         copyText(text, markCopied, 'Failed to copy value');
       }}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+        if (isEnter(e) || (e.key === ' ' && !isComposing(e))) e.stopPropagation();
       }}
     >
       {copied ? <Check className="tw-h-3.5 tw-w-3.5" /> : <Copy className="tw-h-3.5 tw-w-3.5" />}
