@@ -82,4 +82,19 @@ describe('UI 2.0 Questionnaire limits', () => {
     await act(() => new Promise((r) => setTimeout(r, 30)));
     expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'First question' }));
   });
+
+  test('[ShadQuestionnaire-FOCUS-005] a failed submit on the same question focuses its field at once, with nothing pending', async () => {
+    widget.render({
+      currentMode: 'view',
+      properties: { items: binding(expr([{ name: 'only', prompt: 'Only question', type: 'text', required: true }])) },
+    });
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Submit' })));
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Only question' }));
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    outside.focus();
+    await act(() => new Promise((r) => setTimeout(r, 30)));
+    expect(document.activeElement).toBe(outside);
+    outside.remove();
+  });
 });
