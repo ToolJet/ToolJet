@@ -1,7 +1,6 @@
-import {
-  RetuneShippedThemeNeutrals1792170000000,
-  firstShippedDefinition,
-} from '../../../../data-migrations/1792170000000-RetuneShippedThemeNeutrals';
+import { RetuneShippedThemeNeutrals1792170000000 } from '../../../../data-migrations/1792170000000-RetuneShippedThemeNeutrals';
+
+const { firstShippedDefinition } = RetuneShippedThemeNeutrals1792170000000;
 import { shippedThemes } from '@modules/organization-themes/constants/shipped-themes';
 
 /** Existing workspaces get the tinted neutrals only on shipped themes nobody has edited. The statement itself was run

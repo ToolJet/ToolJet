@@ -56,7 +56,8 @@ const FIRST_PALETTES: Array<{
 
 const pair = ([light, dark]: [string, string]) => ({ light, dark });
 
-export const firstShippedDefinition = (name: string): unknown => {
+// Not exported: TypeORM loads every export of a migration file as a migration class (the class exposes it for specs).
+const firstShippedDefinition = (name: string): unknown => {
   const palette = FIRST_PALETTES.find((p) => p.name === name);
   if (!palette) return undefined;
   return {
@@ -77,6 +78,9 @@ export const firstShippedDefinition = (name: string): unknown => {
  *  same name, is left alone. One set-based statement: every workspace has these rows, so the cloud has many of them,
  *  and comparing as jsonb ignores key order. */
 export class RetuneShippedThemeNeutrals1792170000000 implements MigrationInterface {
+  /** The shipped theme `name` as AddShippedThemesToOrganizations first wrote it. */
+  static readonly firstShippedDefinition = firstShippedDefinition;
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     const themes = shippedThemes.map((theme) => ({
       name: theme.name,
