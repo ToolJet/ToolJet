@@ -1,7 +1,7 @@
 import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import {
-  MAX_CHOICES,
-  MAX_ITEMS,
+  CHOICES_PER_STEP,
+  choicesToDraw,
   answerFrom,
   answerValue,
   answersOf,
@@ -57,10 +57,14 @@ describe('normalizeItems', () => {
     ).toHaveLength(1);
   });
 
-  it('caps items and choices', () => {
-    expect(normalizeItems(Array.from({ length: 500 }, () => ({})))).toHaveLength(MAX_ITEMS);
+  it('keeps every item and choice (the view draws one question, and choices in steps)', () => {
+    expect(normalizeItems(Array.from({ length: 500 }, () => ({})))).toHaveLength(500);
     const many = normalizeItems([{ choices: Array.from({ length: 500 }, (_, i) => `c${i}`) }]);
-    expect(many[0].choices).toHaveLength(MAX_CHOICES);
+    expect(many[0].choices).toHaveLength(500);
+    expect(choicesToDraw(many[0], emptyAnswer(many[0]), CHOICES_PER_STEP)).toBe(CHOICES_PER_STEP);
+    expect(choicesToDraw(many[0], { ...emptyAnswer(many[0]), selected: 'c199' }, CHOICES_PER_STEP)).toBe(200);
+    expect(choicesToDraw(many[0], { ...emptyAnswer(many[0]), selected: 'c199' }, CHOICES_PER_STEP * 2)).toBe(250);
+    expect(choicesToDraw(many[0], null, 1000)).toBe(500);
   });
 
   it('reads non-arrays as no items', () => {

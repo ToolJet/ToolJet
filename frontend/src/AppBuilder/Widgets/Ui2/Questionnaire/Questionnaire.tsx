@@ -5,6 +5,8 @@ import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBui
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
   answersOf,
+  choicesToDraw,
+  CHOICES_PER_STEP,
   emptyAnswer,
   firstProblem,
   initialAnswers,
@@ -23,6 +25,7 @@ import { QuestionAnswer, type AnswerOption } from './QuestionAnswer';
 import type { KeyboardEvent } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { ShowMoreBar, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 
 /** What the Questionnaire exposes besides its actions. */
 type QuestionnaireState = {
@@ -55,6 +58,8 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   const [error, setError] = useState('');
   // New items or default answers start the questionnaire again (an inspector edit, a query that loaded them).
   const firstRun = useRef(true);
+  // The step a focus move was asked for (see step).
+  const focusTo = useRef<number | null>(null);
   useEffect(() => {
     if (firstRun.current) {
       firstRun.current = false;
@@ -64,12 +69,17 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
     setIndex(0);
     setComplete(false);
     setError('');
+    // A focus move asked for on the old questions does not take focus in the new ones.
+    focusTo.current = null;
   }, [defaults]);
 
   const count = items.length;
   const at = count ? Math.min(index, count - 1) : 0;
   const item = items[at];
   const answer = item ? answers[item.name] || emptyAnswer(item) : null;
+  // A question's first choices and a Show more for the next ones (and always up to the one picked).
+  const [choiceStep, moreChoices] = useShownCount(CHOICES_PER_STEP, item?.name);
+  const drawnChoices = item ? choicesToDraw(item, answer, choiceStep) : 0;
   const exposedAnswers = useMemo(() => answersOf(items, answers), [items, answers]);
   const currentItem: QuestionnaireState['currentItem'] = item
     ? { name: item.name, prompt: item.prompt, type: item.type, required: item.required }
@@ -143,15 +153,17 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   };
 
   // A step the user takes from the buttons puts focus in the new question once it is drawn (its fieldset is a new
-  // one), so the keyboard is where the screen moved; goTo, an action, leaves focus where it is.
-  const focusNext = useRef(false);
+  // one), so the keyboard is where the screen moved; goTo, an action, leaves focus where it is. The request (focusTo)
+  // names the step it is for: one that moved nowhere, or whose questions were replaced, takes no focus later (a failed
+  // submit's timer focused the replacement questions).
   useEffect(() => {
-    if (!focusNext.current) return;
-    focusNext.current = false;
-    focusFirst();
+    const wanted = focusTo.current;
+    focusTo.current = null;
+    if (wanted === at) focusFirst();
   }, [at]);
   const step = (to: number, extra?: Partial<QuestionnaireState>) => {
-    focusNext.current = true;
+    const target = Math.max(0, Math.min(count - 1, to));
+    focusTo.current = target === at ? null : target;
     move(to, extra);
   };
   const next = () => {
@@ -173,9 +185,9 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   const submit = () => {
     const missing = firstProblem(items, answers);
     if (missing !== -1) {
-      if (missing !== at) move(missing);
+      if (missing !== at) step(missing);
+      else focusFirst();
       setError(problem(items[missing], answers[items[missing].name]));
-      setTimeout(focusFirst, 0);
       return;
     }
     setComplete(true);
@@ -188,7 +200,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   const mode = ['letters', 'numbers', 'none'].includes(p.shortcuts) ? p.shortcuts : 'letters';
   const options: AnswerOption[] = item
     ? [
-        ...item.choices.map((c) => ({ kind: 'choice' as const, ...c })),
+        ...item.choices.slice(0, drawnChoices).map((c) => ({ kind: 'choice' as const, ...c })),
         ...(item.other ? [{ kind: 'other' as const, label: item.other.label, value: null, description: '' }] : []),
       ]
     : [];
@@ -352,6 +364,17 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
             </p>
           ) : null}
         </fieldset>
+        {item.type !== 'text' ? (
+          <div className="tw-mt-2">
+            <ShowMoreBar
+              remaining={item.choices.length - drawnChoices}
+              step={CHOICES_PER_STEP}
+              onMore={moreChoices}
+              borderColor="var(--lk-border,var(--sc-border))"
+              disabled={disabled}
+            />
+          </div>
+        ) : null}
         <div className="tw-mt-6 tw-flex tw-items-center tw-gap-2">
           {at > 0 ? (
             <Button variant="outline" disabled={disabled} onClick={() => step(at - 1)}>
