@@ -143,7 +143,12 @@ export const ShadTabs = (props: WidgetProps) => {
 
   const pickDefault = (visible: Tab[]): TabId | undefined =>
     visible.some((tab) => tab.id == defaultTab) ? defaultTab : visible[0]?.id;
-  const [currentTab, setCurrentTab] = useState<TabId | undefined>(() => pickDefault(shown));
+  // The tab chosen (by default, a click or an action) is kept apart from the tab shown: the chosen tab while it is
+  // visible, else the first visible tab, else none. Derived as the widget renders, so an action that hides the current
+  // tab has moved to the next one by the time it returns (`await setTabVisibility('a', false); await nextTab()` lost
+  // the second action), and with every tab hidden or removed nothing is current, as with an empty list.
+  const [chosenTab, setCurrentTab] = useState<TabId | undefined>(() => pickDefault(shown));
+  const currentTab = shown.some((tab) => tab.id == chosenTab) ? chosenTab : shown[0]?.id;
   // Only a new defaultTab moves the tab; the tabs shown then are read from a ref.
   const latestPick = useLatest(() => pickDefault(shown));
   useEffect(() => setCurrentTab(latestPick.current()), [defaultTab, latestPick]);
@@ -156,10 +161,10 @@ export const ShadTabs = (props: WidgetProps) => {
     });
     return () => cancelAnimationFrame(frame);
   }, [id, currentTab, properties.scrollToTopOnTabSwitch]);
-  // A hidden or removed current tab falls back to the first visible one.
+  // A hidden or removed chosen tab gives way for good to the tab shown in its place.
   useEffect(() => {
-    if (shown.length && !shown.some((tab) => tab.id == currentTab)) setCurrentTab(shown[0].id);
-  }, [shown, currentTab]);
+    if (currentTab !== undefined && currentTab !== chosenTab) setCurrentTab(currentTab);
+  }, [currentTab, chosenTab]);
 
   const stepIndex = Math.max(
     0,

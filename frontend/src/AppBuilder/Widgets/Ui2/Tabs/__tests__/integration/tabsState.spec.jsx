@@ -65,4 +65,43 @@ describe('UI 2.0 Tabs state', () => {
       expect(document.getElementById(underscored.getAttribute('aria-controls'))).toHaveAttribute('activetab', 'a_b');
     });
   });
+
+  describe('with no tab left', () => {
+    test('hiding every tab leaves no current tab, as an empty list starts', async () => {
+      render();
+      await waitFor(() => expect(exposed().currentTab).toBe('a'));
+      for (const tab of ['a', 'b', 'c']) await widget.act('setTabVisibility', tab, false);
+      expect(exposed()).toMatchObject({ currentTab: undefined, currentTabTitle: '' });
+    });
+
+    test('removing every tab leaves no current tab', async () => {
+      render();
+      await waitFor(() => expect(exposed().currentTab).toBe('a'));
+      await act(async () => widget.setComponentProperty(ID, 'tabs', '{{[]}}', 'properties'));
+      await waitFor(() => expect(exposed()).toMatchObject({ currentTab: undefined, currentTabTitle: '' }));
+    });
+
+    test('a tab shown again becomes current again', async () => {
+      render();
+      await waitFor(() => expect(exposed().currentTab).toBe('a'));
+      for (const tab of ['a', 'b', 'c']) await widget.act('setTabVisibility', tab, false);
+      await widget.act('setTabVisibility', 'b', true);
+      expect(exposed()).toMatchObject({ currentTab: 'b', currentTabTitle: 'Beta' });
+    });
+  });
+
+  describe('hiding the current tab, then the next action', () => {
+    test('nextTab after hiding the current tab moves on from the tab that took its place', async () => {
+      render();
+      await waitFor(() => expect(exposed().currentTab).toBe('a'));
+      let afterHide;
+      await act(async () => {
+        await exposed().setTabVisibility('a', false);
+        afterHide = exposed().currentTab;
+        await exposed().nextTab();
+      });
+      expect(afterHide).toBe('b');
+      expect(exposed().currentTab).toBe('c');
+    });
+  });
 });
