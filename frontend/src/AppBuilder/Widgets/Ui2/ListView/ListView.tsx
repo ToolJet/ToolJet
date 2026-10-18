@@ -25,6 +25,8 @@ import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMo
 import { useListSelection } from './useListSelection';
 import { Row, type ListMode } from './ListRow';
 import { takeRowValues } from '@/AppBuilder/Widgets/Ui2/_shared/rowValues';
+import { useLazyLoadedFirst } from '@/AppBuilder/Widgets/Ui2/_shared/lazyWidgets';
+import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
 
 /** What the list's actions read later, without going stale. */
 interface ListLive {
@@ -46,6 +48,7 @@ type ListStore = {
   ) => void;
   initExposedValueArrayForChildren: (id: string, count: number, moduleId: string, parentIndices: number[]) => void;
   containerChildrenMapping?: Record<string, string[]>;
+  getComponentTypeFromId: (id: string, moduleId: string) => string | undefined;
 };
 
 // ToolJet UI 2.0 List view. Row-scoped like the native Listview: one canvas (the components parented to
@@ -73,6 +76,13 @@ export const ShadListView = (props: WidgetProps) => {
     setExposedVariable
   );
   const { moduleId } = useModuleContext();
+  // The row template's widgets load before the first rows are drawn, so they mount with the rows, in their batch.
+  useLazyLoadedFirst(() => {
+    const state = useStore.getState() as unknown as ListStore;
+    return (state.containerChildrenMapping?.[id] || []).map((child) =>
+      getComponentToRender(state.getComponentTypeFromId(child, moduleId))
+    );
+  });
   // Rows, their values and their heights hang off the list's own path (in a native Kanban card, that card's index).
   const contextPath = useOwnContextPath(props.subContainerIndex, props.parentId);
   const parentIndices = useStable(useMemo(() => contextPath.map((segment) => segment.index), [contextPath]));
