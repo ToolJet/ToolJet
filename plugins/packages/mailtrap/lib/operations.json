@@ -1,0 +1,277 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Mailtrap datasource",
+  "description": "A schema defining Mailtrap datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "send_email",
+          "name": "Send email"
+        },
+        {
+          "value": "send_template_email",
+          "name": "Send email using template"
+        }
+      ]
+    },
+    "send_email": {
+      "from_email": {
+        "label": "From email",
+        "key": "from_email",
+        "type": "codehinter",
+        "description": "Enter sender email (must belong to a verified sending domain)",
+        "placeholder": "sender@example.com",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "from_name": {
+        "label": "From name",
+        "key": "from_name",
+        "type": "codehinter",
+        "description": "Enter sender name",
+        "placeholder": "ToolJet",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "to": {
+        "label": "To",
+        "key": "to",
+        "type": "codehinter",
+        "description": "Enter recipient(s): an email, a comma-separated list, or an array of emails / {email, name} objects",
+        "placeholder": "{{['user@example.com']}}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "cc": {
+        "label": "CC",
+        "key": "cc",
+        "type": "codehinter",
+        "description": "Enter CC recipient(s)",
+        "placeholder": "{{['user@example.com']}}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "bcc": {
+        "label": "BCC",
+        "key": "bcc",
+        "type": "codehinter",
+        "description": "Enter BCC recipient(s)",
+        "placeholder": "{{['user@example.com']}}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "reply_to": {
+        "label": "Reply to",
+        "key": "reply_to",
+        "type": "codehinter",
+        "description": "Enter reply-to address",
+        "placeholder": "support@example.com",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "subject": {
+        "label": "Subject",
+        "key": "subject",
+        "type": "codehinter",
+        "description": "Enter subject",
+        "placeholder": "Your order has shipped",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "text": {
+        "label": "Body as text",
+        "key": "text",
+        "type": "codehinter",
+        "description": "Enter plain-text body",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "html": {
+        "label": "Body as HTML",
+        "key": "html",
+        "type": "codehinter",
+        "description": "Enter HTML body",
+        "height": "150px",
+        "editorType": "extendedSingleLine",
+        "lineNumbers": true
+      },
+      "category": {
+        "label": "Category",
+        "key": "category",
+        "type": "codehinter",
+        "description": "Enter category used to group emails in Mailtrap stats",
+        "placeholder": "Order confirmation",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "attachments": {
+        "label": "Attachments",
+        "key": "attachments",
+        "type": "codehinter",
+        "description": "Files to attach: File Picker files or [{filename, content (base64), type}]",
+        "placeholder": "{{components.filepicker1.files}}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "custom_variables": {
+        "label": "Custom variables",
+        "key": "custom_variables",
+        "type": "codehinter",
+        "description": "JSON object of values attached to the email and returned in webhooks",
+        "placeholder": "{{ { \"user_id\": \"45982\" } }}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "headers": {
+        "label": "Headers",
+        "key": "headers",
+        "type": "codehinter",
+        "description": "JSON object of custom email headers",
+        "placeholder": "{{ { \"X-Message-Source\": \"tooljet\" } }}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "send_template_email": {
+      "from_email": {
+        "label": "From email",
+        "key": "from_email",
+        "type": "codehinter",
+        "description": "Enter sender email (must belong to a verified sending domain)",
+        "placeholder": "sender@example.com",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "from_name": {
+        "label": "From name",
+        "key": "from_name",
+        "type": "codehinter",
+        "description": "Enter sender name",
+        "placeholder": "ToolJet",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "to": {
+        "label": "To",
+        "key": "to",
+        "type": "codehinter",
+        "description": "Enter recipient(s): an email, a comma-separated list, or an array of emails / {email, name} objects",
+        "placeholder": "{{['user@example.com']}}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "cc": {
+        "label": "CC",
+        "key": "cc",
+        "type": "codehinter",
+        "description": "Enter CC recipient(s)",
+        "placeholder": "{{['user@example.com']}}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "bcc": {
+        "label": "BCC",
+        "key": "bcc",
+        "type": "codehinter",
+        "description": "Enter BCC recipient(s)",
+        "placeholder": "{{['user@example.com']}}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "reply_to": {
+        "label": "Reply to",
+        "key": "reply_to",
+        "type": "codehinter",
+        "description": "Enter reply-to address",
+        "placeholder": "support@example.com",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "template_uuid": {
+        "label": "Template UUID",
+        "key": "template_uuid",
+        "type": "codehinter",
+        "description": "Enter the UUID of a Mailtrap email template",
+        "placeholder": "bfa432fd-0000-0000-0000-8493da283a69",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "template_variables": {
+        "label": "Template variables",
+        "key": "template_variables",
+        "type": "codehinter",
+        "description": "JSON object of variables used in the template",
+        "placeholder": "{{ { \"user_name\": \"John\" } }}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "attachments": {
+        "label": "Attachments",
+        "key": "attachments",
+        "type": "codehinter",
+        "description": "Files to attach: File Picker files or [{filename, content (base64), type}]",
+        "placeholder": "{{components.filepicker1.files}}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "custom_variables": {
+        "label": "Custom variables",
+        "key": "custom_variables",
+        "type": "codehinter",
+        "description": "JSON object of values attached to the email and returned in webhooks",
+        "placeholder": "{{ { \"user_id\": \"45982\" } }}",
+        "lineNumbers": false,
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    }
+  }
+}
