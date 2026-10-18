@@ -28,7 +28,7 @@ interface TableBodyProps {
   allowSelection: boolean;
   striped: boolean;
   bordered: boolean;
-  clickRow: (entry: Entry) => void;
+  clickRow: (entry: Entry, options?: { keep?: boolean }) => void;
   hoverRow: (entry: Entry) => void;
   hoveredRef: MutableRefObject<string | null>;
   toggleBulk: (entry: Entry) => void;
@@ -113,7 +113,8 @@ export const TableBody = ({
           {rendered.map((entry, i) => {
             const row = withEdits(entry);
             const isSelected = selected.has(entry.key);
-            const showSelected = isSelected && (bulk || properties.highlightSelectedRow !== false);
+            // As on the native Table, only a selectable table marks rows (a row the selectRow action picked included).
+            const showSelected = allowSelection && isSelected && (bulk || properties.highlightSelectedRow !== false);
             const position = virtual ? virtualItems[i]?.index ?? i : i;
             return (
               <tr
