@@ -322,6 +322,19 @@ describe('UI 2.0 Kanban', () => {
     expect(columns()[0]).toHaveTextContent('Cedar');
   });
 
+  test("[ShadKanban-ACT-005] onCardMoved reads the native Kanban's cardDetails and destinationColumnId", async () => {
+    render({ properties: deals() });
+    widget.setEvents(
+      setVariableOn(ID, 'onCardMoved', {
+        value:
+          "{{components.board1.lastCardMovement.cardDetails.name + ':' + components.board1.lastCardMovement.destinationColumnId}}",
+      })
+    );
+
+    await widget.act('moveCard', 'D2', 'new');
+    await waitFor(() => expect(widget.variables().seen).toBe('Cedar:new'));
+  });
+
   test('[ShadKanban-ACT-004] deleteCard removes a card by id; an unknown id changes nothing', async () => {
     render({ properties: deals() });
     widget.setEvents(countInvocationsOn(ID, 'onCardRemoved'));

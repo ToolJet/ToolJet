@@ -2,7 +2,7 @@ export const shadKanbanConfig = {
   name: 'ShadKanban',
   displayName: 'Kanban',
   description:
-    'Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar), or, with Card content Custom, child components laid out on the card and bound to {{cardData.<field>}}. Drag to move, optional add and delete buttons, and addCard/updateCardData/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.lastCardMovement, lastAddedCard, lastRemovedCard, lastUpdatedCard, updatedCardData)',
+    'Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar), or, with Card content Custom, child components laid out on the card and bound to {{cardData.<field>}}. Drag to move, optional add and delete buttons, and addCard/updateCardData/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.lastCardMovement, lastAddedCard, lastRemovedCard, lastUpdatedCard, updatedCardData). lastCardMovement is {cardId, card, from, to, toIndex}: a move saves with lastCardMovement.cardId and .to (the native names cardDetails, originColumnId, destinationColumnId, originCardIndex and destinationIndex also work)',
   component: 'ShadKanban',
   defaultSize: {
     width: 43,
