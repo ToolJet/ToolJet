@@ -192,6 +192,8 @@ export const ShadCalendar = (props: WidgetProps) => {
           {...selection}
           month={shown}
           onMonthChange={(next) => showMonth(next, true)}
+          // Disabled or loading, the month arrows are off too, not only the days (setMonth still moves it).
+          disableNavigation={disabled}
           numberOfMonths={drawn}
           weekStartsOn={properties.weekStartsOn === 'monday' ? 1 : 0}
           showOutsideDays={properties.showOutsideDays !== false}

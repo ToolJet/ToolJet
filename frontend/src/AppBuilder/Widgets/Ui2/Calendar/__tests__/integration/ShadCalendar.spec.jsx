@@ -128,6 +128,26 @@ describe('UI 2.0 Calendar', () => {
     expect(screen.getByText('November 2026')).toBeInTheDocument();
   });
 
+  // Disabled only blocked the days: the month arrows still turned the month and fired onMonthChanged.
+  test.each(['the disabledState property', 'setDisable'])(
+    '[ShadCalendar-BUSY-001] disabled by %s, the month arrows turn nothing and fire nothing; setMonth still works',
+    async (how) => {
+      render(how === 'setDisable' ? {} : { properties: { disabledState: binding('{{true}}') } });
+      if (how === 'setDisable') await widget.act('setDisable', true);
+      widget.setEvents(setVariableOn(ID, 'onMonthChanged', { value: '{{components.calendar1.visibleMonth}}' }));
+      await screen.findByText('October 2026');
+
+      await act(async () => fireEvent.click(screen.getByRole('button', { name: /next month/i })));
+      await act(async () => fireEvent.click(screen.getByRole('button', { name: /previous month/i })));
+
+      expect(screen.getByText('October 2026')).toBeInTheDocument();
+      expect(exposed().visibleMonth).toBe('2026-10');
+      expect(widget.variables().seen).toBeUndefined();
+      await widget.act('setMonth', '2027-01-15');
+      await waitFor(() => expect(screen.getByText('January 2027')).toBeInTheDocument());
+    }
+  );
+
   test('[ShadCalendar-PROP-005] minDate, maxDate, disabledDates and disabledDays block those days', async () => {
     render({
       properties: {
