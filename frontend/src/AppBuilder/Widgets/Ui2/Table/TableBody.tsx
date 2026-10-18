@@ -158,6 +158,11 @@ export const TableBody = ({
                         column.editable && !isDisabled
                           ? (e) => {
                               e.stopPropagation();
+                              // A click on the cell whose editor is open (around the input) is not another row click.
+                              if (isEditing) return;
+                              // The click opening the editor is a row click too, as on the native Table: the row
+                              // selects (never deselects) and onRowClicked fires. Clicks in the editor stop at it.
+                              clickRow(entry, { keep: true });
                               setEditing({ key: entry.key, column: column.id });
                             }
                           : undefined

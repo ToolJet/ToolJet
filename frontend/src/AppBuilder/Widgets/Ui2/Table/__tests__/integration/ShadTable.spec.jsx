@@ -397,6 +397,45 @@ describe('UI 2.0 Table', () => {
     expect(screen.getByText('1 row changed')).toBeInTheDocument();
   });
 
+  test('[ShadTable-EVT-016] a click on an editable cell selects its row and fires onRowClicked once, and opens the editor', async () => {
+    // The editable cell stopped the click before it reached the row: the row did not select and onRowClicked did not
+    // fire. The native Table fires onRowClicked for it.
+    render({ properties: { columns: binding(EDITABLE), disableRowDeselection: binding('{{false}}') } });
+    widget.setEvents([
+      ...countInvocationsOn(ID, 'onRowClicked'),
+      ...countInvocationsOn(ID, 'onSelectionChanged', { key: 'changes' }),
+    ]);
+
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    // By position: the row's text is in an input while its editor is open.
+    const grace = () => rows()[2];
+    const cell = () => grace().querySelector('td');
+    fireEvent.click(cell());
+    const input = await waitFor(() => grace().querySelector('input'));
+    await waitFor(() => expect(widget.variables().calls).toBe(1));
+    expect(widget.variables().changes).toBe(1);
+    expect(exposed()).toMatchObject({ selectedRow: { name: 'Grace Hopper' }, selectedRowsId: [2] });
+    expect(grace()).toHaveAttribute('data-state', 'selected');
+
+    // Clicks and typing in the open editor, or on its cell around it, are not row clicks.
+    fireEvent.click(input);
+    fireEvent.change(input, { target: { value: 'Grace B. Hopper' } });
+    fireEvent.click(input);
+    fireEvent.click(cell());
+    await settle();
+    expect(widget.variables()).toMatchObject({ calls: 1, changes: 1 });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(exposed().changeSet).toEqual({ 2: { name: 'Grace B. Hopper' } }));
+
+    // Editing a cell on the selected row is not a deselecting click, with deselection on.
+    fireEvent.click(cell());
+    await waitFor(() => expect(widget.variables().calls).toBe(2));
+    await settle();
+    expect(widget.variables().changes).toBe(1);
+    expect(grace()).toHaveAttribute('data-state', 'selected');
+    expect(grace().querySelector('input')).not.toBeNull();
+  });
+
   test('[ShadTable-IME-001] the Enter that ends an IME composition in a cell editor does not commit it', async () => {
     // Release audit round 2: the Enter that confirms composed characters committed the cell (and closed the editor).
     render({ properties: { columns: binding(EDITABLE) } });
