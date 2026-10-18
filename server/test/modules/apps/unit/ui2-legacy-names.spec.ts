@@ -349,4 +349,86 @@ describe('applyUi2RenamesToImport', () => {
       expect(data.dataQueries[0].options.code).toBe(`return ${text}`);
     }
   );
+
+  // Release audit round 2: the rewrite was a pattern over raw text. It missed references a reader sees at once
+  // (whitespace, a line break or a comment between the parts, a key in brackets) and it changed text that only looked
+  // like a reference (plain text outside {{ }}, a string inside the code). It now reads the code.
+  describe('[UI2-IMPORT-401] references are found by the code, not by the text', () => {
+    const run = (properties: Record<string, any>, dataQueries: any[] = []) => {
+      const data = {
+        pages: [page],
+        components: [
+          { id: 'tags-id', name: 'tags1', type: 'ShadTagsInput', pageId: 'p1', properties: {} },
+          { id: 'txt', name: 'text1', type: 'Text', pageId: 'p1', properties },
+        ],
+        dataQueries,
+      };
+      applyUi2RenamesToImport(data);
+      return data;
+    };
+    const text = (value: string) => run({ text: { value } }).components[1].properties.text.value;
+
+    it.each([
+      ['{{components.tags1 /* the tags */ .tags}}', '{{components.tags1 /* the tags */ .values}}'],
+      ['{{components\n  .tags1\n  .tags.length}}', '{{components\n  .tags1\n  .values.length}}'],
+      ['{{components.tags1?.["tags"]}}', '{{components.tags1?.["values"]}}'],
+      ['{{components[`tags1`].tags}}', '{{components[`tags1`].values}}'],
+      ["{{components['tags1']['tags'].join(', ')}}", "{{components['tags1']['values'].join(', ')}}"],
+      ['{{components.tags1 . disable (true)}}', '{{components.tags1 . setDisable (true)}}'],
+      ['{{ {a: {b: components.tags1.tags}} }}', '{{ {a: {b: components.tags1.values}} }}'],
+    ])('rewrites %j', (before, after) => {
+      expect(text(before)).toBe(after);
+    });
+
+    it.each([
+      'Use components.tags1.tags to read the tags',
+      "{{'components.tags1.tags'}}",
+      '{{`see components.tags1.tags`}}',
+      '{{other.components.tags1.tags}}',
+    ])('leaves literal text alone: %j', (value) => {
+      expect(text(value)).toBe(value);
+    });
+
+    it('rewrites only the bindings in mixed text', () => {
+      expect(text('Count: {{components.tags1.tags.length}} (see components.tags1.tags)')).toBe(
+        'Count: {{components.tags1.values.length}} (see components.tags1.tags)'
+      );
+    });
+
+    it('reads RunJS code as a program: comments between parts, strings left alone', () => {
+      const code = "// count\nconst t = components.tags1 // the field\n  .tags;\nreturn [t, 'components.tags1.tags'];";
+      const data = run({}, [
+        { id: 'q', appVersionId: 'v1', options: { code, transformation: 'return components.tags1.tags' } },
+      ]);
+      expect(data.dataQueries[0].options).toEqual({
+        code: "// count\nconst t = components.tags1 // the field\n  .values;\nreturn [t, 'components.tags1.tags'];",
+        transformation: 'return components.tags1.values',
+      });
+    });
+
+    it('keeps rewriting code it cannot read as JavaScript (a Python query) the old way', () => {
+      const code = 'print(components.tags1.tags)\nif True:\n  pass';
+      const data = run({}, [{ id: 'q', appVersionId: 'v1', options: { code } }]);
+      expect(data.dataQueries[0].options.code).toBe('print(components.tags1.values)\nif True:\n  pass');
+    });
+  });
+
+  // Release audit round 2: copying a payload assigned keys one by one, so an own `__proto__` key (JSON.parse makes
+  // one) set the copy's prototype instead and was lost.
+  it('[UI2-IMPORT-402] keeps an own __proto__ key in a payload it copies', () => {
+    const properties = JSON.parse('{"__proto__": {"value": "kept"}, "text": {"value": "{{components.tags1.tags}}"}}');
+    const data = {
+      pages: [page],
+      components: [
+        { id: 'tags-id', name: 'tags1', type: 'ShadTagsInput', pageId: 'p1', properties: {} },
+        { id: 'txt', name: 'text1', type: 'Text', pageId: 'p1', properties },
+      ],
+    };
+    applyUi2RenamesToImport(data);
+    const out = data.components[1].properties;
+    expect(Object.keys(out)).toEqual(['__proto__', 'text']);
+    expect(Object.getOwnPropertyDescriptor(out, '__proto__')?.value).toEqual({ value: 'kept' });
+    expect(Object.getPrototypeOf(out)).toBe(Object.prototype);
+    expect(out.text.value).toBe('{{components.tags1.values}}');
+  });
 });

@@ -199,4 +199,40 @@ describe('RenameUi2PackNames data migration', () => {
     expect(historyReads).toHaveLength(1);
     expect(historyReads[0][0]).toMatch(/created_at >= \$1/);
   });
+
+  // Release audit round 2: the migration's rewrite read the code too (see ui2-legacy-names.spec UI2-IMPORT-401/402).
+  it('[UI2-MIG-401] rewrites references by the code and leaves literal text alone', async () => {
+    const code = "const t = components.tags1 // the field\n  .tags;\nreturn [t, 'components.tags1.tags'];";
+    const tables: Tables = {
+      pages: [{ id: 'p1', app_version_id: 'v1' }],
+      components: [
+        component('tags1', 'ShadTagsInput', 'p1'),
+        component('text1', 'Text', 'p1', {
+          properties: {
+            text: { value: 'Count: {{components.tags1 /* c */ .tags.length}} (see components.tags1.tags)' },
+          },
+        }),
+      ],
+      data_queries: [{ id: 'q1', app_version_id: 'v1', options: { code } }],
+    };
+    await new Migration().up(fakeQueryRunner(tables).queryRunner);
+    expect(tables.components[1].properties.text.value).toBe(
+      'Count: {{components.tags1 /* c */ .values.length}} (see components.tags1.tags)'
+    );
+    expect(tables.data_queries[0].options.code).toBe(
+      "const t = components.tags1 // the field\n  .values;\nreturn [t, 'components.tags1.tags'];"
+    );
+  });
+
+  it('[UI2-MIG-402] keeps an own __proto__ key in a rewritten payload', async () => {
+    const properties = JSON.parse('{"__proto__": {"value": "kept"}, "text": {"value": "{{components.tags1.tags}}"}}');
+    const tables: Tables = {
+      pages: [{ id: 'p1', app_version_id: 'v1' }],
+      components: [component('tags1', 'ShadTagsInput', 'p1'), component('text1', 'Text', 'p1', { properties })],
+    };
+    await new Migration().up(fakeQueryRunner(tables).queryRunner);
+    const out = tables.components[1].properties;
+    expect(Object.keys(out)).toEqual(['__proto__', 'text']);
+    expect(out.text.value).toBe('{{components.tags1.values}}');
+  });
 });
