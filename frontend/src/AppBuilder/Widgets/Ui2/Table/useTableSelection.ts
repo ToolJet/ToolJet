@@ -74,12 +74,14 @@ export const useTableSelection = ({
     expose(kept, focus);
   }, [entries, live, latest]);
 
-  const clickRow = (entry: Entry) => {
+  // A click on a row, or on something in it that acts on the row (an action button, an editable cell): `keep` never
+  // deselects, since pressing a button or editing a cell on the selected row is not a click to deselect it.
+  const clickRow = (entry: Entry, { keep = false }: { keep?: boolean } = {}) => {
     if (isDisabled) return;
     if (allowSelection && !bulk) {
       const already = selected.has(entry.key);
       // A click keeps the row selected unless deselection is turned on (an unset property reads as its default, on).
-      if (already && properties.disableRowDeselection !== false) {
+      if (already && (keep || properties.disableRowDeselection !== false)) {
         fireEvent('onRowClicked');
         return;
       }

@@ -487,6 +487,62 @@ describe('UI 2.0 Table', () => {
     });
   });
 
+  test('[ShadTable-EVT-015] an action button selects its row as a click on the row does, and never deselects it', async () => {
+    // The action published selectedRow alone: the clicked row stayed highlighted, onSelectionChanged did not fire,
+    // and the next click on the highlighted row deselected it. The native Table's action click reaches the row: the
+    // row selects and onRowClicked fires, after onActionButtonClicked.
+    render({ properties: { columns: binding(EDITABLE), disableRowDeselection: binding('{{false}}') } });
+    widget.setEvents([
+      ...countInvocationsOn(ID, 'onRowClicked'),
+      ...countInvocationsOn(ID, 'onSelectionChanged', { key: 'changes' }),
+      ...on('onActionButtonClicked', '{{components.table1.selectedRows[0].name}}'),
+    ]);
+
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    fireEvent.click(row('Ada'));
+    await waitFor(() => expect(widget.variables().changes).toBe(1));
+    fireEvent.click(within(row('Alan')).getByRole('button', { name: 'Open' }));
+    await waitFor(() => expect(widget.variables().seen).toBe('Alan Turing'));
+    await waitFor(() => expect(widget.variables().changes).toBe(2));
+    expect(widget.variables().calls).toBe(2);
+    expect(exposed()).toMatchObject({ selectedRow: { name: 'Alan Turing' }, selectedRowId: 1, selectedRowsId: [1] });
+    expect(row('Alan')).toHaveAttribute('data-state', 'selected');
+    expect(row('Ada')).not.toHaveAttribute('data-state');
+
+    // An action on the selected row keeps it selected: a click on a button is not a deselecting click.
+    fireEvent.click(within(row('Alan')).getByRole('button', { name: 'Open' }));
+    await waitFor(() => expect(widget.variables().calls).toBe(3));
+    await settle();
+    expect(widget.variables().changes).toBe(2);
+    expect(exposed()).toMatchObject({ selectedRow: { name: 'Alan Turing' }, selectedRowsId: [1] });
+    expect(row('Alan')).toHaveAttribute('data-state', 'selected');
+  });
+
+  test('[ShadTable-PROP-013] with allowSelection off, an action exposes its row for the handler and highlights nothing', async () => {
+    render({ properties: { columns: binding(EDITABLE), allowSelection: binding('{{false}}') } });
+    widget.setEvents([
+      ...countInvocationsOn(ID, 'onRowClicked'),
+      ...countInvocationsOn(ID, 'onSelectionChanged', { key: 'changes' }),
+      ...on('onActionButtonClicked', '{{components.table1.selectedRow.name}}'),
+    ]);
+
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    fireEvent.click(within(row('Grace')).getByRole('button', { name: 'Open' }));
+    await waitFor(() => expect(widget.variables().seen).toBe('Grace Hopper'));
+    await waitFor(() => expect(widget.variables().calls).toBe(1));
+    expect(exposed()).toMatchObject({ selectedRowId: 2, selectedRows: [], selectedRowsId: [] });
+    expect(widget.variables().changes).toBeUndefined();
+    expect(rows().filter((tr) => tr.hasAttribute('data-state'))).toEqual([]);
+
+    // A row the selectRow action picked is not marked either, as on the native Table: with selection off, a marked row
+    // would disagree with the selectedRow an action or click exposes.
+    await widget.act('selectRow', 'name', 'Alan Turing');
+    fireEvent.click(within(row('Grace')).getByRole('button', { name: 'Open' }));
+    await waitFor(() => expect(widget.variables().calls).toBe(2));
+    expect(exposed().selectedRow).toMatchObject({ name: 'Grace Hopper' });
+    expect(rows().filter((tr) => tr.hasAttribute('data-state'))).toEqual([]);
+  });
+
   test('[ShadTable-EVT-010] showRefreshButton fires onRefresh; showDownloadButton downloads CSV and fires onTableDataDownload', async () => {
     render({ properties: { showRefreshButton: binding('{{true}}'), showDownloadButton: binding('{{true}}') } });
     widget.setEvents([...on('onRefresh', 'YES', 'refreshed'), ...on('onTableDataDownload', 'YES', 'downloaded')]);

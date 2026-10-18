@@ -225,14 +225,16 @@ export const ShadTable = (props: WidgetProps) => {
   };
   const turnPage = pageGoTo(setPage, setExposedVariable, fireEvent);
   const goTo: typeof turnPage = (target, options) => runNow(() => turnPage(target, options));
-  const onAction: OnAction = (buttonId, column, row, rowIndex) => {
-    setExposedVariables({
-      selectedRow: row,
-      selectedRowId: rowIndex,
-      lastActionClicked: { buttonId, columnKey: column.key, columnName: column.name, row },
+  // An action acts on its row as a click on the row does (the native Table's action click reaches the row): the row
+  // selects through the selection state, so the highlight, selectedRow(s) and onSelectionChanged agree, and
+  // onRowClicked fires. Everything is published before the events fire, onActionButtonClicked first, as natively.
+  const onAction: OnAction = (buttonId, column, row, rowIndex) =>
+    runNow(() => {
+      setExposedVariables({ lastActionClicked: { buttonId, columnKey: column.key, columnName: column.name, row } });
+      fireEvent('onActionButtonClicked');
+      const entry = live.current.entries.find((e) => e.index === rowIndex);
+      if (entry) clickRow(entry, { keep: true });
     });
-    fireEvent('onActionButtonClicked');
-  };
 
   // ---- exported data and actions --------------------------------------------------------------------------------------
   useEffect(() => {
