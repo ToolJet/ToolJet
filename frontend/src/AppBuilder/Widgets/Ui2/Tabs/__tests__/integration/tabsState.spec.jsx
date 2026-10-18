@@ -67,6 +67,21 @@ describe('UI 2.0 Tabs state', () => {
     });
   });
 
+  describe('the whole widget loading', () => {
+    test.each(['spinner', 'skeleton'])("keeps the tabs' edits through setLoading and back (%s look)", async (look) => {
+      render(ABC, { loadingIndicator: binding(look) }, { field1: inputIn('b') });
+      await widget.act('setTab', 'b');
+      const box = await screen.findByRole('textbox');
+      await act(async () => fireEvent.change(box, { target: { value: 'my draft' } }));
+      await waitFor(() => expect(fieldValue()).toBe('my draft'));
+
+      await widget.act('setLoading', true);
+      await widget.act('setLoading', false);
+      expect(screen.getByRole('textbox')).toHaveValue('my draft');
+      expect(fieldValue()).toBe('my draft');
+    });
+  });
+
   describe('tab ids that differ only in whitespace and underscores', () => {
     test('give each tab and panel its own DOM id', async () => {
       render([

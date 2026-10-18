@@ -299,25 +299,26 @@ export const ShadTabs = (props: WidgetProps) => {
         />
       )}
       <div className="tw-relative tw-min-h-0 tw-w-full tw-flex-1" style={{ background: look.panelBackground }}>
+        {/* Loading, the panels stay mounted beside the spinner, none of them shown: swapping them for it unmounted every
+            tab's components, and what was typed in them was lost. */}
         {isLoading ? (
-          <div className="tw-flex tw-h-full tw-items-center tw-justify-center">
+          <div className="tw-flex tw-h-full tw-items-center tw-justify-center" aria-busy="true">
             <Spinner />
           </div>
-        ) : (
-          // Every tab's panel, hidden ones too (out of sight, keeping their components), unless only the current one is
-          // rendered.
-          tabs.map((tab) =>
-            properties.renderOnlyActiveTab && tab.id != currentTab ? null : (
-              <TabPanel
-                key={tab.id}
-                id={id}
-                tab={tab}
-                width={width}
-                active={tab.id == currentTab}
-                dynamic={dynamic}
-                background={look.panelBackground}
-              />
-            )
+        ) : null}
+        {/* Every tab's panel, hidden ones too (out of sight, keeping their components), unless only the current one
+            is rendered. */}
+        {tabs.map((tab) =>
+          properties.renderOnlyActiveTab && tab.id != currentTab ? null : (
+            <TabPanel
+              key={tab.id}
+              id={id}
+              tab={tab}
+              width={width}
+              active={!isLoading && tab.id == currentTab}
+              dynamic={dynamic}
+              background={look.panelBackground}
+            />
           )
         )}
       </div>
