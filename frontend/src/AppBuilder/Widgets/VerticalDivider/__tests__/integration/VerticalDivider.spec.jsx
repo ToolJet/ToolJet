@@ -163,7 +163,7 @@ describe('Vertical Divider widget', () => {
       component: 'VerticalDivider',
       defaultSize: { width: 1, height: 100 },
       events: {},
-      exposedVariables: {},
+      exposedVariables: { isVisible: true },
       properties: { visibility: { validation: { defaultValue: true } } },
       styles: {
         dividerColor: {
@@ -185,6 +185,43 @@ describe('Vertical Divider widget', () => {
         },
       },
     });
-    expect(frontendConfig.actions ?? []).toEqual([]);
+    expect(frontendConfig.actions.map((a) => a.handle)).toEqual(['setVisibility']);
+  });
+
+  test('[VerticalDivider-CSA-001] setVisibility hides and restores the VerticalDivider and publishes isVisible', async () => {
+    // Break this catches: the CSA not being registered on mount, or toggling the DOM without publishing isVisible.
+    const { container } = widget.render();
+    const divider = await waitFor(() => {
+      const node = root(container);
+      expect(node).toBeInTheDocument();
+      return node;
+    });
+    await waitFor(() => expect(widget.exposed()).toMatchObject({ isVisible: true }));
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(divider).toHaveStyle({ display: 'none' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: false });
+
+    await widget.act('setVisibility', true);
+    await waitFor(() => expect(divider).toHaveStyle({ display: 'flex' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[VerticalDivider-CSA-002] a visibility property change overrides an earlier setVisibility', async () => {
+    // Break this catches: local CSA state no longer yielding to a later change of the Visibility property.
+    const { container } = widget.render();
+    const divider = await waitFor(() => {
+      const node = root(container);
+      expect(node).toBeInTheDocument();
+      return node;
+    });
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(divider).toHaveStyle({ display: 'none' }));
+
+    await setProperty('visibility', false);
+    await setProperty('visibility', true);
+    await waitFor(() => expect(divider).toHaveStyle({ display: 'flex' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: true });
   });
 });
