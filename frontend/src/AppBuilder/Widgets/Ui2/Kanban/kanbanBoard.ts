@@ -14,13 +14,20 @@ export interface BoardColumn {
   cards: BoardCard[];
 }
 
-/** A card's move (lastCardMovement): the card with its new status, where it came from and where it went. */
+/** A card's move (lastCardMovement): the card with its new status, where it came from and where it went. It also
+ *  carries the native Kanban's names for the same facts, which apps and agents bind (cardDetails.id,
+ *  destinationColumnId): without them a save on onCardMoved matched no row and still reported success. */
 export interface CardMove {
   cardId: unknown;
   card: CardRow;
   from: string;
   to: string;
   toIndex: number;
+  cardDetails: CardRow;
+  originColumnId: string;
+  destinationColumnId: string;
+  originCardIndex: number;
+  destinationIndex: number;
 }
 
 export interface CardDetail {
@@ -115,7 +122,18 @@ export const moveCard = (
   const { __key, ...plain } = moved;
   return {
     columns: next,
-    move: { cardId: cardIdOf(moved, idField), card: plain, from: from.id, to: to.id, toIndex },
+    move: {
+      cardId: cardIdOf(moved, idField),
+      card: plain,
+      from: from.id,
+      to: to.id,
+      toIndex,
+      cardDetails: plain,
+      originColumnId: from.id,
+      destinationColumnId: to.id,
+      originCardIndex: fromIndex,
+      destinationIndex: toIndex,
+    },
   };
 };
 

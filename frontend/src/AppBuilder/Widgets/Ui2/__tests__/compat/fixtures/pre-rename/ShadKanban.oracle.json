@@ -157,7 +157,18 @@
           },
           "from": "todo",
           "to": "done",
-          "toIndex": 1
+          "toIndex": 1,
+          "cardDetails": {
+            "id": 1,
+            "title": "Draft the brief",
+            "status": "done",
+            "priority": "High",
+            "owner": "Ada Lovelace"
+          },
+          "originColumnId": "todo",
+          "destinationColumnId": "done",
+          "originCardIndex": 0,
+          "destinationIndex": 1
         }
       }
     },
@@ -302,7 +313,18 @@
         },
         "from": "todo",
         "to": "done",
-        "toIndex": 1
+        "toIndex": 1,
+        "cardDetails": {
+          "id": 1,
+          "title": "Draft the brief",
+          "status": "done",
+          "priority": "High",
+          "owner": "Ada Lovelace"
+        },
+        "originColumnId": "todo",
+        "destinationColumnId": "done",
+        "originCardIndex": 0,
+        "destinationIndex": 1
       },
       "lastCardMovement": {
         "cardId": 1,
@@ -315,7 +337,18 @@
         },
         "from": "todo",
         "to": "done",
-        "toIndex": 1
+        "toIndex": 1,
+        "cardDetails": {
+          "id": 1,
+          "title": "Draft the brief",
+          "status": "done",
+          "priority": "High",
+          "owner": "Ada Lovelace"
+        },
+        "originColumnId": "todo",
+        "destinationColumnId": "done",
+        "originCardIndex": 0,
+        "destinationIndex": 1
       },
       "addCardColumn": "",
       "collapsedColumns": [],

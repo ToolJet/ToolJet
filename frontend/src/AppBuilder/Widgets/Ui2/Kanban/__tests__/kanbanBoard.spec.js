@@ -99,6 +99,20 @@ describe('moveCard', () => {
     expect(move).toMatchObject({ from: 'todo', to: 'todo', toIndex: 0 });
   });
 
+  // Apps and agents bind the native Kanban's names (cardDetails.id, destinationColumnId); without them a save on
+  // onCardMoved matched no row and still reported success (Luna builds, 18 Oct).
+  it("also carries the native Kanban's names for the move", () => {
+    const { move } = moveCard(cols(), 1, 'done', null, 'status', 'id');
+    expect(move).toMatchObject({
+      originColumnId: 'todo',
+      destinationColumnId: 'done',
+      originCardIndex: 0,
+      destinationIndex: 1,
+      cardDetails: { id: 1, title: 'Fix login', status: 'done' },
+    });
+    expect(move.cardDetails).toEqual(move.card);
+  });
+
   it('returns nothing to do for a drop where the card already is', () => {
     expect(moveCard(cols(), 4, 'done', null, 'status', 'id').move).toBeNull();
   });
