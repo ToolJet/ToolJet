@@ -92,8 +92,16 @@ export class DataQueriesController implements IDataQueriesController {
   //* On Updating references, need update the options of multiple queries
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Patch('versions/:versionId')
-  async bulkUpdate(@User() user: UserEntity, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
-    return await this.dataQueriesService.bulkUpdateQueryOptions(user, updatingReferencesOptions.data_queries_options);
+  async bulkUpdate(
+    @User() user: UserEntity,
+    @Param('versionId') versionId,
+    @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto
+  ) {
+    return await this.dataQueriesService.bulkUpdateQueryOptions(
+      user,
+      versionId,
+      updatingReferencesOptions.data_queries_options
+    );
   }
 
   @InitFeature(FEATURE_KEY.DELETE)
