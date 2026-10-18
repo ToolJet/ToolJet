@@ -3,7 +3,6 @@ import ReactMarkdown, { type Components, type ExtraProps, type Options } from 'r
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import toast from 'react-hot-toast';
 import { AlertCircle, Check, Copy } from 'lucide-react';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -11,7 +10,7 @@ import { formatTimestamp } from '@/AppBuilder/Widgets/Ui2/_shared/chatHelpers';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import type { ReactNode } from 'react';
 import type { RunRow } from './chatModel';
-import { useCopied } from '@/AppBuilder/Widgets/Ui2/_shared/useCopied';
+import { copyText, useCopied } from '@/AppBuilder/Widgets/Ui2/_shared/useCopied';
 import { safeImageUrl } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ToolJet UI 2.0 Chat (Chat.tsx): its message rows, the typing dots, the loading skeleton and the header's buttons.
@@ -81,14 +80,7 @@ const CopyButton = ({ value, align }: { value: string; align: 'start' | 'end' })
       type="button"
       aria-label={copied ? 'Copied' : 'Copy message'}
       title={copied ? 'Copied' : 'Copy'}
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(value);
-          markCopied();
-        } catch {
-          toast.error('Failed to copy message');
-        }
-      }}
+      onClick={() => copyText(value, markCopied, 'Failed to copy message')}
       className={cn(
         'tw-inline-flex tw-h-6 tw-w-6 tw-items-center tw-justify-center tw-rounded-ui2-md tw-text-ui2-muted-foreground tw-opacity-0 tw-transition-opacity tw-duration-150 hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 group-hover/msg:tw-opacity-100 [&_svg]:tw-size-3.5',
         align === 'end' ? 'tw-ml-auto' : ''

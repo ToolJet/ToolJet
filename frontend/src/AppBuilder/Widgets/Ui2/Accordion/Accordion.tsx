@@ -9,10 +9,20 @@ import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_ACCORDION_ITEMS = 200;
 
-/** The open sections as drawn: those that exist (fewer sections drop the rest) and, single-open, only the first. */
-const openOf = (open: string[], count: number, multiple: boolean): string[] => {
-  const valid = open.filter((k, i) => Number(k) < count && open.indexOf(k) === i);
-  return multiple ? valid : valid.slice(0, 1);
+/** A section index, the one rule for defaultOpen, bindings and the expand / collapse actions: a whole number, 0 or
+ *  more, as a number or numeric text ("01" is section 1), as its canonical key ('1'); anything else (-1, 0.5, '',
+ *  null) is no index. A section past `count` is none either. */
+export const sectionKey = (v: unknown, count = Infinity): string | null => {
+  if (typeof v !== 'number' && !(typeof v === 'string' && v.trim() !== '')) return null;
+  const n = Number(v);
+  return Number.isInteger(n) && n >= 0 && n < count ? String(n) : null;
+};
+
+/** The open sections as drawn: valid indexes of sections that exist (fewer sections drop the rest), each once, and,
+ *  single-open, only the first of them (an invalid first default no longer displaces a valid one). */
+const openOf = (open: unknown[], count: number, multiple: boolean): string[] => {
+  const keys = [...new Set(open.map((k) => sectionKey(k, count)).filter((k): k is string => k !== null))];
+  return multiple ? keys : keys.slice(0, 1);
 };
 
 export const ShadAccordion = (props: WidgetProps) => {
@@ -20,7 +30,7 @@ export const ShadAccordion = (props: WidgetProps) => {
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const multiple = properties.multiple === true;
-  const initial = useStable(list(properties.defaultOpen).map(String));
+  const initial = useStable(list(properties.defaultOpen).map((k) => sectionKey(k) ?? ''));
   const [stored, setOpen] = useState<string[]>(initial);
   useEffect(() => setOpen(initial), [initial]);
   const all = useStable(list(properties.items));
@@ -51,10 +61,7 @@ export const ShadAccordion = (props: WidgetProps) => {
   // expand(index) and collapse(index) open or close one section (all of them without an index), like the native
   // Accordion's expand() and collapse(), and fire onExpand or onCollapse every time as those do (not onChange, which
   // follows the user); a single-open accordion keeps one section open.
-  const indexArg = (i: unknown): string | null => {
-    const n = Number(i);
-    return Number.isInteger(n) && n >= 0 && n < shape.current.count ? String(n) : null;
-  };
+  const indexArg = (i: unknown): string | null => sectionKey(i, shape.current.count);
   const noIndex = (i: unknown): boolean => i === undefined || i === null || i === '';
   useExposed(setExposedVariables, properties, {
     openIndexes: open.map(Number),

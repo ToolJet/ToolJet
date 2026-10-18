@@ -10,7 +10,8 @@
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import React from 'react';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, countInvocationsOn, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import * as mapLayers from '@/AppBuilder/Widgets/Ui2/Map/mapLayers';
 
 const ID = 'map1';
 const widget = createWidgetHarness({
@@ -353,6 +354,44 @@ describe('UI 2.0 Map', () => {
     expect(q('.sc-map-style-switch')).toBeNull();
   });
 
+  test.each(['setDisable', 'setLoading'])(
+    '[ShadMap-ACT-007] after %s the style switch changes nothing, and setMapStyle still does',
+    async (action) => {
+      // Release audit round 2: the Map | Satellite radios sat outside the tools the busy state hides, and still worked.
+      render({ properties: { showStyleSwitch: binding('{{true}}') } });
+      await waitFor(() => expect(exposed().mapStyle).toBe('streets'));
+      await widget.act(action, true);
+      expect(screen.getByRole('radio', { name: 'Satellite' })).toBeDisabled();
+      fireEvent.click(screen.getByRole('radio', { name: 'Satellite' }));
+      await settle();
+      expect(exposed().mapStyle).toBe('streets');
+      await widget.act('setMapStyle', 'satellite');
+      await waitFor(() => expect(exposed().mapStyle).toBe('satellite'));
+    }
+  );
+
+  test('[ShadMap-PROP-015] pin icons that failed to load are tried again, though the map asks for the same ones', async () => {
+    // Release audit round 2: the map asked for its icons only when their names changed, so one failed load left its
+    // pins without icons for good.
+    const real = mapLayers.loadIcons;
+    const load = jest.spyOn(mapLayers, 'loadIcons').mockImplementationOnce(() => Promise.resolve(false));
+    load.mockImplementation((...args) => real(...args));
+    try {
+      render({
+        properties: {
+          iconField: binding('kind'),
+          data: binding("{{[{ id: 1, kind: 'flame', lat: 30.27, lng: -97.74 }]}}"),
+        },
+      });
+      await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+      expect(q('.sc-map-pin-glyph svg')).toBeNull();
+      await waitFor(() => expect(q('.sc-map-pin-glyph svg')).toBeTruthy(), { timeout: 6000 });
+      expect(load).toHaveBeenCalledTimes(2);
+    } finally {
+      load.mockRestore();
+    }
+  }, 10000);
+
   test('[ShadMap-KBD-001] the wheel scrolls the page unless Ctrl is held, or scrollWheelZoom is on', async () => {
     render();
     await waitFor(() => expect(exposed().zoom).toBe(13));
@@ -464,6 +503,78 @@ describe('UI 2.0 Map', () => {
           Promise.resolve([{ lat: '10', lon: '20', display_name: `${new URL(url).searchParams.get('q')} result` }]),
       });
 
+    test('[ShadMap-PROP-014] a geocoder answer over the size limit is refused and the search box says why', async () => {
+      // Release audit round 2: a geocoder answer was read and parsed whole, whatever its size.
+      fetchMock.mockImplementation(() =>
+        Promise.resolve(new Response(JSON.stringify([{ lat: '1', lon: '2', display_name: 'x'.repeat(300 * 1024) }])))
+      );
+      render({
+        properties: {
+          showSearch: binding('{{true}}'),
+          geocoderUrl: binding('https://geo.example/prop-014/search?q={query}'),
+        },
+      });
+      fireEvent.change(await screen.findByRole('searchbox'), { target: { value: 'Everything' } });
+      await waitFor(
+        () => expect(q('.sc-map-search-note')).toHaveTextContent("The geocoder's answer is too large to show"),
+        {
+          timeout: 4000,
+        }
+      );
+    }, 10000);
+
+    test.each(['disabledState', 'loadingState'])(
+      '[ShadMap-EVT-006] with %s on, an open search suggestion picks nothing and fires nothing',
+      async (state) => {
+        // Release audit round 2: a suggestion already open still moved the map, set pickedLocation and fired
+        // onLocationPicked once the map was disabled or loading (in a browser, Tab then Enter reached it under the veil).
+        fetchMock.mockImplementation(answerByQuery);
+        render({
+          properties: {
+            showSearch: binding('{{true}}'),
+            pickLocation: binding('{{true}}'),
+            geocoderUrl: binding(`https://geo.example/evt-006-${state}/search?q={query}`),
+          },
+        });
+        const input = await screen.findByRole('searchbox');
+        fireEvent.change(input, { target: { value: 'Alpha' } });
+        const option = await screen.findByRole('button', { name: 'Alpha result' }, { timeout: 4000 });
+        widget.setEvents(countInvocationsOn(ID, 'onLocationPicked', { key: 'picked' }));
+        const center = JSON.stringify(exposed().center);
+        act(() => widget.setComponentProperty(ID, state, '{{true}}', 'properties'));
+        await waitFor(() => expect(input).toBeDisabled());
+        expect(option).toBeDisabled();
+        fireEvent.click(option);
+        await settle();
+        expect([exposed().pickedLocation, JSON.stringify(exposed().center), widget.variables().picked ?? 0]).toEqual([
+          {},
+          center,
+          0,
+        ]);
+      },
+      10000
+    );
+
+    test('[ShadMap-KBD-003] the Enter that ends an IME composition neither searches nor picks a place', async () => {
+      // Release audit round 2: typing an address in Japanese, the Enter that confirms the characters searched or chose.
+      fetchMock.mockImplementation(answerByQuery);
+      render({
+        properties: {
+          showSearch: binding('{{true}}'),
+          pickLocation: binding('{{true}}'),
+          geocoderUrl: binding('https://geo.example/kbd-003/search?q={query}'),
+        },
+      });
+      const input = await screen.findByRole('searchbox');
+      fireEvent.change(input, { target: { value: 'とうきょう' } });
+      await screen.findByRole('button', { name: 'とうきょう result' }, { timeout: 4000 });
+      fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+      fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 });
+      expect(exposed().pickedLocation).toEqual({});
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(exposed().pickedLocation).toEqual({ lat: 10, lng: 20, address: 'とうきょう result' });
+    }, 10000);
+
     test('[ShadMap-EVT-005] Enter on a new query picks nothing from the previous query, then picks the new place', async () => {
       // Release audit 42: Enter during the pause after typing Beta picked Alpha's place and fired onLocationPicked.
       fetchMock.mockImplementation(answerByQuery);
@@ -487,6 +598,26 @@ describe('UI 2.0 Map', () => {
       await screen.findByRole('button', { name: 'Beta result' }, { timeout: 4000 });
       fireEvent.keyDown(input, { key: 'Enter' });
       expect(exposed().pickedLocation).toEqual({ lat: 10, lng: 20, address: 'Beta result' });
+    }, 10000);
+
+    test('[ShadMap-IME-001] the Enter that ends an IME composition in the search picks nothing', async () => {
+      // Release audit round 2: the Enter that confirms composed characters chose the first place.
+      fetchMock.mockImplementation(answerByQuery);
+      render({
+        properties: {
+          showSearch: binding('{{true}}'),
+          pickLocation: binding('{{true}}'),
+          geocoderUrl: binding('https://geo.example/ime-001/search?q={query}'),
+        },
+      });
+      const input = await screen.findByRole('searchbox');
+      fireEvent.change(input, { target: { value: 'とうきょう' } });
+      await screen.findByRole('button', { name: 'とうきょう result' }, { timeout: 4000 });
+      fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+      fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 });
+      expect(exposed().pickedLocation).toEqual({});
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(exposed().pickedLocation).toEqual({ lat: 10, lng: 20, address: 'とうきょう result' });
     }, 10000);
 
     test('[ShadMap-ACT-005] an address lookup still running when the map unmounts writes nothing, not even into a new mount', async () => {

@@ -18,7 +18,7 @@ import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import { Chip, ClearButton, MENU_SURFACE } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { isComposing, isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Tags input ----------------------------------------------------------------------------------------------------
 
@@ -108,9 +108,15 @@ export const ShadTagsInput = (props: WidgetProps) => {
   const add = (candidates: unknown) => {
     let wanted = M.toTags(candidates);
     if (properties.allowCustomTags === false) {
-      const known = wanted
-        .map((c) => suggestions.find((s) => M.sameTag(s.tag, c) || M.sameTag(s.label, c))?.tag)
-        .filter((t): t is string => !!t);
+      // A candidate is the suggestion whose value it is (exactly, then by the case rule), else the one whose label it
+      // is: a picked suggestion keeps its own value even when another suggestion's label reads the same, and with
+      // caseSensitive on, alpha and Alpha are different suggestions.
+      const cs = rules.caseSensitive;
+      const resolve = (c: string) =>
+        suggestions.find((s) => s.tag === c)?.tag ??
+        suggestions.find((s) => M.sameTag(s.tag, c, cs))?.tag ??
+        suggestions.find((s) => M.sameTag(s.label, c, cs))?.tag;
+      const known = wanted.map(resolve).filter((t): t is string => !!t);
       if (known.length < wanted.length) setTagError('Pick a tag from the suggestions');
       wanted = known;
       if (!wanted.length) return false;
@@ -142,7 +148,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     // Keys that belong to an IME composition (the Enter that confirms it) are the input method's, not the field's.
     if (isComposing(e)) return;
-    if (e.key === 'Enter') {
+    if (isEnter(e)) {
       e.preventDefault();
       if (menuOpen && active >= 0 && visible[active]) {
         if (add([visible[active].tag])) setText('');
@@ -175,7 +181,8 @@ export const ShadTagsInput = (props: WidgetProps) => {
           >
             {tags.map((tag, i) => (
               <Chip
-                key={`${tag}-${i}`}
+                // Tags are unique (addTags), so a chip keeps its identity when one before it is removed.
+                key={tag}
                 label={tag}
                 removeLabel={`Remove ${tag}`}
                 onRemove={disabled ? undefined : () => remove(i)}

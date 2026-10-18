@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Area, AreaChart, CartesianGrid, Line, LineChart, XAxis } from 'recharts';
 import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { curveOf, MAX_ROWS } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { curveOf, hiddenNote, MAX_ROWS } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
   animated,
   AXIS,
@@ -11,6 +11,7 @@ import {
   GRID,
   isCompactChart,
   useAffixes,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import {
   seriesSetup,
@@ -36,7 +37,11 @@ export const ShadAreaChart = (props: WidgetProps) => {
   const Chart = p.lineOnly === true ? LineChart : AreaChart;
   const compact = isCompactChart(props.height);
   return (
-    <ChartFrame props={props} empty={!data.length || !series.length}>
+    <ChartFrame
+      props={props}
+      empty={!data.length || !series.length}
+      notes={[setup.fieldNote, hiddenNote(list(bound).length - data.length, 'row')]}
+    >
       {(onDatum) => (
         <Chart
           data={data}
@@ -91,4 +96,4 @@ export const ShadAreaChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadAreaChart);
+export default withControlState(withChartRecovery(ShadAreaChart));

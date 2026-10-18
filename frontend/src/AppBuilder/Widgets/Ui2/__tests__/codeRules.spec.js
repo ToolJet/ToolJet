@@ -5,6 +5,7 @@
 // - Widgets do not reach into the canvas's DOM (its wrappers and layout attributes) to size themselves: the canvas
 //   passes width, height and boxFit as props, and rows size through the reflow. One exception, an open question for
 //   the app builder team: Stat equalises a row of Stat cards by reading their FlexContainer wrapper (Stat/statRow.ts).
+// - Enter is read through _shared/keyboard.ts (isEnter), never compared directly.
 // - No `react-hooks/exhaustive-deps` suppressions: dependencies are complete (useStable and useLatest in packHooks are
 //   the tools for bound data and latest-value reads).
 import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
@@ -86,6 +87,15 @@ describe('UI 2.0 widget code rules', () => {
     const CANVAS = /flex-child-wrapper|canvas-component|draggable-widget|data-layout-context|['"`.]ele-/;
     const found = sources.filter((file) => CANVAS.test(fs.readFileSync(file, 'utf8'))).map(rel);
     expect(found).toEqual(['Stat/Stat.tsx']);
+  });
+
+  // Release audit round 2: the Enter that confirms an IME composition (Japanese, Chinese, Korean input) is not the user
+  // pressing Enter. Every Enter goes through keyboard.ts (isEnter, onKeyActivate), which leaves composition keys alone.
+  it('checks Enter only through the shared keyboard helpers', () => {
+    const found = sources
+      .filter((file) => !file.endsWith('_shared/keyboard.ts'))
+      .filter((file) => /\.key\s*===\s*['"]Enter['"]/.test(fs.readFileSync(file, 'utf8')));
+    expect(found.map(rel)).toEqual([]);
   });
 
   it('suppresses no react-hooks/exhaustive-deps warnings', () => {

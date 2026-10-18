@@ -1,14 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { runNow, useActionFire, useAutoHeight, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  useActionFire,
+  useAutoHeight,
+  useLatest,
+  withOwnedActions,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { applyFilters, matchesSearch, normalizeColumns, rowKey, sortRows } from './tableModel';
 import type { Entry, FireOption, Live, OnAction, Paged, Row, Sort, TableColumn, TableFilter } from './types';
-import { ROW_BORDER, useCellResolver } from './TableCells';
+import { RIGHT_FADE, ROW_BORDER, useCellResolver } from './TableCells';
 import { TableToolbar } from './TableToolbar';
 import { TableHead } from './TableHead';
 import { TableBody } from './TableBody';
@@ -28,11 +34,6 @@ import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 const ROW_HEIGHT: Record<string, number> = { condensed: 36, regular: 44, spacious: 56 };
 const VIRTUALIZE_ABOVE = 150;
-
-const RIGHT_FADE = {
-  maskImage: 'linear-gradient(to right, #000 calc(100% - 40px), transparent)',
-  WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 40px), transparent)',
-};
 
 const MAX_FILTERS = 50;
 
@@ -73,6 +74,8 @@ export const ShadTable = (props: WidgetProps) => {
   const live = useRef<Live>({} as Live);
   const { edits, withEdits, editing, setEditing, commitEdit, discard } = useTableEdits({
     data,
+    columns,
+    isDisabled,
     live,
     setExposedVariables,
     fireEvent,
@@ -390,4 +393,4 @@ export const ShadTable = (props: WidgetProps) => {
   );
 };
 
-export default ShadTable;
+export default withOwnedActions(ShadTable);

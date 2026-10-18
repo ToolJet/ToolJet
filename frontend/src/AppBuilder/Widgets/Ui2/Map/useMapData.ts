@@ -4,10 +4,14 @@ import { useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { mapPoints, parseCenter } from './mapModel';
 import { areaShapes, heatPoints, markerRoutes, routeRows, statusFill } from './mapShapes';
 import { circleCorners } from './mapIcons';
-import { loadIcons } from './mapLayers';
+import { loadIcons, missingIcons } from './mapLayers';
 
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { MapPoint } from './mapTypes';
+
+// A failed icon load is tried again twice, 2 s and then 4 s later.
+const ICON_RETRIES = 2;
+const ICON_RETRY_MS = 2000;
 
 /** The marker groups' index: each feature holds its marker's position in the points (i). */
 export type MarkerIndex = Supercluster<{ i: number; cluster?: false }>;
@@ -99,12 +103,24 @@ export const useMapData = (p: Resolved) => {
   // Icons for the pins load once, the first time a map names one; the pins draw again when they arrive.
   const [iconsReady, setIconsReady] = useState(0);
   const iconNames = useStable(useMemo(() => [...new Set(points.map((pt) => pt.icon).filter(Boolean))], [points]));
+  // A load that failed is tried again a few times, later each time: the map asks only when its icon names change, so
+  // one failed load left its pins without icons for good (release audit round 2).
   useEffect(() => {
     if (!iconNames.length) return undefined;
     let alive = true;
-    loadIcons(iconNames).then((loaded) => alive && loaded && setIconsReady((n) => n + 1));
+    let retry: ReturnType<typeof setTimeout> | undefined;
+    const load = (attempt: number) =>
+      loadIcons(iconNames).then((loaded) => {
+        if (!alive) return;
+        if (loaded) setIconsReady((n) => n + 1);
+        if (attempt < ICON_RETRIES && missingIcons(iconNames).length) {
+          retry = setTimeout(() => load(attempt + 1), ICON_RETRY_MS * (attempt + 1));
+        }
+      });
+    load(0);
     return () => {
       alive = false;
+      clearTimeout(retry);
     };
   }, [iconNames]);
 

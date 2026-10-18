@@ -1,0 +1,39 @@
+{
+  "static": [
+    {
+      "query": "rows",
+      "path": "options.code",
+      "equals": "return [components.tags1[0].values, components.tags1[index].values, components.tags1[variables.row].values];"
+    },
+    {
+      "query": "optional",
+      "path": "options.code",
+      "equals": "return components?.['tags1']?.[0]?.values;"
+    },
+    {
+      "query": "literal",
+      "path": "options.code",
+      "equals": "const label = \"components.tags1.tags\"; return components.tags1.values;"
+    },
+    {
+      "query": "template",
+      "path": "options.code",
+      "equals": "return `components.tags1.tags: ${components.tags1.values}`;"
+    },
+    {
+      "query": "comment-call",
+      "path": "options.code",
+      "equals": "return components.tags1.setDisable /* reason */ (true);"
+    },
+    {
+      "query": "alias",
+      "path": "options.code",
+      "equals": "const setDisabled = components.tags1.setDisable; return setDisabled(true);"
+    },
+    {
+      "query": "plain-call",
+      "path": "options.code",
+      "equals": "return components.tags1.setDisable(true);"
+    }
+  ]
+}

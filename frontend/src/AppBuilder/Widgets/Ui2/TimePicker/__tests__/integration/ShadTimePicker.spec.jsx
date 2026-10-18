@@ -207,6 +207,8 @@ describe('UI 2.0 Time picker', () => {
     await open();
 
     await choose('Times', '9:00 AM');
+    // The closing popup hands focus back to the field a moment later; leaving means leaving from there.
+    await waitFor(() => expect(document.activeElement).toBe(trigger()));
     await act(async () => trigger().blur());
 
     await waitFor(() => expect(widget.variables().blurred).toBe('YES'), { timeout: 300 });

@@ -8,7 +8,13 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useDynamicHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { tabIds, tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
-import { asActions, useActionFire, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  asActions,
+  useActionFire,
+  useLatest,
+  useStable,
+  withOwnedActions,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { TabStrip } from './TabStrip';
@@ -46,19 +52,21 @@ interface TabPanelProps {
 // as dynamicHeightReflow expects; the wizard footer adds STEP_NAV_HEIGHT.
 export const STEP_NAV_HEIGHT = 56;
 
-/** One tab's panel: its canvas, or a spinner while the tab is loading. Memoised on its own inputs, so switching
- *  tabs re-renders only the two panels whose visibility changes. */
+/** One tab's panel: its canvas, with a spinner in its place while the tab is loading. A hidden or loading tab keeps
+ *  its canvas mounted, only out of sight, so what was typed in its components survives (it was unmounted and lost).
+ *  Memoised on its own inputs, so switching tabs re-renders only the two panels whose visibility changes. */
 const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, background }: TabPanelProps) {
   const ref = useRef<HTMLDivElement>(null);
   // A disabled tab's panel blocks the keyboard as it blocks the mouse: inert takes its fields out of the tab order.
   useDisableInert(ref, tab.disable);
-  if (tab.visible === false) return null;
+  // A hidden tab has no tab in the strip, so its panel is no tab panel either: no role, id or label pointing at it.
+  const shown = tab.visible !== false;
   return (
     <div
       ref={ref}
-      role="tabpanel"
-      id={tabIds(id, tab.id).panel}
-      aria-labelledby={tabIds(id, tab.id).tab}
+      role={shown ? 'tabpanel' : undefined}
+      id={shown ? tabIds(id, tab.id).panel : undefined}
+      aria-labelledby={shown ? tabIds(id, tab.id).tab : undefined}
       aria-disabled={tab.disable || undefined}
       // activetab is ToolJet's own attribute on a tab pane (as on the native Tabs), not one React's types know.
       {...{ activetab: tab.id }}
@@ -73,10 +81,11 @@ const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, backg
       }}
     >
       {tab.loading ? (
-        <div className="tw-flex tw-h-full tw-items-center tw-justify-center">
+        <div className="tw-flex tw-h-full tw-items-center tw-justify-center" aria-busy="true">
           <Spinner />
         </div>
-      ) : (
+      ) : null}
+      <div className="tw-h-full tw-w-full" hidden={tab.loading}>
         <SubContainer
           id={`${id}-${tab.id}`}
           canvasHeight={dynamic ? '100%' : '200'}
@@ -90,7 +99,7 @@ const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, backg
           }}
           componentType="ShadTabs"
         />
-      )}
+      </div>
     </div>
   );
 });
@@ -143,7 +152,12 @@ export const ShadTabs = (props: WidgetProps) => {
 
   const pickDefault = (visible: Tab[]): TabId | undefined =>
     visible.some((tab) => tab.id == defaultTab) ? defaultTab : visible[0]?.id;
-  const [currentTab, setCurrentTab] = useState<TabId | undefined>(() => pickDefault(shown));
+  // The tab chosen (by default, a click or an action) is kept apart from the tab shown: the chosen tab while it is
+  // visible, else the first visible tab, else none. Derived as the widget renders, so an action that hides the current
+  // tab has moved to the next one by the time it returns (`await setTabVisibility('a', false); await nextTab()` lost
+  // the second action), and with every tab hidden or removed nothing is current, as with an empty list.
+  const [chosenTab, setCurrentTab] = useState<TabId | undefined>(() => pickDefault(shown));
+  const currentTab = shown.some((tab) => tab.id == chosenTab) ? chosenTab : shown[0]?.id;
   // Only a new defaultTab moves the tab; the tabs shown then are read from a ref.
   const latestPick = useLatest(() => pickDefault(shown));
   useEffect(() => setCurrentTab(latestPick.current()), [defaultTab, latestPick]);
@@ -156,10 +170,10 @@ export const ShadTabs = (props: WidgetProps) => {
     });
     return () => cancelAnimationFrame(frame);
   }, [id, currentTab, properties.scrollToTopOnTabSwitch]);
-  // A hidden or removed current tab falls back to the first visible one.
+  // A hidden or removed chosen tab gives way for good to the tab shown in its place.
   useEffect(() => {
-    if (shown.length && !shown.some((tab) => tab.id == currentTab)) setCurrentTab(shown[0].id);
-  }, [shown, currentTab]);
+    if (currentTab !== undefined && currentTab !== chosenTab) setCurrentTab(currentTab);
+  }, [currentTab, chosenTab]);
 
   const stepIndex = Math.max(
     0,
@@ -291,23 +305,26 @@ export const ShadTabs = (props: WidgetProps) => {
         />
       )}
       <div className="tw-relative tw-min-h-0 tw-w-full tw-flex-1" style={{ background: look.panelBackground }}>
+        {/* Loading, the panels stay mounted beside the spinner, none of them shown: swapping them for it unmounted every
+            tab's components, and what was typed in them was lost. */}
         {isLoading ? (
-          <div className="tw-flex tw-h-full tw-items-center tw-justify-center">
+          <div className="tw-flex tw-h-full tw-items-center tw-justify-center" aria-busy="true">
             <Spinner />
           </div>
-        ) : (
-          shown.map((tab) =>
-            properties.renderOnlyActiveTab && tab.id != currentTab ? null : (
-              <TabPanel
-                key={tab.id}
-                id={id}
-                tab={tab}
-                width={width}
-                active={tab.id == currentTab}
-                dynamic={dynamic}
-                background={look.panelBackground}
-              />
-            )
+        ) : null}
+        {/* Every tab's panel, hidden ones too (out of sight, keeping their components), unless only the current one
+            is rendered. */}
+        {tabs.map((tab) =>
+          properties.renderOnlyActiveTab && tab.id != currentTab ? null : (
+            <TabPanel
+              key={tab.id}
+              id={id}
+              tab={tab}
+              width={width}
+              active={!isLoading && tab.id == currentTab}
+              dynamic={dynamic}
+              background={look.panelBackground}
+            />
           )
         )}
       </div>
@@ -352,4 +369,4 @@ export const ShadTabs = (props: WidgetProps) => {
   );
 };
 
-export default ShadTabs;
+export default withOwnedActions(ShadTabs);

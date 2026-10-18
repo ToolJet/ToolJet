@@ -25,6 +25,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { FileKind } from '@/AppBuilder/Widgets/Ui2/_pickers/fileModel';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isStringOrNumber, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { parseContent } from './fileParse';
 
 // ---- File upload ---------------------------------------------------------------------------------------------------
 
@@ -58,6 +59,8 @@ export interface ReadFile {
   lastModified: number;
   preview: string;
   parsedData: unknown;
+  /** Why the content could not be parsed ('' when it was, or parsing is off). */
+  parseError: string;
 }
 
 /** Reads a file the native File picker's way: text content, base64 and data URL, held in the file-handle registry
@@ -69,22 +72,7 @@ export const readFile = async (
   const dataURL = await readAs(file, 'readAsDataURL');
   const content = await readAs(file, 'readAsText');
   const base64Data = dataURL.split(',')[1] || '';
-  let parsedData: unknown = null;
-  if (parse) {
-    try {
-      const fp = await import('@/AppBuilder/Widgets/FilePicker/helpers/fileProcessing');
-      const type = parseFileType || 'auto-detect';
-      if (fp.parseFileContentEnabled(file, type === 'auto-detect', type)) {
-        parsedData = await fp.processFileContent(
-          file.type,
-          { readFileAsText: content, readFileAsDataURL: base64Data },
-          { fileParsingDelimiter: delimiter || ',', fileTypeFromExtension: type }
-        );
-      }
-    } catch {
-      parsedData = null;
-    }
-  }
+  const parsed = parse ? await parseContent(file, content, base64Data, { parseFileType, delimiter }) : null;
   handleSeq += 1;
   const handle = `shad-file-${Date.now().toString(36)}-${handleSeq}`;
   registerFileHandle(handle, file, { content, base64Data, dataURL });
@@ -95,7 +83,8 @@ export const readFile = async (
     size: Number(file.size) || 0,
     lastModified: file.lastModified,
     preview: String(file.type ?? '').startsWith('image/') ? dataURL : '',
-    parsedData,
+    parsedData: parsed ? parsed.data : null,
+    parseError: parsed ? parsed.error : '',
   };
 };
 
@@ -108,6 +97,7 @@ export const exposedFile = (f: ReadFile) => ({
   base64Data: createFileFieldRef(f.handle, 'base64Data'),
   dataURL: createFileFieldRef(f.handle, 'dataURL'),
   parsedData: f.parsedData,
+  parseError: f.parseError,
 });
 
 export const DROPZONE =
@@ -154,11 +144,30 @@ export const ShadFileUpload = (props: WidgetProps) => {
     });
     publish(next);
   };
-  // Reads in flight belong to a generation: clearing starts a new one, so a read that finishes after a clear is
-  // released, not published (a cleared file came back, with its load events).
+  // Who owns a read in flight, checked when it finishes:
+  // - a generation, which clearing ends: a read that finishes after a clear is released, not published (a cleared
+  //   file came back, with its load events);
+  // - its place in the order of drops: with one file allowed, a read older than the latest drop is released (an older
+  //   read finishing last replaced the newer selection);
+  // - isParsing counts the parsing reads of the current generation, so it stays true until the last one finishes (the
+  //   first read to finish, or one cleared away, turned it off while another was still parsing).
   const generation = useRef(0);
+  const latestDrop = useRef(0);
+  const parsingReads = useRef(0);
+  const countParsing = (delta: number) => {
+    const was = parsingReads.current > 0;
+    parsingReads.current = delta === 0 ? 0 : Math.max(0, parsingReads.current + delta);
+    const now = parsingReads.current > 0;
+    if (now === was) return;
+    setParsing(now);
+    setExposedVariables({ isParsing: now });
+  };
+  // The limits in force when a read finishes apply, not those when it started (maxFiles or multiple can change while
+  // a read is pending).
+  const limits = useLatest({ multiple, maxFiles });
   const clearFiles = (withEvent = true) => {
     generation.current += 1;
+    countParsing(0);
     const old = filesRef.current;
     old.forEach((f) => releaseFileHandle(f.handle));
     setRejectError('');
@@ -202,47 +211,44 @@ export const ShadFileUpload = (props: WidgetProps) => {
     }
     setRejectError(message);
     if (!taking.length) return;
+    latestDrop.current += 1;
+    const drop = latestDrop.current;
     const parse = properties.parseContent === true;
-    if (parse) {
-      setParsing(true);
-      setExposedVariables({ isParsing: true });
-    }
+    if (parse) countParsing(1);
     const options = { parse, parseFileType: properties.parseFileType, delimiter: properties.delimiter };
     const results = await Promise.allSettled(taking.map((f) => readFile(f, options)));
     const read = results
       .filter((r): r is PromiseFulfilledResult<ReadFile> => r.status === 'fulfilled')
       .map((r) => r.value);
-    if (!mounted.current) {
-      read.forEach((f) => releaseFileHandle(f.handle));
-      return;
-    }
-    if (parse) {
-      setParsing(false);
-      setExposedVariables({ isParsing: false });
-    }
-    if (started !== generation.current) {
-      read.forEach((f) => releaseFileHandle(f.handle));
-      return;
-    }
+    const release = () => read.forEach((f) => releaseFileHandle(f.handle));
+    if (!mounted.current) return release();
+    if (started !== generation.current) return release();
+    if (parse) countParsing(-1);
+    const live = limits.current;
+    if (!live.multiple && drop !== latestDrop.current) return release();
     if (read.length < taking.length) setRejectError(`${taking.length - read.length} file(s) could not be read`);
-    if (!read.length) return;
-    if (!multiple) filesRef.current.forEach((f) => releaseFileHandle(f.handle));
+    if (!read.length) return undefined;
+    if (!live.multiple) filesRef.current.forEach((f) => releaseFileHandle(f.handle));
     // The files are put together when the reads finish, not when they start: two drops can both have seen room for
     // the last file, or both carried the same file. What does not fit is released, so its payload is not kept.
-    const kept = multiple ? filesRef.current : [];
+    const kept = live.multiple ? filesRef.current : [];
     const same = (a: ReadFile, b: ReadFile) =>
       a.name === b.name && a.size === b.size && a.lastModified === b.lastModified;
     const added = read.filter((f, i) => !kept.some((k) => same(k, f)) && read.findIndex((g) => same(g, f)) === i);
-    const next = [...kept, ...added].slice(0, maxFiles);
+    const next = [...kept, ...added].slice(0, live.maxFiles);
     read.filter((f) => !next.includes(f)).forEach((f) => releaseFileHandle(f.handle));
     if (added.length > next.length - kept.length) {
-      setRejectError(M.rejectionMessage([{ errors: [{ code: 'too-many-files' }] }], { maxFiles }));
+      setRejectError(M.rejectionMessage([{ errors: [{ code: 'too-many-files' }] }], { maxFiles: live.maxFiles }));
     }
-    if (next.length === kept.length && multiple) return;
+    // A file whose content could not be parsed says so, beside the list (it is also on the file, as parseError).
+    const unparsed = next.filter((f) => !kept.includes(f) && f.parseError).map((f) => f.parseError);
+    if (unparsed.length) setRejectError(unparsed.join(' '));
+    if (next.length === kept.length && live.multiple) return undefined;
     publish(next);
     fireEvent('onFileSelected');
     // The native File picker's event once the files are read (and parsed, with Parse content on).
     fireEvent('onFileLoaded');
+    return undefined;
   };
   const remove = (index: number) => {
     const file = filesRef.current[index];

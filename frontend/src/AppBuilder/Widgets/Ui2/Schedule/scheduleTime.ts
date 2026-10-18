@@ -2,6 +2,7 @@
 // calendar days in local time: where the clocks change a day has 23 or 25 hours.
 import type { ParsedTime } from './scheduleTypes';
 import { isNonBlankString, pad2 } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isRealDateText } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 
 export const int = (v: unknown, fallback: number): number => {
   if (v === null || v === undefined || v === '' || typeof v === 'boolean') return fallback;
@@ -45,6 +46,8 @@ export const parseTime = (v: unknown, day?: Date): ParsedTime | null => {
   if (typeof v === 'number') return Number.isFinite(v) ? { time: v, dateOnly: false } : null;
   if (!isNonBlankString(v) || v.length > 64) return null;
   const s = v.trim();
+  // A day or time that does not exist (30 February, 25:00) is not read as another one: Date would roll it over.
+  if (!isRealDateText(s)) return null;
   const date = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (date) {
     const d = new Date(Number(date[1]), Number(date[2]) - 1, Number(date[3]));

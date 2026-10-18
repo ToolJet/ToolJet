@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import {
+  CONTROL,
+  controlAria,
+  fieldIdOf,
+  fieldName,
+  FormField,
+  requiredAria,
+} from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -28,11 +35,13 @@ import {
   MUTED,
   OptionsMenu,
   PLACEHOLDER,
+  useDropRemovedChoices,
   useKeptSelection,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 /** A rule between the options and the selection's own commands: drawn only, since a list of options may hold only
  *  options and groups (cmdk's Separator is role="separator"). */
@@ -44,7 +53,7 @@ const MenuRule = () => <div aria-hidden="true" className="-tw-mx-1 tw-h-px tw-bg
  *  click, Enter, Space or ArrowDown; a click on it while open closes the menu instead of reopening it. */
 const useAnchoredMenu = (properties: WidgetProps['properties'], onClose?: () => void) => {
   const anchorRef = useRef<HTMLDivElement>(null);
-  const popup = usePickerPopup(properties);
+  const popup = usePickerPopup(properties, anchorRef);
   const { open } = popup;
   const disabled = busy(properties);
   const change = (next: boolean) => {
@@ -54,7 +63,10 @@ const useAnchoredMenu = (properties: WidgetProps['properties'], onClose?: () => 
   };
   return {
     open,
-    blocked: popup.blocked,
+    get blocked() {
+      return popup.blocked;
+    },
+    blurAway: () => popup.blurAway(anchorRef.current),
     change,
     anchorRef,
     anchorProps: {
@@ -70,6 +82,8 @@ const useAnchoredMenu = (properties: WidgetProps['properties'], onClose?: () => 
         if (e.target instanceof Node && anchorRef.current?.contains(e.target)) e.preventDefault();
       },
       onCloseAutoFocus: (e: Event) => {
+        popup.onCloseAutoFocus(e);
+        if (e.defaultPrevented) return;
         e.preventDefault();
         anchorRef.current?.focus();
       },
@@ -89,6 +103,14 @@ export const ShadMultiselect = (props: WidgetProps) => {
   const defaultKeys = useStable([...new Set(M.toValueList(properties.defaultValue).map(M.keyOf))]);
   const limitRef = useLatest(limit);
   const [keys, setKeys] = useState(() => defaultKeys.slice(0, limit || undefined));
+  // An option that is removed takes its choice with it (unless it is only off a server-side search page), so it neither
+  // comes back selected nor counts against maxSelections while it is gone.
+  useDropRemovedChoices(
+    options.map((o) => M.keyOf(o.value)),
+    keys,
+    (gone) => setKeys((k) => k.filter((x) => !gone.has(x))),
+    properties.serverSideSearch === true
+  );
   useEffect(() => setKeys(defaultKeys.slice(0, limitRef.current || undefined)), [defaultKeys, limitRef]);
   useEffect(() => {
     if (limit > 0) setKeys((k) => (k.length > limit ? k.slice(0, limit) : k));
@@ -108,7 +130,12 @@ export const ShadMultiselect = (props: WidgetProps) => {
     deselectOptions: async (v: unknown) => setKeys((k) => M.removeKeys(k, v)),
     clear: async () => setKeys([]),
     setFocus: async () => menu.anchorRef.current?.focus(),
-    setBlur: async () => menu.anchorRef.current?.blur(),
+    // Closes an open menu too (focus is in it then), the way the menu's own close does: touched, onBlur once.
+    setBlur: async () => {
+      const wasOpen = menu.open;
+      menu.blurAway();
+      if (wasOpen) menuChange(false);
+    },
   });
   const publish = (next: string[]) => {
     // As the rendered selection resolves them: with server-side search, kept records stand in for options off the page.
@@ -174,11 +201,14 @@ export const ShadMultiselect = (props: WidgetProps) => {
             role="combobox"
             aria-controls={menu.open ? menuId : undefined}
             // A div takes no name from <label for>: the label's text, else the placeholder, names it.
-            aria-label={toText(properties.label) || fieldName(props, 'Select options')}
+            // The field is not a labelable element, so it carries its label's text; a label of only spaces names nothing,
+            // so the placeholder or component name does, as for the Select.
+            aria-label={toText(properties.label).trim() || fieldName(props, 'Select options')}
             {...controlAria(props, check.error)}
+            {...requiredAria(props)}
             onKeyDown={(e) => {
               if (disabled) return;
-              if (['Enter', ' ', 'ArrowDown'].includes(e.key)) {
+              if (!isComposing(e) && ['Enter', ' ', 'ArrowDown'].includes(e.key)) {
                 e.preventDefault();
                 menuChange(true);
               } else if (e.key === 'Backspace' && selectedOptions.length) {

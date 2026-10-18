@@ -6,6 +6,9 @@
 // A rename maps an old name to the name that replaces it; where both names fired or held the same thing, only the
 // replacement is left. An exposed value may map to a path ('lastCardMovement.card').
 
+import { parse as acornParse, parseExpressionAt as acornParseExpressionAt } from 'acorn';
+import { ancestor as ancestorWalk } from 'acorn-walk';
+
 export type Ui2Renames = {
   events?: Record<string, string>;
   actions?: Record<string, string>;
@@ -134,8 +137,16 @@ export const rewriteStringsDeep = <T>(value: T, fn: (text: string) => string): T
   if (typeof value === 'string') return fn(value) as unknown as T;
   if (Array.isArray(value)) return value.map((item) => rewriteStringsDeep(item, fn)) as unknown as T;
   if (isPlainObject(value)) {
+    // Keys are defined, not assigned: an own `__proto__` key (JSON.parse makes one) is a key like any other, where
+    // `out[key] = ...` would set the copy's prototype and drop it.
     const out: Record<string, unknown> = {};
-    for (const [key, item] of Object.entries(value)) out[key] = rewriteStringsDeep(item, fn);
+    for (const [key, item] of Object.entries(value))
+      Object.defineProperty(out, key, {
+        value: rewriteStringsDeep(item, fn),
+        enumerable: true,
+        writable: true,
+        configurable: true,
+      });
     return out as T;
   }
   return value;
@@ -190,13 +201,14 @@ const own = (map: Record<string, string>, key: string) =>
   Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
 
 /**
- * Rewrites references to renamed exposed values and actions inside any string. `components.x.selectedRow` becomes
+ * The pattern the rewrite used before it read the code, kept for code that is not JavaScript (a Python query) and a
+ * binding that does not parse. `components.x.selectedRow` becomes
  * `components.x.selectedRecord` for a ShadListView `x`; `components.x.disable(true)` becomes
  * `components.x.setDisable(true)`. Action names are renamed only where they are called, exposed names only where they
  * are not, so a value that shares an old action's name is left alone. The whole member name must match (`selectedRowId`
  * is its own entry, never a prefix hit of `selectedRow`). A path target (`lastCardMovement.card`) is inserted as is.
  */
-export const rewriteReferences = (text: string, renamesByComponentName: Ui2RenamesByComponentRef): string => {
+const rewriteReferencesByPattern = (text: string, renamesByComponentName: Ui2RenamesByComponentRef): string => {
   if (typeof text !== 'string' || !text.includes('components')) return text;
   const re = new RegExp(REFERENCE.source, 'g');
   let out = '';
@@ -213,7 +225,7 @@ export const rewriteReferences = (text: string, renamesByComponentName: Ui2Renam
     if (!renames || !key) continue;
 
     const isCall = CALL_AHEAD.test(text.slice(match.index + whole.length));
-    const target = isCall ? own(renames.actions, key) : own(renames.exposed, key);
+    const target = isCall ? own(renames.actions, key) : (own(renames.exposed, key) ?? own(renames.actions, key));
     if (!target || target === key) continue;
 
     const newMember =
@@ -227,6 +239,136 @@ export const rewriteReferences = (text: string, renamesByComponentName: Ui2Renam
     last = match.index + whole.length;
   }
   return last === 0 ? text : out + text.slice(last);
+};
+
+// The rewrite reads the code (acorn), so it finds what a reader sees as a reference (whitespace, a line break or a
+// comment between the parts, a key in brackets or backticks) and leaves what only looks like one (a string in the
+// code, plain text outside {{ }}). Code it cannot read as JavaScript (a Python query) falls back to the pattern.
+const ACORN_OPTIONS = {
+  ecmaVersion: 'latest',
+  sourceType: 'script',
+  allowReturnOutsideFunction: true,
+  allowAwaitOutsideFunction: true,
+  allowHashBang: true,
+} as const;
+
+type Edit = { start: number; end: number; text: string };
+
+/** A member key known without running the code: `.key`, `['key']` or a backtick key with no `${}`. */
+const staticKey = (node: any, computed: boolean): string | undefined => {
+  if (!computed && node?.type === 'Identifier') return node.name;
+  if (computed && node?.type === 'Literal' && typeof node.value === 'string') return node.value;
+  if (computed && node?.type === 'TemplateLiteral' && node.expressions.length === 0) return node.quasis[0].value.cooked;
+  return undefined;
+};
+
+/** The component a member expression names: `components.<ref>` (or `['<ref>']`), then any List view row index (a number or an expression). */
+const componentRefOf = (node: any): string | undefined => {
+  if (node?.type !== 'MemberExpression') return undefined;
+  if (node.object.type === 'Identifier' && node.object.name === 'components')
+    return staticKey(node.property, node.computed);
+  // A row: `[0]`, `[index]`, `[variables.row]`; any key not known without running the code.
+  if (node.computed && staticKey(node.property, true) === undefined) return componentRefOf(node.object);
+  return undefined;
+};
+
+/** The renames to make inside one parsed node (a program or an expression), as edits to the text it came from. */
+const referenceEdits = (root: any, renamesByComponentName: Ui2RenamesByComponentRef): Edit[] => {
+  const edits: Edit[] = [];
+  ancestorWalk(root, {
+    MemberExpression(node: any, _state: unknown, ancestors: any[]) {
+      const ref = componentRefOf(node.object);
+      if (ref === undefined || !Object.prototype.hasOwnProperty.call(renamesByComponentName, ref)) return;
+      const renames = renamesByComponentName[ref];
+      const key = staticKey(node.property, node.computed);
+      if (key === undefined) return;
+      const parent = ancestors[ancestors.length - 2];
+      const isCall = parent?.type === 'CallExpression' && parent.callee === node;
+      const target = isCall ? own(renames.actions, key) : (own(renames.exposed, key) ?? own(renames.actions, key));
+      if (!target || target === key) return;
+      const property = node.property;
+      if (!node.computed) {
+        edits.push({ start: property.start, end: property.end, text: target });
+      } else {
+        const quote = property.type === 'TemplateLiteral' ? '`' : String(property.raw)[0];
+        const text = target
+          .split('.')
+          .map((part) => `${quote}${part}${quote}`)
+          .join('][');
+        edits.push({ start: property.start, end: property.end, text });
+      }
+    },
+  });
+  return edits;
+};
+
+const applyEdits = (text: string, edits: Edit[]): string =>
+  [...edits]
+    .sort((a, b) => b.start - a.start)
+    .reduce((out, edit) => out.slice(0, edit.start) + edit.text + out.slice(edit.end), text);
+
+/**
+ * Rewrites references to renamed exposed values and actions in code (RunJS, a transformation): `components.x.selectedRow`
+ * becomes `components.x.selectedRecord` for a ShadListView `x`; `components.x.disable(true)` becomes
+ * `components.x.setDisable(true)`. Action names are renamed only where they are called, exposed names only where they
+ * are not. A path target (`lastCardMovement.card`) is inserted as is. Strings and comments are left alone.
+ */
+export const rewriteReferences = (text: string, renamesByComponentName: Ui2RenamesByComponentRef): string => {
+  if (typeof text !== 'string' || !text.includes('components')) return text;
+  try {
+    return applyEdits(text, referenceEdits(acornParse(text, ACORN_OPTIONS), renamesByComponentName));
+  } catch {
+    return rewriteReferencesByPattern(text, renamesByComponentName);
+  }
+};
+
+/**
+ * Rewrites references inside the {{ }} bindings of a value (a property, a style, an event or query parameter); the text
+ * around them is the user's and is left alone. Each binding is read as an expression, so a `}}` inside it (an object
+ * in an object) does not end it early; a binding that is not valid JavaScript falls back to the pattern.
+ */
+export const rewriteBindings = (text: string, renamesByComponentName: Ui2RenamesByComponentRef): string => {
+  if (typeof text !== 'string' || !text.includes('{{') || !text.includes('components')) return text;
+  const edits: Edit[] = [];
+  let from = 0;
+  for (;;) {
+    const open = text.indexOf('{{', from);
+    if (open === -1) break;
+    let close = -1;
+    try {
+      const node: any = acornParseExpressionAt(text, open + 2, ACORN_OPTIONS);
+      const after = text.slice(node.end).match(/^\s*\}\}/);
+      if (after) {
+        edits.push(...referenceEdits(node, renamesByComponentName));
+        close = node.end + after[0].length - 2;
+      }
+    } catch {
+      // not an expression: handled below
+    }
+    if (close === -1) {
+      close = text.indexOf('}}', open + 2);
+      if (close === -1) break;
+      const inner = text.slice(open + 2, close);
+      const rewritten = rewriteReferencesByPattern(inner, renamesByComponentName);
+      if (rewritten !== inner) edits.push({ start: open + 2, end: close, text: rewritten });
+    }
+    from = close + 2;
+  }
+  return edits.length ? applyEdits(text, edits) : text;
+};
+
+/** Query options: `code` and `transformation` are code; every other string holds {{ }} bindings. */
+export const rewriteQueryOptions = <T>(options: T, renamesByComponentName: Ui2RenamesByComponentRef): T => {
+  if (!isPlainObject(options)) return rewriteStringsDeep(options, (t) => rewriteBindings(t, renamesByComponentName));
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(options)) {
+    const next =
+      (key === 'code' || key === 'transformation') && typeof value === 'string'
+        ? rewriteReferences(value, renamesByComponentName)
+        : rewriteStringsDeep(value, (t) => rewriteBindings(t, renamesByComponentName));
+    Object.defineProperty(out, key, { value: next, enumerable: true, writable: true, configurable: true });
+  }
+  return out as T;
 };
 
 /**
@@ -243,7 +385,7 @@ export const migrateFlexContainerCardStyle = <T extends Record<string, any>>(pro
 /**
  * Renames one event handler's `event` JSON. The event id is renamed when the handler's source is a Shad* type with a
  * mapping; a `control-component` action on a Shad* target is renamed by the target's type. Returns the same object
- * when nothing applies. References inside strings are not touched here: run rewriteStringsDeep with rewriteReferences.
+ * when nothing applies. References inside strings are not touched here: run rewriteStringsDeep with rewriteBindings.
  */
 export const renameEventHandler = (
   event: Record<string, any>,
@@ -326,7 +468,8 @@ export const applyUi2RenamesToImport = (data: {
     if (!versionComponents.some((c) => typeof c?.type === 'string' && c.type.startsWith('Shad'))) continue;
 
     const byRef = buildRenamesByComponentRef(versionComponents as ComponentLike[]);
-    const rewrite = (text: string) => rewriteReferences(text, byRef);
+    // Values hold {{ }} bindings around the user's own text; query code is code (rewriteQueryOptions).
+    const rewrite = (text: string) => rewriteBindings(text, byRef);
     const typesById: Record<string, string> = {};
     for (const c of versionComponents) typesById[c.id] = c.type;
 
@@ -338,7 +481,7 @@ export const applyUi2RenamesToImport = (data: {
     }
 
     for (const q of data.dataQueries ?? []) {
-      if (q.appVersionId === versionId && q.options != null) q.options = rewriteStringsDeep(q.options, rewrite);
+      if (q.appVersionId === versionId && q.options != null) q.options = rewriteQueryOptions(q.options, byRef);
     }
 
     for (const h of data.events ?? []) {

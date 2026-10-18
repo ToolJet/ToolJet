@@ -19,8 +19,10 @@ import {
   EDGE,
   Group,
   INNER,
+  numberBounds,
   numberTextProps,
   useNumberBox,
+  withRule,
 } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -84,7 +86,9 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
     },
   });
   const commit = (next: number | null) => box.commit(next, (n) => ({ formattedValue: formatted(n) }));
-  const check = useValidation(props, value, () => box.clearTyped((n) => ({ formattedValue: formatted(n) })));
+  const check = useValidation(withRule(props, numberBounds(props.validation)), value, () =>
+    box.clearTyped((n) => ({ formattedValue: formatted(n) }))
+  );
   const textBox = useTextBox(props, check.touch);
   const disabled = busy(properties);
   const display = ['symbol', 'narrowSymbol', 'code'].includes(properties.currencyDisplay)

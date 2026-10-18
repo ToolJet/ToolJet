@@ -7,6 +7,7 @@ import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
   resourceHeading,
   dayKey,
+  parseTime,
   placeBookings,
   positionOf,
   scheduleRange,
@@ -16,11 +17,11 @@ import {
 } from './scheduleModel';
 import { pickBooking, pickSlot, resolveSelection, selectionExposed } from './scheduleSelection';
 import type { SchedulePick } from './scheduleSelection';
-import type { PlacedBooking, ScheduleColumn, ScheduleResource, ScheduleSlot } from './scheduleTypes';
+import type { BookingProblem, PlacedBooking, ScheduleColumn, ScheduleResource, ScheduleSlot } from './scheduleTypes';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { LABEL, LINE, SURFACE, ScheduleRow } from './ScheduleRow';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
-import { clampNumber, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { clampNumber, isSet, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { ShowMoreBar, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { EmptyText } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 
@@ -68,9 +69,11 @@ export const ShadSchedule = (props: WidgetProps) => {
     () => scheduleResources(resourceRows, bookings, p.resourceField),
     [resourceRows, bookings, p.resourceField]
   );
-  const placed = useMemo(
-    () =>
-      placeBookings(
+  // Bookings with malformed dates are left off and listed (problems), never placed on another day.
+  const { placed, problems } = useMemo(() => {
+    const found: BookingProblem[] = [];
+    return {
+      placed: placeBookings(
         bookings,
         {
           resourceField: p.resourceField,
@@ -83,22 +86,47 @@ export const ShadSchedule = (props: WidgetProps) => {
           hourFormat: p.hourFormat,
         },
         range,
-        resources
+        resources,
+        found
       ),
-    [
-      bookings,
-      p.resourceField,
-      p.startField,
-      p.endField,
-      p.titleField,
-      p.subtitleField,
-      p.statusField,
-      p.idField,
-      p.hourFormat,
-      range,
-      resources,
-    ]
-  );
+      problems: found,
+    };
+  }, [
+    bookings,
+    p.resourceField,
+    p.startField,
+    p.endField,
+    p.titleField,
+    p.subtitleField,
+    p.statusField,
+    p.idField,
+    p.hourFormat,
+    range,
+    resources,
+  ]);
+  // A date property that is not a date shows today, and says so.
+  const badDate = date !== undefined && date !== null && toText(date).trim() !== '' && !parseTime(date);
+  const notes = [
+    badDate ? `The date "${toText(date)}" is not a date; showing today.` : '',
+    problems.length
+      ? `${problems.length} booking${problems.length === 1 ? '' : 's'} not shown: ${
+          problems.length === 1 ? 'its' : 'their'
+        } dates are not valid.`
+      : '',
+  ].filter(Boolean);
+  const notice = notes.length ? (
+    <div
+      role="note"
+      data-schedule-problems=""
+      title={problems
+        .map((x) => `${x.title || 'Booking'}${isSet(x.id) ? ` (${toText(x.id)})` : ''}: ${x.problem}`)
+        .join('\n')}
+      className="tw-mt-1 tw-text-xs"
+      style={{ color: 'var(--lk-error,var(--sc-destructive))' }}
+    >
+      {notes.join(' ')}
+    </div>
+  ) : null;
 
   const tracks = useMemo(() => slotTracks(range), [range]);
   const [shownCount, showMore] = useShownCount(RESOURCES_PER_STEP, resources);
@@ -308,6 +336,7 @@ export const ShadSchedule = (props: WidgetProps) => {
   return (
     <Shell {...props} innerRef={ref}>
       {body}
+      {notice}
     </Shell>
   );
 };

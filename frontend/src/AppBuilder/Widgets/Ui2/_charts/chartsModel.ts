@@ -63,18 +63,20 @@ const CURVES: Record<Curve, Curve> = { monotone: 'monotone', linear: 'linear', s
 const isCurve = (c: unknown): c is Curve => typeof c === 'string' && Object.prototype.hasOwnProperty.call(CURVES, c);
 export const curveOf = (c: unknown): Curve => (isCurve(c) ? CURVES[c] : 'monotone');
 
-/** The x field and series a chart plots. A field the data does not have falls back to the data's own: the first text
- *  field for x, the numeric fields for the series (a Luna build kept the catalog's default "revenue" against data with
- *  "amount", and drew an empty chart). Fields the data has are kept as they are. */
-export const resolveChartFields = (
-  data: unknown,
-  xField: string | undefined,
-  series: string[]
-): { x: string | undefined; series: string[] } => {
-  const rows: Row[] = (Array.isArray(data) ? data : []).filter(
-    (row): row is Row => row && typeof row === 'object' && !Array.isArray(row)
-  );
-  if (!rows.length) return { x: xField, series };
+/** The x field and series a chart plots, read from the rows it draws (callers pass those; at most MAX_ROWS are read):
+ *  a row past the cap neither picks a field nor empties the chart. A field the data does not have falls back to the
+ *  data's own, the first text field for x and the numeric fields for the series (a Luna build kept the catalog's
+ *  default "revenue" against data with "amount", and drew an empty chart); `missing` names the configured fields the
+ *  data lacks and `substitutes` those drawn in their place, for the note under the chart (fieldNote). */
+export interface ChartFields {
+  x: string | undefined;
+  series: string[];
+  missing: string[];
+  substitutes: string[];
+}
+export const resolveChartFields = (data: unknown, xField: string | undefined, series: string[]): ChartFields => {
+  const rows: Row[] = (Array.isArray(data) ? data : []).filter(isRecord).slice(0, MAX_ROWS);
+  if (!rows.length) return { x: xField, series, missing: [], substitutes: [] };
   const keys = [...new Set(rows.slice(0, 50).flatMap((row) => Object.keys(row)))];
   const has = (key: string) => rows.some((row) => row[key] !== undefined && row[key] !== null);
   const numeric = (key: string) =>
@@ -84,9 +86,32 @@ export const resolveChartFields = (
       ? xField
       : keys.find((key) => !numeric(key) && rows.some((row) => typeof row[key] === 'string')) ?? xField;
   const named = series.filter((key) => has(key));
-  const fallback = keys.filter((key) => key !== x && numeric(key) && typeof rows[0][key] !== 'boolean').slice(0, 6);
-  return { x, series: named.length ? named : fallback.length ? fallback : series };
+  const fallback = named.length
+    ? []
+    : keys.filter((key) => key !== x && numeric(key) && typeof rows[0][key] !== 'boolean').slice(0, 6);
+  return {
+    x,
+    series: named.length ? named : fallback.length ? fallback : series,
+    missing: [...(xField && !has(xField) ? [xField] : []), ...series.filter((key) => !has(key))],
+    // Fields drawn for none configured (no series set) replace nothing.
+    substitutes: [...(x !== xField && x !== undefined ? [x] : []), ...(series.length ? fallback : [])],
+  };
 };
+
+const andList = (words: string[]) =>
+  words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
+
+/** The note under a chart drawn without fields it was configured with: "The data has no revenue field: showing amount
+ *  and count", or null when every configured field is in the data. */
+export const fieldNote = ({ missing, substitutes }: Pick<ChartFields, 'missing' | 'substitutes'>): string | null => {
+  if (!missing.length) return null;
+  const lacks = `The data has no ${missing.join(' or ')} field${missing.length === 1 ? '' : 's'}`;
+  return substitutes.length ? `${lacks}: showing ${andList(substitutes)}` : lacks;
+};
+
+/** The note under a chart that draws only part of its data ("12 more rows not shown"), or null when it draws all. */
+export const hiddenNote = (count: number, one: string, many = `${one}s`): string | null =>
+  count > 0 ? `${count} more ${count === 1 ? one : many} not shown` : null;
 
 /** A series' name in the legend and tooltip: the author's label for it (seriesLabels), else its field name made
  *  readable ("food_cost_pct" reads "Food cost pct", "lastWeek" reads "Last week"; a build's legend showed raw keys). */

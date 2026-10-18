@@ -47,17 +47,54 @@ describe('resolveChartFields', () => {
     { category: 'Rent', amount: '1200', count: 1 },
   ];
   it('keeps fields that exist in the data', () => {
-    expect(resolveChartFields(rows, 'category', ['amount'])).toEqual({ x: 'category', series: ['amount'] });
+    expect(resolveChartFields(rows, 'category', ['amount'])).toEqual({
+      x: 'category',
+      series: ['amount'],
+      missing: [],
+      substitutes: [],
+    });
   });
   it("falls back to the data's numeric fields when no named series exists (a build kept the default 'revenue')", () => {
-    expect(resolveChartFields(rows, 'category', ['revenue'])).toEqual({ x: 'category', series: ['amount', 'count'] });
+    expect(resolveChartFields(rows, 'category', ['revenue'])).toEqual({
+      x: 'category',
+      series: ['amount', 'count'],
+      missing: ['revenue'],
+      substitutes: ['amount', 'count'],
+    });
   });
   it('falls back to the first text field when the x field is missing', () => {
-    expect(resolveChartFields(rows, 'month', ['amount'])).toEqual({ x: 'category', series: ['amount'] });
+    expect(resolveChartFields(rows, 'month', ['amount'])).toEqual({
+      x: 'category',
+      series: ['amount'],
+      missing: ['month'],
+      substitutes: ['category'],
+    });
+  });
+  it('reads only the rows a chart draws: a field past the cap neither picks the series nor empties the chart', () => {
+    const drawn = Array.from({ length: 2000 }, (_, i) => ({ month: `m${i}`, amount: i }));
+    expect(resolveChartFields([...drawn, { month: 'late', revenue: 5 }], 'month', ['revenue'])).toMatchObject({
+      series: ['amount'],
+      missing: ['revenue'],
+    });
   });
   it('copes with empty and junk data', () => {
-    expect(resolveChartFields([], 'month', ['revenue'])).toEqual({ x: 'month', series: ['revenue'] });
-    expect(resolveChartFields([null, 'x'], 'month', ['revenue'])).toEqual({ x: 'month', series: ['revenue'] });
+    expect(resolveChartFields([], 'month', ['revenue'])).toMatchObject({ x: 'month', series: ['revenue'] });
+    expect(resolveChartFields([null, 'x'], 'month', ['revenue'])).toMatchObject({ x: 'month', series: ['revenue'] });
+  });
+});
+
+describe('fieldNote and hiddenNote', () => {
+  const { fieldNote, hiddenNote } = require('@/AppBuilder/Widgets/Ui2/_charts/chartsModel');
+  it('names the missing fields and what is drawn in their place', () => {
+    expect(fieldNote({ missing: [], substitutes: ['amount'] })).toBe(null);
+    expect(fieldNote({ missing: ['revenue', 'cost'], substitutes: ['a', 'b', 'c'] })).toBe(
+      'The data has no revenue or cost fields: showing a, b and c'
+    );
+  });
+  it('counts what a chart leaves out', () => {
+    expect(hiddenNote(0, 'row')).toBe(null);
+    expect(hiddenNote(1, 'axis', 'axes')).toBe('1 more axis not shown');
+    expect(hiddenNote(3, 'axis', 'axes')).toBe('3 more axes not shown');
   });
 });
 

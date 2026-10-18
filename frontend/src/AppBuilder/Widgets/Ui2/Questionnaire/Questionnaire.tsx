@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, CircleCheck } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
   answersOf,
+  choicesToDraw,
+  CHOICES_PER_STEP,
   emptyAnswer,
   firstProblem,
   initialAnswers,
@@ -20,9 +22,11 @@ import {
 } from './questionnaireModel';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { QuestionAnswer, type AnswerOption } from './QuestionAnswer';
+import { QuestionProgress, QuestionnaireDone } from './QuestionnaireParts';
 import type { KeyboardEvent } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { isComposing, isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { ShowMoreBar, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 
 /** What the Questionnaire exposes besides its actions. */
 type QuestionnaireState = {
@@ -36,8 +40,6 @@ type QuestionnaireState = {
 // with progress, answer cards with shortcuts, Previous / Skip / Next / Submit and required-answer validation. Config in
 // WidgetManager/widgets/shad*.js, logic in questionnaireModel.ts, the answer and its cards in QuestionAnswer.tsx,
 // style variables in looks/conversation.ts.
-
-const ACCENT = 'var(--lk-accent,var(--sc-primary))';
 
 export const ShadQuestionnaire = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, fireEvent, id } = props;
@@ -55,6 +57,8 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   const [error, setError] = useState('');
   // New items or default answers start the questionnaire again (an inspector edit, a query that loaded them).
   const firstRun = useRef(true);
+  // The step a focus move was asked for (see step).
+  const focusTo = useRef<number | null>(null);
   useEffect(() => {
     if (firstRun.current) {
       firstRun.current = false;
@@ -64,12 +68,17 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
     setIndex(0);
     setComplete(false);
     setError('');
+    // A focus move asked for on the old questions does not take focus in the new ones.
+    focusTo.current = null;
   }, [defaults]);
 
   const count = items.length;
   const at = count ? Math.min(index, count - 1) : 0;
   const item = items[at];
   const answer = item ? answers[item.name] || emptyAnswer(item) : null;
+  // A question's first choices and a Show more for the next ones (and always up to the one picked).
+  const [choiceStep, moreChoices] = useShownCount(CHOICES_PER_STEP, item?.name);
+  const drawnChoices = item ? choicesToDraw(item, answer, choiceStep) : 0;
   const exposedAnswers = useMemo(() => answersOf(items, answers), [items, answers]);
   const currentItem: QuestionnaireState['currentItem'] = item
     ? { name: item.name, prompt: item.prompt, type: item.type, required: item.required }
@@ -143,15 +152,17 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   };
 
   // A step the user takes from the buttons puts focus in the new question once it is drawn (its fieldset is a new
-  // one), so the keyboard is where the screen moved; goTo, an action, leaves focus where it is.
-  const focusNext = useRef(false);
+  // one), so the keyboard is where the screen moved; goTo, an action, leaves focus where it is. The request (focusTo)
+  // names the step it is for: one that moved nowhere, or whose questions were replaced, takes no focus later (a failed
+  // submit's timer focused the replacement questions).
   useEffect(() => {
-    if (!focusNext.current) return;
-    focusNext.current = false;
-    focusFirst();
+    const wanted = focusTo.current;
+    focusTo.current = null;
+    if (wanted === at) focusFirst();
   }, [at]);
   const step = (to: number, extra?: Partial<QuestionnaireState>) => {
-    focusNext.current = true;
+    const target = Math.max(0, Math.min(count - 1, to));
+    focusTo.current = target === at ? null : target;
     move(to, extra);
   };
   const next = () => {
@@ -173,9 +184,9 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   const submit = () => {
     const missing = firstProblem(items, answers);
     if (missing !== -1) {
-      if (missing !== at) move(missing);
+      if (missing !== at) step(missing);
+      else focusFirst();
       setError(problem(items[missing], answers[items[missing].name]));
-      setTimeout(focusFirst, 0);
       return;
     }
     setComplete(true);
@@ -188,7 +199,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   const mode = ['letters', 'numbers', 'none'].includes(p.shortcuts) ? p.shortcuts : 'letters';
   const options: AnswerOption[] = item
     ? [
-        ...item.choices.map((c) => ({ kind: 'choice' as const, ...c })),
+        ...item.choices.slice(0, drawnChoices).map((c) => ({ kind: 'choice' as const, ...c })),
         ...(item.other ? [{ kind: 'other' as const, label: item.other.label, value: null, description: '' }] : []),
       ]
     : [];
@@ -205,7 +216,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
     if (disabled || !item || isComposing(e)) return;
     const target = e.target as HTMLElement | null;
     const typing = target?.tagName === 'TEXTAREA' || target?.tagName === 'INPUT';
-    if (e.key === 'Enter' && !e.shiftKey && (!typing || target?.tagName === 'INPUT')) {
+    if (isEnter(e) && !e.shiftKey && (!typing || target?.tagName === 'INPUT')) {
       if (target?.getAttribute?.('data-answer') === '') return; // the button's own Enter picks it
       e.preventDefault();
       if (last) submit();
@@ -252,55 +263,18 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
     );
   } else if (complete) {
     body = (
-      <div className="tw-flex tw-flex-col tw-items-center tw-gap-3 tw-py-8 tw-text-center" data-complete="">
-        <span
-          className="tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-full [&_svg]:tw-size-6"
-          style={{ background: `color-mix(in srgb, ${ACCENT} 12%, transparent)`, color: ACCENT }}
-        >
-          <CircleCheck />
-        </span>
-        <h3
-          className="tw-m-0 tw-text-ui2-lg tw-font-semibold tw-text-[color:var(--lk-title,var(--sc-foreground))]"
-          style={titleStyle}
-        >
-          {String(p.completeTitle ?? '') || 'Thanks for your answers'}
-        </h3>
-        {p.completeText ? (
-          <p className="tw-m-0 tw-max-w-sm tw-text-ui2-sm tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
-            {String(p.completeText)}
-          </p>
-        ) : null}
-        <Button variant="ghost" size="sm" disabled={disabled} onClick={() => actions.goTo(count - 1)}>
-          Edit answers
-        </Button>
-      </div>
+      <QuestionnaireDone
+        title={String(p.completeTitle ?? '') || 'Thanks for your answers'}
+        text={p.completeText ? String(p.completeText) : ''}
+        titleStyle={titleStyle}
+        disabled={disabled}
+        onEdit={() => actions.goTo(count - 1)}
+      />
     );
   } else {
-    const percent = Math.round(((at + 1) / count) * 100);
     body = (
       <>
-        {p.showProgress !== false ? (
-          <div className="tw-mb-5 tw-flex tw-flex-col tw-gap-2">
-            <div className="tw-flex tw-items-center tw-justify-between tw-text-xs tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
-              <span className="tw-tabular-nums">{`Question ${at + 1} of ${count}`}</span>
-              {!item.required ? <span>Optional</span> : null}
-            </div>
-            <div
-              role="progressbar"
-              aria-label="Questionnaire progress"
-              aria-valuemin={1}
-              aria-valuemax={count}
-              aria-valuenow={at + 1}
-              aria-valuetext={`Question ${at + 1} of ${count}`}
-              className="tw-h-1.5 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-[color:var(--sc-muted)]"
-            >
-              <div
-                className="tw-h-full tw-rounded-full tw-transition-[width] tw-duration-300 tw-ease-out"
-                style={{ width: `${percent}%`, background: ACCENT }}
-              />
-            </div>
-          </div>
-        ) : null}
+        {p.showProgress !== false ? <QuestionProgress at={at} count={count} optional={!item.required} /> : null}
         <fieldset
           key={item.name}
           ref={groupRef}
@@ -352,6 +326,17 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
             </p>
           ) : null}
         </fieldset>
+        {item.type !== 'text' ? (
+          <div className="tw-mt-2">
+            <ShowMoreBar
+              remaining={item.choices.length - drawnChoices}
+              step={CHOICES_PER_STEP}
+              onMore={moreChoices}
+              borderColor="var(--lk-border,var(--sc-border))"
+              disabled={disabled}
+            />
+          </div>
+        ) : null}
         <div className="tw-mt-6 tw-flex tw-items-center tw-gap-2">
           {at > 0 ? (
             <Button variant="outline" disabled={disabled} onClick={() => step(at - 1)}>

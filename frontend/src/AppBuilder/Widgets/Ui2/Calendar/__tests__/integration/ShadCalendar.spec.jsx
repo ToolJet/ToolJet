@@ -288,4 +288,56 @@ describe('UI 2.0 Calendar', () => {
       await waitFor(() => expect(exposed().visibleMonth).toBe('2026-10'));
     });
   });
+
+  // Audit round 2: switching mode from single or range to multiple drew the old selection (a Date, or { from, to })
+  // in multiple mode, and DayPicker threw 'selected?.some is not a function'; the selection was put in the new shape
+  // only by a later effect. It is now in the mode's shape from the first render in that mode.
+  describe('changing mode', () => {
+    test.each([
+      ['single', {}, '2026-10-09'],
+      ['range', range('2026-10-09', '2026-10-12'), ['2026-10-09', '2026-10-12']],
+    ])('[ShadCalendar-PROP-014] %s to multiple draws and exposes a list of dates', async (from, properties, value) => {
+      render({ properties: { mode: binding(from), ...properties } });
+      await waitFor(() => expect(exposed().value).toEqual(value));
+
+      act(() => widget.setComponentProperty(ID, 'mode', 'multiple', 'properties'));
+      await waitFor(() => expect(Array.isArray(exposed().value)).toBe(true));
+      expect(exposed().selectedDates).toEqual(exposed().value);
+      await clickDay(20);
+      await waitFor(() => expect(exposed().value).toContain('2026-10-20'));
+    });
+
+    test('[ShadCalendar-PROP-015] multiple back to single draws one date', async () => {
+      render({ properties: { mode: binding('multiple'), defaultValue: binding("{{['2026-10-09', '2026-10-12']}}") } });
+      await waitFor(() => expect(exposed().value).toEqual(['2026-10-09', '2026-10-12']));
+
+      act(() => widget.setComponentProperty(ID, 'mode', 'single', 'properties'));
+      await waitFor(() => expect(typeof exposed().value).toBe('string'));
+      await clickDay(21);
+      await waitFor(() => expect(exposed().value).toBe('2026-10-21'));
+    });
+  });
+
+  // Audit round 2: with 2 or 3 months asked for and minDate and maxDate allowing fewer, only the allowed months were
+  // drawn but visibleEnd ran on into months not drawn (October drawn, visibleEnd 31 December).
+  test.each([
+    [2, '2026-10-31', 1, '2026-10-31'],
+    [3, '2026-10-31', 1, '2026-10-31'],
+    [3, '2026-11-30', 2, '2026-11-30'],
+  ])(
+    '[ShadCalendar-PROP-016] %i months asked, maxDate %s: %i drawn, visibleEnd %s',
+    async (asked, maxDate, drawn, visibleEnd) => {
+      render({
+        properties: {
+          numberOfMonths: binding(`{{${asked}}}`),
+          defaultMonth: binding('2026-10-01'),
+          minDate: binding('2026-10-01'),
+          maxDate: binding(maxDate),
+        },
+      });
+
+      await waitFor(() => expect(screen.getAllByRole('grid')).toHaveLength(drawn));
+      expect(exposed()).toMatchObject({ visibleMonth: '2026-10', visibleStart: '2026-10-01', visibleEnd });
+    }
+  );
 });

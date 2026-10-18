@@ -1,5 +1,11 @@
 import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
-import { GEOCODE_TIMEOUT_MS, geocode } from '@/AppBuilder/Widgets/Ui2/Map/mapLayers';
+import {
+  GEOCODE_MAX_ANSWER_BYTES,
+  GEOCODE_TIMEOUT_MS,
+  GeocoderAnswerTooLarge,
+  geocode,
+} from '@/AppBuilder/Widgets/Ui2/Map/mapLayers';
+import { PLACE_LABEL_MAX, parsePlaces } from '@/AppBuilder/Widgets/Ui2/Map/mapGeocoding';
 
 // The geocoder client: one request a second for every map on the page, answers kept by URL. The client keeps its queue
 // and answers for the whole page, so every test has its own endpoint and a clock far from the others.
@@ -115,5 +121,47 @@ describe('geocoder client', () => {
     await tick(2000);
     expect(await skipped).toBeNull();
     expect(calls.map((c) => c.url)).toHaveLength(1);
+  });
+
+  it('refuses an answer larger than GEOCODE_MAX_ANSWER_BYTES, read or declared, and the queue moves on', async () => {
+    // Release audit 2: a geocoder answer was read and parsed whole, whatever its size.
+    const big = JSON.stringify([{ lat: '1', lon: '2', display_name: 'x'.repeat(GEOCODE_MAX_ANSWER_BYTES) }]);
+    global.fetch = jest.fn(async (url, options) => {
+      calls.push({ url, at: Date.now(), options });
+      if (url.includes('Streamed')) return new Response(big);
+      if (url.includes('Declared'))
+        return new Response('[]', { headers: { 'content-length': String(GEOCODE_MAX_ANSWER_BYTES + 1) } });
+      return answer(url);
+    });
+    const streamed = lookup('Streamed').catch((error) => error);
+    const declared = lookup('Declared').catch((error) => error);
+    const next = lookup('Small');
+    await tick(4000);
+    expect(await streamed).toBeInstanceOf(GeocoderAnswerTooLarge);
+    expect(await declared).toBeInstanceOf(GeocoderAnswerTooLarge);
+    expect((await next)[0].label).toBe('Small');
+  });
+});
+
+describe('places from an answer', () => {
+  it('shortens a label longer than PLACE_LABEL_MAX, with an ellipsis that shows it was shortened', () => {
+    const [place] = parsePlaces([{ lat: '1', lon: '2', display_name: 'Pier 39, '.repeat(100) }]);
+    expect(place.label).toHaveLength(PLACE_LABEL_MAX);
+    expect(place.label.endsWith('…')).toBe(true);
+    expect(parsePlaces([{ lat: '1', lon: '2', display_name: 'Pier 39' }])[0].label).toBe('Pier 39');
+  });
+});
+
+describe('a caller that stopped waiting', () => {
+  it('gets null even when the answer is kept, as it does when it is not', async () => {
+    // Release audit round 2: an aborted call returned a kept answer, though an aborted call that would fetch got null.
+    const warm = lookup('Kept');
+    await tick(10);
+    expect((await warm)[0].label).toBe('Kept');
+    const gone = new AbortController();
+    gone.abort();
+    expect(await lookup('Kept', gone.signal)).toBeNull();
+    expect(await lookup('Unkept', gone.signal)).toBeNull();
+    expect(calls).toHaveLength(1);
   });
 });

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import { geocode } from './mapLayers';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { GeocoderAnswerTooLarge, geocode } from './mapLayers';
 import { hasSize } from './mapIcons';
 import type { MutableRefObject } from 'react';
 import type { LeafletMap } from 'leaflet';
@@ -51,7 +52,13 @@ export const useMapSearch = ({
               setSearchError(places.length ? '' : 'No places found');
             }
           })
-          .catch(() => setSearchError('Search is unavailable right now'))
+          .catch((error) =>
+            setSearchError(
+              error instanceof GeocoderAnswerTooLarge
+                ? "The geocoder's answer is too large to show"
+                : 'Search is unavailable right now'
+            )
+          )
           .finally(() => setSearching(false));
       },
       typeAhead ? SEARCH_DELAY_MS : 0
@@ -117,8 +124,10 @@ export const MapSearch = ({
         aria-label={placeholder || 'Search for an address'}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' && results[0]) choosePlace(results[0]);
-          else if (e.key === 'Enter' && !typeAhead) setSubmitted(query.trim());
+          if (disabled) return;
+          // The Enter that confirms IME characters (Japanese, Chinese, Korean) neither searches nor picks a place.
+          if (isEnter(e) && results[0]) choosePlace(results[0]);
+          else if (isEnter(e) && !typeAhead) setSubmitted(query.trim());
           if (e.key === 'Escape') setResults([]);
         }}
       />
@@ -127,7 +136,10 @@ export const MapSearch = ({
         <ul className="sc-map-search-results" role="listbox">
           {results.map((r, i) => (
             <li key={`${r.lat},${r.lng},${i}`} role="option" aria-selected={false}>
-              <button type="button" onClick={() => choosePlace(r)}>
+              {/* Disabled with the map: a suggestion already open moved the map, set pickedLocation and fired
+                  onLocationPicked once the map was disabled or loading, and Tab then Enter reached it under the
+                  loading veil (release audit round 2). */}
+              <button type="button" disabled={disabled} onClick={() => !disabled && choosePlace(r)}>
                 {r.label}
               </button>
             </li>

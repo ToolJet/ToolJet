@@ -22,6 +22,7 @@ import { matchesCondition, readCell } from './tableModel';
 import type { OnAction, Resolve, Row, TableColumn } from './types';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isSet, safeImageUrl, safeUrl } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // An HTML cell is the row's data: DOMPurify's defaults keep <style> (which restyles the whole page) and forms (a
 // password box in a cell), so both are dropped too.
@@ -56,6 +57,12 @@ const BADGE_BY_STATUS: Record<string, BadgeVariant> = {
 };
 
 export const ROW_BORDER = 'tw-border-[color:var(--lk-border,var(--sc-border))]';
+
+/** The fade on the right edge of a table that scrolls further right. */
+export const RIGHT_FADE = {
+  maskImage: 'linear-gradient(to right, #000 calc(100% - 40px), transparent)',
+  WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 40px), transparent)',
+};
 export const MUTED = 'tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))]';
 
 interface CellBoundaryProps {
@@ -324,7 +331,7 @@ export const CellEditor = ({ column, value, onCommit, onCancel }: CellEditorProp
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => commit(draft)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') commit(draft);
+        if (isEnter(e)) commit(draft);
         if (e.key === 'Escape') onCancel();
       }}
     />

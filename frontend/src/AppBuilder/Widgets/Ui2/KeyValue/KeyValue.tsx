@@ -9,8 +9,8 @@ import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { colorFor, keyValueItems, keyValueText, linkHref } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import type { KeyValueRow } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { clampCoerce, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
-import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
-import { useCopied } from '@/AppBuilder/Widgets/Ui2/_shared/useCopied';
+import { isComposing, isEnter, onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { copyText, useCopied } from '@/AppBuilder/Widgets/Ui2/_shared/useCopied';
 
 // ---- Key-value list --------------------------------------------------------------------------------------------------
 
@@ -29,13 +29,13 @@ export const CopyButton = ({ text }: { text: string }) => {
       type="button"
       aria-label="Copy value"
       className="tw-ml-1 tw-inline-flex tw-h-6 tw-w-6 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-md tw-text-ui2-muted-foreground tw-opacity-0 tw-transition-opacity hover:tw-bg-ui2-accent hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring group-hover:tw-opacity-100"
-      onClick={() => {
-        try {
-          navigator.clipboard?.writeText(text);
-        } catch {
-          // Clipboard access can be refused; nothing to do.
-        }
-        markCopied();
+      // The copy is the button's own: its row's click and Enter or Space (onFieldClick) do not take it.
+      onClick={(e) => {
+        e.stopPropagation();
+        copyText(text, markCopied, 'Failed to copy value');
+      }}
+      onKeyDown={(e) => {
+        if (isEnter(e) || (e.key === ' ' && !isComposing(e))) e.stopPropagation();
       }}
     >
       {copied ? <Check className="tw-h-3.5 tw-w-3.5" /> : <Copy className="tw-h-3.5 tw-w-3.5" />}

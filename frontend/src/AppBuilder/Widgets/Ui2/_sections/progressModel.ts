@@ -74,43 +74,58 @@ export interface ProgressItem {
   index: number;
 }
 
-export const progressItems = (data: unknown, fields: ProgressFields = {}): ProgressItem[] => {
+/** A row of the bound data with its unique key: what selection and the row count read, for every row. */
+export interface ProgressEntry {
+  key: string;
+  row: Row;
+  index: number;
+}
+
+/** The object rows of a progress list with their keys (idField, else id, else the position; repeats made unique). */
+export const progressEntries = (data: unknown, fields: ProgressFields = {}): ProgressEntry[] => {
   if (!Array.isArray(data)) return [];
+  const f = fields || {};
+  const found = data.flatMap((row: Row, index: number) => {
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
+    const id = toText(isNonBlankString(f.idField) ? row[f.idField] : row.id);
+    return [{ entry: { key: id || String(index), row, index }, fromId: !!id }];
+  });
+  return uniqueKeys(
+    found.map((r) => r.entry),
+    found.map((r) => r.fromId)
+  );
+};
+
+/** One drawn row of a progress list: its figures formatted, its percentage and tone worked out. A list formats only
+ *  the rows it draws (a 10,000-row binding formatted every row before the first 100 were shown). */
+export const progressItem = ({ key, row, index }: ProgressEntry, fields: ProgressFields = {}): ProgressItem => {
   const f = fields || {};
   const format = typeof f.valueFormat === 'string' && PROGRESS_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
   const numberOf = (v: unknown): number | null =>
     typeof v === 'number' ? (Number.isFinite(v) ? v : null) : percentOf(v);
-  const items = data.flatMap((row: Row, index: number): (ProgressItem & { keyFromId: boolean })[] => {
-    if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
-    const labelKey = isNonBlankString(f.labelField) && f.labelField in row ? f.labelField : firstTextField(row);
-    const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
-    const rawValue = isNonBlankString(f.valueField) ? row[f.valueField] : undefined;
-    const rawTarget = isNonBlankString(f.targetField) ? row[f.targetField] : undefined;
-    const value = numberOf(rawValue);
-    const target = numberOf(rawTarget);
-    let pct = isNonBlankString(f.percentField) ? numberOf(row[f.percentField]) : null;
-    if (pct === null && value !== null) pct = target !== null ? (target > 0 ? (value / target) * 100 : null) : value;
-    const status = isNonBlankString(f.statusField) ? toText(row[f.statusField]).trim() : '';
-    const tone = progressTone(status) || autoProgressTone(pct, f.autoTone);
-    return [
-      {
-        key: toText(id) || String(index),
-        keyFromId: !!toText(id),
-        label: labelKey ? toText(row[labelKey]) : '',
-        value: value !== null ? formatValue(value, format, f.currency) : '',
-        target: target !== null ? formatValue(target, format, f.currency) : '',
-        pct,
-        caption: isNonBlankString(f.captionField) ? toText(row[f.captionField]).trim() : '',
-        // A status that only names a tone colours the bar without a chip.
-        status: status && !PROGRESS_TONES.includes(status.toLowerCase()) ? status : '',
-        tone,
-        row,
-        index,
-      },
-    ];
-  });
-  return uniqueKeys(
-    items.map(({ keyFromId, ...item }) => item),
-    items.map((item) => item.keyFromId)
-  );
+  const labelKey = isNonBlankString(f.labelField) && f.labelField in row ? f.labelField : firstTextField(row);
+  const rawValue = isNonBlankString(f.valueField) ? row[f.valueField] : undefined;
+  const rawTarget = isNonBlankString(f.targetField) ? row[f.targetField] : undefined;
+  const value = numberOf(rawValue);
+  const target = numberOf(rawTarget);
+  let pct = isNonBlankString(f.percentField) ? numberOf(row[f.percentField]) : null;
+  if (pct === null && value !== null) pct = target !== null ? (target > 0 ? (value / target) * 100 : null) : value;
+  const status = isNonBlankString(f.statusField) ? toText(row[f.statusField]).trim() : '';
+  return {
+    key,
+    label: labelKey ? toText(row[labelKey]) : '',
+    value: value !== null ? formatValue(value, format, f.currency) : '',
+    target: target !== null ? formatValue(target, format, f.currency) : '',
+    pct,
+    caption: isNonBlankString(f.captionField) ? toText(row[f.captionField]).trim() : '',
+    // A status that only names a tone colours the bar without a chip.
+    status: status && !PROGRESS_TONES.includes(status.toLowerCase()) ? status : '',
+    tone: progressTone(status) || autoProgressTone(pct, f.autoTone),
+    row,
+    index,
+  };
 };
+
+/** Every row of a progress list, drawn (progressEntries, each through progressItem). */
+export const progressItems = (data: unknown, fields: ProgressFields = {}): ProgressItem[] =>
+  progressEntries(data, fields).map((entry) => progressItem(entry, fields));

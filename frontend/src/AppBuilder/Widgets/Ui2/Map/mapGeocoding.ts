@@ -53,6 +53,12 @@ interface GeocoderItem {
   features?: unknown;
 }
 
+/** The longest place label kept; a longer one is shortened, ending in an ellipsis so it shows it was (release audit
+ *  round 2: a label's length had no limit). Nominatim's longest addresses are about 150 characters. */
+export const PLACE_LABEL_MAX = 200;
+const capLabel = (label: string): string =>
+  label.length > PLACE_LABEL_MAX ? `${label.slice(0, PLACE_LABEL_MAX - 1)}…` : label;
+
 export const parsePlaces = (response: unknown): Place[] => {
   const json = response as GeocoderItem | GeocoderItem[] | null | undefined;
   const list: (GeocoderItem | null)[] = Array.isArray(json)
@@ -71,10 +77,10 @@ export const parsePlaces = (response: unknown): Place[] => {
       const label = toText(
         p.label ?? p.display_name ?? [p.name, p.street, p.city, p.country].filter(Boolean).join(', ')
       );
-      return at && label ? [{ ...at, label }] : [];
+      return at && label ? [{ ...at, label: capLabel(label) }] : [];
     }
     const at = toLatLng(item.lat, item.lon ?? item.lng);
     const label = toText(item.display_name ?? item.label ?? item.name);
-    return at && label ? [{ ...at, label }] : [];
+    return at && label ? [{ ...at, label: capLabel(label) }] : [];
   });
 };

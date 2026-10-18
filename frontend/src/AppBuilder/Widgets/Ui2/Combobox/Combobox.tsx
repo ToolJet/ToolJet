@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import {
+  CONTROL,
+  controlAria,
+  fieldIdOf,
+  fieldName,
+  FormField,
+  requiredAria,
+} from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -20,6 +27,7 @@ import {
   OptionIcon,
   OptionsMenu,
   PLACEHOLDER,
+  useDropRemovedChoices,
   useKeptSelection,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
@@ -35,10 +43,17 @@ export const ShadCombobox = (props: WidgetProps) => {
   const options = toOptions(properties.options);
   const initial = M.initialKey(properties.defaultValue);
   const [key, setKey] = useState(initial);
+  // An option that is removed takes its choice with it (unless it is only off a server-side search page).
+  useDropRemovedChoices(
+    options.map((o) => M.keyOf(o.value)),
+    key === null ? [] : [key],
+    () => setKey(null),
+    properties.serverSideSearch === true
+  );
   useEffect(() => setKey(initial), [initial]);
-  const popup = usePickerPopup(properties);
-  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
+  const { open } = popup;
   const focus = useFocusEvents(fireEvent);
   const [search, onSearch] = useSearch(props);
   const [selected] = useKeptSelection(options, key === null ? [] : [key], properties.serverSideSearch === true) as [
@@ -63,7 +78,12 @@ export const ShadCombobox = (props: WidgetProps) => {
     },
     clear: async () => setKey(null),
     setFocus: async () => triggerRef.current?.focus(),
-    setBlur: async () => triggerRef.current?.blur(),
+    // Closes an open popup too (focus is in it then), the way the popup's own close does: touched, onBlur once.
+    setBlur: async () => {
+      const wasOpen = popup.open;
+      popup.blurAway(triggerRef.current);
+      if (wasOpen) openChange(false);
+    },
   });
   const check = useValidation(
     props,
@@ -110,11 +130,14 @@ export const ShadCombobox = (props: WidgetProps) => {
             <Button
               ref={triggerRef}
               id={fieldIdOf(props)}
+              // Named by its label; without a visible one (empty, or only spaces) by its placeholder or component name.
+              aria-label={fieldName(props, 'Select an option')}
               type="button"
               variant="outline"
               role="combobox"
               aria-expanded={open}
               {...controlAria(props, check.error)}
+              {...requiredAria(props)}
               disabled={disabled}
               {...focus.handlers}
               className={cn('tw-w-full tw-justify-between tw-gap-2 tw-px-3 tw-font-normal', CONTROL)}
@@ -142,6 +165,7 @@ export const ShadCombobox = (props: WidgetProps) => {
           align="start"
           className={cn('tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[12rem] tw-p-0', MENU_SURFACE)}
           style={lookVars(componentType, styles)}
+          onCloseAutoFocus={popup.onCloseAutoFocus}
         >
           <OptionsMenu
             properties={properties}

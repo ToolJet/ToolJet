@@ -60,7 +60,7 @@ const changes = (before, after) => {
 };
 
 /** A component in the shape the store holds, from its exported (saved) shape. */
-const toStore = (c) => ({
+export const toStore = (c) => ({
   id: c.id,
   name: c.name,
   component: {

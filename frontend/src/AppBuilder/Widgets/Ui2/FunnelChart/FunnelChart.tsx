@@ -4,13 +4,15 @@ import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/pa
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { funnelStages, MAX_STAGES, type FunnelStage } from './funnelModel';
+import { funnel, type FunnelStage } from './funnelModel';
+import { hiddenNote } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
-  ChartBoundary,
+  ChartNotes,
   EmptyChart,
   animated,
   useExposedClick,
   useValueFormat,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
@@ -26,10 +28,8 @@ export const ShadFunnelChart = (props: WidgetProps) => {
   const options = useValueFormat(p);
   const showConversion = p.showConversion !== false;
   // The stages and the label and value column widths are worked out again only when what they read changes.
-  const stages = useMemo(
-    () => funnelStages(bound, p.stageField, p.valueField).slice(0, MAX_STAGES),
-    [bound, p.stageField, p.valueField]
-  );
+  const drawn = useMemo(() => funnel(bound, p.stageField, p.valueField), [bound, p.stageField, p.valueField]);
+  const { stages } = drawn;
   const format = useMemo(() => formatter(options, options.format === 'compact'), [options]);
   const [labelWidth, valueWidth] = useMemo(
     () => [
@@ -48,11 +48,15 @@ export const ShadFunnelChart = (props: WidgetProps) => {
   const emptyView = <EmptyChart text={String(p.emptyText || 'No data')} />;
   return (
     <Shell {...props}>
-      <div style={{ height }} className="tw-w-full tw-overflow-hidden tw-text-xs" onDoubleClick={click.onDoubleClick}>
-        {empty ? (
-          emptyView
-        ) : (
-          <ChartBoundary resetKey={p} fallback={emptyView}>
+      <div
+        style={{ height }}
+        className="tw-flex tw-w-full tw-flex-col tw-overflow-hidden tw-text-xs"
+        onDoubleClick={click.onDoubleClick}
+      >
+        <div className="tw-min-h-0 tw-w-full tw-flex-1">
+          {empty ? (
+            emptyView
+          ) : (
             <div className="tw-flex tw-h-full tw-flex-col tw-justify-center tw-gap-1.5 tw-py-1">
               {stages.map((stage, i) => {
                 const conversion = i > 0 ? stage[base] : null;
@@ -111,11 +115,12 @@ export const ShadFunnelChart = (props: WidgetProps) => {
                 );
               })}
             </div>
-          </ChartBoundary>
-        )}
+          )}
+        </div>
+        <ChartNotes notes={[drawn.fieldNote, hiddenNote(drawn.hidden, 'stage')]} />
       </div>
     </Shell>
   );
 };
 
-export default withControlState(ShadFunnelChart);
+export default withControlState(withChartRecovery(ShadFunnelChart));

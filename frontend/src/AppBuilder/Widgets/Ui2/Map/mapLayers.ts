@@ -161,35 +161,76 @@ export const useHeatLayer = (
 // ---- Icons -----------------------------------------------------------------------------------------------------------
 
 const ICON_SVG = new Map<string, string>();
-let iconsLoading: Promise<boolean> | null = null;
+// Icons kept, by name, at most: a map's data can name any icon, and each name it gives is kept (release audit round 2).
+export const ICON_CACHE_MAX = 500;
+// Icons being drawn, by name, so maps asking at once share one drawing (each was drawn again per map).
+const ICON_PENDING = new Map<string, Promise<boolean>>();
+type IconModules = [
+  typeof import('lucide-react'),
+  typeof import('react-dom/server'),
+  typeof import('react'),
+  typeof import('@/AppBuilder/Widgets/Ui2/_display/iconModel')
+];
+let iconModules: Promise<IconModules> | null = null;
 
-/** Loads lucide and renders each named icon once to SVG text for a pin (white, 14px). Resolves when ready; names lucide
- *  does not have get its dashed placeholder. */
-export const loadIcons = (names: unknown[]): Promise<boolean> => {
-  const wanted = [...new Set(names.filter((n): n is string => typeof n === 'string' && !!n && n.length <= 64))].filter(
+/** lucide and the SVG renderer, loaded once. A failed load is forgotten so the next call loads again: it stayed in the
+ *  chain, and no icon loaded until the page was reloaded (release audit 2). */
+const loadIconModules = (): Promise<IconModules> => {
+  if (iconModules) return iconModules;
+  const loading = Promise.all([
+    import('lucide-react'),
+    import('react-dom/server'),
+    import('react'),
+    import('@/AppBuilder/Widgets/Ui2/_display/iconModel'),
+  ]);
+  iconModules = loading;
+  loading.catch(() => {
+    if (iconModules === loading) iconModules = null;
+  });
+  return loading;
+};
+
+/** The names a map asks for that loadIcons would load and that are not drawn yet (names that are not text, or are
+ *  over 64 characters, are never loaded). */
+export const missingIcons = (names: unknown[]): string[] =>
+  [...new Set(names.filter((n): n is string => typeof n === 'string' && !!n && n.length <= 64))].filter(
     (n) => !ICON_SVG.has(n)
   );
-  if (!wanted.length) return Promise.resolve(false);
-  iconsLoading = (iconsLoading || Promise.resolve()).then(() =>
-    Promise.all([
-      import('lucide-react'),
-      import('react-dom/server'),
-      import('react'),
-      import('@/AppBuilder/Widgets/Ui2/_display/iconModel'),
-    ]).then(([Lucide, Server, React, model]) => {
+
+/** Loads lucide and renders each named icon once to SVG text for a pin (white, 14px). Resolves true when icons it
+ *  asked for are ready, false when there was nothing to load or the load failed (a later call tries again); names
+ *  lucide does not have get its dashed placeholder. */
+export const loadIcons = (names: unknown[]): Promise<boolean> => {
+  const named = missingIcons(names);
+  const fresh = named.filter((n) => !ICON_PENDING.has(n));
+  const work = named.filter((n) => ICON_PENDING.has(n)).map((n) => ICON_PENDING.get(n) as Promise<boolean>);
+  if (fresh.length) {
+    const drawing = loadIconModules().then(([Lucide, Server, React, model]) => {
       const maps = [Lucide.icons, Lucide];
       const fallback = Lucide.CircleDashed || Lucide.Circle;
-      wanted.forEach((name) => {
+      fresh.forEach((name) => {
         const Icon = model.resolveIcon(name, maps, fallback);
         const markup = Server.renderToStaticMarkup(
           React.createElement(Icon, { size: 14, strokeWidth: 2.25, color: '#ffffff', 'aria-hidden': 'true' })
         );
         ICON_SVG.set(name, markup);
+        const oldest = ICON_SVG.keys().next().value;
+        if (ICON_SVG.size > ICON_CACHE_MAX && oldest !== undefined) ICON_SVG.delete(oldest);
       });
       return true;
-    })
-  );
-  return iconsLoading.catch(() => false);
+    });
+    const settled = drawing.catch(() => false);
+    fresh.forEach((name) => ICON_PENDING.set(name, settled));
+    // Only this drawing's own entries are cleared: a name asked for again after it failed belongs to the new drawing.
+    settled.then(() =>
+      fresh.forEach((name) => {
+        if (ICON_PENDING.get(name) === settled) ICON_PENDING.delete(name);
+      })
+    );
+    work.push(settled);
+  }
+  if (!work.length) return Promise.resolve(false);
+  return Promise.all(work).then((ready) => ready.every(Boolean));
 };
 export const iconSvg = (name: string): string => ICON_SVG.get(name) || '';
 
@@ -202,6 +243,41 @@ export const GEOCODE_TIMEOUT_MS = 10000;
 let lastRequest = 0;
 let queue: Promise<unknown> = Promise.resolve();
 const CACHE = new Map<string, Place[]>();
+// The largest geocoder answer read: five Nominatim places are a few kilobytes. An answer was read and parsed whole,
+// whatever its size (release audit round 2).
+export const GEOCODE_MAX_ANSWER_BYTES = 256 * 1024;
+
+/** A geocoder answer over GEOCODE_MAX_ANSWER_BYTES, refused rather than read on: the address search says so. */
+export class GeocoderAnswerTooLarge extends Error {
+  constructor() {
+    super(`geocoder answer over ${GEOCODE_MAX_ANSWER_BYTES / 1024} KB`);
+    this.name = 'GeocoderAnswerTooLarge';
+    Object.setPrototypeOf(this, GeocoderAnswerTooLarge.prototype);
+  }
+}
+
+/** A geocoder answer as JSON, read up to GEOCODE_MAX_ANSWER_BYTES: refused at once when it declares more, and when it
+ *  streams past the limit, without reading the rest. */
+const readAnswer = async (res: Response): Promise<unknown> => {
+  if (Number(res.headers?.get?.('content-length')) > GEOCODE_MAX_ANSWER_BYTES) throw new GeocoderAnswerTooLarge();
+  const reader = res.body?.getReader?.();
+  if (!reader) return res.json();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > GEOCODE_MAX_ANSWER_BYTES) {
+      reader.cancel().catch(() => {});
+      throw new GeocoderAnswerTooLarge();
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  chunks.reduce((at, chunk) => (bytes.set(chunk, at), at + chunk.byteLength), 0);
+  return JSON.parse(new TextDecoder().decode(bytes));
+};
 
 /** A request on its way, shared by every caller asking for its URL meanwhile: five setPickedLocation calls on one spot
  *  made five requests a second apart for one answer. It is cancelled when the last caller stops waiting. */
@@ -232,7 +308,7 @@ const request = (url: string): SharedRequest => {
         headers: { Accept: 'application/json', 'Accept-Language': navigator.language || 'en' },
       });
       if (!res.ok) throw new Error(`geocoder ${res.status}`);
-      return parsePlaces(await res.json());
+      return parsePlaces(await readAnswer(res));
     })();
     try {
       const places = await Promise.race([fetched, deadline]);
@@ -263,9 +339,10 @@ export const geocode = (
   values: Record<string, unknown>,
   signal?: AbortSignal | null
 ): Promise<Place[] | null> => {
+  // A caller that stopped waiting gets null, whether or not the answer is kept (a kept answer came back to it).
+  if (signal?.aborted) return Promise.resolve(null);
   const url = fillUrl(template, values);
   if (CACHE.has(url)) return Promise.resolve(CACHE.get(url) ?? null);
-  if (signal?.aborted) return Promise.resolve(null);
   const shared = IN_FLIGHT.get(url) ?? request(url);
   IN_FLIGHT.set(url, shared);
   shared.waiting += 1;

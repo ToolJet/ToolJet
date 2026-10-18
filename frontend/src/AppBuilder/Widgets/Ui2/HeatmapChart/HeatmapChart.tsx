@@ -3,25 +3,18 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { heatmapGrid } from './heatmapModel';
+import { hiddenNote } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
-  ChartBoundary,
+  ChartNotes,
   EmptyChart,
   useExposedClick,
   useValueFormat,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { clamp } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 // ---- Heatmap -------------------------------------------------------------------------------------------------------
-
-/** The labels past the drawn grid, as the note under it reads them ("5 more columns not shown"). */
-const hiddenNote = ({ columns, rows }: { columns: number; rows: number }) =>
-  `${[
-    columns ? `${columns} more column${columns === 1 ? '' : 's'}` : '',
-    rows ? `${rows} more row${rows === 1 ? '' : 's'}` : '',
-  ]
-    .filter(Boolean)
-    .join(' and ')} not shown`;
 
 /** A grid of cells shaded by value (weekday by hour, region by month): plain HTML, so labels never clip and the shade
  *  follows the theme's chart colour. Each cell blends the chart colour into the muted surface by its value. */
@@ -65,7 +58,7 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
         {empty ? (
           emptyView
         ) : (
-          <ChartBoundary resetKey={p} fallback={emptyView}>
+          <>
             <div
               className="tw-grid tw-min-h-0 tw-flex-1"
               style={{ gridTemplateColumns: columns, gap, gridAutoRows: '1fr' }}
@@ -118,11 +111,8 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
                 </div>
               ))}
             </div>
-            {grid.hidden.columns || grid.hidden.rows ? (
-              <div className="tw-pt-1.5 tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">
-                {hiddenNote(grid.hidden)}
-              </div>
-            ) : null}
+            {/* The labels past the drawn grid ("5 more columns not shown"). */}
+            <ChartNotes notes={[hiddenNote(grid.hidden.columns, 'column'), hiddenNote(grid.hidden.rows, 'row')]} />
             {p.showLegend !== false ? (
               <div className="tw-flex tw-items-center tw-justify-end tw-gap-2 tw-pt-2 tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">
                 <span className="tw-tabular-nums">{format(grid.min)}</span>
@@ -135,11 +125,11 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
                 <span className="tw-tabular-nums">{format(grid.max)}</span>
               </div>
             ) : null}
-          </ChartBoundary>
+          </>
         )}
       </div>
     </Shell>
   );
 };
 
-export default withControlState(ShadHeatmapChart);
+export default withControlState(withChartRecovery(ShadHeatmapChart));

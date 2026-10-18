@@ -6,7 +6,16 @@ import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/form
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Truncate, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
-import { AFFIX, EDGE, Group, INNER, numberTextProps, useNumberBox } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import {
+  AFFIX,
+  EDGE,
+  Group,
+  INNER,
+  numberBounds,
+  numberTextProps,
+  useNumberBox,
+  withRule,
+} from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
@@ -46,7 +55,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
     },
   });
   const commit = (next: number | null) => box.commit(next, () => ({}));
-  const check = useValidation(props, value, () => box.clearTyped(() => ({})));
+  const check = useValidation(withRule(props, numberBounds(validation)), value, () => box.clearTyped(() => ({})));
   const textBox = useTextBox(props, check.touch);
   const disabled = busy(properties);
   const loading = !!properties.loadingState;

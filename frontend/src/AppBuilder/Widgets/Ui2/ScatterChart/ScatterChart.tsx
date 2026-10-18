@@ -14,6 +14,7 @@ import {
   animated,
   axisWidthFor,
   isCompactChart,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { clamp, isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -179,4 +180,4 @@ export const ShadScatterChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadScatterChart);
+export default withControlState(withChartRecovery(ShadScatterChart));

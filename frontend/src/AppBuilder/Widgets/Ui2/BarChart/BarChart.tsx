@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { highlightIndexes, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { hiddenNote, highlightIndexes, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
   animated,
   AXIS,
@@ -12,6 +12,7 @@ import {
   isCompactChart,
   MAX_BARS,
   useAffixes,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import {
   seriesSetup,
@@ -187,7 +188,11 @@ export const ShadBarChart = (props: WidgetProps) => {
         )
       : null;
   return (
-    <ChartFrame props={props} empty={!data.length || !series.length}>
+    <ChartFrame
+      props={props}
+      empty={!data.length || !series.length}
+      notes={[setup.fieldNote, hiddenNote(list(bound).length - data.length, 'bar')]}
+    >
       {(onDatum) => (
         <BarChart
           data={data}
@@ -265,4 +270,4 @@ export const ShadBarChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadBarChart);
+export default withControlState(withChartRecovery(ShadBarChart));

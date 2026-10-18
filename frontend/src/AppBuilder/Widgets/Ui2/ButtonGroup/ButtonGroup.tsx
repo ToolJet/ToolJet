@@ -70,15 +70,31 @@ export const ShadButtonGroup = (props: WidgetProps) => {
   useAutoHeight(props, ref);
   const mode = GROUP_MODES.includes(properties.mode) ? properties.mode : 'single';
   const buttons = groupButtons(properties.buttons);
-  // A new default, mode or set of button values resets the selection.
+  // A new default or mode starts the selection again. A new set of buttons keeps a choice the user (or an action) made,
+  // dropping a button that is gone (it does not come back when the button does); until a choice is made it keeps
+  // following the default, so a default whose buttons arrive later (a query still loading) is applied.
   const keys = useStable(buttons.map((b) => String(b.value)));
-  const initial = useStable(initialSelection(properties.defaultValue, mode, buttons));
-  const [selected, setSelected] = useState(initial);
-  useEffect(() => setSelected(initial), [initial, mode, keys]);
+  const defaultValue = useStable(properties.defaultValue);
+  const [selected, setSelected] = useState(() => initialSelection(properties.defaultValue, mode, buttons));
+  const chosen = useRef(false);
+  const live = useLatest({ mode, buttons, defaultValue });
+  useEffect(() => {
+    chosen.current = false;
+    setSelected(initialSelection(defaultValue, mode, live.current.buttons));
+  }, [defaultValue, mode, live]);
+  useEffect(() => {
+    if (!chosen.current) {
+      setSelected(initialSelection(live.current.defaultValue, live.current.mode, live.current.buttons));
+      return;
+    }
+    setSelected((current) =>
+      current.every((k) => keys.includes(k)) ? current : current.filter((k) => keys.includes(k))
+    );
+  }, [keys, live]);
   const [lastClicked, setLastClicked] = useState<{ label: string; value: Text } | null>(null);
-  const live = useLatest({ mode, buttons });
   const exposed = selectionExposed(selected, mode, buttons);
   const apply = (next: string[]) => {
+    chosen.current = true;
     setSelected(next);
     setExposedVariables(selectionExposed(next, live.current.mode, live.current.buttons));
   };

@@ -26,6 +26,7 @@ import { HistorySkeleton, IconButton, MessageRow, Typing } from './ChatParts';
 import { useChatScroll } from './useChatScroll';
 import { validateMessageHistory, validateSingleMessageObject } from '@/AppBuilder/Widgets/Ui2/_shared/chatHelpers';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ToolJet UI 2.0 Chat: the native Chat widget (Widgets/Chat) in the pack's look, with its properties, events, exposed
 // values and actions. Config in WidgetManager/widgets/shad*.js, message and scroll logic in chatModel.ts, the message
@@ -343,7 +344,7 @@ export const ShadChat = (props: WidgetProps) => {
                 fitInput();
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent?.isComposing) {
+                if (isEnter(e) && !e.shiftKey) {
                   e.preventDefault();
                   submit();
                 }

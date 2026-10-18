@@ -4,6 +4,7 @@
 import { chipTone } from '@/AppBuilder/Widgets/Ui2/_shared/chipTone';
 import type {
   BookingFields,
+  BookingProblem,
   PlacedBooking,
   PlacedBookings,
   Row,
@@ -210,6 +211,8 @@ export const scheduleResources = (
   });
 };
 
+const isBlank = (v: unknown): boolean => v === undefined || v === null || (typeof v === 'string' && !v.trim());
+
 const TONES: readonly string[] = ['success', 'warning', 'danger', 'info', 'neutral'];
 /** A booking's tone from its status: a tone name, else its words (Confirmed green, Tentative amber, Cancelled red,
  *  Booked blue); '' (the accent) when it has none. */
@@ -230,7 +233,8 @@ export const placeBookings = (
   bookings: unknown,
   fields: BookingFields = {},
   range: ScheduleRange | null | undefined,
-  resources: ScheduleResource[] = []
+  resources: ScheduleResource[] = [],
+  problems?: BookingProblem[]
 ): PlacedBookings => {
   const out: PlacedBookings = {};
   if (!Array.isArray(bookings) || !range) return out;
@@ -247,15 +251,27 @@ export const placeBookings = (
     if (!row || typeof row !== 'object' || Array.isArray(row)) return;
     const resourceKey = byId.get(toText(field(row, f.resourceField)).trim());
     if (resourceKey === undefined) return;
-    const start = parseTime(field(row, f.startField), day);
-    if (!start) return;
-    const endParsed = parseTime(field(row, f.endField), new Date(start.time));
+    // A malformed date leaves the booking off, reported, rather than placed on another day or with an invented end.
+    const report = (problem: string) =>
+      problems?.push({
+        index,
+        id: row[isNonBlankString(f.idField) ? f.idField : 'id'],
+        title: toText(field(row, f.titleField)).trim(),
+        problem,
+      });
+    const startRaw = field(row, f.startField);
+    const start = parseTime(startRaw, day);
+    if (!start) return void report(isBlank(startRaw) ? 'it has no start' : 'its start is not a date');
+    const endRaw = field(row, f.endField);
+    const endParsed = parseTime(endRaw, new Date(start.time));
+    if (!endParsed && !isBlank(endRaw)) return void report('its end is not a date');
     let end: number;
     // A day is a calendar day (to the next local midnight), not 24 hours: a day can have 23 or 25.
     const dayAfter = start.dateOnly ? nextMidnight(start.time) : addDays(start.time, 1);
     if (endParsed) end = endParsed.dateOnly && days ? nextMidnight(endParsed.time) : endParsed.time;
     else end = start.dateOnly || days ? dayAfter : start.time + HOUR;
-    if (end <= start.time) end = days ? dayAfter : start.time + HOUR / 2;
+    if (end < start.time) return void report('it ends before it starts');
+    if (end === start.time) end = days ? dayAfter : start.time + HOUR / 2;
     if (end <= range.start || start.time >= range.end) return;
     // On the days scale a timed booking shorter than a day fills its day: placed by its time of day, a one-hour class
     // was a 10px sliver with no room for its title (a gym's week, 2026-10-14). Its own time stays in `time`.
