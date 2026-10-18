@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
-import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { missingIsGone, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { itemKey } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -68,7 +68,14 @@ export const useListSelection = (args: ListSelectionArgs) => {
     const at = all.findIndex((item, index) => itemKey(item, idField, index) === selectedKey);
     const item = shownAt >= 0 ? items[shownAt] : at >= 0 ? all[at] : undefined;
     if (item === undefined) {
-      clearSelection();
+      if (missingIsGone(all.length)) clearSelection();
+      else
+        live.current.setExposedVariables({
+          selectedItem: {},
+          selectedItemId: null,
+          selectedRecord: {},
+          selectedRecordId: null,
+        });
       return;
     }
     live.current.setExposedVariables({

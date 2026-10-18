@@ -84,7 +84,9 @@ Each widget loads in its own chunk, the first time a page shows it.
   input and picker with 0, false and an option valued ''.
 - **Selection after a data change.** A widget keeps its selection by the item's key (its id field, else its position).
   When the data changes it re-publishes the selection from the fresh record at its new place, and clears it when the
-  key is gone. No event fires for either. `selectionRefresh.spec.jsx` renames, reorders and removes a selected item in
+  key is gone from a list that has items. An empty list is not a removal: a query's data is [] while it reruns, so
+  while the list is empty nothing is selected and the selection comes back with the item (`missingIsGone` in
+  packHooks; pickers keep their chosen options the same way). No event fires for any of these. `selectionRefresh.spec.jsx` renames, reorders and removes a selected item in
   each selecting widget. A paged List view keeps the selected item across a page turn, with no record
   (`selectedRecord` empty, `selectedRecordId` null) while the item is on another page.
 - **An element is always truthy.** Never test a JSX element (`const icon = <Icon />`, or a prop typed `JSX.Element`) to

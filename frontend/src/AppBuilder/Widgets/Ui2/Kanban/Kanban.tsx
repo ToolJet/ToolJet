@@ -2,7 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
-import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  missingIsGone,
+  useAutoHeight,
+  useExposed,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { useOwnContextPath } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -75,9 +81,10 @@ export const ShadKanban = (props: WidgetProps) => {
     () => (selectedKey === null ? null : columns.flatMap((c) => c.cards).find((c) => c.__key === selectedKey) ?? null),
     [columns, selectedKey]
   );
+  const cardCount = columns.reduce((n, c) => n + c.cards.length, 0);
   useEffect(() => {
-    if (selectedKey !== null && !selected) setSelectedKey(null);
-  }, [selectedKey, selected]);
+    if (selectedKey !== null && !selected && missingIsGone(cardCount)) setSelectedKey(null);
+  }, [selectedKey, selected, cardCount]);
   // The card whose details show (a details field is mapped): a click opens a card's details, a second click closes them.
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [lastMove, setLastMove] = useState<CardMove | null>(null);

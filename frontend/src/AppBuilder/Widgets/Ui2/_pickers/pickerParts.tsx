@@ -10,7 +10,7 @@ import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { isStringOrNumber } from '@/AppBuilder/Widgets/Ui2/_shared/values';
-import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { missingIsGone, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // ToolJet UI 2.0: the pickers widgets. Combobox and Multiselect are shadcn's Popover + Command (cmdk)
 // recipe; Tags input, Color picker and Rating follow shadcn's field look; File upload is react-dropzone in shadcn
@@ -181,6 +181,7 @@ export const useDropRemovedChoices = (
   const signature = optionKeys.join('\u0000');
   useEffect(() => {
     const present = new Set(signature ? signature.split('\u0000') : []);
+    if (!missingIsGone(present.size)) return;
     const { selectedKeys: selected, drop: dropKeys, keep: kept } = latest.current;
     if (!kept) {
       const gone = new Set(selected.filter((k) => seen.current.has(k) && !present.has(k)));

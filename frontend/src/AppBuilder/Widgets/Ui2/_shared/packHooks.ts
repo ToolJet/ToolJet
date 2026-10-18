@@ -34,6 +34,12 @@ export const useStable = <T>(value: T): T => {
 
 /** A ref that always holds the latest value: for callbacks and effects that read current props without rerunning
  *  when they change. */
+/** Whether a selected item that is missing from a list is gone: only when the list has items. An empty list is not a
+ *  removal: a query's data is [] while it reruns (queryPanelSlice runQuery), so a widget that dropped a selection whose
+ *  item went missing lost it on every save that refreshes its list (a feedback inbox's selected item and its reply
+ *  button, 2026-10-18). While the list is empty nothing is selected; the selection comes back with the item. */
+export const missingIsGone = (count: number): boolean => count > 0;
+
 export const useLatest = <T>(value: T): MutableRefObject<T> => {
   const ref = useRef(value);
   ref.current = value;

@@ -8,6 +8,11 @@
  *
  * Each case selects an item (by its action, or a click where the widget has no action), then renames it, reorders the
  * data and removes it, reading what an app sees after each step.
+ *
+ * An empty list is not a removal: a query sets its data to [] while it reruns (queryPanelSlice runQuery), so a save
+ * that refreshes the list emptied it for a moment, and the selection was dropped for good. A feedback inbox built on
+ * staging (2026-10-18) lost its selected item after every status save, and its reply button stopped working. Each case
+ * now also empties the data and brings it back, and the selection must still be there.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
@@ -124,6 +129,16 @@ describe('UI 2.0 selections follow a data refresh', () => {
       const all = eventsOf(componentType);
       widget.setEvents(all.flatMap((event) => countInvocationsOn(ID, event, { key: `n_${event}` })));
       const setData = (names) => widget.setComponentProperty(ID, dataKey, data(names), 'properties');
+
+      // A query rerunning: its data is [] until the answer comes back.
+      setData([]);
+      await act(async () => {});
+      setData([
+        [1, 'Ada'],
+        [2, 'Grace'],
+        [3, 'Alan'],
+      ]);
+      await waitFor(() => expect(selectedName(exposed())).toBe('Grace'));
 
       setData([
         [1, 'Ada'],
