@@ -57,6 +57,8 @@ export const ShadRadioGroup = (props: WidgetProps) => {
           // Each label is a 24px touch target (WCAG 2.5.8), as tall as a 16px row and the list's old 8px gap.
           className={properties.horizontal === true ? 'tw-flex tw-flex-wrap tw-gap-x-4' : 'tw-gap-0'}
           onValueChange={(next) => {
+            // A disabled option takes no click (the item is disabled too).
+            if (byKey.get(next)?.disabled) return;
             change(next, 'onSelectionChange');
             check.touch();
           }}
@@ -68,6 +70,7 @@ export const ShadRadioGroup = (props: WidgetProps) => {
                 <RadioGroupItem
                   value={choiceKey(o.value)}
                   id={itemId}
+                  disabled={o.disabled === true}
                   className="tw-border-[color:var(--lk-invalid,var(--sc-primary))]"
                 />
                 <Label
