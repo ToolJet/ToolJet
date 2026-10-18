@@ -121,6 +121,17 @@ export const shownMonth = (month: ConfigType, numberOfMonths: number, minDate?: 
   return start.toDate();
 };
 
+/** How many months are drawn from `start` (the first shown, shownMonth): `numberOfMonths`, or fewer when maxDate's
+ *  month comes sooner (a three-month calendar allowed only October draws October alone). The visible period is
+ *  exposed over these months, not those asked for. */
+export const shownMonthCount = (start: ConfigType, numberOfMonths: number, maxDate?: unknown): number => {
+  const asked = Math.max(1, numberOfMonths);
+  const max = toDate(maxDate);
+  if (!max) return asked;
+  const allowed = dayjs(max).startOf('month').diff(dayjs(start).startOf('month'), 'month') + 1;
+  return Math.max(1, Math.min(asked, allowed));
+};
+
 /** Markers by day ('YYYY-MM-DD' -> [{ label, color }]): `[{ date, label?, color? }]`, or plain dates. */
 export const markersByDay = (markers: unknown): Map<string, Marker[]> => {
   const map = new Map<string, Marker[]>();

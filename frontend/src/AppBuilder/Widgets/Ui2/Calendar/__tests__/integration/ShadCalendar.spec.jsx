@@ -317,4 +317,27 @@ describe('UI 2.0 Calendar', () => {
       await waitFor(() => expect(exposed().value).toBe('2026-10-21'));
     });
   });
+
+  // Audit round 2: with 2 or 3 months asked for and minDate and maxDate allowing fewer, only the allowed months were
+  // drawn but visibleEnd ran on into months not drawn (October drawn, visibleEnd 31 December).
+  test.each([
+    [2, '2026-10-31', 1, '2026-10-31'],
+    [3, '2026-10-31', 1, '2026-10-31'],
+    [3, '2026-11-30', 2, '2026-11-30'],
+  ])(
+    '[ShadCalendar-PROP-016] %i months asked, maxDate %s: %i drawn, visibleEnd %s',
+    async (asked, maxDate, drawn, visibleEnd) => {
+      render({
+        properties: {
+          numberOfMonths: binding(`{{${asked}}}`),
+          defaultMonth: binding('2026-10-01'),
+          minDate: binding('2026-10-01'),
+          maxDate: binding(maxDate),
+        },
+      });
+
+      await waitFor(() => expect(screen.getAllByRole('grid')).toHaveLength(drawn));
+      expect(exposed()).toMatchObject({ visibleMonth: '2026-10', visibleStart: '2026-10-01', visibleEnd });
+    }
+  );
 });

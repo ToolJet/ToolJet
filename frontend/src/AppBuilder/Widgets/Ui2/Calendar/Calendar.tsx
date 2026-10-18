@@ -14,6 +14,7 @@ import {
   disabledMatchers,
   markersByDay,
   shownMonth,
+  shownMonthCount,
   toDate,
   visiblePeriod,
   ymd,
@@ -128,6 +129,7 @@ export const ShadCalendar = (props: WidgetProps) => {
   // The months shown, inside minDate and maxDate: drawn, exposed and published as one.
   const { minDate, maxDate } = properties;
   const shown = shownMonth(month, months, minDate, maxDate);
+  const drawn = shownMonthCount(shown, months, maxDate);
   const live = useLatest({ mode, selected, months, minDate, maxDate });
 
   const publish = (next: CalendarSelection) => {
@@ -139,12 +141,12 @@ export const ShadCalendar = (props: WidgetProps) => {
     const { months: n, minDate: min, maxDate: max } = live.current;
     const next = shownMonth(date, n, min, max);
     setMonth(next);
-    setExposedVariables(visiblePeriod(next, n));
+    setExposedVariables(visiblePeriod(next, shownMonthCount(next, n, max)));
     if (fire) fireEvent('onMonthChanged');
   };
   useExposed(setExposedVariables, properties, {
     ...calendarExposed(selected, mode),
-    ...visiblePeriod(shown, months),
+    ...visiblePeriod(shown, drawn),
     selectDate: async (date: unknown, endDate?: unknown) => {
       const { mode: m, selected: current } = live.current;
       let next: CalendarSelection;
@@ -190,7 +192,7 @@ export const ShadCalendar = (props: WidgetProps) => {
           {...selection}
           month={shown}
           onMonthChange={(next) => showMonth(next, true)}
-          numberOfMonths={months}
+          numberOfMonths={drawn}
           weekStartsOn={properties.weekStartsOn === 'monday' ? 1 : 0}
           showOutsideDays={properties.showOutsideDays !== false}
           fixedWeeks={properties.fixedWeeks === true}
