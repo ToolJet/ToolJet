@@ -234,6 +234,41 @@ export const GEOCODE_TIMEOUT_MS = 10000;
 let lastRequest = 0;
 let queue: Promise<unknown> = Promise.resolve();
 const CACHE = new Map<string, Place[]>();
+// The largest geocoder answer read: five Nominatim places are a few kilobytes. An answer was read and parsed whole,
+// whatever its size (release audit round 2).
+export const GEOCODE_MAX_ANSWER_BYTES = 256 * 1024;
+
+/** A geocoder answer over GEOCODE_MAX_ANSWER_BYTES, refused rather than read on: the address search says so. */
+export class GeocoderAnswerTooLarge extends Error {
+  constructor() {
+    super(`geocoder answer over ${GEOCODE_MAX_ANSWER_BYTES / 1024} KB`);
+    this.name = 'GeocoderAnswerTooLarge';
+    Object.setPrototypeOf(this, GeocoderAnswerTooLarge.prototype);
+  }
+}
+
+/** A geocoder answer as JSON, read up to GEOCODE_MAX_ANSWER_BYTES: refused at once when it declares more, and when it
+ *  streams past the limit, without reading the rest. */
+const readAnswer = async (res: Response): Promise<unknown> => {
+  if (Number(res.headers?.get?.('content-length')) > GEOCODE_MAX_ANSWER_BYTES) throw new GeocoderAnswerTooLarge();
+  const reader = res.body?.getReader?.();
+  if (!reader) return res.json();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > GEOCODE_MAX_ANSWER_BYTES) {
+      reader.cancel().catch(() => {});
+      throw new GeocoderAnswerTooLarge();
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  chunks.reduce((at, chunk) => (bytes.set(chunk, at), at + chunk.byteLength), 0);
+  return JSON.parse(new TextDecoder().decode(bytes));
+};
 
 /** A request on its way, shared by every caller asking for its URL meanwhile: five setPickedLocation calls on one spot
  *  made five requests a second apart for one answer. It is cancelled when the last caller stops waiting. */
@@ -264,7 +299,7 @@ const request = (url: string): SharedRequest => {
         headers: { Accept: 'application/json', 'Accept-Language': navigator.language || 'en' },
       });
       if (!res.ok) throw new Error(`geocoder ${res.status}`);
-      return parsePlaces(await res.json());
+      return parsePlaces(await readAnswer(res));
     })();
     try {
       const places = await Promise.race([fetched, deadline]);

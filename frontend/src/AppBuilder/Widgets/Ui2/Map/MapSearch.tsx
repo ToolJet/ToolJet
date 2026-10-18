@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import { geocode } from './mapLayers';
+import { GeocoderAnswerTooLarge, geocode } from './mapLayers';
 import { hasSize } from './mapIcons';
 import type { MutableRefObject } from 'react';
 import type { LeafletMap } from 'leaflet';
@@ -51,7 +51,13 @@ export const useMapSearch = ({
               setSearchError(places.length ? '' : 'No places found');
             }
           })
-          .catch(() => setSearchError('Search is unavailable right now'))
+          .catch((error) =>
+            setSearchError(
+              error instanceof GeocoderAnswerTooLarge
+                ? "The geocoder's answer is too large to show"
+                : 'Search is unavailable right now'
+            )
+          )
           .finally(() => setSearching(false));
       },
       typeAhead ? SEARCH_DELAY_MS : 0

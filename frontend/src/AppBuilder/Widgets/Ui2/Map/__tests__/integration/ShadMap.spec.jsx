@@ -464,6 +464,26 @@ describe('UI 2.0 Map', () => {
           Promise.resolve([{ lat: '10', lon: '20', display_name: `${new URL(url).searchParams.get('q')} result` }]),
       });
 
+    test('[ShadMap-PROP-014] a geocoder answer over the size limit is refused and the search box says why', async () => {
+      // Release audit round 2: a geocoder answer was read and parsed whole, whatever its size.
+      fetchMock.mockImplementation(() =>
+        Promise.resolve(new Response(JSON.stringify([{ lat: '1', lon: '2', display_name: 'x'.repeat(300 * 1024) }])))
+      );
+      render({
+        properties: {
+          showSearch: binding('{{true}}'),
+          geocoderUrl: binding('https://geo.example/prop-014/search?q={query}'),
+        },
+      });
+      fireEvent.change(await screen.findByRole('searchbox'), { target: { value: 'Everything' } });
+      await waitFor(
+        () => expect(q('.sc-map-search-note')).toHaveTextContent("The geocoder's answer is too large to show"),
+        {
+          timeout: 4000,
+        }
+      );
+    }, 10000);
+
     test('[ShadMap-EVT-005] Enter on a new query picks nothing from the previous query, then picks the new place', async () => {
       // Release audit 42: Enter during the pause after typing Beta picked Alpha's place and fired onLocationPicked.
       fetchMock.mockImplementation(answerByQuery);
