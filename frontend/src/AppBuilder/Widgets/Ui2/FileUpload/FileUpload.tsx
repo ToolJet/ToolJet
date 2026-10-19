@@ -46,12 +46,29 @@ const KIND_ICONS: Record<FileKind, LucideIcon> = {
   other: FileIcon,
 };
 
-export const readAs = (file: Blob, how: 'readAsDataURL' | 'readAsText') =>
+const stopped = () => new DOMException('The file is no longer wanted', 'AbortError');
+
+/** One FileReader read; when `signal` aborts, the read is aborted and the promise rejects with an AbortError. */
+export const readAs = (file: Blob, how: 'readAsDataURL' | 'readAsText', signal?: AbortSignal) =>
   new Promise<string>((resolve, reject) => {
+    if (signal?.aborted) return reject(stopped());
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ''));
-    reader.onerror = () => reject(reader.error || new Error('Failed to read file'));
+    const onAbort = () => {
+      reader.abort();
+      reject(stopped());
+    };
+    signal?.addEventListener('abort', onAbort, { once: true });
+    const settled = () => signal?.removeEventListener('abort', onAbort);
+    reader.onload = () => {
+      settled();
+      resolve(String(reader.result ?? ''));
+    };
+    reader.onerror = () => {
+      settled();
+      reject(reader.error || new Error('Failed to read file'));
+    };
     reader[how](file);
+    return undefined;
   });
 
 export let handleSeq = 0;
@@ -70,15 +87,26 @@ export interface ReadFile {
 }
 
 /** Reads a file the native File picker's way: text content, base64 and data URL, held in the file-handle registry
- *  (the store gets light string-like refs), plus parsed rows for CSV/TSV/Excel/JSON when parsing is on. */
+ *  (the store gets light string-like refs), plus parsed rows for CSV/TSV/Excel/JSON when parsing is on. Once `signal`
+ *  aborts, no further read, parse or registration starts (one already running is aborted, a parse runs to its end). */
 export const readFile = async (
   file: File,
-  { parse, parseFileType, delimiter }: { parse: boolean; parseFileType?: unknown; delimiter?: unknown }
+  {
+    parse,
+    parseFileType,
+    delimiter,
+    signal,
+  }: { parse: boolean; parseFileType?: unknown; delimiter?: unknown; signal?: AbortSignal }
 ): Promise<ReadFile> => {
-  const dataURL = await readAs(file, 'readAsDataURL');
-  const content = await readAs(file, 'readAsText');
+  const wanted = () => {
+    if (signal?.aborted) throw stopped();
+  };
+  const dataURL = await readAs(file, 'readAsDataURL', signal);
+  const content = await readAs(file, 'readAsText', signal);
   const base64Data = dataURL.split(',')[1] || '';
+  wanted();
   const parsed = parse ? await parseContent(file, content, base64Data, { parseFileType, delimiter }) : null;
+  wanted();
   handleSeq += 1;
   const handle = `shad-file-${Date.now().toString(36)}-${handleSeq}`;
   registerFileHandle(handle, file, { content, base64Data, dataURL });
@@ -157,7 +185,14 @@ export const ShadFileUpload = (props: WidgetProps) => {
   //   read finishing last replaced the newer selection);
   // - isParsing counts the parsing reads of the current generation, so it stays true until the last one finishes (the
   //   first read to finish, or one cleared away, turned it off while another was still parsing).
+  // Ending a generation (clearing) or unmounting also aborts its reads, so a file no longer wanted is not read on or
+  // parsed only to be released; the checks below still decide what is published.
   const generation = useRef(0);
+  const reads = useRef(new Set<AbortController>());
+  const stopReads = () => {
+    reads.current.forEach((r) => r.abort());
+    reads.current.clear();
+  };
   const latestDrop = useRef(0);
   const parsingReads = useRef(0);
   const countParsing = (delta: number) => {
@@ -173,6 +208,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
   const limits = useLatest({ multiple, maxFiles });
   const clearFiles = (withEvent = true) => {
     generation.current += 1;
+    stopReads();
     countParsing(0);
     const old = filesRef.current;
     old.forEach((f) => releaseFileHandle(f.handle));
@@ -197,6 +233,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
     exposeRef.current({ file: [], fileSize: 0 });
     return () => {
       mounted.current = false;
+      stopReads();
       filesRef.current.forEach((f) => releaseFileHandle(f.handle));
     };
   }, [exposeRef]);
@@ -221,8 +258,16 @@ export const ShadFileUpload = (props: WidgetProps) => {
     const drop = latestDrop.current;
     const parse = properties.parseContent === true;
     if (parse) countParsing(1);
-    const options = { parse, parseFileType: properties.parseFileType, delimiter: properties.delimiter };
+    const batch = new AbortController();
+    reads.current.add(batch);
+    const options = {
+      parse,
+      parseFileType: properties.parseFileType,
+      delimiter: properties.delimiter,
+      signal: batch.signal,
+    };
     const results = await Promise.allSettled(taking.map((f) => readFile(f, options)));
+    reads.current.delete(batch);
     const read = results
       .filter((r): r is PromiseFulfilledResult<ReadFile> => r.status === 'fulfilled')
       .map((r) => r.value);
