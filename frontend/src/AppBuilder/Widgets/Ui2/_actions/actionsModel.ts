@@ -3,7 +3,7 @@
 // types, huge lists, ToolJet's `{ value }` wrappers from the inspector's option lists) and never throws.
 
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { clampInt, isRecord, isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { clampInt, isRecord, isScalar, list, own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 const MAX_ITEMS = 200;
 const MAX_CHILDREN = 50;
@@ -379,7 +379,9 @@ const RATIOS: Record<string, number> = {
 export const aspectRatio = (v: unknown): number | null => {
   const raw = text(v).trim().replace(':', '/');
   if (raw === 'fill' || raw === '') return null;
-  if (RATIOS[raw]) return RATIOS[raw];
+  // An own key only: 'constructor' or 'toString' returned an Object method, not a number.
+  const named = own(RATIOS, raw);
+  if (named) return named;
   const [w, h] = raw.split('/').map(Number);
   if (Number.isFinite(w) && w > 0 && Number.isFinite(h) && h > 0) return Math.min(10, Math.max(0.1, w / h));
   const n = Number(raw);
