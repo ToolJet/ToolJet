@@ -128,6 +128,17 @@ describe('[finding 13] UI 2.0 Kanban custom card components belong to their card
     await waitFor(() => expect(values()).toEqual(['updated', 'updated']));
   });
 
+  // Audit 2026-10-18: a card drawn anew in another column read its Input's default again and lost what was typed.
+  test('moving an edited card to another column keeps what was typed on it', async () => {
+    await render();
+    await act(async () => fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'Alpha edited' } }));
+    await act(async () => widget.exposed().moveCard(1, 'done'));
+    await waitFor(() => expect(screen.getAllByRole('textbox')).toHaveLength(2));
+    expect(values()).toEqual(['beta', 'Alpha edited']);
+    await press('Update Alpha');
+    await waitFor(() => expect(values()).toEqual(['beta', 'updated']));
+  });
+
   // Audit 2026-10-18: the board is disabled or loading, so a focused button on a card does nothing either.
   test.each(['setLoading', 'setDisable'])('after %s, Enter on a focused card button does nothing', async (action) => {
     await render();
