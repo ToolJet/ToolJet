@@ -81,9 +81,14 @@ const tabKeys =
         : enabled[(Math.max(at, 0) + move + enabled.length) % enabled.length];
     event.preventDefault();
     if (next.id != currentTab) onPick(next); // eslint-disable-line eqeqeq
+    // The tab is found by comparing its data-tab-id, not by a selector: a tab id may hold any text, and one with a
+    // line break or form feed made the selector invalid, so focus stayed on the old tab.
     const strip = event.currentTarget;
+    const id = String(next.id);
     requestAnimationFrame(() =>
-      strip.querySelector<HTMLElement>(`[data-tab-id="${String(next.id).replace(/["\\]/g, '\\$&')}"]`)?.focus()
+      Array.from(strip.querySelectorAll<HTMLElement>('[role="tab"]'))
+        .find((tab) => tab.dataset.tabId === id)
+        ?.focus()
     );
   };
 
