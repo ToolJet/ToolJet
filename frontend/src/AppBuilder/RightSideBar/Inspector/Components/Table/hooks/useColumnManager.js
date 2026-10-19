@@ -92,8 +92,11 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
         await deleteEvents({ ref }, 'table_column');
       }
 
-      // Clean up events for all buttons in removed button columns
       for (const col of removedColumns) {
+        if (col.id) {
+          await deleteEvents({ ref: col.id }, 'table_column');
+        }
+        // Clean up events for all buttons in removed button columns
         if (col.columnType === 'button' && col.buttons) {
           const columnKey = col.key || col.name;
           for (const btn of col.buttons) {
