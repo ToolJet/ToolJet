@@ -3,7 +3,7 @@ import { Clock } from 'lucide-react';
 import { CONTROL, controlAria, fieldIdOf, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { runNow, useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
@@ -207,9 +207,12 @@ export const ShadTimePicker = (props: WidgetProps) => {
   const pick = (m: number | null, close = false) => {
     if (close) openChange(false);
     if (m === minutes) return;
-    setMinutes(m);
-    setExposedVariables(exposed(m));
-    fireEvent('onSelect');
+    // Published (isValid too) before onSelect fires, so its handlers read the pick, as the text inputs do.
+    runNow(() => {
+      setMinutes(m);
+      setExposedVariables(exposed(m));
+      fireEvent('onSelect');
+    });
   };
   const check = useValidation(
     withRule(props, (v) => {

@@ -5,6 +5,7 @@ import { CONTROL, controlAria, fieldIdOf, FormField } from '@/AppBuilder/Widgets
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
+  runNow,
   useAutoHeight,
   useExposed,
   useLatest,
@@ -135,9 +136,12 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   });
   const commit = (next: number | null) => {
     if (next === ts) return;
-    setTs(next);
-    setExposedVariables(M.dateTimeExposed(next === null ? null : dayjs(next), displayFormat));
-    fireEvent('onSelect');
+    // Published (isValid too) before onSelect fires, so its handlers read the pick, as the text inputs do.
+    runNow(() => {
+      setTs(next);
+      setExposedVariables(M.dateTimeExposed(next === null ? null : dayjs(next), displayFormat));
+      fireEvent('onSelect');
+    });
   };
   const check = useValidation(
     withRule(props, () => M.dateProblem(date, rules)),
