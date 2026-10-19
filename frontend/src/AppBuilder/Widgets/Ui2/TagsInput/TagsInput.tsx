@@ -16,7 +16,7 @@ import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import { Chip, ClearButton, MENU_SURFACE } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
-import type { ChangeEvent, KeyboardEvent } from 'react';
+import type { ChangeEvent, CompositionEvent, KeyboardEvent } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isComposing, isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
@@ -137,13 +137,27 @@ export const ShadTagsInput = (props: WidgetProps) => {
       tag
     );
   };
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const takeTyped = (value: string) => {
     setTagError('');
     setDismissed(false);
-    const { parts, rest } = M.splitTyped(e.target.value);
+    const { parts, rest } = M.splitTyped(value);
     if (parts.length) add(parts);
     setText(rest);
     setActive(-1);
+  };
+  // While an IME composition is open its text is provisional (a comma typed on the way to 東京支店 is not a tag
+  // boundary), so the draft is split only once the composition ends. The flag covers browsers that do not mark the
+  // input event itself as composing.
+  const composing = useRef(false);
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (composing.current || (e.nativeEvent as InputEvent).isComposing) setText(e.target.value);
+    else takeTyped(e.target.value);
+  };
+  const onCompositionEnd = (e: CompositionEvent<HTMLInputElement>) => {
+    composing.current = false;
+    // Safari sends its last input after compositionend: by then the draft holds only what was left, so nothing is
+    // added twice.
+    takeTyped(e.currentTarget.value);
   };
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     // Keys that belong to an IME composition (the Enter that confirms it) are the input method's, not the field's.
@@ -201,6 +215,10 @@ export const ShadTagsInput = (props: WidgetProps) => {
               disabled={disabled}
               placeholder={String(properties.placeholder ?? '')}
               onChange={onChange}
+              onCompositionStart={() => {
+                composing.current = true;
+              }}
+              onCompositionEnd={onCompositionEnd}
               onKeyDown={onKeyDown}
               onFocus={() => {
                 setFocused(true);
@@ -208,6 +226,8 @@ export const ShadTagsInput = (props: WidgetProps) => {
                 focusEvent();
               }}
               onBlur={() => {
+                // A composition cannot outlive the focus; a missed compositionend must not leave splitting off.
+                composing.current = false;
                 setFocused(false);
                 setActive(-1);
                 check.touch();
