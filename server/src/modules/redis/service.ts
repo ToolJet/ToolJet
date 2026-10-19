@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
 import { TransactionLogger } from '@modules/logging/service';
+import { getRedisConnectionOptions } from '@helpers/redis-config';
 
 /**
  * Global Redis Service
@@ -32,19 +33,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly transactionLogger: TransactionLogger) {}
 
   /**
-   * Redis connection configuration derived from environment variables
+   * Redis connection configuration derived from environment variables.
+   * Shared with the standalone migration process — see `@helpers/redis-config`.
    */
   private getRedisConfig() {
-    return {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
-      maxRetriesPerRequest: 3,
-      connectTimeout: 5000,
-      ...(process.env.REDIS_USERNAME && { username: process.env.REDIS_USERNAME }),
-      ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
-      ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
-      ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
-    };
+    return getRedisConnectionOptions();
   }
 
   onModuleInit() {
