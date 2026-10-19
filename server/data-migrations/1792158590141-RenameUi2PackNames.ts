@@ -278,14 +278,21 @@ const staticKey = (node: any, computed: boolean): string | undefined => {
 const isRow = (node: any): boolean =>
   node?.type === 'MemberExpression' && node.computed && staticKey(node.property, true) === undefined;
 
-/** The component a member expression names: `components.<ref>` (or `['<ref>']`), then any List view row index. */
+/**
+ * The component a member expression names: `components.<ref>` (or `['<ref>']`), then any List view row index; or a
+ * widget in a List view row, `<list>.children[<row>].<name>`, which the list exposes by the widget's name.
+ */
 const componentRefOf = (node: any): string | undefined => {
   node = unparen(node);
   if (node?.type !== 'MemberExpression') return undefined;
   const object = unparen(node.object);
   if (object?.type === 'Identifier' && object.name === 'components') return staticKey(node.property, node.computed);
   if (isRow(node)) return componentRefOf(object);
-  return undefined;
+  if (!isRow(object)) return undefined;
+  const children = unparen(object.object);
+  if (children?.type !== 'MemberExpression' || staticKey(children.property, children.computed) !== 'children')
+    return undefined;
+  return componentRefOf(children.object) === undefined ? undefined : staticKey(node.property, node.computed);
 };
 
 // A function's parameter, a local variable or a catch parameter named `components` is not the app's components: code
