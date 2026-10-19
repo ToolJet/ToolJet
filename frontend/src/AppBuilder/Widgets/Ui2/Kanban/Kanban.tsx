@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import type { DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
 import {
   missingIsGone,
   useAutoHeight,
@@ -20,7 +20,7 @@ import { SHADOWS, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanb
 import { fitsContentInView, kanbanCardHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { BoardCard, BoardColumn, CardMove, Renamed } from './kanbanBoard';
-import { CardBody, CustomCardBody, KanbanCard } from './KanbanCard';
+import { CardBody, CardSnapshot, CustomCardBody, KanbanCard, snapshotCard } from './KanbanCard';
 import type { CardFields } from './KanbanCard';
 import { CARDS_PER_STEP, KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
 import { useCardHosts } from './cardHosts';
@@ -90,6 +90,8 @@ export const ShadKanban = (props: WidgetProps) => {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [lastMove, setLastMove] = useState<CardMove | null>(null);
   const [activeKey, setActiveKey] = useState<UniqueIdentifier | null>(null);
+  // A custom card's drag preview: a still copy of the card (snapshotCard), never its components drawn again.
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => new Set());
   const toggleExpanded = (key: string) =>
     setExpandedKeys((current) => {
@@ -267,8 +269,16 @@ export const ShadKanban = (props: WidgetProps) => {
     properties.allowDelete === true && !properties.disabledState
       ? (card: BoardCard) => enabled && doDelete(card.__key)
       : undefined;
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
+  const onDragStart = ({ active }: DragStartEvent) => {
+    setActiveKey(active.id);
+    setPreview(custom ? snapshotCard(hostOf(String(active.id))) : null);
+  };
+  const endDrag = () => {
     setActiveKey(null);
+    setPreview(null);
+  };
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    endDrag();
     const target = over?.data?.current;
     // Checked at the drop too: the board may have been disabled, set loading or locked since the pick-up.
     if (!target || !draggable) return;
@@ -297,8 +307,8 @@ export const ShadKanban = (props: WidgetProps) => {
         sensors={sensors}
         collisionDetection={kanbanCollision}
         accessibility={accessibility}
-        onDragStart={({ active }) => setActiveKey(active.id)}
-        onDragCancel={() => setActiveKey(null)}
+        onDragStart={onDragStart}
+        onDragCancel={endDrag}
         onDragEnd={onDragEnd}
       >
         <div
@@ -380,7 +390,7 @@ export const ShadKanban = (props: WidgetProps) => {
                       padding
                     )}
                   >
-                    {renderBody(activeCard)}
+                    {custom ? <CardSnapshot node={preview} /> : renderBody(activeCard)}
                   </div>
                 ) : null}
               </DragOverlay>,
