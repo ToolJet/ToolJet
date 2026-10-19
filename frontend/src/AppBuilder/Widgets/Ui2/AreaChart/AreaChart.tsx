@@ -20,6 +20,7 @@ import {
   valueAxis,
 } from '@/AppBuilder/Widgets/Ui2/_charts/cartesianParts';
 import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { useSvgId } from '@/AppBuilder/Widgets/Ui2/_shared/svgId';
 
 export const ShadAreaChart = (props: WidgetProps) => {
   const p = props.properties;
@@ -36,6 +37,7 @@ export const ShadAreaChart = (props: WidgetProps) => {
   const { xField, series, names, fills } = setup;
   const Chart = p.lineOnly === true ? LineChart : AreaChart;
   const compact = isCompactChart(props.height);
+  const fillId = useSvgId('sc-fill');
   return (
     <ChartFrame
       props={props}
@@ -50,7 +52,7 @@ export const ShadAreaChart = (props: WidgetProps) => {
         >
           <defs>
             {series.map((s, i) => (
-              <linearGradient key={s} id={`sc-fill-${props.id}-${i}`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient key={s} id={`${fillId}-${i}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={fills[i]} stopOpacity={0.6} />
                 <stop offset="95%" stopColor={fills[i]} stopOpacity={0.05} />
               </linearGradient>
@@ -84,7 +86,7 @@ export const ShadAreaChart = (props: WidgetProps) => {
                 type={curveOf(p.curve)}
                 stroke={fills[i]}
                 strokeWidth={2}
-                fill={`url(#sc-fill-${props.id}-${i})`}
+                fill={`url(#${fillId}-${i})`}
                 stackId={p.stack === true ? 'a' : undefined}
                 isAnimationActive={animated(p, data.length)}
               />
