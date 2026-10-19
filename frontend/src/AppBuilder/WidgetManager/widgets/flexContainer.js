@@ -25,7 +25,7 @@ export const flexContainerConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'none' },
     },
     // Optional: a title or description bound to a query reads undefined until the query answers, and the card draws
-    // nothing for it; required, every page load logged "received undefined" for each card (2026-10-15).
+    // nothing for it; required, every page load logged "received undefined" for each card.
     cardTitle: {
       type: 'code',
       displayName: 'Card title',
