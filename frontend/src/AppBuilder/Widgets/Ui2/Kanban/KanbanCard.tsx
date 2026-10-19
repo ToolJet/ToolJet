@@ -74,7 +74,8 @@ export const CardBody = ({ card, fields, compact, badgeColors, progressStyle, ex
     <>
       <p
         className={cn(
-          'tw-pr-5 tw-font-medium tw-leading-snug tw-text-[color:var(--kb-card-title,var(--sc-card-foreground))]',
+          // One long word (an id, a URL) breaks instead of running past the card.
+          'tw-pr-5 tw-font-medium tw-leading-snug tw-text-[color:var(--kb-card-title,var(--sc-card-foreground))] [overflow-wrap:anywhere]',
           compact ? 'tw-text-[13px]' : 'tw-text-ui2-sm'
         )}
       >

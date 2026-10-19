@@ -96,7 +96,8 @@ export const ShadTags = (props: WidgetProps) => {
   const size = own(TAG_SIZE, p.size) || TAG_SIZE.default;
   const radius = p.pill === true ? 'tw-rounded-full' : 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
   const base = cn(
-    'tw-inline-flex tw-shrink-0 tw-items-center tw-whitespace-nowrap tw-border tw-font-medium tw-leading-none tw-transition-colors',
+    // A chip stops at the row's width; its text ends in an ellipsis (the whole tag is its title).
+    'tw-inline-flex tw-max-w-full tw-shrink-0 tw-items-center tw-whitespace-nowrap tw-border tw-font-medium tw-leading-none tw-transition-colors',
     size,
     radius
   );
@@ -111,8 +112,8 @@ export const ShadTags = (props: WidgetProps) => {
     const style = colour ? ({ '--tg': colour } as StyleWithVars) : undefined;
     if (!interactive) {
       return (
-        <span key={`${tag}-${i}`} className={className} style={style}>
-          {tag}
+        <span key={`${tag}-${i}`} className={className} style={style} title={tag}>
+          <span className="tw-truncate">{tag}</span>
         </span>
       );
     }
@@ -122,6 +123,7 @@ export const ShadTags = (props: WidgetProps) => {
         type="button"
         className={className}
         style={style}
+        title={tag}
         disabled={!!p.disabledState}
         onClick={() => {
           if (busy(p)) return;
@@ -130,7 +132,7 @@ export const ShadTags = (props: WidgetProps) => {
           fireEvent('onTagClicked');
         }}
       >
-        {tag}
+        <span className="tw-truncate">{tag}</span>
       </button>
     );
   };
