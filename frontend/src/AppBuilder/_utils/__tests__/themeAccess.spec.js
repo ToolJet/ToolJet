@@ -29,6 +29,15 @@ describe('theme access', () => {
     expect(canUseTheme(undefined, false)).toBe(false);
   });
 
+  // A version preview converts the app response to snake_case (useAppData), so the theme arrives as is_shipped.
+  it('reads a shipped or basic theme in snake_case too, as a version preview stores it', () => {
+    const previewNavy = { ...navy, isShipped: undefined, is_shipped: true };
+    const previewBasic = { ...basic, isBasic: undefined, is_basic: true };
+    expect(canUseTheme(previewNavy, false)).toBe(true);
+    expect(canUseTheme(previewBasic, false)).toBe(true);
+    expect(appliedThemeDefinition(previewNavy, false)).toBe(navy.definition);
+  });
+
   it("applies a shipped theme's colours without the license", () => {
     expect(appliedThemeDefinition(navy, false)).toBe(navy.definition);
   });
