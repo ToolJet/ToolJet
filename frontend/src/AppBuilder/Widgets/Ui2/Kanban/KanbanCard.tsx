@@ -319,9 +319,19 @@ interface CustomCardBodyProps {
   editing: boolean;
   /** The card is a row of the board (a top-level board, useCustomCards): its components belong to it. */
   scoped: boolean;
+  /** The board takes no input (disabled, loading or hidden): nor do the card's components. */
+  blocked?: boolean;
   currentLayout?: string;
   darkMode?: boolean;
 }
+
+/** Swallows a key (but Tab, so focus can move on) or a press on a blocked card's components: a button that already
+ *  had focus still ran its event on Enter while the board was disabled or loading. */
+const blockInput = (e: React.SyntheticEvent) => {
+  if (e.type === 'keydown' && (e as React.KeyboardEvent).key === 'Tab') return;
+  e.preventDefault();
+  e.stopPropagation();
+};
 
 // Custom cards fit only on a top-level board (Kanban.tsx), so their path is always empty.
 const TOP_LEVEL: [] = [];
@@ -335,6 +345,7 @@ export const CustomCardBody = ({
   fit,
   editing,
   scoped,
+  blocked = false,
   currentLayout,
   darkMode,
 }: CustomCardBodyProps) => {
@@ -364,7 +375,15 @@ export const CustomCardBody = ({
     ) : null;
   return (
     // In the editor, a press inside the card edits its components instead of starting a card drag.
-    <div data-card-canvas="" style={{ height }} onPointerDown={editing ? (e) => e.stopPropagation() : undefined}>
+    <div
+      data-card-canvas=""
+      style={{ height }}
+      onPointerDown={editing ? (e) => e.stopPropagation() : undefined}
+      onKeyDownCapture={blocked ? blockInput : undefined}
+      onPointerDownCapture={blocked ? blockInput : undefined}
+      onMouseDownCapture={blocked ? blockInput : undefined}
+      onClickCapture={blocked ? blockInput : undefined}
+    >
       {scoped ? <SubcontainerContext.Provider value={contextValue}>{canvas}</SubcontainerContext.Provider> : canvas}
     </div>
   );

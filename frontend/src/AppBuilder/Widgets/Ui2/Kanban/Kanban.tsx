@@ -169,6 +169,10 @@ export const ShadKanban = (props: WidgetProps) => {
     deleteCard: async (id: unknown) => doDelete(id),
   });
 
+  // Disabled, loading or hidden, the board takes no input: a card or button that already had focus kept its keys
+  // (Enter selected a card, Delete removed one during a reload, a custom card's button ran its event), and a drag under
+  // way still dropped.
+  const enabled = !properties.disabledState && !properties.loadingState && properties.visibility !== false;
   const custom = properties.cardLayout === 'custom';
   const editing = props.currentMode === 'edit';
   const cardHeight = kanbanCardHeight(properties);
@@ -191,6 +195,7 @@ export const ShadKanban = (props: WidgetProps) => {
           fit={fitCards}
           editing={editing}
           scoped={scoped}
+          blocked={!enabled}
           currentLayout={props.currentLayout}
           darkMode={props.darkMode}
         />
@@ -207,9 +212,6 @@ export const ShadKanban = (props: WidgetProps) => {
       );
   const padding = custom ? 'tw-p-0' : compact ? 'tw-p-2.5' : 'tw-p-3';
 
-  // Disabled or loading, the board takes no input: a card or button that already had focus kept its keys (Enter
-  // selected a card, Delete removed one during a reload), and a drag under way still dropped.
-  const enabled = !properties.disabledState && !properties.loadingState;
   // Custom cards don't drag in the editor, where a press edits the card's components.
   const draggable = properties.allowDrag !== false && enabled && !(custom && editing);
   const sensors = useSensors(

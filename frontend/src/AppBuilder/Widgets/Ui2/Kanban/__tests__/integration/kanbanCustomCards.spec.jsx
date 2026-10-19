@@ -6,6 +6,7 @@
  * Real store, real RenderWidget, real widgets; jsdom's missing layout is given a width so cards mount their canvas.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
+import userEvent from '@testing-library/user-event';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
 import { binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
@@ -125,6 +126,21 @@ describe('[finding 13] UI 2.0 Kanban custom card components belong to their card
     await waitFor(() => expect(values()).toEqual(['beta', 'updated']));
     await press('Update Beta');
     await waitFor(() => expect(values()).toEqual(['updated', 'updated']));
+  });
+
+  // Audit 2026-10-18: the board is disabled or loading, so a focused button on a card does nothing either.
+  test.each(['setLoading', 'setDisable'])('after %s, Enter on a focused card button does nothing', async (action) => {
+    await render();
+    const user = userEvent.setup({ delay: null });
+    const button = screen.getByRole('button', { name: 'Update Alpha' });
+    act(() => button.focus());
+    await widget.act(action, true);
+    expect(document.activeElement).toBe(button);
+    await user.keyboard('{Enter}');
+    expect(values()).toEqual(['alpha', 'beta']);
+    await widget.act(action, false);
+    await press('Update Alpha');
+    await waitFor(() => expect(values()).toEqual(['updated', 'beta']));
   });
 
   // Audit round 2: a card's components outlive its column being folded for a while.
