@@ -39,7 +39,7 @@ describe('UI 2.0 Button', () => {
 
     await waitFor(() => expect(button()).toHaveClass('tw-bg-ui2-destructive'));
     expect(button()).toHaveClass('tw-px-3', 'tw-text-xs');
-    expect(button()).not.toHaveClass('tw-bg-ui2-primary');
+    expect(button()).not.toHaveClass('tw-bg-ui2-primary-strong');
   });
 
   // On the grid, or as a fixed-width flex child, a button fills the box drawn for it (boxFit 'grid' or 'fixed', from

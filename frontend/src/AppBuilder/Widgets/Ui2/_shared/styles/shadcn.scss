@@ -14,6 +14,9 @@
   --sc-popover-foreground: var(--cc-primary-text, #0a0a0a);
   --sc-primary: var(--cc-primary-brand, #171717);
   --sc-primary-foreground: var(--cc-on-primary-brand, #ffffff);
+  // The fill behind small labels in that colour (a primary Button, Badge or Hero action): the primary darkened just
+  // enough for 4.5:1 where white reads under it (useAppData, onBrandText.js), else the primary itself.
+  --sc-primary-strong: var(--cc-primary-brand-strong, var(--sc-primary));
   // Muted surfaces use surface3: shadcn's muted (#f4f4f5) matches it in light themes, and in dark themes surface2
   // often equals surface1 (ToolJet Modern: both #1F2937), which would hide pill bars and hover states.
   --sc-secondary: var(--cc-surface3-surface, #f5f5f5);

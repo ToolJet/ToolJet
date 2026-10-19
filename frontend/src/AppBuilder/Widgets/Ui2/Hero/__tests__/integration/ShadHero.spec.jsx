@@ -241,4 +241,19 @@ describe('UI 2.0 Hero', () => {
     expect(vars.getPropertyValue('--lk-title-font')).toMatch(/Georgia, serif$/);
     expect(title().style.fontFamily).toBe('var(--lk-title-font,inherit)');
   });
+
+  // Release audit (19 Oct): the action drew its white label on the primary as it is, 3.7:1 on a #3B82F6 theme where
+  // 14px text needs 4.5:1. It now fills like any primary Button, with the theme's strong primary (darkened only where
+  // white would not read); a set accent colour still replaces it, and darkens on hover instead of fading.
+  test('[ShadHero-STY-002] the primary action fills with the strong primary; a set accent replaces it', async () => {
+    render();
+    const action = () => classes(screen.getByRole('button', { name: 'New booking' }));
+    await waitFor(() => expect(action()).toContain('tw-bg-ui2-primary-strong'));
+    expect(action()).not.toContain('hover:tw-opacity-90');
+
+    render({ styles: { accentColor: binding('#e11d48') } });
+    await waitFor(() => expect(action()).toContain('tw-bg-[color:var(--lk-accent)]'));
+    expect(action()).not.toContain('tw-bg-ui2-primary-strong');
+    expect(action()).toContain('hover:tw-bg-[color:color-mix(in_srgb,var(--lk-accent)_88%,#000)]');
+  });
 });
