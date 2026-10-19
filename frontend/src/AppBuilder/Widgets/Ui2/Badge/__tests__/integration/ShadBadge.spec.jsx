@@ -29,7 +29,7 @@ describe('UI 2.0 Badge', () => {
     render();
 
     expect(await screen.findByText('Paid')).toBeInTheDocument();
-    expect(badge()).toHaveClass('tw-bg-ui2-primary');
+    expect(badge()).toHaveClass('tw-bg-ui2-primary-strong');
   });
 
   test('[ShadBadge-PROP-001] text follows its binding', async () => {
@@ -47,7 +47,7 @@ describe('UI 2.0 Badge', () => {
 
     render({ properties: { variant: binding('outline') } });
     await waitFor(() => expect(badge()).toHaveClass('tw-text-ui2-foreground'));
-    expect(badge()).not.toHaveClass('tw-bg-ui2-primary');
+    expect(badge()).not.toHaveClass('tw-bg-ui2-primary-strong');
   });
 
   test('[ShadBadge-STY-001] colour and radius styles reach the badge as CSS variables it reads', async () => {

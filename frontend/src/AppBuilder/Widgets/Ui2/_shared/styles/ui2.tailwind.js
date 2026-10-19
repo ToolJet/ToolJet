@@ -24,7 +24,8 @@ module.exports = {
       ring: token('ring'),
       background: token('background'),
       foreground: token('foreground'),
-      primary: pair('primary'),
+      // `ui2-primary-strong`: the fill for small labels on the primary (shadcn.scss).
+      primary: { ...pair('primary'), strong: token('primary-strong') },
       secondary: pair('secondary'),
       destructive: pair('destructive'),
       success: pair('success'),

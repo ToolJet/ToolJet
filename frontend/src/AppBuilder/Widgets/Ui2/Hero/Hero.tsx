@@ -10,6 +10,7 @@ import { heroAside, heroMeta } from '@/AppBuilder/Widgets/Ui2/_sections/sections
 import { ACCENT, ACCENT_INK, TITLE_FONT } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { safeImageUrl, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 
 // ---- Hero ------------------------------------------------------------------------------------------------------------
 
@@ -110,12 +111,17 @@ export const ShadHero = (props: WidgetProps) => {
           <Button
             disabled={busy(p)}
             onClick={() => fireEvent('onActionClicked')}
-            className={cn(
+            className={
               onDark
                 ? // A fixed dark ink: the theme foreground is near-white in a dark app, which drew a blank white button.
                   'tw-bg-white tw-text-[#0f172a] hover:tw-bg-white/90'
-                : 'tw-bg-[color:var(--lk-accent,var(--sc-primary))] tw-text-[color:var(--sc-primary-foreground)] hover:tw-opacity-90'
-            )}
+                : // Otherwise a primary Button's strong fill, or the set accent, darkened on hover like a set Button colour.
+                  whenSet(
+                    props.styles,
+                    'accentColor',
+                    'tw-bg-[color:var(--lk-accent)] hover:tw-bg-[color:color-mix(in_srgb,var(--lk-accent)_88%,#000)]'
+                  )
+            }
           >
             {primary}
           </Button>
