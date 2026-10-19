@@ -224,6 +224,7 @@ export const baseComponentProperties = (
       'CustomComponent',
       'QrScanner',
       'Spinner',
+      'Chart',
     ],
     Layout: [],
   };

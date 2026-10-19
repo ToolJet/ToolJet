@@ -24,7 +24,6 @@ export default function Chart({
   dataCy,
 }) {
   const isInitialRender = useRef(true);
-  const [loadingState, setLoadingState] = useState(false);
   const themeChanged = useStore((state) => state.themeChanged);
 
   const getColor = (color) => {
@@ -32,9 +31,37 @@ export default function Chart({
     return '#fff';
   };
 
-  const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius, borderColor } = styles;
+  const { padding, boxShadow, backgroundColor, borderRadius, borderColor } = styles;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
     properties;
+  const { visibility, disabledState, loadingState } = properties;
+
+  const [isVisible, setIsVisible] = useState(visibility);
+  const [isDisabled, setIsDisabled] = useState(disabledState);
+  const [isLoading, setIsLoading] = useState(loadingState ?? false);
+  // The point-click handlers below are memoized once, so they read the live disabled flag from a ref.
+  const isDisabledRef = useRef(disabledState);
+  isDisabledRef.current = isDisabled;
+
+  // A changed Visibility / Disable / Loading property wins over an earlier CSA call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setIsDisabled(disabledState);
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (loadingState == undefined) return;
+    setIsLoading(loadingState);
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
 
   const modifiedBackgroundColor = getModifiedColor(backgroundColor, 0);
   const modifiedMarkerColor = getModifiedColor(markerColor, 0);
@@ -43,17 +70,10 @@ export default function Chart({
   const modifiedAxisColor = getCssVarValue(document.documentElement, 'var(--cc-default-border)');
   console.log('modifiedAxisColor', modifiedAxisColor);
 
-  useEffect(() => {
-    const loadingStateProperty = properties.loadingState;
-    if (loadingStateProperty != undefined) {
-      setLoadingState(loadingStateProperty);
-    }
-  }, [properties.loadingState]);
-
   const computedStyles = {
     width: width - 4,
     height,
-    display: visibility ? '' : 'none',
+    display: isVisible ? '' : 'none',
     // background: darkMode ? '#1f2936' : 'white',
     border: `1px solid ${borderColor}`,
     boxShadow,
@@ -75,7 +95,7 @@ export default function Chart({
 
   const jsonChartData = isDescriptionJson ? JSON.parse(jsonData).data : [];
 
-  const chartLayout = isDescriptionJson ? JSON.parse(jsonData).layout ?? {} : {};
+  const chartLayout = isDescriptionJson ? (JSON.parse(jsonData).layout ?? {}) : {};
 
   const updatedBgColor = ['#fff', '#ffffff'].includes(modifiedBackgroundColor)
     ? darkMode
@@ -85,7 +105,7 @@ export default function Chart({
 
   const fontColor = getColor(updatedBgColor);
 
-  const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
+  const chartTitle = plotFromJson ? (chartLayout?.title ?? title) : title;
   useEffect(() => {
     if (isInitialRender.current) return;
     const { xaxis, yaxis } = chartLayout;
@@ -241,7 +261,7 @@ export default function Chart({
   );
 
   const handleClick = useCallback((data) => {
-    if (!disabledState && data.length > 0) {
+    if (!isDisabledRef.current && data.length > 0) {
       const {
         x: xAxisLabel,
         y: yAxisLabel,
@@ -263,7 +283,7 @@ export default function Chart({
   }, []);
 
   const handleDoubleClick = useCallback(() => {
-    if (!disabledState) {
+    if (!isDisabledRef.current) {
       fireEvent('onDoubleClick');
     }
   }, []);
@@ -285,6 +305,21 @@ export default function Chart({
       clearClickedPoint: () => {
         setExposedVariable('clickedDataPoint', {});
       },
+      isVisible: visibility,
+      isDisabled: disabledState,
+      isLoading: loadingState ?? false,
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+      setDisable: async function (value) {
+        setIsDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
+      },
+      setLoading: async function (value) {
+        setIsLoading(!!value);
+        setExposedVariable('isLoading', !!value);
+      },
     };
 
     setExposedVariables(exposedVariables);
@@ -294,8 +329,8 @@ export default function Chart({
   }, []);
 
   return (
-    <div class="widget-chart" data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
-      {loadingState === true ? (
+    <div class="widget-chart" data-disabled={isDisabled} style={computedStyles} data-cy={dataCy}>
+      {isLoading === true ? (
         <div style={{ width }} className="p-2 loader-main-container">
           <center>
             <div className="spinner-border mt-5" role="status"></div>
@@ -310,7 +345,7 @@ export default function Chart({
           }}
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
-          disabledState={disabledState}
+          disabledState={isDisabled}
         />
       )}
     </div>

@@ -72,6 +72,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Calendar',
   'QrScanner',
   'Spinner',
+  'Chart',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
