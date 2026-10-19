@@ -48,6 +48,25 @@ export const createDebuggerSlice = (set, get) => ({
       );
     },
 
+    // A binding's read of every row of a windowed ListView, refused (_engines/materialize/prepare.js): logged once per
+    // refusal, while the binding keeps its value.
+    logRefusedRead: (componentId, property, error, moduleId = 'canvas') => {
+      const componentName = get().getComponentNameFromId(componentId, moduleId) ?? componentId;
+      get().debugger.log({
+        type: 'component',
+        kind: 'component',
+        key: `${componentName} - ${property}`,
+        componentId,
+        strace: 'page_level',
+        message: error.message,
+        status: true,
+        error: { message: error.message, reason: error.reason, componentId },
+        errorTarget: 'Component Property',
+        logLevel: 'error',
+        timestamp: moment().toISOString(),
+      });
+    },
+
     logMultiple: (logs) => {
       set(
         (state) => {

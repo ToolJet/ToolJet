@@ -7,6 +7,7 @@ import _ from 'lodash';
 import { deepFreeze } from '@/AppBuilder/_engines/data/freeze';
 import { sameExposedValue } from '@/AppBuilder/_engines/data/equality';
 import { valueWithIds } from '@/AppBuilder/_engines/data/expressions';
+import { readyState } from '@/AppBuilder/_engines/materialize/prepare';
 
 const initialState = {
   resolvedStore: {
@@ -854,16 +855,17 @@ export const createResolvedSlice = (set, get) => {
     getAllExposedValues: (moduleId = 'canvas') => {
       return get().resolvedStore.modules[moduleId].exposedValues;
     },
-    getResolvedValue: (value, customVariables = {}, moduleId = 'canvas') => {
+    // `exposedValues`: what to resolve in, when not the store's (an event's action params, with the rows of a windowed
+    // ListView they read made ready: _engines/materialize/prepare.js). Else the store's, with the rows of a windowed
+    // ListView it reads that can be read at once (prepare.js readyState).
+    getResolvedValue: (value, customVariables = {}, moduleId = 'canvas', exposedValues = undefined) => {
       if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
         const { componentNameIdMapping, queryNameIdMapping } = get().modules[moduleId];
-        return resolveDynamicValues(
-          valueWithIds(value, componentNameIdMapping, queryNameIdMapping),
-          get().resolvedStore.modules[moduleId].exposedValues,
-          customVariables,
-          false,
-          []
-        );
+        const text = valueWithIds(value, componentNameIdMapping, queryNameIdMapping);
+        const [state, variables] = exposedValues
+          ? [exposedValues, customVariables]
+          : readyState(get, text, get().resolvedStore.modules[moduleId].exposedValues, customVariables, moduleId);
+        return resolveDynamicValues(text, state, variables, false, []);
       } else {
         return value;
       }

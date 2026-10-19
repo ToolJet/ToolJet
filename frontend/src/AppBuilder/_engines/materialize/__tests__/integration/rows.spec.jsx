@@ -655,9 +655,9 @@ describe('Listview rows on demand — a long list', () => {
     renderListview(ROWS, { icon: true });
     await mounted();
 
-    // Never drawn: nothing to read for it.
-    expect(state().readListviewRow('lv1', 2005, MODULE_ID).icon1).toBeUndefined();
-    expect(state().uncomputedRowChildren('lv1', 2005, MODULE_ID)).toEqual(['ico1']);
+    // Never drawn: nothing to read for it. (Not row 2005: outside1's binding reads it, which draws it.)
+    expect(state().readListviewRow('lv1', 2007, MODULE_ID).icon1).toBeUndefined();
+    expect(state().uncomputedRowChildren('lv1', 2007, MODULE_ID)).toEqual(['ico1']);
     expect(state().uncomputedRowChildren('lv1', 3, MODULE_ID)).toEqual([]);
 
     const slot = state().resolvedStore.modules[MODULE_ID].listviewSlots.lv1.indexOf(3);

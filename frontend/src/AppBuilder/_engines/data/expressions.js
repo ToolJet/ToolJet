@@ -14,7 +14,8 @@ import { extractAndReplaceReferencesFromString as referencesWithIds } from '@/Ap
 // Texts remembered per cache; the oldest is forgotten past this.
 const CACHE_LIMIT = 20000;
 
-const remember = (cache, key, make) => {
+/** `cache.get(key)`, made (`make()`) and kept the first time: at most CACHE_LIMIT keys, the oldest forgotten first. */
+export const remember = (cache, key, make) => {
   if (cache.has(key)) return cache.get(key);
   const value = make();
   if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value);

@@ -197,7 +197,8 @@ export const footprintOf = (value) => (value !== null && typeof value === 'objec
  * null when it finished inline, else a promise that resolves once it has. Long arrays are walked a slice at a time,
  * each item frozen in one go, and frozen themselves once all their items are; everything else is frozen as `deepFreeze`
  * does. Only the code that made the value can reach it while it's being frozen (it isn't in the store yet). Records the
- * value's estimated size (`footprintOf`), and each long array's rows profile (`rowsProfileOf`).
+ * value's estimated size (`footprintOf`), and each long array's rows profile (`rowsProfileOf`). What throws while it is
+ * frozen (a getter) throws, or rejects the promise when it is in a later slice.
  */
 export const deepFreezeInSlices = (value) => {
   if (!needsFreezing(value)) return null;
@@ -262,5 +263,21 @@ export const deepFreezeInSlices = (value) => {
     return true;
   };
 
-  return runSliced(work);
+  // A throw ends the work, and is its result: thrown from the first slice, else rejecting the promise.
+  let failure = null;
+  const sliced = runSliced((inTime) => {
+    try {
+      return work(inTime);
+    } catch (error) {
+      failure = error;
+      return true;
+    }
+  });
+  if (failure) throw failure;
+  return (
+    sliced &&
+    sliced.then(() => {
+      if (failure) throw failure;
+    })
+  );
 };

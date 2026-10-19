@@ -14,6 +14,8 @@ import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepFreeze, deepFreezeInSlices } from '@/AppBuilder/_engines/data/freeze';
 import { lazyCopies } from '@/AppBuilder/_engines/data/clone';
 import { hasCycleInSlices } from '@/AppBuilder/_engines/data/cycles';
+import { prepareScript, scriptReadsOf } from '@/AppBuilder/_engines/materialize/scripts';
+import { listviewReadsIn, prepareReads } from '@/AppBuilder/_engines/materialize/prepare';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -187,7 +189,8 @@ export const createQueryPanelSlice = (set, get) => ({
         );
       };
       const frozen = deepFreezeInSlices(data);
-      if (frozen) frozen.then(write);
+      // What can't be frozen (a getter that throws in a later slice) isn't shown, as when it throws at once.
+      if (frozen) frozen.then(write, () => {});
       else write();
     },
     setShowCreateQuery: (showCreateQuery) =>
@@ -483,10 +486,6 @@ export const createQueryPanelSlice = (set, get) => ({
       //   const queryState = { ...getCurrentState(), parameters };
       const queryState = { ...get().getAllExposedValues(moduleId), parameters };
 
-      const options = getQueryVariables(dataQuery.options, queryState, {
-        components: get().getComponentNameIdMapping(moduleId),
-        queries: get().getQueryNameIdMapping(moduleId),
-      });
       const disableQueryExpr = dataQuery.options?.disableQuery;
       if (disableQueryExpr) {
         const resolvedDisable = get().getResolvedValue(disableQueryExpr, queryState, moduleId);
@@ -538,6 +537,41 @@ export const createQueryPanelSlice = (set, get) => ({
           return;
         }
       }
+
+      // The rows of a windowed ListView its options read are made ready first (_engines/materialize/prepare.js), once
+      // it is to run: drawn, or every row read in the background; then it runs (unless it was deleted meanwhile). A
+      // read refused fails it, with the reason.
+      const prepared =
+        query.kind === 'runjs' || query.kind === 'runpy'
+          ? null
+          : prepareReads(get, listviewReadsIn(get, dataQuery.options, moduleId), queryState, {}, moduleId, {
+              json: true,
+            });
+      if (prepared?.pending) {
+        setResolvedQuery(queryId, { isLoading: true }, moduleId);
+        return prepared.pending.then(() =>
+          get().dataQuery.queries.modules?.[moduleId]?.some(({ id }) => id === queryId)
+            ? get().queryPanel.runQuery(
+                queryId,
+                queryName,
+                confirmed,
+                mode,
+                userSuppliedParameters,
+                component,
+                eventId,
+                shouldSetPreviewData,
+                isOnLoad,
+                moduleId,
+                callbackFns
+              )
+            : undefined
+        );
+      }
+
+      const options = getQueryVariables(dataQuery.options, prepared?.state ?? queryState, {
+        components: get().getComponentNameIdMapping(moduleId),
+        queries: get().getQueryNameIdMapping(moduleId),
+      });
 
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {
@@ -707,7 +741,9 @@ export const createQueryPanelSlice = (set, get) => ({
         }
 
         let queryExecutionPromise = null;
-        if (query.kind === 'runjs') {
+        if (prepared?.error) {
+          queryExecutionPromise = Promise.reject({ error: prepared.error.message });
+        } else if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters, moduleId);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options?.code, query, false, mode, queryState, moduleId);
@@ -992,7 +1028,17 @@ export const createQueryPanelSlice = (set, get) => ({
 
       // const queryState = { ...getCurrentState(), parameters };
       const queryState = { ...get().getAllExposedValues(moduleId), parameters };
-      const options = getQueryVariables(query.options, queryState, {
+      // As runQuery does: the rows of a windowed ListView its options read are made ready first, then it runs.
+      const prepared =
+        query.kind === 'runjs' || query.kind === 'runpy'
+          ? null
+          : prepareReads(get, listviewReadsIn(get, query.options, moduleId), queryState, {}, moduleId, { json: true });
+      if (prepared?.pending) {
+        return prepared.pending.then(() =>
+          get().queryPanel.previewQuery(query, calledFromQuery, userSuppliedParameters, moduleId, callbackFns)
+        );
+      }
+      const options = getQueryVariables(query.options, prepared?.state ?? queryState, {
         components: get().getComponentNameIdMapping(),
         queries: get().getQueryNameIdMapping(),
       });
@@ -1006,7 +1052,12 @@ export const createQueryPanelSlice = (set, get) => ({
         }
 
         let queryExecutionPromise = null;
-        if (query.kind === 'runjs') {
+        if (prepared?.error) {
+          queryExecutionPromise = Promise.reject({
+            error: prepared.error.message,
+            data: { message: prepared.error.message, description: prepared.error.message },
+          });
+        } else if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, true, '', parameters);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, true, 'edit', queryState);
@@ -1419,18 +1470,28 @@ export const createQueryPanelSlice = (set, get) => ({
         getAppType,
       } = get();
       let result = {};
-      const currentState = getResolvedState(moduleId);
       const appType = getAppType(moduleId);
 
       if (transformationLanguage === 'python') {
-        result = await runPythonTransformation(currentState, data, transformation, query, mode);
+        result = await runPythonTransformation(getResolvedState(moduleId), data, transformation, query, mode);
       } else if (transformationLanguage === 'javascript') {
         try {
+          // The rows of a windowed ListView it names are made ready first, its entry a plain one holding them
+          // (_engines/materialize/scripts.js); a read refused fails it. The state is taken once they are: rows drawn
+          // for it meanwhile are in it.
+          const reads = scriptReadsOf(get, transformation, moduleId);
+          const prepared = reads && (await prepareScript(get, reads, moduleId));
+          if (prepared?.error) throw prepared.error;
+          const currentState = getResolvedState(moduleId);
           const { eventsSlice } = get();
           const { generateAppActions } = eventsSlice;
           // Each query (and the page) is copied when the transformation first reads it, not all on every run.
           const queriesInResolvedState = lazyCopies(currentState.queries, 'queries');
           const actions = generateAppActions(query?.id, mode);
+          prepared?.ids.forEach((id) => {
+            const name = get().getComponentNameFromId(id, moduleId);
+            currentState.components[name] = prepared.entry(id, currentState.components[name]);
+          });
 
           const proxiedComponents = currentState?.components;
           const proxiedGlobals = currentState?.globals;
@@ -1708,6 +1769,15 @@ export const createQueryPanelSlice = (set, get) => ({
         };
       }
 
+      // The rows of a windowed ListView it names are made ready first, its entry a plain one holding them
+      // (_engines/materialize/scripts.js); a read refused fails it.
+      const reads = scriptReadsOf(get, code, moduleId);
+      const prepared = reads && (await prepareScript(get, reads, moduleId));
+      if (prepared?.error) {
+        const { message } = prepared.error;
+        return { status: 'failed', data: { message, description: message } };
+      }
+
       const defaultParams =
         queryDetails?.options?.parameters?.reduce(
           (paramObj, param) => ({
@@ -1784,12 +1854,18 @@ export const createQueryPanelSlice = (set, get) => ({
       // `components` don't hit undefined entries (e.g. children of a collapsed Table row).
       const componentNameIdMapping = get().modules[moduleId]?.componentNameIdMapping ?? {};
       const componentsInResolvedState = {};
+      // The rows made ready for the run, let go once it settles: what escapes it (a returned `components`, a callback
+      // run later) reads the store's entries, as before.
+      let run = prepared;
       for (const name of Object.keys(resolvedState.components)) {
         const componentId = componentNameIdMapping[name];
+        const current = () =>
+          get().resolvedStore.modules[moduleId]?.exposedValues?.components?.[componentId] ??
+          resolvedState.components[name];
         Object.defineProperty(componentsInResolvedState, name, {
-          get: () =>
-            get().resolvedStore.modules[moduleId]?.exposedValues?.components?.[componentId] ??
-            resolvedState.components[name],
+          get: prepared?.ids.includes(componentId)
+            ? () => (run ? run.entry(componentId, current()) : current())
+            : current,
           enumerable: true,
         });
       }
@@ -1861,6 +1937,7 @@ export const createQueryPanelSlice = (set, get) => ({
         error = err.message || err.stack.split('\n')[0] || 'JS execution failed';
         result = { status: 'failed', data: { message: error, description: error, lineNumber } };
       }
+      run = null;
 
       // Checked without blocking when the result is large: the answer at once for a usual result, else after slices.
       const cyclic = hasCycleInSlices(result);

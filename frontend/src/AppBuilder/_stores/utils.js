@@ -8,10 +8,12 @@ var _ = require('lodash');
 
 const resetters = [];
 
+// `func` run `debounce` ms (the event's) after the last call for that event, or at once without one. `.now`: `func`
+// itself, for a call already debounced once.
 export function debounce(func) {
   const timers = new Map();
 
-  return (...args) => {
+  const debounced = (...args) => {
     const event = args[0] || {};
     const moduleId = args[3] || 'canvas';
     const eventId = moduleId + '-' + (event?.id || uuidv4());
@@ -30,6 +32,8 @@ export function debounce(func) {
 
     timers.set(eventId, timer);
   };
+  debounced.now = func;
+  return debounced;
 }
 
 export const zustandDevTools = (fn, options = {}) =>

@@ -11,6 +11,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { cloneDeep, merge, set as lodashSet, isEmpty } from 'lodash';
 import { deepFreeze } from '@/AppBuilder/_engines/data/freeze';
 import { readsNothingRowScoped } from '@/AppBuilder/_engines/data/expressions';
+import { KEEP, prepareBinding, windowedReadsOf } from '@/AppBuilder/_engines/materialize/prepare';
 import {
   computeComponentName,
   getDropTargetLabel,
@@ -189,6 +190,27 @@ const initialState = {
   focusedParentId: null,
   modalsOpenOnCanvas: [],
   showComponentPermissionModal: false,
+};
+
+// A binding whose rows of a windowed ListView became ready (_engines/materialize/prepare.js), resolved again: unless it
+// was removed meanwhile (its component deleted, or another app loaded).
+const resolveAgain = (get, dependency, path, moduleId, parentIndices) => {
+  if (!get().dependencyGraph?.modules?.[moduleId]?.graph?.hasNode(dependency)) return;
+  get().applyDependencyUpdate(dependency, path, moduleId, parentIndices);
+};
+
+// A binding reading no windowed ListView's rows resolves in its state as it is.
+const asIs = (state) => state;
+
+/**
+ * The state a binding of `componentId`'s `property` resolves in, its template reading `reads` of windowed ListViews'
+ * children/data (windowedReadsOf: callers check it first, so a binding reading none costs nothing more): with those
+ * rows made ready (_engines/materialize/prepare.js), or KEEP when they aren't yet: it keeps its value, and `retry` runs
+ * once they are (once per `key`). A read refused is logged.
+ */
+const bindingScope = (get, reads, state, customObjects, moduleId, { componentId, property, retry, key }) => {
+  const report = (error) => get().debugger.logRefusedRead(componentId, property, error, moduleId);
+  return prepareBinding(get, reads, state, customObjects, moduleId, retry, report, key);
 };
 
 export const createComponentsSlice = (set, get) => ({
@@ -563,6 +585,23 @@ export const createComponentsSlice = (set, get) => ({
     const parentId = getComponentDefinition(componentId, moduleId)?.component?.parent;
     const nearestListviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
 
+    // The rows of a windowed ListView it reads, made ready first: it has no value yet to keep, so until they are it
+    // resolves as before, and again once they are (setValueToComponent). Reading none: `state` itself.
+    const reads = shouldResolve ? windowedReadsOf(get, value, moduleId) : null;
+    const scopeOf = reads
+      ? (state, rowResolvables) => {
+          const scope = bindingScope(get, reads, state, rowResolvables, moduleId, {
+            componentId,
+            property: `${paramType}.${property}`,
+            key: `set\u0000${moduleId}\u0000${componentId}\u0000${paramType}.${property}`,
+            retry: () =>
+              get().getComponentDefinition(componentId, moduleId) &&
+              get().setValueToComponent(componentId, paramType, property, parentId, value, value, false, moduleId),
+          });
+          return scope === KEEP ? state : scope;
+        }
+      : asIs;
+
     const updateResolvedValueForNonNullIndex = (resolvedValue, idx) => {
       if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
         componentResolvedValues[componentId] = [];
@@ -591,7 +630,13 @@ export const createComponentsSlice = (set, get) => ({
 
     if (length === 0) {
       const resolvedValue = shouldResolve
-        ? resolveDynamicValues(value, getAllExposedValues(moduleId), customResolvables, false, [])
+        ? resolveDynamicValues(
+            value,
+            scopeOf(getAllExposedValues(moduleId), customResolvables),
+            customResolvables,
+            false,
+            []
+          )
         : value;
 
       if (index !== null) {
@@ -639,7 +684,13 @@ export const createComponentsSlice = (set, get) => ({
         // Mutate the overlay in place: swap descendant entries to row i's values
         if (scopeCtx) updateRowScope(scopeCtx, i);
         const resolvedValue = shouldResolve
-          ? resolveDynamicValues(value, scopedState, customResolvables[i] || {}, false, [])
+          ? resolveDynamicValues(
+              value,
+              scopeOf(scopedState, customResolvables[i] || {}),
+              customResolvables[i] || {},
+              false,
+              []
+            )
           : value;
 
         updateResolvedValueForNonNullIndex(resolvedValue, i);
@@ -680,11 +731,35 @@ export const createComponentsSlice = (set, get) => ({
       shouldResolve = true;
     }
 
+    // The rows of a windowed ListView it reads are made ready first: until they are, it keeps its value (KEEP), and is
+    // set again once they are (_engines/materialize/prepare.js). Reading none: `state` itself.
+    const reads = shouldResolve ? windowedReadsOf(get, unResolvedValue, moduleId) : null;
+    const scopeOf = reads
+      ? (state, customObjects = {}) =>
+          bindingScope(get, reads, state, customObjects, moduleId, {
+            componentId,
+            property: `${paramType}.${property}`,
+            key: `set\u0000${moduleId}\u0000${componentId}\u0000${paramType}.${property}`,
+            retry: () =>
+              get().getComponentDefinition(componentId, moduleId) &&
+              get().setValueToComponent(
+                componentId,
+                paramType,
+                property,
+                parentId,
+                value,
+                unResolvedValue,
+                skipResolve,
+                moduleId
+              ),
+          })
+      : asIs;
+
     if (!isInListview) {
       // Not in a ListView - simple case
-      const resolvedValue = shouldResolve
-        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
-        : value;
+      const scope = scopeOf(getAllExposedValues(moduleId));
+      if (scope === KEEP) return;
+      const resolvedValue = shouldResolve ? resolveDynamicValues(unResolvedValue, scope, {}, false, []) : value;
       setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
       return;
     }
@@ -708,9 +783,9 @@ export const createComponentsSlice = (set, get) => ({
 
     if (listviewAncestors.length === 0) {
       // Fallback - shouldn't happen but handle gracefully
-      const resolvedValue = shouldResolve
-        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
-        : value;
+      const scope = scopeOf(getAllExposedValues(moduleId));
+      if (scope === KEEP) return;
+      const resolvedValue = shouldResolve ? resolveDynamicValues(unResolvedValue, scope, {}, false, []) : value;
       setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
       return;
     }
@@ -725,9 +800,9 @@ export const createComponentsSlice = (set, get) => ({
       // Row-referencing values resolve to nothing without rows, and seeding every row from that
       // garbage is worse than waiting: the listItem announcement rewrites them per row.
       if (shouldResolve && getCustomResolvableReference(unResolvedValue, parentId, moduleId).length > 0) return;
-      const resolvedValue = shouldResolve
-        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
-        : value;
+      const scope = scopeOf(getAllExposedValues(moduleId));
+      if (scope === KEEP) return;
+      const resolvedValue = shouldResolve ? resolveDynamicValues(unResolvedValue, scope, {}, false, []) : value;
       setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
       return;
     }
@@ -769,8 +844,10 @@ export const createComponentsSlice = (set, get) => ({
           if (i >= resolvables.length) continue;
           const fullIndices = [...currentIndices, i];
           if (scopeCtx) updateRowScope(scopeCtx, i);
+          const rowState = scopeOf(scopedState, resolvables[i] || {});
+          if (rowState === KEEP) continue;
           const resolvedValue = shouldResolve
-            ? resolveDynamicValues(unResolvedValue, scopedState, resolvables[i] || {}, false, [])
+            ? resolveDynamicValues(unResolvedValue, rowState, resolvables[i] || {}, false, [])
             : value;
           setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, fullIndices, moduleId);
         }
@@ -2917,8 +2994,20 @@ export const createComponentsSlice = (set, get) => ({
     const key = keys.join('.');
     const unResolvedValue = getNodeData(dependency, moduleId);
     const exposedValues = preloadedExposedValues || getAllExposedValues(moduleId);
+    // The rows of a windowed ListView it reads, made ready first (_engines/materialize/prepare.js): until they are, it
+    // keeps its value, and is resolved again once they are.
+    const reads = windowedReadsOf(get, unResolvedValue, moduleId);
+    const scope = reads
+      ? bindingScope(get, reads, exposedValues, {}, moduleId, {
+          componentId: entityId,
+          property: `${type}.${key}`,
+          key: `dependency\u0000${moduleId}\u0000${dependency}\u0000${parentIndices ?? ''}`,
+          retry: () => resolveAgain(get, dependency, path, moduleId, parentIndices),
+        })
+      : exposedValues;
+    if (scope === KEEP) return;
     // Deep-frozen before it's written (instant when it's data already in the store, eg. `{{queries.q.data}}`).
-    const resolvedValue = deepFreeze(resolveDynamicValues(unResolvedValue, exposedValues, {}, false, []));
+    const resolvedValue = deepFreeze(resolveDynamicValues(unResolvedValue, scope, {}, false, []));
 
     if (type === undefined) {
       applyOrQueueMutation((state) => {
@@ -3079,10 +3168,23 @@ export const createComponentsSlice = (set, get) => ({
       : Array.from({ length }, (_, i) => i);
     if (indicesToResolve.length === 0) return;
 
+    // Reads the rows of a windowed ListView: made ready first, row by row (_engines/materialize/prepare.js). A row
+    // whose aren't keeps its value (KEEP), and they are all resolved again once they are.
+    const reads = windowedReadsOf(get, unResolvedValue, moduleId);
+    const binding = reads && {
+      componentId: entityId,
+      property: key,
+      key: `dependency\u0000${moduleId}\u0000${dependency}\u0000${parentIndices ?? ''}`,
+      retry: () => resolveAgain(get, dependency, path, moduleId, parentIndices),
+    };
     const resolveRow = (i) => {
       const rowCustomResolvables = getCustomResolvables(resolvableParentId, i, moduleId, parentIndices);
       if (scopeCtx) updateRowScope(scopeCtx, i);
-      const resolvedValue = resolveDynamicValues(unResolvedValue, scopedState, rowCustomResolvables, false, []);
+      const rowState = reads
+        ? bindingScope(get, reads, scopedState, rowCustomResolvables, moduleId, binding)
+        : scopedState;
+      if (rowState === KEEP) return KEEP;
+      const resolvedValue = resolveDynamicValues(unResolvedValue, rowState, rowCustomResolvables, false, []);
       return shouldValidate
         ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
         : resolvedValue;
@@ -3098,9 +3200,12 @@ export const createComponentsSlice = (set, get) => ({
     ) {
       // The same on every row (see readsNothingRowScoped): resolved and validated once, not once per row.
       const value = resolveRow(indicesToResolve[0]);
-      for (const i of indicesToResolve) updates.push({ index: i, value });
+      if (value !== KEEP) for (const i of indicesToResolve) updates.push({ index: i, value });
     } else {
-      for (const i of indicesToResolve) updates.push({ index: i, value: resolveRow(i) });
+      for (const i of indicesToResolve) {
+        const value = resolveRow(i);
+        if (value !== KEEP) updates.push({ index: i, value });
+      }
     }
 
     // Writes one row's resolved value, honouring array notation in the property path.

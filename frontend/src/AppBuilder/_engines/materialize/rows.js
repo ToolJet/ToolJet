@@ -32,6 +32,12 @@
  * descendantsOf / widgetsMountedIn list and count the widgets a drawn row mounts, and a hold (holdRowMounted) can be
  * let go before its row is drawn (an AbortSignal).
  *
+ * An event's control-component action on a widget in a windowed ListView's rows (a child, or in a container of the
+ * row: that one runs drawn) runs through runRowAction too, on the data row of the row it fired in (`controlRowOf`: the
+ * firing widget's slot at that ListView's level, mapped through its slots as they were when it fired; row 0 when it
+ * fired outside that ListView's rows). What scripts and `{{ }}` templates read of the rows is scripts.js's and
+ * prepare.js's.
+ *
  * Functions here take the store's `get`; the store actions built on them are in listViewComponentSlice.js.
  */
 import { cloneDeep, isEqual, set as lodashSet } from 'lodash';
@@ -85,6 +91,12 @@ const typeOf = (get, childId, moduleId) => get().getComponentDefinition(childId,
 
 /** The data rows a windowed ListView's slots show, or null when it draws every row. */
 export const slotsOf = (get, listviewId, moduleId) => moduleOf(get, moduleId)?.listviewSlots?.[listviewId] ?? null;
+
+/** Whether the module has a windowed ListView (only then is any row of a ListView not drawn). */
+export const hasWindowedListview = (get, moduleId) => {
+  for (const _id in moduleOf(get, moduleId)?.listviewSlots ?? {}) return true;
+  return false;
+};
 
 /** The changes recorded for a data row, by child id (undefined when none). */
 export const rowChangesOf = (get, listviewId, dataRow, moduleId) =>
@@ -163,6 +175,35 @@ export const listviewRows = (get, listviewId, moduleId) => {
   const merged = { ...general, ...properties };
   const data = merged.dataSourceSelector === 'rawJson' ? merged.data : merged.dataSourceSelector;
   return Array.isArray(data) ? data : [];
+};
+
+/**
+ * Where an event's control-component action on a widget in a windowed ListView's rows (a child, or deeper in a
+ * container of the row) runs: `{ listviewId, dataRow }`, the data row of the row the event fired in, or row 0 when it
+ * fired outside that ListView's rows (as in a ListView that draws every row). A widget in a row fires with its index,
+ * one slot per ListView around it (outermost first): the one at that ListView's level is mapped through its slots as
+ * they were when the event fired (`firedSlots`: the module's listviewSlots then; the rows may have scrolled since,
+ * while earlier actions ran). Null for a widget no windowed ListView holds (in a ListView that draws every row, or one inside
+ * a row), or a slot showing no row; at once in a module with no windowed ListView.
+ */
+export const controlRowOf = (get, componentId, sourceId, sourceIndex, moduleId, firedSlots = undefined) => {
+  if (!hasWindowedListview(get, moduleId)) return null;
+  const state = get();
+  const parentOf = (id) => state.getComponentDefinition(id, moduleId)?.component?.parent;
+  const listOf = (id) => {
+    const parent = parentOf(id);
+    return parent ? state.findNearestSubcontainerAncestor(parent, moduleId) : null;
+  };
+  const listviewId = listOf(componentId);
+  const slots = listviewId ? slotsOf(get, listviewId, moduleId) : null;
+  if (!slots) return null;
+  const lists = []; // the ListViews (and Kanbans) around the source, outermost first
+  for (let id = sourceId && listOf(sourceId); id; id = listOf(id)) lists.unshift(id);
+  const level = lists.indexOf(listviewId);
+  const indices = Array.isArray(sourceIndex) ? sourceIndex : [sourceIndex];
+  if (level < 0 || indices[level] === null || indices[level] === undefined) return { listviewId, dataRow: 0 };
+  const dataRow = (firedSlots?.[listviewId] ?? slots)[indices[level]];
+  return dataRow >= 0 ? { listviewId, dataRow } : null;
 };
 
 /** Whether `dataRow` is one of the ListView's rows. */

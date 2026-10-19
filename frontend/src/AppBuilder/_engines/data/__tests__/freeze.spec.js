@@ -103,4 +103,18 @@ describe('deepFreezeInSlices', () => {
     await pending;
     expect(rows.every((row) => Object.isFrozen(row))).toBe(true);
   });
+  test('what throws while it is frozen (a getter) throws, or rejects the promise in a later slice: never hangs', async () => {
+    const throwing = () => ({
+      get value() {
+        throw new TypeError('refused');
+      },
+    });
+    expect(() => deepFreezeInSlices({ a: throwing() })).toThrow('refused');
+    expect(() => deepFreeze({ a: throwing() })).toThrow('refused');
+    const rows = Array.from({ length: 300000 }, (_, i) => ({ id: i, address: { city: 'c' } }));
+    rows.push(throwing());
+    const pending = deepFreezeInSlices(rows);
+    expect(pending).toBeInstanceOf(Promise);
+    await expect(pending).rejects.toThrow('refused');
+  });
 });

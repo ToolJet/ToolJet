@@ -34,6 +34,7 @@ import {
   rowChangesWritten,
 } from '@/AppBuilder/_engines/materialize/estimate';
 import { materializeAll } from '@/AppBuilder/_engines/materialize/materialize';
+import { forgetListviewReads, readByTemplates } from '@/AppBuilder/_engines/materialize/prepare';
 
 export const listViewComponentSlice = (set, get, api) => {
   // Microtask dedup for _deriveListviewChain calls outside an explicit batch window.
@@ -201,6 +202,9 @@ export const listViewComponentSlice = (set, get, api) => {
         settleRows(get, level);
       });
   };
+
+  // The rows each windowed ListView last showed (refreshListviewEstimate): `${moduleId}|${listviewId}` → rows.
+  const _notifiedRows = new Map();
 
   // Dependents of a ListView's children/data re-resolve (and of its selected row, when that was written).
   const notifyRowsWritten = (listviewId, moduleId, selectedWritten) => {
@@ -735,10 +739,19 @@ export const listViewComponentSlice = (set, get, api) => {
       profileListview(get, api.subscribe, listviewId, moduleId);
     },
 
-    // The ListView shows other rows (Listview.jsx, after it renders them): its rows' profile follows even when the store
-    // didn't change after it rendered (data reloaded with the same content).
-    refreshListviewEstimate: (listviewId, moduleId = 'canvas') =>
-      profileListview(get, api.subscribe, listviewId, moduleId),
+    // The ListView shows other rows (Listview.jsx, after it renders them): its rows' profile follows even when the
+    // store didn't change after it rendered (data reloaded with the same content). Once a template read rows of it
+    // that it doesn't draw (_engines/materialize/prepare.js readByTemplates), which its children/data don't hold, what
+    // reads its children/data is resolved again too; nothing more for a ListView no template read so.
+    refreshListviewEstimate: (listviewId, moduleId = 'canvas') => {
+      profileListview(get, api.subscribe, listviewId, moduleId);
+      const key = `${moduleId}|${listviewId}`;
+      const rows = handleOf(moduleId, listviewId)?.rows;
+      if (!rows || _notifiedRows.get(key) === rows) return;
+      const first = !_notifiedRows.has(key);
+      _notifiedRows.set(key, rows);
+      if (!first && readByTemplates(listviewId, moduleId)) notifyRowsWritten(listviewId, moduleId, false);
+    },
 
     // `resetRows`: also clear the children's per-row values the slots held (they would be read as data rows).
     clearListviewSlots: (listviewId, moduleId = 'canvas', resetRows = false) => {
@@ -747,6 +760,8 @@ export const listViewComponentSlice = (set, get, api) => {
       // resolved state replaced while it was mounted).
       forgetListviewRows(listviewId, moduleId);
       forgetEstimate(listviewId, moduleId);
+      forgetListviewReads(listviewId, moduleId);
+      _notifiedRows.delete(`${moduleId}|${listviewId}`);
       if (!slots) return;
       const childComponents = resetRows ? get().getContainerChildrenMapping(listviewId, moduleId) : [];
       set(
@@ -833,7 +848,11 @@ export const listViewComponentSlice = (set, get, api) => {
      * left the list, the ListView unmounted, no such action).
      */
     runRowAction: (listviewId, dataRow, childId, action, args = [], moduleId = 'canvas') => {
-      const { exposure, isState } = actionKindOf(get, childId, action, moduleId);
+      // A widget deeper in the row (in a container of it) runs drawn, the row kept drawn: only the row's own children
+      // are read, and their changes kept, while it isn't.
+      const { exposure, isState } = get().getContainerChildrenMapping(listviewId, moduleId).includes(childId)
+        ? actionKindOf(get, childId, action, moduleId)
+        : {};
       const windowed = !!slotsOf(listviewId, [], moduleId);
       const keep = () => {
         const handle = handleOf(moduleId, listviewId);

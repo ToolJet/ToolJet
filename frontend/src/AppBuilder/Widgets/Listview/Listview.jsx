@@ -23,8 +23,9 @@ import { registerListview, rowWidgetsUnmounted } from '@/AppBuilder/_engines/mat
 const WINDOWED_WIDGETS = 2000;
 // Lines of rows rendered beyond each edge of the view.
 const OVERSCAN_LINES = 3;
-// Rows new to the view mount within about this much time per frame (nearest the view first).
-const MOUNT_BUDGET_MS = 8;
+// Rows in view always render at once; the rows beyond them (overscan, lead) mount in the tasks after, about this much
+// time each, ahead of the scrolling first (see useWindow's aheadBudgetMs).
+const AHEAD_BUDGET_MS = 8;
 const NO_SCROLL_ELEMENT = { current: null };
 // Rows the user only clicked stay rendered, at most this many (the longest untouched since is let go first). Rows with
 // a field the user touched stay for good: a row that unmounts re-exposes its defaults when it mounts again.
@@ -214,7 +215,7 @@ export const Listview = function Listview({
     estimateSize: windowed ? lineHeight : 1,
     getItemKey: lineKey,
     overscan: windowed ? OVERSCAN_LINES * lineHeight : 0,
-    mountBudgetMs: MOUNT_BUDGET_MS,
+    aheadBudgetMs: AHEAD_BUDGET_MS,
   });
   const pinnedRows = useRef(new Set());
   const editedRows = useRef(new Set());
