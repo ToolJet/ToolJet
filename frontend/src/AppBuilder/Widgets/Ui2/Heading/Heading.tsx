@@ -36,7 +36,8 @@ export const ShadHeading = (props: WidgetProps) => {
     if (!fixed || !tagRef.current) return setLines(null);
     const lineHeight = parseFloat(window.getComputedStyle(tagRef.current).lineHeight);
     setLines(clampLines(props.height, lineHeight));
-  }, [fixed, props.height, level, text, props.styles?.fontSize?.value]);
+    // Resolved styles are plain values: the size itself, not a { value } wrapper, changes the line height.
+  }, [fixed, props.height, level, text, props.styles?.fontSize]);
   const clamped: CSSProperties = lines
     ? { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: lines, overflow: 'hidden' }
     : {};
