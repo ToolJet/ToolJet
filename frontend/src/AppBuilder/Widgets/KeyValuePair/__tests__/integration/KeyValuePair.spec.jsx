@@ -348,64 +348,136 @@ describe('KeyValuePair: inline editing and changeset', () => {
   });
 });
 
-describe('KeyValuePair: changeset popover responsive CTA', () => {
-  // A second harness at a width above the text-fit breakpoint — the default
-  // `widget` harness (200px) exercises the narrow case.
-  const wideWidget = createWidgetHarness({
-    componentType: 'KeyValuePair',
-    handle: NAME,
-    id: ID,
-    defaultProperties: {
-      dataSourceSelector: binding('rawJson'),
-      data: binding(DEFAULT_DATA),
-      fields: binding(DEFAULT_FIELDS),
-      useDynamicField: binding('{{false}}'),
-      fieldDynamicData: binding([]),
-      fieldDeletionHistory: binding([]),
-      dynamicHeight: binding('{{false}}'),
-      showUpdateActions: binding('{{true}}'),
-      loadingState: binding('{{false}}'),
-      visibility: binding('{{true}}'),
-      disabledState: binding('{{false}}'),
-    },
-    widgetWidth: 400,
-  });
+describe('KeyValuePair: changeset bar responsive layout', () => {
+  const harnesses = [];
 
-  beforeEach(async () => {
-    await widget.setup();
-    await wideWidget.setup();
-  });
-  afterEach(() => {
-    widget.teardown();
-    wideWidget.teardown();
-  });
-
-  const makeChange = async (w) => {
-    w.render();
+  // `render()` has no per-call width override, so each width gets its own harness.
+  const atWidth = async (widgetWidth, { properties, events } = {}) => {
+    const w = createWidgetHarness({
+      componentType: 'KeyValuePair',
+      handle: NAME,
+      id: ID,
+      defaultProperties: {
+        dataSourceSelector: binding('rawJson'),
+        data: binding(DEFAULT_DATA),
+        fields: binding(DEFAULT_FIELDS),
+        useDynamicField: binding('{{false}}'),
+        fieldDynamicData: binding([]),
+        fieldDeletionHistory: binding([]),
+        dynamicHeight: binding('{{false}}'),
+        showUpdateActions: binding('{{true}}'),
+        disableSaveChanges: binding('{{false}}'),
+        loadingState: binding('{{false}}'),
+        visibility: binding('{{true}}'),
+        disabledState: binding('{{false}}'),
+      },
+      widgetWidth,
+    });
+    harnesses.push(w);
+    await w.setup();
+    w.render({ properties, events });
     await waitFor(() => expect(rows()).toHaveLength(2));
     await w.session.user.click(valueContainer(rows()[0]));
     const input = await waitFor(() => document.getElementById(`${ID}-name`));
     input.textContent = 'Grace Hopper';
     input.blur();
     await waitFor(() => expect(saveButton()).toBeInTheDocument());
+    return w;
   };
 
-  test('[KeyValuePair-EDIT-011] below the text-fit breakpoint, Save/Cancel render icon-only, dropping the text labels that would overflow the component', async () => {
-    // Default harness width (200px) is already narrower than the popover's
-    // full-text natural width (see KeyValuePair-EDIT-012 for the wide case).
-    await makeChange(widget);
-
-    expect(saveButton().textContent).not.toContain('Save changes');
-    expect(saveButton().querySelector('svg.lucide-save')).toBeInTheDocument();
-    expect(cancelButton().textContent).not.toContain('Cancel');
-    expect(cancelButton().querySelector('svg.lucide-x')).toBeInTheDocument();
+  afterEach(() => {
+    harnesses.splice(0).forEach((w) => w.teardown());
   });
 
-  test('[KeyValuePair-EDIT-012] above the text-fit breakpoint, Save/Cancel keep their full text labels', async () => {
-    await makeChange(wideWidget);
+  const bar = () => document.querySelector('.kv-changeset-popover');
+  const content = () => document.querySelector('.key-value-pair-content');
 
+  const expectTextBar = () => {
     expect(saveButton().textContent).toContain('Save changes');
     expect(cancelButton().textContent).toContain('Cancel');
+    expect(bar()).not.toHaveClass('kv-changeset-docked');
+    expect(content()).not.toHaveClass('kv-content-docked');
+  };
+
+  const expectIconBar = () => {
+    expect(saveButton().textContent).toBe('');
+    expect(saveButton()).toHaveAttribute('aria-label', 'Save changes');
+    expect(saveButton().querySelector('svg.lucide-check')).toBeInTheDocument();
+    expect(cancelButton().textContent).toBe('');
+    expect(cancelButton()).toHaveAttribute('aria-label', 'Cancel');
+    expect(cancelButton().querySelector('svg.lucide-x')).toBeInTheDocument();
+  };
+
+  const expectDockedIconBar = () => {
+    expectIconBar();
+    expect(bar()).toHaveClass('kv-changeset-docked');
+    expect(content()).toHaveClass('kv-content-docked');
+  };
+
+  test('[KeyValuePair-EDIT-011] below 200px the bar is a docked footer of icon-only ✕ / ✓ buttons', async () => {
+    await atWidth(150);
+
+    expectDockedIconBar();
+  });
+
+  test('[KeyValuePair-EDIT-012] at 200px and above the bar floats with its full text labels', async () => {
+    await atWidth(200);
+
+    expectTextBar();
+  });
+
+  test('[KeyValuePair-EDIT-018] the docked footer lasts only while changes are pending, and the content reserves room for it meanwhile', async () => {
+    const w = await atWidth(60);
+
+    expectDockedIconBar();
+
+    await w.session.user.click(cancelButton());
+    await waitFor(() => expect(w.exposed()?.changeSet).toEqual({}));
+    expect(bar()).toBeNull();
+    expect(content()).not.toHaveClass('kv-content-docked');
+  });
+
+  test.each([
+    [200, 'text'],
+    [199, 'docked icons'],
+    [100, 'docked icons'],
+    [52, 'docked icons'],
+  ])('[KeyValuePair-EDIT-019] at widgetWidth %i the bar renders as %s', async (width, tier) => {
+    await atWidth(width);
+
+    if (tier === 'text') expectTextBar();
+    if (tier === 'docked icons') expectDockedIconBar();
+  });
+
+  describe.each([
+    [300, 'text'],
+    [150, 'docked icons'],
+    [60, 'docked icons'],
+  ])('at widgetWidth %i (%s)', (width) => {
+    test('[KeyValuePair-EDIT-020] Cancel fires its event and clears the changeSet', async () => {
+      const w = await atWidth(width, { events: setVariableOn(ID, 'onCancelKeyValuePairChanges') });
+
+      await w.session.user.click(cancelButton());
+
+      await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+      await waitFor(() => expect(w.exposed()?.changeSet).toEqual({}));
+    });
+
+    test('[KeyValuePair-EDIT-020] Save fires its event and clears the changeSet', async () => {
+      const w = await atWidth(width, { events: setVariableOn(ID, 'onSaveKeyValuePairChanges') });
+
+      await w.session.user.click(saveButton());
+
+      await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+      await waitFor(() => expect(w.exposed()?.changeSet).toEqual({}));
+    });
+
+    test('[KeyValuePair-EDIT-020] disableSaveChanges disables Save but never hides it, and leaves Cancel enabled', async () => {
+      await atWidth(width, { properties: { disableSaveChanges: binding('{{true}}') } });
+
+      expect(saveButton()).toBeDisabled();
+      expect(cancelButton()).toBeEnabled();
+    });
   });
 });
 
