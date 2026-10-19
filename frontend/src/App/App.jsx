@@ -53,6 +53,7 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import LimitReachedModal from '@/modules/common/components/LimitReachedModal';
+import UpgradePlanModal from '@/modules/common/components/UpgradePlanModal';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -503,6 +504,7 @@ class AppComponent extends React.Component {
               </Routes>
             </BreadCrumbContext.Provider>
             <div id="modal-div" />
+            <UpgradePlanModal />
           </div>
 
           <Toast toastOptions={toastOptions} />

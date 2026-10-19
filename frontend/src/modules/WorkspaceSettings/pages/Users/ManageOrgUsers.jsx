@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, organizationUserService, userService, groupPermissionV2Service } from '@/_services';
+import { authenticationService, organizationUserService, userService } from '@/_services';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
@@ -18,6 +18,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { getLimitState } from '@/modules/common/helpers/limitGating';
 import { useLicenseStore } from '@/_stores/licenseStore';
+import { isBulkUpsertEnabled } from './bulkUploadLimits';
+import BulkUploadUsersDrawer from './components/BulkUploadUsersDrawer';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -40,6 +42,7 @@ class ManageOrgUsersComponent extends React.Component {
       options: {},
       file: null,
       isInviteUsersDrawerOpen: false,
+      isBulkUploadDrawerOpen: false,
       userLimits: {},
       currentEditingUser: null,
       userDrawerMode: USER_DRAWER_MODES.CREATE,
@@ -372,29 +375,6 @@ class ManageOrgUsersComponent extends React.Component {
           });
       };
 
-      if (isEditing && role === 'end-user') {
-        const userId = this.state.currentEditingUser?.user_id;
-        if (userId) {
-          groupPermissionV2Service
-            .getUserAdminGroups(userId)
-            .then(({ groups }) => {
-              if (groups.length > 0) {
-                this.setState({
-                  creatingUser: false,
-                  isInviteUsersDrawerOpen: false,
-                  showAutoRoleChangeModal: true,
-                  autoRoleChangeMessageType: 'DOWNGRADE_BLOCKED_BY_GROUP_ADMIN',
-                  autoRoleChangeModalList: groups.map((g) => g.name),
-                });
-              } else {
-                proceed();
-              }
-            })
-            .catch(() => proceed());
-          return;
-        }
-      }
-
       proceed();
     } else {
       this.setState({ creatingUser: false, file: null, isInviteUsersDrawerOpen: true });
@@ -520,6 +500,16 @@ class ManageOrgUsersComponent extends React.Component {
             iconName={errorIconName}
             onClose={this.clearErrorState}
           />
+          {this.state.isBulkUploadDrawerOpen && (
+            <BulkUploadUsersDrawer
+              isOpen={this.state.isBulkUploadDrawerOpen}
+              onClose={() => this.setState({ isBulkUploadDrawerOpen: false })}
+              onUploaded={() => {
+                this.fetchUsers();
+                this.fetchUserLimits();
+              }}
+            />
+          )}
           {this.state.isInviteUsersDrawerOpen && (
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}
@@ -553,15 +543,45 @@ class ManageOrgUsersComponent extends React.Component {
                       {meta?.total_count} users
                     </div>
                     <div className=" workspace-setting-buttons-wrap">
-                      <ButtonSolid
-                        data-cy="button-invite-new-user"
-                        className="singleuser-btn"
-                        onClick={this.openInviteUsers}
-                        leftIcon="usergroup"
-                        fill={'#FDFDFE'}
-                      >
-                        {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
-                      </ButtonSolid>
+                      {isBulkUpsertEnabled() && (
+                        <ButtonSolid
+                          data-cy="button-bulk-upload-users"
+                          variant="tertiary"
+                          size="md"
+                          className="bulk-upload-header-btn"
+                          onClick={() => this.setState({ isBulkUploadDrawerOpen: true })}
+                          leftIcon="IconUsers"
+                          isTablerIcon
+                          iconWidth="16"
+                          fill="var(--icon-default)"
+                        >
+                          Bulk upload users
+                        </ButtonSolid>
+                      )}
+                      {isBulkUpsertEnabled() ? (
+                        <ButtonSolid
+                          data-cy="button-invite-new-user"
+                          size="md"
+                          className="bulk-upload-header-btn"
+                          onClick={this.openInviteUsers}
+                          leftIcon="IconPlus"
+                          isTablerIcon
+                          iconWidth="16"
+                          fill="#FDFDFE"
+                        >
+                          Add user
+                        </ButtonSolid>
+                      ) : (
+                        <ButtonSolid
+                          data-cy="button-invite-new-user"
+                          className="singleuser-btn"
+                          onClick={this.openInviteUsers}
+                          leftIcon="usergroup"
+                          fill={'#FDFDFE'}
+                        >
+                          {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
+                        </ButtonSolid>
+                      )}
                     </div>
                   </div>
                 </div>

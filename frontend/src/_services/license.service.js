@@ -20,6 +20,7 @@ export const licenseService = {
   addTopUpCredits,
   getAiCreditsBalance,
   getSelfhostCustomer,
+  getPlanPrices,
 };
 
 function get() {
@@ -183,6 +184,12 @@ function getAiCreditsBalance() {
   return fetch(`${config.apiUrl}/organization/payment/${organizationId}/ai-credits-balance`, requestOptions).then(
     handleResponse
   );
+}
+
+// Per-builder plan prices from Stripe. Cloud reads them directly; self-hosted relays cloud's.
+function getPlanPrices() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization/payment/plan-prices`, requestOptions).then(handleResponse);
 }
 
 function getSelfhostCustomer() {
