@@ -77,6 +77,11 @@ export const useCustomCards = (
       initExposedValueArrayForChildren(id, cards.length, moduleId, parentIndices);
       moveValues?.();
       publishedKeys.current = keys;
+    } else if (publishedKeys.current.length) {
+      // An emptied board drops its cards' component values (and actions) from children: they stayed readable under
+      // card indexes no card had. Their per-card settings stay, so cards that come back render as before.
+      initExposedValueArrayForChildren(id, 0, moduleId, parentIndices);
+      publishedKeys.current = [];
     }
     setPublished({ columns, generation: generation.current });
   }, [custom, parentIndices, columns, id, moduleId, updateCustomResolvables, initExposedValueArrayForChildren]);
