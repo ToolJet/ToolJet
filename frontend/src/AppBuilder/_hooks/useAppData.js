@@ -35,6 +35,7 @@ import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
+import { appliedThemeDefinition } from '../_utils/themeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 import { onBrandText } from '@/AppBuilder/_helpers/onBrandText';
@@ -777,7 +778,7 @@ const useAppData = (
   useEffect(() => {
     const root = document.documentElement;
     const mode = appMode && appMode !== 'auto' ? appMode : darkMode ? 'dark' : 'light';
-    const themeObj = !themeAccess ? baseTheme?.definition : selectedTheme?.definition || {};
+    const themeObj = appliedThemeDefinition(selectedTheme, themeAccess);
     Object.keys(themeObj).forEach((category) => {
       const categoryObj = themeObj[category];
       Object.keys(categoryObj).forEach((property) => {

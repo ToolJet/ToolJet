@@ -4,7 +4,8 @@ import { TJDefaultTheme } from './index';
 /**
  * Colour themes ToolJet ships beside the basic "ToolJet" theme, so any workspace can restyle an app in one click from
  * the editor's theme picker. They are ordinary workspace themes: created for
- * every new workspace (createDefaultTheme) and backfilled for existing ones (data migration), editable and removable.
+ * every new workspace (createDefaultTheme) and backfilled for existing ones (data migration). Every plan can apply them
+ * and make one the default; only workspaces with the custom themes license can edit, rename or remove them.
  * Each changes the brand colour and tints the basic theme's neutrals towards it (app background, surfaces, borders,
  * text); status colours stay the basic theme's.
  */
@@ -154,3 +155,17 @@ export const shippedThemes: Array<{ name: string; definition: Definition }> = PA
     },
   };
 });
+
+const shippedThemeNames = new Set(shippedThemes.map((theme) => theme.name));
+
+/**
+ * Whether a workspace theme is that workspace's copy of a shipped theme. Shipped themes are usable on every plan, like
+ * the basic theme, and read-only without the custom themes license.
+ *
+ * Matched by exact name: names are unique within a workspace (organization_id_app_theme_name_unique), the seed and
+ * createDefaultTheme write exactly these names, and only licensed workspaces can rename a theme. Not by definition:
+ * shipped definitions get retuned over time, and a licensed workspace may have edited its copy. A marker column would
+ * need a schema change and a backfill that could only use these names anyway.
+ */
+export const isShippedTheme = (theme: { name?: string; isBasic?: boolean } | null | undefined): boolean =>
+  !!theme && !theme.isBasic && shippedThemeNames.has(theme.name);
