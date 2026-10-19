@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 import { TJDefaultTheme } from '@modules/organization-themes/constants';
 import { shippedThemes } from '@modules/organization-themes/constants/shipped-themes';
 
-// The shipped themes as AddShippedThemesToOrganizations wrote them (2026-10-13): the basic theme with the palette's
+// The shipped themes as AddShippedThemesToOrganizations wrote them: the basic theme with the palette's
 // primary, app background and second surface. Frozen here, so later palette changes do not change what this matches.
 const FIRST_PALETTES: Array<{
   name: string;
