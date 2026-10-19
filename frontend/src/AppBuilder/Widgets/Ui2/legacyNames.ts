@@ -18,6 +18,12 @@ export const UI2_COMMON_RENAMES: Ui2Renames = {
   actions: { visibility: 'setVisibility', disable: 'setDisable', loading: 'setLoading' },
 };
 
+/**
+ * Common renames a widget never had, so a saved old name on it is left as it is. The Dialog was ModalV2 in the pack's
+ * look, without the `disable` alias the other widgets had; its setters are setDisableTrigger and setDisableModal.
+ */
+export const UI2_COMMON_RENAME_EXCEPTIONS: Record<string, string[]> = { ShadDialog: ['disable'] };
+
 const CHART: Ui2Renames = { exposed: { clickedDatum: 'clickedDataPoint' } };
 const PICKER: Ui2Renames = { events: { onChange: 'onSelect' }, actions: { clear: 'clearValue' } };
 
@@ -109,9 +115,11 @@ export const UI2_RENAMES: Record<string, Ui2Renames> = {
 export const renamesFor = (type: string): Required<Ui2Renames> | null => {
   if (!type || !type.startsWith('Shad')) return null;
   const own = UI2_RENAMES[type] ?? {};
+  const common = { ...UI2_COMMON_RENAMES.actions };
+  for (const name of UI2_COMMON_RENAME_EXCEPTIONS[type] ?? []) delete common[name];
   return {
     events: { ...own.events },
-    actions: { ...UI2_COMMON_RENAMES.actions, ...own.actions },
+    actions: { ...common, ...own.actions },
     exposed: { ...own.exposed },
     properties: { ...own.properties },
   };
