@@ -23,7 +23,7 @@ import { AbilityUtilService } from '@modules/ability/util.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
 import { App } from '@entities/app.entity';
-import { getAppDataRevision } from './app-data-revision';
+import { getAppDataRevision, VIEWER_LICENSE_FIELDS } from './app-data-revision';
 import { AppBase } from '@entities/app_base.entity';
 import { AppsUtilService } from './util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -310,7 +310,9 @@ export class AppsService implements IAppsService {
 
   async validateReleasedApp(
     ability: AppAbility,
-    app: App
+    app: App,
+    // Undefined for an anonymous visitor of a public app.
+    user?: User
   ): Promise<{ id: string; slug: string; currentVersionId: string; appDataRevision: string | null }> {
     if (!app.currentVersionId) {
       // ability is undefined for unauthenticated visitors on a public app - the guard
@@ -328,7 +330,11 @@ export class AppsService implements IAppsService {
       id: app.id,
       slug: app.slug,
       currentVersionId: app.currentVersionId,
-      appDataRevision: await getAppDataRevision(this.appRepository.manager, app),
+      appDataRevision: await getAppDataRevision(this.appRepository.manager, app, {
+        versionId: app.currentVersionId,
+        userId: user?.id,
+        licenseTerms: await this.licenseTermsService.getLicenseTerms(VIEWER_LICENSE_FIELDS, app.organizationId),
+      }),
     };
   }
 

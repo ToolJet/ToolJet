@@ -15,13 +15,38 @@ interface Entry {
   savedAt: number;
 }
 
-// Every DB name ever created via createVersionedStore, so clearAllViewerCaches() (called on
-// logout) can wipe all of them without each cache module needing its own cleanup wiring.
+const DB_NAME_PREFIX = 'tj-app-cache-';
+
+// Every DB name created via createVersionedStore in this page load, so clearAllViewerCaches()
+// (called on logout) can wipe them without each cache module needing its own cleanup wiring.
 const registeredDbNames: string[] = [];
 
-export function clearAllViewerCaches(): void {
-  for (const dbName of registeredDbNames) {
+function deleteDatabase(dbName: string): void {
+  try {
     indexedDB.deleteDatabase(dbName);
+  } catch {
+    // Storage can be broken or blocked; one failed delete must not stop the rest.
+  }
+}
+
+// Best-effort and never throws: logout calls it first and must go through even when storage fails.
+export function clearAllViewerCaches(): void {
+  try {
+    if (typeof indexedDB === 'undefined') return;
+    registeredDbNames.forEach(deleteDatabase);
+    // Cache modules register lazily, so a page that never loaded the viewer has nothing registered.
+    // Listing finds those DBs too, along with ones left over from older cache versions.
+    indexedDB
+      .databases?.()
+      .then((databases) =>
+        databases
+          .map(({ name }) => name)
+          .filter((name): name is string => !!name?.startsWith(DB_NAME_PREFIX) && !registeredDbNames.includes(name))
+          .forEach(deleteDatabase)
+      )
+      .catch(() => {});
+  } catch {
+    // Accessing indexedDB itself can throw (e.g. storage disabled for the site).
   }
 }
 
@@ -30,7 +55,7 @@ export function createVersionedStore<T extends Entry>(storeName: string) {
   // createStore() opens IndexedDB without an explicit version, so onupgradeneeded only fires
   // for the first store name ever created under a given DB name — a second store name sharing
   // that DB silently never gets created, and reads/writes against it fail forever.
-  const dbName = `tj-app-cache-${storeName}-v${VIEWER_CACHE_VERSION}`;
+  const dbName = `${DB_NAME_PREFIX}${storeName}-v${VIEWER_CACHE_VERSION}`;
   registeredDbNames.push(dbName);
   const dbStore: UseStore = createStore(dbName, storeName);
 

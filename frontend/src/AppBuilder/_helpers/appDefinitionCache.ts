@@ -6,24 +6,23 @@ import { createVersionedStore } from './versionedIndexedDbStore';
 interface CachedEntry {
   appId: string;
   versionId: string;
+  appDataRevision: string;
   savedAt: number;
   appData: unknown;
 }
 
 const store = createVersionedStore<CachedEntry>('app-definitions');
 
-// appDataRevision changes when a deploy runs a migration. No revision, no caching.
-function cacheKey(versionId: string, appDataRevision: string): string {
-  return `${versionId}:${appDataRevision}`;
-}
-
+// One entry per version, valid only for the appDataRevision it was saved under. The server changes
+// the revision whenever what this viewer would see changes, so a stale entry is never served and
+// gets replaced on the next save. No revision, no caching.
 export async function getCachedAppDefinition(
   versionId: string,
   appDataRevision: string | null | undefined
 ): Promise<unknown | undefined> {
   if (!versionId || !appDataRevision) return undefined;
-  const entry = await store.get(cacheKey(versionId, appDataRevision));
-  return entry?.appData;
+  const entry = await store.get(versionId);
+  return entry?.appDataRevision === appDataRevision ? entry.appData : undefined;
 }
 
 export async function setCachedAppDefinition(
@@ -33,5 +32,5 @@ export async function setCachedAppDefinition(
   appData: unknown
 ): Promise<void> {
   if (!appId || !versionId || !appDataRevision) return;
-  await store.set(cacheKey(versionId, appDataRevision), { appId, versionId, savedAt: Date.now(), appData });
+  await store.set(versionId, { appId, versionId, appDataRevision, savedAt: Date.now(), appData });
 }

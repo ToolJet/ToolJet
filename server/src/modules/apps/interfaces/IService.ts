@@ -14,7 +14,8 @@ export interface IAppsService {
   ): Promise<ValidateAppAccessResponseDto>;
   validateReleasedApp(
     ability: any,
-    app: App
+    app: App,
+    user?: User
   ): Promise<{ id: string; slug: string; currentVersionId: string; appDataRevision: string | null }>;
   update(app: App, appUpdateDto: AppUpdateDto, user: User): Promise<any>;
   delete(app: App, user: User): Promise<void>;
