@@ -6,7 +6,12 @@ import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { getPinnedStyles } from '../pinColumnsUtils';
-import { createTableRowEventOptions } from '../../../_utils/tableEventUtils';
+import {
+  createTableRowEventOptions,
+  createTableCellEventOptions,
+  getColumnCellClickEvents,
+  supportsCellClickEvent,
+} from '../../../_utils/tableEventUtils';
 
 export const TableRow = ({
   id,
@@ -151,6 +156,22 @@ export const TableRow = ({
                   value: cell.getValue(),
                 },
               });
+
+              if (supportsCellClickEvent(cell.column.columnDef?.meta)) {
+                const tableState = useTableStore.getState();
+                const cellClickEvents = tableState.components[id]?.columnDetails?.useDynamicColumn
+                  ? []
+                  : getColumnCellClickEvents(tableState.getTableColumnEvents(id), cell.column.id);
+                if (cellClickEvents.length > 0) {
+                  fireEvent(
+                    'OnTableColumnCellClicked',
+                    createTableCellEventOptions(row.index, cell.column.id, {
+                      column: cell.column.columnDef?.meta,
+                      tableColumnEvents: cellClickEvents,
+                    })
+                  );
+                }
+              }
 
               // These cell clicks keep the current selection (already-selected action/button cells,
               // or an editable cell) and fire onRowClicked directly.

@@ -25,6 +25,7 @@ import { ButtonPropertiesTab } from './ButtonPropertiesTab';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { ArrowLeft, Minus, ArrowRight } from 'lucide-react';
+import { supportsCellClickEvent } from '@/AppBuilder/Widgets/NewTable/_utils/tableEventUtils';
 
 const CustomOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
@@ -531,6 +532,26 @@ export const PropertiesTabElements = ({
           component={component}
           onColumnItemChange={onColumnItemChange}
         />
+      )}
+      {supportsCellClickEvent(column) && !selectedButtonId && (
+        <div className="px-3" data-cy="column-cell-events">
+          <EventManager
+            sourceId={props?.component?.id}
+            eventSourceType="table_column"
+            customEventRefs={{ ref: column.id }}
+            hideEmptyEventsAlert={true}
+            eventMetaDefinition={{ events: { onCellClicked: { displayName: 'Cell clicked' } } }}
+            currentState={currentState}
+            dataQueries={props.dataQueries}
+            components={props.components}
+            eventsChanged={(events) => columnEventChanged(column, events)}
+            apps={props.apps}
+            popOverCallback={(showing) => {
+              handleEventManagerPopoverCallback(showing);
+            }}
+            pages={props.pages}
+          />
+        </div>
       )}
     </>
   );

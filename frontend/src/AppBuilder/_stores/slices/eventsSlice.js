@@ -364,6 +364,21 @@ export const createEventsSlice = (set, get) => ({
         }
       }
 
+      if (eventName === 'OnTableColumnCellClicked') {
+        const { tableColumnEvents } = options;
+
+        for (const event of tableColumnEvents ?? []) {
+          if (event?.event?.actionId) {
+            await get().eventsSlice.executeAction(
+              createExecutionEvent(event, eventExecutionId),
+              mode,
+              customVariables,
+              moduleId
+            );
+          }
+        }
+      }
+
       if (eventName === 'OnTableButtonColumnClicked') {
         const { column, tableColumnEvents } = options;
 

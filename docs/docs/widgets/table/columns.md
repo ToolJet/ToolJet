@@ -467,6 +467,14 @@ On hovering on a column, you can see a delete icon on the right which can be use
 You can choose which columns to show or hide in the Table using this option. You also have the option to **[hide the column selector button](/docs/widgets/table/table/#hide-column-selector-button)** in the Table properties.
 
 
+## Events
+
+Columns have an **Events** section in their settings with the **Cell clicked** event. It is not available for Button, Link and Datepicker columns.
+
+### Cell clicked
+
+This event is triggered when a cell of that column is clicked. The `selectedCell` exposed variable of the Table is updated with the `columnName`, `columnKey` and `value` of the clicked cell before the event runs. Clicking a cell in another column does not trigger it, and it is not available for dynamic columns.
+
 ## Make all columns editable
 
 To make all the columns editable in your table, you can enable the `Make all columns editable` toggle. If you disable the `Make editable` property of any individual column, `Make all columns editable` will automatically switch to disabled.

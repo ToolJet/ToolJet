@@ -424,7 +424,7 @@ export default function generateColumnsData({
                       'OnTableToggleCellChanged',
                       createTableRowEventOptions(row.index, {
                         column: column,
-                        tableColumnEvents,
+                        tableColumnEvents: tableColumnEvents.filter((event) => event?.event?.eventId === 'onChange'),
                       })
                     );
                   }}
