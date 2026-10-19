@@ -10,6 +10,7 @@ import type { Entry, TimelineItem } from '@/AppBuilder/Widgets/Ui2/_display/disp
 import { iconFor } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 import { formatDate } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Timeline --------------------------------------------------------------------------------------------------------
 
@@ -32,6 +33,8 @@ export const ShadTimeline = (props: WidgetProps) => {
   const markerTop = Math.max(0, (LINE_HEIGHT - marker) / 2);
   const contentTop = Math.max(0, (marker - LINE_HEIGHT) / 2);
   const column = Math.max(marker, 12);
+  // A row wired to onItemClicked is a button inside its list item: a tab stop that Enter and Space fire, as a click.
+  const interactive = hasClick && !busy(p);
   const click = (item: TimelineItem) => {
     if (busy(p)) return;
     const { key, ...rest } = item; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -78,7 +81,7 @@ export const ShadTimeline = (props: WidgetProps) => {
               className={cn(
                 'tw-relative tw-flex tw-gap-3',
                 !isLast && (compact ? 'tw-pb-3' : 'tw-pb-6'),
-                hasClick && !busy(p) && 'tw-cursor-pointer'
+                interactive && 'tw-cursor-pointer'
               )}
               style={markerVars}
               onClick={() => click(item)}
@@ -90,46 +93,59 @@ export const ShadTimeline = (props: WidgetProps) => {
                   style={{ left: column / 2 - 0.5, top: markerTop + marker + 4, bottom: 4 - markerTop }}
                 />
               ) : null}
-              <span className="tw-flex tw-shrink-0 tw-justify-center" style={{ width: column, paddingTop: markerTop }}>
-                {icons ? (
-                  <span
-                    className="tw-flex tw-items-center tw-justify-center tw-rounded-full tw-bg-[color:color-mix(in_srgb,var(--tl-c)_14%,var(--sc-background))] tw-text-[color:var(--tl-c)]"
-                    style={{ width: marker, height: marker }}
-                  >
-                    {Icon ? (
-                      <Icon size={compact ? 12 : 14} strokeWidth={2.25} aria-hidden="true" />
-                    ) : (
-                      <span className="tw-h-2 tw-w-2 tw-rounded-full tw-bg-[color:var(--tl-c)]" />
-                    )}
-                  </span>
-                ) : (
-                  <span
-                    className="tw-rounded-full tw-bg-[color:var(--tl-c)] tw-ring-4 tw-ring-[color:color-mix(in_srgb,var(--tl-c)_16%,transparent)]"
-                    style={{ width: marker, height: marker }}
-                  />
+              <div
+                role={interactive ? 'button' : undefined}
+                tabIndex={interactive ? 0 : undefined}
+                onKeyDown={interactive ? onKeyActivate(() => click(item)) : undefined}
+                className={cn(
+                  'tw-flex tw-min-w-0 tw-flex-1 tw-gap-3 tw-rounded-[var(--sc-radius)] tw-outline-none',
+                  interactive && 'focus-visible:tw-ring-2 focus-visible:tw-ring-[color:var(--sc-ring)]'
                 )}
-              </span>
-              <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col" style={{ paddingTop: contentTop }}>
-                {p.timePosition === 'top' ? <div className="tw-mb-0.5">{timeNode}</div> : null}
-                <div className="tw-flex tw-items-baseline tw-justify-between tw-gap-3">
-                  <span
-                    className="tw-min-w-0 tw-break-words tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]"
-                    style={{ lineHeight: `${LINE_HEIGHT}px` }}
-                  >
-                    {item.title}
-                  </span>
-                  {p.timePosition !== 'top' ? timeNode : null}
+              >
+                <span
+                  className="tw-flex tw-shrink-0 tw-justify-center"
+                  style={{ width: column, paddingTop: markerTop }}
+                >
+                  {icons ? (
+                    <span
+                      className="tw-flex tw-items-center tw-justify-center tw-rounded-full tw-bg-[color:color-mix(in_srgb,var(--tl-c)_14%,var(--sc-background))] tw-text-[color:var(--tl-c)]"
+                      style={{ width: marker, height: marker }}
+                    >
+                      {Icon ? (
+                        <Icon size={compact ? 12 : 14} strokeWidth={2.25} aria-hidden="true" />
+                      ) : (
+                        <span className="tw-h-2 tw-w-2 tw-rounded-full tw-bg-[color:var(--tl-c)]" />
+                      )}
+                    </span>
+                  ) : (
+                    <span
+                      className="tw-rounded-full tw-bg-[color:var(--tl-c)] tw-ring-4 tw-ring-[color:color-mix(in_srgb,var(--tl-c)_16%,transparent)]"
+                      style={{ width: marker, height: marker }}
+                    />
+                  )}
+                </span>
+                <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col" style={{ paddingTop: contentTop }}>
+                  {p.timePosition === 'top' ? <div className="tw-mb-0.5">{timeNode}</div> : null}
+                  <div className="tw-flex tw-items-baseline tw-justify-between tw-gap-3">
+                    <span
+                      className="tw-min-w-0 tw-break-words tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]"
+                      style={{ lineHeight: `${LINE_HEIGHT}px` }}
+                    >
+                      {item.title}
+                    </span>
+                    {p.timePosition !== 'top' ? timeNode : null}
+                  </div>
+                  {item.description ? (
+                    <p
+                      className={cn(
+                        'tw-m-0 tw-mt-0.5 tw-break-words tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
+                        compact ? 'tw-text-xs' : 'tw-text-ui2-sm'
+                      )}
+                    >
+                      {item.description}
+                    </p>
+                  ) : null}
                 </div>
-                {item.description ? (
-                  <p
-                    className={cn(
-                      'tw-m-0 tw-mt-0.5 tw-break-words tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
-                      compact ? 'tw-text-xs' : 'tw-text-ui2-sm'
-                    )}
-                  >
-                    {item.description}
-                  </p>
-                ) : null}
               </div>
             </li>
           );
