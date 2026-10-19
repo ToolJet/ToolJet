@@ -668,6 +668,25 @@ describe('FileButton: styling', () => {
     expect(browseButton(container)).not.toHaveClass('tw-justify-center');
   });
 
+  test('[FileButton-STYLE-008] a custom borderColor renders a border on both button types; the default leaves the built-in border untouched', async () => {
+    const { container: solidCustom } = widget.render({ styles: { borderColor: binding('#ff0000') } });
+    await screen.findByText('Upload file');
+    expect(browseButton(solidCustom)).toHaveStyle({
+      borderStyle: 'solid',
+      borderWidth: '1px',
+      borderColor: '#ff0000',
+    });
+
+    const { container: outlineCustom } = widget.render({
+      styles: { buttonType: binding('outline'), borderColor: binding('#ff0000') },
+    });
+    expect(browseButton(outlineCustom)).toHaveStyle({ borderColor: '#ff0000' });
+
+    const { container: solidDefault } = widget.render({ styles: { borderColor: binding('var(--cc-primary-brand)') } });
+    expect(browseButton(solidDefault).style.borderStyle).toBe('');
+    expect(browseButton(solidDefault).style.borderColor).toBe('');
+  });
+
   test('[FileButton-STYLE-004] an outline buttonType always renders a transparent background regardless of backgroundColor', async () => {
     const { container } = widget.render({
       styles: { buttonType: binding('outline'), backgroundColor: binding('#00aa00') },
