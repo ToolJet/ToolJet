@@ -28,9 +28,13 @@ const download = (name: string, content: string, mime: string) => {
   a.href = url;
   a.download = name;
   document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  // A click the browser refuses throws: the link and the blob are still let go.
+  try {
+    a.click();
+  } finally {
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 };
 
 /** The Table's download, and its component actions (selectRow, setFilters, downloadTableData, ...) published once on mount. */
