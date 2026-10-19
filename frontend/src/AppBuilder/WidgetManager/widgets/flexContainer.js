@@ -85,6 +85,17 @@ export const flexContainerConfig = {
         defaultValue: 'flex-start',
       },
     },
+    // In a row, the children that draw a surface (a FlexContainer, a Stat card) take the height of the tallest child on
+    // their line, so cards of different content heights line up. Other children keep their height and the row's Align.
+    // On for a new container (definition below); a container saved before has no value and reads off.
+    equalHeights: {
+      type: 'toggle',
+      displayName: 'Equal heights in a row',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     gap: {
       type: 'numberInput',
       displayName: 'Gap (px)',
@@ -245,6 +256,11 @@ export const flexContainerConfig = {
       justifyContent: { value: 'flex-start' },
       alignItems: { value: 'flex-start' },
       stackBelow: { value: 'none' },
+      equalHeights: { value: '{{true}}' },
+      // The UI 2.0 layout (_helpers/flexLayoutVersion.js): a container created from these defaults gets it, one saved
+      // before keeps the lts-3.16 layout. Not shown in the inspector. Do not add this or equalHeights to the server's
+      // copy of this config: the server merges its defaults into every saved component on load.
+      layoutVersion: { value: '2' },
       loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       visibility: { value: '{{true}}' },

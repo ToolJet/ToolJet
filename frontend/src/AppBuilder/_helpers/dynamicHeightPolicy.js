@@ -1,5 +1,6 @@
 // Which widgets size to their content in the viewer. One rule, read by the canvas wrapper (which slot height to use),
 // the FlexContainer (whether it grows) and the component packs (whether they measure themselves), so the three agree.
+import { usesFlexLayoutV2 } from './flexLayoutVersion';
 
 const CARD_SURFACES = ['shadcnCard'];
 const isPackWidget = (componentType) => /^Shad[A-Z]/.test(componentType ?? '');
@@ -7,13 +8,18 @@ const isPackWidget = (componentType) => /^Shad[A-Z]/.test(componentType ?? '');
 /**
  * - A native widget follows its Dynamic height property.
  * - A FlexContainer drawn as a card, or laid out as a row, always fits its content: a card never scrolls inside or
- *   leaves an empty band, and a row is never a scroll area. A plain column follows the property (it may scroll).
+ *   leaves an empty band, and a row is never a scroll area. A plain column follows the property (it may scroll). A row
+ *   saved before the UI 2.0 layout (flexLayoutVersion.js) follows the property too, as on lts-3.16.
  * - A component-pack widget fits its content unless Dynamic height is turned off: one given a guessed height (an
  *   agent's, or a default) neither clips its content nor leaves a gap under it.
  */
 export const fitsContentInView = (componentType, properties = {}) => {
   if (componentType === 'FlexContainer') {
-    return !!properties.dynamicHeight || CARD_SURFACES.includes(properties.cardStyle) || properties.direction === 'row';
+    return (
+      !!properties.dynamicHeight ||
+      CARD_SURFACES.includes(properties.cardStyle) ||
+      (properties.direction === 'row' && usesFlexLayoutV2(properties))
+    );
   }
   if (isPackWidget(componentType)) return properties.dynamicHeight !== false;
   return !!properties.dynamicHeight;
@@ -26,6 +32,30 @@ export const heightHeldInView = (componentType, properties = {}) => {
     return false;
   }
   return properties.dynamicHeight === false;
+};
+
+/**
+ * Whether a child of a FlexContainer row is stretched to its line's height. An Equal heights row (or one whose Align is
+ * Stretch, for FlexContainer children) stretches the children that draw a surface filling their box: a FlexContainer
+ * (a card or a plain container) and a UI 2.0 Stat drawn as a card that fits its content, so cards of different content
+ * heights line up. Every other child keeps its own height and the row's Align, so a heading beside a button still
+ * centres. A stretched leaf is measured unstretched by the reflow (resolveWidgetMeasuredHeight), so the row can shrink.
+ * Leaves stretch in the viewer only, where their height is their content's; in the editor they keep their drawn height.
+ * @param {{ alignItems?: string, equalHeights?: boolean }} [rowProperties]  the row's resolved properties
+ * @param {string | undefined} childType
+ * @param {Record<string, unknown>} [childProperties]  the child's resolved properties
+ * @param {string} [mode]  'view' or 'edit'
+ * @returns {boolean}
+ */
+export const stretchesInRow = (rowProperties = {}, childType, childProperties = {}, mode) => {
+  if (childType === 'FlexContainer') return rowProperties.alignItems === 'stretch' || !!rowProperties.equalHeights;
+  return (
+    !!rowProperties.equalHeights &&
+    mode === 'view' &&
+    childType === 'ShadStat' &&
+    childProperties.card !== false &&
+    fitsContentInView(childType, childProperties)
+  );
 };
 
 /**
