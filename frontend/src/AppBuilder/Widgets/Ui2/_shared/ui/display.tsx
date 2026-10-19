@@ -85,7 +85,7 @@ export const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'tw-border-transparent tw-bg-ui2-primary tw-text-ui2-primary-foreground',
+        default: 'tw-border-transparent tw-bg-ui2-primary-strong tw-text-ui2-primary-foreground',
         secondary: 'tw-border-transparent tw-bg-ui2-secondary tw-text-ui2-secondary-foreground',
         destructive: 'tw-border-transparent tw-bg-ui2-destructive/10 tw-text-ui2-destructive',
         success: 'tw-border-transparent tw-bg-ui2-success/10 tw-text-ui2-success',

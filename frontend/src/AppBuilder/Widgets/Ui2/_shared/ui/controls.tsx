@@ -17,7 +17,10 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'tw-bg-ui2-primary tw-text-ui2-primary-foreground tw-shadow-sm hover:tw-bg-ui2-primary/90',
+        // The strong primary, so a 14px label reads at 4.5:1; hover darkens it (fading it toward a light page fell
+        // under 4.5:1 even on ToolJet's own blue).
+        default:
+          'tw-bg-ui2-primary-strong tw-text-ui2-primary-foreground tw-shadow-sm hover:tw-bg-[color:color-mix(in_srgb,var(--sc-primary-strong)_88%,#000)]',
         destructive:
           'tw-bg-ui2-destructive tw-text-ui2-destructive-foreground tw-shadow-sm hover:tw-bg-ui2-destructive/90',
         outline:
