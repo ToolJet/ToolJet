@@ -61,6 +61,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Timeline',
   'Calendar',
   'QrScanner',
+  'Spinner',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -222,6 +223,7 @@ export const baseComponentProperties = (
       'Calendar',
       'CustomComponent',
       'QrScanner',
+      'Spinner',
     ],
     Layout: [],
   };
