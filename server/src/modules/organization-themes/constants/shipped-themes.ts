@@ -15,7 +15,7 @@ interface Palette {
   surface2: [string, string];
 }
 
-// The palette menu approved for AI-built apps on 2026-09-12 (ToolJet's own blue stands in for its Blue), plus Rose as
+// The palette menu approved for AI-built apps (ToolJet's own blue stands in for its Blue), plus Rose as
 // the one expressive choice. Every primary carries white button text at 4.5:1 or better in both modes, so the dark
 // primaries are mid tones, not the pale 400s a dark canvas tempts. ToolJet themes have no accent widgets use, so
 // Graphite is the warm near-black (stone canvas) beside Ink's cool one.
