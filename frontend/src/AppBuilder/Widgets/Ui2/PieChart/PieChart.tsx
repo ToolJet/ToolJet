@@ -39,6 +39,8 @@ export const ShadPieChart = (props: WidgetProps) => {
           <Tooltip content={<ChartTooltip format={format} />} />
           {p.showLegend !== false ? <Legend content={<LegendContent />} /> : null}
           <Pie
+            // A chart is one named image (ChartArea): its sectors are not tab stops.
+            rootTabIndex={-1}
             data={data}
             dataKey={valueKey}
             nameKey={p.categoryField}
