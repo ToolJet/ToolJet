@@ -6,6 +6,10 @@ import { useTextField } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
+// The Type list (shadInput.js). A bound type outside it shows a text box: 'file' or 'checkbox' with the text value
+// crashed the widget.
+const TYPES = ['text', 'email', 'number', 'password', 'search'];
+
 export const ShadInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
@@ -16,7 +20,7 @@ export const ShadInput = (props: WidgetProps) => {
     <FormField props={props} properties={properties} check={check} innerRef={fit}>
       <Input
         {...fieldProps}
-        type={properties.inputType || 'text'}
+        type={TYPES.includes(properties.inputType) ? properties.inputType : 'text'}
         onKeyDown={(e) => isEnter(e) && fireEvent('onEnterPressed')}
       />
     </FormField>
