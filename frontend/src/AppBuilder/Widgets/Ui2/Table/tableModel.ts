@@ -304,9 +304,12 @@ export const applyFilters = <T>(rows: T[], filters: unknown, columns: TableColum
   return rows.filter((row) => active.every((f) => passes(readCell(row, f.column.key), f.condition, f.value, f.column)));
 };
 
-/** A stable key for a row: its id field when it has one, else its position in the data. */
+/** A stable key for a row: its id field when it has one, else its position in the data. The two never share a key
+ *  (a row with no id was taken for the row whose id is "#0"): an id key starts with "id:", a position key with "#". */
 export const rowKey = (row: unknown, idField: string, index: number): string =>
-  row && typeof row === 'object' && isSet(readCell(row, idField)) ? String(readCell(row, idField)) : `#${index}`;
+  row && typeof row === 'object' && isSet(readCell(row, idField))
+    ? `id:${String(readCell(row, idField))}`
+    : `#${index}`;
 
 const csvCell = (value: unknown): string => {
   if (isEmptyValue(value)) return '';
