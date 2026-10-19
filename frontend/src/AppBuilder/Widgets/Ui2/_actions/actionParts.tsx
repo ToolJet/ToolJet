@@ -73,6 +73,22 @@ export interface MenuRowsProps<T extends MenuRowsItem> {
   activeKey?: string;
 }
 
+/** A React key per row that follows the action, not its position: the item's value with its type (1 and '1' stay
+ *  apart), else its label, and a count when the same identity repeats. Keyed by position, a refresh that moved an
+ *  open menu's focused action left focus on the same row now drawing another action, and Enter picked that one. When
+ *  the focused action goes, its row goes with it and nothing is picked. */
+const rowKeys = <T extends MenuRowsItem>(rows: MenuRowOf<T>[]) => {
+  const seen = new Map<string, number>();
+  return rows.map((row, i) => {
+    if (row.kind !== 'item') return `${row.kind}${i}`;
+    const absent = row.value === undefined || row.value === null || row.value === '';
+    const id = absent ? `label:${row.label}` : `${typeof row.value}:${String(row.value)}`;
+    const n = seen.get(id) ?? 0;
+    seen.set(id, n + 1);
+    return `${id}#${n}`;
+  });
+};
+
 export const MenuRows = <T extends MenuRowsItem>({ rows, loading, onPick, activeKey }: MenuRowsProps<T>) => {
   if (loading) {
     return (
@@ -84,13 +100,14 @@ export const MenuRows = <T extends MenuRowsItem>({ rows, loading, onPick, active
     );
   }
   if (!rows.length) return <div className={cn('tw-px-2 tw-py-1.5 tw-text-ui2-sm', MUTED)}>No options</div>;
+  const keys = rowKeys(rows);
   return rows.map((row, i) => {
-    if (row.kind === 'separator') return <MenuSeparator key={`s${i}`} />;
-    if (row.kind === 'label') return <MenuLabel key={`l${i}`}>{row.label}</MenuLabel>;
+    if (row.kind === 'separator') return <MenuSeparator key={keys[i]} />;
+    if (row.kind === 'label') return <MenuLabel key={keys[i]}>{row.label}</MenuLabel>;
     const active = activeKey !== undefined && String(row.value) === activeKey;
     return (
       <DropdownMenuPrimitive.Item
-        key={`i${i}`}
+        key={keys[i]}
         disabled={row.disabled}
         onSelect={() => onPick(row)}
         className={cn(
