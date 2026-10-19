@@ -15,6 +15,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   }
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
-    can([FEATURE_KEY.HEALTH, FEATURE_KEY.ROOT], InstanceSettings);
+    can(
+      [
+        FEATURE_KEY.HEALTH,
+        FEATURE_KEY.ROOT,
+        FEATURE_KEY.MIGRATION_STATUS,
+        FEATURE_KEY.MIGRATION_RUNS,
+        FEATURE_KEY.MIGRATION_RETRY,
+      ],
+      InstanceSettings
+    );
   }
 }

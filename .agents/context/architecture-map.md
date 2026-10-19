@@ -139,6 +139,7 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 
 | Failure | Handling/evidence |
 |---|---|
+| Long migration in async mode (`MIGRATION_MODE=async`) | Server serves on the old schema; writes answer 503 `MIGRATION_IN_PROGRESS`; banner via `GET /api/migration-status`; run tracked in `migration_runs`, retry by super admin. `server/docs/MIGRATION_FLOW.md` §10. |
 | Invalid/expired session or insufficient permission | Guards return authorization errors before service execution. |
 | Public/private or unreleased app mismatch | App access guards and release validation prevent hydration. |
 | Query timeout, connector error, OAuth refresh requirement, or throttling | Data query services return structured failed/`needs_oauth` states; throttler limits per-app runs. |

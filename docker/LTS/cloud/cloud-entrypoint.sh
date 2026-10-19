@@ -15,6 +15,12 @@ if [ -f "./.env" ]; then
   declare $(grep -v '^#' ./.env | xargs)
 fi
 
+# MIGRATION_MODE=async: the server runs migrations itself, in the background.
+export MIGRATION_SETUP_COMMAND="$SETUP_CMD"
+if [ "$MIGRATION_MODE" = "async" ]; then
+  SETUP_CMD=true
+fi
+
 if [ -z "$DATABASE_URL" ]; then
   ./server/scripts/wait-for-it.sh $PG_HOST:${PG_PORT:-5432} --strict --timeout=300 -- $SETUP_CMD
 else

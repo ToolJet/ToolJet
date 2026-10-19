@@ -115,7 +115,13 @@ export class MigrationStatusFlag {
     }
   }
 
-  /** Extends the TTL while we are still waiting on another pod's lock. */
+  /** Re-sets the key every third of its TTL until the returned stop function runs. */
+  keepAlive(): () => void {
+    const timer = setInterval(() => void this.refresh(), (this.ttlSeconds * 1000) / 3);
+    timer.unref();
+    return () => clearInterval(timer);
+  }
+
   async refresh(): Promise<void> {
     if (this.released) return;
     try {

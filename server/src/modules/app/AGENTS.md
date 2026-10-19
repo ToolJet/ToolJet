@@ -23,6 +23,7 @@ The base module every other backend module builds on. Owns: the `SubModule` base
 | `module.ts` | Root `AppModule.register()` — `AppModuleLoader.loadModules` + every feature module's `register(configs, true)`; conditional imports (Workflows + BullBoard non-Cloud, `SessionTransferModule` Cloud-only, Metrics via env) |
 | `loader.ts` | Infra modules: TypeORM (main + `tooljetDb`), BullMQ, ConfigModule, pino logger, otel/Sentry, Redis, `GuardValidatorModule` |
 | `middlewares/migration-gate.middleware.ts` | Answers `/api/*` with 503 `MIGRATION_IN_PROGRESS` while a deploy is migrating (flag set in Redis by `src/migration-helpers/`). Never gates health/metrics, never gates non-API paths, fails open on a Redis error, caches the flag for 1s |
+| `migration-runs/` | Async migration mode: `MigrationRunsService` (child process, `migration_runs` tracking, retry) and the super-admin `migration-runs` routes. Public `migration-status` lives on `AppController` |
 | `validators/feature-guard.validator.ts` | `GuardValidator` — boot-time scan asserting every route has an `AbilityGuard` |
 | `interceptors/response.interceptor.ts` | Emits audit-log events after responses, driven by `MODULE_INFO` feature config |
 | `types.ts` | `FeatureConfig`, `ResourceDetails`, `UserAllPermissions` |
@@ -53,6 +54,7 @@ Controller wiring (`src/modules/folders/controller.ts`):
 - Param decorators (`@User`, `App`, ability, permissions) return `cloneDeep` copies — mutating them never touches the request.
 - `IS_GET_CONTEXT: true` is for migrations only (switches `src`/`dist` resolution); normal server startup always passes it false.
 - `AppModule.configure()` applies `MigrationGateMiddleware` before `OtelMiddleware`, both on `'*'`. Anything added to the health-check surface must also be added to `UNGATED_API_PATHS` in the gate middleware — gating a probe endpoint would make the orchestrator kill the pods that are waiting out an upgrade.
+- Root features check abilities against `InstanceSettings` (`FeatureAbilityFactory` is an `AppModule` provider). Non-public root routes need both.
 - Workspace = `Organization` entity/`organizationId` fields (legacy naming) — user-facing term is Workspace.
 
 ## Related modules

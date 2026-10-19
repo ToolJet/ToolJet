@@ -32,3 +32,12 @@ export function getMigrationFlagTtlSeconds(env: RedisEnvSource = process.env): n
 export function isMigrationTrafficGateDisabled(env: RedisEnvSource = process.env): boolean {
   return env.DISABLE_MIGRATION_TRAFFIC_GATE === 'true';
 }
+
+export function isAsyncMigrationMode(env: RedisEnvSource = process.env): boolean {
+  return env.MIGRATION_MODE === 'async';
+}
+
+/** The entrypoint exports its edition's command (Cloud: cloud:setup:prod). */
+export function setupCommand(env: RedisEnvSource = process.env): string {
+  return env.MIGRATION_SETUP_COMMAND || (env.NODE_ENV === 'production' ? 'npm run db:setup:prod' : 'npm run db:setup');
+}

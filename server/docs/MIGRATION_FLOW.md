@@ -184,6 +184,7 @@ All optional; defaults are the shipped behaviour. Also listed in `.env.example` 
 | `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS` | `60` | How often a waiting pod retries. |
 | `MIGRATION_LOCK_MAX_WAIT_MINUTES` | `30` | How long a pod waits before failing its own boot. `0` waits forever. |
 | `MIGRATION_LOCK_PROBE_TIMEOUT` | `5s` | PostgreSQL interval for the probe's `lock_timeout`. |
+| `MIGRATION_MODE` | `blocking` | `async`: the server boots first and migrates in the background. See §10. |
 
 ## 6. Failure modes
 
@@ -258,6 +259,8 @@ The crash-loop fix applies immediately, since that runs in the new pods' migrato
 | `test/modules/app/unit/migration-gate.middleware.spec.ts` | Gated vs ungated paths, 503 shape, caching/single-flight, fail-open, opt-out logging |
 | `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods, one database: nobody crash-loops, the migration body runs exactly once, the gate rises and clears. Plus a `NODE_ENV=production` race, so the coordination is never an artifact of test mode |
 | `test/modules/migrations/e2e/migration-redis-gate.spec.ts` | Real Redis: writer↔reader agreement, outage tolerance, SIGTERM/SIGKILL leak behaviour, opt-out |
+| `test/modules/migrations/unit/migration-run-log.spec.ts` | Async mode: rebuilding a run from runner output, redaction, failed step |
+| `test/modules/app/e2e/migration-runs.spec.ts` | Async mode: status/runs/retry auth (401/403/409), stale-heartbeat → failed, ordering |
 
 The e2e specs drive the real `run()` against a scratch database and a fixture migration set
 (`test/modules/migrations/fixtures/concurrent-pods/`), spawning pods as real OS processes via
@@ -273,3 +276,24 @@ use Redis db `15` so a local ToolJet instance is never gated by a test run.
 - The gate fails open, always. A Redis problem may cost the gate, never the deploy or the API.
 - Every Redis call stays timeout-bounded, construction included.
 - The flag is never written without a TTL.
+- An error inside the migration transaction is final. Never wrap the run in a retry. See §10.
+
+## 10. Async mode (`MIGRATION_MODE=async`)
+
+Opt-in, env only. For installs where a long migration would outlast a liveness probe.
+
+```
+entrypoint: exports MIGRATION_SETUP_COMMAND (the edition's setup), skips running it
+main.ts:    fresh install (no DB / no `migrations` table) → run setup, blocking, as before
+            otherwise → Nest boots and serves on the OLD schema until the migration commits
+MigrationRunsService.start(): child process = setup command (advisory lock, one transaction)
+            stdout/stderr teed to container logs, parsed into `migration_runs`
+```
+
+- **Serving during the run.** New code runs against the old schema until commit; breakage is accepted. The gate (§3.3) answers mutating requests with 503 `MIGRATION_IN_PROGRESS`; reads, login, session and query runs pass (`ASYNC_MODE_WRITE_ALLOWLIST`).
+- **Banner.** `GET {prefix}api/migration-status` (public, state only, 5s cache) → frontend `MigrationBanner`.
+- **Tracking.** `migration_runs`, created by the service (not a migration), written on its own `pg` pool so progress shows while the transaction is open and heartbeats stay out of the TypeORM query log. Last 50 rows kept. A `running` row without a heartbeat for 30s reads as `failed`.
+- **Progress source.** The runner prints `[migrations] START <name>` / `DONE <name> <ms>`; data migrations' `[PROGRESS] i/total` lines give in-migration progress. Log tail: last 200 lines, query parameters, emails and connection URLs removed.
+- **Failure.** Nothing committed; the server keeps serving; status `failed`. Super admin opens `{prefix}migrations` (typed URL, no menu link) and retries: `POST {prefix}api/migration-runs/retry` re-spawns the child on that pod (409 unless the latest run failed and none is running).
+- **Shutdown.** SIGTERM kills the child's process group; the open transaction rolls back.
+

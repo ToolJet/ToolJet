@@ -20,6 +20,8 @@ import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-inf
 import { shutdownOtelLogs, initializeOtelLogs } from '@otel/logs';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { migrateFirstIfFreshInstall } from './migration-helpers/async-mode';
+import { MigrationRunsService } from '@modules/app/migration-runs/service';
 
 // Import helper functions
 import {
@@ -154,6 +156,11 @@ async function bootstrap() {
     await app.listen(port, listen_addr, async function () {
       logStartupInfo(configService, appLogger);
     });
+    // Tracking is best-effort: a failure here must not take down a serving process.
+    await app
+      .get(MigrationRunsService)
+      .start()
+      .catch((error: Error) => appLogger.error(`Async migrations could not start: ${error.message}`));
   } catch (error) {
     logger.error('❌ Failed to bootstrap application:', error);
     process.exit(1);
@@ -230,4 +237,7 @@ function setupBodyParsers(app: NestExpressApplication, configService: ConfigServ
 setupGlobalAgent();
 
 // Main execution
-bootstrap();
+migrateFirstIfFreshInstall().then(bootstrap, (error) => {
+  console.error(error);
+  process.exit(1);
+});

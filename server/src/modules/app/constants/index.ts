@@ -49,6 +49,9 @@ const checkIfSrcPresent = async () => {
 
 export enum FEATURE_KEY {
   HEALTH = 'health',
+  MIGRATION_STATUS = 'migration-status',
+  MIGRATION_RUNS = 'migration-runs',
+  MIGRATION_RETRY = 'migration-retry',
   ROOT = 'root',
 }
 

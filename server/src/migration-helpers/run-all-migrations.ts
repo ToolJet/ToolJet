@@ -238,17 +238,11 @@ async function migrateAsSolePod(
   // advisory lock, so the table probe stays as the cross-version safety net.
   const pending = await waitForTurn(schemaDS, dataDS, lockWaitOptions);
 
-  // Another pod can still grab the table between the probe above and our own LOCK TABLE, so the
-  // run gets the same treatment as the probe. `beforeWait` keeps the flag alive across a long
-  // wait; genuine migration failures are not retryable and still fail the deploy immediately.
-  const executeWithRetry = (flag?: MigrationStatusFlag | null) =>
-    withLockContentionRetry('running migrations', () => executeMigrations(schemaDS, dataDS), lockWaitOptions, {
-      beforeWait: () => flag?.refresh(),
-    });
-
+  // No retry from here on: an error inside the migration transaction is final, and retrying
+  // would re-run the whole (possibly hour-long) run.
   if (pending.length === 0) {
     console.log('[migrations] No schema or data migrations pending — not cutting API traffic for this boot.');
-    await executeWithRetry();
+    await executeMigrations(schemaDS, dataDS);
     return;
   }
 
@@ -257,17 +251,35 @@ async function migrateAsSolePod(
   const flag = MigrationStatusFlag.create(env);
   const disarm = flag?.armShutdownRelease();
   await flag?.acquire();
+  const stopKeepAlive = flag?.keepAlive();
 
   try {
-    await executeWithRetry(flag);
+    await executeMigrations(schemaDS, dataDS);
   } finally {
+    stopKeepAlive?.();
     disarm?.();
     await flag?.release();
     await flag?.close();
   }
 }
 
+/** START/DONE line per migration: the async-mode tracker parses these. */
+function announceEachMigration(dataSource: DataSource): void {
+  for (const migration of dataSource.migrations) {
+    const name = migration.name || migration.constructor.name;
+    const up = migration.up.bind(migration);
+    migration.up = async (queryRunner: QueryRunner) => {
+      const startedAt = Date.now();
+      console.log(`[migrations] START ${name}`);
+      await up(queryRunner);
+      console.log(`[migrations] DONE ${name} ${Date.now() - startedAt}ms`);
+    };
+  }
+}
+
 async function executeMigrations(schemaDS: DataSource, dataDS: DataSource): Promise<void> {
+  announceEachMigration(schemaDS);
+  announceEachMigration(dataDS);
   const { precommittable, hasMissingType } = await planEnumAdditions(schemaDS);
 
   if (hasMissingType) {

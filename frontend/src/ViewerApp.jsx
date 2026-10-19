@@ -20,6 +20,7 @@ import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { MigrationBanner } from '@/_components/MigrationBanner';
 
 /**
  * ViewerApp - Isolated router for viewer routes ONLY
@@ -138,6 +139,7 @@ const ViewerApp = () => {
 
   return (
     <>
+      <MigrationBanner darkMode={isAppDarkMode} />
       <div className="main-wrapper" data-cy="main-wrapper">
         {isEmbedAppsPath ? (
           // Embedded app route: /embed-apps/:appId

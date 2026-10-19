@@ -59,6 +59,12 @@ else
   SETUP_CMD='npm run db:setup'
 fi
 
+# MIGRATION_MODE=async: the server runs migrations itself, in the background.
+export MIGRATION_SETUP_COMMAND="$SETUP_CMD"
+if [ "$MIGRATION_MODE" = "async" ]; then
+  SETUP_CMD=true
+fi
+
 # Wait for PostgreSQL connection
 if [ -z "$DATABASE_URL" ]; then
   ./server/scripts/wait-for-it.sh $PG_HOST:${PG_PORT:-5432} --strict --timeout=300 -- echo "PostgreSQL is up"

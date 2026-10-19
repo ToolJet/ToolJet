@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { RedisService } from '@modules/redis/service';
 import { withTimeout } from '@helpers/with-timeout';
 import {
+  isAsyncMigrationMode,
   isMigrationInProgressValue,
   isMigrationTrafficGateDisabled,
   MIGRATION_IN_PROGRESS_KEY,
@@ -27,6 +28,18 @@ import {
 
 /** Relative to the API prefix — `/api/health` and `/api/metrics` in a default install. */
 const UNGATED_API_PATHS = new Set(['/health', '/metrics']);
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+/** Async mode keeps serving: reads and these end-user writes pass, every other write gets 503. */
+const ASYNC_MODE_WRITE_ALLOWLIST = [
+  /^\/authenticate(\/|$)/,
+  /^\/session(\/|$)/,
+  /^\/oauth\//,
+  /^\/data-queries\/[^/]+\/run$/,
+  /^\/data-queries\/[^/]+\/versions\/[^/]+\/run\/[^/]+$/,
+  /^\/migration-runs\/retry$/,
+];
 
 /** Caps Redis reads at one per second per pod, whatever the request rate. */
 const STATUS_CACHE_TTL_MS = 1000;
@@ -57,6 +70,7 @@ export function buildApiPrefix(subPath: string | undefined): string {
 export class MigrationGateMiddleware implements NestMiddleware {
   private readonly enabled = !isMigrationTrafficGateDisabled();
   private readonly apiPrefix = buildApiPrefix(process.env.SUB_PATH);
+  private readonly asyncMode = isAsyncMigrationMode(process.env);
 
   private cachedInProgress = false;
   private cachedAt = 0;
@@ -80,7 +94,8 @@ export class MigrationGateMiddleware implements NestMiddleware {
   }
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
-    if (!this.enabled || !this.shouldGate(req.path)) return next();
+    // req.path is '/' under forRoutes('*') on Nest 11; originalUrl keeps the full path.
+    if (!this.enabled || !this.shouldGate(req.originalUrl.split('?')[0], req.method)) return next();
     if (!(await this.isMigrationInProgress())) return next();
 
     this.logRejection(req);
@@ -94,9 +109,12 @@ export class MigrationGateMiddleware implements NestMiddleware {
     });
   }
 
-  private shouldGate(path: string): boolean {
+  private shouldGate(path: string, method: string): boolean {
     if (!path.startsWith(this.apiPrefix)) return false;
-    return !UNGATED_API_PATHS.has(path.slice(this.apiPrefix.length));
+    const apiPath = path.slice(this.apiPrefix.length);
+    if (UNGATED_API_PATHS.has(apiPath)) return false;
+    if (!this.asyncMode) return true;
+    return !SAFE_METHODS.has(method) && !ASYNC_MODE_WRITE_ALLOWLIST.some((pattern) => pattern.test(apiPath));
   }
 
   private async isMigrationInProgress(): Promise<boolean> {

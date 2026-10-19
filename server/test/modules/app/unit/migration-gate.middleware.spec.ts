@@ -9,8 +9,9 @@ import {
 } from '@modules/app/middlewares/migration-gate.middleware';
 import { MIGRATION_IN_PROGRESS_KEY } from 'src/migration-helpers/migration-status';
 
+/** Nest 11 mounts forRoutes('*') middleware on the full path, so req.path is always '/'. */
 function buildRequest(path: string, method = 'GET'): Request {
-  return { path, originalUrl: `${path}?x=1`, method } as Request;
+  return { path: '/', originalUrl: `${path}?x=1`, method } as Request;
 }
 
 function buildResponse() {
@@ -236,6 +237,43 @@ describe('MigrationGateMiddleware', () => {
       await middleware.use(buildRequest('/api/apps'), buildResponse(), next);
 
       expect(next).toHaveBeenCalled();
+    });
+  });
+
+  describe('in async migration mode | the app keeps serving, writes fail', () => {
+    beforeEach(() => {
+      process.env.MIGRATION_MODE = 'async';
+    });
+
+    it.each([
+      ['GET', '/api/apps'],
+      ['POST', '/api/authenticate'],
+      ['GET', '/api/session'],
+      ['POST', '/api/data-queries/q1/run'],
+      ['POST', '/api/data-queries/q1/versions/v1/run/e1'],
+      ['POST', '/api/migration-runs/retry'],
+    ])('should let %s %s through', async (method, path) => {
+      const { middleware } = buildMiddleware(flagSet());
+      const next = jest.fn() as NextFunction;
+
+      await middleware.use(buildRequest(path, method), buildResponse(), next);
+
+      expect(next).toHaveBeenCalled();
+    });
+
+    it.each([
+      ['POST', '/api/apps'],
+      ['PUT', '/api/apps/a1'],
+      ['DELETE', '/api/data-queries/q1'],
+    ])('should answer %s %s with 503', async (method, path) => {
+      const { middleware } = buildMiddleware(flagSet());
+      const res = buildResponse();
+      const next = jest.fn() as NextFunction;
+
+      await middleware.use(buildRequest(path, method), res, next);
+
+      expect(next).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(503);
     });
   });
 });
