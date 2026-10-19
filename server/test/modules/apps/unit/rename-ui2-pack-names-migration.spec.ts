@@ -237,8 +237,9 @@ describe('RenameUi2PackNames data migration', () => {
   });
 
   // Release audit 2026-10-18 (reviewFrozenMigrationRewrite, reviewAssemblyFrozenMigrationRewrite,
-  // review-legacy-references): a string in parentheses or before a comment was renamed as if it were code, and so was a
-  // local `components`; a widget read through a List view row was missed.
+  // review-legacy-references, reviewDialogRenameTarget): a string in parentheses or before a comment was renamed as if
+  // it were code, and so was a local `components`; a widget read through a List view row was missed; and a Dialog's
+  // `disable` became `setDisable`, which the Dialog never had.
   it('[UI2-MIG-403] leaves strings and a local `components` alone', async () => {
     const texts = [
       '{{ ("components.tags1.tags") }}',
@@ -280,5 +281,32 @@ describe('RenameUi2PackNames data migration', () => {
     expect(tables.components[2].properties.text.value).toBe(
       '{{components.list1.children[listItem.index].tags1.values}}'
     );
+  });
+
+  it('[UI2-MIG-405] leaves a Dialog `disable` alone, and still renames its other control actions', async () => {
+    const handler = (id: string, handle: string) => ({
+      id,
+      name: 'onClick',
+      source_id: 'button1',
+      app_version_id: 'v1',
+      event: {
+        eventId: 'onClick',
+        actionId: 'control-component',
+        componentId: 'dialog1',
+        componentSpecificActionHandle: handle,
+      },
+    });
+    const tables: Tables = {
+      pages: [{ id: 'p1', app_version_id: 'v1' }],
+      components: [component('dialog1', 'ShadDialog', 'p1'), component('button1', 'ShadButton', 'p1')],
+      event_handlers: [handler('h1', 'disable'), handler('h2', 'visibility')],
+      data_queries: [{ id: 'q1', app_version_id: 'v1', options: { code: 'components.dialog1.disable(true);' } }],
+    };
+    await new Migration().up(fakeQueryRunner(tables).queryRunner);
+    expect(tables.event_handlers.map((h) => h.event.componentSpecificActionHandle)).toEqual([
+      'disable',
+      'setVisibility',
+    ]);
+    expect(tables.data_queries[0].options.code).toBe('components.dialog1.disable(true);');
   });
 });
