@@ -66,7 +66,7 @@ export const MapTools = ({
   style: string;
   setMapStyle: (style: string) => void;
   /** Disabled or loading: the style switch sits outside the tools the busy state hides, so its buttons are disabled
-   *  too (release audit round 2). The setMapStyle action still works. */
+   *  too. The setMapStyle action still works. */
   disabled: boolean;
 }) => (
   <>

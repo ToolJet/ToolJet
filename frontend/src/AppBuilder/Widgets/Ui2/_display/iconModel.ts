@@ -34,7 +34,7 @@ const MAX_ICON_WORDS = 6;
 
 // Tabler names (ToolJet's own icons, which models write on pack widgets too) whose lucide twin has another name. Keyed
 // by the name without its Icon prefix, separators or case. IconDeviceLaptop, IconTool and flask-2 drew the dashed
-// placeholder on stat cards (2026-10-14).
+// placeholder on stat cards.
 const TABLER_TWINS: Record<string, string> = {
   tool: 'Wrench',
   tools: 'Wrench',
@@ -130,7 +130,7 @@ export const resolveIcon = <T>(name: unknown, maps: unknown, fallback: T): Lucid
     const found = lookup(words.slice(n).join(''));
     if (found) return found;
   }
-  // Then as one of a kind: "pills" reads Pill, "IconTicketsStub" reads TicketStub (a pharmacy stat, 2026-10-14).
+  // Then as one of a kind: "pills" reads Pill, "IconTicketsStub" reads TicketStub.
   const singular = base.replace(/(?:es|s)$/, '');
   if (singular && singular !== base) {
     const found = lookup(singular) || lookup(base.replace(/s$/, ''));

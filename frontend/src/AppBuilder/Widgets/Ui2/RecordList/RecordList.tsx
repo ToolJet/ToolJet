@@ -61,7 +61,7 @@ export const ShadRecordList = (props: WidgetProps) => {
   const card = p.listStyle !== 'plain';
   const clickable = (hasClick || p.highlightSelected !== false) && !busy(p);
   // A selected row draws a 3px accent bar and a tint: a plain list that can show it pads its rows 12px, or the bar sat
-  // against the title (a field service app, 2026-10-13).
+  // against the title.
   const inset = card ? 'tw-px-4' : p.highlightSelected !== false ? 'tw-px-3' : 'tw-px-1';
   const divided = (i: number) => (dividers && i > 0 ? 'tw-border-t' : '');
 
@@ -125,7 +125,7 @@ export const ShadRecordList = (props: WidgetProps) => {
               ) : null}
               <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-0.5">
                 {/* Two lines before it clips: in a narrow column beside a chip and a time, one line left titles such as
-                    "Workspace setti…" that said nothing (a content calendar's drafts list, 2026-10-14). */}
+                    "Workspace setti…" that said nothing. */}
                 <span
                   className={cn('tw-line-clamp-2 tw-break-words tw-font-medium tw-leading-snug', density.title)}
                   title={typeof row.title === 'string' ? row.title : undefined}

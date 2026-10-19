@@ -160,7 +160,7 @@ export const ShadSchedule = (props: WidgetProps) => {
   const showNow = p.showNowLine !== false && holdsToday;
   // Placed when the line mounts as well as on each tick: drawn after the bookings loaded, it sat at its default, the
   // left edge, until the next tick 30 seconds later (a week view showed now on Monday; a day view before its first hour
-  // showed it at the start, 2026-10-14).
+  // showed it at the start).
   const placeNow = useCallback(
     (el: HTMLDivElement | null) => {
       if (!el) return;
@@ -188,7 +188,7 @@ export const ShadSchedule = (props: WidgetProps) => {
   const rw = bounded(p.resourceWidth, 168, 80, 400);
   const rowHeight = bounded(p.rowHeight, 56, 32, 160);
   // A day column holds "Mon 12 Oct" and a truncated booking at 80px: at 96 a week beside a 190px resource column needed
-  // 862px, and a rental desk's two-thirds-width card cut Sunday off behind a scroll (2026-10-14).
+  // 862px, and a two-thirds-width card cut Sunday off behind a scroll.
   const columnMin = range.scale === 'days' ? 80 : 72;
   const frame = {
     borderColor: LINE,

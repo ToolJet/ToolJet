@@ -155,7 +155,7 @@ export const lookVars = (componentType: string, styles: Resolved | undefined = {
 
 /** The series colour at `index`: the author's list where it names one, else the theme palette (--sc-chart-1..5,
  *  derived from the Chart color style when set). Past five, each round of the palette is a lighter shade of it: a
- *  six-slice pie drew its first and sixth slices the same green (bakery plan, 2026-10-14). */
+ *  six-slice pie drew its first and sixth slices the same green. */
 export const seriesColor = (colors: unknown, index: number): string => {
   const own = Array.isArray(colors) ? colors[index] : undefined;
   if (isSet(own)) return String(own);

@@ -63,8 +63,8 @@ export const ShadHero = (props: WidgetProps) => {
   useAutoHeight(props, ref);
   // The viewer grows the box to the content and moves the widgets below it (dynamic height). In a fixed box (the
   // editor, which draws every widget at its saved size, or dynamic height turned off) the panel stops at the box and its
-  // content scrolls inside it: a 236px hero in a 200px box drew over a task board's column headers (Daymark,
-  // 2026-10-15), and cut off at the box it lost its bottom edge mid-button.
+  // content scrolls inside it: a 236px hero in a 200px box drew over a task board's column headers,
+  // and cut off at the box it lost its bottom edge mid-button.
   const fixed = !(fitsContentInView(props.componentType ?? 'ShadHero', p) && props.currentMode === 'view');
   const background = ['plain', 'tint', 'gradient', 'image', 'dark'].includes(p.background) ? p.background : 'tint';
   const onDark = background === 'dark' || background === 'image';

@@ -81,7 +81,7 @@ const TITLE_KEYS = ['name', 'title', 'label'];
 
 /** Keys from ids, one of their own for every marker: a repeated id gets a suffix, so a click selects one marker. Each
  *  id remembers the next suffix to try: searching from ~1 again for every repeat made 2,000 equal ids 2,001,000 key
- *  checks (release audit 54). A suffix an id already has is still skipped. */
+ *  checks. A suffix an id already has is still skipped. */
 const uniqueKeys = (points: MapPoint[]): MapPoint[] => {
   const seen = new Set<string>();
   const nextSuffix = new Map<string, number>();

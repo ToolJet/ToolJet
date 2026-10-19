@@ -63,7 +63,7 @@ export const typeClasses = (styles: Resolved | undefined = {}): string[] =>
 
 /** How many whole lines of text fit in a box of `height` px at `lineHeight` px a line (at least one), or null when
  *  either is unknown. A fixed-height heading clamps to this many lines: a long recipe name in a 44px sheet title
- *  wrapped onto a second line that covered the description under it (2026-10-12). */
+ *  wrapped onto a second line that covered the description under it. */
 export const clampLines = (height: unknown, lineHeight: unknown): number | null => {
   const h = Number(height);
   const lh = Number(lineHeight);

@@ -65,7 +65,7 @@ export const curveOf = (c: unknown): Curve => (isCurve(c) ? CURVES[c] : 'monoton
 
 /** The x field and series a chart plots, read from the rows it draws (callers pass those; at most MAX_ROWS are read):
  *  a row past the cap neither picks a field nor empties the chart. A field the data does not have falls back to the
- *  data's own, the first text field for x and the numeric fields for the series (a Luna build kept the catalog's
+ *  data's own, the first text field for x and the numeric fields for the series (an app kept the catalog's
  *  default "revenue" against data with "amount", and drew an empty chart); `missing` names the configured fields the
  *  data lacks and `substitutes` those drawn in their place, for the note under the chart (fieldNote). */
 export interface ChartFields {
@@ -114,9 +114,9 @@ export const hiddenNote = (count: number, one: string, many = `${one}s`): string
   count > 0 ? `${count} more ${count === 1 ? one : many} not shown` : null;
 
 /** A series' name in the legend and tooltip: the author's label for it (seriesLabels), else its field name made
- *  readable ("food_cost_pct" reads "Food cost pct", "lastWeek" reads "Last week"; a build's legend showed raw keys). */
+ *  readable ("food_cost_pct" reads "Food cost pct", "lastWeek" reads "Last week"; a legend showed raw keys). */
 /** seriesLabels as written: an object ({ hours: 'Flight hours' }) or a list naming the series in order (['Flight
- *  hours'], as models often write it; the object-only property dropped it, 35 charts, 2026-10-14). */
+ *  hours'], as models often write it; the object-only property dropped it). */
 export const seriesLabelMap = (labels: unknown, series: string[] | undefined): Record<string, unknown> => {
   const list = series || [];
   // The list can arrive as an object keyed by position ({ 0: 'Flight hours' }) once resolved; keys that are positions
@@ -157,7 +157,7 @@ export const seriesLabel = (key: unknown, labels?: unknown): string => {
     .trim()
     .toLowerCase();
   if (!words) return String(key ?? '');
-  // Acronyms read in capitals: a legend said "Mrr" for mrr (subscription dashboard, 2026-10-14).
+  // Acronyms read in capitals: a legend said "Mrr" for mrr.
   const spoken = words.replace(ACRONYMS, (word) => word.toUpperCase());
   return spoken.charAt(0).toUpperCase() + spoken.slice(1);
 };
@@ -172,8 +172,8 @@ const STATUS_FILLS: Record<string, string> = {
 };
 
 /** Fills for series (or slices) that are all states, Completed, In progress, Missed: their status tones, so a chart
- *  reads like the chips beside it (a stacked chart of visits drew Completed orange and Missed yellow from a warm theme,
- *  field visits, 2026-10-14). A second state of one tone takes a lighter shade. null when any label is not a state, or
+ *  reads like the chips beside it (a stacked chart of visits drew Completed orange and Missed yellow from a warm
+ *  theme). A second state of one tone takes a lighter shade. null when any label is not a state, or
  *  all share one tone: the theme's series colours then. */
 export const statusColors = (labels: unknown): string[] | null => {
   if (!Array.isArray(labels) || labels.length < 2 || labels.length > MAX_SERIES) return null;
@@ -250,7 +250,7 @@ export const percentScale = (format: unknown, values: unknown): number => {
 
 /** A long money or number figure shortened for a small space: "+$190,800.00" as "+$190.8K", keeping its sign and
  *  currency. Under 10,000, percentages and anything with words are left as written. A stat's change badge broke
- *  "+$190,800.0 / 0" over two lines, and a donut's "$8,196,250.00" ran over its ring (museum loans, 2026-10-14). */
+ *  "+$190,800.0 / 0" over two lines, and a donut's "$8,196,250.00" ran over its ring. */
 const FIGURE = /^([+\-−±]?)\s?([$€£¥₹]?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?$/;
 export const compactFigure = (text: unknown): string => {
   const s = String(text ?? '').trim();
@@ -278,7 +278,7 @@ export const centreValueFit = (text: unknown, innerRadius: unknown): { text: str
 
 /** Whole-number ticks for a small count axis: steps of 1, 2 or 5 that end at or just past the maximum, five ticks at
  *  most. Left to itself the chart ran a count axis to 4 for a maximum of 1 and to 8 for a maximum of 5, leaving most
- *  of the plot empty (2026-10-14). Only whole, non-negative values up to 20; anything else is left to the chart ({}). */
+ *  of the plot empty. Only whole, non-negative values up to 20; anything else is left to the chart ({}). */
 export const wholeTicks = (
   rows: ReadonlyArray<Row | null | undefined>,
   series: string[],

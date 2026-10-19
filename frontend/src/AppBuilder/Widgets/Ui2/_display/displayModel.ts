@@ -194,7 +194,7 @@ const STATUS_TOKENS: Record<string, string> = {
   warning: 'var(--sc-warning)',
   pending: 'var(--sc-warning)',
   waiting: 'var(--sc-warning)',
-  // Work under way is the info blue, apart from success and warning whatever the brand (2026-10-14).
+  // Work under way is the info blue, apart from success and warning whatever the brand.
   'in progress': 'var(--sc-chart-info)',
   active: 'var(--sc-primary)',
   current: 'var(--sc-primary)',

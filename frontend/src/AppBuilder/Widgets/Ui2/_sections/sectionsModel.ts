@@ -155,7 +155,7 @@ export interface CardItem {
 export const cardItems = (data: unknown, fields: CardFields = {}): CardItem[] => {
   if (!Array.isArray(data)) return [];
   const f = fields || {};
-  // A comma list or a list of names (metaFields={["duration_label", "seats_label"]} showed nothing, 2026-10-14).
+  // A comma list or a list of names (metaFields={["duration_label", "seats_label"]} showed nothing).
   const metaSpecs = fieldList(f.metaFields);
   const badgeKeys = [
     ...new Set([...(isNonBlankString(f.badgeField) ? [f.badgeField.trim()] : []), ...fieldList(f.badgeFields)]),
@@ -259,7 +259,7 @@ export interface RecordItem {
 export const recordItems = (data: unknown, fields: RecordFields = {}): RecordItem[] => {
   if (!Array.isArray(data)) return [];
   const f = fields || {};
-  // A comma list or a list of names (metaFields={["duration_label", "seats_label"]} showed nothing, 2026-10-14).
+  // A comma list or a list of names (metaFields={["duration_label", "seats_label"]} showed nothing).
   const metaSpecs = fieldList(f.metaFields);
   const format = typeof f.valueFormat === 'string' && VALUE_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
   const items = data.flatMap((row: Row, index: number): (RecordItem & { keyFromId: boolean })[] => {
