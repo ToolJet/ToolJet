@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -185,29 +185,32 @@ export class DataQueriesService implements IDataQueriesService {
     const context = await this.beforeQueryUpdate(user, versionId, dataQueryId, updateDataQueryDto);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      // Scoped to the URL's version: the guards and the promoted-version check above ran
+      // against it, so a query of any other version (or app) must be unreachable here.
       const existing = await manager.findOne(DataQuery, {
-        where: { id: dataQueryId },
+        where: { id: dataQueryId, appVersionId: versionId },
         select: ['id', 'appVersionId', 'name', 'dataSourceId'],
       });
-      if (name !== undefined && existing && existing.name !== name) {
+      if (!existing) {
+        throw new NotFoundException('Data query not found');
+      }
+      if (name !== undefined && existing.name !== name) {
         await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
       }
 
-      if (existing) {
-        const touched = Object.keys({ ...(name !== undefined && { name }), ...(options !== undefined && { options }) });
-        await this.appValidationService.check(
-          'queries',
-          [
-            {
-              op: 'update',
-              id: existing.id,
-              data: { name: name ?? existing.name, options, dataSourceId: existing.dataSourceId },
-              touched,
-            } as QueryWrite,
-          ],
-          { appVersionId: existing.appVersionId, organizationId: user.organizationId, manager }
-        );
-      }
+      const touched = Object.keys({ ...(name !== undefined && { name }), ...(options !== undefined && { options }) });
+      await this.appValidationService.check(
+        'queries',
+        [
+          {
+            op: 'update',
+            id: existing.id,
+            data: { name: name ?? existing.name, options, dataSourceId: existing.dataSourceId },
+            touched,
+          } as QueryWrite,
+        ],
+        { appVersionId: existing.appVersionId, organizationId: user.organizationId, manager }
+      );
 
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
     });
@@ -218,23 +221,26 @@ export class DataQueriesService implements IDataQueriesService {
     );
   }
 
-  async delete(dataQueryId: string) {
+  async delete(dataQueryId: string, versionId: string) {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeQueryDelete(dataQueryId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      // Scoped to the URL's version, like update: the route's guards authorised that
+      // version, so a query of any other version (or app) is a 404, not a deletion.
       const stored = await manager.findOne(DataQuery, {
-        where: { id: dataQueryId },
+        where: { id: dataQueryId, appVersionId: versionId },
         select: ['id', 'name', 'appVersionId'],
       });
-      if (stored) {
-        // Reports handlers that still run this query; deleting is still allowed.
-        await this.appValidationService.check(
-          'queries',
-          [{ op: 'delete', id: stored.id, data: { name: stored.name } } as QueryWrite],
-          { appVersionId: stored.appVersionId, manager }
-        );
+      if (!stored) {
+        throw new NotFoundException('Data query not found');
       }
+      // Reports handlers that still run this query; deleting is still allowed.
+      await this.appValidationService.check(
+        'queries',
+        [{ op: 'delete', id: stored.id, data: { name: stored.name } } as QueryWrite],
+        { appVersionId: stored.appVersionId, manager }
+      );
 
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
       await this.dataQueryRepository.deleteOne(dataQueryId);

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
@@ -220,7 +220,7 @@ export class PageService implements IPageService {
       });
 
       if (!pageToClone) {
-        throw new Error('Page not found');
+        throw new NotFoundException('Page not found');
       }
 
       let pageName = `${pageToClone.name} (copy)`;
@@ -544,12 +544,13 @@ export class PageService implements IPageService {
     const context = await this.beforePageUpdate(pageUpdates.pageId, pageUpdates.diff, appVersionId);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      // Scoped to the version being edited: another version's page id is a 404, not a hit.
       const currentPage = await manager.findOne(Page, {
-        where: { id: pageUpdates.pageId },
+        where: { id: pageUpdates.pageId, appVersionId },
       });
 
       if (!currentPage) {
-        throw new Error('Page not found');
+        throw new NotFoundException('Page not found');
       }
       const touched = Object.keys(pageUpdates.diff);
       if (touched.includes('handle')) await lockForValidation(manager, 'page_handle', appVersionId);
@@ -580,12 +581,14 @@ export class PageService implements IPageService {
     const context = await this.beforePageDelete(pageId, appVersionId);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      // Scoped to the version being edited; a missing (or foreign) page id is a controlled
+      // 404 — a replayed delete must not surface as HTTP 500 (MCP report 2026-10-15, N1).
       const pageExists = await manager.findOne(Page, {
-        where: { id: pageId },
+        where: { id: pageId, appVersionId },
       });
 
       if (!pageExists) {
-        throw new Error('Page not found');
+        throw new NotFoundException('Page not found');
       }
 
       await this.appValidationService.check('pages', [{ op: 'delete', id: pageId, data: { deleteAssociatedPages } }], {
@@ -653,7 +656,7 @@ export class PageService implements IPageService {
     });
 
     if (!pageExists) {
-      throw new Error('Page not found');
+      throw new NotFoundException('Page not found');
     }
 
     await this.appValidationService.check('pages', [{ op: 'delete', id: pageId, data: { deleteAssociatedPages } }], {
