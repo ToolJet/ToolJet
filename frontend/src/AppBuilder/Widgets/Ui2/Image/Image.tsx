@@ -3,7 +3,7 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ImageIcon, ImageOff, X } from 'lucide-react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useHasEvent, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { DISMISS, Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Skeleton, cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -55,13 +55,19 @@ export const ShadImage = (props: WidgetProps) => {
   useAutoHeight({ ...props, properties: { ...p, dynamicHeight: ratio ? p.dynamicHeight : false } }, ref);
   const src = safeImageUrl(p.source);
   const alt = String(p.alternativeText ?? '');
-  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>(src ? 'loading' : 'error');
-  const [open, setOpen] = useState(false);
-  useEffect(() => setStatus(src ? 'loading' : 'error'), [src]);
+  // The load outcome belongs to the source it was for: a new source starts loading (an empty one is an error) in the
+  // same render, so setImageURL and clearImage expose hasError for the new source as soon as they return.
+  const [loadResult, setLoadResult] = useState<{ src: string; status: 'loaded' | 'error' } | null>(null);
+  const status: 'loading' | 'loaded' | 'error' = !src
+    ? 'error'
+    : loadResult?.src === src
+    ? loadResult.status
+    : 'loading';
+  const setStatus = (next: 'loaded' | 'error') => setLoadResult({ src, status: next });
   // A cached image can finish before React listens for its load event.
   useEffect(() => {
     const img = imgRef.current;
-    if (img && img.complete && img.naturalWidth > 0) setStatus('loaded');
+    if (img && img.complete && img.naturalWidth > 0) setLoadResult({ src, status: 'loaded' });
   }, [src]);
   useExposed(setExposedVariables, p, {
     hasError: status === 'error',
@@ -72,6 +78,15 @@ export const ShadImage = (props: WidgetProps) => {
   });
   const hasClick = useHasEvent(id, 'onClick');
   const zoom = p.zoomOnClick === true && status === 'loaded';
+  // The zoom is open only while there is a loaded image to show and the widget is visible: hiding the widget or
+  // clearing its image closes it for good.
+  const [zoomed, setZoomed] = useState(false);
+  const canZoom = zoom && p.visibility !== false;
+  useEffect(() => {
+    if (!canZoom) setZoomed(false);
+  }, [canZoom]);
+  const open = zoomed && canZoom;
+  const frameRef = useRef<HTMLDivElement>(null);
   const clickable = !busy(p) && (hasClick || zoom);
   const caption = isSet(p.caption) ? String(p.caption) : '';
   const fit = FIT.has(p.imageFit) ? p.imageFit : 'cover';
@@ -79,12 +94,13 @@ export const ShadImage = (props: WidgetProps) => {
   const click = () => {
     if (busy(p)) return;
     fireEvent('onClick');
-    if (zoom) setOpen(true);
+    if (zoom) setZoomed(true);
   };
   return (
     <Shell {...props} innerRef={ref}>
       <figure className="tw-m-0 tw-flex tw-w-full tw-flex-col">
         <div
+          ref={frameRef}
           role={clickable ? 'button' : undefined}
           tabIndex={clickable ? 0 : undefined}
           aria-label={clickable ? alt || 'Image' : undefined}
@@ -126,11 +142,17 @@ export const ShadImage = (props: WidgetProps) => {
         ) : null}
       </figure>
       {p.zoomOnClick === true ? (
-        <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+        <DialogPrimitive.Root open={open} onOpenChange={setZoomed}>
           <DialogPrimitive.Portal container={getPortalRoot()}>
-            <DialogPrimitive.Overlay className="tw-fixed tw-inset-0 tw-z-[1300] tw-bg-black/80" />
+            {/* Dismissing the zoom is not input: a disabled Form around the widget lets it through (DISMISS). */}
+            <DialogPrimitive.Overlay {...DISMISS} className="tw-fixed tw-inset-0 tw-z-[1300] tw-bg-black/80" />
             <DialogPrimitive.Content
               aria-describedby={undefined}
+              // The zoom has no Radix trigger to hand focus back to: closing it returns focus to the image.
+              onCloseAutoFocus={(e) => {
+                e.preventDefault();
+                frameRef.current?.focus();
+              }}
               className="tw-fixed tw-left-1/2 tw-top-1/2 tw-z-[1300] -tw-translate-x-1/2 -tw-translate-y-1/2 tw-outline-none"
             >
               <DialogPrimitive.Title className="tw-sr-only">{alt || 'Image'}</DialogPrimitive.Title>
@@ -141,6 +163,7 @@ export const ShadImage = (props: WidgetProps) => {
                 draggable={false}
               />
               <DialogPrimitive.Close
+                {...DISMISS}
                 aria-label="Close"
                 className="tw-absolute -tw-right-3 -tw-top-3 tw-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-full tw-border tw-bg-ui2-background tw-text-ui2-foreground tw-shadow-md tw-transition-colors hover:tw-bg-ui2-accent focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring"
               >
