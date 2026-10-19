@@ -20,7 +20,9 @@ import { SHADOWS, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanb
 import { fitsContentInView, kanbanCardHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { BoardCard, BoardColumn, CardMove, Renamed } from './kanbanBoard';
-import { CardBody, CardSnapshot, CustomCardBody, KanbanCard, snapshotCard } from './KanbanCard';
+import { CardBody, CustomCardBody, KanbanCard } from './KanbanCard';
+import { CardSnapshot, snapshotCard } from './cardSnapshot';
+import { useCardKeys } from './cardKeys';
 import type { CardFields } from './KanbanCard';
 import { CARDS_PER_STEP, KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
 import { useCardHosts } from './cardHosts';
@@ -77,7 +79,7 @@ export const ShadKanban = (props: WidgetProps) => {
   useEffect(() => setColumns(fromData), [fromData]);
   // The selection is kept by card key and read from the current board, so a data refresh re-publishes the fresh card
   // and a removed card clears it (README, "Selection after a data change").
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const { selectedKey, setSelectedKey, openKey, setOpenKey, expandedKeys, toggleExpanded } = useCardKeys(idField);
   const selected = useMemo(
     () => (selectedKey === null ? null : columns.flatMap((c) => c.cards).find((c) => c.__key === selectedKey) ?? null),
     [columns, selectedKey]
@@ -85,31 +87,11 @@ export const ShadKanban = (props: WidgetProps) => {
   const cardCount = columns.reduce((n, c) => n + c.cards.length, 0);
   useEffect(() => {
     if (selectedKey !== null && !selected && missingIsGone(cardCount)) setSelectedKey(null);
-  }, [selectedKey, selected, cardCount]);
-  // The card whose details show (a details field is mapped): a click opens a card's details, a second click closes them.
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  }, [selectedKey, selected, cardCount, setSelectedKey]);
   const [lastMove, setLastMove] = useState<CardMove | null>(null);
   const [activeKey, setActiveKey] = useState<UniqueIdentifier | null>(null);
   // A custom card's drag preview: a still copy of the card (snapshotCard), never its components drawn again.
   const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => new Set());
-  const toggleExpanded = (key: string) =>
-    setExpandedKeys((current) => {
-      const next = new Set(current);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  // Under a new id field a card key can name another record (Alpha's id is Beta's code): the selection, open details
-  // and expanded cards kept by key start over rather than move to that record.
-  const keyedBy = useRef(idField);
-  useEffect(() => {
-    if (keyedBy.current === idField) return;
-    keyedBy.current = idField;
-    setSelectedKey(null);
-    setOpenKey(null);
-    setExpandedKeys(new Set());
-  }, [idField]);
   // Folded columns: those listed in collapsedColumns at start (again whenever that list changes), then the user's.
   const startCollapsed = useStable(
     useMemo(() => list(properties.collapsedColumns).map(String), [properties.collapsedColumns])
