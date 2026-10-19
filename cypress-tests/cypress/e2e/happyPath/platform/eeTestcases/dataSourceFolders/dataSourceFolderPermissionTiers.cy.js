@@ -7,7 +7,6 @@ import {
 } from 'Support/utils/platform/dataSourceFolders';
 import { getGroupPermissionInput } from 'Support/utils/userPermissions';
 
-/** A data source folder grant has three tiers. */
 describe('Data Source Folders — Permission Tiers', () => {
   let workspaceId, wsName, wsSlug;
 
@@ -17,9 +16,6 @@ describe('Data Source Folders — Permission Tiers', () => {
     editFolder: { canEditFolder: true, canEditApps: false, canViewApps: false },
   };
 
-  // ---------------------------------------------------------------- fixture
-
-  /** Folder + a data source inside it + one outside every folder + a group holding one tier + a builder in that group. */
   const setupTier = (label, permissions, isAll = false) => {
     const attemptId = Date.now();
     const folderName = `${label} Tier Folder ${attemptId}`;
@@ -57,9 +53,7 @@ describe('Data Source Folders — Permission Tiers', () => {
       .then(() => ({ folderName, insideName, outsideName, userEmail, folderId, groupName }));
   };
 
-  // ------------------------------------------------- admin-side manipulation
-
-  /** Applies an admin change while the test user stays logged in, so "takes effect on the next request" is proven without a re-login. */
+  // Applies an admin change while the test user stays logged in, so "takes effect on the next request" is proven without a re-login.
   const asAdmin = (changes) => {
     cy.getCookie('tj_auth_token').then((userCookie) => {
       cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
@@ -71,7 +65,7 @@ describe('Data Source Folders — Permission Tiers', () => {
     });
   };
 
-  /** There is no update command for a granular permission, so changing a tier means delete + recreate. */
+  // There is no update command for a granular permission, so changing a tier means delete + recreate.
   let swapCount = 0;
   const adminChangesTierTo = (groupName, folderId, permissions, isAll = false) => {
     swapCount += 1;
@@ -103,8 +97,6 @@ describe('Data Source Folders — Permission Tiers', () => {
   const adminDeletesTheGrant = (groupName) =>
     asAdmin(() => cy.apiDeleteGranularPermission(groupName, ['data_source_folder']));
 
-  // ------------------------------------------------------------- assertions
-
   const phase = (title) => cy.log(`**— ${title} —**`);
 
   const openConnectionOf = (folderName, dataSourceName) => {
@@ -129,13 +121,10 @@ describe('Data Source Folders — Permission Tiers', () => {
     cy.get(dsFolder.dataSourceRow(dataSourceName)).should('be.visible');
   };
 
-  /** Unreachable data sources are absent from the sidebar, not rendered disabled. */
   const expectNotListed = (dataSourceName) => {
     openDataSourcesList();
     cy.get(dsFolder.dataSourceRow(dataSourceName)).should('not.exist');
   };
-
-  // ------------------------------------------------------------------ hooks
 
   beforeEach(() => {
     wsName = `ds-folder-tiers-${Date.now()}`;
@@ -148,7 +137,6 @@ describe('Data Source Folders — Permission Tiers', () => {
       Cypress.env('workspaceSlug', wsSlug);
     });
 
-    // Empty the builder role so only the custom group can grant access.
     cy.apiUpdateGroupPermission('builder', getGroupPermissionInput(true, false));
     cy.apiDeleteGranularPermission('builder');
   });
@@ -157,8 +145,6 @@ describe('Data Source Folders — Permission Tiers', () => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
-
-  // ------------------------------------------------------------------ cases
 
   describe('what each tier grants', () => {
     it('Configure edits, Build with only uses, and Edit folder implies Configure', () => {
@@ -191,15 +177,12 @@ describe('Data Source Folders — Permission Tiers', () => {
         // On a NEW app the landing picker renders folders as COLLAPSED headers — the contents are not in the DOM at all until the header is clicked.
         cy.openApp('', Cypress.env('workspaceId'), Cypress.env('appId'), dsFolder.pickerFolderHeader(folderName));
 
-        // .
         cy.get(dsFolder.pickerFolderHeader(folderName)).should('be.visible');
         cy.get(dsFolder.pickerDataSourceCard(insideName)).should('not.exist');
 
-        // and expanding it reveals the data source inside.
         cy.get(dsFolder.pickerFolderHeader(folderName)).click();
         cy.get(dsFolder.pickerDataSourceCard(insideName)).should('be.visible');
 
-        // The un-foldered data source is listed as a loose card for users who can reach it; this user cannot, so it is absent entirely.
         cy.get(dsFolder.pickerDataSourceCard(outsideName)).should('not.exist');
       });
     });

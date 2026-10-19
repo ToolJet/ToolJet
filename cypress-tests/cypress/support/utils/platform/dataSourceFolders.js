@@ -1,15 +1,13 @@
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, cyParamName } from "Selectors/common";
 import {
   dataSourceFolderPermissionSelectors as dsFolderPerm,
   dataSourceFolderSelectors as dsFolder,
 } from "Selectors/platform/dataSourceFolders";
 import { groupsSelector } from "Selectors/platform/manageGroups";
 
-/** Opens the global data sources page, where data source folders live. */
 export const openDataSourcesList = () => {
   cy.intercept("GET", "/api/folder-data-sources*").as("dataSourceFolders");
   cy.visit(`/${Cypress.env("workspaceSlug")}`);
-  // Navigate via the sidebar icon rather than a hardcoded route — this is how every existing data.
   cy.get(commonSelectors.globalDataSourceIcon, { timeout: 50000 }).click();
   cy.wait("@dataSourceFolders");
   cy.get(dsFolder.sidebarContainer, { timeout: 50000 }).should("be.visible");
@@ -25,7 +23,6 @@ export const uiCreateDataSourceFolder = (folderName) => {
   );
 };
 
-/** Opens a folder row's ⋮ menu. */
 export const uiOpenFolderMenu = (folderId) =>
   cy.get(dsFolder.folderMenuButton(folderId)).click({ force: true });
 
@@ -43,12 +40,10 @@ export const uiRenameDataSourceFolder = (folderId, newName) => {
 export const uiDeleteDataSourceFolder = (folderId) => {
   uiOpenFolderMenu(folderId);
   cy.get(dsFolder.folderDeleteOption(folderId)).click();
-  /** The copy is what stops a user thinking the data sources go with the folder. */
   cy.get(commonSelectors.modalMessage).should(
     "have.text",
     "Deleting this folder will only delete the folder and not the data sources in it. This action is irreversible. Are you sure you want to continue?"
   );
-  // The copy is what stops a user thinking the data sources go with the folder, so assert it.
   cy.get(commonSelectors.modalMessage).should(
     "have.text",
     "Deleting this folder will only delete the folder and not the data sources in it. This action is irreversible. Are you sure you want to continue?"
@@ -66,11 +61,10 @@ export const uiVerifyDataSourceFolderExists = (folderName, shouldExist = true) =
     .get(dsFolder.folderRow(folderName))
     .should(shouldExist ? "exist" : "not.exist");
 
-/** Asserts the folder's ⋮ menu is absent — it only renders when the viewer can rename or delete. */
+// Asserts the folder's ⋮ menu is absent — it only renders when the viewer can rename or delete.
 export const uiVerifyFolderMenuAbsent = (folderId) =>
   cy.get(dsFolder.folderMenuButton(folderId)).should("not.exist");
 
-/** Drags a data source onto a folder row. */
 export const dragDataSourceToFolder = (dataSourceName, folderName, { expectDragLabel } = {}) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({
     position: "center",
@@ -97,27 +91,23 @@ export const dragDataSourceToFolder = (dataSourceName, folderName, { expectDragL
   // Wait for the membership call so a later read cannot race the write.
   cy.intercept("POST", "/api/folder-data-sources*").as("dropIntoFolder");
   cy.get(dsFolder.folderRow(folderName)).realMouseUp({ position: "center" });
-  // Returned so a caller can assert on this drop's request.
   return cy.wait("@dropIntoFolder");
 };
 
-/** Drags a data source out of its folder onto the un-foldered drop zone, the gesture that removes membership. */
 export const dragDataSourceToStrayList = (dataSourceName) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({ position: "center" });
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(0, 20);
   cy.get(dsFolder.strayDropZone).realMouseMove(5, 5, { position: "center" });
   cy.get(dsFolder.strayDropZone).realMouseMove(0, 2, { position: "center" });
 
-  // Same release gate as dragDataSourceToFolder — DroppableZone puts is-drop-over straight onto the.
+  // Same release gate as dragDataSourceToFolder: wait for is-drop-over on the stray drop zone.
   cy.get(dsFolder.strayDropZone).should("have.class", "is-drop-over");
 
   cy.intercept("PUT", "/api/folder-data-sources/*").as("dropOutOfFolder");
   cy.get(dsFolder.strayDropZone).realMouseUp({ position: "center" });
-  // Returned for the same reason as dragDataSourceToFolder.
   return cy.wait("@dropOutOfFolder");
 };
 
-/** Builds a multi-selection. */
 export const multiSelectDataSources = (dataSourceNames = []) => {
   dataSourceNames.forEach((name) => {
     cy.get(dsFolder.dataSourceRow(name)).click({ shiftKey: true });
@@ -127,7 +117,6 @@ export const multiSelectDataSources = (dataSourceNames = []) => {
   });
 };
 
-/** Opens the "Update folder" modal from a data source row's ⋮ menu. */
 export const uiOpenMoveDataSourceModal = (dataSourceName) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realHover();
   cy.get(dsFolder.dataSourceMenuButton(dataSourceName)).click({ force: true });
@@ -136,7 +125,6 @@ export const uiOpenMoveDataSourceModal = (dataSourceName) => {
   });
 };
 
-/** Expands a folder only if it is not already showing the given data source. */
 export const uiEnsureFolderExpanded = (folderName, dataSourceName) => {
   cy.get(dsFolder.folderRow(folderName)).should("exist");
   return cy.get("body").then(($body) => {
@@ -146,11 +134,9 @@ export const uiEnsureFolderExpanded = (folderName, dataSourceName) => {
   });
 };
 
-/** Raw toggle. */
 export const uiExpandDataSourceFolder = (folderName) =>
   cy.get(dsFolder.folderRow(folderName)).click();
 
-/** Starts a drag, asserts the DragOverlay label, then cancels with Escape so no membership request is sent. */
 export const uiVerifyDragPreview = (dataSourceName, expectedLabel) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({ position: "center" });
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(0, 20);
@@ -161,12 +147,10 @@ export const uiVerifyDragPreview = (dataSourceName, expectedLabel) => {
   cy.get(dsFolder.dragOverlay).should("not.exist");
 };
 
-// --------------------------------------------------------------------------- Query run restriction.
-
 export const QUERY_RUN_BLOCKED_MESSAGE =
   "You do not have permission to run queries on this data source";
 
-/** A blocked run is NOT an HTTP error: */
+// A blocked run is not an HTTP error: the run reports status failed with the restriction message.
 export const verifyQueryRunBlocked = (body) => {
   expect(body.status, "query run status").to.equal("failed");
   expect(body.data?.responseObject?.responseBody).to.equal(QUERY_RUN_BLOCKED_MESSAGE);
@@ -192,7 +176,6 @@ const restApiQueryOptions = (runOnPageLoad = false) => ({
   runOnPageLoad,
 });
 
-/** App with one REST API query on the given data source, left in the editor. */
 export const apiCreateAppWithQuery = (appName, dataSourceId, queryName, runOnPageLoad = false) => {
   let appId, versionId;
   return cy
@@ -210,7 +193,6 @@ export const apiCreateAppWithQuery = (appName, dataSourceId, queryName, runOnPag
     .then(() => ({ appId, versionId }));
 };
 
-/** Same app, saved then promoted to production and released under `slug`, with its query set to run on page load. */
 export const apiCreateReleasedAppWithQuery = (appName, slug, dataSourceId, queryName) =>
   apiCreateAppWithQuery(appName, dataSourceId, queryName, true).then(({ appId, versionId }) => {
     cy.apiSaveAppVersion(appId, versionId, "v1");
@@ -221,7 +203,6 @@ export const apiCreateReleasedAppWithQuery = (appName, slug, dataSourceId, query
     return cy.wrap({ appId, versionId });
   });
 
-/** Runs a query from the builder's query panel and yields the run response body. */
 export const uiRunQueryInBuilder = (queryName) => {
   cy.intercept("POST", "/api/data-queries/*/versions/*/run/*").as("builderQueryRun");
   cy.get(dsFolder.listQuery(queryName)).click();
@@ -229,18 +210,19 @@ export const uiRunQueryInBuilder = (queryName) => {
   return cy.wait("@builderQueryRun").its("response.body");
 };
 
-/** Opens a released app and yields the body of its page-load query run. */
 export const visitReleasedAppAndCaptureQueryRun = (slug) => {
   cy.intercept("POST", "/api/data-queries/*/run").as("releasedQueryRun");
   cy.visit(`/applications/${slug}`);
   return cy.wait("@releasedQueryRun").its("response.body");
 };
 
-// --------------------------------------------------------------------------- Groups → Granular.
-
 export const openGroupGranularAccess = (groupName) => {
+  const groupTitle = (name) => `[data-cy="${cyParamName(name)}-title"]`;
   cy.visit(`/${Cypress.env("workspaceSlug")}/workspace-settings/groups`);
+  // The page auto-selects Admin once it loads; a click that lands before that is overridden, so wait for Admin's header, click, then wait for the clicked group's header.
+  cy.get(groupTitle("Admin"), { timeout: 30000 }).should("be.visible");
   cy.get(groupsSelector.groupLink(groupName)).click();
+  cy.get(groupTitle(groupName)).should("be.visible");
   cy.get(groupsSelector.granularLink).click();
 };
 
@@ -254,7 +236,6 @@ export const uiOpenEditDataSourceFolderGrant = () => {
   cy.get(dsFolderPerm.editGranularAccess).click({ force: true });
 };
 
-/** Custom scope, then tick each folder in the resources picker. */
 export const uiSelectGrantFolders = (folderNames = []) => {
   cy.get(dsFolderPerm.sharedModalCustomRadio).check();
   cy.get(dsFolderPerm.sharedModalResourcesContainer).find('[class*="-control"]').click();
@@ -262,7 +243,6 @@ export const uiSelectGrantFolders = (folderNames = []) => {
   cy.get(dsFolderPerm.sharedModalPermissionNameInput).click();
 };
 
-/** Adds a user to a group from its Users tab. */
 export const uiAddUserToGroup = (email) => {
   cy.get(groupsSelector.usersLink).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);

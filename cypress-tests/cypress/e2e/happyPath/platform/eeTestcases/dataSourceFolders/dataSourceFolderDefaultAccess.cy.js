@@ -80,7 +80,6 @@ describe('Data Source Folders — Default Role Access', () => {
               expect(ids, 'all three data sources start in the folder').to.have.length(3);
             });
 
-            // 1 — Remove one from the folder.
             cy.apiRemoveDataSourceFromFolder(removedId, folder.id).then((response) => {
               expect(response.status).to.equal(200);
             });
@@ -91,13 +90,11 @@ describe('Data Source Folders — Default Role Access', () => {
             openDataSourcesList();
             cy.get(dsFolder.dataSourceRow(removedName)).should('be.visible');
 
-            // 2 — Delete a data source that is still in the folder.
             cy.apiDeleteDataSource(deletedName);
             cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
               expect(ids, 'the deleted data source left no membership row').to.deep.equal([keptId]);
             });
 
-            // 3 — Delete the folder.
             openDataSourcesList();
             uiDeleteDataSourceFolder(folder.id);
             uiVerifyDataSourceFolderExists(folderName, false);
@@ -126,7 +123,6 @@ describe('Data Source Folders — Default Role Access', () => {
         cy.get(dsFolder.searchIcon).click();
         cy.get(dsFolder.searchBar).type(folderedDataSource);
 
-        // The folder auto-expands so a match inside it surfaces without a manual click — otherwise a user would have to open every folder to find something by name.
         cy.get(dsFolder.dataSourceRow(folderedDataSource)).should('be.visible');
         cy.get(dsFolder.dataSourceRow(strayDataSource)).should('not.exist');
         uiVerifyDataSourceFolderExists(folderName);
@@ -140,7 +136,6 @@ describe('Data Source Folders — Default Role Access', () => {
 
     openDataSourcesList();
 
-    // Case-insensitive alphabetical order, regardless of creation order.
     cy.get('[data-cy^="datasource-folder-"]')
       .filter((_, el) => /^datasource-folder-(alpha|beta|charlie)-/.test(el.dataset.cy))
       .then(($rows) => {
@@ -149,11 +144,9 @@ describe('Data Source Folders — Default Role Access', () => {
       });
 
     cy.apiGetDataSourceFolderId(`beta ${testId}`).then((firstId) => {
-      // Expanding an empty folder shows the empty state.
       cy.get(dsFolder.folderRow(`beta ${testId}`)).click();
       cy.get(dsFolder.folderEmptyText(firstId)).should('have.text', 'This folder is empty');
 
-      // Delete it, then create a folder with the same name straight away.
       uiDeleteDataSourceFolder(firstId);
       uiVerifyDataSourceFolderExists(`beta ${testId}`, false);
       uiCreateDataSourceFolder(`beta ${testId}`);
