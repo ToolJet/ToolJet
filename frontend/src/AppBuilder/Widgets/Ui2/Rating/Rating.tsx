@@ -74,10 +74,12 @@ export const ShadRating = (props: WidgetProps) => {
     const r = e.currentTarget.getBoundingClientRect?.();
     return half && r?.width && e.clientX - r.left < r.width / 2 ? position - 0.5 : position;
   };
-  const onKeyDown = (e: KeyboardEvent<HTMLSpanElement>) => {
+  const onKeyDown = (e: KeyboardEvent<HTMLSpanElement>, position: number) => {
     if (!interactive) return;
     let next: number | null = null;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = M.stepRating(value, 1, max, half);
+    // Space checks the focused star, as it does a radio; on the checked one it keeps the rating.
+    if (e.key === ' ') next = Math.ceil(value) === position ? value : position;
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = M.stepRating(value, 1, max, half);
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = M.stepRating(value, -1, max, half);
     else if (e.key === 'Home') next = half ? 0.5 : 1;
     else if (e.key === 'End') next = max;
@@ -114,7 +116,7 @@ export const ShadRating = (props: WidgetProps) => {
                 aria-checked={Math.ceil(value) === position}
                 aria-label={labels[i] || `${position} of ${max}`}
                 tabIndex={interactive && position === focusable ? 0 : -1}
-                onKeyDown={onKeyDown}
+                onKeyDown={(e) => onKeyDown(e, position)}
                 onMouseMove={interactive ? (e) => setHover(pointAt(e, position)) : undefined}
                 onClick={
                   interactive
