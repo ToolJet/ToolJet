@@ -32,7 +32,7 @@
     },
     {
       "componentType": "KeyValuePair",
-      "status": "verified",
+      "status": "approved",
       "contract": "ee/test/app-builder/widgets/KeyValuePair/TESTING.md"
     },
     {
