@@ -4,6 +4,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import { SubcontainerContext } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
+import type { ContextSegment } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Avatar, AvatarFallback, Badge, Progress, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -318,8 +319,8 @@ interface CustomCardBodyProps {
   height: number;
   fit: boolean;
   editing: boolean;
-  /** The card is a row of the board (a top-level board, useCustomCards): its components belong to it. */
-  scoped: boolean;
+  /** The rows the board sits in (useOwnContextPath): the card is a row of the board under them. */
+  path: ContextSegment[];
   /** The board takes no input (disabled, loading or hidden): nor do the card's components. */
   blocked?: boolean;
   currentLayout?: string;
@@ -334,9 +335,6 @@ const blockInput = (e: React.SyntheticEvent) => {
   e.stopPropagation();
 };
 
-// Custom cards fit only on a top-level board (Kanban.tsx), so their path is always empty.
-const TOP_LEVEL: [] = [];
-
 export const CustomCardBody = ({
   id,
   index,
@@ -345,7 +343,7 @@ export const CustomCardBody = ({
   height: cardHeight,
   fit,
   editing,
-  scoped,
+  path,
   blocked = false,
   currentLayout,
   darkMode,
@@ -353,7 +351,7 @@ export const CustomCardBody = ({
   // Sized by the reflow as a list row is; a card with something hidden on it may also go below cardHeight.
   const height = useFittedRowHeight({
     id,
-    path: TOP_LEVEL,
+    path,
     index,
     value: card,
     fit,
@@ -361,7 +359,7 @@ export const CustomCardBody = ({
     currentLayout,
   });
   // The card's components read and write their values at this card, as a List view row's do.
-  const contextValue = useMemo(() => ({ contextPath: [{ containerId: id, index }] }), [id, index]);
+  const contextValue = useMemo(() => ({ contextPath: [...path, { containerId: id, index }] }), [path, id, index]);
   const canvas =
     width > 0 ? (
       <SubContainer
@@ -385,7 +383,44 @@ export const CustomCardBody = ({
       onMouseDownCapture={blocked ? blockInput : undefined}
       onClickCapture={blocked ? blockInput : undefined}
     >
-      {scoped ? <SubcontainerContext.Provider value={contextValue}>{canvas}</SubcontainerContext.Provider> : canvas}
+      <SubcontainerContext.Provider value={contextValue}>{canvas}</SubcontainerContext.Provider>
     </div>
   );
+};
+
+/** A still copy of a custom card's canvas, for its drag preview: what the card shows now (its typed values), with
+ *  nothing live in it. The preview drew the card's components a second time at the same card, and those copies
+ *  published their defaults over the card's own values and took over its actions, so after the drag the card's
+ *  components no longer answered their actions or the buttons beside them. Null when the card has no canvas yet. */
+export const snapshotCard = (host: HTMLElement): HTMLElement | null => {
+  const canvas = host.querySelector<HTMLElement>('[data-card-canvas]');
+  if (!canvas) return null;
+  // A copy keeps a field's typed value and checked state, not a select's chosen option.
+  const copy = canvas.cloneNode(true) as HTMLElement;
+  const chosen = canvas.querySelectorAll('select');
+  copy.querySelectorAll('select').forEach((select, i) => {
+    select.selectedIndex = chosen[i]?.selectedIndex ?? select.selectedIndex;
+  });
+  // No second element by the card's ids, no label naming the card's field, and no radio joining the card's group (a
+  // checked one placed in the page would clear the card's own).
+  for (const el of [copy, ...copy.querySelectorAll('*')]) {
+    ['id', 'for', 'name', 'form', 'data-card-canvas'].forEach((attribute) => el.removeAttribute(attribute));
+  }
+  copy.setAttribute('aria-hidden', 'true');
+  copy.setAttribute('inert', '');
+  return copy;
+};
+
+/** Shows a snapshotCard copy. */
+export const CardSnapshot = ({ node }: { node: HTMLElement | null }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const box = ref.current;
+    if (!box || !node) return undefined;
+    box.appendChild(node);
+    return () => {
+      if (node.parentNode === box) box.removeChild(node);
+    };
+  }, [node]);
+  return <div ref={ref} className="tw-pointer-events-none" />;
 };

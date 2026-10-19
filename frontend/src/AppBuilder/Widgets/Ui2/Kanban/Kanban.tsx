@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import type { DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
 import {
   missingIsGone,
   useAutoHeight,
@@ -20,7 +20,7 @@ import { SHADOWS, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanb
 import { fitsContentInView, kanbanCardHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { BoardCard, BoardColumn, CardMove, Renamed } from './kanbanBoard';
-import { CardBody, CustomCardBody, KanbanCard } from './KanbanCard';
+import { CardBody, CardSnapshot, CustomCardBody, KanbanCard, snapshotCard } from './KanbanCard';
 import type { CardFields } from './KanbanCard';
 import { CARDS_PER_STEP, KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
 import { useCardHosts } from './cardHosts';
@@ -90,6 +90,8 @@ export const ShadKanban = (props: WidgetProps) => {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [lastMove, setLastMove] = useState<CardMove | null>(null);
   const [activeKey, setActiveKey] = useState<UniqueIdentifier | null>(null);
+  // A custom card's drag preview: a still copy of the card (snapshotCard), never its components drawn again.
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => new Set());
   const toggleExpanded = (key: string) =>
     setExpandedKeys((current) => {
@@ -98,6 +100,16 @@ export const ShadKanban = (props: WidgetProps) => {
       else next.add(key);
       return next;
     });
+  // Under a new id field a card key can name another record (Alpha's id is Beta's code): the selection, open details
+  // and expanded cards kept by key start over rather than move to that record.
+  const keyedBy = useRef(idField);
+  useEffect(() => {
+    if (keyedBy.current === idField) return;
+    keyedBy.current = idField;
+    setSelectedKey(null);
+    setOpenKey(null);
+    setExpandedKeys(new Set());
+  }, [idField]);
   // Folded columns: those listed in collapsedColumns at start (again whenever that list changes), then the user's.
   const startCollapsed = useStable(
     useMemo(() => list(properties.collapsedColumns).map(String), [properties.collapsedColumns])
@@ -185,15 +197,16 @@ export const ShadKanban = (props: WidgetProps) => {
   const custom = properties.cardLayout === 'custom';
   const editing = props.currentMode === 'edit';
   const cardHeight = kanbanCardHeight(properties);
-  // Cards are rows of the board only at the top level: inside another row-scoped widget (a native Kanban card, a List
-  // view row) the card canvas has no context of its own yet. There cards keep their set height (a card's height would
-  // share the board's layout key and grow with it) and their components one entry.
+  // Cards are rows of the board, under the rows of whatever row-scoped widget holds it (a List view row, a native
+  // Kanban card), as a nested List view's rows are: a card's components, cardData and height belong to that outer row
+  // and that card. Kept to the top level, cards in a List view row shared one entry, so the second card showed the
+  // first card's data and a card's button set another card's field.
   const ownPath = useOwnContextPath(props.subContainerIndex, props.parentId);
-  const scoped = ownPath.length === 0;
-  const { board, order } = useCustomCards(props.id, custom, scoped, columns);
+  const parentIndices = useStable(useMemo(() => ownPath.map((segment) => segment.index), [ownPath]));
+  const { board, order, generation } = useCustomCards(props.id, custom, parentIndices, columns, idField);
   const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
   const hostOf = useCardHosts(board);
-  const fitCards = custom && !editing && scoped && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
+  const fitCards = custom && !editing && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const renderBody = custom
     ? (card: BoardCard) => (
         <CustomCardBody
@@ -204,7 +217,7 @@ export const ShadKanban = (props: WidgetProps) => {
           height={cardHeight}
           fit={fitCards}
           editing={editing}
-          scoped={scoped}
+          path={ownPath}
           blocked={!enabled}
           currentLayout={props.currentLayout}
           darkMode={props.darkMode}
@@ -267,8 +280,16 @@ export const ShadKanban = (props: WidgetProps) => {
     properties.allowDelete === true && !properties.disabledState
       ? (card: BoardCard) => enabled && doDelete(card.__key)
       : undefined;
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
+  const onDragStart = ({ active }: DragStartEvent) => {
+    setActiveKey(active.id);
+    setPreview(custom ? snapshotCard(hostOf(String(active.id))) : null);
+  };
+  const endDrag = () => {
     setActiveKey(null);
+    setPreview(null);
+  };
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    endDrag();
     const target = over?.data?.current;
     // Checked at the drop too: the board may have been disabled, set loading or locked since the pick-up.
     if (!target || !draggable) return;
@@ -297,8 +318,8 @@ export const ShadKanban = (props: WidgetProps) => {
         sensors={sensors}
         collisionDetection={kanbanCollision}
         accessibility={accessibility}
-        onDragStart={({ active }) => setActiveKey(active.id)}
-        onDragCancel={() => setActiveKey(null)}
+        onDragStart={onDragStart}
+        onDragCancel={endDrag}
         onDragEnd={onDragEnd}
       >
         <div
@@ -361,7 +382,8 @@ export const ShadKanban = (props: WidgetProps) => {
                   onDelete={onDelete}
                 />,
                 hostOf(card.__key),
-                card.__key
+                // A new id field mounts every card again (useCustomCards): a key can name another record now.
+                `${generation}:${card.__key}`
               )
             )
           )}
@@ -380,7 +402,7 @@ export const ShadKanban = (props: WidgetProps) => {
                       padding
                     )}
                   >
-                    {renderBody(activeCard)}
+                    {custom ? <CardSnapshot node={preview} /> : renderBody(activeCard)}
                   </div>
                 ) : null}
               </DragOverlay>,
