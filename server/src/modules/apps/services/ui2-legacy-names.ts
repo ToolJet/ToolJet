@@ -604,6 +604,12 @@ export const applyUi2RenamesToImport = (data: {
 
   const versionByPage = new Map((data.pages ?? []).map((p) => [p.id, p.appVersionId]));
   const versionOf = (c: Record<string, any>) => versionByPage.get(c.pageId);
+  // A handler's version is its own; one without it (exports always carry it) takes its source's, a component, page or
+  // query, and is left alone when that is unknown rather than renamed by every version's names.
+  const versionBySource = new Map<string, string | undefined>(versionByPage);
+  for (const q of data.dataQueries ?? []) if (q.id) versionBySource.set(q.id, q.appVersionId);
+  for (const c of components) versionBySource.set(c.id, versionOf(c));
+  const handlerVersion = (h: Record<string, any>) => h.appVersionId ?? versionBySource.get(h.sourceId);
 
   for (const versionId of new Set(components.map(versionOf))) {
     const versionComponents = components.filter((c) => versionOf(c) === versionId);
@@ -627,7 +633,7 @@ export const applyUi2RenamesToImport = (data: {
     }
 
     for (const h of data.events ?? []) {
-      if (h.appVersionId !== undefined && h.appVersionId !== versionId) continue;
+      if (handlerVersion(h) !== versionId) continue;
       const next = renameEventHandlerRow(h as { name?: string; event: any }, typesById[h.sourceId], typesById, rewrite);
       if (next !== h) Object.assign(h, { name: next.name, event: next.event });
     }
