@@ -306,14 +306,16 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
   };
   const lookUpAddress = (at: LatLng) => {
     if (typeof fetch !== 'function') return;
+    const reverse = live.current.geocoder.reverse;
     const mine = new AbortController();
     // Joined before the previous lookup is stopped, so a request it shares for the same spot carries on.
-    const answer = geocode(live.current.geocoder.reverse, { lat: at.lat, lng: at.lng }, mine.signal);
+    const answer = geocode(reverse, { lat: at.lat, lng: at.lng }, mine.signal);
     stopLookup();
     lookup = mine;
     answer
       .then((places) => {
-        if (lookup !== mine) return;
+        // A lookup made on a reverse geocoder the map no longer uses does not name the spot either.
+        if (lookup !== mine || live.current.geocoder.reverse !== reverse) return;
         const label = places?.[0]?.label;
         const now = live.current.picked;
         if (!label || !now || now.lat !== at.lat || now.lng !== at.lng) return;

@@ -23,13 +23,23 @@ export const useMapSearch = ({
   typeAhead: boolean;
 }) => {
   const [query, setQuery] = useState('');
-  // The places found and the query they were found for: a place answers only that query, so Enter on a new query
-  // during the pause before its search never picks the last query's place.
-  const [found, setFound] = useState<{ query: string; places: Place[] }>({ query: '', places: [] });
-  const results = found.query === query.trim() ? found.places : [];
-  const setResults = (places: Place[]) => setFound({ query: query.trim(), places });
+  // The geocoder searched, by its URL: Map hands over the same `live` ref each render, so a new geocoderUrl alone
+  // neither restarted a search nor withdrew the places the old one found, and those could still be picked.
+  const provider = live.current.geocoder.search;
+  // The places found, with the query and the geocoder they were found for: a place answers only that query, so Enter
+  // on a new query during the pause before its search never picks the last query's place.
+  const [found, setFound] = useState<{ query: string; provider: string; places: Place[] }>({
+    query: '',
+    provider: '',
+    places: [],
+  });
+  const results = found.query === query.trim() && found.provider === provider ? found.places : [];
+  const setResults = (places: Place[]) => setFound({ query: query.trim(), provider, places });
   const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState('');
+  // A failure belongs to the geocoder that failed, like its places.
+  const [failure, setFailure] = useState({ provider: '', message: '' });
+  const searchError = failure.provider === provider ? failure.message : '';
+  const setSearchError = (message: string) => setFailure({ provider, message });
   // The query Enter asked for, when the geocoder does not search as you type.
   const [submitted, setSubmitted] = useState('');
   // The label of the place just chosen fills the box; it is not searched for again.
@@ -37,7 +47,7 @@ export const useMapSearch = ({
   useEffect(() => {
     const q = query.trim();
     if (q.length < 3 || typeof fetch !== 'function' || query === chosenRef.current || (!typeAhead && submitted !== q)) {
-      setFound({ query: '', places: [] });
+      setFound({ query: '', provider: '', places: [] });
       setSearching(false);
       return undefined;
     }
@@ -45,19 +55,21 @@ export const useMapSearch = ({
     const timer = setTimeout(
       () => {
         setSearching(true);
-        geocode(live.current.geocoder.search, { query: q }, controller?.signal)
+        geocode(provider, { query: q }, controller?.signal)
           .then((places) => {
             if (places) {
-              setFound({ query: q, places });
-              setSearchError(places.length ? '' : 'No places found');
+              setFound({ query: q, provider, places });
+              setFailure({ provider, message: places.length ? '' : 'No places found' });
             }
           })
           .catch((error) =>
-            setSearchError(
-              error instanceof GeocoderAnswerTooLarge
-                ? "The geocoder's answer is too large to show"
-                : 'Search is unavailable right now'
-            )
+            setFailure({
+              provider,
+              message:
+                error instanceof GeocoderAnswerTooLarge
+                  ? "The geocoder's answer is too large to show"
+                  : 'Search is unavailable right now',
+            })
           )
           .finally(() => setSearching(false));
       },
@@ -67,7 +79,7 @@ export const useMapSearch = ({
       clearTimeout(timer);
       controller?.abort();
     };
-  }, [query, submitted, typeAhead, live]);
+  }, [query, submitted, typeAhead, provider]);
   const choosePlace = (place: Place) => {
     const map = mapRef.current;
     setResults([]);
