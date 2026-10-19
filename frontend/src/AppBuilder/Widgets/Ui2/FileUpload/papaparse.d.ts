@@ -9,6 +9,8 @@ declare module 'papaparse' {
   interface ParseResult {
     data: Record<string, unknown>[];
     errors: ParseError[];
+    /** Papa 5.4+: each renamed duplicate header, new name to original (null when none was renamed). */
+    meta?: { renamedHeaders?: Record<string, string> | null };
   }
   interface ParseConfig {
     header?: boolean;

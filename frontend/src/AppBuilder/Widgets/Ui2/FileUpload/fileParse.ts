@@ -14,7 +14,9 @@ const NONE: ParseOutcome = { data: null, error: '' };
 const failed = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 /** CSV rows by header, as the native picker parses them; rows Papa reports (wrong field count, bad quotes) are named
- *  in `error` ("people.csv: row 2: Too few fields: expected 2 fields but parsed 1"), and kept as parsed. */
+ *  in `error` ("people.csv: row 2: Too few fields: expected 2 fields but parsed 1"), and kept as parsed. A repeated
+ *  header is renamed by Papa (name, name_1) with only a console warning, so `error` names the renamed columns too: a
+ *  binding reading row.name would otherwise miss the second column without a word. */
 const csv = (name: string, text: string, delimiter: string): ParseOutcome => {
   const result = Papa.parse(text, {
     header: true,
@@ -26,6 +28,12 @@ const csv = (name: string, text: string, delimiter: string): ParseOutcome => {
     .slice(0, 5)
     .map((e) => (typeof e.row === 'number' ? `row ${e.row + 1}: ${e.message}` : e.message));
   const more = result.errors.length > problems.length ? ` (and ${result.errors.length - problems.length} more)` : '';
+  const renamed = Object.entries(result.meta?.renamedHeaders ?? {});
+  if (renamed.length) {
+    const shown = renamed.slice(0, 5).map(([to, from]) => `${from} to ${to}`);
+    const extra = renamed.length > shown.length ? ` (and ${renamed.length - shown.length} more)` : '';
+    problems.unshift(`duplicate headers renamed: ${shown.join(', ')}${extra}`);
+  }
   return { data: result.data, error: problems.length ? `${name}: ${problems.join('; ')}${more}` : '' };
 };
 
