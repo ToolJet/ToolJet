@@ -293,17 +293,29 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
     drawPicked();
     if (!quiet && next) live.current.fireEvent('onLocationPicked');
     if (next && !address) lookUpAddress(next);
+    else stopLookup();
   };
-  // The address lookups this mount started. dispose() (the map unmounting) stops them: an answer that arrived later
-  // wrote its address into the store, over the location of the map mounted next.
-  const lookups = new Set<AbortController>();
+  // The address lookup of the current pick, the only one that may name it: each pick, clear or new lookup stops the
+  // one before. Matching coordinates were not enough: an older lookup for the same spot replaced the address of a
+  // search result chosen there since. dispose() (the map unmounting) stops it too: an answer that arrived later wrote
+  // its address into the store, over the location of the map mounted next.
+  let lookup: AbortController | null = null;
+  const stopLookup = () => {
+    lookup?.abort();
+    lookup = null;
+  };
   const lookUpAddress = (at: LatLng) => {
     if (typeof fetch !== 'function') return;
-    const lookup = new AbortController();
-    lookups.add(lookup);
-    geocode(live.current.geocoder.reverse, { lat: at.lat, lng: at.lng }, lookup.signal)
+    const reverse = live.current.geocoder.reverse;
+    const mine = new AbortController();
+    // Joined before the previous lookup is stopped, so a request it shares for the same spot carries on.
+    const answer = geocode(reverse, { lat: at.lat, lng: at.lng }, mine.signal);
+    stopLookup();
+    lookup = mine;
+    answer
       .then((places) => {
-        if (lookup.signal.aborted) return;
+        // A lookup made on a reverse geocoder the map no longer uses does not name the spot either.
+        if (lookup !== mine || live.current.geocoder.reverse !== reverse) return;
         const label = places?.[0]?.label;
         const now = live.current.picked;
         if (!label || !now || now.lat !== at.lat || now.lng !== at.lng) return;
@@ -313,12 +325,11 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
         live.current.setExposedVariables({ pickedLocation: pickedValue(next) });
       })
       .catch(() => {})
-      .finally(() => lookups.delete(lookup));
+      .finally(() => {
+        if (lookup === mine) lookup = null;
+      });
   };
-  const dispose = () => {
-    lookups.forEach((lookup) => lookup.abort());
-    lookups.clear();
-  };
+  const dispose = stopLookup;
   const drawPicked = () => {
     const map = mapRef.current;
     if (!map) return;
