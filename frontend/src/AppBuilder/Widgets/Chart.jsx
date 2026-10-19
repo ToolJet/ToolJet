@@ -25,7 +25,7 @@ export default function Chart({
 }) {
   const isInitialRender = useRef(true);
   // The box the chart is drawn in can be narrower than its grid width: in a flex container (a card in a row of two) the
-  // slot was 553px and the plot was drawn at 563, its right edge cut off by the card (2026-10-14). The chart follows the
+  // slot was 553px and the plot was drawn at 563, its right edge cut off by the card. The chart follows the
   // box it is given, never wider than its grid width.
   const boxRef = useRef(null);
   const [slotWidth, setSlotWidth] = useState(0);

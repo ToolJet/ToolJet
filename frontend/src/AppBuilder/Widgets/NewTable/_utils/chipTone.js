@@ -16,8 +16,8 @@ const TONES = [
   ],
   [
     'info',
-    // "New" is a state, not the start of a place: New York and New Zealand chips were tinted blue (a people directory,
-    // 2026-10-14). An occupied room or unit is in use, as a hotel or a lettings desk reads it, not a warning (2026-10-14).
+    // "New" is a state, not the start of a place: New York and New Zealand chips were tinted blue.
+    // An occupied room or unit is in use, as a hotel or a lettings desk reads it, not a warning.
     /\b(new(?! (york|zealand|delhi|jersey|mexico|hampshire|south wales|orleans|brunswick|haven|england|caledonia|guinea|westminster))|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit|on the way|en route|dispatched|on site|checked out|on loan|in use|occupied|reserved|held|flying|in flight|airborne|quoted|committed|in testing|testing|in qa|on call|on duty|out for delivery|picked up)\b/,
   ],
 ];
@@ -29,9 +29,9 @@ export const chipTone = (value) => {
   // "Not started" is not "started"; "Not paid" or "Not delivered" still needs attention.
   if (/^not\b/.test(text)) return TONES[2][1].test(text.slice(3)) ? 'warning' : 'neutral';
   // Work under way, as In progress is: "In review" was amber in a claims list beside the same state in blue in the table
-  // next to it (2026-10-14). "Needs review" and a bare "Review" still need attention.
+  // next to it. "Needs review" and a bare "Review" still need attention.
   if (/^(in|under) review$/.test(text)) return 'info';
-  // Gear or a book that is out with someone, as Checked out is ("Out" was grey on a rental desk, 2026-10-14).
+  // Gear or a book that is out with someone, as Checked out is ("Out" was grey).
   if (/^(out|on hire|hired out|lent out)$/.test(text)) return 'info';
   for (const [tone, words] of TONES) if (words.test(text)) return tone;
   return 'neutral';

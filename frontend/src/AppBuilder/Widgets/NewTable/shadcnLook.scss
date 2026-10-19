@@ -15,7 +15,7 @@ $radius: var(--cc-radius-default, 6px);
   background: var(--cc-surface1-surface) !important;
   overflow: hidden;
   // The card hugs its rows: a page with fewer rows than the box holds ended the card in 60-220px of empty table above
-  // the pager (seven apps in one round, 2026-10-14). Now the pager follows the last row and the rest of the box is page
+  // the pager. Now the pager follows the last row and the rest of the box is page
   // space. The box is still the most it takes: more rows than fit scroll inside, as before.
   height: auto !important;
   max-height: 100% !important;
@@ -109,7 +109,7 @@ $radius: var(--cc-radius-default, 6px);
     }
   }
   // The last row drops its divider, as shadcn's data table does: above the footer's own rule it drew a second line a
-  // few pixels off, which read as a sliver of a hidden row (2026-10-14, five apps). Transparent, so heights hold.
+  // few pixels off, which read as a sliver of a hidden row. Transparent, so heights hold.
   tbody tr.table-row:last-of-type {
     border-bottom-color: transparent !important;
   }
@@ -316,7 +316,7 @@ $radius: var(--cc-radius-default, 6px);
 }
 
 // Status chips for html columns and Html blocks: <span class="tj-chip tj-chip-success">Paid</span>. Tinted from the
-// app theme's status colours, so one snippet reads right in light and dark mode (the fixed light tints a build wrote
+// app theme's status colours, so one snippet reads right in light and dark mode (fixed light tints
 // glowed on dark tables). Variants: success, warning, danger, info (a fixed blue) and neutral.
 .tj-chip {
   --chip: var(--cc-placeholder-text);
@@ -345,7 +345,7 @@ $radius: var(--cc-radius-default, 6px);
   --chip: var(--cc-error-systemStatus, #dc2626);
 }
 // Info is a fixed blue, as the pack's charts and map draw it: in the brand colour, Open and In progress read as Pending
-// under an orange theme and as Completed under a green one (helpdesk, pet salon, 2026-10-14).
+// under an orange theme and as Completed under a green one.
 .tj-chip-info {
   --chip: #2563eb;
 }
