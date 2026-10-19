@@ -74,7 +74,7 @@ const Markdown = React.memo(({ content }: { content: string }) => (
 Markdown.displayName = 'Markdown';
 
 const CopyButton = ({ value, align }: { value: string; align: 'start' | 'end' }) => {
-  const [copied, markCopied] = useCopied();
+  const [copied, markCopied] = useCopied(value);
   return (
     <button
       type="button"
