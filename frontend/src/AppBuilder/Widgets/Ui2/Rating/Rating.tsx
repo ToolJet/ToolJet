@@ -48,10 +48,10 @@ export const ShadRating = (props: WidgetProps) => {
     undefined,
     properties.defaultValue
   );
-  // A smaller maximum (or whole stars only) fits the rating the user gave, so what is exposed is what is drawn.
+  // A smaller maximum (or whole stars only) fits the rating the user gave, so what is exposed is what is drawn. It
+  // fits the value queued before it (an updater): a new default arriving in the same update has reset it already.
   useEffect(() => {
-    const fitted = M.normalizeRating(stored, max, half);
-    if (fitted !== stored) set(fitted);
+    if (M.normalizeRating(stored, max, half) !== stored) set((v) => M.normalizeRating(v, max, half));
   }, [stored, max, half, set]);
   useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
   const value = Math.min(Number(stored) || 0, max);

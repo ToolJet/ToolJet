@@ -55,10 +55,14 @@ export const ShadSlider = (props: WidgetProps) => {
     raw
   );
   // New bounds (a smaller maximum, a larger minimum) fit the value the user set, so what is exposed is what is drawn.
+  // It fits the value queued before it (an updater): a new default arriving in the same update has reset it already.
   useEffect(() => {
-    const fitted = sliderValues(value, bounds);
-    const next = isRange ? fitted : fitted[0];
-    if (JSON.stringify(next) !== JSON.stringify(value)) setValue(next);
+    const fit = (v: number | number[]) => {
+      const fitted = sliderValues(v, bounds);
+      return isRange ? fitted : fitted[0];
+    };
+    const same = (v: number | number[]) => JSON.stringify(fit(v)) === JSON.stringify(v);
+    if (!same(value)) setValue((v) => (same(v) ? v : fit(v)));
   }, [value, bounds, isRange, setValue]);
   latest.current = { bounds, isRange, initial, value };
   // A Form's clearForm sets it to its minimum (a range to minimum and minimum), as the native Range slider.
