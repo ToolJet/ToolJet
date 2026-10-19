@@ -9,7 +9,49 @@ import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { getSafeRenderableValue } from '../utils';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
+export const BoundedBox = ({
+  properties,
+  fireEvent,
+  darkMode,
+  setExposedVariable,
+  setExposedVariables,
+  height,
+  styles,
+  id,
+}) => {
+  const { visibility, disabledState } = properties;
+  const [isVisible, setIsVisible] = useState(visibility);
+  const [isDisabled, setIsDisabled] = useState(disabledState);
+
+  // A changed Visibility / Disable property wins over an earlier setVisibility / setDisable call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setIsDisabled(disabledState);
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      isDisabled: disabledState,
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+      setDisable: async function (value) {
+        setIsDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
@@ -183,7 +225,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   return (
     <div
       onMouseDown={(e) => e.stopPropagation()}
-      style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
+      style={{ display: isVisible ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
       className="bounded-box relative"
     >
       <Annotation
@@ -224,7 +266,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
           />
         )}
         renderContent={() => null}
-        disableAnnotation={styles.disabledState}
+        disableAnnotation={isDisabled}
       />
     </div>
   );

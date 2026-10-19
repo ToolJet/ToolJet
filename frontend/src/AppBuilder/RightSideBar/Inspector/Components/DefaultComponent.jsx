@@ -62,6 +62,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Calendar',
   'QrScanner',
   'Spinner',
+  'BoundedBox',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -225,6 +226,7 @@ export const baseComponentProperties = (
       'QrScanner',
       'Spinner',
       'Chart',
+      'BoundedBox',
     ],
     Layout: [],
   };

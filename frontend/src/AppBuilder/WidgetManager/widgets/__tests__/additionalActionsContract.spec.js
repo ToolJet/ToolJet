@@ -37,10 +37,11 @@ const CONTRACT = {
   QrScanner: ['visibility', 'disabledState'],
   Spinner: ['visibility'],
   Chart: ['visibility', 'disabledState', 'loadingState'],
+  BoundedBox: ['visibility', 'disabledState'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.
-const TOOLTIP_IN_PROPERTIES = ['Calendar', 'CustomComponent', 'QrScanner', 'Spinner', 'Chart'];
+const TOOLTIP_IN_PROPERTIES = ['Calendar', 'CustomComponent', 'QrScanner', 'Spinner', 'Chart', 'BoundedBox'];
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);
 const frontendWidgets = asList(frontendWidgetExports);

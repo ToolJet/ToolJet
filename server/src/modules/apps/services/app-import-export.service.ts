@@ -77,7 +77,8 @@ type PartialRevampedComponent =
   | 'RadioButtonV2'
   | 'QrScanner'
   | 'Spinner'
-  | 'Chart';
+  | 'Chart'
+  | 'BoundedBox';
 
 type NewRevampedComponent =
   | 'Text'
@@ -190,6 +191,7 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'QrScanner',
   'Spinner',
   'Chart',
+  'BoundedBox',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -291,6 +293,7 @@ const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Accordion',
   'AudioRecorder',
+  'BoundedBox',
   'Button',
   'ButtonGroupV2',
   'Calendar',
@@ -3060,6 +3063,24 @@ function migrateProperties(
     }
 
     if (componentType === 'Chart') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'BoundedBox') {
       for (const key of ['visibility', 'disabledState']) {
         if (styles[key]) {
           if (properties[key] === undefined) {
