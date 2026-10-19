@@ -37,18 +37,19 @@ export const tagClasses = (variant: unknown, mapped: boolean): string => {
 };
 
 /** How many tags fit on one line, leaving room for the +N chip when some do not (all when nothing is measured). The
- *  tags list is expected to keep its reference while unchanged: a new list measures again. */
+ *  tags list is expected to keep its reference while unchanged: a new list measures again. `row` is the row element
+ *  itself, not a ref, so a row mounted again (after a loading state) is measured and observed: with a ref the fit kept
+ *  watching the row that was there when the tags last changed. */
 export const useFit = (
   enabled: boolean,
   tags: string[],
-  rowRef: RefObject<HTMLDivElement>,
+  row: HTMLDivElement | null,
   measureRef: RefObject<HTMLDivElement>
 ): number => {
   const [fit, setFit] = useState(tags.length);
   useLayoutEffect(() => {
     if (!enabled) return undefined;
     const measure = () => {
-      const row = rowRef.current;
       const probe = measureRef.current;
       if (!row || !probe) return;
       const available = row.clientWidth;
@@ -70,18 +71,18 @@ export const useFit = (
       setFit(Math.max(0, n));
     };
     measure();
-    if (typeof ResizeObserver === 'undefined' || !rowRef.current) return undefined;
+    if (typeof ResizeObserver === 'undefined' || !row) return undefined;
     const observer = new ResizeObserver(measure);
-    observer.observe(rowRef.current);
+    observer.observe(row);
     return () => observer.disconnect();
-  }, [enabled, tags, rowRef, measureRef]);
+  }, [enabled, tags, row, measureRef]);
   return enabled ? Math.min(fit, tags.length) : tags.length;
 };
 
 export const ShadTags = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
   const ref = useRef<HTMLDivElement>(null);
-  const rowRef = useRef<HTMLDivElement>(null);
+  const [row, setRow] = useState<HTMLDivElement | null>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const source = useStable(p.tags);
@@ -90,7 +91,7 @@ export const ShadTags = (props: WidgetProps) => {
   useExposed(setExposedVariables, p, { lastClickedTag: last, tags });
   const hasClick = useHasEvent(id, 'onTagClicked');
   const single = p.overflow === 'single';
-  const shown = useFit(single, tags, rowRef, measureRef);
+  const shown = useFit(single, tags, row, measureRef);
   const variant = ['soft', 'outline', 'solid'].includes(p.variant) ? p.variant : 'soft';
   const size = own(TAG_SIZE, p.size) || TAG_SIZE.default;
   const radius = p.pill === true ? 'tw-rounded-full' : 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
@@ -151,7 +152,7 @@ export const ShadTags = (props: WidgetProps) => {
     body = (
       <div className="tw-relative">
         <div
-          ref={rowRef}
+          ref={setRow}
           className={cn('tw-flex', single ? 'tw-flex-nowrap tw-overflow-hidden' : 'tw-flex-wrap')}
           style={GAP_STYLE}
           aria-label="Tags"
