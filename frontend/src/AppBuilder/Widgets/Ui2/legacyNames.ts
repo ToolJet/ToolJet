@@ -1,7 +1,9 @@
 // Names the UI 2.0 widgets used before their names were settled (NAMING.md), and the name each one became. Apps saved
-// with an old name are rewritten by the server's data migration (server/data-migrations/*RenameUi2PackNames.ts) and on
-// import; normalizeLegacyNames below covers anything loaded without that (a restored version, a git pull).
-// The server keeps its own copy (server/src/modules/apps/services/ui2-legacy-names.ts); a spec checks they agree.
+// with an old name are rewritten by the server: the data migration (server/data-migrations/*RenameUi2PackNames.ts) and
+// import, which git sync goes through too; nothing renames at load. This copy is read by specs: packConfigs.spec keeps
+// retired names out of the configs, and the compat guard (__tests__/compat) takes a removed name as renamed only when
+// it is mapped here. The server keeps its own copy (server/src/modules/apps/services/ui2-legacy-names.ts); a spec
+// checks they agree.
 //
 // A rename maps an old name to the name that replaces it; where both names fired or held the same thing, only the
 // replacement is left. An exposed value may map to a path ('lastCardMovement.card').
