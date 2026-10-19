@@ -2,6 +2,9 @@ import React from 'react';
 import { renderElement } from '../Utils';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
+// eslint-disable-next-line import/no-unresolved
+import i18next from 'i18next';
 
 export const CustomComponent = function CustomComponent({
   dataQueries,
@@ -9,11 +12,15 @@ export const CustomComponent = function CustomComponent({
   paramUpdated,
   componentMeta,
   components,
+  currentState,
   darkMode,
   layoutPropertyChanged,
 }) {
   const code = component.component.definition.properties.code;
   const args = component.component.definition.properties.data;
+  const additionalActions = Object.keys(componentMeta?.properties ?? {}).filter(
+    (key) => componentMeta.properties[key]?.section === 'additionalActions'
+  );
   let items = [];
 
   items.push({
@@ -45,6 +52,26 @@ export const CustomComponent = function CustomComponent({
         hideSuggestion={true}
         canRefresh={true}
       />
+    ),
+  });
+
+  items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
+    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    isOpen: true,
+    children: additionalActions.map((property) =>
+      renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        components,
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
+      )
     ),
   });
 

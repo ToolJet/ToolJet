@@ -1,10 +1,10 @@
 import { MigrationProgress, deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-const MIGRATION_NAME = 'MoveCalendarVisibilityToProperties';
-const TYPE = 'Calendar';
+const MIGRATION_NAME = 'MigrateVisibilityTooltipForCustomComponent';
+const TYPE = 'CustomComponent';
 
-export class MoveCalendarVisibilityToProperties1792357383563 implements MigrationInterface {
+export class MigrateVisibilityTooltipForCustomComponent1792382391104 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 100;
     let offset = 0;
@@ -15,17 +15,17 @@ export class MoveCalendarVisibilityToProperties1792357383563 implements Migratio
     const totalComponents = parseInt(countResult[0].count, 10);
 
     if (totalComponents === 0) {
-      console.log(`${MIGRATION_NAME}: [SUCCESS] No Calendar components found. | Total: 0`);
+      console.log(`${MIGRATION_NAME}: [SUCCESS] No CustomComponent components found. | Total: 0`);
       return;
     }
 
     console.log(
-      `${MIGRATION_NAME}: [START] Move Calendar visibility from styles to properties | Total: ${totalComponents}`
+      `${MIGRATION_NAME}: [START] Migrate CustomComponent visibility/tooltip + backfill tooltipFormat | Total: ${totalComponents}`
     );
     const migrationProgress = new MigrationProgress(MIGRATION_NAME, totalComponents);
     while (hasMoreData) {
       const components = await queryRunner.query(
-        `SELECT id, properties, styles
+        `SELECT id, properties, styles, general_properties
                      FROM components
                      WHERE type = $1
                      ORDER BY "created_at" ASC
@@ -42,8 +42,9 @@ export class MoveCalendarVisibilityToProperties1792357383563 implements Migratio
       offset += batchSize;
     }
 
-    // Calendar's visibility moved from styles to properties — a structural change to the component
-    // definition. Invalidate app version history so stale undo/redo snapshots don't resurrect the old shape.
+    // CustomComponent's visibility/tooltip moved into properties and tooltipFormat was backfilled —
+    // a structural change to the component definition. Invalidate app version history so stale
+    // undo/redo snapshots don't resurrect the old shape.
     const versions: { app_version_id: string }[] = await queryRunner.query(
       `SELECT DISTINCT p.app_version_id FROM components c
          INNER JOIN pages p ON c.page_id = p.id WHERE c.type = $1`,
@@ -56,7 +57,7 @@ export class MoveCalendarVisibilityToProperties1792357383563 implements Migratio
     );
 
     console.log(
-      `${MIGRATION_NAME}: [SUCCESS] Move Calendar visibility from styles to properties finished. Updated ${totalUpdated} components.`
+      `${MIGRATION_NAME}: [SUCCESS] Migrate CustomComponent visibility/tooltip + backfill tooltipFormat finished. Updated ${totalUpdated} components.`
     );
   }
 
@@ -68,27 +69,43 @@ export class MoveCalendarVisibilityToProperties1792357383563 implements Migratio
     let updatedCount = 0;
 
     for (const component of components) {
-      migrationProgress.show();
-
       const properties = component.properties ? { ...component.properties } : {};
       const styles = component.styles ? { ...component.styles } : {};
-
-      if (styles.visibility === undefined) continue;
+      const general = component.general_properties ? { ...component.general_properties } : {};
 
       // visibility: styles → properties. Only fill the target when unset so a value the user
       // may already have on properties is preserved; always drop the stale styles key.
-      if (properties.visibility === undefined) {
-        properties.visibility = styles.visibility;
+      if (styles.visibility !== undefined) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
       }
-      delete styles.visibility;
 
-      await queryRunner.query(`UPDATE components SET properties = $1, styles = $2 WHERE id = $3`, [
-        JSON.stringify(properties),
-        JSON.stringify(styles),
-        component.id,
-      ]);
+      // tooltip: general_properties → properties (same preserve-then-delete rule).
+      if (general?.tooltip !== undefined) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+
+      // tooltipFormat: new property that pairs with the properties-based tooltip. Existing
+      // CustomComponents predate it, so backfill the default when absent.
+      if (properties.tooltipFormat === undefined) {
+        properties.tooltipFormat = { value: 'plainText' };
+      }
+
+      await queryRunner.query(
+        `UPDATE components
+           SET properties = $1, styles = $2, general_properties = $3
+           WHERE id = $4`,
+        [JSON.stringify(properties), JSON.stringify(styles), JSON.stringify(general), component.id]
+      );
 
       updatedCount++;
+
+      migrationProgress.show();
     }
 
     return updatedCount;

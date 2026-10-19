@@ -289,6 +289,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'ColorPicker',
   'Container',
   'CurrencyInput',
+  'CustomComponent',
   'DatePickerV2',
   'DaterangePicker',
   'DatetimePickerV2',
@@ -2983,6 +2984,22 @@ function migrateProperties(
           properties.visibility = styles.visibility;
         }
         delete styles.visibility;
+      }
+    }
+
+    if (componentType === 'CustomComponent') {
+      if (styles.visibility) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
       }
     }
   }

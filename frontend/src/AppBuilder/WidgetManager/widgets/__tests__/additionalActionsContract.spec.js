@@ -33,7 +33,11 @@ const CONTRACT = {
   FlexContainer: ['visibility', 'disabledState', 'loadingState'],
   Timeline: ['visibility'],
   Calendar: ['visibility'],
+  CustomComponent: ['visibility'],
 };
+
+// Widgets migrated off the universal `general.tooltip` as part of this pass.
+const TOOLTIP_IN_PROPERTIES = ['CustomComponent'];
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);
 const frontendWidgets = asList(frontendWidgetExports);
@@ -56,6 +60,15 @@ describe.each([
       });
       expect(config().definition.properties.collapseWhenHidden).toEqual({ value: '{{false}}' });
     });
+
+    if (TOOLTIP_IN_PROPERTIES.includes(component)) {
+      test('keeps tooltip and tooltipFormat in Additional Actions', () => {
+        expect(config().properties.tooltipFormat).toMatchObject({ type: 'switch', section: 'additionalActions' });
+        expect(config().properties.tooltip).toMatchObject({ type: 'code', section: 'additionalActions' });
+        expect(config().definition.properties.tooltip).toEqual({ value: '' });
+        expect(config().definition.properties.tooltipFormat).toEqual({ value: 'plainText' });
+      });
+    }
 
     test.each(stateProps)('%s lives in Additional Actions with its CSA and exposed variable', (prop) => {
       const { action, exposed } = STATE_PROPS[prop];

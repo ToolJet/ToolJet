@@ -5,16 +5,35 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
 export const CustomComponent = (props) => {
-  const { height, properties, styles, id, setExposedVariable, dataCy } = props;
+  const { height, properties, styles, id, setExposedVariable, setExposedVariables, dataCy } = props;
   const exposedVariables = useStore((state) => state.getExposedValueOfComponent(id), shallow);
   const onEvent = useStore((state) => state.eventsSlice.onEvent, shallow);
-  const { visibility, boxShadow, borderColor, borderRadius } = styles;
-  const { code, data } = properties;
+  const { boxShadow, borderColor, borderRadius } = styles;
+  const { code, data, visibility } = properties;
+  const [isVisible, setIsVisible] = useState(visibility);
   const [customProps, setCustomProps] = useState(data);
   const iFrameRef = useRef(null);
   const messageEventListenerRef = useRef(null);
 
   const customPropRef = useRef(data);
+
+  // A Visibility property change wins over an earlier setVisibility call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setCustomProps(data);
@@ -158,7 +177,7 @@ export const CustomComponent = (props) => {
       className="card"
       style={{
         '--cc-custom-component-border-color': borderColor,
-        display: visibility ? '' : 'none',
+        display: isVisible ? '' : 'none',
         height,
         boxShadow,
         border: `1px solid var(--cc-custom-component-border-color) !important`,
