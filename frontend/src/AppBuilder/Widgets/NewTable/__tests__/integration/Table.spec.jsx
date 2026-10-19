@@ -3793,3 +3793,100 @@ describe('Table: multiselect column dropdown', () => {
     }
   );
 });
+
+describe('Table: column cell click event', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const cellClickEvent = (columnId, key) => ({
+    id: `evt-cell-click-${columnId}`,
+    name: 'onCellClicked',
+    index: 0,
+    sourceId: ID,
+    target: 'table_column',
+    event: { ref: columnId, eventId: 'onCellClicked', actionId: 'set-custom-variable', key, value: '{{true}}' },
+  });
+
+  test('[Table-COLEVENT-001] clicking a cell fires that column onCellClicked handlers and exposes selectedCell', async () => {
+    widget.render({ events: [cellClickEvent('col-email', 'emailCellClicked')] });
+    await waitFor(() => expect(cell('email', 1)).toBeInTheDocument());
+
+    rtlFireEvent.click(cell('email', 1));
+
+    await waitFor(() => expect(store().getVariable('emailCellClicked', MODULE_ID)).toBe(true));
+    expect(exposed('selectedCell')).toMatchObject({
+      columnName: 'email',
+      columnKey: 'email',
+      value: 'grace@example.com',
+    });
+  });
+
+  test('[Table-COLEVENT-002] clicking a cell of another column does not fire a column onCellClicked handler', async () => {
+    widget.render({
+      events: [cellClickEvent('col-email', 'emailCellClicked'), cellClickEvent('col-age', 'ageCellClicked')],
+    });
+    await waitFor(() => expect(cell('age', 0)).toBeInTheDocument());
+
+    rtlFireEvent.click(cell('age', 0));
+
+    await waitFor(() => expect(store().getVariable('ageCellClicked', MODULE_ID)).toBe(true));
+    expect(store().getVariable('emailCellClicked', MODULE_ID)).toBeUndefined();
+  });
+
+  test.each([
+    ['link', { name: 'site', key: 'site', id: 'col-site', columnType: 'link', columnSize: 160 }],
+    ['datepicker', { name: 'site', key: 'site', id: 'col-site', columnType: 'datepicker', columnSize: 160 }],
+  ])('[Table-COLEVENT-004] a %s column does not fire onCellClicked handlers', async (_type, column) => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, site: '2026-01-01' }])}}}`),
+        columns: { value: [column] },
+      },
+      events: [cellClickEvent('col-site', 'siteCellClicked')],
+    });
+    await waitFor(() => expect(cell('site', 0)).toBeInTheDocument());
+
+    rtlFireEvent.click(cell('site', 0));
+    await drain();
+
+    expect(exposed('selectedCell')).toMatchObject({ columnKey: 'site' });
+    expect(store().getVariable('siteCellClicked', MODULE_ID)).toBeUndefined();
+  });
+
+  test('[Table-COLEVENT-003] toggling a toggle column does not fire onCellClicked handlers of other columns', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, name: 'Ada', flag: false }])}}}`),
+        columns: {
+          value: [
+            { name: 'name', key: 'name', id: 'col-name', columnType: 'string', columnSize: 120 },
+            { name: 'flag', key: 'flag', id: 'col-flag', columnType: 'toggle', columnSize: 100, isEditable: true },
+          ],
+        },
+      },
+      events: [
+        cellClickEvent('col-name', 'nameCellClicked'),
+        {
+          id: 'evt-toggle',
+          name: 'onChange',
+          index: 0,
+          sourceId: ID,
+          target: 'table_column',
+          event: {
+            ref: 'flag',
+            eventId: 'onChange',
+            actionId: 'set-custom-variable',
+            key: 'toggleFired',
+            value: '{{true}}',
+          },
+        },
+      ],
+    });
+    await waitFor(() => expect(cell('flag', 0)?.querySelector('input[type="checkbox"]')).toBeInTheDocument());
+
+    rtlFireEvent.click(cell('flag', 0).querySelector('input[type="checkbox"]'));
+
+    await waitFor(() => expect(store().getVariable('toggleFired', MODULE_ID)).toBe(true));
+    expect(store().getVariable('nameCellClicked', MODULE_ID)).toBeUndefined();
+  });
+});
