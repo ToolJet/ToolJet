@@ -1,6 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
-import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
@@ -24,7 +30,9 @@ export const ShadCarousel = (props: WidgetProps) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent, height, currentMode } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
-  const slides = carouselSlides(properties.slides);
+  // Normalised once per slides value, not on every render (a variable update elsewhere re-renders the widget).
+  const rawSlides = useStable(properties.slides);
+  const slides = useMemo(() => carouselSlides(rawSlides), [rawSlides]);
   const perView = Math.min(clampUnwrapped(properties.slidesPerView, 1, 4, 1), Math.max(1, slides.length));
   const positions = carouselPositions(slides.length, perView);
   const loop = properties.loop !== false;
@@ -45,6 +53,11 @@ export const ShadCarousel = (props: WidgetProps) => {
   // The image URL that failed, by slide: a slide shows its image again when new data brings another URL.
   const [failed, setFailed] = useState<Record<number, string>>({});
   const [hovered, setHovered] = useState(false);
+  // Keyboard focus anywhere in the carousel pauses autoplay, as hovering does (WCAG 2.2.2): slides do not move away
+  // from someone reading or operating them. Focus a click brings (on a slide, an arrow) does not: autoplay would
+  // otherwise stay stopped after the mouse left until something else was clicked.
+  const [focused, setFocused] = useState(false);
+  const pointerFocus = useRef(false);
   const disabled = busy(properties);
   const live = useLatest({ positions, loop, slides });
 
@@ -66,8 +79,14 @@ export const ShadCarousel = (props: WidgetProps) => {
   });
 
   const latestGo = useLatest(go);
+  // A hidden carousel does not play either: nobody sees its slides change, and each change fires onSlideChanged.
   const autoplay =
-    properties.autoplay === true && positions > 1 && !disabled && !(properties.pauseOnHover !== false && hovered);
+    properties.autoplay === true &&
+    positions > 1 &&
+    !disabled &&
+    properties.visibility !== false &&
+    !focused &&
+    !(properties.pauseOnHover !== false && hovered);
   const interval = clampUnwrapped(properties.interval, 1000, 600000, 5000);
   useEffect(() => {
     if (!autoplay) return undefined;
@@ -78,8 +97,14 @@ export const ShadCarousel = (props: WidgetProps) => {
     return () => clearInterval(timer);
   }, [autoplay, interval, live, latestGo]);
 
-  // Swipes: a horizontal drag of 40px or more moves a slide, and is not a click.
-  const drag = useRef<{ x: number | null; swiped: boolean }>({ x: null, swiped: false });
+  // Swipes: a horizontal drag of 40px or more moves a slide, and is not a click. The swipe belongs to the pointer that
+  // started it: a second finger landing meanwhile (not the primary pointer) neither restarts it nor ends it. A new
+  // primary pointer starts afresh, since the last one may have been released outside the carousel.
+  const drag = useRef<{ x: number | null; pointer: number | null; swiped: boolean }>({
+    x: null,
+    pointer: null,
+    swiped: false,
+  });
   const ratio = aspectRatio(properties.aspectRatio);
   const fill = ratio === null;
   const caption = ['overlay', 'below', 'none'].includes(properties.captionPosition)
@@ -132,6 +157,9 @@ export const ShadCarousel = (props: WidgetProps) => {
         )}
         style={fill ? { height } : undefined}
         onKeyDown={(e) => {
+          // A key pressed in the carousel is keyboard use, even where a click brought focus.
+          pointerFocus.current = false;
+          setFocused(true);
           // Disabled, the arrow keys do nothing, as the arrow buttons and swipes.
           if (disabled) return;
           if (e.key === 'ArrowLeft') {
@@ -144,11 +172,25 @@ export const ShadCarousel = (props: WidgetProps) => {
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        onFocus={() => {
+          setFocused(!pointerFocus.current);
+          pointerFocus.current = false;
+        }}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+        }}
         onPointerDown={(e) => {
-          drag.current = { x: e.clientX, swiped: false };
+          pointerFocus.current = true;
+          if (drag.current.x !== null && e.isPrimary === false) return;
+          drag.current = { x: e.clientX, pointer: e.pointerId, swiped: false };
+        }}
+        onPointerCancel={(e) => {
+          if (e.pointerId === drag.current.pointer) drag.current.x = null;
         }}
         onPointerUp={(e) => {
           const start = drag.current.x;
+          if (e.pointerId !== drag.current.pointer) return;
+          drag.current.x = null;
           if (start === null || start === undefined || disabled) return;
           const dx = e.clientX - start;
           if (Math.abs(dx) >= 40) {
@@ -156,7 +198,6 @@ export const ShadCarousel = (props: WidgetProps) => {
             go(indexRef.current + (dx < 0 ? 1 : -1));
             setTimeout(() => (drag.current.swiped = false), 0);
           }
-          drag.current.x = null;
         }}
       >
         <div className={cn('tw-relative tw-overflow-hidden', SLIDE_RADIUS, fill && 'tw-min-h-0 tw-flex-1')}>
