@@ -3,8 +3,8 @@
 //   Tailwind class would silently do nothing, or pick up a Bootstrap class of the same name.
 // - No `!important` in the pack's styles, except the one documented rule in shadcn.scss (a global !important to undo).
 // - Widgets do not reach into the canvas's DOM (its wrappers and layout attributes) to size themselves: the canvas
-//   passes width, height and boxFit as props, and rows size through the reflow. One exception, an open question for
-//   the app builder team: Stat equalises a row of Stat cards by reading their FlexContainer wrapper (Stat/statRow.ts).
+//   passes width, height, boxFit and boxStretch as props, and rows size through the reflow (a row of Stat cards lines
+//   up through its FlexContainer's Equal heights option).
 // - Enter is read through _shared/keyboard.ts (isEnter), never compared directly.
 // - A 16px box (a check box, an option's icon or tick, a flag) takes the capped ui2-xs radius, not the theme-scaled
 //   ui2-sm: at a theme radius of 12px, ui2-sm is 8px and the box draws as a circle, a check box that reads as a radio.
@@ -88,7 +88,7 @@ describe('UI 2.0 widget code rules', () => {
   it("does not read the canvas's DOM to size a widget", () => {
     const CANVAS = /flex-child-wrapper|canvas-component|draggable-widget|data-layout-context|['"`.]ele-/;
     const found = sources.filter((file) => CANVAS.test(fs.readFileSync(file, 'utf8'))).map(rel);
-    expect(found).toEqual(['Stat/Stat.tsx']);
+    expect(found).toEqual([]);
   });
 
   // Release audit round 2: the Enter that confirms an IME composition (Japanese, Chinese, Korean input) is not the user

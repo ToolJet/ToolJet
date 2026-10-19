@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -10,7 +10,6 @@ import { progressPercent, sparkPaths, splitChange, statSize, statValue } from '.
 import { compactFigure } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import { joinStatRow } from './statRow';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { isSet, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { useSvgId } from '@/AppBuilder/Widgets/Ui2/_shared/svgId';
@@ -87,7 +86,7 @@ export const ShadStat = (props: WidgetProps) => {
   // The native Statistics' setters: the figure (primary) and the change (secondary), until those properties change.
   const [properties, override] = useOverrides(props.properties);
   const ref = useRef<HTMLDivElement>(null);
-  useAutoHeight(props, ref);
+  const bodyRef = useRef<HTMLDivElement>(null);
   useExposed(setExposedVariables, properties, {
     primaryLabel: toText(properties.label),
     primaryValue: typeof properties.value === 'number' ? properties.value : toText(properties.value),
@@ -106,36 +105,11 @@ export const ShadStat = (props: WidgetProps) => {
   // footnote that wrapped past the box cut the card's bottom edge off. It keeps two lines, the rest in its title. An
   // auto-height box keeps fitting the content (the card is not stretched there, or the height could only grow).
   const fixed = !(fitsContentInView(props.componentType, properties) && props.currentMode === 'view');
-  // Stats side by side in a row share one height: each reports its content's natural height (the content plus the
-  // card's padding and border, never the stretched card) and takes the row's tallest as its minimum (statRow.ts).
-  const evenRow = !fixed && properties.card !== false;
-  const cardRef = useRef<HTMLDivElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const [rowMin, setRowMin] = useState(0);
-  useLayoutEffect(() => {
-    const card = cardRef.current;
-    const content = bodyRef.current;
-    const container = ref.current?.closest('.flex-child-wrapper')?.parentElement;
-    if (!evenRow || !card || !content || !container) return undefined;
-    if (!getComputedStyle(container).flexDirection.startsWith('row')) return undefined;
-    const member = joinStatRow(container, setRowMin);
-    const measure = () => {
-      const cs = getComputedStyle(card);
-      const chrome = (['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'] as const).reduce(
-        (sum, key) => sum + (parseFloat(cs[key]) || 0),
-        0
-      );
-      member.report(content.offsetHeight + chrome);
-    };
-    measure();
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
-    observer?.observe(content);
-    return () => {
-      observer?.disconnect();
-      member.leave();
-      setRowMin(0);
-    };
-  }, [evenRow]);
+  // Stats side by side in an Equal heights row share one height: the FlexContainer stretches each Stat's box to the
+  // tallest child on its line (boxStretch) and the card fills it. The reflow still measures the Stat at its own content
+  // height, so the auto height watches the content, which keeps its natural height inside the stretched card.
+  const stretched = !fixed && properties.card !== false && !!props.boxStretch;
+  useAutoHeight(props, stretched ? bodyRef : ref);
   // Optional parts: an icon (a tinted tile at the right of the label, at the left of the whole figure, or on top), a
   // context line beside the change ("vs last month"), a trend line and a progress bar. Each shows only when set.
   const icon = typeof properties.icon === 'string' && properties.icon.trim() ? properties.icon.trim() : '';
@@ -266,25 +240,19 @@ export const ShadStat = (props: WidgetProps) => {
       content
     );
   return (
-    <Shell {...props} innerRef={ref}>
+    <Shell {...props} innerRef={ref} className={stretched ? 'tw-h-full' : undefined}>
       {properties.card === false ? (
         body
       ) : (
         <Card
-          ref={cardRef}
           className={cn(
             'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-[color:var(--lk-bg,var(--sc-card))] tw-px-6 tw-py-5',
-            fixed && 'tw-flex tw-flex-col tw-overflow-hidden'
+            fixed && 'tw-flex tw-flex-col tw-overflow-hidden',
+            stretched && 'tw-h-full'
           )}
-          style={
-            fixed && Number(props.height) > 0
-              ? { height: Number(props.height) }
-              : evenRow && rowMin > 0
-              ? { minHeight: rowMin }
-              : undefined
-          }
+          style={fixed && Number(props.height) > 0 ? { height: Number(props.height) } : undefined}
         >
-          {evenRow ? <div ref={bodyRef}>{body}</div> : body}
+          {stretched ? <div ref={bodyRef}>{body}</div> : body}
         </Card>
       )}
     </Shell>

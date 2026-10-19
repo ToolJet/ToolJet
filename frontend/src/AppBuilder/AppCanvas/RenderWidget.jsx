@@ -112,6 +112,7 @@ const RenderWidget = ({
   currentMode,
   currentLayout,
   boxFit,
+  boxStretch,
 }) => {
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
@@ -393,6 +394,7 @@ const RenderWidget = ({
             {...obj}
             currentLayout={currentLayout}
             boxFit={boxFit}
+            boxStretch={boxStretch}
             setExposedVariable={setExposedVariable}
             setExposedVariables={setExposedVariables}
             height={widgetHeight - 4}

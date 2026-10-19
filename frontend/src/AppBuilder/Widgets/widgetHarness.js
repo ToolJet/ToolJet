@@ -92,7 +92,15 @@ export function widgetProps(
   // `currentMode` is overridable because several widgets gate view-only
   // behaviour on it (RadioButtonV2's dynamic height, for one), and the editor
   // path must stay the default.
-  { darkMode = false, widgetHeight = 40, widgetWidth = 200, currentMode = 'edit', boxFit, subContainerIndex } = {}
+  {
+    darkMode = false,
+    widgetHeight = 40,
+    widgetWidth = 200,
+    currentMode = 'edit',
+    boxFit,
+    boxStretch,
+    subContainerIndex,
+  } = {}
 ) {
   return {
     id,
@@ -105,6 +113,7 @@ export function widgetProps(
     inCanvas: true,
     darkMode,
     ...(boxFit && { boxFit }),
+    ...(boxStretch && { boxStretch }),
     ...(subContainerIndex !== undefined && { subContainerIndex }),
     onOptionChange: () => {},
     onOptionsChange: () => {},
@@ -219,6 +228,7 @@ export function createWidgetHarness({
     darkMode = false,
     currentMode = 'edit',
     boxFit,
+    boxStretch,
     subContainerIndex,
     afterSeed,
     also = defaultAlso,
@@ -271,6 +281,7 @@ export function createWidgetHarness({
             widgetWidth,
             currentMode,
             boxFit,
+            boxStretch,
             subContainerIndex,
           })}
         />

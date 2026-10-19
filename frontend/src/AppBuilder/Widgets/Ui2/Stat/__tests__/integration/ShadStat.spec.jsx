@@ -121,6 +121,36 @@ describe('UI 2.0 Stat', () => {
     expect(root(container).firstChild.style.height).toBe('156px');
   });
 
+  // KPI cards side by side came out at different heights (a change chip wrapped in the narrower ones). In an Equal
+  // heights row the FlexContainer stretches each Stat's box to the tallest child on its line (boxStretch) and the card
+  // fills it, its content keeping its own height for the reflow; the Stat reads nothing from its parent.
+  test('[ShadStat-LAYOUT-001] in a box stretched by an Equal heights row the card fills the box', async () => {
+    const { container } = render({ boxStretch: true, properties: { change: binding('+8 vs last week') } });
+
+    await screen.findByText('$12,400');
+    expect(root(container)).toHaveClass('tw-h-full');
+    const card = root(container).firstChild;
+    expect(card).toHaveClass('tw-h-full');
+    expect(card.style.minHeight).toBe('');
+    // The content sits in its own block inside the card, at its natural height.
+    expect(card.firstChild).not.toHaveClass('tw-h-full');
+    expect(card.firstChild).toContainElement(screen.getByText('Revenue'));
+  });
+
+  test('[ShadStat-LAYOUT-002] keeps its own height when the box is not stretched, without its card, or in a fixed box', async () => {
+    for (const options of [
+      {},
+      { boxStretch: true, properties: { card: binding('{{false}}') } },
+      { boxStretch: true, properties: { dynamicHeight: binding('{{false}}') } },
+      { boxStretch: true, currentMode: 'edit' },
+    ]) {
+      const { container } = render(options);
+      await screen.findByText('$12,400');
+      expect(root(container)).not.toHaveClass('tw-h-full');
+      expect(container.querySelector('.tw-h-full')).toBeNull();
+    }
+  });
+
   test('[ShadStat-PROP-006] icon draws the named icon in a square tile at the right of the label', async () => {
     const { container } = render({ properties: { icon: binding('wallet') } });
 
