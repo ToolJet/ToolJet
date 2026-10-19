@@ -7,8 +7,8 @@ checks the rules below against every config.
 ## Rules
 
 1. **One name per thing.** An event, action, exposed value or property has exactly one name. No second name for the
-   same thing, no runtime aliases (the older `visibility()`, `disable()` and `loading()` are gone; every widget has
-   `setVisibility`, `setDisable` and `setLoading`).
+   same thing and no runtime aliases: every widget's control actions are `setVisibility`, `setDisable` and
+   `setLoading`.
 2. **The native widget's name** where the UI 2.0 widget has a native counterpart: ListView uses Listview's
    `onRecordClicked`, `selectedRecord` and `selectedRecordId`; Kanban uses `onCardSelected`, `updatedCardData`,
    `lastCardMovement`; Select and the pickers fire `onSelect`; Radio group fires `onSelectionChange`. Where the native
@@ -27,13 +27,6 @@ checks the rules below against every config.
 Two events on one widget may both fire for one click only when they mean different things (Checkbox `onChange` and
 `onCheck`; Button group `onClick` and, when the selection changed, `onChange`; Accordion `onExpand`/`onCollapse` and
 `onChange`).
-
-## Retired names
-
-The names used before these rules are in `legacyNames.ts` (old name to new). Saved apps are rewritten by the server
-data migration `server/data-migrations/*-RenameUi2PackNames.ts`, and exported apps on import
-(`server/src/modules/apps/services/ui2-legacy-names.ts`, the same table; a spec checks the copies agree). The MCP
-catalog, its lint and the agent's page compiler use only the current names.
 
 ## Event dispatch
 

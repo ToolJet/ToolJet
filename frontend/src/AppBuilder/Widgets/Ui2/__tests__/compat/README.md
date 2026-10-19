@@ -26,12 +26,11 @@ saved value it rejects falls back to the default. One that only loosens is accep
 When `contracts.spec.js` fails:
 
 - **Something was added.** Run `npm run ui2:contracts` and commit `Ui2/__contracts__`.
-- **Something was renamed.** Map the old name to the new one in `legacyNames.ts` and its server copy, and add a data
-  migration in `server/data-migrations` that rewrites saved apps (start from `*-RenameUi2PackNames.ts`; never edit a
-  migration that shipped). Put `Ui2` in the migration's file name so layer 2 replays it. Then run
-  `npm run ui2:contracts`.
+- **Something was removed or renamed.** Put the old name back. A released name stays as it is.
 - **A break is intended** (a default that was wrong, a removed widget). Add an entry with its reason to
-  `Ui2/__contracts__/acceptedBreaks.json`, as the failure message shows, then run `npm run ui2:contracts`.
+  `Ui2/__contracts__/acceptedBreaks.json`, as the failure message shows, then run `npm run ui2:contracts`. Where saved
+  apps need rewriting, add a data migration in `server/data-migrations` (never edit one that shipped), with `Ui2` in its
+  file name so layer 2 replays it.
 
 The script refuses the same changes the spec refuses, so the files cannot be regenerated past a break.
 
@@ -43,9 +42,9 @@ button; a trigger button whose click handlers call each of its actions with argu
 by component id and by name; and a RunJS query that calls each action and reads each value by name. The names are the
 ones that release's configs had.
 
-`integration/savedApps.spec.jsx` runs every fixture through import's rename (`applyUi2RenamesToImport`) and through every
-`server/data-migrations/*Ui2*.ts` migration on a stand-in database (`compat/migrationReplay.js`); the two must give the
-same app. It loads the result into the real store with `createWidgetHarness`, renders it in view mode, and fails on:
+`integration/savedApps.spec.jsx` runs every fixture through every `server/data-migrations/*Ui2*.ts` migration on a
+stand-in database (`compat/migrationReplay.js`); a page saved with the current names must come through unchanged. It
+loads the result into the real store with `createWidgetHarness`, renders it in view mode, and fails on:
 
 - a widget that renders "This widget is not available";
 - any console error or warning (the console guard every UI 2.0 spec gets from `ui2Harness.js`);
@@ -77,25 +76,10 @@ or changed one. If a widget's behaviour changes on purpose, the oracle may be re
    Recording fills only oracles marked pending.
 3. Run the spec again without the variable, twice, to see it is stable; commit the new folder and `manifest.json`.
 
-Seeded sets: `pre-rename` (the `staging/ui2-auto` configs before the names were settled; every event and action that
-saved apps on the local copy of staging used on these widgets is in them) and `current`.
+Seeded set: `current`.
 
-### Saved-app scenarios
-
-`scenarios/<name>.json` are hand-written saved apps for shapes the per-widget fixtures do not cover, replayed by
-`integration/savedAppScenarios.spec.jsx` through the same import and migrations. Their `<name>.oracle.json` holds what a
-correct upgrade gives, written by hand rather than recorded, so a rename that misses fails instead of becoming the
-expected result: the saved text afterwards (`static`), keys the app owns (`ownKeys`), and, loaded and rendered, bindings
-(`resolved`), exposed values, RunJS results and fired events. A scenario the product does not pass yet says so with
-`knownFailing` (owner and reason) and runs as `test.failing`, which turns red the day it is fixed.
-
-- `expressions`: a pre-rename Date picker read and called through bracket, comment-split, optional and run-time
-  references, in bindings and RunJS, beside plain text that only mentions a reference. Known failing.
-- `expression-shapes`: Codex's import edge cases on a pre-rename Tags input, checked as saved code after import: row
-  references with a fixed, dynamic and computed index, optional access, text in string and template literals, a call
-  with a comment before its parentheses, an action taken as a value, and a plain call. Known failing.
-- `proto-key`: own `__proto__` keys in a saved Table row and a query body. Known failing.
-- `mixed`: native TextInput, Button and Text with UI 2.0 widgets, bound to and calling each other.
+The FlexContainer layout-version migration is replayed on its own (`compat/flexLayoutVersionReplay.spec.js`), as no
+fixture has a FlexContainer.
 
 ## 3. Visual
 
