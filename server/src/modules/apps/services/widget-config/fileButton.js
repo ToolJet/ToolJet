@@ -254,6 +254,12 @@ export const fileButtonConfig = {
     //   validation: { schema: { type: 'string' }, defaultValue: 'auto' },
     //   accordian: 'button',
     // },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+      accordian: 'button',
+    },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
@@ -358,6 +364,7 @@ export const fileButtonConfig = {
       buttonType: { value: 'solid' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
       // hoverBackgroundColor: { value: 'auto' },
+      borderColor: { value: 'var(--cc-primary-brand)' },
       borderRadius: { value: '6' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },

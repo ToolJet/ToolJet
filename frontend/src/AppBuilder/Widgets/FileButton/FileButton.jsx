@@ -13,6 +13,10 @@ import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 // lightening/darkening) keeps the chosen hue and reads as disabled on both light and dark surfaces.
 const DISABLED_BG_ALPHA = 0.4;
 
+// Default borderColor. Treated as "not customised" so saved apps (and new widgets) keep the
+// variant's built-in border: none for solid, the neutral border token for outline.
+const DEFAULT_BORDER_COLOR = 'var(--cc-primary-brand)';
+
 const fontWeightClass = {
   normal: 'tw-font-normal',
   medium: 'tw-font-medium',
@@ -54,6 +58,7 @@ export const FileButton = (props) => {
     buttonType = 'solid',
     backgroundColor = 'var(--cc-primary-brand)',
     hoverBackgroundColor = 'auto',
+    borderColor = DEFAULT_BORDER_COLOR,
     borderRadius = 6,
     boxShadow = '0px 0px 0px 0px #00000040',
     padding = 'default',
@@ -154,10 +159,21 @@ export const FileButton = (props) => {
     : backgroundColor;
   const computedDisabledBgColor = tinycolor(resolvedBgColor).setAlpha(DISABLED_BG_ALPHA).toRgbString();
 
+  // The solid variant has no border (`tw-border-none`), so a custom color also needs an explicit
+  // border style/width. Disabled fades the color, like the background.
+  const hasCustomBorderColor = Boolean(borderColor) && borderColor !== DEFAULT_BORDER_COLOR;
+  const resolvedBorderColor = borderColor?.startsWith('var(')
+    ? (getCssVarValue(document.documentElement, borderColor) ?? borderColor)
+    : borderColor;
+  const computedBorderColor = disabledState
+    ? tinycolor(resolvedBorderColor).setAlpha(DISABLED_BG_ALPHA).toRgbString()
+    : borderColor;
+
   // Dynamic values that cannot be expressed as static Tailwind classes
   const buttonStyle = {
     borderRadius: `${borderRadius}px`,
     boxShadow,
+    ...(hasCustomBorderColor && { borderStyle: 'solid', borderWidth: '1px', borderColor: computedBorderColor }),
     ...(buttonType === 'solid' && {
       '--button-primary': backgroundColor,
       '--button-primary-hover': computedHoverBgColor,
