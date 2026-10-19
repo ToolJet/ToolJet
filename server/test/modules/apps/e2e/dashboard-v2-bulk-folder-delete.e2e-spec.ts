@@ -56,13 +56,7 @@ describe('DashboardBulkFolderDeleteController', () => {
         type: 'front-end',
       }).expect(200);
 
-      expect(res.body).toMatchObject({
-        applied: true,
-        blocked_ids: [],
-        counts: { allowed: 2, blocked: 0, done: 2 },
-      });
-      expect(res.body).not.toHaveProperty('apps_to_root');
-      expect(res.body).not.toHaveProperty('hidden_apps_to_root');
+      expect(res.body).toEqual({ blocked_ids: [] });
       expect(await folderExists(f1.id)).toBe(false);
       expect(await folderExists(f2.id)).toBe(false);
       expect(await appExists(a.id)).toBe(true);
@@ -82,35 +76,30 @@ describe('DashboardBulkFolderDeleteController', () => {
         type: 'front-end',
       }).expect(200);
 
-      expect(res.body).toMatchObject({ applied: true, counts: { done: 1 } });
+      expect(res.body).toEqual({ blocked_ids: [] });
       expect(await folderExists(folder.id)).toBe(false);
       expect(await appExists(a.id)).toBe(false);
       expect(await appExists(b.id)).toBe(false);
     });
 
-    it('should write nothing on dry_run or when any folder is blocked, and delete the rest with skip_blocked', async () => {
+    it('should write nothing when any folder is blocked, and act on the rest when resent without it', async () => {
       const admin = await createAdmin(nestApp, 'bulk-fdel-modes@tooljet.io');
       const endUser = await createEndUser(nestApp, 'bulk-fdel-modes-eu@tooljet.io', { workspace: admin.workspace });
       const mine = await folderOf('Mine', admin.workspace.id, endUser.user.id);
       const theirs = await folderOf('Theirs', admin.workspace.id, admin.user.id);
       const body = { folder_ids: [mine.id, theirs.id], mode: 'folder_only', type: 'front-end' };
 
-      const dry = await bulkDelete(endUser.cookie, admin.workspace.id, { ...body, dry_run: true }).expect(200);
-      expect(dry.body).toMatchObject({
-        dry_run: true,
-        applied: false,
-        blocked_ids: [theirs.id],
-        counts: { allowed: 1, blocked: 1, done: 0 },
-      });
-      expect(await folderExists(mine.id)).toBe(true);
-
       const allOrNothing = await bulkDelete(endUser.cookie, admin.workspace.id, body).expect(200);
-      expect(allOrNothing.body).toMatchObject({ applied: false, counts: { done: 0 } });
+      expect(allOrNothing.body).toEqual({ blocked_ids: [theirs.id] });
       expect(await folderExists(mine.id)).toBe(true);
       expect(await folderExists(theirs.id)).toBe(true);
 
-      const skip = await bulkDelete(endUser.cookie, admin.workspace.id, { ...body, skip_blocked: true }).expect(200);
-      expect(skip.body).toMatchObject({ applied: true, blocked_ids: [theirs.id], counts: { allowed: 1, done: 1 } });
+      const resent = await bulkDelete(endUser.cookie, admin.workspace.id, {
+        folder_ids: [mine.id],
+        mode: 'folder_only',
+        type: 'front-end',
+      }).expect(200);
+      expect(resent.body).toEqual({ blocked_ids: [] });
       expect(await folderExists(mine.id)).toBe(false);
       expect(await folderExists(theirs.id)).toBe(true);
     });
@@ -122,11 +111,8 @@ describe('DashboardBulkFolderDeleteController', () => {
       const { app } = await seedDashboardApp(nestApp, { user: admin.user, name: 'Admin app', folder });
       const body = { folder_ids: [folder.id], mode: 'folder_and_apps', type: 'front-end' };
 
-      const dry = await bulkDelete(endUser.cookie, admin.workspace.id, { ...body, dry_run: true }).expect(200);
-      expect(dry.body).toMatchObject({ blocked_ids: [], counts: { allowed: 1, blocked: 0 } });
-
       const res = await bulkDelete(endUser.cookie, admin.workspace.id, body).expect(200);
-      expect(res.body).toMatchObject({ applied: true, counts: { done: 1 } });
+      expect(res.body).toEqual({ blocked_ids: [] });
       expect(await folderExists(folder.id)).toBe(false);
       expect(await appExists(app.id)).toBe(true);
       expect(await findEntity(FolderApp, { appId: app.id })).toBeNull();
@@ -144,10 +130,9 @@ describe('DashboardBulkFolderDeleteController', () => {
         folder_ids: [folder.id],
         mode: 'folder_only',
         type: 'front-end',
-        dry_run: true,
       }).expect(200);
 
-      expect(res.body).toMatchObject({ blocked_ids: [folder.id], counts: { allowed: 0, blocked: 1 } });
+      expect(res.body).toEqual({ blocked_ids: [folder.id] });
     });
 
     it('should 400 on a bad body', async () => {

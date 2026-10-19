@@ -65,39 +65,27 @@ describe('DashboardBulkMoveController', () => {
         folder_id: folder.id,
       }).expect(200);
 
-      expect(res.body).toMatchObject({
-        dry_run: false,
-        applied: true,
-        blocked_ids: [],
-        counts: { allowed: 2, blocked: 0, done: 2 },
-      });
+      expect(res.body).toEqual({ blocked_ids: [] });
       expect(await folderOf(a.id)).toBe(folder.id);
       expect(await folderOf(b.id)).toBe(folder.id);
     });
 
-    it('should write nothing on dry_run or when any app is blocked, and move the rest with skip_blocked', async () => {
+    it('should write nothing when any app is blocked, and act on the rest when resent without it', async () => {
       const { admin, endUser, folder } = await ownerSetup('modes');
       const { app: mine } = await seedDashboardApp(nestApp, { user: endUser.user, name: 'Mine' });
       const { app: theirs } = await seedDashboardApp(nestApp, { user: admin.user, name: 'Theirs' });
       const body = { app_ids: [mine.id, theirs.id], folder_id: folder.id };
 
-      const dry = await bulkMove(endUser.cookie, admin.workspace.id, { ...body, dry_run: true }).expect(200);
-      expect(dry.body).toMatchObject({
-        dry_run: true,
-        applied: false,
-        blocked_ids: [theirs.id],
-        counts: { allowed: 1, blocked: 1, done: 0 },
-      });
       const allOrNothing = await bulkMove(endUser.cookie, admin.workspace.id, body).expect(200);
-      expect(allOrNothing.body).toMatchObject({ applied: false, counts: { done: 0 } });
+      expect(allOrNothing.body).toEqual({ blocked_ids: [theirs.id] });
       expect(await folderOf(mine.id)).toBeNull();
+      expect(await folderOf(theirs.id)).toBeNull();
 
-      const skip = await bulkMove(endUser.cookie, admin.workspace.id, { ...body, skip_blocked: true }).expect(200);
-      expect(skip.body).toMatchObject({
-        applied: true,
-        blocked_ids: [theirs.id],
-        counts: { allowed: 1, blocked: 1, done: 1 },
-      });
+      const resent = await bulkMove(endUser.cookie, admin.workspace.id, {
+        app_ids: [mine.id],
+        folder_id: folder.id,
+      }).expect(200);
+      expect(resent.body).toEqual({ blocked_ids: [] });
       expect(await folderOf(mine.id)).toBe(folder.id);
       expect(await folderOf(theirs.id)).toBeNull();
     });
@@ -120,9 +108,8 @@ describe('DashboardBulkMoveController', () => {
       const res = await bulkMove(admin.cookie, admin.workspace.id, {
         app_ids: [foreignApp.id],
         folder_id: folder.id,
-        skip_blocked: true,
       }).expect(200);
-      expect(res.body).toMatchObject({ blocked_ids: [foreignApp.id], counts: { allowed: 0, done: 0 } });
+      expect(res.body).toEqual({ blocked_ids: [foreignApp.id] });
       expect(await folderOf(foreignApp.id)).toBeNull();
     });
 
@@ -159,7 +146,6 @@ describe('DashboardBulkMoveController', () => {
       const v2 = await bulkMove(cookie, admin.workspace.id, {
         folder_id: folder.id,
         app_ids: [viaV2.id],
-        dry_run: true,
       }).expect(200);
 
       expect(v1.statusCode).toBe(allowed ? 201 : 403);
