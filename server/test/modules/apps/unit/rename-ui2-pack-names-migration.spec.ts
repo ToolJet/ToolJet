@@ -235,4 +235,32 @@ describe('RenameUi2PackNames data migration', () => {
     expect(Object.keys(out)).toEqual(['__proto__', 'text']);
     expect(out.text.value).toBe('{{components.tags1.values}}');
   });
+
+  // Release audit 2026-10-18 (reviewFrozenMigrationRewrite, reviewAssemblyFrozenMigrationRewrite): a string in
+  // parentheses or before a comment was renamed as if it were code, and so was a local `components`.
+  it('[UI2-MIG-403] leaves strings and a local `components` alone', async () => {
+    const texts = [
+      '{{ ("components.tags1.tags") }}',
+      '{{ "components.tags1.tags" /* text */ }}',
+      '{{ ("components.tags1.tags" + components.tags1.tags.length) }}',
+    ];
+    const code = 'function read(components) { return components.tags1.tags; }\nreturn components.tags1.tags;';
+    const tables: Tables = {
+      pages: [{ id: 'p1', app_version_id: 'v1' }],
+      components: [
+        component('tags1', 'ShadTagsInput', 'p1'),
+        ...texts.map((value, i) => component(`text${i}`, 'Text', 'p1', { properties: { text: { value } } })),
+      ],
+      data_queries: [{ id: 'q1', app_version_id: 'v1', options: { code } }],
+    };
+    await new Migration().up(fakeQueryRunner(tables).queryRunner);
+    expect(tables.components.slice(1).map((c) => c.properties.text.value)).toEqual([
+      '{{ ("components.tags1.tags") }}',
+      '{{ "components.tags1.tags" /* text */ }}',
+      '{{ ("components.tags1.tags" + components.tags1.values.length) }}',
+    ]);
+    expect(tables.data_queries[0].options.code).toBe(
+      'function read(components) { return components.tags1.tags; }\nreturn components.tags1.values;'
+    );
+  });
 });
