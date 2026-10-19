@@ -50,6 +50,10 @@ Each widget loads in its own chunk, the first time a page shows it.
 
 - A widget's box comes as props: `width` and `height` from the grid or its FlexContainer, and `boxFit` (`grid`,
   `fixed` or `fill`) for whether a flex child fills its share of the line.
+- `boxStretch` is true when an Equal heights FlexContainer row stretches the box to the tallest child on its line
+  (`stretchesInRow` in `_helpers/dynamicHeightPolicy.js` names the widgets it stretches). The widget's surface fills
+  the box, and its auto height watches its content, which keeps its natural height: the reflow measures the widget
+  unstretched, so the row can shrink again. The Stat card is the example.
 - Content-fitted height goes through the core reflow: `useAutoHeight` for a widget, and `useFittedRowHeight` for a
   List view row or a Kanban custom card (the same path as the native List view's rows; see `isUi2PerRowType` in
   `_helpers/dynamicHeightPolicy.js`).

@@ -33,6 +33,9 @@ export interface WidgetProps {
   /** How the box was sized: placed on the grid, a fixed-width flex child, or a flex child that fills its share of the
    *  line (WidgetWrapper, from useFlexWidgetLayout). */
   boxFit?: 'grid' | 'fixed' | 'fill';
+  /** The box is stretched to its row's height: an Equal heights FlexContainer row lines up its cards
+   *  (dynamicHeightPolicy.stretchesInRow). A widget with a surface fills it; its content height is still its own. */
+  boxStretch?: boolean;
   currentMode?: 'edit' | 'view';
   currentLayout?: string;
   darkMode?: boolean;
