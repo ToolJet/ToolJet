@@ -1,7 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon } from 'lucide-react';
-import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  useAutoHeight,
+  useExposed,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Calendar, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { toDate, ymd } from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
 import {
@@ -184,7 +190,8 @@ export const ShadDatePicker = (props: WidgetProps) => {
   };
   const pick = (next: Selection) => {
     if (popup.blocked) return;
-    commit(next, true);
+    // Published (isValid too) before onSelect fires, so its handlers read the pick, as the text inputs do (runNow).
+    runNow(() => commit(next, true));
     // A range's first click already sets both ends to that day: it closes on the second click.
     rangeClicks.current += 1;
     if (!range || rangeClicks.current >= 2) openChange(false);
