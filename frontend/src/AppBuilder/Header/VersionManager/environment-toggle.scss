@@ -1,51 +1,110 @@
+// Segmented environment tabs inside the version manager popover.
+// The selected state mirrors the editor header's layout toggle (indigo soft fill + border)
+// so the popover reads as part of the same header system.
 .environment-toggle {
-        padding: 8px;
+  padding: 8px 8px 4px;
 
-        .environment-toggle__bar {
-                display: flex;
-                align-items: center;
-                background-color: var(--slate3);
-                border-radius: 6px;
-                padding: 2px;
-                justify-content: space-around;
-                gap: 4px;
+  .environment-toggle__bar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    background-color: var(--surfaces-surface-01);
 
-                .environment-toggle__btn {
-                        padding: 6px 12px !important;
-                        border: none;
-                        border-radius: 4px !important;
-                        background-color: transparent;
-                        color: var(--text-placeholder);
-                        font-weight: 400;
-                        transition: all 0.12s ease;
-                        cursor: pointer;
-                        box-shadow: none;
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                        outline: none !important;
+    // EE wraps tooltip-bearing tabs in a div — let the wrapper share the row equally.
+    > div {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+    }
 
-                        &:hover:not(.disabled) {
-                                background-color: var(--interactive-hover);
-                                color: var(--text-default);
-                        }
+    .environment-toggle__btn {
+      flex: 1 1 0;
+      gap: 4px;
+      height: 26px;
+      padding: 0 10px !important;
+      border: 1px solid transparent !important;
+      border-radius: 4px !important;
+      background-color: transparent;
+      color: var(--text-placeholder);
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 18px;
+      transition:
+        background-color 0.12s ease,
+        color 0.12s ease,
+        border-color 0.12s ease;
+      cursor: pointer;
+      box-shadow: none !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      outline: none !important;
 
-                        &.selected {
-                                background-color: var(--background-surface-layer-01);
-                                color: var(--text-default);
-                                font-weight: 500;
-                                box-shadow: var(--elevation-100-box-shadow);
-                        }
+      &:hover:not(.disabled):not(.selected) {
+        background-color: var(--surfaces-surface-02);
+        color: var(--text-default);
+      }
 
-                        &.disabled {
-                                cursor: not-allowed;
-                                color: var(--text-disabled);
-                                pointer-events: none;
-                        }
-                }
-        }
+      &:focus-visible {
+        border-color: var(--indigo7) !important;
+      }
+
+      &.selected {
+        background-color: var(--indigo3);
+        border-color: var(--indigo5) !important;
+        color: var(--indigo9);
+        font-weight: 400;
+      }
+
+      &.disabled {
+        cursor: not-allowed;
+        color: var(--text-disabled);
+        opacity: 1;
+        pointer-events: none;
+      }
+    }
+  }
 }
 
 .environment-toggle__btn.btn {
-        min-width: 0;
+  min-width: 0;
+}
+
+// Sliding selection indicator. VersionManagerDropdown sets --env-index / --env-count on the host;
+// tabs are equal width (flex: 1 1 0), so the pill's offset is index × (tab width + gap).
+.environment-toggle-host--animated .environment-toggle {
+  .environment-toggle__bar {
+    position: relative;
+    isolation: isolate;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      bottom: 2px;
+      left: 2px;
+      z-index: -1;
+      width: calc((100% - 4px - (var(--env-count) - 1) * 2px) / var(--env-count));
+      transform: translateX(calc(var(--env-index) * (100% + 2px)));
+      border: 1px solid var(--indigo5);
+      border-radius: 4px;
+      background-color: var(--indigo3);
+      transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .environment-toggle__btn.selected {
+      background-color: transparent;
+      border-color: transparent !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .environment-toggle__bar::before {
+      transition: none;
+    }
+  }
 }
