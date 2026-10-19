@@ -143,8 +143,12 @@ describe('sorting', () => {
 
 describe('rowKey', () => {
   it('uses the id field, else the position', () => {
-    expect(rowKey({ id: 9 }, 'id', 0)).toBe('9');
+    expect(rowKey({ id: 9 }, 'id', 0)).toBe('id:9');
     expect(rowKey({}, 'id', 4)).toBe('#4');
+  });
+
+  it('never gives a row with no id the key of a real id', () => {
+    expect(rowKey({ id: '#4' }, 'id', 0)).not.toBe(rowKey({}, 'id', 4));
   });
 });
 
