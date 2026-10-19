@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo, useEffect, useState, useRef, useLayoutEffect } from 'react';
 import cx from 'classnames';
 import { has } from 'lodash';
-import { Save, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
+import { Tooltip } from 'react-tooltip';
 import KeyValueRow from './_components/KeyValueRow';
 import './keyValuePair.scss';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -11,8 +12,18 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { isEditedDataValid } from './_utils/fieldValidity';
 
-// Below this width, Cancel/Save fall back to icon-only (same pattern as Table's ChangeSetUI).
-const CTA_TEXT_MIN_WIDTH = 250;
+// From this width the Cancel/Save bar floats with text labels; below it, it docks as an icon-only footer.
+const CTA_TEXT_MIN_WIDTH = 200;
+
+// Hosts the tooltip trigger on a wrapper so a disabled button still shows its tooltip.
+const ChangeSetButtonAnchor = ({ label, tooltipId, children }) =>
+  tooltipId ? (
+    <span className="kv-btn-anchor" data-tooltip-id={tooltipId} data-tooltip-content={label}>
+      {children}
+    </span>
+  ) : (
+    children
+  );
 
 /**
  * KeyValuePair Widget
@@ -78,6 +89,7 @@ export const KeyValuePair = ({
     backgroundColor,
     border: `1px solid ${borderColor}`,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    '--kv-border-radius': `${borderRadius ? parseFloat(borderRadius) : 0}px`,
     boxShadow,
     ...(hoverBackgroundMode === 'manual' && hoverBackgroundColor && { '--kv-hover-bg': hoverBackgroundColor }),
   };
@@ -118,7 +130,10 @@ export const KeyValuePair = ({
 
   // Check if there are unsaved changes
   const hasChanges = Object.keys(editedData).length > 0;
-  const showCtaText = widgetWidth > CTA_TEXT_MIN_WIDTH;
+  const showCtaText = widgetWidth >= CTA_TEXT_MIN_WIDTH;
+  const isChangeSetDocked = !showCtaText;
+  const showChangeSet = showUpdateActions && hasChanges;
+  const ctaTooltipId = `kv-cta-tooltip-${id}`;
   const handleFieldClick = useCallback(
     (fieldKey, fieldValue) => {
       setExposedVariables({ lastClickedField: { key: fieldKey, value: fieldValue } });
@@ -233,7 +248,10 @@ export const KeyValuePair = ({
       data-cy={dataCy}
       id={`component-${id}`}
     >
-      <div className="key-value-pair-content" style={{ overflowY: isDynamicHeightEnabled ? 'hidden' : 'auto' }}>
+      <div
+        className={cx('key-value-pair-content', { 'kv-content-docked': showChangeSet && isChangeSetDocked })}
+        style={{ overflowY: isDynamicHeightEnabled ? 'hidden' : 'auto' }}
+      >
         {resolvedFields.map((field, index) => (
           <KeyValueRow
             componentId={id}
@@ -258,29 +276,34 @@ export const KeyValuePair = ({
       </div>
 
       {/* ChangeSet Popover */}
-      {showUpdateActions && hasChanges && (
-        <div className="kv-changeset-popover">
+      {showChangeSet && (
+        <div className={cx('kv-changeset-popover', { 'kv-changeset-docked': isChangeSetDocked })}>
           <div className="kv-changeset-content">
+            {!showCtaText && <Tooltip id={ctaTooltipId} className="tooltip" place="top" />}
             <div className="kv-changeset-actions">
-              <button
-                type="button"
-                className={cx('kv-btn-cancel', { 'kv-btn-icon-only': !showCtaText })}
-                onClick={discardChanges}
-                data-cy="kv-button-cancel"
-                aria-label="Cancel"
-              >
-                {showCtaText ? 'Cancel' : <X size={14} />}
-              </button>
-              <button
-                type="button"
-                className={cx('kv-btn-save', { 'kv-btn-icon-only': !showCtaText })}
-                onClick={saveChanges}
-                data-cy="kv-button-save-changes"
-                aria-label="Save changes"
-                disabled={isSaveChangesDisabled}
-              >
-                {showCtaText ? 'Save changes' : <Save size={14} />}
-              </button>
+              <ChangeSetButtonAnchor label="Cancel" tooltipId={showCtaText ? undefined : ctaTooltipId}>
+                <button
+                  type="button"
+                  className={cx('kv-btn-cancel', { 'kv-btn-icon-only': !showCtaText })}
+                  onClick={discardChanges}
+                  data-cy="kv-button-cancel"
+                  aria-label="Cancel"
+                >
+                  {showCtaText ? 'Cancel' : <X size={14} />}
+                </button>
+              </ChangeSetButtonAnchor>
+              <ChangeSetButtonAnchor label="Save changes" tooltipId={showCtaText ? undefined : ctaTooltipId}>
+                <button
+                  type="button"
+                  className={cx('kv-btn-save', { 'kv-btn-icon-only': !showCtaText })}
+                  onClick={saveChanges}
+                  data-cy="kv-button-save-changes"
+                  aria-label="Save changes"
+                  disabled={isSaveChangesDisabled}
+                >
+                  {showCtaText ? 'Save changes' : <Check size={14} />}
+                </button>
+              </ChangeSetButtonAnchor>
             </div>
           </div>
         </div>

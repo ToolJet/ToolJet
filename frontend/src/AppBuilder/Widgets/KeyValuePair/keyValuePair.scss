@@ -16,23 +16,28 @@
     display: none;
   }
 
-  // ChangeSet Popover - fixed at bottom, overlays content
+  // ChangeSet Popover - fixed at bottom, overlays content; stays 8px inside both edges
   .kv-changeset-popover {
     position: absolute;
     bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--surfaces-surface-01);
-    border: 1px solid var(--borders-default);
-    border-radius: 9px;
-    padding: 8px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
     z-index: 10;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 
     .kv-changeset-content {
       display: flex;
       align-items: center;
       gap: 6px;
+      max-width: 100%;
+      pointer-events: auto;
+      background: var(--surfaces-surface-01);
+      border: 1px solid var(--borders-default);
+      border-radius: 9px;
+      padding: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
     }
 
     .kv-changeset-actions {
@@ -67,7 +72,7 @@
       font-weight: 500;
       color: var(--surfaces-surface-01);
       background: var(--primary-accent-strong);
-      border: none;
+      border: 1px solid var(--primary-accent-strong);
       border-radius: 6px;
       cursor: pointer;
       white-space: nowrap;
@@ -81,12 +86,13 @@
       // Save/Cancel are plain buttons, not ButtonSolid, so they need it explicitly.
       &:disabled {
         background: var(--slate6);
+        border-color: var(--slate6);
         color: var(--slate9);
         cursor: not-allowed;
       }
     }
 
-    // Icon-only fallback below CTA_TEXT_MIN_WIDTH (KeyValuePair.jsx)
+    // Icon-only below CTA_TEXT_MIN_WIDTH (KeyValuePair.jsx)
     .kv-btn-cancel.kv-btn-icon-only,
     .kv-btn-save.kv-btn-icon-only {
       display: flex;
@@ -94,6 +100,41 @@
       justify-content: center;
       padding: 6px;
       min-width: 28px;
+    }
+
+    .kv-btn-anchor {
+      display: inline-flex;
+    }
+
+    // Below CTA_TEXT_MIN_WIDTH the bar becomes a full-width footer on the bottom edge
+    &.kv-changeset-docked {
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      .kv-changeset-content {
+        width: 100%;
+        padding: 6px;
+        border-width: 1px 0 0;
+        border-radius: 0 0 calc(var(--kv-border-radius, 0px) - 1px) calc(var(--kv-border-radius, 0px) - 1px);
+        box-shadow: 0 -1px 6px rgba(0, 0, 0, 0.06);
+      }
+
+      .kv-changeset-actions {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .kv-btn-anchor {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .kv-btn-cancel.kv-btn-icon-only,
+      .kv-btn-save.kv-btn-icon-only {
+        flex: 1;
+        min-width: 0;
+      }
     }
   }
 
@@ -112,6 +153,12 @@
     height: 100%;
     overflow-y: auto;
     scrollbar-color: var(--interactive-selected) transparent;
+
+    // Keeps the last row clear of the docked footer
+    &.kv-content-docked {
+      box-sizing: border-box;
+      padding-bottom: 52px;
+    }
   }
 }
 
