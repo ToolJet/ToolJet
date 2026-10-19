@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import isEqual from 'lodash/isEqual';
+import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { FocusEvent, RefObject } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -149,7 +150,9 @@ export const truthy = (v: unknown): boolean =>
 
 /** onFocus and onBlur for a control that opens a list or popover (a select, a date picker): onFocus when focus comes
  *  to the control from outside, onBlur once it leaves the control and its open list, not when focus moves into the
- *  list and back. Spread `handlers` on the trigger and call `opened(isOpen)` from the popup's open change. */
+ *  list and back. Spread `handlers` on the trigger and call `opened(isOpen)` from the popup's open change. `onLeave`
+ *  runs with onBlur: a field passes its validation's touch, so tabbing past a closed, empty required picker shows the
+ *  message, as leaving a text box does. */
 export interface FocusEvents {
   /** Spread on the trigger. */
   handlers: { onFocus: (e?: FocusEvent<HTMLElement>) => void; onBlur: () => void };
@@ -157,7 +160,8 @@ export interface FocusEvents {
   opened: (isOpen: boolean) => void;
 }
 
-export const useFocusEvents = (fireEvent: WidgetProps['fireEvent']): FocusEvents => {
+export const useFocusEvents = (fireEvent: WidgetProps['fireEvent'], onLeave?: () => void): FocusEvents => {
+  const left = useLatest(onLeave);
   const state = useRef<{
     inside: boolean;
     open: boolean;
@@ -189,6 +193,7 @@ export const useFocusEvents = (fireEvent: WidgetProps['fireEvent']): FocusEvents
       // onBlur and then onFocus though focus never left the control.
       if (inTransit && (!el || el === document.body)) return leave(false);
       s.inside = false;
+      left.current?.();
       fireEvent('onBlur');
     }, 0);
   };

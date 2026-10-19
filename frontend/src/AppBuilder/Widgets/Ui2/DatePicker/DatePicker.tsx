@@ -73,7 +73,7 @@ export const ShadDatePicker = (props: WidgetProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popup = usePickerPopup(properties, triggerRef);
   const { open } = popup;
-  const focus = useFocusEvents(fireEvent);
+  const focus = useFocusEvents(fireEvent, () => check.touch());
   const shown = (d: Date | undefined) => (d ? dayjs(d).format(format) : '');
   const unix = (d: Date | undefined) => (d ? dayjs(d).valueOf() : null);
   // What the widget exposes for a selection: value, plus the native date pickers' unixTimestamp and displayValue, or a

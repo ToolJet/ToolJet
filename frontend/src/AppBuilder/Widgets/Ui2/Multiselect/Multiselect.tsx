@@ -149,7 +149,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
   });
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
-  const focus = useFocusEvents(fireEvent);
+  const focus = useFocusEvents(fireEvent, () => check.touch());
   const menuId = `${fieldIdOf(props)}-menu`;
   const menu = useAnchoredMenu(properties, () => {
     check.touch();
