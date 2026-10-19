@@ -118,9 +118,13 @@ export const ShadChat = (props: WidgetProps) => {
       link.href = url;
       link.download = `chat-history-${new Date().toISOString()}.json`;
       document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // The link and the blob URL go even when the click throws (they were left in the page, the blob held).
+      try {
+        link.click();
+      } finally {
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
       toast.success('Chat history downloaded successfully');
     } catch {
       toast.error('Failed to download chat history');
