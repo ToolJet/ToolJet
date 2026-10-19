@@ -16,7 +16,6 @@ import {
 } from 'Support/utils/platform/folderPermissions';
 import { groupsText } from 'Texts/platform/manageGroups';
 
-// Who can create, rename and delete app folders by default, and how a custom group overrides the coarse (Permissions tab) folderCreate / folderDelete flags once the builder role's own flags are switched off.
 describe('Apps — Folder Permissions: Default Role Access', { retries: 0 }, () => {
   let workspaceId, testId, wsName, wsSlug;
 
@@ -93,7 +92,6 @@ describe('Apps — Folder Permissions: Default Role Access', { retries: 0 }, () 
         cy.apiRemoveAppFromFolder(appIds.removed, folder.id);
         apiGetItemIdsInFolder(folder.id).then((ids) => expect(ids).to.deep.equal([appIds.kept]));
 
-        // Deleting the folder (as its owner) does not delete the app still inside it.
         openAppsDashboard();
         uiDeleteFolder(folderName);
         openAllApps();
@@ -117,7 +115,6 @@ describe('Apps — Folder Permissions: Default Role Access', { retries: 0 }, () 
     apiCreateGroup(groupName).then((groupId) => apiAddUserToGroup(groupId, userEmail));
 
     phase('builder role without create and delete: no create button, no delete on a folder they do not own');
-    // The custom group starts with both flags OFF, so it does not give them back yet.
     loginAs(userEmail);
     openAppsDashboard();
     cy.get(commonSelectors.createNewFolderButton).should('not.exist');

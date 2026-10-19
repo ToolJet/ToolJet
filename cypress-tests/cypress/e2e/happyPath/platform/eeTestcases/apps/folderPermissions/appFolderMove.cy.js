@@ -14,7 +14,6 @@ import {
   uiSubmitAddToFolder,
 } from 'Support/utils/platform/folderPermissions';
 
-// Moving apps between folders through the dashboard "Add to folder" modal.
 describe('Apps — Moving Apps Between Folders', { retries: 0 }, () => {
   let workspaceId, wsName, wsSlug;
 
@@ -22,7 +21,6 @@ describe('Apps — Moving Apps Between Folders', { retries: 0 }, () => {
   const toggleAppsPicker = () => cy.get(dashboardSelector.bulkMoveAppsSelect).click();
   const pickApp = (appName) => cy.contains(dashboardSelector.bulkMoveAppOption, appName).click();
 
-  // A group holding Edit folder on the given folders, and a builder in it.
   const setupEditor = (label, folderIds) => {
     const attemptId = Date.now();
     const groupName = `QA App ${label} Group ${attemptId}`;
@@ -62,7 +60,6 @@ describe('Apps — Moving Apps Between Folders', { retries: 0 }, () => {
     cy.apiCreateAppFolder(editableFolderName).then((folder) => {
       setupEditor('Move', [folder.id]).then((userEmail) => {
         loginAs(userEmail);
-        // Ownership grants edit access on the app itself.
         cy.apiCreateApp(appName);
 
         openAppsDashboard();
@@ -94,7 +91,6 @@ describe('Apps — Moving Apps Between Folders', { retries: 0 }, () => {
         openAppsDashboard();
         uiOpenAddToFolder(appNames[0]);
 
-        // The first app rides in pre-selected; add the other two.
         toggleAppsPicker();
         pickApp(appNames[1]);
         pickApp(appNames[2]);
@@ -166,12 +162,10 @@ describe('Apps — Moving Apps Between Folders', { retries: 0 }, () => {
         setupEditor('Relocate', [sourceFolder.id, destFolder.id]).then((userEmail) => {
           loginAs(userEmail);
 
-          // Single move through the UI, from inside the source folder.
           openAppsDashboard();
           openFolder(sourceFolderName);
           uiAddItemToFolder(singleAppName, destFolderName);
 
-          // Bulk relocate in one request.
           cy.then(() => cy.apiBulkAddAppsToFolder(destFolder.id, bulkAppIds));
 
           cy.then(() => {

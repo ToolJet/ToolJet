@@ -12,7 +12,6 @@ import {
   openFolder,
 } from 'Support/utils/platform/folderPermissions';
 
-// End users and app folders.
 describe('Apps — Folder Permissions: End User Role', { retries: 0 }, () => {
   let workspaceId, wsName, wsSlug, testId;
   const editTierTooltip = 'End-user cannot have edit permission';
@@ -45,7 +44,6 @@ describe('Apps — Folder Permissions: End User Role', { retries: 0 }, () => {
     cy.get(groupsSelector.addPermissionButton).click();
     cy.get(groupsSelector.addFolderButton).should('be.enabled').click();
 
-    // Only the tiers are role-gated; the scope radios are not asserted (the shared verifyGranularPermissionModalStates 'enduser' preset expects All disabled, which no longer holds).
     cy.get(groupsSelector.editFolderRadio).should('be.disabled').and('not.be.checked');
     cy.get(groupsSelector.editAppRadio).should('be.disabled').and('not.be.checked');
     cy.get(groupsSelector.viewAppRadio).should('be.enabled').and('be.checked');
@@ -61,7 +59,6 @@ describe('Apps — Folder Permissions: End User Role', { retries: 0 }, () => {
     const groupName = `QA EndUser View ${testId}`;
     const email = `app-enduser-view-${testId}@example.com`;
 
-    // Strip the End-user role's own app/folder grants so the custom group is the only way in.
     cy.apiDeleteGranularPermission('end-user', ['app', 'folder']);
     cy.apiCreateAppFolder(otherFolderName);
     cy.apiCreateAppFolder(folderName).then((folder) => {
@@ -97,7 +94,7 @@ describe('Apps — Folder Permissions: End User Role', { retries: 0 }, () => {
     cy.apiFullUserOnboarding('QA EndUser2', outsider, 'end-user', 'password', wsName);
     loginAsAdmin();
 
-    // 1 — on a custom group the edit tiers stay enabled (it could hold builders), so the server is the guard: promoting the grant names the end user and refuses.
+    // On a custom group the edit tiers stay enabled (it could hold builders), so the server is the guard: promoting the grant names the end user and refuses.
     openGroupGranularAccess(groupName);
     uiOpenEditFolderGrant();
     cy.get(groupsSelector.editAppRadio).should('be.enabled').click({ force: true });
@@ -106,7 +103,6 @@ describe('Apps — Folder Permissions: End User Role', { retries: 0 }, () => {
     cy.get(commonSelectors.modalComponent).should('contain.text', email);
     cy.get(commonSelectors.cancelButton).click();
 
-    // 2 — mirror guard: an end user cannot join a group that already holds an edit tier.
     cy.visit(`/${wsSlug}/workspace-settings/groups`);
     cy.get(groupsSelector.groupLink(editGroupName)).click();
     uiAddUserToGroup(outsider);

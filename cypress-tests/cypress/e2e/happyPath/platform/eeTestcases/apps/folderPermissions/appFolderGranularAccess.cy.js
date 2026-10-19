@@ -17,11 +17,9 @@ import {
   uiRenameFolder,
 } from 'Support/utils/platform/folderPermissions';
 
-// What a folder-scoped grant lets a builder DO to the folder itself, through the UI.
 describe('Apps — Folder Granular Access', { retries: 0 }, () => {
   let workspaceId, wsName, wsSlug;
 
-  // Folder + an admin-owned app inside it + a group holding one tier on the folder + a builder in that group.
   const setupFolderAccess = (label, permissions) => {
     const attemptId = Date.now();
     const folderName = `${label} App Folder ${attemptId}`;

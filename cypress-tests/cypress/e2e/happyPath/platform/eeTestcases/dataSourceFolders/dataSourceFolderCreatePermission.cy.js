@@ -50,7 +50,6 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     cy.apiLogout();
 
     cy.apiLogin();
-    // A data source the user can see, so membership can be exercised.
     const dataSourceName = `ds-create-flag-${testId}`;
     cy.apiCreateGlobalDataSource(dataSourceName);
     apiCreateGroup(groupName).then((groupId) => {
@@ -67,13 +66,11 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     );
     cy.apiLogout();
 
-    // Create control is hidden while the coarse flag is off.
     cy.apiLogin(userEmail, 'password');
     openDataSourcesList();
     cy.get(dsFolder.createFolderIcon).should('not.exist');
     cy.apiLogout();
 
-    // Grant the coarse flag through the Permissions tab.
     cy.apiLogin();
     cy.visit(`/${wsSlug}/workspace-settings/groups`);
     cy.get(groupsSelector.groupLink(groupName)).click();
@@ -82,12 +79,10 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     cy.verifyToastMessage(commonSelectors.toastMessage, groupsText.permissionUpdatedToast);
     cy.apiLogout();
 
-    // Control reappears.
     cy.apiLogin(userEmail, 'password');
     openDataSourcesList();
     cy.get(dsFolder.createFolderIcon).should('be.visible');
 
-    // Create a folder so the delete affordance has something to act on.
     const folderName = `Create Only Folder ${testId}`;
     uiCreateDataSourceFolder(folderName);
     uiVerifyDataSourceFolderExists(folderName);
@@ -107,7 +102,6 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
       cy.get('body').type('{esc}');
       cy.apiLogout();
 
-      // Grant delete on the same group, through the same tab.
       cy.apiLogin();
       cy.visit(`/${wsSlug}/workspace-settings/groups`);
       cy.get(groupsSelector.groupLink(groupName)).click();
@@ -116,7 +110,6 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
       cy.verifyToastMessage(commonSelectors.toastMessage, groupsText.permissionUpdatedToast);
       cy.apiLogout();
 
-      // Delete is now offered, and actually works end to end.
       cy.apiLogin(userEmail, 'password');
       openDataSourcesList();
       uiOpenFolderMenu(folderId);

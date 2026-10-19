@@ -75,7 +75,6 @@ export const verifyDeleteConfirmationModal = () => {
     cy.get(groupsSelector.cancelButton).should("be.visible").and("be.enabled");
 };
 
-
 export const verifyEnvironmentSelectionStateInModal = (role,userType, envOptionList) => {
     const builderEnvOptions = [
         { label: "All environments", checked: false },
@@ -128,7 +127,6 @@ export const selectEnvironments = (envs) => {
 };
 
 export const verifyGranularEditModal = (role, userType) => {
-
     cy.get(groupsSelector.permissionsLink).should("be.visible").click();
     cy.get(groupsSelector.granularLink).should("be.visible").click();
     cy.get(groupsSelector.granularAccessPermission, { timeout: 15000 }).realHover();
@@ -218,7 +216,6 @@ export const verifyGranularAddModal = (role) => {
     cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
     cy.get(groupsSelector.cancelButton).click();
 };
-
 
 export const verifyEnduserHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)
@@ -325,7 +322,6 @@ export const verifyGranularPermissionModalUI = (
         );
     }
 
-    // App folders: three single-select tiers plus the inert Environment block.
     if (resourceType === "folder") {
         cy.verifyElement(dsFolderPerm.sharedModalEditFolderLabel, "Edit folder");
         cy.verifyElement(
@@ -367,7 +363,6 @@ export const verifyGranularPermissionModalUI = (
             "Prevent running queries on data sources in the folder"
         );
 
-        // Environment scoping is not shipped for folder permissions: the control renders, is hard-disabled, and is flagged Coming Soon.
         cy.get(dsFolderPerm.sharedModalEnvironmentContainer).should("be.visible");
         cy.verifyElement(dsFolderPerm.sharedModalEnvironmentLabel, "Environment");
         cy.verifyElement(dsFolderPerm.sharedModalComingSoonChip, "Coming Soon");
@@ -402,7 +397,6 @@ export const verifyGranularPermissionModalUI = (
     }
     cy.get(groupsSelector.customRadio).should("be.visible");
     cy.verifyElement(groupsSelector.customLabel, groupsText.customLabel);
-    // Fixed selector, resource-derived COPY: the shared modal interpolates the resource name into this sentence, so the apps wording is not universal.
     cy.verifyElement(
         groupsSelector.customHelperText,
         resourceType === "data_source_folder"

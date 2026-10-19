@@ -11,7 +11,6 @@ import {
   uiVerifyFolderMenuAbsent,
 } from 'Support/utils/platform/dataSourceFolders';
 
-
 // NOT COVERED HERE — the folder -> data source Configure cascade.
 describe('Data Source Folders — Folder Granular Access', () => {
   let workspaceId, wsName, wsSlug;
@@ -80,7 +79,6 @@ describe('Data Source Folders — Folder Granular Access', () => {
     });
   });
 
-  // Per the tier's helper text: "Rename the folder, move and edit data sources in the folder" — scoped to the granted folder only.
   it('an Edit folder grant lets the user rename the granted folder and move data sources in and out of it — and nothing else', () => {
     setupFolderAccess('Scoped', {
       canEditFolder: true,
@@ -90,14 +88,12 @@ describe('Data Source Folders — Folder Granular Access', () => {
       const strayName = `ds-stray-${Date.now()}`;
       const renamed = `${folderName} Renamed`;
 
-      // A folder the group has no grant on is no longer rendered at all, so there is nothing to open a menu on or drop onto, so that scoping is asserted in PermissionTiers.
       cy.apiLogin();
       cy.apiCreateGlobalDataSource(strayName);
       cy.then(() => {
         cy.apiLogin(userEmail, 'password');
         openDataSourcesList();
 
-        // Granted folder: Rename is offered and works; Delete stays a coarse right.
         uiOpenFolderMenu(folderId);
         cy.get(dsFolder.folderRenameOption(folderId)).should('exist');
         cy.get(dsFolder.folderDeleteOption(folderId)).should('not.exist');
@@ -105,7 +101,6 @@ describe('Data Source Folders — Folder Granular Access', () => {
         uiRenameDataSourceFolder(folderId, renamed);
         uiVerifyDataSourceFolderExists(renamed);
 
-        // Move a data source OUT of the granted folder, then another one IN.
         uiEnsureFolderExpanded(renamed, dataSourceName);
         dragDataSourceToStrayList(dataSourceName);
         cy.apiGetDataSourceIdsInFolder(folderId).then((ids) => expect(ids).to.be.empty);

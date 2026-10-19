@@ -22,12 +22,10 @@ import {
   uiCreateDraftVersion,
 } from 'Support/utils/platform/folderPermissions';
 
-// Module folder tiers (Edit folder > Edit modules > Build with modules): what each grants, how grants combine, and when a change applies.
 describe('Modules — Folder Permission Tiers', { retries: 0 }, () => {
   const R = RESOURCES.module;
   let workspaceId, wsName, wsSlug;
 
-  // Folder + a published module inside it + a published module outside every folder + a group holding one tier + a builder in it.
   const setupTier = (label, tier) => {
     const attemptId = Date.now();
     const ctx = {

@@ -5,7 +5,6 @@ import { apiCreateGroup } from 'Support/utils/manageGroups';
 import { openGroupGranularAccess, uiAddUserToGroup } from 'Support/utils/platform/dataSourceFolders';
 import { RESOURCES, TIERS, apiCreateFolder, apiGrantFolderTier, loginAsAdmin } from 'Support/utils/platform/folderPermissions';
 
-// End users can hold a workflow folder grant at Execute workflows only; running workflows as an end user is not covered yet.
 describe('Workflows — Folder Permissions: End User Role', { retries: 0 }, () => {
   const R = RESOURCES.workflow;
   const grant = folderGrantSelectors.workflow;

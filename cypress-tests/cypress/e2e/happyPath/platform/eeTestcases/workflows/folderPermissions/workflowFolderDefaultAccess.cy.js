@@ -23,7 +23,6 @@ import {
 } from 'Support/utils/platform/folderPermissions';
 import { groupsText } from 'Texts/platform/manageGroups';
 
-// Default role access to workflow folders, and custom group overrides of the coarse create / delete flags.
 describe('Workflows — Folder Permissions: Default Role Access', { retries: 0 }, () => {
   const R = RESOURCES.workflow;
   let workspaceId, testId, wsName, wsSlug;

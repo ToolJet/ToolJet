@@ -20,12 +20,10 @@ import {
   phase,
 } from 'Support/utils/platform/folderPermissions';
 
-// Workflow folder tiers (Edit folder > Edit workflows > Execute workflows): what each grants, how grants combine, and when a change applies.
 describe('Workflows — Folder Permission Tiers', { retries: 0 }, () => {
   const R = RESOURCES.workflow;
   let workspaceId, wsName, wsSlug;
 
-  // Folder + a workflow inside it + a workflow outside every folder + a group holding one tier + a builder in it.
   const setupTier = (label, tier) => {
     const attemptId = Date.now();
     const ctx = {

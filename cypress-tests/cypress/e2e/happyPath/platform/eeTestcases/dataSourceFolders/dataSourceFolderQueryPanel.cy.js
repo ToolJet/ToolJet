@@ -1,6 +1,5 @@
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 
-// Folder grouping inside the app builder.
 describe('Data Source Folders — Query Panel Grouping', () => {
   let workspaceId, wsName, wsSlug, testId, names;
 
@@ -43,31 +42,25 @@ describe('Data Source Folders — Query Panel Grouping', () => {
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
-  // Same checks for both pickers; `item` maps a data source name to its row selector.
   const verifyFolderGrouping = (item, search) => {
-    // Headers for folders with contents, collapsed; an empty folder is not offered.
     cy.get(dsFolder.pickerFolderHeader(names.folderA)).should('be.visible');
     cy.get(dsFolder.pickerFolderHeader(names.folderB)).should('be.visible');
     cy.get(dsFolder.pickerFolderHeader(names.emptyFolder)).should('not.exist');
     cy.get(item(names.a1)).should('not.exist');
     cy.get(item(names.b1)).should('not.exist');
 
-    // Un-foldered data sources are listed on their own.
     cy.get(item(names.stray)).should('be.visible');
 
-    // Expanding a folder shows exactly its members, each once.
     cy.get(dsFolder.pickerFolderHeader(names.folderB)).click();
     cy.get(item(names.b1)).should('have.length', 1);
     cy.get(item(names.b2)).should('have.length', 1);
     cy.get(item(names.a1)).should('not.exist');
     cy.get(dsFolder.pickerFolderHeader(names.folderB)).click();
 
-    // Searching a folder name opens that folder with all its data sources.
     cy.get(search).type(names.folderA);
     cy.get(item(names.a1)).should('be.visible');
     cy.get(dsFolder.pickerFolderHeader(names.folderB)).should('not.exist');
 
-    // Searching a data source name keeps only the folders that contain it.
     cy.get(search).clear().type(names.b2);
     cy.get(dsFolder.pickerFolderHeader(names.folderB)).should('be.visible');
     cy.get(item(names.b2)).should('be.visible');
@@ -80,10 +73,8 @@ describe('Data Source Folders — Query Panel Grouping', () => {
   it('both data source pickers group by folder, search across folders, and reflect a folder change after reload', () => {
     cy.openApp('', workspaceId, Cypress.env('appId'));
 
-    // The empty query panel picker (DataSourcePicker) — the landing state.
     verifyFolderGrouping(dsFolder.pickerDataSourceCard, dsFolder.emptyPickerSearch);
 
-    // The "+" add-query popover (DataSourceSelect) — same contract, different list.
     cy.get(dsFolder.addQueryPopoverButton).click();
     verifyFolderGrouping(dsFolder.selectDataSourceOption, dsFolder.addQueryPopoverSearch);
     cy.get('body').type('{esc}');

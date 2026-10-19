@@ -21,7 +21,6 @@ import {
   uiRenameFolder,
 } from 'Support/utils/platform/folderPermissions';
 
-// What a workflow folder grant lets a builder do to the folder itself; tier effects on the workflows live in PermissionTiers.
 describe('Workflows — Folder Granular Access', { retries: 0 }, () => {
   const R = RESOURCES.workflow;
   let workspaceId, wsName, wsSlug;

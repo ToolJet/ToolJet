@@ -20,7 +20,6 @@ import {
 } from 'Support/utils/platform/folderPermissions';
 import { verifyGranularPermissionModalUI } from 'Support/utils/platform/groupsUI';
 
-// UI-only validation for the app folder permission surfaces: the granular modal, grant scope, group duplication, the dashboard folder list (ordering, search, empty state, name reuse) and the create / rename folder modal.
 describe('Apps — Folder Permission and Modal UI', { retries: 0 }, () => {
   let workspaceId, testId, wsName, wsSlug;
 
@@ -61,7 +60,6 @@ describe('Apps — Folder Permission and Modal UI', { retries: 0 }, () => {
     cy.contains(dsFolder.modalTitle, 'Add app folders permissions').should('be.visible');
     verifyGranularPermissionModalUI('folder');
 
-    // Opens on View apps — the lowest tier (data source folders open with no tier at all).
     cy.get(groupsSelector.viewAppRadio).should('be.checked');
     cy.get(groupsSelector.editFolderRadio).click();
     cy.get(groupsSelector.editFolderRadio).should('be.checked');
@@ -70,7 +68,6 @@ describe('Apps — Folder Permission and Modal UI', { retries: 0 }, () => {
     cy.get(groupsSelector.editAppRadio).should('be.checked');
     cy.get(groupsSelector.editFolderRadio).should('not.be.checked');
 
-    // Cancel discards — no row is left behind.
     cy.get(commonSelectors.cancelButton).click();
     cy.get(commonSelectors.modalComponent).should('not.exist');
     cy.get(groupsSelector.folderGranularAccessRow).should('not.exist');
@@ -88,7 +85,6 @@ describe('Apps — Folder Permission and Modal UI', { retries: 0 }, () => {
     cy.get(groupsSelector.addFolderButton).click();
     cy.get(groupsSelector.viewAppRadio).click();
 
-    // Custom with no folder picked cannot be saved.
     cy.get(groupsSelector.permissionNameInput).type(`scoped ${testId}`);
     cy.get(groupsSelector.customRadio).check();
     cy.get(groupsSelector.confimButton).should('be.disabled');
@@ -152,7 +148,6 @@ describe('Apps — Folder Permission and Modal UI', { retries: 0 }, () => {
 
     openAppsDashboard();
 
-    // The server orders by name; creation order must not leak through.
     cy.get(dashboardSelector.anyFolderRow)
       .filter((_, el) => /^(alpha|beta|charlie)-/.test(el.dataset.cy))
       .then(($rows) => {
@@ -160,19 +155,16 @@ describe('Apps — Folder Permission and Modal UI', { retries: 0 }, () => {
         expect(shown).to.deep.equal([`Alpha ${testId}`, `beta ${testId}`, `charlie ${testId}`]);
       });
 
-    // Search filters the already-loaded folder list.
     cy.get(dashboardSelector.folderSearchIcon).click();
     cy.get(dashboardSelector.folderSearchInput).type('charlie');
     expectFolderListed(`charlie ${testId}`);
     expectFolderListed(`Alpha ${testId}`, false);
     expectFolderListed(`beta ${testId}`, false);
 
-    // An empty folder shows the empty state.
     openAppsDashboard();
     openFolder(`beta ${testId}`);
     cy.get(commonSelectors.empytyFolderImage).should('be.visible');
 
-    // Delete it, then create a folder with the same name straight away.
     cy.apiGetAppFolderId(`beta ${testId}`).then((firstId) => {
       uiDeleteFolder(`beta ${testId}`);
       uiCreateFolder(`beta ${testId}`);
@@ -187,35 +179,29 @@ describe('Apps — Folder Permission and Modal UI', { retries: 0 }, () => {
 
     openAppsDashboard();
 
-    // Create — submit stays disabled until a valid name is present.
     cy.get(commonSelectors.createNewFolderButton).click();
     cy.get(commonSelectors.createFolderButton).should('be.disabled');
 
-    // Whitespace only is treated as empty.
     cy.get(commonSelectors.folderNameInput).type('    ');
     cy.get(dsFolder.folderNameError).should('have.text', "Folder name can't be empty");
     cy.get(commonSelectors.createFolderButton).should('be.disabled');
 
-    // The input is capped at 50 characters.
     cy.clearAndType(commonSelectors.folderNameInput, 'a'.repeat(51));
     cy.get(commonSelectors.folderNameInput).invoke('val').should('have.length', 50);
     cy.get(commonSelectors.createFolderButton).should('not.be.disabled');
 
-    // Outer spaces are trimmed and inner runs collapsed before the name is sent.
     cy.intercept('POST', '/api/folders').as('createFolder');
     cy.clearAndType(commonSelectors.folderNameInput, `  Modal   App Folder  ${testId}  `);
     cy.get(commonSelectors.createFolderButton).click();
     cy.wait('@createFolder').its('request.body.name').should('equal', folderName);
     expectFolderListed(folderName);
 
-    // A duplicate name is refused by the server and surfaced as a toast.
     cy.get(commonSelectors.createNewFolderButton).click();
     cy.clearAndType(commonSelectors.folderNameInput, folderName);
     cy.get(commonSelectors.createFolderButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, 'This folder name is already taken.');
     cy.get(commonSelectors.cancelButton).click();
 
-    // Rename — pre-filled, and disabled while the name is unchanged.
     cy.get(commonSelectors.folderListcard(folderName)).parent().within(() => {
       cy.get(commonSelectors.folderCardOptions(folderName)).invoke('click');
     });
@@ -225,7 +211,6 @@ describe('Apps — Folder Permission and Modal UI', { retries: 0 }, () => {
     cy.clearAndType(commonSelectors.folderNameInput, `${folderName} Edited`);
     cy.get(commonSelectors.buttonSelector('update folder')).should('not.be.disabled');
 
-    // Cancel discards — the folder keeps its original name.
     cy.get(commonSelectors.cancelButton).click();
     expectFolderListed(folderName);
     expectFolderListed(`${folderName} Edited`, false);

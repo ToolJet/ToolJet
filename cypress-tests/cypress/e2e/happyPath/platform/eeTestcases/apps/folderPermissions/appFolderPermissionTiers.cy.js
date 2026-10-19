@@ -16,13 +16,9 @@ import {
   uiCreateDraftVersion,
 } from 'Support/utils/platform/folderPermissions';
 
-// An app folder grant has three tiers — Edit folder > Edit apps > View apps — and this spec owns WHAT each grants, WHERE it is enforced (dashboard listing, folder menu, the /apps/:id editor route) and WHEN a change takes effect.
 describe('Apps — Folder Permission Tiers', { retries: 0 }, () => {
   let workspaceId, wsName, wsSlug;
 
-  // fixture
-
-  // Folder + a published app inside it + a published app outside every folder + a group holding one tier + a builder in it.
   const setupTier = (label, permissions) => {
     const attemptId = Date.now();
     const ctx = {
@@ -57,9 +53,6 @@ describe('Apps — Folder Permission Tiers', { retries: 0 }, () => {
       .then(() => ctx);
   };
 
-  // admin-side manipulation
-
-  // Applies an admin change, then logs the test user back in — no cached session survives.
   const asAdmin = (userEmail, changes) => {
     loginAsAdmin();
     changes();
@@ -83,15 +76,12 @@ describe('Apps — Folder Permission Tiers', { retries: 0 }, () => {
     });
   };
 
-  // assertions
-
   const expectListedInFolder = (folderName, appName) => {
     openAppsDashboard();
     openFolder(folderName);
     cy.get(commonSelectors.appCard(appName)).should('be.visible');
   };
 
-  // Unreachable apps are absent from the dashboard, not rendered disabled.
   const expectNotListed = (appName) => {
     openAppsDashboard();
     openAllApps();
@@ -101,8 +91,6 @@ describe('Apps — Folder Permission Tiers', { retries: 0 }, () => {
   const expectEditable = (appId) => openAppEditor(wsSlug, appId);
 
   const expectRestricted = (appId) => openEditorExpectingRestricted(wsSlug, appId);
-
-  // hooks
 
   beforeEach(() => {
     wsName = `app-folder-tiers-${Date.now()}`;
@@ -124,8 +112,6 @@ describe('Apps — Folder Permission Tiers', { retries: 0 }, () => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
-
-  // cases
 
   describe('what each tier grants', () => {
     it('should make View apps list-only, Edit apps editable, and Edit folder cascade to Edit apps', () => {
@@ -170,7 +156,6 @@ describe('Apps — Folder Permission Tiers', { retries: 0 }, () => {
       expectFolderListed(authorizedFolderName);
       expectFolderListed(unauthorizedFolderName, false);
 
-      // The authorized folder is empty and still visible, showing the empty state.
       openFolder(authorizedFolderName);
       cy.get(commonSelectors.empytyFolderImage).should('be.visible');
     });

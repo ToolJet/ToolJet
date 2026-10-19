@@ -1393,7 +1393,6 @@ Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
   });
 });
 
-
 Cypress.Commands.add("apiAddModuleToFolder", (moduleId, folderId) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1422,8 +1421,6 @@ Cypress.Commands.add("apiRemoveModuleFromFolder", (moduleId, folderId) => {
     });
   });
 });
-
-// App and workflow folders reuse /api/folders for CRUD (`type` is "front-end" or "workflow") and the type-agnostic /api/folder-apps for membership.
 
 const createFolderOfType = (folderName, folderType) =>
   cy.getAuthHeaders().then((headers) =>
@@ -1466,7 +1463,6 @@ const addAppIdToFolder = (appId, folderId) =>
         headers,
         body: { app_id: appId, folder_id: folderId },
         log: false,
-        // Surface the server's message instead of Cypress' generic non-2xx dump.
         failOnStatusCode: false,
       })
       .then((response) => {
@@ -1506,7 +1502,6 @@ Cypress.Commands.add("apiRemoveAppFromFolder", (appId, folderId) =>
   removeAppIdFromFolder(appId, folderId),
 );
 
-// Bulk variant: the same endpoint takes app_ids[] instead of app_id, which is what the dashboard's "Add to folder" modal posts when several apps are selected (folderService.bulkAddToFolder).
 Cypress.Commands.add("apiBulkAddAppsToFolder", (folderId, appIds = []) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -1544,8 +1539,6 @@ Cypress.Commands.add("apiRemoveWorkflowFromFolder", (workflowId, folderId) =>
   removeAppIdFromFolder(workflowId, folderId),
 );
 
-// Data source folders reuse /api/folders with type "data_source"; `type` is the discriminator.
-
 const dataSourceFolderUrl = (path, branchId) => {
   const url = `${Cypress.env("server_host")}/api/folder-data-sources${path}`;
   return branchId
@@ -1553,12 +1546,10 @@ const dataSourceFolderUrl = (path, branchId) => {
     : url;
 };
 
-// Yields the created folder body.
 Cypress.Commands.add("apiCreateDataSourceFolder", (folderName) => {
   return cy.apiCreateFolder(folderName, "data_source");
 });
 
-// Yields the folders array.
 Cypress.Commands.add(
   "apiGetDataSourceFolders",
   (searchKey = "", { branchId = null } = {}) => {
@@ -1581,7 +1572,6 @@ Cypress.Commands.add(
   },
 );
 
-// Yields the folder id.
 Cypress.Commands.add("apiGetDataSourceFolderId", (folderName) => {
   return cy.apiGetDataSourceFolders().then((folders) => {
     const folder = folders.find((f) => f.name === folderName);
@@ -1591,7 +1581,6 @@ Cypress.Commands.add("apiGetDataSourceFolderId", (folderName) => {
   });
 });
 
-// Yields the ids of the data sources currently mapped to a folder.
 Cypress.Commands.add("apiGetDataSourceIdsInFolder", (folderId) => {
   return cy.apiGetDataSourceFolders().then((folders) => {
     const folder = folders.find((f) => f.id === folderId);
@@ -1599,7 +1588,6 @@ Cypress.Commands.add("apiGetDataSourceIdsInFolder", (folderId) => {
   });
 });
 
-// Moves one data source into a folder.
 Cypress.Commands.add(
   "apiAddDataSourceToFolder",
   (dataSourceId, folderId, { branchId = null, failOnStatusCode = false } = {}) => {
@@ -1650,7 +1638,6 @@ Cypress.Commands.add(
   },
 );
 
-// Creates a global REST API data source and yields its ID.
 Cypress.Commands.add("apiCreateGlobalDataSource", (dataSourceName) => {
   cy.apiCreateDataSource(
     `${Cypress.env("server_host")}/api/data-sources`,

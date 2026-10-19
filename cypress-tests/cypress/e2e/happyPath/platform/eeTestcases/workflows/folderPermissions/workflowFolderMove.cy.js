@@ -21,12 +21,10 @@ import {
   uiSubmitAddToFolder,
 } from 'Support/utils/platform/folderPermissions';
 
-// Moving workflows between folders through the "Add to folder" modal, single and bulk.
 describe('Workflows — Moving Workflows Between Folders', { retries: 0 }, () => {
   const R = RESOURCES.workflow;
   let workspaceId, wsName, wsSlug;
 
-  // A group holding Edit folder on the given folders, and a builder in it.
   const setupEditor = (label, folderIds) => {
     const attemptId = Date.now();
     const groupName = `QA Workflow ${label} Group ${attemptId}`;

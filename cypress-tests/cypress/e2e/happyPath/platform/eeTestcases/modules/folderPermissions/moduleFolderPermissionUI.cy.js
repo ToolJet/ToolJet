@@ -14,7 +14,6 @@ import {
   apiGrantFolderTier,
 } from 'Support/utils/platform/folderPermissions';
 
-// Module folder grant UI on the granular access page; the folder list and folder modals are covered once in the app suite.
 describe('Modules — Folder Permission and Modal UI', { retries: 0 }, () => {
   const R = RESOURCES.module;
   const grant = folderGrantSelectors.module;

@@ -22,7 +22,6 @@ import {
   uiRenameFolder,
 } from 'Support/utils/platform/folderPermissions';
 
-// What a module folder grant lets a builder do to the folder itself; tier effects on the modules live in PermissionTiers.
 describe('Modules — Folder Granular Access', { retries: 0 }, () => {
   const R = RESOURCES.module;
   let workspaceId, wsName, wsSlug;

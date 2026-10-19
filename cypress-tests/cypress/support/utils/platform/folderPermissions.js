@@ -8,7 +8,6 @@ import { viewAppCardOptions, viewFolderCardOptions } from 'Support/utils/common'
 import { commonText } from 'Texts/common';
 import { dashboardText } from 'Texts/platform/dashboard';
 
-// Apps, workflows and modules share the Folders.jsx sidebar, /api/folders and /api/folder-apps; only these values differ.
 export const RESOURCES = {
   app: {
     key: 'app',
@@ -48,7 +47,6 @@ export const RESOURCES = {
   },
 };
 
-// A folder grant is one single-select tier; the flag names are the same for every folder type.
 export const TIERS = {
   editFolder: { canEditFolder: true, canEditApps: false, canViewApps: false },
   editItems: { canEditFolder: false, canEditApps: true, canViewApps: false },
@@ -62,8 +60,6 @@ export const loginAsAdmin = () => cy.then(() => cy.apiLogin(undefined, undefined
 
 export const loginAs = (email) => cy.apiLogin(email, 'password');
 
-// API by resource
-
 export const apiCreateFolder = (resource, folderName) => {
   if (resource.key === 'workflow') return cy.apiCreateWorkflowFolder(folderName);
   if (resource.key === 'module') return cy.apiCreateModuleFolder(folderName);
@@ -76,7 +72,6 @@ export const apiGetFolderId = (resource, folderName) => {
   return cy.apiGetAppFolderId(folderName);
 };
 
-// Yields the new item's id.
 export const apiCreateItem = (resource, itemName) => {
   if (resource.key === 'workflow') return cy.apiCreateWorkflow(itemName).then(() => Cypress.env('workflowId'));
   if (resource.key === 'module') return cy.apiCreateModule(itemName).then((module) => module.id);
@@ -106,7 +101,6 @@ export const apiPublishV1 = (itemId) =>
     cy.apiPublishDraftVersion('v1');
   });
 
-// Ids of the items in a folder, as the current session sees them.
 export const apiGetItemIdsInFolder = (folderId, folderType = RESOURCES.app.folderType) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -136,8 +130,6 @@ export const apiGetGranularPermissions = (groupId) =>
       })
   );
 
-// navigation
-
 // The folder section renders for every viewer, so it is the readiness signal once the folder list has loaded.
 const openDashboard = (path) => {
   cy.intercept('GET', '/api/folder-apps*').as('dashboardFolders');
@@ -165,8 +157,6 @@ export const openAll = (resource) => {
 };
 
 export const openAllApps = () => openAll(RESOURCES.app);
-
-// folder rows (keyed by name)
 
 export const expectFolderListed = (folderName, listed = true) =>
   cy.get(commonSelectors.folderListcard(folderName)).should(listed ? 'exist' : 'not.exist');
@@ -214,8 +204,6 @@ export const uiDeleteFolder = (folderName) => {
   expectFolderListed(folderName, false);
 };
 
-// moving items (card menu)
-
 export const uiOpenAddToFolder = (itemName) => {
   viewAppCardOptions(itemName);
   cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
@@ -255,8 +243,6 @@ export const toggleItemsPicker = () => cy.get(dashboardSelector.bulkMoveAppsSele
 
 export const pickItem = (itemName) => cy.contains(dashboardSelector.bulkMoveAppOption, itemName).click();
 
-// editor
-
 // The editor and the restricted redirect are both decided after a chain of boot calls, so each open waits on a readiness signal.
 const EDITOR_BOOT_TIMEOUT = 120000;
 
@@ -280,7 +266,6 @@ export const openWorkflowEditor = (workspaceSlug, workflowId) => {
 export const openItemEditor = (resource, workspaceSlug, itemId) =>
   resource.key === 'workflow' ? openWorkflowEditor(workspaceSlug, itemId) : openAppEditor(workspaceSlug, itemId);
 
-// A real edit through the editor UI, which proves the edit right and not just the route.
 export const uiCreateDraftVersion = (versionName) => {
   cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
   cy.get(commonSelectors.buttonSelector('create draft version')).click();

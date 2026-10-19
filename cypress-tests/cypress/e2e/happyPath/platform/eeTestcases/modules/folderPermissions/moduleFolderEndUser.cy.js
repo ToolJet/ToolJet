@@ -5,7 +5,6 @@ import { apiCreateGroup } from 'Support/utils/manageGroups';
 import { openGroupGranularAccess, uiAddUserToGroup } from 'Support/utils/platform/dataSourceFolders';
 import { RESOURCES, TIERS, apiCreateFolder, apiGrantFolderTier, loginAsAdmin } from 'Support/utils/platform/folderPermissions';
 
-// Module folders are never available to end users at any tier.
 describe('Modules — Folder Permissions: End User Role', { retries: 0 }, () => {
   const R = RESOURCES.module;
   const grant = folderGrantSelectors.module;
