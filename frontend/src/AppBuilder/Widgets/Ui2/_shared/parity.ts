@@ -81,11 +81,15 @@ export interface PickerPopup {
 }
 
 /** Whether an element sits in a panel that takes no input now: an inert, aria-disabled or hidden ancestor (a disabled
- *  or inactive tab's panel, a hidden container), a disabled fieldset (a disabled Form), or one not displayed. Read at
- *  the moment of a choice, since hiding a panel does not re-render what is in it. */
+ *  or inactive tab's panel, a hidden container), a disabled fieldset (a disabled Form), a native Tabs pane the app
+ *  disabled, or one not displayed. Read at the moment of a choice, since hiding a panel does not re-render what is in
+ *  it. */
 export const ownerTakesNoInput = (el: Element | null | undefined): boolean => {
   if (!el || typeof window === 'undefined') return false;
   if (el.closest('[inert], [aria-disabled="true"], fieldset[disabled], [hidden]')) return true;
+  // Native Tabs marks a disabled pane only with data-disabled and pointer-events: none (no inert or aria-disabled).
+  const pane = el.closest('[data-disabled="true"]');
+  if (pane && window.getComputedStyle(pane).pointerEvents === 'none') return true;
   for (let node: Element | null = el; node; node = node.parentElement) {
     const style = window.getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden') return true;
@@ -114,7 +118,7 @@ export const usePickerPopup = (properties: Resolved, anchor?: RefObject<Element>
     for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
       observer.observe(node, {
         attributes: true,
-        attributeFilter: ['hidden', 'inert', 'aria-disabled', 'style', 'disabled'],
+        attributeFilter: ['hidden', 'inert', 'aria-disabled', 'data-disabled', 'style', 'disabled'],
       });
     }
     check();
