@@ -20,11 +20,22 @@ type RowValuesStore = {
 
 const isRow = (value: unknown): value is Row => !!value && typeof value === 'object' && !Array.isArray(value);
 
+/** The rows in one row's value, with their paths below it: the row itself, or a nested widget's rows (lists of rows). */
+const rowsAt = (value: unknown, path: number[] = []): Array<[number[], Row]> => {
+  if (isRow(value)) return [[path, value]];
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((inner, index) => rowsAt(inner, [...path, index]));
+};
+
 /**
  * Takes the rows' values before a row-scoped widget publishes rows keyed `after` in place of rows keyed `before`, and
  * returns what writes them back at their new rows, to run once the per-row arrays are sized for `after`. A record
  * that is new at a row taken by another record starts with no values (its components publish theirs as they mount).
- * Only the widget's own row members move: a component inside a nested row-scoped widget keeps a list per outer row.
+ * A component inside a nested row-scoped widget (a List view on a card, or in a row) keeps a list per row of this
+ * widget, and that list moves with the record: each of its rows is written at the record's new row. The rows left
+ * over there are not reset (the store derived each reset row into the nested widget's children, as an empty row): the
+ * nested widget sizes its per-row lists again for the record it now draws, which drops them, and a new record's
+ * components publish over the rest as they mount.
  * Returns null when no record moved (an append or a removal at the end needs no writes).
  */
 export const takeRowValues = (
@@ -44,10 +55,20 @@ export const takeRowValues = (
 
   const state = useStore.getState() as unknown as RowValuesStore;
   const pageComponents = state.getCurrentPageComponents(moduleId) ?? {};
-  const members = Object.keys(pageComponents).filter((componentId) => {
-    const parent = pageComponents[componentId]?.component?.parent;
-    return !!parent && state.findNearestSubcontainerAncestor(parent, moduleId) === id;
-  });
+  // Its row members at any depth: the row-scoped widgets around a component, nearest first, reach this one.
+  const isMember = (componentId: string) => {
+    const seen = new Set<string>();
+    let parent = pageComponents[componentId]?.component?.parent;
+    while (parent) {
+      const owner = state.findNearestSubcontainerAncestor(parent, moduleId);
+      if (!owner || seen.has(owner)) return false;
+      if (owner === id) return true;
+      seen.add(owner);
+      parent = pageComponents[owner]?.component?.parent;
+    }
+    return false;
+  };
+  const members = Object.keys(pageComponents).filter(isMember);
   const components = state.resolvedStore.modules[moduleId]?.exposedValues?.components ?? {};
   const rowsOf = (componentId: string): unknown[] => {
     let rows: unknown = components[componentId];
@@ -63,10 +84,13 @@ export const takeRowValues = (
     try {
       for (const [componentId, rows] of taken) {
         for (const [to, from] of moves) {
-          const indices = [...parentIndices, to];
-          const row = from === undefined ? undefined : rows[from];
-          if (isRow(row)) state.setExposedValuesPerRow(componentId, row, indices, moduleId);
-          else state.resetComponentExposedValuesPerRow(componentId, indices, moduleId);
+          const moved = rowsAt(from === undefined ? undefined : rows[from]);
+          for (const [path, row] of moved) {
+            state.setExposedValuesPerRow(componentId, row, [...parentIndices, to, ...path], moduleId);
+          }
+          if (!moved.length && isRow(rows[to])) {
+            state.resetComponentExposedValuesPerRow(componentId, [...parentIndices, to], moduleId);
+          }
         }
       }
     } finally {

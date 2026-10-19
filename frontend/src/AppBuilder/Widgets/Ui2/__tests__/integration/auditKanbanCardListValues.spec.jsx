@@ -4,9 +4,10 @@
  * - an emptied board (data refreshed to [] or every card deleted) kept its removed cards' component values in
  *   children, readable by workflows;
  * - a List view on a card: after the card moved or a card before it was removed, the Inputs showed the right values
- *   but children kept the nested values at the old card indexes. Marked test.failing: the cause is shared,
- *   takeRowValues (_shared/rowValues.ts) moves only the board's direct card components' values, not those of a
- *   component inside a nested List view (the same gap as a List view in a List view, NESTED-LIST-RECORD-VALUES).
+ *   but children kept the nested values at the old card indexes. The cause was shared: takeRowValues
+ *   (_shared/rowValues.ts) moved only the board's direct card components' values, not those of a component inside a
+ *   nested List view (the same gap as a List view in a List view, NESTED-LIST-RECORD-VALUES,
+ *   ListView/__tests__/integration/listNestedRowValues.spec.jsx).
  */
 import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
@@ -176,8 +177,7 @@ describe('a List view on a card', () => {
     expect(screen.getByLabelText('Beta one')).toHaveValue('seed');
   });
 
-  // Shared cause: takeRowValues (_shared/rowValues.ts) leaves field1's values at the old card index.
-  test.failing('a card moved to another column takes its nested values along in children', async () => {
+  test('a card moved to another column takes its nested values along in children', async () => {
     await mount();
     await editAlphaOne();
     await w.act('moveCard', 'A', 'done');
@@ -186,7 +186,7 @@ describe('a List view on a card', () => {
     await waitFor(() => expect(published()).toEqual(['seed', 'seed', 'Alpha edit', 'seed']));
   });
 
-  test.failing('a workflow reads the nested value of the card now first', async () => {
+  test('a workflow reads the nested value of the card now first', async () => {
     await mount();
     await editAlphaOne();
     await act(async () =>
@@ -204,7 +204,7 @@ describe('a List view on a card', () => {
     await waitFor(() => expect(w.variables().read).toEqual({ name: 'Beta', value: 'seed' }));
   });
 
-  test.failing('removing a card does not show its nested draft under the next card', async () => {
+  test('removing a card does not show its nested draft under the next card', async () => {
     await mount();
     await editAlphaOne();
     await setData([B]);
