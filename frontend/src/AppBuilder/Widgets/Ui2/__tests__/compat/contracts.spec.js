@@ -1,16 +1,15 @@
 // Backward compatibility, layer 1: each UI 2.0 widget's public contract (the names and defaults a saved app relies on,
 // see contract.js) is frozen in Ui2/__contracts__/<Type>.json. A new name passes once `npm run ui2:contracts` has
 // written it. A removed or renamed name, a changed default, a changed value type or reordered action parameters fail,
-// unless the same change records the rename in legacyNames.ts with a data migration, or lists an accepted break with
-// its reason in __contracts__/acceptedBreaks.json. The failure message says which, and how.
+// unless the same change lists an accepted break with its reason in __contracts__/acceptedBreaks.json. The failure
+// message says which, and how.
 import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
-import { renamesFor } from '@/AppBuilder/Widgets/Ui2/legacyNames';
 import { classify, compareWithFrozen, contractOf, diffContract, explainAll, readAcceptedBreaks } from './contract';
 
 describe('UI 2.0 widget contracts', () => {
   it('match the frozen contracts in Ui2/__contracts__', () => {
-    const { classified } = compareWithFrozen({ configs: shadcnConfigs, renamesFor });
+    const { classified } = compareWithFrozen({ configs: shadcnConfigs });
     if (classified.length) throw new Error(explainAll(classified));
   });
 
@@ -38,13 +37,8 @@ describe('UI 2.0 widget contract rules', () => {
     fn(config);
     return config;
   };
-  const verdicts = (config, { renames = {}, migrationTexts = [], acceptedBreaks = [] } = {}) =>
-    classify(diffContract(frozen.ShadSelect, contractOf(config)), {
-      renamesFor: (type) => ({ events: {}, actions: {}, exposed: {}, properties: {}, ...renames[type] }),
-      migrationTexts,
-      acceptedBreaks,
-      liveContracts: { ShadSelect: contractOf(config) },
-    });
+  const verdicts = (config, { acceptedBreaks = [] } = {}) =>
+    classify(diffContract(frozen.ShadSelect, contractOf(config)), { acceptedBreaks });
   const renameOnSelect = edit((c) => {
     c.events.onPick = c.events.onSelect;
     delete c.events.onSelect;
@@ -63,25 +57,13 @@ describe('UI 2.0 widget contract rules', () => {
     ]);
   });
 
-  it('[COMPAT-CONTRACT-002] renaming an event with no legacy name or migration is a break that says how to fix it', () => {
+  it('[COMPAT-CONTRACT-002] renaming an event is a break that says how to fix it', () => {
     const [removed] = verdicts(renameOnSelect).filter((v) => v.change === 'removed');
     expect(removed).toMatchObject({ area: 'event', key: 'onSelect', verdict: 'break' });
     const message = explainAll([removed]);
     expect(message).toContain('ShadSelect event "onSelect" was removed or renamed.');
-    expect(message).toContain('UI2_RENAMES.ShadSelect.events in Widgets/Ui2/legacyNames.ts');
-    expect(message).toContain('server/data-migrations');
     expect(message).toContain('acceptedBreaks.json');
-  });
-
-  it('[COMPAT-CONTRACT-003] a legacy name alone is not enough: the rename also needs a data migration', () => {
-    const renames = { ShadSelect: { events: { onSelect: 'onPick' } } };
-    const [noMigration] = verdicts(renameOnSelect, { renames }).filter((v) => v.change === 'removed');
-    expect(noMigration.verdict).toBe('break');
-    expect(explainAll([noMigration])).toContain(`no migration in server/data-migrations rewrites`);
-
-    const migrationTexts = ["const RENAMES = { ShadSelect: { events: { onSelect: 'onPick' } } };"];
-    const [migrated] = verdicts(renameOnSelect, { renames, migrationTexts }).filter((v) => v.change === 'removed');
-    expect(migrated).toMatchObject({ verdict: 'renamed', to: 'onPick' });
+    expect(message).toContain('put the old name or value back');
   });
 
   it('[COMPAT-CONTRACT-004] a changed default is a break unless accepted with a reason', () => {
@@ -147,12 +129,7 @@ describe('UI 2.0 widget contract rules', () => {
     const before = contractOf(tabs);
     const after = JSON.parse(JSON.stringify(tabs));
     delete after.definition.properties.tabItems;
-    const [change] = classify(diffContract(before, contractOf(after)), {
-      renamesFor: () => ({ events: {}, actions: {}, exposed: {}, properties: {} }),
-      migrationTexts: [],
-      acceptedBreaks: [],
-      liveContracts: { ShadTabs: contractOf(after) },
-    });
+    const [change] = classify(diffContract(before, contractOf(after)), { acceptedBreaks: [] });
     expect(change).toMatchObject({ area: 'property', key: 'tabItems', change: 'removed', verdict: 'break' });
   });
 });

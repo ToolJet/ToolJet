@@ -7,7 +7,6 @@ import path from 'path';
 import { parse } from '@babel/parser';
 import { shadcnConfigs, SHADCN_COMPONENTS } from '../../../WidgetManager/widgets/shadcn';
 import { widgets as allConfigs } from '../../../WidgetManager/configs/widgetConfig';
-import { renamesFor } from '@/AppBuilder/Widgets/Ui2/legacyNames';
 
 const DIR = path.resolve(__dirname, '../../../WidgetManager/widgets');
 const files = fs.readdirSync(DIR).filter((f) => /^shad[A-Z]\w*\.(js|ts)$/.test(f));
@@ -99,17 +98,6 @@ describe('UI 2.0 widget names', () => {
   const nativeEvents = new Set(
     allConfigs.filter((c) => !c.name.startsWith('Shad')).flatMap((c) => Object.keys(c.events || {}))
   );
-
-  it.each(shadcnConfigs.map((c) => [c.name, c]))('%s uses none of its retired names', (name, config) => {
-    const renames = renamesFor(name);
-    const used = [
-      ...Object.keys(config.events || {}).filter((k) => renames.events[k]),
-      ...(config.actions || []).map((a) => a.handle).filter((k) => renames.actions[k]),
-      ...Object.keys(config.exposedVariables || {}).filter((k) => renames.exposed[k]),
-      ...Object.keys(config.properties || {}).filter((k) => renames.properties[k]),
-    ];
-    expect(used).toEqual([]);
-  });
 
   it.each(shadcnConfigs.map((c) => [c.name, c]))('%s names its own events by the rule', (name, config) => {
     const offRule = Object.keys(config.events || {})

@@ -1,12 +1,8 @@
-// Runs saved-app fixtures through the two paths that rewrite apps saved under an earlier release, so the compat spec
-// loads what a customer's app becomes after an upgrade:
-//  - import (server/src/modules/apps/services/ui2-legacy-names.ts, applyUi2RenamesToImport), for exported apps and git
-//    sync;
-//  - the data migrations (server/data-migrations/*Ui2*.ts, in timestamp order), for apps already in the database. They
-//    run unchanged against a small stand-in for the database that understands the queries they send.
+// Runs saved-app fixtures through the UI 2.0 data migrations (server/data-migrations/*Ui2*.ts, in timestamp order), so
+// the compat spec loads what a customer's app becomes after an upgrade. They run unchanged against a small stand-in for
+// the database that understands the queries they send.
 import fs from 'fs';
 import path from 'path';
-import { applyUi2RenamesToImport } from '../../../../../../../server/src/modules/apps/services/ui2-legacy-names';
 
 const MIGRATIONS = path.resolve(__dirname, '../../../../../../../server/data-migrations');
 
@@ -66,7 +62,6 @@ const toTables = (app) => {
 /** Just enough of TypeORM's QueryRunner for the queries the UI 2.0 migrations send; anything else fails loudly. */
 function standInQueryRunner(db) {
   const versionOf = (c) => db.versionByPage[c.page_id];
-  const shadVersions = () => [...new Set(db.components.filter((c) => c.type.startsWith('Shad')).map(versionOf))].sort();
   const byId = (table, id) => db[table].find((r) => r.id === id);
   // componentLibraryFor (server/src/helpers/component_library.helper.ts): a saved library wins; without one, a version
   // with any Shad* widget is UI 2.0.
@@ -107,71 +102,6 @@ function standInQueryRunner(db) {
           row.properties = { ...saved, ...Object.fromEntries(missing) };
         }
         return [[], rows.length];
-      },
-    ],
-    [
-      /^SELECT c\.id, c\.properties, p\.app_version_id FROM components c JOIN pages p ON p\.id = c\.page_id WHERE c\.type = 'FlexContainer' AND c\.properties::text LIKE '%antCard%'$/,
-      () =>
-        db.components
-          .filter((c) => c.type === 'FlexContainer' && JSON.stringify(c.properties).includes('antCard'))
-          .map((c) => ({ id: c.id, properties: clone(c.properties), app_version_id: versionOf(c) })),
-    ],
-    [
-      /^SELECT COUNT\(DISTINCT p\.app_version_id\) AS count FROM components c JOIN pages p ON p\.id = c\.page_id WHERE c\.type LIKE 'Shad%'$/,
-      () => [{ count: String(shadVersions().length) }],
-    ],
-    [
-      /^SELECT DISTINCT p\.app_version_id FROM components c JOIN pages p ON p\.id = c\.page_id WHERE c\.type LIKE 'Shad%' ORDER BY p\.app_version_id LIMIT \$1 OFFSET \$2$/,
-      ([limit, offset]) =>
-        shadVersions()
-          .slice(offset, offset + limit)
-          .map((v) => ({ app_version_id: v })),
-    ],
-    [
-      /^SELECT c\.id, c\.name, c\.type, c\.page_id, c\.properties, c\.general_properties, c\.styles, c\.general_styles, c\.display_preferences, c\.validation FROM components c JOIN pages p ON p\.id = c\.page_id WHERE p\.app_version_id = \$1$/,
-      ([version]) => clone(db.components.filter((c) => versionOf(c) === version)),
-    ],
-    [
-      // The rename clears undo/redo history for versions whose history names a UI 2.0 type; the fixtures carry none.
-      /^SELECT DISTINCT app_version_id FROM app_history WHERE created_at >= \$1 AND \(change_payload::text ~ \$2 OR change_payload::text ~ \$3\)$/,
-      () => [],
-    ],
-    [
-      /^UPDATE components SET (.+) WHERE id = \$(\d+)$/,
-      (params, [, assignments]) => {
-        const columns = assignments.split(', ').map((a) => a.split(' = ')[0]);
-        const row = byId('components', params[columns.length]);
-        columns.forEach((col, i) => (row[col] = JSON.parse(params[i])));
-        return [];
-      },
-    ],
-    [
-      /^SELECT id, name, event, source_id FROM event_handlers WHERE app_version_id = \$1$/,
-      ([version]) =>
-        clone(db.event_handlers.filter((e) => e.app_version_id === version)).map(({ id, name, event, source_id }) => ({
-          id,
-          name,
-          event,
-          source_id,
-        })),
-    ],
-    [
-      /^UPDATE event_handlers SET name = \$1, event = \$2 WHERE id = \$3$/,
-      ([name, event, id]) => {
-        Object.assign(byId('event_handlers', id), { name, event: JSON.parse(event) });
-        return [];
-      },
-    ],
-    [
-      /^SELECT id, options FROM data_queries WHERE app_version_id = \$1$/,
-      ([version]) =>
-        clone(db.data_queries.filter((q) => q.app_version_id === version)).map(({ id, options }) => ({ id, options })),
-    ],
-    [
-      /^UPDATE data_queries SET options = \$1 WHERE id = \$2$/,
-      ([options, id]) => {
-        byId('data_queries', id).options = JSON.parse(options);
-        return [];
       },
     ],
   ];
@@ -216,10 +146,3 @@ export async function migrate(app) {
   return out;
 }
 const byIdIn = (rows, id) => rows.find((r) => r.id === id);
-
-/** The app after import's rename, in its exported shape. */
-export function importRename(app) {
-  const out = clone(app);
-  applyUi2RenamesToImport(out);
-  return out;
-}

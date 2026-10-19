@@ -1,4 +1,4 @@
-// Loads one saved-app fixture (after import and the data migrations rewrote it) into the real store with the widget
+// Loads one saved-app fixture (after the data migrations ran on it) into the real store with the widget
 // harness, renders it, and drives it the way the saved app would: its events, its control-component actions, its RunJS
 // query and its bindings. Returns what a builder would see (exposed values after each step) and every problem found.
 import { act, screen, waitFor } from '@testing-library/react';
@@ -120,16 +120,15 @@ export function harnessFor(fixture, createWidgetHarness) {
 }
 
 /**
- * Replays `app` (already renamed) through `harness`. `original` is the fixture as it was saved, to name the old name
- * in a problem. The store helpers come from the spec's shared widget harness. Returns { problems, observed }.
+ * Replays `app` (after the data migrations) through `harness`. The store helpers come from the spec's shared widget
+ * harness. Returns { problems, observed }.
  */
-export async function replay(harness, app, original, { MODULE_ID, store, drain }) {
+export async function replay(harness, app, { MODULE_ID, store, drain }) {
   const problems = [];
   const [widget, probe, marker] = app.components;
   const type = widget.type;
   const config = componentTypeDefinitionMap[type];
   const exposed = (id = widget.id) => store().getExposedValueOfComponent(id, MODULE_ID) ?? {};
-  const originalEvent = Object.fromEntries(original.events.map((e) => [e.id, e.event]));
 
   if (!config) {
     problems.push(`${type} is not a registered widget any more: saved apps show "This widget is not available".`);
@@ -186,8 +185,7 @@ export async function replay(harness, app, original, { MODULE_ID, store, drain }
   // handler's action on the marker.
   for (const handler of app.events.filter((e) => e.sourceId === widget.id)) {
     const { eventId, componentSpecificActionHandle: handle } = handler.event;
-    const savedAs = originalEvent[handler.id]?.eventId;
-    const label = savedAs === eventId ? `"${eventId}"` : `"${savedAs}" (renamed to "${eventId}")`;
+    const label = `"${eventId}"`;
     if (!(eventId in (config.events || {}))) {
       problems.push(`${type}: a saved handler on ${label} is on an event the widget no longer has.`);
       continue;
@@ -210,8 +208,7 @@ export async function replay(harness, app, original, { MODULE_ID, store, drain }
   // The saved control-component actions, one at a time, as the trigger's click would run them.
   for (const handler of app.events.filter((e) => e.sourceId !== widget.id && e.event.componentId === widget.id)) {
     const handle = handler.event.componentSpecificActionHandle;
-    const savedAs = originalEvent[handler.id]?.componentSpecificActionHandle;
-    const label = savedAs === handle ? `"${handle}"` : `"${savedAs}" (renamed to "${handle}")`;
+    const label = `"${handle}"`;
     if (typeof exposed()[handle] !== 'function') {
       problems.push(`${type}: a saved control-component action ${label} is not an action the widget has.`);
       continue;

@@ -8,9 +8,6 @@
 
 const AREAS = ['property', 'style', 'validation', 'event', 'action', 'exposed'];
 
-/** The legacyNames.ts table a rename in this area is recorded in. Styles and validation keys have none. */
-export const RENAME_TABLE = { property: 'properties', event: 'events', action: 'actions', exposed: 'exposed' };
-
 const schemaType = (schema) => {
   if (!schema || !schema.type) return 'any';
   if (schema.type === 'union') return `union<${(schema.schemas || []).map(schemaType).join('|')}>`;
@@ -132,84 +129,17 @@ const matchesAccepted = (change, accepted) =>
     (a) => a.type === change.type && a.area === change.area && a.key === change.key && a.change === change.change
   );
 
-// A migration's source, read just far enough to find its rename table: `Type: { events: { old: 'new' } }`, where an
-// entry or a table may be a name bound to an object (`ShadAreaChart: CHART`) and may spread one (`...PICKER`).
-const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const IDENT = '[A-Za-z_$][\\w$]*';
-
-/** The source without its comments (strings are kept, so a `//` inside one is not taken for a comment). */
-const withoutComments = (text) =>
-  text.replace(/("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (m, str) =>
-    str === undefined ? ' ' : str
-  );
-
-/** The `{ ... }` that opens at `open`, by brace depth. */
-const objectAt = (text, open) => {
-  let depth = 0;
-  for (let i = open; i < text.length; i += 1) {
-    if (text[i] === '{') depth += 1;
-    else if (text[i] === '}' && (depth -= 1) === 0) return text.slice(open, i + 1);
-  }
-  return '';
-};
-
-/** The object bound to `name` (`const NAME = { ... }`), with its spreads written out. */
-const boundObject = (text, name, depth) => {
-  const at = new RegExp(`(?:const|let|var)\\s+${esc(name)}\\b[^=;]*=\\s*\\{`).exec(text);
-  return at && depth < 4 ? spreadOut(text, objectAt(text, at.index + at[0].length - 1), depth + 1) : '';
-};
-const spreadOut = (text, object, depth) =>
-  object.replace(new RegExp(`\\.\\.\\.\\s*(${IDENT})`, 'g'), (m, name) => boundObject(text, name, depth));
-
-/** Every object `key` is given in `text`: `key: { ... }`, or `key: NAME` for an object bound to NAME. */
-const entriesOf = (text, scope, key) => {
-  const found = [];
-  const re = new RegExp(`(?:^|[\\s{,])['"]?${esc(key)}['"]?\\s*:\\s*(?:(\\{)|(${IDENT}))`, 'g');
-  for (let m = re.exec(scope); m; m = re.exec(scope)) {
-    const object = m[1] ? spreadOut(text, objectAt(scope, m.index + m[0].length - 1), 0) : boundObject(text, m[2], 0);
-    if (object) found.push(object);
-  }
-  return found;
-};
-
-/**
- * Whether a migration's source renames `from` to `to` for `type`, as the rename tables are written: in the type's own
- * entry under `table` (`ShadSelect: { events: { onChange: 'onSelect' } }`), or under `table` in the common renames
- * every type takes (UI2_COMMON_RENAMES). The pair anywhere else (another widget's entry, a comment) does not count.
- */
-const migrationRewrites = (texts, type, table, from, to) => {
-  const pair = new RegExp(`(?:^|[\\s{,'"])${esc(from)}['"]?\\s*:\\s*['"\`]${esc(to)}['"\`]`);
-  return texts
-    .map(withoutComments)
-    .some((text) =>
-      [...entriesOf(text, text, type), boundObject(text, 'UI2_COMMON_RENAMES', 0)]
-        .flatMap((entry) => entriesOf(text, entry, table))
-        .some((names) => pair.test(names))
-    );
-};
-
 /**
  * Sorts each change into what the contract allows:
  *  - addition: new names, safe; the contract file only needs `npm run ui2:contracts`.
- *  - renamed: a removed name that legacyNames.ts maps to a live name and a data migration rewrites.
  *  - accepted: listed in __contracts__/acceptedBreaks.json with a reason.
  *  - break: anything else; saved apps would notice.
- * `renamesFor` is legacyNames.ts's; `migrationTexts` the sources of server/data-migrations/*.ts.
  */
-export function classify(changes, { renamesFor, migrationTexts, acceptedBreaks, liveContracts }) {
+export function classify(changes, { acceptedBreaks }) {
   return changes.map((change) => {
     if (change.change === 'added') return { ...change, verdict: 'addition' };
     const accepted = matchesAccepted(change, acceptedBreaks);
     if (accepted) return { ...change, verdict: 'accepted', reason: accepted.reason };
-    if (change.change === 'removed' && RENAME_TABLE[change.area]) {
-      const target = renamesFor(change.type)?.[RENAME_TABLE[change.area]]?.[change.key];
-      const live = liveContracts[change.type];
-      const targetLive = target && live && namesIn(live, change.area).includes(target.split('.')[0]);
-      const migrated =
-        target && migrationRewrites(migrationTexts, change.type, RENAME_TABLE[change.area], change.key, target);
-      if (targetLive && migrated) return { ...change, verdict: 'renamed', to: target };
-      return { ...change, verdict: 'break', renamedTo: target, targetLive, migrated };
-    }
     return { ...change, verdict: 'break' };
   });
 }
@@ -245,25 +175,6 @@ export function explainBreak(c) {
   const lines = [];
   if (c.change === 'removed') {
     lines.push(`${what} was removed or renamed.`, `  ${IMPACT[c.area].replace('KEY', c.key)}`);
-    if (RENAME_TABLE[c.area]) {
-      const table = `UI2_RENAMES.${c.type}.${RENAME_TABLE[c.area]}`;
-      if (!c.renamedTo) {
-        lines.push(
-          `  If it was renamed: map "${c.key}" to the new name in ${table} in Widgets/Ui2/legacyNames.ts and in the`,
-          `  server copy (server/src/modules/apps/services/ui2-legacy-names.ts, used on import), and add a data`,
-          `  migration in server/data-migrations that rewrites saved apps (start from *-RenameUi2PackNames.ts).`
-        );
-      } else {
-        if (!c.targetLive)
-          lines.push(`  legacyNames.ts maps it to "${c.renamedTo}", but the live config has no "${c.renamedTo}".`);
-        if (!c.migrated)
-          lines.push(
-            `  legacyNames.ts maps it to "${c.renamedTo}", but no migration in server/data-migrations rewrites`,
-            `  "${c.key}: '${c.renamedTo}'" in its ${c.type} entry. Add one (start from *-RenameUi2PackNames.ts;`,
-            `  never edit a shipped one).`
-          );
-      }
-    }
   } else if (c.change === 'params') {
     lines.push(
       `${what} changed its parameters from ${show(c.from)} to ${show(c.to)}.`,
@@ -315,7 +226,6 @@ export function explainAll(classified) {
           .map(
             (c) =>
               `  ${c.type} ${AREA_WORDS[c.area]} "${c.key}": ${c.verdict === 'addition' ? 'added' : c.verdict}` +
-              (c.to ? ` to "${c.to}"` : '') +
               (c.reason ? ` (${c.reason})` : '')
           )
           .join('\n')
@@ -324,7 +234,7 @@ export function explainAll(classified) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// The files: where the frozen contracts, accepted breaks and migrations live, shared by the spec and the script.
+// The files: where the frozen contracts and accepted breaks live, shared by the spec and the script.
 // ---------------------------------------------------------------------------------------------------------------
 const fs = require('fs');
 const path = require('path');
@@ -332,7 +242,6 @@ const path = require('path');
 const UI2 = path.resolve(__dirname, '../..');
 export const CONTRACTS_DIR = path.join(UI2, '__contracts__');
 export const ACCEPTED_BREAKS = path.join(CONTRACTS_DIR, 'acceptedBreaks.json');
-const MIGRATIONS_DIR = path.resolve(UI2, '../../../../../server/data-migrations');
 
 export const readFrozenContracts = () =>
   Object.fromEntries(
@@ -344,25 +253,12 @@ export const readFrozenContracts = () =>
 export const readAcceptedBreaks = () =>
   fs.existsSync(ACCEPTED_BREAKS) ? JSON.parse(fs.readFileSync(ACCEPTED_BREAKS, 'utf8')).breaks || [] : [];
 
-const readMigrationTexts = () =>
-  fs.existsSync(MIGRATIONS_DIR)
-    ? fs
-        .readdirSync(MIGRATIONS_DIR)
-        .filter((f) => f.endsWith('.ts'))
-        .map((f) => fs.readFileSync(path.join(MIGRATIONS_DIR, f), 'utf8'))
-    : [];
-
 /** Compares the live configs with the frozen contracts. */
-export function compareWithFrozen({ configs, renamesFor, frozen = readFrozenContracts(), acceptedBreaks }) {
+export function compareWithFrozen({ configs, frozen = readFrozenContracts(), acceptedBreaks }) {
   const liveContracts = Object.fromEntries(configs.map((c) => [c.name, contractOf(c)]));
   const types = [...new Set([...Object.keys(frozen), ...Object.keys(liveContracts)])].sort();
   const changes = types.flatMap((type) => diffContract(frozen[type], liveContracts[type]));
-  const classified = classify(changes, {
-    renamesFor,
-    migrationTexts: readMigrationTexts(),
-    acceptedBreaks: acceptedBreaks ?? readAcceptedBreaks(),
-    liveContracts,
-  });
+  const classified = classify(changes, { acceptedBreaks: acceptedBreaks ?? readAcceptedBreaks() });
   return { liveContracts, classified };
 }
 

@@ -1,11 +1,11 @@
-// Lets the UI 2.0 scripts require the widget configs and legacyNames.ts, which are ES modules (one in TypeScript):
-// files under frontend/src, server/src and any extra directory given are compiled on require, as Jest does.
+// Lets the UI 2.0 scripts require the widget configs, which are ES modules: files under frontend/src and any extra
+// directory given are compiled on require, as Jest does.
 const fs = require('fs');
 const path = require('path');
 const babel = require('@babel/core');
 
 const ROOT = path.resolve(__dirname, '..');
-const loadable = [path.join(ROOT, 'src'), path.resolve(ROOT, '../server/src')];
+const loadable = [path.join(ROOT, 'src')];
 
 for (const ext of ['.js', '.ts']) {
   const fallback = require.extensions[ext] || require.extensions['.js'];

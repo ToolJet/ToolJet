@@ -35,8 +35,10 @@ import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { applyUi2RenamesToImport } from './ui2-legacy-names';
-import { remapFlexContainerChildOrder, SLOTTED_PARENT_TYPES } from '@modules/versions/helpers/version-copy-parent.helper';
+import {
+  remapFlexContainerChildOrder,
+  SLOTTED_PARENT_TYPES,
+} from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -975,15 +977,6 @@ export class AppImportExportService {
       importingDataQueryFolders,
       importingDataQueryFolderMappings,
     } = this.extractImportDataFromAppParams(appParams);
-
-    // An export made before the UI 2.0 pack settled its names carries the old event, action, exposed and property
-    // names; rename them before anything is saved (a no-op without Shad* widgets or Ant cards).
-    applyUi2RenamesToImport({
-      pages: importingPages,
-      components: importingComponents,
-      events: importingEvents,
-      dataQueries: importingDataQueries,
-    });
 
     const { appDefaultEnvironmentMapping, appVersionMapping } = await this.createAppVersionsForImportedApp(
       manager,

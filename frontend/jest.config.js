@@ -42,9 +42,6 @@ const esmPackages = [
 ];
 
 module.exports = {
-  // The UI 2.0 saved-app replay imports server/src (ui2-legacy-names.ts) to rename names exactly as import does. The
-  // frontend CI job installs only frontend/node_modules, so a package that file imports (acorn) resolves from here.
-  modulePaths: ['<rootDir>/node_modules'],
   transform: {
     // Keep the application presets, but omit production-only Babel plugins when
     // transforming ESM dependencies such as MSW.

@@ -4,9 +4,9 @@
  * compat/fixtures/<release>/<Type>.json is a saved page per widget and release (see scripts/ui2-compat-fixtures.js): the
  * widget with non-default properties and styles, a handler on each of its events, control-component calls of each of
  * its actions, a text bound to each of its exposed values, and a RunJS query calling and reading it by name. Each runs
- * through import's rename and the data migrations (which must agree), loads into the real store, and renders. Then:
- * no widget is unavailable, nothing logs an error or a warning (ui2Harness's console guard), every saved event still dispatches its action, every saved action
- * and binding still exists, and the exposed values match what was recorded for that fixture
+ * through the UI 2.0 data migrations, loads into the real store, and renders. Then: no widget is unavailable, nothing
+ * logs an error or a warning (ui2Harness's console guard), every saved event still dispatches its action, every saved
+ * action and binding still exists, and the exposed values match what was recorded for that fixture
  * (<Type>.oracle.json). Fixtures are never edited or deleted; fixtures/manifest.json pins each by checksum.
  *
  * UI2_COMPAT_RECORD=1 records the oracles still marked pending (a new release's set). It never overwrites one.
@@ -17,7 +17,7 @@ import path from 'path';
 import { loadCompatibilityFixture } from '@/test/app-builder';
 import { MODULE_ID, store, drain } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { harnessFor, replay } from '../compat/savedAppReplay';
-import { importRename, migrate } from '../compat/migrationReplay';
+import { migrate } from '../compat/migrationReplay';
 
 jest.mock(
   '@helpers/migration.helper',
@@ -100,11 +100,10 @@ describe.each(Object.keys(manifest.fixtures))('saved app %s', (name) => {
   });
 
   test(`[COMPAT-${name}] loads, renders, dispatches and exposes what it did when it was saved`, async () => {
-    const imported = importRename(payload);
     const migrated = await migrate(payload);
-    expect(migrated).toEqual(imported); // an exported app and a stored app become the same app
+    expect(migrated).toEqual(payload); // no data migration rewrites a page saved with the current names
 
-    const { problems, observed } = await replay(harness, imported, payload, { MODULE_ID, store, drain });
+    const { problems, observed } = await replay(harness, migrated, { MODULE_ID, store, drain });
     if (problems.length) throw new Error(`${name} (${metadata.provenance}):\n  ${problems.join('\n  ')}`);
 
     if (recorded.pending) {

@@ -7,8 +7,7 @@
 //  - a trigger button whose click handlers call every action the widget had, with arguments;
 //  - a text whose binding reads every exposed value the widget had, by component id (as the editor stores it);
 //  - a RunJS query that calls every action and reads every exposed value by component name.
-// The names are the ones that release's configs had. (For pre-rename: every event and action saved apps on the local
-// copy of staging used on these widgets, 16 Oct 2026, is in those configs.) A fixture set is written once per release and never edited or
+// The names are the ones that release's configs had. A fixture set is written once per release and never edited or
 // deleted: the spec checks each file against the checksum in fixtures/manifest.json.
 //
 //   node scripts/ui2-compat-fixtures.js <release> [--configs-from <git ref>] [--provenance <text>] [--only ShadX,ShadY]
@@ -60,7 +59,6 @@ const ARGS = {
   ShadCalendar: { selectDate: ['2026-06-18', ''], setMonth: ['2026-07-01'] },
   ShadNavigation: {
     selectItem: ['orders'],
-    setActive: ['orders'],
     setItemVisibility: ['reports', '{{false}}'],
     setItemDisable: ['customers', '{{true}}'],
   },
@@ -70,26 +68,23 @@ const ARGS = {
   ShadCurrencyInput: { setValue: ['{{1234.5}}', 'EUR'] },
   ShadDateTimePicker: {
     setValue: ['2026-06-18 14:30', 'YYYY-MM-DD HH:mm'],
-    setDate: ['2026-06-18 14:30', 'YYYY-MM-DD HH:mm'],
     setValueInTimestamp: ['{{1781000000000}}'],
     setTime: ['09:15', 'HH:mm'],
     setMinDate: ['2026-01-01'],
     setMaxDate: ['2026-12-31'],
   },
-  ShadNumberInput: { setText: ['{{42}}'], setValue: ['{{42}}'] },
+  ShadNumberInput: { setText: ['{{42}}'] },
   ShadOtpInput: { setText: ['1234'] },
   ShadPasswordInput: { setText: ['s3cret-saved'] },
-  ShadPhoneInput: { setValue: ['2025550143', 'US'], setCountryCode: ['GB'], setCountry: ['GB'] },
+  ShadPhoneInput: { setValue: ['2025550143', 'US'], setCountryCode: ['GB'] },
   ShadTimePicker: {
     setValue: ['09:15', 'HH:mm'],
-    setTime: ['09:15', 'HH:mm'],
     setMinTime: ['08:00'],
     setMaxTime: ['18:00'],
   },
   ShadAccordion: { expand: ['{{1}}'], collapse: ['{{1}}'] },
   ShadDatePicker: {
     setValue: ['2026-06-18', 'YYYY-MM-DD'],
-    setDate: ['2026-06-18', 'YYYY-MM-DD'],
     setValueInTimestamp: ['{{1781000000000}}'],
     setStartDate: ['2026-06-10', 'YYYY-MM-DD'],
     setEndDate: ['2026-06-20', 'YYYY-MM-DD'],
@@ -103,7 +98,6 @@ const ARGS = {
   ShadKanban: {
     addCard: ["{{{ id: 9, title: 'Saved card', status: 'todo' }}}", 'todo'],
     moveCard: ['{{1}}', 'done'],
-    updateCard: ['{{2}}', "{{{ title: 'Renamed card' }}}"],
     updateCardData: ['{{2}}', "{{{ title: 'Renamed card' }}}"],
     deleteCard: ['{{3}}'],
   },
@@ -145,11 +139,11 @@ const ARGS = {
 // Actions a fixture does not call: they hand the browser a file, which jsdom cannot.
 const SKIPPED_ACTIONS = new Set(['downloadChat', 'downloadTableData']);
 
-/** The three control actions every widget has, by the names this release's configs give them. */
+/** The three control actions every widget has. */
 const CONTROL = [
-  { names: ['loading', 'setLoading'], exposed: 'isLoading', on: '{{true}}', off: '{{false}}' },
-  { names: ['disable', 'setDisable'], exposed: 'isDisabled', on: '{{true}}', off: '{{false}}' },
-  { names: ['visibility', 'setVisibility'], exposed: 'isVisible', on: '{{false}}', off: '{{true}}' },
+  { name: 'setLoading', exposed: 'isLoading', on: '{{true}}', off: '{{false}}' },
+  { name: 'setDisable', exposed: 'isDisabled', on: '{{true}}', off: '{{false}}' },
+  { name: 'setVisibility', exposed: 'isVisible', on: '{{false}}', off: '{{true}}' },
 ];
 
 const KEEP = new Set([
@@ -264,7 +258,6 @@ function fixtureFor(config, byName) {
   const validation = bucket(Object.entries(def.validation || {}).map(([k, v]) => [k, v.value]));
 
   const button = byName.ShadButton;
-  const controlName = (c) => c.names.find((n) => button.actions.some((a) => a.handle === n));
   const handler = (sourceId, eventId, index, event) => ({
     id: id('handler', sourceId, eventId, index),
     name: eventId,
@@ -284,21 +277,20 @@ function fixtureFor(config, byName) {
   // Every event the widget had, each switching one control state of the marker.
   const eventHandlers = Object.keys(config.events || {}).map((eventId, i) => {
     const c = CONTROL[i % CONTROL.length];
-    const handle = controlName(c);
-    const params = button.actions.find((a) => a.handle === handle).params;
-    return handler(widget.id, eventId, 0, control(marker.id, handle, params, [c.on]));
+    const params = button.actions.find((a) => a.handle === c.name).params;
+    return handler(widget.id, eventId, 0, control(marker.id, c.name, params, [c.on]));
   });
 
   // Every action the widget had, from the trigger's click, the control actions last and each switched back.
   const own = (config.actions || []).filter(
-    (a) => !SKIPPED_ACTIONS.has(a.handle) && !CONTROL.some((c) => c.names.includes(a.handle))
+    (a) => !SKIPPED_ACTIONS.has(a.handle) && !CONTROL.some((c) => c.name === a.handle)
   );
   const calls = own.map((a) => {
     const values = (a.params || []).map((p, i) => ARGS[type]?.[a.handle]?.[i] ?? p.defaultValue ?? '');
     return { action: a, values };
   });
   for (const c of CONTROL) {
-    for (const action of (config.actions || []).filter((a) => c.names.includes(a.handle))) {
+    for (const action of (config.actions || []).filter((a) => a.handle === c.name)) {
       calls.push({ action, values: [c.on] }, { action, values: [c.off] });
     }
   }
