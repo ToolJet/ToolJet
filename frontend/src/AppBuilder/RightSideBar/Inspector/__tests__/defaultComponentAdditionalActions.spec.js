@@ -41,4 +41,8 @@ describe.each(['Calendar'])('%s default inspector', (component) => {
   test('shows the Additional Actions accordion', () => {
     expect(accordionTitles(meta(component))).toContain('Additional Actions');
   });
+
+  test('hides the General section, since its tooltip lives in Additional Actions', () => {
+    expect(accordionTitles(meta(component))).not.toContain('General');
+  });
 });

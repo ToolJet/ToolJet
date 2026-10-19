@@ -69,6 +69,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Container',
   'Timeline',
   'CustomComponent',
+  'Calendar',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];

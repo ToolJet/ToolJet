@@ -218,6 +218,7 @@ export const baseComponentProperties = (
       'ModalV2',
       'Container',
       'Timeline',
+      'Calendar',
       'CustomComponent',
     ],
     Layout: [],

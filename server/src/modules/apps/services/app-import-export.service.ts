@@ -282,6 +282,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'AudioRecorder',
   'Button',
   'ButtonGroupV2',
+  'Calendar',
   'Camera',
   'Cascader',
   'Checkbox',
@@ -2984,6 +2985,13 @@ function migrateProperties(
           properties.visibility = styles.visibility;
         }
         delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
       }
     }
 

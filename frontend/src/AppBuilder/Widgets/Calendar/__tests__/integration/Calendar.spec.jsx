@@ -1,4 +1,4 @@
-import { waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
@@ -37,6 +37,8 @@ const defaultProperties = {
   highlightToday: binding('{{true}}'),
   showPopOverOnEventClick: binding('{{false}}'),
   visibility: binding('{{true}}'),
+  tooltip: binding(''),
+  tooltipFormat: binding('plainText'),
 };
 
 const defaultStyles = {
@@ -240,6 +242,16 @@ describe('Calendar widget', () => {
     });
     await waitFor(() => expect(calRoot()).toHaveStyle({ display: 'block' }));
     expect(exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[Calendar-TIP-001] a tooltip set under properties is shown on hover', async () => {
+    // Break this catches: RenderWidget still reading Calendar's tooltip from `general`
+    // after it moved to properties (SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY).
+    widget.render({ properties: { tooltip: binding('Team schedule') } });
+    await waitCal();
+
+    await widget.session.user.hover(calRoot());
+    await waitFor(() => expect(screen.getAllByText('Team schedule').length).toBeGreaterThan(0));
   });
 
   test('[Calendar-STYLE-002] borderColor is applied to the root inline border', async () => {

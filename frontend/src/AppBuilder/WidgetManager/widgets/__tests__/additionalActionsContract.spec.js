@@ -37,7 +37,7 @@ const CONTRACT = {
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.
-const TOOLTIP_IN_PROPERTIES = ['CustomComponent'];
+const TOOLTIP_IN_PROPERTIES = ['Calendar', 'CustomComponent'];
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);
 const frontendWidgets = asList(frontendWidgetExports);
