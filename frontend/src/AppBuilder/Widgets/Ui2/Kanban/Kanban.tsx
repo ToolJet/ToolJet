@@ -19,7 +19,7 @@ import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinate
 import { SHADOWS, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fitsContentInView, kanbanCardHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import type { BoardCard, BoardColumn, CardMove } from './kanbanBoard';
+import type { BoardCard, BoardColumn, CardMove, Renamed } from './kanbanBoard';
 import { CardBody, CustomCardBody } from './KanbanCard';
 import type { CardFields } from './KanbanCard';
 import { KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
@@ -130,19 +130,24 @@ export const ShadKanban = (props: WidgetProps) => {
     // The native Kanban's onUpdate follows every change to the cards.
     if (event) fire('onUpdate');
   };
+  // A card whose key changed keeps its selection and open details: the card keyed `from` (a changed id), and one
+  // whose made-up key another card's id took (`renamed`).
+  const followKeys = (renamed: Renamed, from?: string, to?: string | null) => {
+    const follow = (key: string | null) => (key === renamed?.from ? renamed.to : key === from ? to ?? null : key);
+    setSelectedKey(follow);
+    setOpenKey(follow);
+  };
   const doAdd = (card: unknown, columnId: unknown) => {
     const { columns: cols, statusField: sf, idField: idf } = live.current;
     const result = addCard(cols, card ?? {}, isSet(columnId) ? String(columnId) : undefined, sf, idf);
+    followKeys(result.renamed);
     commit(result.columns, { lastAddedCard: result.card }, 'onCardAdded');
   };
   const doUpdate = (id: unknown, values: unknown) => {
     const { columns: cols, statusField: sf, idField: idf } = live.current;
     const result = updateCard(cols, id, values ?? {}, sf, idf);
     if (!result.card) return;
-    // A changed id changes the card's key: its selection and open details follow it.
-    const follow = (key: string | null) => (key === String(id ?? '') ? result.key : key);
-    setSelectedKey(follow);
-    setOpenKey(follow);
+    followKeys(result.renamed, String(id ?? ''), result.key);
     commit(result.columns, { lastUpdatedCard: result.card }, 'onCardUpdated');
   };
   const doDelete = (id: unknown) => {

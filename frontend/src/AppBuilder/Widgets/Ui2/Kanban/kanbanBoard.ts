@@ -44,18 +44,51 @@ export const cardIdOf = (card: BoardCard, idField: string): unknown =>
 /** Hands out drag keys no other card has: the card's id when free, else the id with a suffix. Duplicate or empty ids
  *  (two rows with id '' or the same id) gave two cards one key: dnd-kit dragged both and React reused one's element
  *  for the other, and a move removed every copy. Each id remembers its next suffix: probing from ~2 again for every
- *  duplicate cost n(n+1)/2 checks for n cards sharing an id (2,000 cards: two million). */
-const keyMaker = (keys: Set<string>) => {
+ *  duplicate cost n(n+1)/2 checks for n cards sharing an id (2,000 cards: two million).
+ *
+ *  `used` starts with every real id on the board, so a key made up (a suffix, or a card without an id named by its
+ *  column) never takes one: ids a, a, a~2 gave the second a the key a~2, and an action on a~2 changed it instead of the
+ *  card with that id. A card's own id is its key the first time (`own`), though `used` holds it. */
+const keyMaker = (used: Set<string>) => {
   const nextSuffix = new Map<string, number>();
-  return (base: string): string => {
+  const claimed = new Set<string>();
+  return (base: string, own = false): string => {
+    if (own && !claimed.has(base)) {
+      claimed.add(base);
+      used.add(base);
+      return base;
+    }
+    // A duplicate's own id is taken already; a made-up name may be free.
     let key = base;
-    if (keys.has(key)) {
+    if (own || used.has(key)) {
       let n = nextSuffix.get(base) ?? 2;
-      for (key = `${base}~${n}`; keys.has(key); key = `${base}~${n}`) n += 1;
+      for (key = `${base}~${n}`; used.has(key); key = `${base}~${n}`) n += 1;
       nextSuffix.set(base, n + 1);
     }
-    keys.add(key);
+    used.add(key);
     return key;
+  };
+};
+
+/** The key for a card taking the id `id` on a board (`self`, the card's own key, left out): the id, or a suffixed one
+ *  when another card has that id too. A card holding the id as a made-up key gets another one (`renamed`), so the id
+ *  names the card that has it. */
+const claimKey = (columns: BoardColumn[], id: string, idField: string, self?: string) => {
+  const cards = columns.flatMap((c) => c.cards);
+  const used = new Set<string>();
+  for (const card of cards) {
+    used.add(card.__key);
+    if (hasId(card[idField]) && card.__key !== self) used.add(keyOf(card[idField]));
+  }
+  const holder = cards.find((c) => c.__key === id && c.__key !== self);
+  if (!holder) return { columns, key: id, renamed: null };
+  const holderId = hasId(holder[idField]) ? keyOf(holder[idField]) : null;
+  if (holderId === id) return { columns, key: keyMaker(used)(id), renamed: null };
+  const to = keyMaker(used)(holderId ?? holder.__key);
+  return {
+    columns: columns.map((c) => ({ ...c, cards: c.cards.map((x) => (x === holder ? { ...x, __key: to } : x)) })),
+    key: id,
+    renamed: { from: id, to },
   };
 };
 
@@ -77,13 +110,15 @@ export const boardColumns = (cards: unknown, columns: unknown, statusField: stri
   }
   // Keep a stable id on every card for drag and drop, unique across the board. Rows that are not objects become
   // empty cards rather than spreading a string's characters into fields.
-  const uniqueKey = keyMaker(new Set<string>());
+  const ids = new Set<string>();
+  for (const column of byId.values())
+    for (const card of column.cards) if (isRecord(card) && hasId(card[idField])) ids.add(keyOf(card[idField]));
+  const uniqueKey = keyMaker(ids);
   for (const column of byId.values()) {
     column.cards = column.cards.map((card, i) => {
       const row = isRecord(card) ? card : {};
       const id = row[idField];
-      const base = hasId(id) ? keyOf(id) : `${column.id}-${i}`;
-      return { ...row, __key: uniqueKey(base) };
+      return { ...row, __key: hasId(id) ? uniqueKey(keyOf(id), true) : uniqueKey(`${column.id}-${i}`) };
     });
   }
   // Every card now has its key.
@@ -146,6 +181,9 @@ const plain = (card: BoardCard | null | undefined): CardRow | null => {
 /** Every card on the board, without its drag key, in board order (column by column). */
 export const boardCards = (columns: BoardColumn[]) => columns.flatMap((c) => c.cards.map(plain));
 
+/** A card key that changed hands: the card keyed `from` is now keyed `to`. */
+export type Renamed = { from: string; to: string } | null;
+
 /** Adds a card at the end of a column: `columnId` when given (the card's status is set to it), else the card's status
  *  column, which is created when no column has that status. A card without an id gets one no other card has. */
 export const addCard = (
@@ -154,26 +192,27 @@ export const addCard = (
   columnId: unknown,
   statusField: string,
   idField: string
-): { columns: BoardColumn[]; card: CardRow; key: string } => {
+): { columns: BoardColumn[]; card: CardRow; key: string; renamed: Renamed } => {
   const card: CardRow = isRecord(rawCard) ? rawCard : {};
-  const keys = new Set(columns.flatMap((c) => c.cards.map((x) => x.__key)));
   let id = card[idField];
   if (!hasId(id)) {
-    let n = keys.size + 1;
-    while (keys.has(`new-${n}`)) n += 1;
+    const cards = columns.flatMap((c) => c.cards);
+    const used = new Set(cards.flatMap((x) => [x.__key, keyOf(x[idField])]));
+    let n = cards.length + 1;
+    while (used.has(`new-${n}`)) n += 1;
     id = `new-${n}`;
   }
   const status = keyOf(columnId ?? card?.[statusField]);
   const added: CardRow = { ...card, [idField]: id, [statusField]: columnId ?? card?.[statusField] ?? status };
-  const next = columns.map((c) => ({ ...c, cards: [...c.cards] }));
+  const claim = claimKey(columns, keyOf(id), idField);
+  const next = claim.columns.map((c) => ({ ...c, cards: [...c.cards] }));
   let target: BoardColumn | undefined = next.find((c) => c.id === status);
   if (!target) {
     target = { id: status, title: status, cards: [] };
     next.push(target);
   }
-  const key = keyMaker(keys)(keyOf(id));
-  target.cards.push({ ...added, __key: key });
-  return { columns: next, card: added, key };
+  target.cards.push({ ...added, __key: claim.key });
+  return { columns: next, card: added, key: claim.key, renamed: claim.renamed };
 };
 
 /** Removes the card with this id. Returns the new columns and the removed card (null when there is none). */
@@ -189,30 +228,34 @@ export const deleteCard = (
 
 /** Merges `values` into the card with this id, in place; a changed status moves it to the end of that column. A
  *  changed id gives the card the key of its new id (suffixed when another card has it, as duplicate ids in the data
- *  are), so the new id addresses it. Returns the card's key after the update (`key`) with the card. */
+ *  are), so the new id addresses it. Returns the card's key after the update (`key`) with the card, and another card's
+ *  key that changed to make room (`renamed`, claimKey). */
 export const updateCard = (
   columns: BoardColumn[],
   cardId: unknown,
   values: unknown,
   statusField: string,
   idField: string
-): { columns: BoardColumn[]; card: CardRow | null; key: string | null } => {
+): { columns: BoardColumn[]; card: CardRow | null; key: string | null; renamed: Renamed } => {
   const key = keyOf(cardId);
   const card = columns.flatMap((c) => c.cards).find((x) => x.__key === key);
-  if (!card) return { columns, card: null, key: null };
+  if (!card) return { columns, card: null, key: null, renamed: null };
   const updated: BoardCard = { ...card, ...(isRecord(values) ? values : {}), __key: key };
   if (keyOf(updated[statusField]) === keyOf(card[statusField])) {
+    let board = columns;
+    let renamed: Renamed = null;
     if (hasId(updated[idField]) && keyOf(updated[idField]) !== keyOf(card[idField])) {
-      const others = new Set(columns.flatMap((c) => c.cards.map((x) => x.__key)).filter((k) => k !== key));
-      updated.__key = keyMaker(others)(keyOf(updated[idField]));
+      const claim = claimKey(columns, keyOf(updated[idField]), idField, key);
+      ({ columns: board, renamed } = claim);
+      updated.__key = claim.key;
     }
-    const next = columns.map((c) => ({ ...c, cards: c.cards.map((x) => (x.__key === key ? updated : x)) }));
-    return { columns: next, card: plain(updated), key: updated.__key };
+    const next = board.map((c) => ({ ...c, cards: c.cards.map((x) => (x.__key === key ? updated : x)) }));
+    return { columns: next, card: plain(updated), key: updated.__key, renamed };
   }
   const removed = deleteCard(columns, cardId).columns;
   const { __key, ...rest } = updated;
   const added = addCard(removed, rest, undefined, statusField, idField);
-  return { columns: added.columns, card: plain(updated), key: added.key };
+  return { columns: added.columns, card: plain(updated), key: added.key, renamed: added.renamed };
 };
 
 /** Whether a card's content collapses to `collapsedHeight` px (empty: never) given its full `contentHeight`, and the

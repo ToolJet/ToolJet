@@ -113,4 +113,54 @@ describe('UI 2.0 Kanban card identity', () => {
       ]);
     });
   });
+
+  // Audit 2026-10-18: a key the board made up (a duplicate's suffix, a card without an id) took a real card's id, so
+  // an action on that id changed the wrong card.
+  describe('a generated key never takes a real id', () => {
+    const act = (action, id) =>
+      action === 'update'
+        ? widget.act('updateCardData', id, { title: 'Updated' })
+        : action === 'delete'
+        ? widget.act('deleteCard', id)
+        : widget.act('moveCard', id, 'done');
+    // What the board holds after `action` on `real`, by title, beside the untouched `others`.
+    const expected = (action, real, others) =>
+      action === 'delete'
+        ? others
+        : [...others, { ...real, ...(action === 'update' ? { title: 'Updated' } : { stage: 'done' }) }];
+    const byTitle = (rows) => [...rows].sort((a, b) => a.title.localeCompare(b.title));
+    const actions = ['update', 'delete', 'move'];
+
+    test.each(actions)("a duplicate's suffix, on %s of the real id after it", async (action) => {
+      const duplicates = [
+        { id: 'a', title: 'First a', stage: 'todo' },
+        { id: 'a', title: 'Second a', stage: 'todo' },
+      ];
+      const real = { id: 'a~2', title: 'Real a~2', stage: 'todo' };
+      render([...duplicates, real]);
+      await act(action, 'a~2');
+      expect(byTitle(cards())).toEqual(byTitle(expected(action, real, duplicates)));
+    });
+
+    test.each(actions)('a card without an id, on %s of the real id after it', async (action) => {
+      const missing = [{ title: 'No id', stage: 'todo' }];
+      const real = { id: 'todo-0', title: 'Real todo-0', stage: 'todo' };
+      render([...missing, real]);
+      await act(action, 'todo-0');
+      expect(byTitle(cards())).toEqual(byTitle(expected(action, real, missing)));
+    });
+
+    test.each(actions)("a duplicate's suffix, on %s of an added card with that id", async (action) => {
+      const duplicates = [
+        { id: 'a', title: 'First a', stage: 'todo' },
+        { id: 'a', title: 'Second a', stage: 'todo' },
+      ];
+      render(duplicates);
+      const added = { id: 'a~2', title: 'Added a~2', stage: 'todo' };
+      await widget.act('addCard', added, 'todo');
+      expect(exposed().lastAddedCard).toEqual(added);
+      await act(action, 'a~2');
+      expect(byTitle(cards())).toEqual(byTitle(expected(action, added, duplicates)));
+    });
+  });
 });
