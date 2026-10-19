@@ -1,19 +1,14 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 /** The board's size: whether columns run past its right edge, its width, and (for custom cards) a card's width. */
 export const useBoardSize = (custom: boolean, columnCount: number, collapsedColumns: Set<string>) => {
-  const boardRef = useRef<HTMLDivElement | null>(null);
   // Columns that run past the board's right edge fade out there, so the board reads as scrolling sideways (macOS hides
   // the scrollbar, and a column cut at the edge looks broken).
   const [moreRight, setMoreRight] = useState(false);
   const [boardWidth, setBoardWidth] = useState(0);
   // The board can first draw after a loading state, so the measuring follows the element itself: with an empty
   // dependency list it never attached then, and neither the fade nor the column minimum followed the board.
-  const [boardEl, setBoardEl] = useState<HTMLDivElement | null>(null);
-  const boardNode = useCallback((el: HTMLDivElement | null) => {
-    boardRef.current = el;
-    setBoardEl(el);
-  }, []);
+  const [boardEl, boardNode] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = boardEl;
     if (!el) return undefined;
@@ -31,17 +26,20 @@ export const useBoardSize = (custom: boolean, columnCount: number, collapsedColu
     };
   }, [boardEl]);
   const [cardWidth, setCardWidth] = useState(0);
+  // Follows the element too: a board first drawn after a loading state was never measured, its card width stayed 0
+  // and its custom cards drew no content.
   useLayoutEffect(() => {
-    if (!custom || !boardRef.current) return undefined;
+    const el = boardEl;
+    if (!custom || !el) return undefined;
     // A column's content box less the card's 1px borders; every column has the same width.
     const measure = () => {
-      const column = boardRef.current?.querySelector(':scope > [data-collapsed="false"]');
+      const column = el.querySelector(':scope > [data-collapsed="false"]');
       if (column) setCardWidth(Math.max(0, column.clientWidth - 24 - 2));
     };
     measure();
     const observer = new ResizeObserver(measure);
-    observer.observe(boardRef.current);
+    observer.observe(el);
     return () => observer.disconnect();
-  }, [custom, columnCount, collapsedColumns]);
+  }, [custom, boardEl, columnCount, collapsedColumns]);
   return { boardNode, moreRight, boardWidth, cardWidth };
 };

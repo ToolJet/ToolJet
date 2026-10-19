@@ -139,3 +139,44 @@ describe('[finding 13] UI 2.0 Kanban custom card components belong to their card
     await waitFor(() => expect(values()).toEqual(['updated', 'beta']));
   });
 });
+
+// Audit 2026-10-18: a board first drawn after a loading state (a query's isLoading bound to loadingState) never measured
+// its cards' width, so custom cards came back blank when the data arrived.
+describe('UI 2.0 Kanban custom cards after a loading state', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+
+  const data = '{{[{id:1,title:"Alpha",status:"todo",value:"alpha"}]}}';
+  test.each(['ready-first', 'data-first', 'batched'])(
+    'show their content when the data arrives (%s)',
+    async (order) => {
+      widget.render({
+        currentMode: 'view',
+        extraComponents: {
+          input1: onCard(
+            componentDefinition('input1', 'input1', 'ShadInput', { defaultValue: binding('{{cardData.value}}') }),
+            0
+          ),
+        },
+        properties: {
+          data: binding('{{[]}}'),
+          columns: binding('{{["todo","done"]}}'),
+          idField: binding('id'),
+          cardLayout: binding('custom'),
+          cardHeight: binding('{{200}}'),
+          loadingState: binding('{{true}}'),
+        },
+      });
+      if (order === 'ready-first') await widget.act('setLoading', false);
+      if (order === 'batched') {
+        act(() => {
+          widget.setComponentProperty(ID, 'data', data, 'properties');
+          widget.setComponentProperty(ID, 'loadingState', '{{false}}', 'properties');
+        });
+      } else widget.setComponentProperty(ID, 'data', data, 'properties');
+      if (order === 'data-first') await widget.act('setLoading', false);
+      await waitFor(() => expect(widget.exposed().updatedCardData).toHaveLength(1));
+      await waitFor(() => expect(values()).toEqual(['alpha']));
+    }
+  );
+});
