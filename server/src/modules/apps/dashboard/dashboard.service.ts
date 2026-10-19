@@ -1,14 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { User } from '@entities/user.entity';
-import { AbilityService } from '@modules/ability/interfaces/IService';
+import type { AbilityService } from '@modules/ability/interfaces/IService';
 import { UserPermissions } from '@modules/ability/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { APP_TYPES } from '@modules/apps/constants';
-import { AppsUtilService } from '@modules/apps/util.service';
+import type { AppsUtilService } from '@modules/apps/util.service';
 import { FOLDER_RESOURCE_TYPE_BY_APP_TYPE } from '@modules/folder-apps/ability';
 import { getPermissionResourceForAppType } from '@modules/folder-apps/util.service';
-import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import type { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { appActions, folderActions, resolveFolderAccess } from './actions';
 import {
   BuiltQuery,
@@ -33,7 +33,6 @@ type NameRow = { id: string; name: string };
 
 const displayName = (u: UserNameRow) => [u.first_name, u.last_name].filter(Boolean).join(' ');
 
-@Injectable()
 export class DashboardService {
   constructor(
     private readonly dataSource: DataSource,
