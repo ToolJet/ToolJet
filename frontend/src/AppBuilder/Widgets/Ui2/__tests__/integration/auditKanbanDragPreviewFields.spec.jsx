@@ -6,6 +6,7 @@
  *
  * DndContext is the real one, wrapped only to count the drag callbacks its sensors deliver.
  */
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';

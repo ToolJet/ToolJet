@@ -3,6 +3,7 @@
 // only the Pills bar, Underline and Steps bars staying transparent. The inspector names neither as variant-specific, so
 // every variant now reads both. jsdom applies no Tailwind, so this checks the classes that read the variables; the
 // variables themselves are checked in ShadTabs.spec.
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { TabStrip } from '@/AppBuilder/Widgets/Ui2/Tabs/TabStrip';

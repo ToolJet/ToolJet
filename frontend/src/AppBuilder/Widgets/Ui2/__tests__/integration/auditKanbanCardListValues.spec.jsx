@@ -8,6 +8,7 @@
  *   takeRowValues (_shared/rowValues.ts) moves only the board's direct card components' values, not those of a
  *   component inside a nested List view (the same gap as a List view in a List view, NESTED-LIST-RECORD-VALUES).
  */
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { componentDefinition } from '@/test/app-builder';

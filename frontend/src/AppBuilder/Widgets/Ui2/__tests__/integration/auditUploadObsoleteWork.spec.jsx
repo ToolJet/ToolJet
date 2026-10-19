@@ -1,6 +1,7 @@
 // Release audit round 4 (Codex fixture auditUploadObsoleteReadWork, trimmed): after clearFiles or unmount, a file
 // read already under way was correctly dropped when it finished, but the work went on first: its text was read and,
 // with Parse content on, its CSV parsed. Clearing and unmounting now stop the read where it is.
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import React from 'react';
 import Papa from 'papaparse';
 import { act, fireEvent, waitFor } from '@testing-library/react';

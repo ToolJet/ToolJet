@@ -5,6 +5,7 @@
  * typed on Alpha, Alpha's retained actions and a workflow reading the board all moved to Beta. A new id field now
  * starts the cards over; a refresh under the same id field still keeps each card's draft.
  */
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { componentDefinition } from '@/test/app-builder';

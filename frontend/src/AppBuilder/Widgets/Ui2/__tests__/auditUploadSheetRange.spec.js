@@ -6,6 +6,7 @@
 //
 // An unbounded conversion cannot be interrupted from inside this process, so every workbook is parsed in a child
 // process with its own heap and a deadline; a regression is killed there and fails the test, it does not hang jest.
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { spawn } from 'child_process';
 import path from 'path';
 import JSZip from 'jszip';
