@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { runNow, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell } from './tableModel';
 import type { Editing, Edits, Entry, FireOption, LiveRef, Row, TableColumn } from './types';
@@ -82,25 +82,29 @@ export const useTableEdits = ({
     setEdits(next);
     latestExpose.current(next);
   }, [data, latestExpose]);
-  const commitEdit = (entry: Entry, column: TableColumn, value: unknown) => {
-    const open = editingRef.current;
-    if (!open || open.key !== entry.key || open.column !== column.id || !canEdit.current(column.id)) return;
-    close();
-    const before = readCell(withEdits(entry), column.key);
-    if (before === value || (before == null && (value === '' || value == null))) return; // eslint-disable-line eqeqeq
-    const next = new Map(edits);
-    next.set(entry.key, { ...(next.get(entry.key) ?? {}), [column.key]: value });
-    setEdits(next);
-    exposeEdits(next);
-    fireEvent('onCellValueChanged');
-  };
-  const discard = ({ fire = true }: FireOption = {}) => {
-    close();
-    const next: Edits = new Map();
-    setEdits(next);
-    exposeEdits(next);
-    if (fire) fireEvent('onCancelChanges');
-  };
+  // An edit and a discard run in runNow: the rows that publish from an effect on the edits (selectedRow, selectedRows,
+  // filteredData) have published before onCellValueChanged or onCancelChanges fires, so a handler reads the edited rows.
+  const commitEdit = (entry: Entry, column: TableColumn, value: unknown) =>
+    runNow(() => {
+      const open = editingRef.current;
+      if (!open || open.key !== entry.key || open.column !== column.id || !canEdit.current(column.id)) return;
+      close();
+      const before = readCell(withEdits(entry), column.key);
+      if (before === value || (before == null && (value === '' || value == null))) return; // eslint-disable-line eqeqeq
+      const next = new Map(edits);
+      next.set(entry.key, { ...(next.get(entry.key) ?? {}), [column.key]: value });
+      setEdits(next);
+      exposeEdits(next);
+      fireEvent('onCellValueChanged');
+    });
+  const discard = ({ fire = true }: FireOption = {}) =>
+    runNow(() => {
+      close();
+      const next: Edits = new Map();
+      setEdits(next);
+      exposeEdits(next);
+      if (fire) fireEvent('onCancelChanges');
+    });
 
   return { edits, withEdits, editing, setEditing, commitEdit, discard };
 };
