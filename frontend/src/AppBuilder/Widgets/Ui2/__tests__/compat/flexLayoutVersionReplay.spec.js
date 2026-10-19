@@ -3,6 +3,7 @@
  * the flag gets the UI 2.0 layout's flag (and Equal heights, on); one in a UI 1.0 app, or one that has a flag, does not
  * change. None of the saved-app fixtures has a FlexContainer, so this covers the stand-in's answers to its queries.
  */
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { usesFlexLayoutV2 } from '@/AppBuilder/_helpers/flexLayoutVersion';
 import { migrate } from './migrationReplay';
 
