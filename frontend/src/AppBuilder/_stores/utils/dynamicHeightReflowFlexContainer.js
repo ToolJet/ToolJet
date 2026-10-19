@@ -120,7 +120,7 @@ export const resolveFlexContainerHeight = ({
     const childDefinition = getComponentDefinition?.(childId);
     // A component-pack widget fits its content (dynamicHeightPolicy), so its measured height stands even below the
     // drawn one. The bump below returns the drawn height for every non-input widget, which floored a short ShadTable
-    // at its drawn 340px and left an empty band in its card (2026-10-10).
+    // at its drawn 340px and left an empty band in its card.
     // The same holds for a FlexContainer drawn as a card or a row (a row of cards kept its drawn 430px), unless the
     // row was saved before the UI 2.0 layout and keeps its drawn height (dynamicHeightPolicy.fitsContentInView).
     const childType = childDefinition?.component?.component ?? '';
