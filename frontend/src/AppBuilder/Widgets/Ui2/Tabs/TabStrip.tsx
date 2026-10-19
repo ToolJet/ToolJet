@@ -81,9 +81,14 @@ const tabKeys =
         : enabled[(Math.max(at, 0) + move + enabled.length) % enabled.length];
     event.preventDefault();
     if (next.id != currentTab) onPick(next); // eslint-disable-line eqeqeq
+    // The tab is found by comparing its data-tab-id, not by a selector: a tab id may hold any text, and one with a
+    // line break or form feed made the selector invalid, so focus stayed on the old tab.
     const strip = event.currentTarget;
+    const id = String(next.id);
     requestAnimationFrame(() =>
-      strip.querySelector<HTMLElement>(`[data-tab-id="${String(next.id).replace(/["\\]/g, '\\$&')}"]`)?.focus()
+      Array.from(strip.querySelectorAll<HTMLElement>('[role="tab"]'))
+        .find((tab) => tab.dataset.tabId === id)
+        ?.focus()
     );
   };
 
@@ -91,7 +96,7 @@ const TAB_RING = 'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-vi
 
 /** The tab strip in one of the three styles. Stays 50px tall (the reflow's TABS_TAB_BAR_HEIGHT). */
 interface TabStripProps {
-  /** The Tabs widget's id, for the ids that tie each tab to its panel. */
+  /** The Tabs widget's DOM id (its own per List view row), for the ids that tie each tab to its panel. */
   widgetId: string;
   /** Only the active tab's panel is in the page (renderOnlyActiveTab). */
   onlyActivePanel?: boolean;
@@ -127,7 +132,10 @@ export const TabStrip = ({
       <div
         role="tablist"
         onKeyDown={onKeyDown}
-        className={cn('tw-flex tw-h-[50px] tw-items-center tw-gap-2 tw-px-3', justify)}
+        className={cn(
+          'tw-flex tw-h-[50px] tw-items-center tw-gap-2 tw-bg-[color:var(--tb-list-bg,transparent)] tw-px-3',
+          justify
+        )}
       >
         {tabs.map((tab, index) => {
           const done = index < stepIndex;
@@ -153,7 +161,7 @@ export const TabStrip = ({
                 disabled={!!tab.disable || !reachable}
                 onPick={onPick}
                 className={cn(
-                  'tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-ui2-md tw-px-1.5 tw-py-1 tw-text-ui2-sm tw-transition-colors disabled:tw-cursor-not-allowed',
+                  'tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-ui2-md tw-px-1.5 tw-py-1 tw-text-[length:var(--tb-font,0.875rem)] tw-leading-[1.43] tw-transition-colors disabled:tw-cursor-not-allowed',
                   TAB_RING,
                   active
                     ? 'tw-font-semibold tw-text-[color:var(--tb-active-text,var(--sc-foreground))]'
@@ -206,7 +214,7 @@ export const TabStrip = ({
         role="tablist"
         onKeyDown={onKeyDown}
         className={cn(
-          'tw-flex tw-h-[50px] tw-items-end tw-gap-1 tw-overflow-x-auto tw-overflow-y-hidden tw-border-b tw-px-3',
+          'tw-flex tw-h-[50px] tw-items-end tw-gap-1 tw-overflow-x-auto tw-overflow-y-hidden tw-border-b tw-bg-[color:var(--tb-list-bg,transparent)] tw-px-3',
           justify
         )}
         style={{ borderColor: 'var(--tb-border, var(--sc-border))' }}
