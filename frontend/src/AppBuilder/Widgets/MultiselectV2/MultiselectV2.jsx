@@ -1,4 +1,4 @@
-import _, { has, isObject } from 'lodash';
+import _, { has, isObject, omit } from 'lodash';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Select from 'react-select';
 import './multiselectV2.scss';
@@ -11,8 +11,8 @@ import cx from 'classnames';
 import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
-import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from '../DropdownV2/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import {
   getLabelFontSize,
   getLabelWidthOfInput,
@@ -20,6 +20,10 @@ import {
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
+import { exposedOptionsOf, selectOptionsOf } from '@/AppBuilder/_engines/materialize/widgets/DropdownV2';
+import { multiselectV2Exposure, defaultSelectionOf } from '@/AppBuilder/_engines/materialize/widgets/MultiselectV2';
+
+const { actions } = multiselectV2Exposure;
 
 export const MultiselectV2 = ({
   id,
@@ -121,22 +125,11 @@ export const MultiselectV2 = ({
 
   const stableOptions = useContentStable(options);
   const stableSchema = useContentStable(schema);
-  const selectOptions = useMemo(() => {
-    const _options = advanced ? schema : options;
-    let _selectOptions = Array.isArray(_options)
-      ? _options
-          .filter((data) => data?.visible ?? true)
-          .map((data) => ({
-            ...data,
-            label: getSafeRenderableValue(data?.label),
-            value: data?.value,
-            caption: data?.caption ?? null,
-            isDisabled: data?.disable ?? false,
-          }))
-      : [];
-    return sortArray(_selectOptions, sort);
+  const selectOptions = useMemo(
+    () => selectOptionsOf({ advanced, schema, options, sort }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, stableSchema, stableOptions, sort]);
+    [advanced, stableSchema, stableOptions, sort]
+  );
 
   const hasMaxLimit = maxLimit !== '' && maxLimit !== null && maxLimit !== undefined && !Number.isNaN(Number(maxLimit));
   const maxSelectionLimit = hasMaxLimit ? Math.max(0, Math.floor(Number(maxLimit))) : null;
@@ -180,28 +173,12 @@ export const MultiselectV2 = ({
   ]);
 
   function findDefaultItem(value, isAdvanced, isDefault) {
-    if (isAdvanced) {
-      const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
-      return foundItem;
+    if (isAdvanced || isDefault) {
+      return defaultSelectionOf({ advanced: isAdvanced, schema, values: value }, selectOptions);
     }
-    if (isDefault) {
-      // `values` carries no validation schema, so a broken binding can resolve
-      // to a string or an object. Without this guard `.find` throws and the
-      // platform error boundary replaces the whole field; a non-array `options`
-      // already degrades to an empty list, so match it.
-      // A Set, not a search of `value` per option: 10k options × 10k values was 10^8 comparisons. As before, an option
-      // whose value is falsy isn't picked (the search returned the matching value, used as the test).
-      const wanted = Array.isArray(value) ? new Set(value) : null;
-      return Array.isArray(selectOptions) && wanted
-        ? selectOptions.filter((item) => item.value && wanted.has(item.value))
-        : [];
-    } else {
-      // `item.value === item.value`: a NaN value never matched (===), and a Set would find it.
-      const wanted = new Set((selected ?? []).map((val) => val.value));
-      return Array.isArray(selectOptions)
-        ? selectOptions.filter((item) => item.value === item.value && wanted.has(item.value))
-        : [];
-    }
+    // `item.value === item.value`: a NaN value never matched (===), and a Set would find it.
+    const wanted = new Set((selected ?? []).map((val) => val.value));
+    return selectOptions.filter((item) => item.value === item.value && wanted.has(item.value));
   }
 
   function hasVisibleFalse(value) {
@@ -264,11 +241,7 @@ export const MultiselectV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable(
-      'options',
-      Array.isArray(selectOptions) &&
-        selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }))
-    );
+    setExposedVariable('options', exposedOptionsOf(selectOptions));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectOptions]);
 
@@ -305,37 +278,28 @@ export const MultiselectV2 = ({
   }, [validate]);
 
   useEffect(() => {
-    const defaultItems = findDefaultItem(values, advanced, true);
-
     const exposedVariables = {
       clear: async function () {
         setInputValue([]);
       },
       setVisibility: async function (value) {
-        setVisibility(!!value);
-        setExposedVariable('isVisible', !!value);
+        const { isVisible } = actions.setVisibility(undefined, [value]);
+        setVisibility(isVisible);
+        setExposedVariable('isVisible', isVisible);
       },
       setLoading: async function (value) {
-        setIsMultiSelectLoading(!!value);
-        setExposedVariable('isLoading', !!value);
+        const { isLoading } = actions.setLoading(undefined, [value]);
+        setIsMultiSelectLoading(isLoading);
+        setExposedVariable('isLoading', isLoading);
       },
       setDisable: async function (value) {
-        setIsMultiSelectDisabled(!!value);
-        setExposedVariable('isDisabled', !!value);
+        const { isDisabled } = actions.setDisable(undefined, [value]);
+        setIsMultiSelectDisabled(isDisabled);
+        setExposedVariable('isDisabled', isDisabled);
       },
-      label: label,
-      isVisible: properties.visibility,
-      isLoading: multiSelectLoadingState,
-      isDisabled: disabledState,
-      isMandatory: isMandatory,
-      // Of the default selection the effects above just made (this render's `isValid` predates it).
-      isValid: validate(defaultItems?.length ? defaultItems.map((option) => option.value) : null)?.isValid,
-      selectedOptions:
-        Array.isArray(defaultItems) &&
-        defaultItems?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
-      options:
-        Array.isArray(selectOptions) &&
-        selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
+      // isValid is of the default selection the effects above just made (this render's `isValid` predates it); they
+      // have exposed its values already.
+      ...omit(multiselectV2Exposure.initial({ properties, validation, validate }), 'values'),
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
@@ -421,9 +385,7 @@ export const MultiselectV2 = ({
     setSelected(values);
     setExposedVariables({
       values: values.map((item) => item.value),
-      selectedOptions:
-        Array.isArray(values) &&
-        values?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
+      selectedOptions: exposedOptionsOf(values),
     });
     const validationStatus = validate(values?.length ? values?.map((option) => option.value) : null);
     setValidationStatus(validationStatus);

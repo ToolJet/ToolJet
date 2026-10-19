@@ -1,12 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import moment from 'moment-timezone';
+import {
+  dateBoundOf,
+  dateBoundsValuesOf,
+  excludedDatesOf,
+} from '@/AppBuilder/_engines/materialize/widgets/DatePickerV2';
 
 const useDateInput = ({ validation = {}, dateFormat, setExposedVariable, setExposedVariables }) => {
   const isInitialRender = useRef(true);
   const { disabledDates } = validation;
   const [excludedDates, setExcludedDates] = useState([]);
-  const [minDate, setMinDate] = useState(moment(validation.minDate, dateFormat).toDate());
-  const [maxDate, setMaxDate] = useState(moment(validation.maxDate, dateFormat).toDate());
+  const [minDate, setMinDate] = useState(dateBoundOf(validation.minDate, dateFormat));
+  const [maxDate, setMaxDate] = useState(dateBoundOf(validation.maxDate, dateFormat));
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -34,8 +39,7 @@ const useDateInput = ({ validation = {}, dateFormat, setExposedVariable, setExpo
 
   useEffect(() => {
     const exposedVariables = {
-      minDate: validation.minDate,
-      maxDate: validation.maxDate,
+      ...dateBoundsValuesOf(validation),
       setMinDate: (date) => {
         const momentDate = moment(date, dateFormat);
         if (momentDate.isValid()) {
@@ -73,18 +77,7 @@ const useDateInput = ({ validation = {}, dateFormat, setExposedVariable, setExpo
   }, [dateFormat]);
 
   useEffect(() => {
-    if (Array.isArray(disabledDates) && disabledDates.length > 0) {
-      const _exluded = [];
-      disabledDates?.map((item) => {
-        if (moment(item, dateFormat).isValid()) {
-          _exluded.push(moment(item, dateFormat).toDate());
-        }
-      });
-
-      setExcludedDates(_exluded);
-    } else {
-      setExcludedDates([]);
-    }
+    setExcludedDates(excludedDatesOf(disabledDates, dateFormat));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates, dateFormat]);
 

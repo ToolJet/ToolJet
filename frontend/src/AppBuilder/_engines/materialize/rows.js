@@ -395,6 +395,19 @@ const readsComponents = (get, childId, moduleId) => {
 };
 
 /**
+ * A child's mount values from its module, or none when the module throws on this input: the drawn widget throws there
+ * too, inside its error boundary, and exposes nothing, while its siblings are unaffected.
+ */
+const initialOf = (exposure, input, childId) => {
+  try {
+    return exposure.initial(input);
+  } catch (error) {
+    console.error(`Computing ${childId} for an undrawn row failed`, error);
+    return {};
+  }
+};
+
+/**
  * Computes an undrawn row's children that have an exposure module: `{ values, inputs, initials }`, each a Map by child
  * id (`values`: exposed values, with the row's changes). When a child reads a component (itself or a sibling), its
  * values depend on the others' (`dependent`): they are computed again with the ones just computed until they no longer
@@ -413,7 +426,7 @@ const computeRow = (get, listviewId, dataRow, moduleId, base, withoutChanges = f
     const next = { values: new Map(), inputs: new Map(), initials: new Map() };
     computed.forEach(([childId, exposure]) => {
       const input = headlessInput(get, listviewId, childId, scope, customResolveObjects, moduleId);
-      const initial = exposure.initial(input);
+      const initial = initialOf(exposure, input, childId);
       next.inputs.set(childId, input);
       next.initials.set(childId, initial);
       next.values.set(childId, { ...initial, ...freshChange(exposure, changes?.[childId], initial, input).values });
@@ -771,7 +784,7 @@ const drawnChanges = (get, listviewId, slot, dataRow, moduleId) => {
   Object.entries(rowChangesOf(get, listviewId, dataRow, moduleId) ?? {}).forEach(([childId, change]) => {
     const exposure = exposureOf(typeOf(get, childId, moduleId));
     const input = exposure && drawnInput(get, listviewId, slot, childId, moduleId);
-    const fresh = exposure ? freshChange(exposure, change, exposure.initial(input), input) : change;
+    const fresh = exposure ? freshChange(exposure, change, initialOf(exposure, input, childId), input) : change;
     if (fresh !== change) stale = true;
     if (Object.keys(fresh.values).length || fresh.replay.length) changes[childId] = fresh;
   });
@@ -825,7 +838,8 @@ export const settleRow = (get, listviewId, slot, dataRow, moduleId) => {
         const exposure = exposureOf(typeOf(get, childId, moduleId));
         if (!exposure) continue;
         const input = drawnInput(get, listviewId, slot, childId, moduleId);
-        for (const { action, args } of freshChange(exposure, change, exposure.initial(input), input).replay) {
+        for (const { action, args } of freshChange(exposure, change, initialOf(exposure, input, childId), input)
+          .replay) {
           left = !inSlot();
           if (left) return; // left before it was restored
           try {

@@ -41,6 +41,8 @@ export const useInput = ({
   fireEvent,
   inputType,
   beforeSetInputValue,
+  // The input's exposure module (TextInput's unless the widget has its own).
+  exposure = textInputExposure,
 }) => {
   const isInitialRender = useRef(true);
   const inputRef = useRef();
@@ -179,11 +181,11 @@ export const useInput = ({
   }, [inputType, country, decimalPlaces, numberFormat]);
 
   useEffect(() => {
-    // What the input exposes and its state actions come from textInputExposure (the materialization engine computes
+    // What the input exposes and its state actions come from its exposure module (the materialization engine computes
     // undrawn ListView rows with it). A state action applies its patch to the widget's state and exposed values.
     const setters = { isVisible: setVisibility, isDisabled: setDisable, isLoading: setLoading };
     const run = (action, args) => {
-      for (const [key, value] of Object.entries(textInputExposure.actions[action](undefined, args))) {
+      for (const [key, value] of Object.entries(exposure.actions[action](undefined, args))) {
         setters[key](value);
         setExposedVariable(key, value);
       }
@@ -208,7 +210,7 @@ export const useInput = ({
         run('setLoading', [loading]);
       },
       // The first value's status is the one computed above; validating it again could see a store changed since.
-      ...textInputExposure.initial({
+      ...exposure.initial({
         properties,
         validation,
         validate: (val) => (Object.is(val, value) ? validationStatus : validateInput(val)),

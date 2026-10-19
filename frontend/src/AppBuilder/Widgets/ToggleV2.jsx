@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { toggleSwitchV2Exposure } from '@/AppBuilder/_engines/materialize/widgets/ToggleSwitchV2';
+
+const { actions } = toggleSwitchV2Exposure;
 
 const Switch = ({
   on,
@@ -213,24 +216,28 @@ export const ToggleSwitchV2 = ({
         setUserInteracted(true);
       },
       setVisibility: async function (state) {
-        setVisibility(!!state);
-        setExposedVariable('isVisible', !!state);
+        const { isVisible } = actions.setVisibility(undefined, [state]);
+        setVisibility(isVisible);
+        setExposedVariable('isVisible', isVisible);
       },
       setDisable: async function (disable) {
-        setDisable(!!disable);
-        setExposedVariable('isDisabled', !!disable);
+        const { isDisabled } = actions.setDisable(undefined, [disable]);
+        setDisable(isDisabled);
+        setExposedVariable('isDisabled', isDisabled);
       },
       setLoading: async function (loading) {
-        setLoading(!!loading);
-        setExposedVariable('isLoading', !!loading);
+        const { isLoading } = actions.setLoading(undefined, [loading]);
+        setLoading(isLoading);
+        setExposedVariable('isLoading', isLoading);
       },
-      label: label,
-      isMandatory: isMandatory,
-      isLoading: loading,
-      isVisible: visibility,
+      // The first value's status is the one computed above; validating it again could see a store changed since.
+      ...toggleSwitchV2Exposure.initial({
+        properties,
+        validation,
+        validate: (value) => (Object.is(value, on) ? validationStatus : validate(value)),
+      }),
+      // Disabled while loading too, until the disabledState effect settles it to initial's isDisabled.
       isDisabled: disable,
-      isValid: isValid,
-      value: defaultValue,
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;

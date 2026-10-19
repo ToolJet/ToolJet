@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { dateInputActions as actions, dateInputValuesOf } from '@/AppBuilder/_engines/materialize/widgets/DatePickerV2';
 
 const useDatetimeInput = ({
   properties,
@@ -70,22 +71,21 @@ const useDatetimeInput = ({
 
   useEffect(() => {
     const exposedVariables = {
-      isVisible: properties.visibility,
-      isLoading: properties.loadingState,
-      isDisabled: properties.disabledState,
-      label: properties.label,
-      isMandatory: isMandatory,
+      ...dateInputValuesOf({ properties, validation }),
       setVisibility: (visibility) => {
-        setExposedVariable('isVisible', visibility);
-        setVisibility(visibility);
+        const { isVisible } = actions.setVisibility(undefined, [visibility]);
+        setExposedVariable('isVisible', isVisible);
+        setVisibility(isVisible);
       },
       setLoading: (loading) => {
-        setExposedVariable('isLoading', loading);
-        setLoading(loading);
+        const { isLoading } = actions.setLoading(undefined, [loading]);
+        setExposedVariable('isLoading', isLoading);
+        setLoading(isLoading);
       },
       setDisable: (disable) => {
-        setExposedVariable('isDisabled', disable);
-        setDisable(disable);
+        const { isDisabled } = actions.setDisable(undefined, [disable]);
+        setExposedVariable('isDisabled', isDisabled);
+        setDisable(isDisabled);
       },
       setFocus: () => {
         setIsCalendarOpen(true);

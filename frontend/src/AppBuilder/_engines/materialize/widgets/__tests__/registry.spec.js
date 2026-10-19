@@ -1,7 +1,22 @@
 import { exposureOf } from '../index';
 
 describe('exposureOf', () => {
-  it.each(['Text', 'TextInput', 'Button', 'Image'])('returns the module for %s', (type) => {
+  it.each([
+    'Text',
+    'TextInput',
+    'Button',
+    'Image',
+    'Checkbox',
+    'ToggleSwitchV2',
+    'NumberInput',
+    'DropdownV2',
+    'MultiselectV2',
+    'RadioButtonV2',
+    'DatePickerV2',
+    'TimePicker',
+    'DatetimePickerV2',
+    'DaterangePicker',
+  ])('returns the module for %s', (type) => {
     const module = exposureOf(type);
     expect(typeof module.initial).toBe('function');
     expect(typeof module.actions).toBe('object');
