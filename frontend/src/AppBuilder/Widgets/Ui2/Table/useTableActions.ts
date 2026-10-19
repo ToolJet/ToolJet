@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { asActions, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { readCell, toCsv } from './tableModel';
+import { looseMatcher, readCell, toCsv } from './tableModel';
 import type { Entry, FireOption, LiveRef, Sort, WithEdits } from './types';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
@@ -62,22 +62,13 @@ export const useTableActions = ({
     // A column key is text or a number; anything else (an action called with a list as the key) matches nothing.
     const isKey = (key: unknown): key is string | number =>
       (typeof key === 'string' && key !== '') || typeof key === 'number';
-    const byKeyValue = (key: unknown, value: unknown): Entry[] =>
-      isKey(key) ? live.current.entries.filter((entry) => readCell(entry.row, key) == value) : []; // eslint-disable-line eqeqeq
-    // The rows whose cell equals any of `values`, in one pass over the rows: matching each value against every row took
-    // minutes for 10k values on 10k rows. Cells and values compare as text, as == does for text and numbers.
-    const byKeyValues = (key: unknown, values: unknown): Entry[] => {
+    // selectRow, selectRows and deselectRows match a cell to a value by one rule, the native Table's ==.
+    const byKeyValues = (key: unknown, values: unknown[]): Entry[] => {
       if (!isKey(key)) return [];
-      const wanted = new Set(
-        (Array.isArray(values) ? values : [values])
-          .filter((v) => v !== null && v !== undefined && typeof v !== 'object')
-          .map(String)
-      );
-      return live.current.entries.filter((entry) => {
-        const cell = readCell(entry.row, key);
-        return cell !== null && cell !== undefined && typeof cell !== 'object' && wanted.has(String(cell));
-      });
+      const matches = looseMatcher(values);
+      return live.current.entries.filter((entry) => matches(readCell(entry.row, key)));
     };
+    const list = (values: unknown) => (Array.isArray(values) ? values : [values]);
     publish.current(
       asActions({
         pageIndex: 1,
@@ -90,18 +81,18 @@ export const useTableActions = ({
         // As on the native Table, setPage does not fire onPageChanged.
         setPage: async (target: unknown) => act().goTo(target, { fire: false }),
         selectRow: async (key: unknown, value: unknown) => {
-          const [match] = byKeyValue(key, value);
+          const [match] = byKeyValues(key, [value]);
           if (match) act().select(new Set([match.key]), match.key);
         },
         deselectRow: async () => act().select(new Set(), null),
         selectRows: async (key: unknown, values: unknown) => {
           const keys = new Set(live.current.selected);
-          byKeyValues(key, values).forEach((entry) => keys.add(entry.key));
+          byKeyValues(key, list(values)).forEach((entry) => keys.add(entry.key));
           act().select(keys, live.current.focusKey);
         },
         deselectRows: async (key: unknown, values: unknown) => {
           const keys = new Set(live.current.selected);
-          byKeyValues(key, values).forEach((entry) => keys.delete(entry.key));
+          byKeyValues(key, list(values)).forEach((entry) => keys.delete(entry.key));
           act().select(keys, live.current.focusKey);
         },
         selectAllRows: async () =>

@@ -304,6 +304,38 @@ export const applyFilters = <T>(rows: T[], filters: unknown, columns: TableColum
   return rows.filter((row) => active.every((f) => passes(readCell(row, f.column.key), f.condition, f.value, f.column)));
 };
 
+const PRIMITIVE = new Set(['string', 'number', 'boolean']);
+
+/** Whether a cell matches any of `values` by ==, as the native Table's selectRow, selectRows and deselectRows match, in
+ *  one pass over the rows: comparing every value with every row took minutes for 10k values on 10k rows. Text, numbers
+ *  and booleans of one type match as they are, of different types as numbers ('01' == 1, 0 == false); null and
+ *  undefined match only each other; anything else (an object, a bigint) is compared with == itself. */
+export const looseMatcher = (values: unknown[]): ((cell: unknown) => boolean) => {
+  const same = new Set<unknown>();
+  const asNumber = new Map<string, Set<number>>([...PRIMITIVE].map((type) => [type, new Set<number>()]));
+  const other: unknown[] = [];
+  let nullish = false;
+  values.forEach((value) => {
+    if (value === null || value === undefined) nullish = true;
+    else if (PRIMITIVE.has(typeof value)) {
+      const n = Number(value);
+      // NaN equals nothing, itself included.
+      if (Number.isNaN(n) && typeof value === 'number') return;
+      same.add(value);
+      if (!Number.isNaN(n)) asNumber.get(typeof value)?.add(n);
+    } else other.push(value);
+  });
+  return (cell) => {
+    if (cell === null || cell === undefined) return nullish;
+    const type = typeof cell;
+    if (!PRIMITIVE.has(type)) return values.some((value) => cell == value); // eslint-disable-line eqeqeq
+    if (same.has(cell)) return true;
+    const n = Number(cell);
+    if (!Number.isNaN(n) && [...asNumber].some(([t, numbers]) => t !== type && numbers.has(n))) return true;
+    return other.some((value) => cell == value); // eslint-disable-line eqeqeq
+  };
+};
+
 /** A stable key for a row: its id field when it has one, else its position in the data. The two never share a key
  *  (a row with no id was taken for the row whose id is "#0"): an id key starts with "id:", a position key with "#". */
 export const rowKey = (row: unknown, idField: string, index: number): string =>
