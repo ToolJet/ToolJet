@@ -161,7 +161,7 @@ export const valueAxisWidth = (
   const max = Math.max(...values);
   const min = Math.min(0, ...values);
   // The ticks between the ends too (quarters of the nice top): "1.5K km" and "4.5K km" outran a "5K km" top and were
-  // cut to ".5K km" (fleet distance chart, 2026-10-14).
+  // cut to ".5K km".
   const top = niceCeil(max);
   const ticks = [max, top, min, top * 0.25, top * 0.5, top * 0.75, top * 0.9, top * 0.3, top * 0.7];
   const longest = Math.max(...ticks.map((v) => String(format(v) ?? '').length));

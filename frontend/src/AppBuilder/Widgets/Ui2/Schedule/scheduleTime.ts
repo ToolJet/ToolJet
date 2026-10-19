@@ -10,7 +10,7 @@ export const int = (v: unknown, fallback: number): number => {
   return Number.isFinite(n) ? n : fallback;
 };
 /** An hour of the day from a number (9) or a clock time ('09:00', '5:30 PM'); an end rounds up to the next hour
- *  ('17:30' ends after 17:00-18:00). dayStart="09:00" fell back to 8 (2026-10-14). */
+ *  ('17:30' ends after 17:00-18:00). dayStart="09:00" fell back to 8. */
 export const hourOf = (v: unknown, fallback: number, roundUp: boolean): number => {
   const clock = typeof v === 'string' ? v.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*([ap]\.?m\.?)?$/i) : null;
   if (!clock) return int(v, fallback);

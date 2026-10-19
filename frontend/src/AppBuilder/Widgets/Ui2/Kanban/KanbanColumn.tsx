@@ -62,7 +62,7 @@ export const KanbanColumn = ({
   minColumn = 200,
 }: KanbanColumnProps) => {
   // A board that fits its content still stops at its drawn height (maxHeight): past it the column scrolls like a
-  // fixed board's. Without the cap, 40 loans stood a board 2,274px tall (2026-10-13).
+  // fixed board's. Without the cap, 40 cards stood a board 2,274px tall.
   const scrolls = fixed || !!maxHeight;
   const { setNodeRef, isOver } = useDroppable({
     id: `col-${column.id}`,
@@ -109,7 +109,7 @@ export const KanbanColumn = ({
       // width if narrower) before it scrolls; five 245px stages clipped their last column. Without one the columns
       // share the board, at least the minimum each: 200px, or 160px on a board of six or more stages (a seventh
       // stage was cut off at the right edge of a full-width board). Columns grow to fill a wider board, as table
-      // columns do: four 250px stages left a 165px empty strip at the right of a full-width board (2026-10-14).
+      // columns do: four 250px stages left a 165px empty strip at the right of a full-width board.
       style={
         collapsed
           ? { ...look.column, width: 152, flex: '0 0 152px' }

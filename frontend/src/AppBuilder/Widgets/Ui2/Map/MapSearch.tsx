@@ -24,7 +24,7 @@ export const useMapSearch = ({
 }) => {
   const [query, setQuery] = useState('');
   // The places found and the query they were found for: a place answers only that query, so Enter on a new query
-  // during the pause before its search never picks the last query's place (release audit 42).
+  // during the pause before its search never picks the last query's place.
   const [found, setFound] = useState<{ query: string; places: Place[] }>({ query: '', places: [] });
   const results = found.query === query.trim() ? found.places : [];
   const setResults = (places: Place[]) => setFound({ query: query.trim(), places });
@@ -138,7 +138,7 @@ export const MapSearch = ({
             <li key={`${r.lat},${r.lng},${i}`} role="option" aria-selected={false}>
               {/* Disabled with the map: a suggestion already open moved the map, set pickedLocation and fired
                   onLocationPicked once the map was disabled or loading, and Tab then Enter reached it under the
-                  loading veil (release audit round 2). */}
+                  loading veil. */}
               <button type="button" disabled={disabled} onClick={() => !disabled && choosePlace(r)}>
                 {r.label}
               </button>

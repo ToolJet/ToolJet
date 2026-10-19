@@ -10,7 +10,7 @@ const MIGRATION_NAME = 'RenameUi2PackNames';
 // below are copied from src/modules/apps/services/ui2-legacy-names.ts (2026-10-16) rather than imported. Do not
 // edit them to follow later renames: write a new migration. Nothing here is exported, because TypeORM loads every
 // exported function in data-migrations/ as a migration class.
-// Before release (2026-10-18, release audit) the copy took the import's fixes: a string in parentheses or before a
+// Before release the copy took the import's fixes: a string in parentheses or before a
 // comment, and a local `components`, are not references.
 // ---------------------------------------------------------------------------------------------------------------
 

@@ -23,7 +23,7 @@ import {
 import { isRecord, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** A category name as at most `lines` lines of `max` characters, broken at spaces; what still does not fit ends in an
- *  ellipsis. Recharts dropped every other name of an 8-bar chart rather than wrap them (expense build, 2026-10-12). */
+ *  ellipsis. Recharts dropped every other name of an 8-bar chart rather than wrap them. */
 export const wrapLabel = (value: unknown, max: number, lines = 2): string[] => {
   const cut = (text: string) => (text.length > max ? `${text.slice(0, Math.max(1, max - 1))}…` : text);
   const out: string[] = [];
@@ -57,8 +57,7 @@ interface CategoryTickProps {
 
 export const CategoryTick = ({ x, y, payload, width, visibleTicksCount, angled }: CategoryTickProps) => {
   if (angled) {
-    // Drawn at an angle, whole up to 22 letters: ten one-word genres in a half-width chart were cut to "Ficti..."
-    // (bookshop, 2026-10-14).
+    // Drawn at an angle, whole up to 22 letters: ten one-word genres in a half-width chart were cut to "Ficti...".
     const text = String(payload?.value ?? '');
     return (
       <text
@@ -197,7 +196,7 @@ export const ShadBarChart = (props: WidgetProps) => {
         <BarChart
           data={data}
           layout={horizontal ? 'vertical' : 'horizontal'}
-          // Names drawn at an angle reach left of their bar: the first one was cut ("me & Mystery", bookshop sales).
+          // Names drawn at an angle reach left of their bar: the first one was cut ("me & Mystery").
           margin={{ left: !horizontal && categoryAxis.angled ? 28 : 4, right: 12, top: 12 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
@@ -222,7 +221,7 @@ export const ShadBarChart = (props: WidgetProps) => {
                 // bars the names can outnumber the lines the chart has room for (26 reps in 240px printed over each
                 // other), so every nth name shows, as many as fit.
                 // Every name while each bar has a line of its own (about 15px): a 14-region chart with room for all of
-                // them showed every other one (wine cellar, 2026-10-14).
+                // them showed every other one.
                 interval={
                   data.length <= 12 || (Number(props.height) - 60) / data.length >= 15 ? 0 : 'equidistantPreserveStart'
                 }

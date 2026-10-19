@@ -295,7 +295,7 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
     if (next && !address) lookUpAddress(next);
   };
   // The address lookups this mount started. dispose() (the map unmounting) stops them: an answer that arrived later
-  // wrote its address into the store, over the location of the map mounted next (release audit 43).
+  // wrote its address into the store, over the location of the map mounted next.
   const lookups = new Set<AbortController>();
   const lookUpAddress = (at: LatLng) => {
     if (typeof fetch !== 'function') return;

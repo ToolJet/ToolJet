@@ -94,7 +94,7 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
                 style={{ borderColor: hairline }}
               >
                 {f.label ? (
-                  // A long label wraps rather than being cut ("Technicians on the...", 2026-10-13); it takes the cell's
+                  // A long label wraps rather than being cut ("Technicians on the..."); it takes the cell's
                   // spare height, so the figures in a row of the grid stay level whatever their labels' lengths.
                   <dt
                     className="tw-flex-1 tw-break-words tw-text-xs tw-font-medium"
@@ -142,7 +142,7 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
                   </dd>
                 ) : figures.some((other) => other.caption) ? (
                   // A line held where a neighbour has a caption, so the figure stays level with theirs: "28" and "433"
-                  // sat a line lower than "11" and "£6,467.11" (bookshop stock strip, 2026-10-14).
+                  // sat a line lower than "11" and "£6,467.11".
                   <dd aria-hidden="true" className="tw-invisible tw-m-0 tw-text-xs">
                     &nbsp;
                   </dd>

@@ -161,7 +161,7 @@ export const useHeatLayer = (
 // ---- Icons -----------------------------------------------------------------------------------------------------------
 
 const ICON_SVG = new Map<string, string>();
-// Icons kept, by name, at most: a map's data can name any icon, and each name it gives is kept (release audit round 2).
+// Icons kept, by name, at most: a map's data can name any icon, and each name it gives is kept.
 export const ICON_CACHE_MAX = 500;
 // Icons being drawn, by name, so maps asking at once share one drawing (each was drawn again per map).
 const ICON_PENDING = new Map<string, Promise<boolean>>();
@@ -174,7 +174,7 @@ type IconModules = [
 let iconModules: Promise<IconModules> | null = null;
 
 /** lucide and the SVG renderer, loaded once. A failed load is forgotten so the next call loads again: it stayed in the
- *  chain, and no icon loaded until the page was reloaded (release audit 2). */
+ *  chain, and no icon loaded until the page was reloaded. */
 const loadIconModules = (): Promise<IconModules> => {
   if (iconModules) return iconModules;
   const loading = Promise.all([
@@ -244,7 +244,7 @@ let lastRequest = 0;
 let queue: Promise<unknown> = Promise.resolve();
 const CACHE = new Map<string, Place[]>();
 // The largest geocoder answer read: five Nominatim places are a few kilobytes. An answer was read and parsed whole,
-// whatever its size (release audit round 2).
+// whatever its size.
 export const GEOCODE_MAX_ANSWER_BYTES = 256 * 1024;
 
 /** A geocoder answer over GEOCODE_MAX_ANSWER_BYTES, refused rather than read on: the address search says so. */

@@ -65,7 +65,7 @@ export const statValue = (
   if (!isNumericFigure(value)) return String(value);
   if (!isFormat(valueFormat)) return typeof value === 'number' ? formatter({ format: 'number' })(value) : String(value);
   // A percent below 1 is a ratio, as the pack's charts read a series of fractions (percentScale): a churn rate of 0.021
-  // and a margin of 0.70 showed "0%" and "0.7%" (2026-10-14). A whole percentage (42.5) shows as written.
+  // and a margin of 0.70 showed "0%" and "0.7%". A whole percentage (42.5) shows as written.
   const n = Number(value);
   const shown = valueFormat === 'percent' && n !== 0 && Math.abs(n) < 1 ? n * 100 : n;
   return formatter({ format: valueFormat, currency })(shown);
@@ -73,7 +73,7 @@ export const statValue = (
 
 /** A change written with its context ("+8 vs semana passada") as { chip: '+8', context: 'vs semana passada' }: the chip
  *  holds the figure and the words go to the context line, which wraps. In the chip, capped at 60% of the row, the
- *  whole phrase read "+8 vs semana pa..." (a clinic app, 2026-10-13). A bare figure or words without one stay whole. */
+ *  whole phrase read "+8 vs semana pa...". A bare figure or words without one stay whole. */
 const LEADING_FIGURE = /^\s*([+\-−±]?\s?[$€£¥₹]?\d[\d.,]*\s?%?[kKmMbB]?)\s+(\S.*?)\s*$/;
 export const splitChange = (change: unknown): { chip: string; context: string } => {
   const text = change === null || change === undefined ? '' : String(change).trim();

@@ -137,7 +137,7 @@ export const TONE_VAR: Record<string, string> = {
   warning: 'var(--sc-warning)',
   danger: 'var(--sc-destructive)',
   // A fixed blue, as charts and the map use: in the brand colour, Booked and In progress read as Completed under a green
-  // theme and as Pending under an orange one (pet salon, helpdesk, 2026-10-14).
+  // theme and as Pending under an orange one.
   info: 'var(--sc-chart-info)',
   neutral: 'var(--sc-muted-foreground)',
 };
@@ -217,7 +217,7 @@ export const InlineProgress = ({ pct, className }: { pct: number | null; classNa
       style={{
         color: 'var(--lk-fg,var(--sc-muted-foreground))',
         // Room for "100.0%", so every bar in a list is the same length: at 2.5rem a "10.2%" row's bar came out shorter
-        // than its neighbours' (nonprofit programmes, 2026-10-14).
+        // than its neighbours'.
         minWidth: '3rem',
         textAlign: 'right',
       }}

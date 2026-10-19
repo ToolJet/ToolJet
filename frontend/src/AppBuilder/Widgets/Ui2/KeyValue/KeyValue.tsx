@@ -121,8 +121,8 @@ export const ShadKeyValue = (props: WidgetProps) => {
     fireEvent('onFieldClick');
   };
   const inline = p.layout !== 'stacked';
-  // As many columns as fit: two inline columns in a 400px card cut every value to a few letters ("PO 88", "$8,") on a
-  // claim's facts (2026-10-14). An inline pair needs about 300px, a stacked one 160px.
+  // As many columns as fit: two inline columns in a 400px card cut every value to a few letters ("PO 88", "$8,").
+  // An inline pair needs about 300px, a stacked one 160px.
   const fits = Number(props.width) > 0 ? Math.max(1, Math.floor(Number(props.width) / (inline ? 300 : 160))) : 4;
   const columns = Math.min(Math.floor(clampCoerce(p.columns, 1, 4, 1)), fits);
   const dividers = p.dividers !== false;

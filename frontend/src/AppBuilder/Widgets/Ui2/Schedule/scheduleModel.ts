@@ -274,7 +274,7 @@ export const placeBookings = (
     if (end === start.time) end = days ? dayAfter : start.time + HOUR / 2;
     if (end <= range.start || start.time >= range.end) return;
     // On the days scale a timed booking shorter than a day fills its day: placed by its time of day, a one-hour class
-    // was a 10px sliver with no room for its title (a gym's week, 2026-10-14). Its own time stays in `time`.
+    // was a 10px sliver with no room for its title. Its own time stays in `time`.
     const wholeDay = days && !start.dateOnly && end < dayAfter;
     const spanStart = wholeDay ? midnight(new Date(start.time)).getTime() : start.time;
     const spanEnd = wholeDay ? nextMidnight(spanStart) : end;
@@ -373,7 +373,7 @@ export const slotValue = (
 
 /** How a booking's face fits its box: a title line and a second line (time, subtitle) when the booking is 110px wide and
  *  its lane 34px tall; a narrower booking gives its title both lines and drops the second, which its place on the grid
- *  already says (bookings in 30-minute slots read "Ju... 11:...", both lines cut, 2026-10-14). The tooltip has it all. */
+ *  already says (bookings in 30-minute slots read "Ju... 11:...", both lines cut). The tooltip has it all. */
 export const bookingFace = (
   widthPx: number,
   laneHeight: number,
@@ -385,7 +385,7 @@ export const bookingFace = (
 };
 
 /** The resource column's heading as written, a field name read as words: resourceTitle="boat_name" headed a schedule
- *  "Boat_name" (2026-10-14). The first letter is capitalised. */
+ *  "Boat_name". The first letter is capitalised. */
 export const resourceHeading = (value: unknown): string => {
   const raw = value === null || value === undefined ? '' : String(value).trim();
   const words = /^[A-Za-z][A-Za-z0-9]*([_-][A-Za-z0-9]+)+$|^[a-z]+[A-Z][A-Za-z0-9]*$/.test(raw)

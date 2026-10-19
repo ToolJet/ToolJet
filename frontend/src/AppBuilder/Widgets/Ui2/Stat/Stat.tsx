@@ -166,7 +166,7 @@ export const ShadStat = (props: WidgetProps) => {
     >
       {trend !== 'neutral' ? <TrendIcon className="tw-h-3 tw-w-3 tw-shrink-0" /> : null}
       {/* Words without a leading figure wrap rather than being cut; a figure stays on one line, a long one shortened
-          ("+$190,800.00" broke as "+$190,800.0 / 0" and squeezed the label to two lines, 2026-10-14). */}
+          ("+$190,800.00" broke as "+$190,800.0 / 0" and squeezed the label to two lines). */}
       {figureChip ? (
         <span className="tw-whitespace-nowrap">{compactFigure(change.chip)}</span>
       ) : (

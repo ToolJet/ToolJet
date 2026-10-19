@@ -104,7 +104,7 @@ export const useMapData = (p: Resolved) => {
   const [iconsReady, setIconsReady] = useState(0);
   const iconNames = useStable(useMemo(() => [...new Set(points.map((pt) => pt.icon).filter(Boolean))], [points]));
   // A load that failed is tried again a few times, later each time: the map asks only when its icon names change, so
-  // one failed load left its pins without icons for good (release audit round 2).
+  // one failed load left its pins without icons for good.
   useEffect(() => {
     if (!iconNames.length) return undefined;
     let alive = true;

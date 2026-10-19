@@ -10,8 +10,8 @@ export const fieldName = (value: unknown, fallback: string): string =>
   typeof value === 'string' && value.trim() ? value : typeof value === 'number' ? String(value) : fallback;
 
 /** The narrowest a column gets before the board scrolls: 200px, 160px on a board of six or more stages, and down to
- *  140px when that lets every stage fit the board (three stages in a 620px half of a page cut the third at the edge,
- *  2026-10-14). 16px gaps between columns. */
+ *  140px when that lets every stage fit the board (three stages in a 620px half of a page cut the third at the edge).
+ *  16px gaps between columns. */
 export const columnMinimum = (count: number, boardWidth: number): number => {
   const base = count >= 6 ? 160 : 200;
   if (!(boardWidth > 0) || count < 1) return base;

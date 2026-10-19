@@ -53,8 +53,8 @@ interface GeocoderItem {
   features?: unknown;
 }
 
-/** The longest place label kept; a longer one is shortened, ending in an ellipsis so it shows it was (release audit
- *  round 2: a label's length had no limit). Nominatim's longest addresses are about 150 characters. */
+/** The longest place label kept; a longer one is shortened, ending in an ellipsis so it shows it was (a label's
+ *  length had no limit). Nominatim's longest addresses are about 150 characters. */
 export const PLACE_LABEL_MAX = 200;
 const capLabel = (label: string): string =>
   label.length > PLACE_LABEL_MAX ? `${label.slice(0, PLACE_LABEL_MAX - 1)}…` : label;
