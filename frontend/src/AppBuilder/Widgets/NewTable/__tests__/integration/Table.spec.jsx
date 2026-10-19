@@ -184,6 +184,26 @@ describe('Table: default rendering and data source', () => {
     expect(table()).not.toBeInTheDocument();
   });
 
+  test('[Table-EMPTY-001] with many columns and no data, the header row sits in a horizontally scrollable container', async () => {
+    const MANY_COLUMNS = Array.from({ length: 12 }, (_, i) => ({
+      name: `col${i}`,
+      key: `col${i}`,
+      id: `col-${i}`,
+      columnType: 'string',
+      columnSize: 150,
+    }));
+    widget.render({ properties: { data: binding('{{[]}}'), columns: { value: MANY_COLUMNS } } });
+
+    await waitFor(() => expect(document.querySelector('.warning-no-data-text')).toHaveTextContent('No data'));
+    expect(headerCell('col11')).toBeInTheDocument();
+
+    // jsdom loads no stylesheets, so assert on the class that decides overflow: Bootstrap's
+    // `.overflow-hidden` is `overflow: hidden !important` and beats `.jet-data-table { overflow-x: auto }`.
+    const scrollContainer = headerCell('col11').closest('.jet-data-table');
+    expect(scrollContainer).toHaveClass('table-responsive');
+    expect(scrollContainer).not.toHaveClass('overflow-hidden');
+  });
+
   test('[Table-DATA-001] dataSourceSelector switches the table to a bound variable instead of the data property', async () => {
     const BOUND_ROWS = [{ id: 9, name: 'Bound', email: 'bound@example.com', age: 1 }];
     store().setVariable('boundRows', BOUND_ROWS, MODULE_ID);
