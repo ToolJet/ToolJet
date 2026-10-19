@@ -1,7 +1,9 @@
 // Names the UI 2.0 widgets used before their names were settled (NAMING.md), and the name each one became. Apps saved
-// with an old name are rewritten by the server's data migration (server/data-migrations/*RenameUi2PackNames.ts) and on
-// import; normalizeLegacyNames below covers anything loaded without that (a restored version, a git pull).
-// The server keeps its own copy (server/src/modules/apps/services/ui2-legacy-names.ts); a spec checks they agree.
+// with an old name are rewritten by the server: the data migration (server/data-migrations/*RenameUi2PackNames.ts) and
+// import, which git sync goes through too; nothing renames at load. This copy is read by specs: packConfigs.spec keeps
+// retired names out of the configs, and the compat guard (__tests__/compat) takes a removed name as renamed only when
+// it is mapped here. The server keeps its own copy (server/src/modules/apps/services/ui2-legacy-names.ts); a spec
+// checks they agree.
 //
 // A rename maps an old name to the name that replaces it; where both names fired or held the same thing, only the
 // replacement is left. An exposed value may map to a path ('lastCardMovement.card').
@@ -17,6 +19,12 @@ export type Ui2Renames = {
 export const UI2_COMMON_RENAMES: Ui2Renames = {
   actions: { visibility: 'setVisibility', disable: 'setDisable', loading: 'setLoading' },
 };
+
+/**
+ * Common renames a widget never had, so a saved old name on it is left as it is. The Dialog was ModalV2 in the pack's
+ * look, without the `disable` alias the other widgets had; its setters are setDisableTrigger and setDisableModal.
+ */
+export const UI2_COMMON_RENAME_EXCEPTIONS: Record<string, string[]> = { ShadDialog: ['disable'] };
 
 const CHART: Ui2Renames = { exposed: { clickedDatum: 'clickedDataPoint' } };
 const PICKER: Ui2Renames = { events: { onChange: 'onSelect' }, actions: { clear: 'clearValue' } };
@@ -109,9 +117,11 @@ export const UI2_RENAMES: Record<string, Ui2Renames> = {
 export const renamesFor = (type: string): Required<Ui2Renames> | null => {
   if (!type || !type.startsWith('Shad')) return null;
   const own = UI2_RENAMES[type] ?? {};
+  const common = { ...UI2_COMMON_RENAMES.actions };
+  for (const name of UI2_COMMON_RENAME_EXCEPTIONS[type] ?? []) delete common[name];
   return {
     events: { ...own.events },
-    actions: { ...UI2_COMMON_RENAMES.actions, ...own.actions },
+    actions: { ...common, ...own.actions },
     exposed: { ...own.exposed },
     properties: { ...own.properties },
   };

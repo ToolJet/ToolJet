@@ -132,11 +132,60 @@ const matchesAccepted = (change, accepted) =>
     (a) => a.type === change.type && a.area === change.area && a.key === change.key && a.change === change.change
   );
 
-/** Whether `text` (a migration's source) rewrites `from` to `to`, as the rename tables are written: `from: 'to'`. */
-const migrationRewrites = (texts, from, to) => {
-  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(?:^|[\\s{,'"])${esc(from)}['"]?\\s*:\\s*['"\`]${esc(to)}['"\`]`);
-  return texts.some((text) => re.test(text));
+// A migration's source, read just far enough to find its rename table: `Type: { events: { old: 'new' } }`, where an
+// entry or a table may be a name bound to an object (`ShadAreaChart: CHART`) and may spread one (`...PICKER`).
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const IDENT = '[A-Za-z_$][\\w$]*';
+
+/** The source without its comments (strings are kept, so a `//` inside one is not taken for a comment). */
+const withoutComments = (text) =>
+  text.replace(/("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (m, str) =>
+    str === undefined ? ' ' : str
+  );
+
+/** The `{ ... }` that opens at `open`, by brace depth. */
+const objectAt = (text, open) => {
+  let depth = 0;
+  for (let i = open; i < text.length; i += 1) {
+    if (text[i] === '{') depth += 1;
+    else if (text[i] === '}' && (depth -= 1) === 0) return text.slice(open, i + 1);
+  }
+  return '';
+};
+
+/** The object bound to `name` (`const NAME = { ... }`), with its spreads written out. */
+const boundObject = (text, name, depth) => {
+  const at = new RegExp(`(?:const|let|var)\\s+${esc(name)}\\b[^=;]*=\\s*\\{`).exec(text);
+  return at && depth < 4 ? spreadOut(text, objectAt(text, at.index + at[0].length - 1), depth + 1) : '';
+};
+const spreadOut = (text, object, depth) =>
+  object.replace(new RegExp(`\\.\\.\\.\\s*(${IDENT})`, 'g'), (m, name) => boundObject(text, name, depth));
+
+/** Every object `key` is given in `text`: `key: { ... }`, or `key: NAME` for an object bound to NAME. */
+const entriesOf = (text, scope, key) => {
+  const found = [];
+  const re = new RegExp(`(?:^|[\\s{,])['"]?${esc(key)}['"]?\\s*:\\s*(?:(\\{)|(${IDENT}))`, 'g');
+  for (let m = re.exec(scope); m; m = re.exec(scope)) {
+    const object = m[1] ? spreadOut(text, objectAt(scope, m.index + m[0].length - 1), 0) : boundObject(text, m[2], 0);
+    if (object) found.push(object);
+  }
+  return found;
+};
+
+/**
+ * Whether a migration's source renames `from` to `to` for `type`, as the rename tables are written: in the type's own
+ * entry under `table` (`ShadSelect: { events: { onChange: 'onSelect' } }`), or under `table` in the common renames
+ * every type takes (UI2_COMMON_RENAMES). The pair anywhere else (another widget's entry, a comment) does not count.
+ */
+const migrationRewrites = (texts, type, table, from, to) => {
+  const pair = new RegExp(`(?:^|[\\s{,'"])${esc(from)}['"]?\\s*:\\s*['"\`]${esc(to)}['"\`]`);
+  return texts
+    .map(withoutComments)
+    .some((text) =>
+      [...entriesOf(text, text, type), boundObject(text, 'UI2_COMMON_RENAMES', 0)]
+        .flatMap((entry) => entriesOf(text, entry, table))
+        .some((names) => pair.test(names))
+    );
 };
 
 /**
@@ -156,7 +205,8 @@ export function classify(changes, { renamesFor, migrationTexts, acceptedBreaks, 
       const target = renamesFor(change.type)?.[RENAME_TABLE[change.area]]?.[change.key];
       const live = liveContracts[change.type];
       const targetLive = target && live && namesIn(live, change.area).includes(target.split('.')[0]);
-      const migrated = target && migrationRewrites(migrationTexts, change.key, target);
+      const migrated =
+        target && migrationRewrites(migrationTexts, change.type, RENAME_TABLE[change.area], change.key, target);
       if (targetLive && migrated) return { ...change, verdict: 'renamed', to: target };
       return { ...change, verdict: 'break', renamedTo: target, targetLive, migrated };
     }
@@ -209,7 +259,8 @@ export function explainBreak(c) {
         if (!c.migrated)
           lines.push(
             `  legacyNames.ts maps it to "${c.renamedTo}", but no migration in server/data-migrations rewrites`,
-            `  "${c.key}: '${c.renamedTo}'". Add one (start from *-RenameUi2PackNames.ts; never edit a shipped one).`
+            `  "${c.key}: '${c.renamedTo}'" in its ${c.type} entry. Add one (start from *-RenameUi2PackNames.ts;`,
+            `  never edit a shipped one).`
           );
       }
     }
