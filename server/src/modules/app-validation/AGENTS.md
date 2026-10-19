@@ -61,6 +61,17 @@ Adding an event action: follow `.github/instructions/event-action-remapping.inst
   query of every fresh app under enforce - pinned by version-index.spec. The export reader
   mirrors this: untagged (global) data sources belong to every version of an export.
 
+## Telemetry
+
+`core/telemetry.ts`, from `check()`; no-op without the OTel SDK, never throws into the write.
+
+- `tooljet.write_source` on the request span (server-resolved), every checked write.
+- Counter `tooljet.app_validation.issues` (Prometheus: `tooljet_app_validation_issues_total`),
+  one per issue, labels `area, source, mode, code, severity, outcome` (`blocked` | `reported`
+  = would block, returned as warning | `warned`). No IDs, paths, names or messages.
+- Span event `app_validation {area, source, mode, blocked, reported, warned, codes}`.
+- Errors log one `warn` (`rejected` in enforce, `wouldBlock` in report).
+
 ## Tests
 
 ```
