@@ -70,6 +70,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Timeline',
   'CustomComponent',
   'Calendar',
+  'QrScanner',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];

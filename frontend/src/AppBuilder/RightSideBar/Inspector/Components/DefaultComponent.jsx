@@ -60,6 +60,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FlexContainer',
   'Timeline',
   'Calendar',
+  'QrScanner',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -220,6 +221,7 @@ export const baseComponentProperties = (
       'Timeline',
       'Calendar',
       'CustomComponent',
+      'QrScanner',
     ],
     Layout: [],
   };

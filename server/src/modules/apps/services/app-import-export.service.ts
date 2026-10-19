@@ -69,7 +69,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2';
+type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2' | 'QrScanner';
 
 type NewRevampedComponent =
   | 'Text'
@@ -179,6 +179,7 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'Calendar',
   'CustomComponent',
   'RadioButtonV2',
+  'QrScanner',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -317,6 +318,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'PhoneInput',
   'PopoverMenu',
   'ProgressBar',
+  'QrScanner',
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',
@@ -3001,6 +3003,24 @@ function migrateProperties(
           properties.visibility = styles.visibility;
         }
         delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'QrScanner') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
       }
 
       if (general?.tooltip) {

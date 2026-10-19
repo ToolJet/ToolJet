@@ -22,11 +22,13 @@ const widget = createWidgetHarness({
   componentType: 'QrScanner',
   handle: ID,
   id: ID,
-  defaultProperties: {},
-  defaultStyles: {
+  defaultProperties: {
     visibility: binding('{{true}}'),
     disabledState: binding('{{false}}'),
+    tooltip: binding(''),
+    tooltipFormat: binding('plainText'),
   },
+  defaultStyles: {},
 });
 
 const exposed = () => store().getExposedValueOfComponent(ID, MODULE_ID);
@@ -100,7 +102,7 @@ describe('QrScanner widget', () => {
   test('[QrScanner-STYLE-001] visibility=false hides the container', async () => {
     // Break this catches: dropping the `display: visibility ? '' : 'none'` mapping
     // (QrScanner.jsx:22), so a hidden scanner stays on screen.
-    widget.render({ styles: { visibility: binding('{{false}}') } });
+    widget.render({ properties: { visibility: binding('{{false}}') } });
 
     await waitFor(() => expect(container()).toBeInTheDocument());
     expect(container()).toHaveStyle({ display: 'none' });
@@ -109,9 +111,71 @@ describe('QrScanner widget', () => {
   test('[QrScanner-STYLE-002] disabledState=true sets the container data-disabled', async () => {
     // Break this catches: dropping `data-disabled={disabledState}` (QrScanner.jsx:21),
     // so a disabled scanner stays interactive (the global pointer-events rule no-ops).
-    widget.render({ styles: { disabledState: binding('{{true}}') } });
+    widget.render({ properties: { disabledState: binding('{{true}}') } });
 
     await waitFor(() => expect(container()).toBeInTheDocument());
     expect(container()).toHaveAttribute('data-disabled', 'true');
+  });
+
+  test('[QrScanner-CSA-001] setVisibility hides and restores the scanner and publishes isVisible', async () => {
+    // Break this catches: the CSA not being registered on mount, or toggling the DOM without publishing isVisible.
+    widget.render({});
+    await waitFor(() => expect(container()).toBeInTheDocument());
+    await waitFor(() => expect(exposed()).toMatchObject({ isVisible: true }));
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(container()).toHaveStyle({ display: 'none' }));
+    expect(exposed()).toMatchObject({ isVisible: false });
+
+    await widget.act('setVisibility', true);
+    await waitFor(() => expect(container()).not.toHaveStyle({ display: 'none' }));
+    expect(exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[QrScanner-CSA-002] setDisable toggles data-disabled, the canvas disabled class and isDisabled', async () => {
+    // Break this catches: the CSA not being registered, or not publishing isDisabled (which drives
+    // RenderWidget's `disabled` canvas class).
+    widget.render({});
+    await waitFor(() => expect(container()).toBeInTheDocument());
+    await waitFor(() => expect(exposed()).toMatchObject({ isDisabled: false }));
+
+    await widget.act('setDisable', true);
+    await waitFor(() => expect(container()).toHaveAttribute('data-disabled', 'true'));
+    expect(exposed()).toMatchObject({ isDisabled: true });
+    expect(document.querySelector(`[data-cy="draggable-widget-${ID}"]`)).toHaveClass('disabled');
+
+    await widget.act('setDisable', false);
+    await waitFor(() => expect(container()).toHaveAttribute('data-disabled', 'false'));
+    expect(exposed()).toMatchObject({ isDisabled: false });
+  });
+
+  test('[QrScanner-CSA-003] changed visibility/disabledState properties override earlier CSA calls', async () => {
+    // Break this catches: local CSA state no longer yielding to a later change of the owning property.
+    widget.render({});
+    await waitFor(() => expect(container()).toBeInTheDocument());
+
+    await widget.act('setVisibility', false);
+    await widget.act('setDisable', true);
+    await widget.session.store.act(async () => {
+      widget.setComponentProperty(ID, 'visibility', '{{false}}', 'properties');
+      widget.setComponentProperty(ID, 'disabledState', '{{true}}', 'properties');
+    });
+    await widget.session.store.act(async () => {
+      widget.setComponentProperty(ID, 'visibility', '{{true}}', 'properties');
+      widget.setComponentProperty(ID, 'disabledState', '{{false}}', 'properties');
+    });
+
+    await waitFor(() => expect(container()).not.toHaveStyle({ display: 'none' }));
+    expect(container()).toHaveAttribute('data-disabled', 'false');
+    expect(exposed()).toMatchObject({ isVisible: true, isDisabled: false });
+  });
+
+  test('[QrScanner-TIP-001] a tooltip set under properties is shown on hover', async () => {
+    // Break this catches: RenderWidget still reading QrScanner's tooltip from `general`.
+    widget.render({ properties: { tooltip: binding('Point at a QR code') } });
+    await waitFor(() => expect(container()).toBeInTheDocument());
+
+    await widget.session.user.hover(container());
+    await waitFor(() => expect(screen.getAllByText('Point at a QR code').length).toBeGreaterThan(0));
   });
 });
