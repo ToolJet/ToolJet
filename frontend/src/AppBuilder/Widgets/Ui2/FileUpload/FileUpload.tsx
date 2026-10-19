@@ -236,13 +236,14 @@ export const ShadFileUpload = (props: WidgetProps) => {
     if (!read.length) return undefined;
     if (!live.multiple) filesRef.current.forEach((f) => releaseFileHandle(f.handle));
     // The files are put together when the reads finish, not when they start: two drops can both have seen room for
-    // the last file, or both carried the same file. What does not fit is released, so its payload is not kept.
+    // the last file, or both carried the same file. What does not fit is released, so its payload is not kept: a
+    // file already in the list too, when maxFiles dropped while this read was under way.
     const kept = live.multiple ? filesRef.current : [];
     const same = (a: ReadFile, b: ReadFile) =>
       a.name === b.name && a.size === b.size && a.lastModified === b.lastModified;
     const added = read.filter((f, i) => !kept.some((k) => same(k, f)) && read.findIndex((g) => same(g, f)) === i);
     const next = [...kept, ...added].slice(0, live.maxFiles);
-    read.filter((f) => !next.includes(f)).forEach((f) => releaseFileHandle(f.handle));
+    [...kept, ...read].filter((f) => !next.includes(f)).forEach((f) => releaseFileHandle(f.handle));
     if (added.length > next.length - kept.length) {
       setRejectError(M.rejectionMessage([{ errors: [{ code: 'too-many-files' }] }], { maxFiles: live.maxFiles }));
     }
