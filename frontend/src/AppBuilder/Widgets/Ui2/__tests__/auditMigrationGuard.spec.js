@@ -1,6 +1,7 @@
 // Release audit 2026-10-18 (Codex fixture reviewMetadataGuardBoundaries): the compat guard took a removed name as
 // migrated when any migration's text held the pair anywhere (`onChange: 'onSelect'`), another widget's entry or a
 // comment included. A rename now counts only in the widget's own entry of a migration's table (or the common one).
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import fs from 'fs';
 import path from 'path';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
