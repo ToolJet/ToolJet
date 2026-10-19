@@ -64,27 +64,27 @@ export const shadInputConfig = {
       },
     },
     inputType: {
-      type: 'switch',
+      type: 'select',
       displayName: 'Type',
       options: [
         {
-          displayName: 'Text',
+          name: 'Text',
           value: 'text',
         },
         {
-          displayName: 'Email',
+          name: 'Email',
           value: 'email',
         },
         {
-          displayName: 'Number',
+          name: 'Number',
           value: 'number',
         },
         {
-          displayName: 'Password',
+          name: 'Password',
           value: 'password',
         },
         {
-          displayName: 'Search',
+          name: 'Search',
           value: 'search',
         },
       ],

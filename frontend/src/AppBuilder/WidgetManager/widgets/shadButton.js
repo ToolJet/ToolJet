@@ -30,31 +30,31 @@ export const shadButtonConfig = {
       },
     },
     variant: {
-      type: 'switch',
+      type: 'select',
       displayName: 'Variant',
       options: [
         {
-          displayName: 'Default',
+          name: 'Default',
           value: 'default',
         },
         {
-          displayName: 'Secondary',
+          name: 'Secondary',
           value: 'secondary',
         },
         {
-          displayName: 'Outline',
+          name: 'Outline',
           value: 'outline',
         },
         {
-          displayName: 'Ghost',
+          name: 'Ghost',
           value: 'ghost',
         },
         {
-          displayName: 'Destructive',
+          name: 'Destructive',
           value: 'destructive',
         },
         {
-          displayName: 'Link',
+          name: 'Link',
           value: 'link',
         },
       ],

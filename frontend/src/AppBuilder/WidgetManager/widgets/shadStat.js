@@ -50,27 +50,27 @@ export const shadStatConfig = {
       },
     },
     valueFormat: {
-      type: 'switch',
+      type: 'select',
       displayName: 'Value format',
       options: [
         {
-          displayName: 'Auto',
+          name: 'Auto',
           value: 'auto',
         },
         {
-          displayName: 'Number',
+          name: 'Number',
           value: 'number',
         },
         {
-          displayName: 'Currency',
+          name: 'Currency',
           value: 'currency',
         },
         {
-          displayName: 'Percent',
+          name: 'Percent',
           value: 'percent',
         },
         {
-          displayName: 'Compact',
+          name: 'Compact',
           value: 'compact',
         },
       ],

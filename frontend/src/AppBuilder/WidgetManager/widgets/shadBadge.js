@@ -30,31 +30,31 @@ export const shadBadgeConfig = {
       },
     },
     variant: {
-      type: 'switch',
+      type: 'select',
       displayName: 'Variant',
       options: [
         {
-          displayName: 'Default',
+          name: 'Default',
           value: 'default',
         },
         {
-          displayName: 'Secondary',
+          name: 'Secondary',
           value: 'secondary',
         },
         {
-          displayName: 'Outline',
+          name: 'Outline',
           value: 'outline',
         },
         {
-          displayName: 'Success',
+          name: 'Success',
           value: 'success',
         },
         {
-          displayName: 'Warning',
+          name: 'Warning',
           value: 'warning',
         },
         {
-          displayName: 'Destructive',
+          name: 'Destructive',
           value: 'destructive',
         },
       ],
