@@ -22,6 +22,7 @@ import {
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import { useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import { isDisabledOption } from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -65,7 +66,7 @@ export const ShadSelect = (props: WidgetProps) => {
       const wanted = v && typeof v === 'object' && 'value' in v ? (v as { value: unknown }).value : v;
       if (wanted === undefined || wanted === null || typeof wanted === 'object') return;
       const option = byKey.get(optionKey(wanted));
-      if (!option || option.disabled) return;
+      if (!option || isDisabledOption(option)) return;
       setKey(optionKey(wanted));
       fireEvent('onSelect');
     },
@@ -105,6 +106,7 @@ export const ShadSelect = (props: WidgetProps) => {
         }}
         onValueChange={(next) =>
           !popup.blocked &&
+          !isDisabledOption(byKey.get(next)) &&
           runNow(() => {
             setKey(next);
             setExposedVariable('value', byKey.get(next)?.value ?? '');
@@ -128,7 +130,8 @@ export const ShadSelect = (props: WidgetProps) => {
         {/* The list opens in the pack's portal root, outside the widget: it takes the widget's style variables itself. */}
         <SelectContent style={lookVars(props.componentType, props.styles)} onCloseAutoFocus={popup.onCloseAutoFocus}>
           {shown.map((o) => (
-            <SelectItem key={optionKey(o.value)} value={optionKey(o.value)}>
+            // A disabled option takes no click, and the keyboard skips it (End, arrows, typeahead).
+            <SelectItem key={optionKey(o.value)} value={optionKey(o.value)} disabled={isDisabledOption(o)}>
               {o.label}
             </SelectItem>
           ))}

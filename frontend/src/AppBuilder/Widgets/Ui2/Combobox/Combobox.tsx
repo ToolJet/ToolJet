@@ -72,7 +72,7 @@ export const ShadCombobox = (props: WidgetProps) => {
       const wanted = v && typeof v === 'object' && 'value' in v ? (v as { value: unknown }).value : v;
       if (wanted === undefined || wanted === null || typeof wanted === 'object') return;
       const option = options.find((o) => M.keyOf(o.value) === M.keyOf(wanted));
-      if (!option || option.disabled) return;
+      if (!option || M.isDisabledOption(option)) return;
       setKey(M.keyOf(wanted));
       fireEvent('onSelect');
     },
