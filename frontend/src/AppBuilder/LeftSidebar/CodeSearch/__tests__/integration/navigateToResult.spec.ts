@@ -1,17 +1,16 @@
 /**
  * Where a code search result lands: the store state navigateToResult leaves behind for each kind of
- * result. The DOM half (tab clicks, field flash) lives in highlightMatch and is browser-verified.
+ * result — the place it opens, the tabs it asks for, and the focus request the field's editor takes.
  *
  * Real composed store. Only `react-hot-toast` is stubbed: it is the external boundary navigation
- * reports failures through. Fake timers drive switchPage's macrotask hops and stop highlightMatch's
- * requestAnimationFrame polling from outliving the test.
+ * reports failures through. Fake timers drive switchPage's macrotask hops and the reveal/focus waits.
  */
 import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { componentDefinition, binding } from '@/test/app-builder';
 import { navigateToResult } from '../../navigateToResult';
 import type { RevealStep, SearchRecord } from '../../buildSearchRecords';
-import type { RevealRequest } from '@/AppBuilder/_stores/slices/codeSearchSlice';
+import type { FocusRequest, RevealRequest } from '@/AppBuilder/_stores/slices/codeSearchSlice';
 
 jest.mock('react-hot-toast', () => {
   const toast = Object.assign(jest.fn(), {} as Record<string, jest.Mock>);
@@ -63,12 +62,15 @@ function seedApp() {
   s.dataQuery.setQueries([{ id: 'q1', name: 'query1', kind: 'restapi', options: {} }], 'canvas');
 }
 
-// Lets navigateToResult run to completion, including any page switch it starts.
-// Fixtures carry only the fields navigation reads.
-async function go(record: Partial<SearchRecord>, { hops = 5 } = {}) {
-  const done = navigateToResult({ record: record as SearchRecord, start: 0, end: 1, occurrence: 0 });
+// Lets navigateToResult run to completion, including any page switch it starts and any reveal or
+// focus request nobody takes. Fixtures carry only the fields navigation reads.
+async function go(record: Partial<SearchRecord>, { hops = 5, start = 0, end = 1 } = {}) {
+  let settled = false;
+  const done = navigateToResult({ record: record as SearchRecord, start, end, occurrence: 0 }).finally(() => {
+    settled = true;
+  });
   // 16ms per hop: page switches yield on setTimeout(0), modal reveal waits on animation frames.
-  for (let i = 0; i < hops; i++) await jest.advanceTimersByTimeAsync(16);
+  for (let i = 0; i < hops || (!settled && i < 500); i++) await jest.advanceTimersByTimeAsync(16);
   await done;
 }
 
@@ -84,6 +86,21 @@ function revealSpy(opens: RevealStep['kind'][] = []) {
   });
   return { steps: () => requested.map(({ kind, ownerId, itemId }) => ({ kind, ownerId, itemId })), unsubscribe };
 }
+
+// Stands in for the code editor that holds the field (codeSearchHighlight): records every focus
+// request and takes it.
+function focusSpy() {
+  const requested: FocusRequest[] = [];
+  const unsubscribe = useStore.subscribe((s: any) => {
+    const request: FocusRequest | null = s.codeSearch.focusRequest;
+    if (!request || requested[requested.length - 1]?.nonce === request.nonce) return;
+    requested.push(request);
+    s.consumeCodeSearchFocus(request.nonce);
+  });
+  return { requests: () => requested.map(({ nonce: _nonce, ...target }) => target), unsubscribe };
+}
+
+const inspectorTab = (ownerId: string, itemId: string): RevealStep => ({ kind: 'inspectorTab', ownerId, itemId });
 
 beforeEach(() => {
   jest.useFakeTimers();
@@ -133,7 +150,7 @@ describe('navigateToResult', () => {
     spy.unsubscribe();
 
     expect(state().selectedComponents).toEqual(['t1']);
-    expect(spy.steps()).toEqual([]);
+    expect(spy.steps()).toEqual([inspectorTab('t1', 'properties')]);
     expect(state().codeSearch.revealRequest).toBeNull();
   });
 
@@ -142,6 +159,7 @@ describe('navigateToResult', () => {
     card.dataset.eventId = 'ev-1';
     document.body.appendChild(card);
     jest.spyOn(Element.prototype, 'getClientRects').mockImplementation(() => [{}] as unknown as DOMRectList);
+    const tabs = revealSpy(['inspectorTab']);
 
     await go(
       {
@@ -158,13 +176,14 @@ describe('navigateToResult', () => {
       { hops: 80 }
     );
 
+    tabs.unsubscribe();
     expect(card.classList.contains('tj-code-search-flash')).toBe(true);
     jest.restoreAllMocks();
     card.remove();
   });
 
   test('a column field does not ask any popover to open', async () => {
-    const spy = revealSpy([]);
+    const spy = revealSpy(['inspectorTab']);
 
     await go({
       entityType: 'component',
@@ -178,8 +197,84 @@ describe('navigateToResult', () => {
     });
     spy.unsubscribe();
 
-    expect(spy.steps()).toEqual([]);
+    expect(spy.steps()).toEqual([inspectorTab('t1', 'properties')]);
     expect(state().codeSearch.revealRequest).toBeNull();
+    expect(state().codeSearch.focusRequest).toBeNull();
+  });
+
+  test("a component field opens its Inspector tab, then asks the field's editor to select the match", async () => {
+    const tabs = revealSpy(['inspectorTab']);
+    const focus = focusSpy();
+
+    await go(
+      {
+        entityType: 'component',
+        entityId: 't1',
+        pageId: 'page-a',
+        fieldPath: ['styles', 'textColor'],
+        text: 'var(--text)',
+      },
+      { start: 4, end: 8 }
+    );
+    tabs.unsubscribe();
+    focus.unsubscribe();
+
+    expect(tabs.steps()).toEqual([inspectorTab('t1', 'styles')]);
+    expect(focus.requests()).toEqual([
+      {
+        scope: '.editor-sidebar .inspector',
+        keys: ['textColor'],
+        inOpenedTab: false,
+        text: 'var(--text)',
+        start: 4,
+        end: 8,
+      },
+    ]);
+  });
+
+  test('a field no editor takes lands on its own tagged row', async () => {
+    document.body.innerHTML = `
+      <div class="editor-sidebar"><div class="inspector">
+        <div data-param="name"><input type="text" value="table1" /></div>
+      </div></div>`;
+    jest.spyOn(Element.prototype, 'getClientRects').mockImplementation(() => [{}] as unknown as DOMRectList);
+    Element.prototype.scrollIntoView = jest.fn();
+    const tabs = revealSpy(['inspectorTab']);
+
+    await go({ entityType: 'component', entityId: 't1', pageId: 'page-a', fieldPath: ['name'], text: 'table1' });
+    tabs.unsubscribe();
+
+    expect(document.querySelector('[data-param="name"]')?.classList.contains('tj-code-search-flash')).toBe(true);
+    expect(state().codeSearch.focusRequest).toBeNull();
+    jest.restoreAllMocks();
+    document.body.innerHTML = '';
+  });
+
+  test('a request-tab field is looked for inside that opened tab only', async () => {
+    const tabs = revealSpy(['queryTab', 'restTab']);
+    const focus = focusSpy();
+
+    await go({
+      entityType: 'query',
+      entityId: 'q1',
+      pageId: null,
+      fieldPath: ['options', 'headers', '0', 'value'],
+      text: 'Bearer x',
+      reveal: [
+        { kind: 'queryTab', ownerId: 'q1', itemId: 'setup' },
+        { kind: 'restTab', ownerId: 'q1', itemId: 'headers' },
+      ],
+    });
+    tabs.unsubscribe();
+    focus.unsubscribe();
+
+    expect(focus.requests()).toMatchObject([
+      {
+        scope: '[data-reveal-root="restTab:headers"]',
+        keys: ['options', 'headers', '0', 'value'],
+        inOpenedTab: true,
+      },
+    ]);
   });
 
   test('a query result selects the query', async () => {
@@ -211,7 +306,7 @@ describe('navigateToResult', () => {
       kind: 'queryTab',
       itemId: 'setup',
     });
-    await jest.advanceTimersByTimeAsync(2000);
+    await jest.advanceTimersByTimeAsync(3000);
     await done;
   });
 

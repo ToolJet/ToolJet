@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FormField } from './index';
 
-export const FormFieldsList = ({ formId, fields, onDeleteField, currentStatusRef, onSave }) => {
+export const FormFieldsList = ({ fields, onDeleteField, currentStatusRef, onSave }) => {
   const [activeMenuField, setActiveMenuField] = useState(null);
 
   if (fields.length === 0) {
@@ -19,7 +19,6 @@ export const FormFieldsList = ({ formId, fields, onDeleteField, currentStatusRef
           {fields.map((field) => (
             <FormField
               key={field.name}
-              formId={formId}
               field={field}
               activeMenu={activeMenuField}
               onMenuToggle={(fieldName) => {

@@ -34,6 +34,8 @@ const InputComponent = RawInput as React.ComponentType<any>;
 type StoreState = any;
 
 const SEARCH_DEBOUNCE_MS = 150;
+// Every saved edit replaces the definition, and each new one is re-sent and re-indexed in full.
+const INDEX_DEBOUNCE_MS = 400;
 const EMPTY: never[] = [];
 const REGEX_TOO_SLOW = 'Regular expression takes too long to run';
 const EMPTY_RESULT = searchRecords([], '');
@@ -119,7 +121,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
     string,
     CodeSearchOptions,
     (term: string) => void,
-    (options: Partial<CodeSearchOptions>) => void
+    (options: Partial<CodeSearchOptions>) => void,
   ] = useStore(
     (state: StoreState) => [
       state.codeSearch.term,
@@ -164,6 +166,12 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
     () => ({ pages, queries, events, globalSettings, pageSettings, queryIdNameMapping, defs: getPlainDefs() }),
     [pages, queries, events, globalSettings, pageSettings, queryIdNameMapping]
   );
+  // Re-index once edits settle, not on every save.
+  const [indexedInput, setIndexedInput] = useState(input);
+  useEffect(() => {
+    const timer = setTimeout(() => setIndexedInput(input), INDEX_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [input]);
 
   const { caseSensitive, wholeWord, regex, type, currentPageOnly } = options;
 
@@ -173,14 +181,14 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
     if (debouncedTerm.length < MIN_TERM_LENGTH) return setResult(EMPTY_RESULT);
     let current = true;
     const filters = { caseSensitive, wholeWord, regex, type, currentPageOnly };
-    runSearch({ input, term: debouncedTerm, filters, currentPageId }).then((outcome) => {
+    runSearch({ input: indexedInput, term: debouncedTerm, filters, currentPageId }).then((outcome) => {
       if (!current || 'superseded' in outcome) return;
       setResult('timedOut' in outcome ? { ...EMPTY_RESULT, error: REGEX_TOO_SLOW } : outcome.result);
     });
     return () => {
       current = false;
     };
-  }, [input, debouncedTerm, caseSensitive, wholeWord, regex, type, currentPageOnly, currentPageId]);
+  }, [indexedInput, debouncedTerm, caseSensitive, wholeWord, regex, type, currentPageOnly, currentPageId]);
 
   useEffect(() => disposeSearchWorker, []);
 

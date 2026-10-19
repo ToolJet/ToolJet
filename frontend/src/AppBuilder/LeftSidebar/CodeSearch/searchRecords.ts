@@ -252,14 +252,15 @@ export const searchRecords = (
   const entityRank = (entity: ResultEntity) => {
     if (entity.defined) return -2;
     if (entity.pageId && entity.pageId === currentPageId) return -1;
-    return entity.pageId ? pageOrder.get(entity.pageId) ?? pages.length : pages.length + 1;
+    return entity.pageId ? (pageOrder.get(entity.pageId) ?? pages.length) : pages.length + 1;
   };
 
   const sortedGroups: ResultGroup[] = SECTION_ORDER.flatMap((key) => {
     const group = groups.get(key);
     if (!group) return [];
     const entities = [...group.entities.values()];
-    for (const entity of entities) entity.defined = sameName(entity.entityName);
+    // Events are listed under their owner, which the term naming doesn't make a definition.
+    if (key !== 'events') for (const entity of entities) entity.defined = sameName(entity.entityName);
     entities.sort((a, b) => entityRank(a) - entityRank(b));
     return [{ ...group, entities }];
   });

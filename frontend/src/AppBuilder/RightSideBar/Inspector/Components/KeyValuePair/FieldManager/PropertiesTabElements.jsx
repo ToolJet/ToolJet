@@ -78,12 +78,7 @@ export const PropertiesTabElements = ({
   return (
     <>
       {/* Field Type Selector */}
-      <div
-        className="field px-3"
-        data-cy={`dropdown-field-type`}
-        data-param="fieldType"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="field px-3" data-cy={`dropdown-field-type`} onClick={(e) => e.stopPropagation()}>
         <label data-cy={`label-field-type`} className="form-label">
           {t('widget.KeyValuePair.fieldType', 'Field type')}
         </label>
@@ -106,7 +101,7 @@ export const PropertiesTabElements = ({
       </div>
 
       {/* Field Name */}
-      <div className="field px-3" data-cy={`input-and-label-field-name`} data-param="name">
+      <div className="field px-3" data-cy={`input-and-label-field-name`}>
         <label data-cy={`label-field-name`} className="form-label">
           {t('widget.KeyValuePair.fieldName', 'Label')}
         </label>
@@ -126,7 +121,7 @@ export const PropertiesTabElements = ({
       </div>
 
       {/* Key */}
-      <div data-cy={`input-and-label-key`} className="field px-3" data-param="key">
+      <div data-cy={`input-and-label-key`} className="field px-3">
         <label className="form-label">{t('widget.KeyValuePair.key', 'Key')}</label>
         <CodeHinter
           currentState={currentState}
@@ -146,7 +141,7 @@ export const PropertiesTabElements = ({
       {/* Make Editable Toggle with Validation */}
       {!['image', 'link'].includes(field.fieldType) && (
         <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px' }}>
-          <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }} data-param="isEditable">
+          <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
             <ProgramaticallyHandleProperties
               label="make editable"
               currentState={currentState}
@@ -177,7 +172,7 @@ export const PropertiesTabElements = ({
 
       {/* Visibility Toggle */}
       <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
-        <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }} data-param="fieldVisibility">
+        <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
           <ProgramaticallyHandleProperties
             label="Visibility"
             currentState={currentState}

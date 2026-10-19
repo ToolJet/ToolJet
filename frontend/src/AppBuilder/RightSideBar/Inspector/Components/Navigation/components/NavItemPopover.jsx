@@ -86,7 +86,6 @@ const NavItemPopover = forwardRef(
         {...restProps}
         style={{ ...restProps.style, width: '310px' }}
         className={`${darkMode ? 'dark-theme theme-dark' : ''} nav-item-popover ${restProps.className || ''}`}
-        data-reveal-root={`listItem:${item?.id}`}
       >
         <div
           className="nav-item-popover-container"
@@ -129,11 +128,7 @@ const NavItemPopover = forwardRef(
             {/* Fields section */}
             <div className="nav-item-popover-fields-section">
               {/* Label field */}
-              <div
-                data-param="label"
-                data-cy="inspector-nav-item-details-label-field"
-                className="nav-item-popover-field"
-              >
+              <div data-cy="inspector-nav-item-details-label-field" className="nav-item-popover-field">
                 <label data-cy="inspector-nav-item-details-label-label" className="nav-item-popover-field-label">
                   Label
                 </label>
@@ -149,7 +144,7 @@ const NavItemPopover = forwardRef(
               </div>
 
               {/* Id field */}
-              <div data-param="id" data-cy="inspector-nav-item-details-id-field" className="nav-item-popover-field">
+              <div data-cy="inspector-nav-item-details-id-field" className="nav-item-popover-field">
                 <label data-cy="inspector-nav-item-details-id-label" className="nav-item-popover-field-label">
                   Id
                 </label>
@@ -170,11 +165,7 @@ const NavItemPopover = forwardRef(
               </div>
 
               {!item.isGroup && (
-                <div
-                  data-param="caption"
-                  data-cy="inspector-nav-item-details-caption-field"
-                  className="nav-item-popover-field"
-                >
+                <div data-cy="inspector-nav-item-details-caption-field" className="nav-item-popover-field">
                   <label data-cy="inspector-nav-item-details-caption-label" className="nav-item-popover-field-label">
                     Caption
                   </label>
@@ -192,7 +183,7 @@ const NavItemPopover = forwardRef(
               )}
 
               {/* Icon field */}
-              <div data-param="icon" data-cy="inspector-nav-item-details-icon-field" className="nav-item-popover-field">
+              <div data-cy="inspector-nav-item-details-icon-field" className="nav-item-popover-field">
                 <CodeHinter
                   {...fxEditorCodeHinterProps}
                   data-cy="inspector-nav-item-details-icon-input"
@@ -215,11 +206,7 @@ const NavItemPopover = forwardRef(
 
             {/* Toggle fields section */}
             <div className="nav-item-popover-toggles-section">
-              <div
-                data-param="visible"
-                data-cy="inspector-nav-item-details-visibility-field"
-                className="nav-item-popover-field"
-              >
+              <div data-cy="inspector-nav-item-details-visibility-field" className="nav-item-popover-field">
                 <CodeHinter
                   {...fxEditorCodeHinterProps}
                   data-cy="inspector-nav-item-details-visibility-input"
@@ -234,11 +221,7 @@ const NavItemPopover = forwardRef(
                 />
               </div>
 
-              <div
-                data-param="disable"
-                data-cy="inspector-nav-item-details-disable-field"
-                className="nav-item-popover-field"
-              >
+              <div data-cy="inspector-nav-item-details-disable-field" className="nav-item-popover-field">
                 <CodeHinter
                   {...fxEditorCodeHinterProps}
                   data-cy="inspector-nav-item-details-disable-input"

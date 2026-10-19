@@ -28,6 +28,7 @@ import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/To
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
 import './PageMenu/style.scss';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -52,6 +53,12 @@ export const PageSettings = () => {
     setRightSidebarOpen(false);
   };
   const treeRef = useRef(null);
+  const [activeTab, setActiveTab] = useState('properties');
+  // Code search opens the tab (Properties / Styles) a page setting lives under.
+  useCodeSearchReveal('inspectorTab', 'pageSettings', (tab) => {
+    setActiveTab(tab);
+    return true;
+  });
 
   const pagesMeta = useMemo(() => JSON.parse(JSON.stringify(pageConfig)), []);
 
@@ -171,7 +178,7 @@ export const PageSettings = () => {
           </div>
         </div>
         <div className={cx({ disabled: shouldFreeze })}>
-          <Tabs defaultActiveKey={'properties'} id="page-settings">
+          <Tabs activeKey={activeTab} onSelect={setActiveTab} id="page-settings">
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
               <div className="tj-text-xsm color-slate12 ">
                 <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />

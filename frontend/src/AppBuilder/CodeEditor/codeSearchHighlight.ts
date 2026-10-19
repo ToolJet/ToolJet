@@ -3,9 +3,11 @@ import { RangeSetBuilder, StateEffect } from '@codemirror/state';
 import useStore from '@/AppBuilder/_stores/store';
 import type { CodeSearchState } from '@/AppBuilder/_stores/slices/codeSearchSlice';
 import { buildMatcher, MIN_TERM_LENGTH } from '@/AppBuilder/LeftSidebar/CodeSearch/searchRecords';
+import { editorHoldsField, landInEditor } from '@/AppBuilder/LeftSidebar/CodeSearch/highlightMatch';
 
 // Marks every match of the code search term in this editor while the Code search panel is open,
-// so a jump lands on a field whose matches are all visible at a glance.
+// so a jump lands on a field whose matches are all visible at a glance. Also selects a clicked
+// result's match when this editor shows that field (the store's focus request).
 const matchMark = Decoration.mark({ class: 'tj-code-search-match' });
 const refresh = StateEffect.define<null>();
 
@@ -40,8 +42,22 @@ const buildDecorations = (view: EditorView, matcher: RegExp | null): DecorationS
   return builder.finish();
 };
 
-// ponytail: one store subscription per mounted editor (tens in the Inspector); move to a single
-// shared subscription if editor counts grow large.
+// Read when it runs, not when it was scheduled: the first editor holding the field takes and clears
+// the request, so a second one showing the same field leaves it.
+const takeFocus = (view: EditorView) => {
+  const { codeSearch, consumeCodeSearchFocus } = useStore.getState();
+  const { focusRequest } = codeSearch;
+  if (!focusRequest || !view.dom.isConnected || !editorHoldsField(view, focusRequest)) return;
+  consumeCodeSearchFocus(focusRequest.nonce);
+  landInEditor(view, focusRequest);
+};
+
+// On a microtask, after the store update that scheduled it has reached every editor. A promise job,
+// not queueMicrotask, so test clocks that fake timers leave it running.
+const deferTakeFocus = (view: EditorView) => void Promise.resolve().then(() => takeFocus(view));
+
+// One store subscription per mounted editor (tens in the Inspector); a single shared subscription
+// would scale better if editor counts grow large.
 export const codeSearchHighlight = ViewPlugin.fromClass(
   class {
     matcher: RegExp | null;
@@ -51,9 +67,15 @@ export const codeSearchHighlight = ViewPlugin.fromClass(
     constructor(view: EditorView) {
       this.matcher = activeMatcher(useStore.getState());
       this.decorations = buildDecorations(view, this.matcher);
+      // A request left before this editor mounted (its tab or panel was still opening).
+      deferTakeFocus(view);
       this.unsubscribe = useStore.subscribe((state: HighlightState, previous: HighlightState) => {
+        const { focusRequest } = state.codeSearch;
+        if (focusRequest && focusRequest !== previous.codeSearch.focusRequest) deferTakeFocus(view);
+        // Only what the matcher reads: result clicks also update codeSearch (reveal requests).
         const changed =
-          state.codeSearch !== previous.codeSearch ||
+          state.codeSearch.term !== previous.codeSearch.term ||
+          state.codeSearch.options !== previous.codeSearch.options ||
           state.isSidebarOpen !== previous.isSidebarOpen ||
           state.selectedSidebarItem !== previous.selectedSidebarItem;
         if (!changed) return;

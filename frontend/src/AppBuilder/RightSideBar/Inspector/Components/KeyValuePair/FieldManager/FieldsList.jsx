@@ -10,7 +10,7 @@ import { FieldItem } from './FieldItem';
 export const FieldsList = ({
   filteredFields,
   fields,
-  activeFieldId,
+  activeFieldPopoverIndex,
   isRootCloseEnabled,
   isAllFieldsEditable,
   darkMode,
@@ -34,7 +34,7 @@ export const FieldsList = ({
                 key={item.id}
                 item={item}
                 index={index}
-                activeFieldId={activeFieldId}
+                activeFieldPopoverIndex={activeFieldPopoverIndex}
                 isRootCloseEnabled={isRootCloseEnabled}
                 darkMode={darkMode}
                 onRemove={onRemove}

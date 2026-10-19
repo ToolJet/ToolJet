@@ -1,7 +1,14 @@
 import toast from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
-import { highlightMatch } from './highlightMatch';
+import {
+  flashPopover,
+  focusTargetFor,
+  landAnywhere,
+  landOnTaggedField,
+  popoverStepOf,
+  tabKeyFor,
+} from './highlightMatch';
 import type { RevealStep } from './buildSearchRecords';
 import type { SearchMatch } from './searchRecords';
 
@@ -11,6 +18,8 @@ type StoreState = any;
 const WAIT_TIMEOUT_MS = 5000;
 // How long a reveal step may wait for the editor to open it (its list may still be mounting).
 const REVEAL_STEP_TIMEOUT_MS = 1500;
+// How long a field's code editor may take to mount and take the focus request.
+const FOCUS_TIMEOUT_MS = 1000;
 // Edited in the left sidebar's Libraries panel, not Global settings.
 const LIBRARY_FIELDS = new Set(['preloadedScript', 'libraries']);
 
@@ -99,6 +108,23 @@ const runReveal = async (steps: RevealStep[] = []): Promise<{ opened?: RevealSte
   return { opened };
 };
 
+// Asks the code editor showing the field to select the match (it takes the request itself, see
+// codeSearchHighlight). Editors already on screen take it at once; one still mounting takes it when
+// it mounts. A field without a code editor lands on its own tagged row instead.
+const focusField = async (match: SearchMatch, opened: RevealStep[]) => {
+  const target = focusTargetFor(match, opened);
+  const { requestCodeSearchFocus, consumeCodeSearchFocus } = useStore.getState();
+  const nonce = requestCodeSearchFocus(target);
+  // Taken by an editor, or replaced by a newer result's request.
+  const settled = (state: StoreState) => state.codeSearch.focusRequest?.nonce !== nonce;
+  await nextFrame();
+  if (settled(useStore.getState())) return;
+  if (landOnTaggedField(target)) return consumeCodeSearchFocus(nonce);
+  if (await waitForStore(settled, FOCUS_TIMEOUT_MS)) return;
+  consumeCodeSearchFocus(nonce);
+  landAnywhere(target);
+};
+
 // Opens the place a search match came from, then selects the match inside it.
 export const navigateToResult = async (match: SearchMatch, moduleId = 'canvas'): Promise<unknown> => {
   const { record } = match;
@@ -147,9 +173,17 @@ export const navigateToResult = async (match: SearchMatch, moduleId = 'canvas'):
     setSelectedSidebarItem('settings');
   }
 
-  // Tabs put the field on screen. Popovers are flashed, not opened: the result already names the path.
+  // Tabs (Properties / Styles, a query's tabs) put the field on screen. Popovers are flashed, not
+  // opened: the result already names the path.
   const TAB_KINDS = new Set<RevealStep['kind']>(['queryTab', 'restTab']);
-  const steps = (record.reveal || []).filter((step) => TAB_KINDS.has(step.kind));
-  const { opened, superseded } = steps.length ? await runReveal(steps) : { opened: [] };
-  if (!superseded) highlightMatch(match, opened);
+  const tabKey = tabKeyFor(record);
+  const steps: RevealStep[] = [
+    ...(tabKey ? [{ kind: 'inspectorTab' as const, ownerId, itemId: tabKey }] : []),
+    ...(record.reveal || []).filter((step) => TAB_KINDS.has(step.kind)),
+  ];
+  const { opened = [], superseded } = steps.length ? await runReveal(steps) : { opened: [] };
+  if (superseded) return;
+  const popoverStep = popoverStepOf(record);
+  if (popoverStep) return flashPopover(match, popoverStep);
+  await focusField(match, opened);
 };

@@ -6,7 +6,16 @@ export type EntityType = 'component' | 'query' | 'event' | 'page' | 'app';
 
 // One thing navigation asks the editor to open; see useCodeSearchReveal.
 export interface RevealStep {
-  kind: 'listItem' | 'page' | 'queryTab' | 'queryParam' | 'restTab' | 'popoverTab' | 'event' | 'preloadedScript';
+  kind:
+    | 'listItem'
+    | 'page'
+    | 'queryTab'
+    | 'queryParam'
+    | 'restTab'
+    | 'popoverTab'
+    | 'event'
+    | 'preloadedScript'
+    | 'inspectorTab'; // Properties / Styles of a component or page settings; added by navigation
   ownerId: string | null;
   itemId: string;
 }

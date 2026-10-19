@@ -72,7 +72,6 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
           id="parameter-form-popover"
           className={`query-manager-sort-filter-popup p-0 ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
           style={{ width: '268px' }}
-          data-reveal-root={isEdit ? `queryParam:${name}` : undefined}
         >
           <ParameterForm
             darkMode={darkMode}

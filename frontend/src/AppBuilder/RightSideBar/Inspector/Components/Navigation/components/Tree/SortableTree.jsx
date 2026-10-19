@@ -38,7 +38,6 @@ export function SortableTree({
     }
     return (
       <GroupMenuItem
-        componentId={componentId}
         darkMode={darkMode}
         item={item}
         highlight={props.isHighlighted}

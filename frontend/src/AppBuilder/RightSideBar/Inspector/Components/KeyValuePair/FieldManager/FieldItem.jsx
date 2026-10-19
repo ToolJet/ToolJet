@@ -37,7 +37,7 @@ const getDraggableStyle = (isDragging, draggableStyle) => ({
 export const FieldItem = ({
   item,
   index,
-  activeFieldId,
+  activeFieldPopoverIndex,
   isRootCloseEnabled,
   darkMode,
   onRemove,
@@ -72,10 +72,9 @@ export const FieldItem = ({
           <OverlayTrigger
             trigger="click"
             placement="left"
-            show={activeFieldId === item.id}
             rootClose={isRootCloseEnabled}
             overlay={renderFieldPopover(item, index)}
-            onToggle={(show) => onTogglePopover(item.id, show)}
+            onToggle={(show) => onTogglePopover(index, show)}
           >
             <div className="table-column-lists" data-list-item-id={String(item.id ?? '')}>
               <List.Item
@@ -92,7 +91,7 @@ export const FieldItem = ({
                 showCopyColumnOption
                 showVisibilityIcon
                 isColumnVisible={fieldVisibility}
-                className={activeFieldId === item.id ? 'active-column-list' : ''}
+                className={activeFieldPopoverIndex === index ? 'active-column-list' : ''}
                 columnType={item?.fieldType}
                 Icon={getFieldIcon(item?.fieldType)}
               />

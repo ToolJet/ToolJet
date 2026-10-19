@@ -51,6 +51,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import { Cascader } from './Components/Cascader/Cascader';
 import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
@@ -176,6 +177,12 @@ export const Inspector = ({
   const setComponentPermission = useStore((state) => state.setComponentPermission);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
+  const [activeTab, setActiveTab] = useState('properties');
+  // Code search opens the tab (Properties / Styles) a field lives under.
+  useCodeSearchReveal('inspectorTab', selectedComponentId, (tab) => {
+    setActiveTab(tab);
+    return true;
+  });
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -519,8 +526,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>
@@ -625,7 +632,7 @@ export const Inspector = ({
 
   const renderTabs = () => {
     return (
-      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
+      <Tabs activeKey={activeTab} onSelect={setActiveTab} id="inspector" hidden={isModuleContainer}>
         <Tab eventKey="properties" title="Properties">
           {propertiesTab}
         </Tab>

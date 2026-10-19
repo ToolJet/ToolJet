@@ -17,6 +17,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
     layoutPropertyChanged,
@@ -74,8 +75,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const [options, setOptions] = useState([]);
   const [markedAsDefault, setMarkedAsDefault] = useState(_markedAsDefault);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
-  // The option whose popover is open, by value: indexes shift when options are sorted.
-  const [openOptionValue, setOpenOptionValue] = useState(null);
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
@@ -171,8 +170,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    // The open popover follows the option's value, so keep it open while that value is edited.
-    if (openOptionValue === String(options[index]?.value)) setOpenOptionValue(String(value));
     updateOptions(_options);
   };
 
@@ -310,10 +307,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       <Popover
         className={`${darkMode && 'dark-theme theme-dark'} inspector-select-options-popover`}
         style={{ minWidth: '248px' }}
-        data-reveal-root={`listItem:${item?.value}`}
       >
         <Popover.Body>
-          <div data-param="label" className="field mb-3" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
               {'Option label'}
             </label>
@@ -327,7 +323,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleLabelChange(value, index)}
             />
           </div>
-          <div data-param="value" className="field mb-3" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
               {'Option value'}
             </label>
@@ -342,7 +338,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             />
           </div>
           {isCaptionEnabled && (
-            <div data-param="caption" className="field mb-3" data-cy={`input-and-label-option-caption`}>
+            <div className="field mb-3" data-cy={`input-and-label-option-caption`}>
               <label className="font-weight-500 mb-1 font-size-12">{'Option caption'}</label>
               <CodeHinter
                 type={'basic'}
@@ -355,7 +351,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               />
             </div>
           )}
-          <div data-param="default" className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               initialValue={
                 isMultiSelect || isTagsInput ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value
@@ -378,7 +374,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramType={'toggle'}
             />
           </div>
-          <div data-param="visible" className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               initialValue={item?.visible?.value}
               theme={darkMode ? 'monokai' : 'default'}
@@ -398,7 +394,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramType={'toggle'}
             />
           </div>
-          <div data-param="disable" className="field" data-cy={`input-and-label-column-name`}>
+          <div className="field" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               initialValue={item?.disable?.value}
               theme={darkMode ? 'monokai' : 'default'}
@@ -449,7 +445,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             trigger="click"
                             placement="left"
                             rootClose
-                            show={openOptionValue === String(item?.value)}
                             onExited={() => {
                               if (isSortingEnabled && sort !== 'none') {
                                 const sortedOptions = sortArray([...options], sort);
@@ -458,7 +453,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             }}
                             overlay={_renderOverlay(item, index)}
                             onToggle={(isOpen) => {
-                              setOpenOptionValue(isOpen ? String(item?.value) : null);
                               if (!isOpen) {
                                 document.activeElement?.blur(); // Manually trigger blur when popover closes
                               }

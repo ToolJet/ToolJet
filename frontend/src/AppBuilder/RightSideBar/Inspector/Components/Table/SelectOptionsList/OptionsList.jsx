@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -27,8 +27,6 @@ export const OptionsList = ({
   paramToUpdate,
 }) => {
   const items = [];
-  // The option whose details popover is open, by value; code search opens one the same way.
-  const [openOptionValue, setOpenOptionValue] = useState(null);
 
   const recordOptions = (startIndex, endIndex) => {
     const columns =
@@ -171,7 +169,6 @@ export const OptionsList = ({
       <Popover
         id="popover-basic"
         className={`${darkMode && 'dark-theme'}`}
-        data-reveal-root={`listItem:${option?.value}`}
         onClick={(e) => e.stopPropagation()}
         style={{
           zIndex: 99999,
@@ -182,7 +179,7 @@ export const OptionsList = ({
         }}
       >
         <Popover.Body>
-          <div data-param="label" className="field mb-2 tj-app-input" onClick={(e) => e.stopPropagation()}>
+          <div className="field mb-2 tj-app-input" onClick={(e) => e.stopPropagation()}>
             <label data-cy={`label-action-button-text`} className="form-label">
               Option label
             </label>
@@ -200,7 +197,7 @@ export const OptionsList = ({
               }}
             />
           </div>
-          <div data-param="value" className="field tj-app-input" onClick={(e) => e.stopPropagation()}>
+          <div className="field tj-app-input" onClick={(e) => e.stopPropagation()}>
             <label data-cy={`label-action-button-text`} className="form-label">
               Option value
             </label>
@@ -401,8 +398,6 @@ export const OptionsList = ({
                                     trigger="click"
                                     placement="top"
                                     rootClose={true}
-                                    show={openOptionValue === String(option?.value)}
-                                    onToggle={(isOpen) => setOpenOptionValue(isOpen ? String(option?.value) : null)}
                                     overlay={selectPopover(option, optionIndex)}
                                   >
                                     <div key={resolvedItemName}>

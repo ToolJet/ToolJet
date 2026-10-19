@@ -66,7 +66,7 @@ const ParameterForm = ({
           onSubmit={handleSubmit}
           style={{ paddingRight: '25px !important' }}
         >
-          <Form.Group as={Col} style={{ display: 'flex' }} className="mb-2 pr-1" data-param="name">
+          <Form.Group as={Col} style={{ display: 'flex' }} className="mb-2 pr-1">
             <Form.Label column htmlFor="paramName" data-cy="parameter-name-label">
               Name
             </Form.Label>
@@ -82,7 +82,7 @@ const ParameterForm = ({
               {name && error && <div className="invalid-feedback d-block">{error}</div>}
             </Col>
           </Form.Group>
-          <Form.Group as={Col} style={{ display: 'flex' }} data-param="defaultValue">
+          <Form.Group as={Col} style={{ display: 'flex' }}>
             <Form.Label column htmlFor="defaultValue" style={{ marginRight: '0px' }} data-cy="parameter-value-label">
               Value
               <span className="ms-1">

@@ -49,7 +49,6 @@ const OptionDetailsPopover = forwardRef(
         className={`${darkMode && 'dark-theme theme-dark'} ${popoverClassName} inspector-options-popover ${
           restProps.className
         }`}
-        data-reveal-root={`listItem:${item?.value}`}
       >
         <Popover.Body>
           <div data-cy={`${dataCyPrefix}-option-details-container`}>
@@ -70,7 +69,7 @@ const OptionDetailsPopover = forwardRef(
             </div>
             <div data-cy={`${dataCyPrefix}-option-details-fields`} className="pm-option-details">
               {showField('format') && (
-                <div data-param="format" data-cy={`${dataCyPrefix}-option-details-format-field`} className="field mb-2">
+                <div data-cy={`${dataCyPrefix}-option-details-format-field`} className="field mb-2">
                   <CodeHinter
                     {...fxEditorCodeHinterProps}
                     data-cy={`${dataCyPrefix}-option-details-format-input`}
@@ -96,7 +95,7 @@ const OptionDetailsPopover = forwardRef(
               )}
 
               {showField('label') && (
-                <div data-param="label" data-cy={`${dataCyPrefix}-option-details-label-field`} className="field mb-2">
+                <div data-cy={`${dataCyPrefix}-option-details-label-field`} className="field mb-2">
                   <label
                     data-cy={`${dataCyPrefix}-option-details-label-label`}
                     className="font-weight-500 mb-1 font-size-12"
@@ -115,11 +114,7 @@ const OptionDetailsPopover = forwardRef(
               )}
 
               {showField('description') && (
-                <div
-                  data-param="description"
-                  data-cy={`${dataCyPrefix}-option-details-description-field`}
-                  className="field mb-2"
-                >
+                <div data-cy={`${dataCyPrefix}-option-details-description-field`} className="field mb-2">
                   <label
                     data-cy={`${dataCyPrefix}-option-details-description-label`}
                     className="font-weight-500 mb-1 font-size-12"
@@ -138,7 +133,7 @@ const OptionDetailsPopover = forwardRef(
               )}
 
               {showField('value') && (
-                <div data-param="value" data-cy={`${dataCyPrefix}-option-details-value-field`} className="field mb-2">
+                <div data-cy={`${dataCyPrefix}-option-details-value-field`} className="field mb-2">
                   <label
                     data-cy={`${dataCyPrefix}-option-details-value-label`}
                     className="font-weight-500 mb-1 font-size-12"
@@ -157,7 +152,7 @@ const OptionDetailsPopover = forwardRef(
               )}
 
               {showField('icon') && (
-                <div data-param="icon" data-cy={`${dataCyPrefix}-option-details-icon-field`} className="field mb-3">
+                <div data-cy={`${dataCyPrefix}-option-details-icon-field`} className="field mb-3">
                   <CodeHinter
                     {...fxEditorCodeHinterProps}
                     data-cy={`${dataCyPrefix}-option-details-icon-input`}
@@ -181,11 +176,7 @@ const OptionDetailsPopover = forwardRef(
               )}
 
               {showField('default') && (
-                <div
-                  data-param="default"
-                  data-cy={`${dataCyPrefix}-option-details-default-field`}
-                  className="field mb-2"
-                >
+                <div data-cy={`${dataCyPrefix}-option-details-default-field`} className="field mb-2">
                   <CodeHinter
                     {...fxEditorCodeHinterProps}
                     data-cy={`${dataCyPrefix}-option-details-default-input`}
@@ -208,11 +199,7 @@ const OptionDetailsPopover = forwardRef(
               )}
 
               {showField('visibility') && (
-                <div
-                  data-param="visible"
-                  data-cy={`${dataCyPrefix}-option-details-visibility-field`}
-                  className="field mb-2"
-                >
+                <div data-cy={`${dataCyPrefix}-option-details-visibility-field`} className="field mb-2">
                   <CodeHinter
                     {...fxEditorCodeHinterProps}
                     data-cy={`${dataCyPrefix}-option-details-visibility-input`}
@@ -234,11 +221,7 @@ const OptionDetailsPopover = forwardRef(
               )}
 
               {showField('disable') && (
-                <div
-                  data-param="disable"
-                  data-cy={`${dataCyPrefix}-option-details-disable-field`}
-                  className="field mb-2"
-                >
+                <div data-cy={`${dataCyPrefix}-option-details-disable-field`} className="field mb-2">
                   <CodeHinter
                     {...fxEditorCodeHinterProps}
                     data-cy={`${dataCyPrefix}-option-details-disable-input`}

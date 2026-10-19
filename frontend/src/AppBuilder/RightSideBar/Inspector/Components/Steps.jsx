@@ -42,8 +42,6 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
 
   const [options, setOptions] = useState([]);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
-  // The step whose popover is open, by identity: indexes shift when steps are reordered.
-  const [openStepId, setOpenStepId] = useState(null);
   let properties = [];
   let additionalActions = [];
   let optionsProperties = [];
@@ -122,8 +120,6 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    // Keep the popover open while its own id or label is edited.
-    if (openStepId === stepIdentity(options[index])) setOpenStepId(stepIdentity(_options[index]));
     setOptions(_options);
     updateAllOptionsParams(_options);
   };
@@ -165,10 +161,9 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
       <Popover
         className={`${darkMode && 'dark-theme theme-dark'} inspector-steps-options-popover`}
         style={{ minWidth: '248px' }}
-        data-reveal-root={`listItem:${stepIdentity(item)}`}
       >
         <Popover.Body>
-          <div data-param="id" className="field mb-3" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
               {'Id'}
             </label>
@@ -182,7 +177,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleLabelChange('id', value, index)}
             />
           </div>
-          <div data-param="name" className="field mb-3" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
               {'Label'}
             </label>
@@ -196,7 +191,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleLabelChange('name', value, index)}
             />
           </div>
-          <div data-param="tooltip" className="field mb-3" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
               {'Tooltip'}
             </label>
@@ -210,7 +205,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleLabelChange('tooltip', value, index)}
             />
           </div>
-          <div data-param="visible" className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               initialValue={item?.visible?.value}
               theme={darkMode ? 'monokai' : 'default'}
@@ -238,7 +233,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               paramType={'toggle'}
             />
           </div>
-          <div data-param="disabled" className="field" data-cy={`input-and-label-column-name`}>
+          <div className="field" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               initialValue={item?.disabled?.value}
               theme={darkMode ? 'monokai' : 'default'}
@@ -289,8 +284,6 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                             trigger="click"
                             placement="left"
                             rootClose
-                            show={openStepId === stepIdentity(item)}
-                            onToggle={(isOpen) => setOpenStepId(isOpen ? stepIdentity(item) : null)}
                             overlay={_renderOverlay(item, index)}
                           >
                             <div key={item.name + item.id}>

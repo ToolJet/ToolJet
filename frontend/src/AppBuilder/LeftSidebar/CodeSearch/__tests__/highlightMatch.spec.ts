@@ -1,9 +1,10 @@
 /**
- * Which element a result lands on once its panel or popover is open: the field's own wrapper,
- * tagged `data-param="<key>"`. Geometry is the only thing controlled: jsdom has no layout, so an
+ * Where a result lands when no code editor took it (fields shown in a code editor are selected by
+ * that editor, see editorTakesFocus.spec): a popover's row, else the field's own wrapper, tagged
+ * `data-param="<key>"`. Geometry is the only thing controlled: jsdom has no layout, so an
  * element counts as on screen unless it sits inside `[data-offscreen]` (an inactive tab pane).
  */
-import { highlightMatch } from '../highlightMatch';
+import { flashPopover, focusTargetFor, landOnTaggedField, popoverStepOf } from '../highlightMatch';
 import type { RevealStep, SearchRecord } from '../buildSearchRecords';
 
 const FLASH = 'tj-code-search-flash';
@@ -28,7 +29,10 @@ const mount = (html: string) => {
 
 // Fixtures carry only the fields highlightMatch reads.
 const land = (record: Partial<SearchRecord>, opened: RevealStep[] = []) => {
-  highlightMatch({ record: record as SearchRecord, start: 0, end: record.text?.length ?? 0, occurrence: 0 }, opened);
+  const match = { record: record as SearchRecord, start: 0, end: record.text?.length ?? 0, occurrence: 0 };
+  const popoverStep = popoverStepOf(match.record);
+  if (popoverStep) flashPopover(match, popoverStep);
+  else landOnTaggedField(focusTargetFor(match, opened));
   jest.advanceTimersByTime(200);
   return document.querySelector<HTMLElement>(`.${FLASH}`);
 };

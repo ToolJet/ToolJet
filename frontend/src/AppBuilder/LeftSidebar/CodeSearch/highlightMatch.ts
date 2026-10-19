@@ -1,13 +1,17 @@
 import { EditorView } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
+import type { FocusTarget } from '@/AppBuilder/_stores/slices/codeSearchSlice';
 import type { RevealStep, SearchRecord } from './buildSearchRecords';
 import type { SearchMatch } from './searchRecords';
+
+// Where a result lands once navigation has opened its place. A field shown in a code editor is
+// selected by that editor itself (it takes the store's focus request, see codeSearchHighlight);
+// the DOM lookups here are the fallback for fields without one, and for popover rows.
 
 type FoundEditor = { element: HTMLElement; view: EditorView };
 
 const FLASH_CLASS = 'tj-code-search-flash';
 const FLASH_MS = 1500;
-const EXACT_WAIT_MS = 600; // prefer the exact field; after this accept any editor containing the match
 const TIMEOUT_MS = 2000;
 
 const flash = (element: HTMLElement | null) => {
@@ -49,11 +53,11 @@ const editorsIn = (scope: Element): FoundEditor[] =>
 // The editor whose text equals the indexed field is the field itself (editors render
 // replaceIdsWithName(initialValue), the same text the index holds). Otherwise, when allowed, the
 // first editor that contains the match.
-const findEditor = (scope: Element, match: SearchMatch, allowPartial: boolean) => {
+const findEditor = (scope: Element, target: FocusTarget, allowPartial: boolean) => {
   const editors = editorsIn(scope);
-  const exact = editors.find(({ view }) => view.state.doc.toString() === match.record.text);
+  const exact = editors.find(({ view }) => view.state.doc.toString() === target.text);
   if (exact || !allowPartial) return exact;
-  const needle = match.record.text.slice(match.start, match.end);
+  const needle = target.text.slice(target.start, target.end);
   return editors.find(({ view }) => view.state.doc.toString().includes(needle));
 };
 
@@ -65,27 +69,16 @@ const SECTION_KEYS = new Set(['properties', 'styles', 'general', 'generalStyles'
 const hasInspectorTabs = (record: SearchRecord) =>
   record.ownerType === 'component' || record.entityType === 'component' || record.entityId === 'pageSettings';
 
-// Tabs are matched by their untranslated key (`data-tab-key`), never by label text.
-const tabKeyFor = (record: SearchRecord) => {
+// The Properties / Styles tab a field lives under (the Inspector's or page settings' tab key).
+export const tabKeyFor = (record: SearchRecord) => {
   if (!hasInspectorTabs(record)) return null;
   return record.entityType !== 'event' && STYLE_SECTIONS.includes(record.fieldPath[0]) ? 'styles' : 'properties';
-};
-
-// Open the tab the field lives under before looking for it.
-const selectTab = (panel: Element, record: SearchRecord) => {
-  const key = tabKeyFor(record);
-  const tab = key && panel.querySelector<HTMLElement>(`[data-tab-key="${key}"]`);
-  if (tab && tab.getAttribute('aria-selected') !== 'true') tab.click();
 };
 
 const expandCollapsedAccordion = (element: Element) => {
   const collapsed = element.closest('.accordion-collapse:not(.show)');
   collapsed?.parentElement?.querySelector<HTMLElement>(':scope > .accordion-header')?.click();
 };
-
-// The handler card of an event whose popover didn't open.
-const findHandlerCard = (panel: Element, record: SearchRecord) =>
-  panel.querySelector<HTMLElement>(`[data-event-id="${CSS.escape(record.eventId ?? '')}"]`);
 
 const keyedIn = (scope: Element, key: string) =>
   [...scope.querySelectorAll<HTMLElement>(`[data-param="${CSS.escape(key)}"]`)].filter(isVisible);
@@ -108,23 +101,25 @@ const deepestTagged = (scope: Element, keys: string[]): HTMLElement[] | null => 
   return null;
 };
 
-// The field's own wrappers (`data-param="<key>"`). Inside an opened popover any path key may be the
-// tagged one, since the popover holds only that item. In a whole panel the field's own key must be
-// tagged, or an inner key like `name` could land on another field; deeper keys narrow within it.
-const findFieldElements = (scope: Element, record: SearchRecord, inPopover: boolean) => {
-  const keys = record.fieldPath.map(String);
-  if (inPopover) return deepestTagged(scope, keys);
-  const own = SECTION_KEYS.has(keys[0]) && keys.length > 1 ? keys.slice(1) : keys;
-  const anchors = keyedIn(scope, own[0]);
+// Keys a wrapper of the field may be tagged with. Inside an opened request tab any path key may be
+// the tagged one, since the tab holds only that item. In a whole panel the field's own key must be
+// tagged, or an inner key like `name` could land on another field.
+const anchorKeys = ({ keys, inOpenedTab }: FocusTarget) => (inOpenedTab ? keys : keys.slice(0, 1));
+
+// The field's own wrappers (`data-param="<key>"`); in a whole panel, deeper keys narrow within it.
+const findFieldElements = (scope: Element, target: FocusTarget) => {
+  if (target.inOpenedTab) return deepestTagged(scope, target.keys);
+  const anchors = keyedIn(scope, target.keys[0]);
   if (!anchors.length) return null;
-  const inner = anchors.flatMap((anchor) => deepestTagged(anchor, own.slice(1)) || []);
+  const inner = anchors.flatMap((anchor) => deepestTagged(anchor, target.keys.slice(1)) || []);
   return inner.length ? inner : anchors;
 };
 
 // A match that lives in a popover flashes that popover's row. Search already shows the path inside it.
 // These are not opened.
 const POPOVER_KINDS = new Set<RevealStep['kind']>(['listItem', 'event', 'page', 'queryParam', 'preloadedScript']);
-const popoverStepOf = (record: SearchRecord) => (record.reveal || []).find((step) => POPOVER_KINDS.has(step.kind));
+export const popoverStepOf = (record: SearchRecord) =>
+  (record.reveal || []).find((step) => POPOVER_KINDS.has(step.kind));
 const popoverTrigger = (record: SearchRecord, step: RevealStep): HTMLElement | null => {
   const id = CSS.escape(String(step.itemId));
   if (step.kind === 'event')
@@ -137,20 +132,34 @@ const popoverTrigger = (record: SearchRecord, step: RevealStep): HTMLElement | n
 // Steps whose opened place is marked `data-reveal-root="<kind>:<itemId>"`: a request sub-tab's pane
 // (inactive panes stay mounted, so the match must not land in one). Other tabs have no root.
 const ROOT_KINDS = new Set<RevealStep['kind']>(['restTab']);
-const revealRootOf = (step: RevealStep) =>
-  document.querySelector<HTMLElement>(`[data-reveal-root="${CSS.escape(`${step.kind}:${step.itemId}`)}"]`);
+
+// What the field's editor needs to recognise and select the match: where to look, the keys its
+// wrapper is tagged with, and the clicked occurrence. `openedSteps` are the tabs navigation opened.
+export const focusTargetFor = (match: SearchMatch, openedSteps: RevealStep[] = []): FocusTarget => {
+  const { record, start, end } = match;
+  const roots = openedSteps.filter((step) => ROOT_KINDS.has(step.kind));
+  const innermost = roots[roots.length - 1];
+  const keys = record.fieldPath.map(String);
+  const own = SECTION_KEYS.has(keys[0]) && keys.length > 1 ? keys.slice(1) : keys;
+  return {
+    scope: innermost
+      ? `[data-reveal-root="${`${innermost.kind}:${innermost.itemId}`.replace(/["\\]/g, '\\$&')}"]`
+      : panelSelectorFor(record),
+    keys: innermost ? keys : own,
+    inOpenedTab: Boolean(innermost),
+    text: record.text,
+    start,
+    end,
+  };
+};
 
 // Where the clicked occurrence starts in `text`: the same offset when it is the indexed text, else
 // the same-numbered copy of the needle (the 3rd `foo` stays the 3rd), else the first.
-const occurrenceStart = (text: string, match: SearchMatch) => {
-  const needle = match.record.text.slice(match.start, match.end);
-  if (text === match.record.text) return match.start;
+const occurrenceStart = (text: string, target: FocusTarget) => {
+  const needle = target.text.slice(target.start, target.end);
+  if (text === target.text) return target.start;
   let nth = 0;
-  for (
-    let at = match.record.text.indexOf(needle);
-    at >= 0 && at < match.start;
-    at = match.record.text.indexOf(needle, at + 1)
-  )
+  for (let at = target.text.indexOf(needle); at >= 0 && at < target.start; at = target.text.indexOf(needle, at + 1))
     nth++;
   let from = text.indexOf(needle);
   for (let i = 0; i < nth && from >= 0; i++) {
@@ -161,26 +170,26 @@ const occurrenceStart = (text: string, match: SearchMatch) => {
   return from;
 };
 
-const selectOccurrence = (view: EditorView, match: SearchMatch) => {
-  const from = occurrenceStart(view.state.doc.toString(), match);
+const selectOccurrence = (view: EditorView, target: FocusTarget) => {
+  const from = occurrenceStart(view.state.doc.toString(), target);
   if (from < 0) return;
   view.dispatch({
-    selection: EditorSelection.single(from, from + match.end - match.start),
+    selection: EditorSelection.single(from, from + target.end - target.start),
     scrollIntoView: true,
   });
   view.focus();
 };
 
 // A plain text input holding the field (a name, a handle): select the match in it.
-const selectInInput = (element: HTMLElement, match: SearchMatch) => {
+const selectInInput = (element: HTMLElement, target: FocusTarget) => {
   const input = (
     element.matches('input, textarea') ? element : element.querySelector('input[type="text"], textarea')
   ) as HTMLInputElement | HTMLTextAreaElement | null;
   if (!input || input.disabled) return;
-  const from = occurrenceStart(input.value, match);
+  const from = occurrenceStart(input.value, target);
   if (from < 0) return;
   input.focus();
-  input.setSelectionRange(from, from + match.end - match.start);
+  input.setSelectionRange(from, from + target.end - target.start);
 };
 
 const revealAndFlash = (element: HTMLElement, afterScroll?: () => void) => {
@@ -193,91 +202,62 @@ const revealAndFlash = (element: HTMLElement, afterScroll?: () => void) => {
   });
 };
 
-// A tagged wrapper: its own editor holding the match, else the wrapper itself (a toggle, select,
-// picker or plain input).
-const landOnFieldElement = (elements: HTMLElement[], match: SearchMatch) => {
-  const withEditor = (allowPartial: boolean) =>
-    elements
-      .map((element) => ({
-        element,
-        editor: findEditor(element, match, allowPartial),
-      }))
-      .find(({ editor }) => editor);
-  const found = withEditor(false) || withEditor(true);
-  const editor = found?.editor;
-  if (editor) return revealAndFlash(editor.element, () => selectOccurrence(editor.view, match));
-  const [element] = elements;
-  revealAndFlash(element, () => selectInInput(element, match));
+// The `data-param` keys tagged on `element`'s ancestors inside `scope`.
+const taggedKeysOf = (element: Element, scope: Element) => {
+  const keys: string[] = [];
+  for (let at = element.parentElement; at && at !== scope; at = at.parentElement) {
+    const key = at.getAttribute('data-param');
+    if (key) keys.push(key);
+  }
+  return keys;
 };
 
-// A popover match flashes the row that opens it. The field inside stays closed; the result label
-// already says which control is in there.
-const flashPopover = (match: SearchMatch, step: RevealStep) => {
+// Whether this code editor shows the requested field: it is on screen in the requested place, holds
+// exactly the indexed text, and its wrapper is tagged with the field's key. An editor with no tagged
+// wrapper (a query's main editor) is the field only when nothing on screen there carries the key.
+export const editorHoldsField = (view: EditorView, target: FocusTarget) => {
+  const scope = view.dom.closest(target.scope);
+  if (!scope || !isVisible(view.dom) || view.state.doc.toString() !== target.text) return false;
+  const anchors = anchorKeys(target);
+  const tagged = taggedKeysOf(view.dom, scope);
+  if (tagged.length) return tagged.some((key) => anchors.includes(key));
+  return anchors.every((key) => !keyedIn(scope, key).length);
+};
+
+// Flashed around the editor: CodeMirror rewrites its own root's class whenever it updates.
+export const landInEditor = (view: EditorView, target: FocusTarget) =>
+  revealAndFlash(view.dom.parentElement ?? view.dom, () => selectOccurrence(view, target));
+
+// A field no code editor took: its own tagged row (a toggle, select, picker or plain input, or an
+// editor whose text differs from the index). False when the place shows no such row.
+export const landOnTaggedField = (target: FocusTarget) => {
+  const scope = document.querySelector<HTMLElement>(target.scope);
+  const elements = scope && findFieldElements(scope, target);
+  if (!elements) return false;
+  const editor = elements.map((element) => findEditor(element, target, true)).find(Boolean);
+  if (editor) landInEditor(editor.view, target);
+  else revealAndFlash(elements[0], () => selectInInput(elements[0], target));
+  return true;
+};
+
+// Last resort: any editor there containing the match, else the whole place.
+export const landAnywhere = (target: FocusTarget) => {
+  const scope = document.querySelector<HTMLElement>(target.scope);
+  const editor = scope && findEditor(scope, target, true);
+  if (editor) landInEditor(editor.view, target);
+  else flash(scope);
+};
+
+// A popover match flashes the row that opens it, once that row has rendered. The field inside stays
+// closed; the result label already says which control is in there.
+export const flashPopover = (match: SearchMatch, step: RevealStep) => {
   const { record } = match;
   const started = performance.now();
   const tick = () => {
-    const panel = document.querySelector<HTMLElement>(panelSelectorFor(record));
-    // Column and event rows live under Properties; the Inspector may be showing Styles.
-    if (panel) selectTab(panel, record);
     const trigger = popoverTrigger(record, step);
     if (trigger && isVisible(trigger)) return revealAndFlash(trigger);
-    if (performance.now() - started > TIMEOUT_MS) return flash(panel);
-    requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-};
-
-// Waits for the opened panel to render, then selects and flashes the match: in the field's own
-// tagged wrapper when it has one, else in a code editor holding the text, else its handler card, else
-// the whole panel. `openedSteps` are tabs navigation opened (a query request tab); the match is
-// looked for inside that pane when it has one.
-export const highlightMatch = (match: SearchMatch, openedSteps: RevealStep[] = []): void => {
-  const { record } = match;
-  const popoverStep = popoverStepOf(record);
-  if (popoverStep) return flashPopover(match, popoverStep);
-  const started = performance.now();
-  const roots = openedSteps.filter((step) => ROOT_KINDS.has(step.kind));
-  const innermost = roots[roots.length - 1];
-  const inEventPopover = true;
-  let lastRoot: HTMLElement | null = null;
-  let lastField: HTMLElement | null = null;
-  const tick = () => {
-    const sidebarPanel = document.querySelector<HTMLElement>(panelSelectorFor(record));
-    const elapsed = performance.now() - started;
-    // Re-applied every frame: selecting a component re-renders the Inspector back to Properties.
-    if (sidebarPanel) selectTab(sidebarPanel, record);
-    let panel = sidebarPanel;
-    if (innermost) {
-      // Clicking a result closes an open popover (outside click) before the request reopens it, so the
-      // popover counts only once the same element shows on two frames in a row.
-      const root = revealRootOf(innermost);
-      const stable = root && root === lastRoot;
-      lastRoot = root;
-      if (!stable) return elapsed > TIMEOUT_MS ? flash(sidebarPanel) : requestAnimationFrame(tick);
-      panel = root;
-    }
-    if (panel && !inEventPopover) {
-      const card = findHandlerCard(panel, record);
-      if (card) return revealAndFlash(card);
-    }
-    if (panel && inEventPopover) {
-      // Same element on two frames: its editor (if any) has mounted, and a re-render didn't replace it.
-      const fields = findFieldElements(panel, record, Boolean(innermost));
-      const stable = fields && fields[0] === lastField;
-      lastField = fields?.[0] ?? null;
-      if (stable) return landOnFieldElement(fields, match);
-      if (!fields) {
-        const editor = findEditor(panel, match, false);
-        if (editor) return revealAndFlash(editor.element, () => selectOccurrence(editor.view, match));
-        if (elapsed > EXACT_WAIT_MS) {
-          const partial = findEditor(panel, match, true);
-          if (partial) return revealAndFlash(partial.element, () => selectOccurrence(partial.view, match));
-          // The opened popover is the item, but nothing in it shows this field (a stored key with no control).
-          if (innermost) return flash(panel);
-        }
-      }
-    }
-    if (elapsed > TIMEOUT_MS) return flash(panel);
+    if (performance.now() - started > TIMEOUT_MS)
+      return flash(document.querySelector<HTMLElement>(panelSelectorFor(record)));
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);

@@ -4,7 +4,6 @@ import { OverlayTrigger, Popover } from 'react-bootstrap';
 import ParameterForm from './ParameterForm';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
 import { generateCypressDataCy } from '../../../modules/common/helpers/cypressHelpers.js';
-import useStore from '@/AppBuilder/_stores/store';
 
 const ParameterList = ({
   parameters = [],
@@ -18,7 +17,6 @@ const ParameterList = ({
   const [selectedParameter, setSelectedParameter] = useState();
   const [formattedParameters, setFormattedParameters] = useState([]);
   const containerWidth = containerRef.current?.offsetWidth || 0.8 * document.body.clientWidth - 635;
-  const queryId = useStore((state) => state.queryPanel.selectedQuery?.id);
 
   useEffect(() => {
     let totalWidth = 0;
@@ -80,7 +78,6 @@ const ParameterList = ({
               // currentState={currentState}
               darkMode={darkMode}
               dataCy={generateCypressDataCy(parameter.name)}
-              queryId={queryId}
             />
           );
         })}
@@ -102,7 +99,6 @@ const ParameterList = ({
             id="parameter-more-popover"
             className={`query-manager-sort-filter-popup  ${darkMode && 'popover-dark-themed theme-dark dark-theme'}`}
             style={{ minWidth: '270px', maxWidth: 'fit-content' }}
-            data-reveal-root={selectedParameter ? `queryParam:${selectedParameter.name}` : undefined}
           >
             {selectedParameter ? (
               <ParameterForm

@@ -155,7 +155,6 @@ export const Table = (props) => {
     (column, index) => (
       <Popover
         id="table-column-popover-basic"
-        data-reveal-root={`listItem:${column.id}`}
         className={`${darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',

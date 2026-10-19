@@ -35,9 +35,8 @@ export const ComboboxContent = ({ className, ...props }) => (
   <RocketComboboxContent {...props} className={cn(POPOVER_MENU_Z, isDarkThemeActive() && 'dark-theme', className)} />
 );
 
-// `param`: the stored key this row edits, so code search can find the row (see highlightMatch).
-export const FieldRow = ({ label, dataCy, children, className, param }) => (
-  <div data-param={param} className={cn('tw-flex tw-min-h-8 tw-items-start tw-justify-between', className)}>
+export const FieldRow = ({ label, dataCy, children, className }) => (
+  <div className={cn('tw-flex tw-min-h-8 tw-items-start tw-justify-between', className)}>
     <span data-cy={dataCy} className="tw-flex tw-h-8 tw-items-center tw-font-body-default tw-text-text-default">
       {label}
     </span>

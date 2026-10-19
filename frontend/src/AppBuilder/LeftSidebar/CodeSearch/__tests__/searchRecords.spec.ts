@@ -12,7 +12,7 @@ const component = (overrides: Partial<SearchRecord>) =>
     fieldLabel: 'Properties › Data',
     shortLabel: 'Data',
     ...overrides,
-  } as SearchRecord);
+  }) as SearchRecord;
 // Fixtures carry only the fields searchRecords reads.
 const records = [
   component({ text: '{{queries.getUsers.data}}' }),
@@ -85,6 +85,16 @@ describe('searchRecords', () => {
   test('entity named by the term is pinned first in its section and tagged defined', () => {
     const queries = searchRecords(records, 'getUsers', {}, ctx).groups.find((g) => g.key === 'queries');
     expect(queries?.entities[0]).toMatchObject({ entityId: 'q1', defined: true });
+  });
+
+  test("an event's owner is not tagged defined, even when the term names it", () => {
+    const ownedByUsersTable = [
+      component({ entityName: 'usersTable', text: 'usersTable' }),
+      { ...records[4], text: '{{components.usersTable.selectedRow}}' },
+    ] as SearchRecord[];
+    const { groups } = searchRecords(ownedByUsersTable, 'usersTable', {}, ctx);
+    expect(groups.find((g) => g.key === 'components')?.entities[0].defined).toBe(true);
+    expect(groups.find((g) => g.key === 'events')?.entities[0].defined).toBe(false);
   });
 
   test('results come in fixed sections: Components, Queries, Events, then Pages & app', () => {
