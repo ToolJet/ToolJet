@@ -311,7 +311,12 @@ const request = (url: string): SharedRequest => {
         signal: stop.signal,
         headers: { Accept: 'application/json', 'Accept-Language': navigator.language || 'en' },
       });
-      if (!res.ok) throw new Error(`geocoder ${res.status}`);
+      if (!res.ok) {
+        // Cancelled, not just left unread, as an oversized answer is: an error body went on downloading after the
+        // search had already said it failed.
+        res.body?.cancel?.().catch(() => {});
+        throw new Error(`geocoder ${res.status}`);
+      }
       return parsePlaces(await readAnswer(res));
     })();
     try {
