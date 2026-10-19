@@ -158,7 +158,6 @@ export const ShadComboChart = (props: WidgetProps) => {
       {(onDatum) => (
         <ComposedChart
           data={rows}
-          accessibilityLayer
           margin={{ left: 4, right: hasRight ? 4 : 12, top: 12 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >

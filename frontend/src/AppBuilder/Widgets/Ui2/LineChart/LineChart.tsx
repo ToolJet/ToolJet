@@ -91,7 +91,6 @@ export const ShadLineChart = (props: WidgetProps) => {
       {(onDatum) => (
         <LineChart
           data={rows}
-          accessibilityLayer
           margin={{ left: 4, right: 12, top: target !== null && targetLabel ? 20 : 8 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
