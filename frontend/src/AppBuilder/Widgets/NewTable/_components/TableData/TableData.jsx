@@ -182,7 +182,7 @@ export const TableData = ({
     );
   } else if (data.length === 0) {
     return (
-      <div className={'table-responsive jet-data-table overflow-hidden position-relative'}>
+      <div className={'table-responsive jet-data-table position-relative'}>
         {renderTableHeader()}
         <EmptyState />
       </div>
