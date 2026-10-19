@@ -91,7 +91,7 @@ const TAB_RING = 'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-vi
 
 /** The tab strip in one of the three styles. Stays 50px tall (the reflow's TABS_TAB_BAR_HEIGHT). */
 interface TabStripProps {
-  /** The Tabs widget's id, for the ids that tie each tab to its panel. */
+  /** The Tabs widget's DOM id (its own per List view row), for the ids that tie each tab to its panel. */
   widgetId: string;
   /** Only the active tab's panel is in the page (renderOnlyActiveTab). */
   onlyActivePanel?: boolean;

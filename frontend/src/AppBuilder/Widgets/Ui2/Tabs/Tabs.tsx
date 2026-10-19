@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
@@ -39,6 +39,8 @@ type TabsStore = {
 
 interface TabPanelProps {
   id: string;
+  /** The widget's DOM id, for the ids that tie the panel to its tab (unique per List view row). */
+  domId: string;
   tab: Tab;
   width: number;
   active: boolean;
@@ -55,7 +57,7 @@ export const STEP_NAV_HEIGHT = 56;
 /** One tab's panel: its canvas, with a spinner in its place while the tab is loading. A hidden or loading tab keeps
  *  its canvas mounted, only out of sight, so what was typed in its components survives (it was unmounted and lost).
  *  Memoised on its own inputs, so switching tabs re-renders only the two panels whose visibility changes. */
-const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, background }: TabPanelProps) {
+const TabPanel = memo(function TabPanel({ id, domId, tab, width, active, dynamic, background }: TabPanelProps) {
   const ref = useRef<HTMLDivElement>(null);
   // A disabled tab's panel blocks the keyboard as it blocks the mouse: inert takes its fields out of the tab order.
   useDisableInert(ref, tab.disable);
@@ -65,8 +67,8 @@ const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, backg
     <div
       ref={ref}
       role={shown ? 'tabpanel' : undefined}
-      id={shown ? tabIds(id, tab.id).panel : undefined}
-      aria-labelledby={shown ? tabIds(id, tab.id).tab : undefined}
+      id={shown ? tabIds(domId, tab.id).panel : undefined}
+      aria-labelledby={shown ? tabIds(domId, tab.id).tab : undefined}
       aria-disabled={tab.disable || undefined}
       // activetab is ToolJet's own attribute on a tab pane (as on the native Tabs), not one React's types know.
       {...{ activetab: tab.id }}
@@ -136,6 +138,10 @@ export const ShadTabs = (props: WidgetProps) => {
   const wizard = variant === 'steps';
   const dynamic = properties.dynamicHeight !== false && currentMode === 'view';
   const look = tabsLook(styles);
+  // The DOM id the tab and panel ids are built from: component ids repeat in List view and Kanban rows, so a Tabs in a
+  // row adds its instance's id, or each row's tab would control the first row's panel (as withControlState's domId).
+  const instance = useId().replace(/[^\w-]/g, '');
+  const domId = subContainerIndex == null ? id : `${id}-${instance}`;
 
   // Tabs from the static list or the dynamic option; a tab without an id gets its index. Kept in state so the
   // per-tab actions can change disable, loading and visibility at run time.
@@ -161,15 +167,21 @@ export const ShadTabs = (props: WidgetProps) => {
   // Only a new defaultTab moves the tab; the tabs shown then are read from a ref.
   const latestPick = useLatest(() => pickDefault(shown));
   useEffect(() => setCurrentTab(latestPick.current()), [defaultTab, latestPick]);
-  // Scroll to top on tab switch: the new tab's canvas starts at its top, as the native Tabs does.
+  // Scroll to top on tab switch: the new tab's canvas starts at its top, as the native Tabs does. Looked up in this
+  // instance's own panels (its first canvas, not one nested in it): a document-wide lookup by the canvas id reset the
+  // first List view row's canvas whichever row switched.
+  const panelsRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (properties.scrollToTopOnTabSwitch !== true) return undefined;
     const frame = requestAnimationFrame(() => {
-      const canvas = document.getElementById(`canvas-${id}-${currentTab}`);
+      const panel = Array.from(panelsRef.current?.children ?? []).find(
+        (child) => child.getAttribute('activetab') === String(currentTab)
+      );
+      const canvas = panel?.querySelector('.real-canvas');
       if (canvas) canvas.scrollTop = 0;
     });
     return () => cancelAnimationFrame(frame);
-  }, [id, currentTab, properties.scrollToTopOnTabSwitch]);
+  }, [currentTab, properties.scrollToTopOnTabSwitch]);
   // A hidden or removed chosen tab gives way for good to the tab shown in its place.
   useEffect(() => {
     if (currentTab !== undefined && currentTab !== chosenTab) setCurrentTab(currentTab);
@@ -292,7 +304,7 @@ export const ShadTabs = (props: WidgetProps) => {
         </div>
       ) : properties.hideTabs ? null : (
         <TabStrip
-          widgetId={id}
+          widgetId={domId}
           onlyActivePanel={!!properties.renderOnlyActiveTab}
           tabs={shown}
           currentTab={currentTab}
@@ -304,7 +316,11 @@ export const ShadTabs = (props: WidgetProps) => {
           onPick={isLoading ? () => {} : onPick}
         />
       )}
-      <div className="tw-relative tw-min-h-0 tw-w-full tw-flex-1" style={{ background: look.panelBackground }}>
+      <div
+        ref={panelsRef}
+        className="tw-relative tw-min-h-0 tw-w-full tw-flex-1"
+        style={{ background: look.panelBackground }}
+      >
         {/* Loading, the panels stay mounted beside the spinner, none of them shown: swapping them for it unmounted every
             tab's components, and what was typed in them was lost. */}
         {isLoading ? (
@@ -319,6 +335,7 @@ export const ShadTabs = (props: WidgetProps) => {
             <TabPanel
               key={tab.id}
               id={id}
+              domId={domId}
               tab={tab}
               width={width}
               active={!isLoading && tab.id == currentTab}
