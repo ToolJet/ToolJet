@@ -227,6 +227,8 @@ export const createResolvedSlice = (set, get) => {
 
     // variables
     setVariable: (key, value, moduleId = 'canvas') => {
+      // Frozen before it's written, as Immer would (and a long array's rows profiled: freeze.js rowsProfileOf).
+      deepFreeze(value);
       // Synchronous write so getVariable reads the new value immediately in the same runJS context.
       set(
         (state) => {

@@ -26,10 +26,17 @@
  * `runRowAction` (the store's listViewComponentSlice): the widget a row drew with may have unmounted since. A drawn
  * row's state actions record their change whoever calls them: its children's slots expose them as `recordingAction`s.
  *
+ * Every row at once (`children`/`data` as if every row were drawn) is materialize.js's, estimated first by estimate.js:
+ * for it, the size of a ListView's row changes is kept here as they are written (sizeRowChanges), readRow can read a
+ * drawn row as if it weren't, and as its data alone gives it (`headless`, `withoutChanges`: to measure a row),
+ * descendantsOf / widgetsMountedIn list and count the widgets a drawn row mounts, and a hold (holdRowMounted) can be
+ * let go before its row is drawn (an AbortSignal).
+ *
  * Functions here take the store's `get`; the store actions built on them are in listViewComponentSlice.js.
  */
 import { cloneDeep, isEqual, set as lodashSet } from 'lodash';
 import { resolveDynamicValues, hasArrayNotation, parsePropertyPath } from '@/AppBuilder/_stores/utils';
+import { sizeOf } from '@/AppBuilder/_engines/data/freeze';
 import { exposureOf } from './widgets';
 
 const SECTIONS = new Set(['properties', 'general', 'generalStyles', 'styles', 'validation', 'others']);
@@ -107,8 +114,49 @@ export const liveExposure = (get, listviewId, dataRow, childId, moduleId) => {
   return live?.id !== undefined && !unmountedIn(get, listviewId, slot, dataRow, childId, moduleId) ? live : undefined;
 };
 
+// A container's children for walking its tree: under its id, or under its slots' (a Tabs keeps its children under
+// `${tabsId}-${tab}`, its SubContainers' ids). A child has one parent: its children are under one or the other.
+const childrenIn = (get, moduleId) => {
+  const { getContainerChildrenMapping, containerChildrenMapping } = get();
+  const slotChildren = {};
+  Object.keys(containerChildrenMapping ?? {}).forEach((key) => {
+    const base = key.match(/([a-fA-F0-9-]{36})-.+/)?.[1];
+    if (base) (slotChildren[base] ??= []).push(...(containerChildrenMapping[key] || []));
+  });
+  return (id) => {
+    const children = getContainerChildrenMapping(id, moduleId);
+    return children.length > 0 ? children : (slotChildren[id] ?? []);
+  };
+};
+
+/**
+ * Every widget inside a container's rows, at any depth (a Container's, a Form's, a Tabs' children too): the widget
+ * definitions a drawn row of a ListView mounts.
+ */
+export const descendantsOf = (get, containerId, moduleId) => {
+  const childrenOf = childrenIn(get, moduleId);
+  const descendants = [];
+  const collect = (id) =>
+    childrenOf(id).forEach((childId) => {
+      descendants.push(childId);
+      collect(childId);
+    });
+  collect(containerId);
+  return descendants;
+};
+
+/**
+ * How many widgets a drawn row of a container mounts: every widget inside it (descendantsOf's), a repeating one's
+ * (a ListView nested in the row) once for each of its rows, `repeatsOf(id)` (1 for any other widget).
+ */
+export const widgetsMountedIn = (get, containerId, moduleId, repeatsOf) => {
+  const childrenOf = childrenIn(get, moduleId);
+  const count = (id) => childrenOf(id).reduce((sum, childId) => sum + 1 + repeatsOf(childId) * count(childId), 0);
+  return count(containerId);
+};
+
 /** The ListView's rows (the listItem of each), as it renders them. */
-const rowsOf = (get, listviewId, moduleId) => {
+export const listviewRows = (get, listviewId, moduleId) => {
   const handle = handleOf(moduleId, listviewId);
   if (handle) return handle.rows;
   const { properties = {}, general = {} } = get().getResolvedComponent(listviewId, null, moduleId) ?? {};
@@ -119,7 +167,7 @@ const rowsOf = (get, listviewId, moduleId) => {
 
 /** Whether `dataRow` is one of the ListView's rows. */
 export const isRowOf = (get, listviewId, dataRow, moduleId) =>
-  Number.isInteger(dataRow) && dataRow >= 0 && dataRow < rowsOf(get, listviewId, moduleId).length;
+  Number.isInteger(dataRow) && dataRow >= 0 && dataRow < listviewRows(get, listviewId, moduleId).length;
 
 // ─── Row action wrappers ────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -311,9 +359,9 @@ const readsComponents = (get, childId, moduleId) => {
  * values depend on the others' (`dependent`): they are computed again with the ones just computed until they no longer
  * change, as the drawn row's settle once its widgets have exposed theirs.
  */
-const computeRow = (get, listviewId, dataRow, moduleId, base) => {
-  const changes = rowChangesOf(get, listviewId, dataRow, moduleId);
-  const customResolveObjects = { listItem: rowsOf(get, listviewId, moduleId)[dataRow] };
+const computeRow = (get, listviewId, dataRow, moduleId, base, withoutChanges = false) => {
+  const changes = withoutChanges ? undefined : rowChangesOf(get, listviewId, dataRow, moduleId);
+  const customResolveObjects = { listItem: listviewRows(get, listviewId, moduleId)[dataRow] };
   const scope = rowScope(get, listviewId, dataRow, moduleId, base);
   const computed = get()
     .getContainerChildrenMapping(listviewId, moduleId)
@@ -362,6 +410,31 @@ export const resolveRowChildInput = (get, listviewId, dataRow, childId, moduleId
 // ─── Changes ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const NO_CHANGE = { values: {}, basis: {}, replay: [] };
+
+// Per ListView (keyOf): the estimated bytes of its row changes' values (sizeOf), in all and by data row (estimate.js).
+const changeSizes = new Map();
+
+/**
+ * Keeps the size of a row's changes current: called after every write to them (recorded or pruned); adds the new size
+ * to the ListView's total and takes the old one off. Returns the row's size now.
+ */
+export const sizeRowChanges = (get, listviewId, dataRow, moduleId) => {
+  const key = keyOf(moduleId, listviewId);
+  let bytes = 0;
+  Object.values(rowChangesOf(get, listviewId, dataRow, moduleId) ?? {}).forEach((change) => {
+    bytes += sizeOf(change.values);
+  });
+  if (!changeSizes.has(key)) changeSizes.set(key, { total: 0, byRow: new Map() });
+  const sizes = changeSizes.get(key);
+  sizes.total += bytes - (sizes.byRow.get(dataRow) ?? 0);
+  if (bytes) sizes.byRow.set(dataRow, bytes);
+  else sizes.byRow.delete(dataRow);
+  return bytes;
+};
+
+/** The estimated bytes of a ListView's row changes: `{ total, byRow }` (data row → bytes), sizeRowChanges' figures. */
+export const rowChangeSizes = (listviewId, moduleId) =>
+  changeSizes.get(keyOf(moduleId, listviewId)) ?? { total: 0, byRow: new Map() };
 
 /**
  * A child's recorded change without what its widget would have reset since: a value whose prop gives another value
@@ -432,8 +505,18 @@ export const nextRowChange = ({ exposure, change, initial, input, action, args, 
  * can't be computed: its `children[dataRow]` entry is used, if any, and its id is listed in `uncomputed` (see
  * uncomputedRowChildren). Functions are row action wrappers in a windowed ListView (and for computed children); `keep`:
  * the row is to be written into `children` (wrapRowActions). `base`: rowScopeBase, when rows are read together.
+ * `options` (estimate.js, measuring a row): `headless`, read it as if it weren't drawn, whether or not it is (the
+ * computed path); `withoutChanges`, as its data alone gives it (its recorded changes left out).
  */
-export const readRow = (get, listviewId, dataRow, moduleId = 'canvas', keep = false, base = undefined) => {
+export const readRow = (
+  get,
+  listviewId,
+  dataRow,
+  moduleId = 'canvas',
+  keep = false,
+  base = undefined,
+  { headless = false, withoutChanges = false } = {}
+) => {
   // A row past the end (or not a row index) has no values: nothing is made up for it.
   if (!isRowOf(get, listviewId, dataRow, moduleId)) return { row: undefined, uncomputed: [], computed: null };
   const state = get();
@@ -444,7 +527,7 @@ export const readRow = (get, listviewId, dataRow, moduleId = 'canvas', keep = fa
   let computed = null;
   state.getContainerChildrenMapping(listviewId, moduleId).forEach((childId) => {
     const name = state.getComponentNameFromId(childId, moduleId);
-    const live = liveExposure(get, listviewId, dataRow, childId, moduleId);
+    const live = !headless && liveExposure(get, listviewId, dataRow, childId, moduleId);
     if (live) {
       row[name] = {
         ...(windowed ? wrapRowActions(get, listviewId, dataRow, childId, live, moduleId, keep) : live),
@@ -461,7 +544,7 @@ export const readRow = (get, listviewId, dataRow, moduleId = 'canvas', keep = fa
       }
       return;
     }
-    computed ??= computeRow(get, listviewId, dataRow, moduleId, base);
+    computed ??= computeRow(get, listviewId, dataRow, moduleId, base, withoutChanges);
     const values = { ...computed.values.get(childId) };
     [...Object.keys(exposure.actions), ...exposure.liveActions].forEach((action) => {
       values[action] = wrapperOf(get, listviewId, dataRow, childId, action, moduleId, keep);
@@ -612,7 +695,7 @@ export const forgetListviewRows = (listviewId, moduleId, fromRow = 0) => {
   const key = keyOf(moduleId, listviewId);
   const last = cutAt.get(key);
   if (fromRow <= 0) {
-    [settled, unmounted, wrappers, cutAt].forEach((map) => map.delete(key));
+    [settled, unmounted, wrappers, cutAt, changeSizes].forEach((map) => map.delete(key));
     return true;
   }
   cutAt.set(key, fromRow);
@@ -624,6 +707,12 @@ export const forgetListviewRows = (listviewId, moduleId, fromRow = 0) => {
   );
   wrappers.get(key)?.forEach((_row, dataRow, byRow) => {
     if (dataRow >= fromRow) byRow.delete(dataRow);
+  });
+  const sizes = changeSizes.get(key);
+  sizes?.byRow.forEach((bytes, dataRow) => {
+    if (dataRow < fromRow) return;
+    sizes.total -= bytes;
+    sizes.byRow.delete(dataRow);
   });
   return true;
 };
@@ -735,12 +824,14 @@ export const settleRows = (get, rows) =>
 /**
  * Draws `dataRow` of the ListView and holds it drawn: resolves to the hold's release once the row is drawn, with its
  * widgets mounted and its changes replayed. A ListView that draws every row resolves at once. Rejects when the row
- * leaves the list (data or page changed) or the ListView unmounts before the row is drawn.
+ * leaves the list (data or page changed) or the ListView unmounts before the row is drawn, or when `signal` (an
+ * AbortSignal) aborts first (with its reason): the row is no longer held then.
  */
-export const holdRowMounted = (get, subscribe, listviewId, dataRow, moduleId = 'canvas') => {
+export const holdRowMounted = (get, subscribe, listviewId, dataRow, moduleId = 'canvas', signal = undefined) => {
   const notMounted = () => new Error(`ListView ${listviewId} is not mounted`);
   const notInList = () => new RangeError(`Row ${dataRow} is not in the list`);
   const first = handleOf(moduleId, listviewId);
+  if (signal?.aborted) return Promise.reject(signal.reason);
   if (!first) return Promise.reject(notMounted());
   if (!isRowOf(get, listviewId, dataRow, moduleId)) return Promise.reject(notInList());
   if (!first.windowed && !slotsOf(get, listviewId, moduleId)) return Promise.resolve(NO_RELEASE);
@@ -749,10 +840,15 @@ export const holdRowMounted = (get, subscribe, listviewId, dataRow, moduleId = '
     let release = NO_RELEASE;
     const finish = (error) => {
       removeWaiter(check);
+      signal?.removeEventListener('abort', aborted);
       if (!error) return resolve(release);
       release();
       reject(error);
     };
+    const aborted = () => {
+      if (waiters.has(check)) finish(signal.reason);
+    };
+    signal?.addEventListener('abort', aborted);
     const check = () => {
       if (!waiters.has(check)) return;
       const handle = handleOf(moduleId, listviewId);

@@ -15,11 +15,16 @@ const memoryInfo = () => {
   return info && info.jsHeapSizeLimit > 0 ? info : null;
 };
 
+/** estimateBytes' figures: an object or array, and a property or element in one (a character is a byte). */
+export const OBJECT_BYTES = 24;
+export const SLOT_BYTES = 20;
+
 /**
  * Estimated bytes taken by `objects` objects and arrays holding `slots` properties or elements and `chars` characters
  * of strings: a dataset parsed from JSON comes to about this (a 21-key row of short strings and numbers, ~800 B).
  */
-export const estimateBytes = ({ objects = 0, slots = 0, chars = 0 }) => objects * 24 + slots * 20 + chars;
+export const estimateBytes = ({ objects = 0, slots = 0, chars = 0 }) =>
+  objects * OBJECT_BYTES + slots * SLOT_BYTES + chars;
 
 /** Bytes that can still be allocated before the tab gets near its limit; Infinity when it can't be told. */
 export const headroom = () => {
@@ -31,7 +36,8 @@ export const headroom = () => {
 /** Whether `bytes` more can be allocated without nearing the tab's limit. */
 export const canAllocate = (bytes) => !(bytes > headroom());
 
-const formatBytes = (bytes) =>
+/** `bytes` as people read it: "2.1 GB", "300 MB". */
+export const formatBytes = (bytes) =>
   bytes >= 1024 * MB ? `${(bytes / (1024 * MB)).toFixed(1)} GB` : `${Math.max(1, Math.round(bytes / MB))} MB`;
 
 export class MemoryBudgetError extends Error {

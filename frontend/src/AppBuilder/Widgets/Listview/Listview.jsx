@@ -182,11 +182,13 @@ export const Listview = function Listview({
   };
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
-  const filteredData = _.isArray(data)
-    ? enablePagination
-      ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage)
-      : data
-    : [];
+  // The same array while the data and the page are: the rows materializing reads (_engines/materialize) are known by
+  // identity, and a scroll re-renders.
+  const filteredData = useMemo(
+    () =>
+      _.isArray(data) ? (enablePagination ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage) : data) : [],
+    [data, enablePagination, startIndexOfRowInThePage, endIndexOfRowInThePage]
+  );
 
   // Check if parentIndices changed (component moved into/out of a ListView)
   const parentIndicesChanged =
@@ -292,6 +294,10 @@ export const Listview = function Listview({
     () => (topLevel ? registerListview(moduleId, id, rowsHandle.current) : undefined),
     [moduleId, id, topLevel]
   );
+  const refreshListviewEstimate = useStore((state) => state.refreshListviewEstimate, shallow);
+  useEffect(() => {
+    if (topLevel && windowed) refreshListviewEstimate(id, moduleId);
+  }, [filteredData, windowed, topLevel, id, moduleId, refreshListviewEstimate]);
   const slotState = useRef(NO_SLOTS);
   const pendingSlots = useRef(null);
   const prevWindowedRef = useRef(false);

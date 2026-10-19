@@ -3,6 +3,7 @@ import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import {
   actionKindOf,
+  descendantsOf,
   forgetListviewRows,
   handleOf,
   hasReplay,
@@ -26,6 +27,13 @@ import {
   wrapRows,
 } from '@/AppBuilder/_engines/materialize/rows';
 import { exposureOf } from '@/AppBuilder/_engines/materialize/widgets';
+import {
+  estimate,
+  forgetEstimate,
+  profileListview,
+  rowChangesWritten,
+} from '@/AppBuilder/_engines/materialize/estimate';
+import { materializeAll } from '@/AppBuilder/_engines/materialize/materialize';
 
 export const listViewComponentSlice = (set, get, api) => {
   // Microtask dedup for _deriveListviewChain calls outside an explicit batch window.
@@ -224,6 +232,7 @@ export const listViewComponentSlice = (set, get, api) => {
     set((state) => recordRowChange(state, { listviewId, dataRow, childId, change, moduleId }), false, {
       type: 'runRowAction',
     });
+    rowChangesWritten(get, listviewId, dataRow, moduleId);
     // Its widget shows the change: not to be replayed onto it (unless the row was still to be restored).
     if (!hasReplay(changes)) markRowSettled(listviewId, slot, dataRow, moduleId);
   };
@@ -318,6 +327,7 @@ export const listViewComponentSlice = (set, get, api) => {
       set((state) => changes.forEach((payload) => recordRowChange(state, payload)), false, {
         type: 'runRowAction',
       });
+      reads.forEach(({ listviewId, dataRow, moduleId }) => rowChangesWritten(get, listviewId, dataRow, moduleId));
       // The rows as they read now: a child reading a changed sibling is computed again (rows.js computeRow).
       const rows = [...reads.values()].map(({ listviewId, dataRow, moduleId, read }) => {
         const rowData = read.computed?.dependent
@@ -720,7 +730,15 @@ export const listViewComponentSlice = (set, get, api) => {
         { type: 'setListviewSlots', payload: { listviewId, moduleId } }
       );
       reconcileSettledRows(listviewId, slots, moduleId);
+      // Its rows' profile, for estimating reading them all: started (in the background) once it has data, then kept
+      // current through the store (estimate.js).
+      profileListview(get, api.subscribe, listviewId, moduleId);
     },
+
+    // The ListView shows other rows (Listview.jsx, after it renders them): its rows' profile follows even when the store
+    // didn't change after it rendered (data reloaded with the same content).
+    refreshListviewEstimate: (listviewId, moduleId = 'canvas') =>
+      profileListview(get, api.subscribe, listviewId, moduleId),
 
     // `resetRows`: also clear the children's per-row values the slots held (they would be read as data rows).
     clearListviewSlots: (listviewId, moduleId = 'canvas', resetRows = false) => {
@@ -728,6 +746,7 @@ export const listViewComponentSlice = (set, get, api) => {
       // The engine's per-row bookkeeping goes with the ListView even when its slots are already gone (the module's
       // resolved state replaced while it was mounted).
       forgetListviewRows(listviewId, moduleId);
+      forgetEstimate(listviewId, moduleId);
       if (!slots) return;
       const childComponents = resetRows ? get().getContainerChildrenMapping(listviewId, moduleId) : [];
       set(
@@ -761,7 +780,23 @@ export const listViewComponentSlice = (set, get, api) => {
         false,
         { type: 'replaceListviewRowChanges', payload: { listviewId, dataRow, moduleId } }
       );
+      rowChangesWritten(get, listviewId, dataRow, moduleId);
     },
+
+    /**
+     * What reading every row of the ListView at once would cost (_engines/materialize/estimate.js): `{ ready, rows,
+     * timeMs, resultBytes, jsonChars, drawnWidgets … }`. `options.json`: the rows are to be serialized.
+     */
+    estimateListviewRows: (listviewId, options = {}, moduleId = 'canvas') =>
+      estimate(get, listviewId, moduleId, options),
+
+    /**
+     * Every row of the ListView, `{ children, data }` keyed by data row, as if it drew them all (deep-frozen, not
+     * stored): a promise (`options.mode` 'background', the default) or the value ('sync'). Throws a
+     * MaterializationError saying why when reading them all doesn't fit (_engines/materialize/materialize.js).
+     */
+    materializeListviewRows: (listviewId, options = {}, moduleId = 'canvas') =>
+      materializeAll(get, api.subscribe, listviewId, moduleId, options),
 
     /** A row's data, like `children[dataRow]`, whether or not the row is drawn. */
     readListviewRow: (listviewId, dataRow, moduleId = 'canvas') => readRow(get, listviewId, dataRow, moduleId).row,
@@ -862,41 +897,11 @@ export const listViewComponentSlice = (set, get, api) => {
     // Called ONCE before the row loop. Collects descendant IDs and creates the
     // prototype overlay. Returns null if the ListView has no descendants.
     prepareRowScope: (components, listviewId, moduleId = 'canvas') => {
-      const { getContainerChildrenMapping, containerChildrenMapping } = get();
-
-      // Pre-build a map from base UUID → children that are stored under slot IDs.
-      // Some containers (e.g. Tabs) render their SubContainer with a slot suffix:
-      //   <SubContainer id={`${id}-${tab.id}`} />
-      // so their children have parent="tabs-uuid-tab0" and are stored in
-      // containerChildrenMapping["tabs-uuid-tab0"], NOT under "tabs-uuid".
-      // This map lets collectDescendants find those children when traversing down.
-      const slotChildrenByBase = {};
-      for (const key of Object.keys(containerChildrenMapping)) {
-        const match = key.match(/([a-fA-F0-9-]{36})-.+/);
-        if (match) {
-          const baseId = match[1];
-          if (!slotChildrenByBase[baseId]) slotChildrenByBase[baseId] = [];
-          slotChildrenByBase[baseId].push(...(containerChildrenMapping[key] || []));
-        }
-      }
-
       // Recursively collect ALL descendant component IDs of this ListView.
       // This includes components nested inside sub-containers (Form, Container, Tabs, etc.).
       // Example: ListView → [Checkbox, Button, Form → [TextInput, Dropdown]]
       //   → allDescendants = [Checkbox, Button, Form, TextInput, Dropdown]
-      const allDescendants = [];
-      const collectDescendants = (containerId) => {
-        const children = getContainerChildrenMapping(containerId, moduleId);
-        const slotChildren = slotChildrenByBase[containerId] || [];
-        // Combine direct children (base ID) and slot-keyed children (e.g. Tabs).
-        // A child can only have one parent so there is no overlap between the two arrays.
-        const allChildren = children.length > 0 ? children : slotChildren;
-        for (const childId of allChildren) {
-          allDescendants.push(childId);
-          collectDescendants(childId);
-        }
-      };
-      collectDescendants(listviewId);
+      const allDescendants = descendantsOf(get, listviewId, moduleId);
 
       if (allDescendants.length === 0) return null;
 

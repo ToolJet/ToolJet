@@ -4,6 +4,7 @@
  * before it's stored.
  */
 import useStore from '@/AppBuilder/_stores/store';
+import { rowsProfileOf } from '@/AppBuilder/_engines/data/freeze';
 
 const state = () => useStore.getState();
 const exposed = () => state().resolvedStore.modules.canvas.exposedValues;
@@ -64,5 +65,29 @@ describe("other code can't change stored data", () => {
       true,
       true,
     ]);
+  });
+
+  test('a variable is stored as it was set, frozen as Immer freezes it: class instances (a Date) are left alone', () => {
+    seed([]);
+    class Counter {
+      count = 0;
+    }
+    const counter = new Counter();
+    const when = new Date(0);
+    const value = { rows: [{ name: 'a' }], nested: { counter, when } };
+    state().setVariable('v', value, 'canvas');
+    expect(state().getVariable('v', 'canvas')).toBe(value);
+    expect([Object.isFrozen(value), Object.isFrozen(value.rows[0]), Object.isFrozen(value.nested)]).toEqual([
+      true,
+      true,
+      true,
+    ]);
+    expect([Object.isFrozen(counter), Object.isFrozen(when)]).toEqual([false, false]);
+    counter.count += 1;
+    expect(state().getVariable('v', 'canvas').nested.counter.count).toBe(1);
+    // A long array's rows are profiled as it is frozen (for a ListView over it).
+    const rows = Array.from({ length: 2000 }, (_, i) => ({ id: i }));
+    state().setVariable('rows', rows, 'canvas');
+    expect(rowsProfileOf(rows)).toBeDefined();
   });
 });
