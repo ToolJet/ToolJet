@@ -2,8 +2,10 @@ import { resolveFlexContainerHeight } from '../dynamicHeightReflowFlexContainer'
 import { BOX_PADDING, SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 // A FlexContainer 'flex' with children, rendered `wrapperWidth` wide. Layouts are canonical; no temp heights.
+// The container is a new one (layoutVersion 2) unless `legacy`: saved before UI 2.0, it keeps the lts-3.16 layout.
 const resolve = ({
-  properties,
+  properties: ownProperties,
+  legacy = false,
   children,
   height = 40,
   wrapperWidth = 1264,
@@ -12,6 +14,7 @@ const resolve = ({
   hidden = [],
   styles = {},
 }) => {
+  const properties = legacy ? ownProperties : { layoutVersion: '2', ...ownProperties };
   const layouts = { flex: { height }, ...Object.fromEntries(children.map((c) => [c.id, c.layout])) };
   const components = {
     flex: { component: { definition: { properties: { childOrder: { value: children.map((c) => c.id) } } } } },
@@ -44,6 +47,8 @@ const resolve = ({
 };
 
 const chrome = (padding) => padding * 2 + BOX_PADDING * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2;
+// lts-3.16 left the widget's box padding out.
+const legacyChrome = (padding) => padding * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2;
 const cards = (n, layout) => Array.from({ length: n }, (_, i) => ({ id: `c${i}`, layout }));
 
 describe('FlexContainer dynamic height', () => {
@@ -192,5 +197,71 @@ describe('FlexContainer dynamic height', () => {
       height: 300,
     });
     expect(height).toBe(300);
+  });
+});
+
+describe('FlexContainer dynamic height, saved before layout version 2 (lts-3.16)', () => {
+  it('gives each fill child of a wrapping row its own line', () => {
+    const height = resolve({
+      legacy: true,
+      properties: { direction: 'row', flexWrap: true, gap: 16, padding: 0 },
+      children: cards(3, { fillWidth: true, height: 158 }),
+    });
+    expect(height).toBe(158 * 3 + 16 * 2 + legacyChrome(0));
+  });
+
+  it('keeps the authored height of a row as its floor', () => {
+    const height = resolve({
+      legacy: true,
+      properties: { direction: 'row', padding: 0 },
+      children: cards(2, { width: 20, height: 260 }),
+      height: 430,
+    });
+    expect(height).toBe(430);
+  });
+
+  it('keeps the slot of a hidden child unless it collapses when hidden', () => {
+    const children = (collapseWhenHidden) => [
+      { id: 't', layout: { height: 390 } },
+      { id: 'empty', layout: { height: 180 }, properties: { collapseWhenHidden } },
+    ];
+    const height = (collapseWhenHidden) =>
+      resolve({
+        legacy: true,
+        properties: { direction: 'column', padding: 0, gap: 8 },
+        children: children(collapseWhenHidden),
+        hidden: ['empty'],
+        height: 100,
+      });
+    expect(height(false)).toBe(390 + 8 + 180 + legacyChrome(0));
+    expect(height(true)).toBe(390 + legacyChrome(0));
+  });
+
+  it("leaves the widget's box padding out", () => {
+    const height = resolve({
+      legacy: true,
+      properties: { direction: 'column', padding: 0 },
+      children: cards(1, { width: 6, height: 36 }),
+      height: 20,
+    });
+    expect(height).toBe(36 + legacyChrome(0));
+  });
+
+  it('floors a row child saved before layout version 2 at its drawn height, inside a new row', () => {
+    const row = (childProperties) =>
+      resolve({
+        properties: { direction: 'row', padding: 0 },
+        children: ['a', 'b'].map((id) => ({
+          id,
+          type: 'FlexContainer',
+          properties: { direction: 'row', ...childProperties },
+          layout: { width: 20, height: 410 },
+        })),
+        temps: { a: { height: 264 }, b: { height: 264 } },
+        bump: () => 410,
+        height: 430,
+      });
+    expect(row({})).toBe(410 + chrome(0));
+    expect(row({ layoutVersion: '2' })).toBe(264 + chrome(0));
   });
 });
