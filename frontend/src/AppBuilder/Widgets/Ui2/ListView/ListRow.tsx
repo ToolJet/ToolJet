@@ -68,9 +68,11 @@ export const Row = ({
         onClickCapture={() => onPick(index)}
         onKeyDown={(e) => e.target === e.currentTarget && activate(e)}
         className={cn(
-          'tw-relative tw-overflow-hidden tw-outline-none tw-transition-colors focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--sc-ring)] hover:tw-bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
+          // The focus and selected marks are outlines drawn inside the row: a ring is a box-shadow, which a chosen item
+          // shadow (set inline) replaced.
+          'tw-relative tw-overflow-hidden tw-outline-none tw-transition-colors focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:-tw-outline-offset-2 focus-visible:tw-outline-[color:var(--sc-ring)] hover:tw-bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
           selected &&
-            'tw-bg-[color:var(--lv-selected-bg,color-mix(in_srgb,var(--sc-primary)_8%,transparent))] tw-ring-1 tw-ring-inset tw-ring-ui2-primary',
+            'tw-bg-[color:var(--lv-selected-bg,color-mix(in_srgb,var(--sc-primary)_8%,transparent))] tw-outline tw-outline-1 -tw-outline-offset-1 tw-outline-ui2-primary',
           look.framed && 'tw-border tw-border-[color:var(--lv-item-border,var(--sc-border))]',
           mode === 'list' &&
             showBorder &&

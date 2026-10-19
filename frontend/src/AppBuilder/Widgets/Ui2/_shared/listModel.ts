@@ -106,7 +106,10 @@ export const listLook = (styles: Resolved = {}): ListLook => ({
     ...(styles.itemVariant === 'outline' ? { background: 'var(--sc-card)', borderRadius: 'var(--sc-radius)' } : {}),
     ...(isSet(styles.itemBackgroundColor) ? { background: styles.itemBackgroundColor } : {}),
     ...(isSet(styles.itemBorderRadius) ? { borderRadius: px(styles.itemBorderRadius) } : {}),
-    boxShadow: SHADOWS[styles.itemShadow] ?? (isSet(styles.itemShadow) ? styles.itemShadow : 'none'),
+    // Only a chosen shadow is set inline: an inline box-shadow, 'none' included, hid the row's focus and selected rings.
+    ...(isSet(styles.itemShadow) && styles.itemShadow !== 'none'
+      ? { boxShadow: SHADOWS[styles.itemShadow] ?? styles.itemShadow }
+      : {}),
   },
   // A framed item takes the border class, coloured by --lv-item-border (Item border color) or the theme border.
   framed: styles.itemVariant === 'outline' || isSet(styles.itemBorderColor),
