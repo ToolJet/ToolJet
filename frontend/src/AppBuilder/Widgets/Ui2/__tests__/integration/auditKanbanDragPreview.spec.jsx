@@ -7,6 +7,7 @@
  *
  * Real DndContext, KeyboardSensor and DragOverlay; real store, widgets and workflows. jsdom is given a card width.
  */
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';

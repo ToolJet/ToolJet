@@ -6,6 +6,7 @@
  *
  * Real ListView, Kanban, Input and Button, real store and a real control-component workflow; jsdom is given a width.
  */
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { componentDefinition } from '@/test/app-builder';
