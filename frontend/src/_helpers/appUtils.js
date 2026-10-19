@@ -10,6 +10,7 @@ import RunPyIcon from '@/AppBuilder/QueryManager/Icons/Icons/runpy.svg';
 import { allSvgs } from '@tooljet/plugins/client';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { deepClone } from './utilities/utils.helpers';
+import { dropNewContainerDefaults } from '@/AppBuilder/_helpers/flexLayoutVersion';
 
 export function addToLocalStorage(object) {
   localStorage.setItem(object['key'], object['value']);
@@ -198,14 +199,19 @@ export const buildComponentMetaDefinition = (components = {}) => {
 
     const mergedDefinition = {
       ...componentMeta.definition,
-      properties: mergeWith(
-        componentMeta.definition.properties,
-        currentComponentData?.component?.definition?.properties,
-        (objValue, srcValue) => {
-          if (currentComponentData?.component?.component === 'Table' && Array.isArray(objValue)) {
-            return srcValue;
+      // A FlexContainer saved before UI 2.0 does not take the new-container-only defaults (flexLayoutVersion.js).
+      properties: dropNewContainerDefaults(
+        currentComponentData?.component?.component,
+        mergeWith(
+          componentMeta.definition.properties,
+          currentComponentData?.component?.definition?.properties,
+          (objValue, srcValue) => {
+            if (currentComponentData?.component?.component === 'Table' && Array.isArray(objValue)) {
+              return srcValue;
+            }
           }
-        }
+        ),
+        currentComponentData?.component?.definition?.properties
       ),
       styles: merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
       generalStyles: merge(

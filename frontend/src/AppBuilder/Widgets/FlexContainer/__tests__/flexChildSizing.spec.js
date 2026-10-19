@@ -2,6 +2,7 @@ import {
   computeFlexChildFlexStyle,
   flexCardHeaderPx,
   flexChildLineWidth,
+  leavesFlexFlow,
   resolveFlexChildSizing,
 } from '../flexContainer.utils';
 
@@ -103,5 +104,17 @@ describe('card header height', () => {
     expect(flexCardHeaderPx({ cardStyle: 'shadcnCard', cardTitle: 'Revenue', cardExtra: 'Last 30 days' })).toBe(70);
     expect(flexCardHeaderPx({ cardStyle: 'shadcnCard' })).toBe(0);
     expect(flexCardHeaderPx({ cardStyle: 'none', cardTitle: 'Ignored' })).toBe(0);
+  });
+});
+
+describe('a dialog without its trigger button in a flex container', () => {
+  it('leaves the flow of a new container in the viewer', () => {
+    expect(leavesFlexFlow({ modalWithoutTrigger: true, mode: 'view', layoutV2: true })).toBe(true);
+    expect(leavesFlexFlow({ modalWithoutTrigger: true, mode: 'edit', layoutV2: true })).toBe(false);
+    expect(leavesFlexFlow({ modalWithoutTrigger: false, mode: 'view', layoutV2: true })).toBe(false);
+  });
+
+  it('keeps its slot in a container saved before layout version 2, as on lts-3.16', () => {
+    expect(leavesFlexFlow({ modalWithoutTrigger: true, mode: 'view', layoutV2: false })).toBe(false);
   });
 });

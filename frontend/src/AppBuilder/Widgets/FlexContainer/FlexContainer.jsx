@@ -5,7 +5,8 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useShouldStackFlexRealCanvas } from './useFlexStackBelow';
 import { flexCardHeaderPx } from './flexContainer.utils';
-import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { fitsContentInView, stretchesInRow } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { usesFlexLayoutV2 } from '@/AppBuilder/_helpers/flexLayoutVersion';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -71,14 +72,15 @@ export const FlexContainer = ({
 
   const childIds = useStore((state) => state.containerChildrenMapping?.[id] ?? [], shallow);
 
-  // Inside a row whose Align is Stretch, this container fills the line's height (its wrapper is stretched), so the
-  // cards of a row share one height. Its own content height stays its floor and still drives the reflow.
+  // Inside an Equal heights row (or one whose Align is Stretch), this container fills the line's height (its wrapper is
+  // stretched), so the cards of a row share one height. Its own content height stays its floor and still drives the
+  // reflow.
   const { moduleId } = useModuleContext();
   const isStretched = useStore((state) => {
     const parentId = state.getComponentDefinition?.(id, moduleId)?.component?.parent;
     if (!parentId) return false;
     const parent = state.getResolvedComponent?.(parentId, null, moduleId);
-    return parent?.properties?.alignItems === 'stretch' && (parent?.properties?.direction ?? 'column') === 'row';
+    return (parent?.properties?.direction ?? 'column') === 'row' && stretchesInRow(parent?.properties, 'FlexContainer');
   }, shallow);
 
   useDynamicHeight({
@@ -142,8 +144,9 @@ export const FlexContainer = ({
     display: 'flex',
     flexDirection: effectiveDirection,
     // Only a row wraps: a wrapping column starts a second column beside the first once its content outgrows its
-    // height (dynamic-height tables did), and a rooms page drew all its cards off the right edge.
-    flexWrap: shouldStack || !isRow ? 'nowrap' : flexWrap ? 'wrap' : 'nowrap',
+    // height (dynamic-height tables did), and a rooms page drew all its cards off the right edge. A column saved before
+    // the UI 2.0 layout still wraps, as on lts-3.16.
+    flexWrap: shouldStack || (!isRow && usesFlexLayoutV2(properties)) ? 'nowrap' : flexWrap ? 'wrap' : 'nowrap',
     gap: `${gap ?? 8}px`,
     padding: `${padding ?? 12}px`,
     justifyContent: justifyContent ?? 'flex-start',

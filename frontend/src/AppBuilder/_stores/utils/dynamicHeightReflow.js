@@ -794,6 +794,20 @@ export const resolveContainerHeight = ({
   return Math.max(currentMax + extraHeight, containerHeight);
 };
 
+// A widget stretched to its row's height by an Equal heights FlexContainer row (flexContainer.scss,
+// dynamicHeightPolicy.stretchesInRow) would measure as the row, and the row could then never drop back below it when
+// its tallest child shrinks. Measure it at its own content height and put the stretch back, in the same frame.
+const measureOwnHeight = (element) => {
+  if (!element?.classList?.contains('flex-stretch-child')) return element?.offsetHeight;
+  const { alignSelf, minHeight } = element.style;
+  element.style.alignSelf = 'flex-start';
+  element.style.minHeight = '0px';
+  const height = element.offsetHeight;
+  element.style.alignSelf = alignSelf;
+  element.style.minHeight = minHeight;
+  return height;
+};
+
 // The changed widget's target height:
 //   - Container-like widget (incl. the Listview widget itself): delegate to the
 //     already-computed `containerHeight`. For the Listview widget this is the
@@ -878,7 +892,7 @@ export const resolveWidgetMeasuredHeight = ({
   // -350, collapsing every downstream sibling above its canonical top.
   // Treat 0 as "not yet measurable" and prefer the last known / canonical
   // height instead — no visible widget legitimately renders at 0.
-  const measuredHeight = element?.offsetHeight;
+  const measuredHeight = measureOwnHeight(element);
   if (measuredHeight === 0) {
     return existingHeight ?? fallbackHeight();
   }

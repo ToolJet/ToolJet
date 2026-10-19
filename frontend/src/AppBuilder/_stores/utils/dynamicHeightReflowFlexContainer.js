@@ -6,6 +6,7 @@ import {
   normalizeChildOrder,
   resolveFlexChildSizing,
 } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { usesFlexLayoutV2 } from '@/AppBuilder/_helpers/flexLayoutVersion';
 
 // FlexContainer.jsx falls back to these literals when the property panel has
 // not authored a value (`gap ?? 8`, `padding ?? 12`). Keep the resolver in
@@ -62,6 +63,8 @@ export const resolveFlexContainerHeight = ({
   const canonicalLayout = getCanonicalLayout(componentId, currentLayout, currentPageComponents);
   const component = getResolvedComponent(componentId, contextIndices);
   const properties = component?.properties || {};
+  // A container saved before the UI 2.0 layout keeps the lts-3.16 measurement (_helpers/flexLayoutVersion.js).
+  const layoutV2 = usesFlexLayoutV2(properties);
   const gap = parseFlexPixelValue(properties.gap, FLEX_DEFAULT_GAP);
   const padding = parseFlexPixelValue(properties.padding, FLEX_DEFAULT_PADDING);
   const direction = computeEffectiveFlexDirection(properties.direction ?? 'column', properties.stackBelow ?? 'none');
@@ -83,7 +86,8 @@ export const resolveFlexContainerHeight = ({
 
   // Build a compact list of only the children that should occupy flex flow.
   // Visibility is resolved the same way as the rest of dynamic-height reflow,
-  // but a hidden child is always out of flow (see below). For each in-flow child, read the effective layout so
+  // but in the UI 2.0 layout a hidden child is always out of flow (see below). For each in-flow child, read the
+  // effective layout so
   // previously measured dynamic-height temps are included. The
   // calculateMoveableBoxHeightWithId floor preserves the existing label-height
   // bump behavior used elsewhere in this file for top-aligned input widgets.
@@ -101,7 +105,9 @@ export const resolveFlexContainerHeight = ({
     const childResolved = getResolvedComponent(childId, contextIndices);
     // A hidden child renders at 0 in flex flow (WidgetWrapper collapses hidden widgets), so it takes no space here
     // either, collapseWhenHidden or not: reserving its slot drew a blank band the size of a hidden empty state.
-    if (!childVisibility) return accumulator;
+    // lts-3.16 (a container saved before the UI 2.0 layout) reserves it unless the child collapses when hidden.
+    const childInFlow = childVisibility || (!layoutV2 && !childResolved?.properties?.collapseWhenHidden);
+    if (!childInFlow) return accumulator;
 
     const effectiveLayout = getEffectiveLayout(
       childId,
@@ -114,8 +120,9 @@ export const resolveFlexContainerHeight = ({
     const childDefinition = getComponentDefinition?.(childId);
     // A component-pack widget fits its content (dynamicHeightPolicy), so its measured height stands even below the
     // drawn one. The bump below returns the drawn height for every non-input widget, which floored a short ShadTable
-    // at its drawn 340px and left an empty band in its card (2026-10-10).
-    // The same holds for a FlexContainer drawn as a card or a row (a row of cards kept its drawn 430px).
+    // at its drawn 340px and left an empty band in its card.
+    // The same holds for a FlexContainer drawn as a card or a row (a row of cards kept its drawn 430px), unless the
+    // row was saved before the UI 2.0 layout and keeps its drawn height (dynamicHeightPolicy.fitsContentInView).
     const childType = childDefinition?.component?.component ?? '';
     const fitsContent =
       /^Shad[A-Z]/.test(childType) ||
@@ -124,7 +131,7 @@ export const resolveFlexContainerHeight = ({
       (childType === 'Table' && childResolved?.styles?.tableLook === 'shadcn') ||
       (childType === 'FlexContainer' &&
         (childResolved?.properties?.cardStyle === 'shadcnCard' ||
-          childResolved?.properties?.direction === 'row'));
+          (childResolved?.properties?.direction === 'row' && usesFlexLayoutV2(childResolved?.properties))));
     if (typeof calculateMoveableBoxHeightWithId === 'function' && !fitsContent) {
       const childStylesDefinition = childDefinition?.component?.definition?.styles;
       const bumpedHeight = calculateMoveableBoxHeightWithId(childId, currentLayout, childStylesDefinition);
@@ -174,11 +181,19 @@ export const resolveFlexContainerHeight = ({
     // min-width (see computeFlexChildFlexStyle), so the browser packs them at
     // that minimum and grows them afterwards. Pack the same way: fill children
     // share a line until their minimum widths no longer fit.
+    //
+    // In a container saved before the UI 2.0 layout, fillWidth children render
+    // with `flex: '1 0 auto'` (computeFlexChildFlexStyleV1): their basis is the
+    // available width and they cannot shrink, so each claims a whole line.
     const lines = childMetrics.reduce(
       (accumulator, child) => {
         const currentLine = accumulator[accumulator.length - 1];
         const rawChildWidth = Number.isFinite(child.width) ? child.width : availableWidth;
-        const childWidth = Math.min(flexChildLineWidth({ ...child, width: rawChildWidth }), availableWidth);
+        const childWidth = layoutV2
+          ? Math.min(flexChildLineWidth({ ...child, width: rawChildWidth }), availableWidth)
+          : child.fillWidth
+          ? availableWidth
+          : rawChildWidth;
         const nextWidth = currentLine.items === 0 ? childWidth : currentLine.width + gap + childWidth;
 
         if (currentLine.items > 0 && nextWidth > availableWidth) {
@@ -203,15 +218,16 @@ export const resolveFlexContainerHeight = ({
   // packs) fits its content instead, so a card never leaves an empty band.
   // The widget's own box padding (RenderWidget's BOX_PADDING, unless styles.padding is 'none') wraps the canvas too:
   // left out, every flex container came out 4px short and its content scrolled by that much (a 36px button row).
-  const boxPadding = component?.styles?.padding === 'none' ? 0 : BOX_PADDING;
+  // lts-3.16 left it out; a container saved before the UI 2.0 layout keeps that height.
+  const boxPadding = !layoutV2 || component?.styles?.padding === 'none' ? 0 : BOX_PADDING;
   const heightWithChrome =
     contentHeight + padding * 2 + boxPadding * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2 + flexCardHeaderPx(properties);
   // A card and a row always fit their content (dynamicHeightPolicy.fitsContentInView): no floor, so a row of cards
-  // whose content is shorter than drawn leaves no empty band under it.
+  // whose content is shorter than drawn leaves no empty band under it. A row saved before the UI 2.0 layout keeps it.
   if (
     flexCardHeaderPx(properties) ||
     properties.cardStyle === 'shadcnCard' ||
-    properties.direction === 'row'
+    (properties.direction === 'row' && layoutV2)
   ) {
     return heightWithChrome;
   }
