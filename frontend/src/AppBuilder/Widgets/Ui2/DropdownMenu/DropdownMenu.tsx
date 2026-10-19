@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { ChevronDown, Ellipsis } from 'lucide-react';
-import { useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -35,25 +36,24 @@ export const triggerLook = (styles: Resolved | undefined) =>
 
 export const ShadDropdownMenu = (props: WidgetProps) => {
   const { properties, styles, setExposedVariable, fireEvent, setExposedVariables, componentType } = props;
-  const [open, setOpen] = useState(false);
   const [last, setLast] = useState<ReturnType<typeof clickedOption> | null>(null);
   const disabled = busy(properties);
-  const live = useLatest({ disabled });
+  // The menu is portalled outside the widget: it is open only while the widget and the panels around it take input
+  // (usePickerPopup), so hiding the widget, or switching, disabling or hiding its Tabs or Container, closes it.
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
   const changeOpen = (next: boolean) => {
-    if (next && live.current.disabled) return;
-    setOpen(next);
+    if (next && popup.blocked) return;
+    popup.setOpen(next);
     setExposedVariable('isOpen', next);
     fireEvent(next ? 'onOpen' : 'onClose');
   };
   useExposed(setExposedVariables, properties, {
-    isOpen: open,
+    isOpen: popup.open,
     lastClickedOption: last,
-    open: async () => !live.current.disabled && setOpen(true),
-    close: async () => setOpen(false),
+    open: async () => !popup.blocked && popup.setOpen(true),
+    close: async () => popup.setOpen(false),
   });
-  useEffect(() => {
-    if (disabled && open) setOpen(false);
-  }, [disabled, open]);
   const rows = menuRows(properties.items);
   const variant = VARIANTS.includes(properties.variant) ? properties.variant : 'outline';
   const size = SIZES.includes(properties.size) ? properties.size : 'default';
@@ -61,6 +61,8 @@ export const ShadDropdownMenu = (props: WidgetProps) => {
   const label = String(unwrap(properties.label) ?? '');
   const triggerIcon = typeof properties.triggerIcon === 'string' ? properties.triggerIcon.trim() : '';
   const pick = (row: MenuEntry) => {
+    // A choice can arrive before the closed menu has rendered.
+    if (popup.blocked) return;
     const option = clickedOption(row);
     setLast(option);
     setExposedVariable('lastClickedOption', option);
@@ -71,8 +73,8 @@ export const ShadDropdownMenu = (props: WidgetProps) => {
   );
   return (
     <Shell {...props}>
-      <DropdownMenuPrimitive.Root open={open} onOpenChange={changeOpen} modal={false}>
-        <DropdownMenuPrimitive.Trigger asChild disabled={disabled}>
+      <DropdownMenuPrimitive.Root open={popup.open} onOpenChange={changeOpen} modal={false}>
+        <DropdownMenuPrimitive.Trigger asChild disabled={disabled} ref={triggerRef}>
           <Button
             variant={variant}
             size={iconOnly ? 'icon' : size}

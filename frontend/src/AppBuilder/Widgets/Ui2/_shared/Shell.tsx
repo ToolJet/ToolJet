@@ -129,9 +129,14 @@ export interface ShellProps {
 /** A native Form that is disabled wraps its children in `<fieldset disabled>`. That disables native form controls but
  *  not the pack's own (a Slider thumb, Rating stars, Multiselect chips), so the widget root swallows input that would
  *  change them: every key but Tab (moving on stays possible) and every press or click, including in its popups
- *  (React events from a portal pass through the root). */
+ *  (React events from a portal pass through the root). Closing an overlay the widget opened (an Image zoom's Close
+ *  button and backdrop) changes nothing, so an element marked with DISMISS still takes it. */
 const ALLOWED_KEYS = new Set(['Tab']);
 const inDisabledFieldset = (el: HTMLElement | null) => !!el?.closest?.('fieldset[disabled]');
+const DISMISS_ATTR = 'data-ui2-dismiss';
+/** Spread on a control that only closes an overlay: it keeps working inside a disabled Form. */
+export const DISMISS = { [DISMISS_ATTR]: '' } as const;
+const dismisses = (target: EventTarget | null) => !!(target as Element | null)?.closest?.(`[${DISMISS_ATTR}]`);
 
 export const Shell = (props: ShellProps) => {
   const { properties, styles, componentType, dataCy, children, innerRef, className } = props;
@@ -147,6 +152,7 @@ export const Shell = (props: ShellProps) => {
   const blockInput = (e: React.SyntheticEvent) => {
     if (!inDisabledFieldset(root.current)) return;
     if (e.type === 'keydown' && ALLOWED_KEYS.has((e as React.KeyboardEvent).key)) return;
+    if (dismisses(e.target)) return;
     e.preventDefault();
     e.stopPropagation();
   };
