@@ -4,6 +4,7 @@ import {
   cellStyleFor,
   matchesCondition,
   compareCells,
+  looseMatcher,
   matchesSearch,
   normalizeColumns,
   readCell,
@@ -138,6 +139,43 @@ describe('sorting', () => {
     const copy = [...rows];
     sortRows(rows, normalizeColumns([{ key: 'name' }], rows)[0], 'desc');
     expect(rows).toEqual(copy);
+  });
+});
+
+describe('looseMatcher', () => {
+  it('matches as == does', () => {
+    const samples = [
+      null,
+      undefined,
+      '',
+      ' ',
+      '0',
+      '01',
+      '1',
+      '1.0',
+      'abc',
+      'true',
+      0,
+      -0,
+      1,
+      2,
+      NaN,
+      true,
+      false,
+      [1],
+      ['abc'],
+      {},
+    ];
+    samples.forEach((cell) =>
+      samples.forEach((value) => {
+        expect([cell, value, looseMatcher([value])(cell)]).toEqual([cell, value, cell == value]); // eslint-disable-line eqeqeq
+      })
+    );
+  });
+
+  it('matches any of the values', () => {
+    const matches = looseMatcher(['01', 2, null]);
+    expect([1, '2', undefined, '1', 3].map(matches)).toEqual([true, true, true, false, false]);
   });
 });
 
