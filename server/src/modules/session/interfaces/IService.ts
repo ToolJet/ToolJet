@@ -11,7 +11,12 @@ export interface ISessionService {
 
   validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void>;
 
-  createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions>;
+  createSession(
+    userId: string,
+    device: string,
+    manager?: EntityManager,
+    passwordExpiry?: Date | null
+  ): Promise<UserSessions>;
 
   terminateSession(user: User, sessionId: string, response: Response): Promise<void>;
 
@@ -21,7 +26,7 @@ export interface ISessionService {
 }
 
 export interface ISessionUtilService {
-  terminateAllSessions(userId: string): Promise<void>;
+  terminateAllSessions(userId: string, exceptSessionId?: string): Promise<void>;
 }
 
 export interface JWTPayload {
