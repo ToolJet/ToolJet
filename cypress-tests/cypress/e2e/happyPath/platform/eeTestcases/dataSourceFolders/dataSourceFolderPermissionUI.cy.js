@@ -14,7 +14,7 @@ import {
 } from 'Support/utils/platform/dataSourceFolders';
 import { verifyGranularPermissionModalUI } from 'Support/utils/platform/groupsUI';
 
-/** UI-only validation for the data source folder permission surfaces. */
+// UI-only validation for the data source folder permission surfaces.
 describe('Data Source Folders — Permission and Modal UI', () => {
   let workspaceId, testId, wsName, wsSlug;
 
@@ -88,7 +88,7 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(dsFolderPerm.sharedModalConfigureRadio).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).click();
 
-    // e.
+    // Restrict query run is an independent checkbox that leaves the selected tier alone.
     cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).check();
     cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).should('be.checked');
@@ -101,7 +101,7 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(dsFolderPerm.sharedModalPermissionNameInput).invoke('val').should('have.length', 50);
     cy.get(dsFolderPerm.sharedModalPermissionNameInput).clear();
     cy.get(dsFolderPerm.sharedModalConfirmButton).should('be.disabled');
-    // NOT ASSERTED: a spaces-only name should keep Add disabled but does not (UX-6, filed).
+    // Not asserted: a spaces-only name currently keeps Add enabled.
 
     // The X is a different control from Cancel: it must discard too, leaving no row behind.
     cy.get(dsFolder.modalCloseButton).click();

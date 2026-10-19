@@ -6,15 +6,13 @@ import {
   apiCreateReleasedAppWithQuery,
   openGroupGranularAccess,
   uiAddUserToGroup,
-  uiOpenAddDataSourceFolderGrant,
   uiOpenEditDataSourceFolderGrant,
-  uiSelectGrantFolders,
   verifyQueryRunAllowed,
   verifyQueryRunBlocked,
   visitReleasedAppAndCaptureQueryRun,
 } from 'Support/utils/platform/dataSourceFolders';
 
-/** End users and data source folders. */
+// End users and data source folders.
 describe('Data Source Folders — End User Role', () => {
   let workspaceId, wsName, wsSlug, testId;
   const queryName = 'enduserquery';
@@ -75,7 +73,7 @@ describe('Data Source Folders — End User Role', () => {
     cy.contains('.tooltip', 'End-user cannot access data source folders').should('be.visible');
 
     setupFolder().then(({ folderId }) => {
-      // Grant FIRST, end user second: creating a restriction-only grant on a group that ALREADY holds an end user is still refused (BUG-06) — parked at the bottom.
+      // Grant first, end user second: a restriction-only grant on a group that already holds an end user is refused.
       apiCreateGroup(groupName);
       createGrant(groupName, folderId, { canRunQuery: false });
       cy.apiFullUserOnboarding('QA EndUser', email, 'end-user', 'password', wsName, {}, [groupName]);
@@ -96,7 +94,7 @@ describe('Data Source Folders — End User Role', () => {
       cy.get(commonSelectors.modalComponent).should('contain.text', email);
       cy.get(commonSelectors.cancelButton).click();
 
-      // 4 — mirror guard: an end user cannot join a group that already holds a tier (Q-4: different message, different code path).
+      // 4 — mirror guard: an end user cannot join a group that already holds a tier.
       const tieredGroup = `QA Tier Group ${testId}`;
       const outsider = `ds-enduser-tier-${testId}@example.com`;
       apiCreateGroup(tieredGroup);

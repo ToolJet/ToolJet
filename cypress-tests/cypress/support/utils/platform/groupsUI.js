@@ -325,9 +325,23 @@ export const verifyGranularPermissionModalUI = (
         );
     }
 
-    // Data source folders carry a FOURTH control the other resource types do not:
-    // "Restrict query run" is an independent checkbox, not a tier radio, and it is
-    // rendered inverted (checked === restricted, default unchecked === unrestricted).
+    // App folders: three single-select tiers plus the inert Environment block.
+    if (resourceType === "folder") {
+        cy.verifyElement(dsFolderPerm.sharedModalEditFolderLabel, "Edit folder");
+        cy.verifyElement(
+            dsFolderPerm.sharedModalEditFolderHelperText,
+            "Rename the folder, add, remove and edit apps in the folder"
+        );
+        cy.verifyElement(groupsSelector.editAppsPermissionLabel, "Edit apps");
+        cy.verifyElement(groupsSelector.editAppsPermissionHelperText, "Edit apps in the folder");
+        cy.verifyElement(groupsSelector.viewAppsPermissionLabel, "View apps");
+        cy.verifyElement(groupsSelector.viewAppsPermissionHelperText, "View apps in the folder");
+        cy.get(dsFolderPerm.sharedModalEnvironmentContainer).should("be.visible");
+        cy.verifyElement(dsFolderPerm.sharedModalEnvironmentLabel, "Environment");
+        cy.verifyElement(dsFolderPerm.sharedModalComingSoonChip, "Coming Soon");
+    }
+
+    // Data source folders carry a FOURTH control the other resource types do not: "Restrict query run" is an independent checkbox, not a tier radio, and it is rendered inverted (checked === restricted, default unchecked === unrestricted).
     if (resourceType === "data_source_folder") {
         cy.verifyElement(dsFolderPerm.sharedModalEditFolderLabel, "Edit folder");
         cy.verifyElement(
@@ -353,8 +367,7 @@ export const verifyGranularPermissionModalUI = (
             "Prevent running queries on data sources in the folder"
         );
 
-        // Environment scoping is not shipped for folder permissions: the control
-        // renders, is hard-disabled, and is flagged Coming Soon.
+        // Environment scoping is not shipped for folder permissions: the control renders, is hard-disabled, and is flagged Coming Soon.
         cy.get(dsFolderPerm.sharedModalEnvironmentContainer).should("be.visible");
         cy.verifyElement(dsFolderPerm.sharedModalEnvironmentLabel, "Environment");
         cy.verifyElement(dsFolderPerm.sharedModalComingSoonChip, "Coming Soon");
@@ -367,14 +380,14 @@ export const verifyGranularPermissionModalUI = (
     );
     cy.get(groupsSelector.allAppsRadio).should("be.visible");
 
-    // The radio itself is always data-cy="all-apps-radio", but its LABEL and helper
-    // text build their data-cy from the resource name — `all-data-source-folders-label`
-    // for this type — so the apps-shaped constants below only match resourceType "app".
+    // The radio itself is always data-cy="all-apps-radio", but its LABEL and helper text build their data-cy from the resource name — `all-data-source-folders-label` for this type — so the apps-shaped constants below only match resourceType "app".
     if (resourceType === "data_source_folder") {
         cy.verifyElement(
             dsFolderPerm.allResourcesLabel,
             "All data source folders"
         );
+    } else if (resourceType === "folder") {
+        cy.verifyElement(groupsSelector.allAppFoldersLabel, "All app folders");
     } else {
         if (isEdit) {
             cy.verifyElement(groupsSelector.allAppsLabel, groupsText.allAppsLabel);
@@ -389,13 +402,14 @@ export const verifyGranularPermissionModalUI = (
     }
     cy.get(groupsSelector.customRadio).should("be.visible");
     cy.verifyElement(groupsSelector.customLabel, groupsText.customLabel);
-    // Fixed selector, resource-derived COPY: the shared modal interpolates the
-    // resource name into this sentence, so the apps wording is not universal.
+    // Fixed selector, resource-derived COPY: the shared modal interpolates the resource name into this sentence, so the apps wording is not universal.
     cy.verifyElement(
         groupsSelector.customHelperText,
         resourceType === "data_source_folder"
             ? "Select specific data source folders you want to add to the group"
-            : groupsText.customHelperText
+            : resourceType === "folder"
+              ? "Select specific app folders you want to add to the group"
+              : groupsText.customHelperText
     );
 
     cy.verifyElement(
