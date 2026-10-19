@@ -23,7 +23,8 @@
  *   are the rows as they last read, and materialize.js checks memory, JSON length and its pace as it goes. A row's
  *   figures:
  *   - time: building it as materialize.js does (buildRow: readRow's computed path, then freezing it and its function-free
- *     copy), timed twice, the slower kept; each timing reads it until the time taken stands out from the timer's tick
+ *     copy), built once untimed (a first read is far slower than the rows after it), then timed twice, the slower
+ *     kept; each timing reads it until the time taken stands out from the timer's tick
  *     (browsers coarsen it: 0.1 ms in Chrome, 1 ms in Firefox and Safari, 5 µs cross-origin isolated, against ~15 µs a
  *     row), at most TIMING_MS (Chrome: about 50 reads, Firefox and Safari: about 250; a binding with a side effect runs
  *     that often). Its JSON (`jsonMs`) too. A row that is drawn to be read adds DRAW_MS_PER_WIDGET for every widget it
@@ -259,6 +260,9 @@ const figuresOf = (get, listviewId, dataRow, moduleId, { rows, structure }, base
   const build = () => {
     built = buildRow(get, listviewId, dataRow, moduleId, base, options);
   };
+  // Built once first: the first read of a row after a load is ~30x a steady one (its bindings compiled, its scope
+  // cached), which is what the rows after it cost; timing it would estimate ten times the real pace (5M rows measured).
+  build();
   const buildMs = Math.max(timeRead(build), timeRead(build));
   const { row, values, uncomputed } = built;
   let json = '';

@@ -339,9 +339,9 @@ describe('estimate', () => {
     expect(est.resultBytes).toBeGreaterThanOrEqual(
       top5().reduce((sum, { index }) => sum + figure(texts[index], 2000).resultBytes, 0) + 1995 * fifth.resultBytes
     );
-    // Calibration read only the 5 longest (each read takes longer than a timing: twice each).
+    // Calibration read only the 5 longest (each read takes longer than a timing: once untimed, then twice each).
     expect(new Set(readRow.mock.calls.map((call) => call[2]))).toEqual(new Set(top5().map(({ index }) => index)));
-    expect(readRow).toHaveBeenCalledTimes(10);
+    expect(readRow).toHaveBeenCalledTimes(15);
   });
 
   test('with fewer than 5 rows, the sum of all (rows frozen before are scanned first)', async () => {
@@ -400,6 +400,23 @@ describe('estimate', () => {
     expect(decide(est).batchRows).toBeLessThan(8 / 0.015 / 0.7);
   });
 
+  test("a row's slow first read (its bindings compiled, its scope cached) isn't taken for the rows' pace", async () => {
+    const texts = Array.from({ length: 2000 }, () => 'y'.repeat(150));
+    // 15 µs a read, but 5 ms the first time a row is read (measured at 5M rows: ~5 ms, then ~0.15 ms).
+    const { get, rows } = setup(texts, { msPerChar: 0.0001 });
+    const steady = readAs(get, rows, { msPerChar: 0.0001 });
+    const read = new Set();
+    readRow.mockImplementation((...args) => {
+      if (!read.has(args[2])) clock += 5;
+      read.add(args[2]);
+      return steady(...args);
+    });
+    performance.now.mockImplementation(() => Math.floor(clock * 10) / 10);
+    const est = await ready(get);
+    expect(est.timeMs).toBeGreaterThan(2000 * 0.015 * 0.85);
+    expect(est.timeMs).toBeLessThan(2000 * 0.015 * 1.2);
+  });
+
   test('a row is read only as often as the timer needs: about 50 times on 0.1 ms ticks, a few on a fine one', async () => {
     const texts = Array.from({ length: 2000 }, () => 'y'.repeat(150));
     // 15 µs a read on Chrome's 0.1 ms ticks: 8 ticks take about 54 reads, twice a row.
@@ -442,7 +459,7 @@ describe('estimate', () => {
       remaining = 0;
       timedOut = true;
       await ready(get);
-      expect(readRow).toHaveBeenCalledTimes(10);
+      expect(readRow).toHaveBeenCalledTimes(15);
     } finally {
       delete global.requestIdleCallback;
       delete global.cancelIdleCallback;
@@ -467,6 +484,8 @@ describe('estimate', () => {
     expect(readRow.mock.calls.map((call) => [call[2], !!call[6]?.withoutChanges])).toEqual([
       [1, false],
       [1, false],
+      [1, false],
+      [1, true],
       [1, true],
       [1, true],
     ]);
@@ -813,9 +832,9 @@ describe('estimate', () => {
     state.definitions = { ...state.definitions, txt1: { component: { component: 'Text' } } };
     state.modules = { canvas: { pages: [] } };
     get.notify();
-    await until(() => readRow.mock.calls.length === 10);
+    await until(() => readRow.mock.calls.length === 15);
     await until(() => false);
-    expect(readRow).toHaveBeenCalledTimes(10);
+    expect(readRow).toHaveBeenCalledTimes(15);
     expect(estimate(get, 'lv1').timeMs).toBeCloseTo(2 * before.timeMs, 6);
 
     // Forgotten: no longer watched.
