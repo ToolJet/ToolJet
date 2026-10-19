@@ -236,8 +236,9 @@ describe('RenameUi2PackNames data migration', () => {
     expect(out.text.value).toBe('{{components.tags1.values}}');
   });
 
-  // Release audit 2026-10-18 (reviewFrozenMigrationRewrite, reviewAssemblyFrozenMigrationRewrite): a string in
-  // parentheses or before a comment was renamed as if it were code, and so was a local `components`.
+  // Release audit 2026-10-18 (reviewFrozenMigrationRewrite, reviewAssemblyFrozenMigrationRewrite,
+  // review-legacy-references): a string in parentheses or before a comment was renamed as if it were code, and so was a
+  // local `components`; a widget read through a List view row was missed.
   it('[UI2-MIG-403] leaves strings and a local `components` alone', async () => {
     const texts = [
       '{{ ("components.tags1.tags") }}',
@@ -261,6 +262,23 @@ describe('RenameUi2PackNames data migration', () => {
     ]);
     expect(tables.data_queries[0].options.code).toBe(
       'function read(components) { return components.tags1.tags; }\nreturn components.tags1.values;'
+    );
+  });
+
+  it('[UI2-MIG-404] renames a widget read through a List view row', async () => {
+    const tables: Tables = {
+      pages: [{ id: 'p1', app_version_id: 'v1' }],
+      components: [
+        component('list1', 'ShadListView', 'p1'),
+        component('tags1', 'ShadTagsInput', 'p1'),
+        component('text1', 'Text', 'p1', {
+          properties: { text: { value: '{{components.list1.children[listItem.index].tags1.tags}}' } },
+        }),
+      ],
+    };
+    await new Migration().up(fakeQueryRunner(tables).queryRunner);
+    expect(tables.components[2].properties.text.value).toBe(
+      '{{components.list1.children[listItem.index].tags1.values}}'
     );
   });
 });
