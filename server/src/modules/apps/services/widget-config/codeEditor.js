@@ -29,11 +29,53 @@ export const codeEditorConfig = {
       },
       section: 'additionalActions',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    // Renders first in the Tooltip pair. Its displayName is the visible "Tooltip" label for the
+    // whole pair; the `tooltip` code field below hides its own label via showLabel:false.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
     mode: {
       type: 'code',
@@ -54,25 +96,6 @@ export const codeEditorConfig = {
   },
   events: {},
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-      accordian: 'container',
-    },
-
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-      accordian: 'container',
-    },
     borderRadius: {
       type: 'code',
       displayName: 'Border radius',
@@ -103,12 +126,24 @@ export const codeEditorConfig = {
   },
   exposedVariables: {
     value: '',
+    isVisible: true,
+    isDisabled: false,
   },
   actions: [
     {
       handle: 'setValue',
       displayName: 'Set value',
       params: [{ handle: 'setValue', defaultValue: '' }],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
   ],
   definition: {
@@ -118,15 +153,17 @@ export const codeEditorConfig = {
     },
     properties: {
       dynamicHeight: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       enableLineNumber: { value: '{{true}}' },
       mode: { value: 'javascript' },
       placeholder: { value: '' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       borderRadius: { value: '{{6}}' },
       borderColor: { value: 'var(--cc-weak-border)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },

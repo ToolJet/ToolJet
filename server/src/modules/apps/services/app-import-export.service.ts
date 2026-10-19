@@ -302,6 +302,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Chart',
   'Checkbox',
   'CircularProgressBar',
+  'CodeEditor',
   'ColorPicker',
   'Container',
   'CurrencyInput',
@@ -3081,6 +3082,24 @@ function migrateProperties(
     }
 
     if (componentType === 'BoundedBox') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'CodeEditor') {
       for (const key of ['visibility', 'disabledState']) {
         if (styles[key]) {
           if (properties[key] === undefined) {

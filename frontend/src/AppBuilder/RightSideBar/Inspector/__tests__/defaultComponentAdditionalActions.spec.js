@@ -37,7 +37,7 @@ const accordionTitles = (config) => {
   ).map((item) => item.title);
 };
 
-describe.each(['Calendar', 'QrScanner', 'Spinner', 'BoundedBox'])('%s default inspector', (component) => {
+describe.each(['Calendar', 'QrScanner', 'Spinner', 'BoundedBox', 'CodeEditor'])('%s default inspector', (component) => {
   test('shows the Additional Actions accordion', () => {
     expect(accordionTitles(meta(component))).toContain('Additional Actions');
   });

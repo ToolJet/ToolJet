@@ -227,6 +227,7 @@ export const baseComponentProperties = (
       'Spinner',
       'Chart',
       'BoundedBox',
+      'CodeEditor',
     ],
     Layout: [],
   };
