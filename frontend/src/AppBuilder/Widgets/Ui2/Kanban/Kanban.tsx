@@ -197,15 +197,16 @@ export const ShadKanban = (props: WidgetProps) => {
   const custom = properties.cardLayout === 'custom';
   const editing = props.currentMode === 'edit';
   const cardHeight = kanbanCardHeight(properties);
-  // Cards are rows of the board only at the top level: inside another row-scoped widget (a native Kanban card, a List
-  // view row) the card canvas has no context of its own yet. There cards keep their set height (a card's height would
-  // share the board's layout key and grow with it) and their components one entry.
+  // Cards are rows of the board, under the rows of whatever row-scoped widget holds it (a List view row, a native
+  // Kanban card), as a nested List view's rows are: a card's components, cardData and height belong to that outer row
+  // and that card. Kept to the top level, cards in a List view row shared one entry, so the second card showed the
+  // first card's data and a card's button set another card's field.
   const ownPath = useOwnContextPath(props.subContainerIndex, props.parentId);
-  const scoped = ownPath.length === 0;
-  const { board, order, generation } = useCustomCards(props.id, custom, scoped, columns, idField);
+  const parentIndices = useStable(useMemo(() => ownPath.map((segment) => segment.index), [ownPath]));
+  const { board, order, generation } = useCustomCards(props.id, custom, parentIndices, columns, idField);
   const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
   const hostOf = useCardHosts(board);
-  const fitCards = custom && !editing && scoped && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
+  const fitCards = custom && !editing && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const renderBody = custom
     ? (card: BoardCard) => (
         <CustomCardBody
@@ -216,7 +217,7 @@ export const ShadKanban = (props: WidgetProps) => {
           height={cardHeight}
           fit={fitCards}
           editing={editing}
-          scoped={scoped}
+          path={ownPath}
           blocked={!enabled}
           currentLayout={props.currentLayout}
           darkMode={props.darkMode}

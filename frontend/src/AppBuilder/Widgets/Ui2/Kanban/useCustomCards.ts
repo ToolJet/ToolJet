@@ -10,16 +10,22 @@ const NO_RECORD = '\u0000';
 
 /** What custom cards read from the app store. */
 type CustomCardStore = {
-  updateCustomResolvables: (id: string, values: Record<string, unknown>[], key: string, moduleId: string) => void;
+  updateCustomResolvables: (
+    id: string,
+    values: Record<string, unknown>[],
+    key: string,
+    moduleId: string,
+    parentIndices: number[]
+  ) => void;
   initExposedValueArrayForChildren: (id: string, count: number, moduleId: string, parentIndices: number[]) => void;
 };
 
 /**
  * Custom card content: every card renders the board's one card canvas (the components dropped on the first card) with
- * its own row of cardData, as a List view renders its rows. On a top-level board (`scoped`) each card is a row of the
- * board: its components keep their values per card (components[child][card], by board order), so a card's button
- * acts on its own card's components. Those values move with their cards when cards move (takeRowValues). Inside
- * another row-scoped widget the card canvas has no context of its own yet, and its components keep one entry.
+ * its own row of cardData, as a List view renders its rows. Each card is a row of the board, under the outer rows the
+ * board sits in (`parentIndices`, as a nested List view's rows are): its components keep their values per card
+ * (components[child][...outer][card], by board order), so a card's button acts on its own card's components. Those
+ * values move with their cards when cards move (takeRowValues).
  *
  * Cards are drawn from the board as last published (`board`), so a card that moves never resolves another card's
  * {{cardData}} for a render (with a default bound to the card, that reset an edited Input). `order` is each card's row.
@@ -32,7 +38,7 @@ type CustomCardStore = {
 export const useCustomCards = (
   id: string,
   custom: boolean,
-  scoped: boolean,
+  parentIndices: number[],
   columns: BoardColumn[],
   identity: string
 ) => {
@@ -60,19 +66,20 @@ export const useCustomCards = (
     const cards = boardCards(columns);
     if (cards.length) {
       const keys = columns.flatMap((column) => column.cards.map((card) => card.__key));
-      const moveValues = scoped ? takeRowValues(id, moduleId, [], publishedKeys.current, keys) : null;
+      const moveValues = takeRowValues(id, moduleId, parentIndices, publishedKeys.current, keys);
       updateCustomResolvables(
         id,
         cards.map((card) => ({ cardData: card })),
         'cardData',
-        moduleId
+        moduleId,
+        parentIndices
       );
-      if (scoped) initExposedValueArrayForChildren(id, cards.length, moduleId, []);
+      initExposedValueArrayForChildren(id, cards.length, moduleId, parentIndices);
       moveValues?.();
       publishedKeys.current = keys;
     }
     setPublished({ columns, generation: generation.current });
-  }, [custom, scoped, columns, id, moduleId, updateCustomResolvables, initExposedValueArrayForChildren]);
+  }, [custom, parentIndices, columns, id, moduleId, updateCustomResolvables, initExposedValueArrayForChildren]);
   const board = custom ? published.columns : columns;
   const order = useMemo(
     () => new Map(board.flatMap((column) => column.cards).map((card, index) => [card.__key, index])),
