@@ -48,8 +48,8 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
 
       if (app.isPublic === true) {
         // A public front-end app exposes only its RELEASED version to anonymous callers; a draft
-        // query requires auth (GHSA-grw5-2fvf-vwm4 / grh7-xf9j-r3qg). Scoped to front-end: workflows/
-        // modules keep is_public elsewhere and the module branch below handles public-parent embedding.
+        // query requires auth. Scoped to front-end: workflows/modules keep is_public elsewhere and
+        // the module branch below handles public-parent embedding.
         if (app.type === APP_TYPES.FRONT_END && !(await this.isQueryInReleasedVersion(id, app))) {
           try {
             // An authenticated builder may still preview a draft; an anonymous caller may not.

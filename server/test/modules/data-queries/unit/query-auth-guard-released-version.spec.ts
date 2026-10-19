@@ -4,9 +4,8 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 
 /**
- * Regression for GHSA-grw5-2fvf-vwm4 / grh7-xf9j-r3qg: anonymous POST /api/data-queries/:id/run
- * must be confined to a public app's RELEASED version — draft queries require auth. Pure unit test;
- * repositories and the passport JWT path are mocked.
+ * Regression: anonymous POST /api/data-queries/:id/run must be confined to a public app's RELEASED
+ * version — draft queries require auth. Pure unit test; repositories and the passport JWT path are mocked.
  *
  * @group security
  */
