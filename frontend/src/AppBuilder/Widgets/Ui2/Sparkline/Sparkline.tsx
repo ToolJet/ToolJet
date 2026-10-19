@@ -12,6 +12,7 @@ import {
 import { SafeFrame, animated, withChartRecovery } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { clamp } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { useSvgId } from '@/AppBuilder/Widgets/Ui2/_shared/svgId';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 interface SparkTipProps {
@@ -52,6 +53,7 @@ export const ShadSparkline = (props: WidgetProps) => {
     [points, p.showBand, p.bandMin, p.bandMax]
   );
   const strokeWidth = clamp(p.strokeWidth, 0.5, 6, 2);
+  const fillId = useSvgId('sc-spark');
   const endDot = p.showEndDot !== false && last;
   const dotRadius = Math.max(2.5, strokeWidth + 1);
   const pad = endDot ? dotRadius + 1.5 : strokeWidth;
@@ -80,7 +82,7 @@ export const ShadSparkline = (props: WidgetProps) => {
       {() => (
         <Chart data={points} margin={{ top: pad, bottom: pad, left: Math.max(1, strokeWidth / 2), right: pad }}>
           <defs>
-            <linearGradient id={`sc-spark-${props.id}`} x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={color} stopOpacity={0.35} />
               <stop offset="100%" stopColor={color} stopOpacity={0.02} />
             </linearGradient>
@@ -110,7 +112,7 @@ export const ShadSparkline = (props: WidgetProps) => {
             type={curveOf(p.curve)}
             stroke={color}
             strokeWidth={strokeWidth}
-            fill={p.type === 'line' ? 'none' : `url(#sc-spark-${props.id})`}
+            fill={p.type === 'line' ? 'none' : `url(#${fillId})`}
             dot={dot}
             activeDot={p.showTooltip === true ? { r: dotRadius, strokeWidth: 0, fill: color } : false}
             connectNulls
