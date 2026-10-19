@@ -3,8 +3,10 @@ import { Logger } from 'nestjs-pino';
 import { NextFunction, Request, Response } from 'express';
 import { RedisService } from '@modules/redis/service';
 import { withTimeout } from '@helpers/with-timeout';
+import { MigrationRunsService } from '../migration-runs/service';
 import {
-  isAsyncMigrationMode,
+  getMigrationMode,
+  isServerManagedMigrationMode,
   isMigrationInProgressValue,
   isMigrationTrafficGateDisabled,
   MIGRATION_IN_PROGRESS_KEY,
@@ -36,9 +38,10 @@ const ASYNC_MODE_WRITE_ALLOWLIST = [
   /^\/authenticate(\/|$)/,
   /^\/session(\/|$)/,
   /^\/oauth\//,
+  /^\/sso\//,
   /^\/data-queries\/[^/]+\/run$/,
   /^\/data-queries\/[^/]+\/versions\/[^/]+\/run\/[^/]+$/,
-  /^\/migration-runs\/retry$/,
+  /^\/migration-runs\/run$/,
 ];
 
 /** Caps Redis reads at one per second per pod, whatever the request rate. */
@@ -55,6 +58,9 @@ const LOG_THROTTLE_MS = 30_000;
 
 const RETRY_AFTER_SECONDS = 30;
 
+export const MIGRATION_PENDING_MESSAGE =
+  'ToolJet has an upgrade waiting for an administrator to apply it. Changes cannot be saved until then.';
+
 export const MIGRATION_IN_PROGRESS_MESSAGE =
   'ToolJet is being upgraded — database migrations are in progress. Please retry in a few moments.';
 
@@ -69,8 +75,9 @@ export function buildApiPrefix(subPath: string | undefined): string {
 @Injectable()
 export class MigrationGateMiddleware implements NestMiddleware {
   private readonly enabled = !isMigrationTrafficGateDisabled();
-  private readonly apiPrefix = buildApiPrefix(process.env.SUB_PATH);
-  private readonly asyncMode = isAsyncMigrationMode(process.env);
+  private readonly apiPrefix = buildApiPrefix(process.env.SUB_PATH).toLowerCase();
+  private readonly asyncMode = isServerManagedMigrationMode(process.env);
+  private readonly manualMode = getMigrationMode(process.env) === 'manual';
 
   private cachedInProgress = false;
   private cachedAt = 0;
@@ -80,7 +87,8 @@ export class MigrationGateMiddleware implements NestMiddleware {
 
   constructor(
     private readonly redisService: RedisService,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly migrationRuns: MigrationRunsService
   ) {
     // Announced once at boot: an operator looking at a pod that served traffic straight
     // through an upgrade needs to find the reason in that pod's own log, not guess at env.
@@ -95,8 +103,12 @@ export class MigrationGateMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
     // req.path is '/' under forRoutes('*') on Nest 11; originalUrl keeps the full path.
-    if (!this.enabled || !this.shouldGate(req.originalUrl.split('?')[0], req.method)) return next();
-    if (!(await this.isMigrationInProgress())) return next();
+    // Lowercased: Express matches routes case-insensitively, so /API/apps reaches /api/apps.
+    const path = req.originalUrl.split('?')[0].toLowerCase();
+    if (!this.enabled || !this.shouldGate(path, req.method)) return next();
+    // Manual mode: writes wait for a super admin to run the pending migrations (status is cached 5s, fails open).
+    const pending = this.manualMode && (await this.migrationRuns.status()).state === 'pending';
+    if (!pending && !(await this.isMigrationInProgress())) return next();
 
     this.logRejection(req);
     res.setHeader('Retry-After', String(RETRY_AFTER_SECONDS));
@@ -104,8 +116,8 @@ export class MigrationGateMiddleware implements NestMiddleware {
       statusCode: HttpStatus.SERVICE_UNAVAILABLE,
       timestamp: new Date().toISOString(),
       path: req.originalUrl,
-      message: MIGRATION_IN_PROGRESS_MESSAGE,
-      code: 'MIGRATION_IN_PROGRESS',
+      message: pending ? MIGRATION_PENDING_MESSAGE : MIGRATION_IN_PROGRESS_MESSAGE,
+      code: pending ? 'MIGRATION_PENDING' : 'MIGRATION_IN_PROGRESS',
     });
   }
 

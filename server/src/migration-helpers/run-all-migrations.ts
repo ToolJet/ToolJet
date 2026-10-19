@@ -223,9 +223,20 @@ export async function run(schemaDS: DataSource = schemaDataSource, dataDS: DataS
   // Everything from "what is pending?" to "migrations committed" happens as the cluster's only
   // migrating pod. Reading the pending list outside this lock is what lets a losing pod wake up
   // with a stale list and re-run an already-applied migration.
-  await withMigrationAdvisoryLock(schemaDS, lockWaitOptions, {}, () =>
-    migrateAsSolePod(schemaDS, dataDS, lockWaitOptions, env)
+  // Server-managed modes: another server already migrating owns the run. Waiting would make this one
+  // re-run the same migrations after that run ends, even a failed one.
+  const skipIfBusy = process.env.MIGRATION_SKIP_IF_LOCKED === 'true';
+  const ran = await withMigrationAdvisoryLock(
+    schemaDS,
+    lockWaitOptions,
+    {},
+    async () => {
+      await migrateAsSolePod(schemaDS, dataDS, lockWaitOptions, env);
+      return true;
+    },
+    { skipIfBusy }
   );
+  if (!ran) console.log('[migrations] Another server is running migrations; leaving the run to it.');
 }
 
 async function migrateAsSolePod(
@@ -237,6 +248,17 @@ async function migrateAsSolePod(
   // A pod still running the previous release can hold the `migrations` table without taking the
   // advisory lock, so the table probe stays as the cross-version safety net.
   const pending = await waitForTurn(schemaDS, dataDS, lockWaitOptions);
+
+  // Manual mode: report what is pending, run nothing. The server tracks it until a super admin starts it.
+  // process.env, not env: set by the parent per spawn, and the .env file must not mask it.
+  if (process.env.MIGRATION_CHECK_ONLY === 'true') {
+    console.log(
+      pending.length
+        ? `[migrations] ${pending.length} migration(s) pending: ${pending.join(', ')}`
+        : '[migrations] No schema or data migrations pending.'
+    );
+    return;
+  }
 
   // No retry from here on: an error inside the migration transaction is final, and retrying
   // would re-run the whole (possibly hour-long) run.

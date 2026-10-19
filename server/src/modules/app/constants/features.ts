@@ -18,7 +18,7 @@ export const FEATURES: FeaturesConfig = {
       isSuperAdminFeature: true,
       skipAuditLogs: true,
     },
-    [FEATURE_KEY.MIGRATION_RETRY]: {
+    [FEATURE_KEY.MIGRATION_RUN]: {
       isSuperAdminFeature: true,
     },
   },

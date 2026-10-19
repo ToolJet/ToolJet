@@ -1,12 +1,28 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 import moment from 'moment';
 import { toast } from 'react-hot-toast';
+import {
+  IconAlertTriangle,
+  IconCircleCheck,
+  IconCircleDashed,
+  IconCircleX,
+  IconClockPause,
+  IconChevronRight,
+  IconCopy,
+  IconDownload,
+  IconLoader2,
+} from '@tabler/icons-react';
 import Layout from '@/_ui/Layout';
+import { copyToClipboard } from '@/_helpers/appUtils';
 import { migrationsService } from '@/_services/migrations.service';
 import {
   Button,
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
   InlineInfo,
+  Skeleton,
   Table,
   TableHeader,
   TableBody,
@@ -16,220 +32,523 @@ import {
   Empty,
   EmptyHeader,
   EmptyTitle,
+  EmptyDescription,
 } from '@/components/ui/Rocket';
 
-const POLL_MS = 2000;
+const ACTIVE_POLL_MS = 2000;
+const IDLE_POLL_MS = 15000;
 
-const STATUS_PILL = {
-  running: { label: 'Running', className: 'tw-bg-background-accent-weak tw-text-text-accent' },
-  succeeded: { label: 'Succeeded', className: 'tw-bg-background-success-weak tw-text-text-success' },
-  failed: { label: 'Failed', className: 'tw-bg-background-error-weak tw-text-text-danger' },
+const STATUS = {
+  pending: {
+    label: 'Waiting',
+    Icon: IconClockPause,
+    tone: 'tw-text-text-warning',
+    pill: 'tw-bg-background-warning-weak tw-text-text-warning',
+    headline: (run) => `Upgrade to ${run.toVersion} is waiting to run`,
+  },
+  running: {
+    label: 'Running',
+    Icon: IconLoader2,
+    tone: 'tw-text-text-accent',
+    pill: 'tw-bg-background-accent-weak tw-text-text-accent',
+    spin: true,
+    headline: (run) => `Upgrading to ${run.toVersion}`,
+  },
+  succeeded: {
+    label: 'Succeeded',
+    Icon: IconCircleCheck,
+    tone: 'tw-text-text-success',
+    pill: 'tw-bg-background-success-weak tw-text-text-success',
+    headline: (run) => `Upgraded to ${run.toVersion}`,
+  },
+  failed: {
+    label: 'Failed',
+    Icon: IconAlertTriangle,
+    tone: 'tw-text-text-danger',
+    pill: 'tw-bg-background-error-weak tw-text-text-danger',
+    headline: (run) => `Upgrade to ${run.toVersion} failed`,
+  },
 };
 
-const MIGRATION_STATUS_CLASS = {
-  done: 'tw-text-text-success',
-  running: 'tw-text-text-accent',
-  pending: 'tw-text-text-placeholder',
-  failed: 'tw-text-text-danger',
+const STEP = {
+  done: { label: 'Done', Icon: IconCircleCheck, tone: 'tw-text-text-success' },
+  running: { label: 'Running', Icon: IconLoader2, tone: 'tw-text-text-accent', spin: true },
+  pending: { label: 'Waiting', Icon: IconCircleDashed, tone: 'tw-text-text-placeholder' },
+  failed: { label: 'Failed', Icon: IconCircleX, tone: 'tw-text-text-danger' },
 };
 
-const formatDuration = (run) => {
-  if (!run.finishedAt) return '—';
-  return moment.duration(moment(run.finishedAt).diff(moment(run.startedAt))).humanize();
+export const formatMs = (ms) => {
+  if (ms < 1000) return '<1s';
+  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`;
+  const minutes = Math.floor(ms / 60_000);
+  const seconds = Math.round((ms % 60_000) / 1000);
+  return minutes < 60 ? `${minutes}m ${seconds}s` : `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 };
+
+const elapsed = (run) => moment(run.finishedAt ?? undefined).diff(moment(run.startedAt));
+const triggeredBy = (run) => (run.triggeredBy === 'boot' ? 'server start' : run.triggeredBy);
+const plural = (count, noun) => `${count} ${noun}${count === 1 ? '' : 's'}`;
 
 const StatusPill = ({ status }) => {
-  const pill = STATUS_PILL[status] ?? { label: status, className: 'tw-bg-background-surface-layer-02' };
+  const meta = STATUS[status] ?? STATUS.running;
   return (
-    <span className={cx('tw-rounded-full tw-px-2 tw-py-0.5 tw-font-title-default', pill.className)}>{pill.label}</span>
+    <span className={cx('tw-shrink-0 tw-rounded-full tw-px-2 tw-py-0.5 tw-font-title-default', meta.pill)}>
+      {meta.label}
+    </span>
   );
 };
 
-const Card = ({ title, children }) => (
-  <section className="tw-flex tw-flex-col tw-gap-3 tw-rounded-lg tw-border tw-border-solid tw-border-border-weak tw-bg-background-surface-layer-01 tw-p-4">
-    {title && <h2 className="tw-m-0 tw-font-title-large tw-text-text-default">{title}</h2>}
+const Card = ({ className, children }) => (
+  <section
+    className={cx(
+      'tw-flex tw-flex-col tw-gap-4 tw-rounded-lg tw-border tw-border-solid tw-border-border-weak tw-bg-background-surface-layer-01 tw-p-5',
+      className
+    )}
+  >
     {children}
   </section>
 );
 
-const Field = ({ label, children }) => (
-  <div className="tw-flex tw-flex-col tw-gap-0.5">
-    <span className="tw-font-body-small tw-text-text-placeholder">{label}</span>
-    <span className="tw-font-body-default tw-text-text-default">{children}</span>
+const Bar = ({ percent, label, className }) => (
+  <div
+    role="progressbar"
+    aria-label={label}
+    aria-valuenow={percent}
+    aria-valuemin={0}
+    aria-valuemax={100}
+    className={cx('tw-overflow-hidden tw-rounded-full tw-bg-background-surface-layer-02', className)}
+  >
+    <div
+      className="tw-h-full tw-bg-background-accent-strong tw-transition-[width] tw-duration-300"
+      style={{ width: `${percent}%` }}
+    />
   </div>
 );
 
-const SummaryCard = ({ run }) => (
-  <Card>
-    <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
-      <h2 className="tw-m-0 tw-font-title-x-large tw-text-text-default">
-        Upgrading {run.fromVersion} → {run.toVersion}
-      </h2>
-      <StatusPill status={run.status} />
-    </div>
-    <div className="tw-flex tw-gap-8">
-      <Field label="Started">
-        {moment(run.startedAt).format('lll')} ({moment(run.startedAt).fromNow()})
-      </Field>
-      <Field label="Triggered by">{run.triggeredBy}</Field>
-    </div>
-  </Card>
-);
+/** One line under the headline: how many, how long, when, who. */
+const facts = (run) => {
+  const parts = [];
+  if (run.migrationsTotal) parts.push(plural(run.migrationsTotal, 'migration'));
+  if (run.fromVersion && run.fromVersion !== run.toVersion) parts.push(`from ${run.fromVersion}`);
+  if (run.status === 'running') parts.push(`running for ${formatMs(elapsed(run))}`);
+  else if (run.status !== 'pending') parts.push(`took ${formatMs(elapsed(run))}`);
+  parts.push(`${run.status === 'pending' ? 'found' : 'started'} ${moment(run.startedAt).fromNow()}`);
+  parts.push(`by ${triggeredBy(run)}`);
+  return parts.join(' · ');
+};
 
-const ProgressCard = ({ run }) => {
+const StatusCard = ({ run, onRun, runPending }) => {
+  const meta = STATUS[run.status] ?? STATUS.running;
+  const canRun = run.status === 'pending' || run.status === 'failed';
   const percent = run.migrationsTotal ? Math.round((run.migrationsDone / run.migrationsTotal) * 100) : 0;
+  const current = run.migrations.find((step) => step.status === 'running');
+
   return (
-    <Card title="Progress">
-      {run.currentMigration && (
-        <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
-          <code className="tw-font-code-regular tw-text-text-default">{run.currentMigration}</code>
-          {run.progress && <span className="tw-font-body-default tw-text-text-placeholder">{run.progress}</span>}
+    <Card>
+      <div className="tw-flex tw-items-start tw-gap-3">
+        <meta.Icon
+          size={28}
+          stroke={1.75}
+          aria-hidden
+          className={cx('tw-mt-0.5 tw-shrink-0', meta.tone, meta.spin && 'tw-animate-spin')}
+        />
+        <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1">
+          <div className="tw-flex tw-items-center tw-gap-2">
+            <h2 className="tw-m-0 tw-truncate tw-font-title-x-large tw-text-text-default">{meta.headline(run)}</h2>
+            <StatusPill status={run.status} />
+          </div>
+          <p
+            className="tw-m-0 tw-font-body-default tw-text-text-placeholder"
+            title={moment(run.startedAt).format('lll')}
+          >
+            {facts(run)}
+          </p>
+        </div>
+        {canRun && (
+          <Button className="tw-shrink-0" onClick={onRun} disabled={runPending}>
+            {runPending ? 'Starting' : run.status === 'pending' ? 'Run migrations' : 'Retry migration'}
+          </Button>
+        )}
+      </div>
+
+      {run.status === 'running' && run.migrationsTotal > 0 && (
+        <div className="tw-flex tw-flex-col tw-gap-2">
+          <Bar percent={percent} label="Overall progress" className="tw-h-2" />
+          <div className="tw-flex tw-justify-between tw-gap-2 tw-font-body-small tw-text-text-placeholder">
+            <span className="tw-truncate">{current ? `Now running ${current.name}` : 'Starting'}</span>
+            <span className="tw-shrink-0">
+              {run.migrationsDone} of {run.migrationsTotal} done
+            </span>
+          </div>
         </div>
       )}
-      <div className="tw-h-2 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-background-surface-layer-02">
-        <div className="tw-h-full tw-bg-background-accent-strong" style={{ width: `${percent}%` }} />
+
+      {run.status === 'running' && (
+        <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">
+          Everything runs in one transaction, so nothing is saved until the last migration finishes. Changes made in
+          ToolJet are refused until then.
+        </p>
+      )}
+
+      {run.status === 'pending' && (
+        <InlineInfo
+          type="warning"
+          title="Changes made in ToolJet are refused until these migrations run."
+          description="They run in one transaction. If one fails, nothing is saved and ToolJet stays on the current database version."
+        />
+      )}
+
+      {run.status === 'failed' && (
+        <InlineInfo
+          type="danger"
+          title="Nothing was committed. ToolJet keeps running on the previous database version."
+          description={
+            <>
+              {run.error && (
+                <code className="tw-mb-2 tw-block tw-max-h-32 tw-overflow-auto tw-whitespace-pre-wrap tw-break-words tw-font-code-regular">
+                  {run.error}
+                </code>
+              )}
+              <span className="tw-block">
+                Retrying runs every pending migration again. Changes are refused until it finishes.
+              </span>
+            </>
+          }
+        />
+      )}
+    </Card>
+  );
+};
+
+const stepDetail = (step, run) => {
+  if (step.status === 'running' && step.percent !== undefined) return `${step.percent}%`;
+  if (step.status === 'running' && run.progress) return run.progress;
+  if (step.durationMs !== undefined) return formatMs(step.durationMs);
+  return STEP[step.status]?.label ?? '';
+};
+
+/** One migration's own log lines, refetched as the run's log grows while it runs. */
+const StepLog = ({ runId, step, logSize }) => {
+  const [log, setLog] = useState(null);
+  const refresh = step.status === 'running' ? logSize : 0;
+
+  useEffect(() => {
+    let cancelled = false;
+    migrationsService
+      .getLog(runId, step.name)
+      .then((text) => !cancelled && setLog(text))
+      .catch(() => !cancelled && setLog(''));
+    return () => {
+      cancelled = true;
+    };
+  }, [runId, step.name, refresh]);
+
+  if (log === null) return <Skeleton className="tw-h-16 tw-w-full" />;
+  return (
+    <pre
+      tabIndex={0}
+      aria-label={`${step.name} log`}
+      className="tw-m-0 tw-max-h-64 tw-overflow-auto tw-rounded-md tw-bg-background-surface-layer-02 tw-p-3 tw-font-code-regular tw-text-text-default"
+    >
+      {log || 'This migration logged nothing.'}
+    </pre>
+  );
+};
+
+const MigrationRow = ({ step, run }) => {
+  const [open, setOpen] = useState(false);
+  const meta = STEP[step.status] ?? STEP.pending;
+  const live = step.status === 'running' && step.percent !== undefined;
+  const hasLog = step.status !== 'pending';
+  return (
+    <li className="tw-flex tw-flex-col tw-gap-1">
+      <button
+        type="button"
+        disabled={!hasLog}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className="tw-flex tw-w-full tw-items-center tw-gap-3 tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-py-1.5 tw-text-left enabled:tw-cursor-pointer enabled:hover:tw-bg-interactive-hover"
+      >
+        <IconChevronRight
+          size={14}
+          aria-hidden
+          className={cx(
+            'tw-shrink-0 tw-text-icon-default tw-transition-transform',
+            open && 'tw-rotate-90',
+            !hasLog && 'tw-invisible'
+          )}
+        />
+        <meta.Icon
+          size={16}
+          stroke={2}
+          aria-label={meta.label}
+          className={cx('tw-shrink-0', meta.tone, meta.spin && 'tw-animate-spin')}
+        />
+        <span className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-code-regular tw-text-text-default" title={step.name}>
+          {step.name}
+        </span>
+        {live && (
+          <Bar percent={step.percent} label={`${step.name} progress`} className="tw-h-1.5 tw-w-24 tw-shrink-0" />
+        )}
+        <span
+          className={cx(
+            'tw-w-16 tw-shrink-0 tw-text-right tw-font-body-small',
+            live ? meta.tone : 'tw-text-text-placeholder'
+          )}
+        >
+          {stepDetail(step, run)}
+        </span>
+      </button>
+      {open && (
+        <div className="tw-pb-2 tw-pl-9">
+          <StepLog runId={run.id} step={step} logSize={run.logTail.length} />
+        </div>
+      )}
+    </li>
+  );
+};
+
+const downloadLog = (run) =>
+  migrationsService
+    .getLog(run.id)
+    .then((text) => {
+      const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+      const link = Object.assign(document.createElement('a'), {
+        href: url,
+        download: `tooljet-migration-${run.toVersion}-${run.id.slice(0, 8)}.log`,
+      });
+      link.click();
+      URL.revokeObjectURL(url);
+    })
+    .catch(() => toast.error('Could not download the log.'));
+
+const EMPTY_MIGRATIONS_MESSAGE = {
+  pending: 'Checking which migrations need to run.',
+  running: 'Checking which migrations need to run.',
+  succeeded: 'Nothing to migrate. The database was already up to date.',
+  failed: 'The run stopped before it could list its migrations. The log shows why.',
+};
+
+const MigrationsCard = ({ run }) => {
+  if (run.migrationsTotal === 0) {
+    return (
+      <Card>
+        <h3 className="tw-m-0 tw-font-title-large tw-text-text-default">Migrations</h3>
+        <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">{EMPTY_MIGRATIONS_MESSAGE[run.status]}</p>
+      </Card>
+    );
+  }
+  return (
+    <Card className="tw-gap-2">
+      <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
+        <h3 className="tw-m-0 tw-font-title-large tw-text-text-default">Migrations</h3>
+        <span className="tw-font-body-small tw-text-text-placeholder">
+          {run.migrationsDone} of {run.migrationsTotal} done
+        </span>
       </div>
-      <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">
-        {run.migrationsDone} of {run.migrationsTotal} migrations
-        {run.status === 'running' && ' · one transaction, nothing committed yet'}
-      </p>
-      <ul className="tw-m-0 tw-flex tw-list-none tw-flex-col tw-gap-1 tw-p-0">
-        {run.migrations.map((migration) => (
-          <li key={migration.name} className="tw-flex tw-items-center tw-justify-between tw-gap-2">
-            <code className="tw-font-code-regular tw-text-text-default">{migration.name}</code>
-            <span className={cx('tw-font-body-small', MIGRATION_STATUS_CLASS[migration.status])}>
-              {migration.status}
-            </span>
-          </li>
+      <ul className="tw-m-0 tw-flex tw-max-h-[32rem] tw-list-none tw-flex-col tw-overflow-y-auto tw-p-0">
+        {run.migrations.map((step) => (
+          <MigrationRow key={step.name} step={step} run={run} />
         ))}
       </ul>
     </Card>
   );
 };
 
-const LogCard = ({ logTail }) => (
-  <Card title="Log">
-    <pre className="tw-m-0 tw-max-h-80 tw-overflow-auto tw-rounded-md tw-border tw-border-solid tw-border-border-weak tw-bg-background-surface-layer-02 tw-p-3 tw-font-code-regular tw-text-text-default">
-      {logTail.join('\n')}
-    </pre>
-    <span className="tw-font-body-small tw-text-text-placeholder">
-      Last 200 lines · query parameters and secrets removed
-    </span>
-  </Card>
-);
+const LogCard = ({ run, open }) => {
+  const { logTail } = run;
+  const ref = useRef(null);
+  const text = logTail.join('\n');
+
+  // Follow the tail while it grows, unless the reader scrolled up.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 80) el.scrollTop = el.scrollHeight;
+  }, [text]);
+
+  if (logTail.length === 0) return null;
+  return (
+    // Re-keyed so a run that starts or fails opens the log on its own.
+    <Collapsible defaultOpen={open} key={String(open)}>
+      <CollapsibleTrigger>
+        <span className="tw-flex tw-flex-1 tw-items-center tw-gap-2">
+          <span className="tw-font-title-large tw-text-text-default">Log</span>
+          <span className="tw-font-body-small tw-text-text-placeholder">{plural(logTail.length, 'line')}</span>
+        </span>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="tw-flex tw-flex-col tw-gap-2">
+          <pre
+            ref={ref}
+            tabIndex={0}
+            aria-label="Migration log"
+            className="tw-m-0 tw-max-h-80 tw-overflow-auto tw-rounded-md tw-bg-background-surface-layer-02 tw-p-3 tw-font-code-regular tw-text-text-default"
+          >
+            {text}
+          </pre>
+          <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
+            <span className="tw-font-body-small tw-text-text-placeholder">
+              Last 200 lines. Click a migration to see its own lines. Sensitive information is redacted.
+            </span>
+            <div className="tw-flex tw-gap-1">
+              <Button variant="ghost" size="small" onClick={() => copyToClipboard(text)}>
+                <IconCopy size={14} aria-hidden /> Copy
+              </Button>
+              <Button variant="ghost" size="small" onClick={() => downloadLog(run)}>
+                <IconDownload size={14} aria-hidden /> Download full log
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
 
 const HistoryCard = ({ runs }) => (
-  <Card title="History">
-    {runs.length === 0 ? (
-      <Empty>
-        <EmptyHeader>
-          <EmptyTitle>No migrations have run in async mode yet.</EmptyTitle>
-        </EmptyHeader>
-      </Empty>
-    ) : (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Started</TableHead>
-            <TableHead>Version</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Duration</TableHead>
-            <TableHead>Triggered by</TableHead>
+  <Card className="tw-gap-2">
+    <h3 className="tw-m-0 tw-font-title-large tw-text-text-default">Earlier runs</h3>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Status</TableHead>
+          <TableHead>Version</TableHead>
+          <TableHead>Started</TableHead>
+          <TableHead>Took</TableHead>
+          <TableHead>By</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {runs.map((run) => (
+          <TableRow key={run.id}>
+            <TableCell>
+              <StatusPill status={run.status} />
+            </TableCell>
+            <TableCell>
+              {run.fromVersion && run.fromVersion !== run.toVersion
+                ? `${run.fromVersion} → ${run.toVersion}`
+                : run.toVersion}
+            </TableCell>
+            <TableCell title={moment(run.startedAt).format('lll')}>{moment(run.startedAt).fromNow()}</TableCell>
+            <TableCell>{run.status === 'running' || run.status === 'pending' ? '-' : formatMs(elapsed(run))}</TableCell>
+            <TableCell className="tw-max-w-[220px] tw-truncate">{triggeredBy(run)}</TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {runs.map((run) => (
-            <TableRow key={run.id}>
-              <TableCell>{moment(run.startedAt).format('lll')}</TableCell>
-              <TableCell>
-                {run.fromVersion} → {run.toVersion}
-              </TableCell>
-              <TableCell>
-                <StatusPill status={run.status} />
-              </TableCell>
-              <TableCell>{formatDuration(run)}</TableCell>
-              <TableCell>{run.triggeredBy}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    )}
+        ))}
+      </TableBody>
+    </Table>
   </Card>
 );
 
-export const MigrationsPage = ({ switchDarkMode, darkMode }) => {
+const LoadingState = () => (
+  <div aria-busy="true" aria-label="Loading migration runs" className="tw-flex tw-flex-col tw-gap-4">
+    <Skeleton className="tw-h-24 tw-w-full" />
+    <Skeleton className="tw-h-40 tw-w-full" />
+    <Skeleton className="tw-h-14 tw-w-full" />
+  </div>
+);
+
+const EmptyState = () => (
+  <Empty>
+    <EmptyHeader>
+      <EmptyTitle>No migration runs yet</EmptyTitle>
+      <EmptyDescription>
+        Runs appear here when ToolJet starts with MIGRATION_MODE set to async or manual and finds migrations to run.
+      </EmptyDescription>
+    </EmptyHeader>
+  </Empty>
+);
+
+const MigrationsContent = () => {
   const [runs, setRuns] = useState(null);
-  const [retryRequested, setRetryRequested] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [runPending, setRunPending] = useState(false);
+  const requestSeq = useRef(0);
   const latest = runs?.[0];
 
-  const load = useCallback(
-    () =>
-      migrationsService
-        .getRuns()
-        .then((data) => setRuns(data?.runs ?? []))
-        .catch(() => setRuns((prev) => prev ?? [])),
-    []
-  );
+  const load = useCallback(() => {
+    // Polls can overlap; only the newest answer is applied.
+    const seq = ++requestSeq.current;
+    return migrationsService
+      .getRuns()
+      .then((data) => {
+        if (seq !== requestSeq.current) return;
+        setRuns(data?.runs ?? []);
+        setLoadFailed(false);
+      })
+      .catch(() => seq === requestSeq.current && setLoadFailed(true));
+  }, []);
 
+  const active = latest?.status === 'running' || runPending;
   useEffect(() => {
     load();
-  }, [load]);
-
-  useEffect(() => {
-    if (latest?.status !== 'running') return;
-    const timer = setInterval(load, POLL_MS);
+    const timer = setInterval(load, active ? ACTIVE_POLL_MS : IDLE_POLL_MS);
     return () => clearInterval(timer);
-  }, [latest?.status, load]);
+  }, [active, load]);
 
-  // "Retry requested" holds until the newest run changes.
+  // Acknowledged once the latest run changes: a new row, or the pending row starting.
   useEffect(() => {
-    setRetryRequested(false);
+    setRunPending(false);
   }, [latest?.id, latest?.status]);
 
-  const retry = () => {
-    setRetryRequested(true);
+  const startRun = () => {
+    setRunPending(true);
     migrationsService
-      .retry()
-      .then(() => {
-        toast.success('Retry requested. The migration will start shortly.');
-        load();
-      })
+      .run()
+      .then(load)
       .catch((err) => {
-        setRetryRequested(false);
-        toast.error(err?.statusCode === 409 ? 'There is nothing to retry.' : err?.error || 'Could not retry.');
+        setRunPending(false);
+        toast.error(
+          err?.statusCode === 409 ? err.error || 'There is nothing to run.' : 'Could not start the migrations.'
+        );
+        load();
       });
   };
 
+  if (runs === null) {
+    return loadFailed ? (
+      <InlineInfo
+        type="danger"
+        title="Could not load migration runs."
+        action={
+          <Button variant="outline" onClick={load}>
+            Try again
+          </Button>
+        }
+      />
+    ) : (
+      <LoadingState />
+    );
+  }
+  if (!latest) return <EmptyState />;
+
   return (
-    <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
-      <div className="tw-h-full tw-w-full tw-overflow-y-auto">
-        <div className="tw-mx-auto tw-flex tw-max-w-[960px] tw-flex-col tw-gap-4 tw-px-6 tw-py-10">
-          <h1 className="tw-m-0 tw-font-title-heavy-x-large tw-text-text-default">Migrations</h1>
-          {latest?.status === 'failed' && (
-            <InlineInfo
-              type="danger"
-              variant="filled"
-              title={`Upgrade to ${latest.toVersion} failed. Nothing was committed.`}
-              description={latest.error && <code className="tw-font-code-regular">{latest.error}</code>}
-              action={
-                <Button onClick={retry} disabled={retryRequested}>
-                  {retryRequested ? 'Retry requested' : 'Retry migration'}
-                </Button>
-              }
-            />
-          )}
-          {latest && (
-            <>
-              <SummaryCard run={latest} />
-              <ProgressCard run={latest} />
-              <LogCard logTail={latest.logTail} />
-            </>
-          )}
-          {runs && <HistoryCard runs={runs} />}
-        </div>
-      </div>
-    </Layout>
+    <div className="tw-flex tw-flex-col tw-gap-4">
+      {loadFailed && <InlineInfo type="warning" title="Lost connection to the server. Showing the last known state." />}
+      <StatusCard run={latest} onRun={startRun} runPending={runPending} />
+      <MigrationsCard run={latest} />
+      <LogCard run={latest} open={latest.status === 'running' || latest.status === 'failed'} />
+      {runs.length > 1 && <HistoryCard runs={runs.slice(1)} />}
+    </div>
   );
 };
+
+/** Page content. EE renders it inside the instance settings shell; CE wraps it in MigrationsPage. */
+export const MigrationsPanel = () => (
+  <div className="tw-mx-auto tw-max-w-[960px] tw-px-6 tw-pb-8">
+    <MigrationsContent />
+  </div>
+);
+
+/** CE has no instance settings shell, so the panel gets its own page. */
+export const MigrationsPage = ({ switchDarkMode, darkMode }) => (
+  <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
+    <div className="tw-h-full tw-w-full tw-overflow-y-auto tw-pt-8">
+      <h1 className="tw-mx-auto tw-mb-4 tw-max-w-[960px] tw-px-6 tw-font-title-heavy-x-large tw-text-text-default">
+        Migrations
+      </h1>
+      <MigrationsPanel />
+    </div>
+  </Layout>
+);
 
 export default MigrationsPage;

@@ -6,7 +6,9 @@ import {
   buildApiPrefix,
   MigrationGateMiddleware,
   MIGRATION_IN_PROGRESS_MESSAGE,
+  MIGRATION_PENDING_MESSAGE,
 } from '@modules/app/middlewares/migration-gate.middleware';
+import { MigrationRunsService, MigrationState } from '@modules/app/migration-runs/service';
 import { MIGRATION_IN_PROGRESS_KEY } from 'src/migration-helpers/migration-status';
 
 /** Nest 11 mounts forRoutes('*') middleware on the full path, so req.path is always '/'. */
@@ -23,15 +25,25 @@ function buildResponse() {
   return res as unknown as Response & typeof res;
 }
 
-function buildMiddleware(get: jest.Mock) {
+function runsIn(state: MigrationState) {
+  return { status: async () => ({ state }) } as unknown as MigrationRunsService;
+}
+
+const idleRuns = runsIn('idle');
+
+function buildMiddleware(get: jest.Mock, runs = idleRuns) {
   const logger = { warn: jest.fn(), log: jest.fn(), error: jest.fn() } as unknown as Logger;
   const redisService = { getClient: () => ({ get }) } as unknown as RedisService;
-  return { middleware: new MigrationGateMiddleware(redisService, logger), logger };
+  return { middleware: new MigrationGateMiddleware(redisService, logger, runs), logger };
 }
 
 /** The cache is per-instance and time-based; a fresh instance per test keeps them independent. */
 function flagSet() {
   return jest.fn().mockResolvedValue('pod-3:17:deadbeef');
+}
+
+function flagCleared() {
+  return jest.fn().mockResolvedValue(null);
 }
 
 function flagClear() {
@@ -231,7 +243,7 @@ describe('MigrationGateMiddleware', () => {
           throw new Error('Redis client not initialized. Ensure RedisModule is imported.');
         },
       } as unknown as RedisService;
-      const middleware = new MigrationGateMiddleware(redisService, logger);
+      const middleware = new MigrationGateMiddleware(redisService, logger, idleRuns);
       const next = jest.fn() as NextFunction;
 
       await middleware.use(buildRequest('/api/apps'), buildResponse(), next);
@@ -251,7 +263,8 @@ describe('MigrationGateMiddleware', () => {
       ['GET', '/api/session'],
       ['POST', '/api/data-queries/q1/run'],
       ['POST', '/api/data-queries/q1/versions/v1/run/e1'],
-      ['POST', '/api/migration-runs/retry'],
+      ['POST', '/api/migration-runs/run'],
+      ['POST', '/api/sso/saml/c1'],
     ])('should let %s %s through', async (method, path) => {
       const { middleware } = buildMiddleware(flagSet());
       const next = jest.fn() as NextFunction;
@@ -265,6 +278,7 @@ describe('MigrationGateMiddleware', () => {
       ['POST', '/api/apps'],
       ['PUT', '/api/apps/a1'],
       ['DELETE', '/api/data-queries/q1'],
+      ['POST', '/API/apps'],
     ])('should answer %s %s with 503', async (method, path) => {
       const { middleware } = buildMiddleware(flagSet());
       const res = buildResponse();
@@ -274,6 +288,46 @@ describe('MigrationGateMiddleware', () => {
 
       expect(next).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(503);
+    });
+  });
+
+  describe('in manual migration mode | writes wait for a super admin to run migrations', () => {
+    beforeEach(() => {
+      process.env.MIGRATION_MODE = 'manual';
+    });
+
+    it('should answer writes with 503 MIGRATION_PENDING while migrations are waiting', async () => {
+      const { middleware } = buildMiddleware(flagCleared(), runsIn('pending'));
+      const res = buildResponse();
+      const next = jest.fn() as NextFunction;
+
+      await middleware.use(buildRequest('/api/apps', 'POST'), res, next);
+
+      expect(next).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ code: 'MIGRATION_PENDING', message: MIGRATION_PENDING_MESSAGE })
+      );
+    });
+
+    it.each([
+      ['GET', '/api/apps'],
+      ['POST', '/api/migration-runs/run'],
+    ])('should let %s %s through while migrations are waiting', async (method, path) => {
+      const { middleware } = buildMiddleware(flagCleared(), runsIn('pending'));
+      const next = jest.fn() as NextFunction;
+
+      await middleware.use(buildRequest(path, method), buildResponse(), next);
+
+      expect(next).toHaveBeenCalled();
+    });
+
+    it('should let writes through once the migrations succeeded', async () => {
+      const { middleware } = buildMiddleware(flagCleared(), runsIn('succeeded'));
+      const next = jest.fn() as NextFunction;
+
+      await middleware.use(buildRequest('/api/apps', 'POST'), buildResponse(), next);
+
+      expect(next).toHaveBeenCalled();
     });
   });
 });

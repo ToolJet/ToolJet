@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -21,11 +21,22 @@ export class MigrationRunsController {
     return { runs: await this.migrationRunsService.runs() };
   }
 
-  @Post('retry')
+  /** Full log of a run, or of one migration in it (`?migration=<name>`). */
+  @Get(':id/log')
+  @InitFeature(FEATURE_KEY.MIGRATION_RUNS)
+  async log(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Query('migration') migration?: string
+  ): Promise<{ log: string }> {
+    return { log: await this.migrationRunsService.log(id, migration || undefined) };
+  }
+
+  /** Starts migrations that are waiting (manual mode) or retries a failed run. */
+  @Post('run')
   @HttpCode(201)
-  @InitFeature(FEATURE_KEY.MIGRATION_RETRY)
-  async retry(@User() user: UserEntity): Promise<{ ok: true }> {
-    await this.migrationRunsService.retry(user.email);
+  @InitFeature(FEATURE_KEY.MIGRATION_RUN)
+  async run(@User() user: UserEntity): Promise<{ ok: true }> {
+    await this.migrationRunsService.run(user.email);
     return { ok: true };
   }
 }

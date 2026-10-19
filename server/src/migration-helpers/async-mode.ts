@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import { Client, ClientConfig } from 'pg';
 import ormconfig from '../../ormconfig';
-import { isAsyncMigrationMode, setupCommand } from './migration-status';
+import { isServerManagedMigrationMode, setupCommand } from './migration-status';
 
 type Env = Record<string, string | undefined>;
 
@@ -49,7 +49,7 @@ async function isFreshInstall(): Promise<boolean> {
  * boots, so run it here, blocking, exactly like blocking mode would have.
  */
 export async function migrateFirstIfFreshInstall(env: Env = process.env): Promise<void> {
-  if (!isAsyncMigrationMode(env) || !(await isFreshInstall())) return;
+  if (!isServerManagedMigrationMode(env) || !(await isFreshInstall())) return;
   console.log('[migrations] Async mode on a fresh install: migrating before the server starts.');
   const exitCode = await new Promise<number>((resolve) => {
     spawn(setupCommand(env), { shell: true, stdio: 'inherit' }).on('exit', (code) => resolve(code ?? 1));

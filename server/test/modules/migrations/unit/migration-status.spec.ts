@@ -2,6 +2,7 @@
 import {
   DEFAULT_MIGRATION_FLAG_TTL_SECONDS,
   getMigrationFlagTtlSeconds,
+  getMigrationMode,
   isMigrationInProgressValue,
   isMigrationTrafficGateDisabled,
   MIGRATION_IN_PROGRESS_KEY,
@@ -49,6 +50,18 @@ describe('migration-helpers/migration-status', () => {
       ['an empty value', '', false],
     ])('should read %s as in-progress=%s', (_label, value, expected) => {
       expect(isMigrationInProgressValue(value as string | null | undefined)).toBe(expected);
+    });
+  });
+
+  describe('getMigrationMode | who runs migrations', () => {
+    it.each([
+      [{}, 'blocking'],
+      [{ MIGRATION_MODE: 'async' }, 'async'],
+      [{ MIGRATION_MODE: 'manual' }, 'manual'],
+      [{ MIGRATION_MODE: 'later' }, 'blocking'],
+      [{ MIGRATION_MODE: 'manual', TOOLJET_EDITION: 'cloud' }, 'blocking'],
+    ])('should read %j as %s', (env, mode) => {
+      expect(getMigrationMode(env)).toBe(mode);
     });
   });
 

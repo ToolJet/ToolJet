@@ -288,6 +288,17 @@ describe('migration-helpers/migrations-table-gate', () => {
       expect(critical).not.toHaveBeenCalled();
     });
 
+    it('should skip without waiting when asked to and another server holds the lock', async () => {
+      const { dataSource, queries } = fakeDataSource([false, true]);
+      const critical = jest.fn().mockResolvedValue('ran');
+
+      await expect(
+        withMigrationAdvisoryLock(dataSource, options, noWait, critical, { skipIfBusy: true })
+      ).resolves.toBeUndefined();
+      expect(critical).not.toHaveBeenCalled();
+      expect(queries.filter(({ sql }) => sql.includes('pg_try_advisory_lock'))).toHaveLength(1);
+    });
+
     it('should release the lock when the migration fails, so the next pod is not locked out', async () => {
       const { dataSource, queries, queryRunner } = fakeDataSource([true]);
 

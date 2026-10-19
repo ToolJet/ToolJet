@@ -9,6 +9,7 @@ const POLL_MS = 30000;
 const RUNNING_POLL_MS = 10000;
 
 const MESSAGES = {
+  pending: 'A ToolJet upgrade is waiting for your administrator. Changes cannot be saved until it is applied.',
   running: 'ToolJet is being upgraded. Some features may not work and changes may not save until it finishes.',
   failed: 'The latest ToolJet upgrade failed. Some features may not work. Contact your administrator.',
 };
@@ -29,7 +30,8 @@ const writeDismissed = (value) => {
   }
 };
 
-export const MigrationBanner = ({ darkMode, onVisibilityChange }) => {
+/** floating: a fixed pill for full-height screens (editor, released and embedded apps) that must not shift layout. */
+export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false }) => {
   const [status, setStatus] = useState({ state: 'idle' });
   const [dismissed, setDismissed] = useState(readDismissed);
 
@@ -40,7 +42,8 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange }) => {
       const next = await migrationsService.getStatus();
       if (cancelled) return;
       setStatus(next);
-      timer = setTimeout(poll, next.state === 'running' ? RUNNING_POLL_MS : POLL_MS);
+      // Pending can turn into running at any click, so it polls as often.
+      timer = setTimeout(poll, next.state === 'running' || next.state === 'pending' ? RUNNING_POLL_MS : POLL_MS);
     };
     poll();
     return () => {
@@ -50,15 +53,21 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange }) => {
   }, []);
 
   const message = MESSAGES[status.state];
-  // A new run has a new startedAt, so an earlier dismissal no longer matches.
-  const runKey = status.startedAt ?? status.state;
+  // Per run and state: a new run, or the same run failing, shows again after a dismissal.
+  const runKey = `${status.state}:${status.startedAt ?? ''}`;
   const visible = !!message && dismissed !== runKey;
 
   useEffect(() => {
     onVisibilityChange?.(visible);
   }, [visible, onVisibilityChange]);
 
-  if (!visible) return null;
+  // Always mounted, so screen readers announce the message when it appears rather than missing a pre-filled region.
+  const announcement = (
+    <div role="status" className="tw-sr-only">
+      {visible ? message : ''}
+    </div>
+  );
+  if (!visible) return announcement;
 
   const close = () => {
     writeDismissed(runKey);
@@ -66,27 +75,34 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange }) => {
   };
 
   return (
-    <div
-      role="status"
-      data-cy="migration-banner"
-      className={cx(
-        'tw-flex tw-h-[30px] tw-w-full tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-bg-background-warning-weak',
-        { 'theme-dark dark-theme': darkMode }
-      )}
-    >
-      <div className="tw-ml-auto tw-flex tw-items-center tw-gap-2">
-        <SolidIcon name="warning" width="16" fill="var(--icon-warning)" />
-        <p className="tw-m-0 tw-text-[12px] tw-leading-[18px] tw-text-text-warning">{message}</p>
-      </div>
-      <button
-        type="button"
-        aria-label="Dismiss upgrade notice"
-        onClick={close}
-        className="tw-ml-auto tw-flex tw-items-center tw-border-0 tw-bg-transparent tw-p-0 tw-cursor-pointer"
+    <>
+      {announcement}
+      <div
+        data-cy="migration-banner"
+        className={cx(
+          'tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-bg-background-warning-weak',
+          floating
+            ? 'tw-fixed tw-bottom-4 tw-left-1/2 tw-z-[1040] tw-max-w-[min(760px,calc(100vw-32px))] tw--translate-x-1/2 tw-rounded-full tw-border tw-border-solid tw-border-border-weak tw-py-1.5'
+            : 'tw-h-[30px] tw-w-full',
+          { 'theme-dark dark-theme': darkMode }
+        )}
       >
-        <CloseIcon width="12" />
-      </button>
-    </div>
+        <div className="tw-ml-auto tw-flex tw-min-w-0 tw-items-center tw-gap-2">
+          <SolidIcon name="warning" width="16" fill="var(--icon-warning)" className="tw-shrink-0" />
+          <p title={message} className="tw-m-0 tw-truncate tw-font-body-small tw-text-text-warning">
+            {message}
+          </p>
+        </div>
+        <button
+          type="button"
+          aria-label="Dismiss upgrade notice"
+          onClick={close}
+          className="tw-ml-auto tw-flex tw-shrink-0 tw-items-center tw-rounded tw-border-0 tw-bg-transparent tw-p-1 tw-cursor-pointer hover:tw-bg-interactive-hover focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-border-accent-strong"
+        >
+          <CloseIcon width="12" />
+        </button>
+      </div>
+    </>
   );
 };
 

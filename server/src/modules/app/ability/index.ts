@@ -21,7 +21,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         FEATURE_KEY.ROOT,
         FEATURE_KEY.MIGRATION_STATUS,
         FEATURE_KEY.MIGRATION_RUNS,
-        FEATURE_KEY.MIGRATION_RETRY,
+        FEATURE_KEY.MIGRATION_RUN,
       ],
       InstanceSettings
     );

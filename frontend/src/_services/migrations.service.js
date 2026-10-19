@@ -4,7 +4,8 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const migrationsService = {
   getStatus,
   getRuns,
-  retry,
+  getLog,
+  run,
 };
 
 const IDLE = { state: 'idle' };
@@ -22,7 +23,17 @@ function getRuns() {
   return fetch(`${config.apiUrl}/migration-runs`, requestOptions).then(handleResponse);
 }
 
-function retry() {
+/** Starts waiting (manual mode) or failed migrations. */
+function run() {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/migration-runs/retry`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/migration-runs/run`, requestOptions).then(handleResponse);
+}
+
+/** Whole run, or one migration's lines when `migration` is given. */
+function getLog(runId, migration) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const query = migration ? `?migration=${encodeURIComponent(migration)}` : '';
+  return fetch(`${config.apiUrl}/migration-runs/${runId}/log${query}`, requestOptions)
+    .then(handleResponse)
+    .then((data) => data?.log ?? '');
 }

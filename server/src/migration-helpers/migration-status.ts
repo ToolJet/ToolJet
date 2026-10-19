@@ -33,8 +33,18 @@ export function isMigrationTrafficGateDisabled(env: RedisEnvSource = process.env
   return env.DISABLE_MIGRATION_TRAFFIC_GATE === 'true';
 }
 
-export function isAsyncMigrationMode(env: RedisEnvSource = process.env): boolean {
-  return env.MIGRATION_MODE === 'async';
+/** blocking: entrypoint migrates before boot. async: server migrates in the background. manual: a super admin starts it. */
+export type MigrationMode = 'blocking' | 'async' | 'manual';
+
+/** Cloud always migrates before boot: it has no migrations page, and its deploy sets the env. */
+export function getMigrationMode(env: RedisEnvSource = process.env): MigrationMode {
+  if (env.TOOLJET_EDITION === 'cloud') return 'blocking';
+  return env.MIGRATION_MODE === 'async' || env.MIGRATION_MODE === 'manual' ? env.MIGRATION_MODE : 'blocking';
+}
+
+/** async and manual: the server boots first and owns the migration run. */
+export function isServerManagedMigrationMode(env: RedisEnvSource = process.env): boolean {
+  return getMigrationMode(env) !== 'blocking';
 }
 
 /** The entrypoint exports its edition's command (Cloud: cloud:setup:prod). */

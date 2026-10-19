@@ -28,6 +28,17 @@ describe('migration run log', () => {
     });
   });
 
+  describe('applyLogLine | bound values in error dumps never reach the log', () => {
+    it.each([
+      [['  parameters: [', '    \'{"password":"hunter2"}\'', '  ],', '  driverError: error: boom']],
+      [["  parameters: [ 'hunter2' ],", '  driverError: error: boom']],
+    ])('should replace the parameters block in %j', (lines) => {
+      const { logTail } = replay(lines);
+
+      expect(logTail).toEqual(['  parameters: [redacted]', '  driverError: error: boom']);
+    });
+  });
+
   describe('applyLogLine | rebuilding a run from runner output', () => {
     const run = replay([
       '[migrations] 3 migration(s) pending: LockMigrationsTable1234567890000, AddIndex1700, BackfillX1800',
@@ -45,16 +56,37 @@ describe('migration run log', () => {
         currentMigration: 'BackfillX1800',
         progress: '1200/5000',
         migrations: [
-          { name: 'AddIndex1700', status: 'done' },
-          { name: 'BackfillX1800', status: 'running' },
+          { name: 'AddIndex1700', status: 'done', durationMs: 12 },
+          { name: 'BackfillX1800', status: 'running', percent: 24 },
         ],
       });
     });
 
+    it.each([
+      ['BackfillX: [PROGRESS] Resolved 30/40 (75%)', '30/40', 75],
+      ['BackfillX1800 Progress 42 %', '42%', 42],
+    ])('should read the progress format %j', (line, label, percent) => {
+      const next = applyLogLine(run, line);
+
+      expect(next.progress).toBe(label);
+      expect(next.migrations[1]).toEqual({ name: 'BackfillX1800', status: 'running', percent });
+    });
+
+    it('should drop query log lines unless ORM_LOGGING asked for them', () => {
+      const query = 'query is slow: SELECT 1 -- PARAMETERS: ["secret"]';
+
+      expect(applyLogLine(run, query).logTail).toBe(run.logTail);
+      expect(applyLogLine(run, query, { keepQueries: true }).logTail.at(-1)).toBe('query is slow: SELECT 1');
+    });
+
+    it('should ignore progress lines before any migration starts', () => {
+      expect(replay(['Seed Progress 50 %']).progress).toBeNull();
+    });
+
     it('should mark the running migration as the failed one', () => {
       expect(markFailed(run).migrations).toEqual([
-        { name: 'AddIndex1700', status: 'done' },
-        { name: 'BackfillX1800', status: 'failed' },
+        { name: 'AddIndex1700', status: 'done', durationMs: 12 },
+        { name: 'BackfillX1800', status: 'failed', percent: 24 },
       ]);
     });
 

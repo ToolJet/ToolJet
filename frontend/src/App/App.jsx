@@ -40,7 +40,7 @@ import {
   getDataSourcesRoutes,
   getAuditLogsRoutes,
 } from '@/modules';
-import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import { isWorkflowsFeatureEnabled, fetchEdition } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
@@ -98,7 +98,8 @@ class AppComponent extends React.Component {
   updateMargin() {
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
-    const showBannerCondition = ((isAdmin || isBuilder) && this.state.showBanner) || this.state.showMigrationBanner;
+    const migrationBannerOnTop = this.state.showMigrationBanner && !this.isEditorOrViewerFromPath();
+    const showBannerCondition = ((isAdmin || isBuilder) && this.state.showBanner) || migrationBannerOnTop;
     const marginValue = showBannerCondition ? '25' : '0';
     const marginValueLayout = showBannerCondition ? '35' : '0';
     document.documentElement.style.setProperty('--dynamic-margin', `${marginValue}px`);
@@ -240,10 +241,16 @@ class AppComponent extends React.Component {
       <>
         <div
           className={
-            !isApplicationsPath && (isAdmin || isBuilder || showMigrationBanner) ? 'banner-layout-wrapper' : ''
+            !isApplicationsPath && (isAdmin || isBuilder || (showMigrationBanner && !this.isEditorOrViewerFromPath()))
+              ? 'banner-layout-wrapper'
+              : ''
           }
         >
-          <MigrationBanner darkMode={darkMode} onVisibilityChange={this.setMigrationBannerVisible} />
+          <MigrationBanner
+            darkMode={darkMode}
+            onVisibilityChange={this.setMigrationBannerVisible}
+            floating={!!this.isEditorOrViewerFromPath()}
+          />
           {!isApplicationsPath && !this.isEditorOrViewerFromPath() && (isAdmin || isBuilder) && showBanner && (
             <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
           )}
@@ -350,18 +357,21 @@ class AppComponent extends React.Component {
                     </DesktopOnlyRoute>
                   }
                 />
-                <Route
-                  path="/migrations"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <SuperAdminRoute navigate={this.props.navigate}>
-                          <MigrationsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                        </SuperAdminRoute>
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
+                {/* EE renders migrations inside its instance settings shell (settings/*). */}
+                {fetchEdition() === 'ce' && (
+                  <Route
+                    path="settings/migrations"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <SuperAdminRoute navigate={this.props.navigate}>
+                            <MigrationsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                          </SuperAdminRoute>
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                )}
                 <Route
                   path="/:workspaceId/settings/*"
                   element={

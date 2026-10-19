@@ -97,22 +97,29 @@ export async function withMigrationAdvisoryLock<T>(
   dataSource: DataSource,
   options: LockWaitOptions,
   deps: LockWaitDeps,
-  critical: () => Promise<T>
-): Promise<T> {
+  critical: () => Promise<T>,
+  { skipIfBusy = false }: { skipIfBusy?: boolean } = {}
+): Promise<T | undefined> {
   const queryRunner = dataSource.createQueryRunner();
   try {
     await queryRunner.connect();
-    await withLockContentionRetry(
-      'acquiring the migration lock',
-      async () => {
-        const [{ locked }] = await queryRunner.query('SELECT pg_try_advisory_lock($1) AS locked', [
-          MIGRATION_ADVISORY_LOCK_KEY,
-        ]);
-        if (!locked) throw new MigrationLockBusyError();
-      },
-      options,
-      deps
-    );
+    if (skipIfBusy) {
+      const [{ locked }] = await queryRunner.query('SELECT pg_try_advisory_lock($1) AS locked', [
+        MIGRATION_ADVISORY_LOCK_KEY,
+      ]);
+      if (!locked) return undefined;
+    } else
+      await withLockContentionRetry(
+        'acquiring the migration lock',
+        async () => {
+          const [{ locked }] = await queryRunner.query('SELECT pg_try_advisory_lock($1) AS locked', [
+            MIGRATION_ADVISORY_LOCK_KEY,
+          ]);
+          if (!locked) throw new MigrationLockBusyError();
+        },
+        options,
+        deps
+      );
 
     try {
       return await critical();
