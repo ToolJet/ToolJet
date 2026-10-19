@@ -164,7 +164,8 @@ export const KanbanColumn = ({
                 aria-label={`Collapse ${column.title}`}
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={() => onCollapse(column.id)}
-                className="tw-rounded-ui2-md tw-p-0.5 tw-text-ui2-muted-foreground tw-opacity-0 tw-transition hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring group-hover/col:tw-opacity-100"
+                // Shown on hover or focus, and always where there is no hover (touch), as a 24px target.
+                className="tw-rounded-ui2-md tw-p-1 tw-text-ui2-muted-foreground tw-opacity-0 [@media(hover:none)]:tw-opacity-100 tw-transition hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring group-hover/col:tw-opacity-100"
               >
                 <ChevronLeft className="tw-h-4 tw-w-4" />
               </button>
