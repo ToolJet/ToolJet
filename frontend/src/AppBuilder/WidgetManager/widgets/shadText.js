@@ -31,27 +31,27 @@ export const shadTextConfig = {
       },
     },
     tone: {
-      type: 'switch',
+      type: 'select',
       displayName: 'Style',
       options: [
         {
-          displayName: 'Paragraph',
+          name: 'Paragraph',
           value: 'paragraph',
         },
         {
-          displayName: 'Lead',
+          name: 'Lead',
           value: 'lead',
         },
         {
-          displayName: 'Muted',
+          name: 'Muted',
           value: 'muted',
         },
         {
-          displayName: 'Small',
+          name: 'Small',
           value: 'small',
         },
         {
-          displayName: 'Large',
+          name: 'Large',
           value: 'large',
         },
       ],

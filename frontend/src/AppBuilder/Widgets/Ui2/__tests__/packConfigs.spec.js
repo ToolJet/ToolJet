@@ -73,6 +73,15 @@ describe('UI 2.0 widget config files', () => {
     }
   );
 
+  // A switch draws every option side by side in the inspector: six (the Button's variants) ran past its right edge and
+  // cut the last off. Longer lists are a select.
+  it.each(shadcnConfigs.map((c) => [c.name, c]))('%s keeps switches to four options', (name, config) => {
+    const wide = Object.entries({ ...config.properties, ...config.styles })
+      .filter(([, p]) => p?.type === 'switch' && (p.options?.length ?? 0) > 4)
+      .map(([key]) => key);
+    expect(wide).toEqual([]);
+  });
+
   // Collapse when hidden was once missing on every UI 2.0 widget: a hidden widget kept its slot as a blank band and the
   // widgets below never moved up. RenderWidget and the reflow read the property generically.
   it.each(shadcnConfigs.filter((c) => c.name !== 'ShadDialog').map((c) => [c.name, c]))(

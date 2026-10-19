@@ -140,27 +140,27 @@ export const shadHeroConfig = {
       },
     },
     background: {
-      type: 'switch',
+      type: 'select',
       displayName: 'Background',
       options: [
         {
-          displayName: 'Plain',
+          name: 'Plain',
           value: 'plain',
         },
         {
-          displayName: 'Tint',
+          name: 'Tint',
           value: 'tint',
         },
         {
-          displayName: 'Gradient',
+          name: 'Gradient',
           value: 'gradient',
         },
         {
-          displayName: 'Image',
+          name: 'Image',
           value: 'image',
         },
         {
-          displayName: 'Dark',
+          name: 'Dark',
           value: 'dark',
         },
       ],
