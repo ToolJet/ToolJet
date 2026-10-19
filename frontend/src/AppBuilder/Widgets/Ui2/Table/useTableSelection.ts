@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { missingIsGone, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell } from './tableModel';
@@ -73,6 +73,15 @@ export const useTableSelection = ({
     setFocusKey(focus);
     expose(kept, focus);
   }, [entries, live, latest]);
+
+  // An edit or a discard changes the values of the selected rows: they publish again (the selection showed the rows as
+  // they were). Edits run in runNow, so this has run before their event fires. The first render has nothing to redo.
+  const shownEdits = useRef(withEdits);
+  useEffect(() => {
+    if (shownEdits.current === withEdits) return;
+    shownEdits.current = withEdits;
+    latest.current.exposeSelection(live.current.selected, live.current.focusKey);
+  }, [withEdits, live, latest]);
 
   // A click on a row, or on something in it that acts on the row (an action button, an editable cell): `keep` never
   // deselects, since pressing a button or editing a cell on the selected row is not a click to deselect it.

@@ -4,6 +4,7 @@ import {
   cellStyleFor,
   matchesCondition,
   compareCells,
+  looseMatcher,
   matchesSearch,
   normalizeColumns,
   readCell,
@@ -141,10 +142,51 @@ describe('sorting', () => {
   });
 });
 
+describe('looseMatcher', () => {
+  it('matches as == does', () => {
+    const samples = [
+      null,
+      undefined,
+      '',
+      ' ',
+      '0',
+      '01',
+      '1',
+      '1.0',
+      'abc',
+      'true',
+      0,
+      -0,
+      1,
+      2,
+      NaN,
+      true,
+      false,
+      [1],
+      ['abc'],
+      {},
+    ];
+    samples.forEach((cell) =>
+      samples.forEach((value) => {
+        expect([cell, value, looseMatcher([value])(cell)]).toEqual([cell, value, cell == value]); // eslint-disable-line eqeqeq
+      })
+    );
+  });
+
+  it('matches any of the values', () => {
+    const matches = looseMatcher(['01', 2, null]);
+    expect([1, '2', undefined, '1', 3].map(matches)).toEqual([true, true, true, false, false]);
+  });
+});
+
 describe('rowKey', () => {
   it('uses the id field, else the position', () => {
-    expect(rowKey({ id: 9 }, 'id', 0)).toBe('9');
+    expect(rowKey({ id: 9 }, 'id', 0)).toBe('id:9');
     expect(rowKey({}, 'id', 4)).toBe('#4');
+  });
+
+  it('never gives a row with no id the key of a real id', () => {
+    expect(rowKey({ id: '#4' }, 'id', 0)).not.toBe(rowKey({}, 'id', 4));
   });
 });
 
