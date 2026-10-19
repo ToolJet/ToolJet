@@ -38,9 +38,30 @@ export default function Calendar({
   containerProps,
   removeComponent,
   setExposedVariable,
+  setExposedVariables,
   dataCy,
 }) {
   const style = { height, borderRadius: `${styles.borderRadius}px`, overflow: 'hidden' };
+  const { visibility } = properties;
+  const [isVisible, setIsVisible] = useState(visibility);
+
+  // A Visibility property change wins over an earlier setVisibility call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
   const events = Array.isArray(properties?.events)
     ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
@@ -130,7 +151,7 @@ export default function Calendar({
     <div
       id={id}
       style={{
-        display: styles.visibility ? 'block' : 'none',
+        display: isVisible ? 'block' : 'none',
         boxShadow: styles.boxShadow,
         border: `1px solid ${styles.borderColor}`,
         borderRadius: `${styles.borderRadius}px`,

@@ -32,6 +32,18 @@ export const calendarConfig = {
       type: 'toggle',
       displayName: 'Show popover when event is clicked',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {
     onCalendarEventSelect: { displayName: 'On Event Select' },
@@ -40,7 +52,6 @@ export const calendarConfig = {
     onCalendarViewChange: { displayName: 'On View Change' },
   },
   styles: {
-    visibility: { type: 'toggle', displayName: 'Visibility' },
     cellSizeInViewsClassifiedByResource: {
       type: 'select',
       displayName: 'Cell size in views classified by resource',
@@ -75,7 +86,15 @@ export const calendarConfig = {
     selectedSlots: {},
     currentView: 'month',
     currentDate: undefined,
+    isVisible: true,
   },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -116,10 +135,11 @@ export const calendarConfig = {
       showPopOverOnEventClick: {
         value: false,
       },
+      visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       cellSizeInViewsClassifiedByResource: { value: 'spacious' },
       weekDateFormat: { value: 'DD MMM' },
       borderColor: { value: 'var(--cc-weak-border)' },

@@ -2976,6 +2976,15 @@ function migrateProperties(
         properties.layout = { value: 'wrap' };
       }
     }
+
+    if (componentType === 'Calendar') {
+      if (styles.visibility) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
+      }
+    }
   }
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
