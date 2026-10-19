@@ -132,7 +132,10 @@ export const TabStrip = ({
       <div
         role="tablist"
         onKeyDown={onKeyDown}
-        className={cn('tw-flex tw-h-[50px] tw-items-center tw-gap-2 tw-px-3', justify)}
+        className={cn(
+          'tw-flex tw-h-[50px] tw-items-center tw-gap-2 tw-bg-[color:var(--tb-list-bg,transparent)] tw-px-3',
+          justify
+        )}
       >
         {tabs.map((tab, index) => {
           const done = index < stepIndex;
@@ -158,7 +161,7 @@ export const TabStrip = ({
                 disabled={!!tab.disable || !reachable}
                 onPick={onPick}
                 className={cn(
-                  'tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-ui2-md tw-px-1.5 tw-py-1 tw-text-ui2-sm tw-transition-colors disabled:tw-cursor-not-allowed',
+                  'tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-ui2-md tw-px-1.5 tw-py-1 tw-text-[length:var(--tb-font,0.875rem)] tw-leading-[1.43] tw-transition-colors disabled:tw-cursor-not-allowed',
                   TAB_RING,
                   active
                     ? 'tw-font-semibold tw-text-[color:var(--tb-active-text,var(--sc-foreground))]'
@@ -211,7 +214,7 @@ export const TabStrip = ({
         role="tablist"
         onKeyDown={onKeyDown}
         className={cn(
-          'tw-flex tw-h-[50px] tw-items-end tw-gap-1 tw-overflow-x-auto tw-overflow-y-hidden tw-border-b tw-px-3',
+          'tw-flex tw-h-[50px] tw-items-end tw-gap-1 tw-overflow-x-auto tw-overflow-y-hidden tw-border-b tw-bg-[color:var(--tb-list-bg,transparent)] tw-px-3',
           justify
         )}
         style={{ borderColor: 'var(--tb-border, var(--sc-border))' }}
