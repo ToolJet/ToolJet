@@ -80,7 +80,7 @@ describe('UI 2.0 List view', () => {
     await waitFor(() => expect(widget.variables().seen).toBe('Grace'));
     expect(exposed()).toMatchObject({ selectedItemId: 'b', selectedRecordId: 1 });
     expect(exposed().selectedRecord).toMatchObject({ rowText: { text: 'Grace' } });
-    expect(items()[1]).toHaveClass('tw-ring-1');
+    expect(items()[1]).toHaveClass('tw-outline-1');
   });
 
   test('[ShadListView-PROP-001] data that arrives after the first render fills the rows, and follows changes', async () => {
@@ -191,7 +191,7 @@ describe('UI 2.0 List view', () => {
     await waitFor(() => expect(names()).toHaveLength(3));
     fireEvent.click(screen.getByText('Alan'));
     await waitFor(() => expect(exposed().selectedItemId).toBe('c'));
-    expect(items()[2]).not.toHaveClass('tw-ring-1');
+    expect(items()[2]).not.toHaveClass('tw-outline-1');
   });
 
   test('[ShadListView-PROP-005] idField keys the selection, so it follows its item when the data reorders', async () => {
@@ -207,8 +207,8 @@ describe('UI 2.0 List view', () => {
       'properties'
     );
     await waitFor(() => expect(names()).toEqual(['Alan', 'Ada']));
-    expect(items()[1]).toHaveClass('tw-ring-1');
-    expect(items()[0]).not.toHaveClass('tw-ring-1');
+    expect(items()[1]).toHaveClass('tw-outline-1');
+    expect(items()[0]).not.toHaveClass('tw-outline-1');
   });
 
   // Review: the highlight followed the record key, but selectedItem kept the old record after a refresh (.data had
@@ -233,7 +233,7 @@ describe('UI 2.0 List view', () => {
     setData("{{[{ key: 'a', name: 'Ada' }]}}");
     await waitFor(() => expect(exposed().selectedItemId).toBeNull());
     expect(exposed()).toMatchObject({ selectedItem: {}, selectedRecord: {}, selectedRecordId: null });
-    expect(items()[0]).not.toHaveClass('tw-ring-1');
+    expect(items()[0]).not.toHaveClass('tw-outline-1');
     expect(widget.variables().clicks).toBe(1);
   });
 
@@ -300,7 +300,7 @@ describe('UI 2.0 List view', () => {
     await widget.act('selectItem', 'c');
     await waitFor(() => expect(exposed()).toMatchObject({ selectedItemId: 'c', selectedRecordId: 2 }));
     expect(exposed().selectedItem).toEqual({ key: 'c', name: 'Alan' });
-    expect(items()[2]).toHaveClass('tw-ring-1');
+    expect(items()[2]).toHaveClass('tw-outline-1');
     await widget.act('clearSelection');
     await waitFor(() => expect(exposed().selectedItemId).toBeNull());
     expect(exposed()).toMatchObject({ selectedItem: {}, selectedRecord: {}, selectedRecordId: null });
