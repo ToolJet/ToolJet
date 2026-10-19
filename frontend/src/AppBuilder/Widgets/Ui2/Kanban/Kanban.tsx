@@ -100,6 +100,16 @@ export const ShadKanban = (props: WidgetProps) => {
       else next.add(key);
       return next;
     });
+  // Under a new id field a card key can name another record (Alpha's id is Beta's code): the selection, open details
+  // and expanded cards kept by key start over rather than move to that record.
+  const keyedBy = useRef(idField);
+  useEffect(() => {
+    if (keyedBy.current === idField) return;
+    keyedBy.current = idField;
+    setSelectedKey(null);
+    setOpenKey(null);
+    setExpandedKeys(new Set());
+  }, [idField]);
   // Folded columns: those listed in collapsedColumns at start (again whenever that list changes), then the user's.
   const startCollapsed = useStable(
     useMemo(() => list(properties.collapsedColumns).map(String), [properties.collapsedColumns])
@@ -192,7 +202,7 @@ export const ShadKanban = (props: WidgetProps) => {
   // share the board's layout key and grow with it) and their components one entry.
   const ownPath = useOwnContextPath(props.subContainerIndex, props.parentId);
   const scoped = ownPath.length === 0;
-  const { board, order } = useCustomCards(props.id, custom, scoped, columns);
+  const { board, order, generation } = useCustomCards(props.id, custom, scoped, columns, idField);
   const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
   const hostOf = useCardHosts(board);
   const fitCards = custom && !editing && scoped && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
@@ -371,7 +381,8 @@ export const ShadKanban = (props: WidgetProps) => {
                   onDelete={onDelete}
                 />,
                 hostOf(card.__key),
-                card.__key
+                // A new id field mounts every card again (useCustomCards): a key can name another record now.
+                `${generation}:${card.__key}`
               )
             )
           )}
