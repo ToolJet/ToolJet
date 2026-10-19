@@ -54,7 +54,7 @@ export const ShadCombobox = (props: WidgetProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popup = usePickerPopup(properties, triggerRef);
   const { open } = popup;
-  const focus = useFocusEvents(fireEvent);
+  const focus = useFocusEvents(fireEvent, () => check.touch());
   const [search, onSearch] = useSearch(props);
   const [selected] = useKeptSelection(options, key === null ? [] : [key], properties.serverSideSearch === true) as [
     Option | undefined

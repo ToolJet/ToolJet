@@ -185,7 +185,7 @@ export const ShadTimePicker = (props: WidgetProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popup = usePickerPopup(properties, triggerRef);
   const { open } = popup;
-  const focus = useFocusEvents(fireEvent);
+  const focus = useFocusEvents(fireEvent, () => check.touch());
   const exposed = (m: number | null) => ({ value: M.toHHmm(m), formattedValue: M.formatTime(m, use24) });
   const setTime = (t: unknown, format: unknown) => {
     const m = parseTimeArg(t, format);

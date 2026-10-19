@@ -100,7 +100,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popup = usePickerPopup(properties, triggerRef);
   const { open } = popup;
-  const focus = useFocusEvents(fireEvent);
+  const focus = useFocusEvents(fireEvent, () => check.touch());
   const date = ts === null ? null : dayjs(ts);
   const exposed = M.dateTimeExposed(date, displayFormat);
   const tsRef = useLatest(ts);
