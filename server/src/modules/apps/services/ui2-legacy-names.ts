@@ -254,22 +254,121 @@ const ACORN_OPTIONS = {
 
 type Edit = { start: number; end: number; text: string };
 
+/** The expression inside any parentheses: a binding is read with its parentheses kept, so its end is the source's. */
+const unparen = (node: any): any => {
+  while (node?.type === 'ParenthesizedExpression') node = node.expression;
+  return node;
+};
+
 /** A member key known without running the code: `.key`, `['key']` or a backtick key with no `${}`. */
 const staticKey = (node: any, computed: boolean): string | undefined => {
+  node = unparen(node);
   if (!computed && node?.type === 'Identifier') return node.name;
   if (computed && node?.type === 'Literal' && typeof node.value === 'string') return node.value;
   if (computed && node?.type === 'TemplateLiteral' && node.expressions.length === 0) return node.quasis[0].value.cooked;
   return undefined;
 };
 
-/** The component a member expression names: `components.<ref>` (or `['<ref>']`), then any List view row index (a number or an expression). */
+/** A List view row: `[0]`, `[index]`, `[variables.row]`; any key not known without running the code. */
+const isRow = (node: any): boolean =>
+  node?.type === 'MemberExpression' && node.computed && staticKey(node.property, true) === undefined;
+
+/** The component a member expression names: `components.<ref>` (or `['<ref>']`), then any List view row index. */
 const componentRefOf = (node: any): string | undefined => {
+  node = unparen(node);
   if (node?.type !== 'MemberExpression') return undefined;
-  if (node.object.type === 'Identifier' && node.object.name === 'components')
-    return staticKey(node.property, node.computed);
-  // A row: `[0]`, `[index]`, `[variables.row]`; any key not known without running the code.
-  if (node.computed && staticKey(node.property, true) === undefined) return componentRefOf(node.object);
+  const object = unparen(node.object);
+  if (object?.type === 'Identifier' && object.name === 'components') return staticKey(node.property, node.computed);
+  if (isRow(node)) return componentRefOf(object);
   return undefined;
+};
+
+// A function's parameter, a local variable or a catch parameter named `components` is not the app's components: code
+// inside its scope reads the local value, which is not renamed.
+const FUNCTIONS = new Set(['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression']);
+
+/** Whether a binding pattern (`a`, `{ a, b: c }`, `[a, ...b]`, `a = 1`) declares `components`. */
+const patternBinds = (pattern: any): boolean => {
+  switch (pattern?.type) {
+    case 'Identifier':
+      return pattern.name === 'components';
+    case 'ObjectPattern':
+      return pattern.properties.some((p: any) => patternBinds(p.type === 'RestElement' ? p.argument : p.value));
+    case 'ArrayPattern':
+      return pattern.elements.some(patternBinds);
+    case 'RestElement':
+      return patternBinds(pattern.argument);
+    case 'AssignmentPattern':
+      return patternBinds(pattern.left);
+    default:
+      return false;
+  }
+};
+
+/** Whether a statement declares `components` in its block. */
+const declares = (node: any): boolean => {
+  if (node?.type === 'VariableDeclaration') return node.declarations.some((d: any) => patternBinds(d.id));
+  if (node?.type === 'FunctionDeclaration' || node?.type === 'ClassDeclaration') return node.id?.name === 'components';
+  return false;
+};
+
+/** Whether a `var components` in these statements (outside nested functions) declares it for the whole function. */
+const hoistsVar = (node: any): boolean => {
+  switch (node?.type) {
+    case 'VariableDeclaration':
+      return node.kind === 'var' && declares(node);
+    case 'Program':
+    case 'BlockStatement':
+      return node.body.some(hoistsVar);
+    case 'IfStatement':
+      return hoistsVar(node.consequent) || hoistsVar(node.alternate);
+    case 'ForStatement':
+      return hoistsVar(node.init) || hoistsVar(node.body);
+    case 'ForInStatement':
+    case 'ForOfStatement':
+      return hoistsVar(node.left) || hoistsVar(node.body);
+    case 'WhileStatement':
+    case 'DoWhileStatement':
+    case 'LabeledStatement':
+    case 'WithStatement':
+      return hoistsVar(node.body);
+    case 'TryStatement':
+      return hoistsVar(node.block) || hoistsVar(node.handler?.body) || hoistsVar(node.finalizer);
+    case 'SwitchStatement':
+      return node.cases.some((c: any) => c.consequent.some(hoistsVar));
+    default:
+      return false;
+  }
+};
+
+/** Whether a node opens a scope that declares `components`. */
+const scopeBinds = (node: any): boolean => {
+  if (FUNCTIONS.has(node.type))
+    return (
+      (node.type === 'FunctionExpression' && node.id?.name === 'components') ||
+      node.params.some(patternBinds) ||
+      hoistsVar(node.body)
+    );
+  switch (node.type) {
+    case 'Program':
+      return node.body.some(declares) || hoistsVar(node);
+    case 'BlockStatement':
+    case 'StaticBlock':
+      return node.body.some(declares);
+    case 'SwitchStatement':
+      return node.cases.some((c: any) => c.consequent.some(declares));
+    case 'ForStatement':
+      return declares(node.init);
+    case 'ForInStatement':
+    case 'ForOfStatement':
+      return declares(node.left);
+    case 'CatchClause':
+      return patternBinds(node.param);
+    case 'ClassExpression':
+      return node.id?.name === 'components';
+    default:
+      return false;
+  }
 };
 
 /** The renames to make inside one parsed node (a program or an expression), as edits to the text it came from. */
@@ -282,11 +381,15 @@ const referenceEdits = (root: any, renamesByComponentName: Ui2RenamesByComponent
       const renames = renamesByComponentName[ref];
       const key = staticKey(node.property, node.computed);
       if (key === undefined) return;
-      const parent = ancestors[ancestors.length - 2];
-      const isCall = parent?.type === 'CallExpression' && parent.callee === node;
+      if (ancestors.some(scopeBinds)) return;
+      // `(components.x.disable)(true)` calls it too.
+      let callee = node;
+      let at = ancestors.length - 2;
+      while (ancestors[at]?.type === 'ParenthesizedExpression') callee = ancestors[at--];
+      const isCall = ancestors[at]?.type === 'CallExpression' && ancestors[at].callee === callee;
       const target = isCall ? own(renames.actions, key) : (own(renames.exposed, key) ?? own(renames.actions, key));
       if (!target || target === key) return;
-      const property = node.property;
+      const property = unparen(node.property);
       if (!node.computed) {
         edits.push({ start: property.start, end: property.end, text: target });
       } else {
@@ -322,6 +425,18 @@ export const rewriteReferences = (text: string, renamesByComponentName: Ui2Renam
   }
 };
 
+/** Whether only whitespace and comments follow `end` in `source`. */
+const onlyCommentsAfter = (source: string, end: number, comments: Array<[number, number]>): boolean => {
+  let rest = '';
+  let at = end;
+  for (const [start, stop] of comments) {
+    if (start < at) continue;
+    rest += source.slice(at, start);
+    at = stop;
+  }
+  return /^\s*$/.test(rest + source.slice(at));
+};
+
 /**
  * Rewrites references inside the {{ }} bindings of a value (a property, a style, an event or query parameter); the text
  * around them is the user's and is left alone. Each binding is read as an expression, so a `}}` inside it (an object
@@ -341,8 +456,14 @@ export const rewriteBindings = (text: string, renamesByComponentName: Ui2Renames
     for (let end = text.indexOf('}}', open + 2), tries = 0; end !== -1 && tries < 16; tries += 1) {
       const source = text.slice(open + 2, end);
       try {
-        const node: any = acornParseExpressionAt(source, 0, ACORN_OPTIONS);
-        if (/^\s*$/.test(source.slice(node.end))) {
+        // Parentheses are kept and comments noted, so a binding ending in `)` or a comment ends where its source does.
+        const comments: Array<[number, number]> = [];
+        const node: any = acornParseExpressionAt(source, 0, {
+          ...ACORN_OPTIONS,
+          preserveParens: true,
+          onComment: (_block: boolean, _text: string, start: number, end: number) => comments.push([start, end]),
+        });
+        if (onlyCommentsAfter(source, node.end, comments)) {
           const base = open + 2;
           edits.push(
             ...referenceEdits(node, renamesByComponentName).map((edit) => ({
