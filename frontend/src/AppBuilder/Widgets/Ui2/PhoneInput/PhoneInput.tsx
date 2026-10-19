@@ -8,6 +8,7 @@ import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_sha
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
+  missingIsGone,
   useAutoHeight,
   useExposed,
   useLatest,
@@ -56,7 +57,6 @@ export const ShadPhoneInput = (props: WidgetProps) => {
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, componentType, styles } = props;
-  // A new default number, country or country list starts the input again.
   const defaultValue = useStable(properties.defaultValue);
   const defaultCountry = useStable(properties.defaultCountry);
   const onlyCountries = useStable(Array.isArray(properties.onlyCountries) ? properties.onlyCountries : null);
@@ -66,7 +66,22 @@ export const ShadPhoneInput = (props: WidgetProps) => {
   );
   const { countries } = start;
   const [state, setState] = useState<PhoneState>({ value: start.value, country: start.country });
-  useEffect(() => setState({ value: start.value, country: start.country }), [start]);
+  const startRef = useLatest(start);
+  // A new default number or country starts the input again.
+  useEffect(() => {
+    const { value, country } = startRef.current;
+    setState({ value, country });
+  }, [defaultValue, defaultCountry, startRef]);
+  // A new country list (reordered, longer, shorter) keeps the number the user set or cleared while its country is
+  // still offered, so the Form keeps it too; only a list without that country starts the input again. An empty list
+  // is not a removal (a query's data is [] while it reruns). The check reads the state queued before it (an updater),
+  // so a new default arriving with the list wins.
+  const listed = onlyCountries?.length ?? 0;
+  useEffect(() => {
+    if (!missingIsGone(listed)) return;
+    const { value, country, countries: offered } = startRef.current;
+    setState((s) => (offered.includes(s.country) ? s : { value, country }));
+  }, [onlyCountries, listed, startRef]);
   const stateRef = useLatest(state);
   const info = M.phoneInfo(state.value, state.country);
   // Typing reaches update() from inside the phone library's effect, where React cannot render isValid before the
@@ -93,9 +108,10 @@ export const ShadPhoneInput = (props: WidgetProps) => {
   // action would land after the next (`await setValue(...); await clear()` ended with the number set again). An action
   // that changes the number or the country starts the library afresh (a new key) from that state, so there is no copy
   // left to report; one that changes nothing leaves it alone. A box the user was typing in keeps focus, with the caret
-  // at the end.
+  // at the end, and no second onFocus: the user never left it.
   const [revision, setRevision] = useState(0);
   const refocus = useRef(false);
+  const refocusing = useRef(false);
   const restart = (prev: PhoneState, next: PhoneState) => {
     if (next.value === prev.value && next.country === prev.country) return;
     refocus.current = !!textBox.ref.current && document.activeElement === textBox.ref.current;
@@ -145,7 +161,9 @@ export const ShadPhoneInput = (props: WidgetProps) => {
     const box = boxRef.current;
     if (!refocus.current || !box) return;
     refocus.current = false;
+    refocusing.current = true;
     box.focus();
+    refocusing.current = false;
     box.setSelectionRange(box.value.length, box.value.length);
   }, [revision, boxRef]);
   useEffect(() => {
@@ -252,7 +270,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
           className={INNER}
           placeholder={toText(properties.placeholder)}
           disabled={disabled}
-          onFocus={textBox.onFocus}
+          onFocus={() => !refocusing.current && textBox.onFocus()}
           onBlur={textBox.onBlur}
           onChange={(v) => update({ ...stateRef.current, value: v || '' })}
           onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => isEnter(e) && fireEvent('onEnterPressed')}
