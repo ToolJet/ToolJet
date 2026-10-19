@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Badge, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { KanbanCard, SECONDARY_TEXT } from './KanbanCard';
+import { SECONDARY_TEXT } from './KanbanCard';
 import type { KanbanLook } from './KanbanCard';
-import type { BoardCard, BoardColumn } from './kanbanBoard';
+import type { BoardColumn } from './kanbanBoard';
+import { CardSlot } from './cardHosts';
 import { ShowMore } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { isComposing, isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
@@ -16,7 +16,7 @@ const COUNT_BADGE =
 
 // A board draws this many cards a column at first, then this many more per "Show more" click (10k cards froze the
 // page); the board draws MAX_BOARD_COLUMNS columns at a time the same way (a 10k-item list bound as the columns).
-const CARDS_PER_STEP = 100;
+export const CARDS_PER_STEP = 100;
 export const MAX_BOARD_COLUMNS = 50;
 
 const BOTTOM_FADE = {
@@ -26,20 +26,16 @@ const BOTTOM_FADE = {
 
 interface KanbanColumnProps {
   column: BoardColumn;
-  renderBody: (card: BoardCard) => ReactNode;
-  padding: string;
   look: KanbanLook;
   width?: string;
-  collapsedHeight: unknown;
-  expandedKeys: Set<string>;
-  onToggle: (key: string) => void;
+  /** Each card's host element: the board renders the cards (cardHosts.tsx), the column places them. */
+  hostOf: (key: string) => HTMLDivElement;
+  /** How many of its cards the column shows (the board renders those), and what shows more. */
+  shownCards: number;
+  onMoreCards: () => void;
   compact: boolean;
   showCount: boolean;
-  selectedKey?: string;
-  draggable: boolean;
   emptyText: string;
-  onSelect: (card: BoardCard) => void;
-  onDelete?: (card: BoardCard) => void;
   onAdd?: (column: BoardColumn) => void;
   collapsed: boolean;
   onCollapse?: (columnId: string) => void;
@@ -50,20 +46,14 @@ interface KanbanColumnProps {
 
 export const KanbanColumn = ({
   column,
-  renderBody,
-  padding,
   look,
   width,
-  collapsedHeight,
-  expandedKeys,
-  onToggle,
+  hostOf,
+  shownCards,
+  onMoreCards,
   compact,
   showCount,
-  selectedKey,
-  draggable,
   emptyText,
-  onSelect,
-  onDelete,
   onAdd,
   collapsed,
   onCollapse,
@@ -78,7 +68,6 @@ export const KanbanColumn = ({
     id: `col-${column.id}`,
     data: { type: 'column', columnId: column.id },
   });
-  const [shownCards, setShownCards] = useState(CARDS_PER_STEP);
   const hiddenCards = column.cards.length - shownCards;
   // On a board with a fixed height the cards scroll inside their column, fading out at the bottom while more are
   // below (Trello-like); a board that fits its content grows instead.
@@ -195,24 +184,7 @@ export const KanbanColumn = ({
         )}
       >
         {column.cards.length ? (
-          column.cards
-            .slice(0, shownCards)
-            .map((card) => (
-              <KanbanCard
-                key={card.__key}
-                card={card}
-                columnId={column.id}
-                renderBody={renderBody}
-                padding={padding}
-                look={look}
-                collapse={{ height: collapsedHeight, expanded: expandedKeys.has(card.__key), onToggle }}
-                selected={card.__key === selectedKey}
-                draggable={draggable}
-                hidden={collapsed}
-                onSelect={onSelect}
-                onDelete={onDelete}
-              />
-            ))
+          column.cards.slice(0, shownCards).map((card) => <CardSlot key={card.__key} host={hostOf(card.__key)} />)
         ) : (
           <div className="tw-rounded-ui2-lg tw-border tw-border-dashed tw-px-3 tw-py-6 tw-text-center tw-text-xs tw-text-ui2-muted-foreground">
             {emptyText}
@@ -221,7 +193,7 @@ export const KanbanColumn = ({
         <ShowMore
           remaining={hiddenCards}
           step={CARDS_PER_STEP}
-          onMore={() => setShownCards((n) => n + CARDS_PER_STEP)}
+          onMore={onMoreCards}
           onPointerDown={(e) => e.stopPropagation()}
           className="tw-rounded-ui2-md tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
         />

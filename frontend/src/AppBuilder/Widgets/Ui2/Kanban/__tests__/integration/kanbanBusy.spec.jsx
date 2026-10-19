@@ -113,6 +113,8 @@ describe('[finding 30] a busy UI 2.0 Kanban takes no input', () => {
       ['setDisable', () => widget.act('setDisable', true)],
       ['setLoading', () => widget.act('setLoading', true)],
       ['allowDrag off', () => act(async () => widget.setComponentProperty(ID, 'allowDrag', '{{false}}', 'properties'))],
+      // Audit 2026-10-18: a hidden board took the drop.
+      ['setVisibility false', () => widget.act('setVisibility', false)],
     ])('does not move the card after %s', async (_name, interrupt) => {
       await render();
       await moveAlphaToDone(interrupt);

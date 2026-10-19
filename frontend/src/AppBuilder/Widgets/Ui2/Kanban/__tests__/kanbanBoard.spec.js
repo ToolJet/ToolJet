@@ -74,6 +74,49 @@ describe('duplicate ids', () => {
     );
     expect(columns[0].cards.map((card) => card.__key)).toEqual(['a', 'a~2', 'a~3', 'a~4']);
   });
+
+  // Audit 2026-10-18: a made-up key took the id of a card later in the data, and actions on that id hit the wrong card.
+  it('never take the id of a card later in the data', () => {
+    const columns = boardColumns(
+      [{ id: 'a' }, { id: 'a' }, { id: 'a~2' }, {}, { id: 'todo-0' }].map((card) => ({ ...card, status: 'todo' })),
+      [],
+      'status',
+      'id'
+    );
+    expect(columns[0].cards.map((card) => card.__key)).toEqual(['a', 'a~3', 'a~2', 'todo-3', 'todo-0']);
+  });
+
+  it('give an added card its id even when a made-up key had it', () => {
+    const before = boardColumns(
+      [{ id: 'a' }, { id: 'a' }].map((card) => ({ ...card, status: 'todo' })),
+      [],
+      'status',
+      'id'
+    );
+    const { columns, key } = addCard(before, { id: 'a~2' }, 'todo', 'status', 'id');
+    expect(key).toBe('a~2');
+    expect(columns[0].cards.map((card) => [card.id, card.__key])).toEqual([
+      ['a', 'a'],
+      ['a', 'a~3'],
+      ['a~2', 'a~2'],
+    ]);
+  });
+
+  it('give a card renamed by an update its new id even when a made-up key had it', () => {
+    const before = boardColumns(
+      [{ id: 'a' }, { id: 'a' }, { id: 'b' }].map((card) => ({ ...card, status: 'todo' })),
+      [],
+      'status',
+      'id'
+    );
+    const { columns, key } = updateCard(before, 'b', { id: 'a~2' }, 'status', 'id');
+    expect(key).toBe('a~2');
+    expect(columns[0].cards.map((card) => [card.id, card.__key])).toEqual([
+      ['a', 'a'],
+      ['a', 'a~3'],
+      ['a~2', 'a~2'],
+    ]);
+  });
 });
 
 describe('moveCard', () => {
