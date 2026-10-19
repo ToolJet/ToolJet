@@ -4,17 +4,82 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { activeItemExposed, findNav, navItems, unwrap } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import { MenuContent, MenuLabel, MenuRows, SIZES } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import { ITEM_BASE, NAV_HEIGHT, NAV_LOOK, NAV_SQUARE, NavFace, SEPARATOR_LINE, patchNavItems } from './navParts';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { NavItem } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import type { NavItemChange } from './navParts';
-import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Navigation --------------------------------------------------------------------------------------------------
+
+interface NavDropdownProps {
+  item: NavItem;
+  properties: Resolved;
+  className: string;
+  isActive: boolean;
+  iconRail: boolean;
+  activeKey?: string;
+  menuStyle: CSSProperties;
+  onPick: (item: NavItem, parent: NavItem) => void;
+}
+
+/** A parent item's dropdown. The menu is portalled outside the widget: it is open only while the widget, the panels
+ *  around it and the parent item take input (usePickerPopup), so hiding the widget, switching, disabling or hiding its
+ *  Tabs or Container, or disabling the parent closes it. The parent's children in the sidebar's nested list stay
+ *  enabled when the parent is disabled, as in the native Navigation; this only closes the menu its trigger opened. */
+const NavDropdown = ({
+  item,
+  properties,
+  className,
+  isActive,
+  iconRail,
+  activeKey,
+  menuStyle,
+  onPick,
+}: NavDropdownProps) => {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup({ ...properties, disabledState: busy(properties) || item.disabled }, triggerRef);
+  return (
+    <DropdownMenuPrimitive.Root modal={false} open={popup.open} onOpenChange={popup.setOpen}>
+      <DropdownMenuPrimitive.Trigger asChild disabled={busy(properties) || item.disabled} ref={triggerRef}>
+        <button
+          type="button"
+          className={className}
+          title={iconRail ? item.label : undefined}
+          aria-current={isActive ? 'true' : undefined}
+        >
+          <NavFace
+            item={item}
+            active={isActive}
+            collapsed={iconRail}
+            chevron={iconRail ? null : <ChevronDown className="tw-h-3.5 tw-w-3.5 tw-shrink-0 tw-opacity-60" />}
+          />
+        </button>
+      </DropdownMenuPrimitive.Trigger>
+      <MenuContent
+        align="start"
+        side={iconRail ? 'right' : 'bottom'}
+        style={menuStyle}
+        className="[--lk-item-hover:var(--lk-hover,var(--sc-accent))]"
+      >
+        {iconRail ? <MenuLabel>{item.label}</MenuLabel> : null}
+        <MenuRows
+          rows={item.children.map((child) => ({ kind: 'item', ...child, description: '' }))}
+          activeKey={activeKey}
+          // A choice can arrive before the closed menu has rendered.
+          onPick={(child) =>
+            !popup.blocked && onPick(item.children.find((c) => c.key === String(child.value)) || child, item)
+          }
+        />
+      </MenuContent>
+    </DropdownMenuPrimitive.Root>
+  );
+};
 
 export const ShadNavigation = (props: WidgetProps) => {
   const { properties, styles, setExposedVariables, fireEvent, height, componentType } = props;
@@ -116,36 +181,17 @@ export const ShadNavigation = (props: WidgetProps) => {
 
   // A parent opens its children as a dropdown in the top bar and the icon rail, as a nested list in the sidebar.
   const dropdown = (item: NavItem, isActive: boolean) => (
-    <DropdownMenuPrimitive.Root key={item.key} modal={false}>
-      <DropdownMenuPrimitive.Trigger asChild disabled={disabled || item.disabled}>
-        <button
-          type="button"
-          className={itemClass(isActive)}
-          title={iconRail ? item.label : undefined}
-          aria-current={isActive ? 'true' : undefined}
-        >
-          <NavFace
-            item={item}
-            active={isActive}
-            collapsed={iconRail}
-            chevron={iconRail ? null : <ChevronDown className="tw-h-3.5 tw-w-3.5 tw-shrink-0 tw-opacity-60" />}
-          />
-        </button>
-      </DropdownMenuPrimitive.Trigger>
-      <MenuContent
-        align="start"
-        side={iconRail ? 'right' : 'bottom'}
-        style={lookVars(componentType, styles)}
-        className="[--lk-item-hover:var(--lk-hover,var(--sc-accent))]"
-      >
-        {iconRail ? <MenuLabel>{item.label}</MenuLabel> : null}
-        <MenuRows
-          rows={item.children.map((child) => ({ kind: 'item', ...child, description: '' }))}
-          activeKey={found && found.parent?.key === item.key ? found.item.key : undefined}
-          onPick={(child) => pick(item.children.find((c) => c.key === String(child.value)) || child, item)}
-        />
-      </MenuContent>
-    </DropdownMenuPrimitive.Root>
+    <NavDropdown
+      key={item.key}
+      item={item}
+      properties={properties}
+      className={itemClass(isActive)}
+      isActive={isActive}
+      iconRail={iconRail}
+      activeKey={found && found.parent?.key === item.key ? found.item.key : undefined}
+      menuStyle={lookVars(componentType, styles)}
+      onPick={pick}
+    />
   );
 
   const rows: ReactNode[] = [];
