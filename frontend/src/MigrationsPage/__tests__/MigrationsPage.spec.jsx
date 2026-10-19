@@ -76,7 +76,7 @@ describe('MigrationsPage', () => {
 
     expect(await screen.findByText('Upgrade to 3.21.0 failed')).toBeInTheDocument();
     expect(
-      screen.getByText('Nothing was committed. ToolJet keeps running on the previous database version.')
+      screen.getByText('Nothing was committed. Changes made in ToolJet are refused until a retry succeeds.')
     ).toBeInTheDocument();
     expect(screen.getByText('deadlock detected')).toBeInTheDocument();
     expect(screen.getByText('12.4s')).toBeInTheDocument();

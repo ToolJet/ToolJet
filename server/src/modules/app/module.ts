@@ -1,4 +1,4 @@
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 import { OnModuleInit, DynamicModule, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
@@ -242,7 +242,7 @@ export class AppModule implements OnModuleInit, NestModule {
 
     return {
       module: AppModule,
-      imports: [...modules, ...imports],
+      imports: [DiscoveryModule, ...modules, ...imports],
       controllers: [AppController, MigrationRunsController],
       providers: [
         /* Bound here rather than in main.ts so enforcement is part of the module graph: any

@@ -201,7 +201,7 @@ const StatusCard = ({ run, onRun, runPending }) => {
       {run.status === 'failed' && (
         <InlineInfo
           type="danger"
-          title="Nothing was committed. ToolJet keeps running on the previous database version."
+          title="Nothing was committed. Changes made in ToolJet are refused until a retry succeeds."
           description={
             <>
               {run.error && (
@@ -209,9 +209,7 @@ const StatusCard = ({ run, onRun, runPending }) => {
                   {run.error}
                 </code>
               )}
-              <span className="tw-block">
-                Retrying runs every pending migration again. Changes are refused until it finishes.
-              </span>
+              <span className="tw-block">Retrying runs every pending migration again, in one transaction.</span>
             </>
           }
         />

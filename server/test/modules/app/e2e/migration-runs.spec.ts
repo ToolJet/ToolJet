@@ -2,7 +2,15 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { initTestApp, closeTestApp, createSuperAdmin, createAdmin, getDefaultDataSource } from 'test-helper';
+import { WorkerHost } from '@nestjs/bullmq';
 import { MIGRATION_RUNS_DDL, MigrationRunsService } from '@modules/app/migration-runs/service';
+import { MIGRATION_ACTIVE_LOCK_KEY, MIGRATION_ADVISORY_LOCK_KEY } from 'src/migration-helpers/migrations-table-gate';
+
+type Internals = {
+  query: (sql: string, params?: unknown[]) => Promise<unknown[]>;
+  runChild: jest.Mock;
+  recordPending: (triggeredBy: string) => Promise<string | null>;
+};
 
 /** @group platform */
 describe('MigrationRunsController', () => {
@@ -115,14 +123,32 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
   let app: INestApplication;
   let service: MigrationRunsService;
 
+  /** A service as one server would hold it, its own pool routed through the suite transaction so seeded rows are visible. */
+  const newServer = () => {
+    const server = new MigrationRunsService();
+    (server as unknown as Internals).query = async (sql, params) => {
+      const result = await dataSource.query(sql, params);
+      // TypeORM answers UPDATE/DELETE with [rows, count]; the service's pg pool answers with rows.
+      return /^\s*(UPDATE|DELETE)/i.test(sql) ? result[0] : result;
+    };
+    return server;
+  };
+  const stubRunChild = (server: MigrationRunsService) => ((server as unknown as Internals).runChild = jest.fn());
+  const holding = async (key: number, fn: () => Promise<void>) => {
+    await dataSource.query('SELECT pg_advisory_lock($1)', [key]);
+    try {
+      await fn();
+    } finally {
+      await dataSource.query('SELECT pg_advisory_unlock($1)', [key]);
+    }
+  };
+  const version = (): string => globalThis.TOOLJET_VERSION ?? 'unknown';
+
   beforeAll(async () => {
     ({ app } = await initTestApp());
     dataSource = getDefaultDataSource();
     process.env.MIGRATION_MODE = 'async';
-    service = new MigrationRunsService();
-    // Route the service's own pool through the suite transaction so seeded rows are visible.
-    (service as unknown as { query: (sql: string, params?: unknown[]) => Promise<unknown[]> }).query = (sql, params) =>
-      dataSource.query(sql, params);
+    service = newServer();
     await dataSource.query(MIGRATION_RUNS_DDL);
   });
 
@@ -161,6 +187,66 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     await expect(service.status()).resolves.toMatchObject({ state: 'failed', toVersion: '3.21.75' });
   });
 
+  it('should keep a running row running while its migration lock is held, however old its heartbeat', async () => {
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by, heartbeat_at) VALUES ('3.21.75', 'running', 'boot', now() - interval '5 minutes')`
+    );
+
+    await holding(MIGRATION_ADVISORY_LOCK_KEY, async () => {
+      await expect(service.runs()).resolves.toMatchObject([{ status: 'running' }]);
+    });
+  });
+
+  it('should let a dead run be retried: it is marked failed and a new run claimed', async () => {
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by, heartbeat_at) VALUES ('3.21.75', 'running', 'boot', now() - interval '5 minutes')`
+    );
+    const runChild = stubRunChild(service);
+
+    await service.run('admin@tooljet.io');
+
+    const statuses = await dataSource.query('SELECT status FROM migration_runs ORDER BY started_at');
+    expect(statuses).toEqual([{ status: 'failed' }, { status: 'running' }]);
+    expect(runChild).toHaveBeenCalledWith('admin@tooljet.io', { runId: expect.any(String) });
+  });
+
+  it("should report another server's migration from its lock before any run row exists", async () => {
+    await holding(MIGRATION_ACTIVE_LOCK_KEY, async () => {
+      await expect(newServer().status()).resolves.toEqual({ state: 'running' });
+    });
+    await expect(newServer().status()).resolves.toEqual({ state: 'idle' });
+  });
+
+  it('should report running while another migrator holds the active lock, whatever the latest row says', async () => {
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ('3.21.75', 'succeeded', 'boot')`
+    );
+
+    await holding(MIGRATION_ACTIVE_LOCK_KEY, async () => {
+      await expect(newServer().status()).resolves.toMatchObject({ state: 'running', toVersion: '3.21.75' });
+    });
+  });
+
+  it('should answer a burst of status reads with one read', async () => {
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ('3.21.75', 'succeeded', 'boot')`
+    );
+    const server = newServer();
+    const query = jest.spyOn(server as unknown as Internals, 'query');
+
+    await Promise.all(Array.from({ length: 20 }, () => server.status()));
+
+    // The locks and the latest run: one read of each for the whole burst.
+    expect(query).toHaveBeenCalledTimes(2);
+  });
+
+  it('should fail open when the status cannot be read', async () => {
+    const server = newServer();
+    (server as unknown as Internals).query = () => Promise.reject(new Error('connection refused'));
+
+    await expect(server.status()).resolves.toEqual({ state: 'idle' });
+  });
+
   it('should refuse to run while the latest run succeeded', async () => {
     await dataSource.query(
       `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at) VALUES ('3.21.75', 'succeeded', 'boot', now())`
@@ -169,17 +255,101 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     await expect(service.run('admin@tooljet.io')).rejects.toMatchObject({ status: 409 });
   });
 
-  it('should start only one runner when two run requests arrive together', async () => {
+  it.each([
+    ['failed', 'a retry'],
+    ['pending', 'a waiting run'],
+  ])('should start only one runner when two servers are asked to start %s (%s) together', async (status) => {
     await dataSource.query(
-      `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at) VALUES ('3.21.75', 'failed', 'boot', now())`
+      `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ('3.21.75', $1, 'boot')`,
+      [status]
     );
-    const runChild = jest.fn();
-    (service as unknown as { runChild: jest.Mock }).runChild = runChild;
+    const [first, second] = [newServer(), newServer()];
+    const children = [stubRunChild(first), stubRunChild(second)];
 
-    const results = await Promise.allSettled([service.run('a@tooljet.io'), service.run('b@tooljet.io')]);
+    const results = await Promise.allSettled([first.run('a@tooljet.io'), second.run('b@tooljet.io')]);
 
     expect(results.map((result) => result.status).sort()).toEqual(['fulfilled', 'rejected']);
-    expect(runChild).toHaveBeenCalledTimes(1);
+    expect(children.reduce((count, runChild) => count + runChild.mock.calls.length, 0)).toBe(1);
+  });
+
+  it('should keep one pending row when servers booting together all find work', async () => {
+    const ids = await Promise.all(
+      [newServer(), newServer(), service].map((server) => (server as unknown as Internals).recordPending('boot'))
+    );
+
+    expect(new Set(ids).size).toBe(1);
+    await expect(dataSource.query('SELECT count(*)::int FROM migration_runs')).resolves.toEqual([{ count: 1 }]);
+  });
+
+  it('should bring a waiting run back on top when a server boots after a newer run failed, so Run claims it', async () => {
+    const [{ id }] = await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by, started_at) VALUES ('3.21.75', 'pending', 'boot', now() - interval '1 hour') RETURNING id`
+    );
+    // Not now(): the suite transaction would give it the same timestamp as the boot below.
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by, started_at) VALUES ('3.21.75', 'failed', 'boot', now() - interval '1 minute')`
+    );
+    const runChild = stubRunChild(service);
+
+    await expect((service as unknown as Internals).recordPending('boot')).resolves.toBe(id);
+    await expect(newServer().status()).resolves.toMatchObject({ state: 'pending' });
+    await service.run('admin@tooljet.io');
+    expect(runChild).toHaveBeenCalledWith('admin@tooljet.io', { runId: id });
+  });
+
+  it('should rerun on boot a run whose server stopped, since the migration itself did not fail', async () => {
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by, heartbeat_at) VALUES ($1, 'running', 'boot', now() - interval '5 minutes')`,
+      [version()]
+    );
+    const runChild = stubRunChild(service);
+
+    await service.start();
+
+    expect(runChild).toHaveBeenCalledWith('boot', { checkOnly: false });
+  });
+
+  describe('workers (WORKER=true) | background jobs wait while writes are refused', () => {
+    const originalWorker = process.env.WORKER;
+    afterEach(() => {
+      process.env.WORKER = originalWorker;
+      jest.useRealTimers();
+    });
+
+    it('should pause every queue worker from boot and resume once migrations succeed', async () => {
+      jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate'] });
+      process.env.WORKER = 'true';
+      const worker = { pause: jest.fn().mockResolvedValue(undefined), resume: jest.fn() };
+      const host = Object.assign(Object.create(WorkerHost.prototype), { _worker: worker });
+      const server = new MigrationRunsService({ getProviders: () => [{ instance: host }, { instance: {} }] } as never);
+      const status = jest.spyOn(server, 'status').mockResolvedValue({ state: 'running' });
+
+      (server as unknown as { holdJobsWhileMigrating: () => void }).holdJobsWhileMigrating();
+      expect(worker.pause).toHaveBeenCalledWith(true);
+
+      await jest.advanceTimersByTimeAsync(5000);
+      expect(worker.resume).not.toHaveBeenCalled();
+
+      status.mockResolvedValue({ state: 'succeeded' });
+      await jest.advanceTimersByTimeAsync(5000);
+      expect(worker.resume).toHaveBeenCalledTimes(1);
+      await server.onApplicationShutdown();
+    });
+  });
+
+  it('should not rerun a failed run of this version when a server boots, but should for a new version', async () => {
+    const runChild = stubRunChild(service);
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ($1, 'failed', 'boot')`,
+      [version()]
+    );
+
+    await service.start();
+    expect(runChild).not.toHaveBeenCalled();
+
+    await dataSource.query(`UPDATE migration_runs SET to_version = '0.0.1'`);
+    await service.start();
+    expect(runChild).toHaveBeenCalledWith('boot', { checkOnly: false });
   });
 
   it('should keep a manual-mode pending run pending however old its heartbeat, and start it on request', async () => {
@@ -187,13 +357,12 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       `INSERT INTO migration_runs (to_version, status, triggered_by, heartbeat_at)
        VALUES ('3.21.75', 'pending', 'boot', now() - interval '2 days') RETURNING id`
     );
-    const runChild = jest.fn();
-    (service as unknown as { runChild: jest.Mock }).runChild = runChild;
+    const runChild = stubRunChild(service);
 
     await expect(service.status()).resolves.toMatchObject({ state: 'pending' });
     await service.run('admin@tooljet.io');
 
-    expect(runChild).toHaveBeenCalledWith('admin@tooljet.io', { pendingRunId: id, recordNow: true });
+    expect(runChild).toHaveBeenCalledWith('admin@tooljet.io', { runId: id });
   });
 
   it("should return one migration's log lines, or the whole run's", async () => {
@@ -239,6 +408,12 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       process.env.MIGRATION_SETUP_COMMAND = originalCommand;
     });
 
+    async function waitForRow(): Promise<void> {
+      while ((await dataSource.query('SELECT 1 FROM migration_runs')).length === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+
     async function runToExit(args = ''): Promise<void> {
       process.env.MIGRATION_SETUP_COMMAND = `${runner} ${args}`;
       await service.start();
@@ -261,6 +436,44 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       await expect(service.log(run.id, 'BackfillThing2')).resolves.toBe(
         '[migrations] START BackfillThing2\nBackfillThing2: [PROGRESS] 5/10 (50%)\n[migrations] DONE BackfillThing2 40ms'
       );
+    });
+
+    it('should clear a stale waiting run when a manual-mode check finds nothing pending', async () => {
+      await dataSource.query(
+        `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ('3.21.75', 'pending', 'boot')`
+      );
+      process.env.MIGRATION_MODE = 'manual';
+      const manual = newServer();
+      process.env.MIGRATION_MODE = 'async';
+      process.env.MIGRATION_SETUP_COMMAND = `${runner} none`;
+
+      await manual.start();
+      const internals = manual as unknown as { child: unknown; finalWrite: Promise<void> | null };
+      while (internals.child) await new Promise((resolve) => setTimeout(resolve, 50));
+      await internals.finalWrite;
+
+      await expect(manual.runs()).resolves.toEqual([]);
+    });
+
+    it('should mark a run stopped by this server shutting down as stopped, not failed, so the next boot retries it', async () => {
+      process.env.MIGRATION_SETUP_COMMAND = `${runner} slow`;
+      await service.start();
+      await waitForRow();
+
+      await service.onApplicationShutdown();
+
+      const [run] = await service.runs();
+      expect(run).toMatchObject({
+        status: 'failed',
+        error: 'The migrating server stopped without reporting a result.',
+      });
+      Object.assign(service, { shuttingDown: false, pool: null });
+    });
+
+    it('should record nothing when another server holds the lock and this runner skips', async () => {
+      await runToExit('skip');
+
+      await expect(service.runs()).resolves.toEqual([]);
     });
 
     it('should record a failed run with the failing migration and error', async () => {

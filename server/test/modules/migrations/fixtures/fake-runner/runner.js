@@ -1,5 +1,21 @@
-// Stands in for the setup command: prints what run-all-migrations prints. `fail` as argv[2] fails the second migration.
+// Stands in for the setup command: prints what run-all-migrations prints. argv[2]: `fail` fails the
+// second migration; `skip` finds another server holding the lock; `none` finds nothing pending;
+// `slow` keeps running until killed.
 const fail = process.argv[2] === 'fail';
+if (process.argv[2] === 'slow') {
+  console.log('[migrations] 1 migration(s) pending: SlowThing1');
+  console.log('[migrations] START SlowThing1');
+  setTimeout(() => undefined, 60_000);
+  return;
+}
+if (process.argv[2] === 'none') {
+  console.log('[migrations] No schema or data migrations pending.');
+  process.exit(0);
+}
+if (process.argv[2] === 'skip') {
+  console.log('[migrations] Another server is running migrations; leaving the run to it.');
+  process.exit(75);
+}
 const lines = [
   '[migrations] 2 migration(s) pending: AddThing1, BackfillThing2',
   '[migrations] START AddThing1',

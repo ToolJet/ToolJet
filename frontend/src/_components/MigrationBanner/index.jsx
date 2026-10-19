@@ -11,7 +11,7 @@ const RUNNING_POLL_MS = 10000;
 const MESSAGES = {
   pending: 'A ToolJet upgrade is waiting for your administrator. Changes cannot be saved until it is applied.',
   running: 'ToolJet is being upgraded. Some features may not work and changes may not save until it finishes.',
-  failed: 'The latest ToolJet upgrade failed. Some features may not work. Contact your administrator.',
+  failed: 'The latest ToolJet upgrade failed. Changes cannot be saved until an administrator retries it.',
 };
 
 const readDismissed = () => {

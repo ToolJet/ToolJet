@@ -2,13 +2,12 @@ import { DataSource, MigrationExecutor, QueryRunner } from 'typeorm';
 import schemaDataSource from './db-migrations-datasource';
 import dataDataSource from './data-migrations-datasource';
 import { extractEnumValueAdditions, EnumValueAddition } from './enum-value-additions';
-import { MigrationStatusFlag } from './migration-status-flag';
 import {
   excludeLockSentinels,
   getLockWaitOptions,
-  LockWaitOptions,
-  probeMigrationsTable,
-  withLockContentionRetry,
+  LockSession,
+  MIGRATION_ACTIVE_LOCK_KEY,
+  SKIPPED_EXIT_CODE,
   withMigrationAdvisoryLock,
 } from './migrations-table-gate';
 import { getEnvVars } from '../../scripts/database-config-utils';
@@ -48,17 +47,10 @@ import { getEnvVars } from '../../scripts/database-config-utils';
  * timestamps interleave, which would reorder them and break that invariant. Instead we
  * drive two MigrationExecutor passes.
  *
- * Concurrency: the LockMigrationsTable migrations (lowest timestamps, present in both
- * dirs) run first in the schema pass and `LOCK TABLE migrations`, serialising concurrent
- * boots. That lock makes every other booting pod block on its first read of `migrations`,
- * which under a `statement_timeout`/`lock_timeout` used to surface as an error, a non-zero
- * exit and a container restart — a crash loop lasting as long as the migration. Two things
- * fix that here, both in `run()`:
- *   - a waiting room (`migrations-table-gate.ts`): probe the table under a short, local lock
- *     timeout and retry on an interval instead of exiting;
- *   - an upgrade gate (`migration-status.ts`): while real migrations are pending, raise the
- *     `MIGRATION_IN_PROGRESS` flag in Redis so already-running pods answer API traffic with
- *     503 rather than serving requests against a half-migrated schema.
+ * Concurrency (`migrations-table-gate.ts`): one pod at a time holds the migration advisory lock
+ * from "what is pending?" to commit; the others wait their turn instead of crash-looping. While
+ * real migrations run it also holds the active lock, which serving pods read to answer writes
+ * with 503 rather than serve them against a half-migrated schema.
  */
 
 /**
@@ -194,22 +186,11 @@ async function realPendingMigrationNames(dataSourceWithMigrations: DataSource): 
   return excludeLockSentinels(pending.map(({ name }) => name));
 }
 
-/**
- * Waits out any pod already holding the `migrations` table, then reports what this deploy has
- * left to do. Both steps read that table, so both are retried as one unit.
- */
-async function waitForTurn(schemaDS: DataSource, dataDS: DataSource, options: LockWaitOptions): Promise<string[]> {
-  return withLockContentionRetry(
-    'waiting for the migrations table',
-    async () => {
-      await probeMigrationsTable(schemaDS, options.probeLockTimeout);
-      return [...(await realPendingMigrationNames(schemaDS)), ...(await realPendingMigrationNames(dataDS))];
-    },
-    options
-  );
-}
-
-export async function run(schemaDS: DataSource = schemaDataSource, dataDS: DataSource = dataDataSource): Promise<void> {
+/** False when MIGRATION_SKIP_IF_LOCKED found another server migrating and left the run to it. */
+export async function run(
+  schemaDS: DataSource = schemaDataSource,
+  dataDS: DataSource = dataDataSource
+): Promise<boolean> {
   if (!schemaDS.isInitialized) await schemaDS.initialize();
   // dataDS is initialized to load its migration classes; queries run through whichever
   // query runner each pass uses.
@@ -217,8 +198,7 @@ export async function run(schemaDS: DataSource = schemaDataSource, dataDS: DataS
 
   // getEnvVars(), not process.env: this process never boots ConfigModule, so settings that
   // live only in the env file would otherwise be invisible here.
-  const env = getEnvVars();
-  const lockWaitOptions = getLockWaitOptions(env);
+  const lockWaitOptions = getLockWaitOptions(getEnvVars());
 
   // Everything from "what is pending?" to "migrations committed" happens as the cluster's only
   // migrating pod. Reading the pending list outside this lock is what lets a losing pod wake up
@@ -230,27 +210,21 @@ export async function run(schemaDS: DataSource = schemaDataSource, dataDS: DataS
     schemaDS,
     lockWaitOptions,
     {},
-    async () => {
-      await migrateAsSolePod(schemaDS, dataDS, lockWaitOptions, env);
+    async (session) => {
+      await migrateAsSolePod(schemaDS, dataDS, session);
       return true;
     },
     { skipIfBusy }
   );
   if (!ran) console.log('[migrations] Another server is running migrations; leaving the run to it.');
+  return !!ran;
 }
 
-async function migrateAsSolePod(
-  schemaDS: DataSource,
-  dataDS: DataSource,
-  lockWaitOptions: LockWaitOptions,
-  env: Record<string, string | undefined>
-): Promise<void> {
-  // A pod still running the previous release can hold the `migrations` table without taking the
-  // advisory lock, so the table probe stays as the cross-version safety net.
-  const pending = await waitForTurn(schemaDS, dataDS, lockWaitOptions);
+async function migrateAsSolePod(schemaDS: DataSource, dataDS: DataSource, session: LockSession): Promise<void> {
+  const pending = [...(await realPendingMigrationNames(schemaDS)), ...(await realPendingMigrationNames(dataDS))];
 
   // Manual mode: report what is pending, run nothing. The server tracks it until a super admin starts it.
-  // process.env, not env: set by the parent per spawn, and the .env file must not mask it.
+  // process.env, not getEnvVars(): set by the parent per spawn, and the .env file must not mask it.
   if (process.env.MIGRATION_CHECK_ONLY === 'true') {
     console.log(
       pending.length
@@ -260,8 +234,6 @@ async function migrateAsSolePod(
     return;
   }
 
-  // No retry from here on: an error inside the migration transaction is final, and retrying
-  // would re-run the whole (possibly hour-long) run.
   if (pending.length === 0) {
     console.log('[migrations] No schema or data migrations pending — not cutting API traffic for this boot.');
     await executeMigrations(schemaDS, dataDS);
@@ -269,19 +241,12 @@ async function migrateAsSolePod(
   }
 
   console.log(`[migrations] ${pending.length} migration(s) pending: ${pending.join(', ')}`);
-
-  const flag = MigrationStatusFlag.create(env);
-  const disarm = flag?.armShutdownRelease();
-  await flag?.acquire();
-  const stopKeepAlive = flag?.keepAlive();
-
+  // Serving pods refuse writes while this is held; it dies with this session, so a killed pod cannot leave it set.
+  await session.query('SELECT pg_advisory_lock($1)', [MIGRATION_ACTIVE_LOCK_KEY]);
   try {
     await executeMigrations(schemaDS, dataDS);
   } finally {
-    stopKeepAlive?.();
-    disarm?.();
-    await flag?.release();
-    await flag?.close();
+    await session.query('SELECT pg_advisory_unlock($1)', [MIGRATION_ACTIVE_LOCK_KEY]).catch(() => undefined);
   }
 }
 
@@ -315,10 +280,10 @@ async function executeMigrations(schemaDS: DataSource, dataDS: DataSource): Prom
 // Importing the module (e.g. from a test) does not execute migrations.
 if (require.main === module) {
   run()
-    .then(async () => {
+    .then(async (ran) => {
       await schemaDataSource.destroy();
       await dataDataSource.destroy();
-      process.exit(0);
+      process.exit(ran ? 0 : SKIPPED_EXIT_CODE);
     })
     .catch(async (error) => {
       console.error(error);

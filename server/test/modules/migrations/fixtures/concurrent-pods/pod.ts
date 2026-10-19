@@ -6,7 +6,7 @@
  * set, so the test exercises the production gate and waiting-room code paths verbatim.
  *
  * Spawned as a separate OS process (not a thread) so each pod gets its own connection pool,
- * its own Redis client and its own exit code — the thing that used to crash-loop.
+ * its own exit code — the thing that used to crash-loop.
  *
  * Contract with the spec: everything the runner logs goes to stdout, and the last line is
  * `__POD_RESULT__{json}`. Exit code 0 means the pod booted successfully.

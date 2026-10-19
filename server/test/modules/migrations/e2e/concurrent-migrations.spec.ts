@@ -1,14 +1,14 @@
 /** @group database */
-import Redis from 'ioredis';
 import { DataSource } from 'typeorm';
-import { MIGRATION_IN_PROGRESS_KEY } from 'src/migration-helpers/migration-status';
+import { HELD_MIGRATION_LOCKS_SQL } from 'src/migration-helpers/migrations-table-gate';
 import {
   createScratchDatabase,
   dropScratchDatabase,
   PodOutcome,
   postgres,
   runPod,
-  TEST_REDIS_DB,
+  spawnPod,
+  waitFor,
 } from '../fixtures/concurrent-pods/harness';
 
 /**
@@ -18,7 +18,7 @@ import {
  * `migrations` table lock and runs a slow migration; the rest must wait it out instead of
  * timing out and exiting — the crash loop this whole mechanism exists to prevent.
  *
- * Everything here is real: real PostgreSQL, real Redis, real OS processes, and the real
+ * Everything here is real: real PostgreSQL, real OS processes, and the real
  * `run()` from `src/migration-helpers/run-all-migrations.ts`. Only the migration set is a
  * fixture (the two production lock sentinels plus one slow migration), and only the database
  * is a scratch one, so the suite is fast and touches nothing else.
@@ -29,32 +29,33 @@ const MIGRATION_SLEEP_SECONDS = 6;
 
 const scratchDatabase = `tooljet_migration_gate_${process.pid}`;
 
-/** Samples the upgrade flag throughout the run, so the spec can see it raised AND cleared. */
-function watchFlag(redis: Redis) {
-  const samples: (string | null)[] = [];
+interface HeldLocks {
+  running: boolean;
+  migrating: boolean;
+}
+
+const heldLocks = async (connection: DataSource): Promise<HeldLocks> =>
+  (await connection.query(HELD_MIGRATION_LOCKS_SQL))[0];
+
+/** Samples the active lock throughout the run, so the spec can see it taken AND released. */
+function watchActiveLock(connection: DataSource) {
+  const samples: boolean[] = [];
   const timer = setInterval(() => {
-    void redis.get(MIGRATION_IN_PROGRESS_KEY).then((value) => samples.push(value));
+    void heldLocks(connection).then(({ migrating }) => samples.push(migrating));
   }, 100);
   return { samples, stop: () => clearInterval(timer) };
 }
 
 describe('Concurrent pod boots | rolling upgrade against one database', () => {
   let scratch: DataSource;
-  let redis: Redis;
   let pods: PodOutcome[];
-  let flagSamples: (string | null)[];
+  let activeLockSamples: boolean[];
 
   beforeAll(async () => {
     await createScratchDatabase(scratchDatabase);
+    scratch = await new DataSource({ type: 'postgres', ...postgres, database: scratchDatabase }).initialize();
 
-    redis = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: Number(process.env.REDIS_PORT || 6379),
-      db: Number(TEST_REDIS_DB),
-    });
-    await redis.del(MIGRATION_IN_PROGRESS_KEY);
-
-    const watcher = watchFlag(redis);
+    const watcher = watchActiveLock(scratch);
     // One shared release instant; the generous lead time absorbs ts-node start-up.
     const startAt = Date.now() + 12_000;
     pods = await Promise.all(
@@ -68,15 +69,11 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       )
     );
     watcher.stop();
-    flagSamples = watcher.samples;
-
-    scratch = await new DataSource({ type: 'postgres', ...postgres, database: scratchDatabase }).initialize();
+    activeLockSamples = watcher.samples;
   }, 180_000);
 
   afterAll(async () => {
     await scratch?.destroy().catch(() => undefined);
-    await redis?.del(MIGRATION_IN_PROGRESS_KEY);
-    await redis?.quit();
     await dropScratchDatabase(scratchDatabase);
   }, 60_000);
 
@@ -96,8 +93,6 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       expect(waiting.length).toBe(POD_COUNT - 1);
       waiting.forEach(({ stdout }) => {
         expect(stdout).toContain('This pod will NOT exit.');
-        // Queued on the advisory lock, which is taken before the pending list is read.
-        expect(stdout).toContain('Another pod holds the ToolJet migration advisory lock');
         expect(stdout).toContain('Lock released');
       });
     });
@@ -140,9 +135,6 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
    * reads `.env.test`). Production pods do not. NODE_ENV must not be load-bearing for any of the
    * coordination, so this repeats the race under a production-like value.
    *
-   * Deliberately asserts nothing about Redis: a developer's or CI's `.env` may point REDIS_* at
-   * another instance, and an env-file key beats an exported variable (see MIGRATION_FLOW.md §1).
-   * Migrations succeed regardless of Redis, so these assertions hold either way.
    */
   describe('without NODE_ENV=test | coordination is not an artifact of test mode', () => {
     const productionDatabase = `tooljet_migration_gate_prod_${process.pid}`;
@@ -192,34 +184,59 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
 
       expect(migrated).toHaveLength(1);
       expect(waited).toHaveLength(1);
-      expect(waited[0].stdout).toContain('Another pod holds the ToolJet migration advisory lock');
       expect(waited[0].stdout).toContain('This pod will NOT exit.');
       expect(waited[0].stdout).toContain('No schema or data migrations pending');
     });
   });
 
   describe('the upgrade gate', () => {
-    it('should raise MIGRATION_IN_PROGRESS while the migration is running', () => {
-      expect(flagSamples.filter(Boolean).length).toBeGreaterThan(0);
+    it('should hold the active lock while the migration is running', () => {
+      expect(activeLockSamples.filter(Boolean).length).toBeGreaterThan(0);
     });
 
-    it('should name the owning pod in the flag, so operators can see who is migrating', () => {
-      const [owner] = flagSamples.filter(Boolean);
-
-      expect(owner).toMatch(/^.+:\d+:[0-9a-f]{8}$/);
+    it('should release both locks once migrations finish, leaving nothing to leak', async () => {
+      expect(await heldLocks(scratch)).toEqual({ running: false, migrating: false });
     });
 
-    it('should clear the flag once migrations finish, leaving nothing to leak', async () => {
-      expect(await redis.get(MIGRATION_IN_PROGRESS_KEY)).toBeNull();
-    });
-
-    it('should not raise the gate on the pods that had no migrations to run', () => {
+    it('should not take the active lock on the pods that had no migrations to run', () => {
       const noWork = pods.filter(({ stdout }) => stdout.includes('No schema or data migrations pending'));
 
-      noWork.forEach(({ stdout }) => {
-        expect(stdout).toContain('not cutting API traffic for this boot');
-        expect(stdout).not.toContain('Upgrade gate ON');
-      });
+      noWork.forEach(({ stdout }) => expect(stdout).toContain('not cutting API traffic for this boot'));
+      // Two pods found nothing; had either taken the lock, the samples would show it after the run.
+      expect(activeLockSamples[activeLockSamples.length - 1]).toBe(false);
     });
+
+    it('should release the gate the moment a migrating pod is killed, with no expiry to wait out', async () => {
+      const database = `tooljet_migration_gate_kill_${process.pid}`;
+      await createScratchDatabase(database);
+      const connection = await new DataSource({ type: 'postgres', ...postgres, database }).initialize();
+      try {
+        const pod = spawnPod({ podId: 'pod-sigkill', database, migrationSleepSeconds: 25 });
+        await waitFor(
+          'the active lock',
+          () => heldLocks(connection),
+          ({ migrating }) => migrating,
+          {
+            timeoutMs: 60_000,
+          }
+        );
+
+        pod.child.kill('SIGKILL');
+        await pod.done;
+
+        await waitFor(
+          'the locks to go',
+          () => heldLocks(connection),
+          ({ running, migrating }) => !running && !migrating,
+          {
+            timeoutMs: 5000,
+          }
+        );
+        expect(await connection.query('SELECT 1 FROM migration_witness').catch(() => [])).toHaveLength(0);
+      } finally {
+        await connection.destroy().catch(() => undefined);
+        await dropScratchDatabase(database);
+      }
+    }, 180_000);
   });
 });

@@ -3,7 +3,7 @@
  *
  * A "pod" is a real OS process running `pod.ts`, which runs the real `run()` against a scratch
  * database and the fixture migration set. Separate processes (not threads) are the point —
- * each gets its own connection pool, its own Redis client and its own exit code.
+ * each gets its own connection pool and its own exit code.
  */
 import { ChildProcess, spawn } from 'child_process';
 import { join, resolve } from 'path';
@@ -11,9 +11,6 @@ import { DataSource } from 'typeorm';
 
 export const SERVER_ROOT = resolve(__dirname, '../../../../..');
 const POD_SCRIPT = join(SERVER_ROOT, 'test/modules/migrations/fixtures/concurrent-pods/pod.ts');
-
-/** Redis db the dev instance never uses, so a local ToolJet is never gated by these specs. */
-export const TEST_REDIS_DB = '15';
 
 export const postgres = {
   host: process.env.PG_HOST || 'localhost',
@@ -54,7 +51,7 @@ export interface RunningPod {
 export function spawnPod({ podId, database, startAt, migrationSleepSeconds = 6, env = {} }: PodOptions): RunningPod {
   // `process.execPath` rather than `npx ts-node`: the child must BE the node process, so that
   // a signal the spec sends lands on the pod itself. An `npx` wrapper cannot forward SIGKILL —
-  // it dies and orphans the real process, which then finishes normally and clears its own key.
+  // it dies and orphans the real process, which then finishes normally.
   const child = spawn(
     process.execPath,
     ['-r', 'ts-node/register/transpile-only', '-r', 'tsconfig-paths/register', POD_SCRIPT],
@@ -72,8 +69,6 @@ export function spawnPod({ podId, database, startAt, migrationSleepSeconds = 6, 
         SCRATCH_PG_USER: postgres.username,
         SCRATCH_PG_PASS: postgres.password,
         SCRATCH_PG_DB: database,
-        REDIS_DB: TEST_REDIS_DB,
-        MIGRATION_LOCK_PROBE_TIMEOUT: '1s',
         MIGRATION_LOCK_RETRY_INTERVAL_SECONDS: '2',
         ...env,
       },
