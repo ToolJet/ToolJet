@@ -13,6 +13,7 @@ import {
   shownOptions,
 } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import { isDisabledOption } from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
+import { useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const ShadRadioGroup = (props: WidgetProps) => {
@@ -23,7 +24,7 @@ export const ShadRadioGroup = (props: WidgetProps) => {
   const options = toOptions(properties.options);
   const byKey = optionsByKey(options);
   const initial = defaultKey(properties.defaultValue);
-  const [key, change] = useValue(
+  const [key, change, setKey] = useValue(
     props,
     initial,
     () => ({
@@ -33,6 +34,14 @@ export const ShadRadioGroup = (props: WidgetProps) => {
       deselectOption: async () => change('', 'onSelectionChange'),
     }),
     (k) => byKey.get(k)?.value ?? ''
+  );
+  // An option that is removed takes its choice with it, so it does not come back selected when it reappears (as
+  // Select). An empty list is not a removal (missingIsGone).
+  useDropRemovedChoices(
+    options.map((o) => choiceKey(o.value)),
+    key ? [key] : [],
+    () => setKey(''),
+    false
   );
   useExposed(props.setExposedVariables, properties, {
     label: String(properties.label ?? ''),
