@@ -160,6 +160,47 @@ export const computeFlexChildFlexStyle = ({
   return { flex: `0 0 ${effectiveHeightPx}px`, width: fillWidth ? '100%' : `${effectiveWidthPx}px`, minHeight: 0 };
 };
 
+/**
+ * Flex sizing of a FlexContainer child's wrapper in a container saved before the UI 2.0 layout (lts-3.16, kept as it
+ * was; see _helpers/flexLayoutVersion.js). A fill child in a row grows from its content-sized basis and never shrinks,
+ * so it takes the whole line and fill children stack one per line.
+ */
+export const computeFlexChildFlexStyleV1 = ({
+  isFlexRow,
+  flexShouldStack,
+  fillWidth,
+  effectiveWidthPx,
+  effectiveHeightPx,
+  availableWidth,
+}) => {
+  const flexMainFill = isFlexRow ? fillWidth : false;
+  const flexMainPx = isFlexRow ? effectiveWidthPx : effectiveHeightPx;
+  if (flexShouldStack && !isFlexRow) {
+    return {
+      flex: flexMainFill ? '1 0 auto' : `0 0 ${flexMainPx}px`,
+      height: `${effectiveHeightPx}px`,
+      minHeight: 0,
+      ...(fillWidth
+        ? { width: '100%', minWidth: 0 }
+        : { width: `${Math.min(effectiveWidthPx, availableWidth)}px`, maxWidth: '100%', minWidth: 0 }),
+    };
+  }
+  return {
+    flex: flexMainFill ? '1 0 auto' : `0 0 ${flexMainPx}px`,
+    ...(isFlexRow
+      ? { height: `${effectiveHeightPx}px`, minWidth: 0 }
+      : { width: fillWidth ? '100%' : `${effectiveWidthPx}px`, minHeight: 0 }),
+  };
+};
+
+/**
+ * Whether a dialog without its trigger button leaves its FlexContainer's flow in the viewer (no slot, no gap): it
+ * draws nothing in place, and the open dialog renders outside the box. A container saved before the UI 2.0 layout keeps
+ * its slot, as on lts-3.16.
+ */
+export const leavesFlexFlow = ({ modalWithoutTrigger, mode, layoutV2 }) =>
+  !!modalWithoutTrigger && mode === 'view' && !!layoutV2;
+
 /** Width a child takes on a wrapping line, as the browser packs it: a fill child its minimum, a fixed child its width. */
 export const flexChildLineWidth = ({ fillWidth, minWidthPx = 0, width }) => (fillWidth ? minWidthPx || 0 : width);
 
