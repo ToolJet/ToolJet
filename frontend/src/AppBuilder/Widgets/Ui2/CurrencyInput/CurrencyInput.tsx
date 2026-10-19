@@ -76,7 +76,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
       const next = code !== undefined && code !== null && code !== '' ? M.toCurrency(code, currencyRef.current) : null;
       if (next) setCurrency(next);
       const places = M.currencyDecimals(next ?? currencyRef.current, latest.current.decimalPlaces);
-      box.set(M.roundTo(M.parseNumber(v, latest.current.locale), places));
+      box.set(M.parseNumber(v, latest.current.locale), (n) => M.roundTo(n, places));
       check.touch();
     },
     setCurrency: async (code: unknown) => setCurrency(M.toCurrency(code, currencyRef.current)),
@@ -113,11 +113,12 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
             onValueChange={(code) => {
               const next = M.toCurrency(code, currency);
               if (next === currency) return;
-              const rounded = M.roundTo(value, M.currencyDecimals(next, properties.decimalPlaces));
+              const places = M.currencyDecimals(next, properties.decimalPlaces);
+              const rounded = M.roundTo(value, places);
               // box.set fires the one onChange, once the new currency and amount are published.
               runNow(() => {
                 setCurrency(next);
-                box.set(rounded);
+                box.set(rounded, (n) => M.roundTo(n, places));
                 setExposedVariables({ currency: next, value: rounded, formattedValue: formatted(rounded, next) });
               });
             }}

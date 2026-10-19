@@ -30,6 +30,10 @@ export const ShadSlider = (props: WidgetProps) => {
     initial,
     value: isRange ? initial : initial[0],
   });
+  // Puts the thumbs back on the value (below): an action or a Form's clear sets it even while a drag holds them
+  // elsewhere, and may set the value it already has.
+  const [placed, setPlaced] = useState(0);
+  const place = () => setPlaced((n) => n + 1);
   const [value, change, setValue] = useValue(
     props,
     isRange ? initial : initial[0],
@@ -38,16 +42,19 @@ export const ShadSlider = (props: WidgetProps) => {
         const { bounds: b, isRange: range, value: current } = latest.current;
         if (!numeric(n)) return;
         const [v] = sliderValues(Number(n), b);
+        place();
         change(range ? sliderValues([v, Math.max(v, list(current)[1] ?? v)], b) : v);
       },
       setRangeValue: async (a: unknown, z: unknown) => {
         const { bounds: b, isRange: range } = latest.current;
         if (!numeric(a) || !numeric(z)) return;
         const pair = sliderValues([Number(a), Number(z)], b);
+        place();
         change(range ? pair : pair[0]);
       },
       reset: async () => {
         const { initial: start, isRange: range } = latest.current;
+        place();
         set(range ? start : start[0]);
       },
     }),
@@ -55,22 +62,30 @@ export const ShadSlider = (props: WidgetProps) => {
     raw
   );
   // New bounds (a smaller maximum, a larger minimum) fit the value the user set, so what is exposed is what is drawn.
+  // It fits the value queued before it (an updater): a new default arriving in the same update has reset it already.
   useEffect(() => {
-    const fitted = sliderValues(value, bounds);
-    const next = isRange ? fitted : fitted[0];
-    if (JSON.stringify(next) !== JSON.stringify(value)) setValue(next);
+    const fit = (v: number | number[]) => {
+      const fitted = sliderValues(v, bounds);
+      return isRange ? fitted : fitted[0];
+    };
+    const same = (v: number | number[]) => JSON.stringify(fit(v)) === JSON.stringify(v);
+    if (!same(value)) setValue((v) => (same(v) ? v : fit(v)));
   }, [value, bounds, isRange, setValue]);
   latest.current = { bounds, isRange, initial, value };
   // A Form's clearForm sets it to its minimum (a range to minimum and minimum), as the native Range slider.
   useFormClearNow(() => {
     const { bounds: b, isRange: range } = latest.current;
+    place();
     change(range ? [b.min, b.min] : b.min);
   });
   useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
-  // The thumbs shown while dragging; a new value or new bounds put them back on the value.
+  // The thumbs shown while dragging; a new value or new bounds put them back on the value, and so do an action and the
+  // control turning disabled or loading: that cuts a drag short without committing it, and the thumbs stayed where
+  // they were dragged while the value and the Form kept the old one.
   const [live, setLive] = useState(initial);
   const current = useStable(value);
-  useEffect(() => setLive(sliderValues(current, bounds)), [current, bounds]);
+  const disabled = busy(properties);
+  useEffect(() => setLive(sliderValues(current, bounds)), [current, bounds, disabled, placed]);
   return (
     <Shell {...props} innerRef={fit}>
       <Field
@@ -83,7 +98,7 @@ export const ShadSlider = (props: WidgetProps) => {
             max={bounds.max}
             step={bounds.step}
             value={live}
-            disabled={busy(properties)}
+            disabled={disabled}
             thumbLabel={fieldName(props, 'Slider') ?? String(properties.label)}
             onValueChange={setLive}
             onValueCommit={(v) => change(isRange ? v : v[0])}

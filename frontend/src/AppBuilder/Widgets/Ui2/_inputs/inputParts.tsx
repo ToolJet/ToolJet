@@ -123,10 +123,12 @@ export const useNumberBox = (
     });
   };
   /** Sets the value from an action, as the native number inputs' setText, setValue and clear do: onChange, every
-   *  time. The value is published by the action's flush before the event fires (runNow). */
-  const set = (v: unknown) => {
+   *  time. The value is published by the action's flush before the event fires (runNow). `roundAs` rounds it when
+   *  the same action changes the decimal places (a Currency input's setValue(value, currency)): this render's `round`
+   *  still has the old ones. */
+  const set = (v: unknown, roundAs = round) => {
     setDraft(null);
-    const next = round(typeof v === 'number' ? v : parse(v));
+    const next = roundAs(typeof v === 'number' ? v : parse(v));
     valueRef.current = next;
     setValue(next);
     fireEvent('onChange');

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { FormField, HELP, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -50,7 +50,14 @@ export const ShadPasswordInput = (props: WidgetProps) => {
   };
   const check = useValidation(props, value, () => onChange(''));
   const textBox = useTextBox(props, check.touch);
-  const [visible, setVisible] = useState(false);
+  // Turning the toggle off masks a password it revealed (there is no button left to hide it), and turning it back on
+  // starts masked.
+  const canReveal = properties.showToggle !== false;
+  const [revealed, setVisible] = useState(false);
+  useEffect(() => {
+    if (!canReveal) setVisible(false);
+  }, [canReveal]);
+  const visible = revealed && canReveal;
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
   const meter = properties.showStrength === true && !loading;
@@ -63,7 +70,7 @@ export const ShadPasswordInput = (props: WidgetProps) => {
           type={visible ? 'text' : 'password'}
           autoComplete={properties.showStrength === true ? 'new-password' : 'current-password'}
           {...controlAria(props, check.error)}
-          className={cn(INNER, properties.showToggle !== false && 'tw-pr-1')}
+          className={cn(INNER, canReveal && 'tw-pr-1')}
           value={value}
           placeholder={toText(properties.placeholder)}
           disabled={disabled}
@@ -72,7 +79,7 @@ export const ShadPasswordInput = (props: WidgetProps) => {
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => isEnter(e) && fireEvent('onEnterPressed')}
         />
-        {properties.showToggle !== false && !loading ? (
+        {canReveal && !loading ? (
           <button
             type="button"
             aria-label={visible ? 'Hide password' : 'Show password'}

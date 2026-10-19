@@ -18,6 +18,9 @@ export const ShadTextarea = (props: WidgetProps) => {
   // When the label and help text leave the text area less than its 60px, the box grows to fit them (in view, with
   // dynamic height on); the text area itself is sized from the authored height, so the box comes back down.
   useAutoHeight(props, fieldRef);
+  // The loading look replaces the label and help text, so the end of loading measures and observes the new ones (the
+  // observer stayed on the replaced label).
+  const loading = !!properties.loadingState;
   useLayoutEffect(() => {
     const field = fieldRef.current;
     const area = field?.querySelector('textarea');
@@ -30,7 +33,7 @@ export const ShadTextarea = (props: WidgetProps) => {
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
     [...(field.children[0]?.children ?? [])].forEach((part) => part !== area && observer?.observe(part));
     return () => observer?.disconnect();
-  }, [properties.label, properties.description, check.error]);
+  }, [properties.label, properties.description, check.error, loading]);
   return (
     <Shell {...props}>
       <div ref={fieldRef}>
