@@ -39,6 +39,7 @@ const CONTRACT = {
   Chart: ['visibility', 'disabledState', 'loadingState'],
   BoundedBox: ['visibility', 'disabledState'],
   CodeEditor: ['visibility', 'disabledState'],
+  Kanban: ['visibility', 'disabledState'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.

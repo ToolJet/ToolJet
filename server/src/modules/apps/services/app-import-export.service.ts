@@ -3557,6 +3557,15 @@ function migrateProperties(
       }
       delete general?.tooltip;
     }
+
+    for (const key of ['visibility', 'disabledState']) {
+      if (styles[key]) {
+        if (properties[key] === undefined) {
+          properties[key] = styles[key];
+        }
+        delete styles[key];
+      }
+    }
   }
 
   if (componentType === 'ModuleViewer' && styles.padding === undefined) {

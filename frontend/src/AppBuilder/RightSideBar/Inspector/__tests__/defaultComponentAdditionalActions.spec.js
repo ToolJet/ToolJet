@@ -37,12 +37,15 @@ const accordionTitles = (config) => {
   ).map((item) => item.title);
 };
 
-describe.each(['Calendar', 'QrScanner', 'Spinner', 'BoundedBox', 'CodeEditor'])('%s default inspector', (component) => {
-  test('shows the Additional Actions accordion', () => {
-    expect(accordionTitles(meta(component))).toContain('Additional Actions');
-  });
+describe.each(['Calendar', 'QrScanner', 'Spinner', 'BoundedBox', 'CodeEditor', 'Kanban'])(
+  '%s default inspector',
+  (component) => {
+    test('shows the Additional Actions accordion', () => {
+      expect(accordionTitles(meta(component))).toContain('Additional Actions');
+    });
 
-  test('hides the General section, since its tooltip lives in Additional Actions', () => {
-    expect(accordionTitles(meta(component))).not.toContain('General');
-  });
-});
+    test('hides the General section, since its tooltip lives in Additional Actions', () => {
+      expect(accordionTitles(meta(component))).not.toContain('General');
+    });
+  }
+);
