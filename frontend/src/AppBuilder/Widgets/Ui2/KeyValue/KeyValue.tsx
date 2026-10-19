@@ -23,7 +23,7 @@ const cssSize = (value: unknown, fallback: string): string => {
 };
 
 export const CopyButton = ({ text }: { text: string }) => {
-  const [copied, markCopied] = useCopied();
+  const [copied, markCopied] = useCopied(text);
   return (
     <button
       type="button"

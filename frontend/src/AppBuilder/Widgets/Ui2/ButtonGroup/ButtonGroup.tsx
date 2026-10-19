@@ -107,7 +107,15 @@ export const ShadButtonGroup = (props: WidgetProps) => {
     setSelected: async (v: unknown) => apply(initialSelection(v, live.current.mode, live.current.buttons)),
     clear: async () => apply([]),
   });
-  const check = useValidation(props, mode === 'actions' ? lastClicked?.value ?? '' : exposed.value, () => apply([]));
+  // A Form's clearForm empties what validity reads: the selection, and in actions mode the last click (a mandatory
+  // actions group stayed valid after the clear).
+  const clearField = () => {
+    apply([]);
+    if (live.current.mode !== 'actions') return;
+    setLastClicked(null);
+    setExposedVariable('lastClicked', null);
+  };
+  const check = useValidation(props, mode === 'actions' ? lastClicked?.value ?? '' : exposed.value, clearField);
   const variant = GROUP_VARIANTS.includes(properties.variant) ? properties.variant : 'outline';
   const size = SIZES.includes(properties.size) ? properties.size : 'default';
   const orientation = properties.orientation === 'vertical' ? 'vertical' : 'horizontal';

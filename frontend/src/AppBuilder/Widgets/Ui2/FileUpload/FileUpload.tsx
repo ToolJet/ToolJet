@@ -16,7 +16,13 @@ import { controlAria, fieldIdOf, FormField } from '@/AppBuilder/Widgets/Ui2/_sha
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/fileModel';
 import { MUTED } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
@@ -244,19 +250,25 @@ export const ShadFileUpload = (props: WidgetProps) => {
     const unparsed = next.filter((f) => !kept.includes(f) && f.parseError).map((f) => f.parseError);
     if (unparsed.length) setRejectError(unparsed.join(' '));
     if (next.length === kept.length && live.multiple) return undefined;
-    publish(next);
-    fireEvent('onFileSelected');
-    // The native File picker's event once the files are read (and parsed, with Parse content on).
-    fireEvent('onFileLoaded');
+    // The files, and isValid and a Form's formData derived from them, are published before the events fire (runNow),
+    // so a handler (or a Form submitted from one) reads the new selection.
+    runNow(() => {
+      publish(next);
+      fireEvent('onFileSelected');
+      // The native File picker's event once the files are read (and parsed, with Parse content on).
+      fireEvent('onFileLoaded');
+    });
     return undefined;
   };
   const remove = (index: number) => {
     const file = filesRef.current[index];
     if (!file) return;
     releaseFileHandle(file.handle);
-    setRejectError('');
-    publish(filesRef.current.filter((_, i) => i !== index));
-    fireEvent('onFileDeselected');
+    runNow(() => {
+      setRejectError('');
+      publish(filesRef.current.filter((_, i) => i !== index));
+      fireEvent('onFileDeselected');
+    });
   };
   const full = multiple && files.length >= maxFiles;
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({

@@ -170,7 +170,8 @@ export const Chip = ({ value, onImage, toneName }: { value: unknown; onImage?: b
   );
 };
 
-/** A slim progress bar in the accent (or a tone), as wide as its box. */
+/** A slim progress bar in the accent (or a tone), as wide as its box. Unknown progress (pct null: no value, or a
+ *  target of 0 or less) has no aria-valuenow, so it reads as indeterminate rather than as 0%. */
 export const Bar = ({
   pct,
   tone,
@@ -187,7 +188,7 @@ export const Bar = ({
     aria-label={label || undefined}
     aria-valuemin={0}
     aria-valuemax={100}
-    aria-valuenow={Math.round(barWidth(pct))}
+    aria-valuenow={typeof pct === 'number' && Number.isFinite(pct) ? Math.round(barWidth(pct)) : undefined}
     className="tw-relative tw-w-full tw-min-w-0 tw-overflow-hidden tw-rounded-full"
     style={{
       height,

@@ -13,12 +13,16 @@ export const copyText = async (text: string, markCopied: () => void, failure: st
   }
 };
 
-export const useCopied = (): [boolean, () => void] => {
-  const [copied, setCopied] = useState(false);
+/** Whether `text` shows as copied, and the mark for a copy of it. The mark belongs to the text it was made for: a copy
+ *  of an old value that finished after the value changed showed the check against the new one. Each copy starts the
+ *  1.5s again (a second copy within it went off early). */
+export const useCopied = (text: string): [boolean, () => void] => {
+  // A new object for each copy, so the timer restarts even when the same text is copied again.
+  const [mark, setMark] = useState<{ text: string } | null>(null);
   useEffect(() => {
-    if (!copied) return undefined;
-    const t = setTimeout(() => setCopied(false), 1500);
+    if (!mark) return undefined;
+    const t = setTimeout(() => setMark(null), 1500);
     return () => clearTimeout(t);
-  }, [copied]);
-  return [copied, () => setCopied(true)];
+  }, [mark]);
+  return [mark !== null && mark.text === text, () => setMark({ text })];
 };

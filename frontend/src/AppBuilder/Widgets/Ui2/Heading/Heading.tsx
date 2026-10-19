@@ -8,6 +8,7 @@ import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { textAlign } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useTextActions } from '@/AppBuilder/Widgets/Ui2/_shared/textActions';
+import { own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4';
 
@@ -23,7 +24,8 @@ export const ShadHeading = (props: WidgetProps) => {
   const tagRef = useRef<HTMLHeadingElement>(null);
   useAutoHeight(props, ref);
   const { properties, handlers, clickable } = useTextActions(props);
-  const level: HeadingLevel = HEADING[properties.level] ? properties.level : 'h2';
+  // An own key only: 'constructor' or 'toString' found an Object method and rendered as a tag, crashing the widget.
+  const level: HeadingLevel = own(HEADING, properties.level) ? properties.level : 'h2';
   const Tag = level;
   // A heading of fixed height shows the whole lines that fit and ends in an ellipsis (the full text on hover): a long
   // bound title wrapped past its box and covered whatever sat under it. One that grows with its content is not clamped.

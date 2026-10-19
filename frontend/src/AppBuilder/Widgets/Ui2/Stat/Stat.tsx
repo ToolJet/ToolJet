@@ -13,6 +13,7 @@ import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loading
 import { joinStatRow } from './statRow';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { isSet, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { useSvgId } from '@/AppBuilder/Widgets/Ui2/_shared/svgId';
 
 // The Stat's icon is drawn by the Display module, which holds the lucide icon map; it loads only for a Stat with one.
 const StatIconGlyph = React.lazy(() =>
@@ -44,12 +45,12 @@ export const SPARK_W = 120;
 
 export const SPARK_H = 36;
 
-export const StatSparkline = ({ data, type, id }: { data: unknown; type: unknown; id: unknown }) => {
+export const StatSparkline = ({ data, type }: { data: unknown; type: unknown }) => {
   // The trend data (a list or '3,5,4' text) is parsed into paths again only when it changes, not on every render.
   const points = useStable(data);
   const paths = useMemo(() => sparkPaths(points, SPARK_W, SPARK_H), [points]);
+  const gradient = useSvgId('stat-spark');
   if (!paths) return null;
-  const gradient = `stat-spark-${String(id ?? 'x').replace(/[^\w-]/g, '')}`;
   return (
     <svg
       viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
@@ -252,9 +253,7 @@ export const ShadStat = (props: WidgetProps) => {
           ) : null}
         </div>
       ) : null}
-      {properties.trendData ? (
-        <StatSparkline data={properties.trendData} type={properties.sparklineType} id={props.id} />
-      ) : null}
+      {properties.trendData ? <StatSparkline data={properties.trendData} type={properties.sparklineType} /> : null}
     </div>
   );
   const body =

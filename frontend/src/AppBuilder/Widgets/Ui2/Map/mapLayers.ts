@@ -259,7 +259,11 @@ export class GeocoderAnswerTooLarge extends Error {
 /** A geocoder answer as JSON, read up to GEOCODE_MAX_ANSWER_BYTES: refused at once when it declares more, and when it
  *  streams past the limit, without reading the rest. */
 const readAnswer = async (res: Response): Promise<unknown> => {
-  if (Number(res.headers?.get?.('content-length')) > GEOCODE_MAX_ANSWER_BYTES) throw new GeocoderAnswerTooLarge();
+  if (Number(res.headers?.get?.('content-length')) > GEOCODE_MAX_ANSWER_BYTES) {
+    // Cancelled, not just left unread: the download went on in the background.
+    res.body?.cancel?.().catch(() => {});
+    throw new GeocoderAnswerTooLarge();
+  }
   const reader = res.body?.getReader?.();
   if (!reader) return res.json();
   const chunks: Uint8Array[] = [];
