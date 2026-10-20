@@ -89,13 +89,17 @@ const toOther = (other: unknown): OtherSpec | null => {
  *  description } with duplicates and blanks dropped. A choice question with no choices and no Other becomes text. */
 export const normalizeItems = (items: unknown): QuestionItem[] => {
   const names = new Set<string>();
+  // Where a repeated name's suffix search starts: every suffix below it is taken, so the nth repeat does not scan
+  // the suffixes given to the ones before it again (n repeats took n(n+1)/2 lookups).
+  const nextSuffix = new Map<string, number>();
   const out: QuestionItem[] = [];
   for (const raw of Array.isArray(items) ? (items as Record<string, unknown>[]) : []) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue;
     let name = toText(raw.name).trim() || `question${out.length + 1}`;
     if (names.has(name)) {
-      let n = 2;
+      let n = nextSuffix.get(name) ?? 2;
       while (names.has(`${name}_${n}`)) n += 1;
+      nextSuffix.set(name, n + 1);
       name = `${name}_${n}`;
     }
     names.add(name);
