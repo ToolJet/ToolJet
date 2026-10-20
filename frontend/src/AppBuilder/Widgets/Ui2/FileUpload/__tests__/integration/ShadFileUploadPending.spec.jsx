@@ -1,6 +1,6 @@
 /**
- * UI 2.0 File upload with reads still pending: clearing cancels them (release audit 1), and reads that finish past
- * maxFiles release their payloads (2). FileReader reads are held until a test lets them finish. Titles carry
+ * UI 2.0 File upload with reads still pending: clearing cancels them (release audit 1), and pending reads hold their
+ * places against maxFiles (2). FileReader reads are held until a test lets them finish. Titles carry
  * [ShadFileUpload-<AREA>-<NNN>] scenario ids.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
@@ -57,13 +57,13 @@ describe('UI 2.0 File upload with pending reads', () => {
     expect(registrySize()).toBe(baseline);
   });
 
-  test('[ShadFileUpload-PEND-002] two drops racing for the last place keep one file and release the other', async () => {
+  test('[ShadFileUpload-PEND-002] a drop for a place a pending read holds is turned away, not read', async () => {
     const view = widget.render({ currentMode: 'view', properties: { maxFiles: binding('{{1}}') } });
     await drop(view, file('first.txt'));
     await drop(view, file('second.txt'));
-    expect(held).toHaveLength(2);
+    expect(held).toHaveLength(1);
     await finishReads();
-    expect(names()).toHaveLength(1);
+    expect(names()).toEqual(['first.txt']);
     expect(registrySize()).toBe(baseline + 1);
     await widget.act('clearFiles');
     expect(registrySize()).toBe(baseline);
