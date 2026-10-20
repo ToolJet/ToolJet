@@ -41,7 +41,7 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { fromOwnSurface, isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 /** A rule between the options and the selection's own commands: drawn only, since a list of options may hold only
  *  options and groups (cmdk's Separator is role="separator"). */
@@ -195,6 +195,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
         <PopoverPrimitive.Anchor asChild>
           <div
             {...menu.anchorProps}
+            data-picker-field=""
             {...focus.handlers}
             onClick={() => menuChange(!menu.open)}
             id={fieldIdOf(props)}
@@ -206,8 +207,10 @@ export const ShadMultiselect = (props: WidgetProps) => {
             aria-label={toText(properties.label).trim() || fieldName(props, 'Select options')}
             {...controlAria(props, check.error)}
             {...requiredAria(props)}
+            // The field's own keys only: Enter, Space or Backspace on a chip's Remove or on Clear is that button's
+            // (Backspace on Remove Design dropped Engineering, the last chip).
             onKeyDown={(e) => {
-              if (disabled) return;
+              if (disabled || !fromOwnSurface(e)) return;
               if (!isComposing(e) && ['Enter', ' ', 'ArrowDown'].includes(e.key)) {
                 e.preventDefault();
                 menuChange(true);
