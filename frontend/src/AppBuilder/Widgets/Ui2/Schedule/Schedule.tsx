@@ -15,7 +15,15 @@ import {
   slotTracks,
   startDay,
 } from './scheduleModel';
-import { pickBooking, pickSlot, resolveSelection, selectionExposed } from './scheduleSelection';
+import {
+  pickBooking,
+  pickSlot,
+  resolveSelection,
+  revealTarget,
+  selectionExposed,
+  selectionTarget,
+} from './scheduleSelection';
+import { timelineMinWidth } from './scheduleLayout';
 import type { SchedulePick } from './scheduleSelection';
 import type { BookingProblem, PlacedBooking, ScheduleColumn, ScheduleResource, ScheduleSlot } from './scheduleTypes';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -27,7 +35,8 @@ import { EmptyText } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 
 // ToolJet UI 2.0 Schedule: resources down the side, time across (the hours of a day, or days), bookings as blocks,
 // a now-line, and clicks on a booking or an empty slot. Config in WidgetManager/widgets/shad*.js, logic in
-// scheduleModel.ts, a resource's row in ScheduleRow.tsx, style variables in looks/schedule.ts.
+// scheduleModel.ts, the time axis's width in scheduleLayout.ts, a resource's row in ScheduleRow.tsx, style variables in
+// looks/schedule.ts.
 
 const RESOURCES_PER_STEP = 50;
 
@@ -129,6 +138,8 @@ export const ShadSchedule = (props: WidgetProps) => {
   ) : null;
 
   const tracks = useMemo(() => slotTracks(range), [range]);
+  // The time axis is drawn at least this wide and scrolls sideways in the widget below it (scheduleLayout.ts).
+  const axisMin = useMemo(() => timelineMinWidth(range, placed), [range, placed]);
   const [shownCount, showMore] = useShownCount(RESOURCES_PER_STEP, resources);
   // The selection is who or what was picked, resolved against the schedule as it is now (scheduleSelection.ts).
   const [pick, setPick] = useState<SchedulePick | null>(null);
@@ -140,6 +151,10 @@ export const ShadSchedule = (props: WidgetProps) => {
   const hasSlotClick = useHasEvent(id, 'onSlotClicked');
   const disabled = busy(p);
   const highlight = p.highlightSelected !== false;
+  // A selection, by click or by keyboard, is brought into view on a scrolled time axis.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const target = selectionTarget(selected);
+  useEffect(() => revealTarget(scrollRef.current, target), [target]);
 
   const choose = (next: SchedulePick, event: string) => {
     setPick(next);
@@ -187,9 +202,7 @@ export const ShadSchedule = (props: WidgetProps) => {
 
   const rw = bounded(p.resourceWidth, 168, 80, 400);
   const rowHeight = bounded(p.rowHeight, 56, 32, 160);
-  // A day column holds "Mon 12 Oct" and a truncated booking at 80px: at 96 a week beside a 190px resource column needed
-  // 862px, and a two-thirds-width card cut Sunday off behind a scroll.
-  const columnMin = range.scale === 'days' ? 80 : 72;
+  const axisWidth = Math.max((Number(props.width) || 0) - rw, axisMin);
   const frame = {
     borderColor: LINE,
     borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
@@ -252,11 +265,8 @@ export const ShadSchedule = (props: WidgetProps) => {
     const shown = resources.slice(0, shownCount);
     body = (
       <div className="sc-schedule tw-overflow-hidden tw-border" style={frame} data-scale={range.scale}>
-        <div className="tw-overflow-x-auto">
-          <div
-            className="tw-relative"
-            style={{ minWidth: rw + range.columns.length * columnMin, '--rw': `${rw}px` } as StyleWithVars}
-          >
+        <div ref={scrollRef} className="tw-overflow-x-auto" style={{ scrollPaddingLeft: rw }} data-schedule-scroll="">
+          <div className="tw-relative" style={{ minWidth: rw + axisMin, '--rw': `${rw}px` } as StyleWithVars}>
             <div className="tw-flex tw-border-b" style={{ borderColor: LINE }}>
               <div
                 className="tw-sticky tw-left-0 tw-z-20 tw-flex tw-shrink-0 tw-items-end tw-px-3 tw-pb-2 tw-pt-3 tw-text-xs tw-font-medium"
@@ -298,7 +308,7 @@ export const ShadSchedule = (props: WidgetProps) => {
                   hasSlotClick={hasSlotClick}
                   hourFormat={p.hourFormat}
                   slotTracks={tracks}
-                  width={props.width}
+                  axisWidth={axisWidth}
                   clickSlot={clickSlot}
                   clickBooking={clickBooking}
                 />
