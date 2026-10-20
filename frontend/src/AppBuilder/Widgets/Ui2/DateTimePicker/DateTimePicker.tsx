@@ -90,7 +90,14 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   const formatRef = useLatest(displayFormat);
   const rawDefault = useStable(properties.defaultValue);
   const readDefault = () => M.parseDateTime(rawDefault, displayFormat)?.valueOf() ?? null;
-  const [ts, setTs] = useState(readDefault);
+  const [ts, setTimestamp] = useState(readDefault);
+  // A popup pick of a time the clocks skip on its day (02:30 on the day they go forward): the value stays as it was
+  // and the field is invalid, saying so, until the value changes; the next time picked goes on that day.
+  const [skipped, setSkipped] = useState<{ day: Dayjs; text: string } | null>(null);
+  const setTs = (next: number | null) => {
+    setSkipped(null);
+    setTimestamp(next);
+  };
   const [defaultRead, setDefaultRead] = useState(rawDefault);
   if (defaultRead !== rawDefault) {
     setDefaultRead(rawDefault);
@@ -122,12 +129,14 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
       const n = Number(v);
       if (!blankArg(v) && typeof v !== 'boolean' && Number.isFinite(n) && dayjs(n).isValid()) setTs(n);
     },
-    // setTime keeps the day (today when none is picked) and sets the time of day.
+    // setTime keeps the day (today when none is picked) and sets the time of day; a time the clocks skip that day
+    // leaves the value, as any time it cannot read does.
     setTime: async (v: unknown, format: unknown) => {
       const m = parseTimeArg(v, format);
       if (m === null) return;
       const day = tsRef.current === null ? dayjs().startOf('day') : dayjs(tsRef.current);
-      setTs(M.atTime(day, m).valueOf());
+      const next = M.atTime(day, m);
+      if (next) setTs(next.valueOf());
     },
     clearValue: async () => setTs(null),
     ...M.dateBoundActions(override),
@@ -135,6 +144,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
     setBlur: async () => triggerRef.current?.blur(),
   });
   const commit = (next: number | null) => {
+    setSkipped(null);
     if (next === ts) return;
     // Published (isValid too) before onSelect fires, so its handlers read the pick, as the text inputs do.
     runNow(() => {
@@ -144,7 +154,9 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
     });
   };
   const check = useValidation(
-    withRule(props, () => M.dateProblem(date, rules)),
+    withRule(props, () =>
+      skipped ? `The clocks skip ${skipped.text} in this time zone. Pick another time.` : M.dateProblem(date, rules)
+    ),
     exposed.value,
     () => commit(null)
   );
@@ -154,13 +166,21 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   const timeOf = (d: Dayjs | null) => (d ? d.hour() * 60 + d.minute() : nowMinutes);
   // Changing the time before picking a day uses today (or the first allowed day).
   const baseDay = () => {
+    if (skipped) return skipped.day;
     if (date) return date;
     const today = now.startOf('day');
     if (!M.dateProblem(today, rules)) return today;
     return rules.min ?? today;
   };
+  // A pick from the popup at `minutes` on `day`; a time the clocks skip that day is refused, not moved.
+  const pick = (day: Dayjs, minutes: number) => {
+    const next = M.atTime(day, minutes);
+    if (next) return commit(next.valueOf());
+    setSkipped({ day: day.startOf('day'), text: `${M.safeFormat(day, dayFormat)} ${M.formatTime(minutes, use24)}` });
+    check.touch();
+  };
   // From the popup's time controls: nothing once the picker is off (an open popup can outlive a setDisable).
-  const setTime = (minutes: number) => !popup.blocked && commit(M.atTime(baseDay(), minutes).valueOf());
+  const setTime = (minutes: number) => !popup.blocked && pick(baseDay(), minutes);
   const minutes = date ? timeOf(date) : null;
   const hour = minutes === null ? null : Math.floor(minutes / 60);
   const minute = minutes === null ? null : minutes % 60;
@@ -215,7 +235,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
             disabled={disabledMatchers}
             onSelect={(day) => {
               if (!day || popup.blocked) return;
-              commit(M.atTime(dayjs(day), timeOf(date)).valueOf());
+              pick(dayjs(day), timeOf(date));
             }}
           />
           <div className="tw-flex tw-items-center tw-gap-2 tw-border-t tw-px-3 tw-py-2.5">
