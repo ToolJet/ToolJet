@@ -9,7 +9,7 @@ import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { ColumnLike, ColumnType, Row, TableColumn } from './types';
 import { isEmptyValue, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
-import { boundedRegex } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
+import { boundedRegex, warnRegexOutcome } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
 
 const falsy = (value: unknown): boolean => value === false || value === 'false' || value === '{{false}}';
 
@@ -222,6 +222,17 @@ const NO_VALUE = new Set<unknown>(['isEmpty', 'isNotEmpty']);
 const safeRegex = (pattern: unknown) =>
   boundedRegex(pattern instanceof RegExp ? pattern.source : pattern === undefined ? '' : String(pattern), 'i');
 
+// Whether a matches (or, negated, an nl) rule holds for the text. An invalid pattern matches nothing. A pattern too
+// complex to check on the text (boundedRegex) holds for neither: the row is left out, and the Table warns once.
+const regexHolds = (pattern: unknown, text: string, negated: boolean): boolean => {
+  const re = safeRegex(pattern);
+  if (!re) return negated;
+  const outcome = re.match(text);
+  if (typeof outcome === 'boolean') return outcome !== negated;
+  warnRegexOutcome('Table', re, outcome);
+  return false;
+};
+
 const passes = (value: unknown, condition: unknown, wanted: unknown, column?: ColumnLike): boolean => {
   const text = (isEmptyValue(value) ? '' : typeof value === 'object' ? stringify(value) : String(value)).toLowerCase();
   const target = String(wanted ?? '').toLowerCase();
@@ -230,14 +241,10 @@ const passes = (value: unknown, condition: unknown, wanted: unknown, column?: Co
       return text.includes(target);
     case 'doesNotContains':
       return !text.includes(target);
-    case 'matches': {
-      const re = safeRegex(wanted);
-      return re ? re.test(text) : false;
-    }
-    case 'nl': {
-      const re = safeRegex(wanted);
-      return re ? !re.test(text) : true;
-    }
+    case 'matches':
+      return regexHolds(wanted, text, false);
+    case 'nl':
+      return regexHolds(wanted, text, true);
     case 'equals':
       return text === target || (Number.isFinite(asNumber(value)) && asNumber(value) === asNumber(wanted));
     case 'ne':
