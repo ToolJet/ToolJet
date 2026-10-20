@@ -1,4 +1,5 @@
 import tinycolor from 'tinycolor2';
+import { onBrandText, primaryStrong } from '@/AppBuilder/_helpers/onBrandText';
 import type { CSSProperties } from 'react';
 import type { CssVars, Resolved, StyleWithVars } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -58,9 +59,10 @@ export const kanbanLook = (styles: Resolved = {}): KanbanLook => ({
 });
 
 /** A badge's colours from the author's map (value -> colour, matched exactly or ignoring case), as the variables its
- *  classes read. A colour is the text, on a 14% tint of it; a light colour (a tint such as #DCFCE7, which models often
- *  mean as the chip) is the background instead, with a deep text of the same hue; { text, background } sets both.
- *  Null when the map does not name the value. */
+ *  classes read. A colour is the chip, with the label primary buttons use on the brand colour (white, or near-black
+ *  on a light accent) and the fill darkened just enough for 4.5:1 under white (onBrandText, primaryStrong); a light
+ *  colour (a tint such as #DCFCE7, which models often mean as the chip) keeps its tint, with a deep text of the same
+ *  hue; { text, background } sets both, as given. Null when the map does not name the value. */
 export const badgeLook = (value: unknown, badgeColors: unknown): CssVars | null => {
   if (!badgeColors || typeof badgeColors !== 'object' || !isSet(value)) return null;
   const text = String(value);
@@ -81,9 +83,25 @@ export const badgeLook = (value: unknown, badgeColors: unknown): CssVars | null 
   if (!isSet(colour)) return null;
   const parsed = tinycolor(String(colour));
   if (parsed.isValid() && parsed.getLuminance() > 0.6) {
-    return { '--kb-badge-fg': deepOf(colour), '--kb-badge-bg': String(colour) };
+    // A bright, saturated colour (#36e2e2) is too light for white yet too strong for its deep hue at 4.5:1: its
+    // label is then the near-black primary buttons use on a light accent.
+    const deep = deepOf(colour);
+    const ratio = (parsed.getLuminance() + 0.05) / (tinycolor(deep).getLuminance() + 0.05);
+    const fg = ratio >= 4.5 ? deep : onBrandText(String(colour)) ?? deep;
+    return { '--kb-badge-fg': fg, '--kb-badge-bg': String(colour) };
   }
-  return { '--kb-badge-fg': String(colour), '--kb-badge-bg': `color-mix(in srgb, ${colour} 14%, transparent)` };
+  // The colour drawn as 12px text on a tint of itself read under 4.5:1 for most mid and deep colours, the catalog's
+  // own example (#dc2626, #16a34a) among them, and how far under depended on the card below. The chip is opaque now,
+  // so it reads the same on every theme. A colour tinycolor cannot read (a CSS variable) keeps the tint, with the
+  // status ink's mix toward the theme's text colour (shadcn.scss).
+  const label = onBrandText(String(colour));
+  if (!label) {
+    return {
+      '--kb-badge-fg': `color-mix(in srgb, ${colour} 50%, var(--sc-foreground))`,
+      '--kb-badge-bg': `color-mix(in srgb, ${colour} 10%, transparent)`,
+    };
+  }
+  return { '--kb-badge-fg': label, '--kb-badge-bg': primaryStrong(String(colour)) };
 };
 
 /** A deep, readable text colour of the same hue as a (light) colour: tailwind's 800 step, roughly. */
