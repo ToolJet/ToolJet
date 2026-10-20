@@ -41,10 +41,57 @@ const csv = (name: string, text: string, delimiter: string): ParseOutcome => {
  *  the range the sheet declares, filled or not, and a 5 KB file can declare all 17 billion of A1:XFD1048576. */
 export const MAX_SHEET_CELLS = 2_000_000;
 
-/** The first sheet's rows by header, as the native reader converts them ({} for an empty sheet). A declared range
- *  within the budget is converted as is, so the result matches the native reader's (empty header cells included); a
- *  larger one ends at the last row and column holding a cell, since all past them is empty. A sheet whose cells really
- *  span more than the budget is not converted: cutting it would publish part of the data as if it were all of it. */
+type Sheets = typeof import('xlsx');
+type Sheet = import('xlsx').WorkSheet;
+const listed = (items: string[]) =>
+  items.slice(0, 5).join(', ') + (items.length > 5 ? ` (and ${items.length - 5} more)` : '');
+
+/** What converting the sheet changes without a word, for parseError: headers the conversion renames (a repeated one
+ *  becomes same_1, __proto__ becomes __proto___NaN), so a binding reading the header as written misses the column,
+ *  and cells holding an Excel error (#DIV/0!), which come out blank like an empty cell. Each header's name is found by
+ *  converting the header row over one row holding the column numbers, so it is the converter's own naming. */
+const sheetNotes = (XLSX: Sheets, sheet: Sheet): string[] => {
+  const ref = sheet['!ref'];
+  if (!ref) return [];
+  const range = XLSX.utils.decode_range(ref);
+  const probe: Sheet = {
+    '!ref': XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 1, c: range.e.c - range.s.c } }),
+  };
+  const labels: [number, string][] = [];
+  for (let c = range.s.c; c <= range.e.c; c += 1) {
+    const header = sheet[XLSX.utils.encode_cell({ r: range.s.r, c })];
+    const label = header ? XLSX.utils.format_cell(header) : '';
+    if (label) labels.push([c, label]);
+    if (header) probe[XLSX.utils.encode_cell({ r: 0, c: c - range.s.c })] = header;
+    probe[XLSX.utils.encode_cell({ r: 1, c: c - range.s.c })] = { t: 'n', v: c };
+  }
+  const named = new Map<unknown, string>();
+  Object.entries(XLSX.utils.sheet_to_json<Record<string, number>>(probe)[0] ?? {}).forEach(([key, c]) =>
+    named.set(c, key)
+  );
+  const renamed = labels
+    .filter(([c, label]) => named.get(c) !== label)
+    .map(([c, label]) => (named.has(c) ? `${label} to ${named.get(c)}` : `${label} (left out)`));
+  const errors: { r: number; c: number; at: string; text: string }[] = [];
+  for (const key of Object.keys(sheet)) {
+    const cell = sheet[key];
+    if (key.startsWith('!') || cell?.t !== 'e') continue;
+    const { r, c } = XLSX.utils.decode_cell(key);
+    if (r < range.s.r || r > range.e.r || c < range.s.c || c > range.e.c) continue;
+    errors.push({ r, c, at: key, text: XLSX.utils.format_cell(cell) });
+  }
+  errors.sort((a, b) => a.r - b.r || a.c - b.c);
+  return [
+    renamed.length ? `headers renamed: ${listed(renamed)}` : '',
+    errors.length ? `cells holding errors: ${listed(errors.map((e) => `${e.at} ${e.text}`))}` : '',
+  ].filter(Boolean);
+};
+
+/** The first sheet's rows by header, as the native reader converts them ({} for an empty sheet), with what
+ *  sheetNotes finds in `error`. A declared range within the budget is converted as is, so the result matches the
+ *  native reader's (empty header cells included); a larger one ends at the last row and column holding a cell, since
+ *  all past them is empty. A sheet whose cells really span more than the budget is not converted: cutting it would
+ *  publish part of the data as if it were all of it. */
 const spreadsheet = async (name: string, base64Data: string): Promise<ParseOutcome> => {
   const unreadable = { data: null, error: `${name} could not be read as a spreadsheet` };
   try {
@@ -79,7 +126,8 @@ const spreadsheet = async (name: string, base64Data: string): Promise<ParseOutco
       }
     }
     const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-    return { data: rows.length ? { Sheet1: rows } : {}, error: '' };
+    const notes = sheetNotes(XLSX, sheet);
+    return { data: rows.length ? { Sheet1: rows } : {}, error: notes.length ? `${name}: ${notes.join('; ')}` : '' };
   } catch {
     return unreadable;
   }
