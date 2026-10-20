@@ -57,7 +57,13 @@ export interface IDataSourcesUtilService {
     dataSourceOptionId?: string
   ): Promise<Array<object>>;
 
-  resolveConstants(value: string, organizationId: string, environmentId: string, user?: User): Promise<string>;
+  resolveConstants(
+    value: string,
+    organizationId: string,
+    environmentId: string,
+    user?: User,
+    collectedSecretValues?: string[]
+  ): Promise<string>;
 
   resolveKeyValuePair(element: any, organizationId: string, environmentId: string): Promise<any>;
 

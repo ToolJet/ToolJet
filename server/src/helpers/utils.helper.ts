@@ -884,3 +884,27 @@ export async function resolveSourceOptionsForOAuth(
 
   return resolvedOptions;
 }
+
+// Scrubs resolved secret values by value anywhere in a tree (metadata headers, URL params, resolved URL).
+export function redactSecretValues<T>(value: T, secretValues: string[] = []): T {
+  const valuesToRedact = (secretValues || []).filter(
+    (secret): secret is string => typeof secret === 'string' && secret.length > 0
+  );
+  if (valuesToRedact.length === 0 || value === undefined || value === null) return value;
+
+  let serialized: string;
+  try {
+    serialized = JSON.stringify(value);
+  } catch {
+    return value;
+  }
+  if (serialized === undefined) return value;
+
+  const redacted = valuesToRedact.reduce((acc, secret) => acc.split(secret).join('[REDACTED]'), serialized);
+
+  try {
+    return JSON.parse(redacted) as T;
+  } catch {
+    return value;
+  }
+}
