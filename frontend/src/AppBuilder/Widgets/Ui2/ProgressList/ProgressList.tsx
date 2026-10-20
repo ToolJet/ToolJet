@@ -3,7 +3,7 @@ import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { percentLabel } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
-import { progressEntries, progressItem, type ProgressEntry } from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
+import { progressEntries, progressItem, progressMax, type ProgressEntry } from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import {
   Bar,
@@ -63,11 +63,13 @@ export const ShadProgressList = (props: WidgetProps) => {
   );
   // Every row's key (selection and the count read the whole list); the figures of the drawn rows only.
   const entries = useMemo(() => progressEntries(data, { idField }), [data, idField]);
+  // The scale of bars that have no target: the list's largest value.
+  const max = useMemo(() => progressMax(entries, { valueField, targetField }), [entries, valueField, targetField]);
   // The first rows and a button for the next ones: a 10,000-row binding froze the page in the other lists.
   const [shownCount, showMore] = useShownCount(PROGRESS_ROWS_PER_STEP, entries);
   const rows = useMemo(
-    () => entries.slice(0, shownCount).map((entry) => progressItem(entry, fields)),
-    [entries, shownCount, fields]
+    () => entries.slice(0, shownCount).map((entry) => progressItem(entry, { ...fields, max })),
+    [entries, shownCount, fields, max]
   );
   const { click } = useItemSelection<ProgressEntry>(props, 'onItemClicked', entries);
   const clickable = useHasEvent(id, 'onItemClicked') && !busy(p);
@@ -101,7 +103,8 @@ export const ShadProgressList = (props: WidgetProps) => {
     >
       {rows.map((row) => {
         const figure = showValues && row.value ? (row.target ? `${row.value} of ${row.target}` : row.value) : '';
-        const pct = Number.isFinite(row.pct) ? percentLabel(row.pct) : '';
+        // A relative bar (a share of the largest value) is drawn, never printed as a percentage.
+        const pct = Number.isFinite(row.pct) && !row.relative ? percentLabel(row.pct) : '';
         return (
           <li
             key={row.key}
