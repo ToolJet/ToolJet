@@ -8,6 +8,8 @@ import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import React from 'react';
 import { act, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
@@ -37,8 +39,9 @@ const mountModules = async (session, type, height, modules) => {
       s.setCurrentMode('view', moduleId);
       if (events) s.eventsSlice.setEvents(events, moduleId);
     }
+    // A drag-drop context as the canvas gives one: a Tabs draws its panes as sub-canvases.
     session.render(
-      <>
+      <DndProvider backend={HTML5Backend}>
         {modules.map(([moduleId, id]) => (
           <ModuleProvider key={moduleId} moduleId={moduleId} isModuleMode>
             <div data-testid={moduleId}>
@@ -58,7 +61,7 @@ const mountModules = async (session, type, height, modules) => {
             </div>
           </ModuleProvider>
         ))}
-      </>
+      </DndProvider>
     );
   });
 };
@@ -177,4 +180,24 @@ describe.each([
       }).toEqual({ values: [initial, chosen], checked: ['false', 'true'], events: [undefined, chosen] });
     }
   );
+});
+
+// Tabs built its tab and panel ids the same way: two module instances' tabs named one panel id between them.
+describe('ShadTabs in two module instances', () => {
+  const w = createWidgetHarness({ componentType: 'ShadTabs', id: 'tabs1', handle: 'tabs1', widgetWidth: 400 });
+  beforeEach(() => w.setup());
+  afterEach(w.teardown);
+
+  test('each tab controls the panel in its own instance', async () => {
+    const tabs = (id) => componentDefinition(id, 'tabs1', 'ShadTabs', {});
+    await mountModules(w.session, 'ShadTabs', 300, [
+      ['m1', 'tabs1', tabs('tabs1')],
+      ['m2', 'tabs1', tabs('tabs1')],
+    ]);
+    await waitFor(() => expect(within(screen.getByTestId('m2')).getAllByRole('tab').length).toBeGreaterThan(0));
+    const [a, b] = ['m1', 'm2'].map((id) => within(screen.getByTestId(id)).getAllByRole('tab')[0]);
+    expect(a.id).not.toBe(b.id);
+    const panel = document.getElementById(b.getAttribute('aria-controls'));
+    expect(screen.getByTestId('m2').contains(panel)).toBe(true);
+  });
 });
