@@ -133,6 +133,21 @@ describe('AI build cancellation', () => {
     expect(jest.getTimerCount()).toBe(0);
   });
 
+  it('ends the turn when the agent never answers a delivered cancellation', async () => {
+    const shouldCancel = jest.fn().mockResolvedValue(false);
+    const { pending } = await start(util, shouldCancel);
+    await events['ingest-complete']({ data: { message: 'ingested' } });
+    shouldCancel.mockResolvedValue(true);
+    await jest.advanceTimersByTimeAsync(3000);
+    expect(socket.emit).toHaveBeenCalledWith('cancel', expect.any(Object), expect.any(Function));
+    await jest.advanceTimersByTimeAsync(59_000);
+    expect(socket.disconnect).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1000);
+    expect((await pending)[1]).toMatchObject({ cancelled: true, reload: true, app_id: 'inventory-app' });
+    expect(socket.disconnect).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
   it('keeps a cancellation pending across socket reconnects', async () => {
     const shouldCancel = jest.fn().mockResolvedValue(false);
     const { pending } = await start(util, shouldCancel);
