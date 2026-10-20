@@ -138,10 +138,10 @@ export const ShadTabs = (props: WidgetProps) => {
   const wizard = variant === 'steps';
   const dynamic = properties.dynamicHeight !== false && currentMode === 'view';
   const look = tabsLook(styles);
-  // The DOM id the tab and panel ids are built from: component ids repeat in List view and Kanban rows, so a Tabs in a
-  // row adds its instance's id, or each row's tab would control the first row's panel (as withControlState's domId).
-  const instance = useId().replace(/[^\w-]/g, '');
-  const domId = subContainerIndex == null ? id : `${id}-${instance}`;
+  // The DOM id the tab and panel ids are built from: component ids repeat in List view and Kanban rows and across
+  // module instances, so every Tabs adds its instance's id, or one copy's tab would control another copy's panel (as
+  // withControlState's domId).
+  const domId = `${id}-${useId().replace(/[^\w-]/g, '')}`;
 
   // Tabs from the static list or the dynamic option; a tab without an id gets its index. Kept in state so the
   // per-tab actions can change disable, loading and visibility at run time.
