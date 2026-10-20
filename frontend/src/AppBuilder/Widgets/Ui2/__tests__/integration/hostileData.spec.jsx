@@ -186,7 +186,7 @@ describe('known safe paths', () => {
     widget.teardown();
   });
 
-  test('[ShadMap-XSS-002] marker labels, popups and colours are escaped', async () => {
+  test('[ShadMap-XSS-002] marker labels, popups, colours and images are escaped', async () => {
     const widget = harnessFor('ShadMap');
     await widget.setup();
     widget.render({
@@ -203,14 +203,25 @@ describe('known safe paths', () => {
               color: `red" onmouseover="__xss(13)`,
             },
             { id: 2, lat: 37.78, lng: -122.41, title: BREAKOUT, label: HTML, color: 'url(javascript:__xss(14))' },
+            // Marker images: script URLs keep the pin; an SVG with a script is only a picture.
+            ...URLS.map((photo, i) => ({ id: `img${i}`, lat: 37.7 + i / 100, lng: -122.3, photo })),
+            { id: 'svg', lat: 37.6, lng: -122.3, photo: `data:image/svg+xml;utf8,<svg>${HTML}</svg>` },
+            { id: 'quote', lat: 37.65, lng: -122.3, photo: `https://cdn.example/a.png${BREAKOUT}` },
           ],
         }),
         titleField: binding('title'),
         labelField: binding('label'),
+        imageField: binding('photo'),
+        headingField: binding('label'),
         clusterMarkers: binding('{{false}}'),
       },
     });
     await waitFor(() => expect(document.querySelector('[data-marker]')).toBeTruthy());
+    expect([...document.querySelectorAll('.sc-map-image')].map((el) => el.getAttribute('data-marker'))).toEqual([
+      'svg',
+      'quote',
+    ]);
+    expect(document.querySelector('.sc-map-image img').childNodes).toHaveLength(0);
     fireEvent.click(document.querySelector('[data-marker]'));
     await settle();
     expect(unsafeNodes(document.body)).toEqual([]);

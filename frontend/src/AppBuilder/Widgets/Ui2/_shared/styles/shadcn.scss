@@ -454,19 +454,24 @@
   transform-origin: 50% 100%;
   transition: transform 120ms ease;
 }
-.tj-shadcn .sc-map-pin[data-tone='success'] {
+.tj-shadcn .sc-map-pin[data-tone='success'],
+.tj-shadcn .sc-map-image[data-tone='success'] {
   --pin: var(--sc-success);
 }
-.tj-shadcn .sc-map-pin[data-tone='warning'] {
+.tj-shadcn .sc-map-pin[data-tone='warning'],
+.tj-shadcn .sc-map-image[data-tone='warning'] {
   --pin: var(--sc-warning);
 }
-.tj-shadcn .sc-map-pin[data-tone='danger'] {
+.tj-shadcn .sc-map-pin[data-tone='danger'],
+.tj-shadcn .sc-map-image[data-tone='danger'] {
   --pin: var(--sc-destructive);
 }
-.tj-shadcn .sc-map-pin[data-tone='info'] {
+.tj-shadcn .sc-map-pin[data-tone='info'],
+.tj-shadcn .sc-map-image[data-tone='info'] {
   --pin: var(--sc-map-info);
 }
-.tj-shadcn .sc-map-pin[data-tone='neutral'] {
+.tj-shadcn .sc-map-pin[data-tone='neutral'],
+.tj-shadcn .sc-map-image[data-tone='neutral'] {
   --pin: var(--sc-muted-foreground);
 }
 .tj-shadcn .sc-map-pin svg {
@@ -648,6 +653,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .tj-shadcn .sc-map-pin,
+  .tj-shadcn .sc-map-image,
   .tj-shadcn .sc-map-cluster {
     transition: none;
   }
@@ -758,6 +764,88 @@
 }
 .tj-shadcn .sc-map-pin-glyph svg {
   display: block;
+}
+// markerSize: small and large pins, the drawing scaled and the label or icon kept in the pin's head.
+.tj-shadcn .sc-map-pin[data-size='small'] {
+  width: 22px;
+  height: 28px;
+}
+.tj-shadcn .sc-map-pin[data-size='small'] .sc-map-pin-label,
+.tj-shadcn .sc-map-pin[data-size='small'] .sc-map-pin-glyph {
+  top: 3px;
+  width: 22px;
+  height: 16px;
+  font-size: 9px;
+}
+.tj-shadcn .sc-map-pin[data-size='small'] .sc-map-pin-glyph svg {
+  width: 11px;
+  height: 11px;
+}
+.tj-shadcn .sc-map-pin[data-size='large'] {
+  width: 36px;
+  height: 46px;
+}
+.tj-shadcn .sc-map-pin[data-size='large'] .sc-map-pin-label,
+.tj-shadcn .sc-map-pin[data-size='large'] .sc-map-pin-glyph {
+  top: 5px;
+  width: 36px;
+  height: 26px;
+  font-size: 14px;
+}
+.tj-shadcn .sc-map-pin[data-size='large'] .sc-map-pin-glyph svg {
+  width: 18px;
+  height: 18px;
+}
+
+// imageField: the row's image in place of the pin, centred on its spot. A status shows as a thin ring of its colour;
+// the selected image is larger with an outline. A heading turns the image only (Map/mapMarkers.ts).
+.tj-shadcn .sc-map-image {
+  --pin: var(--lk-accent, var(--sc-primary));
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.35));
+  transition: transform 120ms ease;
+}
+.tj-shadcn .sc-map-image[data-size='small'] {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+.tj-shadcn .sc-map-image[data-size='large'] {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+}
+.tj-shadcn .sc-map-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+  pointer-events: none;
+  user-select: none;
+}
+.tj-shadcn .sc-map-image[data-ring] {
+  box-shadow: 0 0 0 2px var(--pin);
+}
+.tj-shadcn .sc-map-marker:hover .sc-map-image,
+.tj-shadcn .sc-map-marker:focus-visible .sc-map-image {
+  transform: scale(1.12);
+}
+.tj-shadcn .sc-map-marker:focus-visible .sc-map-image,
+.tj-shadcn .sc-map-image[data-selected] {
+  outline: 2px solid var(--lk-accent, var(--sc-primary));
+  outline-offset: 3px;
+}
+.tj-shadcn .sc-map-image[data-selected] {
+  transform: scale(1.2);
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.4));
+}
+.tj-shadcn .sc-map[data-disabled] .sc-map-image {
+  cursor: default;
 }
 
 // A longer label is a pill with a pointer (a price): the card surface, a dot of the status colour; selected, filled.

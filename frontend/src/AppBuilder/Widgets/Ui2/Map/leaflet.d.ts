@@ -80,7 +80,7 @@ declare module 'leaflet' {
 
   interface DivIconOptions {
     className?: string;
-    html?: string;
+    html?: string | HTMLElement;
     iconSize?: [number, number];
     iconAnchor?: [number, number];
   }

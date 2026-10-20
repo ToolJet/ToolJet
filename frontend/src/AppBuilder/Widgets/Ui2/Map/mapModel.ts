@@ -16,7 +16,7 @@ import type {
   PickedLocation,
   MapConfig,
 } from './mapTypes';
-import { isNonBlankString, safeUrl, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isNonBlankString, safeImageUrl, safeUrl, schemeOf, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_LAT = 85.0511287798;
 export const MIN_ZOOM = 1;
@@ -31,6 +31,27 @@ const coordinate = (v: unknown): number | null => {
   if (typeof v !== 'string' || !/^\s*[+-]?(\d+(\.\d*)?|\.\d+)\s*$/.test(v)) return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
+};
+
+/** A heading in degrees clockwise from north (0 north, 90 east), from a number or numeric text, wrapped to 0 to 360;
+ *  null for anything else, which draws the marker upright. */
+export const headingOf = (v: unknown): number | null => {
+  const n = coordinate(v);
+  return n === null ? null : ((n % 360) + 360) % 360;
+};
+
+// The image types a marker may show from a data URI (SVG included: shown as an image, its scripts never run).
+const MARKER_IMAGE_DATA = /^data:image\/(png|jpeg|gif|webp|svg\+xml)[;,]/i;
+
+/** A row's marker image as a URL an <img> may load: https or http, a path on this site, or a data URI of a PNG, JPEG,
+ *  GIF, WebP or SVG image; '' for anything else (javascript:, data:text/html, another host by //), so the pin shows. */
+export const markerImageUrl = (v: unknown): string => {
+  // Only text is a URL: a number in the field is no image.
+  const url = typeof v === 'string' ? safeImageUrl(v) : '';
+  const scheme = schemeOf(url);
+  if (scheme === 'data') return MARKER_IMAGE_DATA.test(url) ? url : '';
+  if (scheme === null) return /^[/\\]{2}/.test(url) ? '' : url;
+  return scheme === 'http' || scheme === 'https' ? url : '';
 };
 
 /** A latitude and longitude, or null: in range, and not exactly 0, 0 (a missing location stored as zeros, which
@@ -98,8 +119,8 @@ const uniqueKeys = (points: MapPoint[]): MapPoint[] => {
   });
 };
 
-/** Markers from rows: each row's coordinates (latField, lngField), title, subtitle, status (and its tone) and id.
- *  Rows without valid coordinates are skipped and counted. The title falls back to name, title or label, then the row's first text field (not its id); unset
+/** Markers from rows: each row's coordinates (latField, lngField), title, subtitle, status (and its tone) and id, and
+ *  its icon (iconField, else markerIcon), heading and image. Rows without valid coordinates are skipped and counted. The title falls back to name, title or label, then the row's first text field (not its id); unset
  *  fields read the config's defaults (lat, lng, status, id). */
 export const mapPoints = (
   data: unknown,
@@ -108,6 +129,8 @@ export const mapPoints = (
   if (!Array.isArray(data)) return { points: [], skipped: 0, rows: 0 };
   const f = fields || {};
   const latKey = isNonBlankString(f.latField) ? f.latField : 'lat';
+  // One icon for every pin; a row's own iconField value wins.
+  const everyIcon = isNonBlankString(f.markerIcon) ? f.markerIcon.trim() : '';
   const lngKey = isNonBlankString(f.lngField) ? f.lngField : 'lng';
   let skipped = 0;
   const points: MapPoint[] = [];
@@ -138,7 +161,9 @@ export const mapPoints = (
       lng: at.lng,
       title: titleKey ? toText(row[titleKey]) : '',
       label: isNonBlankString(f.labelField) ? toText(row[f.labelField]).trim().slice(0, 24) : '',
-      icon: isNonBlankString(f.iconField) ? toText(row[f.iconField]).trim() : '',
+      icon: (isNonBlankString(f.iconField) ? toText(row[f.iconField]).trim() : '') || everyIcon,
+      heading: isNonBlankString(f.headingField) ? headingOf(row[f.headingField]) : null,
+      image: isNonBlankString(f.imageField) ? markerImageUrl(row[f.imageField]) : '',
       subtitle: isNonBlankString(f.subtitleField) ? toText(row[f.subtitleField]) : '',
       status,
       statusLabel: chipLabel(status),

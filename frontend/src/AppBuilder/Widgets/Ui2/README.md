@@ -119,7 +119,9 @@ These run with the frontend jest suite (`npx jest --maxWorkers=2 src/AppBuilder/
   states and open overlays, and each overlay's keyboard path (open, focus, Escape, focus back; Tab kept in the Dialog).
 - `__tests__/integration/hostileData.spec.jsx`: HTML, quote breakouts, script URLs and markdown through every text,
   URL and data field from a query; nothing may run or reach the DOM unsanitised. Bound URLs go through `safeUrl` or
-  `safeImageUrl` (`_shared/values.ts`), HTML through DOMPurify or rehype-sanitize.
+  `safeImageUrl` (`_shared/values.ts`), HTML through DOMPurify or rehype-sanitize. The Map's marker images narrow
+  `safeImageUrl` further (`markerImageUrl` in `Map/mapModel.ts`: http, https, a path or an image data URI) and are drawn
+  as an `<img>` made as DOM (`Map/mapMarkers.ts`), never as markup.
 - `__tests__/compat/contracts.spec.js` and `__tests__/integration/savedApps.spec.jsx`: apps saved under an earlier
   release keep working (frozen names and defaults per widget, and saved pages per release replayed after the data
   migrations). How to read a failure and how to add a release's fixtures: `__tests__/compat/README.md`.
