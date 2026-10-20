@@ -4,7 +4,7 @@
 
 import type { Option, OptionValue } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { clampInt, isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
-import { boundedRegex } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
+import { TOO_COMPLEX, UNSUPPORTED, boundedRegex } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
 import type { BoundedRegex } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
 
 // ---- Options (Combobox, Multiselect) -------------------------------------------------------------------------------
@@ -142,7 +142,8 @@ export const sameTag = (a: unknown, b: unknown, caseSensitive?: unknown): boolea
   caseSensitive ? String(a) === String(b) : String(a).toLowerCase() === String(b).toLowerCase();
 
 /** Adds candidates to the tags: { tags, added, error }. Duplicates (ignoring case unless caseSensitive), tags that
- *  fail the pattern and tags past maxTags are refused, with the reason in `error`. */
+ *  fail the pattern (or that the pattern is too complex to check) and tags past maxTags are refused, with the reason
+ *  in `error`. */
 /** addTags' rules: the most tags (0 for no limit), whether case tells tags apart, and the pattern a tag must match
  *  with the message shown when it does not. */
 export interface TagRules {
@@ -170,7 +171,14 @@ export const addTags = (
       error = `"${tag}" is already added`;
       continue;
     }
-    if (re && !re.test(tag)) {
+    const outcome = re ? re.match(tag) : true;
+    if (outcome === TOO_COMPLEX || outcome === UNSUPPORTED) {
+      // Not a verdict on the tag: the pattern could not be checked on it (boundedRegex), so the author's message would
+      // mislead.
+      error = `The pattern is ${outcome === TOO_COMPLEX ? 'too complex' : 'not supported'} to check "${tag}"`;
+      continue;
+    }
+    if (!outcome) {
       error = isScalar(patternError) && String(patternError).trim() ? String(patternError) : `"${tag}" is not valid`;
       continue;
     }

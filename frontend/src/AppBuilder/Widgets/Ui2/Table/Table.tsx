@@ -12,7 +12,7 @@ import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { applyFilters, matchesSearch, normalizeColumns, rowKey, sortRows } from './tableModel';
+import { applyFilters, matchesSearch, normalizeColumns, rowKey, screenStyleRules, sortRows } from './tableModel';
 import type { Entry, FireOption, Live, OnAction, Paged, Row, Sort, TableColumn, TableFilter } from './types';
 import { RIGHT_FADE, ROW_BORDER, useCellResolver } from './TableCells';
 import { TableToolbar } from './TableToolbar';
@@ -93,6 +93,7 @@ export const ShadTable = (props: WidgetProps) => {
   );
 
   const processed = useMemo(() => {
+    screenStyleRules(columns, entries.map(withEdits)); // style rules' regex verdicts on every row, before cells render
     let list = entries;
     if (searchText && properties.serverSideSearch !== true) {
       list = list.filter((entry) => matchesSearch(withEdits(entry), shownColumns, searchText));

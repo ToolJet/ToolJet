@@ -4,7 +4,8 @@ import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 // Tags pattern, a Table regex filter or a conditional-style rule such as ^(a+)+$ took seconds on 29 characters
 // ('a' x 28 then '!') and could not be stopped once started; the Table ran it for every row as it rendered. Patterns
 // are now matched by the pack's bounded matcher, whose work grows with text length times pattern size. Patterns it
-// cannot run in linear time (lookaround, backreferences) still work, run by the browser on short text only.
+// cannot run in linear time (lookaround, backreferences) still work, run by its step-budgeted backtracking matcher on
+// short text only (audit 599).
 //
 // The browser's RegExp is never given the pathological pattern and a non-empty text here: such a call is caught,
 // recorded and answered false without running, so a regression fails the test instead of hanging jest.

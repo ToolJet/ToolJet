@@ -9,7 +9,7 @@ import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { ColumnLike, ColumnType, Row, TableColumn } from './types';
 import { isEmptyValue, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
-import { boundedRegex } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
+import { cellText, regexHolds, regexResults } from './tableRegex';
 
 const falsy = (value: unknown): boolean => value === false || value === 'false' || value === '{{false}}';
 
@@ -218,26 +218,18 @@ export const FILTER_CONDITIONS: [string, string][] = [
 ];
 const NO_VALUE = new Set<unknown>(['isEmpty', 'isNotEmpty']);
 
-// The rule's pattern, matched with bounded work: a Table tests it against every row as it renders.
-const safeRegex = (pattern: unknown) =>
-  boundedRegex(pattern instanceof RegExp ? pattern.source : pattern === undefined ? '' : String(pattern), 'i');
-
 const passes = (value: unknown, condition: unknown, wanted: unknown, column?: ColumnLike): boolean => {
-  const text = (isEmptyValue(value) ? '' : typeof value === 'object' ? stringify(value) : String(value)).toLowerCase();
+  const text = cellText(value);
   const target = String(wanted ?? '').toLowerCase();
   switch (condition) {
     case 'contains':
       return text.includes(target);
     case 'doesNotContains':
       return !text.includes(target);
-    case 'matches': {
-      const re = safeRegex(wanted);
-      return re ? re.test(text) : false;
-    }
-    case 'nl': {
-      const re = safeRegex(wanted);
-      return re ? !re.test(text) : true;
-    }
+    case 'matches':
+      return regexHolds(wanted, text, false);
+    case 'nl':
+      return regexHolds(wanted, text, true);
     case 'equals':
       return text === target || (Number.isFinite(asNumber(value)) && asNumber(value) === asNumber(wanted));
     case 'ne':
@@ -298,8 +290,34 @@ export const applyFilters = <T>(rows: T[], filters: unknown, columns: TableColum
     })
     .filter((f): f is { column: TableColumn; condition: string; value: unknown } => f !== null);
   if (!active.length) return rows;
-  return rows.filter((row) => active.every((f) => passes(readCell(row, f.column.key), f.condition, f.value, f.column)));
+  // A regex filter is tested on every row first: a pattern that cannot be checked on one row keeps no row (tableRegex).
+  const matched = new Map<unknown, boolean[]>();
+  for (const f of active) {
+    if (f.condition !== 'matches' && f.condition !== 'nl') continue;
+    const results = regexResults(f.value, rows, (row) => readCell(row, f.column.key));
+    if (results === null) return [];
+    if (results) matched.set(f, results);
+  }
+  return rows.filter((row, i) =>
+    active.every((f) => {
+      const results = matched.get(f);
+      return results
+        ? results[i] !== (f.condition === 'nl')
+        : passes(readCell(row, f.column.key), f.condition, f.value, f.column);
+    })
+  );
 };
+
+/** Tests every column's regex style rules on every row before a cell is styled, so a rule whose pattern cannot be
+ *  checked on some row styles no cell, whatever the row order (tableRegex). */
+export const screenStyleRules = (columns: TableColumn[], rows: unknown[]): void =>
+  columns.forEach((column) =>
+    (column.conditionalStyles ?? []).forEach((r) => {
+      if (r.condition !== 'matches' && r.condition !== 'nl') return;
+      const field = isSet(r.key) ? String(r.key) : column.key;
+      regexResults(r.value, rows, (row) => readCell(row, field));
+    })
+  );
 
 const PRIMITIVE = new Set(['string', 'number', 'boolean']);
 
