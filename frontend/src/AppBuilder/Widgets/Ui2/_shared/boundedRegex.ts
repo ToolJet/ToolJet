@@ -13,7 +13,7 @@
 //   (ς and σ), word characters under i and u (ſ, the Kelvin sign) and Unicode properties are JavaScript's own.
 // A text past a cap, or a search out of steps, is TOO_COMPLEX; the v flag's classes of strings (\q{...},
 // \p{RGI_Emoji}) are UNSUPPORTED. Neither is a match or a non-match: the caller decides (Tags refuses the tag, a Table
-// rule does not hold and the Table warns once).
+// rule holds for no row and the Table warns once).
 import { compileBacktracking, Exhausted } from './regex/backtrack';
 import type { Backtracker } from './regex/backtrack';
 import { compileLinear, runLinear } from './regex/linear';
@@ -109,8 +109,9 @@ export const boundedRegex = (source: string, flags = ''): BoundedRegex | null =>
 
 const warned = new Set<string>();
 
-/** Logs, once per pattern, that a widget could not check its pattern on some value (TOO_COMPLEX or UNSUPPORTED). */
-export const warnRegexOutcome = (widget: string, re: BoundedRegex, outcome: RegexOutcome) => {
+/** Logs, once per pattern, that a widget could not check its pattern on some value (TOO_COMPLEX or UNSUPPORTED), and
+ *  what the widget did about it (`result`). */
+export const warnRegexOutcome = (widget: string, re: BoundedRegex, outcome: RegexOutcome, result: string) => {
   if (typeof outcome === 'boolean' || warned.has(re.source)) return;
   if (warned.size >= 100) warned.clear();
   warned.add(re.source);
@@ -119,5 +120,5 @@ export const warnRegexOutcome = (widget: string, re: BoundedRegex, outcome: Rege
     outcome === TOO_COMPLEX
       ? 'is too complex to check on some values within its work limit'
       : 'uses syntax that cannot be checked (a class of strings)';
-  console.warn(`${widget}: the pattern /${shown}/ ${why}; those values are treated as not matching.`);
+  console.warn(`${widget}: the pattern /${shown}/ ${why}, ${result}.`);
 };
