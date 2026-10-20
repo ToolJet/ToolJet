@@ -258,7 +258,12 @@ describe('wholeTicks', () => {
     expect(wholeTicks([{ a: 2, b: 3 }], ['a', 'b'], true)).toEqual({ domain: [0, 5], tickCount: 6 });
   });
   it('leaves fractions, negatives, large counts and empty data to the chart', () => {
-    expect(wholeTicks(rows(1.5, 2), ['y'])).toEqual({});
+    // A small decimal axis ends just past its maximum: a CSAT of 3.6 to 4.7 runs to 5, not 8 (2026-10-20).
+    expect(wholeTicks(rows(1.5, 2), ['y'])).toEqual({ domain: [0, 2], tickCount: 5 });
+    expect(wholeTicks(rows(0.12, 0.4), ['y'])).toEqual({ domain: [0, 0.4], tickCount: 5 });
+    expect(wholeTicks(rows(3.6, 4.7, 4.5), ['y'])).toEqual({ domain: [0, 5], tickCount: 6 });
+    expect(wholeTicks(rows(0.42, 0.93), ['y'])).toEqual({ domain: [0, 1], tickCount: 6 });
+    expect(wholeTicks(rows(12.5, 3), ['y'])).toEqual({});
     expect(wholeTicks(rows(-1, 2), ['y'])).toEqual({});
     expect(wholeTicks(rows(40, 2), ['y'])).toEqual({});
     expect(wholeTicks([], ['y'])).toEqual({});
