@@ -2,12 +2,11 @@ import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 // Release audit 016 (Codex fixture badge-contrast-cases-016, KANBAN-BADGE-CONTRAST-016c13d): a badge colour from
 // badgeColors was drawn as the 12px label itself on a 14% tint of it, so mid and deep colours, the catalog's own
 // example ({ High: '#dc2626', Low: '#16a34a' }) among them, read under WCAG's 4.5:1 for small text (2.8:1 to 4.0:1),
-// by how much depending on the card below. The colour is now an opaque chip under the label primary buttons use on
-// the brand colour (onBrandText), deepened just enough where white reads under 4.5:1 (primaryStrong), so it reads the
-// same on every theme. The pack's status ink (the colour mixed half toward the theme's text) was tried first and left
-// #dc2626 at 4.49:1 on two dark themes. A light colour keeps its tint with a deep text of its hue, now near-black
-// where that deep text falls short (bright cyan or yellow). The controls (a light tint, an explicit { text,
-// background } pair) already passed, and the explicit pair stays the author's.
+// by how much depending on the card below. The chip keeps its tint; only a label that would read under 4.5:1 changes,
+// to the pack's status ink (the colour mixed toward the theme's text, darker on light themes and lighter on dark
+// ones) taken only as far as it needs. A light colour drawn as the chip keeps its deep text of the same hue, made
+// darker where that reads under 4.5:1 (a bright cyan or yellow). The controls (a light tint, an explicit { text,
+// background } pair) already passed and are unchanged.
 import tinycolor from 'tinycolor2';
 import { badgeLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { shippedThemes } from '../../../../../../server/src/modules/organization-themes/constants/shipped-themes';
@@ -82,6 +81,21 @@ describe('Kanban badge labels read at 4.5:1 or more', () => {
       return contrast(paint(look['--kb-badge-fg'], { ...surface, card: bg }), bg) < 4.5;
     });
     expect(low.map((s) => s.surface)).toEqual([]);
+  });
+
+  it.each(CASES.filter(([, c]) => typeof c === 'string' && tinycolor(c).getLuminance() <= 0.6))(
+    '%s keeps its 14%% tint',
+    (_label, colour) => {
+      expect(badgeLook('Value', { Value: colour })['--kb-badge-bg']).toBe(
+        `color-mix(in srgb, ${colour} 14%, transparent)`
+      );
+    }
+  );
+
+  // One value serves light and dark themes, and no colour reads at 4.5:1 on both its light and its dark tint, so every
+  // tinted label takes the ink. A light chip whose deep text already reads is drawn exactly as before.
+  it('a light chip whose deep text reads is drawn as before', () => {
+    expect(badgeLook('Won', { Won: '#DCFCE7' })).toEqual({ '--kb-badge-fg': '#0a712d', '--kb-badge-bg': '#DCFCE7' });
   });
 
   it('an explicit { text, background } pair stays the author’s', () => {
