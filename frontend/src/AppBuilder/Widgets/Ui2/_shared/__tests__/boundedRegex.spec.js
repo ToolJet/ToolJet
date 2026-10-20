@@ -108,7 +108,7 @@ test.each([
   ['backreference', '(a)\\1', 'xaax', 'xa'],
   ['named backreference', '(?<x>a)\\k<x>', 'aa', 'ab'],
   ['a repeat past the program size', `a{${MAX_PROGRAM + 1}}`, 'a'.repeat(MAX_PROGRAM + 1), 'a'],
-])('a valid pattern with %s is run by the browser on short text', (_, source, matching, other) => {
+])('a valid pattern with %s is run by the backtracking matcher on short text', (_, source, matching, other) => {
   const bounded = boundedRegex(source);
   expect(bounded.linear).toBe(false);
   // The program-size case needs more text than the fallback reads, so it never matches.
@@ -116,12 +116,12 @@ test.each([
   expect(bounded.test(other)).toBe(false);
 });
 
-test('text past the fallback cap does not match, and is not given to the browser', () => {
+test('text past the fallback cap does not match, and the browser is only given single characters', () => {
   const bounded = boundedRegex('^(?=.*\\d).+$');
   const tests = jest.spyOn(RegExp.prototype, 'test');
   expect(bounded.test(`${'a'.repeat(MAX_FALLBACK_TEXT_LENGTH - 1)}1`)).toBe(true);
   expect(bounded.test(`${'a'.repeat(MAX_FALLBACK_TEXT_LENGTH)}1`)).toBe(false);
-  expect(tests.mock.calls.map(([text]) => text.length)).toEqual([MAX_FALLBACK_TEXT_LENGTH]);
+  expect(tests.mock.calls.filter(([text]) => text.length > 1)).toEqual([]);
   tests.mockRestore();
 });
 
