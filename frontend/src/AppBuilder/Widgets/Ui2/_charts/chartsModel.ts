@@ -278,7 +278,8 @@ export const centreValueFit = (text: unknown, innerRadius: unknown): { text: str
 
 /** Whole-number ticks for a small count axis: steps of 1, 2 or 5 that end at or just past the maximum, five ticks at
  *  most. Left to itself the chart ran a count axis to 4 for a maximum of 1 and to 8 for a maximum of 5, leaving most
- *  of the plot empty. Only whole, non-negative values up to 20; anything else is left to the chart ({}). */
+ *  of the plot empty. Whole, non-negative values up to 20, or decimals up to 10 (steps of 0.1 to 2); anything else
+ *  is left to the chart ({}). */
 export const wholeTicks = (
   rows: ReadonlyArray<Row | null | undefined>,
   series: string[],
@@ -291,10 +292,18 @@ export const wholeTicks = (
       .filter((v) => v !== null && v !== undefined && v !== '')
       .map(Number)
   );
-  if (!values.length || values.some((v) => !Number.isFinite(v) || v < 0 || !Number.isInteger(v))) return {};
+  if (!values.length || values.some((v) => !Number.isFinite(v) || v < 0)) return {};
   const max = stacked
     ? Math.max(...list.map((row) => series.reduce((sum, s) => sum + (Number(row?.[s]) || 0), 0)))
     : Math.max(...values);
+  // A small decimal axis (a score out of 5, a ratio) ends at or just past its maximum too: left to the chart, a CSAT
+  // line of 3.6 to 4.7 with a 4.5 target ran its axis to 8 (support dashboard, 2026-10-20).
+  if (values.some((v) => !Number.isInteger(v))) {
+    if (max <= 0 || max > 10) return {};
+    const step = [0.1, 0.2, 0.25, 0.5, 1, 2].find((s) => Math.ceil(max / s - 1e-9) <= 5) ?? 2;
+    const top = Math.round(Math.ceil(max / step - 1e-9) * step * 1000) / 1000;
+    return { domain: [0, top], tickCount: Math.round(top / step) + 1 };
+  }
   if (max <= 0 || max > 20) return {};
   const step = [1, 2, 5].find((s) => Math.ceil(max / s) <= 5) ?? 5;
   const top = Math.ceil(max / step) * step;
