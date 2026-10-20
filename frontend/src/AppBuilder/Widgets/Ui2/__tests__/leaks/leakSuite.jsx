@@ -8,7 +8,8 @@
 //  - window and document listeners, live observers, zustand subscriptions, document.body's children and elements,
 //    document.head's children and live Leaflet tile layers are back where they were before the measured cycles;
 //  - the body's attributes and scroll-lock styles, and hidden or inert nodes, are as on the untouched page;
-//  - no cycle leaves a timer scheduled after its unmount beyond what an empty cycle leaves (leakProbes.js, timerProbe);
+//  - no cycle leaves a timer scheduled after its unmount, once its next-tick cleanup work has run, beyond what an
+//    empty cycle leaves (leakProbes.js, timerProbe);
 //  - every Leaflet map made is removed; a chart leaves no Recharts node behind.
 // KNOWN lists the leaks found in code outside this folder. probes.spec.jsx checks that each probe sees a leak.
 import React from 'react';
@@ -182,6 +183,8 @@ export const measureWidget = async (name, variant = {}) => {
     rechartsMounted += document.querySelectorAll('.recharts-wrapper, .recharts-surface').length ? 1 : 0;
     probes.timers.unmounting();
     unmount();
+    // The unmount's next-tick work runs before anything is measured, so what it leaves is seen (leakProbes.js).
+    await act(async () => probes.timers.settle());
     rechartsLeft += document.querySelectorAll('.recharts-wrapper, .recharts-responsive-container').length;
     return probes.timers.leftovers();
   };
