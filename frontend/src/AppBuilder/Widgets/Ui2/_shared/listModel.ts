@@ -1,7 +1,6 @@
 // ToolJet UI 2.0 List view: paging and the look, kept apart from the component so they are tested on
 // their own.
-import type { CSSProperties } from 'react';
-import type { CssVars, Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import type { CssVars, Resolved, StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 const positive = (value: unknown, fallback: number): number => {
@@ -91,7 +90,7 @@ const VARIABLES: [styleKey: string, cssVar: string][] = [
  *  background and padding. */
 export interface ListLook {
   vars: CssVars;
-  item: CSSProperties;
+  item: StyleWithVars;
   framed: boolean;
   background: string;
   padding: string;
@@ -102,9 +101,15 @@ export const listLook = (styles: Resolved = {}): ListLook => ({
     VARIABLES.filter(([key]) => isSet(styles[key])).map(([key, name]) => [name, String(styles[key])])
   ),
   item: {
+    // The item's own surface is a variable a row class paints, so the selected and hover fills (classes too) can take
+    // its place: an inline background beat them. Set on every row, so a List view in a row starts from its own.
     // Outlined card: the theme's card surface and radius; each set colour or radius below still wins.
-    ...(styles.itemVariant === 'outline' ? { background: 'var(--sc-card)', borderRadius: 'var(--sc-radius)' } : {}),
-    ...(isSet(styles.itemBackgroundColor) ? { background: styles.itemBackgroundColor } : {}),
+    '--lv-item-bg': isSet(styles.itemBackgroundColor)
+      ? String(styles.itemBackgroundColor)
+      : styles.itemVariant === 'outline'
+      ? 'var(--sc-card)'
+      : 'transparent',
+    ...(styles.itemVariant === 'outline' ? { borderRadius: 'var(--sc-radius)' } : {}),
     ...(isSet(styles.itemBorderRadius) ? { borderRadius: px(styles.itemBorderRadius) } : {}),
     // Only a chosen shadow is set inline: an inline box-shadow, 'none' included, hid the row's focus and selected rings.
     ...(isSet(styles.itemShadow) && styles.itemShadow !== 'none'
