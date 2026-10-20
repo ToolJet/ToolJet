@@ -4,6 +4,7 @@ import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import {
   MAX_PATTERN_LENGTH,
   MAX_PROGRAM,
+  MAX_FALLBACK_TEXT_LENGTH,
   MAX_TEXT_LENGTH,
   MAX_WORK,
   boundedRegex,
@@ -86,7 +87,7 @@ describe('answers as the browser does', () => {
   test.each(PATTERNS)('/%s/%s', (source, flags) => {
     const bounded = boundedRegex(source, flags);
     expect(bounded).not.toBeNull();
-    expect(bounded.supported).toBe(true);
+    expect(bounded.linear).toBe(true);
     const native = new RegExp(source, flags);
     for (const text of TEXTS) {
       expect([text, bounded.test(text)]).toEqual([text, native.test(text)]);
@@ -101,16 +102,27 @@ test('a pattern the browser rejects is null', () => {
 });
 
 test.each([
-  ['lookahead', '^(?=.*\\d).+$'],
-  ['negative lookahead', '^(?!admin).*$'],
-  ['lookbehind', '(?<=a)b'],
-  ['backreference', '(a)\\1'],
-  ['named backreference', '(?<x>a)\\k<x>'],
-  ['a repeat past the program size', `a{${MAX_PROGRAM + 1}}`],
-])('a valid pattern with %s is unsupported and matches nothing', (_, source) => {
+  ['lookahead', '^(?=.*\\d).+$', 'tag1', 'tag'],
+  ['negative lookahead', '^(?!admin).*$', 'user', 'admin'],
+  ['lookbehind', '(?<=a)b', 'ab', 'cb'],
+  ['backreference', '(a)\\1', 'xaax', 'xa'],
+  ['named backreference', '(?<x>a)\\k<x>', 'aa', 'ab'],
+  ['a repeat past the program size', `a{${MAX_PROGRAM + 1}}`, 'a'.repeat(MAX_PROGRAM + 1), 'a'],
+])('a valid pattern with %s is run by the browser on short text', (_, source, matching, other) => {
   const bounded = boundedRegex(source);
-  expect(bounded.supported).toBe(false);
-  expect(bounded.test('a1 ab aa admin')).toBe(false);
+  expect(bounded.linear).toBe(false);
+  // The program-size case needs more text than the fallback reads, so it never matches.
+  expect(bounded.test(matching)).toBe(matching.length <= MAX_FALLBACK_TEXT_LENGTH);
+  expect(bounded.test(other)).toBe(false);
+});
+
+test('text past the fallback cap does not match, and is not given to the browser', () => {
+  const bounded = boundedRegex('^(?=.*\\d).+$');
+  const tests = jest.spyOn(RegExp.prototype, 'test');
+  expect(bounded.test(`${'a'.repeat(MAX_FALLBACK_TEXT_LENGTH - 1)}1`)).toBe(true);
+  expect(bounded.test(`${'a'.repeat(MAX_FALLBACK_TEXT_LENGTH)}1`)).toBe(false);
+  expect(tests.mock.calls.map(([text]) => text.length)).toEqual([MAX_FALLBACK_TEXT_LENGTH]);
+  tests.mockRestore();
 });
 
 test('text past the cap does not match', () => {
@@ -145,7 +157,7 @@ test.each(['', 'i'])(
   'the largest pattern on the longest text its work allows finishes in bounded time (flags %s)',
   (f) => {
     const bounded = boundedRegex(LARGEST, f);
-    expect(bounded.supported).toBe(true);
+    expect(bounded.linear).toBe(true);
     const start = performance.now();
     expect(bounded.test(`${'a'.repeat(Math.floor(MAX_WORK / MAX_PROGRAM) - 1)}!`)).toBe(true);
     expect(bounded.test('a'.repeat(Math.floor(MAX_WORK / MAX_PROGRAM)))).toBe(false);

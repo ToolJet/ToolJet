@@ -3,7 +3,8 @@ import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 // currentTableStyleRegex016, trimmed): an author's pattern was run with the browser's RegExp, which backtracks, so a
 // Tags pattern, a Table regex filter or a conditional-style rule such as ^(a+)+$ took seconds on 29 characters
 // ('a' x 28 then '!') and could not be stopped once started; the Table ran it for every row as it rendered. Patterns
-// are now matched by the pack's bounded matcher, whose work grows with text length times pattern size.
+// are now matched by the pack's bounded matcher, whose work grows with text length times pattern size. Patterns it
+// cannot run in linear time (lookaround, backreferences) still work, run by the browser on short text only.
 //
 // The browser's RegExp is never given the pathological pattern and a non-empty text here: such a call is caught,
 // recorded and answered false without running, so a regression fails the test instead of hanging jest.
@@ -11,6 +12,7 @@ import { screen } from '@testing-library/react';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { addTags } from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
+import { MAX_FALLBACK_TEXT_LENGTH } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
 import { applyFilters, cellStyleFor, normalizeColumns } from '@/AppBuilder/Widgets/Ui2/Table/tableModel';
 
 const NESTED = '^(a+)+$';
@@ -111,5 +113,30 @@ describe('Table filters and conditional styles', () => {
       await w.act('setFilters', [{ column: 'value', condition: c, value: NESTED }]);
       expect(w.exposed().filteredData.map((r) => r.id)).toEqual(c === 'nl' ? ['row1'] : []);
     });
+  });
+});
+
+describe('patterns the linear engine cannot run keep working', () => {
+  test('a lookahead Tags pattern accepts a matching tag and refuses one that does not match', () => {
+    const rules = { pattern: '^(?=.*\\d).+$', patternError: 'Needs a digit' };
+    expect(addTags([], ['release2'], rules)).toEqual({ tags: ['release2'], added: ['release2'], error: '' });
+    expect(addTags([], ['release'], rules)).toEqual({ tags: [], added: [], error: 'Needs a digit' });
+  });
+
+  test('a backreference Table filter keeps the rows with a doubled letter', () => {
+    const rows = [
+      { id: 'double', value: 'Balloon' },
+      { id: 'single', value: 'Kite' },
+    ];
+    const columns = normalizeColumns([{ key: 'value', name: 'Value', columnType: 'string' }], rows);
+    const filters = [{ column: 'value', condition: 'matches', value: '([a-z])\\1' }];
+    expect(applyFilters(rows, filters, columns).map((r) => r.id)).toEqual(['double']);
+  });
+
+  test('text past the fallback cap does not match', () => {
+    const rules = { pattern: '^(?=.*\\d).+$', patternError: 'Needs a digit' };
+    const long = `${'a'.repeat(MAX_FALLBACK_TEXT_LENGTH)}1`;
+    expect(addTags([], [long], rules).added).toEqual([]);
+    expect(addTags([], [long.slice(1)], rules).added).toEqual([long.slice(1)]);
   });
 });
