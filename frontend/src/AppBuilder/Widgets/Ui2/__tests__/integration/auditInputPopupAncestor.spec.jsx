@@ -53,7 +53,7 @@ const CASES = [
       defaultValue: binding('#6366f1'),
       swatches: binding("{{['#6366f1','#22c55e']}}"),
     },
-    trigger: () => document.getElementById(`shad-${FIELD}`),
+    trigger: () => document.querySelector(`[id^="shad-${FIELD}-"]`),
     option: () => screen.queryByRole('button', { name: '#22c55e' }),
     read: (e) => ({ value: e.value }),
     initial: { value: '#6366f1' },
