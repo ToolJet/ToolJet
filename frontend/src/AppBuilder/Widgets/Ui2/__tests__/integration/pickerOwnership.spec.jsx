@@ -16,7 +16,7 @@ import { binding, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/inte
 const TABS = 'tab1';
 const PICK = 'pick1';
 const OPTIONS = '{{[{label:"Alpha",value:"a"},{label:"Beta",value:"b"}]}}';
-const trigger = () => document.getElementById(`shad-${PICK}`);
+const trigger = () => document.querySelector(`[id^="shad-${PICK}-"]`);
 const searchTo = async (text) => {
   const search = await screen.findByPlaceholderText('Search options');
   fireEvent.change(search, { target: { value: text } });
