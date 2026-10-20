@@ -346,8 +346,9 @@ export const rowKey = (row: unknown, idField: string, index: number): string =>
 const csvCell = (value: unknown): string => {
   if (isEmptyValue(value)) return '';
   let text: string = typeof value === 'object' ? stringify(value) : String(value);
-  // A cell that starts like a formula is run by spreadsheets: prefix it so it is read as text.
-  if (/^[=+\-@\t\r]/.test(text) && !(typeof value === 'number')) text = `'${text}`;
+  // A cell that starts like a formula is run by spreadsheets: prefix it so it is read as text. A line feed and the
+  // full-width forms of the signs (＝＋－＠) start one in some spreadsheets too.
+  if (/^[=+\-@\t\r\n\uFF1D\uFF0B\uFF0D\uFF20]/.test(text) && !(typeof value === 'number')) text = `'${text}`;
   return /[",\n\r]/.test(text) || text.startsWith("'") ? `"${text.replace(/"/g, '""')}"` : text;
 };
 
