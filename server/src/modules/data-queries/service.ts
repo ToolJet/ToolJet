@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -17,7 +17,6 @@ import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDelet
 import { App } from '@entities/app.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
-import { VersionSnapshotStore } from '@modules/versions/diff/snapshot-store';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -241,32 +240,6 @@ export class DataQueriesService implements IDataQueriesService {
     app?: App
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
-
-    // The compare view renders an AI-turn snapshot: run the query as the snapshot had it,
-    // on the same data source, and never write those options back. The query may since have
-    // been deleted, in which case it is rebuilt from the snapshot.
-    if (updateDataQueryDto.snapshotId) {
-      if (!app) throw new NotFoundException();
-      // Edit access is checked by SnapshotRunGuard on the route.
-      const stored = await dbTransactionWrap((manager: EntityManager) =>
-        new VersionSnapshotStore().load(manager, app.id, updateDataQueryDto.snapshotId)
-      );
-      const row = stored.rows.queries.find((query) => query.id === dataQueryId);
-      if (!row || row.dataSourceId !== dataSource.id) throw new NotFoundException('This query is not in the snapshot');
-      const existing = await this.dataQueryRepository.findOne({
-        where: { id: dataQueryId },
-        relations: { dataSource: true },
-      });
-      const snapshotQuery = Object.assign(existing ?? new DataQuery(), {
-        id: row.id,
-        name: row.name,
-        options: row.options,
-        dataSourceId: dataSource.id,
-        dataSource: existing?.dataSource ?? dataSource,
-        appVersionId: stored.versionId,
-      });
-      return this.runAndGetResult(user, snapshotQuery, resolvedOptions, response, environmentId, 'view', app);
-    }
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
       dataSource: true,

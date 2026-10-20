@@ -202,11 +202,6 @@ export class VersionService implements IVersionService {
     });
   }
 
-  // Pages as the viewer loads them: stored values over each widget's defaults.
-  withComponentDefaults(pages: any[]): any[] {
-    return this.appUtilService.mergeDefaultComponentData(pages);
-  }
-
   async getVersion(app: App, user: User, mode?: string): Promise<any> {
     const prepareResponse = async (app: App, versionId: string) => {
       let appVersion,

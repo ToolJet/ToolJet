@@ -13,11 +13,6 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppHistoryModule } from '@modules/app-history/module';
-import { VersionDiffController } from './controllers/diff.controller';
-import { VersionDiffService } from './diff/version-diff.service';
-import { VersionReviewController } from './controllers/review.controller';
-import { VersionReviewService } from './reviews/version-review.service';
-import { VersionService as BaseVersionService } from './service';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -30,6 +25,8 @@ export class VersionModule extends SubModule {
       VersionsCreateService,
       VersionService,
       VersionUtilService,
+      VersionCompareControllers,
+      VersionCompareProviders,
     } = await this.getProviders(configs, 'versions', [
       'controller',
       'controller.v2',
@@ -39,6 +36,7 @@ export class VersionModule extends SubModule {
       'services/create.service',
       'service',
       'util.service',
+      'compare',
     ]);
 
     // Get apps related providers
@@ -63,8 +61,7 @@ export class VersionModule extends SubModule {
             ComponentsController,
             EventsController,
             PagesController,
-            VersionDiffController,
-            VersionReviewController,
+            ...VersionCompareControllers,
             VersionController,
             VersionControllerV2,
           ]
@@ -84,10 +81,7 @@ export class VersionModule extends SubModule {
         EventsService,
         VersionService,
         VersionUtilService,
-        VersionDiffService,
-        VersionReviewService,
-        // VersionDiffController is edition-agnostic and asks for the base class; hand it this edition's service.
-        ...(VersionService !== BaseVersionService ? [{ provide: BaseVersionService, useExisting: VersionService }] : []),
+        ...VersionCompareProviders,
         FeatureAbilityFactory,
         GroupPermissionsRepository,
       ],

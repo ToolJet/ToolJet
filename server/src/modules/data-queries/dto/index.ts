@@ -39,12 +39,7 @@ export class CreateDataQueryDto {
   folder_id: string;
 }
 
-export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {
-  // Compare view: run the query as an AI-turn snapshot of the version had it. Never saved.
-  @IsUUID()
-  @IsOptional()
-  snapshotId?: string;
-}
+export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {}
 
 export interface IUpdatingReferencesOptions {
   id: string;

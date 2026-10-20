@@ -40,8 +40,6 @@ import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { isUUID } from 'class-validator';
-import { VersionReviewService } from '@modules/versions/reviews/version-review.service';
-import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -257,14 +255,10 @@ export class AppsUtilService implements IAppsUtilService {
     // removing keys with undefined values
     cleanObject(updatableParams);
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Setting current_version_id releases a version, so it passes the same release hooks.
+      const isNewRelease = !!updatableParams.currentVersionId && currentVersionId !== lastReleasedVersion;
       if (updatableParams.currentVersionId) {
-        // Setting current_version_id is a release too, so it passes the same review gate.
-        const reviews = new VersionReviewService();
-        if (currentVersionId !== lastReleasedVersion) {
-          await reviews.assertReleasable(manager, appId, currentVersionId, 'release');
-          const actorId = (RequestContext.currentContext?.req as any)?.user?.id ?? app.userId;
-          await reviews.markReleased(manager, appId, currentVersionId, actorId);
-        }
+        if (isNewRelease) await this.beforeVersionRelease(manager, appId, currentVersionId);
         //check if the app version is eligible for release
         const currentEnvironment: AppEnvironment = await this.getEnvironmentOfVersion(currentVersionId, manager);
 
@@ -316,13 +310,34 @@ export class AppsUtilService implements IAppsUtilService {
           await manager.query(promotedFromQuery, [lastReleasedVersion]);
         }
       }
-      return await catchDbException(async () => {
+      const result = await catchDbException(async () => {
         return await manager.update(App, appId, updatableParams);
       }, [
         { dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' },
         { dbConstraint: DataBaseConstraints.APP_SLUG_UNIQUE, message: 'This app slug is already taken.' },
       ]);
+      if (isNewRelease) await this.afterVersionRelease(manager, appId, currentVersionId);
+      return result;
     }, manager);
+  }
+
+  /**
+   * Hook called before a version becomes the released version - override in EE
+   */
+  protected async beforeVersionRelease(manager: EntityManager, appId: string, versionId: string): Promise<void> {
+    // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after a version becomes the released version - override in EE
+   */
+  protected async afterVersionRelease(
+    manager: EntityManager,
+    appId: string,
+    versionId: string,
+    userId?: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides
   }
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
