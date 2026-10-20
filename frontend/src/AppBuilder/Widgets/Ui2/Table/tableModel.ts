@@ -9,6 +9,7 @@ import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { ColumnLike, ColumnType, Row, TableColumn } from './types';
 import { isEmptyValue, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { boundedRegex } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
 
 const falsy = (value: unknown): boolean => value === false || value === 'false' || value === '{{false}}';
 
@@ -217,13 +218,9 @@ export const FILTER_CONDITIONS: [string, string][] = [
 ];
 const NO_VALUE = new Set<unknown>(['isEmpty', 'isNotEmpty']);
 
-const safeRegex = (pattern: unknown): RegExp | null => {
-  try {
-    return new RegExp(pattern as string, 'i');
-  } catch {
-    return null;
-  }
-};
+// The rule's pattern, matched with bounded work: a Table tests it against every row as it renders.
+const safeRegex = (pattern: unknown) =>
+  boundedRegex(pattern instanceof RegExp ? pattern.source : pattern === undefined ? '' : String(pattern), 'i');
 
 const passes = (value: unknown, condition: unknown, wanted: unknown, column?: ColumnLike): boolean => {
   const text = (isEmptyValue(value) ? '' : typeof value === 'object' ? stringify(value) : String(value)).toLowerCase();
