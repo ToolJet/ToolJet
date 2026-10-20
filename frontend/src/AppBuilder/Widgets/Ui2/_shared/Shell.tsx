@@ -128,9 +128,11 @@ export interface ShellProps {
 
 /** A native Form that is disabled wraps its children in `<fieldset disabled>`. That disables native form controls but
  *  not the pack's own (a Slider thumb, Rating stars, Multiselect chips), so the widget root swallows input that would
- *  change them: every key but Tab (moving on stays possible) and every press or click, including in its popups
- *  (React events from a portal pass through the root). Closing an overlay the widget opened (an Image zoom's Close
- *  button and backdrop) changes nothing, so an element marked with DISMISS still takes it. */
+ *  change them: every key but Tab (moving on stays possible) and every press, release or click, including in its
+ *  popups (React events from a portal pass through the root; Radix Select commits a mouse choice on pointerup). A
+ *  popup's own choice handler checks its owner too (usePickerPopup's guard): this is the second line. Closing an
+ *  overlay the widget opened (an Image zoom's Close button and backdrop) changes nothing, so an element marked with
+ *  DISMISS still takes it. */
 const ALLOWED_KEYS = new Set(['Tab']);
 const inDisabledFieldset = (el: HTMLElement | null) => !!el?.closest?.('fieldset[disabled]');
 const DISMISS_ATTR = 'data-ui2-dismiss';
@@ -191,6 +193,7 @@ export const Shell = (props: ShellProps) => {
       data-cy={dataCy}
       onKeyDownCapture={blockInput}
       onPointerDownCapture={blockInput}
+      onPointerUpCapture={blockInput}
       onMouseDownCapture={blockInput}
       onClickCapture={blockInput}
       aria-busy={loading || undefined}

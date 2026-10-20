@@ -72,6 +72,10 @@ export interface PickerPopup {
   open: boolean;
   /** Read when a choice arrives: the picker's own state, and the panels around it (see ownerTakesNoInput). */
   readonly blocked: boolean;
+  /** Wraps a choice handler (a menu's onValueChange or onSelect): the choice is dropped while `blocked`. A choice can
+   *  come from a popup opened before its owner stopped taking input, by pointer or by key, in whatever event phase
+   *  the menu library commits it. Public setters and clear actions do not go through it. */
+  guard: <A extends unknown[]>(choice: (...args: A) => void) => (...args: A) => void;
   setOpen: (next: boolean) => void;
   /** setBlur: takes focus away from the control and its open popup, and closes the popup without handing focus back
    *  to the trigger (blurring only the trigger did nothing while focus was in the popup). */
@@ -91,6 +95,8 @@ export const ownerTakesNoInput = (el: Element | null | undefined): boolean => {
   const pane = el.closest('[data-disabled="true"]');
   if (pane && window.getComputedStyle(pane).pointerEvents === 'none') return true;
   for (let node: Element | null = el; node; node = node.parentElement) {
+    // useDisableInert sets the inert property (a disabled Tabs, Container or List view), which not every DOM reflects.
+    if ((node as HTMLElement).inert === true) return true;
     const style = window.getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden') return true;
   }
@@ -125,12 +131,18 @@ export const usePickerPopup = (properties: Resolved, anchor?: RefObject<Element>
     return () => observer.disconnect();
   }, [open, anchor]);
   const leaving = useRef(false);
+  // Read when the choice arrives: a panel disabled or hidden after the popup opened counts.
+  const isBlocked = () => own || ownerTakesNoInput(anchor?.current);
   return {
     open: open && !blocked,
-    // A getter, so a guard reads it when the choice arrives: a panel disabled or hidden after the popup opened counts.
     get blocked() {
-      return own || ownerTakesNoInput(anchor?.current);
+      return isBlocked();
     },
+    guard:
+      (choice) =>
+      (...args) => {
+        if (!isBlocked()) choice(...args);
+      },
     setOpen: (next: boolean) => setOpenState(next && !blocked),
     blurAway: (trigger) => {
       leaving.current = open;

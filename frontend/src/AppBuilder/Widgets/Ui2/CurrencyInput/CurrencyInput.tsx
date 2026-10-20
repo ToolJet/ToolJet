@@ -27,6 +27,7 @@ import {
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 
 // ---- Currency input ------------------------------------------------------------------------------------------------
 
@@ -103,6 +104,22 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
       ? draft
       : M.formatNumber(value, { decimals, grouping: properties.thousandSeparator !== false, locale, fixed: true });
   const vars = lookVars(componentType, styles);
+  // The currency menu is the shared picker popup: it closes, and takes no choice, once the input or a panel around it
+  // stops taking input (a menu opened before setDisable, a Tabs switch or a disabled Form).
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
+  const pickCurrency = popup.guard((code: string) => {
+    const next = M.toCurrency(code, currency);
+    if (next === currency) return;
+    const places = M.currencyDecimals(next, properties.decimalPlaces);
+    const rounded = M.roundTo(value, places);
+    // box.set fires the one onChange, once the new currency and amount are published.
+    runNow(() => {
+      setCurrency(next);
+      box.set(rounded, (n) => M.roundTo(n, places));
+      setExposedVariables({ currency: next, value: rounded, formattedValue: formatted(rounded, next) });
+    });
+  });
   return (
     <FormField props={props} properties={properties} check={check} innerRef={fit}>
       <Group disabled={disabled}>
@@ -110,20 +127,12 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
           <Select
             value={currency}
             disabled={disabled}
-            onValueChange={(code) => {
-              const next = M.toCurrency(code, currency);
-              if (next === currency) return;
-              const places = M.currencyDecimals(next, properties.decimalPlaces);
-              const rounded = M.roundTo(value, places);
-              // box.set fires the one onChange, once the new currency and amount are published.
-              runNow(() => {
-                setCurrency(next);
-                box.set(rounded, (n) => M.roundTo(n, places));
-                setExposedVariables({ currency: next, value: rounded, formattedValue: formatted(rounded, next) });
-              });
-            }}
+            open={popup.open}
+            onOpenChange={popup.setOpen}
+            onValueChange={pickCurrency}
           >
             <SelectTrigger
+              ref={triggerRef}
               aria-label="Currency"
               className={cn(
                 ADDON,
