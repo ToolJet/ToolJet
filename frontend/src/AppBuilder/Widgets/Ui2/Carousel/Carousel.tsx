@@ -18,6 +18,8 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import { safeImageUrl, safeUrl } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { ownerTakesNoInput, useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Carousel ----------------------------------------------------------------------------------------------------
 
@@ -27,7 +29,7 @@ const ARROW =
 export const SLIDE_RADIUS = 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))]';
 
 export const ShadCarousel = (props: WidgetProps) => {
-  const { properties, setExposedVariable, setExposedVariables, fireEvent, height, currentMode } = props;
+  const { id, properties, setExposedVariable, setExposedVariables, fireEvent, height, currentMode } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   // Normalised once per slides value, not on every render (a variable update elsewhere re-renders the widget).
@@ -79,7 +81,9 @@ export const ShadCarousel = (props: WidgetProps) => {
   });
 
   const latestGo = useLatest(go);
-  // A hidden carousel does not play either: nobody sees its slides change, and each change fires onSlideChanged.
+  // A hidden carousel does not play either: nobody sees its slides change, and each change fires onSlideChanged. Nor
+  // does one in a panel that takes no input (a retained Tabs pane switched away, a hidden, loading or disabled one):
+  // hiding a panel does not re-render what is in it, so each tick looks, and skips the move.
   const autoplay =
     properties.autoplay === true &&
     positions > 1 &&
@@ -91,6 +95,7 @@ export const ShadCarousel = (props: WidgetProps) => {
   useEffect(() => {
     if (!autoplay) return undefined;
     const timer = setInterval(() => {
+      if (ownerTakesNoInput(ref.current)) return;
       const { positions: count, loop: wrap } = live.current;
       latestGo.current(!wrap && indexRef.current >= count - 1 ? 0 : indexRef.current + 1);
     }, interval);
@@ -115,6 +120,9 @@ export const ShadCarousel = (props: WidgetProps) => {
   const step = `((100% - (${perView} - 1) * ${gap}) / ${perView} + ${gap})`;
   const canPrev = positions > 1 && (loop || index > 0);
   const canNext = positions > 1 && (loop || index < positions - 1);
+  // A slide that does something when clicked (onSlideClicked, its link) is a button: in the tab order while in view,
+  // and Enter or Space activates it as a click does.
+  const hasSlideClick = useHasEvent(id, 'onSlideClicked');
 
   const clickSlide = (i: number) => {
     // Disabled, a slide is not clickable either (no onSlideClicked, no link), as the arrows, dots and keys.
@@ -208,6 +216,7 @@ export const ShadCarousel = (props: WidgetProps) => {
             {slides.map((slide, i) => {
               const showImage = !!safeImageUrl(slide.image) && failed[i] !== safeImageUrl(slide.image);
               const visible = i >= index && i < index + perView;
+              const actionable = !disabled && (hasSlideClick || !!safeUrl(slide?.link));
               return (
                 <div
                   key={i}
@@ -223,9 +232,14 @@ export const ShadCarousel = (props: WidgetProps) => {
                       'tw-relative tw-overflow-hidden tw-bg-[color:var(--lk-slide-bg,var(--sc-muted))]',
                       SLIDE_RADIUS,
                       fill && 'tw-min-h-0 tw-flex-1',
-                      !disabled && 'tw-cursor-pointer'
+                      !disabled && 'tw-cursor-pointer',
+                      actionable &&
+                        'tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--sc-ring)]'
                     )}
                     style={fill ? undefined : { aspectRatio: ratio }}
+                    role={actionable ? 'button' : undefined}
+                    tabIndex={actionable ? (visible ? 0 : -1) : undefined}
+                    onKeyDown={actionable ? onKeyActivate(() => clickSlide(i)) : undefined}
                     onClick={() => clickSlide(i)}
                   >
                     {showImage ? (
