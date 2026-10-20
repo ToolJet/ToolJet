@@ -4,6 +4,8 @@
 
 import type { Option, OptionValue } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { clampInt, isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { boundedRegex } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
+import type { BoundedRegex } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
 
 // ---- Options (Combobox, Multiselect) -------------------------------------------------------------------------------
 
@@ -128,19 +130,12 @@ export const splitTyped = (text: unknown): { parts: string[]; rest: string } => 
   return { parts: pieces.map((p) => p.trim()).filter(Boolean), rest };
 };
 
-/** A regular expression from the author's text, or null when it is empty, invalid or too large. V8 compiles a pattern
- *  on its first use, so it is tried once here: a huge one ("Regular expression too large") then fails here, not in
- *  render. */
-export const safeRegex = (pattern: unknown): RegExp | null => {
+/** A pattern from the author's text, matched with bounded work (boundedRegex), or null when it is empty, invalid or
+ *  too large. */
+export const safeRegex = (pattern: unknown): BoundedRegex | null => {
   const source = pattern instanceof RegExp ? pattern.source : isScalar(pattern) ? String(pattern) : '';
-  if (source.trim() === '' || source.length > 2000) return null;
-  try {
-    const re = new RegExp(source, pattern instanceof RegExp ? pattern.flags.replace('g', '') : '');
-    re.test('');
-    return re;
-  } catch {
-    return null;
-  }
+  if (source.trim() === '') return null;
+  return boundedRegex(source, pattern instanceof RegExp ? pattern.flags.replace('g', '') : '');
 };
 
 export const sameTag = (a: unknown, b: unknown, caseSensitive?: unknown): boolean =>

@@ -9,6 +9,7 @@ import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { ColumnLike, ColumnType, Row, TableColumn } from './types';
 import { isEmptyValue, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { boundedRegex } from '@/AppBuilder/Widgets/Ui2/_shared/boundedRegex';
 
 const falsy = (value: unknown): boolean => value === false || value === 'false' || value === '{{false}}';
 
@@ -217,13 +218,9 @@ export const FILTER_CONDITIONS: [string, string][] = [
 ];
 const NO_VALUE = new Set<unknown>(['isEmpty', 'isNotEmpty']);
 
-const safeRegex = (pattern: unknown): RegExp | null => {
-  try {
-    return new RegExp(pattern as string, 'i');
-  } catch {
-    return null;
-  }
-};
+// The rule's pattern, matched with bounded work: a Table tests it against every row as it renders.
+const safeRegex = (pattern: unknown) =>
+  boundedRegex(pattern instanceof RegExp ? pattern.source : pattern === undefined ? '' : String(pattern), 'i');
 
 const passes = (value: unknown, condition: unknown, wanted: unknown, column?: ColumnLike): boolean => {
   const text = (isEmptyValue(value) ? '' : typeof value === 'object' ? stringify(value) : String(value)).toLowerCase();
@@ -346,8 +343,9 @@ export const rowKey = (row: unknown, idField: string, index: number): string =>
 const csvCell = (value: unknown): string => {
   if (isEmptyValue(value)) return '';
   let text: string = typeof value === 'object' ? stringify(value) : String(value);
-  // A cell that starts like a formula is run by spreadsheets: prefix it so it is read as text.
-  if (/^[=+\-@\t\r]/.test(text) && !(typeof value === 'number')) text = `'${text}`;
+  // A cell that starts like a formula is run by spreadsheets: prefix it so it is read as text. A line feed and the
+  // full-width forms of the signs (＝＋－＠) start one in some spreadsheets too.
+  if (/^[=+\-@\t\r\n\uFF1D\uFF0B\uFF0D\uFF20]/.test(text) && !(typeof value === 'number')) text = `'${text}`;
   return /[",\n\r]/.test(text) || text.startsWith("'") ? `"${text.replace(/"/g, '""')}"` : text;
 };
 

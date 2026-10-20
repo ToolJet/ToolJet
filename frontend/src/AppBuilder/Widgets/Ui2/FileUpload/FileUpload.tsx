@@ -110,12 +110,13 @@ export const ShadFileUpload = (props: WidgetProps) => {
   //   read finishing last replaced the newer selection);
   // - isParsing counts the parsing reads of the current generation, so it stays true until the last one finishes (the
   //   first read to finish, or one cleared away, turned it off while another was still parsing).
-  // Ending a generation (clearing) or unmounting also aborts its reads, so a file no longer wanted is not read on or
-  // parsed only to be released; the checks below still decide what is published.
+  // Ending a generation (clearing), unmounting or, with one file allowed, choosing a newer file also aborts the reads
+  // under way, so a file no longer wanted is not read on or parsed only to be released; the checks below still decide
+  // what is published. Each batch of reads holds its number of files, the places it takes against maxFiles.
   const generation = useRef(0);
-  const reads = useRef(new Set<AbortController>());
+  const reads = useRef(new Map<AbortController, number>());
   const stopReads = () => {
-    reads.current.forEach((r) => r.abort());
+    reads.current.forEach((_, r) => r.abort());
     reads.current.clear();
   };
   const latestDrop = useRef(0);
@@ -168,7 +169,10 @@ export const ShadFileUpload = (props: WidgetProps) => {
     check.touch();
     const started = generation.current;
     const current = multiple ? filesRef.current : [];
-    const room = multiple ? Math.max(0, maxFiles - current.length) : 1;
+    // Reads still pending hold their places: drops made before they finish could otherwise start a read each.
+    let pending = 0;
+    reads.current.forEach((n) => (pending += n));
+    const room = multiple ? Math.max(0, maxFiles - current.length - pending) : 1;
     const fresh = list(accepted).filter(
       (f) => !current.some((c) => c.name === f.name && c.size === f.size && c.lastModified === f.lastModified)
     );
@@ -179,12 +183,13 @@ export const ShadFileUpload = (props: WidgetProps) => {
     }
     setRejectError(message);
     if (!taking.length) return;
+    if (!multiple) stopReads();
     latestDrop.current += 1;
     const drop = latestDrop.current;
     const parse = properties.parseContent === true;
     if (parse) countParsing(1);
     const batch = new AbortController();
-    reads.current.add(batch);
+    reads.current.set(batch, taking.length);
     const options = {
       parse,
       parseFileType: properties.parseFileType,
@@ -201,7 +206,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
     if (started !== generation.current) return release();
     if (parse) countParsing(-1);
     const live = limits.current;
-    if (!live.multiple && drop !== latestDrop.current) return release();
+    if (batch.signal.aborted || (!live.multiple && drop !== latestDrop.current)) return release();
     if (read.length < taking.length) setRejectError(`${taking.length - read.length} file(s) could not be read`);
     if (!read.length) return undefined;
     if (!live.multiple) filesRef.current.forEach((f) => releaseFileHandle(f.handle));
