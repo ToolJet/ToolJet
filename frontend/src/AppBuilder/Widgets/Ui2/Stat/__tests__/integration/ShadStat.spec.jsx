@@ -263,13 +263,14 @@ describe('UI 2.0 Stat', () => {
       properties: { change: binding('+12%'), trend: binding('up') },
       styles: { positiveColor: binding('#16a34a'), negativeColor: binding('#dc2626') },
     });
-    await waitFor(() => expect(chip('+12%').style.getPropertyValue('--kb-badge-fg')).toBe('#16a34a'));
+    // The colour is the chip under a white label, deepened where white reads under 4.5:1 (auditKanbanBadgeContrast).
+    await waitFor(() => expect(chip('+12%').style.getPropertyValue('--kb-badge-bg')).toBe('#12883e'));
 
     render({
       properties: { change: binding('-3%'), trend: binding('down') },
       styles: { positiveColor: binding('#16a34a'), negativeColor: binding('#dc2626') },
     });
-    await waitFor(() => expect(chip('-3%').style.getPropertyValue('--kb-badge-fg')).toBe('#dc2626'));
+    await waitFor(() => expect(chip('-3%').style.getPropertyValue('--kb-badge-bg')).toBe('#dc2626'));
   });
 
   test('[ShadStat-STY-003] valueFontFamily, labelTextTransform and labelLetterSpacing style the figure and label apart', async () => {

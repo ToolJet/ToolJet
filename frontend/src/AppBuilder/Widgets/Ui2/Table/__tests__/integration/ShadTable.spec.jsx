@@ -101,8 +101,9 @@ describe('UI 2.0 Table', () => {
 
     await waitFor(() => expect(row('Ada')).toHaveTextContent('2026/09/14'));
     expect(row('Ada')).toHaveTextContent(/1\.250,00\s€/);
-    expect(within(row('Ada')).getByText('Paid').closest('[style]').style.getPropertyValue('--kb-badge-fg')).toBe(
-      '#16a34a'
+    // The colour is the chip under a white label, deepened where white reads under 4.5:1 (auditKanbanBadgeContrast).
+    expect(within(row('Ada')).getByText('Paid').closest('[style]').style.getPropertyValue('--kb-badge-bg')).toBe(
+      '#12883e'
     );
   });
 

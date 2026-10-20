@@ -1,5 +1,6 @@
 import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import tinycolor from 'tinycolor2';
+import { primaryStrong } from '@/AppBuilder/_helpers/onBrandText';
 import { badgeLook, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 
 describe('kanbanLook', () => {
@@ -45,11 +46,13 @@ describe('kanbanLook', () => {
 
 describe('badgeLook', () => {
   it('colours a badge from the map by its exact or lower-case value', () => {
-    expect(badgeLook('High', { High: '#dc2626' })).toEqual({
-      '--kb-badge-fg': '#dc2626',
-      '--kb-badge-bg': 'color-mix(in srgb, #dc2626 14%, transparent)',
+    // The colour is the chip, under the label primary buttons use (auditKanbanBadgeContrast checks the contrast).
+    expect(badgeLook('High', { High: '#dc2626' })).toEqual({ '--kb-badge-fg': '#ffffff', '--kb-badge-bg': '#dc2626' });
+    expect(badgeLook('LOW', { low: '#16a34a' })).toEqual({
+      '--kb-badge-fg': '#ffffff',
+      '--kb-badge-bg': primaryStrong('#16a34a'),
     });
-    expect(badgeLook('LOW', { low: '#16a34a' })['--kb-badge-fg']).toBe('#16a34a');
+    expect(primaryStrong('#16a34a')).not.toBe('#16a34a');
   });
 
   it('reads a light colour as the chip background, with a deep text of the same hue', () => {
