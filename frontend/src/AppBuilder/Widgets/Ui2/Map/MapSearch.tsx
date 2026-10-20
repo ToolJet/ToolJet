@@ -36,12 +36,21 @@ export const useMapSearch = ({
   const results = found.query === query.trim() && found.provider === provider ? found.places : [];
   const setResults = (places: Place[]) => setFound({ query: query.trim(), provider, places });
   const [searching, setSearching] = useState(false);
-  // A failure belongs to the geocoder that failed, like its places.
-  const [failure, setFailure] = useState({ provider: '', message: '' });
-  const searchError = failure.provider === provider ? failure.message : '';
-  const setSearchError = (message: string) => setFailure({ provider, message });
-  // The query Enter asked for, when the geocoder does not search as you type.
+  // A failure belongs to the query and the geocoder that failed, like their places: a new query's pause before its
+  // search shows no message from the last one.
+  const [failure, setFailure] = useState({ query: '', provider: '', message: '' });
+  const searchError = failure.query === query.trim() && failure.provider === provider ? failure.message : '';
+  const setSearchError = (message: string) => setFailure({ query: query.trim(), provider, message });
+  // The query Enter asked for, when the geocoder does not search as you type, and which press it was: Enter again on
+  // the same query after a failure is a new attempt, so it searches again.
   const [submitted, setSubmitted] = useState('');
+  const [attempt, setAttempt] = useState(0);
+  // Enter while that query's search runs starts no second one.
+  const submit = (q: string) => {
+    if (searching && submitted === q) return;
+    setSubmitted(q);
+    setAttempt((n) => n + 1);
+  };
   // The label of the place just chosen fills the box; it is not searched for again.
   const chosenRef = useRef('');
   useEffect(() => {
@@ -59,11 +68,12 @@ export const useMapSearch = ({
           .then((places) => {
             if (places) {
               setFound({ query: q, provider, places });
-              setFailure({ provider, message: places.length ? '' : 'No places found' });
+              setFailure({ query: q, provider, message: places.length ? '' : 'No places found' });
             }
           })
           .catch((error) =>
             setFailure({
+              query: q,
               provider,
               message:
                 error instanceof GeocoderAnswerTooLarge
@@ -79,7 +89,7 @@ export const useMapSearch = ({
       clearTimeout(timer);
       controller?.abort();
     };
-  }, [query, submitted, typeAhead, provider]);
+  }, [query, submitted, attempt, typeAhead, provider]);
   const choosePlace = (place: Place) => {
     const map = mapRef.current;
     setResults([]);
@@ -97,7 +107,7 @@ export const useMapSearch = ({
     searching,
     searchError,
     submitted,
-    setSubmitted,
+    submit,
     chosenRef,
     choosePlace,
   };
@@ -114,18 +124,8 @@ export const MapSearch = ({
   placeholder: string;
   typeAhead: boolean;
 }) => {
-  const {
-    query,
-    setQuery,
-    results,
-    setResults,
-    searching,
-    searchError,
-    submitted,
-    setSubmitted,
-    chosenRef,
-    choosePlace,
-  } = search;
+  const { query, setQuery, results, setResults, searching, searchError, submitted, submit, chosenRef, choosePlace } =
+    search;
   return (
     <div className="sc-map-search" role="search">
       <input
@@ -139,7 +139,7 @@ export const MapSearch = ({
           if (disabled) return;
           // The Enter that confirms IME characters (Japanese, Chinese, Korean) neither searches nor picks a place.
           if (isEnter(e) && results[0]) choosePlace(results[0]);
-          else if (isEnter(e) && !typeAhead) setSubmitted(query.trim());
+          else if (isEnter(e) && !typeAhead) submit(query.trim());
           if (e.key === 'Escape') setResults([]);
         }}
       />
