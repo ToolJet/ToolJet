@@ -19,9 +19,6 @@ export const appVersionService = {
   findAllEventsWithSourceId,
   cloneGroup,
   createDraftVersion,
-  getDiff,
-  getLayout,
-  restoreSnapshot,
 };
 
 function getAll(appId) {
@@ -43,40 +40,8 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
   };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote`, requestOptions).then(handleResponse);
 }
-// What changed from baseVersionId (or a stored snapshot) to versionId, grouped by page.
-function getDiff(appId, versionId, baseVersionId, baseSnapshotId) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const query = baseSnapshotId
-    ? `baseSnapshot=${encodeURIComponent(baseSnapshotId)}`
-    : `base=${encodeURIComponent(baseVersionId)}`;
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/diff?${query}`, requestOptions).then(
-    handleResponse
-  );
-}
-
-// Undo this turn: put a draft back to a snapshot of itself, if it has not changed since expectedFingerprint.
-function restoreSnapshot(appId, snapshotId, expectedFingerprint) {
-  const requestOptions = {
-    method: 'POST',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify({ expectedFingerprint }),
-  };
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/snapshots/${snapshotId}/restore`, requestOptions).then(
-    handleResponse
-  );
-}
-
-// Layout boxes of one page of a version or a snapshot, for drawing it without running it.
-function getLayout(appId, { versionId, snapshotId }, pageKey) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const path = snapshotId ? `snapshots/${snapshotId}` : `versions/${versionId}`;
-  const page = pageKey ? `?page=${encodeURIComponent(pageKey)}` : '';
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/${path}/layout${page}`, requestOptions).then(handleResponse);
-}
-
-// The definition of an AI-turn snapshot of a version, shaped like getAppVersionData's,
-// for rendering the state before the edit in the compare view.
+// The definition of a stored snapshot of a version, shaped like getAppVersionData's, for
+// rendering that snapshot read-only.
 function getSnapshotDefinition(appId, versionId, snapshotId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(

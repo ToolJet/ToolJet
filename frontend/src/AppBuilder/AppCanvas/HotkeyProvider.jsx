@@ -5,7 +5,6 @@ import { pasteComponents, copyComponents } from './copyPasteWidgetsUtils';
 import useKeyHooks from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { useVersionDiffStore } from '@/AppBuilder/VersionDiff/useVersionDiffStore';
 
 export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, isModuleMode }) => {
   const { isModuleEditor } = useModuleContext();
@@ -23,22 +22,22 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const containerChildrenMapping = useStore((state) => state.containerChildrenMapping, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
-  // The compare view covers the editor; its keys must not move, delete or undo what is underneath.
-  const compareOpen = useVersionDiffStore((state) => state.isOpen);
+  // A full-screen view covering the editor; its keys must not move, delete or undo what is underneath.
+  const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
 
   useHotkeys(
     'meta+z, control+z',
     (e) => {
       if (!isEditorReadOnly) handleUndo(e);
     },
-    { enabled: mode === 'edit' && !compareOpen }
+    { enabled: mode === 'edit' && !overlayOpen }
   );
   useHotkeys(
     'meta+shift+z, control+shift+z',
     (e) => {
       if (!isEditorReadOnly) handleRedo(e);
     },
-    { enabled: mode === 'edit' && !compareOpen }
+    { enabled: mode === 'edit' && !overlayOpen }
   );
 
   const paste = async () => {
@@ -140,7 +139,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
       'meta+a, ctrl+a',
     ],
     handleHotKeysCallback,
-    mode === 'edit' && !compareOpen
+    mode === 'edit' && !overlayOpen
   );
 
   return (

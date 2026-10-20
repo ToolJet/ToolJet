@@ -3,7 +3,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
-import { useVersionDiffStore } from '@/AppBuilder/VersionDiff/useVersionDiffStore';
 
 const QueryKeyHooks = ({ children, isExpanded }) => {
   const runQueryOnShortcut = useStore((state) => state.queryPanel.runQueryOnShortcut);
@@ -15,7 +14,7 @@ const QueryKeyHooks = ({ children, isExpanded }) => {
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
   const moduleId = useModuleId();
-  const compareOpen = useVersionDiffStore((state) => state.isOpen);
+  const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
 
   const isAbortSupported = !ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind);
   const isQueryActive = isQueryLoading || isPreviewQueryLoading;
@@ -29,11 +28,11 @@ const QueryKeyHooks = ({ children, isExpanded }) => {
         } else runQueryOnShortcut();
       }
     },
-    { enabled: isExpanded && !isQueryActive && !compareOpen, enableOnFormTags: ['input'] }
+    { enabled: isExpanded && !isQueryActive && !overlayOpen, enableOnFormTags: ['input'] }
   );
 
   useHotkeys('mod+period', () => abortQueryOnShortcut(moduleId), {
-    enabled: isExpanded && isAbortSupported && isQueryActive && !compareOpen,
+    enabled: isExpanded && isAbortSupported && isQueryActive && !overlayOpen,
     enableOnFormTags: ['input'],
   });
 

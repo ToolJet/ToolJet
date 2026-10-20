@@ -376,10 +376,10 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         placement="bottom-end"
         rootClose
         onHide={(event) => {
-          // Promote and Release open their dialogs from inside this menu, and those dialogs (and the
-          // compare view on top of them) render outside it. A click in them is not a click away
-          // from the menu; closing here would take the open dialog with it.
-          if (event?.target?.closest?.('.modal, .vd-root, .vd-card')) return;
+          // Promote and Release open their dialogs from inside this menu, and those dialogs (and any
+          // full-screen view opened from them) render outside it. A click in them is not a click
+          // away from the menu; closing here would take the open dialog with it.
+          if (event?.target?.closest?.('.modal, [data-editor-overlay]')) return;
           closeDropdown();
         }}
         popperConfig={{

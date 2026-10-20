@@ -1,21 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
-import { useVersionDiffStore } from '@/AppBuilder/VersionDiff/useVersionDiffStore';
-import { reviewService } from '@/AppBuilder/VersionDiff/reviewService';
-import { ChangeSummary } from '@/AppBuilder/VersionDiff/ChangeSummary';
+import ReleaseConfirmationExtras from './ReleaseConfirmationExtras';
 
 export default function ReleaseConfirmation(props) {
   const { onClose, onConfirm, show } = props;
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
-  const openCompare = useVersionDiffStore((state) => state.openCompare);
-  // Re-check the gate when the compare view closes: the review may have been approved in it.
-  const compareOpen = useVersionDiffStore((state) => state.isOpen);
   const { name, selectedVersionId, appId, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } =
     useStore(
       (state) => ({
@@ -28,22 +23,9 @@ export default function ReleaseConfirmation(props) {
       }),
       shallow
     );
-  // When the workspace requires reviews, say why release is locked before the
-  // person clicks Yes (the server refuses it either way).
-  const [gate, setGate] = useState(null);
-  useEffect(() => {
-    if (!show || !appId || !selectedVersionId || compareOpen) return;
-    let cancelled = false;
-    reviewService
-      .gate(appId, selectedVersionId)
-      .then((result) => !cancelled && setGate(result))
-      .catch(() => !cancelled && setGate(null));
-    return () => {
-      cancelled = true;
-    };
-  }, [show, appId, selectedVersionId, compareOpen]);
-  const locked = gate?.required && !gate?.allowed;
-
+  // A full-screen view opened from this dialog needs the focus and the Escape key.
+  const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
+  const [releaseLocked, setReleaseLocked] = useState(false);
   const releasedVersionName =
     versionsPromotedToEnvironment.find((v) => v.id === releasedVersionId)?.name ||
     developmentVersions.find((v) => v.id === releasedVersionId)?.name;
@@ -51,9 +33,8 @@ export default function ReleaseConfirmation(props) {
     <Modal
       show={show}
       onHide={onClose}
-      // The compare view opens on top of this dialog; its own fields need the focus.
-      enforceFocus={!compareOpen}
-      keyboard={!compareOpen}
+      enforceFocus={!overlayOpen}
+      keyboard={!overlayOpen}
       size="sm"
       animation={false}
       centered={true}
@@ -86,55 +67,20 @@ export default function ReleaseConfirmation(props) {
             ? `Are you sure you want to release version ${name}?`
             : `Releasing version ${name} will override ${releasedVersionName}. Are you sure you want to continue?`}
         </div>
-        {locked && (
-          <div className="release-review-gate" data-cy="release-review-gate">
-            <strong>Needs an approved review</strong>
-            <span>{gate.reason}</span>
-            <button
-              type="button"
-              className="release-review-changes"
-              onClick={() =>
-                gate.reviewId
-                  ? openCompare({ reviewId: gate.reviewId, source: 'review' })
-                  : openCompare({
-                      baseVersionId: releasedVersionId,
-                      targetVersionId: selectedVersionId,
-                      source: 'release',
-                    })
-              }
-            >
-              {gate.reviewId ? 'Open the review' : 'Request a review'}
-            </button>
-          </div>
-        )}
-        {gate?.required && gate?.allowed && gate?.reviewId && (
-          <div className="release-review-gate release-review-gate--ok" data-cy="release-review-approved">
-            <strong>Approved in review</strong>
-            <span>This exact version was approved, so it can be released.</span>
-            <button
-              type="button"
-              className="release-review-changes"
-              onClick={() => openCompare({ reviewId: gate.reviewId, source: 'review' })}
-            >
-              Open the review
-            </button>
-          </div>
-        )}
-        {releasedVersionId && releasedVersionId !== selectedVersionId && (
-          <ChangeSummary
-            appId={appId}
-            baseVersion={{ id: releasedVersionId, name: releasedVersionName }}
-            targetVersionId={selectedVersionId}
-            source="release"
-            label={`What changes for users, compared with ${releasedVersionName}`}
-          />
-        )}
+        <ReleaseConfirmationExtras
+          show={show}
+          appId={appId}
+          versionId={selectedVersionId}
+          releasedVersionId={releasedVersionId}
+          releasedVersionName={releasedVersionName}
+          onLockedChange={setReleaseLocked}
+        />
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
-        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button" disabled={locked}>
+        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button" disabled={releaseLocked}>
           Yes
         </ButtonSolid>
       </Modal.Footer>
