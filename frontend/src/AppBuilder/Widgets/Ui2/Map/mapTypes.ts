@@ -26,9 +26,16 @@ export interface MapPoint extends LatLng {
   status: string;
   statusLabel: string;
   tone: string;
+  /** Degrees clockwise from north the icon or image points to (headingField); null: upright. */
+  heading: number | null;
+  /** A safe image URL shown in place of the pin (imageField); '' for the pin. */
+  image: string;
   row: Row;
   index: number;
 }
+
+/** How big markers are drawn (markerSize); medium is the pin's own size. */
+export type MarkerSize = 'small' | 'medium' | 'large';
 
 /** A view: its center and zoom. */
 export interface MapView {
@@ -51,6 +58,9 @@ export interface PointFields {
   idField?: unknown;
   labelField?: unknown;
   iconField?: unknown;
+  headingField?: unknown;
+  imageField?: unknown;
+  markerIcon?: unknown;
 }
 
 /** The tiles to draw: the base layer's URL and credit, how to tone it ('light', 'dark' or null: as drawn), and a

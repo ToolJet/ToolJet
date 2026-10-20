@@ -7,13 +7,13 @@ import {
   latLngOf,
   paint,
   pickedIcon,
-  pinIcon,
   pointTitle,
   popupNode,
   round6,
   startIcon,
 } from './mapIcons';
 import { geocode, iconSvg } from './mapLayers';
+import { markerIcon, markerImageKey, markerPopupOffset, markerSizeOf } from './mapMarkers';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { LeafletMap } from 'leaflet';
 
@@ -98,6 +98,7 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
     }
     const popup = popupRef.current;
     popup.options.autoPan = hasSize(map);
+    popup.options.offset = markerPopupOffset(point, live.current.p.markerSize);
     popup
       .setLatLng([point.lat, point.lng])
       .setContent(
@@ -107,6 +108,8 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
   };
 
   // ---- Markers ----
+  // A marker image that fails to load is drawn as its pin from then on: the markers draw again.
+  const imageFailed = () => draw();
   /** Draws the markers (or groups) in and around the view, reusing the ones already drawn. */
   const draw = () => {
     const map = mapRef.current;
@@ -148,6 +151,7 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
             : { key: pts[f.properties.i].key, point: pts[f.properties.i] }
         )
       : pts.filter(inBox).map((pt) => ({ key: pt.key, point: pt }));
+    const size = markerSizeOf(live.current.p.markerSize);
     const seen = new Set<string>();
     const drawn = markersRef.current;
     items.forEach((item) => {
@@ -159,13 +163,17 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
         ? `c${item.cluster.count}@${item.lat},${item.lng}|${off}`
         : `${item.point.lat},${item.point.lng}|${item.point.tone}|${color}|${item.point.label}|${
             item.point.icon
-          }:${glyph}|${pointTitle(item.point)}|${isSelected}|${off}`;
+          }:${glyph}|${pointTitle(item.point)}|${isSelected}|${off}|${size}|${item.point.heading}|${markerImageKey(
+            item.point
+          )}`;
       const existing = drawn.get(item.key);
       if (existing && existing.sig === sig) return;
       if (existing) layer.removeLayer(existing.marker);
       const at: [number, number] = item.cluster ? [item.lat, item.lng] : [item.point.lat, item.point.lng];
       const marker = L.marker(at, {
-        icon: item.cluster ? clusterIcon(item.cluster) : pinIcon(item.point, isSelected, color),
+        icon: item.cluster
+          ? clusterIcon(item.cluster)
+          : markerIcon(item.point, isSelected, color, { size, onImageError: imageFailed }),
         title: item.cluster ? `${item.cluster.count} locations` : pointTitle(item.point),
         keyboard: !off,
         interactive: !off,

@@ -73,6 +73,7 @@ export const ShadMap = (props: WidgetProps) => {
     heatRadius,
     colorOfPoint,
     iconsReady,
+    markerSize,
   } = useMapData(p);
 
   // The box the map fills: the measured one in a browser, the widget's own size until it is measured (and in tests).
@@ -264,6 +265,7 @@ export const ShadMap = (props: WidgetProps) => {
     showMarkers,
     statusColors,
     iconsReady,
+    markerSize,
     draw,
     closePopup,
     openPopup,

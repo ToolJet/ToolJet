@@ -2,7 +2,7 @@ export const shadMapConfig = {
   name: 'ShadMap',
   displayName: 'Map',
   description:
-    "Map with markers from rows, on open map tiles (no API key): delivery stops and routes, field jobs and service zones, stores, sites, listings, incidents. data: rows read through latField and lngField (numbers or numeric text; rows without valid coordinates, or at exactly 0, 0, are skipped and counted in a footnote), titleField, subtitleField (a second line: the address), statusField and idField. Pins are coloured by status: by its words (Delivered or Done green, Delayed or Pending amber, Failed or Overdue red, Open, Scheduled or In transit blue; or a tone name success | warning | danger | info), or by statusColors ({ 'Under offer': '#d97706', Open: 'warning' }); showLegend (on) lists the colours with counts. labelField puts a short value in the pin (a stop number) or, longer, a price pill ('€450k'); iconField puts a lucide icon in the pin ('snowflake', 'droplets', 'zap'). Routes: connectMarkers draws a line through the markers in routeOrderField order, one per routeField value (a driver, a van), from routeStart (a depot { lat, lng }) when given; routes (a second dataset) draws lines from rows { name, path: [[lat, lng], ...] or a GeoJSON LineString, color or status }; routeColors names each line's colour. Areas (zones, territories, geofences): areas rows with an outline (areaShapeField: [[lat, lng], ...], a GeoJSON Polygon or its JSON text) or a circle (lat, lng and areaRadiusField in metres), titled by areaTitleField and filled by areaStatusField's tone (or the row's color). A click on a marker selects it (selectedMarker: its row, selectedMarkerId), opens a popup with the title, status and popupFields (a comma list of field specs as the Record list's metaFields: 'driver', 'eta:ETA {}', 'total|currency'; showPopup off for none) and fires onMarkerClick; a click on a line or area exposes selectedShape (its row) and selectedShapeType ('route' | 'area') and fires onShapeClicked; a click on the map clears the selection, exposes clickedLocation { lat, lng } and fires onMapClicked. pickLocation lets the user click (or drag a pin) to choose a spot: pickedLocation { lat, lng, address } and onLocationPicked (defaultPickedLocation starts it); showSearch adds an address search box (OpenStreetMap Nominatim by default, rate-limited; geocoderUrl and reverseGeocoderUrl, with {query} or {lat} and {lng}, point it at another geocoder). display 'heat' (or 'both') draws density instead of pins, weighted by heatField. clusterMarkers groups crowded pins into counts (on by default; keeps thousands of rows smooth). fitToMarkers (on by default) opens on everything drawn and refits when data changes; off, the map opens on defaultCenter ({ lat, lng }, [lat, lng] or 'lat, lng') at defaultZoom (1 to 18; 12 is a city, 15 a street). scrollWheelZoom is off by default (the page scrolls past the map; Ctrl or Cmd with the wheel zooms); showFullscreen adds a fullscreen button; mapStyle 'satellite' shows imagery and showStyleSwitch a Map | Satellite toggle. Exposes center, zoom and bounds after every move; onBoundsChange fires when the user pans or zooms. Actions: setCenter(lat, lng, zoom), setZoom, fitBounds, selectMarker(id), clearSelection, setPickedLocation(lat, lng), clearPickedLocation, setMapStyle('streets' | 'satellite'). Height: fixed (the map fills it); give it 320 to 640px",
+    "Map with markers from rows, on open map tiles (no API key): delivery stops and routes, field jobs and service zones, stores, sites, listings, incidents. data: rows read through latField and lngField (numbers or numeric text; rows without valid coordinates, or at exactly 0, 0, are skipped and counted in a footnote), titleField, subtitleField (a second line: the address), statusField and idField. Pins are coloured by status: by its words (Delivered or Done green, Delayed or Pending amber, Failed or Overdue red, Open, Scheduled or In transit blue; or a tone name success | warning | danger | info), or by statusColors ({ 'Under offer': '#d97706', Open: 'warning' }); showLegend (on) lists the colours with counts. labelField puts a short value in the pin (a stop number) or, longer, a price pill ('€450k'); iconField puts a lucide icon in the pin ('snowflake', 'droplets', 'zap'); markerIcon sets one icon for every pin (iconField wins per row). headingField (degrees, 0 north, clockwise) turns the icon or image to where a vehicle is going, best with 'navigation' or 'plane'. imageField shows an image per row (an https URL, a path or a data URI, SVG included; it should point north for heading) instead of the pin, with a ring of its status colour; a broken or unsafe URL keeps the pin. markerSize: small, medium (default) or large. Routes: connectMarkers draws a line through the markers in routeOrderField order, one per routeField value (a driver, a van), from routeStart (a depot { lat, lng }) when given; routes (a second dataset) draws lines from rows { name, path: [[lat, lng], ...] or a GeoJSON LineString, color or status }; routeColors names each line's colour. Areas (zones, territories, geofences): areas rows with an outline (areaShapeField: [[lat, lng], ...], a GeoJSON Polygon or its JSON text) or a circle (lat, lng and areaRadiusField in metres), titled by areaTitleField and filled by areaStatusField's tone (or the row's color). A click on a marker selects it (selectedMarker: its row, selectedMarkerId), opens a popup with the title, status and popupFields (a comma list of field specs as the Record list's metaFields: 'driver', 'eta:ETA {}', 'total|currency'; showPopup off for none) and fires onMarkerClick; a click on a line or area exposes selectedShape (its row) and selectedShapeType ('route' | 'area') and fires onShapeClicked; a click on the map clears the selection, exposes clickedLocation { lat, lng } and fires onMapClicked. pickLocation lets the user click (or drag a pin) to choose a spot: pickedLocation { lat, lng, address } and onLocationPicked (defaultPickedLocation starts it); showSearch adds an address search box (OpenStreetMap Nominatim by default, rate-limited; geocoderUrl and reverseGeocoderUrl, with {query} or {lat} and {lng}, point it at another geocoder). display 'heat' (or 'both') draws density instead of pins, weighted by heatField. clusterMarkers groups crowded pins into counts (on by default; keeps thousands of rows smooth). fitToMarkers (on by default) opens on everything drawn and refits when data changes; off, the map opens on defaultCenter ({ lat, lng }, [lat, lng] or 'lat, lng') at defaultZoom (1 to 18; 12 is a city, 15 a street). scrollWheelZoom is off by default (the page scrolls past the map; Ctrl or Cmd with the wheel zooms); showFullscreen adds a fullscreen button; mapStyle 'satellite' shows imagery and showStyleSwitch a Map | Satellite toggle. Exposes center, zoom and bounds after every move; onBoundsChange fires when the user pans or zooms. Actions: setCenter(lat, lng, zoom), setZoom, fitBounds, selectMarker(id), clearSelection, setPickedLocation(lat, lng), clearPickedLocation, setMapStyle('streets' | 'satellite'). Height: fixed (the map fills it); give it 320 to 640px",
   component: 'ShadMap',
   defaultSize: {
     width: 20,
@@ -130,6 +130,66 @@ export const shadMapConfig = {
         },
         defaultValue: '',
       },
+    },
+    markerIcon: {
+      type: 'code',
+      displayName: 'Icon for every pin (a lucide icon name)',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    headingField: {
+      type: 'code',
+      displayName: 'Heading field (degrees, 0 is north; turns the icon)',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    imageField: {
+      type: 'code',
+      displayName: 'Marker image field (an image URL in place of the pin)',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    markerSize: {
+      type: 'switch',
+      displayName: 'Marker size',
+      options: [
+        {
+          displayName: 'Small',
+          value: 'small',
+        },
+        {
+          displayName: 'Medium',
+          value: 'medium',
+        },
+        {
+          displayName: 'Large',
+          value: 'large',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: 'medium',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
     },
     popupFields: {
       type: 'code',
@@ -938,6 +998,18 @@ export const shadMapConfig = {
       },
       iconField: {
         value: '',
+      },
+      markerIcon: {
+        value: '',
+      },
+      headingField: {
+        value: '',
+      },
+      imageField: {
+        value: '',
+      },
+      markerSize: {
+        value: 'medium',
       },
       popupFields: {
         value: 'eta:ETA {}, driver',

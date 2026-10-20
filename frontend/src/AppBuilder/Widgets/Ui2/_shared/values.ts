@@ -40,7 +40,8 @@ const LINK_SCHEMES = new Set(['http', 'https', 'mailto', 'tel', 'sms']);
 // Spaces and control characters, which browsers ignore inside a scheme ('java\tscript:'), so they are ignored here too.
 // eslint-disable-next-line no-control-regex
 const IGNORED_IN_SCHEME = /[\s\u0000-\u001f]/g;
-const schemeOf = (url: string): string | null =>
+/** A URL's scheme in lower case, as a browser reads it ('java\tscript:' is javascript); null for a relative URL. */
+export const schemeOf = (url: string): string | null =>
   url
     .replace(IGNORED_IN_SCHEME, '')
     .match(/^([a-z][a-z0-9+.-]*):/i)?.[1]
