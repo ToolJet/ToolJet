@@ -186,6 +186,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
         <PopoverPrimitive.Anchor asChild>
           <div
             ref={anchorRef}
+            data-picker-field=""
             onClick={() => inputRef.current?.focus()}
             className={cn(
               'tw-flex tw-min-h-9 tw-w-full tw-cursor-text tw-flex-wrap tw-items-center tw-gap-1.5 tw-border tw-px-2 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-within:tw-ring-1 focus-within:tw-ring-ui2-ring',
