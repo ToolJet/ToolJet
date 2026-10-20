@@ -3,7 +3,7 @@ import { Icon } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import type { ReactNode } from 'react';
 import type { NavItem } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import type { Bound, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { isStringOrNumber } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isStringOrNumber, own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // The Navigation's item looks, an item's face, and the item changes its actions make.
 
@@ -102,7 +102,7 @@ export const patchNavItems = (items: unknown, changes: Record<string, NavItemCha
     const obj: Resolved = isStringOrNumber(raw) ? { label: String(raw), value: raw } : raw;
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return raw;
     const key = String(obj.value ?? obj.id ?? '');
-    const change = changes[key];
+    const change = own(changes, key);
     const children =
       depth < 4 && Array.isArray(obj.children) ? obj.children.map((c: Bound) => patch(c, depth + 1)) : obj.children;
     return change || children !== obj.children ? { ...obj, ...(change || {}), children } : raw;
