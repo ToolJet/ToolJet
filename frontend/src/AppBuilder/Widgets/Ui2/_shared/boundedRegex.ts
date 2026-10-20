@@ -4,8 +4,9 @@
 // instead, a Thompson NFA stepped through the text one character at a time (as RE2 does), so the work is at most the
 // text length times the pattern's size, whatever the pattern.
 // - The browser's own parser checks the pattern first, so a pattern it rejects is rejected here too (null).
-// - Constructs with no linear-time run (lookaround, backreferences, Unicode property escapes, the v flag) leave the
-//   pattern unsupported: it matches nothing, so a Tags pattern refuses every tag rather than letting all through.
+// - A pattern using constructs with no linear-time run (lookaround, backreferences, Unicode property escapes, the v
+//   flag) keeps working: the browser's RegExp runs it, on text of at most MAX_FALLBACK_TEXT_LENGTH characters, short
+//   enough to bound the backtracking of the patterns authors write with them (^(?=.*\d).+$, (\w)\1).
 // - The pattern (MAX_PATTERN_LENGTH characters, MAX_PROGRAM steps once {n,m} repeats are written out), the text
 //   (MAX_TEXT_LENGTH characters) and the work (text length times program steps, MAX_WORK) are capped: text past
 //   either cap does not match. A Table tests a rule against every row as it renders, so one test stays well under a
@@ -15,13 +16,14 @@ export const MAX_PATTERN_LENGTH = 2000;
 export const MAX_PROGRAM = 2000;
 export const MAX_TEXT_LENGTH = 10_000;
 export const MAX_WORK = 1_000_000;
+export const MAX_FALLBACK_TEXT_LENGTH = 256;
 
 /** A pattern ready to test text against, like a RegExp's test (g and y are ignored: no lastIndex is kept). */
 export interface BoundedRegex {
   readonly source: string;
   readonly flags: string;
-  /** False for a valid pattern the engine cannot run in linear time; it then matches nothing. */
-  readonly supported: boolean;
+  /** False for a valid pattern the engine cannot run in linear time; the browser's RegExp then runs it on short text. */
+  readonly linear: boolean;
   test(text: unknown): boolean;
 }
 
@@ -356,6 +358,8 @@ export const boundedRegex = (source: string, flags = ''): BoundedRegex | null =>
   if (source.length <= MAX_PATTERN_LENGTH) {
     try {
       new RegExp(source, flags); // eslint-disable-line no-new
+      // Without g and y, test() keeps no lastIndex between texts.
+      const native = new RegExp(source, flags.replace(/[gy]/g, ''));
       let prog: Inst[] | null = null;
       try {
         prog = flags.includes('v') ? fail() : compile(parse(source, flags));
@@ -365,10 +369,11 @@ export const boundedRegex = (source: string, flags = ''): BoundedRegex | null =>
       compiled = {
         source,
         flags,
-        supported: !!prog,
+        linear: !!prog,
         test: (text: unknown) => {
           const s = String(text ?? '');
-          return !!prog && s.length <= MAX_TEXT_LENGTH && s.length * prog.length <= MAX_WORK && run(prog, s, flags);
+          if (!prog) return s.length <= MAX_FALLBACK_TEXT_LENGTH && native.test(s);
+          return s.length <= MAX_TEXT_LENGTH && s.length * prog.length <= MAX_WORK && run(prog, s, flags);
         },
       };
     } catch {
