@@ -51,7 +51,7 @@ const COLOR = {
     defaultValue: binding('#6366f1'),
     swatches: binding("{{['#6366f1','#22c55e']}}"),
   },
-  trigger: () => document.getElementById(`shad-${ID}`),
+  trigger: () => document.querySelector(`[id^="shad-${ID}-"]`),
   option: () => screen.queryByRole('button', { name: '#22c55e' }),
   read: (e) => ({ value: e.value }),
   initial: { value: '#6366f1' },
