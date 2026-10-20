@@ -14,26 +14,80 @@ export const clampInt = <F>(v: unknown, min: number, max: number, fallback: F): 
 
 // ---- Numbers -------------------------------------------------------------------------------------------------------
 
-/** The group and decimal separators of a locale ('' or an unknown locale: en-US). */
-export const separators = (locale: unknown): { group: string; decimal: string } => {
+// Every numbering system Intl knows, read once from its own formatting: each digit ('٣' and '৩' are 3), its
+// separators and minus sign, and the marks it writes around a number (the direction mark before an Arabic minus). Digits read in any field;
+// which of '.' and ',' is the decimal separator is the field's locale's choice.
+interface NumberingSystems {
+  digits: Map<string, string>;
+  separators: Set<string>;
+  marks: Set<string>;
+}
+let numbering: NumberingSystems | null = null;
+const numberingSystems = (): NumberingSystems => {
+  if (numbering) return numbering;
+  const known: NumberingSystems = { digits: new Map(), separators: new Set(), marks: new Set() };
+  const intl = Intl as { supportedValuesOf?: (key: string) => string[] };
+  let systems = ['latn', 'arab', 'arabext'];
   try {
-    const parts = new Intl.NumberFormat(isBlank(locale) ? 'en-US' : String(locale)).formatToParts(12345.6);
+    systems = intl.supportedValuesOf?.('numberingSystem') ?? systems;
+  } catch {
+    // An older browser: the systems above.
+  }
+  for (const system of systems) {
+    try {
+      const parts = new Intl.NumberFormat(`en-u-nu-${system}`).formatToParts(-9876543210.5);
+      const digits = Array.from(
+        parts
+          .filter((p) => p.type === 'integer')
+          .map((p) => p.value)
+          .join('')
+      );
+      if (digits.length === 10) digits.forEach((d, i) => known.digits.set(d, String(9 - i)));
+      for (const p of parts) {
+        const into =
+          p.type === 'literal' ? known.marks : p.type === 'fraction' || p.type === 'integer' ? null : known.separators;
+        for (const c of p.value) into?.add(c);
+      }
+    } catch {
+      // A system Intl names but cannot format with: its digits stay unread.
+    }
+  }
+  numbering = known;
+  return known;
+};
+
+/** The group and decimal separators and the minus sign of a locale ('' or an unknown locale: en-US). */
+export const separators = (locale: unknown): { group: string; decimal: string; minus: string } => {
+  try {
+    const parts = new Intl.NumberFormat(isBlank(locale) ? 'en-US' : String(locale)).formatToParts(-12345.6);
     return {
       group: parts.find((p) => p.type === 'group')?.value ?? ',',
       decimal: parts.find((p) => p.type === 'decimal')?.value ?? '.',
+      minus: parts.find((p) => p.type === 'minusSign')?.value ?? '-',
     };
   } catch {
-    return { group: ',', decimal: '.' };
+    return { group: ',', decimal: '.', minus: '-' };
   }
 };
 
-/** A number from a number or from text typed in a locale's format ('1,234.5', '1.234,5', '$ 12'); null when there
- *  is no number. */
+// U+2212, the minus sign many locales write (Swedish, Finnish, Persian), is a minus in any field, as the hyphen is.
+const MINUS_SIGN = '\u2212';
+
+/** Text in ASCII digits with '-' for its minus sign: any numbering system's digits, the locale's minus sign as Intl
+ *  writes it, and the direction marks around them dropped. Separators are left as typed. */
+const asciiNumber = (text: string, minus: string): string => {
+  const { digits, marks } = numberingSystems();
+  const s = Array.from(text, (c) => (marks.has(c) ? '' : digits.get(c) ?? c)).join('');
+  return (minus && minus !== '-' ? s.split(minus).join('-') : s).split(MINUS_SIGN).join('-');
+};
+
+/** A number from a number or from text typed in a locale's format ('1,234.5', '1.234,5', '$ 12', '−1 234,5',
+ *  '١٬٢٣٤٫٥'); null when there is no number. */
 export const parseNumber = (v: unknown, locale?: unknown): number | null => {
   if (typeof v === 'number') return Number.isFinite(v) ? v : null;
   if (isBlank(v) || (typeof v !== 'string' && typeof v !== 'bigint')) return null;
-  const { group, decimal } = separators(locale);
-  let s = String(v).trim();
+  const { group, decimal, minus } = separators(locale);
+  let s = asciiNumber(String(v).trim(), minus);
   const negative = /^\s*[(-]|^[^\d]*-/.test(s);
   // Spaces, no-break spaces and apostrophes are group separators in some locales.
   s = s.replace(/[\s\u00a0\u202f']/g, '');
@@ -83,8 +137,16 @@ export const formatNumber = (
   }
 };
 
-/** Characters a number field accepts while typing. */
-export const numericText = (text: unknown): string => String(text ?? '').replace(/[^\d.,\-\s'\u00a0\u202f]/g, '');
+/** Characters a number field accepts while typing: digits of any numbering system, the separators, minus signs and
+ *  direction marks a locale writes, spaces and apostrophes. */
+export const numericText = (text: unknown): string => {
+  const { digits, separators: kept, marks } = numberingSystems();
+  return Array.from(String(text ?? ''))
+    .filter(
+      (c) => digits.has(c) || kept.has(c) || marks.has(c) || c === MINUS_SIGN || /[\d.,\-\s'\u00a0\u202f]/.test(c)
+    )
+    .join('');
+};
 
 /** One step up (dir 1) or down (dir -1) from `value`, kept within min and max when they are numbers. */
 export interface StepBounds {
