@@ -143,7 +143,8 @@ describe('UI 2.0 Kanban', () => {
     render({ properties: deals({ badgeColors: binding("{{({ gold: '#b45309' })}}") }) });
 
     const badge = (await screen.findByText('Gold')).closest('[class*="kb-badge"], [style]');
-    expect(badge.style.getPropertyValue('--kb-badge-fg')).toBe('#b45309');
+    // Mixed toward the text colour, since #b45309 reads under 4.5:1 on its tint (auditKanbanBadgeContrast).
+    expect(badge.style.getPropertyValue('--kb-badge-fg')).toBe('color-mix(in srgb, #b45309 44%, var(--sc-foreground))');
     // A value the map does not name keeps the built-in badge colours.
     expect(screen.getByText('Silver').closest('[class*="kb-badge"]')).toBeNull();
   });

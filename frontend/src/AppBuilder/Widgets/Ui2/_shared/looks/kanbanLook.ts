@@ -60,7 +60,8 @@ export const kanbanLook = (styles: Resolved = {}): KanbanLook => ({
 /** A badge's colours from the author's map (value -> colour, matched exactly or ignoring case), as the variables its
  *  classes read. A colour is the text, on a 14% tint of it; a light colour (a tint such as #DCFCE7, which models often
  *  mean as the chip) is the background instead, with a deep text of the same hue; { text, background } sets both.
- *  Null when the map does not name the value. */
+ *  Where the text would read under 4.5:1 on its chip it is deepened just enough (inkOn, deepOf). Null when the map
+ *  does not name the value. */
 export const badgeLook = (value: unknown, badgeColors: unknown): CssVars | null => {
   if (!badgeColors || typeof badgeColors !== 'object' || !isSet(value)) return null;
   const text = String(value);
@@ -83,13 +84,81 @@ export const badgeLook = (value: unknown, badgeColors: unknown): CssVars | null 
   if (parsed.isValid() && parsed.getLuminance() > 0.6) {
     return { '--kb-badge-fg': deepOf(colour), '--kb-badge-bg': String(colour) };
   }
-  return { '--kb-badge-fg': String(colour), '--kb-badge-bg': `color-mix(in srgb, ${colour} 14%, transparent)` };
+  return { '--kb-badge-fg': inkOn(colour), '--kb-badge-bg': `color-mix(in srgb, ${colour} 14%, transparent)` };
 };
 
-/** A deep, readable text colour of the same hue as a (light) colour: tailwind's 800 step, roughly. */
+// WCAG 1.4.3 for normal-size text: badge labels are 12px.
+const NORMAL_TEXT = 4.5;
+// The tint behind it (the 14% in badgeLook).
+const TINT = 0.14;
+
+type Rgb = [number, number, number];
+const rgbOf = (colour: string): Rgb => {
+  const hex = tinycolor(colour).toHexString();
+  return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as Rgb;
+};
+// WCAG relative luminance.
+const luminance = (c: Rgb) =>
+  c
+    .map((v) => (v / 255 <= 0.04045 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4))
+    .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+const contrast = (a: Rgb, b: Rgb) => {
+  const [x, y] = [luminance(a), luminance(b)];
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+};
+/** color-mix in srgb: `share` of a, the rest of b. */
+const mix = (a: Rgb, b: Rgb, share: number): Rgb => [0, 1, 2].map((i) => a[i] * share + b[i] * (1 - share)) as Rgb;
+
+// The card and text colours a label is checked on, one pair per mode. Each channel is the worst of ToolJet's shipped
+// themes (the lightest light-mode text, the lightest dark-mode card, the dimmest dark-mode text), so a label that
+// reads here reads on each of them (auditKanbanBadgeContrast checks every shipped theme). One value serves both modes,
+// so a colour keeps its own text only where it reads on both.
+const SURFACES: { card: Rgb; text: Rgb }[] = [
+  { card: rgbOf('#ffffff'), text: rgbOf('#382f47') },
+  { card: rgbOf('#2a2731'), text: rgbOf('#bbc1ca') },
+];
+
+const inks = new Map<string, string>();
+/** A colour as 12px text on its 14% tint: the colour itself where it reads at 4.5:1 on light and dark cards, else the
+ *  status ink (shadcn.scss), mixed toward the theme's text colour (darker on light themes, lighter on dark ones) only
+ *  as far as it takes to read. A colour tinycolor cannot read (a CSS variable) gets the status ink's half mix. */
+const inkOn = (colour: unknown): string => {
+  const text = String(colour);
+  const known = inks.get(text);
+  if (known) return known;
+  let ink = `color-mix(in srgb, ${text} 50%, var(--sc-foreground))`;
+  if (tinycolor(text).isValid()) {
+    const c = rgbOf(text);
+    const reads = (share: number) =>
+      SURFACES.every(({ card, text: fg }) => {
+        const tint = mix(c, card, TINT);
+        return contrast(mix(c, fg, share), tint) >= NORMAL_TEXT;
+      });
+    let share = 100;
+    while (share > 0 && !reads(share / 100)) share -= 1;
+    ink = share === 100 ? text : `color-mix(in srgb, ${text} ${share}%, var(--sc-foreground))`;
+  }
+  if (inks.size > 500) inks.clear();
+  inks.set(text, ink);
+  return ink;
+};
+
+/** A deep, readable text colour of the same hue as a (light) colour: tailwind's 800 step, roughly, and darker where
+ *  that reads under 4.5:1 on the colour (a bright cyan or yellow): its lightness lowered just enough, as primaryStrong
+ *  does for a brand fill. */
 const deepOf = (colour: unknown): string => {
   const parsed = tinycolor(String(colour));
   if (!parsed.isValid()) return 'var(--sc-foreground)';
   const { h, s } = parsed.toHsl();
-  return tinycolor({ h, s: Math.max(s, 0.55), l: 0.24 }).toHexString();
+  const at = (l: number) => tinycolor({ h, s: Math.max(s, 0.55), l }).toHexString();
+  const bg = rgbOf(parsed.toHexString());
+  if (contrast(rgbOf(at(0.24)), bg) >= NORMAL_TEXT) return at(0.24);
+  // Lightness bisected between black (which reads) and the 800 step (which does not), checked on the hex it becomes.
+  let [pass, fail] = [0, 0.24];
+  while (fail - pass > 0.001) {
+    const mid = (pass + fail) / 2;
+    if (contrast(rgbOf(at(mid)), bg) >= NORMAL_TEXT) pass = mid;
+    else fail = mid;
+  }
+  return at(pass);
 };

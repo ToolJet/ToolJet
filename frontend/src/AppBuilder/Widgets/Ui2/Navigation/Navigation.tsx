@@ -6,6 +6,7 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { activeItemExposed, findNav, navItems, unwrap } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import { MenuContent, MenuLabel, MenuRows, SIZES } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
@@ -240,7 +241,8 @@ export const ShadNavigation = (props: WidgetProps) => {
       return;
     }
     if (item.children.length) {
-      const open = !!expanded[item.key];
+      // Its own entry only: a parent valued __proto__ or constructor must not find Object.prototype's members.
+      const open = !!own(expanded, item.key);
       const childActive = found?.parent?.key === item.key;
       rows.push(
         <div key={item.key} className="tw-flex tw-w-full tw-shrink-0 tw-flex-col">

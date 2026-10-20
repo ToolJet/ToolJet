@@ -113,8 +113,11 @@ const observerProbe = (restores, size) => {
 };
 
 // Work a cleanup defers to the next tick (Radix's FocusScope returns focus that way) is not left behind; anything
-// longer, any interval, and any timer the mounted widget scheduled and its cleanup did not clear, is.
+// longer, any interval, and any timer the mounted widget scheduled and its cleanup did not clear, is. settle() lets
+// that next-tick work run, so the other probes see what it does, for at most SETTLE_ROUNDS rounds of it (a cleanup
+// timer may schedule another); whatever is still scheduled after that is left behind too.
 const NEXT_TICK_MS = 16;
+const SETTLE_ROUNDS = 3;
 
 const timerProbe = (restores) => {
   const realSetTimeout = window.setTimeout;
@@ -122,6 +125,7 @@ const timerProbe = (restores) => {
   const realSetInterval = window.setInterval;
   const realClearInterval = window.clearInterval;
   const pending = new Map();
+  const settled = [];
   let cycle = 0;
   let unmounting = false;
   restores.push(
@@ -163,17 +167,38 @@ const timerProbe = (restores) => {
     begin: () => {
       cycle += 1;
       unmounting = false;
+      settled.length = 0;
     },
     /** From now on, timers are scheduled by the unmount (cleanups). */
     unmounting: () => {
       unmounting = true;
     },
-    /** The cycle's timers still scheduled that count as left behind (see NEXT_TICK_MS); clears all of the cycle's. */
+    /** Lets the unmount's next-tick timers run; the cycle's other timers are left behind, and are reported and cleared
+     *  now, so they do not run in the wait. Call leftovers() after it. */
+    settle: async () => {
+      const nextTick = (t) => t.unmounting && t.kind === 'setTimeout' && t.delay <= NEXT_TICK_MS;
+      for (const [id, t] of pending) {
+        if (t.cycle !== cycle || nextTick(t)) continue;
+        settled.push(t);
+        pending.delete(id);
+        if (t.kind === 'setInterval') realClearInterval.call(window, id);
+        else realClearTimeout.call(window, id);
+      }
+      for (let round = 0; round < SETTLE_ROUNDS; round += 1) {
+        const waiting = [...pending.values()].filter((t) => t.cycle === cycle && nextTick(t));
+        if (!waiting.length) return;
+        // Past the longest of them: a timer runs no earlier than its delay, and in order of when it is due.
+        const wait = Math.max(...waiting.map((t) => t.delay)) + 1;
+        await new Promise((resolve) => realSetTimeout.call(window, resolve, wait));
+      }
+    },
+    /** The cycle's timers left behind: those settle() set aside, and every one of the cycle's still scheduled (a
+     *  next-tick timer that did not get to run, or that kept scheduling more). Clears them all. */
     leftovers: () => {
-      const left = [];
+      const left = settled.splice(0);
       for (const [id, t] of pending) {
         if (t.cycle !== cycle) continue;
-        if (!t.unmounting || t.kind === 'setInterval' || t.delay > NEXT_TICK_MS) left.push(t);
+        left.push(t);
         pending.delete(id);
         if (t.kind === 'setInterval') realClearInterval.call(window, id);
         else realClearTimeout.call(window, id);

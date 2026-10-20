@@ -22,12 +22,14 @@ const cssSize = (value: unknown, fallback: string): string => {
   return fallback;
 };
 
-export const CopyButton = ({ text }: { text: string }) => {
+export const CopyButton = ({ text, disabled = false }: { text: string; disabled?: boolean }) => {
   const [copied, markCopied] = useCopied(text);
   return (
     <button
       type="button"
       aria-label="Copy value"
+      // Disabled with the list: it wrote to the clipboard while the list was disabled.
+      disabled={disabled}
       className="tw-ml-1 tw-inline-flex tw-h-6 tw-w-6 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-md tw-text-ui2-muted-foreground tw-opacity-0 tw-transition-opacity hover:tw-bg-ui2-accent hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring group-hover:tw-opacity-100"
       // The copy is the button's own: its row's click and Enter or Space (onFieldClick) do not take it.
       onClick={(e) => {
@@ -48,9 +50,10 @@ interface KeyValueValueProps {
   text: string;
   emptyText: string;
   badgeColors: unknown;
+  disabled?: boolean;
 }
 
-export const KeyValueValue = ({ row, text, emptyText, badgeColors }: KeyValueValueProps) => {
+export const KeyValueValue = ({ row, text, emptyText, badgeColors, disabled = false }: KeyValueValueProps) => {
   const empty = <span className="tw-text-[color:var(--sc-muted-foreground)]">{emptyText}</span>;
   if (row.type === 'boolean') {
     if (row.value === undefined || row.value === null || row.value === '') return empty;
@@ -93,6 +96,10 @@ export const KeyValueValue = ({ row, text, emptyText, badgeColors }: KeyValueVal
         href={href}
         target={external ? '_blank' : undefined}
         rel={external ? 'noopener noreferrer' : undefined}
+        // A disabled list's links do not navigate, as a disabled Link's do not (Link.tsx).
+        aria-disabled={disabled || undefined}
+        tabIndex={disabled ? -1 : undefined}
+        onClick={disabled ? (e) => e.preventDefault() : undefined}
         className="tw-break-all tw-rounded-ui2-sm tw-font-medium tw-text-[color:var(--lk-link,var(--sc-primary-ink))] tw-no-underline tw-underline-offset-4 hover:tw-underline focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring"
       >
         {shown}
@@ -163,7 +170,14 @@ export const ShadKeyValue = (props: WidgetProps) => {
               onClick={() => clickField(row)}
               role={clickable ? 'button' : undefined}
               tabIndex={clickable ? 0 : undefined}
-              onKeyDown={clickable ? onKeyActivate(() => clickField(row)) : undefined}
+              // Keys pressed on the row only: Enter or Space on its link follows or scrolls as usual.
+              onKeyDown={
+                clickable
+                  ? (e) => {
+                      if (e.target === e.currentTarget) onKeyActivate(() => clickField(row))(e);
+                    }
+                  : undefined
+              }
               className={cn(
                 'tw-group tw-flex tw-min-w-0 tw-text-ui2-sm',
                 clickable && 'tw-cursor-pointer hover:tw-bg-[color:var(--sc-muted)]',
@@ -178,8 +192,14 @@ export const ShadKeyValue = (props: WidgetProps) => {
                 {row.label}
               </dt>
               <dd className="tw-m-0 tw-flex tw-min-w-0 tw-flex-1 tw-items-start tw-font-medium tw-text-[color:var(--lk-fg,var(--sc-foreground))]">
-                <KeyValueValue row={row} text={text} emptyText={emptyText} badgeColors={p.badgeColors} />
-                {p.allowCopy === true && text ? <CopyButton text={text} /> : null}
+                <KeyValueValue
+                  row={row}
+                  text={text}
+                  emptyText={emptyText}
+                  badgeColors={p.badgeColors}
+                  disabled={busy(p)}
+                />
+                {p.allowCopy === true && text ? <CopyButton text={text} disabled={busy(p)} /> : null}
               </dd>
             </div>
           );

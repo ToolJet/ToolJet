@@ -1,9 +1,10 @@
 import React from 'react';
 import { Icon } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import type { ReactNode } from 'react';
+import { MAX_CHILDREN, MAX_ITEMS, NAV_DEPTH } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import type { NavItem } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import type { Bound, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { isStringOrNumber } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isStringOrNumber, own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // The Navigation's item looks, an item's face, and the item changes its actions make.
 
@@ -91,21 +92,30 @@ export const NavFace = ({ item, active, collapsed, chevron }: NavFaceProps) => (
   </>
 );
 
-/** Items with the setItemVisibility / setItemDisable changes applied: `changes` maps an item's value to
- *  { visible, disabled }. Plain text items become { label, value } so they can take a change. */
 /** An item's changes from setItemVisibility / setItemDisable. */
 export type NavItemChange = { visible?: boolean; disabled?: boolean };
 
+/** Items with the setItemVisibility / setItemDisable changes applied: `changes` maps an item's value to
+ *  { visible, disabled }. Plain text items become { label, value } so they can take a change. It reads no more than
+ *  navItems does (the same item, child and depth caps), and a node shared down several paths is patched once at
+ *  each depth it is reached, not once per path. */
 export const patchNavItems = (items: unknown, changes: Record<string, NavItemChange>): unknown => {
   if (!Object.keys(changes).length || !Array.isArray(items)) return items;
+  const done = Array.from({ length: NAV_DEPTH + 1 }, () => new WeakMap<object, Bound>());
   const patch = (raw: Bound, depth: number): Bound => {
+    const shared = raw && typeof raw === 'object' ? done[depth].get(raw) : undefined;
+    if (shared !== undefined) return shared;
     const obj: Resolved = isStringOrNumber(raw) ? { label: String(raw), value: raw } : raw;
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return raw;
     const key = String(obj.value ?? obj.id ?? '');
-    const change = changes[key];
+    const change = own(changes, key);
     const children =
-      depth < 4 && Array.isArray(obj.children) ? obj.children.map((c: Bound) => patch(c, depth + 1)) : obj.children;
-    return change || children !== obj.children ? { ...obj, ...(change || {}), children } : raw;
+      depth < NAV_DEPTH && Array.isArray(obj.children)
+        ? obj.children.slice(0, MAX_CHILDREN).map((c: Bound) => patch(c, depth + 1))
+        : obj.children;
+    const out = change || children !== obj.children ? { ...obj, ...(change || {}), children } : raw;
+    if (raw && typeof raw === 'object') done[depth].set(raw, out);
+    return out;
   };
-  return items.slice(0, 1000).map((raw) => patch(raw, 0));
+  return items.slice(0, MAX_ITEMS).map((raw) => patch(raw, 0));
 };

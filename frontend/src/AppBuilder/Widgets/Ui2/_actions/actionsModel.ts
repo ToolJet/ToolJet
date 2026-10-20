@@ -5,8 +5,11 @@
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { clampInt, isRecord, isScalar, list, own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
-const MAX_ITEMS = 200;
-const MAX_CHILDREN = 50;
+// Navigation's action patching (Navigation/navParts) reads within the same caps.
+export const MAX_ITEMS = 200;
+export const MAX_CHILDREN = 50;
+/** How many levels of navigation children are flattened under a top-level item. */
+export const NAV_DEPTH = 3;
 const MAX_SLIDES = 100;
 
 /** A value an author can type: text, a number or a flag. */
@@ -279,7 +282,7 @@ export const navItems = (items: unknown): NavRow[] => {
         const c = navEntry(child, seen);
         if (!c || !c.key) continue;
         children.push({ ...c, separator: false, children: [] });
-        if (depth < 3 && isRecord<Resolved>(child)) walk(child.children, depth + 1);
+        if (depth < NAV_DEPTH && isRecord<Resolved>(child)) walk(child.children, depth + 1);
       }
     };
     if (isRecord<Resolved>(raw)) walk(raw.children, 1);
