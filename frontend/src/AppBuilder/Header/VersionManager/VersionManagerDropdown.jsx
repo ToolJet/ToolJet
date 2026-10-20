@@ -33,6 +33,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
+    isAiBuildingApp,
   } = useStore(
     (state) => ({
       appId: state.appId ?? state.appStore.modules[moduleId]?.app?.appId,
@@ -48,6 +49,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
+      isAiBuildingApp: state.ai?.isLoading ?? false,
     }),
     shallow
   );
@@ -231,6 +233,22 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const resetDeleteModal = () => {
     setDeleteVersion({ versionId: '', versionName: '', showModal: false });
   };
+
+  // An AI build writes to the version it started on. The pill is disabled while it runs, but a menu (or a
+  // dialog opened from it) that was already open would still let the user create, rename, promote or delete
+  // versions under the agent, so close them when a build starts.
+  useEffect(() => {
+    if (!isAiBuildingApp) return;
+    if (useVersionManagerStore.getState().isDropdownOpen) closeDropdown();
+    setOpenMenuVersionId(null);
+    setShowCreateDraftModal(false);
+    setShowPromoteModal(false);
+    setVersionToPromote(null);
+    setShowEditVersionModal(false);
+    setVersionToEdit(null);
+    resetDeleteModal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAiBuildingApp]);
 
   const confirmDeleteVersion = () => {
     if (!deleteVersion.versionId) return;
