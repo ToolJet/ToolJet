@@ -21,7 +21,11 @@ const CASES = [
     { defaultValue: 'a', options: OPTIONS },
     'onSelect',
     async () => {
-      fireEvent.pointerDown(document.getElementById(`shad-${ID}`), { button: 0, pointerType: 'mouse', ctrlKey: false });
+      fireEvent.pointerDown(document.querySelector(`[id^="shad-${ID}-"]`), {
+        button: 0,
+        pointerType: 'mouse',
+        ctrlKey: false,
+      });
       return screen.findByRole('option', { name: 'Beta' });
     },
     (e) => e.value,
@@ -31,7 +35,7 @@ const CASES = [
     { defaultValue: '#6366f1', swatches: '{{["#6366f1","#22c55e"]}}' },
     'onChange',
     async () => {
-      fireEvent.click(document.getElementById(`shad-${ID}`));
+      fireEvent.click(document.querySelector(`[id^="shad-${ID}-"]`));
       return screen.findByRole('button', { name: '#22c55e' });
     },
     (e) => e.value,
@@ -41,7 +45,7 @@ const CASES = [
     { defaultValue: 'a', options: OPTIONS, searchPlaceholder: 'Search options' },
     'onSelect',
     async () => {
-      fireEvent.click(document.getElementById(`shad-${ID}`));
+      fireEvent.click(document.querySelector(`[id^="shad-${ID}-"]`));
       const search = await screen.findByPlaceholderText('Search options');
       fireEvent.change(search, { target: { value: 'Beta' } });
       await waitFor(() =>
@@ -56,7 +60,7 @@ const CASES = [
     { defaultValue: '{{["a"]}}', options: OPTIONS, searchPlaceholder: 'Search options' },
     'onSelect',
     async () => {
-      fireEvent.click(document.getElementById(`shad-${ID}`));
+      fireEvent.click(document.querySelector(`[id^="shad-${ID}-"]`));
       const search = await screen.findByPlaceholderText('Search options');
       fireEvent.change(search, { target: { value: 'Beta' } });
       await waitFor(() =>
@@ -71,7 +75,7 @@ const CASES = [
     { defaultValue: '2026-10-15', format: 'YYYY-MM-DD' },
     'onSelect',
     async () => {
-      fireEvent.click(document.getElementById(`shad-${ID}`));
+      fireEvent.click(document.querySelector(`[id^="shad-${ID}-"]`));
       const grid = (await screen.findAllByRole('grid'))[0];
       return within(grid).getByText('20').closest('button');
     },
@@ -82,7 +86,7 @@ const CASES = [
     { defaultValue: '2026-10-15T09:00:00' },
     'onSelect',
     async () => {
-      fireEvent.click(document.getElementById(`shad-${ID}`));
+      fireEvent.click(document.querySelector(`[id^="shad-${ID}-"]`));
       const grid = (await screen.findAllByRole('grid'))[0];
       return within(grid).getByText('20').closest('button');
     },
@@ -93,7 +97,7 @@ const CASES = [
     { defaultValue: '09:00', timeFormat: '24h', pickerStyle: 'list' },
     'onSelect',
     async () => {
-      fireEvent.click(document.getElementById(`shad-${ID}`));
+      fireEvent.click(document.querySelector(`[id^="shad-${ID}-"]`));
       const times = await screen.findByRole('listbox', { name: 'Times' });
       return within(times).getByRole('option', { name: '10:00' });
     },
@@ -130,7 +134,7 @@ describe('[UI2-POPUP-037] an open popup takes no choice once its picker is disab
     await widget.setup();
     try {
       widget.render({ currentMode: 'view', properties: bind(properties) });
-      await waitFor(() => expect(document.getElementById(`shad-${ID}`)).toBeInTheDocument());
+      await waitFor(() => expect(document.querySelector(`[id^="shad-${ID}-"]`)).toBeInTheDocument());
       widget.setEvents(countInvocationsOn(ID, event, { key: 'calls' }));
       const target = await openAndFocus();
       act(() => target.focus());
@@ -163,8 +167,8 @@ describe('[UI2-POPUP-068] the open Color picker follows a color set from outside
     await widget.setup();
     try {
       widget.render({ currentMode: 'view', properties: bind({ defaultValue: '#6366f1' }) });
-      await waitFor(() => expect(document.getElementById(`shad-${ID}`)).toBeInTheDocument());
-      await act(async () => fireEvent.click(document.getElementById(`shad-${ID}`)));
+      await waitFor(() => expect(document.querySelector(`[id^="shad-${ID}-"]`)).toBeInTheDocument());
+      await act(async () => fireEvent.click(document.querySelector(`[id^="shad-${ID}-"]`)));
       const hex = await screen.findByRole('textbox', { name: /hex/i });
       await act(async () => hex.focus());
       await setFromOutside(widget);

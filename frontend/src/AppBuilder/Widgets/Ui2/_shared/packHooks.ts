@@ -313,10 +313,11 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
       [properties, isVisible, isLoading, isDisabled]
     );
     const fireEvent = useActionFire(props.fireEvent);
-    // The control's DOM id (labels, help notes): component ids repeat in List view and Kanban rows, so a widget in a
-    // row adds its instance's id, or the second row's label would name the first row's control.
-    const instance = useId().replace(/[^\w-]/g, '');
-    const domId = props.subContainerIndex == null ? `shad-${props.id}` : `shad-${props.id}-${instance}`;
+    // The control's DOM id (labels, help notes), one per rendered instance: DOM ids are document-wide, and a component
+    // id repeats in List view rows and Kanban cards (inside Tabs there too, with no row index of its own) and in every
+    // instance of a module, so an id made from it alone let the second instance's label focus, edit or toggle the
+    // first instance's control.
+    const domId = `shad-${props.id}-${useId().replace(/[^\w-]/g, '')}`;
     return React.createElement(Widget, {
       ...props,
       properties: effective,

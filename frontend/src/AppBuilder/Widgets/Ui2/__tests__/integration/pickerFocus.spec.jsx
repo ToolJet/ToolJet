@@ -22,7 +22,7 @@ const harnesses = Object.fromEntries(
     createWidgetHarness({ componentType: type, id: ID, handle: 'pick1', widgetHeight: 120, preload: [type] }),
   ])
 );
-const trigger = () => document.getElementById(`shad-${ID}`);
+const trigger = () => document.querySelector(`[id^="shad-${ID}-"]`);
 const popupOpen = () => !!document.querySelector('[role=listbox]');
 const settle = () => act(async () => new Promise((resolve) => setTimeout(resolve, 50)));
 const render = (widget, extra = {}) =>
