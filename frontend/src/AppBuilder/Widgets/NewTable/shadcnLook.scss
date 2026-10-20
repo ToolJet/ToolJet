@@ -280,8 +280,10 @@ $radius: var(--cc-radius-default, 6px);
   box-shadow: none !important;
   background: transparent !important;
 
+  // 4px at the sides: the card clips at its edge, and the search box's and buttons' focus rings reach 3 to 4px
+  // outside them, so a flush header cut the ring's left side off the search box.
   .table-card-header {
-    padding: 4px 0 12px !important;
+    padding: 4px 4px 12px !important;
     min-height: 0;
   }
   // The sticky header row needs an opaque fill: the card's, not the theme surface.
