@@ -363,6 +363,14 @@ describe('progressItems', () => {
   it('takes percentField over value / target', () => {
     expect(progressItems(data, { ...fields, percentField: 'pct' })[2].pct).toBe(40);
     expect(progressItems([{ v: 5, t: 0 }], { valueField: 'v', targetField: 't' })[0].pct).toBeNull();
+    // With no target, a currency or large figure is drawn against the list's largest value and never printed as a
+    // percentage: a top-products list printed "529700%" beside each bar (sales dashboard, 2026-10-20).
+    const top = progressItems([{ p: 'A', r: 5297 }, { p: 'B', r: 2648.5 }], { labelField: 'p', valueField: 'r', valueFormat: 'currency' });
+    expect(top.map((r) => r.pct)).toEqual([100, 50]);
+    expect(top.every((r) => r.relative)).toBe(true);
+    // A percentage value is still its own bar.
+    expect(progressItems([{ v: 40 }], { valueField: 'v' })[0]).toMatchObject({ pct: 40 });
+    expect(progressItems([{ v: 40 }], { valueField: 'v' })[0].relative).toBeUndefined();
   });
 
   it('tones rows without a status from autoTone', () => {
