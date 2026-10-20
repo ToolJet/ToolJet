@@ -7,6 +7,22 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.VERSION]: {
     [FEATURE_KEY.GET]: {},
     [FEATURE_KEY.GET_ONE]: {},
+    [FEATURE_KEY.COMPARE]: {
+      shouldNotSkipPublicApp: true,
+    },
+    [FEATURE_KEY.REVIEW_APPROVE]: {
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
+    [FEATURE_KEY.REVIEW_OVERRIDE]: {
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
+    // Undo an AI turn. A public app must not widen who can rewrite its draft.
+    [FEATURE_KEY.SNAPSHOT_RESTORE]: {
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
     [FEATURE_KEY.CREATE]: {
       auditLogsKey: 'APP_UPDATE',
     },
