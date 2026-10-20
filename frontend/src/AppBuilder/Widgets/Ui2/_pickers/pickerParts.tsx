@@ -308,6 +308,24 @@ export const OptionsMenu = ({
   );
 };
 
+// The controls of a picker field (data-picker-field) that focus can move to.
+const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Runs a button's removal (a chip's Remove, Clear) and, when the focused button went with it, hands focus to the
+ *  nearest control left in its field: the next one, else the one before, else the field itself. Focus fell to the page
+ *  otherwise. The removal renders before it returns (runNow); one the field refused leaves the button, and focus, as
+ *  they were, and a pointer press that left focus elsewhere moves nothing. */
+const removeKeepingFocus = (button: HTMLElement, remove: () => void) => {
+  const field = button.closest<HTMLElement>('[data-picker-field]');
+  const hadFocus = button.ownerDocument.activeElement === button;
+  const around = field ? [...field.querySelectorAll<HTMLElement>(FOCUSABLE)] : [];
+  const at = around.indexOf(button);
+  remove();
+  if (!field || !hadFocus || button.isConnected) return;
+  const nearest = [...around.slice(at + 1), ...around.slice(0, Math.max(at, 0)).reverse(), field];
+  nearest.find((el) => el.isConnected && el.matches(FOCUSABLE))?.focus();
+};
+
 export const ClearButton = ({ onClear, label = 'Clear' }: { onClear: () => void; label?: string }) => (
   <button
     type="button"
@@ -316,7 +334,7 @@ export const ClearButton = ({ onClear, label = 'Clear' }: { onClear: () => void;
     onPointerDown={stopPress}
     onClick={(e) => {
       e.stopPropagation();
-      onClear();
+      removeKeepingFocus(e.currentTarget, onClear);
     }}
   >
     <X className="tw-h-3.5 tw-w-3.5" />
@@ -340,7 +358,7 @@ export const Chip = ({ label, onRemove, removeLabel }: ChipProps) => (
         onPointerDown={stopPress}
         onClick={(e) => {
           e.stopPropagation();
-          onRemove();
+          removeKeepingFocus(e.currentTarget, onRemove);
         }}
       >
         <X className="tw-h-3 tw-w-3" />

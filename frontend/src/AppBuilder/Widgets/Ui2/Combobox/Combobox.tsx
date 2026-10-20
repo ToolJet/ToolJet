@@ -125,7 +125,7 @@ export const ShadCombobox = (props: WidgetProps) => {
   return (
     <FormField props={props} properties={properties} check={check} innerRef={ref}>
       <Popover open={open} onOpenChange={openChange}>
-        <div className="tw-relative">
+        <div data-picker-field="" className="tw-relative">
           <PopoverTrigger asChild>
             <Button
               ref={triggerRef}
