@@ -223,15 +223,17 @@ const storedExposed = (moduleId: string, id: string, path: ContextSegment[]): Re
  *  false), and values the component already holds left out. Inside an action's batch the store writes every key it is
  *  given and updates its dependents, so a click that re-published unchanged keys (isVisible, label) re-ran queries
  *  bound to them. A key is left out only when both the store and this instance's last write already hold it: inside a
- *  batch the store lags this instance's writes, and after a reset the store differs from them. */
+ *  batch the store lags this instance's writes, and after a reset the store differs from them.
+ *  The publishers are stable, and each call writes through the widget's latest setters and row. Work that finishes
+ *  later (a file read) calls the publishers it started with, and RenderWidget's setters write to the row index of
+ *  their render: when the publishers were remade with them, a List view row kept across a reorder published its
+ *  completion to the record now at its old index. */
 const useOwnedPublish = (
   props: Pick<WidgetProps, 'setExposedVariables' | 'setExposedVariable'>,
   alive: MutableRefObject<boolean>,
   id: string
 ) => {
-  const { setExposedVariables, setExposedVariable } = props;
-  const moduleId = useModuleId();
-  const path = useSubcontainerContext().contextPath;
+  const latest = useLatest({ ...props, moduleId: useModuleId(), path: useSubcontainerContext().contextPath });
   const sent = useRef<Record<string, unknown>>({});
   return useMemo(() => {
     const owned = (value: unknown) =>
@@ -246,23 +248,24 @@ const useOwnedPublish = (
       !(key in sent.current) ||
       !isEqual(sent.current[key], value) ||
       !isEqual(stored[key], value);
+    const storedNow = () => storedExposed(latest.current.moduleId, id, latest.current.path);
     return {
       setExposedVariables: ((values: Record<string, unknown>) => {
-        const stored = storedExposed(moduleId, id, path);
+        const stored = storedNow();
         const next = Object.entries(values || {}).filter(([key, value]) => changed(key, value, stored));
         next.forEach(([key, value]) => {
           if (typeof value !== 'function') sent.current[key] = value;
         });
         if (!next.length) return undefined;
-        return setExposedVariables(Object.fromEntries(next.map(([key, value]) => [key, owned(value)])));
+        return latest.current.setExposedVariables(Object.fromEntries(next.map(([key, value]) => [key, owned(value)])));
       }) as WidgetProps['setExposedVariables'],
       setExposedVariable: ((key: string, value: unknown) => {
-        if (!changed(key, value, storedExposed(moduleId, id, path))) return undefined;
+        if (!changed(key, value, storedNow())) return undefined;
         if (typeof value !== 'function') sent.current[key] = value;
-        return setExposedVariable(key, owned(value));
+        return latest.current.setExposedVariable(key, owned(value));
       }) as WidgetProps['setExposedVariable'],
     };
-  }, [setExposedVariables, setExposedVariable, alive, moduleId, id, path]);
+  }, [alive, id, latest]);
 };
 
 /** Whether the component is still mounted. */
@@ -313,10 +316,11 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
       [properties, isVisible, isLoading, isDisabled]
     );
     const fireEvent = useActionFire(props.fireEvent);
-    // The control's DOM id (labels, help notes): component ids repeat in List view and Kanban rows, so a widget in a
-    // row adds its instance's id, or the second row's label would name the first row's control.
-    const instance = useId().replace(/[^\w-]/g, '');
-    const domId = props.subContainerIndex == null ? `shad-${props.id}` : `shad-${props.id}-${instance}`;
+    // The control's DOM id (labels, help notes), one per rendered instance: DOM ids are document-wide, and a component
+    // id repeats in List view rows and Kanban cards (inside Tabs there too, with no row index of its own) and in every
+    // instance of a module, so an id made from it alone let the second instance's label focus, edit or toggle the
+    // first instance's control.
+    const domId = `shad-${props.id}-${useId().replace(/[^\w-]/g, '')}`;
     return React.createElement(Widget, {
       ...props,
       properties: effective,

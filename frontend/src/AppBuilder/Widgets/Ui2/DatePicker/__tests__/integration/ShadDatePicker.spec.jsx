@@ -23,7 +23,7 @@ const widget = createWidgetHarness({
 // Interactions are tested as an app user meets them: in view mode, where the editor's canvas does not take presses.
 const render = (options = {}) => widget.render({ currentMode: 'view', ...options });
 const exposed = () => widget.exposed() ?? {};
-const trigger = () => document.getElementById(`shad-${ID}`);
+const trigger = () => document.querySelector(`[id^="shad-${ID}-"]`);
 const open = async () => {
   await act(async () => fireEvent.click(trigger()));
   await screen.findAllByRole('grid');

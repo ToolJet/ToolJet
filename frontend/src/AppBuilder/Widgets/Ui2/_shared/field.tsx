@@ -27,7 +27,8 @@ export const FieldLabel = ({ id, text, required }: { id?: string; text: string; 
   </Label>
 );
 
-/** A widget's control DOM id (withControlState's domId): `shad-<id>`, with an instance suffix in repeated rows. */
+/** A widget's control DOM id: withControlState's domId, `shad-<id>-<instance>`, one per rendered instance (a component
+ *  id repeats in List view rows, Kanban cards and module instances). `shad-<id>` only for a widget drawn without it. */
 export const fieldIdOf = (props: { id?: string; domId?: string }): string => props.domId ?? `shad-${props.id}`;
 
 /** The id of the note under a widget's control (its validation message, else its help text). */
@@ -47,7 +48,7 @@ export const controlAria = (props: { id?: string; domId?: string; properties?: R
 });
 
 /** The validation message, else the help text, under a control; `size` is the text size class. `controlId` (the
- *  control's `shad-<id>`) gives the note the id controlAria points at. */
+ *  control's id, fieldIdOf) gives the note the id controlAria points at. */
 export const FieldNote = ({
   error,
   description,

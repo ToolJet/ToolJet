@@ -38,8 +38,8 @@ test.each(
       child.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{true}}') };
       child.layouts = { desktop: { top: 0, left: 0, width: 25, height: 100 } };
       w.render({ currentMode: 'view', properties: { defaultTab: binding('t0') }, extraComponents: { field1: child } });
-      await waitFor(() => expect(document.getElementById('shad-field1')).not.toBeNull());
-      const trigger = document.getElementById('shad-field1'),
+      await waitFor(() => expect(document.querySelector('[id^="shad-field1-"]')).not.toBeNull());
+      const trigger = document.querySelector('[id^="shad-field1-"]'),
         panel = trigger.closest('[role="tabpanel"]');
       expect(panel).not.toBeNull();
       w.setEvents(countInvocationsOn('field1', event));

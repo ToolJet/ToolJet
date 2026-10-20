@@ -46,7 +46,7 @@ async function mount() {
 }
 async function start() {
   await mount();
-  await act(async () => fireEvent.click(document.getElementById('shad-color1')));
+  await act(async () => fireEvent.click(document.querySelector('[id^="shad-color1-"]')));
   await act(async () => fireEvent.click(await screen.findByRole('button', { name: 'Pick a color from the screen' })));
   expect(openMock).toHaveBeenCalledTimes(1);
 }
@@ -83,8 +83,8 @@ test.each(['setDisable', 'setLoading', 'setVisibility'])(
     expect(
       w.exposed()[action === 'setDisable' ? 'isDisabled' : action === 'setLoading' ? 'isLoading' : 'isVisible']
     ).toBe(action !== 'setVisibility');
-    if (action === 'setVisibility') expect(document.getElementById('shad-color1')).not.toBeVisible();
-    else expect(document.getElementById('shad-color1')).toBeDisabled();
+    if (action === 'setVisibility') expect(document.querySelector('[id^="shad-color1-"]')).not.toBeVisible();
+    else expect(document.querySelector('[id^="shad-color1-"]')).toBeDisabled();
     await finish();
     expect({ value: w.exposed().value, changes: w.variables().changes }).toEqual({
       value: '#ff0000',
@@ -95,7 +95,7 @@ test.each(['setDisable', 'setLoading', 'setVisibility'])(
 test('unmounted component must not publish or run workflows when eyedropper finishes', async () => {
   await start();
   act(() => w.session.render(<></>));
-  expect(document.getElementById('shad-color1')).toBeNull();
+  expect(document.querySelector('[id^="shad-color1-"]')).toBeNull();
   await finish();
   expect({ value: w.exposed().value, changes: w.variables().changes }).toEqual({
     value: '#ff0000',
@@ -105,14 +105,14 @@ test('unmounted component must not publish or run workflows when eyedropper fini
 test('old eyedropper must not overwrite a fresh component with the same ID', async () => {
   await start();
   act(() => w.session.render(<></>));
-  expect(document.getElementById('shad-color1')).toBeNull();
+  expect(document.querySelector('[id^="shad-color1-"]')).toBeNull();
   await mount();
   await w.act('setColor', '#0000ff');
-  expect(document.getElementById('shad-color1')).toHaveTextContent('#0000ff');
+  expect(document.querySelector('[id^="shad-color1-"]')).toHaveTextContent('#0000ff');
   await finish();
   expect({
     value: w.exposed().value,
-    visible: document.getElementById('shad-color1').textContent,
+    visible: document.querySelector('[id^="shad-color1-"]').textContent,
     changes: w.variables().changes,
   }).toEqual({ value: '#0000ff', visible: '#0000ff', changes: undefined });
 });

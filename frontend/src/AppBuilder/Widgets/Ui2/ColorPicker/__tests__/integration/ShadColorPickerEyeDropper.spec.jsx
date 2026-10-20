@@ -36,7 +36,7 @@ afterEach(() => {
 
 const render = () => widget.render({ currentMode: 'view', properties: { defaultValue: binding('#6366f1') } });
 const startPicking = async () => {
-  await act(async () => fireEvent.click(document.getElementById(`shad-${ID}`)));
+  await act(async () => fireEvent.click(document.querySelector(`[id^="shad-${ID}-"]`)));
   await act(async () => fireEvent.click(await screen.findByRole('button', { name: 'Pick a color from the screen' })));
   expect(answer).toBeInstanceOf(Function);
 };
@@ -87,7 +87,7 @@ describe('UI 2.0 Color picker EyeDropper', () => {
     widget.teardown();
     await widget.setup();
     render();
-    await waitFor(() => expect(document.getElementById(`shad-${ID}`)).not.toBeNull());
+    await waitFor(() => expect(document.querySelector(`[id^="shad-${ID}-"]`)).not.toBeNull());
     widget.setEvents(countInvocationsOn(ID, 'onChange', { key: 'changes' }));
     await sample('#22c55e');
     await act(async () => new Promise((resolve) => setTimeout(resolve, 20)));
