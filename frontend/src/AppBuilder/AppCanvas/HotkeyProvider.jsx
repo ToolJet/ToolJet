@@ -22,20 +22,22 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const containerChildrenMapping = useStore((state) => state.containerChildrenMapping, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
+  // A full-screen view covering the editor; its keys must not move, delete or undo what is underneath.
+  const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
 
   useHotkeys(
     'meta+z, control+z',
     (e) => {
       if (!isEditorReadOnly) handleUndo(e);
     },
-    { enabled: mode === 'edit' }
+    { enabled: mode === 'edit' && !overlayOpen }
   );
   useHotkeys(
     'meta+shift+z, control+shift+z',
     (e) => {
       if (!isEditorReadOnly) handleRedo(e);
     },
-    { enabled: mode === 'edit' }
+    { enabled: mode === 'edit' && !overlayOpen }
   );
 
   const paste = async () => {
@@ -137,7 +139,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
       'meta+a, ctrl+a',
     ],
     handleHotKeysCallback,
-    mode === 'edit'
+    mode === 'edit' && !overlayOpen
   );
 
   return (

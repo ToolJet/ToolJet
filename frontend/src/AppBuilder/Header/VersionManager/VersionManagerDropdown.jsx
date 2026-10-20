@@ -375,7 +375,13 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         target={buttonRef.current}
         placement="bottom-end"
         rootClose
-        onHide={closeDropdown}
+        onHide={(event) => {
+          // Promote and Release open their dialogs from inside this menu, and those dialogs (and any
+          // full-screen view opened from them) render outside it. A click in them is not a click
+          // away from the menu; closing here would take the open dialog with it.
+          if (event?.target?.closest?.('.modal, [data-editor-overlay]')) return;
+          closeDropdown();
+        }}
         popperConfig={{
           modifiers: [
             {
