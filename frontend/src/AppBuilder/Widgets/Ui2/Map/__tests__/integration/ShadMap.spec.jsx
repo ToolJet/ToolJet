@@ -392,6 +392,138 @@ describe('UI 2.0 Map', () => {
     }
   }, 10000);
 
+  test('[ShadMap-DEF-002] with no marker options set, pins draw as they always have: no size, heading or image', async () => {
+    render();
+
+    await waitFor(() => expect(pins()).toHaveLength(8));
+    for (const el of pins()) {
+      expect(el).toHaveClass('sc-map-pin');
+      expect(el).not.toHaveAttribute('data-size');
+      expect(el.querySelector('[data-heading]')).toBeNull();
+      expect(el.parentElement.style.width).toBe('28px');
+      expect(el.parentElement.style.height).toBe('36px');
+    }
+    expect(q('.sc-map-image, .leaflet-marker-pane img')).toBeNull();
+  });
+
+  test('[ShadMap-PROP-016] markerIcon puts one icon in every pin, iconField wins per row, headingField turns the icon', async () => {
+    render({
+      properties: {
+        markerIcon: binding('navigation'),
+        iconField: binding('kind'),
+        headingField: binding('course'),
+        data: binding(
+          "{{[{ id: 'v1', kind: 'car', course: 90, lat: 37.78, lng: -122.41 }, { id: 'v2', course: '180', lat: 37.77, lng: -122.42 }, { id: 'v3', course: 'unknown', lat: 37.76, lng: -122.43 }]}}"
+        ),
+      },
+    });
+
+    await waitFor(() => expect(pin('v1')).toHaveAttribute('data-icon', 'car'));
+    expect(pin('v2')).toHaveAttribute('data-icon', 'navigation');
+    expect(pin('v3')).toHaveAttribute('data-icon', 'navigation');
+    await waitFor(() => expect(q('[data-marker="v2"] .sc-map-pin-glyph svg')).toBeTruthy(), { timeout: 4000 });
+    // A car has no direction of its own and turns by the heading; navigation already points north-east.
+    expect(q('[data-marker="v1"] .sc-map-pin-glyph').style.transform).toBe('rotate(90deg)');
+    expect(q('[data-marker="v2"] .sc-map-pin-glyph').style.transform).toBe('rotate(135deg)');
+    expect(q('[data-marker="v3"] .sc-map-pin-glyph').style.transform).toBe('');
+    // The pin itself stays upright.
+    expect(pin('v1').style.transform).toBe('');
+  });
+
+  test('[ShadMap-PROP-017] imageField shows each row image in place of its pin; selection, popup, legend and focus still work', async () => {
+    const svg =
+      "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><script>window.__mapImageRan=true</script></svg>";
+    render({
+      properties: {
+        imageField: binding('photo'),
+        headingField: binding('course'),
+        data: binding(
+          `{{[{ id: 'p1', customer: 'Plane 1', status: 'Delayed', photo: 'https://cdn.example/plane.png', course: 45, lat: 37.78, lng: -122.41 }, { id: 'p2', customer: 'Plane 2', status: 'Delayed', photo: ${JSON.stringify(
+            svg
+          )}, lat: 37.77, lng: -122.42 }, { id: 'p3', customer: 'Plane 3', status: 'Delivered', photo: 'javascript:alert(1)', lat: 37.76, lng: -122.43 }]}}`
+        ),
+      },
+    });
+
+    await waitFor(() => expect(pin('p1')).toHaveClass('sc-map-image'));
+    expect(pin('p1').querySelector('img').getAttribute('src')).toBe('https://cdn.example/plane.png');
+    expect(pin('p1').querySelector('img').style.transform).toBe('rotate(45deg)');
+    expect(pin('p1')).toHaveAttribute('data-tone', 'warning');
+    // An SVG with a script is an image: its markup never reaches the page and its script never runs.
+    expect(pin('p2').querySelector('img').getAttribute('src')).toBe(svg);
+    expect(document.querySelector('.sc-map script, .sc-map-image svg')).toBeNull();
+    expect(window.__mapImageRan).toBeUndefined();
+    // A script URL is no image: that row keeps its pin.
+    expect(pin('p3')).toHaveClass('sc-map-pin');
+    expect(q('.sc-map-legend')).toHaveTextContent('Delayed2');
+
+    const marker = pin('p2').parentElement;
+    expect(marker).toHaveAttribute('tabindex', '0');
+    expect(marker).toHaveAttribute('role', 'button');
+    expect(marker).toHaveAttribute('title', 'Plane 2 · Delayed');
+
+    fireEvent.click(pin('p1'));
+    await waitFor(() => expect(exposed().selectedMarkerId).toBe('p1'));
+    await waitFor(() => expect(pin('p1')).toHaveAttribute('data-selected', 'true'));
+    expect(pin('p1')).toHaveClass('sc-map-image');
+    expect(popup()).toHaveTextContent('Plane 1');
+  });
+
+  test('[ShadMap-PROP-018] an image that fails to load falls back to the pin', async () => {
+    render({
+      properties: {
+        imageField: binding('photo'),
+        data: binding(
+          "{{[{ id: 'b1', photo: 'https://cdn.example/prop-018-missing.png', lat: 37.78, lng: -122.41 }]}}"
+        ),
+      },
+    });
+
+    await waitFor(() => expect(pin('b1')).toHaveClass('sc-map-image'));
+    act(() => {
+      pin('b1').querySelector('img').dispatchEvent(new Event('error'));
+    });
+    await waitFor(() => expect(pin('b1')).toHaveClass('sc-map-pin'));
+    expect(q('.leaflet-marker-pane img')).toBeNull();
+  });
+
+  test('[ShadMap-PROP-019] markerSize draws pins and images small, medium or large', async () => {
+    render({ properties: { markerSize: binding('small') } });
+    await waitFor(() => expect(pin('S-101')).toHaveAttribute('data-size', 'small'));
+    expect(pin('S-101').parentElement.style.width).toBe('22px');
+
+    render({
+      properties: {
+        markerSize: binding('large'),
+        imageField: binding('photo'),
+        data: binding("{{[{ id: 'L1', photo: '/brand/marker.png', lat: 37.78, lng: -122.41 }]}}"),
+      },
+    });
+    await waitFor(() => expect(pin('L1')).toHaveAttribute('data-size', 'large'));
+    expect(pin('L1').parentElement.style.width).toBe('44px');
+    expect(pin('L1').parentElement.style.height).toBe('44px');
+  });
+
+  test('[ShadMap-PROP-020] image markers group into counts like pins, and the rest draw as images', async () => {
+    render({
+      properties: {
+        clusterMarkers: binding('{{true}}'),
+        imageField: binding('photo'),
+        data: binding(
+          "{{[...Array.from({ length: 300 }, (_, i) => ({ id: i + 1, lat: 37.7 + ((i * 7919) % 1000) / 6000, lng: -122.5 + ((i * 104729) % 1000) / 5000, photo: '/vans/' + (i % 3) + '.png' })), { id: 'ny', lat: 40.71, lng: -74.0, photo: '/vans/ny.png' }, { id: 'la', lat: 34.05, lng: -118.24, photo: '/vans/la.png' }]}}"
+        ),
+      },
+    });
+
+    await waitFor(() => expect(document.querySelectorAll('[data-cluster]').length).toBeGreaterThan(0));
+    const groups = [...document.querySelectorAll('[data-cluster]')];
+    expect(groups.reduce((n, g) => n + Number(g.textContent), 0) + pins().length).toBe(302);
+    expect(pins().length).toBeGreaterThan(0);
+    expect([...pins()].every((el) => el.classList.contains('sc-map-image'))).toBe(true);
+    fireEvent.click(pin('ny'));
+    await waitFor(() => expect(exposed().selectedMarkerId).toBe('ny'));
+  });
+
   test('[ShadMap-KBD-001] the wheel scrolls the page unless Ctrl is held, or scrollWheelZoom is on', async () => {
     render();
     await waitFor(() => expect(exposed().zoom).toBe(13));

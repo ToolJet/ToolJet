@@ -176,6 +176,15 @@
       "default": "",
       "initial": ""
     },
+    "headingField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
     "heatField": {
       "type": "string",
       "schema": {
@@ -211,6 +220,15 @@
       },
       "default": "id",
       "initial": "id"
+    },
+    "imageField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
     },
     "labelField": {
       "type": "string",
@@ -256,6 +274,24 @@
       },
       "default": "streets",
       "initial": "streets"
+    },
+    "markerIcon": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "markerSize": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "medium",
+      "initial": "medium"
     },
     "pickLocation": {
       "type": "boolean",

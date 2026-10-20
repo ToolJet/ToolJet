@@ -3,7 +3,7 @@
 import L from 'leaflet';
 import { iconSvg } from './mapLayers';
 import type { Icon, LeafletMap, Path } from 'leaflet';
-import type { LatLng, MapPoint } from './mapTypes';
+import type { LatLng, MapPoint, MarkerSize } from './mapTypes';
 
 /** A group of markers drawn as a count. */
 export interface Cluster {
@@ -20,20 +20,35 @@ export const latLngOf = (ll: LatLng): LatLng => ({ lat: round6(ll.lat), lng: rou
 const PIN_BODY = '<path class="sc-map-pin-body" d="M14 35s11-11.3 11-21.2A11 11 0 0 0 3 13.8C3 23.7 14 35 14 35z"/>';
 const PIN_DOT = '<circle class="sc-map-pin-dot" cx="14" cy="13.8" r="4.4"/>';
 
+/** How a pin is drawn beyond its row (mapMarkers.ts): its size, and how far its icon turns, in degrees clockwise (null
+ *  or unset: upright). */
+export interface PinLook {
+  size?: MarkerSize;
+  turn?: number | null;
+}
+
+// Pin sizes other than medium (28 x 36, the pin's own): width and height in px, the drawing scaled to them.
+const PIN_SIZES: Record<string, [number, number]> = { small: [22, 28], large: [36, 46] };
+
 /** A pin: the teardrop with a dot, a short label (a stop number) or an icon in it; a longer label is a pill (a price)
- *  with a pointer. Colours arrive as the --pin variable, which shadcn.scss's pin rules read. */
-export const pinIcon = (point: MapPoint, selected: boolean, color: string | null): Icon => {
+ *  with a pointer. Colours arrive as the --pin variable, which shadcn.scss's pin rules read. A size other than medium
+ *  is a data-size the stylesheet reads; a turn rotates the icon only, so the pin and any label stay upright. */
+export const pinIcon = (point: MapPoint, selected: boolean, color: string | null, look: PinLook = {}): Icon => {
   const style = color ? ` style="--pin:${color}"` : '';
   const attrs = `data-marker="${escapeHtml(point.key)}"${point.tone ? ` data-tone="${point.tone}"` : ''}${
     point.icon ? ` data-icon="${escapeHtml(point.icon)}"` : ''
   }${selected ? ' data-selected="true"' : ''}${style}`;
   const glyph = point.icon ? iconSvg(point.icon) : '';
+  const turned =
+    typeof look.turn === 'number' && Number.isFinite(look.turn)
+      ? ` data-heading="${escapeHtml(point.heading)}" style="transform:rotate(${look.turn}deg)"`
+      : '';
   if (point.label && point.label.length > 3) {
     const width = Math.round(18 + point.label.length * 7.2 + (glyph ? 16 : 0));
     return L.divIcon({
       className: 'sc-map-marker',
       html: `<span class="sc-map-pill" ${attrs}>${
-        glyph ? `<span class="sc-map-pill-icon">${glyph}</span>` : ''
+        glyph ? `<span class="sc-map-pill-icon"${turned}>${glyph}</span>` : ''
       }${escapeHtml(point.label)}</span>`,
       iconSize: [width, 26],
       iconAnchor: [width / 2, 32],
@@ -42,15 +57,19 @@ export const pinIcon = (point: MapPoint, selected: boolean, color: string | null
   const inner = point.label
     ? `<span class="sc-map-pin-label">${escapeHtml(point.label)}</span>`
     : glyph
-    ? `<span class="sc-map-pin-glyph">${glyph}</span>`
+    ? `<span class="sc-map-pin-glyph"${turned}>${glyph}</span>`
     : '';
+  const sized = look.size ? PIN_SIZES[look.size] : undefined;
+  const [w, h] = sized || [28, 36];
   return L.divIcon({
     className: 'sc-map-marker',
-    html: `<span class="sc-map-pin" ${attrs}><svg viewBox="0 0 28 36" width="28" height="36" aria-hidden="true">${PIN_BODY}${
+    html: `<span class="sc-map-pin" ${attrs}${
+      sized ? ` data-size="${look.size}"` : ''
+    }><svg viewBox="0 0 28 36" width="${w}" height="${h}" aria-hidden="true">${PIN_BODY}${
       inner ? '' : PIN_DOT
     }</svg>${inner}</span>`,
-    iconSize: [28, 36],
-    iconAnchor: [14, 35],
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h - 1],
   });
 };
 

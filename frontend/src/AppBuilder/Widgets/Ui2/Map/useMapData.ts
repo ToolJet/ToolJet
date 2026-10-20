@@ -5,6 +5,7 @@ import { mapPoints, parseCenter } from './mapModel';
 import { areaShapes, heatPoints, markerRoutes, routeRows, statusFill } from './mapShapes';
 import { circleCorners } from './mapIcons';
 import { loadIcons, missingIcons } from './mapLayers';
+import { markerSizeOf } from './mapMarkers';
 
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { MapPoint } from './mapTypes';
@@ -37,6 +38,9 @@ export const useMapData = (p: Resolved) => {
     idField: p.idField,
     labelField: p.labelField,
     iconField: p.iconField,
+    headingField: p.headingField,
+    imageField: p.imageField,
+    markerIcon: p.markerIcon,
   });
   const statusColors = useStable(p.statusColors);
   const routeColors = useStable(p.routeColors);
@@ -139,5 +143,6 @@ export const useMapData = (p: Resolved) => {
     heatRadius,
     colorOfPoint,
     iconsReady,
+    markerSize: markerSizeOf(p.markerSize),
   };
 };
