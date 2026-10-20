@@ -128,6 +128,19 @@ export const isRealDateText = (text: string): boolean => {
   return hour <= 23 && minute <= 59 && second <= 59;
 };
 
+/** True when `d` is the local year, month (1 to 12), day, hour, minute and second asked for. A local time the clocks
+ *  skip (02:30 on the day they go forward, or a day a zone left out) comes back from Date as another one. */
+const keepsFields = (d: Dayjs, [year, month, day, hour = 0, minute = 0, second = 0]: number[]): boolean =>
+  d.year() === year &&
+  d.month() + 1 === month &&
+  d.date() === day &&
+  d.hour() === hour &&
+  d.minute() === minute &&
+  d.second() === second;
+
+// An explicit offset (Z, +05:30, -0800) names one instant, whatever its local time is here.
+const ISO_OFFSET = /(?:Z|[+-]\d{2}(?::?\d{2})?)$/i;
+
 /** A date (dayjs) from ISO text, 'YYYY-MM-DD HH:mm', text in the display `format`, a unix timestamp (seconds or
  *  milliseconds) or a Date; null otherwise, and for a day or time that does not exist. ISO text is read as ISO before
  *  the display format; `formatFirst` reads with `format` first, for a format given with the value (an action's
@@ -152,9 +165,15 @@ export const parseDateTime = (v: unknown, format?: unknown, formatFirst = false)
     if (d.isValid()) return d;
   }
   // ISO text the formats above do not cover (an offset, a fraction of a second), when it names a real date and time.
+  // Without an offset it is a local time, which must exist here: one the clocks skip read as another (the strict
+  // formats above refuse it the same way).
   if (/^\d{4}-\d{2}-\d{2}T/.test(s) && isRealDateText(s)) {
     const d = dayjs(s);
-    if (d.isValid()) return d;
+    const fields =
+      ISO_FIELDS.exec(s)
+        ?.slice(1)
+        .map((f) => (f === undefined ? 0 : Number(f))) ?? [];
+    if (d.isValid() && (ISO_OFFSET.test(s) || keepsFields(d, fields))) return d;
   }
   return null;
 };
@@ -254,12 +273,16 @@ export const dateProblem = (d: Dayjs | null | undefined, rules: DateRules | null
   return '';
 };
 
-/** `date` (a dayjs day) at `minutes` past midnight. */
-export const atTime = (date: Dayjs, minutes: number): Dayjs =>
-  date
+/** `date` (a dayjs day) at `minutes` past midnight; null when the clocks skip that time on that day (02:30 on the
+ *  day they go forward), not the time they go to. */
+export const atTime = (date: Dayjs, minutes: number): Dayjs | null => {
+  const hour = Math.floor(minutes / 60);
+  const d = date
     .startOf('day')
-    .hour(Math.floor(minutes / 60))
+    .hour(hour)
     .minute(minutes % 60);
+  return keepsFields(d, [date.year(), date.month() + 1, date.date(), hour, minutes % 60]) ? d : null;
+};
 
 /** react-day-picker's disabled matchers for the rules: before the minimum, after the maximum, and one lookup for the
  *  disabled days (a matcher per day would be checked against every day drawn). */
