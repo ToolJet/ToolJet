@@ -78,7 +78,8 @@ type PartialRevampedComponent =
   | 'QrScanner'
   | 'Spinner'
   | 'Chart'
-  | 'BoundedBox';
+  | 'BoundedBox'
+  | 'Map';
 
 type NewRevampedComponent =
   | 'Text'
@@ -192,6 +193,7 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'Spinner',
   'Chart',
   'BoundedBox',
+  'Map',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -326,6 +328,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'KeyValuePair',
   'Link',
   'Listview',
+  'Map',
   'ModalV2',
   'MultiselectV2',
   'NumberInput',
@@ -3100,6 +3103,24 @@ function migrateProperties(
     }
 
     if (componentType === 'CodeEditor') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'Map') {
       for (const key of ['visibility', 'disabledState']) {
         if (styles[key]) {
           if (properties[key] === undefined) {

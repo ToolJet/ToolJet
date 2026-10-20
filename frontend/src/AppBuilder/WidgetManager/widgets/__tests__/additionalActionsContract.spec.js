@@ -40,6 +40,7 @@ const CONTRACT = {
   BoundedBox: ['visibility', 'disabledState'],
   CodeEditor: ['visibility', 'disabledState'],
   Kanban: ['visibility', 'disabledState'],
+  Map: ['visibility', 'disabledState'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.
@@ -51,6 +52,8 @@ const TOOLTIP_IN_PROPERTIES = [
   'Chart',
   'BoundedBox',
   'CodeEditor',
+  'Kanban',
+  'Map',
 ];
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);

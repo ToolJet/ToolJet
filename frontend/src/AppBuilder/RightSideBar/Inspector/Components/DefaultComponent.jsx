@@ -63,6 +63,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'QrScanner',
   'Spinner',
   'BoundedBox',
+  'Map',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -228,6 +229,7 @@ export const baseComponentProperties = (
       'Chart',
       'BoundedBox',
       'CodeEditor',
+      'Map',
     ],
     Layout: [],
   };
