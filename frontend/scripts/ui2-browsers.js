@@ -4,7 +4,8 @@
  * running ToolJet. Not part of jest (npm run test:ui2-browsers, or test:ui2-phone for the phone checks).
  *
  * Desktop (default), per browser, light and dark:
- *   - the page loads every widget with no page error and no "not available" widget;
+ *   - the page loads every registered UI 2.0 widget, each once by its gallery name, with no page error, no "not
+ *     available" widget and no widget that crashed into its error fallback;
  *   - axe-core finds no violation (WCAG 2.1 A and AA, colour contrast included, which jsdom cannot check);
  *   - every overlay (select lists, date and time pickers, menus, the dialog...) opens on a press, stays inside the
  *     window, takes focus, has no axe violation, closes on Escape and gives focus back to its widget;
@@ -20,7 +21,8 @@
  *
  * Environment: UI2_BROWSERS_URL (default http://localhost:8082), UI2_GALLERY_APP (the app's id or slug, required),
  * UI2_GALLERY_PAGE (default home), UI2_BROWSERS (default chromium,webkit,firefox), UI2_BROWSERS_OUT (default
- * build/ui2-browsers). Writes report.json and overlay screenshots there; exits 1 on any problem not in KNOWN.
+ * build/ui2-browsers). Writes report.json and overlay screenshots there; exits 1 on any problem not in KNOWN, and 2
+ * when it cannot run (an unknown browser, or a selection that leaves nothing to run: --phone has no Firefox).
  */
 const fs = require('fs');
 const path = require('path');
@@ -35,7 +37,12 @@ const BROWSERS = (process.env.UI2_BROWSERS || 'chromium,webkit,firefox').split('
 const OUT = path.resolve(__dirname, '..', process.env.UI2_BROWSERS_OUT || 'build/ui2-browsers');
 const PHONE = process.argv.includes('--phone');
 const AXE = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
-const WIDGETS = 75;
+// The gallery's widgets: one of every registered UI 2.0 widget, named <type>1 (ShadDateTimePicker: datetimepicker1).
+// Checked by name, so a duplicate cannot stand in for a missing widget; widgets nested in them are not counted.
+require('./ui2-require-hook');
+const { shadcnConfigs } = require('../src/AppBuilder/WidgetManager/widgets/shadcn');
+const GALLERY = shadcnConfigs.map((c) => `${c.name.replace(/^Shad/, '').toLowerCase()}1`);
+const SUPPORTED = ['chromium', 'webkit', 'firefox'];
 
 // The overlays, by the gallery widget that opens them, and what to press to open them.
 const OVERLAYS = {
@@ -79,30 +86,55 @@ async function openGallery(browserType, { mode, phone }) {
   const page = await context.newPage();
   // Collected for the whole run (the checks raise errors too) and read once they are done.
   const errors = [];
-  let preferenceFailed = false;
+  let preferenceFailures = 0;
   page.on('pageerror', (e) => errors.push(e?.message));
   page.on('console', (m) => {
-    if (m.type() === 'error' && m.text().includes('Failed to fetch LLM preference')) preferenceFailed = true;
+    if (m.type() === 'error' && m.text().includes('Failed to fetch LLM preference')) preferenceFailures += 1;
   });
-  const pageErrors = () => pageErrorLines(errors, preferenceFailed);
+  const pageErrors = () => pageErrorLines(errors, preferenceFailures);
   await page.goto(`${BASE}/applications/${APP}/${PAGE}`, { waitUntil: 'domcontentloaded', timeout: 180000 });
-  let shown = 0;
-  for (let i = 0; i < 240 && shown < WIDGETS; i += 1) {
-    shown = await page.evaluate(() => document.querySelectorAll('[data-cy^="draggable-widget-"]').length);
-    if (shown < WIDGETS) await sleep(500);
+  // How many times each gallery widget is on the page.
+  const count = () =>
+    page.evaluate(
+      (names) => names.map((n) => document.querySelectorAll(`[data-cy="draggable-widget-${n}"]`).length),
+      GALLERY
+    );
+  let counts = [];
+  for (let i = 0; i < 240; i += 1) {
+    counts = await count();
+    if (counts.every((n) => n > 0)) break;
+    await sleep(500);
   }
   await sleep(5000);
-  return { browser, page, pageErrors, shown };
+  counts = await count();
+  return { browser, page, pageErrors, inventory: Object.fromEntries(GALLERY.map((n, i) => [n, counts[i] || 0])) };
 }
 
-// A promise rejected with a plain object reads "Object", "[object Object]" or "Object { ... }" by browser.
+/** What the page lacks of the gallery: widgets missing, widgets there more than once. */
+const inventoryProblems = (inventory) => {
+  const names = Object.keys(inventory);
+  const missing = names.filter((n) => !inventory[n]);
+  const repeated = names.filter((n) => inventory[n] > 1).map((n) => `${n} (${inventory[n]})`);
+  return [
+    ...(missing.length ? [`${missing.length} of ${names.length} widgets not on the page: ${missing.join(', ')}`] : []),
+    ...(repeated.length ? [`widgets on the page more than once: ${repeated.join(', ')}`] : []),
+  ];
+};
+
+// A promise rejected with a plain object reads "Object", "[object Object]" or "Object { ... }" by browser. One such
+// error is put down to each failed LLM preference request; any more stay problems (the page does not say which
+// rejection is which, so a count is the most it can tell).
 const PLAIN = /^(Object|\[object Object\]|Object \{.*\})$/;
-const pageErrorLines = (messages, preferenceFailed) =>
-  messages.map((message) =>
-    PLAIN.test(String(message))
-      ? `page error: a plain object${preferenceFailed ? ', after the viewer failed to fetch the LLM preference' : ''}`
-      : `page error: ${String(message).slice(0, 200)}`
-  );
+const pageErrorLines = (messages, preferenceFailures) => {
+  let explained = 0;
+  return messages.map((message) => {
+    if (!PLAIN.test(String(message))) return `page error: ${String(message).slice(0, 200)}`;
+    explained += 1;
+    return explained <= preferenceFailures
+      ? 'page error: a plain object, after the viewer failed to fetch the LLM preference'
+      : 'page error: a plain object';
+  });
+};
 
 /** axe over `include` (a selector, default every widget on the page, not the viewer around them): one line per
  *  violation and the widgets it was found in. */
@@ -302,20 +334,29 @@ const phoneProblems = (page) =>
 
 async function run() {
   if (!APP) throw new Error('Set UI2_GALLERY_APP to the id or slug of a public app holding every UI 2.0 widget.');
-  fs.mkdirSync(OUT, { recursive: true });
-  const report = {};
+  const unknown = BROWSERS.filter((b) => !SUPPORTED.includes(b));
+  if (unknown.length)
+    throw new Error(`Unknown browser in UI2_BROWSERS: ${unknown.join(', ')} (${SUPPORTED.join(', ')})`);
   const runs = PHONE
     ? BROWSERS.filter((b) => b !== 'firefox').flatMap((b) => [375, 414].map((w) => ({ b, mode: 'light', phone: w })))
     : BROWSERS.flatMap((b) => ['light', 'dark'].map((mode) => ({ b, mode })));
+  // A green result with nothing tested is no result: Firefox has no phone mode (no isMobile), so --phone with only
+  // Firefox selected has nothing to run.
+  if (!runs.length)
+    throw new Error(`Nothing to run for UI2_BROWSERS=${BROWSERS.join(',')}${PHONE ? ' with --phone' : ''}`);
+  fs.mkdirSync(OUT, { recursive: true });
+  const report = {};
   for (const { b, mode, phone } of runs) {
     const key = phone ? `${b} ${phone}px` : `${b} ${mode}`;
     process.stdout.write(`${key}... `);
-    const { browser, page, pageErrors, shown } = await openGallery(playwright[b], { mode, phone });
+    const { browser, page, pageErrors, inventory } = await openGallery(playwright[b], { mode, phone });
     const problems = [];
     try {
-      if (shown < WIDGETS) problems.push(`only ${shown} of ${WIDGETS} widgets on the page`);
+      problems.push(...inventoryProblems(inventory));
       const unavailable = await page.locator('[data-cy="unavailable-widget"]').count();
       if (unavailable) problems.push(`${unavailable} widgets not available`);
+      const crashed = await page.locator('[data-cy="error-boundary-fallback"]').count();
+      if (crashed) problems.push(`${crashed} widgets crashed into their error fallback`);
       if (phone) {
         problems.push(...(await phoneProblems(page)));
         await page.screenshot({ path: path.join(OUT, `phone-${b}-${phone}.png`), fullPage: true });
@@ -339,7 +380,8 @@ async function run() {
     for (const p of fresh) console.log(`  - ${p}`);
   }
   fs.writeFileSync(path.join(OUT, PHONE ? 'phone-report.json' : 'report.json'), JSON.stringify(report, null, 1));
-  const failed = Object.values(report).some((list) => list.some((p) => !KNOWN.has(p)));
+  const failed =
+    Object.keys(report).length !== runs.length || Object.values(report).some((list) => list.some((p) => !KNOWN.has(p)));
   process.exit(failed ? 1 : 0);
 }
 
