@@ -464,7 +464,8 @@ describe('UI 2.0 List view', () => {
     expect(root.style.padding).toBe('6px');
     // An outlined item is framed by the border class (the pack reset zeroes inline borders).
     expect(items()[0]).toHaveClass('tw-border');
-    expect(items()[0].style.background).toBe('rgb(255, 255, 255)');
+    // The item surface is a variable a class paints, so the selected and hover fills can take its place.
+    expect(items()[0].style.getPropertyValue('--lv-item-bg')).toBe('#ffffff');
     expect(items()[0].style.borderRadius).toBe('10px');
     expect(items()[0].style.boxShadow).toBe('0 1px 2px 0 rgb(0 0 0 / 0.05)');
   });

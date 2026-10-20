@@ -144,7 +144,8 @@ export const ShadListView = (props: WidgetProps) => {
   // components, while this one rendered: React warned, and it risked a render loop. The layout effect runs before
   // paint and before the rows' mount effects. Rows are drawn from the items already written (shown), keyed by record:
   // a row that moves never resolves another record's {{listItem}}, which reset its components (an edited Input took
-  // its default again). When records move, their rows' component values move with them (takeRowValues).
+  // its default again). When records move, their rows' component values move with them, and so do the items of a
+  // List view in their rows (takeRowValues).
   const keys = useMemo(() => items.map((item, index) => itemKey(item, idField, index)), [items, idField]);
   // drawn counts the times rows of new records were drawn (first draw, "Show more", a page turn), for the batch below.
   const [shown, setShown] = useState<{ items: unknown[]; keys: string[]; drawn: number }>({
