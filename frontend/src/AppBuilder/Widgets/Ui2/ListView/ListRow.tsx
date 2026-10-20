@@ -70,9 +70,12 @@ export const Row = ({
         className={cn(
           // The focus and selected marks are outlines drawn inside the row: a ring is a box-shadow, which a chosen item
           // shadow (set inline) replaced.
-          'tw-relative tw-overflow-hidden tw-outline-none tw-transition-colors focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:-tw-outline-offset-2 focus-visible:tw-outline-[color:var(--sc-ring)] hover:tw-bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
-          selected &&
-            'tw-bg-[color:var(--lv-selected-bg,color-mix(in_srgb,var(--sc-primary)_8%,transparent))] tw-outline tw-outline-1 -tw-outline-offset-1 tw-outline-ui2-primary',
+          'tw-relative tw-overflow-hidden tw-outline-none tw-transition-colors focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:-tw-outline-offset-2 focus-visible:tw-outline-[color:var(--sc-ring)]',
+          // One fill class at a time, so no stylesheet order decides between them: the selected fill (kept under the
+          // pointer), or the item's surface (--lv-item-bg, listLook) with the hover fill over it.
+          selected
+            ? 'tw-bg-[color:var(--lv-selected-bg,color-mix(in_srgb,var(--sc-primary)_8%,transparent))] tw-outline tw-outline-1 -tw-outline-offset-1 tw-outline-ui2-primary'
+            : 'tw-bg-[color:var(--lv-item-bg)] hover:tw-bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
           look.framed && 'tw-border tw-border-[color:var(--lv-item-border,var(--sc-border))]',
           mode === 'list' &&
             showBorder &&

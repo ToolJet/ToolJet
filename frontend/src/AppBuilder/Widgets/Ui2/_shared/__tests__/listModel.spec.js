@@ -65,7 +65,8 @@ describe('listLook', () => {
       padding: 12,
     });
     expect(look.vars['--sc-primary']).toBe('#0f766e');
-    expect(look.item).toMatchObject({ background: '#fff', borderRadius: '10px' });
+    expect(look.item).toMatchObject({ '--lv-item-bg': '#fff', borderRadius: '10px' });
+    expect(look.item.background).toBeUndefined();
     expect(look.item.boxShadow).toMatch(/rgb/);
     expect(look.padding).toBe('12px');
   });
@@ -73,7 +74,9 @@ describe('listLook', () => {
     expect(listLook({}).framed).toBe(false);
     const outline = listLook({ itemVariant: 'outline' });
     expect(outline.framed).toBe(true);
-    expect(outline.item).toMatchObject({ background: 'var(--sc-card)', borderRadius: 'var(--sc-radius)' });
+    expect(outline.item).toMatchObject({ '--lv-item-bg': 'var(--sc-card)', borderRadius: 'var(--sc-radius)' });
+    expect(listLook({}).item['--lv-item-bg']).toBe('transparent');
+    expect(listLook({ itemVariant: 'outline', itemBackgroundColor: '#fafafa' }).item['--lv-item-bg']).toBe('#fafafa');
     expect(outline.item.border).toBeUndefined();
     const custom = listLook({ itemVariant: 'outline', itemBorderColor: '#ddd', itemBorderRadius: 4 });
     expect(custom.vars['--lv-item-border']).toBe('#ddd');
