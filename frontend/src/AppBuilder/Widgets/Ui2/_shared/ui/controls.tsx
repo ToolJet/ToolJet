@@ -197,7 +197,9 @@ export const ToggleGroup = React.forwardRef<
   <ToggleGroupPrimitive.Root
     ref={ref}
     className={cn(
-      'tw-inline-flex tw-items-center tw-rounded-ui2-lg tw-bg-ui2-muted tw-p-[3px] tw-text-ui2-muted-foreground',
+      // h-9 like the input, select and button, so a segmented control sits flush beside a field in a filter row
+      // (sized by its items it was 34px against the fields' 36px).
+      'tw-inline-flex tw-h-9 tw-items-center tw-rounded-ui2-lg tw-bg-ui2-muted tw-p-[3px] tw-text-ui2-muted-foreground',
       className
     )}
     {...props}
