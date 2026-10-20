@@ -675,24 +675,39 @@
 .tj-shadcn .sc-hero-box {
   container-type: inline-size;
 }
+// With an aside: the text on the left, the primary action top right and the aside's figure under it. With the actions
+// under the text, a hero with an icon set its button at the icon's edge, about 100px left of the text it belongs to,
+// and left the figure alone at the far right (to-do "Today" header, 2026-10-20).
 .tj-shadcn .sc-hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr;
   grid-template-areas:
-    'text aside'
-    'actions aside';
+    'text actions'
+    'text aside';
   column-gap: 1.5rem;
-  align-items: center;
+  align-items: start;
 }
 .tj-shadcn .sc-hero-grid > .sc-hero-text {
   grid-area: text;
+  align-self: center;
 }
 .tj-shadcn .sc-hero-grid > .sc-hero-aside {
   grid-area: aside;
+  margin-top: 1rem;
 }
 .tj-shadcn .sc-hero-grid > .sc-hero-actions {
   grid-area: actions;
-  margin-top: 0.75rem;
+  justify-self: end;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-actions > div {
+  justify-content: flex-end;
+}
+// No actions: the aside centres beside the text, as before.
+.tj-shadcn .sc-hero-grid:not(:has(> .sc-hero-actions)) > .sc-hero-aside {
+  grid-row: 1 / span 2;
+  align-self: center;
+  margin-top: 0;
 }
 @container (max-width: 560px) {
   .tj-shadcn .sc-hero-grid {
@@ -711,6 +726,7 @@
   }
   .tj-shadcn .sc-hero-grid > .sc-hero-actions {
     margin-top: 1rem;
+    justify-self: start;
   }
 }
 
