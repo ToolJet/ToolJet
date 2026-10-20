@@ -58,9 +58,9 @@ const keyAllocator = () => {
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** The visible range: { scale, start, end, columns: [{ key, start, end, label, sub, today }], slots: [{ start, end,
- *  edge }], dayStart, dayEnd }. 'hours' shows dayStart to dayEnd of one day, a column an hour, slots of slotMinutes
- *  (at most MAX_SLOTS); 'days' shows `days` days (1 to MAX_DAYS), a column and a slot a day. */
+/** The visible range: { scale, start, end, columns, slots }. 'hours' shows dayStart to dayEnd of one day, a column an
+ *  hour, slots of slotMinutes (at most MAX_SLOTS); 'days' shows `days` days (2 to MAX_DAYS), a column and a slot a day.
+ *  One day on the days scale is drawn by its hours: as one column it drew every booking across the whole width. */
 export const scheduleRange = (
   {
     scale = 'hours',
@@ -83,8 +83,8 @@ export const scheduleRange = (
 ): ScheduleRange => {
   const first = startDay(date, now);
   const todayKey = dayKey(new Date(now));
-  if (scale === 'days') {
-    const count = clampNumber(int(days, 7), 1, MAX_DAYS);
+  const count = clampNumber(int(days, 7), 1, MAX_DAYS);
+  if (scale === 'days' && count > 1) {
     const columns = Array.from({ length: count }, (_, i): ScheduleColumn => {
       const d = new Date(first.getFullYear(), first.getMonth(), first.getDate() + i);
       const next = new Date(first.getFullYear(), first.getMonth(), first.getDate() + i + 1);

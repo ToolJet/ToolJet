@@ -3,6 +3,7 @@ import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { MAX_ROW_BOOKINGS, bookingFace, slotAvailability, slotValue } from './scheduleModel';
+import { barMinWidth } from './scheduleLayout';
 import type {
   PlacedBooking,
   PlacedBookings,
@@ -73,7 +74,8 @@ interface ScheduleRowProps {
   disabled: boolean;
   hasSlotClick: boolean;
   hourFormat: unknown;
-  width: number;
+  /** The time axis's width in px, as drawn (the widget's, or more where it scrolls). */
+  axisWidth: number;
   /** The slots' grid tracks (slotTracks). */
   slotTracks: string;
   clickSlot: (resource: ScheduleResource, slot: ScheduleSlot) => void;
@@ -92,7 +94,7 @@ export const ScheduleRow = ({
   disabled,
   hasSlotClick,
   hourFormat,
-  width,
+  axisWidth,
   slotTracks,
   clickSlot,
   clickBooking,
@@ -100,6 +102,7 @@ export const ScheduleRow = ({
   const lanes = entry?.lanes || 1;
   const laneHeight = lanes === 1 ? Math.max(20, rowHeight - PAD * 2) : LANE;
   const rowH = lanes === 1 ? rowHeight : Math.max(rowHeight, lanes * LANE + (lanes - 1) * LANE_GAP + PAD * 2);
+  const barMin = barMinWidth(range);
   return (
     <div className={cn('tw-flex', i > 0 && 'tw-border-t')} style={{ borderColor: LINE }} data-resource={r.key}>
       <div
@@ -156,7 +159,8 @@ export const ScheduleRow = ({
             highlight && selected?.kind === 'booking' && selected.resource === r.key && selected.key === b.key;
           const cancelled = /\bcancel/i.test(b.status);
           const second = [b.time, b.subtitle].filter(Boolean).join(' · ');
-          const face = bookingFace(((Number(width) || 0) - rw) * (b.width / 100) - 4, laneHeight, !!second);
+          const barPx = axisWidth * (b.width / 100) - 4;
+          const face = bookingFace(barPx, laneHeight, !!second);
           const top = PAD + b.lane * (laneHeight + LANE_GAP);
           return (
             <button
@@ -170,14 +174,17 @@ export const ScheduleRow = ({
               data-booking={b.key}
               data-tone={b.tone || undefined}
               className={cn(
-                'sc-booking tw-absolute tw-z-[1] tw-flex tw-min-w-0 tw-flex-col tw-justify-center tw-overflow-hidden tw-rounded-ui2-md tw-border-l-[3px] tw-px-2 tw-text-left tw-text-xs tw-leading-tight tw-outline-none tw-transition-shadow tw-duration-150 focus-visible:tw-ring-2 focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))] disabled:tw-cursor-default',
+                'sc-booking tw-absolute tw-z-[1] tw-flex tw-min-w-0 tw-flex-col tw-justify-center tw-overflow-hidden tw-rounded-ui2-md tw-border-l-[3px] tw-text-left tw-text-xs tw-leading-tight tw-outline-none tw-transition-shadow tw-duration-150 focus-visible:tw-ring-2 focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))] disabled:tw-cursor-default',
+                // A short booking gives its padding to its title: at 40px, 8px a side left room for one letter.
+                barPx < 56 ? 'tw-px-1' : 'tw-px-2',
                 !disabled && 'tw-cursor-pointer',
                 cancelled && 'tw-opacity-70'
               )}
               style={
                 {
                   left: `calc(${b.left}% + 2px)`,
-                  width: `max(calc(${b.width}% - 4px), 6px)`,
+                  width: `calc(${b.width}% - 4px)`,
+                  minWidth: barMin,
                   top,
                   height: laneHeight,
                   // The fill, the edge and the ink derive from the tone in shadcn.scss (.sc-booking).

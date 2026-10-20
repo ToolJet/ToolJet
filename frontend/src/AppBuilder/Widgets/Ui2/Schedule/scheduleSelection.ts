@@ -67,3 +67,25 @@ export const selectionExposed = (selected: ScheduleSelected | null) => ({
   selectedBookingId: selected?.kind === 'booking' ? selected.item.id ?? null : null,
   selectedSlot: selected?.kind === 'slot' ? selected.value : {},
 });
+
+/** The selection as one value for an effect's dependencies: its resource and its booking key or slot index, '' for
+ *  none. It changes when another booking or slot is picked, not when a refresh resolves the same one again. */
+export const selectionTarget = (selected: ScheduleSelected | null): string =>
+  selected
+    ? JSON.stringify([selected.resource, selected.kind, selected.kind === 'booking' ? selected.key : selected.index])
+    : '';
+
+/** Brings the selected booking or slot into view along a scrolled time axis (the scroll container's scroll-padding
+ *  keeps it clear of the sticky resource column). */
+export const revealTarget = (root: HTMLElement | null, target: string): void => {
+  if (!root || !target) return;
+  const [resource, kind, which] = JSON.parse(target) as [string, string, string | number];
+  const row = Array.from(root.querySelectorAll<HTMLElement>('[data-resource]')).find(
+    (el) => el.dataset.resource === resource
+  );
+  const el =
+    kind === 'booking'
+      ? Array.from(row?.querySelectorAll<HTMLElement>('[data-booking]') ?? []).find((b) => b.dataset.booking === which)
+      : row?.querySelectorAll<HTMLElement>('button.sc-slot')[Number(which)];
+  el?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+};
