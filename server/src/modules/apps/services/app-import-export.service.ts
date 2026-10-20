@@ -333,6 +333,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'MultiselectV2',
   'NumberInput',
   'PasswordInput',
+  'PDF',
   'PhoneInput',
   'PopoverMenu',
   'ProgressBar',
@@ -3128,6 +3129,22 @@ function migrateProperties(
           }
           delete styles[key];
         }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'PDF') {
+      if (styles.visibility) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
       }
 
       if (general?.tooltip) {

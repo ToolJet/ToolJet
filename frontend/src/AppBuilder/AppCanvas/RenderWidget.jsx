@@ -76,6 +76,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'BoundedBox',
   'CodeEditor',
   'Map',
+  'PDF',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];

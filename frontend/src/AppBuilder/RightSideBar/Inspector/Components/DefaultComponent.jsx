@@ -64,6 +64,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Spinner',
   'BoundedBox',
   'Map',
+  'PDF',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -230,6 +231,7 @@ export const baseComponentProperties = (
       'BoundedBox',
       'CodeEditor',
       'Map',
+      'PDF',
     ],
     Layout: [],
   };
