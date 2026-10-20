@@ -19,3 +19,8 @@ export const onKeyActivate =
       handler(e);
     }
   };
+
+/** Whether a key was pressed on the element whose handler runs, not on a control inside it. A parent's own shortcuts (a
+ *  Kanban card's Space to move it, a picker field's Enter to open and Backspace to drop its last chip) take only these
+ *  keys: one typed in a field, or pressed on a button, inside the parent belongs to that control. */
+export const fromOwnSurface = (e: KeyboardEvent<Element>): boolean => e.target === e.currentTarget;

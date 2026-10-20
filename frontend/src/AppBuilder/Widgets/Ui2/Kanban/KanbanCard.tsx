@@ -12,7 +12,7 @@ import { badgeLook, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/ka
 import { cardClamp, cardDateLabel, cardDetails } from './kanbanBoard';
 import type { BoardCard } from './kanbanBoard';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
-import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { fromOwnSurface, isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 export type KanbanLook = ReturnType<typeof kanbanLook>;
 
@@ -242,10 +242,12 @@ export const KanbanCard = ({
       data-tj-inner-drag=""
       onClick={() => onSelect(card)}
       // Enter activates the card as a click does (select it, onCardClicked, its details); Space picks it up to move
-      // (KANBAN_KEYS). While a card is being moved, Enter drops it instead.
+      // (KANBAN_KEYS). While a card is being moved, Enter drops it instead. A key from a control on a custom card is
+      // that control's: Space typed in its Input picked the card up.
       onKeyDown={(e) => {
+        if (!fromOwnSurface(e)) return;
         drag.listeners?.onKeyDown?.(e);
-        if (isEnter(e) && !drag.isDragging && e.target === e.currentTarget) {
+        if (isEnter(e) && !drag.isDragging) {
           e.preventDefault();
           onSelect(card);
         }
