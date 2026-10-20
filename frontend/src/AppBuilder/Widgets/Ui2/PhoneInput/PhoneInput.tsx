@@ -25,6 +25,7 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { SECONDARY_ON_HIGHLIGHT } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 
 export const BareInput = React.forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>((props, ref) => (
   <input ref={ref} {...props} />
@@ -172,7 +173,14 @@ export const ShadPhoneInput = (props: WidgetProps) => {
     queued.current = [];
     events.forEach((event) => fireEvent(event));
   });
-  const [open, setOpen] = useState(false);
+  // The country menu is the shared picker popup: it closes, and takes no choice, once the input or a panel around it
+  // stops taking input (a menu opened before setDisable, a Tabs switch or a disabled Form).
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
+  const pickCountry = popup.guard((c: Country) => {
+    update(toCountry(c));
+    popup.setOpen(false);
+  });
   const disabled = busy(properties);
   const canChange = properties.isCountryChangeEnabled !== false && countries.length > 1;
   const showFlag = properties.showFlag !== false;
@@ -189,9 +197,10 @@ export const ShadPhoneInput = (props: WidgetProps) => {
     <FormField props={props} properties={properties} check={check} innerRef={fit}>
       <Group disabled={disabled}>
         {canChange ? (
-          <Popover open={open} onOpenChange={setOpen}>
+          <Popover open={popup.open} onOpenChange={popup.setOpen}>
             <PopoverTrigger asChild>
               <button
+                ref={triggerRef}
                 type="button"
                 aria-label={`Country: ${name}`}
                 disabled={disabled}
@@ -231,10 +240,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
                           key={c}
                           value={`${label} +${M.callingCode(c)} ${c}`}
                           className={COMMAND_ITEM}
-                          onSelect={() => {
-                            update(toCountry(c));
-                            setOpen(false);
-                          }}
+                          onSelect={() => pickCountry(c)}
                         >
                           {showFlag ? <FlagIcon country={c} title={label} /> : null}
                           <span className="tw-flex-1 tw-truncate">{label}</span>
