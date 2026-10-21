@@ -78,6 +78,7 @@ const KEEP_RUNS = 50;
 const STATUS_CACHE_MS = 1000;
 const SHUTDOWN_WAIT_MS = 10_000;
 const JOBS_CHECK_MS = 5000;
+const DEAD_RUN_CHECK_MS = 10_000;
 // Background jobs would run new code against an old or half-migrated schema in these states.
 const HOLD_JOBS_STATES: MigrationState[] = ['pending', 'running', 'failed'];
 
@@ -173,6 +174,8 @@ export class MigrationRunsService implements OnApplicationShutdown {
   private finalWrite: Promise<void> | null = null;
   private shuttingDown = false;
   private jobsTimer: NodeJS.Timeout | null = null;
+  private deadRunTimer: NodeJS.Timeout | null = null;
+  private restartingDeadRun = false;
 
   constructor(@Optional() private readonly discovery?: DiscoveryService) {}
 
@@ -189,6 +192,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
   async start(triggeredBy = 'boot'): Promise<void> {
     if (!this.enabled || this.child) return;
     this.holdJobsWhileMigrating();
+    this.watchForDeadRuns();
     await this.query(MIGRATION_RUNS_DDL).catch((error: { code?: string }) => {
       // Two pods racing CREATE TABLE IF NOT EXISTS: one loses on the type's unique index.
       if (error.code !== '23505' && error.code !== '42P07') throw error;
@@ -274,6 +278,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
   async onApplicationShutdown(): Promise<void> {
     this.shuttingDown = true;
     if (this.jobsTimer) clearInterval(this.jobsTimer);
+    if (this.deadRunTimer) clearInterval(this.deadRunTimer);
     if (this.child?.pid) {
       try {
         // Detached group: kill npm and the runner under it. The open transaction rolls back.
@@ -388,6 +393,11 @@ export class MigrationRunsService implements OnApplicationShutdown {
         // Inserted as failed, not running: a failure must not wait on the one-active-run index.
         if (!runId && !succeeded) runId = await this.insertRun(triggeredBy, 'failed');
         if (!runId && run.hasPendingWork) runId = await this.insertRun(triggeredBy);
+        // Nothing pending, yet the latest run failed: the database is current (a run that committed just
+        // before its server died, or a manual db:migrate). Recorded, or writes stay refused.
+        if (!runId && succeeded && (await this.runs(1))[0]?.status === 'failed') {
+          runId = await this.insertRun(triggeredBy);
+        }
         // A check that found nothing: a waiting row from an earlier boot is stale (applied another way).
         if (checkOnly && succeeded && !run.hasPendingWork) {
           await this.query(`DELETE FROM migration_runs WHERE status = 'pending'`);
@@ -398,7 +408,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
         if (!succeeded) {
           return this.updateRun(runId, run, 'failed', this.shuttingDown ? DEAD_RUN_ERROR : errorSummary(run));
         }
-        await this.updateRun(runId, run, checkOnly ? 'pending' : 'succeeded');
+        await this.updateRun(runId, run, checkOnly && run.hasPendingWork ? 'pending' : 'succeeded');
         if (!checkOnly) await this.dropEarlierLogs(runId);
       });
     });
@@ -467,6 +477,39 @@ export class MigrationRunsService implements OnApplicationShutdown {
   }
 
   /** Lets the one-active-run index go of a run whose server died, so it can be retried. */
+  /**
+   * A run whose server stopped after the others booted (scale-down, node loss) would otherwise wait for
+   * the next boot, with writes refused. Every server looks for one; the one-active-run index lets one
+   * claim it. Manual mode only re-checks, so it waits for a super admin again.
+   */
+  private watchForDeadRuns(): void {
+    if (this.deadRunTimer) return;
+    this.deadRunTimer = setInterval(() => void this.restartDeadRun(), DEAD_RUN_CHECK_MS);
+    this.deadRunTimer.unref();
+  }
+
+  async restartDeadRun(): Promise<void> {
+    if (this.child || this.shuttingDown || this.restartingDeadRun) return;
+    this.restartingDeadRun = true;
+    try {
+      const [{ running }] = await this.query<{ running: boolean }>(HELD_MIGRATION_LOCKS_SQL);
+      if (running) return;
+      await this.reapDeadRuns();
+      const [latest] = await this.runs(1);
+      if (latest?.status !== 'failed' || latest.error !== DEAD_RUN_ERROR) return;
+      console.log('[migrations] The migrating server stopped; starting the run again.');
+      if (this.manual) this.runChild('recovery', { checkOnly: true });
+      else await this.run('recovery');
+    } catch (error) {
+      // Lost the claim to another server (409), or the database is unreachable: the next check retries.
+      if (!(error instanceof ConflictException)) {
+        console.warn(`[migrations] Could not check for a stopped run: ${(error as Error).message}`);
+      }
+    } finally {
+      this.restartingDeadRun = false;
+    }
+  }
+
   private async reapDeadRuns(): Promise<void> {
     await this.query(
       `UPDATE migration_runs

@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 import {
   excludeLockSentinels,
   LOCK_SENTINEL_MIGRATION_NAMES,
+  DEAD_CLIENT_KEEPALIVE_SQL,
   DEFAULT_MAX_WAIT_MINUTES,
   DEFAULT_RETRY_INTERVAL_SECONDS,
   getLockWaitOptions,
@@ -186,11 +187,13 @@ describe('migration-helpers/migrations-table-gate', () => {
         return undefined;
       });
 
-      expect(queries[0].sql).toContain('pg_try_advisory_lock');
+      // Keepalive first: a silently lost pod must not hold the lock for the OS default of ~2 hours.
+      expect(queries[0].sql).toBe(DEAD_CLIENT_KEEPALIVE_SQL);
+      expect(queries[1].sql).toContain('pg_try_advisory_lock');
       expect(order).toEqual(['critical']);
       expect(queries[queries.length - 1].sql).toContain('pg_advisory_unlock');
       // Same key both ways, or the lock would never be released.
-      expect(queries[0].parameters).toEqual(queries[queries.length - 1].parameters);
+      expect(queries[1].parameters).toEqual(queries[queries.length - 1].parameters);
       expect(queryRunner.release).toHaveBeenCalled();
     });
 

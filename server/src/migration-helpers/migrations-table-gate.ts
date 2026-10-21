@@ -76,6 +76,10 @@ export const HELD_MIGRATION_LOCKS_SQL = `
            WHERE locktype = 'advisory' AND objsubid = 1 AND granted
              AND database = (SELECT oid FROM pg_database WHERE datname = current_database())) held`;
 
+/** Postgres drops a silent client after about 60s (30s idle, then 3 probes 10s apart). Ignored on Unix sockets. */
+export const DEAD_CLIENT_KEEPALIVE_SQL =
+  'SET tcp_keepalives_idle = 30; SET tcp_keepalives_interval = 10; SET tcp_keepalives_count = 3';
+
 /** Exit code of a runner that left the run to another server (MIGRATION_SKIP_IF_LOCKED). */
 export const SKIPPED_EXIT_CODE = 75;
 
@@ -101,6 +105,9 @@ export async function withMigrationAdvisoryLock<T>(
   const queryRunner = dataSource.createQueryRunner();
   try {
     await queryRunner.connect();
+    // The lock session idles while migrations run, so a crash releases the lock at once. A pod lost
+    // without a FIN (node failure, partition) would hold it until the OS keepalive: about 2 hours.
+    await queryRunner.query(DEAD_CLIENT_KEEPALIVE_SQL).catch(() => undefined);
     const startedAt = now();
     for (let attempt = 1; ; attempt++) {
       const [{ locked }] = await queryRunner.query('SELECT pg_try_advisory_lock($1) AS locked', [

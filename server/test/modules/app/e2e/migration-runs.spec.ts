@@ -10,6 +10,7 @@ type Internals = {
   query: (sql: string, params?: unknown[]) => Promise<unknown[]>;
   runChild: jest.Mock;
   recordPending: (triggeredBy: string) => Promise<string | null>;
+  deadRunTimer: NodeJS.Timeout | null;
 };
 
 /** @group platform */
@@ -143,6 +144,19 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     }
   };
   const version = (): string => globalThis.TOOLJET_VERSION ?? 'unknown';
+  // start() arms a timer that would restart runs behind a case's back; cases call restartDeadRun themselves.
+  const stopDeadRunWatch = (server: MigrationRunsService) => {
+    const internals = server as unknown as Internals;
+    if (internals.deadRunTimer) clearInterval(internals.deadRunTimer);
+    internals.deadRunTimer = null;
+  };
+  const seedDeadRun = () =>
+    dataSource.query(
+      // Back-dated: the suite transaction freezes now(), and the run that replaces it must sort above it.
+      `INSERT INTO migration_runs (to_version, status, triggered_by, started_at, heartbeat_at)
+       VALUES ($1, 'running', 'boot', now() - interval '6 minutes', now() - interval '5 minutes')`,
+      [version()]
+    );
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
@@ -156,9 +170,11 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     await dataSource.query('DELETE FROM migration_runs');
     // Some cases stub runChild on this shared instance; every case starts from the real one.
     Object.assign(service, { cachedStatus: null, runChild: MigrationRunsService.prototype['runChild'] });
+    stopDeadRunWatch(service);
   });
 
   afterAll(async () => {
+    stopDeadRunWatch(service);
     process.env.MIGRATION_MODE = originalMode;
     await dataSource.query('DROP TABLE IF EXISTS migration_run_logs, migration_runs');
     await closeTestApp(app);
@@ -309,6 +325,59 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     expect(runChild).toHaveBeenCalledWith('boot', { checkOnly: false });
   });
 
+  describe('restartDeadRun | a run whose server stopped after the other servers booted', () => {
+    it('should claim the stopped run on one server only, without waiting for a boot', async () => {
+      await seedDeadRun();
+      const servers = [newServer(), newServer()];
+      const runChildren = servers.map(stubRunChild);
+
+      await Promise.all(servers.map((server) => server.restartDeadRun()));
+
+      const calls = runChildren.flatMap((runChild) => runChild.mock.calls);
+      expect(calls).toEqual([['recovery', { runId: expect.any(String) }]]);
+      await expect(service.runs()).resolves.toMatchObject([
+        { status: 'running', triggeredBy: 'recovery' },
+        { status: 'failed', error: 'The migrating server stopped without reporting a result.' },
+      ]);
+    });
+
+    it('should only re-check in manual mode, so the run waits for a super admin again', async () => {
+      await seedDeadRun();
+      process.env.MIGRATION_MODE = 'manual';
+      const manual = newServer();
+      process.env.MIGRATION_MODE = 'async';
+      const runChild = stubRunChild(manual);
+
+      await manual.restartDeadRun();
+
+      expect(runChild).toHaveBeenCalledWith('recovery', { checkOnly: true });
+    });
+
+    it('should leave it while a migrator holds the migration lock', async () => {
+      await seedDeadRun();
+      await dataSource.query(
+        `UPDATE migration_runs SET status = 'failed', error = 'The migrating server stopped without reporting a result.'`
+      );
+      const runChild = stubRunChild(service);
+
+      await holding(MIGRATION_ADVISORY_LOCK_KEY, () => service.restartDeadRun());
+
+      expect(runChild).not.toHaveBeenCalled();
+    });
+
+    it('should leave a run whose migration failed for a super admin to retry', async () => {
+      await dataSource.query(
+        `INSERT INTO migration_runs (to_version, status, triggered_by, error) VALUES ($1, 'failed', 'boot', 'relation "x" already exists')`,
+        [version()]
+      );
+      const runChild = stubRunChild(service);
+
+      await service.restartDeadRun();
+
+      expect(runChild).not.toHaveBeenCalled();
+    });
+  });
+
   describe('workers (WORKER=true) | background jobs wait while writes are refused', () => {
     const originalWorker = process.env.WORKER;
     afterEach(() => {
@@ -448,11 +517,39 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       process.env.MIGRATION_SETUP_COMMAND = `${runner} none`;
 
       await manual.start();
+      stopDeadRunWatch(manual);
       const internals = manual as unknown as { child: unknown; finalWrite: Promise<void> | null };
       while (internals.child) await new Promise((resolve) => setTimeout(resolve, 50));
       await internals.finalWrite;
 
       await expect(manual.runs()).resolves.toEqual([]);
+    });
+
+    it('should record success when a stopped run had already committed, so writes are no longer refused', async () => {
+      await seedDeadRun();
+
+      await runToExit('none');
+
+      await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
+    });
+
+    it('should record success when a manual-mode check finds nothing pending after a failed run', async () => {
+      await dataSource.query(
+        `INSERT INTO migration_runs (to_version, status, triggered_by, error, started_at) VALUES ($1, 'failed', 'boot', 'boom', now() - interval '1 minute')`,
+        [version()]
+      );
+      process.env.MIGRATION_MODE = 'manual';
+      const manual = newServer();
+      process.env.MIGRATION_MODE = 'async';
+      process.env.MIGRATION_SETUP_COMMAND = `${runner} none`;
+
+      await manual.start();
+      stopDeadRunWatch(manual);
+      const internals = manual as unknown as { child: unknown; finalWrite: Promise<void> | null };
+      while (internals.child) await new Promise((resolve) => setTimeout(resolve, 50));
+      await internals.finalWrite;
+
+      await expect(manual.runs()).resolves.toMatchObject([{ status: 'succeeded' }, { status: 'failed' }]);
     });
 
     it('should mark a run stopped by this server shutting down as stopped, not failed, so the next boot retries it', async () => {
