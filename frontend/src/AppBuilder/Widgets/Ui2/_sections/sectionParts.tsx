@@ -6,6 +6,7 @@ import { ShowMoreBar } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { missingIsGone, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import type { ReactNode, Ref } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { barWidth, percentLabel } from './sectionsModel';
@@ -98,24 +99,28 @@ export const ListSection = (s: ListSectionProps) => {
   const p = s.props.properties;
   const { frameClass, frame } = listFrame(s.card);
   const pad = s.card && s.cardClass;
+  // In a fixed box (the editor, or dynamic height off) the list's card fills the box: a card that ended at its last
+  // row left a blank band under it in a taller box. With dynamic height on in the viewer the box follows the rows.
+  const boxed = inFixedBox(s.props);
+  const fill = boxed && 'tw-h-full';
   let body;
   if (p.loadingState && !wantsSkeleton(p)) {
     body = <LoadingBox height={s.props.height} />;
   } else if (p.loadingState) {
     body = (
-      <div className={cn(s.skeletonClass, frameClass, pad)} style={frame}>
+      <div className={cn(s.skeletonClass, frameClass, pad, fill)} style={frame}>
         {s.skeleton}
       </div>
     );
   } else if (!s.count) {
     body = (
-      <div className={frameClass} style={frame}>
+      <div className={cn(frameClass, boxed && 'tw-flex tw-h-full tw-items-center tw-justify-center')} style={frame}>
         <EmptyText text={p.emptyText} fallback={s.emptyFallback} />
       </div>
     );
   } else {
     body = (
-      <div className={cn('tw-overflow-hidden', frameClass, pad)} style={frame}>
+      <div className={cn('tw-overflow-hidden', frameClass, pad, fill)} style={frame}>
         <ul className="tw-m-0 tw-list-none tw-p-0" role="list">
           {s.children}
         </ul>
@@ -124,7 +129,7 @@ export const ListSection = (s: ListSectionProps) => {
     );
   }
   return (
-    <Shell {...s.props} innerRef={s.innerRef}>
+    <Shell {...s.props} innerRef={s.innerRef} className={cn(fill)}>
       {body}
     </Shell>
   );
