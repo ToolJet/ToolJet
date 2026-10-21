@@ -81,6 +81,12 @@ export const StatSparkline = ({ data, type }: { data: unknown; type: unknown }) 
   );
 };
 
+// Heights the label's reserve needs (px): the card's padding (py-5), two label lines, the gap to the figure, the figure.
+const CARD_PADDING_Y = 40;
+const LABEL_TWO_LINES = 40;
+const ROW_GAP = 6;
+const VALUE_LINE: Record<string, number> = { sm: 28, default: 32, lg: 40 };
+
 export const ShadStat = (props: WidgetProps) => {
   const { setExposedVariables } = props;
   // The native Statistics' setters: the figure (primary) and the change (secondary), until those properties change.
@@ -129,6 +135,15 @@ export const ShadStat = (props: WidgetProps) => {
   const iconNode = icon ? <StatIcon name={icon} shape={iconShape} size={iconSize} /> : null;
   const progress = progressPercent(properties.progress);
   const label = String(properties.label ?? '');
+  // The label's two-line reserve (figures level across a row of Stats) only where the box has room for it: in a short
+  // fixed box it pushed the figure down past the box's edge (a 60px Stat showed the top of "42"). There the label keeps
+  // to one line.
+  const labelRoom =
+    (properties.card === false ? 0 : CARD_PADDING_Y) +
+    LABEL_TWO_LINES +
+    ROW_GAP +
+    (VALUE_LINE[size] ?? VALUE_LINE.default);
+  const reserveLabel = !fixed || Number(props.height) >= labelRoom;
   const context = [change.context, properties.changeLabel ? String(properties.changeLabel) : '']
     .filter(Boolean)
     .join(' · ');
@@ -169,7 +184,11 @@ export const ShadStat = (props: WidgetProps) => {
   ) : null;
   const content = (
     <div
-      className={cn('tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1.5', fixed && 'tw-min-h-0 tw-overflow-hidden')}
+      className={cn(
+        'tw-flex tw-min-w-0 tw-flex-1 tw-flex-col',
+        reserveLabel ? 'tw-gap-1.5' : 'tw-gap-1',
+        fixed && 'tw-min-h-0 tw-overflow-hidden'
+      )}
     >
       {icon && iconPosition === 'top' ? <div className="tw-mb-1">{iconNode}</div> : null}
       <div className="tw-flex tw-min-w-0 tw-items-start tw-justify-between tw-gap-2">
@@ -180,7 +199,7 @@ export const ShadStat = (props: WidgetProps) => {
           title={label || undefined}
           className={cn(
             'tw-min-w-0 tw-flex-1 tw-text-ui2-sm tw-text-[color:var(--lk-label,var(--sc-muted-foreground))]',
-            label && 'tw-line-clamp-2 tw-min-h-[2lh] tw-break-words',
+            label && (reserveLabel ? 'tw-line-clamp-2 tw-min-h-[2lh] tw-break-words' : 'tw-line-clamp-1'),
             textCase(props.styles?.labelTextTransform) && 'lk-label-case',
             isSet(props.styles?.labelLetterSpacing) && 'lk-label-tracking'
           )}
@@ -194,6 +213,7 @@ export const ShadStat = (props: WidgetProps) => {
         <span
           className={cn(
             statSize(size),
+            !reserveLabel && 'tw-leading-tight',
             'tw-font-semibold tw-tabular-nums tw-tracking-tight tw-text-[color:var(--lk-value,var(--sc-foreground))]',
             fontStack(props.styles?.valueFontFamily) && 'lk-value-font'
           )}
@@ -259,7 +279,9 @@ export const ShadStat = (props: WidgetProps) => {
       ) : (
         <Card
           className={cn(
-            'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-[color:var(--lk-bg,var(--sc-card))] tw-px-6 tw-py-5',
+            'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-[color:var(--lk-bg,var(--sc-card))] tw-px-6',
+            // A short box keeps less padding, so the figure fits.
+            reserveLabel ? 'tw-py-5' : 'tw-py-3',
             fixed && 'tw-flex tw-flex-col tw-overflow-hidden',
             stretched && 'tw-h-full'
           )}

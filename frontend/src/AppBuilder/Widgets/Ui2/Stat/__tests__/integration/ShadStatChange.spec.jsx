@@ -58,3 +58,35 @@ describe('UI 2.0 Stat change chip', () => {
     expect(chip().getAttribute('style') ?? '').not.toContain('--kb-badge-fg');
   });
 });
+
+describe('UI 2.0 Stat in a short box', () => {
+  // The label's two-line reserve pushed the figure past the edge of a short fixed box: a 60px plain Stat showed only
+  // the top of "42". The reserve is kept only where the box has room; a short box keeps the label to one line, with a
+  // tighter gap and padding (in a browser the figure ends at 58px of 58 at 60px, and inside a 90px card).
+  const short = (height) =>
+    createWidgetHarness({ componentType: 'ShadStat', handle: 'stat1', id: 'stat1', widgetHeight: height });
+  const cases = [
+    [60, { card: binding('{{false}}') }, false],
+    [90, { card: binding('{{false}}') }, true],
+    [90, {}, false],
+    [160, {}, true],
+  ];
+  test.each(cases)('at %ipx (%o) the label reserves two lines: %s', async (height, extra, reserves) => {
+    const harness = short(height);
+    await harness.setup();
+    harness.render({
+      currentMode: 'view',
+      properties: {
+        label: binding('Open tickets'),
+        value: binding('{{42}}'),
+        dynamicHeight: binding('{{false}}'),
+        ...extra,
+      },
+    });
+    const label = await screen.findByText('Open tickets');
+    if (reserves) expect(label).toHaveClass('tw-line-clamp-2', 'tw-min-h-[2lh]');
+    else expect(label).toHaveClass('tw-line-clamp-1');
+    if (!reserves) expect(label).not.toHaveClass('tw-min-h-[2lh]');
+    harness.teardown();
+  });
+});
