@@ -1,5 +1,11 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
+import {
+  getCurrentCountFromLimitCounter,
+  verifyLimitCounter,
+  verifyLimitReachedModal,
+} from "Support/utils/license";
+
 
 describe("License - Workspace Limits", () => {
   const workspace1Name = `${fake.companyName}-Workspace-1`;
@@ -14,26 +20,6 @@ describe("License - Workspace Limits", () => {
     cy.wait("@getLicenseAccess");
     cy.wait(2000);
     cy.get(commonSelectors.workspaceName).click();
-  };
-
-  const verifyWorkspaceLimitModal = (
-    heading,
-    infoText,
-    shouldUpgradeButtonExist = true
-  ) => {
-    cy.get('[data-cy="workspaces-limit-heading"]')
-      .should("be.visible")
-      .and("have.text", heading);
-
-    cy.get('[data-cy="workspaces-limit-info"]')
-      .should("be.visible")
-      .and("have.text", infoText);
-
-    if (shouldUpgradeButtonExist) {
-      cy.get('[data-cy="workspaces-limit-banner"]').within(() => {
-        cy.get('[data-cy="upgrade-button"]').should("be.visible");
-      });
-    }
   };
 
   beforeEach(() => {
@@ -53,35 +39,31 @@ describe("License - Workspace Limits", () => {
   });
 
   it("should verify workspace limit progression with nearing and reached states", () => {
+    
     cy.apiCreateWorkspace(workspace1Name, workspace1Slug).then((res) => {
-      console.log(res);
       workspace1Id = res.body.organization_id;
     });
 
     openWorkspaceModal();
-
-    verifyWorkspaceLimitModal(
-      "Workspace  limit nearing - 2/3",
-      "You're nearing your limit for number of workspaces. Upgrade for more"
-    );
-
     cy.get(commonSelectors.addWorkspaceButton).click();
     cy.get('[data-cy="create-workspace-title"]').should("be.visible");
-
-    cy.get("body").click();
+    
+    verifyLimitCounter();
+    getCurrentCountFromLimitCounter().then((counts) => {
+      expect(counts.current).to.equal(2);
+      expect(counts.total).to.equal(3);
+    });
+    cy.get(commonSelectors.cancelButton).click();
 
     cy.apiCreateWorkspace(workspace2Name, workspace2Slug).then((res) => {
       workspace2Id = res.body.organization_id;
     });
 
     openWorkspaceModal();
-
-    verifyWorkspaceLimitModal(
-      "Workspace limit reached",
-      "You've reached your limit for number of workspaces. Upgrade for more"
-    );
-
     cy.get(commonSelectors.addWorkspaceButton).click();
+    verifyLimitReachedModal("Workspace limit reached", {
+      bodyText: "You've reached your limit for workspaces (3/3).",
+    });
     cy.get('[data-cy="create-workspace-title"]').should("not.exist");
   });
 });
