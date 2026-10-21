@@ -1,6 +1,5 @@
 import React from 'react';
 import { getPrivateRoute } from '@/_helpers/routes';
-import { appendBranchName } from '@/_helpers/active-branch';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import GetStartedCard from './GetStartedCard';
 import withAdminOrBuilderOnly from './withAdminOrBuilderOnly';
@@ -157,11 +156,7 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
     <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
       <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
       <GetStartedWidget type="DATASOURCE" to={getPrivateRoute('data_sources')} />
-      <GetStartedWidget
-        type="WORKFLOW"
-        to={appendBranchName(getPrivateRoute('workflows'))}
-        onClick={handleWorkflowClick}
-      />
+      <GetStartedWidget type="WORKFLOW" to={getPrivateRoute('workflows')} onClick={handleWorkflowClick} />
     </div>
   );
 }

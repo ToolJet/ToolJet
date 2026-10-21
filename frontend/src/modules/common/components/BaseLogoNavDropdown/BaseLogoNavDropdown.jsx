@@ -75,7 +75,7 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-en
         )}
         {(admin || showDataSource) && (
           <Link
-            to={appendBranchName(getPrivateRoute('data_sources'))}
+            to={getPrivateRoute('data_sources')}
             className="dropdown-item tj-text tj-text-xsm"
             target="_blank"
             data-cy="data-source-option"
