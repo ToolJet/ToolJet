@@ -212,6 +212,14 @@ export class MigrationRunsService implements OnApplicationShutdown {
     await this.reapDeadRuns();
     const [latest] = await this.runs(1);
     this.started = true;
+    // An older pod mid-rollout, or the previous image after a rollback: its runner would find nothing and record a success.
+    if (latest && isNewerRelease(latest.toVersion)) {
+      console.warn(
+        `[migrations] Release ${latest.toVersion} owns the latest migration run; this server leaves it alone.`
+      );
+      this.releaseBootHold();
+      return;
+    }
     // A failed migration is retried by a super admin, never by the next server that boots. A new release may
     // carry the fix, and a run whose server stopped (rollout, scale-down, node loss) did not fail: both run again.
     if (latest?.status === 'failed' && latest.toVersion === currentVersion() && latest.error !== DEAD_RUN_ERROR) {
@@ -264,7 +272,10 @@ export class MigrationRunsService implements OnApplicationShutdown {
       // The active lock wins over the row: a server in blocking mode, or a `db:migrate` run by hand, migrates untracked.
       const [{ migrating }] = await this.query<{ migrating: boolean }>(HELD_MIGRATION_LOCKS_SQL);
       const [latest] = await this.runs(1);
-      if (latest) value = { state: latest.status, startedAt: latest.startedAt, toVersion: latest.toVersion };
+      // A newer release's failed run is not this server's to wait on: its code runs on the schema it knows.
+      const newerFailure = latest?.status === 'failed' && isNewerRelease(latest.toVersion);
+      if (latest && !newerFailure)
+        value = { state: latest.status, startedAt: latest.startedAt, toVersion: latest.toVersion };
       if (migrating) value = { ...value, state: 'running' };
       if (this.bootHold && migrating) this.bootHold = false;
       else if (this.bootHold) value = { ...value, state: 'running' };

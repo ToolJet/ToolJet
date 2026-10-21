@@ -322,18 +322,33 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     });
   });
 
-  it("should not retry or restart a newer release's run, whose migrations this build cannot see", async () => {
+  it("should not boot, retry or restart a newer release's run, whose migrations this build cannot see", async () => {
     await dataSource.query(
       `INSERT INTO migration_runs (to_version, status, triggered_by, error) VALUES ('999.0.0', 'failed', 'boot', $1)`,
       ['The migrating server stopped without reporting a result.']
     );
-    const runChild = stubRunChild(service);
+    const server = newServer();
+    const runChild = stubRunChild(server);
 
-    await expect(service.run('admin@tooljet.io')).rejects.toMatchObject({ status: 409 });
-    await service.restartDeadRun();
+    await server.start();
+    stopDeadRunWatch(server);
+    await expect(server.run('admin@tooljet.io')).rejects.toMatchObject({ status: 409 });
+    await server.restartDeadRun();
 
     expect(runChild).not.toHaveBeenCalled();
     await expect(dataSource.query('SELECT status FROM migration_runs')).resolves.toEqual([{ status: 'failed' }]);
+  });
+
+  it("should not refuse writes on an older server for a newer release's failed run", async () => {
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ('999.0.0', 'failed', 'boot')`
+    );
+    const server = newServer();
+    stubRunChild(server);
+    await server.start();
+    stopDeadRunWatch(server);
+
+    await expect(server.status()).resolves.toMatchObject({ state: 'idle' });
   });
 
   it('should start the boot run from the dead-run check when start() failed at boot', async () => {
