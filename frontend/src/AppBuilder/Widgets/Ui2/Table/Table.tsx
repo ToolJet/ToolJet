@@ -15,7 +15,7 @@ import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/typ
 import { applyFilters, matchesSearch, normalizeColumns, rowKey, screenRegexRules, sortRows } from './tableModel';
 import type { Entry, FireOption, Live, OnAction, Paged, Row, Sort, TableColumn, TableFilter } from './types';
 import { RIGHT_FADE, ROW_BORDER, useCellResolver } from './TableCells';
-import { TableToolbar } from './TableToolbar';
+import { TableToolbar, hasToolbar } from './TableToolbar';
 import { TableHead } from './TableHead';
 import { TableBody } from './TableBody';
 import { TableFooter } from './TableFooter';
@@ -25,6 +25,7 @@ import { useTableSelection } from './useTableSelection';
 import { useTableScroll } from './useTableScroll';
 import { useTableSearch } from './useTableSearch';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 
 // ToolJet UI 2.0 Table. Native Table conventions (property, event, exposed and action names; server-side
 // pagination, search, sort and filters), the shadcn data-table look, and none of the native table's known failure
@@ -262,7 +263,8 @@ export const ShadTable = (props: WidgetProps) => {
   const rowHeight = ROW_HEIGHT[properties.cellSize] ?? ROW_HEIGHT.regular;
   const visibleRows = paged.items;
   const virtual = visibleRows.length > VIRTUALIZE_ABOVE;
-  const fixedHeight = props.properties?.dynamicHeight === false || virtual;
+  const boxed = inFixedBox(props); // the card fills a fixed box, its rows scrolling inside (not ending short of it)
+  const fixedHeight = boxed || virtual;
   const { scrollRef, moreBelow, moreRight, boxWidth, virtualItems, padTop, padBottom, rendered } = useTableScroll({
     fixedHeight,
     virtual,
@@ -276,19 +278,14 @@ export const ShadTable = (props: WidgetProps) => {
   // and the table shares its width among the columns instead of cutting the last one off.
   const requestedWidth = shownColumns.reduce((sum, column) => sum + (Number(column.width) || 0), 0);
   const fitWidths = !boxWidth || requestedWidth <= boxWidth;
-  const toolbar =
-    properties.displaySearchBox !== false ||
-    properties.showFilterButton !== false ||
-    properties.hideColumnSelectorButton !== true ||
-    properties.showDownloadButton === true ||
-    properties.showRefreshButton === true;
+  const toolbar = hasToolbar(properties);
   const colCount = shownColumns.length + (bulk ? 1 : 0) || 1;
   const fontSize = isSet(styles?.fontSize) ? `${Number(styles.fontSize) || 14}px` : undefined;
-  const pendingEdits = edits.size;
+  const shown = { ...properties, visibility: isVisible };
 
   return (
-    <Shell {...props} properties={{ ...properties, visibility: isVisible }} innerRef={ref}>
-      <div className="tw-flex tw-flex-col tw-gap-3" style={{ fontSize }}>
+    <Shell {...props} properties={shown} innerRef={ref} className={cn(boxed && 'tw-h-full')}>
+      <div className={cn('tw-flex tw-flex-col tw-gap-3', boxed && 'tw-h-full')} style={{ fontSize }}>
         {toolbar ? (
           <TableToolbar
             properties={properties}
@@ -310,11 +307,14 @@ export const ShadTable = (props: WidgetProps) => {
           ref={scrollRef}
           className={cn(
             'tw-relative tw-w-full tw-overflow-auto tw-bg-[color:var(--lk-bg,transparent)]',
+            boxed && 'tw-min-h-0 tw-flex-1',
             styles?.showBorder !== false && 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] tw-border',
             ROW_BORDER
           )}
           style={{
-            ...(fixedHeight ? { maxHeight: Math.max(160, (Number(height) || 440) - (toolbar ? 56 : 0) - 52) } : {}),
+            ...(virtual && !boxed
+              ? { maxHeight: Math.max(160, (Number(height) || 440) - (toolbar ? 56 : 0) - 52) }
+              : {}),
             ...(moreRight ? RIGHT_FADE : {}),
           }}
         >
@@ -381,7 +381,7 @@ export const ShadTable = (props: WidgetProps) => {
           properties={properties}
           isLoading={isLoading}
           isDisabled={isDisabled}
-          pendingEdits={pendingEdits}
+          pendingEdits={edits.size}
           discard={discard}
           fireEvent={fireEvent}
           bulk={bulk}

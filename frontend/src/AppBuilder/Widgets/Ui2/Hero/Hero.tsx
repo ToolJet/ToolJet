@@ -3,7 +3,7 @@ import * as Lucide from 'lucide-react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { resolveIcon } from '@/AppBuilder/Widgets/Ui2/_display/iconModel';
 import { heroAside, heroMeta } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
@@ -63,10 +63,10 @@ export const ShadHero = (props: WidgetProps) => {
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   // The viewer grows the box to the content and moves the widgets below it (dynamic height). In a fixed box (the
-  // editor, which draws every widget at its saved size, or dynamic height turned off) the panel stops at the box and its
-  // content scrolls inside it: a 236px hero in a 200px box drew over a task board's column headers,
-  // and cut off at the box it lost its bottom edge mid-button.
-  const fixed = !(fitsContentInView(props.componentType ?? 'ShadHero', p) && props.currentMode === 'view');
+  // editor, which draws every widget at its saved size, or dynamic height turned off) the panel fills the box and its
+  // content scrolls inside it: a 236px hero in a 200px box drew over a task board's column headers, and a panel that
+  // stopped at its content left a blank band between the card and the bottom of a taller box.
+  const fixed = inFixedBox({ ...props, componentType: props.componentType ?? 'ShadHero', properties: p });
   const background = ['plain', 'tint', 'gradient', 'image', 'dark'].includes(p.background) ? p.background : 'tint';
   const onDark = background === 'dark' || background === 'image';
   const size = HERO_SIZE[p.size] || HERO_SIZE.default;
@@ -193,7 +193,9 @@ export const ShadHero = (props: WidgetProps) => {
           className={cn(
             'sc-hero tw-w-full',
             panel,
-            fixed && 'tw-max-h-full tw-overflow-y-auto',
+            // In a taller box the content sits in the middle of the panel; taller than the box, it scrolls from its top.
+            fixed && 'tw-h-full tw-overflow-y-auto [align-content:safe_center]',
+            fixed && center && '[justify-content:safe_center]',
             // With an aside, a grid: text and actions on the left, the aside right of both; in a narrow hero, text,
             // aside, actions (shadcn.scss).
             grid

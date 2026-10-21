@@ -121,6 +121,15 @@ interface TableToolbarProps {
 }
 
 /** The search box and the filter, columns, download and refresh buttons above the table. */
+/** Whether the table draws its toolbar: search, filter and columns show unless turned off; download and refresh only
+ *  when turned on. */
+export const hasToolbar = (properties: Resolved): boolean =>
+  properties.displaySearchBox !== false ||
+  properties.showFilterButton !== false ||
+  properties.hideColumnSelectorButton !== true ||
+  properties.showDownloadButton === true ||
+  properties.showRefreshButton === true;
+
 export const TableToolbar = ({
   properties,
   styles,
