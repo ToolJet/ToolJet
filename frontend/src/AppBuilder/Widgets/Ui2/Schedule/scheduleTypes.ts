@@ -61,6 +61,7 @@ export interface PlacedBooking {
   lane: number;
 }
 
+/** placeBookings builds it without a prototype; read an entry with placedOn (scheduleSelection). */
 export type PlacedBookings = Record<string, { lanes: number; items: PlacedBooking[] }>;
 
 /** What the schedule has selected: a booking, or an empty slot of a resource. */

@@ -18,6 +18,7 @@ import {
 import {
   pickBooking,
   pickSlot,
+  placedOn,
   resolveSelection,
   revealTarget,
   selectionExposed,
@@ -298,7 +299,7 @@ export const ShadSchedule = (props: WidgetProps) => {
                   key={r.key}
                   r={r}
                   i={i}
-                  entry={placed[r.key]}
+                  entry={placedOn(placed, r.key)}
                   rowHeight={rowHeight}
                   rw={rw}
                   range={range}
