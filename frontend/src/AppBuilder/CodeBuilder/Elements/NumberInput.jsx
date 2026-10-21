@@ -1,5 +1,6 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useThemeDefault } from '@/AppBuilder/CodeEditor/themeDefault';
 
 export const NumberInput = ({
   value,
@@ -11,6 +12,10 @@ export const NumberInput = ({
   showNativeStepper = false,
 }) => {
   const inputId = `${String(cyLabel)}-input`;
+  // A blank UI 2.0 style (a card radius) follows the theme: its placeholder is the theme's value (themeDefault.js).
+  const themeDefault = useThemeDefault();
+  const themeNumber = themeDefault ? parseFloat(themeDefault.value) : NaN;
+  const placeholder = themeDefault ? (Number.isFinite(themeNumber) ? String(themeNumber) : 'Theme') : '';
   const prefixIcon = meta?.prefixIcon;
 
   const getStepValue = () => {
@@ -45,7 +50,8 @@ export const NumberInput = ({
         type="number"
         className="tj-input-element tj-text-xsm"
         value={value}
-        placeholder=""
+        placeholder={placeholder}
+        title={themeDefault ? 'Follows the app theme. Enter a value to set your own.' : undefined}
         id={inputId}
         step={step}
         readOnly={!allowTyping}
