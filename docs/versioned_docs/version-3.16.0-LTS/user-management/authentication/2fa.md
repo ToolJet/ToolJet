@@ -18,6 +18,12 @@ Role Required: **Super Admin**
 
 Before users can set up 2FA on their accounts, a super admin needs to turn the feature on for the instance.
 
+:::info Prerequisite
+Set the `MFA_MASTER_SECRET` environment variable on the ToolJet server before you turn on 2FA. ToolJet uses this secret to derive each user's 2FA key. If it isn't set, users can't set up 2FA from their profile, and users who already have 2FA turned on can't sign in. These requests fail with the error `MFA_MASTER_SECRET is not configured. Set it in the environment before enabling two-factor authentication.`
+
+Keep the value unchanged once users have set up 2FA. Changing it invalidates every authenticator app that's already set up. See [Environment Variables](/docs/setup/env-vars#two-factor-authentication).
+:::
+
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 2. Go to **Settings > Security**. <br/>
    (Example URL - `https://app.corp.com/settings/security`)
