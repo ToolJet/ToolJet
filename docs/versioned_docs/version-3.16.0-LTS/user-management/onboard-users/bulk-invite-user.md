@@ -26,6 +26,7 @@ Role Required: **Admin**
 4. In the **Bulk upload users via CSV** drawer, download a template:
     - **Empty template**: A blank CSV file with the supported columns. Use it to add new users.
     - **Current users list**: A CSV file of every user in the workspace, including archived users, pre-filled with their current details. Edit it and upload it back to update users.
+
     <img className="screenshot-full img-m" src="/img/user-management/onboard-user/bulk-invite/bulk-upload-drawer.png" alt="Bulk upload users via CSV drawer with template downloads and the upload area" />
 
     :::caution
@@ -36,9 +37,11 @@ Role Required: **Admin**
 
 6. Drag and drop the file into the **Upload CSV** area, or click **browse** to select it. ToolJet checks the file as soon as you add it, without changing any users.
     - If the file is valid, the drawer shows a summary of the changes, for example `Ready to upload: 2 new · 1 updated`.
-      <img className="screenshot-full img-m" src="/img/user-management/onboard-user/bulk-invite/bulk-upload-validated.png" alt="Validated CSV file with a summary of 2 new and 1 updated users" />
     - If the file has problems, the drawer shows **Errors detected, resolve and re-upload** and lists each error with its row number. Fix the file, then use the replace icon to upload it again.
-      <img className="screenshot-full img-m" src="/img/user-management/onboard-user/bulk-invite/bulk-upload-errors.png" alt="CSV file with errors listed by row number" />
+
+    <img className="screenshot-full img-m" src="/img/user-management/onboard-user/bulk-invite/bulk-upload-validated.png" alt="Validated CSV file with a summary of 2 new and 1 updated users" />
+
+    <img className="screenshot-full img-m" src="/img/user-management/onboard-user/bulk-invite/bulk-upload-errors.png" alt="CSV file with errors listed by row number" />
 
 7. Click **Upload users**. The button is enabled only after the file passes the check.
 
