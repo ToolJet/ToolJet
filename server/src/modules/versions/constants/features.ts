@@ -28,6 +28,12 @@ export const FEATURES: FeaturesConfig = {
       shouldNotSkipPublicApp: true,
       auditLogsKey: 'APP_SNAPSHOT_CREATE',
     },
+    // A builder names a snapshot in the compare view's From menu.
+    [FEATURE_KEY.SNAPSHOT_RENAME]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_SNAPSHOT_RENAME',
+    },
     // Undo an AI turn or the changes since an agent snapshot. A public app must not widen who can rewrite its draft.
     [FEATURE_KEY.SNAPSHOT_RESTORE]: {
       license: LICENSE_FIELD.VERSION_REVIEW,
