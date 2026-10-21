@@ -963,6 +963,38 @@ describe('AppsController', () => {
       await logout(app, viewerUserData['tokenCookie'], viewerUserData.user.defaultOrganizationId);
       await logout(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
     });
+
+    // Regression: a public app must not bypass the permission check (AbilityGuard public-app skip).
+    it('should not allow a viewer to update a PUBLIC app (public flag must not bypass authorization)', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(
+        app,
+        { name: 'public name', user: adminUserData.user, isPublic: true },
+        false
+      );
+
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        groups: ['all_users', 'viewer'],
+        organization: adminUserData.organization,
+      });
+      const loggedViewer = await login(app, 'viewer@tooljet.io');
+
+      const response = await request(app.getHttpServer())
+        .put(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedViewer.tokenCookie)
+        .send({ app: { name: 'pwned-by-viewer' } });
+
+      expect(response.statusCode).toBe(403);
+      await application.reload();
+      expect(application.name).toBe('public name');
+
+      await logout(app, loggedViewer.tokenCookie, viewerUserData.user.defaultOrganizationId);
+    });
   });
 
   describe('DELETE /api/apps/:id | Delete application', () => {
@@ -1062,6 +1094,36 @@ describe('AppsController', () => {
 
       await expect(App.findOneOrFail({ where: { id: application.id } })).resolves;
       await logout(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
+    });
+
+    // Regression: a public app must not be deletable by a no-permission member.
+    it('should not allow a viewer to delete a PUBLIC app', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(
+        app,
+        { name: 'public app to keep', user: adminUserData.user, isPublic: true },
+        false
+      );
+
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        groups: ['all_users', 'viewer'],
+        organization: adminUserData.organization,
+      });
+      const loggedViewer = await login(app, 'viewer@tooljet.io');
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedViewer.tokenCookie);
+
+      expect(response.statusCode).toBe(403);
+      await expect(App.findOneOrFail({ where: { id: application.id } })).resolves.toBeDefined();
+
+      await logout(app, loggedViewer.tokenCookie, viewerUserData.user.defaultOrganizationId);
     });
   });
 

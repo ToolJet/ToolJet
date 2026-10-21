@@ -325,8 +325,9 @@ export class EventsService implements IEventsService {
           const { event_id, diff } = event;
 
           const eventDiff = diff?.event;
+          // Scope to this version so events in other versions aren't rewritable.
           const eventToUpdate = await manager.findOne(EventHandler, {
-            where: { id: event_id },
+            where: { id: event_id, appVersionId },
           });
 
           if (!eventToUpdate) {

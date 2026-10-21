@@ -208,11 +208,12 @@ export class DataQueriesService implements IDataQueriesService {
     );
   }
 
-  async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
+  async bulkUpdateQueryOptions(user: User, appVersionId: string, dataQueriesOptions: IUpdatingReferencesOptions[]) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       for (const { id, options } of dataQueriesOptions) {
+        // Scope to the URL's version so other versions' queries aren't targetable.
         await this.dataQueryRepository.findOneOrFail({
-          where: { id, dataSource: { organizationId: user.organizationId } },
+          where: { id, appVersionId, dataSource: { organizationId: user.organizationId } },
           relations: ['dataSource'],
         });
         await this.dataQueryRepository.updateOne(id, { options }, manager);
