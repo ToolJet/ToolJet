@@ -1,6 +1,7 @@
 /** Public MCP OAuth is currently available only on explicitly enabled Cloud deployments. */
 export function isMcpOAuthEnabled(edition: unknown, flag: unknown): boolean {
-  return edition === 'cloud' && flag === 'true';
+  // Match getTooljetEdition's case normalization without accepting other editions.
+  return typeof edition === 'string' && edition.toLowerCase() === 'cloud' && flag === 'true';
 }
 
 /** These protocol endpoints never authenticate using browser cookies. Consent and connection

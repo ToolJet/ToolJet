@@ -20,6 +20,11 @@ test('publishes only the enabled Cloud resource, preserving its subpath', () => 
   });
 });
 
+test.each(['Cloud', 'CLOUD'])('matches the app edition normalization for %s', (edition) => {
+  expect(getMcpOAuthPublicConfig({ ...enabled, TOOLJET_EDITION: edition }))
+    .toEqual(getMcpOAuthPublicConfig(enabled));
+});
+
 test.each(['ee', 'ce', undefined])('hides OAuth connection information for edition %s', (edition) => {
   expect(getMcpOAuthPublicConfig({ ...enabled, TOOLJET_EDITION: edition })).toEqual(disabled);
 });

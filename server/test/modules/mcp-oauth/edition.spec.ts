@@ -24,10 +24,11 @@ test.each(['ce', 'ee', 'unknown', '', undefined])('edition %s fails closed even 
   expect(isMcpOAuthEnabled(edition, 'true')).toBe(false);
   expect(() => parseOAuthSettings(config({ ...settings, TOOLJET_EDITION: edition }))).toThrow('Not Found');
 });
-test('Cloud requires the explicit flag and valid deployment settings', () => {
-  expect(parseOAuthSettings(config(settings)).issuer).toBe('https://tooljet.synthetic.example/api/mcp-oauth');
-  expect(() => parseOAuthSettings(config({ ...settings, MCP_OAUTH_ENABLED: 'false' }))).toThrow('Not Found');
-  expect(() => parseOAuthSettings(config({ ...settings, MCP_OAUTH_RESOURCE_URL: undefined }))).toThrow('requires');
+test.each(['cloud', 'Cloud', 'CLOUD'])('%s requires the explicit flag and valid deployment settings', edition => {
+  const cloudSettings = { ...settings, TOOLJET_EDITION: edition };
+  expect(parseOAuthSettings(config(cloudSettings)).issuer).toBe('https://tooljet.synthetic.example/api/mcp-oauth');
+  expect(() => parseOAuthSettings(config({ ...cloudSettings, MCP_OAUTH_ENABLED: 'false' }))).toThrow('Not Found');
+  expect(() => parseOAuthSettings(config({ ...cloudSettings, MCP_OAUTH_RESOURCE_URL: undefined }))).toThrow('requires');
 });
 
 test.each(['ce', 'ee'])('edition %s exposes no OAuth routes and performs no OAuth background/login work', async edition => {
