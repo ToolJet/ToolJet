@@ -43,6 +43,8 @@ const AppLoader = (props) => {
       return <RenderWorkflow {...props} />;
     case 'module':
       return <RenderAppBuilder appType="module" {...props} />;
+    case 'query_library':
+      return <RenderAppBuilder appType="query_library" {...props} />;
   }
 };
 

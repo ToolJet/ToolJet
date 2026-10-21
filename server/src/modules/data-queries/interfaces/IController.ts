@@ -1,6 +1,6 @@
 import { UserEntity } from '@modules/app/decorators/user.decorator';
 import { DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
-import { CreateDataQueryDto, UpdateDataQueryDto } from '../dto';
+import { CreateDataQueryDto, LibraryDefinitionDto, RunLibraryQueryDto, UpdateDataQueryDto } from '../dto';
 import { UpdatingReferencesOptionsDto } from '../dto';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { App } from '@entities/app.entity';
@@ -45,6 +45,27 @@ export interface IDataQueriesController {
     app: App,
     dataQueryId: string,
     updateDataQueryDto: UpdateDataQueryDto,
+    response: Response
+  ): Promise<object>;
+
+  libraryUsage(app: App): Promise<object>;
+
+  getLibraryDefinition(user: UserEntity, app: App, dataQueryId: string, dto: LibraryDefinitionDto): Promise<object>;
+
+  runLibraryQuery(
+    user: UserEntity,
+    app: App,
+    dataQueryId: string,
+    dto: RunLibraryQueryDto,
+    response: Response
+  ): Promise<object>;
+
+  runLibraryQueryOnBuilder(
+    user: UserEntity,
+    app: App,
+    dataQueryId: string,
+    environmentId: string,
+    dto: RunLibraryQueryDto,
     response: Response
   ): Promise<object>;
 

@@ -60,7 +60,8 @@ const Footer = ({ darkMode, count, pageChanged, dataLoading, itemsPerPage = 9, a
               <Skeleton count={1} height={2} />
             ) : (
               <span className="animation-fade">
-                {pageRange} of {count} {appType === 'module' ? 'modules' : 'apps'}
+                {pageRange} of {count}{' '}
+                {appType === 'module' ? 'modules' : appType === 'query_library' ? 'query libraries' : 'apps'}
               </span>
             )}
           </div>

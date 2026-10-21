@@ -5,7 +5,7 @@ import { FEATURE_KEY } from '../../constants';
 import { AbilityFactory } from '@modules/app/ability-factory';
 import { UserAllPermissions } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
-import { APP_TYPES } from '@modules/apps/constants';
+import { isModuleLikeAppType } from '@modules/apps/constants';
 
 type Subjects = InferSubjects<typeof App> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
@@ -39,7 +39,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     // but without module-create may not import modules.
     const importDefinition = requestContext.body?.app?.[0]?.definition;
     const importedAppType = importDefinition?.appV2?.type ?? importDefinition?.type;
-    const isModuleImport = importedAppType === APP_TYPES.MODULE;
+    const isModuleImport = isModuleLikeAppType(importedAppType);
     const canCreateForImport = isModuleImport ? !!userPermission?.moduleCreate : isAllAppsCreatable;
 
     if (canCreateForImport || isAdmin || superAdmin) {

@@ -8,12 +8,21 @@ import AppLogo from '@/_components/AppLogo';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 
+// App type -> where the "Back to ..." link goes (key in `routes`) and how it reads.
+const GO_BACK_TARGETS = {
+  'front-end': { routeKey: 'dashboard', label: 'apps' },
+  query_library: { routeKey: 'queryLibrary', label: 'query libraries' },
+};
+
 const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-end' }) => {
   const { admin } = authenticationService?.currentSessionValue ?? {};
   const isWorkflows = type === 'workflow';
   const workflowsEnabled = admin && isWorkflowsFeatureEnabled();
-  const goBackRouteKey = type === 'front-end' ? 'dashboard' : `${type}s`;
-  const goBackToPageText = `Back to ${type === 'front-end' ? 'apps' : `${type}s`}`;
+  const { routeKey: goBackRouteKey, label: goBackLabel } = GO_BACK_TARGETS[type] ?? {
+    routeKey: `${type}s`,
+    label: `${type}s`,
+  };
+  const goBackToPageText = `Back to ${goBackLabel}`;
 
   const handleBackClick = (e) => {
     e.preventDefault();

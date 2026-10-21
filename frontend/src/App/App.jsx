@@ -361,6 +361,17 @@ class AppComponent extends React.Component {
                     </DesktopOnlyRoute>
                   }
                 />
+                <Route
+                  exact
+                  path="/:workspaceId/query-library"
+                  element={
+                    <DesktopOnlyRoute darkMode={darkMode}>
+                      <PrivateRoute darkMode={darkMode}>
+                        <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'query_library'} />
+                      </PrivateRoute>
+                    </DesktopOnlyRoute>
+                  }
+                />
 
                 {getAuditLogsRoutes({ ...mergedProps, darkMode })}
                 <Route

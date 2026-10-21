@@ -19,9 +19,14 @@ export enum APP_TYPES {
   FRONT_END = 'front-end',
   WORKFLOW = 'workflow',
   MODULE = 'module',
+  QUERY_LIBRARY = 'query_library',
 }
 
 export const APPS_PAGE_SIZE = 9;
+
+// Query libraries ride the Module permission bucket in Phase 1 (spec D9).
+export const isModuleLikeAppType = (type?: string): boolean =>
+  type === APP_TYPES.MODULE || type === APP_TYPES.QUERY_LIBRARY;
 
 export enum LayoutDimensionUnits {
   COUNT = 'count',

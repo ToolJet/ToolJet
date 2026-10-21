@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -7,7 +7,21 @@ import { Response } from 'express';
 import { DataQueryRepository } from './repository';
 import { decamelizeKeys } from 'humps';
 import { serializeDataQueries } from './serialization.helper';
-import { CreateDataQueryDto, IUpdatingReferencesOptions, ListTablesDto, UpdateDataQueryDto } from './dto';
+import {
+  CreateDataQueryDto,
+  IUpdatingReferencesOptions,
+  ListTablesDto,
+  RunLibraryQueryDto,
+  UpdateDataQueryDto,
+} from './dto';
+import {
+  assertLibraryTarget,
+  assertSameLibrary,
+  buildLibraryVariableMap,
+  CLIENT_SIDE_LIBRARY_KINDS,
+  LIBRARY_QUERY_IS_CLIENT_SIDE,
+  toLibraryRunEntity,
+} from './library/library-query.util';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
 import { isEmpty } from 'lodash';
@@ -17,6 +31,7 @@ import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDelet
 import { App } from '@entities/app.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -192,7 +207,28 @@ export class DataQueriesService implements IDataQueriesService {
     );
   }
 
+  async getLibraryUsage(app: App) {
+    const rows = await this.dataQueryRepository.findLibraryConsumers(app.organizationId, app.id);
+    const byApp = new Map<string, { id: string; name: string; queries: any[] }>();
+    for (const row of rows) {
+      const entry = byApp.get(row.appId) ?? { id: row.appId, name: row.appName, queries: [] };
+      entry.queries.push({ id: row.queryId, name: row.queryName, libraryQueryId: row.libraryQueryId });
+      byApp.set(row.appId, entry);
+    }
+    return { apps: [...byApp.values()] };
+  }
+
+  protected async assertLibraryQueryNotInUse(dataQueryId: string) {
+    const query = await this.dataQueryRepository.getOneById(dataQueryId, { appVersion: { app: true } });
+    const app = (query?.appVersion as any)?.app;
+    if (app?.type !== APP_TYPES.QUERY_LIBRARY) return;
+    const consumers = await this.dataQueryRepository.findLibraryConsumers(app.organizationId, app.id, dataQueryId);
+    const appCount = new Set(consumers.map((c) => c.appId)).size;
+    if (appCount > 0) throw new ConflictException(`Used by ${appCount} app(s). Remove it from those apps first.`);
+  }
+
   async delete(dataQueryId: string) {
+    await this.assertLibraryQueryNotInUse(dataQueryId);
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeQueryDelete(dataQueryId);
 
@@ -272,6 +308,77 @@ export class DataQueriesService implements IDataQueriesService {
     });
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
+  }
+
+  protected async loadLibraryTarget(consumerQueryId: string, app: App, libraryQueryId?: string) {
+    const consumer = await this.dataQueryRepository.getOneById(consumerQueryId, {
+      dataSource: true,
+      permissions: true,
+    });
+    const primaryId = consumer?.options?.libraryQueryId;
+    const primary = primaryId
+      ? await this.dataQueryRepository.getOneById(primaryId, { dataSource: true, appVersion: { app: true } })
+      : null;
+
+    let library = primary;
+    if (primary && libraryQueryId && libraryQueryId !== primary.id) {
+      const sibling = await this.dataQueryRepository.getOneById(libraryQueryId, {
+        dataSource: true,
+        appVersion: { app: true },
+      });
+      assertSameLibrary(primary, sibling);
+      library = sibling;
+    }
+
+    const libraryApp = (library?.appVersion as any)?.app ?? null;
+    assertLibraryTarget({ consumer, library, consumerApp: app, libraryApp });
+    return { consumer, library, libraryApp };
+  }
+
+  // `user` is used by the EE override to apply query-level permissions on the consumer query.
+
+  async getLibraryDefinition(consumerQueryId: string, app: App, libraryQueryId?: string, user?: User) {
+    const { library } = await this.loadLibraryTarget(consumerQueryId, app, libraryQueryId);
+    if (!CLIENT_SIDE_LIBRARY_KINDS.includes(library.kind)) {
+      throw new BadRequestException('Only RunJS library queries run in the browser');
+    }
+    const siblings = await this.dataQueryRepository.getAll(library.appVersionId);
+    return {
+      id: library.id,
+      name: library.name,
+      kind: library.kind,
+      code: library.options?.code ?? '',
+      parameters: library.options?.parameters ?? [],
+      siblings: siblings.map((q) => ({ id: q.id, name: q.name, kind: q.kind })),
+    };
+  }
+
+  async runLibraryQuery(
+    user: User,
+    consumerQueryId: string,
+    dto: RunLibraryQueryDto,
+    response: Response,
+    app: App,
+    environmentId?: string
+  ): Promise<object> {
+    const { consumer, library } = await this.loadLibraryTarget(consumerQueryId, app, dto?.libraryQueryId);
+    if (CLIENT_SIDE_LIBRARY_KINDS.includes(library.kind)) {
+      throw new BadRequestException(LIBRARY_QUERY_IS_CLIENT_SIDE);
+    }
+    const currentUser = user
+      ? { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName }
+      : undefined;
+    const { variableMap } = buildLibraryVariableMap(library.options, dto?.inputs, { currentUser });
+    // Always 'view': runQueryOnBuilder's option write-back must never touch a library query.
+    return this.runAndGetResult(
+      user,
+      toLibraryRunEntity(library, consumer),
+      variableMap,
+      response,
+      environmentId,
+      'view',
+      app
+    );
   }
 
   async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {

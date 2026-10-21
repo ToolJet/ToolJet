@@ -83,3 +83,19 @@ export class ListTablesDto {
   @IsOptional()
   limit?: number;
 }
+
+export class LibraryDefinitionDto {
+  @IsUUID()
+  @IsOptional()
+  libraryQueryId?: string;
+}
+
+export class RunLibraryQueryDto {
+  @IsObject()
+  @IsOptional()
+  inputs?: Record<string, unknown>;
+
+  @IsUUID()
+  @IsOptional()
+  libraryQueryId?: string;
+}

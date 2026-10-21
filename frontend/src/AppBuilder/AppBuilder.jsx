@@ -20,6 +20,8 @@ import { useNavigate } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import { getErrorContext } from '@/_ui/ErrorBoundary/errorReport';
 import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomComponentDevPreviewSync';
+import LibraryUsagePanel from '@/AppBuilder/QueryLibrary/LibraryUsagePanel';
+import '@/AppBuilder/QueryLibrary/query-library.scss';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -30,6 +32,7 @@ import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomCompo
 // TODO: split Loader into separate component and remove editor loading state from Editor
 export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, appType = 'front-end' }) => {
   const isModuleEditor = appType === 'module';
+  const isQueryLibrary = appType === 'query_library';
   // Module read-only (Build-with vs Edit) is resolved inside useAppData from the session.
   useAppData(appId, moduleId, darkMode, 'edit', {}, isModuleEditor, isModuleEditor);
   const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
@@ -84,6 +87,12 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
 
   useCustomComponentDevPreviewSync(appId);
 
+  // The library editor has no pane toggle, so a pane collapsed in another app (shared localStorage pref) must not leave it blank.
+  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
+  useEffect(() => {
+    if (isQueryLibrary) setIsQueryPaneExpanded(true);
+  }, [isQueryLibrary, setIsQueryPaneExpanded]);
+
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {
     return (
@@ -100,17 +109,26 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
           <Suspense fallback={<div>Loading...</div>}>
             <EditorHeader darkMode={darkMode} appType={appType} />
 
-            <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
+            {!isQueryLibrary && <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />}
           </Suspense>
 
           {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
             <RealtimeCursors />
           )}
           <DndProvider backend={HTML5Backend}>
-            <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
-            <QueryPanel darkMode={darkMode} />
-            <RightSidebarToggle darkMode={darkMode} />
-            <RightSideBar darkMode={darkMode} />
+            {isQueryLibrary ? (
+              <div className="query-library-editor">
+                <QueryPanel darkMode={darkMode} />
+                <LibraryUsagePanel versionId={currentVersionId} />
+              </div>
+            ) : (
+              <>
+                <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
+                <QueryPanel darkMode={darkMode} />
+                <RightSidebarToggle darkMode={darkMode} />
+                <RightSideBar darkMode={darkMode} />
+              </>
+            )}
           </DndProvider>
           <Popups darkMode={darkMode} />
         </ModuleProvider>

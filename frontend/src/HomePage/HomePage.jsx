@@ -223,7 +223,10 @@ class HomePageComponent extends React.Component {
         return;
       }
     }
-    if (this.props.appType === 'module' && authenticationService.currentSessionValue?.role?.name == 'end-user') {
+    if (
+      ['module', 'query_library'].includes(this.props.appType) &&
+      authenticationService.currentSessionValue?.role?.name == 'end-user'
+    ) {
       //Restrict route
       this.setState({ shouldRedirect: true });
       return;
@@ -414,6 +417,7 @@ class HomePageComponent extends React.Component {
     if (appType === 'front-end') return 'App';
     if (appType === 'workflow') return 'Workflow';
     if (appType === 'module') return 'Module';
+    if (appType === 'query_library') return 'Query library';
     return 'app';
   };
 
@@ -874,7 +878,8 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else if (this.props.appType === 'module') {
+    } else if (['module', 'query_library'].includes(this.props.appType)) {
+      // Query libraries ride the module permission bucket (spec D9).
       // Admins have implicit full access to all modules
       if (currentSession?.admin || currentSession?.super_admin) {
         return true;
@@ -1823,14 +1828,20 @@ class HomePageComponent extends React.Component {
     const moduleEnabled = featureAccess?.modulesEnabled || false;
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
+    const deleteQueryLibraryText =
+      'This action will permanently delete the query library. This cannot be reversed. Confirm deletion?';
 
     // The apps/workflows list is empty and nothing is filtering it — a genuinely empty
     // workspace rather than a search that found nothing.
     const showEmptyState =
       !isLoading && featuresLoaded && meta?.total_count === 0 && !currentFolder.id && !appSearchKey;
 
+    const isQueryLibrary = this.props.appType === 'query_library';
     const getDisabledState = () => {
-      if (this.props.appType === 'module') {
+      if (isQueryLibrary) {
+        // Not licence-gated (spec D10); the git-sync licence lock still applies like everything else.
+        return this.isGitSyncLicenseLocked();
+      } else if (this.props.appType === 'module') {
         return !moduleEnabled || this.isGitSyncLicenseLocked();
       } else if (this.props.appType === 'front-end') {
         return appsLimit?.percentage >= 100 || this.isGitSyncLicenseLocked();
@@ -1842,6 +1853,22 @@ class HomePageComponent extends React.Component {
     const showCreateAppButtonTooltip = () => {
       return this.canCreateApp();
     };
+    // Query libraries are not licence-gated (spec D10): no tooltip wrapper.
+    const withLicenseTooltip = (children) =>
+      isQueryLibrary ? (
+        children
+      ) : (
+        <LicenseTooltip
+          limits={appsLimit}
+          feature={
+            this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'
+          }
+          isAvailable={true}
+          noTooltipIfValid={true}
+        >
+          {children}
+        </LicenseTooltip>
+      );
     const modalConfigs = {
       create: {
         modalType: 'create',
@@ -2115,7 +2142,9 @@ class HomePageComponent extends React.Component {
                     ? 'homePage.deleteWorkflowAndData'
                     : this.props.appType === 'front-end'
                       ? 'homePage.deleteAppAndData'
-                      : deleteModuleText,
+                      : isQueryLibrary
+                        ? deleteQueryLibraryText
+                        : deleteModuleText,
                   { appName: appToBeDeleted?.name }
                 )
               )
@@ -2440,19 +2469,8 @@ class HomePageComponent extends React.Component {
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
               <div className="create-new-app-license-wrapper">
-                {showCreateAppButtonTooltip() && (
-                  <LicenseTooltip
-                    limits={appsLimit}
-                    feature={
-                      this.props.appType === 'workflow'
-                        ? 'workflows'
-                        : this.props.appType === 'module'
-                          ? 'modules'
-                          : 'apps'
-                    }
-                    isAvailable={true}
-                    noTooltipIfValid={true}
-                  >
+                {showCreateAppButtonTooltip() &&
+                  withLicenseTooltip(
                     <div className="create-new-app-wrapper">
                       <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                         <Button
@@ -2470,7 +2488,9 @@ class HomePageComponent extends React.Component {
                               ? 'workflows'
                               : this.props.appType === 'module'
                                 ? 'modules'
-                                : 'apps'
+                                : isQueryLibrary
+                                  ? 'query-libraries'
+                                  : 'apps'
                           }-button`}
                         >
                           <>
@@ -2479,66 +2499,78 @@ class HomePageComponent extends React.Component {
                             )}
                             {this.props.appType === 'module'
                               ? 'Create new module'
-                              : this.props.t(
-                                  `${
-                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                  }.header.createNewApplication`,
-                                  'Create new app'
-                                )}
+                              : isQueryLibrary
+                                ? 'Create new query library'
+                                : this.props.t(
+                                    `${
+                                      this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                    }.header.createNewApplication`,
+                                    'Create new app'
+                                  )}
                           </>
                         </Button>
-                        <Dropdown.Toggle
-                          disabled={getDisabledState()}
-                          split
-                          className="d-inline"
-                          data-cy="import-dropdown-menu"
-                        />
-                        <ImportAppMenu
-                          darkMode={this.props.darkMode}
-                          showTemplateLibraryModal={
-                            this.props.appType !== 'module'
-                              ? () => {
-                                  if (this.isWorkspaceBranchLocked()) {
-                                    this.setState({ showSwitchBranchForCreate: true });
-                                    return;
-                                  }
-                                  this.showTemplateLibraryModal();
+                        {/* Import/export of query libraries is not supported yet. */}
+                        {!isQueryLibrary && (
+                          <>
+                            <Dropdown.Toggle
+                              disabled={getDisabledState()}
+                              split
+                              className="d-inline"
+                              data-cy="import-dropdown-menu"
+                            />
+                            <ImportAppMenu
+                              darkMode={this.props.darkMode}
+                              showTemplateLibraryModal={
+                                this.props.appType !== 'module'
+                                  ? () => {
+                                      if (this.isWorkspaceBranchLocked()) {
+                                        this.setState({ showSwitchBranchForCreate: true });
+                                        return;
+                                      }
+                                      this.showTemplateLibraryModal();
+                                    }
+                                  : undefined
+                              }
+                              featureAccess={featureAccess}
+                              orgGit={orgGit}
+                              toggleGitRepositoryImportModal={
+                                this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
+                              }
+                              readAndImport={this.readAndImport}
+                              onImportFromDeviceClick={() => {
+                                if (this.isWorkspaceBranchLocked()) {
+                                  this.setState({ showSwitchBranchForCreate: true });
+                                  return false;
                                 }
-                              : undefined
-                          }
-                          featureAccess={featureAccess}
-                          orgGit={orgGit}
-                          toggleGitRepositoryImportModal={
-                            this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
-                          }
-                          readAndImport={this.readAndImport}
-                          onImportFromDeviceClick={() => {
-                            if (this.isWorkspaceBranchLocked()) {
-                              this.setState({ showSwitchBranchForCreate: true });
-                              return false;
-                            }
-                          }}
-                          appType={this.props.appType}
-                        />
+                              }}
+                              appType={this.props.appType}
+                            />
+                          </>
+                        )}
                       </Dropdown>
                     </div>
-                  </LicenseTooltip>
-                )}
+                  )}
               </div>
-              <Folders
-                foldersLoading={this.state.foldersLoading}
-                folders={this.state.folders}
-                currentFolder={currentFolder}
-                folderChanged={this.folderChanged}
-                foldersChanged={this.foldersChanged}
-                canCreateFolder={this.canCreateFolder()}
-                canDeleteFolder={this.canDeleteFolder()}
-                canUpdateFolder={this.canUpdateFolder()}
-                isWorkspaceBranchLocked={this.isWorkspaceBranchLocked()}
-                darkMode={this.props.darkMode}
-                canCreateApp={this.canCreateApp()}
-                appType={this.props.appType}
-              />
+              {isQueryLibrary ? (
+                <div>
+                  <p></p>
+                </div>
+              ) : (
+                <Folders
+                  foldersLoading={this.state.foldersLoading}
+                  folders={this.state.folders}
+                  currentFolder={currentFolder}
+                  folderChanged={this.folderChanged}
+                  foldersChanged={this.foldersChanged}
+                  canCreateFolder={this.canCreateFolder()}
+                  canDeleteFolder={this.canDeleteFolder()}
+                  canUpdateFolder={this.canUpdateFolder()}
+                  isWorkspaceBranchLocked={this.isWorkspaceBranchLocked()}
+                  darkMode={this.props.darkMode}
+                  canCreateApp={this.canCreateApp()}
+                  appType={this.props.appType}
+                />
+              )}
               {this.props.appType === 'front-end' && (
                 <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
               )}
@@ -2598,6 +2630,7 @@ class HomePageComponent extends React.Component {
                       navigate={this.props.navigate}
                       darkMode={this.props.darkMode}
                       hasModuleAccess={this.props.hasModuleAccess}
+                      hasQueryLibraryAccess={authenticationService.currentSessionValue?.role?.name !== 'end-user'}
                     />
                   </>
                 ) : (
@@ -2653,6 +2686,24 @@ class HomePageComponent extends React.Component {
                       }
                       data-cy="workflows-empty-state"
                     />
+                  ) : isQueryLibrary ? (
+                    <div className="empty-module-container">
+                      <EmptyModuleSvg />
+                      <div className="empty-title mt-3" style={{ display: 'block' }}>
+                        <div>Create reusable queries and share them across your apps via query libraries.</div>
+                      </div>
+                      <ButtonSolid
+                        disabled={!this.canCreateApp()}
+                        leftIcon="folderdownload"
+                        isLoading={false}
+                        onClick={this.openCreateAppModal}
+                        data-cy="button-create-query-library"
+                        className="col"
+                        variant="tertiary"
+                      >
+                        <label data-cy="create-query-library">{'Create new query library'}</label>
+                      </ButtonSolid>
+                    </div>
                   ) : (
                     <div className="empty-module-container">
                       <EmptyModuleSvg />
@@ -2711,7 +2762,9 @@ class HomePageComponent extends React.Component {
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
                           ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                          : isQueryLibrary
+                            ? 'No query libraries found'
+                            : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}

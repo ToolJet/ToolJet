@@ -1,0 +1,29 @@
+// ponytail: CSS override of the bottom-docked query pane; a dedicated layout comes with Phase 2 polish.
+.query-library-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  grid-template-rows: minmax(0, 1fr);
+  margin-top: 48px; // EditorHeader is out of flow (fixed, 48px); start below it
+  height: calc(100vh - 48px);
+
+  // Toggle bar is the first child of the QueryPanel wrapper; its inline `display: flex` needs !important to lose.
+  .query-pane:first-child { display: none !important; }
+  #query-manager {
+    position: static !important;
+    height: 100% !important;
+    max-height: none !important;
+    width: 100% !important;
+  }
+}
+
+.query-library-usage {
+  border-left: 1px solid var(--border-weak);
+  padding: 16px;
+  overflow-y: auto;
+
+  &__title { font-weight: 500; margin-bottom: 8px; }
+  &__empty { color: var(--text-placeholder); }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  li { display: flex; justify-content: space-between; gap: 8px; }
+  &__count { color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
+}

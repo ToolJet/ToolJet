@@ -61,4 +61,4 @@ export interface UpdateOptions {
   environmentId: string;
 }
 
-export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
+export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows' | 'library';

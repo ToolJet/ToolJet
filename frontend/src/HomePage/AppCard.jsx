@@ -490,7 +490,7 @@ export default function AppCard({
                   </ToolTip>
                 </div>
               )}
-              {!canUpdate && canView && appType === 'module' && (
+              {!canUpdate && canView && ['module', 'query_library'].includes(appType) && (
                 <div>
                   <ToolTip message="Open in app builder">
                     <Link
@@ -519,8 +519,12 @@ export default function AppCard({
                   </ToolTip>
                 </div>
               )}
-              {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
-              {!isStub && appType !== 'module' && LaunchButton}
+              {!canUpdate &&
+                canView &&
+                !['module', 'query_library'].includes(appType) &&
+                hasNonReleasedPreviewAccess &&
+                ViewButton}
+              {!isStub && !['module', 'query_library'].includes(appType) && LaunchButton}
             </div>
           </div>
         </div>

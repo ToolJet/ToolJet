@@ -18,12 +18,13 @@ import {
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
 } from './dto';
-import { APP_TYPES, APPS_PAGE_SIZE, FEATURE_KEY } from './constants';
+import { APP_TYPES, APPS_PAGE_SIZE, FEATURE_KEY, isModuleLikeAppType } from './constants';
 import { AbilityUtilService } from '@modules/ability/util.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
 import { App } from '@entities/app.entity';
 import { AppBase } from '@entities/app_base.entity';
+import { queryLibraryConsumers } from '@modules/data-queries/library/library-query.util';
 import { AppsUtilService } from './util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -196,7 +197,7 @@ export class AppsService implements IAppsService {
 
     // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
-      if (app.type === APP_TYPES.MODULE && hasViewPermission) {
+      if (isModuleLikeAppType(app.type) && hasViewPermission) {
         // Build-with: user can open the module builder read-only.
         // If preview params are present we need version resolution — fall through.
         // Only short-circuit when there is nothing to resolve.
@@ -301,7 +302,7 @@ export class AppsService implements IAppsService {
       response['versionId'] = version.id;
       response['environmentId'] = environment.id;
     }
-    if (!hasEditPermission && app.type === APP_TYPES.MODULE && hasViewPermission) {
+    if (!hasEditPermission && isModuleLikeAppType(app.type) && hasViewPermission) {
       response['canEdit'] = false;
     }
     return plainToClass(ValidateAppAccessResponseDto, response);
@@ -511,6 +512,14 @@ export class AppsService implements IAppsService {
           );
         }
       });
+    }
+
+    if (app.type === APP_TYPES.QUERY_LIBRARY) {
+      const consumers = await queryLibraryConsumers(this.appRepository.manager, organizationId, app.id);
+      const appCount = new Set(consumers.filter((c) => c.appId !== app.id).map((c) => c.appId)).size;
+      if (appCount > 0) {
+        throw new BadRequestException(`Used by ${appCount} app(s). Remove it from those apps first.`);
+      }
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {

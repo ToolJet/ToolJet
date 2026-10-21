@@ -10,7 +10,9 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import {
   CreateDataQueryDto,
+  LibraryDefinitionDto,
   ListTablesDto,
+  RunLibraryQueryDto,
   UpdateDataQueryDto,
   UpdateSourceDto,
   UpdatingReferencesOptionsDto,
@@ -44,6 +46,13 @@ export class DataQueriesController implements IDataQueriesController {
     @Query('mode') mode?: string
   ) {
     return this.dataQueriesService.getAll(user, app, versionId, mode);
+  }
+
+  @InitFeature(FEATURE_KEY.GET)
+  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
+  @Get(':versionId/library-usage')
+  libraryUsage(@AppDecorator() app: App) {
+    return this.dataQueriesService.getLibraryUsage(app);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -156,6 +165,51 @@ export class DataQueriesController implements IDataQueriesController {
     @Res({ passthrough: true }) response: Response
   ) {
     return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response, app);
+  }
+
+  @InitFeature(FEATURE_KEY.RUN_VIEWER)
+  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard)
+  @Post(':id/library-definition')
+  getLibraryDefinition(
+    @User() user: UserEntity,
+    @AppDecorator() app: App,
+    @Param('id') dataQueryId: string,
+    @Body() dto: LibraryDefinitionDto
+  ) {
+    return this.dataQueriesService.getLibraryDefinition(dataQueryId, app, dto?.libraryQueryId, user);
+  }
+
+  @InitFeature(FEATURE_KEY.RUN_VIEWER)
+  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard)
+  @Post(':id/run-library')
+  runLibraryQuery(
+    @User() user: UserEntity,
+    @AppDecorator() app: App,
+    @Param('id') dataQueryId: string,
+    @Body() dto: RunLibraryQueryDto,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.dataQueriesService.runLibraryQuery(user, dataQueryId, dto, response, app);
+  }
+
+  @InitFeature(FEATURE_KEY.RUN_EDITOR)
+  @UseGuards(
+    JwtAuthGuard,
+    ValidateQueryAppGuard,
+    AppFeatureAbilityGuard,
+    ValidateQuerySourceGuard,
+    DataSourceFeatureAbilityGuard
+  )
+  @Post(':id/versions/:versionId/run-library/:environmentId')
+  runLibraryQueryOnBuilder(
+    @User() user: UserEntity,
+    @AppDecorator() app: App,
+    @Param('id') dataQueryId: string,
+    @Param('environmentId') environmentId: string,
+    @Body() dto: RunLibraryQueryDto,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.dataQueriesService.runLibraryQuery(user, dataQueryId, dto, response, app, environmentId);
   }
 
   @InitFeature(FEATURE_KEY.LIST_TABLES)

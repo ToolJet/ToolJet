@@ -38,7 +38,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 
 | Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **App** | A ToolJet application; types: `FRONT_END` (visual app), `WORKFLOW` (automation), `MODULE` (reusable building block) | — |
+| **App** | A ToolJet application; types: `FRONT_END` (visual app), `WORKFLOW` (automation), `MODULE` (reusable building block), `QUERY_LIBRARY` (reusable queries) | — |
 | **App-Builder** | The visual IDE/editor where apps are constructed | Editor (frontend code term; ambiguous with the Builder role) |
 | **Page** | A view/screen within an app; one page is designated the Home Page | — |
 | **Page Handle** | The unique URL slug for a page within an app | — |
@@ -51,6 +51,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | — |
 | **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | "module" also means a NestJS backend module — always qualify |
 | **Module Pin** | A ModuleViewer component pinning a specific module version via `moduleReferenceId` (stable UUID per version row, survives git/zip round-trips); publishing blocks on draft/orphan/unpinned modules | — |
+| **Query Library** | An app of type `QUERY_LIBRARY` holding reusable queries with inputs; edited in the App-Builder without a canvas (dashboard tab "Query library") | — |
+| **Library Query** | A query of kind `library` in any app that runs a query from a Query Library (`options.libraryQueryId`, inputs in `options.inputs`) | — |
 | **Template** | A pre-built app sample that users can clone as a starting point (60+ across 10 categories) | — |
 | **Conditional Styling** | Dynamic styles applied to components based on runtime conditions | — |
 | **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — see Flagged Ambiguities) |

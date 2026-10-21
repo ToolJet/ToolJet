@@ -85,7 +85,8 @@ type DefaultDataSourceName =
   | 'runjsdefault'
   | 'runpydefault'
   | 'tooljetdbdefault'
-  | 'workflowsdefault';
+  | 'workflowsdefault'
+  | 'librarydefault';
 
 type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2';
 
@@ -142,6 +143,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'runpydefault',
   'tooljetdbdefault',
   'workflowsdefault',
+  'librarydefault',
 ];
 const NewRevampedComponents: NewRevampedComponent[] = [
   'Text',

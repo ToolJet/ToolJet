@@ -6,7 +6,11 @@ const allStaticDataSources = [
   { kind: 'runpy', id: 'runpy', name: 'Run Python code', shortName: 'Python' },
   { kind: 'tooljetdb', id: 'null', name: 'ToolJet Database', shortName: 'ToolJet DB' },
   { kind: 'workflows', id: 'null', name: 'Run Workflow', shortName: 'Workflows' },
+  { kind: 'library', id: 'null', name: 'Query library', shortName: 'Query library' },
 ];
+
+// A query library can't contain these: libraries nest nothing, and Python/workflows have no library runtime.
+export const LIBRARY_UNSUPPORTED_KINDS = ['library', 'runpy', 'workflows'];
 
 export const staticDataSources = allStaticDataSources.filter(
   (source) => source.kind !== 'workflows' || isWorkflowsFeatureEnabled()
@@ -111,6 +115,7 @@ export const schemaUnavailableOptions = {
   },
   runpy: {},
   workflows: {},
+  library: { libraryVersion: 'latest', inputs: {} },
 };
 
 const allDefaultSources = {
@@ -119,6 +124,7 @@ const allDefaultSources = {
   tooljetdb: { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   runpy: { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
   workflows: { kind: 'workflows', id: 'null', name: 'Run Workflow' },
+  library: { kind: 'library', id: 'null', name: 'Query library' },
 };
 
 export const defaultSources = isWorkflowsFeatureEnabled()

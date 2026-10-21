@@ -96,6 +96,8 @@ sequenceDiagram
 6. `PluginsServiceSelector.getService` chooses ToolJet DB, REST API, workflow, or a built-in/marketplace connector and executes it with a timeout.
 7. The result becomes `queries.<name>.data` in frontend state; dependency resolution updates bound components and query success/failure events run.
 
+Library queries (kind `library`) take a variant of this path: the browser resolves the consumer's `inputs` and calls `POST /data-queries/:id/run-library` with the consumer query id; `DataQueriesService.runLibraryQuery` loads the referenced Query Library query, resolves `{{parameters.x}}` in isolated-vm, and runs it through the same `runAndGetResult` pipeline under the consumer's authorization. RunJS library queries instead fetch their code from `library-definition` and run in the browser (`frontend/src/AppBuilder/_utils/libraryQuery.js`).
+
 ### 4. Operate on ToolJet Database
 
 `TooljetDbController` exposes guarded table/column/foreign-key/bulk-upload operations. Row operations enter `/tooljet-db/proxy/*` or `PostgrestProxyService.perform`; the service maps opaque table IDs to workspace tables, creates a scoped Postgres JWT/profile header, validates JSONB input, and calls PostgREST. PostgREST performs the SQL against ToolJet DB PostgreSQL and returns representations/count metadata.

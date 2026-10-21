@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ResourcePermissionQueryObject, ResourcesItem, UserAppsPermissions, EnvironmentPermissionSet } from './types';
-import { Brackets, EntityManager, SelectQueryBuilder } from 'typeorm';
+import { Brackets, EntityManager, In, SelectQueryBuilder } from 'typeorm';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
@@ -198,7 +198,12 @@ export class AbilityUtilService {
   ): Promise<UserAppsPermissions> {
     const appsOwnedByUser = await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.find(AppBase, {
-        where: { userId: user.id, organizationId: user.organizationId, type: appType },
+        where: {
+          userId: user.id,
+          organizationId: user.organizationId,
+          // The Module bucket also covers owned query libraries (spec D9).
+          type: appType === APP_TYPES.MODULE ? In([APP_TYPES.MODULE, APP_TYPES.QUERY_LIBRARY]) : appType,
+        },
       });
     }, manager);
 

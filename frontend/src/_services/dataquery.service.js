@@ -6,6 +6,9 @@ export const dataqueryService = {
   create,
   getAll,
   run,
+  runLibrary,
+  getLibraryDefinition,
+  getLibraryUsage,
   update,
   del,
   preview,
@@ -114,6 +117,36 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
     signal,
   };
   return fetch(url, requestOptions).then(handleResponse);
+}
+
+function runLibrary(queryId, inputs, versionId, environmentId, libraryQueryId, signal) {
+  const hasEditorContext = versionId && environmentId && environmentId !== 'undefined';
+  const url = hasEditorContext
+    ? `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run-library/${environmentId}`
+    : `${config.apiUrl}/data-queries/${queryId}/run-library`;
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ inputs: inputs ?? {}, ...(libraryQueryId && { libraryQueryId }) }),
+    signal,
+  };
+  return fetch(url, requestOptions).then(handleResponse);
+}
+
+function getLibraryDefinition(queryId, libraryQueryId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(libraryQueryId ? { libraryQueryId } : {}),
+  };
+  return fetch(`${config.apiUrl}/data-queries/${queryId}/library-definition`, requestOptions).then(handleResponse);
+}
+
+function getLibraryUsage(libraryVersionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/data-queries/${libraryVersionId}/library-usage`, requestOptions).then(handleResponse);
 }
 
 function preview(query, options, versionId, environmentId, signal) {

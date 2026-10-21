@@ -1,6 +1,5 @@
 import { App } from '@entities/app.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
-import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
@@ -11,6 +10,7 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { VersionsCreateService } from './services/create.service';
 import { camelizeKeys } from 'humps';
 import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
+import { APP_TYPES } from '@modules/apps/constants';
 import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppsUtilService } from '@modules/apps/util.service';
@@ -181,6 +181,9 @@ export class VersionService implements IVersionService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
+    if (app.type === APP_TYPES.QUERY_LIBRARY) {
+      throw new BadRequestException('Query libraries have a single version');
+    }
     const context = await this.beforeVersionCreate(app, user, versionCreateDto);
     let result;
     // Git single-branch keeps exactly one draft on the default branch. When the caller opts to
@@ -557,6 +560,10 @@ export class VersionService implements IVersionService {
     draftVersionDto: DraftVersionDto,
     manager?: EntityManager
   ): Promise<AppVersion> {
+    // The replace path below skips createVersion, so guard here too.
+    if (app.type === APP_TYPES.QUERY_LIBRARY) {
+      throw new BadRequestException('Query libraries have a single version');
+    }
     const { versionFromId, versionType } = draftVersionDto;
     const parentVersion = await this.versionRepository.findVersion(versionFromId);
     const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);

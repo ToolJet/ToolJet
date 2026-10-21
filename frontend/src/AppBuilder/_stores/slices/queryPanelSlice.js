@@ -12,6 +12,13 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import {
+  executeLibraryJS,
+  LIBRARY_KIND,
+  LIBRARY_QUERY_IS_CLIENT_SIDE,
+  libraryTemplateState,
+  mergeLibraryParameters,
+} from '@/AppBuilder/_utils/libraryQuery';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -467,8 +474,11 @@ export const createQueryPanelSlice = (set, get) => ({
         );
       }
 
-      //   const queryState = { ...getCurrentState(), parameters };
-      const queryState = { ...get().getAllExposedValues(moduleId), parameters };
+      const exposedValues = get().getAllExposedValues(moduleId);
+      const queryState =
+        get().getAppType(moduleId) === 'query_library'
+          ? libraryTemplateState(exposedValues, parameters)
+          : { ...exposedValues, parameters };
 
       const options = getQueryVariables(dataQuery.options, queryState, {
         components: get().getComponentNameIdMapping(moduleId),
@@ -686,7 +696,9 @@ export const createQueryPanelSlice = (set, get) => ({
         }
 
         let queryExecutionPromise = null;
-        if (query.kind === 'runjs') {
+        if (query.kind === 'runjs' && get().getAppType(moduleId) === 'query_library') {
+          queryExecutionPromise = get().queryPanel.runLibraryEditorJS(query, parameters, moduleId, mode);
+        } else if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters, moduleId);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options?.code, query, false, mode, queryState, moduleId);
@@ -704,6 +716,10 @@ export const createQueryPanelSlice = (set, get) => ({
             selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId),
             query.options?.workflowVersionId
           );
+        } else if (query.kind === LIBRARY_KIND) {
+          queryExecutionPromise = get().queryPanel.runLibraryQuery(query, moduleId, {
+            signal: abortController?.signal,
+          });
         } else {
           const isReleasedApp = appStore.modules.canvas.app?.isReleasedApp;
           let versionId = currentVersionId;
@@ -839,11 +855,11 @@ export const createQueryPanelSlice = (set, get) => ({
                   break;
               }
 
-              errorData =
-                (query.kind === 'runpy' || query.kind === 'runjs') &&
-                data?.data?.type !== TJ_QUERY_ERROR_TYPE.UNAUTHORIZED
-                  ? data?.data
-                  : data;
+              const isClientJs =
+                query.kind === 'runpy' ||
+                query.kind === 'runjs' ||
+                (query.kind === LIBRARY_KIND && query.options?.libraryKind === 'runjs');
+              errorData = isClientJs && data?.data?.type !== TJ_QUERY_ERROR_TYPE.UNAUTHORIZED ? data?.data : data;
               const result = handleFailure(errorData);
               resolve(result);
               return;
@@ -969,8 +985,11 @@ export const createQueryPanelSlice = (set, get) => ({
         );
       }
 
-      // const queryState = { ...getCurrentState(), parameters };
-      const queryState = { ...get().getAllExposedValues(moduleId), parameters };
+      const exposedValues = get().getAllExposedValues(moduleId);
+      const queryState =
+        get().getAppType(moduleId) === 'query_library'
+          ? libraryTemplateState(exposedValues, parameters)
+          : { ...exposedValues, parameters };
       const options = getQueryVariables(query.options, queryState, {
         components: get().getComponentNameIdMapping(),
         queries: get().getQueryNameIdMapping(),
@@ -985,7 +1004,9 @@ export const createQueryPanelSlice = (set, get) => ({
         }
 
         let queryExecutionPromise = null;
-        if (query.kind === 'runjs') {
+        if (query.kind === 'runjs' && get().getAppType(moduleId) === 'query_library') {
+          queryExecutionPromise = get().queryPanel.runLibraryEditorJS(query, parameters, moduleId, 'edit');
+        } else if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, true, '', parameters);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, true, 'edit', queryState);
@@ -1001,6 +1022,11 @@ export const createQueryPanelSlice = (set, get) => ({
             selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId),
             query.options?.workflowVersionId
           );
+        } else if (query.kind === LIBRARY_KIND) {
+          queryExecutionPromise = get().queryPanel.runLibraryQuery(query, moduleId, {
+            isPreview: true,
+            signal: abortController?.signal,
+          });
         } else {
           queryExecutionPromise = dataqueryService.preview(
             query,
@@ -1552,6 +1578,101 @@ export const createQueryPanelSlice = (set, get) => ({
       } catch (e) {
         return { data: undefined, status: 'failed' };
       }
+    },
+    // Runs a `library` query: SQL/REST kinds on the server, RunJS in the browser (also the fallback when the
+    // server answers LIBRARY_QUERY_IS_CLIENT_SIDE). Inputs are resolved here, against the consumer app's state.
+    runLibraryQuery: async (query, moduleId = 'canvas', { signal } = {}) => {
+      const { appStore, currentVersionId, selectedEnvironment, isPublicAccess } = get();
+      const { currentAppEnvironmentId, environmentId } = appStore.modules[moduleId].app;
+      const isReleasedApp = appStore.modules.canvas.app?.isReleasedApp;
+      const envId =
+        isPublicAccess || (isReleasedApp && !isPublicAccess)
+          ? undefined
+          : (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id;
+
+      const state = get().getAllExposedValues(moduleId);
+      // A blank input box means "use the library default", so it's left out rather than sent as ''.
+      const filledInputs = _.omitBy(query.options?.inputs ?? {}, (raw) => raw === '' || raw === undefined);
+      const inputs = get().resolveReferences(moduleId, filledInputs, state, {}, {});
+      const resolvedState = get().getResolvedState(moduleId);
+
+      const runInBrowser = async (libraryQueryId, params, depth) => {
+        const definition = await dataqueryService.getLibraryDefinition(query.id, libraryQueryId);
+        return executeLibraryJS({
+          code: definition.code,
+          parameters: mergeLibraryParameters(definition.parameters, params, (v) => resolveReferences(v, undefined)),
+          siblings: definition.siblings,
+          constants: resolvedState?.constants,
+          currentUser: resolvedState?.globals?.currentUser,
+          depth,
+          runSibling: async (sibling, siblingParams, nextDepth) => {
+            const result =
+              sibling.kind === 'runjs'
+                ? await runInBrowser(sibling.id, siblingParams, nextDepth)
+                : await dataqueryService.runLibrary(query.id, siblingParams, currentVersionId, envId, sibling.id);
+            if (result?.status === 'failed')
+              throw new Error(result?.data?.message || result?.message || 'Query failed');
+            return result?.data;
+          },
+        });
+      };
+
+      if (query.options?.libraryKind === 'runjs') return runInBrowser(undefined, inputs, 0);
+      try {
+        return await dataqueryService.runLibrary(query.id, inputs, currentVersionId, envId, undefined, signal);
+      } catch (error) {
+        // handleResponse rejects with { error: <message>, data, statusCode }
+        if (error?.error === LIBRARY_QUERY_IS_CLIENT_SIDE || error?.data?.message === LIBRARY_QUERY_IS_CLIENT_SIDE) {
+          return runInBrowser(undefined, inputs, 0);
+        }
+        throw error;
+      }
+    },
+    // RunJS inside a query library app: the same restricted scope consumers get (no components/variables/page/actions),
+    // so authors see exactly what consumers will. Siblings run through the normal editor runQuery.
+    runLibraryEditorJS: (query, parameters, moduleId = 'canvas', mode = 'edit', depth = 0) => {
+      const resolvedState = get().getResolvedState(moduleId);
+      const allQueries = get().dataQuery.queries.modules?.[moduleId] ?? [];
+      const runSibling = async (sibling, params, nextDepth) => {
+        // runjs siblings recurse directly so the depth (D15 nesting cap) carries through; others use the editor runQuery
+        const result =
+          sibling.kind === 'runjs'
+            ? await get().queryPanel.runLibraryEditorJS(
+                allQueries.find((q) => q.id === sibling.id),
+                params,
+                moduleId,
+                mode,
+                nextDepth
+              )
+            : await get().queryPanel.runQuery(
+                sibling.id,
+                sibling.name,
+                true,
+                mode,
+                params,
+                undefined,
+                undefined,
+                false,
+                false,
+                moduleId
+              );
+        // runQuery resolves { status: 'ok', data } on success; a failed runjs sibling resolves its bare error data
+        if (result?.status !== 'ok') {
+          throw new Error(result?.message || result?.data?.message || 'Query failed');
+        }
+        return result.data;
+      };
+      return executeLibraryJS({
+        code: query.options?.code,
+        parameters: mergeLibraryParameters(query.options?.parameters, parameters, (v) =>
+          resolveReferences(v, undefined)
+        ),
+        siblings: allQueries.filter((q) => q.id !== query.id).map(({ id, name, kind }) => ({ id, name, kind })),
+        runSibling,
+        constants: resolvedState?.constants,
+        currentUser: resolvedState?.globals?.currentUser,
+        depth,
+      });
     },
     triggerWorkflow: async (
       moduleId,

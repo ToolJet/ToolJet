@@ -35,7 +35,7 @@ import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/t
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-import { APP_TYPES, APPS_PAGE_SIZE } from './constants';
+import { APP_TYPES, APPS_PAGE_SIZE, isModuleLikeAppType } from './constants';
 import { Component } from 'src/entities/component.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -51,6 +51,7 @@ const PERMISSION_RESOURCE_BY_APP_TYPE: Record<string, MODULES> = {
   [APP_TYPES.WORKFLOW]: MODULES.WORKFLOWS,
   [APP_TYPES.FRONT_END]: MODULES.APP,
   [APP_TYPES.MODULE]: MODULES.MODULES,
+  [APP_TYPES.QUERY_LIBRARY]: MODULES.MODULES,
 };
 const DEFAULT_PERMISSION_RESOURCE = MODULES.APP;
 
@@ -942,7 +943,7 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
-    const willInnerJoinOnBranch = !!branchId && (type === APP_TYPES.MODULE || type === APP_TYPES.FRONT_END);
+    const willInnerJoinOnBranch = !!branchId && (isModuleLikeAppType(type) || type === APP_TYPES.FRONT_END);
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
@@ -972,7 +973,8 @@ export class AppsUtilService implements IAppsUtilService {
       ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
       LIMIT 1
     )`;
-    if (type === APP_TYPES.MODULE) {
+    // Modules and query libraries need their versions (the library picker reads app_versions[0].id).
+    if (isModuleLikeAppType(type)) {
       if (branchId) {
         qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
       } else {
@@ -1002,7 +1004,7 @@ export class AppsUtilService implements IAppsUtilService {
       .addSelect(['user.firstName', 'user.lastName'])
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
-    if (type === APP_TYPES.MODULE) {
+    if (isModuleLikeAppType(type)) {
       // Exclude stub versions: same rationale as the outer `all()` query — stubs
       // carry UUID names that must not be surfaced as selectable module versions.
       viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions', 'versions.isStub = false');
@@ -1063,6 +1065,7 @@ export class AppsUtilService implements IAppsUtilService {
       // Modules are now permission-scoped (H1): filter to the user's editable ∪ viewable ∪ owned
       // module ids, exactly like front-end apps. Previously modules were returned unfiltered.
       case APP_TYPES.MODULE:
+      case APP_TYPES.QUERY_LIBRARY:
         if (context === 'picker') {
           return this.addPickerModulesFilter(viewableAppsQb, userAppPermissions as unknown as UserAppsPermissions);
         }

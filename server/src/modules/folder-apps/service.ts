@@ -95,6 +95,7 @@ export class FolderAppsService implements IFolderAppsService {
       case APP_TYPES.WORKFLOW:
         return MODULES.WORKFLOWS;
       case APP_TYPES.MODULE:
+      case APP_TYPES.QUERY_LIBRARY:
         return MODULES.MODULES;
       default:
         throw new BadRequestException('Invalid resource type');

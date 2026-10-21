@@ -4,4 +4,5 @@ export const staticDataSources = [
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
   { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
   { kind: 'workflows', id: 'null', name: 'Run Workflow' },
+  { kind: 'library', id: 'null', name: 'Query library' },
 ];

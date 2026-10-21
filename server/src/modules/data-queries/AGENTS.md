@@ -38,6 +38,16 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 3. `service.run(sourceOptions, parsedQueryOptions, '${dataSourceId}-${environmentId}', updatedAt, ctx)` —
    the third arg is the plugin connection-cache key; env-scoped so environments never share connections.
 
+## Query libraries
+
+A **Query Library** is a `query_library` app; other apps use its queries as **Library Queries** (kind `library`,
+options `{ libraryAppId, libraryQueryId, libraryKind, libraryVersion, inputs }`). Helpers: `library/library-query.util.ts`.
+
+- Routes take the **consumer** query id (`run-library`, `library-definition`, `:versionId/library-usage`): auth,
+  public access and environment come from the consumer app; the run uses the consumer's id/permissions.
+- Always `'view'` mode (library options never written back); templates see `parameters` + `globals.currentUser`.
+- RunJS runs in the browser (definitions/sibling ids RunJS-only; not a sandbox). One version per library; no deleting in use.
+
 ## Edition split
 
 - `server/ee/data-queries/` — `service.ts`, `util.service.ts`, `controller.ts` all extend CE bases and `super()`.

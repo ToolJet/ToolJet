@@ -17,6 +17,7 @@ import SaveIndicator from './SaveIndicator';
 
 export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
+  const isQueryLibrary = appType === 'query_library';
   const {
     isSaving,
     saveError,
@@ -129,7 +130,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
             </div>
 
             <div className={headerLockClass} aria-disabled={isGitSyncLicenseLocked || undefined}>
-              <HeaderActions darkMode={darkMode} />
+              {!isQueryLibrary && <HeaderActions darkMode={darkMode} />}
             </div>
 
             <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
@@ -138,15 +139,20 @@ export const EditorHeader = ({ darkMode, appType }) => {
                   className={cx('d-flex version-manager-container p-0  align-items-center gap-0', headerLockClass)}
                   aria-disabled={isGitSyncLicenseLocked || undefined}
                 >
-                  {!isModuleEditor && <PreviewAndShareIcons />}
-                  {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
+                  {!isModuleEditor && !isQueryLibrary && <PreviewAndShareIcons />}
+                  {!showSyncButton && !isQueryLibrary && (
+                    <BranchDropdown appId={appId} organizationId={organizationId} />
+                  )}
                   {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
-                  {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
+                  {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && !isQueryLibrary && (
                     <VersionManagerErrorBoundary>
                       <VersionManagerDropdown darkMode={darkMode} />
                     </VersionManagerErrorBoundary>
                   )}
-                  <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
+                  {/* Query libraries have one version and no viewer: no release/share actions. */}
+                  {!isQueryLibrary && (
+                    <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
+                  )}
                 </div>
               </div>
             </div>

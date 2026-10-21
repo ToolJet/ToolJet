@@ -3,7 +3,7 @@ import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
-import { defaultSources, workflowDefaultSources } from '../constants';
+import { defaultSources, workflowDefaultSources, LIBRARY_UNSUPPORTED_KINDS } from '../constants';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { Virtuoso } from 'react-virtuoso';
@@ -55,6 +55,7 @@ function DataSourceSelect({
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   const sampleDataSource = useStore((state) => state.sampleDataSource);
+  const isQueryLibrary = useStore((state) => state.getAppType() === 'query_library');
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
   const currentVersionId = useStore((state) => state.currentVersionId);
 
@@ -143,7 +144,12 @@ function DataSourceSelect({
 
     // Defaults section
     const staticSources = dataSources?.filter((gds) => gds.type === DATA_SOURCE_TYPE.STATIC) || [];
-    const defaultsList = workflowDataSources ? defaultDataSources || [] : staticSources;
+    // Workflows have no runner for library queries; a query library can't hold library/runpy/workflows queries.
+    const defaultsList = (workflowDataSources ? defaultDataSources || [] : staticSources).filter(
+      (ds) =>
+        !(workflowDataSources && ds.kind === 'library') &&
+        (!isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(ds.kind))
+    );
     const filteredDefaults = searchTerm
       ? defaultsList.filter((ds) => {
           const displayName = workflowDataSources
@@ -229,6 +235,7 @@ function DataSourceSelect({
     defaultsCollapsed,
     allowNewFolder,
     createFolder,
+    isQueryLibrary,
   ]);
 
   const listHeight = useMemo(

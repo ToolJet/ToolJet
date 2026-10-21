@@ -42,7 +42,7 @@ export enum FEATURE_KEY {
   LIST_WORKSPACE_APP_USERS_V2 = 'LIST_WORKSPACE_APP_USERS_V2',
 }
 
-export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
+export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows' | 'library';
 export type NewRevampedComponent =
   | 'Text'
   | 'TextInput'
@@ -56,15 +56,24 @@ export type DefaultDataSourceName =
   | 'runjsdefault'
   | 'runpydefault'
   | 'tooljetdbdefault'
-  | 'workflowsdefault';
+  | 'workflowsdefault'
+  | 'librarydefault';
 
-export const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+export const DefaultDataSourceKinds: DefaultDataSourceKind[] = [
+  'restapi',
+  'runjs',
+  'runpy',
+  'tooljetdb',
+  'workflows',
+  'library',
+];
 export const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
   'runjsdefault',
   'runpydefault',
   'tooljetdbdefault',
   'workflowsdefault',
+  'librarydefault',
 ];
 export const NewRevampedComponents: NewRevampedComponent[] = [
   'Text',

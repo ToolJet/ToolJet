@@ -12,7 +12,7 @@ import { canCreateDataSource } from '@/_helpers';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import '../queryManager.theme.scss';
 import useStore from '@/AppBuilder/_stores/store';
-import { staticDataSources } from '../constants';
+import { staticDataSources, LIBRARY_UNSUPPORTED_KINDS } from '../constants';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 function DataSourcePicker({ darkMode }) {
@@ -21,6 +21,7 @@ function DataSourcePicker({ darkMode }) {
   const sampleDataSource = useStore((state) => state.sampleDataSource);
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
   const currentVersionId = useStore((state) => state.currentVersionId);
+  const isQueryLibrary = useStore((state) => state.getAppType() === 'query_library');
   const allUserDefinedSources = [...dataSources, ...globalDataSources].filter(
     (ds) => ds.type !== DATA_SOURCE_TYPE.STATIC && !ds.is_dummy
   );
@@ -35,6 +36,7 @@ function DataSourcePicker({ darkMode }) {
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   const updatedStaticDataSources = staticDataSources
+    .filter((source) => !isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(source.kind))
     .filter((source) => {
       if (source.kind === 'workflows') {
         return staticDataSourcesFullObject?.some((gds) => gds.kind === 'workflows');
