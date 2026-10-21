@@ -102,6 +102,16 @@ describe('AppsRepository — workflow metadata overlay (post-migration)', () => 
     expect(resolved?.id).toBe(workflow.id);
   });
 
+  it('findAllOrganizationWorkflows should name a workflow whose only rows are stubs', async () => {
+    const admin = await createAdmin(app, 'overlay-admin-9@tooljet.io');
+    const orgUser = { ...admin.user, organizationId: admin.workspace.id } as any;
+    const { workflow, version } = await seedWorkflowWithVersionMetadata(orgUser, { slug: 'stub-only-workflow' });
+    await updateEntity(AppVersion, version.id, { isStub: true });
+
+    const workflows = await appsRepository.findAllOrganizationWorkflows(admin.workspace.id, undefined, randomUUID());
+    expect(workflows.find((w) => w.id === workflow.id)?.name).toBe('Overlay Workflow Version Name');
+  });
+
   it('findByDataQuery should overlay version metadata onto a workflow app', async () => {
     const admin = await createAdmin(app, 'overlay-admin-8@tooljet.io');
     const orgUser = { ...admin.user, organizationId: admin.workspace.id } as any;

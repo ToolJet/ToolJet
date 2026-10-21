@@ -382,7 +382,7 @@ export class AppsRepository extends Repository<App> {
     const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
     // A workflow created on a feature branch has no default-branch VERSION row, and apps.name
     // is null for every app, so without the branch arm the name resolves to NULL and callers
-    // render the co_relation_id.
+    // render the co_relation_id. Stub rows still carry app_name, so they count here.
     const useBranchArm = !!activeBranchId && activeBranchId !== defaultBranchId;
     const qb = this.createQueryBuilder('app')
       .select(['app.id AS id'])
@@ -401,12 +401,12 @@ export class AppsRepository extends Repository<App> {
       'app_versions',
       'av_meta',
       `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId
-         AND av_meta.version_type = 'version' AND av_meta.is_stub = false
+         AND av_meta.version_type = 'version'
          AND av_meta.id = (
            SELECT av_inner.id FROM app_versions av_inner
            WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
-             AND av_inner.version_type = 'version' AND av_inner.is_stub = false
-           ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
+             AND av_inner.version_type = 'version'
+           ORDER BY av_inner.is_stub ASC, av_inner.is_synced DESC, av_inner.updated_at DESC
            LIMIT 1
          )`,
       { defaultBranchId }
@@ -416,7 +416,7 @@ export class AppsRepository extends Repository<App> {
         'app_versions',
         'av_branch',
         `av_branch.app_id = app.id AND av_branch.branch_id = :activeBranchId
-           AND av_branch.version_type = 'branch' AND av_branch.is_stub = false`,
+           AND av_branch.version_type = 'branch'`,
         { activeBranchId }
       );
     }
