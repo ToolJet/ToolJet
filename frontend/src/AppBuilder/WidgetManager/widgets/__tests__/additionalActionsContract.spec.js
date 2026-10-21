@@ -45,6 +45,7 @@ const CONTRACT = {
   RichTextEditor: ['visibility', 'disabledState', 'loadingState'],
   SvgImage: ['visibility'],
   Timer: ['visibility', 'disabledState'],
+  Statistics: ['visibility', 'loadingState'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.
@@ -62,6 +63,7 @@ const TOOLTIP_IN_PROPERTIES = [
   'RichTextEditor',
   'SvgImage',
   'Timer',
+  'Statistics',
 ];
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);
