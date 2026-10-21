@@ -191,17 +191,18 @@ describe('UI 2.0 Hero', () => {
   // A hero taller than its saved box drew past its bottom edge over the widget under it (Daymark, 2026-10-15). The
   // viewer grows the box (dynamic height); the editor draws every widget at its saved size, so there the panel stops
   // at its box and its content scrolls inside it.
-  test('[ShadHero-DEF-003] grows with its content in the viewer, and stays inside its box in the editor', async () => {
+  test('[ShadHero-DEF-003] grows with its content in the viewer, and fills its box in the editor', async () => {
+    // The panel fills a fixed box (a panel that stopped at its content left a blank band under it) and scrolls inside.
     const contained = (shell) =>
       classes(shell).includes('tw-h-full') &&
-      classes(panel()).includes('tw-max-h-full') &&
+      classes(panel()).includes('tw-h-full') &&
       classes(panel()).includes('tw-overflow-y-auto') &&
       classes(panel().parentElement).includes('tw-h-full');
 
     const view = render({ properties: { asideValue: binding('{{19}}') } });
     await waitFor(() => expect(panel()).toBeInTheDocument());
     expect(contained(root(view.container))).toBe(false);
-    expect(panel().className).not.toMatch(/\b(overflow-|max-h-)/);
+    expect(panel().className).not.toMatch(/\b(overflow-|max-h-|h-full)/);
 
     const edit = widget.render({ currentMode: 'edit' });
     await waitFor(() => expect(contained(root(edit.container))).toBe(true));

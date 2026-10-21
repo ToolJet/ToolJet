@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useDynamicHeight as useDynamicHeightHook } from '@/_hooks/useDynamicHeight';
 import useStore from '@/AppBuilder/_stores/store';
 import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { ContextSegment } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 
 /** What _hooks/useDynamicHeight reads; any change to `value`, `width` or `componentCount` re-measures the widget. */
@@ -19,6 +20,20 @@ export interface DynamicHeightArgs {
   subContainerIndex?: number | number[];
   isRowSubcontainer?: boolean;
 }
+
+/** Whether the widget is drawn at its box's height rather than its content's: the editor draws every widget at its
+ *  saved height, and the viewer keeps it when Dynamic height is off. The widget's surface then fills its box (its
+ *  content scrolls inside it); otherwise the box follows the content (useAutoHeight), so a surface that stopped short
+ *  of its box left a blank band under it in the editor. */
+export const inFixedBox = ({
+  componentType,
+  properties,
+  currentMode,
+}: {
+  componentType?: string;
+  properties: Record<string, unknown>;
+  currentMode?: string;
+}): boolean => !(fitsContentInView(componentType, properties) && currentMode === 'view');
 
 // useDynamicHeight.jsx is JavaScript, so TypeScript reads every argument as required: this gives them a type.
 export const useDynamicHeight = useDynamicHeightHook as (args: DynamicHeightArgs) => void;
