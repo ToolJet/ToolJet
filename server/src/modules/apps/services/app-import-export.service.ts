@@ -4601,7 +4601,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
-function migrateProperties(
+export function migrateProperties(
   componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
