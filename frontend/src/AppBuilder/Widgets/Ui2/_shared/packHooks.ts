@@ -354,6 +354,8 @@ export const useAutoHeight = (
   const value = useHeightObserver(ref, enabled);
   useDynamicHeight({
     isDynamicHeightEnabled: enabled,
+    // A loading skeleton is not the content: the box keeps its last fitted height, so the page does not jump twice.
+    skipAdjustment: properties.loadingState === true && properties.loadingIndicator === 'skeleton',
     id,
     height,
     value,

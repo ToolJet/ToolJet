@@ -152,7 +152,8 @@ export const ShadCardGrid = (props: WidgetProps) => {
   } else if (p.loadingState) {
     body = (
       <div className="tw-grid tw-gap-4" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
-        {Array.from({ length: columns }).map((_, i) => (
+        {/* As many cards as it will show (a row before the first data), so the grid keeps its rows. */}
+        {Array.from({ length: Math.min(cards.length || columns, shownCount) }).map((_, i) => (
           <div
             key={i}
             className={cn('tw-flex tw-gap-3 tw-rounded-ui2-xl tw-border tw-p-0', row ? 'tw-flex-row' : 'tw-flex-col')}
