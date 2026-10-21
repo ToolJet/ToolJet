@@ -1,6 +1,7 @@
 import React, { Component, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
+import { claimChunkReload } from '@/_helpers/chunkReloadGuard';
 
 // Lazy load ENTIRE APP ROUTERS (not just pages)
 // This is CRITICAL for bundle isolation - each router imports completely different code
@@ -24,11 +25,10 @@ const LoadingFallback = () => (
  * imports will fail with ChunkLoadError.
  *
  * ChunkLoadError recovery strategy:
- *  1. On first ChunkLoadError → auto-reload once (picks up new index.html with correct chunk names)
- *  2. If the reload didn't help (flag still set) → show a user-facing error with a manual Refresh button
- *  3. On successful app boot → flags are cleared (in index.jsx) so future deployments can auto-recover
+ *  1. On a ChunkLoadError → auto-reload (picks up new index.html with correct chunk names)
+ *  2. If it fails again within a minute → show a user-facing error with a manual Refresh button
  *
- * The `chunk_reload` flag in sessionStorage prevents infinite reload loops.
+ * `claimChunkReload` allows one automatic reload per minute, which prevents infinite reload loops.
  */
 class ChunkErrorBoundary extends Component {
   state = { hasError: false, isChunkError: false };
@@ -42,13 +42,8 @@ class ChunkErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     if (error?.name === 'ChunkLoadError') {
-      if (!sessionStorage.getItem('chunk_reload')) {
-        // First failure — attempt one automatic reload to pick up new chunks
-        sessionStorage.setItem('chunk_reload', 'true');
-        window.location.reload();
-      }
-      // If chunk_reload flag is already set, we've already tried reloading once.
-      // Don't reload again — render() will show the error UI instead.
+      // Already reloaded within the last minute: render() shows the error UI instead.
+      if (claimChunkReload()) window.location.reload();
       return;
     }
     // React reports boundary-caught errors to this hook and nowhere else, so without
@@ -58,8 +53,6 @@ class ChunkErrorBoundary extends Component {
   }
 
   handleRefresh = () => {
-    // Clear the flag so the reload gets a fresh attempt
-    sessionStorage.removeItem('chunk_reload');
     window.location.reload();
   };
 

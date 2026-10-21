@@ -82,10 +82,9 @@ appService
   .then(() => {
     createRoot(document.getElementById('app')).render(<AppWithProfiler />);
 
-    // App booted successfully — clear reload flags from both recovery mechanisms
-    // (ChunkErrorBoundary in RootRouter.jsx and the .catch() below) so that
-    // future deployments can trigger auto-reload again if needed.
-    sessionStorage.removeItem('chunk_reload');
+    // App booted successfully — clear the .catch() below's reload flag so a later boot failure can
+    // auto-reload again. The chunk reload guard (chunkReloadGuard.ts) is time-based and isn't cleared
+    // here: route chunks load after boot, so clearing it would let a failing chunk reload forever.
     sessionStorage.removeItem('boot_reload');
   })
   .catch((error) => {
