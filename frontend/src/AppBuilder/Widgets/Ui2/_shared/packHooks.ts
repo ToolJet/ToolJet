@@ -9,6 +9,7 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { stringify } from './packJson';
+import { useSkeletonHold } from './useDynamicHeight';
 import type { MutableRefObject, RefObject } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -352,10 +353,9 @@ export const useAutoHeight = (
 ): void => {
   const enabled = fitsContentInView(componentType, properties) && currentMode === 'view';
   const value = useHeightObserver(ref, enabled);
+  useSkeletonHold(ref, properties, enabled);
   useDynamicHeight({
     isDynamicHeightEnabled: enabled,
-    // A loading skeleton is not the content: the box keeps its last fitted height, so the page does not jump twice.
-    skipAdjustment: properties.loadingState === true && properties.loadingIndicator === 'skeleton',
     id,
     height,
     value,

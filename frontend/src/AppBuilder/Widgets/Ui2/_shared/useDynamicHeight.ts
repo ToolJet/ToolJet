@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
+import type { RefObject } from 'react';
 import { useDynamicHeight as useDynamicHeightHook } from '@/_hooks/useDynamicHeight';
 import useStore from '@/AppBuilder/_stores/store';
 import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -73,4 +74,28 @@ export const useFittedRowHeight = ({ id, path, index, value, fit, height, curren
     height,
   });
   return fit ? fitted ?? height : height;
+};
+
+/** While a loading skeleton shows, the widget's measured root keeps the height its content last had (a min-height), so
+ *  the box useAutoHeight fits neither shrinks to the skeleton nor moves the page when the content comes back. It did
+ *  first by skipping the adjustment (useDynamicHeight's skipAdjustment), which held the box at a height that could be
+ *  the authored one, not the content's: after a loading cycle a Card grid's 380px band stayed under it. */
+export const useSkeletonHold = (
+  ref: RefObject<HTMLElement>,
+  properties: Record<string, unknown>,
+  enabled: boolean
+): void => {
+  const held = useRef<number | null>(null);
+  const skeletonLook = enabled && properties.loadingIndicator === 'skeleton';
+  const loading = properties.loadingState === true;
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || !skeletonLook) return;
+    if (loading) {
+      if (held.current) el.style.minHeight = `${held.current}px`;
+    } else {
+      el.style.minHeight = '';
+      held.current = el.offsetHeight || held.current;
+    }
+  });
 };
