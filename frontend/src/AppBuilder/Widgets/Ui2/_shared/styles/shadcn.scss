@@ -1298,3 +1298,41 @@
     opacity: 1;
   }
 }
+
+// The Table's empty state (TableBody), a size container: in a short table the icon goes first, then the description;
+// the message stays. It sat at the foot of a 40px-padded row in a short table, with only the top of its icon showing.
+// In a table that grows with its rows it is the old row's 130px (contain-intrinsic-height); in a fixed box
+// (.sc-table-box, Table.tsx) the table fills its scroll area, the empty state fills the body, and the scroll area keeps
+// the header row and a line of the message however short the table.
+.tj-shadcn .sc-table-empty {
+  container: sc-table-empty / size;
+  contain-intrinsic-height: 130px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  overflow: hidden;
+}
+.tj-shadcn .sc-table-box:has(> table > tbody > tr > td > .sc-table-empty) {
+  min-height: 70px;
+
+  > table {
+    height: 100%;
+  }
+  .sc-table-empty {
+    contain-intrinsic-height: 28px;
+  }
+}
+@container sc-table-empty (max-height: 79px) {
+  .sc-table-empty-icon {
+    display: none;
+  }
+}
+@container sc-table-empty (max-height: 45px) {
+  .sc-table-empty-note {
+    display: none;
+  }
+}

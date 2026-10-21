@@ -217,14 +217,19 @@ export const TableBody = ({
         </>
       ) : (
         <tr>
-          <td colSpan={colCount} className="tw-px-3 tw-py-10 tw-text-center">
-            <div className="tw-flex tw-flex-col tw-items-center tw-gap-1.5">
-              <Inbox className={cn('tw-h-6 tw-w-6', MUTED)} />
-              <p className="tw-text-ui2-sm tw-font-medium">
+          {/* The empty state fills the body (shadcn.scss .sc-table-empty): in a short table the icon goes, then the
+              description, and the message stays; it sat at the foot of a 40px-padded row with only the icon's top
+              showing. */}
+          <td colSpan={colCount} className="tw-h-full tw-p-0 tw-text-center">
+            <div className="sc-table-empty">
+              <Inbox className={cn('sc-table-empty-icon tw-h-6 tw-w-6 tw-shrink-0', MUTED)} />
+              <p className="tw-m-0 tw-text-ui2-sm tw-font-medium">
                 {searchText || filters.length ? 'No matching rows.' : String(properties.emptyText || 'No results.')}
               </p>
               {properties.emptyDescription && !searchText && !filters.length ? (
-                <p className={cn('tw-text-xs', MUTED)}>{String(properties.emptyDescription)}</p>
+                <p className={cn('sc-table-empty-note tw-m-0 tw-text-xs', MUTED)}>
+                  {String(properties.emptyDescription)}
+                </p>
               ) : null}
             </div>
           </td>
