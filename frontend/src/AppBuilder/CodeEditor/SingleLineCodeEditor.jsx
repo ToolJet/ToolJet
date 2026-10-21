@@ -18,6 +18,7 @@ import { keymap, tooltips, EditorView } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
+import { segmentedLayout } from './segmentedRow';
 import { isInsideParent, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -669,7 +670,8 @@ const DynamicEditorBridge = (props) => {
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
-  const { isFxNotRequired, newLine = false, section = '' } = fieldMeta;
+  const segmented = segmentedLayout({ component, paramType, fieldMeta });
+  const { isFxNotRequired, newLine = segmented === 'stacked', section = '' } = fieldMeta;
   const isDeprecated = section === 'deprecated';
   const { t } = useTranslation();
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
@@ -788,8 +790,16 @@ const DynamicEditorBridge = (props) => {
   };
 
   return (
-    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
-      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+    <div
+      className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor', {
+        'ui2-segmented-stacked': segmented === 'stacked',
+      })}
+    >
+      <div
+        className={cx('d-flex align-items-center justify-content-between code-flex-wrapper', {
+          'ui2-segmented-row': segmented === 'column',
+        })}
+      >
         {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
