@@ -43,6 +43,10 @@ type QuestionnaireState = {
 
 export const ShadQuestionnaire = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, fireEvent, id } = props;
+  // DOM ids come from the instance (withControlState), not the component id: a Questionnaire in List view rows (or in
+  // Tabs inside them) repeats its component id, so ids made from it named every row's answer by the first row's prompt,
+  // and the frame repeated the id the canvas already gives the widget's wrapper.
+  const domId = props.domId ?? `shad-${id}`;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
 
@@ -253,8 +257,8 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
       }
     : { background: 'var(--lk-bg,transparent)' };
   const titleStyle = { fontFamily: 'var(--lk-title-font,inherit)' };
-  const errorId = `${id}-q-error`;
-  const promptId = `${id}-q-prompt`;
+  const errorId = `${domId}-q-error`;
+  const promptId = `${domId}-q-prompt`;
 
   let body;
   if (!count) {
@@ -303,7 +307,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
           </legend>
           {answer ? (
             <QuestionAnswer
-              id={id}
+              id={domId}
               item={item}
               answer={answer}
               error={error}
@@ -374,7 +378,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
 
   return (
     <Shell {...props} innerRef={ref}>
-      <div id={id} className={frame} style={frameStyle} data-step={complete ? 'complete' : at}>
+      <div id={domId} className={frame} style={frameStyle} data-step={complete ? 'complete' : at}>
         {body}
       </div>
     </Shell>
