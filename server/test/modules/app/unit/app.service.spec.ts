@@ -3,7 +3,10 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { AppsService } from '@modules/apps/service';
 import { FEATURE_KEY } from '@modules/apps/constants';
 import { App } from '@entities/app.entity';
-import { resetAppDataRevisionCache } from '@modules/apps/app-data-revision';
+
+jest.mock('@modules/group-permissions/repository', () => ({
+  findUserGroupsWithAppAccess: jest.fn().mockResolvedValue([]),
+}));
 
 /** @group platform */
 describe('AppsService.getBySlug', () => {
@@ -31,12 +34,15 @@ describe('AppsService.getBySlug', () => {
 
 /** @group platform */
 describe('AppsService.validateReleasedApp', () => {
-  // A real instance (no Nest DI): only appRepository.manager.query is touched.
+  // A real instance (no Nest DI): only appRepository.manager.query and the license lookup are touched.
+  const getLicenseTerms = jest.fn().mockResolvedValue({ valid: true });
   const makeService = (query: jest.Mock): AppsService => {
     const service = Object.create(AppsService.prototype) as AppsService;
-    (service as unknown as { appRepository: unknown }).appRepository = { manager: { query } };
+    Object.assign(service, { appRepository: { manager: { query } }, licenseTermsService: { getLicenseTerms } });
     return service;
   };
+  // Answers the change-stamp read.
+  const revisionQuery = () => jest.fn().mockResolvedValue([{ stamp: null }]);
 
   const makeApp = (overrides: Partial<App> = {}): App =>
     ({ id: 'app-uuid-1', slug: 'my-app', currentVersionId: 'ver-uuid-1', name: 'Orders', ...overrides }) as App;
@@ -45,21 +51,22 @@ describe('AppsService.validateReleasedApp', () => {
     can: jest.fn().mockReturnValue(canUpdate),
   });
 
-  beforeEach(() => resetAppDataRevisionCache());
-
   it('returns id, slug, the released version id and the app data revision', async () => {
-    const query = jest.fn().mockResolvedValue([{ revision: '1787800000000' }]);
+    const query = revisionQuery();
     const ability = makeAbility();
 
-    const result = await makeService(query).validateReleasedApp(ability as never, makeApp());
+    const result = await makeService(query).validateReleasedApp(ability as never, makeApp(), {
+      id: 'user-1',
+    } as never);
 
     expect(result).toEqual({
       id: 'app-uuid-1',
       slug: 'my-app',
       currentVersionId: 'ver-uuid-1',
-      appDataRevision: expect.stringMatching(/^1787800000000\./),
+      appDataRevision: expect.stringMatching(/^[0-9a-f]{16}$/),
     });
     expect(ability.can).not.toHaveBeenCalled();
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('app_viewer_cache_stamps'), ['app-uuid-1']);
   });
 
   it('throws 501 HttpException when app has no released version', async () => {

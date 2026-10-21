@@ -20,18 +20,25 @@ import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { getConnectionInstance } from '@helpers/database.helper';
 import { getAppDataRevision } from '@modules/apps/app-data-revision';
 
-// ETag for a published version: changes with the version row (e.g. promote), the app row
-// (rename, public/maintenance), a migration, or the user (EE filters per user). Null = no caching.
-async function publishedVersionETag(app: AppEntity, versionId: string, userId: string): Promise<string | null> {
+// ETag for the released version: changes with the version row (e.g. promote) and everything the
+// released-app cache key covers (getAppDataRevision). Other versions aren't tracked by the change
+// stamps, so they aren't cached. Null = no caching.
+async function releasedVersionETag(
+  app: AppEntity,
+  versionId: string,
+  userId: string,
+  getLicenseTerms: () => Promise<unknown>
+): Promise<string | null> {
+  if (versionId !== app.currentVersionId) return null;
   const manager = getConnectionInstance().manager;
   const version = await manager.findOne(AppVersion, {
     where: { id: versionId, appId: app.id },
     select: ['id', 'status', 'updatedAt'],
   });
   if (version?.status !== AppVersionStatus.PUBLISHED) return null;
-  const revision = await getAppDataRevision(manager, app);
+  const revision = await getAppDataRevision(manager, app, { versionId, userId, licenseTerms: await getLicenseTerms() });
   if (!revision) return null;
-  return `"v-${versionId}-${version.updatedAt.getTime()}-${revision}-${userId}"`;
+  return `"v-${versionId}-${version.updatedAt.getTime()}-${revision}"`;
 }
 
 @InitModule(MODULES.VERSION)
@@ -67,9 +74,11 @@ export class VersionControllerV2 implements IVersionControllerV2 {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ) {
-    // Published versions are cached by the browser but revalidated on every load (no-cache), so
+    // The released version is cached by the browser but revalidated on every load (no-cache), so
     // an unchanged version costs a 304 instead of rebuilding and downloading the payload.
-    const etag = await publishedVersionETag(app, versionId, user.id);
+    const etag = await releasedVersionETag(app, versionId, user.id, () =>
+      this.versionService.getViewerLicenseTerms(app.organizationId)
+    );
     if (etag) {
       res.set({ 'Cache-Control': 'private, no-cache', ETag: etag });
       if (req.headers['if-none-match'] === etag) {

@@ -15,6 +15,7 @@ import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppsUtilService } from '@modules/apps/util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { VIEWER_LICENSE_FIELDS } from '@modules/apps/app-data-revision';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
@@ -216,6 +217,11 @@ export class VersionService implements IVersionService {
         },
       },
     });
+  }
+
+  // License terms the released-app cache key depends on (see getAppDataRevision).
+  getViewerLicenseTerms(organizationId: string): Promise<unknown> {
+    return this.licenseTermsService.getLicenseTerms(VIEWER_LICENSE_FIELDS, organizationId);
   }
 
   async getVersion(app: App, user: User, mode?: string): Promise<any> {
