@@ -18,7 +18,6 @@ export const buildTableColumn = (
   globalFilter,
   serverSideSearch,
   tableBodyRef,
-  t,
   enableExpandableRows,
   toggleRowExpansion,
   moduleId = 'canvas'
@@ -110,7 +109,6 @@ export const buildTableColumn = (
       tableRef: tableBodyRef,
       handleCellValueChange,
       searchText: globalFilter,
-      t,
       moduleId,
     }).filter(Boolean),
 
