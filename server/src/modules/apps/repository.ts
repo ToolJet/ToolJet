@@ -408,9 +408,6 @@ export class AppsRepository extends Repository<App> {
       { defaultBranchId }
     );
     if (activeBranchId) {
-      // Mirrors applyAppVersionsJoin's branchPick (util.service.ts): INNER JOIN scopes the
-      // list to workflows with a version on this branch (stubs included), same as the
-      // dashboard and module picker.
       qb.innerJoin(
         'app_versions',
         'av_branch',
