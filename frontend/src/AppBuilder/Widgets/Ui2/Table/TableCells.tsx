@@ -20,6 +20,7 @@ import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { matchesCondition, readCell } from './tableModel';
 import type { OnAction, Resolve, Row, TableColumn } from './types';
+import type { UncheckedPatterns } from './tableRegex';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isSet, safeImageUrl, safeUrl } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
@@ -129,6 +130,8 @@ interface RenderCellArgs {
   resolve: Resolve;
   onAction: OnAction;
   rowIndex: number;
+  /** Regex rule patterns its data could not be checked on (screenRegexRules): such a button rule holds for no row. */
+  unchecked?: UncheckedPatterns;
 }
 
 export const renderCell = ({
@@ -139,6 +142,7 @@ export const renderCell = ({
   resolve,
   onAction,
   rowIndex,
+  unchecked,
 }: RenderCellArgs): ReactNode => {
   const format = {
     ...column.format,
@@ -234,7 +238,9 @@ export const renderCell = ({
             const id = String(button.id ?? button.buttonId ?? `button${i + 1}`);
             // Rules are data ({ key, condition, value }); a binding inside the columns binding would end it early.
             const when = (rule: Resolved | undefined) =>
-              rule && typeof rule === 'object' && matchesCondition(readCell(row, rule.key), rule.condition, rule.value);
+              rule &&
+              typeof rule === 'object' &&
+              matchesCondition(readCell(row, rule.key), rule.condition, rule.value, undefined, unchecked);
             if (resolve(button.visible ?? button.buttonVisibility, row, value) === false || when(button.hiddenWhen)) {
               return null;
             }

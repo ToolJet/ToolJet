@@ -6,15 +6,16 @@ import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 //
 // Also (P1): a pattern whose search runs out of the matcher's step budget is 'too-complex'. Tags refuses the tag with
 // a message about the pattern. A Table filter or conditional style whose pattern cannot be checked on some row holds
-// for no row, whatever the row order (the filter stops at that row), the verdict is kept per pattern, and the Table
-// warns once, naming the pattern. A native run of a pathological pattern on its text is caught, recorded and answered
+// for no row of that dataset, whatever the row order (the filter stops at that row), and the Table warns once, naming
+// the pattern. The verdict belongs to the dataset, not the pattern (round 6, Table/__tests__/tableRegexScope.spec.js).
+// A native run of a pathological pattern on its text is caught, recorded and answered
 // without running, so a regression fails here instead of hanging jest.
 import { addTags } from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import {
   applyFilters,
   cellStyleFor,
   normalizeColumns,
-  screenStyleRules,
+  screenRegexRules,
 } from '@/AppBuilder/Widgets/Ui2/Table/tableModel';
 
 const rows = [
@@ -142,24 +143,19 @@ describe('Table', () => {
   ])('a %s filter too complex for some row keeps no row, and warns once', (condition, value) => {
     const filters = [{ column: 'value', condition, value }];
     expect(applyFilters(data, filters, tableColumns(data))).toEqual([]);
-    // The verdict is kept: the next render keeps no row either, without searching again.
-    const { result, ms } = (() => {
-      const start = performance.now();
-      return { result: applyFilters(data, filters, tableColumns(data)), ms: performance.now() - start };
-    })();
-    expect(result).toEqual([]);
-    expect(ms).toBeLessThan(2);
+    // The next render of the same data checks it again, keeps no row either, and does not warn again.
+    expect(applyFilters(data, filters, tableColumns(data))).toEqual([]);
     warnedOnceAbout(value);
   });
 
   test('a conditional style too complex for some row applies to no cell, and warns once', () => {
     const [column] = tableColumns(data, [{ condition: 'matches', value: '^(a+)+\\1$', textColor: '#dc2626' }]);
-    screenStyleRules([column], data);
-    expect(data.map((row) => cellStyleFor(column, row))).toEqual([{}, {}, {}, {}]);
+    const unchecked = screenRegexRules([column], data);
+    expect(data.map((row) => cellStyleFor(column, row, unchecked))).toEqual([{}, {}, {}, {}]);
     warnedOnceAbout('^(a+)+\\1$');
   });
 
-  // Rows a fine pattern answers quickly, with one pathological row; each test uses its own pattern (the verdict is kept).
+  // Rows a fine pattern answers quickly, with one pathological row; each test uses its own pattern (warned once each).
   const many = (bad) => [
     ...Array.from({ length: 999 }, (_, i) => ({ id: `row${i}`, value: i % 3 ? 'aaaa' : `b${i}` })),
     { id: 'bad', value: bad },
@@ -184,13 +180,13 @@ describe('Table', () => {
   test('the result does not depend on row order', () => {
     const rows = many(A28);
     const variants = [rows, [...rows].reverse(), [rows[999], ...rows.slice(0, 999)]];
-    // A fresh pattern for each order, so no order sees another's verdict.
+    // A fresh pattern for each order, so each order warns once.
     variants.forEach((order, n) => expect(timedFilter(order, `^(?=a)(a+)+$|^order${n}`).ids).toEqual([]));
     variants.forEach((order, n) => {
       const rule = { condition: 'matches', value: `^(?=a)(a+)+$|^style${n}`, textColor: '#dc2626' };
       const [column] = tableColumns(order, [rule]);
-      screenStyleRules([column], order);
-      expect(order.filter((row) => cellStyleFor(column, row).color)).toEqual([]);
+      const unchecked = screenRegexRules([column], order);
+      expect(order.filter((row) => cellStyleFor(column, row, unchecked).color)).toEqual([]);
     });
     expect(warn).toHaveBeenCalledTimes(6);
   });
@@ -208,8 +204,9 @@ describe('Table', () => {
     const filters = [{ column: 'value', condition, value }];
     expect(applyFilters(rows, filters, tableColumns(rows)).map((r) => r.id)).toEqual(expected);
     const [column] = tableColumns(rows, [{ condition, value, textColor: '#dc2626' }]);
-    screenStyleRules([column], rows);
-    expect(rows.filter((row) => cellStyleFor(column, row).color).map((r) => r.id)).toEqual(expected);
+    const unchecked = screenRegexRules([column], rows);
+    expect(unchecked.size).toBe(0);
+    expect(rows.filter((row) => cellStyleFor(column, row, unchecked).color).map((r) => r.id)).toEqual(expected);
     expect(warn).not.toHaveBeenCalled();
   });
 });
