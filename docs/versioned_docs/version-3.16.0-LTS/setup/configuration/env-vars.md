@@ -159,6 +159,19 @@ By default, an account is locked after 5 failed login attempts. You can control 
 
 - `PASSWORD_EXPIRY_DAYS`: Controls how long a password remains valid before the user is required to reset it (in days). Default: **30 days**. Set to `0` to disable password expiry.
 
+#### Two-Factor Authentication
+
+<PlanBadge type="enterprise" />
+
+- `MFA_MASTER_SECRET`: Secret used to derive each user's two-factor authentication (2FA) key. Required to use [two-factor authentication](/docs/user-management/authentication/2fa). No default.
+  - Use a long random value, for example one generated with `openssl rand -hex 32`.
+
+If `MFA_MASTER_SECRET` isn't set, every 2FA request (setting up an authenticator app, entering a code at sign-in, or turning 2FA off) fails with the error `MFA_MASTER_SECRET is not configured. Set it in the environment before enabling two-factor authentication.`
+
+:::warning
+Set `MFA_MASTER_SECRET` once and keep it unchanged. Each user's 2FA key is derived from this secret, so changing it invalidates every authenticator app that's already set up. Users who had 2FA turned on then need a super admin to [reset 2FA](/docs/user-management/authentication/2fa#reset-two-factor-authentication) before they can set it up again.
+:::
+
 #### Hide Account Setup Link
 
 - `HIDE_ACCOUNT_SETUP_LINK`: Set to `true` to hide the account setup link from the admin in the manage user page. Ensure SMTP is configured to send welcome emails.
