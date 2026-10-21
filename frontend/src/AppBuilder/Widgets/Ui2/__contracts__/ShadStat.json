@@ -19,6 +19,15 @@
       "default": "",
       "initial": ""
     },
+    "changeFormat": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "number",
+      "initial": "number"
+    },
     "changeLabel": {
       "type": "string",
       "schema": {

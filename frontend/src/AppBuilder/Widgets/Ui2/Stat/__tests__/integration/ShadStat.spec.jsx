@@ -74,7 +74,7 @@ describe('UI 2.0 Stat', () => {
     await waitFor(() => expect(figure()).toHaveTextContent('1.3M'));
   });
 
-  test('[ShadStat-PROP-003] change shows a chip with the trend arrow; trend down and neutral change the arrow', async () => {
+  test('[ShadStat-PROP-003] change shows a chip with an arrow for its sign; zero draws a level line', async () => {
     render({ properties: { change: binding('+12%') } });
     await waitFor(() => expect(chip('+12%').querySelector('svg')).toHaveClass('lucide-trending-up'));
     expect(exposed().secondaryValue).toBe('+12%');
@@ -83,7 +83,19 @@ describe('UI 2.0 Stat', () => {
     await waitFor(() => expect(chip('-3%').querySelector('svg')).toHaveClass('lucide-trending-down'));
 
     render({ properties: { change: binding('0%'), trend: binding('neutral') } });
-    await waitFor(() => expect(chip('0%').querySelector('svg')).toBeNull());
+    await waitFor(() => expect(chip('0%').querySelector('svg')).toHaveClass('lucide-minus'));
+
+    // Words with no sign of their own keep the Trend property's arrow, or none for neutral.
+    render({ properties: { change: binding('Flat'), trend: binding('neutral') } });
+    await waitFor(() => expect(chip('Flat').querySelector('svg')).toBeNull());
+  });
+
+  test('[ShadStat-PROP-013] changeFormat writes a numeric change as a percent, a number or money, rounded and signed', async () => {
+    render({ properties: { change: binding('{{12.345}}'), changeFormat: binding('percent') } });
+    await waitFor(() => expect(chip('12.345')).toHaveTextContent('+12.3%'));
+    render({ properties: { change: binding('{{12.345}}'), changeFormat: binding('currency') } });
+    await waitFor(() => expect(chip('12.345')).toHaveTextContent('+$12.35'));
+    // More cases, the arrows and the layout: ShadStatChange.spec.jsx.
   });
 
   // "+8 vs semana passada" in the chip, capped at 60% of the row, read "+8 vs semana pa..." (a clinic app, 2026-10-13).

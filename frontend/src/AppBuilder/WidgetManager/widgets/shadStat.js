@@ -106,6 +106,33 @@ export const shadStatConfig = {
         defaultValue: '',
       },
     },
+    changeFormat: {
+      type: 'switch',
+      displayName: 'Change format',
+      options: [
+        {
+          displayName: 'Percent',
+          value: 'percent',
+        },
+        {
+          displayName: 'Number',
+          value: 'number',
+        },
+        {
+          displayName: 'Currency',
+          value: 'currency',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: 'number',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
     trend: {
       type: 'switch',
       displayName: 'Trend',
@@ -777,6 +804,9 @@ export const shadStatConfig = {
       },
       change: {
         value: '',
+      },
+      changeFormat: {
+        value: 'number',
       },
       trend: {
         value: 'up',
