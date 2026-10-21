@@ -14,6 +14,7 @@ Owns personal access tokens (PATs) and their exchange for workspace sessions.
 - Workspace PATs can reach Apps, Data, Workflows, and the explicitly allowed Workspace Users features.
 - Workflow creation, execution, status, and node routes use the existing module metadata; do not add controller-specific PAT checks.
 - Scope access never overrides owner permissions or edition/license gates.
+- OAuth delegated and viewer requests share these scope bundles and ceilings through `../mcp-oauth/scope.interceptor.ts`; changing `constants/scopes.ts` changes PAT and OAuth access together.
 - Unassigned modules and routes without module metadata fail closed.
 - Credential modules are never grantable; a PAT must not mint another PAT.
 - Browser sessions and embed sessions (`patScope='app'`) are exempt from this workspace ceiling.

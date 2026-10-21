@@ -22,6 +22,15 @@ const api = () => `${config.apiUrl.replace(/\/$/, '')}/mcp-oauth`;
 
 export default function ConsentPage() {
   const id = new URLSearchParams(window.location.search).get('request');
+  // This route loads outside App, which normally applies the saved ToolJet theme.
+  const [darkMode] = useState(() => {
+    try {
+      return localStorage.getItem('darkMode') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const pageClassName = `mcp-oauth-page${darkMode ? ' dark-theme theme-dark' : ''}`;
   const [flow, setFlow] = useState(null);
   const [email, setEmail] = useState(null);
   const [error, setError] = useState('');
@@ -143,14 +152,14 @@ export default function ConsentPage() {
   // Keep consent hidden during the session check and while leaving for login.
   if (!email && !error && !needsLogin) {
     return (
-      <main className="mcp-oauth-page">
+      <main className={pageClassName}>
         <p role="status">Connecting to ToolJet…</p>
       </main>
     );
   }
 
   return (
-    <main className="mcp-oauth-page">
+    <main className={pageClassName}>
       <section className="mcp-oauth-card" aria-labelledby="mcp-oauth-title">
         <p className="mcp-oauth-brand">ToolJet</p>
         <h1 id="mcp-oauth-title">{email && flow ? `Connect ${flow.clientName} to ToolJet` : 'Connect to ToolJet'}</h1>

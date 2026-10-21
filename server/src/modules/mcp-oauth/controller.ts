@@ -21,6 +21,8 @@ import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { McpOAuthService } from './service';
 import { OAuthFailure } from './protocol';
+import { User } from '@entities/user.entity';
+import { BootstrapInput, ConsentInput, ViewerInput } from './dto';
 
 @Catch()
 export class McpOAuthExceptionFilter implements ExceptionFilter {
@@ -29,8 +31,9 @@ export class McpOAuthExceptionFilter implements ExceptionFilter {
     const status =
       error instanceof OAuthFailure ? error.status : error instanceof HttpException ? error.getStatus() : 500;
     res.setHeader('Cache-Control', 'no-store');
+    const req = host.switchToHttp().getRequest<Request>();
     if (error instanceof OAuthFailure && error.error === 'invalid_client' &&
-        host.switchToHttp().getRequest<Request>().headers.authorization) {
+        req.headers.authorization && !/\/exchange\/?$/i.test(req.path)) {
       res.setHeader('WWW-Authenticate', 'Basic realm="ToolJet MCP OAuth"');
     }
     res.status(status).json({
@@ -83,10 +86,10 @@ export class McpOAuthController {
     ) {
       throw new OAuthFailure('access_denied', 'Invalid browser request', 403);
     }
-    await this.oauth.assertBrowserOrigin((req.user as any).organizationId, req.headers.origin);
+    await this.oauth.assertBrowserOrigin((req.user as User).organizationId, req.headers.origin);
   }
   @Post('interactions/:id/bootstrap')
-  async bootstrap(@Param('id') id: string, @Body() body, @Req() req: Request, @Res() res: Response) {
+  async bootstrap(@Param('id') id: string, @Body() body: BootstrapInput, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     if (typeof req.headers.origin !== 'string') throw new OAuthFailure('access_denied', 'Missing browser origin', 403);
     const csrf = await this.oauth.bootstrapBrowser(id, body.ticket, body.nonce, req.headers.origin);
@@ -97,7 +100,7 @@ export class McpOAuthController {
     res.status(204).end();
   }
   @Get('authorize')
-  async authorize(@Query() query, @Res() res: Response) {
+  async authorize(@Query() query: Record<string, unknown>, @Res() res: Response) {
     this.headers(res);
     const flow = await this.oauth.start(query);
     res.cookie(this.oauth.cookieName(flow.id), flow.csrf, {
@@ -119,27 +122,27 @@ export class McpOAuthController {
   async session(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     const flow = await this.oauth.interaction(id, this.csrf(req, id), undefined, this.origin(req));
-    await this.oauth.assertCurrentAuthentication(req.user as any, flow.payload.organizationId);
-    res.json({ email: (req.user as any).email });
+    await this.oauth.assertCurrentAuthentication(req.user as User, flow.payload.organizationId);
+    res.json({ email: (req.user as User).email });
   }
   @Post('interactions/:id')
   @UseGuards(JwtAuthGuard)
-  async consent(@Param('id') id: string, @Body() body, @Req() req: Request, @Res() res: Response) {
+  async consent(@Param('id') id: string, @Body() body: ConsentInput, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     if (typeof body.allow !== 'boolean') throw new OAuthFailure('invalid_request', 'Choose Allow or Cancel');
-    const result = await this.oauth.consent(id, this.csrf(req, id), req.user as any, body.allow, this.origin(req));
+    const result = await this.oauth.consent(id, this.csrf(req, id), req.user as User, body.allow, this.origin(req));
     res.clearCookie(this.oauth.cookieName(id), { path: new URL(this.oauth.settings().issuer).pathname });
     res.status(200).json(result);
   }
   @Post('register')
   @Throttle({ default: { limit: 10, ttl: 60000 } })
-  async register(@Body() body, @Res() res: Response) {
+  async register(@Body() body: Record<string, unknown>, @Res() res: Response) {
     this.headers(res);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(201).json(await this.oauth.register(body));
   }
   @Post('token')
-  async token(@Body() body, @Req() req: Request, @Res() res: Response) {
+  async token(@Body() body: Record<string, unknown>, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     res.setHeader('Access-Control-Allow-Origin', '*');
     if (!req.is('application/x-www-form-urlencoded'))
@@ -147,7 +150,7 @@ export class McpOAuthController {
     res.status(200).json(await this.oauth.token(body, req.headers.authorization));
   }
   @Post('revoke')
-  async revoke(@Body() body, @Req() req: Request, @Res() res: Response) {
+  async revoke(@Body() body: Record<string, unknown>, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     res.setHeader('Access-Control-Allow-Origin', '*');
     if (!req.is('application/x-www-form-urlencoded'))
@@ -157,14 +160,14 @@ export class McpOAuthController {
   }
   @Post('exchange')
   @SkipThrottle()
-  async exchange(@Body() body, @Req() req: Request, @Res() res: Response) {
+  async exchange(@Body() body: Record<string, unknown>, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     res.status(200).json(await this.oauth.exchange(body, req.headers.authorization));
   }
   @Post('viewer')
   @UseGuards(JwtAuthGuard)
   @SetMetadata('mcpOAuthViewerMint', true)
-  async viewer(@Body() body, @Req() req: Request, @Res() res: Response) {
+  async viewer(@Body() body: ViewerInput, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     res.json(await this.oauth.viewer(req.headers['x-tooljet-delegation'] as string,
       req.headers['tj-workspace-id'] as string, body.app_id));
@@ -173,14 +176,14 @@ export class McpOAuthController {
   @UseGuards(JwtAuthGuard)
   async connections(@Req() req: Request, @Res() res: Response) {
     this.headers(res);
-    res.json(await this.oauth.connections(req.user as any));
+    res.json(await this.oauth.connections(req.user as User));
   }
   @Post('connections/:id/revoke')
   @UseGuards(JwtAuthGuard)
   async disconnect(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     await this.browserMutation(req);
-    await this.oauth.disconnect(req.user as any, id);
+    await this.oauth.disconnect(req.user as User, id);
     res.status(204).end();
   }
   @Options(['register', 'token', 'revoke'])

@@ -6,6 +6,9 @@ import { getCookie } from '@/_helpers';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { Navigate } from 'react-router-dom';
 import config from 'config';
+import { http, HttpResponse } from 'msw';
+import '@/test/setupMsw';
+import { server } from '@/test/msw/server';
 
 let mockQuery;
 jest.mock('@/_hooks/use-router', () => ({ __esModule: true, default: () => ({ query: mockQuery }) }));
@@ -35,7 +38,8 @@ jest.mock('react-router-dom', () => ({ Navigate: jest.fn(() => null) }));
 
 const requestId = 'P'.repeat(43);
 const consentPath = `/mcp/consent?request=${requestId}`;
-const originalFetch = global.fetch;
+let interactionRequests;
+const interactionUrl = `http://localhost/tools/api/mcp-oauth/interactions/${requestId}`;
 const originalApiUrl = config.apiUrl;
 beforeEach(() => {
   jest.clearAllMocks();
@@ -46,10 +50,13 @@ beforeEach(() => {
   authenticationService.getSignupOrganizationSlug.mockReturnValue('stale-signup');
   authenticationService.getInviteFlowIndetifier.mockReturnValue('stale-invite');
   authenticationService.signInViaOAuth.mockResolvedValue({ current_organization_id: 'orchard-workspace' });
-  global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ organizationId: 'orchard-workspace' }) });
+  interactionRequests = [];
+  server.use(http.get(interactionUrl, ({ request }) => {
+    interactionRequests.push(request);
+    return HttpResponse.json({ organizationId: 'orchard-workspace' });
+  }));
 });
 afterEach(() => {
-  global.fetch = originalFetch;
   config.apiUrl = originalApiUrl;
 });
 
@@ -65,10 +72,9 @@ test.each(['google', 'git'])(
     const navigate = jest.fn();
     render(<Authorize navigate={navigate} />);
     await waitFor(() => expect(onLoginSuccess).toHaveBeenCalledWith(expect.anything(), navigate, consentPath));
-    expect(global.fetch).toHaveBeenCalledWith(`/tools/api/mcp-oauth/interactions/${requestId}`, {
-      credentials: 'include',
-      headers: { 'x-tooljet-oauth-origin': window.location.origin },
-    });
+    expect(interactionRequests).toHaveLength(1);
+    expect(interactionRequests[0].credentials).toBe('include');
+    expect(interactionRequests[0].headers.get('x-tooljet-oauth-origin')).toBe(window.location.origin);
     expect(authenticationService.signInViaOAuth).toHaveBeenCalledWith(undefined, provider, expect.anything(), {
       organizationId: 'orchard-workspace',
       redirectTo: consentPath,
@@ -84,7 +90,7 @@ test('an expired or wrong-browser interaction never reaches SSO sign-in or onboa
     state: encodeURIComponent(JSON.stringify({ redirectTo: consentPath })),
   };
   window.history.replaceState({}, '', '/tools/sso/git');
-  global.fetch.mockResolvedValue({ ok: false, status: 400 });
+  server.use(http.get(interactionUrl, () => HttpResponse.json({}, { status: 400 })));
   render(<Authorize navigate={jest.fn()} />);
   await waitFor(() => expect(Navigate).toHaveBeenCalled());
   expect(authenticationService.signInViaOAuth).not.toHaveBeenCalled();
@@ -119,6 +125,6 @@ test('ordinary cloud onboarding retains its existing route without an interactio
   aiOnboardingService.signInViaOAuth.mockResolvedValue({});
   render(<Authorize navigate={jest.fn()} />);
   await waitFor(() => expect(aiOnboardingService.signInViaOAuth).toHaveBeenCalled());
-  expect(global.fetch).not.toHaveBeenCalled();
+  expect(interactionRequests).toHaveLength(0);
   expect(authenticationService.signInViaOAuth).not.toHaveBeenCalled();
 });

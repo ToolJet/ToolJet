@@ -10,6 +10,8 @@ import { User } from '@entities/user.entity';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { OAuthStore } from './store';
 import { createOAuthEngine } from './engine';
+import { DelegationIdentity, ViewerIdentity, isDelegationClaims, isViewerClaims } from './claims';
+import { ConnectedClientResponse, InteractionPreviewResponse } from './dto';
 import {
   OAUTH_SCOPES,
   ACCESS_SECONDS,
@@ -449,7 +451,7 @@ export class McpOAuthService implements OnModuleInit {
     await this.assertInteractionOrigin(row, origin, manager);
     return row;
   }
-  async preview(id: string, csrf: string, origin = new URL(this.settings().browser).origin) {
+  async preview(id: string, csrf: string, origin = new URL(this.settings().browser).origin): Promise<InteractionPreviewResponse> {
     const row = await this.interaction(id, csrf, this.dataSource.manager, origin);
     const client = await this.store().client(row.client_id);
     if (!client) throw new OAuthFailure('invalid_client', 'Client is unavailable');
@@ -637,7 +639,7 @@ export class McpOAuthService implements OnModuleInit {
   private async exchangeToken(body: Record<string, unknown>, authorization?: string) {
     const { issuer } = this.settings();
     if (!equalSecret(authorization || '', `Bearer ${this.config.get('MCP_OAUTH_EXCHANGE_SECRET')}`))
-      throw new UnauthorizedException();
+      throw new OAuthFailure('invalid_client', 'MCP exchange service authentication failed', 401);
     if (
       body.grant_type !== 'urn:ietf:params:oauth:grant-type:token-exchange' ||
       body.subject_token_type !== 'urn:ietf:params:oauth:token-type:access_token'
@@ -658,12 +660,13 @@ export class McpOAuthService implements OnModuleInit {
       Math.min(ACCESS_SECONDS, Math.floor((artifact.expires_at.getTime() - Date.now()) / 1000)),
     );
     if (seconds === 0) throw new OAuthFailure('invalid_token', 'Access token expired', 401);
+    const identity: DelegationIdentity = {
+      sub: grant.user_id,
+      oauthGrantId: grant.id,
+      oauthTokenId: artifact.id,
+    };
     const accessToken = this.jwt.sign(
-      {
-        sub: grant.user_id,
-        oauthGrantId: grant.id,
-        oauthTokenId: artifact.id,
-      },
+      identity,
       {
         secret: this.config.get('SECRET_KEY_BASE'),
         issuer,
@@ -697,11 +700,13 @@ export class McpOAuthService implements OnModuleInit {
       secret: this.config.get('SECRET_KEY_BASE'), issuer: this.settings().issuer,
       audience: DELEGATION_AUDIENCE, algorithms: ['HS256'],
     });
+    if (!isDelegationClaims(parent)) throw new UnauthorizedException();
     const seconds = Math.min(VIEWER_SECONDS, Math.floor(parent.exp - Date.now() / 1000));
     if (seconds < 1) throw new UnauthorizedException();
+    const identity: ViewerIdentity = { sub: user.id, oauthGrantId: parent.oauthGrantId,
+      oauthTokenId: parent.oauthTokenId, oauthAppId: appId };
     return {
-      access_token: this.jwt.sign({ sub: user.id, oauthGrantId: parent.oauthGrantId,
-        oauthTokenId: parent.oauthTokenId, oauthAppId: appId }, {
+      access_token: this.jwt.sign(identity, {
         secret: this.config.get('SECRET_KEY_BASE'), issuer: this.settings().issuer,
         audience: VIEWER_AUDIENCE, expiresIn: seconds,
       }),
@@ -709,15 +714,15 @@ export class McpOAuthService implements OnModuleInit {
     };
   }
   async authenticateViewer(credential: string, workspaceId?: string): Promise<User> {
-    let payload;
+    let payload: unknown;
     try {
       payload = this.jwt.verify(credential, { secret: this.config.get('SECRET_KEY_BASE'),
         issuer: this.settings().issuer, audience: VIEWER_AUDIENCE, algorithms: ['HS256'] });
     } catch { throw new UnauthorizedException(); }
     return this.validateViewer(payload, workspaceId);
   }
-  async validateViewer(payload: any, workspaceId?: string): Promise<User> {
-    if (payload.aud !== VIEWER_AUDIENCE || typeof payload.oauthAppId !== 'string') throw new UnauthorizedException();
+  async validateViewer(payload: unknown, workspaceId?: string): Promise<User> {
+    if (!isViewerClaims(payload)) throw new UnauthorizedException();
     const user = await this.validateDelegation({ ...payload, aud: DELEGATION_AUDIENCE }, workspaceId);
     if (!user.oauthScopes.includes('apps') || !user.oauthScopes.includes('data')) throw new UnauthorizedException();
     const [app] = await this.dataSource.query('SELECT id FROM apps WHERE id = $1 AND organization_id = $2',
@@ -728,7 +733,7 @@ export class McpOAuthService implements OnModuleInit {
   }
   async authenticateDelegation(credential: string, workspaceId: string): Promise<User> {
     const { issuer } = this.settings();
-    let payload;
+    let payload: unknown;
     try {
       payload = this.jwt.verify(credential, {
         secret: this.config.get('SECRET_KEY_BASE'),
@@ -741,12 +746,11 @@ export class McpOAuthService implements OnModuleInit {
     }
     return this.validateDelegation(payload, workspaceId);
   }
-  async validateDelegation(payload: any, workspaceId?: string): Promise<User> {
+  async validateDelegation(payload: unknown, workspaceId?: string): Promise<User> {
     const { issuer } = this.settings();
     if (
+      !isDelegationClaims(payload) ||
       payload.iss !== issuer ||
-      payload.aud !== DELEGATION_AUDIENCE ||
-      !Number.isInteger(payload.exp) ||
       payload.exp <= Date.now() / 1000
     ) {
       throw new UnauthorizedException();
@@ -778,15 +782,22 @@ export class McpOAuthService implements OnModuleInit {
     user.tjApiSource = 'mcp_oauth';
     return user;
   }
-  async connections(user: User) {
+  async connections(user: User): Promise<ConnectedClientResponse[]> {
     this.assertEnabled();
     this.assertBrowserUser(user, user.organizationId);
-    return this.dataSource.query(
+    const rows: { id: string; client_name: string; scopes: string[]; created_at: Date; expires_at: Date }[] = await this.dataSource.query(
       `SELECT g.id, c.name AS client_name, g.scopes, g.created_at, g.expires_at FROM mcp_oauth_grants g
        JOIN mcp_oauth_clients c ON c.id = g.client_id WHERE g.user_id = $1 AND g.organization_id = $2
        AND g.revoked_at IS NULL AND g.expires_at > now() ORDER BY g.created_at DESC`,
       [user.id, user.organizationId],
     );
+    return rows.map((row) => ({
+      id: row.id,
+      client_name: row.client_name,
+      scopes: row.scopes,
+      created_at: row.created_at.toISOString(),
+      expires_at: row.expires_at.toISOString(),
+    }));
   }
   async disconnect(user: User, id: string) {
     this.assertEnabled();
