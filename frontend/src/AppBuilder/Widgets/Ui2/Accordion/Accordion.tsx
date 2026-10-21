@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { ShowMoreBar, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -29,6 +30,9 @@ export const ShadAccordion = (props: WidgetProps) => {
   const { properties, setExposedVariables, fireEvent } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
+  // In a fixed box (the editor, or dynamic height off) the sections scroll inside the box: several open sections drew
+  // past it over the widgets below. With dynamic height on in the viewer the box follows the open sections.
+  const fixed = inFixedBox(props);
   const multiple = properties.multiple === true;
   const initial = useStable(list(properties.defaultOpen).map((k) => sectionKey(k) ?? ''));
   const [stored, setOpen] = useState<string[]>(initial);
@@ -90,7 +94,7 @@ export const ShadAccordion = (props: WidgetProps) => {
     ? { type: 'multiple' as const, value: open, onValueChange: change }
     : { type: 'single' as const, collapsible: true, value: open[0] ?? '', onValueChange: change };
   return (
-    <Shell {...props} innerRef={ref}>
+    <Shell {...props} innerRef={ref} className={cn(fixed && 'tw-h-full tw-overflow-y-auto')}>
       {/* Disabled or loading, the sections take no clicks (Radix disables every trigger); the actions still work, as on
           the native Accordion. */}
       <Accordion {...rootProps} disabled={busy(properties)} className="tw-w-full">
