@@ -50,6 +50,9 @@ const CONTRACT = {
   // ModalV2's Visibility and Disable belong to the trigger button and stay in its Trigger section, and
   // Disable is deliberately split (setDisableTrigger / setDisableModal) — product decision, 2026-10-21.
   ModalV2: ['loadingState'],
+  // Chat's Disable (disableInput) is input-only and its Loading is split into history / response —
+  // both kept by product decision, 2026-10-21.
+  Chat: ['visibility'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.
