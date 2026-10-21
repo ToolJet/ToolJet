@@ -102,10 +102,17 @@ describe('Text: content formats', () => {
     widget.render({ properties: { textFormat: binding('plainText'), text: binding('<em>x</em>') } });
     expect(await screen.findByText('<em>x</em>')).toBeInTheDocument();
 
+    // Set text through the action, so the switch has something to lose. With the
+    // saved property alone, a remount re-derives the same string and the switch
+    // looks fine while having discarded the component's own state.
+    await widget.act('setText', '<em>set-by-action</em>');
+    expect(await screen.findByText('<em>set-by-action</em>')).toBeInTheDocument();
+
     widget.setComponentProperty(ID, 'textFormat', 'html', 'properties');
 
     await waitFor(() => expect(root().querySelector('em')).not.toBeNull());
-    expect(exposedOf().text).toBe('<em>x</em>');
+    expect(root().querySelector('em')).toHaveTextContent('set-by-action');
+    expect(exposedOf().text).toBe('<em>set-by-action</em>');
   });
 });
 
@@ -216,6 +223,11 @@ describe('Text: component-specific actions', () => {
 
     await widget.act('setLoading', 1);
     expect(exposedOf().isLoading).toBe(true);
+    // The flag alone is not the behaviour: the content must give way to the loader,
+    // and come back when the action clears it.
+    await waitFor(() => expect(section()).toBeNull());
+    await widget.act('setLoading', 0);
+    await waitFor(() => expect(section()).not.toBeNull());
 
     await widget.act('setDisable', 'yes');
     expect(exposedOf().isDisabled).toBe(true);
@@ -313,10 +325,13 @@ describe('Text: events', () => {
     });
     await screen.findByText('click me');
 
-    await widget.session.user.click(root());
+    // Click the rendered text, not the root: a duplicate handler added on an inner
+    // layer never sees a click delivered straight to the root, so the count would
+    // stay correct while every real user click fired twice.
+    await widget.session.user.click(screen.getByText('click me'));
     await waitFor(() => expect(store().getVariable('calls', MODULE_ID)).toBe(1));
 
-    await widget.session.user.click(root());
+    await widget.session.user.click(screen.getByText('click me'));
     await waitFor(() => expect(store().getVariable('calls', MODULE_ID)).toBe(2));
   });
   test('[Text-EVT-004] onHover fires once per hover, not once per nested element', async () => {
