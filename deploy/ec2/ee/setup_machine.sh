@@ -224,6 +224,10 @@ cp "$BUILD_DIR/server/package.json" "$PROD_DIR/server/"
 [ -d "$BUILD_DIR/server/ee/keys" ] && mkdir -p "$PROD_DIR/server/ee/keys" && cp -r "$BUILD_DIR/server/ee/keys" "$PROD_DIR/server/ee/"
 [ -d "$BUILD_DIR/server/ee/ai/assets" ] && mkdir -p "$PROD_DIR/server/ee/ai/assets" && cp -r "$BUILD_DIR/server/ee/ai/assets" "$PROD_DIR/server/ee/ai/"
 
+# Copy shared widget-definitions package (server/node_modules/@tooljet/widget-definitions symlinks to it).
+# Conditional because this script also builds branches that predate the package.
+[ -d "$BUILD_DIR/packages/widget-definitions" ] && mkdir -p "$PROD_DIR/packages" && cp -r "$BUILD_DIR/packages/widget-definitions" "$PROD_DIR/packages/"
+
 # Copy frontend build
 mkdir -p "$PROD_DIR/frontend"
 cp -r "$BUILD_DIR/frontend/build" "$PROD_DIR/frontend/"
