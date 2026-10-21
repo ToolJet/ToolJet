@@ -8,7 +8,7 @@ import { UserRepository } from '@modules/users/repositories/repository';
 import { McpOAuthService } from './service';
 import { McpOAuthController, McpOAuthMetadataController } from './controller';
 
-/** OAuth connectivity is shared by CE, EE and Cloud and has no license gate. */
+/** Shared module registration keeps login/session injection stable; OAuth is gated to Cloud at runtime. */
 @Global()
 @Module({
   imports: [JwtModule.register({}), ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }])],

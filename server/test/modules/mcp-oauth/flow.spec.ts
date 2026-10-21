@@ -38,6 +38,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   const challenge = createHash('sha256').update(verifier).digest('base64url');
   const redirectUri = 'http://127.0.0.1:54321/callback';
   const settings = {
+    TOOLJET_EDITION: 'cloud',
     MCP_OAUTH_ENABLED: 'true',
     TOOLJET_HOST: 'https://tooljet.synthetic.example',
     MCP_OAUTH_RESOURCE_URL: resourceBase,
@@ -1074,7 +1075,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       await app.close();
     }
   });
-  test('the feature is disabled unless explicitly enabled, independent of edition', async () => {
+  test('Cloud OAuth is disabled unless explicitly enabled', async () => {
     const disabled = new McpOAuthService(
       db,
       new ConfigService({ ...settings, MCP_OAUTH_ENABLED: 'false' }),

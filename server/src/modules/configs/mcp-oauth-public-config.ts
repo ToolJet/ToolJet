@@ -1,7 +1,9 @@
+import { isMcpOAuthEnabled } from '@modules/mcp-oauth/http-security';
+
 // Only public connection information belongs here. OAuth exchange secrets stay on the server.
 export function getMcpOAuthPublicConfig(env: NodeJS.ProcessEnv) {
   const disabled = { MCP_OAUTH_ENABLED: 'false', MCP_OAUTH_RESOURCE_URL: null };
-  if (env.TOOLJET_EDITION !== 'cloud' || env.MCP_OAUTH_ENABLED !== 'true' || !env.MCP_OAUTH_RESOURCE_URL) {
+  if (!isMcpOAuthEnabled(env.TOOLJET_EDITION, env.MCP_OAUTH_ENABLED) || !env.MCP_OAUTH_RESOURCE_URL) {
     return disabled;
   }
 

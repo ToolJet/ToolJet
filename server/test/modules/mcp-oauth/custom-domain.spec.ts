@@ -8,6 +8,7 @@ jest.mock('@modules/users/repositories/repository', () => ({ UserRepository: cla
 
 const organizationId = '00000000-0000-4000-8000-000000000001';
 const settings = {
+  TOOLJET_EDITION: 'cloud',
   MCP_OAUTH_ENABLED: 'true',
   ENABLE_CUSTOM_DOMAINS: 'true',
   TOOLJET_HOST: 'https://tooljet.synthetic.example/tools',

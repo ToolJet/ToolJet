@@ -5,6 +5,8 @@ Deployment and protocol configuration lives in `ToolJet/tooljet-mcp`, `docs/oaut
 
 ## Boundaries
 
+- This release is Cloud-only: both `TOOLJET_EDITION=cloud` and `MCP_OAUTH_ENABLED=true` are required. `isMcpOAuthEnabled` is shared by backend settings, login evidence/cleanup, protocol middleware and public config. CE and self-hosted EE keep their normal login/PAT behavior.
+
 - `service.ts` owns browser consent and token issuance; `identity.service.ts` handles per-request credential checks without depending on the browser flow. `parsers.ts` and `policy.ts` hold shared configuration/registration parsing and policy loading. `engine.ts` adapts the OAuth engine to `store.ts`.
 - `claims.ts` is shared by credential signing and runtime validation. Viewer credentials use a distinct audience, are app-pinned, and cannot become browser sessions, PATs or full delegations.
 - `dto.ts` defines the browser API contracts. Map database rows explicitly; preserve existing wire fields when storage changes.

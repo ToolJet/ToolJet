@@ -1,9 +1,10 @@
+import { isMcpOAuthEnabled } from './http-security';
 import { ConfigService } from '@nestjs/config';
 import { NotFoundException } from '@nestjs/common';
 import { trustedUrl, validateRedirects, stringParam, CLIENT_AUTH_METHODS, OAuthFailure } from './protocol';
 
 export function parseOAuthSettings(config: ConfigService) {
-  if (config.get('MCP_OAUTH_ENABLED') !== 'true') throw new NotFoundException();
+  if (!isMcpOAuthEnabled(config.get('TOOLJET_EDITION'), config.get('MCP_OAUTH_ENABLED'))) throw new NotFoundException();
   const subpath = (config.get<string>('SUB_PATH') || '').replace(/^\/+|\/+$/g, '');
   const browser =
     trustedUrl(config.get<string>('TOOLJET_HOST')).origin + (subpath ? `/${subpath}` : '');

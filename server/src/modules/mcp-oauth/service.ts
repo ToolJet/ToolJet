@@ -1,3 +1,4 @@
+import { isMcpOAuthEnabled } from './http-security';
 import { REFRESH_RETRY_SECONDS, sealRefreshRetry, openRefreshRetry } from './refresh-retry';
 import { McpOAuthIdentityService } from './identity.service';
 import { parseOAuthSettings, parseRegistration } from './parsers';
@@ -132,7 +133,7 @@ export class McpOAuthService implements OnModuleInit {
   }
 
   enabled() {
-    return this.config.get('MCP_OAUTH_ENABLED') === 'true';
+    return isMcpOAuthEnabled(this.config.get('TOOLJET_EDITION'), this.config.get('MCP_OAUTH_ENABLED'));
   }
   assertEnabled() {
     if (!this.enabled()) throw new NotFoundException();

@@ -1,4 +1,4 @@
-import { isPublicOAuthProtocolPath } from '@modules/mcp-oauth/http-security';
+import { isPublicOAuthProtocolPath, isMcpOAuthEnabled } from '@modules/mcp-oauth/http-security';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
@@ -301,7 +301,7 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (safeMethods.has(req.method)) return next();
     if (
-      configService.get('MCP_OAUTH_ENABLED') === 'true' &&
+      isMcpOAuthEnabled(configService.get('TOOLJET_EDITION'), configService.get('MCP_OAUTH_ENABLED')) &&
       isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
     ) return next();
     if (exemptPrefixes.some((p) => req.path === p || req.path.startsWith(p))) return next();
@@ -373,7 +373,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     // workspace browser API's existing CORS policy and credential handling separate.
     app.use((req: Request, res: Response, next: NextFunction) => {
       if (
-        configService.get('MCP_OAUTH_ENABLED') !== 'true' ||
+        !isMcpOAuthEnabled(configService.get('TOOLJET_EDITION'), configService.get('MCP_OAUTH_ENABLED')) ||
         !isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
       ) return next();
       res.setHeader('Access-Control-Allow-Origin', '*');

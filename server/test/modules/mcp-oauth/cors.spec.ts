@@ -10,7 +10,7 @@ describe('OAuth protocol CORS through bootstrap middleware', () => {
   let app;
   let settings;
   beforeEach(async () => {
-    settings = { TOOLJET_HOST: 'https://tooljet.synthetic.example', MCP_OAUTH_ENABLED: 'true', SUB_PATH: '' };
+    settings = { TOOLJET_EDITION: 'cloud', TOOLJET_HOST: 'https://tooljet.synthetic.example', MCP_OAUTH_ENABLED: 'true', SUB_PATH: '' };
     const module = await Test.createTestingModule({
       providers: [{ provide: DataSource, useValue: { query: async () => [] } }],
     }).compile();
@@ -31,6 +31,13 @@ describe('OAuth protocol CORS through bootstrap middleware', () => {
     expect(response.headers['access-control-allow-origin']).toBe('*');
     expect(response.headers['access-control-allow-headers'].toLowerCase()).toContain('authorization');
     expect(response.headers['access-control-allow-credentials']).toBeUndefined();
+  });
+
+  test.each(['ce', 'ee', 'unknown'])('does not open protocol CORS for edition %s', async edition => {
+    settings.TOOLJET_EDITION = edition;
+    const response = await supertest(app.getHttpServer()).options('/api/mcp-oauth/token')
+      .set('Origin', 'https://client.synthetic.example').set('Access-Control-Request-Method', 'POST');
+    expect(response.headers['access-control-allow-origin']).toBeUndefined();
   });
 
   test.each([['false', '/api/mcp-oauth/token'], ['true', '/api/mcp-oauth/connections']])
@@ -72,3 +79,22 @@ describe('SAML callbacks with custom domains and an installation subpath', () =>
     },
   );
 });
+
+test.each([['cloud', 204], ['ce', 403], ['ee', 403]])(
+  'only Cloud exempts public protocol POSTs from browser-origin CSRF checks (%s)', async (edition, status) => {
+    const module = await Test.createTestingModule({ providers: [
+      { provide: DataSource, useValue: { query: async () => [] } },
+    ] }).compile();
+    const app = module.createNestApplication();
+    setupCsrfOriginCheck(app, new ConfigService({
+      TOOLJET_EDITION: edition, MCP_OAUTH_ENABLED: 'true', TOOLJET_HOST: 'https://tooljet.synthetic.example',
+      ENABLE_CUSTOM_DOMAINS: 'true', ENABLE_CORS: 'false',
+    }));
+    app.use((_req, res) => res.status(204).end());
+    await app.init();
+    try {
+      await supertest(app.getHttpServer()).post('/api/mcp-oauth/token')
+        .set('Origin', 'https://client.synthetic.example').type('form').send({}).expect(status);
+    } finally { await app.close(); }
+  },
+);
