@@ -54,6 +54,7 @@ Cloud plan presets: `STARTER/BASIC/PRO/TEAM_PLAN_TERMS_CLOUD` in `ee/licensing/c
 
 ## Invariants & gotchas
 
+- App-count guards use `manager.count`, never `find().length`: hydrating `App` rows fans out per-row `afterLoad` queries (see `apps/AGENTS.md`, Editing version hydration).
 - `users.editor` / `users.viewer` in terms = **Builder** / **End User** user-facing (`LICENSE_LIMITS_LABEL`). Never surface "editor/viewer" in UI copy.
 - Expiry: `expiry` is `YYYY-MM-DD`, valid until `23:59:59` that day. Expired or unparseable key ⇒ `IsBasicPlan` ⇒ silent fallback to basic terms — no hard errors. Cloud grace period comes from the `expiry_with_grace_period` column, not `Terms.expiry`.
 - CE `BASIC_PLAN_TERMS` ≠ EE `BASIC_PLAN_TERMS`: CE is UNLIMITED users/apps with features off; EE basic is 2 builders / 50 end users / 2 apps.
