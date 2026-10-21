@@ -49,6 +49,7 @@ export const usePostgrestQueryBuilder = ({
     const { headers, data, error } = await tooljetDatabaseService.findOne(selectedTable.id, query);
 
     if (error) {
+      setLoadingState(false);
       toast.error(error?.message ?? 'Something went wrong');
       return;
     }
