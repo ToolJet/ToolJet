@@ -7,6 +7,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
 import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
 import { HomePage } from '@/HomePage';
+import './lazyPageStyles';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 // Viewer import removed - now handled by ViewerApp.jsx
@@ -54,6 +55,7 @@ import {
   getDataSourcesRoutes,
   getAuditLogsRoutes,
 } from '@/modules';
+import './workspaceSettingsStyles';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';

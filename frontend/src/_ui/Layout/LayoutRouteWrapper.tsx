@@ -22,24 +22,22 @@ const LayoutRouteWrapper = ({ darkMode, switchDarkMode, guard: Guard }: LayoutRo
   const [collapseSidebar, setCollapseSidebar] = useState(false);
   const [enableCollapsibleSidebar, setEnableCollapsibleSidebar] = useState(false);
 
-  // Two cases for resetting the breadcrumb:
+  // Two places reset the breadcrumb:
   // 1. First mount (e.g. arriving here from a route outside this group, like HomePage): reset
   //    immediately in the effect body, since there's no previous effect instance to clean up yet —
   //    otherwise the breadcrumb from whatever page we came from would linger during the lazy-loaded
   //    page's chunk-loading gap.
-  // 2. Every subsequent pathname change: reset in the cleanup instead of the body. React runs every
-  //    changed component's cleanup (this one, for the OLD pathname) before running any new effect
-  //    bodies, so this fires and clears the breadcrumb before the newly-matched page's own
-  //    mount/location effect sets its real value — without clobbering it afterwards. This also means
-  //    same-page sub-route navigation (e.g. workspace-settings/users -> workspace-settings/groups) is
+  // 2. Every pathname change, including the first one after mount: reset in the cleanup. React runs
+  //    every changed component's cleanup (this one, for the OLD pathname) before running any new
+  //    effect bodies, so this clears the breadcrumb before the newly-matched page's own
+  //    mount/location effect sets its real value — without clobbering it afterwards. Same-page
+  //    sub-route navigation (e.g. workspace-settings/users -> workspace-settings/groups) is
   //    unaffected, since that page's own effect re-sets the correct breadcrumb in the same commit,
   //    after this cleanup runs.
   useEffect(() => {
     if (initialMountRef.current) {
       updateSidebarNAV('');
       initialMountRef.current = false;
-
-      return;
     }
 
     return () => {

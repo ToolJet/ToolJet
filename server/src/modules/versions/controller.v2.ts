@@ -22,10 +22,12 @@ import { getAppDataRevision } from '@modules/apps/app-data-revision';
 
 // ETag for the released version: changes with the version row (e.g. promote) and everything the
 // released-app cache key covers (getAppDataRevision). Other versions aren't tracked by the change
-// stamps, so they aren't cached. Null = no caching.
+// stamps, so they aren't cached. The mode is part of it because view responses are permission-filtered
+// and edit responses aren't. Null = no caching.
 async function releasedVersionETag(
   app: AppEntity,
   versionId: string,
+  mode: string | undefined,
   userId: string,
   getLicenseTerms: () => Promise<unknown>
 ): Promise<string | null> {
@@ -38,7 +40,7 @@ async function releasedVersionETag(
   if (version?.status !== AppVersionStatus.PUBLISHED) return null;
   const revision = await getAppDataRevision(manager, app, { versionId, userId, licenseTerms: await getLicenseTerms() });
   if (!revision) return null;
-  return `"v-${versionId}-${version.updatedAt.getTime()}-${revision}"`;
+  return `"v-${versionId}-${mode ?? ''}-${version.updatedAt.getTime()}-${revision}"`;
 }
 
 @InitModule(MODULES.VERSION)
@@ -76,7 +78,7 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   ) {
     // The released version is cached by the browser but revalidated on every load (no-cache), so
     // an unchanged version costs a 304 instead of rebuilding and downloading the payload.
-    const etag = await releasedVersionETag(app, versionId, user.id, () =>
+    const etag = await releasedVersionETag(app, versionId, mode, user.id, () =>
       this.versionService.getViewerLicenseTerms(app.organizationId)
     );
     if (etag) {

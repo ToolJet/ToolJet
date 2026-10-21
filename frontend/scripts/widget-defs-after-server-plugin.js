@@ -25,8 +25,33 @@ class WidgetDefsAfterServerPlugin {
 
       let debounceTimer = null;
       let generation = 0;
+      const changedFiles = new Set();
+      const removedFiles = new Set();
 
-      this._watcher.on('change', () => {
+      // These files are in watchOptions.ignored, so the bundler doesn't know they changed. rspack only
+      // rebuilds modules it's told about (a bare invalidate() leaves them cached); webpack has no such
+      // method and re-checks file timestamps on invalidate().
+      const rebuild = () => {
+        const watching = compiler.watching;
+        if (typeof watching.invalidateWithChangesAndRemovals === 'function') {
+          watching.invalidateWithChangesAndRemovals(new Set(changedFiles), new Set(removedFiles));
+        } else {
+          watching.invalidate();
+        }
+        changedFiles.clear();
+        removedFiles.clear();
+      };
+
+      this._watcher.on('all', (event, filePath) => {
+        if (event === 'unlink') {
+          removedFiles.add(filePath);
+          changedFiles.delete(filePath);
+        } else if (event === 'add' || event === 'change') {
+          changedFiles.add(filePath);
+          removedFiles.delete(filePath);
+        } else {
+          return;
+        }
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           const currentGen = ++generation;
@@ -51,9 +76,10 @@ class WidgetDefsAfterServerPlugin {
           };
 
           // Phase 1: wait for server to go down (nest restart triggered by the file change).
-          // Timeout after 20s — if it never goes down, nest didn't restart, so abort.
+          // After 20s without a restart, the server isn't watching these files, so rebuild anyway.
           const waitForDown = (attempts = 0) => {
-            if (isStale() || attempts > 40) return;
+            if (isStale()) return;
+            if (attempts > 40) return rebuild();
             http
               .get(`http://localhost:${serverPort}/api/config`, (res) => {
                 res.resume();
@@ -70,7 +96,7 @@ class WidgetDefsAfterServerPlugin {
               .get(`http://localhost:${serverPort}/api/config`, (res) => {
                 res.resume();
                 if (res.statusCode === 200) {
-                  compiler.watching.invalidate();
+                  rebuild();
                 } else {
                   setTimeout(() => waitForUp(attempts + 1), 1000);
                 }

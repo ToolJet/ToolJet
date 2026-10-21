@@ -38,4 +38,10 @@ export class InMemoryCacheService implements ICacheService {
   clear(): void {
     InMemoryCacheService.cacheStore.clear();
   }
+
+  // The store is shared by the whole process, so code that saves cached data can drop the entry
+  // without injecting this service.
+  static forget(key: string): void {
+    InMemoryCacheService.cacheStore.delete(key);
+  }
 }

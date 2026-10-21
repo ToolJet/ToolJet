@@ -9,7 +9,11 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
-import { findNewParentIdFromMousePosition } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import {
+  findNewParentIdFromMousePosition,
+  handleDeactivateTargets,
+  hideGridLines,
+} from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 
 export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
@@ -24,6 +28,16 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
       item: { componentType: component.component, component },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
       end: (item, monitor) => {
+        // Released over the component panel: the drag is cancelled. The panel stays open during a drag
+        // (closing it unmounts this drag source and the drop never lands) and it overlays the canvas,
+        // so the position lookup below would find the canvas underneath and add the component.
+        const releasedAt = monitor.getClientOffset();
+        if (releasedAt && document.elementFromPoint(releasedAt.x, releasedAt.y)?.closest('.editor-sidebar')) {
+          handleDeactivateTargets();
+          hideGridLines();
+          setShowModuleBorder(false);
+          return;
+        }
         // hover on the target sets currentDragCanvasId, but hover only fires on a
         // dragover - if the drop happens before one ever fires (e.g. release right
         // after entering the canvas with no further movement), that state is stale

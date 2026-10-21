@@ -1,7 +1,7 @@
 import React, { Component, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
-import { claimChunkReload } from '@/_helpers/chunkReloadGuard';
+import { claimChunkReload, isChunkLoadError } from '@/_helpers/chunkReloadGuard';
 
 // Lazy load ENTIRE APP ROUTERS (not just pages)
 // This is CRITICAL for bundle isolation - each router imports completely different code
@@ -37,11 +37,11 @@ class ChunkErrorBoundary extends Component {
     // Every error must flip hasError. Returning null here leaves the boundary rendering the
     // same crashing children, which remount and throw again — a silent infinite remount that
     // pegs the CPU and exhausts the browser's connection pool instead of showing anything.
-    return { hasError: true, isChunkError: error?.name === 'ChunkLoadError' };
+    return { hasError: true, isChunkError: isChunkLoadError(error) };
   }
 
   componentDidCatch(error, errorInfo) {
-    if (error?.name === 'ChunkLoadError') {
+    if (isChunkLoadError(error)) {
       // Already reloaded within the last minute: render() shows the error UI instead.
       if (claimChunkReload()) window.location.reload();
       return;

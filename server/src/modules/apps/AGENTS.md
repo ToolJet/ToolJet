@@ -57,13 +57,15 @@ The viewer keeps the released app's `GET apps/slugs/:slug` response in IndexedDB
 
 Not `apps.updated_at` (every draft edit bumps it) and not released version content (frozen).
 
+Stamps are only written by `tj_viewer_cache_stamp`, which locks rows in id order in one statement (migration `AddViewerCacheStamps`). A trigger must collect every app it touches and write them in one call: two writes in one statement deadlock against a concurrent theme change.
+
 **Checklist — anything that changes what a viewer sees in a released app.** A miss here serves a stale app to viewers until the next deploy, and nothing else fails.
 
 | The change | What to do |
 |---|---|
 | Ships only in a new ToolJet version (code, widget defaults, migrations) | Nothing; the server version is in the key. |
 | A new license flag read by `getBySlug` or the version endpoint | Add it to `VIEWER_LICENSE_FIELDS` and to the license-flags test. |
-| New data an admin or builder can change without a release (a permission table, a workspace or app setting) | New migration with a trigger that calls `tj_viewer_cache_touch_apps` / `_versions` / `_workspaces`, plus a case in `test/modules/apps/e2e/viewer-cache-stamps.spec.ts`. |
+| New data an admin or builder can change without a release (a permission table, a workspace or app setting) | New migration with a trigger that makes one call to `tj_viewer_cache_touch_apps` / `_versions` / `_workspaces`, plus a case in `test/modules/apps/e2e/viewer-cache-stamps.spec.ts`. |
 | Something that differs per viewer (like group membership) | Add it to the inputs in `getAppDataRevision`. |
 | A new `apps` column the response reads | Add it to the inputs (the app row is already loaded). |
 

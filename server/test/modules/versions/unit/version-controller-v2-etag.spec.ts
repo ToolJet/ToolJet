@@ -29,7 +29,7 @@ describe('VersionControllerV2.getVersion caching', () => {
   const versionUpdatedAt = new Date('2026-10-02T00:00:00.000Z');
   let etag: string;
 
-  const setup = (status: AppVersionStatus | undefined, ifNoneMatch?: string, viewedApp: App = app) => {
+  const setup = (status: AppVersionStatus | undefined, ifNoneMatch?: string, viewedApp: App = app, mode = 'view') => {
     const findOne = jest.fn().mockResolvedValue(status ? { id: 'ver-1', status, updatedAt: versionUpdatedAt } : null);
     (getConnectionInstance as jest.Mock).mockReturnValue({ manager: { findOne, query: revisionQuery() } });
 
@@ -43,7 +43,7 @@ describe('VersionControllerV2.getVersion caching', () => {
     const controller = new VersionControllerV2(versionService);
     const res = { set: jest.fn(), status: jest.fn() } as unknown as Response;
     const req = { headers: ifNoneMatch ? { 'if-none-match': ifNoneMatch } : {} } as unknown as Request;
-    const call = () => controller.getVersion(user, viewedApp, 'ver-1', 'view', req, res);
+    const call = () => controller.getVersion(user, viewedApp, 'ver-1', mode, req, res);
     return { call, res, getVersion, getLicenseTerms };
   };
 
@@ -53,7 +53,7 @@ describe('VersionControllerV2.getVersion caching', () => {
       userId: 'user-1',
       licenseTerms,
     });
-    etag = `"v-ver-1-${versionUpdatedAt.getTime()}-${revision}"`;
+    etag = `"v-ver-1-view-${versionUpdatedAt.getTime()}-${revision}"`;
   });
 
   it('caches a published version with revalidation and an ETag', async () => {
@@ -80,6 +80,15 @@ describe('VersionControllerV2.getVersion caching', () => {
 
     expect(res.status).toHaveBeenCalledWith(304);
     expect(getVersion).not.toHaveBeenCalled();
+  });
+
+  it("doesn't answer an edit request with the view response's ETag, since only view is permission-filtered", async () => {
+    const { call, res, getVersion } = setup(AppVersionStatus.PUBLISHED, etag, app, 'edit');
+
+    await call();
+
+    expect(res.status).not.toHaveBeenCalledWith(304);
+    expect(getVersion).toHaveBeenCalled();
   });
 
   it('sends the full response when the ETag is stale', async () => {

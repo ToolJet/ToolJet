@@ -4,6 +4,14 @@
 // the app shell boots before a route's lazy chunk is requested, so clearing on boot re-armed the reload
 // on every page load and the tab reloaded forever.
 
+// A JS chunk that fails to load throws a ChunkLoadError. rspack's CSS extract plugin throws a plain
+// Error with code CSS_CHUNK_LOAD_FAILED instead (webpack's mini-css-extract-plugin also named it
+// ChunkLoadError), so both have to be checked.
+export function isChunkLoadError(error: unknown): boolean {
+  const { name, code } = (error ?? {}) as { name?: string; code?: string };
+  return name === 'ChunkLoadError' || code === 'CSS_CHUNK_LOAD_FAILED';
+}
+
 const CHUNK_RELOAD_KEY = 'chunk_reload_at';
 export const CHUNK_RELOAD_WINDOW_MS = 60 * 1000;
 
