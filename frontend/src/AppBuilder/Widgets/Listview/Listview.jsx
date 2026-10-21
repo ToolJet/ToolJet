@@ -62,6 +62,46 @@ export const Listview = function Listview({
   const { borderRadius, boxShadow } = styles;
   const visibility = combinedProperties.visibility ?? true;
   const disabledState = combinedProperties.disabledState ?? false;
+  const [isVisible, setIsVisible] = useState(visibility);
+  const [isDisabled, setIsDisabled] = useState(disabledState);
+  const [isLoading, setIsLoading] = useState(loadingState);
+
+  // A changed Visibility / Disable / Loading property wins over an earlier CSA call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariables({ isVisible: visibility });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setIsDisabled(disabledState);
+    setExposedVariables({ isDisabled: disabledState });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    setIsLoading(loadingState);
+    setExposedVariables({ isLoading: loadingState });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  useEffect(() => {
+    setExposedVariables({
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariables({ isVisible: !!value });
+      },
+      setDisable: async function (value) {
+        setIsDisabled(!!value);
+        setExposedVariables({ isDisabled: !!value });
+      },
+      setLoading: async function (value) {
+        setIsLoading(!!value);
+        setExposedVariables({ isLoading: !!value });
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
@@ -74,7 +114,7 @@ export const Listview = function Listview({
     borderColor,
     ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
     height: isDynamicHeightEnabled ? '100%' : enablePagination ? height - 54 : height,
-    display: visibility ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
     padding: '7px',
@@ -97,7 +137,7 @@ export const Listview = function Listview({
   const parentRef = useRef(null);
   // Disabled list blocks the mouse via `data-disabled`; `inert` also removes the row components from
   // the tab order (runtime only — keeps the builder editable).
-  useDisableInert(parentRef, disabledState);
+  useDisableInert(parentRef, isDisabled);
 
   // Dynamic-height toggle-off transition: drop this Listview's own inflated
   // temp (widget-level + per-row heights). Done once at the widget level so
@@ -199,15 +239,15 @@ export const Listview = function Listview({
 
   return (
     <div
-      data-disabled={disabledState}
+      data-disabled={isDisabled}
       className={cx(`flex-column w-100 position-relative dynamic-${id} listview-scroll-container`, {
-        'jet-container-loading': loadingState,
+        'jet-container-loading': isLoading,
       })}
       id={id}
       ref={parentRef}
       style={computedStyles}
     >
-      {loadingState ? (
+      {isLoading ? (
         <Spinner />
       ) : (
         <>
@@ -228,7 +268,7 @@ export const Listview = function Listview({
                 isDynamicHeightEnabled={isDynamicHeightEnabled}
                 data={data}
                 currentLayout={currentLayout}
-                visibility={visibility}
+                visibility={isVisible}
                 parentHeight={height}
                 dataCy={dataCy}
                 componentType={componentType}

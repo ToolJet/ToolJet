@@ -53,6 +53,7 @@ const CONTRACT = {
   // Chat's Disable (disableInput) is input-only and its Loading is split into history / response —
   // both kept by product decision, 2026-10-21.
   Chat: ['visibility'],
+  Listview: ['visibility', 'disabledState', 'loadingState'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.
