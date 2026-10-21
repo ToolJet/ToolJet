@@ -13,7 +13,7 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
-import { heightHeldInView, isUi2PerRowType } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { heightHeldInView, isUi2PerRowType, marksDynamicHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Grid slice — owns the mutable reflow state for dynamic-height layout.
@@ -75,8 +75,11 @@ export const createGridSlice = (set, get) => {
     ...initialState,
     scheduleReflow,
     checkHoveredComponentDynamicHeight: (id) => {
-      const { getResolvedComponent } = get();
+      const { getResolvedComponent, getComponentDefinition } = get();
       const resolvedProperties = getResolvedComponent(id)?.properties;
+      const componentType = getComponentDefinition(id)?.component?.component;
+      // A UI 2.0 widget's resize lines agree with its outline (marksDynamicHeight); a native widget follows its property.
+      if (/^Shad[A-Z]/.test(componentType ?? '')) return marksDynamicHeight(componentType, resolvedProperties);
       const { dynamicHeight } = resolvedProperties || {};
       return dynamicHeight;
     },

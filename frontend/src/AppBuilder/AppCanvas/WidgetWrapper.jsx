@@ -1,4 +1,4 @@
-import { fitsContentInView, stretchesInRow } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { fitsContentInView, marksDynamicHeight, stretchesInRow } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { leavesFlexFlow } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import React, { memo, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
@@ -123,6 +123,11 @@ const WidgetWrapper = memo(
       shallow
     );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
+    // The editor's dynamic-height marker (purple outline and handle): only for widgets whose box follows their content.
+    const showsDynamicHeight = useStore(
+      (state) => marksDynamicHeight(componentType, state.getResolvedComponent(id, resolveIndex, moduleId)?.properties),
+      shallow
+    );
     // Dont remove - used to re-render height calculations when textSize changes (ProgressBar)
     // eslint-disable-next-line no-unused-vars
     const textSize = useStore(
@@ -300,7 +305,7 @@ const WidgetWrapper = memo(
             'active-target': isWidgetActive,
             'opacity-0 pointer-events-none': isDragging || isResizing,
             'module-container': isModuleContainer,
-            'dynamic-height-target': isDynamicHeightEnabled,
+            'dynamic-height-target': showsDynamicHeight,
             'flex-child-wrapper': isFlexLayout,
             'flex-stretch-child': isFlexLayout && flexLayout.isStretched,
           })}
@@ -337,7 +342,7 @@ const WidgetWrapper = memo(
               customClassName={configHandleClassName}
               isModuleContainer={isModuleContainer}
               subContainerIndex={subContainerIndex}
-              isDynamicHeightEnabled={isDynamicHeightEnabled}
+              isDynamicHeightEnabled={showsDynamicHeight}
             />
           )}
           <RenderWidget
