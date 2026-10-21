@@ -10,6 +10,7 @@ module.exports = {
     '^@entities/(.*)$': '<rootDir>/src/entities/$1',
     '^@helpers/(.*)$': '<rootDir>/src/helpers/$1',
     '^@otel/(.*)$': '<rootDir>/src/otel/$1',
+    '^@dto/(.*)$': '<rootDir>/src/dto/$1',
     '^@ee/(.*)$': '<rootDir>/ee/$1',
   },
   transform: {

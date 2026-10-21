@@ -2,7 +2,7 @@ import { isMcpOAuthEnabled } from './http-security';
 import { REFRESH_RETRY_SECONDS, sealRefreshRetry, openRefreshRetry } from './refresh-retry';
 import { McpOAuthIdentityService } from './identity.service';
 import { parseOAuthSettings, parseRegistration } from './parsers';
-import { loadLoginPolicy } from './policy';
+import { loadLoginPolicy, lockMcpOAuthConsent } from './policy';
 import { Cron } from '@nestjs/schedule';
 import type { ILoginConfigsUtilService } from '@modules/login-configs/interfaces/IUtilsService';
 import { ForbiddenException, Inject, Injectable, NotFoundException, OnModuleInit, Optional, UnauthorizedException } from '@nestjs/common';
@@ -444,6 +444,7 @@ export class McpOAuthService implements OnModuleInit {
         'UPDATE mcp_oauth_clients SET first_authorized_at = now() WHERE id = $1 AND first_authorized_at IS NULL',
         [interaction.client_id],
       );
+      await lockMcpOAuthConsent(manager);
       await manager.query(
         `INSERT INTO mcp_oauth_grants(id,client_id,user_id,organization_id,resource,scopes,authentication,expires_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,

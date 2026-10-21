@@ -1,5 +1,6 @@
+import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
 import { McpOAuthService } from '@modules/mcp-oauth/service';
-import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DeepPartial, EntityManager, MoreThanOrEqual, Not } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { UserSessions } from '@entities/user_sessions.entity';
@@ -49,29 +50,15 @@ export class SessionUtilService {
     protected readonly jwtService: JwtService
   ) { }
 
-  async terminateAllSessions(userId: string, exceptSessionId?: string): Promise<void> {
+  async terminateAllSessions(userId: string, exceptSessionId?: string, manager?: EntityManager): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Administrative termination also invalidates external credentials on the Cloud OAuth rollout.
       // Ordinary logout uses its separate session-only path.
       if (this.configService.get<string>('TOOLJET_EDITION')?.toLowerCase() === 'cloud') {
-        await manager.query("SELECT pg_advisory_xact_lock_shared(hashtext('mcp-oauth-security-policy'))");
-        await manager.query('SELECT id FROM users WHERE id=$1 FOR NO KEY UPDATE', [userId]);
-        for (const [credential, query] of [
-          ['MCP OAuth', 'UPDATE mcp_oauth_grants SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL'],
-          ['PAT', 'UPDATE user_personal_access_tokens SET expires_at = LEAST(expires_at, now()) WHERE user_id = $1'],
-        ]) {
-          try {
-            // A savepoint keeps a failed optional credential update from aborting session deletion.
-            await manager.transaction(async isolatedManager => { await isolatedManager.query(query, [userId]); });
-          } catch (error) {
-            // Respect explicit cancellation and assertion failures, matching PostgreSQL's OTHERS handler.
-            if (['57014', 'P0004'].includes(error?.code)) throw error;
-            Logger.warn(`${credential} invalidation skipped during session termination`, SessionUtilService.name);
-          }
-        }
+        await invalidateUserCredentials(manager, userId);
       }
       await manager.delete(UserSessions, { userId, ...(exceptSessionId ? { id: Not(exceptSessionId) } : {}) });
-    });
+    }, manager);
   }
 
   sign(JWTPayload: any): string {

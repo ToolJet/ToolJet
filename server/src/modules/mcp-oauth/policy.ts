@@ -1,4 +1,5 @@
-import { DataSource } from 'typeorm';
+import { ssoSecurityConfig, INSTANCE_LOGIN_SECURITY_KEYS } from './security-policy';
+import { DataSource, EntityManager } from 'typeorm';
 import { UnauthorizedException } from '@nestjs/common';
 import type { ILoginConfigsUtilService } from '@modules/login-configs/interfaces/IUtilsService';
 import { hash, canonicalJson } from './protocol';
@@ -18,7 +19,7 @@ export async function loadLoginPolicy(dataSource: DataSource, loginConfigs: Pick
       id: provider.configId || provider.config_id,
       enabled:
         !!provider.enabled && provider.featureIncluded !== false && provider.feature_included !== false,
-      config: Object.fromEntries(Object.entries(provider.configs || {}).filter(([key]) => key !== 'name')),
+      config: ssoSecurityConfig(type, provider.configs),
     }));
   });
   // Include workspace and instance restrictions that are not in the public provider list.
@@ -27,13 +28,13 @@ export async function loadLoginPolicy(dataSource: DataSource, loginConfigs: Pick
     [organizationId],
   );
   const instancePolicy = await dataSource.query(
-    "SELECT key,value FROM instance_settings WHERE key IN ('ALLOWED_DOMAINS','PASSWORD_ALLOWED_DOMAINS','PASSWORD_RESTRICTED_DOMAINS','ENABLE_WORKSPACE_LOGIN_CONFIGURATION','MFA_ENABLED') ORDER BY key",
+    'SELECT key,value FROM instance_settings WHERE key = ANY($1) ORDER BY key', [INSTANCE_LOGIN_SECURITY_KEYS],
   );
   // Hash stored encrypted configuration, never store or expose it in OAuth credentials.
   // Public login metadata intentionally hides secrets and group mappings.
   const storedProviders = await dataSource.query(
     `SELECT id, sso, enabled, config_scope,
-       CASE WHEN jsonb_typeof(configs::jsonb) = 'object' THEN configs::jsonb - 'name' ELSE configs::jsonb END AS configs
+       configs
      FROM sso_configs
      WHERE organization_id = $1 OR config_scope = 'instance' ORDER BY id`,
     [organizationId],
@@ -50,10 +51,15 @@ export async function loadLoginPolicy(dataSource: DataSource, loginConfigs: Pick
       version: 1,
       workspacePolicy,
       instancePolicy,
-      storedProviders,
+      storedProviders: storedProviders.map(provider => ({ ...provider, configs: ssoSecurityConfig(provider.sso, provider.configs) })),
       groupSync,
     })),
     password: providers.some((p) => p.type === 'form' && p.enabled),
     sso: providers.some((p) => p.type !== 'form' && p.enabled),
   };
+}
+
+/** Serialize approval with security changes before inserting a grant. */
+export async function lockMcpOAuthConsent(manager: EntityManager) {
+  await manager.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-security-policy'))");
 }

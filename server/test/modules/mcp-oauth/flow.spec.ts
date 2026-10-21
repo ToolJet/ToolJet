@@ -1,5 +1,15 @@
+import { securityCallSiteTests } from '@ee/test/modules/mcp-oauth/security-call-sites';
+import { AddNewColumnsToInstanceSettings1682011503431 } from '../../../data-migrations/1682011503431-AddNewColumnsToInstanceSettings';
+import { updateSecurityEntity, saveSecurityEntity, deleteSecurityEntity, disableMcpOAuthClient, invalidateUserCredentials, lockSecurityChange } from '@modules/mcp-oauth/revocation';
+import { User } from '@entities/user.entity';
+import { Organization } from '@entities/organization.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
+import { SSOConfigs } from '@entities/sso_config.entity';
+import { SsoConfigOidcGroupSync } from '@entities/sso_config_oidc_group_sync.entity';
+import { InstanceSettings } from '@entities/instance_settings.entity';
+import { AddGrantTypeKeyInSSOConfig1761556597329 } from '../../../data-migrations/1761556597329-AddGrantTypeKeyInSSOConfig';
 import { assertPatMintSession, assertPatExchange } from '@modules/personal-access-tokens/credential-lifecycle';
-jest.mock('@helpers/utils.helper', () => ({ getTooljetEdition: () => 'cloud' }));
+jest.mock('@helpers/utils.helper', () => ({ getTooljetEdition: () => 'cloud', catchDbException: callback => callback(), validatePasswordServer: jest.fn(), cleanObject: object => { for (const key of Object.keys(object)) if (object[key] === undefined) delete object[key]; } }));
 jest.mock('@helpers/bootstrap.helper', () => ({ createLogger: () => ({ log: jest.fn() }) }));
 jest.mock('@tooljet/plugins/dist/server', () => ({ QueryError: class extends Error {}, OAuthUnauthorizedClientError: class extends Error {} }), { virtual: true });
 import { join } from 'path';
@@ -59,6 +69,18 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     SECRET_KEY_BASE: signingSecret,
   };
   const resource = () => `${resourceBase}/${organizationId}`;
+  const ban = async (email = user.email) => db.transaction(async manager => {
+    await lockSecurityChange(manager);
+    await manager.query('INSERT INTO user_ban_list(email) VALUES ($1)', [email]);
+    await SessionUtilService.prototype.terminateAllSessions.call(
+      { configService: new ConfigService(settings) }, user.id, undefined, manager);
+  });
+  const banWorkspace = async () => db.transaction(async manager => {
+    await lockSecurityChange(manager);
+    await manager.query('INSERT INTO workspace_ban_list (organization_id) VALUES ($1)', [organizationId]);
+    await updateSecurityEntity(manager, Organization, organizationId, { status: 'archived' });
+  });
+
   const request = (overrides = {}) => ({
     response_type: 'code',
     client_id: client.client_id,
@@ -119,6 +141,10 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     });
     await db.initialize();
     setConnectionInstance(db);
+    // Production also applies this historical data migration's settings columns.
+    const settingsRunner = db.createQueryRunner();
+    try { await new AddNewColumnsToInstanceSettings1682011503431().up(settingsRunner); }
+    finally { await settingsRunner.release(); }
     // npm run test:mcp-oauth applies the real migration chain before Jest starts.
     const [{ total }] = await db.query('SELECT count(*)::int AS total FROM migrations');
     expect(total).toBeGreaterThan(200);
@@ -400,6 +426,11 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     expect((await db.query('SELECT disabled FROM mcp_oauth_clients WHERE id=$1', [confidentialId]))[0].disabled).toBe(true);
   });
 
+  securityCallSiteTests(() => ({ db, user, organizationId, exchange, mint: async () => {
+    user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
+    return redeem(await approve());
+  } }));
+
   const makeViewer = async (scope = 'apps data') => {
     const tokens = await redeem(await approve({ scope }));
     const delegated = await exchange(tokens.access_token);
@@ -441,20 +472,17 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
         user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
         const { delegated } = await makeViewer();
         await withCredentialWriteFailure('mcp_oauth_grants', failure, async () => {
-          const writes: Record<string, [string, any[]]> = {
-            user: ["UPDATE users SET status='archived' WHERE id=$1 RETURNING id", [user.id]],
-            workspace: ["UPDATE organizations SET status='archived' WHERE id=$1 RETURNING id", [organizationId]],
-            membership: ['DELETE FROM organization_users WHERE user_id=$1 AND organization_id=$2 RETURNING id', [user.id, organizationId]],
-            'workspace-ban': ['INSERT INTO workspace_ban_list (organization_id) VALUES ($1) RETURNING id', [organizationId]],
-            client: ['UPDATE mcp_oauth_clients SET disabled=true WHERE id=$1 RETURNING id', [client.client_id]],
-            sso: ['UPDATE sso_configs SET enabled=false WHERE id=$1 RETURNING id', [providerId]],
-            'group-sync': ['UPDATE sso_config_oidc_group_sync SET enable_group_sync=false WHERE sso_config_id=$1 RETURNING id', [providerId]],
-            'instance-policy': ["INSERT INTO instance_settings (key,value) VALUES ('MFA_ENABLED','true') RETURNING id", []],
+          const writes: Record<string, () => Promise<any>> = {
+            user: () => updateSecurityEntity(db.manager, User, user.id, { status: 'archived' }),
+            workspace: () => updateSecurityEntity(db.manager, Organization, organizationId, { status: 'archived' }),
+            membership: () => deleteSecurityEntity(db.manager, OrganizationUser, { userId: user.id, organizationId }),
+            'workspace-ban': () => banWorkspace(),
+            client: () => disableMcpOAuthClient(db.manager, client.client_id),
+            sso: () => updateSecurityEntity(db.manager, SSOConfigs, providerId, { enabled: false }),
+            'group-sync': () => updateSecurityEntity(db.manager, SsoConfigOidcGroupSync, { ssoConfigId: providerId }, { enableGroupSync: false }),
+            'instance-policy': () => saveSecurityEntity(db.manager, InstanceSettings, { key: 'MFA_ENABLED', value: 'true' }),
           };
-          const [sql, parameters] = writes[kind];
-          const result = await db.query(sql, parameters);
-          // TypeORM returns [rows, count] for UPDATE/DELETE and rows for INSERT.
-          expect(Array.isArray(result[0]) ? result[0] : result).toHaveLength(1);
+          await writes[kind]();
           await expect(oauth.authenticateDelegation(delegated.access_token, organizationId)).rejects.toThrow(UnauthorizedException);
         });
       },
@@ -464,7 +492,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
         const { tokens } = await makeViewer();
         await db.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-resilient-ban-pat','workspace',now()+interval '1 day')", [user.id, organizationId]);
         await withCredentialWriteFailure(table, failure, async () => {
-          await db.query('INSERT INTO user_ban_list(email) VALUES ($1)', [user.email]);
+          await ban();
           expect(await db.query('SELECT email FROM user_ban_list')).toEqual([{ email: user.email }]);
           if (table === 'mcp_oauth_grants') {
             expect((await db.query('SELECT expires_at <= now() AS expired FROM user_personal_access_tokens'))[0].expired).toBe(true);
@@ -587,7 +615,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     const { tokens, delegated, appId } = await makeViewer();
     const viewer = await oauth.viewer(delegated.access_token, organizationId, appId);
     await db.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-pat-hash','workspace',now()+interval '1 day')", [user.id,organizationId]);
-    await db.query('INSERT INTO user_ban_list(email) VALUES ($1)', [user.email.toUpperCase()]);
+    await ban(user.email.toUpperCase());
     await db.query('DELETE FROM user_ban_list');
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
@@ -597,9 +625,8 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   });
   test('live ban check denies even when the ban predates a grant', async () => {
     const tokens = await redeem(await approve());
-    await db.query('ALTER TABLE user_ban_list DISABLE TRIGGER mcp_oauth_instance_ban_security');
-    try { await db.query('INSERT INTO user_ban_list(email) VALUES ($1)', [user.email]); }
-    finally { await db.query('ALTER TABLE user_ban_list ENABLE TRIGGER mcp_oauth_instance_ban_security'); }
+    // Direct SQL has no application callback; live checks still reject the current ban.
+    await db.query('INSERT INTO user_ban_list(email) VALUES ($1)', [user.email]);
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     await db.query('DELETE FROM user_ban_list');
     await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
@@ -834,23 +861,25 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   });
   test.each(['membership', 'user', 'workspace'])('disable and reenable %s cannot revive consent before any token check', async (target) => {
     const tokens = await redeem(await approve());
-    const table = { membership: 'organization_users', user: 'users', workspace: 'organizations' }[target];
-    await db.query(`UPDATE ${table} SET status = 'archived'`);
-    await db.query(`UPDATE ${table} SET status = 'active'`);
+    const entity = { membership: OrganizationUser, user: User, workspace: Organization }[target];
+    const criteria = target === 'membership' ? { userId: user.id, organizationId } : { id: target === 'user' ? user.id : organizationId };
+    await updateSecurityEntity(db.manager, entity, criteria, { status: 'archived' });
+    await updateSecurityEntity(db.manager, entity, criteria, { status: 'active' });
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     expect((await db.query('SELECT revoked_at FROM mcp_oauth_grants'))[0].revoked_at).not.toBeNull();
   });
   test('deleting and recreating workspace membership cannot revive consent', async () => {
     const tokens = await redeem(await approve());
-    await db.query('DELETE FROM organization_users');
+    await deleteSecurityEntity(db.manager, OrganizationUser, { userId: user.id });
     await db.query("INSERT INTO organization_users (user_id,organization_id,status,role) VALUES ($1,$2,'active','admin')", [user.id, organizationId]);
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test('workspace ban and unban cannot revive a connection', async () => {
     const tokens = await redeem(await approve());
-    await db.query('INSERT INTO workspace_ban_list (organization_id) VALUES ($1)', [organizationId]);
+    await banWorkspace();
     await db.query('DELETE FROM workspace_ban_list');
+    await updateSecurityEntity(db.manager, Organization, organizationId, { status: 'active' });
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test('client disable and reenable revokes only the disabled client connections', async () => {
@@ -858,25 +887,25 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     const tokens = await redeem(await approve());
     client = await oauth.register({ client_name: 'Other synthetic client', redirect_uris: [redirectUri], token_endpoint_auth_method: 'none' });
     const other = await redeem(await approve());
-    await db.query('UPDATE mcp_oauth_clients SET disabled = true WHERE id = $1', [originalClient.client_id]);
+    await disableMcpOAuthClient(db.manager, originalClient.client_id);
     await db.query('UPDATE mcp_oauth_clients SET disabled = false WHERE id = $1', [originalClient.client_id]);
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     expect((await exchange(other.access_token)).access_token).toBeDefined();
   });
   test('workspace slug change and restore revokes but display-name edits do not', async () => {
     const tokens = await redeem(await approve());
-    await db.query('UPDATE organizations SET name = $1', ['Meadow workspace']);
+    await updateSecurityEntity(db.manager, Organization, organizationId, { name: 'Meadow workspace' });
     expect((await exchange(tokens.access_token)).access_token).toBeDefined();
-    await db.query('UPDATE organizations SET slug = $1', ['meadow']);
-    await db.query('UPDATE organizations SET slug = $1', ['garden']);
+    await updateSecurityEntity(db.manager, Organization, organizationId, { slug: 'meadow' });
+    await updateSecurityEntity(db.manager, Organization, organizationId, { slug: 'garden' });
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test.each([['MFA_ENABLED', 'THEME'], ['THEME', 'MFA_ENABLED']])('renaming setting %s to %s and back durably revokes', async (original, changed) => {
     await db.query('INSERT INTO instance_settings (key,value) VALUES ($1,$2)', [original, 'false']);
     user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
     const tokens = await redeem(await approve());
-    await db.query('UPDATE instance_settings SET key = $1 WHERE key = $2', [changed, original]);
-    await db.query('UPDATE instance_settings SET key = $1 WHERE key = $2', [original, changed]);
+    await updateSecurityEntity(db.manager, InstanceSettings, { key: original }, { key: changed });
+    await updateSecurityEntity(db.manager, InstanceSettings, { key: changed }, { key: original });
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test('unrelated instance settings and other workspaces do not revoke this connection', async () => {
@@ -889,16 +918,16 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   });
   test('changing and restoring a workspace restriction revokes before any token check', async () => {
     const tokens = await redeem(await approve());
-    await db.query('UPDATE organizations SET domain = $1', ['synthetic.example']);
-    await db.query('UPDATE organizations SET domain = NULL');
+    await updateSecurityEntity(db.manager, Organization, organizationId, { domain: 'synthetic.example' });
+    await updateSecurityEntity(db.manager, Organization, organizationId, { domain: null });
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test('nullable form-login configuration can be disabled and reenabled safely', async () => {
     await db.query("INSERT INTO sso_configs (id,organization_id,sso,enabled,config_scope,configs) VALUES ($1,$2,'form',true,'organization',NULL)", [randomUUID(), organizationId]);
     user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
     const tokens = await redeem(await approve());
-    await db.query('UPDATE sso_configs SET enabled = false');
-    await db.query('UPDATE sso_configs SET enabled = true');
+    await updateSecurityEntity(db.manager, SSOConfigs, { organizationId }, { enabled: false });
+    await updateSecurityEntity(db.manager, SSOConfigs, { organizationId }, { enabled: true });
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test('changing and restoring SSO settings revokes while cosmetic names preserve consent', async () => {
@@ -907,10 +936,10 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await db.query("INSERT INTO sso_configs (id,organization_id,sso,enabled,config_scope,configs) VALUES ($1,$2,'openid',true,'organization',$3)", [providerId, organizationId, JSON.stringify(original)]);
     user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
     const tokens = await redeem(await approve());
-    await db.query('UPDATE sso_configs SET configs = $1', [JSON.stringify({ ...original, name: 'Meadow login' })]);
+    await new SSOConfigsRepository(db).updateConfig(providerId, { configs: { ...original, name: 'Meadow login' } as any });
     expect((await exchange(tokens.access_token)).access_token).toBeDefined();
-    await db.query('UPDATE sso_configs SET configs = $1', [JSON.stringify({ ...original, clientId: 'changed-client' })]);
-    await db.query('UPDATE sso_configs SET configs = $1', [JSON.stringify(original)]);
+    await new SSOConfigsRepository(db).updateConfig(providerId, { configs: { ...original, clientId: 'changed-client' } as any });
+    await new SSOConfigsRepository(db).updateConfig(providerId, { configs: original as any });
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test('concurrent client disabling completes without deadlocking first consent or retaining failed approval', async () => {
@@ -932,7 +961,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
         if (!waiting) await new Promise((resolve) => setTimeout(resolve, 5));
       }
       expect(waiting).toBe(true);
-      await writer.query('UPDATE mcp_oauth_clients SET disabled=true WHERE id=$1', [client.client_id]);
+      await disableMcpOAuthClient(writer.manager, client.client_id);
       await writer.commitTransaction();
       const outcome = await approval;
       expect(outcome.error).toMatchObject({ error: 'invalid_grant' });
@@ -951,9 +980,9 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await writer.startTransaction();
     let approval: Promise<string>;
     try {
-      await writer.query('UPDATE organizations SET domain = $1', ['new.synthetic.example']);
+      await updateSecurityEntity(writer.manager, Organization, organizationId, { domain: 'new.synthetic.example' });
       approval = approve();
-      // Wait for the actual INSERT lock, rather than relying on arbitrary callback timing.
+      // Wait for consent's actual application lock, rather than arbitrary callback timing.
       const deadline = Date.now() + 2000;
       let waiting = false;
       while (!waiting && Date.now() < deadline) {
@@ -1096,10 +1125,10 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     const writer = db.createQueryRunner();
     await writer.startTransaction();
     try {
-      await writer.query("UPDATE organizations SET status='archived' WHERE id=$1", [otherId]);
+      await updateSecurityEntity(writer.manager, Organization, otherId, { status: 'archived' });
       await db.transaction(async manager => {
         await manager.query("SET LOCAL statement_timeout = '1500ms'");
-        await manager.query("UPDATE organizations SET status='archived' WHERE id=$1", [organizationId]);
+        await updateSecurityEntity(manager, Organization, organizationId, { status: 'archived' });
       });
     } finally { await writer.rollbackTransaction(); await writer.release(); }
   });
@@ -1113,30 +1142,65 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await first.startTransaction(); await second.startTransaction();
     try {
       for (const runner of [first, second]) await runner.query("SET LOCAL statement_timeout = '1500ms'");
-      const change = (runner, uid, wid) => runner.query(
-        "UPDATE organization_users SET status='archived' WHERE user_id=$1 AND organization_id=$2", [uid, wid]);
+      const change = (runner, uid, wid) => updateSecurityEntity(runner.manager, OrganizationUser, { userId: uid, organizationId: wid }, { status: 'archived' });
       await change(first, u1, w1);
       await change(second, u2, w2);
       await Promise.all([change(first, u2, w1), change(second, u1, w2)]);
       // Mixed local/instance edits remain shared lock holders, with no lock upgrades.
       await Promise.all([
-        first.query("INSERT INTO instance_settings (key,value) VALUES ('ALLOWED_DOMAINS', 'orchard.example')"),
-        second.query("INSERT INTO instance_settings (key,value) VALUES ('PASSWORD_ALLOWED_DOMAINS', 'meadow.example')"),
+        saveSecurityEntity(first.manager, InstanceSettings, { key: 'ALLOWED_DOMAINS', value: 'orchard.example' }),
+        saveSecurityEntity(second.manager, InstanceSettings, { key: 'PASSWORD_ALLOWED_DOMAINS', value: 'meadow.example' }),
       ]);
     } finally {
       await first.rollbackTransaction(); await second.rollbackTransaction();
       await first.release(); await second.release();
     }
   });
-  test('irrelevant updates skip security trigger execution', async () => {
-    await db.transaction(async manager => {
-      await manager.query(`CREATE OR REPLACE FUNCTION mcp_oauth_revoke_on_security_change() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'unexpected trigger'; END; $$`);
-      await manager.query("UPDATE users SET email=email");
-      await manager.query("UPDATE organizations SET name=name");
-      await manager.query("UPDATE mcp_oauth_clients SET name=name");
-      // Throw to restore the real function definition after proving the updates skipped it.
-      throw new Error('restore function');
-    }).catch(error => { expect(error.message).toBe('restore function'); });
+  test('migrations install no OAuth triggers or trigger functions', async () => {
+    expect(await db.query("SELECT tgname FROM pg_trigger WHERE tgname LIKE 'mcp_oauth_%'")).toEqual([]);
+    expect(await db.query("SELECT proname FROM pg_proc WHERE proname IN ('mcp_oauth_revoke_on_security_change', 'mcp_oauth_lock_grant_creation', 'mcp_oauth_revoke_instance_ban') AND pronamespace = 'oauth_test'::regnamespace")).toEqual([]);
+  });
+  test('the existing cleanup migration removes all ten legacy hooks and their functions', async () => {
+    const hooks = [
+      ['mcp_oauth_grant_creation_lock', 'mcp_oauth_grants', 'mcp_oauth_lock_grant_creation'],
+      ['mcp_oauth_user_security', 'users'], ['mcp_oauth_workspace_security', 'organizations'],
+      ['mcp_oauth_membership_security', 'organization_users'], ['mcp_oauth_ban_security', 'workspace_ban_list'],
+      ['mcp_oauth_client_security', 'mcp_oauth_clients'], ['mcp_oauth_sso_security', 'sso_configs'],
+      ['mcp_oauth_group_sync_security', 'sso_config_oidc_group_sync'], ['mcp_oauth_instance_security', 'instance_settings'],
+      ['mcp_oauth_instance_ban_security', 'user_ban_list', 'mcp_oauth_revoke_instance_ban'],
+    ];
+    const runner = db.createQueryRunner();
+    await runner.startTransaction();
+    try {
+      for (const fn of ['mcp_oauth_lock_grant_creation', 'mcp_oauth_revoke_on_security_change', 'mcp_oauth_revoke_instance_ban'])
+        await runner.query(`CREATE FUNCTION ${fn}() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END; $$`);
+      for (const [name, table, fn = 'mcp_oauth_revoke_on_security_change'] of hooks)
+        await runner.query(`CREATE TRIGGER ${name} AFTER UPDATE ON ${table} FOR EACH ROW EXECUTE FUNCTION ${fn}()`);
+      expect((await runner.query("SELECT count(*)::int AS total FROM pg_trigger WHERE tgname LIKE 'mcp_oauth_%'"))[0].total).toBe(10);
+      await new ReduceMcpOAuthPolicyContention1792540800000().up(runner);
+      expect(await runner.query("SELECT tgname FROM pg_trigger WHERE tgname LIKE 'mcp_oauth_%'")).toEqual([]);
+      expect(await runner.query("SELECT proname FROM pg_proc WHERE proname LIKE 'mcp_oauth_%' AND pronamespace='oauth_test'::regnamespace")).toEqual([]);
+    } finally { await runner.rollbackTransaction(); await runner.release(); }
+  });
+  test.each(['organization', 'instance'])('benign SSO migration and extra keys preserve %s consent and fingerprint', async configScope => {
+    const repo = new SSOConfigsRepository(db);
+    const provider = await repo.saveConfig({ sso: 'openid', enabled: true, configScope,
+      organizationId: configScope === 'organization' ? organizationId : null,
+      configs: { client_id: 'synthetic-garden-client', name: 'Garden SSO' },
+    } as any);
+    user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
+    const fingerprint = user.workspaceAuthentication.policyFingerprint;
+    const tokens = await redeem(await approve());
+    const runner = db.createQueryRunner();
+    try { await new AddGrantTypeKeyInSSOConfig1761556597329().up(runner); }
+    finally { await runner.release(); }
+    const migrated = await repo.findOneBy({ id: provider.id });
+    expect(migrated.configs['grant_type']).toBe('authorization_code');
+    await repo.updateConfig(provider.id, { configs: { ...migrated.configs, presentation_version: 2 } as any });
+    expect((await oauth.captureAuthentication(organizationId, 'form')).policyFingerprint).toBe(fingerprint);
+    expect((await db.query('SELECT revoked_at FROM mcp_oauth_grants'))[0].revoked_at).toBeNull();
+    await expect(exchange(tokens.access_token)).resolves.toHaveProperty('access_token');
+    await expect(refresh(tokens.refresh_token)).resolves.toHaveProperty('access_token');
   });
   test('checks resource, client and service authentication at exchange', async () => {
     const code = await approve();

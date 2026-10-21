@@ -19,6 +19,9 @@ export class AddMcpOAuthClientAuthentication1791763200000 implements MigrationIn
     // Never downgrade a confidential client to a public client during rollback.
     await queryRunner.query(`UPDATE mcp_oauth_clients SET disabled = true
       WHERE token_endpoint_auth_method <> 'none'`);
+    await queryRunner.query(`UPDATE mcp_oauth_grants SET revoked_at = now()
+      WHERE revoked_at IS NULL AND client_id IN
+        (SELECT id FROM mcp_oauth_clients WHERE token_endpoint_auth_method <> 'none')`);
     await queryRunner.query(`ALTER TABLE mcp_oauth_clients
       DROP CONSTRAINT mcp_oauth_client_auth_check,
       DROP COLUMN client_secret_hash,
