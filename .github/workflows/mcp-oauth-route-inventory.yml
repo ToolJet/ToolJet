@@ -1,6 +1,9 @@
 name: MCP OAuth security
 
 on:
+  push:
+    branches: ['feat/mcp-oauth-sso', 'lts-3.16']
+    paths: ['server/**', 'frontend/**', 'plugins/**', '.github/workflows/mcp-oauth-route-inventory.yml']
   pull_request:
     paths:
       - 'server/**'
