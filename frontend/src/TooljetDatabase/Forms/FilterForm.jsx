@@ -1,23 +1,25 @@
 import './styles.scss';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Select from '@/_ui/Select';
 import { TooljetDatabaseContext } from '../index';
 import { operators } from '../constants';
 import { debounce } from 'lodash';
 import { ToolTip } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useTjdbActions } from '../_stores/tjdbStore';
 
 export const FilterForm = ({ filters, setFilters, index, column = '', operator = '', value = '', generateMessage }) => {
-  const { columns, setPageCount } = useContext(TooljetDatabaseContext);
+  const { columns } = useContext(TooljetDatabaseContext);
+  const { setPageCount } = useTjdbActions();
 
   const [filterInputValue, setFilterInputValue] = useState(value);
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
   useEffect(() => {
     const debouncedFilter = debounce(() => {
-      const prevFilters = { ...filters };
-      prevFilters[index].value = filterInputValue;
-
-      setFilters(prevFilters);
+      const latest = filtersRef.current;
+      setFilters({ ...latest, [index]: { ...latest[index], value: filterInputValue } });
     }, 500);
 
     debouncedFilter();
@@ -31,17 +33,11 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
   }, [value]);
 
   const handleColumnChange = (value) => {
-    const prevFilters = { ...filters };
-    prevFilters[index].column = value;
-
-    setFilters(prevFilters);
+    setFilters({ ...filters, [index]: { ...filters[index], column: value } });
   };
 
   const handleOperatorChange = (value) => {
-    const prevFilters = { ...filters };
-    prevFilters[index].operator = value;
-
-    setFilters(prevFilters);
+    setFilters({ ...filters, [index]: { ...filters[index], operator: value } });
   };
 
   const handleDelete = () => {

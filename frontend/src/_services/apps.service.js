@@ -42,7 +42,9 @@ function getAppAuthenticationConfig(slug) {
 
 function getWorkflows(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${id}/workflows`, requestOptions).then(handleResponse);
+  // Needs the branch param — without it the backend resolves the org default branch and a
+  // workflow that exists only on a feature branch comes back with a null name.
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${id}/workflows`), requestOptions).then(handleResponse);
 }
 
 function getAppsLimit() {
