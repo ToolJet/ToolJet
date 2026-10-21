@@ -71,7 +71,8 @@ export const ShadRecordList = (props: WidgetProps) => {
       innerRef={ref}
       card={card}
       skeletonClass="tw-overflow-hidden"
-      skeleton={Array.from({ length: 4 }).map((_, i) => (
+      // As many rows as it will show (4 before the first data), so the list keeps its length.
+      skeleton={Array.from({ length: Math.min(rows.length || 4, shownCount) }).map((_, i) => (
         <div
           key={i}
           className={cn('tw-flex tw-items-center tw-gap-3', inset, density.pad, divided(i))}

@@ -21,6 +21,14 @@ export const DELTA_TONE: Record<string, string> = {
   neutral: 'var(--sc-muted-foreground)',
 };
 
+/** A line of text's height (its font size and line height from `className`) with a skeleton bar in it. */
+const SkeletonLine = ({ className, width }: { className: string; width: string }) => (
+  <div className={cn('tw-relative tw-flex tw-max-w-full tw-items-center', width, className)}>
+    <span aria-hidden="true">&nbsp;</span>
+    <Skeleton className="tw-absolute tw-inset-x-0 tw-h-[0.75em]" />
+  </div>
+);
+
 export const ShadSummaryStrip = (props: WidgetProps) => {
   const { properties: p } = props;
   const ref = useRef<HTMLDivElement>(null);
@@ -36,7 +44,9 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
   const size = STRIP_SIZE[p.size] || STRIP_SIZE.default;
   const panel = p.appearance !== 'plain';
   const center = p.align === 'center';
-  const count = p.loadingState ? 4 : figures.length;
+  // While loading, as many cells as the figures it will show (4 before the first data), so the grid keeps its rows.
+  const count = p.loadingState ? figures.length || 4 : figures.length;
+  const captions = figures.some((f) => f.caption);
   const columns = stripColumns(count, width || Number(props.width) || 960, size.min);
   // Borders are classes (the pack's preflight zeroes inline border widths); the colour stays inline.
   const hairline = 'var(--lk-border,var(--sc-border))';
@@ -73,13 +83,16 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
       >
         {p.loadingState
           ? Array.from({ length: count }).map((_, i) => (
+              // A skeleton cell is built from the loaded cell's line boxes (label, figure, caption), each holding a bar,
+              // so it is exactly as tall: a 48px skeleton row in place of a 70px figure row shrank the strip.
               <div
                 key={i}
-                className={cn('tw-flex tw-flex-col tw-gap-2', pad, center && 'tw-items-center', cellBorders(i))}
+                className={cn('tw-flex tw-flex-col tw-gap-1', pad, center && 'tw-items-center', cellBorders(i))}
                 style={{ borderColor: hairline }}
               >
-                <Skeleton className="tw-h-3 tw-w-20" />
-                <Skeleton className="tw-h-7 tw-w-24" />
+                <SkeletonLine className="tw-flex-1 tw-text-xs" width="tw-w-20" />
+                <SkeletonLine className={cn('tw-leading-tight', size.value)} width="tw-w-24" />
+                {captions ? <SkeletonLine className="tw-text-xs" width="tw-w-16" /> : null}
               </div>
             ))
           : figures.map((f, i) => (

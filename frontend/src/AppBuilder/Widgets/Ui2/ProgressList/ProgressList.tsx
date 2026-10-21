@@ -3,7 +3,12 @@ import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { percentLabel } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
-import { progressEntries, progressItem, progressMax, type ProgressEntry } from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
+import {
+  progressEntries,
+  progressItem,
+  progressMax,
+  type ProgressEntry,
+} from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import {
   Bar,
@@ -86,7 +91,8 @@ export const ShadProgressList = (props: WidgetProps) => {
       card={card}
       skeletonClass="tw-flex tw-flex-col"
       cardClass="tw-py-1"
-      skeleton={Array.from({ length: 4 }).map((_, i) => (
+      // As many rows as it will show (4 before the first data), so the list keeps its length.
+      skeleton={Array.from({ length: rows.length || 4 }).map((_, i) => (
         <div key={i} className={cn('tw-flex tw-flex-col tw-gap-2 tw-py-3', inset)}>
           <div className="tw-flex tw-justify-between tw-gap-4">
             <Skeleton className="tw-h-4 tw-w-1/3" />
