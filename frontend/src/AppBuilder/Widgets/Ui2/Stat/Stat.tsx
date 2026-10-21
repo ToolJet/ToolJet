@@ -1,12 +1,12 @@
 import React, { useMemo, useRef } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Badge, Card, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { badgeLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fontStack, textCase } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
-import { progressPercent, sparkPaths, splitChange, statSize, statValue } from './statModel';
+import { progressPercent, sparkPaths, splitChange, statChange, statSize, statValue, textDirection } from './statModel';
 import { compactFigure } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
@@ -95,9 +95,18 @@ export const ShadStat = (props: WidgetProps) => {
     setPrimaryValue: async (v: unknown) => override('value', typeof v === 'number' ? v : toText(v)),
     setSecondaryValue: async (v: unknown) => override('change', toText(v)),
   });
-  const trend = properties.trend || 'neutral';
-  const TrendIcon = trend === 'down' ? TrendingDown : TrendingUp;
-  // The change badge takes the positive or negative colour for its trend (text, on a light tint) when set.
+  // "+8 vs semana passada" as change: the figure stays in the chip, the words join the context line (statModel). A
+  // figure is formatted in the change format (+12.4%, −3.2) and its sign sets the direction: an agent's raw
+  // -9.793980410868281 printed whole, under an up arrow. Words keep their own sign, else the Trend property's.
+  const change = splitChange(properties.change);
+  const figure = statChange(change.chip, properties.changeFormat, properties.currency);
+  const trendDirection = ({ up: 1, down: -1 } as Record<string, number>)[properties.trend] ?? 0;
+  const direction = figure ? figure.direction : textDirection(change.chip) || trendDirection;
+  const trend = direction > 0 ? 'up' : direction < 0 ? 'down' : 'neutral';
+  // Flat (a figure that rounds to zero) draws a level line; words with no direction draw no icon.
+  const TrendIcon = trend === 'down' ? TrendingDown : trend === 'up' ? TrendingUp : figure ? Minus : null;
+  // The change badge takes the positive or negative colour for its direction (text, on a light tint) when set; flat
+  // stays neutral.
   const trendColor = (
     { up: props.styles?.positiveColor, down: props.styles?.negativeColor } as Record<string, unknown>
   )[trend];
@@ -119,30 +128,29 @@ export const ShadStat = (props: WidgetProps) => {
   const iconSize = size === 'lg' ? 20 : size === 'sm' ? 14 : 16;
   const iconNode = icon ? <StatIcon name={icon} shape={iconShape} size={iconSize} /> : null;
   const progress = progressPercent(properties.progress);
-  // "+8 vs semana passada" as change: the figure stays in the chip, the words join the context line (statModel).
-  const change = splitChange(properties.change);
+  const label = String(properties.label ?? '');
   const context = [change.context, properties.changeLabel ? String(properties.changeLabel) : '']
     .filter(Boolean)
     .join(' · ');
-  const figureChip = /^[+\-−±]?\s?[$€£¥₹]?\d/.test(change.chip || '');
+  const figureChip = !!figure || /^[+\-−±]?\s?[$€£¥₹]?\d/.test(change.chip || '');
   const changeBadge = change.chip ? (
     <Badge
       variant="outline"
       style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) ?? undefined : undefined}
-      // A long change shrinks to at most 60% of the label row and ends in an ellipsis, its whole text the tooltip: it
-      // kept its full width and was cut off at the card's edge.
+      // A figure keeps its width (it is short once formatted) and the label beside it wraps; words take at most 60% of
+      // the row and wrap. The whole change is the tooltip.
       title={String(properties.change)}
       className={cn(
         'tw-min-w-0 tw-max-w-[60%] tw-gap-1',
-        figureChip && 'tw-shrink-0',
+        figureChip && 'tw-max-w-full tw-shrink-0',
         isSet(trendColor) && 'tw-border-transparent tw-bg-[color:var(--kb-badge-bg)] tw-text-[color:var(--kb-badge-fg)]'
       )}
     >
-      {trend !== 'neutral' ? <TrendIcon className="tw-h-3 tw-w-3 tw-shrink-0" /> : null}
+      {TrendIcon ? <TrendIcon className="tw-h-3 tw-w-3 tw-shrink-0" data-direction={trend} /> : null}
       {/* Words without a leading figure wrap rather than being cut; a figure stays on one line, a long one shortened
           ("+$190,800.00" broke as "+$190,800.0 / 0" and squeezed the label to two lines). */}
       {figureChip ? (
-        <span className="tw-whitespace-nowrap">{compactFigure(change.chip)}</span>
+        <span className="tw-whitespace-nowrap">{figure ? figure.text : compactFigure(change.chip)}</span>
       ) : (
         <span className="tw-min-w-0 tw-whitespace-normal tw-break-words">{change.chip}</span>
       )}
@@ -165,14 +173,19 @@ export const ShadStat = (props: WidgetProps) => {
     >
       {icon && iconPosition === 'top' ? <div className="tw-mb-1">{iconNode}</div> : null}
       <div className="tw-flex tw-min-w-0 tw-items-start tw-justify-between tw-gap-2">
+        {/* The label takes the row's spare width and two lines' height whether it wraps or not, so Stats side by side
+            start their figures level ("Spend this quarter" on two lines dropped its figure below its neighbours').
+            Longer labels end in an ellipsis, the whole label the tooltip. */}
         <span
+          title={label || undefined}
           className={cn(
-            'tw-min-w-0 tw-text-ui2-sm tw-text-[color:var(--lk-label,var(--sc-muted-foreground))]',
+            'tw-min-w-0 tw-flex-1 tw-text-ui2-sm tw-text-[color:var(--lk-label,var(--sc-muted-foreground))]',
+            label && 'tw-line-clamp-2 tw-min-h-[2lh] tw-break-words',
             textCase(props.styles?.labelTextTransform) && 'lk-label-case',
             isSet(props.styles?.labelLetterSpacing) && 'lk-label-tracking'
           )}
         >
-          {String(properties.label ?? '')}
+          {label}
         </span>
         {badgeInHeader ? changeBadge : null}
         {icon && iconPosition === 'right' ? iconNode : null}

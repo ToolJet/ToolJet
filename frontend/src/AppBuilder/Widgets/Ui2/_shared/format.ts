@@ -97,6 +97,27 @@ export const formatter = (
   };
 };
 
+/** How a change (a Stat's change, a Summary strip's delta) is written: 'percent', 'number' or 'currency'. */
+export const CHANGE_FORMATS: readonly string[] = ['percent', 'number', 'currency'];
+
+/** A change as shown: signed (+12.4%, −3.2, no sign at zero) and rounded, never a raw float (an agent's binding printed
+ *  "-9.793980410868281"): a percent to one decimal, a number to at most one ("12", "3.2"), money in the currency's own
+ *  decimals, all in the viewer's locale. direction is the sign of the figure as shown: −0.04% rounds to 0.0%, flat. */
+export const formatChange = (n: number, format: unknown, currency?: unknown): { text: string; direction: number } => {
+  const kind = typeof format === 'string' && CHANGE_FORMATS.includes(format) ? format : 'number';
+  const code =
+    typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
+  const f =
+    kind === 'currency'
+      ? intl({ style: 'currency', currency: code })
+      : intl({ minimumFractionDigits: kind === 'percent' ? 1 : 0, maximumFractionDigits: 1 });
+  const digits = f.resolvedOptions().maximumFractionDigits ?? 1;
+  const shown = Math.round(Math.abs(n) * 10 ** digits) / 10 ** digits;
+  const direction = shown === 0 ? 0 : Math.sign(n);
+  const sign = direction > 0 ? '+' : direction < 0 ? '\u2212' : '';
+  return { text: `${sign}${f.format(shown)}${kind === 'percent' ? '%' : ''}`, direction };
+};
+
 // The Area, Bar and Pie charts' values: read with Number() (so a flag or '' is a number), short ones compact, with the
 // valuePrefix and valueSuffix as set. formatter reads numbers more strictly; these charts have always shown this.
 const COMPACT = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });

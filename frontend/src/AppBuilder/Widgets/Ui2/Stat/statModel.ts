@@ -1,7 +1,7 @@
 // ToolJet UI 2.0: the pure logic of the Stat (Stat.tsx): its inline trend line, its progress bar and its
 // sizes. Every function takes whatever the author bound and never throws.
 import { sparkPoints, type SparkPoint } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
-import { formatter, isFormat, isNumericFigure } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { formatChange, formatter, isFormat, isNumericFigure } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** Value text classes by size: a small figure for dense rows of KPIs, the default, and a large hero number. */
@@ -80,3 +80,22 @@ export const splitChange = (change: unknown): { chip: string; context: string } 
   const match = text.match(LEADING_FIGURE);
   return match ? { chip: match[1].replace(/\s+/g, ''), context: match[2] } : { chip: text, context: '' };
 };
+
+/** The change chip's figure: a bare number or numeric text ("12.4", "-9.79", "−3%") formatted in the Stat's change format
+ *  (a written % makes it a percent), with its direction from its sign. null for anything else ("+$1,200", "Flat"), which
+ *  shows as written. */
+const BARE_CHANGE = /^([+\-\u2212])?\s*(\d+(?:\.\d+)?|\.\d+)\s*(%)?$/;
+export const statChange = (
+  chip: unknown,
+  format: unknown,
+  currency?: unknown
+): { text: string; direction: number } | null => {
+  if (typeof chip === 'number') return Number.isFinite(chip) ? formatChange(chip, format, currency) : null;
+  const match = typeof chip === 'string' ? chip.trim().match(BARE_CHANGE) : null;
+  if (!match) return null;
+  const n = Number(match[2]) * (match[1] && match[1] !== '+' ? -1 : 1);
+  return formatChange(n, match[3] ? 'percent' : format, currency);
+};
+
+/** The direction a written change reads: a leading +, - or arrow; 0 when it has none. */
+export const textDirection = (text: string): number => (/^[+↑▲]/.test(text) ? 1 : /^[-−↓▼]/.test(text) ? -1 : 0);

@@ -1,7 +1,7 @@
 // ToolJet UI 2.0: the summary strip's figures (SummaryStrip.tsx), pure as sectionsModel.ts: every function takes
 // whatever the author bound and never throws.
 import { type Row } from './sectionsModel';
-import { formatter, formatValue, VALUE_FORMATS } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { formatChange, formatValue, VALUE_FORMATS } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isNonBlankString, num, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_FIGURES = 6;
@@ -28,12 +28,8 @@ const deltaOf = (delta: unknown, format: unknown, currency: unknown): Delta | nu
   const n = typeof delta === 'number' ? (Number.isFinite(delta) ? delta : null) : num(delta);
   if (typeof delta === 'number' || (n !== null && /^[+-]?[\d.,\s]+$/.test(String(delta).trim()))) {
     if (n === null) return null;
-    const kind = typeof format === 'string' && DELTA_FORMATS.includes(format) ? format : 'percent';
-    const body = formatter({ format: kind, currency })(Math.abs(n));
-    return {
-      text: `${n > 0 ? '+' : n < 0 ? '−' : ''}${body}`,
-      direction: Math.sign(n),
-    };
+    // Signed and rounded as a Stat's change is (formatChange): a percent to one decimal, a number to at most one.
+    return formatChange(n, typeof format === 'string' && DELTA_FORMATS.includes(format) ? format : 'percent', currency);
   }
   const text = String(delta).trim();
   const direction = /^[+↑▲]/.test(text) ? 1 : /^[-−↓▼]/.test(text) ? -1 : 0;
