@@ -90,3 +90,26 @@ describe('UI 2.0 Stat in a short box', () => {
     harness.teardown();
   });
 });
+
+describe('UI 2.0 Stat in a narrow card', () => {
+  // On a 375px phone a quarter-width KPI card (about 100px) cut its change chip at the card's edge. The chip now wraps
+  // under the label when both do not fit, and a narrow card keeps 12px side padding (in a browser the chip "+12.4%"
+  // sits whole inside a 100px card).
+  test('the chip can wrap under the label, and a narrow card keeps less side padding', async () => {
+    const narrow = createWidgetHarness({
+      componentType: 'ShadStat',
+      handle: 'stat1',
+      id: 'stat1',
+      widgetHeight: 160,
+      widgetWidth: 100,
+    });
+    await narrow.setup();
+    narrow.render({ currentMode: 'view', properties: { label: binding('Revenue'), change: binding('{{12.4}}') } });
+    const label = await screen.findByText('Revenue');
+    expect(label.parentElement).toHaveClass('tw-flex-wrap');
+    expect(label).toHaveClass('tw-basis-16');
+    expect(label.closest('.tw-px-3')).not.toBeNull();
+    expect(label.closest('.tw-px-6')).toBeNull();
+    narrow.teardown();
+  });
+});

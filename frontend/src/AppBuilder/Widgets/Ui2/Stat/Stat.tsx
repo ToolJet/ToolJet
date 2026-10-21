@@ -86,6 +86,7 @@ const CARD_PADDING_Y = 40;
 const LABEL_TWO_LINES = 40;
 const ROW_GAP = 6;
 const VALUE_LINE: Record<string, number> = { sm: 28, default: 32, lg: 40 };
+const NARROW_CARD = 160;
 
 export const ShadStat = (props: WidgetProps) => {
   const { setExposedVariables } = props;
@@ -191,14 +192,16 @@ export const ShadStat = (props: WidgetProps) => {
       )}
     >
       {icon && iconPosition === 'top' ? <div className="tw-mb-1">{iconNode}</div> : null}
-      <div className="tw-flex tw-min-w-0 tw-items-start tw-justify-between tw-gap-2">
+      {/* The chip wraps under the label when the card is too narrow for both (it was cut at the card's edge in a
+          100px card); the label keeps at least 4rem beside it otherwise. */}
+      <div className="tw-flex tw-min-w-0 tw-flex-wrap tw-items-start tw-justify-between tw-gap-x-2 tw-gap-y-1">
         {/* The label takes the row's spare width and two lines' height whether it wraps or not, so Stats side by side
             start their figures level ("Spend this quarter" on two lines dropped its figure below its neighbours').
             Longer labels end in an ellipsis, the whole label the tooltip. */}
         <span
           title={label || undefined}
           className={cn(
-            'tw-min-w-0 tw-flex-1 tw-text-ui2-sm tw-text-[color:var(--lk-label,var(--sc-muted-foreground))]',
+            'tw-min-w-0 tw-flex-1 tw-basis-16 tw-text-ui2-sm tw-text-[color:var(--lk-label,var(--sc-muted-foreground))]',
             label && (reserveLabel ? 'tw-line-clamp-2 tw-min-h-[2lh] tw-break-words' : 'tw-line-clamp-1'),
             textCase(props.styles?.labelTextTransform) && 'lk-label-case',
             isSet(props.styles?.labelLetterSpacing) && 'lk-label-tracking'
@@ -279,7 +282,10 @@ export const ShadStat = (props: WidgetProps) => {
       ) : (
         <Card
           className={cn(
-            'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-[color:var(--lk-bg,var(--sc-card))] tw-px-6',
+            'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-[color:var(--lk-bg,var(--sc-card))]',
+            // A narrow card (a phone's quarter-width KPI) keeps less padding, so the label and the chip fit beside or
+            // under each other instead of the chip being cut at the card's edge.
+            Number(props.width) > 0 && Number(props.width) < NARROW_CARD ? 'tw-px-3' : 'tw-px-6',
             // A short box keeps less padding, so the figure fits.
             reserveLabel ? 'tw-py-5' : 'tw-py-3',
             fixed && 'tw-flex tw-flex-col tw-overflow-hidden',
