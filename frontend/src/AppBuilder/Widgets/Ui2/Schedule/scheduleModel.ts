@@ -169,8 +169,8 @@ export const slotTracks = (range: ScheduleRange): string =>
     .join(' ');
 
 /** Resources down the side: [{ key, id, name, caption, avatar }] from ['Room A'] or [{ id, name (or label, title),
- *  caption (or subtitle, role), avatar }]. With none given, the distinct values of the bookings' resourceField, in
- *  order of appearance. Repeated ids are kept apart. */
+ *  caption (or subtitle, role), avatar }]. With none given, every distinct value of the bookings' resourceField, in
+ *  order of appearance (the widget draws them RESOURCES_PER_STEP at a time). Repeated ids are kept apart. */
 export const scheduleResources = (
   resources: unknown,
   bookings: unknown,
@@ -186,7 +186,6 @@ export const scheduleResources = (
         seen.add(v);
         list.push(v);
       }
-      if (list.length >= 1000) break;
     }
   }
   const uniqueKey = keyAllocator();
