@@ -5,6 +5,7 @@ import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
 import '@/_styles/componentdesign.scss';
 import '@/_styles/typography.scss';
 import './oauth.css';
+import ClientLogo from './ClientLogo';
 import { captureMcpOAuthBootstrap, clearMcpOAuthBootstrap, getMcpOAuthBootstrap } from './bootstrap';
 
 export const SCOPE_LABELS = {
@@ -166,9 +167,7 @@ export default function ConsentPage() {
       <div className="mcp-oauth-content">
         {hasConsent && (
           <div className="mcp-oauth-connection" aria-hidden="true">
-            <span className="mcp-oauth-connection-logo mcp-oauth-client-monogram">
-              {flow.clientName.trim().charAt(0).toUpperCase()}
-            </span>
+            <ClientLogo name={flow.clientName} />
             <span className="mcp-oauth-connection-line" />
             <span className="mcp-oauth-connection-check">
               <Check size={16} />

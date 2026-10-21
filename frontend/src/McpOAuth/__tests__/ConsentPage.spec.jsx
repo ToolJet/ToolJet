@@ -154,6 +154,18 @@ test('shows only the permissions requested by the client', async () => {
     expect(screen.queryByRole('heading', { name })).not.toBeInTheDocument();
   }
 });
+test.each([
+  ['  orchard assistant  ', 'O'],
+  ['Aster ChatGPT integration', 'A'],
+  ['🪴 garden helper', '🪴'],
+])('uses the first character for unknown client %s', async (clientName, initial) => {
+  preview({ ...flow, clientName });
+  const { container } = render(<ConsentPage />);
+  await screen.findByRole('button', { name: 'Allow access' });
+  const badge = container.querySelector('.mcp-oauth-client-logo');
+  expect(badge).toHaveTextContent(initial);
+  expect(badge.querySelector('svg')).toBeNull();
+});
 test.each(['Cancel', 'Allow access'])('disables both actions while %s is being submitted', async (buttonName) => {
   let resolveDecision;
   const pending = new Promise((resolve) => {
@@ -262,9 +274,11 @@ test.each([
   'cursor://anysphere.cursor-mcp/oauth/callback',
   'http://[::1]:45678/callback',
 ])('shows the exact callback %s even when a client supplies a familiar name', async (redirectUri) => {
-  preview({ ...flow, clientName: 'Claude Code', redirectUri });
-  render(<ConsentPage />);
+  preview({ ...flow, clientName: '  cLaUdE   Code  ', redirectUri });
+  const { container } = render(<ConsentPage />);
   expect(await screen.findByText('builder@synthetic.example')).toBeInTheDocument();
+  expect(container.querySelector('.mcp-oauth-client-logo svg')).toBeInTheDocument();
+  expect(container.querySelector('.mcp-oauth-client-monogram')).toBeNull();
   const callback = screen.getByText(redirectUri);
   expect(callback.tagName).toBe('CODE');
   expect(screen.getByText(/ToolJet has not verified the client name/)).toBeInTheDocument();
