@@ -36,3 +36,61 @@
         border-bottom: 1px solid var(--cc-weak-border);
     }
 }
+
+// A table with no rows: the header row, then the empty state as the body's one row (EmptyState.jsx). The body takes
+// the height the table has below its header and centres the icon and message across the full width. The empty state
+// is a size container: in a short table the icon goes and the message stays. Its own height (contain-intrinsic-height)
+// is the whole empty state's, so a table whose height follows its content (a List view row) still shows all of it.
+.jet-table.table-component .jet-data-table.tj-table-empty {
+    display: flex;
+    flex-direction: column;
+
+    > table {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        margin: 0;
+    }
+    > table > thead {
+        flex: 0 0 auto;
+    }
+    > table > tbody {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+    > table > tbody > tr {
+        display: flex;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    > table > tbody > tr > td {
+        display: flex;
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+    }
+}
+
+.tj-table-empty-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow: hidden;
+    container: tj-table-empty / size;
+    contain-intrinsic-height: 96px;
+}
+
+// The icon (44px), the gap and the message (20px) need 72px.
+@container tj-table-empty (max-height: 71px) {
+    .tj-table-empty-body .warning-no-data {
+        display: none;
+    }
+}
