@@ -177,10 +177,14 @@ export const Inspector = ({
   const setComponentPermission = useStore((state) => state.setComponentPermission);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
-  const [activeTab, setActiveTab] = useState('properties');
+  // The Inspector isn't remounted on selection, so the tab is kept per component: selecting another
+  // component opens on Properties, as when the tabs were uncontrolled.
+  const [tab, setTab] = useState({ componentId: selectedComponentId, key: 'properties' });
+  const activeTab = tab.componentId === selectedComponentId ? tab.key : 'properties';
+  const setActiveTab = (key) => setTab({ componentId: selectedComponentId, key });
   // Code search opens the tab (Properties / Styles) a field lives under.
-  useCodeSearchReveal('inspectorTab', selectedComponentId, (tab) => {
-    setActiveTab(tab);
+  useCodeSearchReveal('inspectorTab', selectedComponentId, (tabKey) => {
+    setActiveTab(tabKey);
     return true;
   });
   const dataQueries = useDataQueries();
