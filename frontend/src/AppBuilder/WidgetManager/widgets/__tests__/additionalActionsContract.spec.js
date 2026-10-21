@@ -42,6 +42,7 @@ const CONTRACT = {
   Kanban: ['visibility', 'disabledState'],
   Map: ['visibility', 'disabledState'],
   PDF: ['visibility'],
+  RichTextEditor: ['visibility', 'disabledState', 'loadingState'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.
@@ -56,6 +57,7 @@ const TOOLTIP_IN_PROPERTIES = [
   'Kanban',
   'Map',
   'PDF',
+  'RichTextEditor',
 ];
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);

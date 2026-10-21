@@ -232,6 +232,7 @@ export const baseComponentProperties = (
       'CodeEditor',
       'Map',
       'PDF',
+      'RichTextEditor',
     ],
     Layout: [],
   };

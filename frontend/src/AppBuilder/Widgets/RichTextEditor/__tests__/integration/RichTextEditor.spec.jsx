@@ -23,11 +23,12 @@ const widget = createWidgetHarness({
     loadingState: binding('{{false}}'),
     dynamicHeight: binding('{{false}}'),
     collapseWhenHidden: binding('{{false}}'),
-  },
-  defaultStyles: {
     visibility: binding('{{true}}'),
     disabledState: binding('{{false}}'),
+    tooltip: binding(''),
+    tooltipFormat: binding('plainText'),
   },
+  defaultStyles: {},
 });
 
 // The widget's own outer wrapper carries data-cy = component name plus
@@ -175,6 +176,37 @@ describe('RichTextEditor widget', () => {
     expect(outer()).toHaveAttribute('data-disabled', 'true');
   });
 
+  test('[RichTextEditor-PREC-002] changed visibility/disabledState properties override earlier CSA calls', async () => {
+    // Break this catches: local CSA state no longer yielding to a later change of the owning property
+    // after the props moved from styles to properties.
+    widget.render({});
+    await waitFor(() => expect(outer()).toBeInTheDocument());
+
+    await widget.act('setVisibility', false);
+    await widget.act('setDisable', true);
+    await widget.session.store.act(async () => {
+      widget.setComponentProperty(ID, 'visibility', '{{false}}', 'properties');
+      widget.setComponentProperty(ID, 'disabledState', '{{true}}', 'properties');
+    });
+    await widget.session.store.act(async () => {
+      widget.setComponentProperty(ID, 'visibility', '{{true}}', 'properties');
+      widget.setComponentProperty(ID, 'disabledState', '{{false}}', 'properties');
+    });
+
+    await waitFor(() => expect(outer()).not.toHaveStyle({ display: 'none' }));
+    expect(outer()).toHaveAttribute('data-disabled', 'false');
+    expect(exposed()).toMatchObject({ isVisible: true, isDisabled: false });
+  });
+
+  test('[RichTextEditor-TIP-001] a tooltip set under properties is shown on hover', async () => {
+    // Break this catches: RenderWidget still reading RichTextEditor's tooltip from `general`.
+    widget.render({ properties: { tooltip: binding('Write the release notes') } });
+    await waitFor(() => expect(outer()).toBeInTheDocument());
+
+    await widget.session.user.hover(outer());
+    await waitFor(() => expect(screen.getAllByText('Write the release notes').length).toBeGreaterThan(0));
+  });
+
   test('[RichTextEditor-FORM-001] a Form clear empties the editor and sets value to an empty string', async () => {
     // Break this catches: dropping the clearCount branch in componentDidUpdate
     // (DraftEditor.jsx:180-185), so a Form clearForm leaves the editor content
@@ -193,9 +225,9 @@ describe('RichTextEditor widget', () => {
   });
 
   test('[RichTextEditor-STYLE-001] visibility=false sets the outer wrapper display:none', async () => {
-    // Break this catches: dropping the `isVisible ? '' : 'none'` mapping
-    // (RichTextEditor.jsx:79), so a hidden editor stays visible.
-    widget.render({ styles: { visibility: binding('{{false}}') } });
+    // Break this catches: dropping the `isVisible ? '' : 'none'` mapping, or still reading
+    // visibility from styles after it moved to properties, so a hidden editor stays visible.
+    widget.render({ properties: { visibility: binding('{{false}}') } });
 
     await waitFor(() => expect(outer()).toBeInTheDocument());
     expect(outer()).toHaveStyle({ display: 'none' });
@@ -204,8 +236,8 @@ describe('RichTextEditor widget', () => {
   test('[RichTextEditor-STYLE-002] disabledState sets the wrapper disabled attributes', async () => {
     // Break this catches: dropping `data-disabled`/`aria-disabled` from the
     // wrapper (RichTextEditor.jsx:75,87), so the global pointer-events rule
-    // never engages and a disabled editor stays editable.
-    widget.render({ styles: { disabledState: binding('{{true}}') } });
+    // never engages and a disabled editor stays editable (or still reading disabledState from styles).
+    widget.render({ properties: { disabledState: binding('{{true}}') } });
 
     await waitFor(() => expect(outer()).toBeInTheDocument());
     expect(outer()).toHaveAttribute('data-disabled', 'true');

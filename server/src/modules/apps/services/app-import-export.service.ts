@@ -79,7 +79,8 @@ type PartialRevampedComponent =
   | 'Spinner'
   | 'Chart'
   | 'BoundedBox'
-  | 'Map';
+  | 'Map'
+  | 'RichTextEditor';
 
 type NewRevampedComponent =
   | 'Text'
@@ -194,6 +195,7 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'Chart',
   'BoundedBox',
   'Map',
+  'RichTextEditor',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -341,6 +343,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',
+  'RichTextEditor',
   'Spinner',
   'StarRating',
   'Statistics',
@@ -3145,6 +3148,24 @@ function migrateProperties(
           properties.visibility = styles.visibility;
         }
         delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'RichTextEditor') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
       }
 
       if (general?.tooltip) {
