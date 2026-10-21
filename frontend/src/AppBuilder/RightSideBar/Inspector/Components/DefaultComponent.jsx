@@ -66,6 +66,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Map',
   'PDF',
   'SvgImage',
+  'Timer',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -234,6 +235,8 @@ export const baseComponentProperties = (
       'Map',
       'PDF',
       'RichTextEditor',
+      'SvgImage',
+      'Timer',
     ],
     Layout: [],
   };

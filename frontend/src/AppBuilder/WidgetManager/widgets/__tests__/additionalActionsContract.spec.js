@@ -44,6 +44,7 @@ const CONTRACT = {
   PDF: ['visibility'],
   RichTextEditor: ['visibility', 'disabledState', 'loadingState'],
   SvgImage: ['visibility'],
+  Timer: ['visibility', 'disabledState'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.

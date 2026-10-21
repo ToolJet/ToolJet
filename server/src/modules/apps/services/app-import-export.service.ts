@@ -81,7 +81,8 @@ type PartialRevampedComponent =
   | 'BoundedBox'
   | 'Map'
   | 'RichTextEditor'
-  | 'SvgImage';
+  | 'SvgImage'
+  | 'Timer';
 
 type NewRevampedComponent =
   | 'Text'
@@ -198,6 +199,7 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'Map',
   'RichTextEditor',
   'SvgImage',
+  'Timer',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -357,6 +359,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextArea',
   'TextInput',
   'TimePicker',
+  'Timer',
   'Timeline',
   'ToggleSwitchV2',
   'TreeSelect',
@@ -3185,6 +3188,24 @@ function migrateProperties(
           properties.visibility = styles.visibility;
         }
         delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'Timer') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
       }
 
       if (general?.tooltip) {

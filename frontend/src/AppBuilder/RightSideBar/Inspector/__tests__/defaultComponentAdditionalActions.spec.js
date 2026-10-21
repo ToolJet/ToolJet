@@ -48,6 +48,7 @@ describe.each([
   'PDF',
   'RichTextEditor',
   'SvgImage',
+  'Timer',
 ])('%s default inspector', (component) => {
   test('shows the Additional Actions accordion', () => {
     expect(accordionTitles(meta(component))).toContain('Additional Actions');
