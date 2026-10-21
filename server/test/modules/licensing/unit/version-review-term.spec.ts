@@ -55,10 +55,19 @@ describe('version review licence term', () => {
     expect(getLicenseFieldValue(LICENSE_FIELD.VERSION_REVIEW, starter)).toBe(false);
   });
 
-  it.each([FEATURE_KEY.COMPARE, FEATURE_KEY.REVIEW_APPROVE, FEATURE_KEY.REVIEW_OVERRIDE, FEATURE_KEY.SNAPSHOT_RESTORE])(
-    'gates the %s endpoints on it',
-    (feature) => {
-      expect(FEATURES[MODULES.VERSION][feature].license).toBe(LICENSE_FIELD.VERSION_REVIEW);
-    }
-  );
+  it.each([
+    FEATURE_KEY.COMPARE,
+    FEATURE_KEY.REVIEW_APPROVE,
+    FEATURE_KEY.REVIEW_OVERRIDE,
+    FEATURE_KEY.SNAPSHOT_CREATE,
+    FEATURE_KEY.SNAPSHOT_RESTORE,
+  ])('gates the %s endpoints on it', (feature) => {
+    expect(FEATURES[MODULES.VERSION][feature].license).toBe(LICENSE_FIELD.VERSION_REVIEW);
+  });
+
+  // Taking and restoring snapshots change the app's history, so each is its own audit event.
+  it('audits snapshot creation and restore under their own action types', () => {
+    expect(FEATURES[MODULES.VERSION][FEATURE_KEY.SNAPSHOT_CREATE].auditLogsKey).toBe('APP_SNAPSHOT_CREATE');
+    expect(FEATURES[MODULES.VERSION][FEATURE_KEY.SNAPSHOT_RESTORE].auditLogsKey).toBe('APP_SNAPSHOT_RESTORE');
+  });
 });
