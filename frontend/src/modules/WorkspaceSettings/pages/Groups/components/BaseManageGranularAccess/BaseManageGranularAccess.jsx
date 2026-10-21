@@ -597,7 +597,7 @@ class BaseManageGranularAccess extends React.Component {
           <SolidIcon name="informationcircle" fill="var(--slate8)" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/user-management/role-based-access/user-roles#permissions-for-user-roles"
             target="_blank"
             rel="noopener noreferrer"
           >

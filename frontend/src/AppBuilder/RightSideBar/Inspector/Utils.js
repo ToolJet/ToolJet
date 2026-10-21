@@ -316,8 +316,19 @@ export const validateStaticId = (value, existingIds = [], currentId = null, mess
 
 export const getDocsLink = (componentType = '') => {
   switch (componentType) {
+    case 'ToggleSwitch':
     case 'ToggleSwitchV2':
-      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
+      return 'https://docs.tooljet.com/docs/widgets/toggle-switch-v2';
+    case 'RadioButton':
+      return 'https://docs.tooljet.com/docs/widgets/radio-button-v2';
+    case 'KanbanBoard':
+      return 'https://docs.tooljet.com/docs/widgets/kanban';
+    case 'JSONEditor':
+      return 'https://docs.tooljet.com/docs/widgets/json-editor';
+    case 'JSONExplorer':
+      return 'https://docs.tooljet.com/docs/widgets/json-explorer';
+    case 'LibraryComponent':
+      return 'https://docs.tooljet.com/docs/app-builder/custom-component-library/overview';
     case 'DropdownV2':
       return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'DropDown':
@@ -332,7 +343,7 @@ export const getDocsLink = (componentType = '') => {
     case 'ModuleContainer':
       return 'https://docs.tooljet.com/docs/app-builder/modules/overview';
     default:
-      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentType)}`;
+      return `https://docs.tooljet.com/docs/widgets/${convertToKebabCase(componentType)}`;
   }
 };
 
