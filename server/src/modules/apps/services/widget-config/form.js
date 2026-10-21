@@ -126,6 +126,15 @@ export const formConfig = {
         defaultValue: true,
       },
     },
+    registerNestedFields: {
+      type: 'toggle',
+      displayName: 'Register nested fields',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -358,6 +367,7 @@ export const formConfig = {
       footerHeight: { value: 60 },
       validateOnSubmit: { value: '{{true}}' },
       resetOnSubmit: { value: '{{true}}' },
+      registerNestedFields: { value: '{{true}}' },
       generateFormFrom: {
         value: '',
       },
