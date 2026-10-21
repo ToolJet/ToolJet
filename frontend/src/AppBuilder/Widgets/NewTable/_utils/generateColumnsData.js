@@ -110,7 +110,6 @@ export default function generateColumnsData({
   validateDates,
   searchText,
   columnForAddNewRow = false,
-  t,
   moduleId = 'canvas',
 }) {
   const _getResolvedValue = useStore.getState().getResolvedValue;
