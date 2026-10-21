@@ -2,7 +2,7 @@ import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import useStore from '@/AppBuilder/_stores/store';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
-import VersionManagerDropdown from '../VersionManagerDropdown';
+import VersionManagerDropdown from '../../VersionManagerDropdown';
 
 jest.mock('@/AppBuilder/_stores/store', () => {
   const { createWithEqualityFn } = require('zustand/traditional');
@@ -32,25 +32,25 @@ jest.mock('@/modules/Appbuilder/components', () => ({ EnvironmentSwitcher: () =>
 jest.mock('@/_components', () => ({
   ConfirmDialog: ({ show, title }) => (show ? <div role="dialog">{title}</div> : null),
 }));
-jest.mock('../VersionSwitcherButton', () => ({ onClick }) => (
+jest.mock('../../VersionSwitcherButton', () => ({ onClick }) => (
   <button type="button" data-cy="version-switcher-button" onClick={onClick}>
     v1
   </button>
 ));
-jest.mock('../VersionDropdownItem', () => ({ version, onDelete, onEdit }) => (
+jest.mock('../../VersionDropdownItem', () => ({ version, onDelete, onEdit }) => (
   <div>
     <button type="button" onClick={() => onDelete(version)}>{`Delete ${version.name}`}</button>
     <button type="button" onClick={() => onEdit(version)}>{`Rename ${version.name}`}</button>
   </div>
 ));
-jest.mock('../CreateDraftButton', () => ({ onClick }) => (
+jest.mock('../../CreateDraftButton', () => ({ onClick }) => (
   <button type="button" onClick={onClick}>
     Create draft
   </button>
 ));
-jest.mock('../VersionSearchField', () => () => null);
-jest.mock('../VersionItemSkeleton', () => () => null);
-jest.mock('..', () => {
+jest.mock('../../VersionSearchField', () => () => null);
+jest.mock('../../VersionItemSkeleton', () => () => null);
+jest.mock('../..', () => {
   const dialog =
     (label, showProp) =>
     // eslint-disable-next-line react/display-name
