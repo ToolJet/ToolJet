@@ -51,7 +51,7 @@ describe('Table with no rows', () => {
     const { container, getByText } = renderEmpty();
     const message = getByText('No data');
     const head = container.querySelector('thead');
-    const body = container.querySelector('.tj-table-empty-body');
+    const body = container.querySelector('.tj-ntable-empty-body');
 
     expect(head).not.toBeNull();
     expect(head.textContent).toContain('DELIVERY');
@@ -72,7 +72,11 @@ describe('Table with no rows', () => {
   it('keeps the empty state in the flow, so it takes room under the header', () => {
     const { container } = renderEmpty();
     const box = container.querySelector('.jet-data-table');
-    expect(box.classList.contains('tj-table-empty')).toBe(true);
+    expect(box.classList.contains('tj-ntable-empty')).toBe(true);
+    // Not the ToolJet database's tj-table-empty, whose global rule drew near-black header borders.
+    expect(container.querySelector('.tj-table-empty')).toBeNull();
+    // The same table classes as with rows, so the header is drawn the same.
+    expect(box.querySelector('table')).toHaveClass('table');
     for (const el of [box, ...box.querySelectorAll('*')]) {
       expect(el.style.position).not.toBe('absolute');
     }
@@ -81,16 +85,16 @@ describe('Table with no rows', () => {
   it('gives the body the height under the header, in both looks', () => {
     const table = scss('table.scss');
     // The body fills what is under the header and is never sized to nothing.
-    expect(table).toMatch(/\.tj-table-empty-body \{[^}]*flex: 1 1 auto;/);
-    expect(table).toMatch(/\.tj-table-empty-body \{[^}]*contain-intrinsic-height: \d+px;/);
+    expect(table).toMatch(/\.tj-ntable-empty-body \{[^}]*flex: 1 1 auto;/);
+    expect(table).toMatch(/\.tj-ntable-empty-body \{[^}]*contain-intrinsic-height: \d+px;/);
     // A short table drops the icon and keeps the message.
     expect(table).toMatch(
-      /@container tj-table-empty \(max-height: \d+px\) \{\s*\.tj-table-empty-body \.warning-no-data/
+      /@container tj-ntable-empty \(max-height: \d+px\) \{\s*\.tj-ntable-empty-body \.warning-no-data/
     );
 
     // The shadcn look sizes the table to its rows; an empty one keeps its box and lets the body grow.
     const look = scss('shadcnLook.scss');
-    expect(look).toMatch(/&:has\(> \.table-responsive\.tj-table-empty\) \{\s*height: 100% !important;/);
-    expect(look).toMatch(/> \.table-responsive\.tj-table-empty \{\s*flex: 1 1 auto !important;/);
+    expect(look).toMatch(/&:has\(> \.table-responsive\.tj-ntable-empty\) \{\s*height: 100% !important;/);
+    expect(look).toMatch(/> \.table-responsive\.tj-ntable-empty \{\s*flex: 1 1 auto !important;/);
   });
 });

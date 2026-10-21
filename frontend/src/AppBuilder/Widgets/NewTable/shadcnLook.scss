@@ -28,12 +28,12 @@ $radius: var(--cc-radius-default, 6px);
     }
   }
   // A table with no rows keeps its box: its empty state fills the space under the header (table.scss,
-  // .tj-table-empty-body). Sized to its rows, the table was as tall as its header and the empty state sat in the
+  // .tj-ntable-empty-body). Sized to its rows, the table was as tall as its header and the empty state sat in the
   // header row.
-  &:has(> .table-responsive.tj-table-empty) {
+  &:has(> .table-responsive.tj-ntable-empty) {
     height: 100% !important;
   }
-  > .table-responsive.tj-table-empty {
+  > .table-responsive.tj-ntable-empty {
     flex: 1 1 auto !important;
   }
 

@@ -167,10 +167,12 @@ export const TableData = ({
       </div>
     );
   } else if (data.length === 0) {
-    // The header row, then the empty state as the body's one row (EmptyState, .tj-table-empty in table.scss).
+    // The header row, then the empty state as the body's one row (EmptyState, .tj-ntable-empty in table.scss): the
+    // same table classes as with rows, so the header looks the same. (tj-ntable-, not tj-table-empty: the ToolJet
+    // database's table styles that name globally, and gave an empty Table's header near-black borders.)
     return (
-      <div className={'table-responsive jet-data-table overflow-hidden tj-table-empty'}>
-        <table>
+      <div className={'table-responsive jet-data-table overflow-hidden tj-ntable-empty'}>
+        <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
           {renderTableHeader()}
           <tbody>
             <tr>

@@ -41,7 +41,7 @@
 // the height the table has below its header and centres the icon and message across the full width. The empty state
 // is a size container: in a short table the icon goes and the message stays. Its own height (contain-intrinsic-height)
 // is the whole empty state's, so a table whose height follows its content (a List view row) still shows all of it.
-.jet-table.table-component .jet-data-table.tj-table-empty {
+.jet-table.table-component .jet-data-table.tj-ntable-empty {
     display: flex;
     flex-direction: column;
 
@@ -73,10 +73,13 @@
         padding: 0 !important;
         border: 0 !important;
         background: transparent !important;
+        // The table's own classes (table-striped, table-hover) tint a row with an inset shadow: the one empty row is not
+        // a data row.
+        box-shadow: none !important;
     }
 }
 
-.tj-table-empty-body {
+.tj-ntable-empty-body {
     flex: 1 1 auto;
     min-height: 0;
     display: flex;
@@ -84,13 +87,13 @@
     justify-content: center;
     padding: 16px;
     overflow: hidden;
-    container: tj-table-empty / size;
+    container: tj-ntable-empty / size;
     contain-intrinsic-height: 96px;
 }
 
 // The icon (44px), the gap and the message (20px) need 72px.
-@container tj-table-empty (max-height: 71px) {
-    .tj-table-empty-body .warning-no-data {
+@container tj-ntable-empty (max-height: 71px) {
+    .tj-ntable-empty-body .warning-no-data {
         display: none;
     }
 }
