@@ -46,7 +46,7 @@ export const shadStatConfig = {
           ],
           optional: true,
         },
-        defaultValue: '$1,250.00',
+        defaultValue: 1250,
       },
     },
     valueFormat: {
@@ -716,7 +716,7 @@ export const shadStatConfig = {
     isLoading: false,
     isDisabled: false,
     primaryLabel: 'Total revenue',
-    primaryValue: '$1,250.00',
+    primaryValue: 1250,
     secondaryLabel: '',
     secondaryValue: '',
   },
@@ -794,7 +794,7 @@ export const shadStatConfig = {
         value: 'Total revenue',
       },
       value: {
-        value: '$1,250.00',
+        value: '{{1250}}',
       },
       valueFormat: {
         value: 'auto',

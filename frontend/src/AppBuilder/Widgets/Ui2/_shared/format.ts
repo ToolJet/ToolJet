@@ -137,6 +137,29 @@ export const isNumericFigure = (value: unknown): value is number | string =>
     ? Number.isFinite(value)
     : typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim());
 
+/** A figure written as text, as a number: plain ("1250", "-12.5") or grouped the way the viewer's locale writes numbers
+ *  ("1,250" and "1,250.5" in English, "1.250,5" in German). null for other text ("$1,250.00", "12 open"), and for text
+ *  the two readings disagree on ("1.250" in German: 1.25 plain, 1250 grouped). */
+export const figureOf = (value: unknown, locale?: string): number | null => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value !== 'string') return null;
+  const text = value.trim();
+  const plain = /^-?\d+(\.\d+)?$/.test(text) ? Number(text) : null;
+  let parts: Intl.NumberFormatPart[] = [];
+  try {
+    parts = new Intl.NumberFormat(locale).formatToParts(12345.6);
+  } catch {
+    return plain;
+  }
+  const group = parts.find((p) => p.type === 'group')?.value ?? ',';
+  const decimal = parts.find((p) => p.type === 'decimal')?.value ?? '.';
+  const esc = (c: string) => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const grouped = new RegExp(`^-?(\\d{1,3}(${esc(group)}\\d{3})+|\\d+)(${esc(decimal)}\\d+)?$`);
+  const local = grouped.test(text) ? Number(text.split(group).join('').replace(decimal, '.')) : null;
+  if (plain !== null && local !== null && plain !== local) return null;
+  return plain ?? local;
+};
+
 // ---- Dates -----------------------------------------------------------------------------------------------------------
 
 /** A date as dayjs reads it; a number below 1e12 is a Unix time in seconds, else in milliseconds. */

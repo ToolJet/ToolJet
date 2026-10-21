@@ -233,8 +233,8 @@
         ],
         "type": "union"
       },
-      "default": "$1,250.00",
-      "initial": "$1,250.00"
+      "default": 1250,
+      "initial": "{{1250}}"
     },
     "valueFormat": {
       "type": "string",

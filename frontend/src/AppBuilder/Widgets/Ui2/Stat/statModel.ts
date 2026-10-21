@@ -1,7 +1,7 @@
 // ToolJet UI 2.0: the pure logic of the Stat (Stat.tsx): its inline trend line, its progress bar and its
 // sizes. Every function takes whatever the author bound and never throws.
 import { sparkPoints, type SparkPoint } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
-import { formatChange, formatter, isFormat, isNumericFigure } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { figureOf, formatChange, formatter, isFormat } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** Value text classes by size: a small figure for dense rows of KPIs, the default, and a large hero number. */
@@ -54,19 +54,24 @@ export const sparkPaths = (data: unknown, width: unknown, height: unknown): Spar
 };
 
 /** The figure a Stat shows. A bare number groups its digits ('auto'); valueFormat 'number', 'currency' (in currency,
- *  default USD), 'percent' (42.5 shows 42.5%) or 'compact' formats numbers and numeric text. Other text (an already
- *  formatted "$1,250.00", "12 open") shows as written: a bound revenue figure read "947.37" with no sign before. */
+ *  default USD), 'percent' (42.5 shows 42.5%) or 'compact' formats numbers and numeric text, plain or grouped as the
+ *  viewer's locale writes it (figureOf). Other text (an already formatted "$1,250.00", "12 open") shows as written. */
 export const statValue = (
   value: unknown,
   { valueFormat = 'auto', currency }: { valueFormat?: unknown; currency?: unknown } = {}
 ): string => {
   // A number that is not finite (Infinity, NaN from a division by zero in a binding) is not a value to show.
   if (value === null || value === undefined || (typeof value === 'number' && !Number.isFinite(value))) return '';
-  if (!isNumericFigure(value)) return String(value);
-  if (!isFormat(valueFormat)) return typeof value === 'number' ? formatter({ format: 'number' })(value) : String(value);
+  if (!isFormat(valueFormat)) {
+    // Auto groups a number's digits; text, numeric or not ("2026", a code), shows as written.
+    return typeof value === 'number' ? formatter({ format: 'number' })(value) : String(value);
+  }
+  // With a format, numeric text is a figure too ("1250", "1,250", "1250.5"): a Value format did nothing to a value bound
+  // as text. Other text ("$1,250.00", "12 open") shows as written.
+  const n = figureOf(value);
+  if (n === null) return String(value);
   // A percent below 1 is a ratio, as the pack's charts read a series of fractions (percentScale): a churn rate of 0.021
   // and a margin of 0.70 showed "0%" and "0.7%". A whole percentage (42.5) shows as written.
-  const n = Number(value);
   const shown = valueFormat === 'percent' && n !== 0 && Math.abs(n) < 1 ? n * 100 : n;
   return formatter({ format: valueFormat, currency })(shown);
 };

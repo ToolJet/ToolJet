@@ -1,3 +1,18 @@
 {
-  "breaks": []
+  "breaks": [
+    {
+      "type": "ShadStat",
+      "area": "property",
+      "key": "value",
+      "change": "default",
+      "reason": "The sample figure is a number (1250), not the preformatted text '$1,250.00', so the Value format applies to it. A Stat that never set its value showed a sample; it now shows the same sample in its format. A value saved as '$1,250.00' shows as written, as before."
+    },
+    {
+      "type": "ShadStat",
+      "area": "property",
+      "key": "value",
+      "change": "initial",
+      "reason": "A new Stat starts with the number 1250 ('{{1250}}'), so the Value format the builder picks applies to it; the old '$1,250.00' was text that no format changed."
+    }
+  ]
 }
