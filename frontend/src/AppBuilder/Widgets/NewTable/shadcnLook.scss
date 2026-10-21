@@ -14,15 +14,18 @@ $radius: var(--cc-radius-default, 6px);
   box-shadow: $shadow-sm !important;
   background: var(--cc-surface1-surface) !important;
   overflow: hidden;
-  // The card hugs its rows: a page with fewer rows than the box holds ended the card in 60-220px of empty table above
-  // the pager. Now the pager follows the last row and the rest of the box is page
-  // space. The box is still the most it takes: more rows than fit scroll inside, as before.
-  height: auto !important;
   max-height: 100% !important;
-  > .table-responsive {
-    flex: 0 1 auto !important;
-    min-height: 0 !important;
+  // With dynamic height on in the viewer, the card hugs its rows and the box follows it: a page with fewer rows than
+  // the box held ended the card in 60-220px of empty table above the pager. The box is still the most it takes: more
+  // rows than fit scroll inside. In a fixed box (the editor, which draws the saved height, or dynamic height off) the
+  // card fills the box, as the ToolJet look does: hugging there left a blank band between the card and the box's end.
+  &.tj-table-look-fit {
     height: auto !important;
+    > .table-responsive {
+      flex: 0 1 auto !important;
+      min-height: 0 !important;
+      height: auto !important;
+    }
   }
   // A table with no rows keeps its box: its empty state fills the space under the header (table.scss,
   // .tj-table-empty-body). Sized to its rows, the table was as tall as its header and the empty state sat in the
