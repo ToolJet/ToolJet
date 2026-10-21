@@ -307,7 +307,7 @@ export const ShadTable = (props: WidgetProps) => {
           ref={scrollRef}
           className={cn(
             'tw-relative tw-w-full tw-overflow-auto tw-bg-[color:var(--lk-bg,transparent)]',
-            boxed && 'tw-min-h-0 tw-flex-1',
+            boxed && 'sc-table-box tw-min-h-0 tw-flex-1',
             styles?.showBorder !== false && 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] tw-border',
             ROW_BORDER
           )}
