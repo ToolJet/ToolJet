@@ -1,3 +1,4 @@
+import { McpOAuthIdentityService } from './identity.service';
 import { LoginConfigsModule } from '@modules/login-configs/module';
 import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { DynamicModule, Global, Module } from '@nestjs/common';
@@ -11,9 +12,9 @@ import { McpOAuthController, McpOAuthMetadataController } from './controller';
 @Global()
 @Module({
   imports: [JwtModule.register({}), ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }])],
-  providers: [McpOAuthService, UserRepository],
+  providers: [McpOAuthService, McpOAuthIdentityService, UserRepository],
   controllers: [McpOAuthController, McpOAuthMetadataController],
-  exports: [McpOAuthService],
+  exports: [McpOAuthService, McpOAuthIdentityService],
 })
 export class McpOAuthModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {

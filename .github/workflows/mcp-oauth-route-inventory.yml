@@ -1,0 +1,36 @@
+name: MCP OAuth route inventory
+
+on:
+  pull_request:
+    paths:
+      - 'server/**'
+      - '.github/workflows/mcp-oauth-route-inventory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  route-inventory:
+    # Private EE code is available only to trusted same-repository PR runs.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.15.1
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm --prefix server ci --ignore-scripts
+      - name: Check public and enterprise capability inventories
+        working-directory: server
+        run: >-
+          npx jest --config test/mcp-oauth.jest.config.cjs --runInBand --runTestsByPath
+          test/modules/personal-access-tokens/unit/route-inventory.spec.ts
+          ee/test/modules/mcp-oauth/unit/route-inventory.spec.ts

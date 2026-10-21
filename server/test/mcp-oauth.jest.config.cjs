@@ -2,7 +2,7 @@
 module.exports = {
   rootDir: '..',
   testEnvironment: 'node',
-  testMatch: ['<rootDir>/test/modules/mcp-oauth/**/*.spec.ts'],
+  testMatch: ['<rootDir>/test/modules/mcp-oauth/**/*.spec.ts', '<rootDir>/ee/test/modules/mcp-oauth/**/*.spec.ts', '<rootDir>/test/modules/personal-access-tokens/unit/route-inventory.spec.ts'],
   moduleNameMapper: {
     '^scripts/(.*)$': '<rootDir>/scripts/$1',
     '^src/(.*)$': '<rootDir>/src/$1',

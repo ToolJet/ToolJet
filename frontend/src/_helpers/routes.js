@@ -158,7 +158,6 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     'settings',
     'licence',
     'error',
-    'mcp',
   ];
 
   const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];

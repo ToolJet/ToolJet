@@ -21,7 +21,6 @@ const makeService = (query: jest.Mock, resolve = jest.fn(async () => ({ organiza
     { query, manager: { query }, transaction: async (run) => run({ query }) } as any,
     new ConfigService(settings),
     new JwtService(),
-    {} as any,
     { fetchOrganizationDetails: jest.fn() } as any,
     { resolveCustomDomain: resolve } as any,
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { getRedirectTo, getRedirectURL, isMcpOAuthConsentPath } from '@/_helpers/routes';
+import { getRedirectTo, getRedirectURL, isMcpOAuthConsentPath, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import { AuthRoute } from '../../Routes/AuthRoute';
 
 const mockNavigate = jest.fn();
@@ -142,3 +142,10 @@ test.each([
     else expect(mockNavigate).toHaveBeenCalledWith('/garden');
   }
 );
+
+test.each(['', '/tools'])('preserves a workspace named mcp with subpath %s', subpath => {
+  window.public_config = { SUB_PATH: subpath };
+  window.history.replaceState({}, '', `${subpath}/mcp/apps/synthetic-app`);
+  expect(getWorkspaceIdOrSlugFromURL()).toBe('mcp');
+  expect(getRedirectURL(consentPath, true)).toBe(consentPath);
+});

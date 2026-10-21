@@ -24,6 +24,9 @@ export class OAuthFailure extends Error {
     super(message);
   }
 }
+export class OAuthRedirectFailure extends OAuthFailure {
+  constructor(error: OAuthFailure, readonly redirectUrl: string) { super(error.error, error.message, error.status); }
+}
 /** Carries only a database grant ID so callers can persist revocation after a failed transaction. */
 export class RejectedOAuthGrant extends OAuthFailure {
   constructor(readonly grantId: string, message: string) {

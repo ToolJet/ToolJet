@@ -45,4 +45,18 @@ export class AppsAbilityFactory {
       detectSubjectType: (item) => item.constructor as ExtractSubjectType<Subjects>,
     });
   }
+  /** Workflows have their own granular permission namespace, separate from front-end apps. */
+  async workflowActions(user: User, id: string) {
+    const { can, build } = new AbilityBuilder<AppsAbility>(Ability as AbilityClass<AppsAbility>);
+    const permissions = await this.abilityService.resourceActionsPermission(user, {
+      organizationId: user.organizationId, resources: [{ resource: MODULES.WORKFLOWS, resourceId: id }],
+    });
+    const workflows = permissions?.[MODULES.WORKFLOWS];
+    if (isSuperAdmin(user) || permissions?.isAdmin || workflows?.isAllEditable || workflows?.isAllExecutable ||
+        workflows?.editableWorkflowsId?.includes(id) || workflows?.executableWorkflowsId?.includes(id)) {
+      can(APP_RESOURCE_ACTIONS.VIEW, App);
+    }
+    return build({ detectSubjectType: (item) => item.constructor as ExtractSubjectType<Subjects> });
+  }
+
 }

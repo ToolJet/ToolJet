@@ -1,5 +1,5 @@
 import OAuth2Server = require('@node-oauth/oauth2-server');
-import { OAuthStore } from './store';
+import { OAuthStore, OAuthArtifactKind } from './store';
 import { ACCESS_SECONDS, CODE_SECONDS, REFRESH_SECONDS, OAuthFailure, secret, matchesRedirectUri } from './protocol';
 
 /** A fresh model per transaction; no user, client or grant is held in singleton state. */
@@ -7,7 +7,7 @@ export function createOAuthEngine(
   store: OAuthStore, resource: string,
   tokenClient?: NonNullable<Awaited<ReturnType<OAuthStore['client']>>>,
 ): OAuth2Server {
-  const load = async (raw: string, kind: string): Promise<any> => {
+  const load = async (raw: string, kind: OAuthArtifactKind): Promise<any> => {
     const artifact = await store.artifact(raw, kind);
     if (!artifact || artifact.consumed_at || artifact.expires_at <= new Date()) return false;
     const grant = await store.activeGrant(artifact.grant_id);

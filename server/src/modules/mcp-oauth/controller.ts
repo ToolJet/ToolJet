@@ -20,7 +20,7 @@ import { Request, Response } from 'express';
 import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { McpOAuthService } from './service';
-import { OAuthFailure } from './protocol';
+import { OAuthFailure, OAuthRedirectFailure } from './protocol';
 import { User } from '@entities/user.entity';
 import { BootstrapInput, ConsentInput, ViewerInput } from './dto';
 
@@ -31,6 +31,7 @@ export class McpOAuthExceptionFilter implements ExceptionFilter {
     const status =
       error instanceof OAuthFailure ? error.status : error instanceof HttpException ? error.getStatus() : 500;
     res.setHeader('Cache-Control', 'no-store');
+    if (error instanceof OAuthRedirectFailure) { res.redirect(302, error.redirectUrl); return; }
     const req = host.switchToHttp().getRequest<Request>();
     if (error instanceof OAuthFailure && error.error === 'invalid_client' &&
         req.headers.authorization && !/\/exchange\/?$/i.test(req.path)) {

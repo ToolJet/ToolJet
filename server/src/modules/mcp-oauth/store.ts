@@ -12,9 +12,10 @@ export interface OAuthGrant {
   expires_at: Date;
   revoked_at: Date | null;
 }
+export type OAuthArtifactKind = 'interaction' | 'code' | 'access' | 'refresh';
 export interface OAuthArtifact {
   id: string;
-  kind: string;
+  kind: OAuthArtifactKind;
   client_id: string;
   grant_id: string | null;
   payload: Record<string, any>;
@@ -41,7 +42,7 @@ export class OAuthStore {
       }
     );
   }
-  async artifact(raw: string, kind: string): Promise<OAuthArtifact | undefined> {
+  async artifact(raw: string, kind: OAuthArtifactKind): Promise<OAuthArtifact | undefined> {
     const [row] = await this.manager.query('SELECT * FROM mcp_oauth_artifacts WHERE id = $1 AND kind = $2', [
       hash(raw),
       kind,
@@ -50,7 +51,7 @@ export class OAuthStore {
   }
   async put(
     raw: string,
-    kind: string,
+    kind: OAuthArtifactKind,
     clientId: string,
     grantId: string | null,
     payload: object,

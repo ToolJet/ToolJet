@@ -1,10 +1,10 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { McpOAuthService } from './service';
+import { McpOAuthIdentityService } from './identity.service';
 
 /** Runs before route guards, including guards that allow anonymous public-app access. */
 @Injectable()
 export class McpDelegationGuard implements CanActivate {
-  constructor(private readonly oauth: McpOAuthService) {}
+  constructor(private readonly oauth: McpOAuthIdentityService) {}
   async canActivate(context: ExecutionContext) {
     if (context.getType() !== 'http') return true;
     const req = context.switchToHttp().getRequest();

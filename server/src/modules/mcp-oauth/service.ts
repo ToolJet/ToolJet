@@ -1,3 +1,7 @@
+import { REFRESH_RETRY_SECONDS, sealRefreshRetry, openRefreshRetry } from './refresh-retry';
+import { McpOAuthIdentityService } from './identity.service';
+import { parseOAuthSettings, parseRegistration } from './parsers';
+import { loadLoginPolicy } from './policy';
 import { Cron } from '@nestjs/schedule';
 import type { ILoginConfigsUtilService } from '@modules/login-configs/interfaces/IUtilsService';
 import { ForbiddenException, Inject, Injectable, NotFoundException, OnModuleInit, Optional, UnauthorizedException } from '@nestjs/common';
@@ -7,10 +11,9 @@ import { JwtService } from '@nestjs/jwt';
 import { createHmac, randomUUID } from 'crypto';
 import OAuth2Server = require('@node-oauth/oauth2-server');
 import { User } from '@entities/user.entity';
-import { UserRepository } from '@modules/users/repositories/repository';
 import { OAuthStore } from './store';
 import { createOAuthEngine } from './engine';
-import { DelegationIdentity, ViewerIdentity, isDelegationClaims, isViewerClaims } from './claims';
+import { DelegationIdentity, ViewerIdentity, isDelegationClaims } from './claims';
 import { ConnectedClientResponse, InteractionPreviewResponse } from './dto';
 import {
   OAUTH_SCOPES,
@@ -21,6 +24,7 @@ import {
   VIEWER_AUDIENCE,
   VIEWER_SECONDS,
   OAuthFailure,
+  OAuthRedirectFailure,
   RejectedOAuthGrant,
   equalSecret,
   hash,
@@ -29,7 +33,6 @@ import {
   scopesParam,
   stringParam,
   trustedUrl,
-  validateRedirects,
   matchesRedirectUri,
   WorkspaceAuthentication,
   CLIENT_AUTH_METHODS,
@@ -41,11 +44,11 @@ export const needsBrowserBootstrap = (issuer: string, browserTarget: string) =>
 
 @Injectable()
 export class McpOAuthService implements OnModuleInit {
+  @Inject(McpOAuthIdentityService) readonly identity: McpOAuthIdentityService;
   constructor(
     readonly dataSource: DataSource,
     private readonly config: ConfigService,
     private readonly jwt: JwtService,
-    private readonly users: UserRepository,
     @Inject('MCP_LOGIN_CONFIGS')
     private readonly loginConfigs: Pick<ILoginConfigsUtilService, 'fetchOrganizationDetails'>,
     @Optional() @Inject('MCP_CUSTOM_DOMAINS')
@@ -75,60 +78,7 @@ export class McpOAuthService implements OnModuleInit {
         AND NOT EXISTS (SELECT 1 FROM mcp_oauth_artifacts a WHERE a.client_id = c.id)`);
     });
   }
-  private async loginPolicy(organizationId: string) {
-    const configs: any = await this.loginConfigs.fetchOrganizationDetails(
-      organizationId,
-      [true, false],
-      true,
-      true,
-    );
-    if (!configs) throw new UnauthorizedException('Workspace login is unavailable');
-    const providers = ['form', 'google', 'git', 'openid', 'saml', 'ldap'].flatMap((type) => {
-      const list = Array.isArray(configs[type]) ? configs[type] : configs[type] ? [configs[type]] : [];
-      return list.map((provider) => ({
-        type,
-        id: provider.configId || provider.config_id,
-        enabled:
-          !!provider.enabled && provider.featureIncluded !== false && provider.feature_included !== false,
-        config: Object.fromEntries(Object.entries(provider.configs || {}).filter(([key]) => key !== 'name')),
-      }));
-    });
-    // Include workspace and instance restrictions that are not in the public provider list.
-    const [workspacePolicy] = await this.dataSource.query(
-      'SELECT slug, domain, password_allowed_domains, password_restricted_domains, inherit_sso FROM organizations WHERE id = $1',
-      [organizationId],
-    );
-    const instancePolicy = await this.dataSource.query(
-      "SELECT key,value FROM instance_settings WHERE key IN ('ALLOWED_DOMAINS','PASSWORD_ALLOWED_DOMAINS','PASSWORD_RESTRICTED_DOMAINS','ENABLE_WORKSPACE_LOGIN_CONFIGURATION','MFA_ENABLED') ORDER BY key",
-    );
-    // Hash stored encrypted configuration, never store or expose it in OAuth credentials.
-    // Public login metadata intentionally hides secrets and group mappings.
-    const storedProviders = await this.dataSource.query(
-      `SELECT id, sso, enabled, config_scope,
-         CASE WHEN jsonb_typeof(configs::jsonb) = 'object' THEN configs::jsonb - 'name' ELSE configs::jsonb END AS configs
-       FROM sso_configs
-       WHERE organization_id = $1 OR config_scope = 'instance' ORDER BY id`,
-      [organizationId],
-    );
-    const groupSync = await this.dataSource.query(
-      `SELECT sso_config_id, organization_id, claim_name, group_mapping, enable_group_sync
-       FROM sso_config_oidc_group_sync WHERE organization_id = $1 OR organization_id IS NULL ORDER BY id`,
-      [organizationId],
-    );
-    return {
-      providers,
-      fingerprint: hash(canonicalJson({
-        providers: providers.sort((a, b) => `${a.type}:${a.id || ''}`.localeCompare(`${b.type}:${b.id || ''}`)),
-        version: 1,
-        workspacePolicy,
-        instancePolicy,
-        storedProviders,
-        groupSync,
-      })),
-      password: providers.some((p) => p.type === 'form' && p.enabled),
-      sso: providers.some((p) => p.type !== 'form' && p.enabled),
-    };
-  }
+  private loginPolicy(organizationId: string) { return loadLoginPolicy(this.dataSource, this.loginConfigs, organizationId); }
   async captureAuthentication(organizationId: string, method: string, providerId?: string): Promise<WorkspaceAuthentication | undefined> {
     if (!this.enabled() || !organizationId) return undefined;
     const policy = await this.loginPolicy(organizationId);
@@ -187,37 +137,7 @@ export class McpOAuthService implements OnModuleInit {
   assertEnabled() {
     if (!this.enabled()) throw new NotFoundException();
   }
-  settings() {
-    this.assertEnabled();
-    const subpath = (this.config.get<string>('SUB_PATH') || '').replace(/^\/+|\/+$/g, '');
-    const browser =
-      trustedUrl(this.config.get<string>('TOOLJET_HOST')).origin + (subpath ? `/${subpath}` : '');
-    const configuredIssuer = this.config.get<string>('MCP_OAUTH_ISSUER') || `${browser}/api/mcp-oauth`;
-    const configuredResource = this.config.get<string>('MCP_OAUTH_RESOURCE_URL');
-    const issuer = trustedUrl(configuredIssuer).href.replace(/\/$/, '');
-    const resource = configuredResource && trustedUrl(configuredResource).href.replace(/\/$/, '');
-    if (new URL(issuer).pathname !== `${subpath ? `/${subpath}` : ''}/api/mcp-oauth`)
-      throw new Error('MCP_OAUTH_ISSUER must point to this installation’s /api/mcp-oauth endpoint');
-    if (
-      !resource ||
-      !this.config.get<string>('MCP_OAUTH_EXCHANGE_SECRET') ||
-      this.config.get<string>('MCP_OAUTH_EXCHANGE_SECRET').length < 32
-    ) {
-      throw new Error('MCP OAuth requires a resource URL and an exchange secret of at least 32 characters');
-    }
-    for (const value of [configuredIssuer, configuredResource]) {
-      const url = trustedUrl(value);
-      if (url.search || value.endsWith('/'))
-        throw new Error('MCP OAuth URLs must have no query or trailing slash');
-    }
-    // Consent needs the host-only cookie issued by /authorize, including when SSO
-    // returns from a custom domain. Split backends must proxy this public endpoint.
-    const issuerUrl = new URL(issuer);
-    const browserUrl = new URL(browser);
-    if (issuerUrl.hostname !== browserUrl.hostname || issuerUrl.protocol !== browserUrl.protocol)
-      throw new Error('MCP OAuth issuer must use the TOOLJET_HOST hostname and scheme; proxy /api/mcp-oauth through the browser host');
-    return { browser, issuer, resource };
-  }
+  settings() { return parseOAuthSettings(this.config); }
   /** Read current domain ownership directly: stale cache entries must not authorize a removed domain. */
   async browserTarget(organizationId: string, manager: EntityManager = this.dataSource.manager, lock = false) {
     const { browser } = this.settings();
@@ -290,28 +210,8 @@ export class McpOAuthService implements OnModuleInit {
   }
   async register(body: Record<string, unknown>) {
     this.settings();
-    const redirects = validateRedirects(body.redirect_uris);
-    const name = stringParam(body.client_name, 'client_name', true) || 'MCP client';
-    if (name.length > 120 || /[\x00-\x1f\x7f]/.test(name))
-      throw new OAuthFailure('invalid_client_metadata', 'Invalid client name');
-    // RFC 7591 defaults new registrations to Basic; existing rows and explicit public clients stay none.
-    const authMethod = body.token_endpoint_auth_method === undefined ? 'client_secret_basic' : body.token_endpoint_auth_method;
-    if (!CLIENT_AUTH_METHODS.includes(authMethod as any))
-      throw new OAuthFailure('invalid_client_metadata', 'Unsupported client authentication method');
+    const { redirects, name, authMethod } = parseRegistration(body);
     const clientSecret = authMethod === 'none' ? undefined : secret('tj_mcp_secret_');
-    if (
-      body.grant_types !== undefined &&
-      (!Array.isArray(body.grant_types) ||
-        body.grant_types.some((g) => !['authorization_code', 'refresh_token'].includes(g)))
-    ) {
-      throw new OAuthFailure('invalid_client_metadata', 'Unsupported grant type');
-    }
-    if (
-      body.response_types !== undefined &&
-      (!Array.isArray(body.response_types) || body.response_types.some((g) => g !== 'code'))
-    ) {
-      throw new OAuthFailure('invalid_client_metadata', 'Only the code response type is supported');
-    }
     const id = secret('tj_mcp_client_');
     await this.dataSource.transaction(async (manager) => {
       // Cross-replica quota. Registration does not confer any ToolJet permissions.
@@ -353,30 +253,45 @@ export class McpOAuthService implements OnModuleInit {
   }
   async start(query: Record<string, unknown>) {
     const { browser } = this.settings();
-    const params = Object.fromEntries(
-      [
-        'client_id',
-        'redirect_uri',
-        'response_type',
-        'state',
-        'code_challenge',
-        'code_challenge_method',
-        'resource',
-      ].map((key) => [key, stringParam(query[key], key)]),
-    );
-    if (
-      params.response_type !== 'code' ||
-      params.code_challenge_method !== 'S256' ||
-      !/^[A-Za-z0-9_-]{43}$/.test(params.code_challenge)
-    ) {
-      throw new OAuthFailure('invalid_request', 'Authorization Code with S256 PKCE is required');
-    }
-    const scopes = scopesParam(query.scope);
+    const clientId = stringParam(query.client_id, 'client_id');
+    const redirectUri = stringParam(query.redirect_uri, 'redirect_uri');
     const store = this.store();
-    const client = await store.client(params.client_id);
-    if (!client || !client.redirectUris.some((registered) => matchesRedirectUri(params.redirect_uri, registered)))
+    const client = await store.client(clientId);
+    if (!client || !client.redirectUris.some((registered) => matchesRedirectUri(redirectUri, registered)))
       throw new OAuthFailure('invalid_client', 'Unregistered client or redirect URI');
-    const org = await this.workspace(params.resource);
+    const parsed = await (async () => {
+      try {
+        const params = Object.fromEntries(
+          [
+            'client_id',
+            'redirect_uri',
+            'response_type',
+            'state',
+            'code_challenge',
+            'code_challenge_method',
+            'resource',
+          ].map((key) => [key, stringParam(query[key], key)]),
+        );
+        if (
+          params.response_type !== 'code' ||
+          params.code_challenge_method !== 'S256' ||
+          !/^[A-Za-z0-9_-]{43}$/.test(params.code_challenge)
+        ) {
+          throw new OAuthFailure('invalid_request', 'Authorization Code with S256 PKCE is required');
+        }
+        const scopes = scopesParam(query.scope);
+        const org = await this.workspace(params.resource);
+        return { params, scopes, org };
+      } catch (error) {
+        if (!(error instanceof OAuthFailure)) throw error;
+        const redirect = new URL(redirectUri);
+        redirect.searchParams.set('error', error.error);
+        redirect.searchParams.set('iss', this.settings().issuer);
+        if (typeof query.state === 'string' && query.state.length <= 4096) redirect.searchParams.set('state', query.state);
+        throw new OAuthRedirectFailure(error, redirect.href);
+      }
+    })();
+    const { params, scopes, org } = parsed;
     const browserTarget = await this.browserTarget(org.id);
     const id = secret();
     const csrf = secret();
@@ -581,6 +496,29 @@ export class McpOAuthService implements OnModuleInit {
       const current = await store.artifact(raw, kind);
       if (grant.resource !== resource)
         throw new OAuthFailure('invalid_target', 'Resource does not match this connection');
+      let retryKey: string | undefined;
+      try {
+        const retryScope = body.scope === undefined ? current.payload.scope : scopesParam(body.scope);
+        retryKey = hash(canonicalJson({ resource, scope: [...retryScope].sort() }));
+      } catch (error) {
+        // Invalid retry parameters must not bypass consumed-token replay detection.
+        if (!current.consumed_at) throw error;
+      }
+      if (current.consumed_at && kind === 'refresh' && retryKey !== undefined && current.expires_at > new Date() &&
+          current.payload.retryKey === retryKey && typeof current.payload.retryResponse === 'string') {
+        const [clock] = await manager.query('SELECT clock_timestamp() AS now');
+        const age = (clock.now.getTime() - current.consumed_at.getTime()) / 1000;
+        const cached = age >= 0 && age <= REFRESH_RETRY_SECONDS
+          ? openRefreshRetry(this.config.get('SECRET_KEY_BASE'), current.id, current.payload.retryResponse) : undefined;
+        if (cached && typeof cached.access_token === 'string' && typeof cached.refresh_token === 'string') {
+          const access = await store.artifact(cached.access_token, 'access');
+          const refresh = await store.artifact(cached.refresh_token, 'refresh');
+          if (access?.grant_id === grant.id && refresh?.grant_id === grant.id && !refresh.consumed_at &&
+              access.expires_at > clock.now && refresh.expires_at > clock.now) {
+            return { body: { ...cached, expires_in: Math.max(0, Math.floor((access.expires_at.getTime() - clock.now.getTime()) / 1000)) } };
+          }
+        }
+      }
       if (current.consumed_at) {
         await store.revoke(grant.id);
         return {
@@ -592,6 +530,12 @@ export class McpOAuthService implements OnModuleInit {
         scopesParam(body.scope).some((scope) => !current.payload.scope.includes(scope))
       ) {
         throw new OAuthFailure('invalid_scope', 'Cannot increase the permissions of a connection');
+      }
+      // Validate syntax before the engine consumes the code. Incorrect but well-formed
+      // PKCE still goes through the engine's one-attempt check and revokes the grant.
+      if (kind === 'code' && (body.redirect_uri !== current.payload.redirectUri ||
+          typeof body.code_verifier !== 'string' || !/^[A-Za-z0-9._~-]{43,128}$/.test(body.code_verifier))) {
+        throw new OAuthFailure('invalid_request', 'Invalid redirect URI or PKCE verifier');
       }
       const response = new OAuth2Server.Response();
       const tokenBody = { ...body, client_id: client.id,
@@ -611,12 +555,17 @@ export class McpOAuthService implements OnModuleInit {
           }),
           response,
         );
+        if (kind === 'refresh') {
+          await manager.query('UPDATE mcp_oauth_artifacts SET payload = $2 WHERE id = $1', [current.id,
+            JSON.stringify({ ...current.payload, retryKey,
+              retryResponse: sealRefreshRetry(this.config.get('SECRET_KEY_BASE'), current.id, response.body) })]);
+        }
         return { body: response.body };
       } catch (error) {
-        // The engine consumes an authorization code before validating PKCE. Commit that
-        // consumption, and revoke its grant, while rolling back actual storage errors.
+        // Never leave an active grant with an irretrievably consumed code and no tokens.
         if (error instanceof OAuth2Server.OAuthError && error.code < 500) {
-          await store.revoke(grant.id);
+          if (error.name === 'invalid_grant' ||
+              (kind === 'code' && (await store.artifact(raw, kind))?.consumed_at)) await store.revoke(grant.id);
           return { failure: new OAuthFailure(error.name, 'Invalid OAuth credential or request', error.code) };
         }
         throw error;
@@ -701,10 +650,16 @@ export class McpOAuthService implements OnModuleInit {
       audience: DELEGATION_AUDIENCE, algorithms: ['HS256'],
     });
     if (!isDelegationClaims(parent)) throw new UnauthorizedException();
-    const seconds = Math.min(VIEWER_SECONDS, Math.floor(parent.exp - Date.now() / 1000));
+    const store = this.store();
+    const grant = await store.activeGrant(parent.oauthGrantId);
+    const seconds = Math.min(VIEWER_SECONDS, Math.floor((grant.expires_at.getTime() - Date.now()) / 1000));
     if (seconds < 1) throw new UnauthorizedException();
+    // An independent, hashed artifact keeps the viewer usable through a parent access-token
+    // expiry while retaining live grant/policy checks and its own short expiry.
+    const viewerArtifact = secret();
+    await store.put(viewerArtifact, 'access', grant.client_id, grant.id, { scope: ['apps', 'data'] }, new Date(Date.now() + seconds * 1000));
     const identity: ViewerIdentity = { sub: user.id, oauthGrantId: parent.oauthGrantId,
-      oauthTokenId: parent.oauthTokenId, oauthAppId: appId };
+      oauthTokenId: hash(viewerArtifact), oauthAppId: appId };
     return {
       access_token: this.jwt.sign(identity, {
         secret: this.config.get('SECRET_KEY_BASE'), issuer: this.settings().issuer,
@@ -713,75 +668,8 @@ export class McpOAuthService implements OnModuleInit {
       token_type: 'Bearer', expires_in: seconds, organization_id: workspaceId, app_id: appId,
     };
   }
-  async authenticateViewer(credential: string, workspaceId?: string): Promise<User> {
-    let payload: unknown;
-    try {
-      payload = this.jwt.verify(credential, { secret: this.config.get('SECRET_KEY_BASE'),
-        issuer: this.settings().issuer, audience: VIEWER_AUDIENCE, algorithms: ['HS256'] });
-    } catch { throw new UnauthorizedException(); }
-    return this.validateViewer(payload, workspaceId);
-  }
-  async validateViewer(payload: unknown, workspaceId?: string): Promise<User> {
-    if (!isViewerClaims(payload)) throw new UnauthorizedException();
-    const user = await this.validateDelegation({ ...payload, aud: DELEGATION_AUDIENCE }, workspaceId);
-    if (!user.oauthScopes.includes('apps') || !user.oauthScopes.includes('data')) throw new UnauthorizedException();
-    const [app] = await this.dataSource.query('SELECT id FROM apps WHERE id = $1 AND organization_id = $2',
-      [payload.oauthAppId, user.organizationId]);
-    if (!app) throw new UnauthorizedException();
-    user.oauthAppId = payload.oauthAppId;
-    return user;
-  }
-  async authenticateDelegation(credential: string, workspaceId: string): Promise<User> {
-    const { issuer } = this.settings();
-    let payload: unknown;
-    try {
-      payload = this.jwt.verify(credential, {
-        secret: this.config.get('SECRET_KEY_BASE'),
-        issuer,
-        audience: DELEGATION_AUDIENCE,
-        algorithms: ['HS256'],
-      });
-    } catch {
-      throw new UnauthorizedException();
-    }
-    return this.validateDelegation(payload, workspaceId);
-  }
-  async validateDelegation(payload: unknown, workspaceId?: string): Promise<User> {
-    const { issuer } = this.settings();
-    if (
-      !isDelegationClaims(payload) ||
-      payload.iss !== issuer ||
-      payload.exp <= Date.now() / 1000
-    ) {
-      throw new UnauthorizedException();
-    }
-    const store = this.store();
-    let grant;
-    try {
-      grant = await this.persistRevocationOnFailure(() => store.activeGrant(payload.oauthGrantId));
-    } catch {
-      throw new UnauthorizedException();
-    }
-    const [artifact] = await this.dataSource.query(
-      "SELECT * FROM mcp_oauth_artifacts WHERE id = $1 AND grant_id = $2 AND kind = 'access' AND expires_at > now()",
-      [payload.oauthTokenId, grant.id],
-    );
-    if (!artifact || payload.sub !== grant.user_id || (workspaceId && workspaceId !== grant.organization_id))
-      throw new UnauthorizedException();
-    const owner = await this.users.findOne({ where: { id: grant.user_id } });
-    const user = owner && (await this.users.findByEmail(owner.email, grant.organization_id, 'active'));
-    if (!user) throw new UnauthorizedException();
-    user.organizationId = grant.organization_id;
-    user.organizationIds = [grant.organization_id];
-    user.isSSOLogin = false;
-    user.isPasswordLogin = false;
-    user.isPATLogin = false;
-    user.oauthGrantId = grant.id;
-    user.oauthClientId = grant.client_id;
-    user.oauthScopes = artifact.payload.scope;
-    user.tjApiSource = 'mcp_oauth';
-    return user;
-  }
+  authenticateViewer(credential: string, workspaceId?: string) { return this.identity.authenticateViewer(credential, workspaceId); }
+  authenticateDelegation(credential: string, workspaceId: string) { return this.identity.authenticateDelegation(credential, workspaceId); }
   async connections(user: User): Promise<ConnectedClientResponse[]> {
     this.assertEnabled();
     this.assertBrowserUser(user, user.organizationId);

@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-jest.mock('@modules/mcp-oauth/service', () => ({ McpOAuthService: class {} }));
+jest.mock('@modules/mcp-oauth/identity.service', () => ({ McpOAuthIdentityService: class {} }));
 jest.mock('@modules/users/repositories/repository', () => ({ UserRepository: class {} }));
 jest.mock('@modules/session/util.service', () => ({ SessionUtilService: class {} }));
 jest.mock('@modules/session/repository', () => ({ UserSessionRepository: class {} }));
@@ -52,18 +52,18 @@ describe('OAuth delegation boundary', () => {
   });
   test('a delegation is not accepted as a browser-cookie or PAT credential', async () => {
     const strategy: any = Object.create(JwtStrategy.prototype);
-    strategy.mcpOAuthService = { validateDelegation: jest.fn() };
+    strategy.mcpOAuthIdentityService = { validateDelegation: jest.fn() };
     for (const carrier of [
       { tj_auth_token: 'synthetic-credential', 'tj-workspace-id': 'garden' },
       { cookie: 'tj_auth_token=synthetic-credential', 'tj-workspace-id': 'garden' },
       { 'x-tooljet-delegation': 'synthetic-credential' },
     ])
       expect(await strategy.validate({ headers: carrier }, payload)).toBe(false);
-    expect(strategy.mcpOAuthService.validateDelegation).not.toHaveBeenCalled();
+    expect(strategy.mcpOAuthIdentityService.validateDelegation).not.toHaveBeenCalled();
   });
   test('the JWT strategy reuses the globally validated principal only for its workspace', async () => {
     const strategy: any = Object.create(JwtStrategy.prototype);
-    strategy.mcpOAuthService = { validateDelegation: jest.fn() };
+    strategy.mcpOAuthIdentityService = { validateDelegation: jest.fn() };
     expect(await strategy.validate({ headers, oauthDelegatedUser: user }, payload)).toBe(user);
     expect(
       await strategy.validate(
@@ -74,6 +74,6 @@ describe('OAuth delegation boundary', () => {
         payload,
       ),
     ).toBe(false);
-    expect(strategy.mcpOAuthService.validateDelegation).not.toHaveBeenCalled();
+    expect(strategy.mcpOAuthIdentityService.validateDelegation).not.toHaveBeenCalled();
   });
 });

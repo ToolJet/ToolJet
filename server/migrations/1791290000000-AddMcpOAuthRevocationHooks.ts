@@ -9,7 +9,50 @@ export class AddMcpOAuthRevocationHooks1791290000000 implements MigrationInterfa
       CREATE INDEX mcp_oauth_grants_active_client_idx
         ON mcp_oauth_grants(client_id) WHERE revoked_at IS NULL;
 
-      CREATE FUNCTION mcp_oauth_lock_grant_creation() RETURNS trigger LANGUAGE plpgsql AS $$
+      ${MCP_OAUTH_ORIGINAL_CREATION_FUNCTION}
+      CREATE TRIGGER mcp_oauth_grant_creation_lock BEFORE INSERT ON mcp_oauth_grants
+        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_lock_grant_creation();
+
+      ${MCP_OAUTH_ORIGINAL_REVOCATION_FUNCTION}
+      CREATE TRIGGER mcp_oauth_user_security AFTER UPDATE ON users
+        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
+      CREATE TRIGGER mcp_oauth_workspace_security AFTER UPDATE ON organizations
+        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
+      CREATE TRIGGER mcp_oauth_membership_security AFTER UPDATE OR DELETE ON organization_users
+        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
+      CREATE TRIGGER mcp_oauth_ban_security AFTER INSERT OR UPDATE OR DELETE ON workspace_ban_list
+        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
+      CREATE TRIGGER mcp_oauth_client_security AFTER UPDATE ON mcp_oauth_clients
+        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
+      CREATE TRIGGER mcp_oauth_sso_security AFTER INSERT OR UPDATE OR DELETE ON sso_configs
+        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
+      CREATE TRIGGER mcp_oauth_group_sync_security AFTER INSERT OR UPDATE OR DELETE ON sso_config_oidc_group_sync
+        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
+      CREATE TRIGGER mcp_oauth_instance_security AFTER INSERT OR UPDATE OR DELETE ON instance_settings
+        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
+    `);
+  }
+
+  async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+      DROP TRIGGER IF EXISTS mcp_oauth_client_security ON mcp_oauth_clients;
+      DROP TRIGGER IF EXISTS mcp_oauth_ban_security ON workspace_ban_list;
+      DROP TRIGGER mcp_oauth_instance_security ON instance_settings;
+      DROP TRIGGER mcp_oauth_group_sync_security ON sso_config_oidc_group_sync;
+      DROP TRIGGER mcp_oauth_sso_security ON sso_configs;
+      DROP TRIGGER mcp_oauth_membership_security ON organization_users;
+      DROP TRIGGER mcp_oauth_workspace_security ON organizations;
+      DROP TRIGGER mcp_oauth_user_security ON users;
+      DROP TRIGGER mcp_oauth_grant_creation_lock ON mcp_oauth_grants;
+      DROP FUNCTION mcp_oauth_revoke_on_security_change();
+      DROP FUNCTION mcp_oauth_lock_grant_creation();
+      DROP INDEX mcp_oauth_grants_active_workspace_idx;
+      DROP INDEX IF EXISTS mcp_oauth_grants_active_client_idx;
+    `);
+  }
+}
+
+export const MCP_OAUTH_ORIGINAL_CREATION_FUNCTION = `      CREATE FUNCTION mcp_oauth_lock_grant_creation() RETURNS trigger LANGUAGE plpgsql AS $$
       BEGIN
         -- Consent rechecks policy after INSERT while holding this shared lock. Security changes
         -- acquire the exclusive lock below, so concurrent changes cannot miss a new grant.
@@ -17,10 +60,9 @@ export class AddMcpOAuthRevocationHooks1791290000000 implements MigrationInterfa
         RETURN NEW;
       END;
       $$;
-      CREATE TRIGGER mcp_oauth_grant_creation_lock BEFORE INSERT ON mcp_oauth_grants
-        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_lock_grant_creation();
+`;
 
-      CREATE FUNCTION mcp_oauth_revoke_on_security_change() RETURNS trigger LANGUAGE plpgsql AS $$
+export const MCP_OAUTH_ORIGINAL_REVOCATION_FUNCTION = `      CREATE FUNCTION mcp_oauth_revoke_on_security_change() RETURNS trigger LANGUAGE plpgsql AS $$
       DECLARE
         previous jsonb := CASE WHEN TG_OP <> 'INSERT' THEN to_jsonb(OLD) ELSE '{}'::jsonb END;
         current_row jsonb := CASE WHEN TG_OP <> 'DELETE' THEN to_jsonb(NEW) ELSE '{}'::jsonb END;
@@ -107,40 +149,4 @@ export class AddMcpOAuthRevocationHooks1791290000000 implements MigrationInterfa
       END;
       $$;
 
-      CREATE TRIGGER mcp_oauth_user_security AFTER UPDATE ON users
-        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
-      CREATE TRIGGER mcp_oauth_workspace_security AFTER UPDATE ON organizations
-        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
-      CREATE TRIGGER mcp_oauth_membership_security AFTER UPDATE OR DELETE ON organization_users
-        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
-      CREATE TRIGGER mcp_oauth_ban_security AFTER INSERT OR UPDATE OR DELETE ON workspace_ban_list
-        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
-      CREATE TRIGGER mcp_oauth_client_security AFTER UPDATE ON mcp_oauth_clients
-        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
-      CREATE TRIGGER mcp_oauth_sso_security AFTER INSERT OR UPDATE OR DELETE ON sso_configs
-        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
-      CREATE TRIGGER mcp_oauth_group_sync_security AFTER INSERT OR UPDATE OR DELETE ON sso_config_oidc_group_sync
-        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
-      CREATE TRIGGER mcp_oauth_instance_security AFTER INSERT OR UPDATE OR DELETE ON instance_settings
-        FOR EACH ROW EXECUTE FUNCTION mcp_oauth_revoke_on_security_change();
-    `);
-  }
-
-  async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-      DROP TRIGGER IF EXISTS mcp_oauth_client_security ON mcp_oauth_clients;
-      DROP TRIGGER IF EXISTS mcp_oauth_ban_security ON workspace_ban_list;
-      DROP TRIGGER mcp_oauth_instance_security ON instance_settings;
-      DROP TRIGGER mcp_oauth_group_sync_security ON sso_config_oidc_group_sync;
-      DROP TRIGGER mcp_oauth_sso_security ON sso_configs;
-      DROP TRIGGER mcp_oauth_membership_security ON organization_users;
-      DROP TRIGGER mcp_oauth_workspace_security ON organizations;
-      DROP TRIGGER mcp_oauth_user_security ON users;
-      DROP TRIGGER mcp_oauth_grant_creation_lock ON mcp_oauth_grants;
-      DROP FUNCTION mcp_oauth_revoke_on_security_change();
-      DROP FUNCTION mcp_oauth_lock_grant_creation();
-      DROP INDEX mcp_oauth_grants_active_workspace_idx;
-      DROP INDEX IF EXISTS mcp_oauth_grants_active_client_idx;
-    `);
-  }
-}
+`;

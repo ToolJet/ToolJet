@@ -1,8 +1,9 @@
+jest.mock('@modules/mcp-oauth/service', () => ({ McpOAuthService: class {} }));
 import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
-jest.mock('@modules/mcp-oauth/service', () => ({ McpOAuthService: class {} }));
+jest.mock('@modules/mcp-oauth/identity.service', () => ({ McpOAuthIdentityService: class {} }));
 jest.mock('@helpers/database.helper', () => ({ dbTransactionWrap: (operation, manager) => operation(manager) }));
 jest.mock('@helpers/utils.helper', () => ({
   isHttpsEnabled: () => false,
@@ -94,7 +95,7 @@ describe('Existing browser and PAT session compatibility', () => {
       handleUnauthorizedUser: jest.fn(),
     };
     instance.userRepository = { findByEmail: jest.fn().mockImplementation(async () => ({ ...owner })) };
-    instance.mcpOAuthService = { validateDelegation: jest.fn() };
+    instance.mcpOAuthIdentityService = { validateDelegation: jest.fn() };
     return instance;
   }
   const pat = { username: owner.id, sub: owner.email, sessionId: owner.sessionId, organizationIds: [organization.id],
@@ -105,7 +106,7 @@ describe('Existing browser and PAT session compatibility', () => {
     const user = await instance.validate({ headers: {}, url: '/api/apps' }, pat);
     expect(user).toMatchObject({ organizationId: organization.id, isPATLogin: true, patScope: 'workspace', tjApiSource: 'personal_access_token' });
     expect(instance.sessionUtilService.validateUserSession).toHaveBeenCalledWith(owner.id, owner.sessionId, organization.id);
-    expect(instance.mcpOAuthService.validateDelegation).not.toHaveBeenCalled();
+    expect(instance.mcpOAuthIdentityService.validateDelegation).not.toHaveBeenCalled();
   });
 
   test('PAT JWT cannot select a workspace outside its signed grant', async () => {
@@ -124,6 +125,6 @@ describe('Existing browser and PAT session compatibility', () => {
     expect(user.isPasswordLogin).toBe(true);
     expect(user.isPATLogin).toBe(false);
     expect(user.workspaceAuthentication).toBeUndefined();
-    expect(instance.mcpOAuthService.validateDelegation).not.toHaveBeenCalled();
+    expect(instance.mcpOAuthIdentityService.validateDelegation).not.toHaveBeenCalled();
   });
 });

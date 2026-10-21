@@ -1,3 +1,5 @@
+import { ReduceMcpOAuthPolicyContention1792540800000 } from '../../../migrations/1792540800000-ReduceMcpOAuthPolicyContention';
+import { McpOAuthIdentityService } from '@modules/mcp-oauth/identity.service';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -137,6 +139,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await new AddMcpOAuth1789416000000().up(runner);
     await new AddMcpOAuthRevocationHooks1791290000000().up(runner);
     await new AddMcpOAuthClientAuthentication1791763200000().up(runner);
+    await new ReduceMcpOAuthPolicyContention1792540800000().up(runner);
     await runner.release();
     expect(await db.query('SELECT * FROM user_personal_access_tokens')).toEqual([
       { id: 'synthetic-existing-pat', token_hash: 'synthetic-existing-hash' },
@@ -145,6 +148,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   afterAll(async () => {
     if (db?.isInitialized) {
       const runner = db.createQueryRunner();
+      await new ReduceMcpOAuthPolicyContention1792540800000().down(runner);
       await new AddMcpOAuthClientAuthentication1791763200000().down(runner);
       await new AddMcpOAuthRevocationHooks1791290000000().down(runner);
       await new AddMcpOAuth1789416000000().down(runner);
@@ -181,9 +185,9 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       db,
       new ConfigService(settings),
       new JwtService(),
-      users as any,
       loginConfigs as any,
     );
+    Object.assign(oauth, { identity: new McpOAuthIdentityService(db, new ConfigService(settings), new JwtService(), users as any, loginConfigs as any) });
     user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
     client = await oauth.register({
       client_name: 'Synthetic desktop client',
@@ -209,13 +213,13 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       licensed = true;
       oauth = new McpOAuthService(
         db, new ConfigService({ ...settings, ENABLE_CUSTOM_DOMAINS: 'true' }), new JwtService(),
-        { findOne: async () => ({ ...user }), findByEmail: async () => ({ ...user }) } as any,
         loginConfigs as any,
         { resolveCustomDomain: async (domain) => {
           const [row] = await db.query("SELECT organization_id FROM custom_domains WHERE domain=$1 AND status='active' AND ssl_status='active'", [domain]);
           return licensed && row ? { organizationId: row.organization_id } : null;
         } },
       );
+      Object.assign(oauth, { identity: new McpOAuthIdentityService(db, new ConfigService({ ...settings, ENABLE_CUSTOM_DOMAINS: 'true' }), new JwtService(), { findOne: async () => ({ ...user }), findByEmail: async () => ({ ...user }) } as any, loginConfigs as any) });
       await db.query("INSERT INTO custom_domains VALUES ($1,$2,$3,'active','active')", [randomUUID(), organizationId, 'orchard.synthetic.example']);
     });
     const begin = async () => {
@@ -374,6 +378,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     const replay = kind === 'code' ? codeBody(code) : refreshBody(tokens.refresh_token);
     await expect(oauth.token(...clientRequest(replay, client.token_endpoint_auth_method, 'synthetic-wrong-secret'))).rejects.toMatchObject({ error: 'invalid_client' });
     expect((await exchange(renewed.access_token)).access_token).toBeDefined();
+    if (kind === 'refresh') await db.query("UPDATE mcp_oauth_artifacts SET consumed_at=now()-interval '6 seconds' WHERE id=$1", [hash(tokens.refresh_token)]);
     await expect(oauth.token(...clientRequest(replay))).rejects.toMatchObject({ error: 'invalid_grant' });
     await expect(exchange(renewed.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
@@ -729,13 +734,13 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       await approval;
     }
   }, 10000);
-  test('a security change serialized before a pending consent cannot leave a usable old-policy grant', async () => {
+  test('a pending security update prevents consent retaining an old-policy grant', async () => {
     const writer = db.createQueryRunner();
     await writer.connect();
     await writer.startTransaction();
     let approval: Promise<string>;
     try {
-      await writer.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-security-policy'))");
+      await writer.query('UPDATE organizations SET domain = $1', ['new.synthetic.example']);
       approval = approve();
       // Wait for the actual INSERT lock, rather than relying on arbitrary callback timing.
       const deadline = Date.now() + 2000;
@@ -746,7 +751,6 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
         if (!waiting) await new Promise((resolve) => setTimeout(resolve, 5));
       }
       expect(waiting).toBe(true);
-      await writer.query('UPDATE organizations SET domain = $1', ['new.synthetic.example']);
       await writer.commitTransaction();
       await expect(approval).rejects.toThrow('policy changed');
       expect((await db.query('SELECT count(*)::int AS total FROM mcp_oauth_grants'))[0].total).toBe(0);
@@ -799,20 +803,101 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await expect(redeem(code)).rejects.toMatchObject({ error: 'invalid_grant' });
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
-  test('refresh replay revokes the entire family including derived credentials', async () => {
+  test('refresh replay outside the retry window revokes the entire family including derived credentials', async () => {
     const tokens = await redeem(await approve());
     const delegated = await exchange(tokens.access_token);
     const renewed = await refresh(tokens.refresh_token);
+    await db.query("UPDATE mcp_oauth_artifacts SET consumed_at=now()-interval '6 seconds' WHERE id=$1", [hash(tokens.refresh_token)]);
     await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     await expect(exchange(renewed.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     await expect(oauth.authenticateDelegation(delegated.access_token, organizationId)).rejects.toThrow(UnauthorizedException);
   });
-  test('simultaneous refreshes cannot both succeed across database connections', async () => {
+  test('simultaneous refreshes recover one rotated pair across database connections', async () => {
     const tokens = await redeem(await approve());
-    const outcomes = await Promise.allSettled([refresh(tokens.refresh_token), refresh(tokens.refresh_token)]);
-    expect(outcomes.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
-    const result: any = outcomes.find((r) => r.status === 'fulfilled');
-    await expect(exchange(result.value.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+    const [first, second] = await Promise.all([refresh(tokens.refresh_token), refresh(tokens.refresh_token)]);
+    expect(first.access_token).toBe(second.access_token);
+    expect(first.refresh_token).toBe(second.refresh_token);
+    expect(first.refresh_token).not.toBe(tokens.refresh_token);
+    expect((await exchange(first.access_token)).access_token).toBeDefined();
+    const stored = JSON.stringify(await db.query('SELECT payload FROM mcp_oauth_artifacts WHERE id=$1', [hash(tokens.refresh_token)]));
+    expect(stored).not.toContain(first.access_token);
+    expect(stored).not.toContain(first.refresh_token);
+  });
+  test.each(['child-used', 'changed-scope', 'invalid-scope', 'tampered-cache'])('refresh retry fails closed for %s', async reason => {
+    const tokens = await redeem(await approve());
+    const renewed = await refresh(tokens.refresh_token);
+    if (reason === 'child-used') await refresh(renewed.refresh_token);
+    if (reason === 'tampered-cache') await db.query("UPDATE mcp_oauth_artifacts SET payload=jsonb_set(payload, '{retryResponse}', '\"invalid\"') WHERE id=$1", [hash(tokens.refresh_token)]);
+    await expect(refresh(tokens.refresh_token, reason === 'changed-scope' ? { scope: 'apps' } : reason === 'invalid-scope' ? { scope: 'bogus' } : {})).rejects.toMatchObject({ error: 'invalid_grant' });
+    await expect(exchange(renewed.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+  });
+  test('malformed code request does not revoke its grant; a consumed code replay still does', async () => {
+    const code = await approve();
+    const [{ grant_id: grantId }] = await db.query('SELECT grant_id FROM mcp_oauth_artifacts WHERE id=$1', [hash(code)]);
+    await expect(redeem(code, { redirect_uri: 'http://127.0.0.1:54321/wrong' })).rejects.toMatchObject({ error: 'invalid_request' });
+    await expect(redeem(code, { code_verifier: 'too-short' })).rejects.toMatchObject({ error: 'invalid_request' });
+    expect((await db.query('SELECT revoked_at FROM mcp_oauth_grants WHERE id=$1', [grantId]))[0].revoked_at).toBeNull();
+    const tokens = await redeem(code);
+    expect((await exchange(tokens.access_token)).access_token).toBeDefined();
+    await expect(redeem(code)).rejects.toMatchObject({ error: 'invalid_grant' });
+    await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+  });
+  test('viewer remains usable when the parent access expires, but never after its own grant expires', async () => {
+    const { tokens, delegated, appId } = await makeViewer();
+    await db.query("UPDATE mcp_oauth_artifacts SET expires_at=now()+interval '20 seconds' WHERE id=$1", [hash(tokens.access_token)]);
+    const viewer = await oauth.viewer(delegated.access_token, organizationId, appId);
+    expect(viewer.expires_in).toBe(120);
+    await db.query("UPDATE mcp_oauth_artifacts SET expires_at=now()-interval '1 second' WHERE id=$1", [hash(tokens.access_token)]);
+    expect((await oauth.authenticateViewer(viewer.access_token)).oauthAppId).toBe(appId);
+    await expect(oauth.authenticateDelegation(delegated.access_token, organizationId)).rejects.toThrow(UnauthorizedException);
+    await db.query("UPDATE mcp_oauth_grants SET expires_at=now()-interval '1 second'");
+    await expect(oauth.authenticateViewer(viewer.access_token)).rejects.toThrow(UnauthorizedException);
+  });
+  test('unrelated workspace security changes do not wait on another workspace policy lock', async () => {
+    const otherId = randomUUID();
+    await db.query("INSERT INTO organizations (id, status) VALUES ($1, 'active')", [otherId]);
+    const writer = db.createQueryRunner();
+    await writer.startTransaction();
+    try {
+      await writer.query("UPDATE organizations SET status='archived' WHERE id=$1", [otherId]);
+      await db.transaction(async manager => {
+        await manager.query("SET LOCAL statement_timeout = '1500ms'");
+        await manager.query("UPDATE organizations SET status='archived' WHERE id=$1", [organizationId]);
+      });
+    } finally { await writer.rollbackTransaction(); await writer.release(); }
+  });
+  test('crossed membership and instance policy changes do not acquire conflicting advisory locks', async () => {
+    const [u1, u2, w1, w2] = Array.from({ length: 4 }, () => randomUUID());
+    for (const uid of [u1, u2]) for (const wid of [w1, w2])
+      await db.query("INSERT INTO organization_users VALUES ($1, $2, 'active')", [uid, wid]);
+    const first = db.createQueryRunner(); const second = db.createQueryRunner();
+    await first.startTransaction(); await second.startTransaction();
+    try {
+      for (const runner of [first, second]) await runner.query("SET LOCAL statement_timeout = '1500ms'");
+      const change = (runner, uid, wid) => runner.query(
+        "UPDATE organization_users SET status='archived' WHERE user_id=$1 AND organization_id=$2", [uid, wid]);
+      await change(first, u1, w1);
+      await change(second, u2, w2);
+      await Promise.all([change(first, u2, w1), change(second, u1, w2)]);
+      // Mixed local/instance edits remain shared lock holders, with no lock upgrades.
+      await Promise.all([
+        first.query("INSERT INTO instance_settings VALUES ('ALLOWED_DOMAINS', 'orchard.example')"),
+        second.query("INSERT INTO instance_settings VALUES ('PASSWORD_ALLOWED_DOMAINS', 'meadow.example')"),
+      ]);
+    } finally {
+      await first.rollbackTransaction(); await second.rollbackTransaction();
+      await first.release(); await second.release();
+    }
+  });
+  test('irrelevant updates skip security trigger execution', async () => {
+    await db.transaction(async manager => {
+      await manager.query(`CREATE OR REPLACE FUNCTION mcp_oauth_revoke_on_security_change() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'unexpected trigger'; END; $$`);
+      await manager.query("UPDATE users SET email=email");
+      await manager.query("UPDATE organizations SET name=name");
+      await manager.query("UPDATE mcp_oauth_clients SET name=name");
+      // Throw to restore the real function definition after proving the updates skipped it.
+      throw new Error('restore function');
+    }).catch(error => { expect(error.message).toBe('restore function'); });
   });
   test('checks resource, client and service authentication at exchange', async () => {
     const code = await approve();
@@ -912,6 +997,17 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       const http = supertest(app.getHttpServer());
       const metadata = await http.get('/.well-known/oauth-authorization-server/api/mcp-oauth').expect(200);
       expect(metadata.body.issuer).toBe('https://tooljet.synthetic.example/api/mcp-oauth');
+      for (const [changes, error] of [[{ code_challenge: '' }, 'invalid_request'], [{ scope: 'unsupported' }, 'invalid_scope'], [{ resource: resourceBase + '/missing' }, 'invalid_target']] as const) {
+        const failed = await http.get('/api/mcp-oauth/authorize').query(request(changes)).expect(302);
+        const location = new URL(failed.headers.location);
+        expect(location.origin + location.pathname).toBe(redirectUri);
+        expect(location.searchParams.get('error')).toBe(error);
+        expect(location.searchParams.get('state')).toBe('synthetic-state');
+        expect(location.searchParams.get('iss')).toBe(metadata.body.issuer);
+        expect(failed.headers['set-cookie']).toBeUndefined();
+      }
+      const invalidClient = await http.get('/api/mcp-oauth/authorize').query(request({ redirect_uri: 'https://unregistered.synthetic.example/callback' })).expect(400);
+      expect(invalidClient.headers.location).toBeUndefined();
       const authorization = await http.get('/api/mcp-oauth/authorize').query(request()).expect(302);
       const id = new URL(authorization.headers.location).searchParams.get('request');
       const cookies = authorization.headers['set-cookie'].map((cookie) => cookie.split(';')[0]);
@@ -983,7 +1079,6 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       db,
       new ConfigService({ ...settings, MCP_OAUTH_ENABLED: 'false' }),
       new JwtService(),
-      {} as any,
       loginConfigs as any,
     );
     expect(() => disabled.metadata()).toThrow(NotFoundException);

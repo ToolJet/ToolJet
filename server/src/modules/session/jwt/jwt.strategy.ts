@@ -1,4 +1,4 @@
-import { McpOAuthService } from '@modules/mcp-oauth/service';
+import { McpOAuthIdentityService } from '@modules/mcp-oauth/identity.service';
 import { Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable } from '@nestjs/common';
@@ -15,8 +15,8 @@ import { trackUserActivity, extractAppIdFromPath } from '@otel/tracing';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  @Inject(McpOAuthService)
-  protected readonly mcpOAuthService: McpOAuthService;
+  @Inject(McpOAuthIdentityService)
+  protected readonly mcpOAuthIdentityService: McpOAuthIdentityService;
 
   constructor(
     protected readonly configService: ConfigService,
@@ -51,7 +51,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       const principal = req['oauthDelegatedUser'];
       if (principal) return principal.oauthAppId === payload.oauthAppId &&
         (!workspace || principal.organizationId === workspace) ? principal : false;
-      return this.mcpOAuthService.validateViewer(payload, typeof workspace === 'string' ? workspace : undefined);
+      return this.mcpOAuthIdentityService.validateViewer(payload, typeof workspace === 'string' ? workspace : undefined);
     }
     if (payload.oauthGrantId || payload.oauthTokenId || payload.aud === 'tooljet:mcp:delegation') {
       const workspace = req.headers['tj-workspace-id'];
@@ -62,7 +62,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           : false;
       }
       // This credential has a fixed expiry and active grant, independently of browser sessions.
-      return this.mcpOAuthService.validateDelegation(payload, workspace);
+      return this.mcpOAuthIdentityService.validateDelegation(payload, workspace);
     }
     const startTime = Date.now();
     this.transactionLogger.log(`JwtStrategy validate invoked at ${new Date().toISOString()}`);
