@@ -9,7 +9,8 @@ import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { ColumnLike, ColumnType, Row, TableColumn } from './types';
 import { isEmptyValue, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
-import { cellText, regexHolds, regexResults } from './tableRegex';
+import { cellText, patternKey, regexHolds, regexResults } from './tableRegex';
+import type { UncheckedPatterns } from './tableRegex';
 
 const falsy = (value: unknown): boolean => value === false || value === 'false' || value === '{{false}}';
 
@@ -218,7 +219,13 @@ export const FILTER_CONDITIONS: [string, string][] = [
 ];
 const NO_VALUE = new Set<unknown>(['isEmpty', 'isNotEmpty']);
 
-const passes = (value: unknown, condition: unknown, wanted: unknown, column?: ColumnLike): boolean => {
+const passes = (
+  value: unknown,
+  condition: unknown,
+  wanted: unknown,
+  column?: ColumnLike,
+  unchecked?: UncheckedPatterns
+): boolean => {
   const text = cellText(value);
   const target = String(wanted ?? '').toLowerCase();
   switch (condition) {
@@ -227,9 +234,9 @@ const passes = (value: unknown, condition: unknown, wanted: unknown, column?: Co
     case 'doesNotContains':
       return !text.includes(target);
     case 'matches':
-      return regexHolds(wanted, text, false);
+      return regexHolds(wanted, text, false, unchecked);
     case 'nl':
-      return regexHolds(wanted, text, true);
+      return regexHolds(wanted, text, true, unchecked);
     case 'equals':
       return text === target || (Number.isFinite(asNumber(value)) && asNumber(value) === asNumber(wanted));
     case 'ne':
@@ -255,17 +262,23 @@ const passes = (value: unknown, condition: unknown, wanted: unknown, column?: Co
   }
 };
 
-/** Whether a value meets one of the filter conditions (used by filters, conditional styles and button rules). */
-export const matchesCondition = (value: unknown, condition: unknown, wanted: unknown, column?: ColumnLike): boolean =>
-  passes(value, condition, wanted, column);
+/** Whether a value meets one of the filter conditions (used by filters, conditional styles and button rules); a regex
+ *  pattern in `unchecked` (screenRegexRules on the dataset) holds for no value. */
+export const matchesCondition = (
+  value: unknown,
+  condition: unknown,
+  wanted: unknown,
+  column?: ColumnLike,
+  unchecked?: UncheckedPatterns
+): boolean => passes(value, condition, wanted, column, unchecked);
 
 /** A cell's style from its column's conditional rules: the first rule whose condition holds (on the cell, or on the
- *  row's `key` field when the rule names one). */
-export const cellStyleFor = (column: TableColumn, row: unknown): CSSProperties => {
+ *  row's `key` field when the rule names one), `unchecked` from screenRegexRules on the cell's dataset. */
+export const cellStyleFor = (column: TableColumn, row: unknown, unchecked?: UncheckedPatterns): CSSProperties => {
   const rule = (column.conditionalStyles ?? []).find((r) => {
     const field = isSet(r.key) ? String(r.key) : column.key;
     const target = ruleColumn(column, field);
-    return passes(readCell(row, field), r.condition, r.value, target);
+    return passes(readCell(row, field), r.condition, r.value, target, unchecked);
   });
   if (!rule) return {};
   return {
@@ -308,16 +321,26 @@ export const applyFilters = <T>(rows: T[], filters: unknown, columns: TableColum
   );
 };
 
-/** Tests every column's regex style rules on every row before a cell is styled, so a rule whose pattern cannot be
- *  checked on some row styles no cell, whatever the row order (tableRegex). */
-export const screenStyleRules = (columns: TableColumn[], rows: unknown[]): void =>
-  columns.forEach((column) =>
-    (column.conditionalStyles ?? []).forEach((r) => {
-      if (r.condition !== 'matches' && r.condition !== 'nl') return;
-      const field = isSet(r.key) ? String(r.key) : column.key;
-      regexResults(r.value, rows, (row) => readCell(row, field));
-    })
-  );
+/** Tests every column's regex style and button rules on every row of one dataset before a cell renders, and returns
+ *  the patterns that could not be checked on some row: given to cellStyleFor and matchesCondition, such a rule holds
+ *  for no row of this dataset, whatever the row order (tableRegex). The next dataset is screened on its own. */
+export const screenRegexRules = (columns: TableColumn[], rows: unknown[]): Set<string> => {
+  const unchecked = new Set<string>();
+  const tested = new Set<string>();
+  const screen = (rule: Resolved | null | undefined, field: unknown) => {
+    if (!rule || typeof rule !== 'object' || (rule.condition !== 'matches' && rule.condition !== 'nl')) return;
+    const key = patternKey(rule.value);
+    const once = JSON.stringify([field, key]);
+    if (key === null || unchecked.has(key) || tested.has(once)) return;
+    tested.add(once);
+    if (regexResults(rule.value, rows, (row) => readCell(row, field)) === null) unchecked.add(key);
+  };
+  for (const column of columns) {
+    for (const r of column.conditionalStyles ?? []) screen(r, isSet(r.key) ? String(r.key) : column.key);
+    for (const b of column.buttons ?? []) for (const rule of [b.hiddenWhen, b.disabledWhen]) screen(rule, rule?.key);
+  }
+  return unchecked;
+};
 
 const PRIMITIVE = new Set(['string', 'number', 'boolean']);
 

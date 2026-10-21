@@ -7,6 +7,7 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { cellStyleFor, readCell } from './tableModel';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { CellBoundary, CellEditor, MUTED, ROW_BORDER, renderCell } from './TableCells';
+import type { UncheckedPatterns } from './tableRegex';
 import type { Editing, Edits, Entry, OnAction, Resolve, Row, TableColumn, TableFilter, WithEdits } from './types';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
@@ -40,6 +41,8 @@ interface TableBodyProps {
   onAction: OnAction;
   searchText: string;
   filters: TableFilter[];
+  /** The regex rule patterns this data could not be checked on (screenRegexRules): they hold for no row. */
+  unchecked: UncheckedPatterns;
 }
 
 export const TableBody = ({
@@ -72,6 +75,7 @@ export const TableBody = ({
   onAction,
   searchText,
   filters,
+  unchecked,
 }: TableBodyProps) => {
   const cellStyle = (column: TableColumn, row: Row, value: unknown): CSSProperties => {
     const color = column.textColor ? resolve(column.textColor, row, value) : undefined;
@@ -80,7 +84,7 @@ export const TableBody = ({
       ...(isSet(color) ? { color: color as CSSProperties['color'] } : {}),
       ...(isSet(background) ? { background: background as CSSProperties['background'] } : {}),
       ...(column.fontWeight ? { fontWeight: column.fontWeight } : {}),
-      ...cellStyleFor(column, row),
+      ...cellStyleFor(column, row, unchecked),
       ...(virtual ? { height: rowHeight } : {}),
     };
   };
@@ -195,6 +199,7 @@ export const TableBody = ({
                             resolve,
                             onAction,
                             rowIndex: entry.index,
+                            unchecked,
                           })}
                         </CellBoundary>
                       )}

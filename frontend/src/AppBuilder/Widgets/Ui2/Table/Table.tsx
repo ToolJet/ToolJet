@@ -12,7 +12,7 @@ import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { applyFilters, matchesSearch, normalizeColumns, rowKey, screenStyleRules, sortRows } from './tableModel';
+import { applyFilters, matchesSearch, normalizeColumns, rowKey, screenRegexRules, sortRows } from './tableModel';
 import type { Entry, FireOption, Live, OnAction, Paged, Row, Sort, TableColumn, TableFilter } from './types';
 import { RIGHT_FADE, ROW_BORDER, useCellResolver } from './TableCells';
 import { TableToolbar } from './TableToolbar';
@@ -34,7 +34,6 @@ import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 const ROW_HEIGHT: Record<string, number> = { condensed: 36, regular: 44, spacious: 56 };
 const VIRTUALIZE_ABOVE = 150;
-
 const MAX_FILTERS = 50;
 
 export const ShadTable = (props: WidgetProps) => {
@@ -92,8 +91,8 @@ export const ShadTable = (props: WidgetProps) => {
     fireEvent
   );
 
+  const unchecked = useMemo(() => screenRegexRules(columns, entries.map(withEdits)), [columns, entries, withEdits]);
   const processed = useMemo(() => {
-    screenStyleRules(columns, entries.map(withEdits)); // style rules' regex verdicts on every row, before cells render
     let list = entries;
     if (searchText && properties.serverSideSearch !== true) {
       list = list.filter((entry) => matchesSearch(withEdits(entry), shownColumns, searchText));
@@ -367,6 +366,7 @@ export const ShadTable = (props: WidgetProps) => {
               onAction={onAction}
               searchText={searchText}
               filters={filters}
+              unchecked={unchecked}
             />
           </table>
           {moreBelow ? (
