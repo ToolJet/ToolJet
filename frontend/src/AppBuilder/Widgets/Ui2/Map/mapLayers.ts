@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import L from 'leaflet';
 import { fillUrl, parsePlaces } from './mapGeocoding';
+import { MAP_REFERRER_POLICY } from './mapModel';
 import type { MutableRefObject } from 'react';
 import type { LeafletMap } from 'leaflet';
 import type { HeatPoint } from './mapShapes';
@@ -309,6 +310,8 @@ const request = (url: string): SharedRequest => {
     const fetched = (async () => {
       const res = await fetch(url, {
         signal: stop.signal,
+        // Nominatim's usage policy asks for a Referer too (MAP_REFERRER_POLICY, mapModel.ts).
+        referrerPolicy: MAP_REFERRER_POLICY,
         headers: { Accept: 'application/json', 'Accept-Language': navigator.language || 'en' },
       });
       if (!res.ok) {

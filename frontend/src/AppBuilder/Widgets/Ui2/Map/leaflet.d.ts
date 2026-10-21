@@ -130,6 +130,7 @@ declare module 'leaflet' {
     maxZoom?: number;
     crossOrigin?: boolean;
     className?: string;
+    referrerPolicy?: string | false;
   }
 
   interface Control {
