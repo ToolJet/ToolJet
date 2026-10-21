@@ -165,6 +165,13 @@ RUN apt-get update -yq \
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
+# Node 22.15.1 bundles tz 2025a, which misses the 1 Nov 2026 Canadian DST changes (IANA 2026b-e).
+# Load ICU 2026e zone data (unicode-org/icu-data tzdata/icunew/2026e/44/le) over it.
+# Remove once the bundled Node ships tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
+
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
