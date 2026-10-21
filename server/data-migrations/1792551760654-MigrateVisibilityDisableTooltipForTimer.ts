@@ -28,7 +28,7 @@ export class MigrateVisibilityDisableTooltipForTimer1792551760654 implements Mig
         `SELECT id, properties, styles, general_properties
                      FROM components
                      WHERE type = $1
-                     ORDER BY "created_at" ASC
+                     ORDER BY "created_at" ASC, id ASC
                      LIMIT $2 OFFSET $3`,
         [TYPE, batchSize, offset]
       );
