@@ -20,7 +20,6 @@ import { EncryptionService } from '@modules/encryption/service';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { setConnectionInstance } from '@helpers/database.helper';
-import { RevokeMcpOAuthOnInstanceBan1792627200000 } from '../../../migrations/1792627200000-RevokeMcpOAuthOnInstanceBan';
 import { McpOAuthIdentityService } from '@modules/mcp-oauth/identity.service';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
@@ -409,14 +408,12 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     try {
       await expect(db.query("UPDATE mcp_oauth_clients SET token_endpoint_auth_method='none' WHERE id=$1", [confidentialId])).rejects.toMatchObject({ driverError: { code: '23514', constraint: 'mcp_oauth_client_auth_check' } });
       await expect(db.query("UPDATE mcp_oauth_clients SET client_secret_hash='not-a-hash' WHERE id=$1", [confidentialId])).rejects.toMatchObject({ driverError: { code: '23514', constraint: 'mcp_oauth_client_auth_check' } });
-      await new RevokeMcpOAuthOnInstanceBan1792627200000().down(runner);
       await migration.down(runner);
       expect((await db.query('SELECT disabled FROM mcp_oauth_clients WHERE id=$1', [publicId]))[0].disabled).toBe(false);
       expect((await db.query('SELECT disabled FROM mcp_oauth_clients WHERE id=$1', [confidentialId]))[0].disabled).toBe(true);
       expect((await db.query('SELECT revoked_at FROM mcp_oauth_grants'))[0].revoked_at).not.toBeNull();
     } finally {
       await migration.up(runner);
-      await new RevokeMcpOAuthOnInstanceBan1792627200000().up(runner);
       await runner.release();
     }
     const [existing] = await db.query('SELECT token_endpoint_auth_method,client_secret_hash,first_authorized_at,created_at FROM mcp_oauth_clients WHERE id=$1', [publicId]);
@@ -1153,6 +1150,39 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     } finally {
       await first.rollbackTransaction(); await second.rollbackTransaction();
       await first.release(); await second.release();
+    }
+  });
+  test('OAuth migrations preserve existing banned users and PATs while installing lookup indexes', async () => {
+    const migrations = [
+      new AddMcpOAuth1789416000000(),
+      new AddMcpOAuthRevocationHooks1791290000000(),
+      new AddMcpOAuthClientAuthentication1791763200000(),
+    ];
+    const runner = db.createQueryRunner();
+    await runner.startTransaction();
+    try {
+      for (const migration of [...migrations].reverse()) await migration.down(runner);
+      await runner.query('INSERT INTO user_ban_list(email) VALUES ($1)', [user.email.toUpperCase()]);
+      await runner.query(`INSERT INTO user_personal_access_tokens
+        (user_id,organization_id,token_hash,scope,expires_at)
+        VALUES ($1,$2,'synthetic-pre-oauth-pat','workspace',now()+interval '3 days')`, [user.id, organizationId]);
+      const originalUsers = await runner.query('SELECT * FROM users WHERE id=$1', [user.id]);
+      const originalBans = await runner.query('SELECT * FROM user_ban_list');
+      const originalTokens = await runner.query('SELECT * FROM user_personal_access_tokens WHERE user_id=$1', [user.id]);
+
+      for (const migration of migrations) await migration.up(runner);
+
+      expect(await runner.query('SELECT * FROM users WHERE id=$1', [user.id])).toEqual(originalUsers);
+      expect(await runner.query('SELECT * FROM user_ban_list')).toEqual(originalBans);
+      expect(await runner.query('SELECT * FROM user_personal_access_tokens WHERE user_id=$1', [user.id])).toEqual(originalTokens);
+      expect(await runner.query(`SELECT indexname FROM pg_indexes WHERE schemaname='oauth_test'
+        AND indexname IN ('mcp_oauth_pending_clients_idx','mcp_oauth_user_ban_email_idx') ORDER BY indexname`)).toEqual([
+        { indexname: 'mcp_oauth_pending_clients_idx' },
+        { indexname: 'mcp_oauth_user_ban_email_idx' },
+      ]);
+    } finally {
+      await runner.rollbackTransaction();
+      await runner.release();
     }
   });
   test('migrations install no OAuth triggers or trigger functions', async () => {

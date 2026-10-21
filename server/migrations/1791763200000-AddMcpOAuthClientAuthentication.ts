@@ -13,6 +13,8 @@ export class AddMcpOAuthClientAuthentication1791763200000 implements MigrationIn
       )`);
     // Preserve every existing cached registration; older schemas did not record consent history.
     await queryRunner.query('UPDATE mcp_oauth_clients SET first_authorized_at = created_at');
+    await queryRunner.query(`CREATE INDEX mcp_oauth_pending_clients_idx
+      ON mcp_oauth_clients (created_at, id) WHERE first_authorized_at IS NULL`);
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
@@ -22,6 +24,7 @@ export class AddMcpOAuthClientAuthentication1791763200000 implements MigrationIn
     await queryRunner.query(`UPDATE mcp_oauth_grants SET revoked_at = now()
       WHERE revoked_at IS NULL AND client_id IN
         (SELECT id FROM mcp_oauth_clients WHERE token_endpoint_auth_method <> 'none')`);
+    await queryRunner.query('DROP INDEX mcp_oauth_pending_clients_idx');
     await queryRunner.query(`ALTER TABLE mcp_oauth_clients
       DROP CONSTRAINT mcp_oauth_client_auth_check,
       DROP COLUMN client_secret_hash,
