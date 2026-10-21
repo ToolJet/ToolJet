@@ -103,6 +103,7 @@ export const shadCircularProgressConfig = {
       fullWidth: true,
     },
     text: {
+      conditionallyRender: { key: 'centerText', value: 'custom' },
       type: 'code',
       displayName: 'Custom centre text',
       validation: {

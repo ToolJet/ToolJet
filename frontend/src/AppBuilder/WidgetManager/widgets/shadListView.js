@@ -128,6 +128,7 @@ export const shadListViewConfig = {
       fullWidth: true,
     },
     columns: {
+      conditionallyRender: { key: 'mode', value: 'grid' },
       type: 'code',
       displayName: 'Grid columns',
       validation: {

@@ -9,6 +9,16 @@ import useStore from '@/AppBuilder/_stores/store';
 // Resolves against the live zustand store instead of the (stale/unsynced)
 // legacy `currentState`, so a conditionallyRender driver bound to another
 // component's value (e.g. `{{components.toggle1.value}}`) resolves correctly.
+/** A UI 2.0 widget: every one hides the properties that do not apply (conditionallyRender in its config). */
+const isUi2Component = (componentType) => typeof componentType === 'string' && /^Shad[A-Z]/.test(componentType);
+
+/** A value bound to something live: {{…}} holding more than a literal ({{true}}, {{7}} and {{'steps'}} are literals). */
+export const isLiveBinding = (value) => {
+  if (typeof value !== 'string' || !value.includes('{{')) return false;
+  const literal = /^\s*\{\{\s*(true|false|null|undefined|-?\d+(\.\d+)?|'[^'{}]*'|"[^"{}]*"|`[^`${}]*`)\s*\}\}\s*$/;
+  return !literal.test(value);
+};
+
 function resolveLiveValue(propertyDefinition) {
   if (!propertyDefinition) return propertyDefinition;
   return { value: useStore.getState().getResolvedValue(propertyDefinition.value) };
@@ -198,11 +208,24 @@ export function renderElement(
     componentConfig.component == 'FileInput' ||
     componentConfig.component == 'FileButton' ||
     componentConfig.component == 'Tabs' ||
-    componentConfig.component == 'ShadTabs'
+    isUi2Component(componentConfig.component)
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
-    const { conditionallyRender = null } = paramConfig;
+    const { conditionallyRender: renderCondition = null } = paramConfig;
+    // A UI 2.0 property that applies to one setting stays shown while it, or the setting it depends on, is bound to
+    // something live ({{components.x.value}}): the app may rely on it, and the setting's value can change at run time.
+    const conditionallyRender =
+      renderCondition &&
+      isUi2Component(componentConfig.component) &&
+      (isLiveBinding(definition?.value) ||
+        []
+          .concat(renderCondition)
+          .some(({ key, parentObjectKey = paramType }) =>
+            isLiveBinding((paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key])?.value)
+          ))
+        ? null
+        : renderCondition;
 
     const getResolvedValue = (key, parentObjectKey = paramType) => {
       const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];

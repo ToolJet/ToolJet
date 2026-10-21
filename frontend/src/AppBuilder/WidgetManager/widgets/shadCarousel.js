@@ -189,6 +189,7 @@ export const shadCarouselConfig = {
       },
     },
     interval: {
+      conditionallyRender: { key: 'autoplay', value: true },
       type: 'code',
       displayName: 'Autoplay interval (ms)',
       validation: {
@@ -200,6 +201,7 @@ export const shadCarouselConfig = {
       },
     },
     pauseOnHover: {
+      conditionallyRender: { key: 'autoplay', value: true },
       type: 'toggle',
       displayName: 'Pause on hover',
       validation: {
