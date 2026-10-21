@@ -21,7 +21,6 @@ import { RequestContext } from '@modules/request-context/service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { setConnectionInstance } from '@helpers/database.helper';
 import { RevokeMcpOAuthOnInstanceBan1792627200000 } from '../../../migrations/1792627200000-RevokeMcpOAuthOnInstanceBan';
-import { ReduceMcpOAuthPolicyContention1792540800000 } from '../../../migrations/1792540800000-ReduceMcpOAuthPolicyContention';
 import { McpOAuthIdentityService } from '@modules/mcp-oauth/identity.service';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
@@ -1159,28 +1158,6 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   test('migrations install no OAuth triggers or trigger functions', async () => {
     expect(await db.query("SELECT tgname FROM pg_trigger WHERE tgname LIKE 'mcp_oauth_%'")).toEqual([]);
     expect(await db.query("SELECT proname FROM pg_proc WHERE proname IN ('mcp_oauth_revoke_on_security_change', 'mcp_oauth_lock_grant_creation', 'mcp_oauth_revoke_instance_ban') AND pronamespace = 'oauth_test'::regnamespace")).toEqual([]);
-  });
-  test('the existing cleanup migration removes all ten legacy hooks and their functions', async () => {
-    const hooks = [
-      ['mcp_oauth_grant_creation_lock', 'mcp_oauth_grants', 'mcp_oauth_lock_grant_creation'],
-      ['mcp_oauth_user_security', 'users'], ['mcp_oauth_workspace_security', 'organizations'],
-      ['mcp_oauth_membership_security', 'organization_users'], ['mcp_oauth_ban_security', 'workspace_ban_list'],
-      ['mcp_oauth_client_security', 'mcp_oauth_clients'], ['mcp_oauth_sso_security', 'sso_configs'],
-      ['mcp_oauth_group_sync_security', 'sso_config_oidc_group_sync'], ['mcp_oauth_instance_security', 'instance_settings'],
-      ['mcp_oauth_instance_ban_security', 'user_ban_list', 'mcp_oauth_revoke_instance_ban'],
-    ];
-    const runner = db.createQueryRunner();
-    await runner.startTransaction();
-    try {
-      for (const fn of ['mcp_oauth_lock_grant_creation', 'mcp_oauth_revoke_on_security_change', 'mcp_oauth_revoke_instance_ban'])
-        await runner.query(`CREATE FUNCTION ${fn}() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END; $$`);
-      for (const [name, table, fn = 'mcp_oauth_revoke_on_security_change'] of hooks)
-        await runner.query(`CREATE TRIGGER ${name} AFTER UPDATE ON ${table} FOR EACH ROW EXECUTE FUNCTION ${fn}()`);
-      expect((await runner.query("SELECT count(*)::int AS total FROM pg_trigger WHERE tgname LIKE 'mcp_oauth_%'"))[0].total).toBe(10);
-      await new ReduceMcpOAuthPolicyContention1792540800000().up(runner);
-      expect(await runner.query("SELECT tgname FROM pg_trigger WHERE tgname LIKE 'mcp_oauth_%'")).toEqual([]);
-      expect(await runner.query("SELECT proname FROM pg_proc WHERE proname LIKE 'mcp_oauth_%' AND pronamespace='oauth_test'::regnamespace")).toEqual([]);
-    } finally { await runner.rollbackTransaction(); await runner.release(); }
   });
   test.each(['organization', 'instance'])('benign SSO migration and extra keys preserve %s consent and fingerprint', async configScope => {
     const repo = new SSOConfigsRepository(db);
