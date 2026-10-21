@@ -36,6 +36,13 @@ afterEach(() => {
 });
 
 describe('geocoder client', () => {
+  it('sends the app origin as the Referer, as Nominatim asks (ToolJet pages send none)', async () => {
+    const work = lookup('Referer');
+    await tick(10);
+    await work;
+    expect(calls[0].options.referrerPolicy).toBe('strict-origin');
+  });
+
   it('keeps distinct lookups in order, at least 1.1 s apart', async () => {
     const work = ['Alpha', 'Beta'].map((q) => lookup(q));
     await tick(3000);

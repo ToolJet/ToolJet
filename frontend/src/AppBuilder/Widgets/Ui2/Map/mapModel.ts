@@ -313,6 +313,14 @@ export const viewKey = (view: MapView | null | undefined): string =>
 // "API key required" on every tile, 2026-10). It is drawn muted in light themes and inverted in dark ones (the
 // .sc-map-canvas[data-basemap] rules in shadcn.scss), so it follows the app theme. Heavy production use belongs on a
 // tile provider of the install's own: public config MAP_TILE_URL.
+/** The referrer tile and geocoder requests send: the app's origin (https://apps.example.com/), never a page path.
+ *  ToolJet serves its pages with Referrer-Policy: no-referrer, so tile requests went with no Referer, and
+ *  OpenStreetMap's tile servers answer those with an "Access blocked" tile: their usage policy requires one. */
+export const MAP_REFERRER_POLICY = 'strict-origin';
+
+/** Every tile layer's options: OSM's a/b/c hosts where a URL names {s}, its deepest zoom, CORS tiles, the referrer. */
+export const TILE_LAYER = { subdomains: 'abc', maxZoom: 19, crossOrigin: true, referrerPolicy: MAP_REFERRER_POLICY };
+
 export const OSM = {
   url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',

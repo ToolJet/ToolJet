@@ -7,6 +7,7 @@ import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { missingIsGone, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import {
+  TILE_LAYER,
   initialView,
   parseCenter,
   pickedValue,
@@ -43,6 +44,8 @@ import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 /** The install's settings (tile and geocoder URLs); set once when the app loads. */
 const publicConfig = (): MapConfig | undefined =>
   typeof window !== 'undefined' ? (window as Window & { public_config?: MapConfig }).public_config : undefined;
+// The tags a tile credit keeps.
+const CREDIT = { ALLOWED_TAGS: ['a', 'span', 'b', 'strong'] };
 const isMac = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || '');
 
 export const ShadMap = (props: WidgetProps) => {
@@ -216,15 +219,8 @@ export const ShadMap = (props: WidgetProps) => {
     const map = mapRef.current;
     if (!map) return undefined;
     const layers = [
-      L.tileLayer(source.url, {
-        attribution: DOMPurify.sanitize(source.attribution || '', { ALLOWED_TAGS: ['a', 'span', 'b', 'strong'] }),
-        subdomains: 'abc',
-        maxZoom: 19,
-        crossOrigin: true,
-      }),
-      ...(source.labels
-        ? [L.tileLayer(source.labels, { maxZoom: 19, crossOrigin: true, className: 'sc-map-labels' })]
-        : []),
+      L.tileLayer(source.url, { ...TILE_LAYER, attribution: DOMPurify.sanitize(source.attribution || '', CREDIT) }),
+      ...(source.labels ? [L.tileLayer(source.labels, { ...TILE_LAYER, className: 'sc-map-labels' })] : []),
     ];
     layers.forEach((layer) => layer.addTo(map));
     return () => {
