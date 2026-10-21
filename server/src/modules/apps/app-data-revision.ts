@@ -4,20 +4,6 @@ import { App } from '@entities/app.entity';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { findUserGroupsWithAppAccess } from '@modules/group-permissions/repository';
 
-// Latest migration timestamp. Migrations run before the server starts, so one read per process.
-let latestMigration: Promise<string | null> | undefined;
-
-function getLatestMigration(manager: EntityManager): Promise<string | null> {
-  latestMigration ??= manager
-    .query('SELECT MAX(timestamp)::text AS revision FROM migrations')
-    .then((rows: { revision: string | null }[]) => rows[0]?.revision ?? null)
-    .catch(() => {
-      latestMigration = undefined; // retry on the next call
-      return null;
-    });
-  return latestMigration;
-}
-
 // License terms the released-app and released-version responses depend on: permission filtering,
 // page groups and modules, JS libraries (stripped without the license), and the environment and
 // branch-freeze state the version endpoint returns.
@@ -65,17 +51,15 @@ async function getViewerGroupIds(
 
 // Cache key for a released app's data, used by the viewer's IndexedDB cache and the version
 // endpoint's ETag. The change stamp and the viewer's groups cover data changes; the server
-// version, migration and license are read live, since they change with no database write or
-// differ between servers mid-deploy. Not apps.updated_at, which every draft edit bumps.
-// Null means "don't cache".
+// version and license are read live, since they change with no database write or differ between
+// servers mid-deploy. The server version also covers migrations, which only ship with a new
+// version. Not apps.updated_at, which every draft edit bumps. Null means "don't cache".
+// Adding something the released app shows? See "Released-app viewer cache" in AGENTS.md.
 export async function getAppDataRevision(
   manager: EntityManager,
   app: Pick<App, 'id' | 'name' | 'isPublic' | 'isMaintenanceOn' | 'organizationId'>,
   scope: AppDataRevisionScope
 ): Promise<string | null> {
-  const migration = await getLatestMigration(manager);
-  if (!migration) return null;
-
   let appStamp: string | null;
   let groupIds: string[];
   try {
@@ -98,10 +82,5 @@ export async function getAppDataRevision(
     globalThis.TOOLJET_VERSION ?? null,
     scope.licenseTerms ?? null,
   ];
-  const hash = createHash('sha1').update(JSON.stringify(inputs)).digest('hex').slice(0, 12);
-  return `${migration}.${hash}`;
-}
-
-export function resetAppDataRevisionCache(): void {
-  latestMigration = undefined;
+  return createHash('sha1').update(JSON.stringify(inputs)).digest('hex').slice(0, 16);
 }

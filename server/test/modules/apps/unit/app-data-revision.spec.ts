@@ -1,5 +1,5 @@
 import { EntityManager } from 'typeorm';
-import { getAppDataRevision, resetAppDataRevisionCache, VIEWER_LICENSE_FIELDS } from '@modules/apps/app-data-revision';
+import { getAppDataRevision, VIEWER_LICENSE_FIELDS } from '@modules/apps/app-data-revision';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { findUserGroupsWithAppAccess } from '@modules/group-permissions/repository';
 
@@ -11,15 +11,11 @@ describe('getAppDataRevision', () => {
   const app = { id: 'app-1', name: 'Orders', isPublic: false, isMaintenanceOn: false, organizationId: 'org-1' };
   const scope = { versionId: 'ver-1', userId: 'user-1', licenseTerms: { valid: true } };
   const makeManager = (query: jest.Mock) => ({ query }) as unknown as EntityManager;
-  const isMigrationRead = (sql: string) => sql.includes('FROM migrations');
-
-  // Answers the migration read with a fixed timestamp and the change-stamp read with `stamp`.
-  const queryReturning = (stamp: string | null = null) =>
-    jest.fn((sql: string) => Promise.resolve(isMigrationRead(sql) ? [{ revision: '1787800000000' }] : [{ stamp }]));
+  // Answers the change-stamp read with `stamp`.
+  const queryReturning = (stamp: string | null = null) => jest.fn(() => Promise.resolve([{ stamp }]));
 
   let serverVersion: unknown;
   beforeEach(() => {
-    resetAppDataRevisionCache();
     serverVersion = globalThis.TOOLJET_VERSION;
     globalThis.TOOLJET_VERSION = '3.21.78';
     viewerGroups.mockReset().mockResolvedValue([{ id: 'group-a' }]);
@@ -28,13 +24,13 @@ describe('getAppDataRevision', () => {
     globalThis.TOOLJET_VERSION = serverVersion;
   });
 
-  it('starts with the latest migration and is stable when nothing changes', async () => {
+  it('is stable when nothing changes', async () => {
     const manager = makeManager(queryReturning());
 
     const first = await getAppDataRevision(manager, app, scope);
     const second = await getAppDataRevision(manager, { ...app }, { ...scope });
 
-    expect(first).toMatch(/^1787800000000\.[0-9a-f]{12}$/);
+    expect(first).toMatch(/^[0-9a-f]{16}$/);
     expect(second).toBe(first);
   });
 
@@ -114,46 +110,18 @@ describe('getAppDataRevision', () => {
     expect(await getAppDataRevision(manager, app, scope)).not.toBe(before);
   });
 
-  it("reads the app's change stamp, and no groups for an anonymous viewer", async () => {
+  it("reads only the app's change stamp, and no groups for an anonymous viewer", async () => {
     const query = queryReturning();
 
     await getAppDataRevision(makeManager(query), app, { versionId: 'ver-1', licenseTerms: {} });
 
+    expect(query).toHaveBeenCalledTimes(1);
     expect(query).toHaveBeenCalledWith(expect.stringContaining('app_viewer_cache_stamps'), ['app-1']);
     expect(viewerGroups).not.toHaveBeenCalled();
   });
 
-  it('reads the latest migration once per process', async () => {
-    const query = queryReturning();
-
-    await getAppDataRevision(makeManager(query), app, scope);
-    await getAppDataRevision(makeManager(query), app, scope);
-
-    expect(query.mock.calls.filter(([sql]) => isMigrationRead(sql))).toHaveLength(1);
-  });
-
-  it('returns null when the migration read fails, and retries on the next call', async () => {
-    const query = jest
-      .fn()
-      .mockRejectedValueOnce(new Error('db down'))
-      .mockImplementation((sql: string) =>
-        Promise.resolve(isMigrationRead(sql) ? [{ revision: '1787800000000' }] : [{ stamp: null }])
-      );
-
-    await expect(getAppDataRevision(makeManager(query), app, scope)).resolves.toBeNull();
-    await expect(getAppDataRevision(makeManager(query), app, scope)).resolves.toMatch(/^1787800000000\./);
-  });
-
   it('returns null when the change stamp cannot be read', async () => {
-    const query = jest.fn((sql: string) =>
-      isMigrationRead(sql) ? Promise.resolve([{ revision: '1787800000000' }]) : Promise.reject(new Error('db down'))
-    );
-
-    await expect(getAppDataRevision(makeManager(query), app, scope)).resolves.toBeNull();
-  });
-
-  it('returns null when there are no migrations', async () => {
-    const query = jest.fn().mockResolvedValue([{ revision: null }]);
+    const query = jest.fn().mockRejectedValue(new Error('db down'));
 
     await expect(getAppDataRevision(makeManager(query), app, scope)).resolves.toBeNull();
   });

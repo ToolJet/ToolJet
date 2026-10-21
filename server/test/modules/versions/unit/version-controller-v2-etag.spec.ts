@@ -4,7 +4,7 @@ import { VersionService } from '@modules/versions/service';
 import { AppVersionStatus } from '@entities/app_version.entity';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
-import { getAppDataRevision, resetAppDataRevisionCache, VIEWER_LICENSE_FIELDS } from '@modules/apps/app-data-revision';
+import { getAppDataRevision, VIEWER_LICENSE_FIELDS } from '@modules/apps/app-data-revision';
 import { EntityManager } from 'typeorm';
 import { getConnectionInstance } from '@helpers/database.helper';
 
@@ -24,10 +24,7 @@ describe('VersionControllerV2.getVersion caching', () => {
     organizationId: 'org-1',
   } as App;
   const licenseTerms = { valid: true };
-  const revisionQuery = () =>
-    jest.fn((sql: string) =>
-      Promise.resolve(sql.includes('FROM migrations') ? [{ revision: '1787800000000' }] : [{ stamp: null }])
-    );
+  const revisionQuery = () => jest.fn().mockResolvedValue([{ stamp: null }]);
   const user = { id: 'user-1' } as User;
   const versionUpdatedAt = new Date('2026-10-02T00:00:00.000Z');
   let etag: string;
@@ -51,13 +48,11 @@ describe('VersionControllerV2.getVersion caching', () => {
   };
 
   beforeEach(async () => {
-    resetAppDataRevisionCache();
     const revision = await getAppDataRevision({ query: revisionQuery() } as unknown as EntityManager, app, {
       versionId: 'ver-1',
       userId: 'user-1',
       licenseTerms,
     });
-    resetAppDataRevisionCache();
     etag = `"v-ver-1-${versionUpdatedAt.getTime()}-${revision}"`;
   });
 

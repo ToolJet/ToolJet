@@ -3,7 +3,6 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { AppsService } from '@modules/apps/service';
 import { FEATURE_KEY } from '@modules/apps/constants';
 import { App } from '@entities/app.entity';
-import { resetAppDataRevisionCache } from '@modules/apps/app-data-revision';
 
 jest.mock('@modules/group-permissions/repository', () => ({
   findUserGroupsWithAppAccess: jest.fn().mockResolvedValue([]),
@@ -42,11 +41,8 @@ describe('AppsService.validateReleasedApp', () => {
     Object.assign(service, { appRepository: { manager: { query } }, licenseTermsService: { getLicenseTerms } });
     return service;
   };
-  // Answers the migration read and the change-stamp read.
-  const revisionQuery = () =>
-    jest.fn((sql: string) =>
-      Promise.resolve(sql.includes('FROM migrations') ? [{ revision: '1787800000000' }] : [{ stamp: null }])
-    );
+  // Answers the change-stamp read.
+  const revisionQuery = () => jest.fn().mockResolvedValue([{ stamp: null }]);
 
   const makeApp = (overrides: Partial<App> = {}): App =>
     ({ id: 'app-uuid-1', slug: 'my-app', currentVersionId: 'ver-uuid-1', name: 'Orders', ...overrides }) as App;
@@ -54,8 +50,6 @@ describe('AppsService.validateReleasedApp', () => {
   const makeAbility = (canUpdate = false) => ({
     can: jest.fn().mockReturnValue(canUpdate),
   });
-
-  beforeEach(() => resetAppDataRevisionCache());
 
   it('returns id, slug, the released version id and the app data revision', async () => {
     const query = revisionQuery();
@@ -69,7 +63,7 @@ describe('AppsService.validateReleasedApp', () => {
       id: 'app-uuid-1',
       slug: 'my-app',
       currentVersionId: 'ver-uuid-1',
-      appDataRevision: expect.stringMatching(/^1787800000000\./),
+      appDataRevision: expect.stringMatching(/^[0-9a-f]{16}$/),
     });
     expect(ability.can).not.toHaveBeenCalled();
     expect(query).toHaveBeenCalledWith(expect.stringContaining('app_viewer_cache_stamps'), ['app-uuid-1']);
