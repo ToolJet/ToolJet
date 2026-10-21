@@ -25,6 +25,47 @@ export const fitsContentInView = (componentType, properties = {}) => {
   return !!properties.dynamicHeight;
 };
 
+// UI 2.0 widgets drawn at their box's height in the viewer too: they never measure themselves (no useAutoHeight), so
+// nothing makes the box follow their content. Kept in step with the widgets by Ui2/__tests__/integration/dynamicHeightMarker.spec.js.
+const PACK_BOX_SIZED = [
+  'ShadAreaChart',
+  'ShadAvatar',
+  'ShadBadge',
+  'ShadBarChart',
+  'ShadBreadcrumb',
+  'ShadButton',
+  'ShadChat',
+  'ShadComboChart',
+  'ShadDropdownMenu',
+  'ShadEmpty',
+  'ShadFunnelChart',
+  'ShadHeatmapChart',
+  'ShadIcon',
+  'ShadLineChart',
+  'ShadLink',
+  'ShadMap',
+  'ShadNavigation',
+  'ShadPagination',
+  'ShadPieChart',
+  'ShadProgress',
+  'ShadRadarChart',
+  'ShadRadialChart',
+  'ShadScatterChart',
+  'ShadSeparator',
+  'ShadSkeleton',
+  'ShadSparkline',
+  'ShadSpinner',
+];
+
+/**
+ * Whether the editor marks the widget as dynamic height (the purple outline, handle and resize lines): its box follows
+ * its content in the viewer. fitsContentInView says yes for every UI 2.0 widget whose Dynamic height is not off, so
+ * widgets that never measure themselves and have no Dynamic height property (Skeleton, Button, the charts) were marked
+ * though their box keeps its drawn height. Only the marker reads this; the layout keeps fitsContentInView.
+ */
+export const marksDynamicHeight = (componentType, properties = {}) =>
+  fitsContentInView(componentType, properties) && !PACK_BOX_SIZED.includes(componentType);
+
 /** The reflow's gate: a height the author turned off dynamic height for stays as drawn. A FlexContainer card or row
  *  is never held (it always fits its content); every other widget keeps ToolJet's rule, dynamicHeight === false. */
 export const heightHeldInView = (componentType, properties = {}) => {
