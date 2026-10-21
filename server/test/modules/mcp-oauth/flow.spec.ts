@@ -437,7 +437,8 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   test('administrative session termination expires external credentials as well as browser sessions', async () => {
     const { tokens, delegated } = await makeViewer();
     await db.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-admin-pat','workspace',now()+interval '1 day')", [user.id,organizationId]);
-    await SessionUtilService.prototype.terminateAllSessions.call({ mcpOAuthService: oauth }, user.id);
+    // Turning the feature off temporarily must not let a later re-enable revive these credentials.
+    await SessionUtilService.prototype.terminateAllSessions.call({ configService: new ConfigService({ TOOLJET_EDITION: 'cloud', MCP_OAUTH_ENABLED: 'false' }) }, user.id);
     expect(await db.query('SELECT id FROM user_sessions WHERE user_id=$1', [user.id])).toEqual([]);
     expect((await db.query('SELECT expires_at <= now() AS expired FROM user_personal_access_tokens'))[0].expired).toBe(true);
     await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
@@ -476,6 +477,23 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await db.query("UPDATE mcp_oauth_clients SET created_at=now()-interval '2 hours' WHERE first_authorized_at IS NULL");
     await oauth.register({ client_name: 'Another gardener', redirect_uris: [redirectUri] });
     expect((await db.query('SELECT count(*)::int AS total FROM mcp_oauth_clients WHERE first_authorized_at IS NULL'))[0].total).toBe(1);
+  });
+  test('approved-client capacity is charged only on first consent and preserves reconnects', async () => {
+    await redeem(await approve());
+    const approvedClient = client;
+    await db.query(`INSERT INTO mcp_oauth_clients(id,name,redirect_uris,first_authorized_at)
+      SELECT 'synthetic-approved-' || i, 'Approved client', '[]', now() FROM generate_series(1,9999) i`);
+    client = await oauth.register({ client_name: 'Pending gardener', redirect_uris: [redirectUri], token_endpoint_auth_method: 'none' });
+    await expect(approve()).rejects.toMatchObject({ error: 'temporarily_unavailable', status: 503 });
+    expect((await db.query('SELECT first_authorized_at FROM mcp_oauth_clients WHERE id=$1', [client.client_id]))[0].first_authorized_at).toBeNull();
+    client = approvedClient;
+    await expect(redeem(await approve())).resolves.toHaveProperty('access_token');
+  });
+  test('concurrent registrations preserve the shared pending cache bound', async () => {
+    await db.query(`INSERT INTO mcp_oauth_clients(id,name,redirect_uris,created_at)
+      SELECT 'synthetic-cache-' || i, 'Pending client', '[]', now()-interval '2 minutes' FROM generate_series(1,999) i`);
+    await Promise.all(Array.from({ length: 8 }, (_, i) => oauth.register({ client_name: 'Synthetic client '+i, redirect_uris: [redirectUri] })));
+    expect((await db.query('SELECT count(*)::int AS total FROM mcp_oauth_clients WHERE first_authorized_at IS NULL'))[0].total).toBe(1000);
   });
   test('rate buckets require credential possession, client authentication and a signed delegation', async () => {
     const { tokens, delegated } = await makeViewer();

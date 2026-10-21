@@ -53,7 +53,7 @@ export class SessionUtilService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Administrative termination also invalidates external credentials on the Cloud OAuth rollout.
       // Ordinary logout uses its separate session-only path.
-      if (this.mcpOAuthService.enabled()) {
+      if (this.configService.get<string>('TOOLJET_EDITION')?.toLowerCase() === 'cloud') {
         await manager.query("SELECT pg_advisory_xact_lock_shared(hashtext('mcp-oauth-security-policy'))");
         await manager.query('UPDATE mcp_oauth_grants SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL', [userId]);
         await manager.query('UPDATE user_personal_access_tokens SET expires_at = LEAST(expires_at, now()) WHERE user_id = $1', [userId]);
