@@ -113,6 +113,17 @@ describe("Workflows - versions, promotion and release", () => {
 
     cy.get(workflowSelector.createDraftLink).click();
     cy.get(workflowSelector.confirmYesButton).click();
+
+    // A new editable draft exists; reloading opens it without the lock banner.
+    cy.then(() => {
+      const publishedVersionId = Cypress.env("editingVersionId");
+      cy.apiFetchWorkflowContext();
+      cy.then(() =>
+        expect(Cypress.env("editingVersionId")).to.not.equal(publishedVersionId)
+      );
+    });
+    cy.reload();
+    cy.get(workflowSelector.startNode).should("exist");
     cy.get(workflowSelector.versionLockBanner).should("not.exist");
   });
 });

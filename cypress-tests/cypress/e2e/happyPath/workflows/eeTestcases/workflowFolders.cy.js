@@ -182,6 +182,8 @@ describe("Workflows - folders and folder movement", () => {
       commonText.emptyFolderText
     );
 
+    // The folder view lists only its own workflows, so go back to the full list.
+    openWorkflowsDashboard();
     moveWorkflowToFolder(data.workflowName, data.folderName);
     cy.get(dashboardSelector.folderName(data.folderName)).should(
       "contain.text",

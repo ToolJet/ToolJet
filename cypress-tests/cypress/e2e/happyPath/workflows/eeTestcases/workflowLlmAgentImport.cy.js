@@ -46,6 +46,17 @@ describe("Workflows - LLM agent workflow import", () => {
     cleanupDataSources([data.dataSourceName]);
   });
 
+  const findWorkflowIdByName = (name) =>
+    cy.getAuthHeaders().then((headers) =>
+      cy
+        .request({
+          url: `${Cypress.env("server_host")}/api/apps?page=1&type=workflow&searchKey=${encodeURIComponent(name)}`,
+          headers,
+          log: false,
+        })
+        .then((res) => res.body.apps.find((app) => app.name === name).id)
+    );
+
   const importAgentWorkflow = (options) => {
     openWorkflowsDashboard();
     workflowImportFile(
@@ -80,8 +91,8 @@ describe("Workflows - LLM agent workflow import", () => {
 
     cy.apiGetDataSourceIdByName(data.dataSourceName).then((dataSourceId) => {
       expect(dataSourceId, "imported OpenAI data source").to.be.a("string");
-      cy.location("pathname").then((pathname) =>
-        getWorkflowQueries(pathname.split("/").pop()).then((queries) => {
+      findWorkflowIdByName(data.workflowName).then((workflowId) =>
+        getWorkflowQueries(workflowId).then((queries) => {
           const models = queries.filter((query) => query.kind === "openai");
           expect(models.map((query) => query.name).sort()).to.deep.equal(
             modelQueries
