@@ -6,6 +6,7 @@ import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { stripColumns, summaryFigures } from '@/AppBuilder/Widgets/Ui2/_sections/summaryModel';
 import { TITLE_FONT } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 
 // ---- Summary strip ---------------------------------------------------------------------------------------------------
 
@@ -42,6 +43,9 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
     [items, valueFormat, currency, deltaFormat]
   );
   const size = STRIP_SIZE[p.size] || STRIP_SIZE.default;
+  // In a fixed box (the editor, or dynamic height off) the panels fill the box: dragged taller, the strip stayed at its
+  // content height with a blank band under it. With dynamic height on in the viewer the box follows the figures.
+  const fixed = inFixedBox(props);
   const panel = p.appearance !== 'plain';
   const center = p.align === 'center';
   // While loading, as many cells as the figures it will show (4 before the first data), so the grid keeps its rows.
@@ -68,14 +72,17 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
     body = <LoadingBox height={props.height} />;
   } else if (!figures.length && !p.loadingState) {
     body = (
-      <div className={panel ? 'tw-border' : ''} style={frame}>
+      <div
+        className={cn(panel && 'tw-border', fixed && 'tw-flex tw-h-full tw-items-center tw-justify-center')}
+        style={frame}
+      >
         <p className="tw-m-0 tw-py-6 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">No figures yet</p>
       </div>
     );
   } else {
     body = (
       <dl
-        className={cn('tw-m-0 tw-grid tw-overflow-hidden', panel && 'tw-border')}
+        className={cn('tw-m-0 tw-grid tw-overflow-hidden', panel && 'tw-border', fixed && 'tw-h-full')}
         style={{
           ...frame,
           gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
@@ -166,7 +173,7 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
     );
   }
   return (
-    <Shell {...props} innerRef={ref}>
+    <Shell {...props} innerRef={ref} className={cn(fixed && 'tw-h-full')}>
       {body}
     </Shell>
   );
