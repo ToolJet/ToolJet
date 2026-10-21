@@ -58,6 +58,7 @@ describe('who may take a snapshot', () => {
     const ability = abilityFor(perms);
     expect(ability.can(FEATURE_KEY.COMPARE, App)).toBe(expected);
     expect(ability.can(FEATURE_KEY.SNAPSHOT_CREATE, App)).toBe(expected);
+    expect(ability.can(FEATURE_KEY.SNAPSHOT_RENAME, App)).toBe(expected);
     expect(ability.can(FEATURE_KEY.SNAPSHOT_RESTORE, App)).toBe(expected);
   });
 
@@ -66,5 +67,6 @@ describe('who may take a snapshot', () => {
     const ability = abilityFor(perms);
     expect(ability.can(FEATURE_KEY.COMPARE, App)).toBe(false);
     expect(ability.can(FEATURE_KEY.SNAPSHOT_CREATE, App)).toBe(false);
+    expect(ability.can(FEATURE_KEY.SNAPSHOT_RENAME, App)).toBe(false);
   });
 });
