@@ -131,6 +131,7 @@ export const shadProgressListConfig = {
       },
     },
     currency: {
+      conditionallyRender: { key: 'valueFormat', value: 'currency' },
       type: 'code',
       displayName: 'Currency (ISO code, e.g. USD)',
       validation: {

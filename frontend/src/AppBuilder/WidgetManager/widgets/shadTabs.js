@@ -149,6 +149,7 @@ export const shadTabsConfig = {
       },
     },
     showStepNav: {
+      conditionallyRender: { key: 'variant', value: 'steps' },
       type: 'toggle',
       displayName: 'Wizard: Back and Next buttons',
       validation: {
@@ -160,6 +161,7 @@ export const shadTabsConfig = {
       },
     },
     nextLabel: {
+      conditionallyRender: { key: 'variant', value: 'steps' },
       type: 'code',
       displayName: 'Wizard: Next label',
       validation: {
@@ -171,6 +173,7 @@ export const shadTabsConfig = {
       },
     },
     backLabel: {
+      conditionallyRender: { key: 'variant', value: 'steps' },
       type: 'code',
       displayName: 'Wizard: Back label',
       validation: {
@@ -182,6 +185,7 @@ export const shadTabsConfig = {
       },
     },
     finishLabel: {
+      conditionallyRender: { key: 'variant', value: 'steps' },
       type: 'code',
       displayName: 'Wizard: Finish label',
       validation: {
@@ -193,6 +197,7 @@ export const shadTabsConfig = {
       },
     },
     linearSteps: {
+      conditionallyRender: { key: 'variant', value: 'steps' },
       type: 'toggle',
       displayName: 'Wizard: steps in order only',
       validation: {

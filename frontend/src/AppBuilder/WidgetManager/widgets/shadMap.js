@@ -255,6 +255,7 @@ export const shadMapConfig = {
       },
     },
     routeField: {
+      conditionallyRender: { key: 'connectMarkers', value: true },
       type: 'code',
       displayName: 'Route field (one line per value)',
       validation: {
@@ -266,6 +267,7 @@ export const shadMapConfig = {
       },
     },
     routeOrderField: {
+      conditionallyRender: { key: 'connectMarkers', value: true },
       type: 'code',
       displayName: 'Route order field',
       validation: {
@@ -277,6 +279,7 @@ export const shadMapConfig = {
       },
     },
     routeStart: {
+      conditionallyRender: { key: 'connectMarkers', value: true },
       type: 'code',
       displayName: 'Routes start at ({ lat, lng })',
       validation: {
@@ -406,6 +409,7 @@ export const shadMapConfig = {
       fullWidth: true,
     },
     heatField: {
+      conditionallyRender: { key: 'display', value: ['heat', 'both'] },
       type: 'code',
       displayName: 'Heat weight field (empty: each row counts once)',
       validation: {
@@ -417,6 +421,7 @@ export const shadMapConfig = {
       },
     },
     heatRadius: {
+      conditionallyRender: { key: 'display', value: ['heat', 'both'] },
       type: 'code',
       displayName: 'Heat radius (px)',
       validation: {

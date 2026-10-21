@@ -150,6 +150,7 @@ export const shadHeatmapChartConfig = {
       fullWidth: true,
     },
     currency: {
+      conditionallyRender: { key: 'yAxisFormat', value: 'currency' },
       type: 'code',
       displayName: 'Currency code',
       validation: {

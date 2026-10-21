@@ -204,6 +204,7 @@ export const shadScheduleConfig = {
       },
     },
     days: {
+      conditionallyRender: { key: 'scale', value: 'days' },
       type: 'code',
       displayName: 'Days shown',
       validation: {

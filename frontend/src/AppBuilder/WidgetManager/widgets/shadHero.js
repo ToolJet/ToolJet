@@ -175,6 +175,7 @@ export const shadHeroConfig = {
       fullWidth: true,
     },
     imageUrl: {
+      conditionallyRender: { key: 'background', value: 'image' },
       type: 'code',
       displayName: 'Background image URL (when Background is Image)',
       validation: {
