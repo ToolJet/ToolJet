@@ -41,6 +41,11 @@ FROM node:22.15.1-bullseye
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
+
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && apt-get install -y freetds-dev libaio1 libxml2 wget supervisor
