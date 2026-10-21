@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FxParamTypeMapping } from './utils';
 import { Color } from '../CodeBuilder/Elements/Color';
 import { Json } from '../CodeBuilder/Elements/Json';
@@ -21,6 +21,7 @@ import DropdownMenu from '../CodeBuilder/Elements/DropdownMenu';
 import { TimePicker } from '../CodeBuilder/Elements/TimePicker';
 import { Query } from '../CodeBuilder/Elements/Query';
 import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
+import { ThemeDefaultContext, followsTheme, useThemeValue } from './themeDefault';
 
 const AllElements = {
   Color,
@@ -49,6 +50,16 @@ const AllElements = {
 export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {
   const componentType = FxParamTypeMapping[paramType];
   const DynamicComponent = AllElements[componentType];
+  // A UI 2.0 widget's blank colour or radius style follows the theme; the field shows it (themeDefault.js). The
+  // provider is always there, so setting a value does not remount the field (and close its open picker).
+  const { component, componentId, paramName, value, darkMode } = restProps;
+  const themed = followsTheme({ component, paramName, paramType, value });
+  const themeValue = useThemeValue(themed, componentId, component, paramName, darkMode);
+  const themeDefault = useMemo(() => (themed ? { value: themeValue } : null), [themed, themeValue]);
 
-  return <DynamicComponent {...restProps} />;
+  return (
+    <ThemeDefaultContext.Provider value={themeDefault}>
+      <DynamicComponent {...restProps} />
+    </ThemeDefaultContext.Provider>
+  );
 };

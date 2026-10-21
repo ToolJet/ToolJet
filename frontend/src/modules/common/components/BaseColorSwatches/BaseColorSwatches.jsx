@@ -7,6 +7,7 @@ import { computeColor } from '@/_helpers/utils';
 import { Tooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
+import { pickerColor, useThemeDefault } from '@/AppBuilder/CodeEditor/themeDefault';
 
 const coerceColorString = (v) => (typeof v === 'string' ? v : '');
 
@@ -40,6 +41,10 @@ const BaseColorSwatches = ({
     value = darkMode ? '#47505D' : '#ffffff';
   }
   value = coerceColorString(value);
+  // A blank UI 2.0 style follows the theme (AppBuilder/CodeEditor/themeDefault.js): the swatch shows the theme's colour
+  // and says so, instead of an empty white swatch that read as a style that failed to load.
+  const themeDefault = useThemeDefault();
+  const followsTheme = Boolean(themeDefault) && !value;
   const [showPicker, setShowPicker] = useState(false);
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
   const coverStyles = {
@@ -125,7 +130,7 @@ const BaseColorSwatches = ({
             <div style={pickerStyle}>
               <SketchPicker
                 onFocus={() => setShowPicker(true)}
-                color={value}
+                color={value || (followsTheme ? pickerColor(themeDefault.value) : undefined)}
                 onChangeComplete={handleColorChange}
                 style={{ bottom: 0 }}
               />
@@ -143,7 +148,17 @@ const BaseColorSwatches = ({
         data-cy={`${String(cyLabel)}-picker`}
         style={outerStyles}
       >
-        <div className="color-icon" style={{ backgroundColor: value, marginLeft: '4px' }} />
+        <div
+          className="color-icon"
+          data-cy={followsTheme ? `${String(cyLabel)}-theme-swatch` : undefined}
+          style={
+            followsTheme
+              ? themeDefault.value
+                ? { backgroundColor: themeDefault.value, marginLeft: '4px' }
+                : { background: 'transparent', borderStyle: 'dashed', borderColor: 'var(--slate8)', marginLeft: '4px' }
+              : { backgroundColor: value, marginLeft: '4px' }
+          }
+        />
 
         <div
           className="col tj-text-xsm p-0 color-slate12"
@@ -154,12 +169,18 @@ const BaseColorSwatches = ({
             whiteSpace: 'nowrap',
           }}
         >
-          {colorMap?.[value]
-            ? colorMap[value]
-                .split('/')
-                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                .join('/')
-            : value}
+          {followsTheme ? (
+            <span style={{ color: 'var(--slate10)' }} title="Follows the app theme. Pick a colour to set your own.">
+              {themeDefault.value ? 'Theme' : 'Theme default'}
+            </span>
+          ) : colorMap?.[value] ? (
+            colorMap[value]
+              .split('/')
+              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+              .join('/')
+          ) : (
+            value
+          )}
         </div>
         {typeof onReset === 'function' && (
           <div className="col-auto p-0">
