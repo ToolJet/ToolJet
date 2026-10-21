@@ -1,7 +1,10 @@
 import { waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { verticalDividerConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/verticalDivider';
-import { verticalDividerConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/verticalDivider';
+import { verticalDividerConfig as frontendConfig } from '@tooljet/widget-definitions';
+// eslint-disable-next-line import/no-relative-packages
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
+
+const serverConfig = serverWidgets.verticalDividerConfig;
 
 const ID = 'verticalDivider1';
 const HANDLE = 'verticalDivider1';

@@ -17,7 +17,7 @@ import ModuleResourcePermissions from './components/ModuleResourcePermission';
 import WorkflowFolderResourcePermissions from './components/WorkflowFolderResourcePermission';
 import ModuleFolderResourcePermissions from './components/ModuleFolderResourcePermission';
 import Spinner from 'react-bootstrap/Spinner';
-import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../..';
+import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../../constants';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGranularAccess extends React.Component {
