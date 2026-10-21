@@ -46,9 +46,10 @@ export const EmptyText = ({ text, fallback }: { text: unknown; fallback: string 
   </p>
 );
 
-/** A clicked row as selectedItem (its data) and selectedItemId (its idField value), and the click that selects it and
- *  fires `event`; nothing while the widget is disabled or loading. */
-export const useItemSelection = <T extends { key: string; row?: Resolved }>(
+/** A clicked row as selectedItem (its data), selectedItemId (its idField value, which two rows may share) and
+ *  selectedItemIndex (its position in the data), and the click that selects it and fires `event`; nothing while the
+ *  widget is disabled or loading. The selection is kept by the row's own key, so it tells duplicates apart. */
+export const useItemSelection = <T extends { key: string; row?: Resolved; index?: number }>(
   props: WidgetProps,
   event: string,
   items: readonly T[]
@@ -65,6 +66,7 @@ export const useItemSelection = <T extends { key: string; row?: Resolved }>(
   const selection = (row: T | null) => ({
     selectedItem: row?.row ?? {},
     selectedItemId: row ? row.row?.[idKey] ?? null : null,
+    selectedItemIndex: row ? row.index ?? null : null,
   });
   useExposed(setExposedVariables, p, selection(selected));
   const click = (row: T) => {

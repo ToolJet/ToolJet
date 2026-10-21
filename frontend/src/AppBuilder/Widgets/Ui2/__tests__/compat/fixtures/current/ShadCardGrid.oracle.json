@@ -5,6 +5,7 @@
     "isDisabled": false,
     "selectedItem": {},
     "selectedItemId": null,
+    "selectedItemIndex": null,
     "id": "<uuid>"
   },
   "probe": "",

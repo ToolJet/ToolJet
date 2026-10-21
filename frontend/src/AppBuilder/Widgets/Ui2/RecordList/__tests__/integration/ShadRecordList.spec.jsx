@@ -142,6 +142,8 @@ describe('UI 2.0 Record list', () => {
 
     await waitFor(() => expect(widget.variables().seen).toBe('Owen Hart'));
     expect(exposed().selectedItemId).toBe('A-2');
+    // selectedItemIndex: its position in the data (two rows may share an id; integration/duplicateItemIds.spec.jsx).
+    expect(exposed().selectedItemIndex).toBe(1);
     expect(row('Oakland Ice Rink')).toHaveAttribute('data-selected', 'true');
   });
 

@@ -96,7 +96,8 @@ export const progressEntries = (data: unknown, fields: ProgressFields = {}): Pro
   });
   return uniqueKeys(
     found.map((r) => r.entry),
-    found.map((r) => r.fromId)
+    found.map((r) => r.fromId),
+    { byOccurrence: true }
   );
 };
 
@@ -147,9 +148,19 @@ export const progressMax = (entries: ProgressEntry[], fields: ProgressFields = {
   const f = fields || {};
   if (!isNonBlankString(f.valueField)) return null;
   // A list that has targets measures each row against its own: no list-wide scale.
-  if (isNonBlankString(f.targetField) && entries.some(({ row }) => percentOf(row[f.targetField as string]) !== null || typeof row[f.targetField as string] === 'number')) return null;
+  if (
+    isNonBlankString(f.targetField) &&
+    entries.some(
+      ({ row }) => percentOf(row[f.targetField as string]) !== null || typeof row[f.targetField as string] === 'number'
+    )
+  )
+    return null;
   const values = entries
-    .map(({ row }) => (typeof row[f.valueField as string] === 'number' ? row[f.valueField as string] : percentOf(row[f.valueField as string])))
+    .map(({ row }) =>
+      typeof row[f.valueField as string] === 'number'
+        ? row[f.valueField as string]
+        : percentOf(row[f.valueField as string])
+    )
     .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
   return values.length ? Math.max(...values) : null;
 };
