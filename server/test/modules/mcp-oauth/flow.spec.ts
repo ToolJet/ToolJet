@@ -1,3 +1,4 @@
+import { assertPatMintSession, assertPatExchange } from '@modules/personal-access-tokens/credential-lifecycle';
 jest.mock('@helpers/utils.helper', () => ({ getTooljetEdition: () => 'cloud' }));
 jest.mock('@helpers/bootstrap.helper', () => ({ createLogger: () => ({ log: jest.fn() }) }));
 jest.mock('@tooljet/plugins/dist/server', () => ({ QueryError: class extends Error {}, OAuthUnauthorizedClientError: class extends Error {} }), { virtual: true });
@@ -444,6 +445,59 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     await expect(oauth.authenticateDelegation(delegated.access_token, organizationId)).rejects.toThrow(UnauthorizedException);
   });
+  const waitForBlockedConnection = async (pid: number) => {
+    for (let i = 0; i < 100; i++) {
+      const [row] = await db.query('SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE $1 = ANY(pg_blocking_pids(pid))) AS waiting', [pid]);
+      if (row.waiting) return;
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    throw new Error('Expected credential lifecycle row-lock contention');
+  };
+  test.each(['termination', 'ban'])('PAT issuance waits for %s and rechecks the initiating session', async reason => {
+    const admin = db.createQueryRunner();
+    await admin.startTransaction();
+    let mint: Promise<unknown>;
+    try {
+      await admin.query("SELECT pg_advisory_xact_lock_shared(hashtext('mcp-oauth-security-policy'))");
+      await admin.query('SELECT id FROM users WHERE id=$1 FOR NO KEY UPDATE', [user.id]);
+      const [{ pid }] = await admin.query('SELECT pg_backend_pid() AS pid');
+      mint = db.transaction(async manager => {
+        await assertPatMintSession(manager, user);
+        await manager.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-racing-pat','workspace',now()+interval '1 day')", [user.id,organizationId]);
+      }).then(() => 'unexpected-success', error => error);
+      await waitForBlockedConnection(pid);
+      await admin.query('DELETE FROM user_sessions WHERE user_id=$1', [user.id]);
+      if (reason === 'ban') await admin.query('INSERT INTO user_ban_list(email) VALUES ($1)', [user.email]);
+      await admin.commitTransaction();
+      expect(await mint).toBeInstanceOf(UnauthorizedException);
+      expect(await db.query('SELECT id FROM user_personal_access_tokens')).toEqual([]);
+    } finally {
+      if (admin.isTransactionActive) await admin.rollbackTransaction();
+      await admin.release();
+      await mint;
+    }
+  });
+  test('termination waits for an admitted PAT mint and then expires the newly inserted token', async () => {
+    const mint = db.createQueryRunner();
+    await mint.startTransaction();
+    let termination: Promise<unknown>;
+    try {
+      await assertPatMintSession(mint.manager, user);
+      const [{ pid }] = await mint.query('SELECT pg_backend_pid() AS pid');
+      termination = SessionUtilService.prototype.terminateAllSessions.call({ configService: new ConfigService({ TOOLJET_EDITION: 'cloud' }) }, user.id);
+      await waitForBlockedConnection(pid);
+      await mint.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-admitted-pat','workspace',now()+interval '1 day')", [user.id,organizationId]);
+      await mint.commitTransaction();
+      await termination;
+      const [pat] = await db.query('SELECT id, user_id AS "userId", token_hash AS "tokenHash", expires_at <= now() AS expired FROM user_personal_access_tokens');
+      expect(pat.expired).toBe(true);
+      await expect(db.transaction(manager => assertPatExchange(manager, pat))).rejects.toThrow(UnauthorizedException);
+    } finally {
+      if (mint.isTransactionActive) await mint.rollbackTransaction();
+      await mint.release();
+      await termination;
+    }
+  });
   test('instance ban revokes access, refresh, delegation, viewer and PATs even after unban', async () => {
     const { tokens, delegated, appId } = await makeViewer();
     const viewer = await oauth.viewer(delegated.access_token, organizationId, appId);
@@ -504,6 +558,8 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     expect(await oauth.rateLimitGrant('token', { ...body, client_id: 'made-up-client' }, {})).toBeUndefined();
     expect(await oauth.rateLimitGrant('viewer', {}, { 'x-tooljet-delegation': delegated.access_token, 'tj-workspace-id': organizationId })).toBe(grant);
     expect(await oauth.rateLimitGrant('viewer', {}, { 'x-tooljet-delegation': delegated.access_token+'tampered', 'tj-workspace-id': organizationId })).toBeUndefined();
+    await db.query('UPDATE mcp_oauth_grants SET revoked_at=now()');
+    expect(await oauth.rateLimitGrant('token', body, {})).toBeUndefined();
   });
   test('OAuth viewer is short-lived, app-pinned and cannot become a delegation', async () => {
     const { delegated, appId } = await makeViewer();

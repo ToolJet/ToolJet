@@ -497,7 +497,12 @@ export class McpOAuthService implements OnModuleInit {
       const raw = stringParam(route === 'revoke' ? body.token : body[kind === 'code' ? 'code' : 'refresh_token'], 'credential');
       const artifact = kind ? await this.store().artifact(raw, kind) :
         await this.store().artifact(raw, 'access') || await this.store().artifact(raw, 'refresh');
-      if (artifact?.client_id === client.id && artifact.grant_id && artifact.expires_at > new Date()) return artifact.grant_id;
+      if (artifact?.client_id === client.id && artifact.grant_id && artifact.expires_at > new Date()) {
+        // Preserve the bounded refresh retry, but spent/revoked credentials cannot populate grant buckets.
+        if (artifact.consumed_at && !(kind === 'refresh' && Date.now() - artifact.consumed_at.getTime() <= 5000)) return undefined;
+        const [grant] = await this.dataSource.query('SELECT id FROM mcp_oauth_grants WHERE id=$1 AND revoked_at IS NULL AND expires_at > now()', [artifact.grant_id]);
+        return grant?.id;
+      }
     } catch { /* Invalid callers share only their own network-address bucket. */ }
     return undefined;
   }

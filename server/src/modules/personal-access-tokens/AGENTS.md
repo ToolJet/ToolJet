@@ -38,3 +38,5 @@ token can pin a session to an app, "has an appId" stops meaning "is an embed ses
   `PAT_APP_VIEWER_MODULES` only with a feature narrowing in `PAT_APP_VIEWER_FEATURES`.
 - The app pin reads `request.tj_app` first (guards resolve the app for slug and query routes, which
   carry no uuid in the path) and falls back to matching `/apps/<uuid>` in the URL.
+
+- On Cloud, `credential-lifecycle.ts` serializes PAT issuance/exchange with administrative termination and instance bans through a user-row SHARE lock. Recheck the live browser session for minting and the current token for exchange while holding the lock. Internal service tokens carry their initiating browser session only in memory and must recheck it on exchange. Revocation takes the policy lock before its user-row NO KEY UPDATE lock; preserve this order.

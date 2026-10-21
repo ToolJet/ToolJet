@@ -160,7 +160,12 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
             // Preserve the randomized ciphertext only when the plaintext is unchanged.
             // Real rotations still change the policy fingerprint and fire revocation hooks.
             const previous = previousConfigs?.[key];
-            if (previous && await this.encryptionService.decryptColumnValue('ssoConfigs', key, previous) === configs[key]) {
+            let unchanged = false;
+            if (previous) {
+              try { unchanged = await this.encryptionService.decryptColumnValue('ssoConfigs', key, previous) === configs[key]; }
+              catch { /* A replacement secret also repairs unreadable legacy ciphertext. */ }
+            }
+            if (unchanged) {
               configs[key] = previous;
             } else {
               configs[key] = await this.encryptionService.encryptColumnValue('ssoConfigs', key, configs[key]);

@@ -9,6 +9,7 @@ export class RevokeMcpOAuthOnInstanceBan1792627200000 implements MigrationInterf
       CREATE FUNCTION mcp_oauth_revoke_instance_ban() RETURNS trigger LANGUAGE plpgsql AS $$
       BEGIN
         PERFORM pg_advisory_xact_lock_shared(hashtext('mcp-oauth-security-policy'));
+        PERFORM id FROM users WHERE lower(email) = lower(NEW.email) ORDER BY id FOR NO KEY UPDATE;
         UPDATE mcp_oauth_grants SET revoked_at = now()
           WHERE revoked_at IS NULL AND user_id IN (SELECT id FROM users WHERE lower(email) = lower(NEW.email));
         UPDATE user_personal_access_tokens SET expires_at = LEAST(expires_at, now())
