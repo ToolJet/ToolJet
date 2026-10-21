@@ -8,7 +8,10 @@ function save(body) {
 
 function get(validateResponse = true) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const handleOutput = validateResponse ? handleResponse : handleResponseWithoutValidation;
+  // A read on page load: a plan without custom styles is shown with a plan tag, not the upgrade dialog.
+  const handleOutput = validateResponse
+    ? (response) => handleResponse(response, false, null, true)
+    : handleResponseWithoutValidation;
   return fetch(`${config.apiUrl}/custom-styles`, requestOptions).then(handleOutput);
 }
 

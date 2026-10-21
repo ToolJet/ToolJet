@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import PlanTag from '@/modules/common/components/PlanTag';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
@@ -76,7 +78,15 @@ const INSPECTOR_HEADER_OPTIONS = [
     label: 'Component permission',
     value: 'permission',
     icon: <LockKeyhole size={16} color="var(--icon-weak)" />,
-    trailingIcon: <SolidIcon width={16} name="enterprisecrown" className="mx-1" />,
+    trailingIcon: (
+      <PlanTag
+        gateKey="appPermissionComponent"
+        iconOnly
+        featureName="Component permissions"
+        className="mx-1"
+        ceFallback={<SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
+      />
+    ),
   },
   {
     label: 'Edit module',
@@ -676,10 +686,7 @@ export const Inspector = ({
                                 >
                                   {option?.label}
                                 </div>
-                                {option.value === 'permission' &&
-                                  !hasAppPermissionComponent &&
-                                  option.trailingIcon &&
-                                  option.trailingIcon}
+                                {option.value === 'permission' && option.trailingIcon && option.trailingIcon}
                               </div>
                             );
 
@@ -690,7 +697,7 @@ export const Inspector = ({
                                   "You don't have access to component permissions. Upgrade your plan to access this feature."
                                 }
                                 placement="left"
-                                show={!hasAppPermissionComponent}
+                                show={!hasAppPermissionComponent && fetchEdition() === 'ce'}
                               >
                                 {optionBody}
                               </ToolTip>

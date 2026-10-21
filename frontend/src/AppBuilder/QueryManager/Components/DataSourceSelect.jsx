@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import PlanTag from '@/modules/common/components/PlanTag';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
@@ -262,7 +264,7 @@ function DataSourceSelect({
             <ToolTip
               message="Keep queries organized in folders. Available on paid plans."
               placement="right"
-              show={!queryFoldersLicensed}
+              show={!queryFoldersLicensed && fetchEdition() === 'ce'}
             >
               <button
                 style={{ ...itemStyle, cursor: queryFoldersLicensed ? 'pointer' : 'default' }}
@@ -284,7 +286,15 @@ function DataSourceSelect({
                 >
                   New folder
                 </span>
-                {!queryFoldersLicensed && <SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
+                {!queryFoldersLicensed && (
+                  <PlanTag
+                    gateKey="queryFolders"
+                    iconOnly
+                    featureName="Query folders"
+                    className="mx-1"
+                    ceFallback={<SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
+                  />
+                )}
               </button>
             </ToolTip>
           </div>

@@ -2,6 +2,8 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { PLAN_DETAILS } from './constants';
 import { ILicenseService } from './interfaces/IService';
 import { User } from '@entities/user.entity';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { PlanCatalogSlice, selectPlanCatalog } from './constants/plan-catalog';
 
 @Injectable()
 export class LicenseService implements ILicenseService {
@@ -28,5 +30,10 @@ export class LicenseService implements ILicenseService {
       throw new HttpException('Failed to fetch plans', 500);
     }
     return { plans: PLAN_DETAILS };
+  }
+
+  // Same for every edition (EE inherits it); only the slice differs.
+  planCatalog(): PlanCatalogSlice {
+    return selectPlanCatalog(getTooljetEdition());
   }
 }

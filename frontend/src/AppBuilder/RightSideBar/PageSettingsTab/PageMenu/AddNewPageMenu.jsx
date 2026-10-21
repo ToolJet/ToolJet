@@ -1,4 +1,6 @@
 import React, { useRef, useState } from 'react';
+import PlanTag from '@/modules/common/components/PlanTag';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import { Overlay, Popover } from 'react-bootstrap';
 import { Button } from '@/components/ui/Button/Button';
 import useStore from '@/AppBuilder/_stores/store';
@@ -125,10 +127,15 @@ export function AddNewPageMenu({ darkMode }) {
               <LicenseTooltip
                 message={"You don't have access to nav groups. Upgrade your plan to access this feature."}
                 placement="bottom"
-                show={!hasAppPagesAddNavGroupEnabled}
+                show={!hasAppPagesAddNavGroupEnabled && fetchEdition() === 'ce'}
               >
                 <div className="d-flex align-items-center">
-                  {!hasAppPagesAddNavGroupEnabled && <SolidIcon name="enterprisecrown" />}
+                  <PlanTag
+                    gateKey="appPagesAddNavGroupEnabled"
+                    iconOnly
+                    featureName="Nav groups"
+                    ceFallback={!hasAppPagesAddNavGroupEnabled ? <SolidIcon name="enterprisecrown" /> : null}
+                  />
                 </div>
               </LicenseTooltip>
             </div>

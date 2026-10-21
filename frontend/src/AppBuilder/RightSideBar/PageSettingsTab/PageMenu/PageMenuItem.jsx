@@ -1,4 +1,6 @@
 import React, { memo, useRef, useState, useCallback } from 'react';
+import PlanTag from '@/modules/common/components/PlanTag';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
 import { AlertTriangle } from 'lucide-react';
@@ -374,18 +376,32 @@ export const PageMenuItem = withRouter(
                               "You don't have access to page permissions. Upgrade your plan to access this feature."
                             }
                             placement="auto"
-                            show={!hasAppPermissionPages}
+                            show={!hasAppPermissionPages && fetchEdition() === 'ce'}
                             tooltipClassName="!tw-z-[100000]"
                           >
                             <div className="d-flex align-items-center enterprise-feature">
-                              <div>Page permission</div>
-                              {!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}
+                              <div
+                                className={
+                                  !hasAppPermissionPages && fetchEdition() !== 'ce'
+                                    ? 'tw-text-text-disabled'
+                                    : undefined
+                                }
+                              >
+                                Page permission
+                              </div>
+                              <PlanTag
+                                gateKey="appPermissionPages"
+                                iconOnly
+                                featureName="Page permissions"
+                                ceFallback={!hasAppPermissionPages ? <SolidIcon name="enterprisecrown" /> : null}
+                              />
                             </div>
                           </ToolTip>
                         }
                         icon="lock"
                         darkMode={darkMode}
                         disabled={!hasAppPermissionPages}
+                        softDisabled={fetchEdition() !== 'ce'}
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
