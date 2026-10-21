@@ -14,7 +14,7 @@ export const verifyAdminHelperText = (index = 0) => {
         .should("be.visible")
         .and("have.text", "read documentation")
         .and("have.attr", "href")
-        .and("include", "docs.tooljet.com/docs/user-management/role-based-access/user-roles");
+        .and("include", "docs.tooljet.com/docs/tutorial/manage-users-groups");
 };
 
 export const verifyEditUserRoleModal = (userEmail) => {
@@ -231,7 +231,7 @@ export const verifyEnduserHelperText = (index = 0) => {
         .should("be.visible")
         .and("have.text", "read documentation")
         .and("have.attr", "href")
-        .and("include", "docs.tooljet.com/docs/user-management/role-based-access/user-roles");
+        .and("include", "docs.tooljet.com/docs/tutorial/manage-users-groups");
 };
 
 export const verifyGranularPermissionModalUI = (
