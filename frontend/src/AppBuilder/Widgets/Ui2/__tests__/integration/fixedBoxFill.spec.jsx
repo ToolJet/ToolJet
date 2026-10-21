@@ -113,3 +113,37 @@ describe('A Summary strip in a fixed box fills it', () => {
     expect(shell().firstElementChild).toHaveClass('tw-h-full', 'tw-items-center');
   });
 });
+
+const accordion = createWidgetHarness({
+  componentType: 'ShadAccordion',
+  handle: 'accordion1',
+  id: 'accordion1',
+  widgetHeight: 160,
+});
+const SECTIONS = binding(
+  "{{Array.from({ length: 5 }, (_, i) => ({ title: 'Section ' + i, content: 'Line one\\nLine two\\nLine three' }))}}"
+);
+const OPEN = { items: SECTIONS, multiple: binding('{{true}}'), defaultOpen: binding('{{[0, 1, 2, 3, 4]}}') };
+
+describe('An Accordion in a fixed box scrolls inside it', () => {
+  beforeEach(() => accordion.setup());
+  afterEach(() => accordion.teardown());
+
+  test('[FixedBox-009] with dynamic height off, or in the editor, its open sections scroll inside the box', () => {
+    for (const [currentMode, extra] of [
+      ['view', { dynamicHeight: binding('{{false}}') }],
+      ['edit', {}],
+    ]) {
+      accordion.render({ currentMode, properties: { ...OPEN, ...extra } });
+      expect(document.querySelectorAll('.canvas-component [data-state=open]').length).toBeGreaterThan(1);
+      expect(shell()).toHaveClass('tw-h-full', 'tw-overflow-y-auto');
+      accordion.teardown();
+    }
+  });
+
+  test('[FixedBox-010] with dynamic height on in the viewer it keeps its sections height, which the box follows', () => {
+    accordion.render({ currentMode: 'view', properties: OPEN });
+    expect(shell()).not.toHaveClass('tw-h-full');
+    expect(shell()).not.toHaveClass('tw-overflow-y-auto');
+  });
+});
