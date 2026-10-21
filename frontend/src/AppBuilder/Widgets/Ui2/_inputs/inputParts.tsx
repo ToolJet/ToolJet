@@ -69,7 +69,9 @@ export interface GroupProps {
 }
 
 export const Group = ({ disabled, className, children }: GroupProps) => (
-  <div className={cn(GROUP, CONTROL, disabled && 'tw-cursor-not-allowed tw-opacity-50', className)}>{children}</div>
+  <div className={cn(GROUP, CONTROL, disabled && 'sc-self-dim tw-cursor-not-allowed tw-opacity-50', className)}>
+    {children}
+  </div>
 );
 
 /** A time (minutes since midnight) from an action's argument, read with the format given when there is one ('HH:mm',

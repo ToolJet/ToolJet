@@ -207,7 +207,7 @@ export const ShadCalendar = (props: WidgetProps) => {
             fullWidth ? 'tw-w-full' : 'tw-w-fit',
             properties.showBorder !== false &&
               'tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border tw-border-solid tw-border-[color:var(--lk-border,var(--sc-border))]',
-            disabled && 'tw-opacity-60'
+            disabled && 'sc-self-dim tw-opacity-60'
           )}
           classNames={{
             months: cn('tw-relative tw-flex tw-flex-col tw-gap-4 sm:tw-flex-row', fullWidth && 'tw-w-full'),

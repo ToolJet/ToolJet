@@ -55,7 +55,7 @@ export const ShadLink = (props: WidgetProps) => {
     underline === 'on-hover' && 'tw-no-underline hover:tw-underline',
     underline === 'no-underline' && 'tw-no-underline hover:tw-no-underline',
     own(WEIGHT, p.fontWeight) || WEIGHT.medium,
-    disabled && 'tw-pointer-events-none tw-opacity-50'
+    disabled && 'sc-self-dim tw-pointer-events-none tw-opacity-50'
   );
   const style = { fontSize: clampCoerce(p.fontSize, 8, 96, 14), lineHeight: 1.4 };
   const content = (

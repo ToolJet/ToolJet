@@ -133,7 +133,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
       <div
         className={cn(
           'tw-relative tw-flex tw-w-fit tw-max-w-full tw-items-center tw-gap-2',
-          disabled && 'tw-cursor-not-allowed tw-opacity-50'
+          disabled && 'sc-self-dim tw-cursor-not-allowed tw-opacity-50'
         )}
       >
         {groups.map(([from, to], g) => (

@@ -221,7 +221,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
             className={cn(
               'tw-flex tw-min-h-9 tw-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-border tw-px-3 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring',
               CONTROL,
-              disabled && 'tw-cursor-not-allowed tw-opacity-50'
+              disabled && 'sc-self-dim tw-cursor-not-allowed tw-opacity-50'
             )}
           >
             <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-1">

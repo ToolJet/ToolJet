@@ -366,10 +366,17 @@ const RenderWidget = ({
     !['Modal', 'ModalV2', 'ShadDialog', 'CircularProgressBar'].includes(component.component) &&
     !SHADCN_COMPONENTS.includes(component.component) &&
     (isDisabled || isLoading);
+  // A disabled UI 2.0 widget is dimmed here, once, to the same half opacity as a native widget's .disabled, whatever
+  // it draws (a Stat, a Hero, Tabs dimmed nothing; an Input only its box). Its parts that dim themselves when disabled
+  // keep full opacity inside it (Ui2/_shared/styles/shadcn.scss). Loading is its own state and is not dimmed; input
+  // stays blocked by the widget itself, so tooltips still show.
+  const isUi2Disabled =
+    SHADCN_COMPONENTS.includes(component.component) && component.component !== 'ShadDialog' && isDisabled && !isLoading;
   const innerWidgetClassName = [
     'canvas-component',
     inCanvas && `_tooljet-${component?.component} _tooljet-${component?.name}`,
     isDisabledOrLoading && 'disabled',
+    isUi2Disabled && 'ui2-disabled',
     userCssClass,
   ]
     .filter(Boolean)

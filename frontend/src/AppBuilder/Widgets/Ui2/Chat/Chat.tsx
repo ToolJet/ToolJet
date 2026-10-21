@@ -333,7 +333,7 @@ export const ShadChat = (props: WidgetProps) => {
           <div
             className={cn(
               'tw-flex tw-items-end tw-gap-2 tw-rounded-ui2-xl tw-border tw-border-[color:var(--lk-field-border,var(--sc-input))] tw-bg-[color:var(--lk-field-bg,var(--sc-background))] tw-p-1.5 tw-shadow-sm tw-transition-shadow focus-within:tw-ring-2 focus-within:tw-ring-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-ring))_45%,transparent)]',
-              locked && 'tw-opacity-60'
+              locked && 'sc-self-dim tw-opacity-60'
             )}
           >
             <textarea
