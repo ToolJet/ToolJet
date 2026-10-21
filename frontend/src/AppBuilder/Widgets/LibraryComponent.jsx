@@ -8,6 +8,8 @@ import { useEffectiveLibraryRevision } from './hooks/useEffectiveLibraryRevision
 import { useLibraryManifest } from './hooks/useLibraryManifest';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import InlineLibraryComponent from './LibraryComponent/InlineLibraryComponent';
+import { getLibraryComponentRuntime } from './LibraryComponent/inlineRuntime';
 
 const DevBadge = ({ label }) => (
   <div className="tw-absolute tw-left-0 -tw-bottom-6 tw-h-5 tw-inline-flex tw-items-center tw-px-1 tw-py-0.5 tw-rounded-md tw-text-white tw-text-sm tw-font-medium tw-whitespace-nowrap tw-pointer-events-none tw-z-10 tw-bg-background-success-strong">
@@ -17,7 +19,10 @@ const DevBadge = ({ label }) => (
 
 const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'componentName', 'visibility', 'loadingState']);
 
-/* sandboxed (opaque-origin) iframe — no parent DOM/cookie access, postMessage only:
+/* POC: renders inline by default (shadow root + host React, see LibraryComponent/inlineRuntime.ts);
+   localStorage 'tj-cc-runtime' = 'iframe' falls back to the shell below.
+
+   sandboxed (opaque-origin) iframe — no parent DOM/cookie access, postMessage only:
    shell → ready → we send load {bundleUrl, cssUrl, componentName}
    props change → we send props
    shell → stateChange/event → setExposedVariable / fireEvent
@@ -137,6 +142,11 @@ const LibraryComponent = ({
 
   const configured = Boolean(libraryId && componentName && effectiveRevision);
 
+  const [runtime] = useState(getLibraryComponentRuntime);
+  const isInline = runtime === 'inline';
+  // Inline mode: ToolJet.useAction handlers register here directly, no postMessage round trip.
+  const [inlineActions] = useState(() => new Map());
+
   const iframeRef = useRef(null);
   const [shellReady, setShellReady] = useState(false);
   const pendingInvocations = useRef(new Map());
@@ -152,6 +162,12 @@ const LibraryComponent = ({
 
   // Sends a message from this parent widget down into the widget's iframe.
   const postToShell = (msg) => iframeRef.current?.contentWindow?.postMessage(msg, '*');
+
+  const invokeInline = (name, args) => {
+    const handler = inlineActions.get(name);
+    if (!handler) console.warn(`[invokeAction] no handler registered for action "${name}".`);
+    return Promise.resolve().then(() => handler?.(...(args ?? [])));
+  };
 
   const invokeInShell = (msg) => {
     const id = ++invocationSeq.current;
@@ -218,7 +234,9 @@ const LibraryComponent = ({
   useEffect(() => {
     if (!configured || !manifestActions?.length) return;
     manifestActions.forEach((a) =>
-      setExposedVariable(a.name, (...args) => invokeInShell({ type: 'invokeAction', name: a.name, args }))
+      setExposedVariable(a.name, (...args) =>
+        isInline ? invokeInline(a.name, args) : invokeInShell({ type: 'invokeAction', name: a.name, args })
+      )
     );
   }, [configured, manifestActions, setExposedVariable]);
 
@@ -269,6 +287,20 @@ const LibraryComponent = ({
         <div className="tw-flex tw-items-center tw-justify-center tw-h-full">
           <Loader width="16" absolute={false} />
         </div>
+      ) : isInline ? (
+        <InlineLibraryComponent
+          key={`${libraryId}|${effectiveRevision}|${componentName}|${devNonce ?? ''}`}
+          bundleUrl={fileUrl('index.js')}
+          cssUrl={fileUrl('index.css')}
+          cacheKey={`${libraryId}|${effectiveRevision}|${devNonce ?? ''}`}
+          componentName={componentName}
+          componentProps={componentProps}
+          setExposedVariable={setExposedVariable}
+          fireEvent={fireEvent}
+          actions={inlineActions}
+          boxShadow={styles.boxShadow}
+          dataCy={dataCy}
+        />
       ) : (
         <iframe
           key={`${libraryId}|${effectiveRevision}|${componentName}|${devNonce ?? ''}`}
