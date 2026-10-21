@@ -529,6 +529,7 @@ export const shadProgressListConfig = {
     isDisabled: false,
     selectedItem: {},
     selectedItemId: null,
+    selectedItemIndex: null,
   },
   actions: [
     {

@@ -197,6 +197,8 @@ describe('UI 2.0 Card grid', () => {
 
     await waitFor(() => expect(widget.variables().seen).toBe('Garden room'));
     expect(exposed().selectedItemId).toBe('R-2');
+    // selectedItemIndex: its position in the data (two cards may share an id; integration/duplicateItemIds.spec.jsx).
+    expect(exposed().selectedItemIndex).toBe(1);
     expect(card('Garden room')).toHaveAttribute('data-selected', 'true');
   });
 

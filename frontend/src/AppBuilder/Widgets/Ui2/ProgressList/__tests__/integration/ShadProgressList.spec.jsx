@@ -123,6 +123,8 @@ describe('UI 2.0 Progress list', () => {
 
     await waitFor(() => expect(widget.variables().seen).toBe('Support'));
     expect(exposed().selectedItemId).toBe('g2');
+    // selectedItemIndex: its position in the data (two rows may share an id; integration/duplicateItemIds.spec.jsx).
+    expect(exposed().selectedItemIndex).toBe(1);
     fireEvent.keyDown(item('Onboarding'), { key: 'Enter' });
     await waitFor(() => expect(exposed().selectedItemId).toBe('g1'));
   });

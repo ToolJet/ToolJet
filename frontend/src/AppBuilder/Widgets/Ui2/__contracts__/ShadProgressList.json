@@ -318,6 +318,7 @@
     "isLoading",
     "isVisible",
     "selectedItem",
-    "selectedItemId"
+    "selectedItemId",
+    "selectedItemIndex"
   ]
 }

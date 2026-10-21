@@ -65,14 +65,28 @@ export const firstTextField = (row: Row): string | undefined => Object.keys(row)
 
 /** Keys from ids, one of their own for every item: a repeated id (or a row without one, keyed by its position, where
  *  another row's id is that number) gets a suffix, so React keeps the rows apart and a click selects one row, not
- *  every row that shares the key. Rows with an id claim it first; the first of a repeated id keeps it. */
-export const uniqueKeys = <T extends { key: string }>(items: T[], fromId: boolean[]): T[] => {
+ *  every row that shares the key. Rows with an id claim it first; the first of a repeated id keeps it. The suffix is
+ *  the row's position; with `byOccurrence` (the selectable lists) it is the id's occurrence (the second "1" is "1~2"),
+ *  so a selected duplicate keeps its key when the data refreshes with other rows added in front of it. Steps and Chat
+ *  keep the position: a step's filled-in id is exposed. */
+export const uniqueKeys = <T extends { key: string }>(
+  items: T[],
+  fromId: boolean[],
+  { byOccurrence = false }: { byOccurrence?: boolean } = {}
+): T[] => {
   const seen = new Set<string>();
+  const occurrences = new Map<string, number>();
   const keys: (string | null)[] = items.map(() => null);
   const claim = (i: number) => {
     const base = items[i].key;
     let key = base;
-    for (let n = 0; seen.has(key); n++) key = `${base}~${i}${n ? `~${n}` : ''}`;
+    if (byOccurrence) {
+      let n = occurrences.get(base) ?? 1;
+      while (seen.has(key)) key = `${base}~${++n}`;
+      occurrences.set(base, n);
+    } else {
+      for (let n = 0; seen.has(key); n++) key = `${base}~${i}${n ? `~${n}` : ''}`;
+    }
     seen.add(key);
     keys[i] = key;
   };
@@ -150,6 +164,7 @@ export interface CardItem {
   progress: number | null;
   meta: string;
   row: Row;
+  index: number;
 }
 
 export const cardItems = (data: unknown, fields: CardFields = {}): CardItem[] => {
@@ -196,12 +211,14 @@ export const cardItems = (data: unknown, fields: CardFields = {}): CardItem[] =>
           .filter(Boolean)
           .join(' · '),
         row,
+        index,
       },
     ];
   });
   return uniqueKeys(
     items.map(({ keyFromId, ...item }) => item),
-    items.map((item) => item.keyFromId)
+    items.map((item) => item.keyFromId),
+    { byOccurrence: true }
   );
 };
 
@@ -291,6 +308,7 @@ export const recordItems = (data: unknown, fields: RecordFields = {}): RecordIte
   });
   return uniqueKeys(
     items.map(({ keyFromId, ...item }) => item),
-    items.map((item) => item.keyFromId)
+    items.map((item) => item.keyFromId),
+    { byOccurrence: true }
   );
 };
