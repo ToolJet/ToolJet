@@ -226,6 +226,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-storybook": "^0.12.0",
+    "fake-indexeddb": "6.2.5",
     "globals": "^15.15.0",
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.6.8",

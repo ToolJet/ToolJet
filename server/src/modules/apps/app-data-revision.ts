@@ -18,7 +18,9 @@ function getLatestMigration(manager: EntityManager): Promise<string | null> {
   return latestMigration;
 }
 
-// License terms the released-app response depends on (permission filtering, page groups, modules).
+// License terms the released-app and released-version responses depend on: permission filtering,
+// page groups and modules, JS libraries (stripped without the license), and the environment and
+// branch-freeze state the version endpoint returns.
 export const VIEWER_LICENSE_FIELDS = [
   LICENSE_FIELD.VALID,
   LICENSE_FIELD.APP_PERMISSIONS_PAGES,
@@ -26,6 +28,9 @@ export const VIEWER_LICENSE_FIELDS = [
   LICENSE_FIELD.APP_PERMISSIONS_COMPONENT,
   LICENSE_FIELD.APP_PAGES_NAV_GROUP,
   LICENSE_FIELD.MODULES,
+  LICENSE_FIELD.APP_JS_LIBRARIES,
+  LICENSE_FIELD.MULTI_ENVIRONMENT,
+  LICENSE_FIELD.GIT_SYNC_MULTI_BRANCH,
 ];
 
 export interface AppDataRevisionScope {

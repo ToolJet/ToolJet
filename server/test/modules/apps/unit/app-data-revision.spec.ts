@@ -1,5 +1,6 @@
 import { EntityManager } from 'typeorm';
-import { getAppDataRevision, resetAppDataRevisionCache } from '@modules/apps/app-data-revision';
+import { getAppDataRevision, resetAppDataRevisionCache, VIEWER_LICENSE_FIELDS } from '@modules/apps/app-data-revision';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { findUserGroupsWithAppAccess } from '@modules/group-permissions/repository';
 
 jest.mock('@modules/group-permissions/repository', () => ({ findUserGroupsWithAppAccess: jest.fn() }));
@@ -84,6 +85,24 @@ describe('getAppDataRevision', () => {
     const after = await getAppDataRevision(manager, app, { ...scope, ...change });
 
     expect(after).not.toBe(before);
+  });
+
+  it('covers every license flag the released-app and released-version responses read', () => {
+    // getBySlug and getVersion (CE and EE) gate on these; a flag missing here lets a license change
+    // leave a stale cached copy or 304.
+    expect(VIEWER_LICENSE_FIELDS).toEqual(
+      expect.arrayContaining([
+        LICENSE_FIELD.VALID,
+        LICENSE_FIELD.APP_PERMISSIONS_PAGES,
+        LICENSE_FIELD.APP_PERMISSIONS_QUERY,
+        LICENSE_FIELD.APP_PERMISSIONS_COMPONENT,
+        LICENSE_FIELD.APP_PAGES_NAV_GROUP,
+        LICENSE_FIELD.MODULES,
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        LICENSE_FIELD.GIT_SYNC_MULTI_BRANCH,
+      ])
+    );
   });
 
   it('changes when a new server version is deployed', async () => {

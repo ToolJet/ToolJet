@@ -1,4 +1,4 @@
-import { get as idbGet, set as idbSet, del as idbDel, keys as idbKeys, createStore, UseStore } from 'idb-keyval';
+import { get as idbGet, set as idbSet, del as idbDel, keys as idbKeys, promisifyRequest, UseStore } from 'idb-keyval';
 
 // Shared IndexedDB store for the viewer caches. Keeps the last N versions per app (all pages of
 // a version are evicted together) and evicts when storage is nearly full.
@@ -17,9 +17,46 @@ interface Entry {
 
 const DB_NAME_PREFIX = 'tj-app-cache-';
 
-// Every DB name created via createVersionedStore in this page load, so clearAllViewerCaches()
-// (called on logout) can wipe them without each cache module needing its own cleanup wiring.
-const registeredDbNames: string[] = [];
+// Every store created via createVersionedStore in this page load, so clearAllViewerCaches()
+// (called on logout) can close and wipe them without each cache module needing its own wiring.
+const registeredStores: { dbName: string; close: () => void }[] = [];
+
+// Like idb-keyval's createStore(), but the connection closes whenever a deletion asks it to, from
+// this tab or another one, and reopens on next use. idb-keyval keeps its connection open for the
+// life of the page, so logout's deleteDatabase would wait until every viewer tab was closed.
+function createClosableStore(dbName: string, storeName: string): { store: UseStore; close: () => void } {
+  let connection: Promise<IDBDatabase> | undefined;
+  let openDb: IDBDatabase | undefined;
+
+  function close(): void {
+    openDb?.close();
+    openDb = undefined;
+    connection = undefined;
+  }
+
+  function connect(): Promise<IDBDatabase> {
+    if (connection) return connection;
+    const request = indexedDB.open(dbName);
+    request.onupgradeneeded = () => request.result.createObjectStore(storeName);
+    const attempt: Promise<IDBDatabase> = promisifyRequest(request).then((db) => {
+      if (connection !== attempt) {
+        db.close(); // closed while opening
+        throw new Error('Viewer cache was closed');
+      }
+      openDb = db;
+      db.onversionchange = close;
+      db.onclose = () => openDb === db && close(); // the browser closed it (e.g. Safari)
+      return db;
+    });
+    connection = attempt;
+    attempt.catch(() => connection === attempt && (connection = undefined));
+    return attempt;
+  }
+
+  const store: UseStore = (txMode, callback) =>
+    connect().then((db) => callback(db.transaction(storeName, txMode).objectStore(storeName)));
+  return { store, close };
+}
 
 function deleteDatabase(dbName: string): void {
   try {
@@ -33,7 +70,11 @@ function deleteDatabase(dbName: string): void {
 export function clearAllViewerCaches(): void {
   try {
     if (typeof indexedDB === 'undefined') return;
-    registeredDbNames.forEach(deleteDatabase);
+    // This tab's own open connections would block the deletion, so close them first.
+    registeredStores.forEach(({ dbName, close }) => {
+      close();
+      deleteDatabase(dbName);
+    });
     // Cache modules register lazily, so a page that never loaded the viewer has nothing registered.
     // Listing finds those DBs too, along with ones left over from older cache versions.
     indexedDB
@@ -41,7 +82,10 @@ export function clearAllViewerCaches(): void {
       .then((databases) =>
         databases
           .map(({ name }) => name)
-          .filter((name): name is string => !!name?.startsWith(DB_NAME_PREFIX) && !registeredDbNames.includes(name))
+          .filter(
+            (name): name is string =>
+              !!name?.startsWith(DB_NAME_PREFIX) && !registeredStores.some((store) => store.dbName === name)
+          )
           .forEach(deleteDatabase)
       )
       .catch(() => {});
@@ -51,13 +95,13 @@ export function clearAllViewerCaches(): void {
 }
 
 export function createVersionedStore<T extends Entry>(storeName: string) {
-  // One DB per store, not a shared 'tj-app-cache' DB with multiple stores: idb-keyval's
-  // createStore() opens IndexedDB without an explicit version, so onupgradeneeded only fires
+  // One DB per store, not a shared 'tj-app-cache' DB with multiple stores: the store opens
+  // IndexedDB without an explicit version, so onupgradeneeded only fires
   // for the first store name ever created under a given DB name — a second store name sharing
   // that DB silently never gets created, and reads/writes against it fail forever.
   const dbName = `${DB_NAME_PREFIX}${storeName}-v${VIEWER_CACHE_VERSION}`;
-  registeredDbNames.push(dbName);
-  const dbStore: UseStore = createStore(dbName, storeName);
+  const { store: dbStore, close } = createClosableStore(dbName, storeName);
+  registeredStores.push({ dbName, close });
 
   async function get(key: string): Promise<T | undefined> {
     if (!key) return undefined;
