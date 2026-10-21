@@ -3,7 +3,7 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Inbox } from 'lucide-react';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
 export const ShadEmpty = (props: WidgetProps) => {
   const { properties, setExposedVariables, fireEvent, height } = props;
@@ -26,7 +26,16 @@ export const ShadEmpty = (props: WidgetProps) => {
           </p>
         ) : null}
         {properties.actionLabel ? (
-          <Button size="sm" variant="outline" className="tw-mt-2" onClick={() => fireEvent('onActionClicked')}>
+          // Disabled or loading, the action takes no click and fires nothing, as every other UI 2.0 action does.
+          <Button
+            size="sm"
+            variant="outline"
+            className="tw-mt-2"
+            disabled={busy(properties)}
+            onClick={() => {
+              if (!busy(properties)) fireEvent('onActionClicked');
+            }}
+          >
             {String(properties.actionLabel)}
           </Button>
         ) : null}

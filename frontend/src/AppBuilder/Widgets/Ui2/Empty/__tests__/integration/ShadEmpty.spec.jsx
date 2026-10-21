@@ -52,6 +52,20 @@ describe('UI 2.0 Empty', () => {
     await waitFor(() => expect(widget.variables().calls).toBe(1));
   });
 
+  test('[ShadEmpty-EVT-002] disabled, the action button takes no click and fires nothing', async () => {
+    render({ properties: { actionLabel: binding('New order'), disabledState: binding('{{true}}') } });
+    widget.setEvents(countInvocationsOn(ID, 'onActionClicked'));
+    const button = screen.getByRole('button', { name: 'New order' });
+    expect(button).toBeDisabled();
+    await act(async () => fireEvent.click(button));
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(widget.variables().calls).toBeUndefined();
+
+    // Loading draws the loading look in place of the box, so there is no button to press.
+    render({ properties: { actionLabel: binding('New order'), loadingState: binding('{{true}}') } });
+    expect(screen.queryByRole('button', { name: 'New order' })).toBeNull();
+  });
+
   test('[ShadEmpty-STY-001] box, icon, title and text colours and the radius reach the widget as CSS variables', async () => {
     const { container } = render({
       properties: { description: binding('Nothing here') },
