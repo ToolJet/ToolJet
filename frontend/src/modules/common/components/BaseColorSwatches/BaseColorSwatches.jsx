@@ -8,6 +8,7 @@ import { Tooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import { pickerColor, useThemeDefault } from '@/AppBuilder/CodeEditor/themeDefault';
+import { pickedColor } from './pickedColor';
 
 const coerceColorString = (v) => (typeof v === 'string' ? v : '');
 
@@ -68,16 +69,8 @@ const BaseColorSwatches = ({
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
 
-  const decimalToHex = (alpha) => {
-    let aHex = Math.round(255 * alpha).toString(16);
-    return alpha === 0 ? '00' : aHex.length < 2 ? `0${aHex}` : aHex;
-  };
-
   const handleColorChange = (color) => {
-    const { r, g, b, a } = color.rgb;
-    const toHex = (n) => n.toString(16).padStart(2, '0');
-    const hexCode = `#${toHex(r)}${toHex(g)}${toHex(b)}${decimalToHex(a ?? 1.0)}`;
-    onChange(hexCode);
+    onChange(pickedColor(color.rgb, value, typeof component === 'string' && component.startsWith('Shad')));
   };
 
   const eventPopover = () => {
