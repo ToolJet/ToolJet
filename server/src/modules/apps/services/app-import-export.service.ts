@@ -22,6 +22,10 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { TransactionLogger } from '@modules/logging/service';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { AppValidationService } from '@modules/app-validation/service';
+import { inputsByArea, readAppVersionsFromExport, toIndexData } from '@modules/app-validation/export-reader';
+import { ValidationArea, ValidationResult, WriteSource } from '@modules/app-validation/types';
+import { VersionIndex } from '@modules/app-validation/version-index';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -375,7 +379,8 @@ export class AppImportExportService {
     protected appsRepository: AppsRepository,
     protected readonly transactionLogger: TransactionLogger,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
-    protected readonly abilityService: AbilityService
+    protected readonly abilityService: AbilityService,
+    protected readonly appValidationService: AppValidationService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -1862,6 +1867,32 @@ export class AppImportExportService {
     };
   }
 
+  // Runs the app-validation rules over the in-memory app, one app version at a time, with a
+  // lookup built from the import data itself - no database reads. Nested modules skipped:
+  // each imports through its own import() call.
+  protected async checkImportedAppData(
+    appParams: any,
+    appType: string | undefined,
+    source: WriteSource
+  ): Promise<ValidationResult> {
+    const collected: ValidationResult = { errors: [], warnings: [] };
+    for (const version of readAppVersionsFromExport({ app: [appParams] })) {
+      if (appParams?.id && version.appId !== appParams.id) continue;
+      const index = VersionIndex.fromData(toIndexData(version));
+      for (const [area, inputs] of Object.entries(inputsByArea(version))) {
+        const result = await this.appValidationService.check(area as ValidationArea, inputs, {
+          appVersionId: version.appVersionId,
+          appType: version.appType ?? appType,
+          source,
+          index,
+        });
+        collected.errors.push(...result.errors);
+        collected.warnings.push(...result.warnings);
+      }
+    }
+    return collected;
+  }
+
   /*
    * With new multi-env changes. the imported apps will not have any released versions from now (if the importing schema has any currentVersionId).
    * All version's default environment will be development or least priority environment only.
@@ -1879,7 +1910,8 @@ export class AppImportExportService {
     branchId?: string,
     cloning = false,
     isGitApp = false,
-    isTemplateApp = false
+    isTemplateApp = false,
+    source?: WriteSource
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -1889,6 +1921,12 @@ export class AppImportExportService {
       await this.performLegacyAppImport(manager, importedApp, appParams, externalResourceMappings, user);
       return;
     }
+
+    await this.checkImportedAppData(
+      appParams,
+      importedApp.type,
+      source ?? (cloning ? 'copy' : isGitApp ? 'git' : 'import')
+    );
 
     let appResourceMappings: AppResourceMappings = {
       defaultDataSourceIdMapping: {},

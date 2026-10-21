@@ -38,7 +38,7 @@ jobs:
           && github.event.pull_request.head.repo.full_name == github.repository)
     outputs:
       server: ${{ (steps.filter.outputs.server == 'true' || steps.filter.outputs.root == 'true' || steps.sub.outputs.server == 'true') && 'true' || 'false' }}
-      frontend: ${{ (steps.filter.outputs.frontend == 'true' || steps.filter.outputs.root == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
+      frontend: ${{ (steps.filter.outputs.frontend == 'true' || steps.filter.outputs.validation_catalog == 'true' || steps.filter.outputs.root == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
       # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
@@ -63,6 +63,11 @@ jobs:
               - 'frontend/**'
               - '!**/*.md'
               - '!frontend/ee'
+            # the frontend parity spec (validationCatalogParity.spec.js) reads these server
+            # files, so a server-only catalog edit must still run the frontend suite
+            validation_catalog:
+              - 'server/src/modules/{app-validation/catalog,apps/services/widget-config}/**'
+              - '!**/*.md'
             plugins:
               - 'plugins/**'
               - '!**/*.md'
