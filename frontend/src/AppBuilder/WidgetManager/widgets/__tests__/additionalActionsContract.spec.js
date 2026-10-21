@@ -46,6 +46,7 @@ const CONTRACT = {
   SvgImage: ['visibility'],
   Timer: ['visibility', 'disabledState'],
   Statistics: ['visibility', 'loadingState'],
+  ModuleViewer: ['visibility'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.

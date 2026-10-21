@@ -50,8 +50,16 @@ export const moduleViewerConfig = {
       ],
     },
   },
-  exposedVariables: {},
-  actions: [],
+  exposedVariables: {
+    isVisible: true,
+  },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
