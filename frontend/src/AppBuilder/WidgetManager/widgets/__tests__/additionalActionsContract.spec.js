@@ -47,6 +47,9 @@ const CONTRACT = {
   Timer: ['visibility', 'disabledState'],
   Statistics: ['visibility', 'loadingState'],
   ModuleViewer: ['visibility'],
+  // ModalV2's Visibility and Disable belong to the trigger button and stay in its Trigger section, and
+  // Disable is deliberately split (setDisableTrigger / setDisableModal) — product decision, 2026-10-21.
+  ModalV2: ['loadingState'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.
