@@ -236,7 +236,8 @@ export const placeBookings = (
   resources: ScheduleResource[] = [],
   problems?: BookingProblem[]
 ): PlacedBookings => {
-  const out: PlacedBookings = {};
+  // Keyed by resource keys, which are any text ('constructor', '__proto__'): no prototype to find an entry on.
+  const out: PlacedBookings = Object.create(null);
   if (!Array.isArray(bookings) || !range) return out;
   const f = fields || {};
   const byId = new Map<string, string>();

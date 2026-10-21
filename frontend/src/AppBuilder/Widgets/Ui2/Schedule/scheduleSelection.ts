@@ -31,6 +31,10 @@ export const pickSlot = (resource: ScheduleResource, slot: ScheduleSlot): Schedu
   end: slot.end,
 });
 
+/** A resource's placed bookings, by its own key only: a resource key is any text, 'constructor' among them. */
+export const placedOn = (placed: PlacedBookings, key: string): PlacedBookings[string] | undefined =>
+  Object.prototype.hasOwnProperty.call(placed, key) ? placed[key] : undefined;
+
 /** The selection as it is now, or null when what was picked is not on the schedule. A booking moved to another
  *  resource is still found by its key. */
 export const resolveSelection = (
@@ -42,7 +46,7 @@ export const resolveSelection = (
 ): ScheduleSelected | null => {
   if (!pick) return null;
   if (pick.kind === 'booking') {
-    const own = placed[pick.resource]?.items.find((b) => b.key === pick.key);
+    const own = placedOn(placed, pick.resource)?.items.find((b) => b.key === pick.key);
     if (own) return { kind: 'booking', resource: pick.resource, key: own.key, item: own };
     for (const [resource, entry] of Object.entries(placed)) {
       const item = entry.items.find((b) => b.key === pick.key);
