@@ -1,7 +1,7 @@
 # pull official base image
-FROM node:14.17.3-buster AS builder
+FROM node:22.15.1-bookworm AS builder
 
-RUN npm i -g npm@7.20.0
+RUN npm i -g npm@10.9.2
 
 # set working directory
 WORKDIR /app
