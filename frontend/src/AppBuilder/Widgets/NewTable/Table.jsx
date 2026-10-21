@@ -359,7 +359,11 @@ const Table = memo(
         data-cy={`draggable-widget-${componentName}`}
         data-disabled={exposedVariablesTemporaryState.isDisabled}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}${
-          styles?.tableLook === 'shadcn' ? ` tj-table-look-shadcn${insideSurface ? ' tj-table-look-flat' : ''}` : ''
+          styles?.tableLook === 'shadcn'
+            ? ` tj-table-look-shadcn${insideSurface ? ' tj-table-look-flat' : ''}${
+                isDynamicHeightEnabled ? ' tj-table-look-fit' : ''
+              }`
+            : ''
         }`}
         style={{
           height: isDynamicHeightEnabled ? (subContainerIndex != null ? 'auto' : '100%') : `${height}px`,
