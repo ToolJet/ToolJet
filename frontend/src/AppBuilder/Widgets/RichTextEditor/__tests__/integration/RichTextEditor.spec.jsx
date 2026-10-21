@@ -198,6 +198,19 @@ describe('RichTextEditor widget', () => {
     expect(exposed()).toMatchObject({ isVisible: true, isDisabled: false });
   });
 
+  test('[RichTextEditor-A11Y-001] aria-hidden follows setVisibility, not only the property', async () => {
+    // Break this catches: aria-hidden reading the Visibility property instead of the live visible state,
+    // so an editor hidden by setVisibility is still announced to assistive tech.
+    widget.render({});
+    await waitFor(() => expect(outer()).toHaveAttribute('aria-hidden', 'false'));
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(outer()).toHaveAttribute('aria-hidden', 'true'));
+
+    await widget.act('setVisibility', true);
+    await waitFor(() => expect(outer()).toHaveAttribute('aria-hidden', 'false'));
+  });
+
   test('[RichTextEditor-TIP-001] a tooltip set under properties is shown on hover', async () => {
     // Break this catches: RenderWidget still reading RichTextEditor's tooltip from `general`.
     widget.render({ properties: { tooltip: binding('Write the release notes') } });

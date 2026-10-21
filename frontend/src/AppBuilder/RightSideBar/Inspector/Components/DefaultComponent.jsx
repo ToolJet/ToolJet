@@ -65,6 +65,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'BoundedBox',
   'Map',
   'PDF',
+  'SvgImage',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',

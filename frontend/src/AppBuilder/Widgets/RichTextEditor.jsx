@@ -84,7 +84,7 @@ export default function RichTextEditor({
       className="scrollbar-container"
       component-id={id}
       aria-label="Text Editor"
-      aria-hidden={!visibility}
+      aria-hidden={!isVisible}
       aria-disabled={isDisabled}
       aria-busy={isLoading}
     >

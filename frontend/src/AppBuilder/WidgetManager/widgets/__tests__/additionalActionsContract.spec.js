@@ -43,6 +43,7 @@ const CONTRACT = {
   Map: ['visibility', 'disabledState'],
   PDF: ['visibility'],
   RichTextEditor: ['visibility', 'disabledState', 'loadingState'],
+  SvgImage: ['visibility'],
 };
 
 // Widgets migrated off the universal `general.tooltip` as part of this pass.
@@ -58,6 +59,8 @@ const TOOLTIP_IN_PROPERTIES = [
   'Map',
   'PDF',
   'RichTextEditor',
+  'SvgImage',
+  'Timer',
 ];
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);

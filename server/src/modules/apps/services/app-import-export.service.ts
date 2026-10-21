@@ -80,7 +80,8 @@ type PartialRevampedComponent =
   | 'Chart'
   | 'BoundedBox'
   | 'Map'
-  | 'RichTextEditor';
+  | 'RichTextEditor'
+  | 'SvgImage';
 
 type NewRevampedComponent =
   | 'Text'
@@ -196,6 +197,7 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'BoundedBox',
   'Map',
   'RichTextEditor',
+  'SvgImage',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -347,6 +349,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Spinner',
   'StarRating',
   'Statistics',
+  'SvgImage',
   'Tabs',
   'Tags',
   'TagsInput',
@@ -3166,6 +3169,22 @@ function migrateProperties(
           }
           delete styles[key];
         }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'SvgImage') {
+      if (styles.visibility) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
       }
 
       if (general?.tooltip) {

@@ -1,4 +1,4 @@
-import { waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
@@ -24,10 +24,12 @@ const CIRCLE_SVG =
 
 const defaultProperties = {
   data: binding(RECT_SVG),
+  visibility: binding('{{true}}'),
   collapseWhenHidden: binding('{{false}}'),
+  tooltip: binding(''),
+  tooltipFormat: binding('plainText'),
 };
 const defaultStyles = {
-  visibility: binding('{{true}}'),
   alignment: binding('left'),
 };
 
@@ -189,12 +191,12 @@ describe('SvgImage widget', () => {
       expect(root(container).style.display).toBe('');
       expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-      await setStyle('visibility', false);
+      await setProperty('visibility', false);
       await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
       expect(within(container).getByRole('img', { hidden: true })).toBe(imageNode);
       expect(shapes(container, 'rect')).toHaveLength(2);
 
-      await setStyle('visibility', true);
+      await setProperty('visibility', true);
       await waitFor(() => expect(root(container).style.display).toBe(''));
       expect(within(container).getByRole('img')).toBe(imageNode);
       expect(shapes(container, 'rect')).toHaveLength(2);
@@ -220,31 +222,34 @@ describe('SvgImage widget', () => {
     await waitFor(() => expect(image(container)).toHaveStyle({ justifyContent: 'center' }));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-    await setStyle('visibility', false);
+    await setProperty('visibility', false);
     await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-    await setStyle('visibility', true);
+    await setProperty('visibility', true);
     await waitFor(() => expect(root(container).style.display).toBe(''));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
   });
 
-  test('[SvgImage-API-001] SvgImage publishes no actions and no widget-owned exposed variables', async () => {
-    // Break this catches: re-introducing the exposedVariables entry removed by 5ee59e433d1, or
-    // wiring a CSA onto a widget documented and registered as having neither.
+  test('[SvgImage-API-001] SvgImage publishes only isVisible and the setVisibility CSA', async () => {
+    // Break this catches: re-introducing the `value` exposed variable removed by 5ee59e433d1, or
+    // wiring anything beyond the standard visibility pair onto the widget.
     const { container } = widget.render();
     await within(container).findByRole('img');
+    const ownKeys = () =>
+      Object.keys(widget.exposed() ?? {})
+        .filter((key) => key !== 'id')
+        .sort();
 
     expect(frontendConfig.events).toEqual({});
-    expect(frontendConfig.exposedVariables).toEqual({});
+    expect(frontendConfig.exposedVariables).toEqual({ isVisible: true });
 
-    const exposed = widget.exposed() ?? {};
-    expect(Object.values(exposed).some((value) => typeof value === 'function')).toBe(false);
-    expect(Object.keys(exposed).filter((key) => key !== 'id')).toEqual([]);
+    await waitFor(() => expect(ownKeys()).toEqual(['isVisible', 'setVisibility']));
+    expect(typeof widget.exposed().setVisibility).toBe('function');
 
     await setProperty('data', CIRCLE_SVG);
     await waitFor(() => expect(shapes(container, 'circle')).toHaveLength(1));
-    expect(Object.keys(widget.exposed() ?? {}).filter((key) => key !== 'id')).toEqual([]);
+    expect(ownKeys()).toEqual(['isVisible', 'setVisibility']);
   });
 
   test('[SvgImage-A11Y-001] The image node keeps its role and component id across changes', async () => {
@@ -262,7 +267,7 @@ describe('SvgImage widget', () => {
     await waitFor(() => expect(image(container)).toHaveStyle({ justifyContent: 'center' }));
     expect(within(container).getByRole('img')).toBe(imageNode);
 
-    await setStyle('visibility', false);
+    await setProperty('visibility', false);
     await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
     expect(within(container).getByRole('img', { hidden: true })).toHaveAttribute('id', `component-${ID}`);
   });
@@ -286,7 +291,7 @@ describe('SvgImage widget', () => {
 
     await setProperty('data', CIRCLE_SVG, ID);
     await setStyle('alignment', 'center', ID);
-    await setStyle('visibility', false, ID);
+    await setProperty('visibility', false, ID);
     await waitFor(() => expect(root(container, HANDLE)).toHaveStyle({ display: 'none' }));
     expect(shapes(container, 'circle', HANDLE2)).toHaveLength(1);
     expect(image(container, HANDLE2)).toBe(second);
@@ -309,27 +314,70 @@ describe('SvgImage widget', () => {
       defaultSize: { width: 4, height: 50 },
       properties: {
         data: { type: 'code', validation: { schema: { type: 'string' } } },
+        visibility: { type: 'toggle', section: 'additionalActions', validation: { defaultValue: true } },
         collapseWhenHidden: { type: 'toggle', validation: { schema: { type: 'boolean' }, defaultValue: false } },
+        tooltipFormat: { section: 'additionalActions' },
+        tooltip: { section: 'additionalActions' },
       },
       others: {
         showOnDesktop: { type: 'toggle' },
         showOnMobile: { type: 'toggle' },
       },
       events: {},
-      exposedVariables: {},
+      exposedVariables: { isVisible: true },
       styles: {
-        visibility: { type: 'toggle', validation: { defaultValue: true } },
         alignment: { type: 'alignButtons', validation: { defaultValue: 'left' } },
       },
       definition: {
         others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
         events: [],
-        styles: { visibility: { value: '{{true}}' }, alignment: { value: 'left' } },
+        styles: { alignment: { value: 'left' } },
       },
     });
     expect(frontendConfig.properties.data.validation.defaultValue).toContain('<svg');
     expect(frontendConfig.definition.properties.data.value).toContain('<svg');
     expect(frontendConfig.definition.properties.collapseWhenHidden).toEqual({ value: '{{false}}' });
-    expect(frontendConfig.actions ?? []).toEqual([]);
+    expect(frontendConfig.styles.visibility).toBeUndefined();
+    expect(frontendConfig.definition.properties.visibility).toEqual({ value: '{{true}}' });
+    expect(frontendConfig.actions.map((a) => a.handle)).toEqual(['setVisibility']);
+  });
+
+  test('[SvgImage-CSA-001] setVisibility hides and restores the same vector and publishes isVisible', async () => {
+    // Break this catches: the CSA not being registered on mount, or toggling the DOM without publishing isVisible.
+    const { container } = widget.render();
+    const imageNode = await within(container).findByRole('img');
+    await waitFor(() => expect(widget.exposed()).toMatchObject({ isVisible: true }));
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: false });
+
+    await widget.act('setVisibility', true);
+    await waitFor(() => expect(root(container).style.display).toBe(''));
+    expect(within(container).getByRole('img')).toBe(imageNode);
+    expect(widget.exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[SvgImage-CSA-002] a visibility property change overrides an earlier setVisibility', async () => {
+    // Break this catches: local CSA state no longer yielding to a later change of the Visibility property.
+    const { container } = widget.render();
+    await within(container).findByRole('img');
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
+
+    await setProperty('visibility', false);
+    await setProperty('visibility', true);
+    await waitFor(() => expect(root(container).style.display).toBe(''));
+    expect(widget.exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[SvgImage-TIP-001] a tooltip set under properties is shown on hover', async () => {
+    // Break this catches: RenderWidget still reading SvgImage's tooltip from `general`.
+    const { container } = widget.render({ properties: { tooltip: binding('Company logo') } });
+    await within(container).findByRole('img');
+
+    await widget.session.user.hover(root(container));
+    await waitFor(() => expect(screen.getAllByText('Company logo').length).toBeGreaterThan(0));
   });
 });
