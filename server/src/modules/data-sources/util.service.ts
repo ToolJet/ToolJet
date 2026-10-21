@@ -1146,7 +1146,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     let result = str;
     for (let i = 0; i < matches.length; i++) {
-      result = result.replace(matches[i][0], replacements[i]);
+      // Use a replacer function so the decrypted value is inserted literally.
+      // String.prototype.replace treats $, $&, $`, $' etc. in a replacement
+      // string as special sequences, which corrupts secrets/constants that
+      // legitimately contain '$' (e.g. 'ab$$cd' becomes 'ab$cd').
+      result = result.replace(matches[i][0], () => replacements[i]);
     }
 
     return result;
