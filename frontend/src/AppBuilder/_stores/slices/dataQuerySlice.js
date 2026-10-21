@@ -322,7 +322,12 @@ export const createDataQuerySlice = (set, get) => ({
               {
                 ...data,
                 data_source_id: queryToClone.data_source_id,
-                plugin: { iconFile: queryToClone.plugin?.iconFile, icon_file: queryToClone.plugin?.icon_file },
+                plugin: {
+                  iconFile: queryToClone.plugin?.iconFile,
+                  icon_file: queryToClone.plugin?.icon_file,
+                  darkIconFile: queryToClone.plugin?.darkIconFile,
+                  dark_icon_file: queryToClone.plugin?.dark_icon_file,
+                },
               },
               ...state.dataQuery.queries.modules[moduleId],
             ];
