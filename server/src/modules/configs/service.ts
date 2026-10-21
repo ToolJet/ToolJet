@@ -4,9 +4,10 @@ import { Injectable } from '@nestjs/common';
 import { IConfigService } from './interfaces/IService';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
 
-// Instance-wide (not per-user/per-org) settings + env vars — same short TTL rationale as the
-// license-terms cache: coalesce the burst of bootstrap calls within one page load, not cache
-// across an admin actually changing an instance setting.
+// Instance-wide (not per-user/per-org) settings + env vars. Concurrent calls (the bootstrap burst on
+// page load) share one lookup, which is dropped as soon as it settles: a setting saved through the API,
+// edited in the database or saved on another server shows up on the very next request. The TTL only
+// bounds a lookup that never settles.
 const PUBLIC_CONFIG_CACHE_TTL_MS = 30_000;
 const PUBLIC_CONFIG_CACHE_KEY = 'public_config';
 
@@ -22,6 +23,10 @@ export class ConfigService implements IConfigService {
 
     const configPromise = this.computePublicConfig();
     this.inMemoryCacheService.set(PUBLIC_CONFIG_CACHE_KEY, configPromise, PUBLIC_CONFIG_CACHE_TTL_MS);
+    configPromise.then(
+      () => this.inMemoryCacheService.delete(PUBLIC_CONFIG_CACHE_KEY),
+      () => this.inMemoryCacheService.delete(PUBLIC_CONFIG_CACHE_KEY)
+    );
     return configPromise;
   }
 

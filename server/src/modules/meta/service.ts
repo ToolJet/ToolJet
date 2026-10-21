@@ -5,8 +5,9 @@ import { ConfigService } from '@nestjs/config';
 import { MetaDataInfo } from './types';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
 
-// Instance-wide, not per-user/per-org — same short-TTL rationale as the public-config cache:
-// coalesce the bootstrap burst within one page load, not cache across an actual instance change.
+// Instance-wide, not per-user/per-org. Like the public config: concurrent calls share one lookup, which is
+// dropped as soon as it settles, so a change (e.g. finishing onboarding, possibly on another server) shows
+// on the next request. The TTL only bounds a lookup that never settles.
 const METADATA_CACHE_TTL_MS = 30_000;
 const METADATA_CACHE_KEY = 'app_metadata';
 
@@ -23,6 +24,10 @@ export class MetadataService implements IMetaService {
 
     const metadataPromise = this.computeMetadata();
     this.inMemoryCacheService.set(METADATA_CACHE_KEY, metadataPromise, METADATA_CACHE_TTL_MS);
+    metadataPromise.then(
+      () => this.inMemoryCacheService.delete(METADATA_CACHE_KEY),
+      () => this.inMemoryCacheService.delete(METADATA_CACHE_KEY)
+    );
     return metadataPromise;
   }
 
