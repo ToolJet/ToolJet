@@ -45,18 +45,6 @@ const runningRun = {
   finishedAt: null,
 };
 
-const pendingRun = {
-  ...runningRun,
-  id: 'run-3',
-  status: 'pending',
-  migrationsDone: 0,
-  migrations: [
-    { name: 'AddColumn1700000000000', status: 'pending' },
-    { name: 'PocSlowBackfill1799999999999', status: 'pending' },
-  ],
-  triggeredBy: 'boot',
-};
-
 const runs = (...list) => http.get(`${API}/migration-runs`, () => HttpResponse.json({ runs: list }));
 
 describe('MigrationsPage', () => {
@@ -76,7 +64,9 @@ describe('MigrationsPage', () => {
 
     expect(await screen.findByText('Upgrade to 3.21.0 failed')).toBeInTheDocument();
     expect(
-      screen.getByText('Nothing was committed. Changes made in ToolJet are refused until a retry succeeds.')
+      screen.getByText(
+        'The data migrations were rolled back. Changes made in ToolJet are refused until a retry succeeds.'
+      )
     ).toBeInTheDocument();
     expect(screen.getByText('deadlock detected')).toBeInTheDocument();
     expect(screen.getByText('12.4s')).toBeInTheDocument();
@@ -86,16 +76,6 @@ describe('MigrationsPage', () => {
 
     expect(await screen.findByRole('button', { name: 'Starting' })).toBeDisabled();
     expect(started).toBe(1);
-  });
-
-  test('offers to run migrations that are waiting in manual mode', async () => {
-    server.use(runs(pendingRun));
-
-    render(<MigrationsPage />);
-
-    expect(await screen.findByText('Upgrade to 3.21.0 is waiting to run')).toBeInTheDocument();
-    expect(screen.getByText('Changes made in ToolJet are refused until these migrations run.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Run migrations' })).toBeEnabled();
   });
 
   test('shows the server reason when there is nothing to run', async () => {

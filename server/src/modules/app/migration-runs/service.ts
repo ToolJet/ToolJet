@@ -4,6 +4,7 @@ import { WorkerHost } from '@nestjs/bullmq';
 import { ChildProcess, spawn } from 'child_process';
 import { createInterface } from 'readline';
 import { Pool } from 'pg';
+import * as semver from 'semver';
 import {
   applyLogLine,
   emptyRunProgress,
@@ -12,16 +13,11 @@ import {
   MigrationStep,
   RunProgress,
 } from '../../../migration-helpers/migration-run-log';
-import {
-  getMigrationMode,
-  isServerManagedMigrationMode,
-  setupCommand,
-} from '../../../migration-helpers/migration-status';
+import { isServerManagedMigrationMode, setupCommand } from '../../../migration-helpers/migration-status';
 import { mainDbConnectionConfig } from '../../../migration-helpers/async-mode';
 import { HELD_MIGRATION_LOCKS_SQL, SKIPPED_EXIT_CODE } from '../../../migration-helpers/migrations-table-gate';
 
-/** pending: manual mode, found work and waits for a super admin to run it. */
-export type MigrationRunStatus = 'pending' | 'running' | 'failed' | 'succeeded';
+export type MigrationRunStatus = 'running' | 'failed' | 'succeeded';
 export type MigrationState = 'idle' | MigrationRunStatus;
 
 export interface MigrationStatus {
@@ -80,7 +76,7 @@ const SHUTDOWN_WAIT_MS = 10_000;
 const JOBS_CHECK_MS = 5000;
 const DEAD_RUN_CHECK_MS = 10_000;
 // Background jobs would run new code against an old or half-migrated schema in these states.
-const HOLD_JOBS_STATES: MigrationState[] = ['pending', 'running', 'failed'];
+const HOLD_JOBS_STATES: MigrationState[] = ['running', 'failed'];
 
 export const MIGRATION_RUNS_DDL = `
   CREATE TABLE IF NOT EXISTS migration_runs (
@@ -98,9 +94,9 @@ export const MIGRATION_RUNS_DDL = `
     heartbeat_at timestamptz NOT NULL DEFAULT now(),
     finished_at timestamptz
   );
-  -- One waiting or running run at a time, across every server: claims race here, not in memory.
+  -- One running run at a time, across every server: claims race here, not in memory.
   CREATE UNIQUE INDEX IF NOT EXISTS migration_runs_one_active ON migration_runs ((true))
-    WHERE status IN ('pending', 'running');
+    WHERE status = 'running';
   CREATE TABLE IF NOT EXISTS migration_run_logs (
     id bigserial PRIMARY KEY,
     run_id uuid NOT NULL REFERENCES migration_runs (id) ON DELETE CASCADE,
@@ -155,9 +151,13 @@ type Query = <T>(sql: string, params?: unknown[]) => Promise<T[]>;
 
 const currentVersion = (): string => globalThis.TOOLJET_VERSION ?? 'unknown';
 
+/** Mid-rollout, an older pod's runner cannot see this release's migrations: it would find nothing and record a success. */
+const isNewerRelease = (version: string): boolean =>
+  !!semver.valid(version) && !!semver.valid(currentVersion()) && semver.gt(version, currentVersion());
+
 /**
- * MIGRATION_MODE=async|manual: runs the migration runner as a child of the serving process and
- * tracks it in `migration_runs`. Manual mode only checks on boot; a super admin starts the run.
+ * MIGRATION_MODE=async: runs the migration runner as a child of the serving process and
+ * tracks it in `migration_runs`.
  * Every mode: `status()` also reports a migration another server runs, from its advisory lock.
  * Own small pg pool: progress stays visible while the migration transaction is open, and
  * heartbeats stay out of TypeORM's query log.
@@ -165,7 +165,6 @@ const currentVersion = (): string => globalThis.TOOLJET_VERSION ?? 'unknown';
 @Injectable()
 export class MigrationRunsService implements OnApplicationShutdown {
   private readonly enabled = isServerManagedMigrationMode(process.env);
-  private readonly manual = getMigrationMode(process.env) === 'manual';
   private child: ChildProcess | null = null;
   private cachedStatus: { at: number; value: MigrationStatus } | null = null;
   private statusRead: Promise<MigrationStatus> | null = null;
@@ -176,6 +175,10 @@ export class MigrationRunsService implements OnApplicationShutdown {
   private jobsTimer: NodeJS.Timeout | null = null;
   private deadRunTimer: NodeJS.Timeout | null = null;
   private restartingDeadRun = false;
+  /** start() got as far as deciding whether to run; until then the dead-run check retries it. */
+  private started = false;
+  /** Async boot: this pod's own writes wait until its data run takes the active lock or ends. */
+  private bootHold = this.enabled;
 
   constructor(@Optional() private readonly discovery?: DiscoveryService) {}
 
@@ -191,6 +194,15 @@ export class MigrationRunsService implements OnApplicationShutdown {
   /** Called from main.ts once the server listens. */
   async start(triggeredBy = 'boot'): Promise<void> {
     if (!this.enabled || this.child) return;
+    try {
+      await this.startRun(triggeredBy);
+    } catch (error) {
+      this.releaseBootHold();
+      throw error;
+    }
+  }
+
+  private async startRun(triggeredBy: string): Promise<void> {
     this.holdJobsWhileMigrating();
     this.watchForDeadRuns();
     await this.query(MIGRATION_RUNS_DDL).catch((error: { code?: string }) => {
@@ -199,34 +211,41 @@ export class MigrationRunsService implements OnApplicationShutdown {
     });
     await this.reapDeadRuns();
     const [latest] = await this.runs(1);
+    this.started = true;
     // A failed migration is retried by a super admin, never by the next server that boots. A new release may
     // carry the fix, and a run whose server stopped (rollout, scale-down, node loss) did not fail: both run again.
-    if (
-      !this.manual &&
-      latest?.status === 'failed' &&
-      latest.toVersion === currentVersion() &&
-      latest.error !== DEAD_RUN_ERROR
-    ) {
+    if (latest?.status === 'failed' && latest.toVersion === currentVersion() && latest.error !== DEAD_RUN_ERROR) {
       console.warn(
         '[migrations] The last migration run of this version failed; waiting for a super admin to retry it.'
       );
+      this.releaseBootHold();
       return;
     }
-    this.runChild(triggeredBy, { checkOnly: this.manual });
+    this.runChild(triggeredBy);
   }
 
-  /** Starts a pending (manual mode) or failed run. The claim is one conditional write, so only one server wins it. */
+  /** Retries a failed run. The one-active-run index lets only one server claim it. */
   async run(triggeredBy: string): Promise<void> {
     if (!this.enabled) throw new ConflictException('Migrations are not managed by the server in this mode.');
     if (this.child) throw new ConflictException('A migration is already running.');
     await this.reapDeadRuns();
     const [latest] = await this.runs(1);
-    const [pending] = await this.query<{ id: string }>(`SELECT id FROM migration_runs WHERE status = 'pending'`);
-    if (!pending && latest?.status !== 'failed') throw new ConflictException('There are no migrations waiting to run.');
-    const runId = pending ? await this.claimPendingRun(pending.id, triggeredBy) : await this.insertRun(triggeredBy);
+    if (latest?.status !== 'failed') throw new ConflictException('Only a failed migration run can be retried.');
+    if (isNewerRelease(latest.toVersion)) {
+      throw new ConflictException(
+        'This server runs an older release than the failed run. Retry from an upgraded server.'
+      );
+    }
+    const runId = await this.insertRun(triggeredBy);
     if (!runId) throw new ConflictException('A migration is already running.');
     this.cachedStatus = null;
     this.runChild(triggeredBy, { runId });
+  }
+
+  /** Ends the boot hold. A start() that cannot run fails open, like the gate. */
+  private releaseBootHold(): void {
+    this.bootHold = false;
+    this.cachedStatus = null;
   }
 
   /** Latest run, or a migration another server runs before this one boots. Fails open: the gate reads it. */
@@ -242,11 +261,13 @@ export class MigrationRunsService implements OnApplicationShutdown {
   private async readStatus(): Promise<MigrationStatus> {
     let value: MigrationStatus = { state: 'idle' };
     try {
-      // The active lock wins over the row: a server in blocking mode, or a manual `db:migrate`, migrates untracked.
+      // The active lock wins over the row: a server in blocking mode, or a `db:migrate` run by hand, migrates untracked.
       const [{ migrating }] = await this.query<{ migrating: boolean }>(HELD_MIGRATION_LOCKS_SQL);
       const [latest] = await this.runs(1);
       if (latest) value = { state: latest.status, startedAt: latest.startedAt, toVersion: latest.toVersion };
       if (migrating) value = { ...value, state: 'running' };
+      if (this.bootHold && migrating) this.bootHold = false;
+      else if (this.bootHold) value = { ...value, state: 'running' };
     } catch (error) {
       console.warn(`[migrations] Could not read the migration status: ${(error as Error).message}`);
     }
@@ -296,13 +317,9 @@ export class MigrationRunsService implements OnApplicationShutdown {
   /**
    * A boot run gets a row only once it finds work, and skips if another server holds the lock.
    * A claimed run (`runId`) already owns its row, so it waits for the lock instead: the holder is
-   * a boot check, or a run that finishes before this one re-reads what is pending.
-   * checkOnly lists pending work and leaves the row `pending`.
+   * a run that finishes before this one re-reads what is pending.
    */
-  private runChild(
-    triggeredBy: string,
-    { checkOnly = false, runId: claimedRunId }: { checkOnly?: boolean; runId?: string } = {}
-  ): void {
+  private runChild(triggeredBy: string, { runId: claimedRunId }: { runId?: string } = {}): void {
     const child = spawn(setupCommand(process.env), {
       shell: true,
       detached: true,
@@ -310,7 +327,8 @@ export class MigrationRunsService implements OnApplicationShutdown {
       env: {
         ...process.env,
         MIGRATION_SKIP_IF_LOCKED: String(!claimedRunId),
-        MIGRATION_CHECK_ONLY: String(checkOnly),
+        // Schema already applied at boot (migrateSchemaBeforeBoot); data rolls back on its own.
+        MIGRATION_PHASE: 'data',
       },
     });
     this.child = child;
@@ -332,7 +350,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
     const record = () =>
       write(async () => {
         if (runId) return;
-        runId = checkOnly ? await this.recordPending(triggeredBy) : await this.insertRun(triggeredBy);
+        runId = await this.insertRun(triggeredBy);
       });
 
     // Kept lines wait here until the run has a row, then go out with the next write.
@@ -365,7 +383,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
     createInterface({ input: child.stderr }).on('line', onLine(process.stderr));
 
     const heartbeat = setInterval(() => {
-      if (checkOnly || !runId || (!dirty && Date.now() - lastWriteAt < IDLE_WRITE_MS)) return;
+      if (!runId || (!dirty && Date.now() - lastWriteAt < IDLE_WRITE_MS)) return;
       dirty = false;
       lastWriteAt = Date.now();
       write(async () => {
@@ -379,13 +397,13 @@ export class MigrationRunsService implements OnApplicationShutdown {
     child.on('close', (code) => {
       clearInterval(heartbeat);
       this.child = null;
-      this.cachedStatus = null;
+      this.releaseBootHold();
       if (code === SKIPPED_EXIT_CODE) return;
       const succeeded = code === 0;
       if (!succeeded) {
         run = markFailed(run);
         console.error(
-          `[migrations] Async migration failed (exit ${code}). Nothing was committed; this server keeps serving.`
+          `[migrations] Async migration failed (exit ${code}). The data migrations were rolled back; this server keeps serving.`
         );
       }
       // A failed child that never reached "pending" still gets a row, so the failure is visible.
@@ -394,13 +412,9 @@ export class MigrationRunsService implements OnApplicationShutdown {
         if (!runId && !succeeded) runId = await this.insertRun(triggeredBy, 'failed');
         if (!runId && run.hasPendingWork) runId = await this.insertRun(triggeredBy);
         // Nothing pending, yet the latest run failed: the database is current (a run that committed just
-        // before its server died, or a manual db:migrate). Recorded, or writes stay refused.
+        // before its server died, or a db:migrate run by hand). Recorded, or writes stay refused.
         if (!runId && succeeded && (await this.runs(1))[0]?.status === 'failed') {
           runId = await this.insertRun(triggeredBy);
-        }
-        // A check that found nothing: a waiting row from an earlier boot is stale (applied another way).
-        if (checkOnly && succeeded && !run.hasPendingWork) {
-          await this.query(`DELETE FROM migration_runs WHERE status = 'pending'`);
         }
         if (!runId) return;
         await saveLines();
@@ -408,8 +422,8 @@ export class MigrationRunsService implements OnApplicationShutdown {
         if (!succeeded) {
           return this.updateRun(runId, run, 'failed', this.shuttingDown ? DEAD_RUN_ERROR : errorSummary(run));
         }
-        await this.updateRun(runId, run, checkOnly && run.hasPendingWork ? 'pending' : 'succeeded');
-        if (!checkOnly) await this.dropEarlierLogs(runId);
+        await this.updateRun(runId, run, 'succeeded');
+        await this.dropEarlierLogs(runId);
       });
     });
   }
@@ -453,34 +467,9 @@ export class MigrationRunsService implements OnApplicationShutdown {
   }
 
   /**
-   * Pods booting together share one pending row: the unique index turns the others' inserts into
-   * this update, which also makes the row the latest again, above any run that failed since.
-   */
-  private async recordPending(triggeredBy: string): Promise<string | null> {
-    const id = await this.insertRun(triggeredBy, 'pending');
-    if (id) return id;
-    const [active] = await this.query<{ id: string }>(
-      `UPDATE migration_runs SET started_at = now(), heartbeat_at = now() WHERE status = 'pending' RETURNING id`
-    );
-    return active?.id ?? null;
-  }
-
-  /** Null when another server claimed it first. */
-  private async claimPendingRun(id: string, triggeredBy: string): Promise<string | null> {
-    const [claimed] = await this.query<{ id: string }>(
-      `UPDATE migration_runs
-         SET status = 'running', triggered_by = $2, started_at = now(), heartbeat_at = now(), error = NULL
-       WHERE id = $1 AND status = 'pending' RETURNING id`,
-      [id, triggeredBy]
-    );
-    return claimed?.id ?? null;
-  }
-
-  /** Lets the one-active-run index go of a run whose server died, so it can be retried. */
-  /**
    * A run whose server stopped after the others booted (scale-down, node loss) would otherwise wait for
    * the next boot, with writes refused. Every server looks for one; the one-active-run index lets one
-   * claim it. Manual mode only re-checks, so it waits for a super admin again.
+   * claim it.
    */
   private watchForDeadRuns(): void {
     if (this.deadRunTimer) return;
@@ -494,12 +483,13 @@ export class MigrationRunsService implements OnApplicationShutdown {
     try {
       const [{ running }] = await this.query<{ running: boolean }>(HELD_MIGRATION_LOCKS_SQL);
       if (running) return;
+      // Boot's start() failed (database unreachable): without this, this server never runs its data migrations.
+      if (!this.started) return await this.start('recovery');
       await this.reapDeadRuns();
       const [latest] = await this.runs(1);
       if (latest?.status !== 'failed' || latest.error !== DEAD_RUN_ERROR) return;
       console.log('[migrations] The migrating server stopped; starting the run again.');
-      if (this.manual) this.runChild('recovery', { checkOnly: true });
-      else await this.run('recovery');
+      await this.run('recovery');
     } catch (error) {
       // Lost the claim to another server (409), or the database is unreachable: the next check retries.
       if (!(error instanceof ConflictException)) {
@@ -526,7 +516,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
     await this.query(`UPDATE migration_runs SET log_tail = '{}' WHERE id <> $1`, [runId]);
   }
 
-  /** Null when another run is already waiting or running (the one-active-run index). */
+  /** Null when another run is already running (the one-active-run index). */
   private async insertRun(triggeredBy: string, status: MigrationRunStatus = 'running'): Promise<string | null> {
     const [previous] = await this.query<{ to_version: string }>(
       `SELECT to_version FROM migration_runs WHERE status = 'succeeded' ORDER BY started_at DESC LIMIT 1`
@@ -551,7 +541,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
     status: MigrationRunStatus,
     error: string | null = null
   ): Promise<void> {
-    const finished = status !== 'running' && status !== 'pending';
+    const finished = status !== 'running';
     await this.query(
       `UPDATE migration_runs
          SET status = $2, current_migration = $3, progress = $4, migrations = $5::jsonb, log_tail = $6,

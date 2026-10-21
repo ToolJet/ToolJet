@@ -5,11 +5,15 @@ import { extractEnumValueAdditions, EnumValueAddition } from './enum-value-addit
 import {
   excludeLockSentinels,
   getLockWaitOptions,
+  getSchemaPhaseOptions,
+  isLockNotAvailableError,
   LockSession,
   MIGRATION_ACTIVE_LOCK_KEY,
+  SchemaPhaseOptions,
   SKIPPED_EXIT_CODE,
   withMigrationAdvisoryLock,
 } from './migrations-table-gate';
+import { MigrationPhase, parseMigrationPhase } from './migration-status';
 import { getEnvVars } from '../../scripts/database-config-utils';
 
 /**
@@ -46,6 +50,12 @@ import { getEnvVars } from '../../scripts/database-config-utils';
  * one data source — TypeORM sorts by the timestamp in the class name and schema/data
  * timestamps interleave, which would reorder them and break that invariant. Instead we
  * drive two MigrationExecutor passes.
+ *
+ * Phases (`MIGRATION_PHASE`, set per spawn in async mode; unset keeps the joint run above):
+ *   - `schema`: at boot, before Nest starts. Only schema migrations, in one short transaction under
+ *     `lock_timeout`, retried on 55P03 so a queued ALTER never stalls readers of released apps.
+ *   - `data`: the server-spawned run. Schema (normally empty, catch-up) then data, in two
+ *     transactions, so a data failure rolls back the data only.
  *
  * Concurrency (`migrations-table-gate.ts`): one pod at a time holds the migration advisory lock
  * from "what is pending?" to commit; the others wait their turn instead of crash-looping. While
@@ -169,15 +179,83 @@ async function runAtomic(precommittable: EnumValueAddition[], schemaDS: DataSour
   }
 }
 
-async function runTwoPhase(schemaDS: DataSource, dataDS: DataSource): Promise<void> {
-  console.log(
-    '[migrations] A pending ALTER TYPE ADD VALUE targets an enum type created in this run; ' +
-      'running schema and data in separate transactions (PostgreSQL cannot add and use an ' +
-      'enum value in one transaction). Schema commits before data runs.'
-  );
+async function runTwoPhase(schemaDS: DataSource, dataDS: DataSource, reason: string): Promise<void> {
+  console.log(`[migrations] ${reason} Schema commits before data runs.`);
   await runPassInOwnTransaction('schema', schemaDS);
   await runPassInOwnTransaction('data', dataDS);
-  console.log('[migrations] Committed schema and data migrations (two-phase, enum-safe).');
+  console.log('[migrations] Committed schema and data migrations in separate transactions.');
+}
+
+const ENUM_TWO_PHASE_REASON =
+  'A pending ALTER TYPE ADD VALUE targets an enum type created in this run; running schema and data in ' +
+  'separate transactions (PostgreSQL cannot add and use an enum value in one transaction).';
+
+const DATA_PHASE_REASON =
+  'Data phase: running schema (catch-up, normally empty) and data in separate transactions, so a data ' +
+  'failure rolls back the data only.';
+
+const SCHEMA_LOCK_RETRY_DELAY_MS = 2000;
+
+async function runSchemaPhase(schemaDS: DataSource, options: SchemaPhaseOptions): Promise<boolean> {
+  // Most boots (restart, scale-up, a pod booting during a long data phase) end here without the lock.
+  if ((await realPendingMigrationNames(schemaDS)).length === 0) {
+    console.log('[migrations] No schema migrations pending before boot.');
+    return true;
+  }
+  await withMigrationAdvisoryLock(schemaDS, options.lockWait, {}, async (session) => {
+    const pending = await realPendingMigrationNames(schemaDS);
+    if (pending.length === 0) {
+      console.log('[migrations] Another pod applied the schema migrations.');
+      return;
+    }
+    console.log(`[migrations] ${pending.length} schema migration(s) pending: ${pending.join(', ')}`);
+    await holdingActiveLock(session, () => applySchemaUnderLockTimeout(schemaDS, options));
+  });
+  return true;
+}
+
+async function applySchemaUnderLockTimeout(
+  schemaDS: DataSource,
+  { lockTimeoutMs, lockAttempts }: SchemaPhaseOptions
+): Promise<void> {
+  announceEachMigration(schemaDS);
+  // Same enum handling as the joint run, so a schema migration can use a value an earlier one added.
+  await precommitEnumValueAdditions((await planEnumAdditions(schemaDS)).precommittable, schemaDS);
+  for (let attempt = 1; ; attempt++) {
+    const queryRunner = schemaDS.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      await queryRunner.query(`SET LOCAL lock_timeout = ${lockTimeoutMs}`);
+      await runPassInSharedTransaction('schema', schemaDS, queryRunner);
+      await queryRunner.commitTransaction();
+      console.log('[migrations] Committed schema migrations.');
+      return;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      if (!isLockNotAvailableError(error) || attempt >= lockAttempts) {
+        console.error('[migrations] Schema migrations failed. Rolled back the schema changes.');
+        throw error;
+      }
+      console.warn(
+        `[migrations] A schema migration waited over ${lockTimeoutMs}ms for a table lock; rolled back so ` +
+          `readers are not stalled behind it. Retrying (attempt ${attempt + 1} of ${lockAttempts}).`
+      );
+    } finally {
+      await queryRunner.release();
+    }
+    await new Promise((resolve) => setTimeout(resolve, SCHEMA_LOCK_RETRY_DELAY_MS));
+  }
+}
+
+/** Serving pods refuse writes while this is held; it dies with this session, so a killed pod cannot leave it set. */
+async function holdingActiveLock(session: LockSession, work: () => Promise<void>): Promise<void> {
+  await session.query('SELECT pg_advisory_lock($1)', [MIGRATION_ACTIVE_LOCK_KEY]);
+  try {
+    await work();
+  } finally {
+    await session.query('SELECT pg_advisory_unlock($1)', [MIGRATION_ACTIVE_LOCK_KEY]).catch(() => undefined);
+  }
 }
 
 /** Pending migrations that represent real work — see `excludeLockSentinels`. */
@@ -191,6 +269,8 @@ export async function run(
   schemaDS: DataSource = schemaDataSource,
   dataDS: DataSource = dataDataSource
 ): Promise<boolean> {
+  // process.env, not getEnvVars(): set by the parent per spawn.
+  const phase = parseMigrationPhase(process.env.MIGRATION_PHASE);
   if (!schemaDS.isInitialized) await schemaDS.initialize();
   // dataDS is initialized to load its migration classes; queries run through whichever
   // query runner each pass uses.
@@ -198,7 +278,9 @@ export async function run(
 
   // getEnvVars(), not process.env: this process never boots ConfigModule, so settings that
   // live only in the env file would otherwise be invisible here.
-  const lockWaitOptions = getLockWaitOptions(getEnvVars());
+  const env = getEnvVars();
+  if (phase === 'schema') return runSchemaPhase(schemaDS, getSchemaPhaseOptions(env));
+  const lockWaitOptions = getLockWaitOptions(env);
 
   // Everything from "what is pending?" to "migrations committed" happens as the cluster's only
   // migrating pod. Reading the pending list outside this lock is what lets a losing pod wake up
@@ -211,7 +293,7 @@ export async function run(
     lockWaitOptions,
     {},
     async (session) => {
-      await migrateAsSolePod(schemaDS, dataDS, session);
+      await migrateAsSolePod(schemaDS, dataDS, session, phase);
       return true;
     },
     { skipIfBusy }
@@ -220,34 +302,22 @@ export async function run(
   return !!ran;
 }
 
-async function migrateAsSolePod(schemaDS: DataSource, dataDS: DataSource, session: LockSession): Promise<void> {
+async function migrateAsSolePod(
+  schemaDS: DataSource,
+  dataDS: DataSource,
+  session: LockSession,
+  phase: MigrationPhase
+): Promise<void> {
   const pending = [...(await realPendingMigrationNames(schemaDS)), ...(await realPendingMigrationNames(dataDS))];
-
-  // Manual mode: report what is pending, run nothing. The server tracks it until a super admin starts it.
-  // process.env, not getEnvVars(): set by the parent per spawn, and the .env file must not mask it.
-  if (process.env.MIGRATION_CHECK_ONLY === 'true') {
-    console.log(
-      pending.length
-        ? `[migrations] ${pending.length} migration(s) pending: ${pending.join(', ')}`
-        : '[migrations] No schema or data migrations pending.'
-    );
-    return;
-  }
 
   if (pending.length === 0) {
     console.log('[migrations] No schema or data migrations pending — not cutting API traffic for this boot.');
-    await executeMigrations(schemaDS, dataDS);
+    await executeMigrations(schemaDS, dataDS, phase);
     return;
   }
 
   console.log(`[migrations] ${pending.length} migration(s) pending: ${pending.join(', ')}`);
-  // Serving pods refuse writes while this is held; it dies with this session, so a killed pod cannot leave it set.
-  await session.query('SELECT pg_advisory_lock($1)', [MIGRATION_ACTIVE_LOCK_KEY]);
-  try {
-    await executeMigrations(schemaDS, dataDS);
-  } finally {
-    await session.query('SELECT pg_advisory_unlock($1)', [MIGRATION_ACTIVE_LOCK_KEY]).catch(() => undefined);
-  }
+  await holdingActiveLock(session, () => executeMigrations(schemaDS, dataDS, phase));
 }
 
 /** START/DONE line per migration: the async-mode tracker parses these. */
@@ -264,13 +334,14 @@ function announceEachMigration(dataSource: DataSource): void {
   }
 }
 
-async function executeMigrations(schemaDS: DataSource, dataDS: DataSource): Promise<void> {
+async function executeMigrations(schemaDS: DataSource, dataDS: DataSource, phase: MigrationPhase): Promise<void> {
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
+  if (phase === 'data') return runTwoPhase(schemaDS, dataDS, DATA_PHASE_REASON);
   const { precommittable, hasMissingType } = await planEnumAdditions(schemaDS);
 
   if (hasMissingType) {
-    await runTwoPhase(schemaDS, dataDS);
+    await runTwoPhase(schemaDS, dataDS, ENUM_TWO_PHASE_REASON);
   } else {
     await runAtomic(precommittable, schemaDS, dataDS);
   }

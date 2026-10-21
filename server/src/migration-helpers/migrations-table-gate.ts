@@ -49,6 +49,38 @@ export function getLockWaitOptions(env: Record<string, string | undefined> = pro
   };
 }
 
+export const SCHEMA_PHASE_RETRY_INTERVAL_SECONDS = 5;
+export const DEFAULT_SCHEMA_LOCK_TIMEOUT_MS = 5000;
+export const DEFAULT_SCHEMA_LOCK_RETRIES = 10;
+
+export interface SchemaPhaseOptions {
+  lockWait: LockWaitOptions;
+  /** `lock_timeout` of the schema transaction. */
+  lockTimeoutMs: number;
+  /** Attempts before a lock timeout fails the phase. */
+  lockAttempts: number;
+}
+
+/** MIGRATION_PHASE=schema: the run a booting pod waits on. */
+export function getSchemaPhaseOptions(env: Record<string, string | undefined> = process.env): SchemaPhaseOptions {
+  return {
+    // Poll faster than the default unless the operator chose an interval.
+    lockWait: getLockWaitOptions({
+      ...env,
+      MIGRATION_LOCK_RETRY_INTERVAL_SECONDS:
+        env.MIGRATION_LOCK_RETRY_INTERVAL_SECONDS || String(SCHEMA_PHASE_RETRY_INTERVAL_SECONDS),
+    }),
+    lockTimeoutMs: Math.round(positiveNumber(env.MIGRATION_SCHEMA_LOCK_TIMEOUT_MS, DEFAULT_SCHEMA_LOCK_TIMEOUT_MS)),
+    lockAttempts: positiveNumber(env.MIGRATION_SCHEMA_LOCK_RETRIES, DEFAULT_SCHEMA_LOCK_RETRIES),
+  };
+}
+
+/** SQLSTATE 55P03 (lock_timeout hit), raw from pg or wrapped in TypeORM's QueryFailedError. */
+export function isLockNotAvailableError(error: unknown): boolean {
+  const { code, driverError } = (error ?? {}) as { code?: string; driverError?: { code?: string } };
+  return (driverError?.code ?? code) === '55P03';
+}
+
 /**
  * Session-scoped advisory lock that serialises migration runs across pods.
  *

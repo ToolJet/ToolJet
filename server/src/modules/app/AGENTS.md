@@ -23,7 +23,7 @@ The base module every other backend module builds on. Owns: the `SubModule` base
 | `module.ts` | Root `AppModule.register()` — `AppModuleLoader.loadModules` + every feature module's `register(configs, true)`; conditional imports (Workflows + BullBoard non-Cloud, `SessionTransferModule` Cloud-only, Metrics via env) |
 | `loader.ts` | Infra modules: TypeORM (main + `tooljetDb`), BullMQ, ConfigModule, pino logger, otel/Sentry, Redis, `GuardValidatorModule` |
 | `middlewares/migration-gate.middleware.ts` | Upgrade gate: 503 on `/api/*` while a migration is running, pending or failed. See `server/docs/MIGRATION_FLOW.md` §4 |
-| `migration-runs/` | `MigrationRunsService` (gate status; async/manual runs) + super-admin `migration-runs` routes. Public `migration-status` is on `AppController`. See `MIGRATION_FLOW.md` §10 |
+| `migration-runs/` | `MigrationRunsService` (gate status; async runs, children get `MIGRATION_PHASE=data`) + super-admin `migration-runs` routes. Schema migrations run before boot (`migrateSchemaBeforeBoot`). Public `migration-status` is on `AppController`. See `MIGRATION_FLOW.md` §10 |
 | `validators/feature-guard.validator.ts` | `GuardValidator` — boot-time scan asserting every route has an `AbilityGuard` |
 | `interceptors/response.interceptor.ts` | Emits audit-log events after responses, driven by `MODULE_INFO` feature config |
 | `types.ts` | `FeatureConfig`, `ResourceDetails`, `UserAllPermissions` |

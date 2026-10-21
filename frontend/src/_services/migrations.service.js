@@ -23,7 +23,7 @@ function getRuns() {
   return fetch(`${config.apiUrl}/migration-runs`, requestOptions).then(handleResponse);
 }
 
-/** Starts waiting (manual mode) or failed migrations. */
+/** Retries a failed run. */
 function run() {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/migration-runs/run`, requestOptions).then(handleResponse);

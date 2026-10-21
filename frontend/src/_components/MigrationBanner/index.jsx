@@ -9,7 +9,6 @@ const POLL_MS = 30000;
 const RUNNING_POLL_MS = 10000;
 
 const MESSAGES = {
-  pending: 'A ToolJet upgrade is waiting for your administrator. Changes cannot be saved until it is applied.',
   running: 'ToolJet is being upgraded. Some features may not work and changes may not save until it finishes.',
   failed: 'The latest ToolJet upgrade failed. Changes cannot be saved until an administrator retries it.',
 };
@@ -42,8 +41,7 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false
       const next = await migrationsService.getStatus();
       if (cancelled) return;
       setStatus(next);
-      // Pending can turn into running at any click, so it polls as often.
-      timer = setTimeout(poll, next.state === 'running' || next.state === 'pending' ? RUNNING_POLL_MS : POLL_MS);
+      timer = setTimeout(poll, next.state === 'running' ? RUNNING_POLL_MS : POLL_MS);
     };
     poll();
     return () => {

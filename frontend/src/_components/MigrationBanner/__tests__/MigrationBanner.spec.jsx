@@ -17,7 +17,6 @@ describe('MigrationBanner', () => {
   test.each([
     ['running', /ToolJet is being upgraded/],
     ['failed', /latest ToolJet upgrade failed/],
-    ['pending', /upgrade is waiting for your administrator/],
   ])('shows the %s notice and announces it', async (state, text) => {
     respondWith({ state, startedAt: '2026-10-19T10:00:00Z' });
     render(<MigrationBanner />);

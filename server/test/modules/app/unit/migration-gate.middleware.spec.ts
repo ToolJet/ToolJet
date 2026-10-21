@@ -6,7 +6,6 @@ import {
   MigrationGateMiddleware,
   MIGRATION_FAILED_MESSAGE,
   MIGRATION_IN_PROGRESS_MESSAGE,
-  MIGRATION_PENDING_MESSAGE,
 } from '@modules/app/middlewares/migration-gate.middleware';
 import { MigrationRunsService, MigrationState } from '@modules/app/migration-runs/service';
 
@@ -213,37 +212,6 @@ describe('MigrationGateMiddleware', () => {
 
       expect(next).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(503);
-    });
-  });
-
-  describe('in manual migration mode | writes wait for a super admin to run migrations', () => {
-    beforeEach(() => {
-      process.env.MIGRATION_MODE = 'manual';
-    });
-
-    it('should answer writes with 503 MIGRATION_PENDING while migrations are waiting', async () => {
-      const { middleware } = buildMiddleware('pending');
-      const res = buildResponse();
-      const next = jest.fn() as NextFunction;
-
-      await middleware.use(buildRequest('/api/apps', 'POST'), res, next);
-
-      expect(next).not.toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ code: 'MIGRATION_PENDING', message: MIGRATION_PENDING_MESSAGE })
-      );
-    });
-
-    it.each([
-      ['GET', '/api/apps'],
-      ['POST', '/api/migration-runs/run'],
-    ])('should let %s %s through while migrations are waiting', async (method, path) => {
-      const { middleware } = buildMiddleware('pending');
-      const next = jest.fn() as NextFunction;
-
-      await middleware.use(buildRequest(path, method), buildResponse(), next);
-
-      expect(next).toHaveBeenCalled();
     });
 
     it('should answer writes with 503 MIGRATION_FAILED after a failed run, until a super admin retries', async () => {

@@ -12,7 +12,7 @@ import {
  *
  * During a rolling upgrade the pods still serving traffic are talking to a database that is
  * mid-migration. The migrating process holds an advisory lock for the duration, and
- * `MigrationRunsService.status()` reads it (plus, in async and manual mode, the latest run);
+ * `MigrationRunsService.status()` reads it (plus, in async mode, the latest run);
  * this middleware turns that into a clean, retryable 503 instead of letting requests hit a
  * half-migrated schema.
  *
@@ -44,9 +44,6 @@ const LOG_THROTTLE_MS = 30_000;
 
 const RETRY_AFTER_SECONDS = 30;
 
-export const MIGRATION_PENDING_MESSAGE =
-  'ToolJet has an upgrade waiting for an administrator to apply it. Changes cannot be saved until then.';
-
 export const MIGRATION_IN_PROGRESS_MESSAGE =
   'ToolJet is being upgraded — database migrations are in progress. Please retry in a few moments.';
 
@@ -56,7 +53,6 @@ export const MIGRATION_FAILED_MESSAGE =
 /** What each refusing state answers; other states pass. */
 const REFUSALS: Partial<Record<MigrationState, { code: string; message: string }>> = {
   running: { code: 'MIGRATION_IN_PROGRESS', message: MIGRATION_IN_PROGRESS_MESSAGE },
-  pending: { code: 'MIGRATION_PENDING', message: MIGRATION_PENDING_MESSAGE },
   failed: { code: 'MIGRATION_FAILED', message: MIGRATION_FAILED_MESSAGE },
 };
 

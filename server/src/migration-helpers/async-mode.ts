@@ -45,14 +45,26 @@ async function isFreshInstall(): Promise<boolean> {
 }
 
 /**
- * Async mode skips setup in the entrypoint. A fresh install still has to migrate before Nest
- * boots, so run it here, blocking, exactly like blocking mode would have.
+ * Async mode skips setup in the entrypoint, so Nest would boot on the old schema and crash
+ * on any column the release adds. Apply schema migrations here first, blocking; data runs after boot.
+ * A fresh install runs the full setup, exactly like blocking mode would have.
  */
-export async function migrateFirstIfFreshInstall(env: Env = process.env): Promise<void> {
-  if (!isServerManagedMigrationMode(env) || !(await isFreshInstall())) return;
-  console.log('[migrations] Async mode on a fresh install: migrating before the server starts.');
+export async function migrateSchemaBeforeBoot(env: Env = process.env): Promise<void> {
+  if (!isServerManagedMigrationMode(env)) return;
+  const freshInstall = await isFreshInstall();
+  console.log(
+    freshInstall
+      ? '[migrations] Fresh install: migrating before the server starts.'
+      : '[migrations] Applying pending schema migrations before the server starts.'
+  );
   const exitCode = await new Promise<number>((resolve) => {
-    spawn(setupCommand(env), { shell: true, stdio: 'inherit' }).on('exit', (code) => resolve(code ?? 1));
+    spawn(setupCommand(env), {
+      shell: true,
+      stdio: 'inherit',
+      env: freshInstall ? process.env : { ...process.env, MIGRATION_PHASE: 'schema' },
+    }).on('exit', (code) => resolve(code ?? 1));
   });
-  if (exitCode !== 0) throw new Error(`Initial database setup failed (exit ${exitCode}).`);
+  if (exitCode !== 0) {
+    throw new Error(`${freshInstall ? 'Initial database setup' : 'Schema migrations'} failed (exit ${exitCode}).`);
+  }
 }

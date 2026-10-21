@@ -9,8 +9,10 @@ import { MIGRATION_ACTIVE_LOCK_KEY, MIGRATION_ADVISORY_LOCK_KEY } from 'src/migr
 type Internals = {
   query: (sql: string, params?: unknown[]) => Promise<unknown[]>;
   runChild: jest.Mock;
-  recordPending: (triggeredBy: string) => Promise<string | null>;
   deadRunTimer: NodeJS.Timeout | null;
+  started: boolean;
+  bootHold: boolean;
+  cachedStatus: unknown;
 };
 
 /** @group platform */
@@ -93,7 +95,7 @@ describe('MigrationRunsController', () => {
     });
   });
 
-  describe('POST /api/migration-runs/run | start waiting or failed migrations', () => {
+  describe('POST /api/migration-runs/run | retry a failed run', () => {
     it('should reject a workspace admin with 403', async () => {
       const admin = await createAdmin(app, 'migration-retry-admin@tooljet.io');
 
@@ -105,7 +107,7 @@ describe('MigrationRunsController', () => {
       expect(response.statusCode).toBe(403);
     });
 
-    it('should answer 409 to a super admin when nothing is waiting to run', async () => {
+    it('should answer 409 to a super admin when the server does not manage migrations (blocking mode)', async () => {
       const superAdmin = await createSuperAdmin(app, 'migration-retry-super@tooljet.io');
 
       const response = await request(app.getHttpServer())
@@ -114,6 +116,7 @@ describe('MigrationRunsController', () => {
         .set('tj-workspace-id', superAdmin.workspace.id);
 
       expect(response.statusCode).toBe(409);
+      expect(response.body).toMatchObject({ message: 'Migrations are not managed by the server in this mode.' });
     });
   });
 });
@@ -124,9 +127,11 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
   let app: INestApplication;
   let service: MigrationRunsService;
 
-  /** A service as one server would hold it, its own pool routed through the suite transaction so seeded rows are visible. */
+  /** A booted server's service, its own pool routed through the suite transaction so seeded rows are visible. */
   const newServer = () => {
     const server = new MigrationRunsService();
+    (server as unknown as Internals).started = true;
+    (server as unknown as Internals).bootHold = false;
     (server as unknown as Internals).query = async (sql, params) => {
       const result = await dataSource.query(sql, params);
       // TypeORM answers UPDATE/DELETE with [rows, count]; the service's pg pool answers with rows.
@@ -226,6 +231,49 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     expect(runChild).toHaveBeenCalledWith('admin@tooljet.io', { runId: expect.any(String) });
   });
 
+  describe('a booting server | its own writes wait for its data run', () => {
+    const booting = () =>
+      Object.assign(newServer() as unknown as Internals, { bootHold: true }) as unknown as MigrationRunsService;
+    const fresh = (server: MigrationRunsService) => Object.assign(server, { cachedStatus: null });
+
+    it('should answer running before its data run takes the lock, and follow the lock once it has', async () => {
+      const server = booting();
+
+      await expect(server.status()).resolves.toEqual({ state: 'running' });
+      await holding(MIGRATION_ACTIVE_LOCK_KEY, async () => {
+        await expect(fresh(server).status()).resolves.toEqual({ state: 'running' });
+      });
+      await expect(fresh(server).status()).resolves.toEqual({ state: 'idle' });
+    });
+
+    it('should release the hold when the last run failed and waits for a retry', async () => {
+      await dataSource.query(
+        `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at) VALUES ($1, 'failed', 'boot', now())`,
+        [version()]
+      );
+      const server = booting();
+      stubRunChild(server);
+
+      await server.start();
+      stopDeadRunWatch(server);
+
+      await expect(server.status()).resolves.toMatchObject({ state: 'failed' });
+    });
+
+    it('should release the hold when start() cannot run, failing open like the gate', async () => {
+      const server = booting();
+      const internals = server as unknown as Internals;
+      const query = internals.query;
+      internals.query = (sql, params) =>
+        sql === MIGRATION_RUNS_DDL ? Promise.reject(new Error('connection refused')) : query(sql, params);
+
+      await expect(server.start()).rejects.toThrow('connection refused');
+      stopDeadRunWatch(server);
+
+      await expect(server.status()).resolves.toEqual({ state: 'idle' });
+    });
+  });
+
   it("should report another server's migration from its lock before any run row exists", async () => {
     await holding(MIGRATION_ACTIVE_LOCK_KEY, async () => {
       await expect(newServer().status()).resolves.toEqual({ state: 'running' });
@@ -268,16 +316,45 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at) VALUES ('3.21.75', 'succeeded', 'boot', now())`
     );
 
-    await expect(service.run('admin@tooljet.io')).rejects.toMatchObject({ status: 409 });
+    await expect(service.run('admin@tooljet.io')).rejects.toMatchObject({
+      status: 409,
+      message: 'Only a failed migration run can be retried.',
+    });
   });
 
-  it.each([
-    ['failed', 'a retry'],
-    ['pending', 'a waiting run'],
-  ])('should start only one runner when two servers are asked to start %s (%s) together', async (status) => {
+  it("should not retry or restart a newer release's run, whose migrations this build cannot see", async () => {
     await dataSource.query(
-      `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ('3.21.75', $1, 'boot')`,
-      [status]
+      `INSERT INTO migration_runs (to_version, status, triggered_by, error) VALUES ('999.0.0', 'failed', 'boot', $1)`,
+      ['The migrating server stopped without reporting a result.']
+    );
+    const runChild = stubRunChild(service);
+
+    await expect(service.run('admin@tooljet.io')).rejects.toMatchObject({ status: 409 });
+    await service.restartDeadRun();
+
+    expect(runChild).not.toHaveBeenCalled();
+    await expect(dataSource.query('SELECT status FROM migration_runs')).resolves.toEqual([{ status: 'failed' }]);
+  });
+
+  it('should start the boot run from the dead-run check when start() failed at boot', async () => {
+    const server = newServer();
+    const internals = server as unknown as Internals;
+    const query = internals.query;
+    internals.started = false;
+    internals.query = () => Promise.reject(new Error('connection refused'));
+    await expect(server.start()).rejects.toThrow('connection refused');
+    stopDeadRunWatch(server);
+    internals.query = query;
+    const runChild = stubRunChild(server);
+
+    await server.restartDeadRun();
+
+    expect(runChild).toHaveBeenCalledWith('recovery');
+  });
+
+  it('should start only one runner when two servers are asked to retry together', async () => {
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ('3.21.75', 'failed', 'boot')`
     );
     const [first, second] = [newServer(), newServer()];
     const children = [stubRunChild(first), stubRunChild(second)];
@@ -286,31 +363,6 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
 
     expect(results.map((result) => result.status).sort()).toEqual(['fulfilled', 'rejected']);
     expect(children.reduce((count, runChild) => count + runChild.mock.calls.length, 0)).toBe(1);
-  });
-
-  it('should keep one pending row when servers booting together all find work', async () => {
-    const ids = await Promise.all(
-      [newServer(), newServer(), service].map((server) => (server as unknown as Internals).recordPending('boot'))
-    );
-
-    expect(new Set(ids).size).toBe(1);
-    await expect(dataSource.query('SELECT count(*)::int FROM migration_runs')).resolves.toEqual([{ count: 1 }]);
-  });
-
-  it('should bring a waiting run back on top when a server boots after a newer run failed, so Run claims it', async () => {
-    const [{ id }] = await dataSource.query(
-      `INSERT INTO migration_runs (to_version, status, triggered_by, started_at) VALUES ('3.21.75', 'pending', 'boot', now() - interval '1 hour') RETURNING id`
-    );
-    // Not now(): the suite transaction would give it the same timestamp as the boot below.
-    await dataSource.query(
-      `INSERT INTO migration_runs (to_version, status, triggered_by, started_at) VALUES ('3.21.75', 'failed', 'boot', now() - interval '1 minute')`
-    );
-    const runChild = stubRunChild(service);
-
-    await expect((service as unknown as Internals).recordPending('boot')).resolves.toBe(id);
-    await expect(newServer().status()).resolves.toMatchObject({ state: 'pending' });
-    await service.run('admin@tooljet.io');
-    expect(runChild).toHaveBeenCalledWith('admin@tooljet.io', { runId: id });
   });
 
   it('should rerun on boot a run whose server stopped, since the migration itself did not fail', async () => {
@@ -322,7 +374,7 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
 
     await service.start();
 
-    expect(runChild).toHaveBeenCalledWith('boot', { checkOnly: false });
+    expect(runChild).toHaveBeenCalledWith('boot');
   });
 
   describe('restartDeadRun | a run whose server stopped after the other servers booted', () => {
@@ -339,18 +391,6 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
         { status: 'running', triggeredBy: 'recovery' },
         { status: 'failed', error: 'The migrating server stopped without reporting a result.' },
       ]);
-    });
-
-    it('should only re-check in manual mode, so the run waits for a super admin again', async () => {
-      await seedDeadRun();
-      process.env.MIGRATION_MODE = 'manual';
-      const manual = newServer();
-      process.env.MIGRATION_MODE = 'async';
-      const runChild = stubRunChild(manual);
-
-      await manual.restartDeadRun();
-
-      expect(runChild).toHaveBeenCalledWith('recovery', { checkOnly: true });
     });
 
     it('should leave it while a migrator holds the migration lock', async () => {
@@ -418,20 +458,7 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
 
     await dataSource.query(`UPDATE migration_runs SET to_version = '0.0.1'`);
     await service.start();
-    expect(runChild).toHaveBeenCalledWith('boot', { checkOnly: false });
-  });
-
-  it('should keep a manual-mode pending run pending however old its heartbeat, and start it on request', async () => {
-    const [{ id }] = await dataSource.query(
-      `INSERT INTO migration_runs (to_version, status, triggered_by, heartbeat_at)
-       VALUES ('3.21.75', 'pending', 'boot', now() - interval '2 days') RETURNING id`
-    );
-    const runChild = stubRunChild(service);
-
-    await expect(service.status()).resolves.toMatchObject({ state: 'pending' });
-    await service.run('admin@tooljet.io');
-
-    expect(runChild).toHaveBeenCalledWith('admin@tooljet.io', { runId: id });
+    expect(runChild).toHaveBeenCalledWith('boot');
   });
 
   it("should return one migration's log lines, or the whole run's", async () => {
@@ -507,22 +534,12 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       );
     });
 
-    it('should clear a stale waiting run when a manual-mode check finds nothing pending', async () => {
-      await dataSource.query(
-        `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ('3.21.75', 'pending', 'boot')`
-      );
-      process.env.MIGRATION_MODE = 'manual';
-      const manual = newServer();
-      process.env.MIGRATION_MODE = 'async';
-      process.env.MIGRATION_SETUP_COMMAND = `${runner} none`;
+    it('should release the boot hold once a runner with nothing pending exits', async () => {
+      Object.assign(service, { bootHold: true });
 
-      await manual.start();
-      stopDeadRunWatch(manual);
-      const internals = manual as unknown as { child: unknown; finalWrite: Promise<void> | null };
-      while (internals.child) await new Promise((resolve) => setTimeout(resolve, 50));
-      await internals.finalWrite;
+      await runToExit('none');
 
-      await expect(manual.runs()).resolves.toEqual([]);
+      await expect(service.status()).resolves.toEqual({ state: 'idle' });
     });
 
     it('should record success when a stopped run had already committed, so writes are no longer refused', async () => {
@@ -531,25 +548,6 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       await runToExit('none');
 
       await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
-    });
-
-    it('should record success when a manual-mode check finds nothing pending after a failed run', async () => {
-      await dataSource.query(
-        `INSERT INTO migration_runs (to_version, status, triggered_by, error, started_at) VALUES ($1, 'failed', 'boot', 'boom', now() - interval '1 minute')`,
-        [version()]
-      );
-      process.env.MIGRATION_MODE = 'manual';
-      const manual = newServer();
-      process.env.MIGRATION_MODE = 'async';
-      process.env.MIGRATION_SETUP_COMMAND = `${runner} none`;
-
-      await manual.start();
-      stopDeadRunWatch(manual);
-      const internals = manual as unknown as { child: unknown; finalWrite: Promise<void> | null };
-      while (internals.child) await new Promise((resolve) => setTimeout(resolve, 50));
-      await internals.finalWrite;
-
-      await expect(manual.runs()).resolves.toMatchObject([{ status: 'succeeded' }, { status: 'failed' }]);
     });
 
     it('should mark a run stopped by this server shutting down as stopped, not failed, so the next boot retries it', async () => {

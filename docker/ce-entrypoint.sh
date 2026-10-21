@@ -17,9 +17,9 @@ else
   SETUP_CMD='npm run db:setup'
 fi
 
-# MIGRATION_MODE=async|manual: the server runs migrations itself (background, or when a super admin starts them).
+# MIGRATION_MODE=async: the server runs migrations itself, in the background.
 export MIGRATION_SETUP_COMMAND="$SETUP_CMD"
-if [ "$MIGRATION_MODE" = "async" ] || [ "$MIGRATION_MODE" = "manual" ]; then
+if [ "$MIGRATION_MODE" = "async" ]; then
   SETUP_CMD=true
 fi
 

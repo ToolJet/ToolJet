@@ -31,7 +31,7 @@ export class MigrationRunsController {
     return { log: await this.migrationRunsService.log(id, migration || undefined) };
   }
 
-  /** Starts migrations that are waiting (manual mode) or retries a failed run. */
+  /** Retries a failed run. */
   @Post('run')
   @HttpCode(201)
   @InitFeature(FEATURE_KEY.MIGRATION_RUN)

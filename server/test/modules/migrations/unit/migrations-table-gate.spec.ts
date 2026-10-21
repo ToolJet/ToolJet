@@ -9,6 +9,8 @@ import {
   DEFAULT_MAX_WAIT_MINUTES,
   DEFAULT_RETRY_INTERVAL_SECONDS,
   getLockWaitOptions,
+  getSchemaPhaseOptions,
+  isLockNotAvailableError,
   LockWaitOptions,
   MigrationLockWaitTimeoutError,
   withMigrationAdvisoryLock,
@@ -94,6 +96,38 @@ describe('migration-helpers/migrations-table-gate', () => {
       });
       expect(parsed.retryIntervalMs).toBe(DEFAULT_RETRY_INTERVAL_SECONDS * 1000);
       expect(parsed.maxWaitMs).toBe(DEFAULT_MAX_WAIT_MINUTES * 60_000);
+    });
+  });
+
+  describe('getSchemaPhaseOptions | the boot-time schema run', () => {
+    it('should poll every 5s and give 10 attempts a 5s lock timeout each when nothing is configured', () => {
+      expect(getSchemaPhaseOptions({})).toEqual({
+        lockWait: { retryIntervalMs: 5000, maxWaitMs: DEFAULT_MAX_WAIT_MINUTES * 60_000 },
+        lockTimeoutMs: 5000,
+        lockAttempts: 10,
+      });
+    });
+
+    it('should apply configured values and ignore unparseable ones', () => {
+      expect(
+        getSchemaPhaseOptions({
+          MIGRATION_LOCK_RETRY_INTERVAL_SECONDS: '20',
+          MIGRATION_LOCK_MAX_WAIT_MINUTES: '0',
+          MIGRATION_SCHEMA_LOCK_TIMEOUT_MS: '1500',
+          MIGRATION_SCHEMA_LOCK_RETRIES: 'many',
+        })
+      ).toEqual({ lockWait: { retryIntervalMs: 20_000, maxWaitMs: 0 }, lockTimeoutMs: 1500, lockAttempts: 10 });
+    });
+  });
+
+  describe('isLockNotAvailableError | which schema-run failures are retried', () => {
+    it.each([
+      ['raw from pg', pgError('55P03'), true],
+      ['wrapped by TypeORM', typeormError('55P03'), true],
+      ['with another SQLSTATE', pgError('42P07'), false],
+      ['that is not an error', undefined, false],
+    ])('should treat a failure %s as %s', (_shape, error, retryable) => {
+      expect(isLockNotAvailableError(error)).toBe(retryable);
     });
   });
 

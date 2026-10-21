@@ -7,7 +7,6 @@ import {
   IconCircleCheck,
   IconCircleDashed,
   IconCircleX,
-  IconClockPause,
   IconChevronRight,
   IconCopy,
   IconDownload,
@@ -39,13 +38,6 @@ const ACTIVE_POLL_MS = 2000;
 const IDLE_POLL_MS = 15000;
 
 const STATUS = {
-  pending: {
-    label: 'Waiting',
-    Icon: IconClockPause,
-    tone: 'tw-text-text-warning',
-    pill: 'tw-bg-background-warning-weak tw-text-text-warning',
-    headline: (run) => `Upgrade to ${run.toVersion} is waiting to run`,
-  },
   running: {
     label: 'Running',
     Icon: IconLoader2,
@@ -131,15 +123,14 @@ const facts = (run) => {
   if (run.migrationsTotal) parts.push(plural(run.migrationsTotal, 'migration'));
   if (run.fromVersion && run.fromVersion !== run.toVersion) parts.push(`from ${run.fromVersion}`);
   if (run.status === 'running') parts.push(`running for ${formatMs(elapsed(run))}`);
-  else if (run.status !== 'pending') parts.push(`took ${formatMs(elapsed(run))}`);
-  parts.push(`${run.status === 'pending' ? 'found' : 'started'} ${moment(run.startedAt).fromNow()}`);
+  else parts.push(`took ${formatMs(elapsed(run))}`);
+  parts.push(`started ${moment(run.startedAt).fromNow()}`);
   parts.push(`by ${triggeredBy(run)}`);
   return parts.join(' · ');
 };
 
 const StatusCard = ({ run, onRun, runPending }) => {
   const meta = STATUS[run.status] ?? STATUS.running;
-  const canRun = run.status === 'pending' || run.status === 'failed';
   const percent = run.migrationsTotal ? Math.round((run.migrationsDone / run.migrationsTotal) * 100) : 0;
   const current = run.migrations.find((step) => step.status === 'running');
 
@@ -164,9 +155,9 @@ const StatusCard = ({ run, onRun, runPending }) => {
             {facts(run)}
           </p>
         </div>
-        {canRun && (
+        {run.status === 'failed' && (
           <Button className="tw-shrink-0" onClick={onRun} disabled={runPending}>
-            {runPending ? 'Starting' : run.status === 'pending' ? 'Run migrations' : 'Retry migration'}
+            {runPending ? 'Starting' : 'Retry migration'}
           </Button>
         )}
       </div>
@@ -185,23 +176,15 @@ const StatusCard = ({ run, onRun, runPending }) => {
 
       {run.status === 'running' && (
         <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">
-          Everything runs in one transaction, so nothing is saved until the last migration finishes. Changes made in
-          ToolJet are refused until then.
+          Schema changes were applied when the server started. The data migrations run in one transaction, so none of
+          them is saved until the last one finishes. Changes made in ToolJet are refused until then.
         </p>
-      )}
-
-      {run.status === 'pending' && (
-        <InlineInfo
-          type="warning"
-          title="Changes made in ToolJet are refused until these migrations run."
-          description="They run in one transaction. If one fails, nothing is saved and ToolJet stays on the current database version."
-        />
       )}
 
       {run.status === 'failed' && (
         <InlineInfo
           type="danger"
-          title="Nothing was committed. Changes made in ToolJet are refused until a retry succeeds."
+          title="The data migrations were rolled back. Changes made in ToolJet are refused until a retry succeeds."
           description={
             <>
               {run.error && (
@@ -209,7 +192,7 @@ const StatusCard = ({ run, onRun, runPending }) => {
                   {run.error}
                 </code>
               )}
-              <span className="tw-block">Retrying runs every pending migration again, in one transaction.</span>
+              <span className="tw-block">Retrying runs the pending data migrations again, in one transaction.</span>
             </>
           }
         />
@@ -321,7 +304,6 @@ const downloadLog = (run) =>
     .catch(() => toast.error('Could not download the log.'));
 
 const EMPTY_MIGRATIONS_MESSAGE = {
-  pending: 'Checking which migrations need to run.',
   running: 'Checking which migrations need to run.',
   succeeded: 'Nothing to migrate. The database was already up to date.',
   failed: 'The run stopped before it could list its migrations. The log shows why.',
@@ -428,7 +410,7 @@ const HistoryCard = ({ runs }) => (
                 : run.toVersion}
             </TableCell>
             <TableCell title={moment(run.startedAt).format('lll')}>{moment(run.startedAt).fromNow()}</TableCell>
-            <TableCell>{run.status === 'running' || run.status === 'pending' ? '-' : formatMs(elapsed(run))}</TableCell>
+            <TableCell>{run.status === 'running' ? '-' : formatMs(elapsed(run))}</TableCell>
             <TableCell className="tw-max-w-[220px] tw-truncate">{triggeredBy(run)}</TableCell>
           </TableRow>
         ))}
@@ -450,7 +432,7 @@ const EmptyState = () => (
     <EmptyHeader>
       <EmptyTitle>No migration runs yet</EmptyTitle>
       <EmptyDescription>
-        Runs appear here when ToolJet starts with MIGRATION_MODE set to async or manual and finds migrations to run.
+        Runs appear here when ToolJet starts with MIGRATION_MODE=async and finds migrations to run.
       </EmptyDescription>
     </EmptyHeader>
   </Empty>
@@ -483,7 +465,7 @@ const MigrationsContent = () => {
     return () => clearInterval(timer);
   }, [active, load]);
 
-  // Acknowledged once the latest run changes: a new row, or the pending row starting.
+  // Acknowledged once the latest run changes: a new row.
   useEffect(() => {
     setRunPending(false);
   }, [latest?.id, latest?.status]);

@@ -239,4 +239,119 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       }
     }, 180_000);
   });
+
+  /** Async mode: schema at boot (`migrateSchemaBeforeBoot`), data in the server-spawned run. */
+  describe('MIGRATION_PHASE | schema at boot, data after', () => {
+    const phaseDatabase = `tooljet_migration_phase_${process.pid}`;
+    let connection: DataSource;
+
+    beforeAll(async () => {
+      await createScratchDatabase(phaseDatabase);
+      connection = await new DataSource({ type: 'postgres', ...postgres, database: phaseDatabase }).initialize();
+    }, 60_000);
+
+    afterAll(async () => {
+      await connection?.destroy().catch(() => undefined);
+      await dropScratchDatabase(phaseDatabase);
+    }, 60_000);
+
+    const phasePod = (podId: string, phase: string, database = phaseDatabase, env: Record<string, string> = {}) =>
+      spawnPod({ podId, database, migrationSleepSeconds: 0, env: { MIGRATION_PHASE: phase, ...env } });
+
+    it('should apply the schema migrations in the schema phase, and let the next boot skip the lock', async () => {
+      const first = await phasePod('schema-1', 'schema').done;
+      const second = await phasePod('schema-2', 'schema').done;
+
+      expect(first).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(first.stdout).toContain('1 schema migration(s) pending: SlowWitnessedMigration1700000000001');
+      expect(first.stdout).toContain('Committed schema migrations.');
+      expect(second).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(second.stdout).toContain('No schema migrations pending before boot.');
+      expect(await connection.query('SELECT 1 FROM migration_witness')).toHaveLength(1);
+      expect(await heldLocks(connection)).toEqual({ running: false, migrating: false });
+    }, 120_000);
+
+    it('should run schema and data in separate transactions in the data phase', async () => {
+      const pod = await phasePod('data-1', 'data').done;
+
+      expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(pod.stdout).toContain('Data phase:');
+      expect(pod.stdout).toContain('Committed schema and data migrations in separate transactions.');
+    }, 120_000);
+
+    it('should refuse an unknown phase', async () => {
+      const pod = await phasePod('bad-phase', 'everything').done;
+
+      expect(pod).toMatchObject({ exitCode: 1, result: { error: expect.stringContaining('Unknown MIGRATION_PHASE') } });
+    }, 120_000);
+
+    describe('a schema migration that waits on a table lock', () => {
+      const blockedDatabase = `tooljet_migration_phase_blocked_${process.pid}`;
+      let blocked: DataSource;
+
+      beforeEach(async () => {
+        await createScratchDatabase(blockedDatabase);
+        blocked = await new DataSource({ type: 'postgres', ...postgres, database: blockedDatabase }).initialize();
+        await blocked.query(
+          'CREATE TABLE migration_witness (id serial PRIMARY KEY, pod text NOT NULL, ran_at timestamptz)'
+        );
+      }, 60_000);
+
+      afterEach(async () => {
+        await blocked?.destroy().catch(() => undefined);
+        await dropScratchDatabase(blockedDatabase);
+      }, 60_000);
+
+      /** A released app's long read, holding the table the migration writes to. */
+      async function holdTableLock() {
+        const holder = blocked.createQueryRunner();
+        await holder.connect();
+        await holder.startTransaction();
+        await holder.query('LOCK TABLE migration_witness IN ACCESS EXCLUSIVE MODE');
+        return {
+          release: async () => {
+            await holder.rollbackTransaction();
+            await holder.release();
+          },
+        };
+      }
+
+      it('should roll back and retry until the lock frees, then apply it once', async () => {
+        const lock = await holdTableLock();
+        const pod = phasePod('blocked-1', 'schema', blockedDatabase, {
+          MIGRATION_SCHEMA_LOCK_TIMEOUT_MS: '300',
+          MIGRATION_SCHEMA_LOCK_RETRIES: '30',
+        });
+        let stdout = '';
+        pod.child.stdout.on('data', (chunk) => (stdout += chunk));
+        pod.child.stderr.on('data', (chunk) => (stdout += chunk));
+        await waitFor(
+          'a lock-timeout retry',
+          async () => stdout,
+          (out) => out.includes('for a table lock; rolled back'),
+          { timeoutMs: 60_000 }
+        );
+        await lock.release();
+        const outcome = await pod.done;
+
+        expect(outcome).toMatchObject({ exitCode: 0, result: { error: null } });
+        expect(await blocked.query('SELECT 1 FROM migration_witness')).toHaveLength(1);
+      }, 120_000);
+
+      it('should fail the boot once the attempts run out', async () => {
+        const lock = await holdTableLock();
+        try {
+          const outcome = await phasePod('blocked-2', 'schema', blockedDatabase, {
+            MIGRATION_SCHEMA_LOCK_TIMEOUT_MS: '200',
+            MIGRATION_SCHEMA_LOCK_RETRIES: '2',
+          }).done;
+
+          expect(outcome).toMatchObject({ exitCode: 1, result: { error: expect.stringContaining('lock timeout') } });
+          expect(outcome.stdout).toContain('Retrying (attempt 2 of 2)');
+        } finally {
+          await lock.release();
+        }
+      }, 120_000);
+    });
+  });
 });
