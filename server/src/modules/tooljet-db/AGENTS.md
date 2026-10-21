@@ -82,15 +82,45 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   The resolver's raw joins add `deleted_at IS NULL` by hand since raw SQL skips TypeORM's automatic
   filter. The `(organization_id, table_name)` unique index is partial, so a dropped name is
   immediately reusable.
+- `findDependents` (the drop blocker and `/dependents` warning) scans every non-stub version of every app
+  type, drafts included - `apps.current_version_id` is the *released* version and `released_at` is never
+  written, so filtering on either hid drafts. Matches `options.table_id`, join tables (incl.
+  `join_table.from.name`) and SQL-mode queries by table name (`tableNamesInSqlQuery`). Superseded versions
+  still count, so a table can stay undroppable until the old version is deleted; the dependents entry
+  names the app and its queries, not the version.
 - "Owned table, not in this (environment, branch)" is always worded by `tableNotInEnvironmentMessage`
   (`relation-resolver.service.ts`) and names the table, never its logical id - `getRelation()`, the proxy,
   join and `resolveTable` all route through it.
 - The migration compiler's SQL (`compile()`) is display-only: history drawer, promote preview, raw-SQL
   response. Nothing executes it; replay re-runs the structured action instead.
-- Licence lapse fails closed on every resolver path: `resolve()` 403s when a table resolves to
-  development while a higher-priority relation exists and the workspace is unlicensed, and
-  `getRelation()` goes through `resolve()` so the single-table paths (`sql_execution`, bulk ops,
-  `view_table`) refuse the same way instead of serving development.
+- Baseline rows have no name/description in the DB (Migration A and `repairBaseline` write none), so
+  `getTableMigrations` derives them on read (`baselineLabel`; a stored value wins) and compiles their
+  SQL from `resulting_schema`, not `payload.ddl` (replay DDL: `{{self}}` placeholders, sequence
+  statements). A foreign key's target is a physical relation id, resolved to a table name through the
+  relation with `withDeleted` (a table dropped after the baseline still appears in it). The SQL is
+  reconstructed: ON DELETE/ON UPDATE are not in the snapshot and are omitted.
+- Licence lapse fails closed for migration-B tables only: `resolve()` 403s when an unlicensed table
+  resolves to development while its migration-B relation (`id === internal_table_id`, re-pointed
+  above an empty development twin) sits at a higher priority. `getRelation()` goes through
+  `resolve()` so the single-table paths (`sql_execution`, bulk ops, `view_table`) refuse the same
+  way. A table created after the rollout and promoted keeps its data in development (promote
+  replays schema only), so it keeps serving development after a lapse.
+- A lapse still lets a workspace export data from staging or production (dump prod to dev before leaving
+  multi-environment); everything else in those environments is locked. `resolve()` takes `{ readOnly: true }`,
+  which lets a request name an environment the licence no longer covers. Only the HTTP `/proxy/*` route
+  (GET/HEAD: row count and CSV export) passes it. `view_table`, App queries (`perform()`), `sql_execution`,
+  joins and bulk ops never do, so they still refuse. `view_tables` and `table/:tableId/migrations` keep listing
+  an unlicensed environment that still holds a relation so the export picker can offer it; empty ones drop out.
+  The frontend flags it `enabled: false` and, like the App Builder, locks it everywhere except that picker.
+- **Promote never leaves a ghost relation.** `has_relation` (and the resolver, and the app-promote block)
+  mean "a relation row exists", so a row with no table behind it reads as "available in staging".
+  `promote` therefore (1) rejects with 400 `Promote "<parent>" first` before creating anything when a missing
+  migration references a table with no relation in the target (`referencedTablesOf`: embedded FKs by name,
+  baseline/raw-SQL `refs` by co_relation_id) - all-or-nothing on FK order; (2) if replay still fails, deletes the
+  target relation only when no physical table backs it (`discardRelationIfNothingMaterialized`) - a relation
+  backing a real table is never deleted, its id is the physical name. The frontend refetches tables and migrations on a failed promote too.
+- **No per-environment access control.** TJDB has no environment permissions yet: admins and Builders reach every
+  environment. `promote` / `promote/preview` gate on licence only - never on the app's granular `environmentAccess`.
 - HTTP `/proxy/*` serves only admins/builders (dashboard, App Builder editor). App queries reach
   PostgREST in-process (`.perform()`), never through this route, so anyone else needs a data query of
   their own workspace to pass `FEATURE_KEY.PROXY_POSTGREST`.
@@ -113,7 +143,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `resulting_schema`. FK ops replay against a never-persisted stand-in `InternalTableMigration` so
   their internal confirm/discard become no-ops. Migration A's baseline DDL uses `{{self}}`/`{{ref_N}}`
   placeholders (resolved via `refs`/`resolveSiblingByCoRelationId`) and rewrites any `serial` default
-  to a `{{self}}`-derived sequence — never bakes in a physical relation id.
+  to a `{{self}}`-derived sequence — never bakes in a physical relation id. A baselined FK's target is a
+  physical relation id; `buildForeignKeyDdl` maps it through `internal_table_relations` to the table's
+  `co_relation_id` (relation id ≠ internal table id for any table created after environments), falling
+  back to reading it as an `internal_tables` id for Migration A's not-yet-inserted targets.
   Known gaps: replay's `edit_column` never re-applies `writeThroughColumnConfigurations` (only the
   inserting migration's display settings survive); `targetRelation` and any FK sibling must already be
   committed/visible (a crash before `applyMigrations` runs is self-healing via retry, not stuck); a

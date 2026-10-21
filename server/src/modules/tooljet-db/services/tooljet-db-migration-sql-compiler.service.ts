@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
 import { StructuredMigrationPayload } from './tooljet-db-migration-recorder.service';
+import { TableSchemaSnapshot, TableSchemaSnapshotColumn } from '../helpers/table-schema-snapshot';
 
 type ColumnDef = {
   column_name: string;
@@ -54,6 +55,31 @@ function columnDefinitionSql(column: ColumnDef): string {
   return parts.join(' ');
 }
 
+// Baseline rows record physical relation ids and a physical table shape, so rendering one needs the
+// table's current name and a relation-id -> table-name lookup for every foreign key's target.
+export type BaselineSqlContext = {
+  tableName: string;
+  tableNameByRelationId: Map<string, string>;
+};
+
+const BASELINE_DESCRIPTION = 'Recorded from the table as it existed when environments were enabled. No SQL was run.';
+
+const SERIAL_TYPE_BY_INTEGER_TYPE: Record<string, string> = {
+  integer: 'serial',
+  bigint: 'bigserial',
+  smallint: 'smallserial',
+};
+const SEQUENCE_DEFAULT = /^nextval\('.*_seq"?'::regclass\)$/;
+
+function baselineColumnSql(column: TableSchemaSnapshotColumn): string {
+  const serialType = SEQUENCE_DEFAULT.test(column.default ?? '') && SERIAL_TYPE_BY_INTEGER_TYPE[column.data_type];
+  const parts = [`${column.name} ${serialType || column.data_type}`];
+  if (!column.is_nullable) parts.push('NOT NULL');
+  // A snapshot default is already a Postgres expression ('open'::text, now()), so it is not re-quoted.
+  if (!serialType && column.default) parts.push(`DEFAULT ${column.default}`);
+  return parts.join(' ');
+}
+
 function foreignKeyAlterSql(tableName: string, fk: ForeignKeyDef): string {
   let clause = `ALTER TABLE ${tableName} ADD FOREIGN KEY (${fk.column_names.join(', ')}) REFERENCES ${fk.referenced_table_name}(${fk.referenced_column_names.join(', ')})`;
   if (fk.on_delete) clause += ` ON DELETE ${fk.on_delete}`;
@@ -73,12 +99,12 @@ function foreignKeyAlterSql(tableName: string, fk: ForeignKeyDef): string {
  */
 @Injectable()
 export class TooljetDbMigrationSqlCompilerService {
-  compile(migration: InternalTableMigration): string | null {
+  compile(migration: InternalTableMigration, baselineContext?: BaselineSqlContext): string | null {
     if (migration.kind === 'raw_sql') {
       return (migration.payload as { sql: string })?.sql ?? null;
     }
     if (migration.kind === 'baseline') {
-      return null;
+      return baselineContext ? this.compileBaseline(migration, baselineContext) : null;
     }
 
     const payload = migration.payload as StructuredMigrationPayload;
@@ -113,6 +139,58 @@ export class TooljetDbMigrationSqlCompilerService {
       default:
         return null;
     }
+  }
+
+  /**
+   * Baseline rows are written without a name or description (Migration A, repairBaseline), so the
+   * history drawer derives them on read. Mirrors `defaultMigrationName` in the recorder. A stored
+   * name or description always wins at the call site.
+   */
+  baselineLabel(migration: InternalTableMigration, tableName: string): { name: string; description: string } | null {
+    if (migration.kind !== 'baseline') return null;
+    return {
+      name: Number(migration.sequence) === 1 ? `Create table "${tableName}"` : `Add foreign keys on "${tableName}"`,
+      description: BASELINE_DESCRIPTION,
+    };
+  }
+
+  /**
+   * A baseline is recorded from the physical table, never run, so there is no authored request to
+   * replay. Display SQL is rebuilt from `resultingSchema` (not `payload.ddl`, which is replay DDL full
+   * of `{{self}}` placeholders and sequence statements). Sequence 1 is the CREATE TABLE; sequence 2
+   * carries the foreign keys. ON DELETE / ON UPDATE are not part of the snapshot and are omitted.
+   */
+  private compileBaseline(migration: InternalTableMigration, context: BaselineSqlContext): string | null {
+    const schema = migration.resultingSchema as TableSchemaSnapshot | null;
+    if (!schema) return null;
+    const header = '-- Reconstructed from the existing table (not executed)';
+    const body = schema.foreign_keys.length
+      ? this.compileBaselineForeignKeys(schema, context)
+      : this.compileBaselineCreateTable(schema, context.tableName);
+    return `${header}\n${body}`;
+  }
+
+  private compileBaselineCreateTable(schema: TableSchemaSnapshot, tableName: string): string {
+    const lines = schema.columns.map((column) => `  ${baselineColumnSql(column)}`);
+    if (schema.primary_key.length) lines.push(`  PRIMARY KEY (${schema.primary_key.join(', ')})`);
+    schema.unique_constraints.forEach((constraint) => lines.push(`  UNIQUE (${constraint.column_names.join(', ')})`));
+    return `CREATE TABLE ${tableName} (\n${lines.join(',\n')}\n);`;
+  }
+
+  private compileBaselineForeignKeys(schema: TableSchemaSnapshot, context: BaselineSqlContext): string {
+    return schema.foreign_keys
+      .map((fk) => {
+        const referencedTableName = context.tableNameByRelationId.get(fk.referenced_table);
+        if (!referencedTableName) {
+          return `-- foreign key (${fk.column_names.join(', ')}) references a table that could not be found`;
+        }
+        return foreignKeyAlterSql(context.tableName, {
+          column_names: fk.column_names,
+          referenced_table_name: referencedTableName,
+          referenced_column_names: fk.referenced_column_names,
+        });
+      })
+      .join('\n');
   }
 
   private compileCreateTable(request: {

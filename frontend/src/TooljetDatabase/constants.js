@@ -388,6 +388,12 @@ export const headMigrationLabel = (migrations = [], appliedMigrationIds = []) =>
 export const envHasRelation = (relationsByEnvironment = [], environmentId) =>
   relationsByEnvironment.find((r) => r.environment_id === environmentId)?.has_relation ?? false;
 
+// After a multi-environment licence lapse the server still lists every environment but flags the
+// unlicensed ones `enabled: false`. `multiEnvLocked` is the live licence verdict, for a list loaded
+// before the lapse.
+export const isEnvironmentLocked = (environment, multiEnvLocked = false) =>
+  environment.priority !== 1 && (environment.enabled === false || multiEnvLocked);
+
 export const SCHEMA_ENV_TOOLTIP = 'Schema changes can only be made in the Development environment';
 export const TABLE_ABSENT_TOOLTIP = 'Table does not exist in this environment';
 

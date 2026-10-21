@@ -17,6 +17,11 @@ export function tableNotInEnvironmentMessage(tableNames: string[]): string {
     : `Tables "${tableNames.join('", "')}" have no relation in this environment`;
 }
 
+export interface ResolveOptions {
+  /** Export reads (proxy GET/HEAD): an environment the licence no longer covers may still be named. */
+  readOnly?: boolean;
+}
+
 /**
  * Resolves (logical table id, environment, branch) -> physical relation name.
  *
@@ -51,10 +56,16 @@ export class TooljetDbRelationResolverService {
     organizationId: string,
     logicalTableIds: string[],
     requestedEnvironmentId?: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    options: ResolveOptions = {}
   ): Promise<Map<string, string>> {
     const entityManager = manager || this.manager;
-    const environmentId = await this.resolveEnvironment(organizationId, requestedEnvironmentId, entityManager);
+    const environmentId = await this.resolveEnvironment(
+      organizationId,
+      requestedEnvironmentId,
+      entityManager,
+      options.readOnly
+    );
 
     if (!logicalTableIds.length) return new Map();
 
@@ -84,9 +95,14 @@ export class TooljetDbRelationResolverService {
 
       resolved.set(tableId, resolvedRow.relationId);
 
+      // Only the row migration B re-pointed upward (id === logical id) holds the data above an empty
+      // development twin. A promoted table's higher relations are schema-only replays; development
+      // stays its source of truth, so it keeps serving after a lapse.
       const resolvedToDevelopment = resolvedRow.priority === DEVELOPMENT_PRIORITY;
-      const hasHigherPrioritySibling = rowsForTable.some((row) => row.priority > DEVELOPMENT_PRIORITY);
-      if (!resolvedToDevelopment || !hasHigherPrioritySibling) continue;
+      const hasLegacyRelationAboveDevelopment = rowsForTable.some(
+        (row) => row.priority > DEVELOPMENT_PRIORITY && row.relationId === tableId
+      );
+      if (!resolvedToDevelopment || !hasLegacyRelationAboveDevelopment) continue;
 
       isUnlicensed ??= !(await this.licenseTermsService.getLicenseTerms(
         LICENSE_FIELD.MULTI_ENVIRONMENT,
@@ -203,12 +219,18 @@ export class TooljetDbRelationResolverService {
   /**
    * Unlicensed workspaces resolve to priority 1 and a request that NAMES another environment is
    * refused rather than answered from development — resolveEnvironmentId already does exactly that.
+   *
+   * A read-only request may name an environment the licence no longer covers: a lapse disables
+   * promotion and writes there, never access to the data already in it. The id needs no ownership
+   * check of its own - resolve()'s join on the table's workspace matches nothing for a foreign id.
    */
   protected async resolveEnvironment(
     organizationId: string,
     requestedEnvironmentId: string | undefined,
-    manager: EntityManager
+    manager: EntityManager,
+    readOnly = false
   ): Promise<string> {
+    if (readOnly && requestedEnvironmentId) return requestedEnvironmentId;
     return this.appEnvironmentUtilService.resolveEnvironmentId(organizationId, requestedEnvironmentId, manager);
   }
 

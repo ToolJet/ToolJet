@@ -15,7 +15,6 @@ import {
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
 import { Brackets, EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
-import { Parser as SqlParser } from 'node-sql-parser/build/postgresql';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -43,6 +42,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { InternalTable } from '@entities/internal_table.entity';
+import { tableNamesInSqlQuery } from '@helpers/tooljet_db.helper';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
@@ -55,21 +55,6 @@ const PERMISSION_RESOURCE_BY_APP_TYPE: Record<string, MODULES> = {
   [APP_TYPES.MODULE]: MODULES.MODULES,
 };
 const DEFAULT_PERMISSION_RESOURCE = MODULES.APP;
-
-// Table names a SQL-mode ToolJet Database query reads or writes. The saved SQL still holds its
-// {{ }} bindings, so each one becomes a literal before parsing.
-// ponytail: a query whose table name is itself a binding cannot be resolved here and is skipped.
-function tableNamesInSqlQuery(options: { operation?: string; sql_execution?: { sqlQuery?: string } }): string[] {
-  const sqlQuery = options?.operation === 'sql_execution' ? options.sql_execution?.sqlQuery : undefined;
-  if (!sqlQuery) return [];
-  try {
-    const { tableList } = new SqlParser().parse(sqlQuery.replace(/\{\{[\s\S]*?\}\}/g, '0'));
-    // tableList entries are `<statement>::<schema>::<table>`
-    return tableList.map((entry) => entry.split('::')[2]).filter(Boolean);
-  } catch {
-    return [];
-  }
-}
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {

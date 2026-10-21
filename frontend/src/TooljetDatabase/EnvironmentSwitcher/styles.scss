@@ -169,6 +169,11 @@
       white-space: nowrap;
     }
 
+    &-upgrade-icon {
+      flex-shrink: 0;
+      margin-left: 4px;
+    }
+
     &-badge {
       color: var(--text-placeholder);
       font-size: 12px;

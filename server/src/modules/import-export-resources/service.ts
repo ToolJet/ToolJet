@@ -35,15 +35,19 @@ export class ImportExportResourcesService {
       app?: Array<Record<string, unknown>>;
     } = {};
 
+    const coRelationIdByTableId: Record<string, string> = {};
     if (exportResourcesDto.tooljet_database?.length) {
       const exportedDbs: ImportTooljetDatabaseDto[] = [];
+      // export() appends the tables foreign keys reference, so this loop visits those too
       for (const tjdb of exportResourcesDto.tooljet_database) {
         const exportedDb = await this.tooljetDbImportExportService.export(
           exportResourcesDto.organization_id,
           tjdb,
           exportResourcesDto.tooljet_database
         );
-        if (exportedDb) exportedDbs.push(exportedDb);
+        if (!exportedDb) continue;
+        exportedDbs.push(exportedDb);
+        coRelationIdByTableId[tjdb.table_id] = exportedDb.id;
       }
 
       if (exportedDbs.length > 0) resourcesExport.tooljet_database = exportedDbs;
@@ -52,10 +56,11 @@ export class ImportExportResourcesService {
     if (exportResourcesDto.app?.length) {
       const exportedApps: Record<string, unknown>[] = [];
       for (const app of exportResourcesDto.app) {
-        const exportedApp = {
-          definition: await this.appImportExportService.export(user, app.id, app.search_params, branchId),
-        };
-        exportedApps.push(exportedApp);
+        const definition = await this.appImportExportService.export(user, app.id, app.search_params, branchId);
+        if (!isEmpty(coRelationIdByTableId)) {
+          this.appImportExportService.pointTooljetDbQueriesAtCoRelationIds(definition, coRelationIdByTableId);
+        }
+        exportedApps.push({ definition });
       }
 
       if (exportedApps.length > 0) resourcesExport.app = exportedApps;
