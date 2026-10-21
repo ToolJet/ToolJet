@@ -1,11 +1,9 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
 import {
-  commonEeSelectors,
   multiEnvSelector,
   instanceSettingsSelector,
   whiteLabellingSelectors,
-
 } from "Selectors/platform/eeCommon";
 import { licenseSelectors } from "Selectors/platform/license";
 import { groupsSelector } from "Selectors/platform/manageGroups";
@@ -93,16 +91,12 @@ describe("License Page", () => {
 
   it("Should verify banners and tooltips with the basic plan", () => {
     const planName = "basic";
-    cy.get(commonSelectors.workspaceName).click();
 
+    cy.get(commonSelectors.workspaceName).click();
     cy.get(commonSelectors.workspaceCount).should("be.visible");
-    verifyResourceLimit("workspace", planName);
 
     cy.get(dashboardSelector.homePageContent).click();
-
     cy.get(commonSelectors.dashboardIcon).click();
-
-    verifyResourceLimit("apps", planName);
 
     cy.get(workflowSelector.globalWorkFlowsIcon).click();
     cy.get(commonSelectors.breadcrumbPageTitle).should(
@@ -110,54 +104,37 @@ describe("License Page", () => {
       "All workflows"
     );
     cy.get(workflowSelector.allWorkflowsLink).should("be.visible");
-    verifyResourceLimit("workflow", planName);
 
     common.navigateToManageUsers();
     cy.get(usersSelector.buttonAddUsers).click();
-    verifyResourceLimit("builders", planName, "usage");
+    cy.get(licenseSelectors.limitCounter).should("be.visible");
 
     cy.reload();
 
     common.navigateToManageGroups();
     cy.wait("@getGroupPermissions");
-    cy.get(groupsSelector.createNewGroupButton).should("be.disabled", {
-      timeout: 10000,
-    });
-    verifyTooltip(
-      groupsSelector.createNewGroupButton,
-      "Custom groups are not available in your plan",
-      true
-    );
-
-    verifyResourceLimit(
-      "custom-groups",
-      planName,
-      "custom-groups",
-      "Custom groups & permissions are paid features"
-    );
+    cy.get(groupsSelector.createNewGroupButton).should("not.exist");
+    cy.get(licenseSelectors.planTag("customGroups"))
+      .should("be.visible")
+      .and("not.have.text", "");
+    verifyTooltip(licenseSelectors.planTag("customGroups"), "Custom groups");
 
     cy.get(
       licenseSelectors.listOfItems(workspaceSettingsText.customStylesListItem)
     ).click();
-    cy.get('[data-cy="modal-close"]').click();
-    cy.get(licenseSelectors.paidFeatureButton).should("be.visible");
+    cy.get(licenseSelectors.planTag("customStyling")).should("be.visible");
 
     cy.get(
       licenseSelectors.listOfItems(
         workspaceSettingsText.configureGitSyncListItem
       )
     ).click();
-    cy.get(licenseSelectors.paidFeatureButton).should("be.visible");
+    cy.get(licenseSelectors.planTag("gitSync")).should("be.visible");
 
     cy.get(
       licenseSelectors.listOfItems(workspaceSettingsText.themesListItem)
     ).click();
-    verifyResourceLimit(
-      "custom-themes",
-      planName,
-      "custom-themes",
-      "Custom themes is our paid feature. Upgrade to a paid plan to add and customize themes."
-    );
+    cy.get(licenseSelectors.planTag("customThemes")).should("be.visible");
 
     common.navigateToSettingPage();
     cy.get(licenseSelectors.listOfItems(settingsText.allUsersListItem)).click({
@@ -178,42 +155,31 @@ describe("License Page", () => {
     cy.get(
       licenseSelectors.listOfItems(settingsText.manageInstanceSettingsListItem)
     ).click();
-    cy.get(licenseSelectors.paidFeatureButton).should("be.visible");
+    cy.get(licenseSelectors.planTag("multiPlayerEdit")).should("be.visible");
     cy.get(instanceSettingsSelector.allowWorkspaceToggle).should("be.disabled");
     cy.get(
       licenseSelectors.listOfItems(settingsText.whiteLabellingListItem)
     ).click();
-    cy.get(licenseSelectors.paidFeatureButton).should("be.visible");
+    cy.get(licenseSelectors.planTag("whiteLabelling")).should("be.visible");
     cy.get(whiteLabellingSelectors.appLogoInput).should("be.disabled");
 
     cy.get(commonSelectors.workspaceConstantsIcon).click();
-    verifyTooltip(
-      licenseSelectors.listOfItems("staging"),
-      "Multi-environments are available only in paid plans",
-      true
-    );
-    verifyTooltip(
-      licenseSelectors.listOfItems("production"),
-      "Multi-environments are available only in paid plans",
-      true
-    );
+    cy.get(licenseSelectors.planTag("multiEnvironment"))
+      .should("have.length.at.least", 1)
+      .and("be.visible");
 
     cy.get(commonSelectors.dashboardIcon).click();
     cy.get(commonSelectors.settingsIcon).click();
-    verifyTooltip(
-      commonEeSelectors.auditLogIcon,
-      "Audit logs are available only in paid plans",
-      true
-    );
+    cy.get(licenseSelectors.planTag("auditLogs")).should("be.visible");
 
     cy.openApp(data.appName1);
 
     cy.get(multiEnvSelector.environmentsTag("development")).click();
     cy.get(multiEnvSelector.environmentsTag("staging")).within(() => {
-      cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("exist");
+      cy.get(licenseSelectors.planTag("multiEnvironment")).should("exist");
     });
     cy.get(multiEnvSelector.environmentsTag("production")).within(() => {
-      cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("exist");
+      cy.get(licenseSelectors.planTag("multiEnvironment")).should("exist");
     });
 
   });

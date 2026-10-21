@@ -36,6 +36,13 @@ export const licenseSelectors = {
   limitHeading: (type) => {
     return `[data-cy="${cyParamName(type)}-limit-heading"]`;
   },
+
+  limitCounter: '[data-cy="limit-counter"]',
+  limitCounterUpgrade: '[data-cy="limit-counter-upgrade"]',
+  limitReachedModal: '[data-cy="limit-reached-modal"]',
+  limitReachedNotNow: '[data-cy="limit-reached-not-now"]',
+  limitReachedUpgrade: '[data-cy="limit-reached-upgrade"]',
+  planTag: (gateKey) => `[data-cy="plan-tag-${gateKey}"]`,
   totalLimitLabel: (type) => {
     return `[data-cy="total-${cyParamName(type)}-limit-label"]`;
   },
