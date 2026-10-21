@@ -71,7 +71,7 @@ export const ShadIcon = (props: WidgetProps) => {
                 ),
               clickable &&
                 'tw-cursor-pointer tw-transition-opacity hover:tw-opacity-80 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring',
-              p.disabledState && 'tw-opacity-50'
+              p.disabledState && 'sc-self-dim tw-opacity-50'
             )}
             style={
               {

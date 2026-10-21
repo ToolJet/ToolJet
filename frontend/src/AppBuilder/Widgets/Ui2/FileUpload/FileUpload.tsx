@@ -282,7 +282,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
               isDragActive &&
                 'tw-border-[color:var(--sc-primary)] tw-bg-[color:color-mix(in_srgb,var(--sc-primary)_6%,transparent)]',
               isDragReject && 'tw-border-[color:var(--lk-error,var(--sc-destructive))]',
-              (disabled || full) && 'tw-cursor-not-allowed tw-opacity-60 hover:tw-bg-transparent'
+              (disabled || full) && 'sc-self-dim tw-cursor-not-allowed tw-opacity-60 hover:tw-bg-transparent'
             ),
           })}
         >

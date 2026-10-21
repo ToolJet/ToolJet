@@ -191,7 +191,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
             className={cn(
               'tw-flex tw-min-h-9 tw-w-full tw-cursor-text tw-flex-wrap tw-items-center tw-gap-1.5 tw-border tw-px-2 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-within:tw-ring-1 focus-within:tw-ring-ui2-ring',
               CONTROL,
-              disabled && 'tw-cursor-not-allowed tw-opacity-50'
+              disabled && 'sc-self-dim tw-cursor-not-allowed tw-opacity-50'
             )}
           >
             {tags.map((tag, i) => (

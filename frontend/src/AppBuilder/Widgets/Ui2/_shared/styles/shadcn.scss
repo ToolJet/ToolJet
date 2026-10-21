@@ -1279,3 +1279,22 @@
   background: var(--sc-muted);
   outline: none;
 }
+
+// A disabled widget is dimmed once, by its wrapper (RenderWidget's .ui2-disabled), to the half opacity of a native
+// widget's .disabled. Parts that dim themselves when disabled (shadcn's disabled: classes, a label beside a disabled
+// control, a disabled input group, a greyed map) keep full opacity inside it: dimmed twice, a disabled Input's box and
+// a Button read at a quarter opacity. Each selector here outranks the class that dims the part (a Tailwind variant is
+// two classes; the map's rule four), so no !important is needed.
+.ui2-disabled {
+  opacity: 0.5;
+}
+.ui2-disabled .tj-shadcn {
+  :disabled,
+  [data-disabled]:not([data-disabled='false']),
+  [aria-disabled='true'],
+  .tw-peer:disabled ~ *,
+  .sc-self-dim,
+  .sc-map[data-disabled] .sc-map-canvas {
+    opacity: 1;
+  }
+}
