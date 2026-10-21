@@ -18,8 +18,16 @@ const table = createWidgetHarness({
   widgetHeight: 440,
   widgetWidth: 600,
 });
+const strip = createWidgetHarness({
+  componentType: 'ShadSummaryStrip',
+  handle: 'strip1',
+  id: 'strip1',
+  widgetHeight: 300,
+  widgetWidth: 800,
+});
 const ROWS = binding("{{[{ id: 1, name: 'A' }, { id: 2, name: 'B' }]}}");
-const shell = () => document.querySelector('.tj-shadcn');
+// The widget's root (a portal root left by an earlier widget is a .tj-shadcn too).
+const shell = () => document.querySelector('.canvas-component .tj-shadcn');
 
 describe('A UI 2.0 surface in a fixed box fills it', () => {
   beforeEach(async () => {
@@ -75,5 +83,33 @@ describe('A UI 2.0 surface in a fixed box fills it', () => {
     expect(look).not.toMatch(/^\s{2}height: auto !important;/m);
     expect(source).toMatch(/isDynamicHeightEnabled \? ' tj-table-look-fit' : ''/);
     expect(source).toMatch(/const isDynamicHeightEnabled = properties\.dynamicHeight && currentMode === 'view';/);
+  });
+});
+
+describe('A Summary strip in a fixed box fills it', () => {
+  beforeEach(() => strip.setup());
+  afterEach(() => strip.teardown());
+
+  test('[FixedBox-006] a Summary strip dragged taller fills its box in the editor, and with dynamic height off', () => {
+    for (const [currentMode, properties] of [
+      ['edit', {}],
+      ['view', { dynamicHeight: binding('{{false}}') }],
+    ]) {
+      strip.render({ currentMode, properties });
+      expect(shell()).toHaveClass('tw-h-full');
+      expect(document.querySelector('dl')).toHaveClass('tw-h-full', 'tw-grid');
+      strip.teardown();
+    }
+  });
+
+  test('[FixedBox-007] with dynamic height on in the viewer the strip keeps its figures height, which the box follows', () => {
+    strip.render({ currentMode: 'view' });
+    expect(shell()).not.toHaveClass('tw-h-full');
+    expect(document.querySelector('dl')).not.toHaveClass('tw-h-full');
+  });
+
+  test('[FixedBox-008] a strip with no figures centres its message in a fixed box', () => {
+    strip.render({ currentMode: 'edit', properties: { items: binding('{{[]}}') } });
+    expect(shell().firstElementChild).toHaveClass('tw-h-full', 'tw-items-center');
   });
 });
