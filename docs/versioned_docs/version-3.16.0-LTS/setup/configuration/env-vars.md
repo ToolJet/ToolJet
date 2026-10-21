@@ -163,6 +163,17 @@ By default, an account is locked after 5 failed login attempts. You can control 
 
 - `HIDE_ACCOUNT_SETUP_LINK`: Set to `true` to hide the account setup link from the admin in the manage user page. Ensure SMTP is configured to send welcome emails.
 
+#### Bulk User Upload
+
+<PlanBadge type="enterprise" />
+
+Limits for [bulk uploading users](/docs/user-management/onboard-users/bulk-invite-users) from a CSV file:
+
+- `ORG_USERS_BULK_UPLOAD_MAX_FILE_SIZE_MB`: Maximum size of the CSV file, in MB. Default: **1**.
+- `ORG_USERS_BULK_UPLOAD_MAX_ROWS`: Maximum number of user rows per file. Default: **250**.
+
+Both values must be positive numbers. Any other value falls back to the default.
+
 #### Restrict Signups
 
 Set `DISABLE_SIGNUPS=true` to allow only invited users to sign up. The signup page will still be visible but unusable.
