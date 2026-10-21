@@ -120,7 +120,9 @@ export const ListSection = (s: ListSectionProps) => {
     );
   } else {
     body = (
-      <div className={cn('tw-overflow-hidden', frameClass, pad, fill)} style={frame}>
+      // In a fixed box the rows scroll inside the card: rows taller than the box allows (a progress bar adds about 14px
+      // a row) drew past the box's bottom over the widgets below it.
+      <div className={cn(boxed ? 'tw-overflow-y-auto' : 'tw-overflow-hidden', frameClass, pad, fill)} style={frame}>
         <ul className="tw-m-0 tw-list-none tw-p-0" role="list">
           {s.children}
         </ul>

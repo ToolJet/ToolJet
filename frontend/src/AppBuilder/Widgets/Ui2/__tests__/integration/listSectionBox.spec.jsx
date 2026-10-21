@@ -62,6 +62,25 @@ describe('A list section in its box', () => {
     expect(frame()).not.toHaveClass('tw-h-full');
   });
 
+  test('[ListBox-006] rows with a progress bar taller than the box scroll inside the card, not past the box', () => {
+    for (const [currentMode, extra] of [
+      ['edit', {}],
+      ['view', { dynamicHeight: binding('{{false}}') }],
+    ]) {
+      list.render({ currentMode, properties: { data: records(8, true), progressField: binding('done'), ...extra } });
+      expect(document.querySelectorAll('[data-progress]')).toHaveLength(8);
+      expect(shell()).toHaveClass('tw-h-full');
+      expect(frame()).toHaveClass('tw-h-full', 'tw-overflow-y-auto');
+      list.teardown();
+    }
+  });
+
+  test('[ListBox-007] dynamic height on in the viewer: progress rows stay in the measured card, which the box follows', () => {
+    list.render({ currentMode: 'view', properties: { data: records(8, true), progressField: binding('done') } });
+    expect(frame()).toHaveClass('tw-overflow-hidden');
+    expect(frame()).not.toHaveClass('tw-h-full');
+  });
+
   test('[ListBox-005] the Progress list shares the section and fills its box in the editor', () => {
     progress.render({ currentMode: 'edit' });
     expect(shell()).toHaveClass('tw-h-full');
