@@ -39,3 +39,40 @@ describe('a percent stat given as a ratio', () => {
     expect(statValue(0, { valueFormat: 'percent' })).toBe(statValue(0, { valueFormat: 'percent' }));
   });
 });
+
+describe('statValue with a value bound as text', () => {
+  // The Value format did nothing to a figure bound as text unless it was a bare "1250"; grouped text ("1,250") showed as
+  // written whatever the format.
+  it('formats numeric text, plain or grouped, in the chosen format', () => {
+    expect(statValue('1250', { valueFormat: 'currency' })).toBe('$1,250');
+    expect(statValue('1,250', { valueFormat: 'currency' })).toBe('$1,250');
+    expect(statValue('1,250.5', { valueFormat: 'number' })).toBe('1,250.5');
+    expect(statValue('-12.5', { valueFormat: 'percent' })).toBe('-12.5%');
+  });
+
+  it('leaves other text as written, and text in auto', () => {
+    expect(statValue('$1,250.00', { valueFormat: 'currency' })).toBe('$1,250.00');
+    expect(statValue('12 open', { valueFormat: 'number' })).toBe('12 open');
+    expect(statValue('2026')).toBe('2026');
+  });
+
+  it('a new Stat starts with a number its format applies to; one saved with the old text keeps it', () => {
+    const { shadStatConfig } = require('@/AppBuilder/WidgetManager/widgets/shadStat');
+    expect(shadStatConfig.definition.properties.value.value).toBe('{{1250}}');
+    expect(statValue(1250, { valueFormat: 'currency' })).toBe('$1,250');
+    expect(statValue('$1,250.00', { valueFormat: 'auto' })).toBe('$1,250.00');
+  });
+});
+
+describe('figureOf', () => {
+  const { figureOf } = require('@/AppBuilder/Widgets/Ui2/_shared/format');
+  it('reads plain and locale-grouped numbers, and refuses text the two readings disagree on', () => {
+    expect(figureOf('1250.5', 'en')).toBe(1250.5);
+    expect(figureOf('1,250', 'en')).toBe(1250);
+    expect(figureOf('1.250,5', 'de')).toBe(1250.5);
+    expect(figureOf('1250.5', 'de')).toBe(1250.5);
+    expect(figureOf('1.250', 'de')).toBeNull();
+    expect(figureOf('12,50,000', 'en')).toBeNull();
+    expect(figureOf('$5', 'en')).toBeNull();
+  });
+});
