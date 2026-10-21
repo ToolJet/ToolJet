@@ -88,6 +88,18 @@ const ROW_GAP = 6;
 const VALUE_LINE: Record<string, number> = { sm: 28, default: 32, lg: 40 };
 const NARROW_CARD = 160;
 
+/** A part drawn as a skeleton of its own size while the Stat loads with the Skeleton look: the part keeps its place
+ *  (invisible) and a skeleton covers it, so the card is as tall loading as loaded. */
+const Veil = ({ on, className, children }: { on: boolean; className?: string; children: React.ReactNode }) =>
+  on && children ? (
+    <span className={cn('tw-relative tw-inline-flex', className)} aria-hidden="true" data-skeleton-part="">
+      <span className="tw-invisible tw-inline-flex tw-w-full tw-min-w-0 tw-max-w-full">{children}</span>
+      <Skeleton className="tw-absolute tw-inset-0 tw-h-auto tw-rounded-ui2-md" />
+    </span>
+  ) : (
+    <>{children}</>
+  );
+
 export const ShadStat = (props: WidgetProps) => {
   const { setExposedVariables } = props;
   // The native Statistics' setters: the figure (primary) and the change (secondary), until those properties change.
@@ -133,7 +145,14 @@ export const ShadStat = (props: WidgetProps) => {
   const iconShape = ['circle', 'none'].includes(properties.iconStyle) ? properties.iconStyle : 'square';
   const size = ['sm', 'lg'].includes(properties.size) ? properties.size : 'default';
   const iconSize = size === 'lg' ? 20 : size === 'sm' ? 14 : 16;
-  const iconNode = icon ? <StatIcon name={icon} shape={iconShape} size={iconSize} /> : null;
+  // Loading with the Skeleton look: the change chip, the icon, the context line and the trend line are skeletons of
+  // their own size too, not only the figure (the chip and icon showed their old values beside a skeleton figure).
+  const veiled = properties.loadingState === true && wantsSkeleton(properties);
+  const iconNode = icon ? (
+    <Veil on={veiled} className="tw-shrink-0">
+      <StatIcon name={icon} shape={iconShape} size={iconSize} />
+    </Veil>
+  ) : null;
   const progress = progressPercent(properties.progress);
   const label = String(properties.label ?? '');
   // The label's two-line reserve (figures level across a row of Stats) only where the box has room for it: in a short
@@ -150,38 +169,46 @@ export const ShadStat = (props: WidgetProps) => {
     .join(' · ');
   const figureChip = !!figure || /^[+\-−±]?\s?[$€£¥₹]?\d/.test(change.chip || '');
   const changeBadge = change.chip ? (
-    <Badge
-      variant="outline"
-      style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) ?? undefined : undefined}
-      // A figure keeps its width (it is short once formatted) and the label beside it wraps; words take at most 60% of
-      // the row and wrap. The whole change is the tooltip.
-      title={String(properties.change)}
-      className={cn(
-        'tw-min-w-0 tw-max-w-[60%] tw-gap-1',
-        figureChip && 'tw-max-w-full tw-shrink-0',
-        isSet(trendColor) && 'tw-border-transparent tw-bg-[color:var(--kb-badge-bg)] tw-text-[color:var(--kb-badge-fg)]'
-      )}
-    >
-      {TrendIcon ? <TrendIcon className="tw-h-3 tw-w-3 tw-shrink-0" data-direction={trend} /> : null}
-      {/* Words without a leading figure wrap rather than being cut; a figure stays on one line, a long one shortened
+    <Veil on={veiled} className={figureChip ? 'tw-max-w-full tw-shrink-0' : 'tw-min-w-0 tw-max-w-[60%]'}>
+      <Badge
+        variant="outline"
+        style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) ?? undefined : undefined}
+        // A figure keeps its width (it is short once formatted) and the label beside it wraps; words take at most 60% of
+        // the row and wrap. The whole change is the tooltip.
+        title={String(properties.change)}
+        className={cn(
+          'tw-min-w-0 tw-max-w-[60%] tw-gap-1',
+          figureChip && 'tw-max-w-full tw-shrink-0',
+          isSet(trendColor) &&
+            'tw-border-transparent tw-bg-[color:var(--kb-badge-bg)] tw-text-[color:var(--kb-badge-fg)]'
+        )}
+      >
+        {TrendIcon ? <TrendIcon className="tw-h-3 tw-w-3 tw-shrink-0" data-direction={trend} /> : null}
+        {/* Words without a leading figure wrap rather than being cut; a figure stays on one line, a long one shortened
           ("+$190,800.00" broke as "+$190,800.0 / 0" and squeezed the label to two lines). */}
-      {figureChip ? (
-        <span className="tw-whitespace-nowrap">{figure ? figure.text : compactFigure(change.chip)}</span>
-      ) : (
-        <span className="tw-min-w-0 tw-whitespace-normal tw-break-words">{change.chip}</span>
-      )}
-    </Badge>
+        {figureChip ? (
+          <span className="tw-whitespace-nowrap">{figure ? figure.text : compactFigure(change.chip)}</span>
+        ) : (
+          <span className="tw-min-w-0 tw-whitespace-normal tw-break-words">{change.chip}</span>
+        )}
+      </Badge>
+    </Veil>
   ) : null;
   // The badge sits in the label row unless the icon takes that corner; then it follows the figure.
   const badgeInHeader = !(icon && iconPosition === 'right');
   const changeLabel = context ? (
     // In a fixed box the context line keeps to one line: wrapping to two, it pushed the title out of a KPI tile.
-    <span
-      className={cn('tw-text-xs tw-text-[color:var(--lk-help,var(--sc-muted-foreground))]', fixed && 'tw-line-clamp-1')}
-      title={fixed ? context : undefined}
-    >
-      {context}
-    </span>
+    <Veil on={veiled} className="tw-min-w-0">
+      <span
+        className={cn(
+          'tw-text-xs tw-text-[color:var(--lk-help,var(--sc-muted-foreground))]',
+          fixed && 'tw-line-clamp-1'
+        )}
+        title={fixed ? context : undefined}
+      >
+        {context}
+      </span>
+    </Veil>
   ) : null;
   const content = (
     <div
@@ -223,7 +250,10 @@ export const ShadStat = (props: WidgetProps) => {
         >
           {properties.loadingState ? (
             wantsSkeleton(properties) ? (
-              <Skeleton className="tw-h-8 tw-w-24" />
+              // A line of the figure's own height and baseline, so the row is as tall as with the figure.
+              <Veil on className="tw-w-24">
+                <span>&nbsp;</span>
+              </Veil>
             ) : (
               <span className="tw-flex tw-h-8 tw-items-center">
                 <Spinner />
@@ -263,7 +293,11 @@ export const ShadStat = (props: WidgetProps) => {
           ) : null}
         </div>
       ) : null}
-      {properties.trendData ? <StatSparkline data={properties.trendData} type={properties.sparklineType} /> : null}
+      {properties.trendData ? (
+        <Veil on={veiled} className="tw-flex tw-w-full">
+          <StatSparkline data={properties.trendData} type={properties.sparklineType} />
+        </Veil>
+      ) : null}
     </div>
   );
   const body =

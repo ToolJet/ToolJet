@@ -98,6 +98,26 @@ describe('UI 2.0 Stat', () => {
     // More cases, the arrows and the layout: ShadStatChange.spec.jsx.
   });
 
+  test('[ShadStat-LOAD-001] the Skeleton look covers the change chip, the icon, the context and the trend line too', async () => {
+    const parts = {
+      change: binding('{{12.4}}'),
+      changeLabel: binding('vs last month'),
+      icon: binding('IconCurrencyDollar'),
+      trendData: binding('{{[3, 5, 4, 6]}}'),
+    };
+    render({ properties: { ...parts, loadingState: binding('{{true}}'), loadingIndicator: binding('skeleton') } });
+    // The figure, the chip, the context line, the icon and the trend line: each a skeleton over the part, kept in its
+    // place (invisible), so the card is as tall loading as loaded (192px for both in a browser).
+    await waitFor(() => expect(document.querySelectorAll('[data-skeleton-part]')).toHaveLength(5));
+    document.querySelectorAll('[data-skeleton-part]').forEach((part) => {
+      expect(part).toHaveAttribute('aria-hidden', 'true');
+      expect(part.firstElementChild).toHaveClass('tw-invisible');
+    });
+
+    render({ properties: { ...parts, loadingState: binding('{{true}}'), loadingIndicator: binding('spinner') } });
+    await waitFor(() => expect(document.querySelectorAll('[data-skeleton-part]')).toHaveLength(0));
+  });
+
   // "+8 vs semana passada" in the chip, capped at 60% of the row, read "+8 vs semana pa..." (a clinic app, 2026-10-13).
   test('[ShadStat-PROP-004] changeLabel is a context line beside the chip, and a change with words splits into it', async () => {
     render({ properties: { change: binding('+8 vs last week'), changeLabel: binding('all clinics') } });
