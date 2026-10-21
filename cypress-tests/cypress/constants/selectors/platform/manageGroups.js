@@ -73,6 +73,7 @@ export const groupsSelector = {
   moduleDeleteLabel: '[data-cy="module-delete-label"]',
   moduleFolderCreateCheck: '[data-cy="module-folder-create-checkbox"]',
   moduleFolderDeleteCheck: '[data-cy="module-folder-delete-checkbox"]',
+  workflowFolderCreateCheck: '[data-cy="workflow-folder-create-checkbox"]',
   foldersCreateCheck: "[data-cy=folder-create-checkbox]",
   foldersDeleteCheck: '[data-cy="folder-delete-checkbox"]',
   foldersCreateLabel: "[data-cy=folder-create-label]",
@@ -109,6 +110,8 @@ export const groupsSelector = {
   datasourcesBuildWithHelperText: '[data-cy="datasource-build-with-helper-text"]',
 
   foldersText: '[data-cy="folders-text"]',
+  folderGranularAccessRow: '[data-cy="folder-granular-access"]',
+  editFolderGranularAccess: '[data-cy="edit-folder-granular-access"]',
   folderEditRadio: '[data-cy="folder-edit-folder-radio"]',
   folderEditLabel: '[data-cy="folder-edit-folder-label"]',
   folderEditHelperText: '[data-cy="folder-edit-folder-helper-text"]',
@@ -146,7 +149,7 @@ export const groupsSelector = {
   multiSelectSearch: '[data-cy="multi-select-search"]',
   multiSelectSearchInput:
     '[data-cy="multi-select-search"]>>>>.select-search__input',
-  addUserButton: '[data-cy="undefined-group-add-button"]',
+  addUserButton: '[data-cy$="-group-add-button"]',
   workspaceCreateLabel: '[data-cy="workspace-variable-create-label"]',
   workspaceVarCreateLabel: '[data-cy="workspace-variable-create-label"]',
   workspaceHelperText: '[data-cy="workspace-constants-helper-text"]',
@@ -231,4 +234,38 @@ export const groupsSelector = {
   editFolderRadio: '[data-cy="edit-folder-permission-radio"]',
   editAppRadio: '[data-cy="edit-apps-permission-radio"]',
   viewAppRadio: '[data-cy="view-apps-permission-radio"]',
+  editAppsPermissionLabel: '[data-cy="edit-apps-permission-label"]',
+  editAppsPermissionHelperText: '[data-cy="edit-apps-permission-helper-text"]',
+  viewAppsPermissionLabel: '[data-cy="view-apps-permission-label"]',
+  viewAppsPermissionHelperText: '[data-cy="view-apps-permission-helper-text"]',
+  allAppFoldersLabel: '[data-cy="all-app-folders-label"]',
+};
+
+export const groupAdminSelector = {
+  groupAdminsLink: '[data-cy="group-admins-link"]',
+  usersLink: "[data-cy=users-link]",
+  permissionsLink: "[data-cy=permissions-link]",
+  granularLink: "[data-cy=granular-access-link]",
+
+  adminMultiSelectSearch: '[data-cy="admin-multi-select-search"]',
+  adminMultiSelectInput: '[data-cy="admin-multi-select-search"] .select-search__input',
+  assignGroupAdminButton: '[data-cy="group-admin-add-button"]',
+
+  groupAdminSearchButton: '[data-cy="group-admin-search-btn"]',
+  adminNameHeader: '[data-cy="name-header"]',
+  adminEmailHeader: '[data-cy="email-header"]',
+
+  adminEmptyPageIcon: '[data-cy="admin-empty-page-icon"]',
+  adminEmptyPageTitle: '[data-cy="admin-empty-page"]',
+  adminEmptyPageInfoText: '[data-cy="admin-empty-page-info-text"]',
+  groupAdminsCheckInput: '[data-cy="group-admins-check-input"]',
+  groupAdminsLabel: '[data-cy="group-admins-label"]',
+
+  usersTableAdminGroupsColumnHeader: '[data-cy="users-table-admin-groups-column-header"]',
+  groupChipCell: '[data-cy="group-chip"]',
+  revokeButton: '[data-cy="remove-button"]',
+  adminMultiSelectOption: '[data-cy="admin-multi-select-search"] .item-renderer',
+  noAccessibleGroupsInfo: '[data-cy="no-accessible-groups-info"]',
+  adminUserRow: (email) => `[data-cy="${cyParamName(email)}-user-row"]`,
+  userRoleSectionTitle: '[data-cy="user-role-title"]',
 };

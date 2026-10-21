@@ -169,9 +169,11 @@ describe('resolveWorkflowRef', () => {
       await expect(resolveWorkflowRef(manager, pin, organizationId, mainId, featureId)).rejects.toThrow(NO_BRANCH_ROW);
     });
 
-    it('treats an unhydrated stub on the branch as absent, and throws', async () => {
+    it('treats an unhydrated stub on the branch as absent, and says to open it', async () => {
       const manager = makeManager([WF_APP], [mainDraft, { ...branchRow, isStub: true }]);
-      await expect(resolveWorkflowRef(manager, pin, organizationId, mainId, featureId)).rejects.toThrow(NO_BRANCH_ROW);
+      await expect(resolveWorkflowRef(manager, pin, organizationId, mainId, featureId)).rejects.toThrow(
+        /hasn't been loaded on this branch yet/
+      );
     });
 
     it('does not accept a VERSION-type row that happens to sit on the consumer branch', async () => {
@@ -257,6 +259,13 @@ describe('resolveWorkflowRef', () => {
       const manager = makeManager([WF_APP], [draftOnFeature]);
       await expect(resolveWorkflowRef(manager, pin, organizationId, mainId, featureId)).rejects.toBeInstanceOf(
         BadRequestException
+      );
+    });
+
+    it('says to open the workflow when the default-branch draft is an unloaded stub', async () => {
+      const manager = makeManager([WF_APP], [{ ...mainDraft, isStub: true }]);
+      await expect(resolveWorkflowRef(manager, pin, organizationId, mainId, featureId)).rejects.toThrow(
+        /draft on main hasn't been loaded yet/
       );
     });
 

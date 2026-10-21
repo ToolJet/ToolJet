@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute, redirectToDashboard, routes } from '@/_helpers/routes';
+import { appendBranchName } from '@/_helpers/active-branch';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';
 import { hasBuilderRole } from '@/_helpers/utils';
@@ -52,7 +53,11 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-en
           : workflowsEnabled &&
             showWorkflows &&
             admin && (
-              <Link target="_blank" to={getPrivateRoute('workflows')} className="dropdown-item tj-text tj-text-xsm">
+              <Link
+                target="_blank"
+                to={appendBranchName(getPrivateRoute('workflows'))}
+                className="dropdown-item tj-text tj-text-xsm"
+              >
                 <SolidIcon name={'workflows'} width="20" fill="#C1C8CD" />
                 <span>{'Workflows'}</span>
               </Link>
