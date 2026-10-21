@@ -87,6 +87,13 @@ describe('Table with no rows', () => {
     // The body fills what is under the header and is never sized to nothing.
     expect(table).toMatch(/\.tj-ntable-empty-body \{[^}]*flex: 1 1 auto;/);
     expect(table).toMatch(/\.tj-ntable-empty-body \{[^}]*contain-intrinsic-height: \d+px;/);
+    // A short table keeps the header and a line of the message (the footer is what the card cuts), tightens the
+    // padding, then drops the icon: at 183px and 150px the message was cut in half or gone.
+    expect(table).toMatch(/\.jet-data-table\.tj-ntable-empty \{[^}]*min-height: 72px;/);
+    expect(table).toMatch(/> table > tbody \{[^}]*min-height: 28px;/);
+    expect(table).toMatch(
+      /@container tj-ntable-empty \(max-height: 103px\) \{\s*\.tj-ntable-empty-body > div \{\s*padding: 4px 12px;/
+    );
     // A short table drops the icon and keeps the message.
     expect(table).toMatch(
       /@container tj-ntable-empty \(max-height: \d+px\) \{\s*\.tj-ntable-empty-body \.warning-no-data/

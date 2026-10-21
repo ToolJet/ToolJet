@@ -44,6 +44,9 @@
 .jet-table.table-component .jet-data-table.tj-ntable-empty {
     display: flex;
     flex-direction: column;
+    // The header row and one line of the message, however short the table: in a short table the body shrank to
+    // nothing and the message was cut in half or gone. Below that the footer is what the card cuts off.
+    min-height: 72px;
 
     > table {
         display: flex;
@@ -59,7 +62,7 @@
     > table > tbody {
         display: flex;
         flex: 1 1 auto;
-        min-height: 0;
+        min-height: 28px;
     }
     > table > tbody > tr {
         display: flex;
@@ -85,14 +88,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
     overflow: hidden;
     container: tj-ntable-empty / size;
-    contain-intrinsic-height: 96px;
+    contain-intrinsic-height: 104px;
+
+    > div {
+        padding: 16px;
+    }
 }
 
-// The icon (44px), the gap and the message (20px) need 72px.
-@container tj-ntable-empty (max-height: 71px) {
+// Shorter than the icon (44px), the gap and the message (20px) with their 16px padding: less padding. Shorter than
+// those three alone: the icon goes, the message stays.
+@container tj-ntable-empty (max-height: 103px) {
+    .tj-ntable-empty-body > div {
+        padding: 4px 12px;
+    }
+}
+@container tj-ntable-empty (max-height: 79px) {
     .tj-ntable-empty-body .warning-no-data {
         display: none;
     }
