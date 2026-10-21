@@ -84,7 +84,12 @@ export class LoginConfigsService implements ILoginConfigsService {
       throw new BadRequestException('Invalid SSO type');
     }
 
-    await this.loginConfigsUtilService.encryptSecret(configs);
+    const previousConfig = type === SSOType.OPENID && !configId ? undefined :
+      await this.ssoConfigsRepository.findOne({ where: {
+        organizationId, sso: type, configScope: ConfigScope.ORGANIZATION,
+        ...(type === SSOType.OPENID ? { id: configId } : {}),
+      } });
+    await this.loginConfigsUtilService.encryptSecret(configs, previousConfig?.configs);
     const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });
     const auditLogsData = {
       userId: user.id,

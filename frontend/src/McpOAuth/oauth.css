@@ -225,3 +225,6 @@
     padding: 12px;
   }
 }
+
+.mcp-oauth-callback { margin: 16px 0; padding: 12px; border: 1px solid var(--border-default); border-radius: 8px; }
+.mcp-oauth-callback code { display: block; overflow-wrap: anywhere; white-space: pre-wrap; unicode-bidi: isolate; }

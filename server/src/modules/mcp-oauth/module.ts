@@ -3,7 +3,7 @@ import { LoginConfigsModule } from '@modules/login-configs/module';
 import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { McpOAuthThrottleGuard } from './throttle.guard';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { McpOAuthService } from './service';
 import { McpOAuthController, McpOAuthMetadataController } from './controller';
@@ -11,8 +11,8 @@ import { McpOAuthController, McpOAuthMetadataController } from './controller';
 /** Shared module registration keeps login/session injection stable; OAuth is gated to Cloud at runtime. */
 @Global()
 @Module({
-  imports: [JwtModule.register({}), ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }])],
-  providers: [McpOAuthService, McpOAuthIdentityService, UserRepository],
+  imports: [JwtModule.register({})],
+  providers: [McpOAuthThrottleGuard, McpOAuthService, McpOAuthIdentityService, UserRepository],
   controllers: [McpOAuthController, McpOAuthMetadataController],
   exports: [McpOAuthService, McpOAuthIdentityService],
 })

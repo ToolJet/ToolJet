@@ -17,7 +17,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { McpOAuthThrottleGuard } from './throttle.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { McpOAuthService } from './service';
 import { OAuthFailure, OAuthRedirectFailure } from './protocol';
@@ -58,7 +58,7 @@ export class McpOAuthExceptionFilter implements ExceptionFilter {
 
 @Controller('mcp-oauth')
 @UseFilters(McpOAuthExceptionFilter)
-@UseGuards(ThrottlerGuard)
+@UseGuards(McpOAuthThrottleGuard)
 export class McpOAuthController {
   constructor(private readonly oauth: McpOAuthService) {}
 
@@ -136,7 +136,6 @@ export class McpOAuthController {
     res.status(200).json(result);
   }
   @Post('register')
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
   async register(@Body() body: Record<string, unknown>, @Res() res: Response) {
     this.headers(res);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -160,7 +159,6 @@ export class McpOAuthController {
     res.status(200).end();
   }
   @Post('exchange')
-  @SkipThrottle()
   async exchange(@Body() body: Record<string, unknown>, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     res.status(200).json(await this.oauth.exchange(body, req.headers.authorization));

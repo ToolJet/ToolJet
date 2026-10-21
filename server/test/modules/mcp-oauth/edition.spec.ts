@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { McpOAuthThrottleGuard } from '@modules/mcp-oauth/throttle.guard';
 import * as supertest from 'supertest';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { McpOAuthService } from '@modules/mcp-oauth/service';
@@ -31,8 +31,8 @@ test.each(['cloud', 'Cloud', 'CLOUD'])('%s requires the explicit flag and valid 
   expect(() => parseOAuthSettings(config({ ...cloudSettings, MCP_OAUTH_RESOURCE_URL: undefined }))).toThrow('requires');
 });
 
-test.each(['ce', 'ee'])('edition %s exposes no OAuth routes and performs no OAuth background/login work', async edition => {
-  const values = { ...settings, TOOLJET_EDITION: edition };
+test.each([{ edition: 'ce', enabled: 'true' }, { edition: 'ee', enabled: 'true' }, { edition: 'cloud', enabled: 'false' }])('edition $edition enabled=$enabled exposes no OAuth routes or background work', async ({ edition, enabled }) => {
+  const values = { ...settings, TOOLJET_EDITION: edition, MCP_OAUTH_ENABLED: enabled };
   const db = { query: jest.fn(), transaction: jest.fn(), manager: { query: jest.fn() } };
   const login = { fetchOrganizationDetails: jest.fn() };
   const oauth = new McpOAuthService(db as any, config(values), new JwtService(), login as any);
@@ -40,7 +40,7 @@ test.each(['ce', 'ee'])('edition %s exposes no OAuth routes and performs no OAut
   const module = await Test.createTestingModule({
     controllers: [McpOAuthController, McpOAuthMetadataController],
     providers: [{ provide: McpOAuthService, useValue: oauth }],
-  }).overrideGuard(ThrottlerGuard).useValue({ canActivate: () => true })
+  }).overrideGuard(McpOAuthThrottleGuard).useValue({ canActivate: () => true })
     .overrideGuard(JwtAuthGuard).useValue({ canActivate: context => {
       context.switchToHttp().getRequest().user = { id: 'synthetic-user', organizationId: 'synthetic-workspace' };
       return true;
@@ -71,6 +71,7 @@ test.each(['ce', 'ee'])('edition %s exposes no OAuth routes and performs no OAut
     expect(login.fetchOrganizationDetails).not.toHaveBeenCalled();
     // The same registered controllers remain functional when configured for Cloud.
     values.TOOLJET_EDITION = 'cloud';
+    values.MCP_OAUTH_ENABLED = 'true';
     await http.get('/.well-known/oauth-authorization-server/api/mcp-oauth').expect(200);
   } finally { await app.close(); }
 });

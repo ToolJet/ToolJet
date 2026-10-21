@@ -173,6 +173,11 @@ export default function ConsentPage() {
             <p className="mcp-oauth-subtitle">
               <strong>{flow.clientName}</strong> is requesting access to <strong>{flow.organizationName}</strong>.
             </p>
+            <div className="mcp-oauth-callback">
+              <p>After you allow, the authorization code is sent to:</p>
+              <code dir="ltr">{flow.redirectUri}</code>
+              <p className="mcp-oauth-muted">Check that this address belongs to the app you started. ToolJet has not verified the client name.</p>
+            </div>
             <div className="mcp-oauth-account">
               <span className="mcp-oauth-icon">
                 <UserRound size={22} aria-hidden="true" />

@@ -75,6 +75,7 @@ export class OAuthStore {
        JOIN users u ON u.id = g.user_id JOIN organizations o ON o.id = g.organization_id
        WHERE g.id = $1 AND g.revoked_at IS NULL AND g.expires_at > now() AND NOT c.disabled
          AND u.status = 'active' AND o.status = 'active'
+         AND NOT EXISTS (SELECT 1 FROM user_ban_list b WHERE lower(b.email) = lower(u.email))
          AND EXISTS (SELECT 1 FROM organization_users ou WHERE ou.user_id = g.user_id
                      AND ou.organization_id = g.organization_id AND ou.status = 'active')
          AND NOT EXISTS (SELECT 1 FROM workspace_ban_list b WHERE b.organization_id = g.organization_id)

@@ -1,3 +1,15 @@
+jest.mock('@helpers/utils.helper', () => ({ getTooljetEdition: () => 'cloud' }));
+jest.mock('@helpers/bootstrap.helper', () => ({ createLogger: () => ({ log: jest.fn() }) }));
+jest.mock('@tooljet/plugins/dist/server', () => ({ QueryError: class extends Error {}, OAuthUnauthorizedClientError: class extends Error {} }), { virtual: true });
+import { join } from 'path';
+import { LoginConfigsService } from '@modules/login-configs/service';
+import { LoginConfigsUtilService } from '@modules/login-configs/util.service';
+import { SSOConfigsRepository } from '@modules/login-configs/repository';
+import { EncryptionService } from '@modules/encryption/service';
+import { RequestContext } from '@modules/request-context/service';
+import { SessionUtilService } from '@modules/session/util.service';
+import { setConnectionInstance } from '@helpers/database.helper';
+import { RevokeMcpOAuthOnInstanceBan1792627200000 } from '../../../migrations/1792627200000-RevokeMcpOAuthOnInstanceBan';
 import { ReduceMcpOAuthPolicyContention1792540800000 } from '../../../migrations/1792540800000-ReduceMcpOAuthPolicyContention';
 import { McpOAuthIdentityService } from '@modules/mcp-oauth/identity.service';
 import 'reflect-metadata';
@@ -9,7 +21,7 @@ import { createHash, randomUUID } from 'crypto';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import * as cookieParser from 'cookie-parser';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { McpOAuthThrottleGuard } from '@modules/mcp-oauth/throttle.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { McpOAuthController, McpOAuthMetadataController } from '@modules/mcp-oauth/controller';
 import { AddMcpOAuth1789416000000 } from '../../../migrations/1789416000000-AddMcpOAuth';
@@ -101,69 +113,24 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       throw new Error('Use a dedicated local database named tooljet_oauth_test_*');
     }
     db = new DataSource({
-      type: 'postgres',
-      url: connection,
-      entities: [],
-      synchronize: false,
-      logging: false,
+      type: 'postgres', url: connection, entities: [join(__dirname, '../../../src/**/*.entity.ts')], synchronize: false, logging: false,
+      schema: 'oauth_test', extra: { options: '-c search_path=oauth_test,public' },
     });
     await db.initialize();
-    // Each test suite owns an isolated schema and never truncates existing ToolJet data.
-    await db.query('CREATE SCHEMA IF NOT EXISTS oauth_test');
-    await db.query('SET search_path TO oauth_test');
-    // Connection pool sessions need the same search_path.
-    await db.destroy();
-    db = new DataSource({
-      type: 'postgres',
-      url: connection,
-      entities: [],
-      synchronize: false,
-      logging: false,
-      extra: { options: '-c search_path=oauth_test' },
-    });
-    await db.initialize();
-    await db.query(`
-      CREATE TABLE apps (id uuid PRIMARY KEY, organization_id uuid);
-      CREATE TABLE users (id uuid PRIMARY KEY, email text, status text);
-      CREATE TABLE organizations (id uuid PRIMARY KEY, name text, slug text, status text, domain text, password_allowed_domains text, password_restricted_domains text, inherit_sso boolean DEFAULT false);
-      CREATE TABLE custom_domains (id uuid PRIMARY KEY, organization_id uuid UNIQUE, domain text UNIQUE, status text, ssl_status text);
-      CREATE TABLE instance_settings (key text PRIMARY KEY, value text);
-      CREATE TABLE sso_configs (id uuid PRIMARY KEY, organization_id uuid, sso text, enabled boolean, config_scope text, configs jsonb);
-      CREATE TABLE sso_config_oidc_group_sync (id uuid PRIMARY KEY, sso_config_id uuid, organization_id uuid, claim_name text, group_mapping jsonb, enable_group_sync boolean);
-      CREATE TABLE organization_users (user_id uuid, organization_id uuid, status text);
-      CREATE TABLE user_sessions (id uuid PRIMARY KEY, user_id uuid, created_at timestamptz DEFAULT now());
-      CREATE TABLE workspace_ban_list (organization_id uuid);
-      CREATE TABLE user_personal_access_tokens (id text PRIMARY KEY, token_hash text);
-      INSERT INTO user_personal_access_tokens VALUES ('synthetic-existing-pat', 'synthetic-existing-hash');
-    `);
-    const runner = db.createQueryRunner();
-    await new AddMcpOAuth1789416000000().up(runner);
-    await new AddMcpOAuthRevocationHooks1791290000000().up(runner);
-    await new AddMcpOAuthClientAuthentication1791763200000().up(runner);
-    await new ReduceMcpOAuthPolicyContention1792540800000().up(runner);
-    await runner.release();
-    expect(await db.query('SELECT * FROM user_personal_access_tokens')).toEqual([
-      { id: 'synthetic-existing-pat', token_hash: 'synthetic-existing-hash' },
-    ]);
+    setConnectionInstance(db);
+    // npm run test:mcp-oauth applies the real migration chain before Jest starts.
+    const [{ total }] = await db.query('SELECT count(*)::int AS total FROM migrations');
+    expect(total).toBeGreaterThan(200);
   });
   afterAll(async () => {
     if (db?.isInitialized) {
-      const runner = db.createQueryRunner();
-      await new ReduceMcpOAuthPolicyContention1792540800000().down(runner);
-      await new AddMcpOAuthClientAuthentication1791763200000().down(runner);
-      await new AddMcpOAuthRevocationHooks1791290000000().down(runner);
-      await new AddMcpOAuth1789416000000().down(runner);
-      await runner.release();
-      expect(await db.query('SELECT * FROM user_personal_access_tokens')).toEqual([
-        { id: 'synthetic-existing-pat', token_hash: 'synthetic-existing-hash' },
-      ]);
       await db.query('DROP SCHEMA oauth_test CASCADE');
       await db.destroy();
     }
   });
   beforeEach(async () => {
     await db.query(
-      'TRUNCATE mcp_oauth_clients, users, organizations, organization_users, user_sessions, workspace_ban_list, instance_settings, sso_configs, sso_config_oidc_group_sync, custom_domains CASCADE',
+      'TRUNCATE mcp_oauth_clients, users, organizations, organization_users, user_sessions, workspace_ban_list, user_ban_list, instance_settings, sso_configs, sso_config_oidc_group_sync, custom_domains CASCADE',
     );
     organizationId = randomUUID();
     user = {
@@ -174,12 +141,12 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       isPasswordLogin: true,
       isSSOLogin: false,
     };
-    await db.query("INSERT INTO users VALUES ($1,$2,'active')", [user.id, user.email]);
+    await db.query("INSERT INTO users (id,email,status) VALUES ($1,$2,'active')", [user.id, user.email]);
     await db.query("INSERT INTO organizations (id,name,slug,status) VALUES ($1,'Garden operations','garden','active')", [
       organizationId,
     ]);
-    await db.query("INSERT INTO organization_users VALUES ($1,$2,'active')", [user.id, organizationId]);
-    await db.query('INSERT INTO user_sessions(id,user_id) VALUES ($1,$2)', [user.sessionId, user.id]);
+    await db.query("INSERT INTO organization_users (user_id,organization_id,status,role) VALUES ($1,$2,'active','admin')", [user.id, organizationId]);
+    await db.query("INSERT INTO user_sessions(id,user_id,expiry) VALUES ($1,$2,now()+interval '1 day')", [user.sessionId, user.id]);
     const users = { findOne: async () => ({ ...user }), findByEmail: async () => ({ ...user }) };
     loginPolicy = { form: { enabled: true }, openid: { enabled: true, configId: 'synthetic-provider' } };
     oauth = new McpOAuthService(
@@ -221,7 +188,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
         } },
       );
       Object.assign(oauth, { identity: new McpOAuthIdentityService(db, new ConfigService({ ...settings, ENABLE_CUSTOM_DOMAINS: 'true' }), new JwtService(), { findOne: async () => ({ ...user }), findByEmail: async () => ({ ...user }) } as any, loginConfigs as any) });
-      await db.query("INSERT INTO custom_domains VALUES ($1,$2,$3,'active','active')", [randomUUID(), organizationId, 'orchard.synthetic.example']);
+      await db.query("INSERT INTO custom_domains (id,organization_id,domain,status,ssl_status) VALUES ($1,$2,$3,'active','active')", [randomUUID(), organizationId, 'orchard.synthetic.example']);
     });
     const begin = async () => {
       const flow = await oauth.start(request());
@@ -256,7 +223,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       if (change === 'remove') await db.query('DELETE FROM custom_domains');
       if (change === 'tls') await db.query("UPDATE custom_domains SET ssl_status='pending_issuance'");
       if (change === 'license') licensed = false;
-      if (change === 'owner') await db.query('UPDATE custom_domains SET organization_id=$1', [randomUUID()]);
+      if (change === 'owner') await db.query('UPDATE custom_domains SET organization_id=$1', [(await db.query("INSERT INTO organizations(status) VALUES ('active') RETURNING id"))[0].id]);
       await expect(oauth.preview(flow.id, csrf, customOrigin)).rejects.toThrow('domain changed');
       await expect(oauth.consent(flow.id, csrf, user, true, customOrigin)).rejects.toMatchObject({ error: 'invalid_request' });
       expect(await db.query('SELECT id FROM mcp_oauth_grants')).toEqual([]);
@@ -416,12 +383,14 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     try {
       await expect(db.query("UPDATE mcp_oauth_clients SET token_endpoint_auth_method='none' WHERE id=$1", [confidentialId])).rejects.toMatchObject({ driverError: { code: '23514', constraint: 'mcp_oauth_client_auth_check' } });
       await expect(db.query("UPDATE mcp_oauth_clients SET client_secret_hash='not-a-hash' WHERE id=$1", [confidentialId])).rejects.toMatchObject({ driverError: { code: '23514', constraint: 'mcp_oauth_client_auth_check' } });
+      await new RevokeMcpOAuthOnInstanceBan1792627200000().down(runner);
       await migration.down(runner);
       expect((await db.query('SELECT disabled FROM mcp_oauth_clients WHERE id=$1', [publicId]))[0].disabled).toBe(false);
       expect((await db.query('SELECT disabled FROM mcp_oauth_clients WHERE id=$1', [confidentialId]))[0].disabled).toBe(true);
       expect((await db.query('SELECT revoked_at FROM mcp_oauth_grants'))[0].revoked_at).not.toBeNull();
     } finally {
       await migration.up(runner);
+      await new RevokeMcpOAuthOnInstanceBan1792627200000().up(runner);
       await runner.release();
     }
     const [existing] = await db.query('SELECT token_endpoint_auth_method,client_secret_hash,first_authorized_at,created_at FROM mcp_oauth_clients WHERE id=$1', [publicId]);
@@ -434,9 +403,90 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     const tokens = await redeem(await approve({ scope }));
     const delegated = await exchange(tokens.access_token);
     const appId = randomUUID();
-    await db.query('INSERT INTO apps VALUES ($1,$2)', [appId, organizationId]);
+    await db.query('INSERT INTO apps (id,organization_id,user_id) VALUES ($1,$2,$3)', [appId, organizationId,user.id]);
     return { tokens, delegated, appId };
   };
+  test('real workspace SSO saves preserve consent for unchanged secrets but revoke rotations', async () => {
+    const previousKey = process.env.LOCKBOX_MASTER_KEY;
+    process.env.LOCKBOX_MASTER_KEY = '7'.repeat(64);
+    const repo = new SSOConfigsRepository(db);
+    const encryption = new EncryptionService();
+    const util = new LoginConfigsUtilService(new ConfigService(), encryption, {} as any, repo);
+    const service = new LoginConfigsService(repo, { findOne: async () => ({ name: 'Garden operations' }) } as any,
+      new ConfigService(), encryption, util, {} as any, {} as any);
+    const save = (configId, name, clientSecret) => RequestContext.cls.run(new RequestContext({} as any, { locals: {} } as any),
+      () => service.updateOrganizationSSOConfigs(user, { type: 'openid', configId, enabled: true,
+        configs: { name, clientId: 'synthetic-login-client', clientSecret } }));
+    try {
+      const row = await save(undefined, 'Garden login', 'synthetic-first-secret');
+      user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
+      const tokens = await redeem(await approve());
+      const renamed = await save(row.id, 'Meadow login', 'synthetic-first-secret');
+      expect(renamed.configs.clientSecret).toBe(row.configs.clientSecret);
+      await expect(exchange(tokens.access_token)).resolves.toHaveProperty('access_token');
+      await save(row.id, 'Meadow login', 'synthetic-first-secret');
+      await expect(exchange(tokens.access_token)).resolves.toHaveProperty('access_token');
+      const rotated = await save(row.id, 'Meadow login', 'synthetic-second-secret');
+      expect(rotated.configs.clientSecret).not.toBe(row.configs.clientSecret);
+      await save(row.id, 'Meadow login', 'synthetic-first-secret');
+      await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+    } finally {
+      if (previousKey === undefined) delete process.env.LOCKBOX_MASTER_KEY; else process.env.LOCKBOX_MASTER_KEY = previousKey;
+    }
+  });
+  test('administrative session termination expires external credentials as well as browser sessions', async () => {
+    const { tokens, delegated } = await makeViewer();
+    await db.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-admin-pat','workspace',now()+interval '1 day')", [user.id,organizationId]);
+    await SessionUtilService.prototype.terminateAllSessions.call({ mcpOAuthService: oauth }, user.id);
+    expect(await db.query('SELECT id FROM user_sessions WHERE user_id=$1', [user.id])).toEqual([]);
+    expect((await db.query('SELECT expires_at <= now() AS expired FROM user_personal_access_tokens'))[0].expired).toBe(true);
+    await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+    await expect(oauth.authenticateDelegation(delegated.access_token, organizationId)).rejects.toThrow(UnauthorizedException);
+  });
+  test('instance ban revokes access, refresh, delegation, viewer and PATs even after unban', async () => {
+    const { tokens, delegated, appId } = await makeViewer();
+    const viewer = await oauth.viewer(delegated.access_token, organizationId, appId);
+    await db.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-pat-hash','workspace',now()+interval '1 day')", [user.id,organizationId]);
+    await db.query('INSERT INTO user_ban_list(email) VALUES ($1)', [user.email.toUpperCase()]);
+    await db.query('DELETE FROM user_ban_list');
+    await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+    await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+    await expect(oauth.authenticateDelegation(delegated.access_token, organizationId)).rejects.toThrow(UnauthorizedException);
+    await expect(oauth.authenticateViewer(viewer.access_token)).rejects.toThrow(UnauthorizedException);
+    expect((await db.query('SELECT expires_at <= now() AS expired FROM user_personal_access_tokens'))[0].expired).toBe(true);
+  });
+  test('live ban check denies even when the ban predates a grant', async () => {
+    const tokens = await redeem(await approve());
+    await db.query('ALTER TABLE user_ban_list DISABLE TRIGGER mcp_oauth_instance_ban_security');
+    try { await db.query('INSERT INTO user_ban_list(email) VALUES ($1)', [user.email]); }
+    finally { await db.query('ALTER TABLE user_ban_list ENABLE TRIGGER mcp_oauth_instance_ban_security'); }
+    await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+    await db.query('DELETE FROM user_ban_list');
+    await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+  });
+  test('pending registration floods stay bounded and cannot displace an approved client', async () => {
+    const tokens = await redeem(await approve());
+    await db.query(`INSERT INTO mcp_oauth_clients(id,name,redirect_uris,created_at)
+      SELECT 'synthetic-pending-' || i, 'Pending client', '[]', now()-interval '2 minutes' FROM generate_series(1,1000) i`);
+    const newcomer = await oauth.register({ client_name: 'New gardener', redirect_uris: [redirectUri], token_endpoint_auth_method: 'none' });
+    expect((await db.query('SELECT count(*)::int AS total FROM mcp_oauth_clients WHERE first_authorized_at IS NULL'))[0].total).toBe(1000);
+    await expect(exchange(tokens.access_token)).resolves.toHaveProperty('access_token');
+    client = newcomer;
+    await expect(redeem(await approve())).resolves.toHaveProperty('access_token');
+    await db.query("UPDATE mcp_oauth_clients SET created_at=now()-interval '2 hours' WHERE first_authorized_at IS NULL");
+    await oauth.register({ client_name: 'Another gardener', redirect_uris: [redirectUri] });
+    expect((await db.query('SELECT count(*)::int AS total FROM mcp_oauth_clients WHERE first_authorized_at IS NULL'))[0].total).toBe(1);
+  });
+  test('rate buckets require credential possession, client authentication and a signed delegation', async () => {
+    const { tokens, delegated } = await makeViewer();
+    const body = { grant_type: 'refresh_token', client_id: client.client_id, refresh_token: tokens.refresh_token };
+    const grant = await oauth.rateLimitGrant('token', body, {});
+    expect(grant).toBe(delegated.grant_id);
+    expect(await oauth.rateLimitGrant('token', { ...body, refresh_token: 'made-up-token' }, {})).toBeUndefined();
+    expect(await oauth.rateLimitGrant('token', { ...body, client_id: 'made-up-client' }, {})).toBeUndefined();
+    expect(await oauth.rateLimitGrant('viewer', {}, { 'x-tooljet-delegation': delegated.access_token, 'tj-workspace-id': organizationId })).toBe(grant);
+    expect(await oauth.rateLimitGrant('viewer', {}, { 'x-tooljet-delegation': delegated.access_token+'tampered', 'tj-workspace-id': organizationId })).toBeUndefined();
+  });
   test('OAuth viewer is short-lived, app-pinned and cannot become a delegation', async () => {
     const { delegated, appId } = await makeViewer();
     const viewer = await oauth.viewer(delegated.access_token, organizationId, appId);
@@ -469,7 +519,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     const limited = await makeViewer('apps');
     await expect(oauth.viewer(limited.delegated.access_token, organizationId, limited.appId)).rejects.toMatchObject({ error: 'access_denied' });
     const complete = await makeViewer();
-    await db.query('UPDATE apps SET organization_id=$1 WHERE id=$2', [randomUUID(), complete.appId]);
+    await db.query('UPDATE apps SET organization_id=$1 WHERE id=$2', [(await db.query("INSERT INTO organizations(status) VALUES ('active') RETURNING id"))[0].id, complete.appId]);
     await expect(oauth.viewer(complete.delegated.access_token, organizationId, complete.appId)).rejects.toMatchObject({ error: 'access_denied' });
   });
   test.each(['revoke', 'membership', 'access_expiry', 'app_workspace'])('viewer stops immediately after %s', async (reason) => {
@@ -478,7 +528,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     if (reason === 'revoke') await oauth.revoke({ token: tokens.access_token, client_id: client.client_id });
     if (reason === 'membership') await db.query("UPDATE organization_users SET status='archived'");
     if (reason === 'access_expiry') await db.query("UPDATE mcp_oauth_artifacts SET expires_at=now()-interval '1 second' WHERE kind='access'");
-    if (reason === 'app_workspace') await db.query('UPDATE apps SET organization_id=$1 WHERE id=$2', [randomUUID(), appId]);
+    if (reason === 'app_workspace') await db.query('UPDATE apps SET organization_id=$1 WHERE id=$2', [(await db.query("INSERT INTO organizations(status) VALUES ('active') RETURNING id"))[0].id, appId]);
     await expect(oauth.authenticateViewer(viewer.access_token)).rejects.toThrow(UnauthorizedException);
   });
   test('code+PKCE, delegation, refresh and disconnect work without a PAT', async () => {
@@ -611,16 +661,16 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
     const replacement = await redeem(await approve());
-    await db.query('INSERT INTO instance_settings VALUES ($1,$2)', ['ALLOWED_DOMAINS', 'synthetic.example']);
+    await db.query('INSERT INTO instance_settings (key,value) VALUES ($1,$2)', ['ALLOWED_DOMAINS', 'synthetic.example']);
     await expect(exchange(replacement.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test('hidden provider configuration and group-mapping changes invalidate grants', async () => {
     const tokens = await redeem(await approve());
-    await db.query("INSERT INTO sso_configs VALUES ($1,$2,'openid',true,'organization',$3)", [randomUUID(), organizationId, JSON.stringify({ encryptedSecret: 'synthetic-ciphertext' })]);
+    await db.query("INSERT INTO sso_configs (id,organization_id,sso,enabled,config_scope,configs) VALUES ($1,$2,'openid',true,'organization',$3)", [randomUUID(), organizationId, JSON.stringify({ encryptedSecret: 'synthetic-ciphertext' })]);
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
     const replacement = await redeem(await approve());
-    await db.query('INSERT INTO sso_config_oidc_group_sync VALUES ($1,$2,$3,$4,$5,true)', [randomUUID(), randomUUID(), organizationId, 'teams', JSON.stringify({ gardeners: 'operators' })]);
+    await db.query('INSERT INTO sso_config_oidc_group_sync (id,sso_config_id,organization_id,claim_name,group_mapping,enable_group_sync) VALUES ($1,$2,$3,$4,$5,true)', [randomUUID(), (await db.query('SELECT id FROM sso_configs LIMIT 1'))[0].id, organizationId, 'teams', JSON.stringify({ gardeners: 'operators' })]);
     await expect(exchange(replacement.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test.each(['membership', 'user', 'workspace'])('disable and reenable %s cannot revive consent before any token check', async (target) => {
@@ -635,12 +685,12 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   test('deleting and recreating workspace membership cannot revive consent', async () => {
     const tokens = await redeem(await approve());
     await db.query('DELETE FROM organization_users');
-    await db.query("INSERT INTO organization_users VALUES ($1,$2,'active')", [user.id, organizationId]);
+    await db.query("INSERT INTO organization_users (user_id,organization_id,status,role) VALUES ($1,$2,'active','admin')", [user.id, organizationId]);
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test('workspace ban and unban cannot revive a connection', async () => {
     const tokens = await redeem(await approve());
-    await db.query('INSERT INTO workspace_ban_list VALUES ($1)', [organizationId]);
+    await db.query('INSERT INTO workspace_ban_list (organization_id) VALUES ($1)', [organizationId]);
     await db.query('DELETE FROM workspace_ban_list');
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
@@ -663,7 +713,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test.each([['MFA_ENABLED', 'THEME'], ['THEME', 'MFA_ENABLED']])('renaming setting %s to %s and back durably revokes', async (original, changed) => {
-    await db.query('INSERT INTO instance_settings VALUES ($1,$2)', [original, 'false']);
+    await db.query('INSERT INTO instance_settings (key,value) VALUES ($1,$2)', [original, 'false']);
     user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
     const tokens = await redeem(await approve());
     await db.query('UPDATE instance_settings SET key = $1 WHERE key = $2', [changed, original]);
@@ -672,9 +722,10 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   });
   test('unrelated instance settings and other workspaces do not revoke this connection', async () => {
     const tokens = await redeem(await approve());
-    await db.query('INSERT INTO instance_settings VALUES ($1,$2)', ['THEME', 'dark']);
+    await db.query('INSERT INTO instance_settings (key,value) VALUES ($1,$2)', ['THEME', 'dark']);
     await db.query('UPDATE instance_settings SET value = $1', ['light']);
-    await db.query('INSERT INTO workspace_ban_list VALUES ($1)', [randomUUID()]);
+    const [{ id: otherWorkspace }] = await db.query("INSERT INTO organizations(status) VALUES ('active') RETURNING id");
+    await db.query('INSERT INTO workspace_ban_list (organization_id) VALUES ($1)', [otherWorkspace]);
     expect((await exchange(tokens.access_token)).access_token).toBeDefined();
   });
   test('changing and restoring a workspace restriction revokes before any token check', async () => {
@@ -684,7 +735,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
   });
   test('nullable form-login configuration can be disabled and reenabled safely', async () => {
-    await db.query("INSERT INTO sso_configs VALUES ($1,$2,'form',true,'organization',NULL)", [randomUUID(), organizationId]);
+    await db.query("INSERT INTO sso_configs (id,organization_id,sso,enabled,config_scope,configs) VALUES ($1,$2,'form',true,'organization',NULL)", [randomUUID(), organizationId]);
     user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
     const tokens = await redeem(await approve());
     await db.query('UPDATE sso_configs SET enabled = false');
@@ -694,7 +745,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   test('changing and restoring SSO settings revokes while cosmetic names preserve consent', async () => {
     const providerId = randomUUID();
     const original = { name: 'Orchard login', clientId: 'synthetic-client' };
-    await db.query("INSERT INTO sso_configs VALUES ($1,$2,'openid',true,'organization',$3)", [providerId, organizationId, JSON.stringify(original)]);
+    await db.query("INSERT INTO sso_configs (id,organization_id,sso,enabled,config_scope,configs) VALUES ($1,$2,'openid',true,'organization',$3)", [providerId, organizationId, JSON.stringify(original)]);
     user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
     const tokens = await redeem(await approve());
     await db.query('UPDATE sso_configs SET configs = $1', [JSON.stringify({ ...original, name: 'Meadow login' })]);
@@ -776,6 +827,32 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await expect(oauth.authenticateDelegation(delegation.access_token, organizationId)).rejects.toThrow(UnauthorizedException);
     loginPolicy.form.enabled = true;
     await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+  });
+  test('consent cannot race administrative session termination', async () => {
+    const flow = await oauth.start(request());
+    const admin = db.createQueryRunner();
+    await admin.startTransaction();
+    let approval: Promise<unknown>;
+    try {
+      await admin.query("SELECT pg_advisory_xact_lock_shared(hashtext('mcp-oauth-security-policy'))");
+      approval = oauth.consent(flow.id, flow.csrf, user, true).then(
+        () => { throw new Error('Consent unexpectedly succeeded'); }, error => error);
+      // Wait until consent has reached the insertion barrier while the old session is still visible.
+      for (let i = 0; i < 100; i++) {
+        const [row] = await db.query("SELECT EXISTS (SELECT 1 FROM pg_locks WHERE locktype='advisory' AND NOT granted AND database=(SELECT oid FROM pg_database WHERE datname=current_database())) AS waiting");
+        if (row.waiting) break;
+        if (i === 99) throw new Error('Consent did not reach the policy barrier');
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      await admin.query('DELETE FROM user_sessions WHERE user_id=$1', [user.id]);
+      await admin.commitTransaction();
+      expect(await approval).toBeInstanceOf(UnauthorizedException);
+      expect(await db.query('SELECT id FROM mcp_oauth_grants WHERE revoked_at IS NULL')).toEqual([]);
+    } finally {
+      if (admin.isTransactionActive) await admin.rollbackTransaction();
+      await admin.release();
+      await approval;
+    }
   });
   test('tokens and authorization codes are stored only as hashes', async () => {
     const code = await approve();
@@ -869,8 +946,10 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   });
   test('crossed membership and instance policy changes do not acquire conflicting advisory locks', async () => {
     const [u1, u2, w1, w2] = Array.from({ length: 4 }, () => randomUUID());
+    for (const uid of [u1,u2]) await db.query("INSERT INTO users(id,email,status) VALUES ($1,$2,'active')", [uid, uid+'@synthetic.example']);
+    for (const wid of [w1,w2]) await db.query("INSERT INTO organizations(id,status) VALUES ($1,'active')", [wid]);
     for (const uid of [u1, u2]) for (const wid of [w1, w2])
-      await db.query("INSERT INTO organization_users VALUES ($1, $2, 'active')", [uid, wid]);
+      await db.query("INSERT INTO organization_users (user_id,organization_id,status,role) VALUES ($1, $2, 'active','admin')", [uid, wid]);
     const first = db.createQueryRunner(); const second = db.createQueryRunner();
     await first.startTransaction(); await second.startTransaction();
     try {
@@ -882,8 +961,8 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       await Promise.all([change(first, u2, w1), change(second, u1, w2)]);
       // Mixed local/instance edits remain shared lock holders, with no lock upgrades.
       await Promise.all([
-        first.query("INSERT INTO instance_settings VALUES ('ALLOWED_DOMAINS', 'orchard.example')"),
-        second.query("INSERT INTO instance_settings VALUES ('PASSWORD_ALLOWED_DOMAINS', 'meadow.example')"),
+        first.query("INSERT INTO instance_settings (key,value) VALUES ('ALLOWED_DOMAINS', 'orchard.example')"),
+        second.query("INSERT INTO instance_settings (key,value) VALUES ('PASSWORD_ALLOWED_DOMAINS', 'meadow.example')"),
       ]);
     } finally {
       await first.rollbackTransaction(); await second.rollbackTransaction();
@@ -937,7 +1016,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       if (kind === 'workspace') await db.query("UPDATE organizations SET status='archived'");
       if (kind === 'client') await db.query('UPDATE mcp_oauth_clients SET disabled=true');
       if (kind === 'suspension')
-        await db.query('INSERT INTO workspace_ban_list VALUES ($1)', [organizationId]);
+        await db.query('INSERT INTO workspace_ban_list (organization_id) VALUES ($1)', [organizationId]);
       await expect(exchange(tokens.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
       // Client authentication precedes grant validation during refresh.
       await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({
@@ -980,7 +1059,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       controllers: [McpOAuthController, McpOAuthMetadataController],
       providers: [{ provide: McpOAuthService, useValue: oauth }],
     })
-      .overrideGuard(ThrottlerGuard)
+      .overrideGuard(McpOAuthThrottleGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(JwtAuthGuard)
       .useValue({

@@ -109,7 +109,7 @@ test('shows requested permissions and the verified workspace', async () => {
   render(<ConsentPage />);
   expect(await screen.findByText('builder@synthetic.example')).toBeInTheDocument();
   expect(screen.getByText('Garden operations')).toBeInTheDocument();
-  expect(screen.queryByText(flow.redirectUri)).not.toBeInTheDocument();
+  expect(screen.getByText(flow.redirectUri)).toBeInTheDocument();
   expect(screen.queryByText('Callback address')).not.toBeInTheDocument();
   expect(screen.getByRole('region', { name: 'Requested permissions' })).toBeInTheDocument();
   expect(screen.getAllByRole('listitem')).toHaveLength(flow.scopes.length);
@@ -189,3 +189,14 @@ test('unavailable theme storage does not prevent consent', async () => {
   render(<ConsentPage />);
   expect(await screen.findByRole('button', { name: 'Allow access' })).toBeEnabled();
 });
+
+test.each(['https://untrusted.synthetic.example/receive?client=desktop', 'cursor://anysphere.cursor-mcp/oauth/callback', 'http://[::1]:45678/callback'])(
+  'shows the exact callback %s even when a client supplies a familiar name', async (redirectUri) => {
+    preview({ ...flow, clientName: 'Claude Code', redirectUri });
+    render(<ConsentPage />);
+    expect(await screen.findByText('builder@synthetic.example')).toBeInTheDocument();
+    const callback = screen.getByText(redirectUri);
+    expect(callback.tagName).toBe('CODE');
+    expect(screen.getByText(/ToolJet has not verified the client name/)).toBeInTheDocument();
+  }
+);

@@ -68,13 +68,14 @@ export class McpOAuthService implements OnModuleInit {
         "SELECT pg_try_advisory_xact_lock(hashtext('mcp-oauth-cleanup')) AS acquired",
       );
       if (!lock.acquired) return;
+      await manager.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-registration'))");
       await manager.query('DELETE FROM mcp_oauth_grants WHERE expires_at < now()');
       await manager.query(
         "DELETE FROM mcp_oauth_artifacts WHERE expires_at < now() AND kind IN ('access','interaction')",
       );
       // Keep approved registrations for cached clients; collect abandoned registrations only.
       await manager.query(`DELETE FROM mcp_oauth_clients c WHERE first_authorized_at IS NULL
-        AND created_at < now() - interval '24 hours'
+        AND created_at < now() - interval '1 hour'
         AND NOT EXISTS (SELECT 1 FROM mcp_oauth_grants g WHERE g.client_id = c.id)
         AND NOT EXISTS (SELECT 1 FROM mcp_oauth_artifacts a WHERE a.client_id = c.id)`);
     });
@@ -217,9 +218,13 @@ export class McpOAuthService implements OnModuleInit {
     await this.dataSource.transaction(async (manager) => {
       // Cross-replica quota. Registration does not confer any ToolJet permissions.
       await manager.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-registration'))");
-      const [count] = await manager.query('SELECT count(*)::int AS total FROM mcp_oauth_clients');
-      if (count.total >= 10000)
-        throw new OAuthFailure('temporarily_unavailable', 'Client registration limit reached', 503);
+      // Pending clients are a bounded rolling cache, not consumers of the approved-client quota.
+      // Evict expired/oldest pending entries synchronously so junk registrations cannot close onboarding.
+      await manager.query(`DELETE FROM mcp_oauth_clients WHERE first_authorized_at IS NULL
+        AND created_at < now() - interval '1 hour'`);
+      await manager.query(`DELETE FROM mcp_oauth_clients WHERE id IN (
+        SELECT id FROM mcp_oauth_clients WHERE first_authorized_at IS NULL
+        ORDER BY created_at DESC, id DESC OFFSET 999)`);
       await manager.query(`INSERT INTO mcp_oauth_clients
         (id,name,redirect_uris,token_endpoint_auth_method,client_secret_hash) VALUES ($1,$2,$3,$4,$5)`, [
         id,
@@ -327,6 +332,7 @@ export class McpOAuthService implements OnModuleInit {
     if (!/^[A-Za-z0-9_-]{43}$/.test(browserNonce))
       throw new OAuthFailure('invalid_request', 'Invalid browser bootstrap');
     return this.dataSource.transaction(async (manager) => {
+      await manager.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-registration'))");
       await manager.query('SELECT id FROM mcp_oauth_artifacts WHERE id = $1 FOR UPDATE', [hash(id)]);
       const row = await this.store(manager).artifact(id, 'interaction');
       if (!row || row.consumed_at || row.expires_at <= new Date() ||
@@ -402,6 +408,7 @@ export class McpOAuthService implements OnModuleInit {
   async consent(id: string, csrf: string, user: User, allow: boolean, origin = new URL(this.settings().browser).origin) {
     const { issuer } = this.settings();
     return this.dataSource.transaction(async (manager) => {
+      await manager.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-registration'))");
       await manager.query('SELECT id FROM mcp_oauth_artifacts WHERE id = $1 FOR UPDATE', [hash(id)]);
       const interaction = await this.interaction(id, csrf, manager, origin);
       // Serialize consent with custom-domain replacement/removal. The
@@ -427,6 +434,11 @@ export class McpOAuthService implements OnModuleInit {
         [user.sessionId, user.id],
       );
       if (!session) throw new UnauthorizedException();
+      const [capacity] = await manager.query(`SELECT
+        (SELECT count(*) FROM mcp_oauth_clients WHERE first_authorized_at IS NOT NULL) AS approved,
+        (SELECT first_authorized_at IS NOT NULL FROM mcp_oauth_clients WHERE id = $1) AS existing`, [interaction.client_id]);
+      if (!capacity.existing && Number(capacity.approved) >= 10000)
+        throw new OAuthFailure('temporarily_unavailable', 'Approved client limit reached', 503);
       // Lock the client before the grant's policy lock, matching the client-disable transaction.
       await manager.query(
         'UPDATE mcp_oauth_clients SET first_authorized_at = now() WHERE id = $1 AND first_authorized_at IS NULL',
@@ -447,6 +459,9 @@ export class McpOAuthService implements OnModuleInit {
         ],
       );
       await store.activeGrant(grantId);
+      // Administrative termination may have committed while INSERT waited for the policy lock.
+      const [liveSession] = await manager.query('SELECT id FROM user_sessions WHERE id = $1 AND user_id = $2', [user.sessionId, user.id]);
+      if (!liveSession) throw new UnauthorizedException();
       const request = new OAuth2Server.Request({ method: 'GET', headers: {}, query: params });
       const code = await createOAuthEngine(store, params.resource).authorize(
         request,
@@ -467,6 +482,24 @@ export class McpOAuthService implements OnModuleInit {
       throw new OAuthFailure('invalid_client', 'Invalid client authentication', authorization ? 401 : 400);
     }
     return { client, credentials };
+  }
+  /** Only proof of a stored credential or verified delegation selects a grant's rate bucket.
+   * A public client_id or unverified JWT claim never lets an attacker spend another grant's quota. */
+  async rateLimitGrant(route: string, body: Record<string, unknown>, headers: Record<string, any>): Promise<string | undefined> {
+    try {
+      if (route === 'viewer') {
+        const user = await this.authenticateDelegation(headers['x-tooljet-delegation'], headers['tj-workspace-id']);
+        return user.oauthGrantId;
+      }
+      if (route !== 'token' && route !== 'revoke') return undefined;
+      const { client } = await this.authenticateClient(body, headers.authorization);
+      const kind = route === 'revoke' ? null : body.grant_type === 'refresh_token' ? 'refresh' : body.grant_type === 'authorization_code' ? 'code' : null;
+      const raw = stringParam(route === 'revoke' ? body.token : body[kind === 'code' ? 'code' : 'refresh_token'], 'credential');
+      const artifact = kind ? await this.store().artifact(raw, kind) :
+        await this.store().artifact(raw, 'access') || await this.store().artifact(raw, 'refresh');
+      if (artifact?.client_id === client.id && artifact.grant_id && artifact.expires_at > new Date()) return artifact.grant_id;
+    } catch { /* Invalid callers share only their own network-address bucket. */ }
+    return undefined;
   }
   async token(body: Record<string, unknown>, authorization?: string) {
     return this.persistRevocationOnFailure(() => this.issueTokens(body, authorization));

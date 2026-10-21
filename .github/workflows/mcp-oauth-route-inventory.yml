@@ -1,9 +1,11 @@
-name: MCP OAuth route inventory
+name: MCP OAuth security
 
 on:
   pull_request:
     paths:
       - 'server/**'
+      - 'frontend/**'
+      - 'plugins/**'
       - '.github/workflows/mcp-oauth-route-inventory.yml'
   workflow_dispatch:
 
@@ -11,11 +13,24 @@ permissions:
   contents: read
 
 jobs:
-  route-inventory:
+  oauth-security:
     # Private EE code is available only to trusted same-repository PR runs.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: oauth_test
+          POSTGRES_PASSWORD: oauth_test
+          POSTGRES_DB: tooljet_oauth_test_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U oauth_test -d tooljet_oauth_test_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      MCP_OAUTH_TEST_DATABASE_URL: postgresql://oauth_test:oauth_test@127.0.0.1:5432/tooljet_oauth_test_ci
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,10 +42,10 @@ jobs:
           node-version: 22.15.1
           cache: npm
           cache-dependency-path: server/package-lock.json
+      - run: npm --prefix plugins ci
+      - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
+      - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci --ignore-scripts
-      - name: Check public and enterprise capability inventories
+      - name: Apply real schema migrations and run all OAuth security tests
         working-directory: server
-        run: >-
-          npx jest --config test/mcp-oauth.jest.config.cjs --runInBand --runTestsByPath
-          test/modules/personal-access-tokens/unit/route-inventory.spec.ts
-          ee/test/modules/mcp-oauth/unit/route-inventory.spec.ts
+        run: npm run test:mcp-oauth
