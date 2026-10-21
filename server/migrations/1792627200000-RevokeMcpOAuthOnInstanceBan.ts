@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-/** Ban and unban never resurrect previously issued credentials. */
+/** Revoke banned users' credentials without making revocation errors reject the ban. */
 export class RevokeMcpOAuthOnInstanceBan1792627200000 implements MigrationInterface {
   async up(runner: QueryRunner): Promise<void> {
     await runner.query(`
@@ -10,10 +10,21 @@ export class RevokeMcpOAuthOnInstanceBan1792627200000 implements MigrationInterf
       BEGIN
         PERFORM pg_advisory_xact_lock_shared(hashtext('mcp-oauth-security-policy'));
         PERFORM id FROM users WHERE lower(email) = lower(NEW.email) ORDER BY id FOR NO KEY UPDATE;
-        UPDATE mcp_oauth_grants SET revoked_at = now()
-          WHERE revoked_at IS NULL AND user_id IN (SELECT id FROM users WHERE lower(email) = lower(NEW.email));
-        UPDATE user_personal_access_tokens SET expires_at = LEAST(expires_at, now())
-          WHERE user_id IN (SELECT id FROM users WHERE lower(email) = lower(NEW.email));
+        BEGIN
+          UPDATE mcp_oauth_grants SET revoked_at = now()
+            WHERE revoked_at IS NULL AND user_id IN (SELECT id FROM users WHERE lower(email) = lower(NEW.email));
+        EXCEPTION WHEN OTHERS THEN
+          RAISE WARNING 'MCP OAuth instance-ban revocation skipped (SQLSTATE %)', SQLSTATE;
+        END;
+        BEGIN
+          UPDATE user_personal_access_tokens SET expires_at = LEAST(expires_at, now())
+            WHERE user_id IN (SELECT id FROM users WHERE lower(email) = lower(NEW.email));
+        EXCEPTION WHEN OTHERS THEN
+          RAISE WARNING 'PAT instance-ban expiry skipped (SQLSTATE %)', SQLSTATE;
+        END;
+        RETURN NEW;
+      EXCEPTION WHEN OTHERS THEN
+        RAISE WARNING 'External credential invalidation skipped for instance ban (SQLSTATE %)', SQLSTATE;
         RETURN NEW;
       END;
       $$;

@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-/** Revoke consent durably at the same transaction boundary as local access/policy changes. */
+/** Revoke consent with local security changes, without failing platform writes on revocation errors. */
 export class AddMcpOAuthRevocationHooks1791290000000 implements MigrationInterface {
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -145,6 +145,12 @@ export const MCP_OAUTH_ORIGINAL_REVOCATION_FUNCTION = `      CREATE FUNCTION mcp
           UPDATE mcp_oauth_grants SET revoked_at = now()
             WHERE organization_id = ANY(workspace_ids) AND revoked_at IS NULL;
         END IF;
+        RETURN NULL;
+      EXCEPTION WHEN OTHERS THEN
+        -- Roll back this function's work, not the platform write that fired it.
+        -- Live OAuth checks still enforce current access; durable revocation is best effort on failure.
+        -- Do not log SQLERRM: database error messages can contain credentials or user data.
+        RAISE WARNING 'MCP OAuth revocation skipped for trigger % (SQLSTATE %)', TG_NAME, SQLSTATE;
         RETURN NULL;
       END;
       $$;

@@ -407,6 +407,90 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     await db.query('INSERT INTO apps (id,organization_id,user_id) VALUES ($1,$2,$3)', [appId, organizationId,user.id]);
     return { tokens, delegated, appId };
   };
+  const withCredentialWriteFailure = async (
+    table: 'mcp_oauth_grants' | 'user_personal_access_tokens',
+    failure: 'missing-table' | 'sql-error',
+    operation: () => Promise<void>,
+  ) => {
+    if (failure === 'missing-table') {
+      await db.query(`ALTER TABLE ${table} RENAME TO synthetic_unavailable_credentials`);
+    } else {
+      await db.query(`CREATE FUNCTION synthetic_reject_credential_update() RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN RAISE EXCEPTION 'Synthetic credential update failure' USING ERRCODE = 'P0001'; END; $$;
+        CREATE TRIGGER synthetic_credential_failure BEFORE UPDATE ON ${table}
+        FOR EACH ROW EXECUTE FUNCTION synthetic_reject_credential_update();`);
+    }
+    try {
+      await operation();
+    } finally {
+      if (failure === 'missing-table') {
+        await db.query(`ALTER TABLE synthetic_unavailable_credentials RENAME TO ${table}`);
+      } else {
+        await db.query(`DROP TRIGGER synthetic_credential_failure ON ${table};
+          DROP FUNCTION synthetic_reject_credential_update();`);
+      }
+    }
+  };
+  describe.each(['missing-table', 'sql-error'] as const)('optional credential revocation failure: %s', failure => {
+    test.each(['user', 'workspace', 'membership', 'workspace-ban', 'client', 'sso', 'group-sync', 'instance-policy'])(
+      '%s writes commit while failed OAuth revocation still leaves live access checks enforced', async kind => {
+        const providerId = randomUUID();
+        await db.query("INSERT INTO sso_configs (id,organization_id,sso,enabled,config_scope,configs) VALUES ($1,$2,'openid',true,'organization','{}')", [providerId, organizationId]);
+        await db.query('INSERT INTO sso_config_oidc_group_sync (id,sso_config_id,organization_id,claim_name,group_mapping,enable_group_sync) VALUES ($1,$2,$3,$4,$5,true)',
+          [randomUUID(), providerId, organizationId, 'teams', JSON.stringify({ archivists: 'operators' })]);
+        user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
+        const { delegated } = await makeViewer();
+        await withCredentialWriteFailure('mcp_oauth_grants', failure, async () => {
+          const writes: Record<string, [string, any[]]> = {
+            user: ["UPDATE users SET status='archived' WHERE id=$1 RETURNING id", [user.id]],
+            workspace: ["UPDATE organizations SET status='archived' WHERE id=$1 RETURNING id", [organizationId]],
+            membership: ['DELETE FROM organization_users WHERE user_id=$1 AND organization_id=$2 RETURNING id', [user.id, organizationId]],
+            'workspace-ban': ['INSERT INTO workspace_ban_list (organization_id) VALUES ($1) RETURNING id', [organizationId]],
+            client: ['UPDATE mcp_oauth_clients SET disabled=true WHERE id=$1 RETURNING id', [client.client_id]],
+            sso: ['UPDATE sso_configs SET enabled=false WHERE id=$1 RETURNING id', [providerId]],
+            'group-sync': ['UPDATE sso_config_oidc_group_sync SET enable_group_sync=false WHERE sso_config_id=$1 RETURNING id', [providerId]],
+            'instance-policy': ["INSERT INTO instance_settings (key,value) VALUES ('MFA_ENABLED','true') RETURNING id", []],
+          };
+          const [sql, parameters] = writes[kind];
+          const result = await db.query(sql, parameters);
+          // TypeORM returns [rows, count] for UPDATE/DELETE and rows for INSERT.
+          expect(Array.isArray(result[0]) ? result[0] : result).toHaveLength(1);
+          await expect(oauth.authenticateDelegation(delegated.access_token, organizationId)).rejects.toThrow(UnauthorizedException);
+        });
+      },
+    );
+    test.each(['mcp_oauth_grants', 'user_personal_access_tokens'] as const)(
+      'instance bans commit when %s fails and still invalidate the other credential kind', async table => {
+        const { tokens } = await makeViewer();
+        await db.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-resilient-ban-pat','workspace',now()+interval '1 day')", [user.id, organizationId]);
+        await withCredentialWriteFailure(table, failure, async () => {
+          await db.query('INSERT INTO user_ban_list(email) VALUES ($1)', [user.email]);
+          expect(await db.query('SELECT email FROM user_ban_list')).toEqual([{ email: user.email }]);
+          if (table === 'mcp_oauth_grants') {
+            expect((await db.query('SELECT expires_at <= now() AS expired FROM user_personal_access_tokens'))[0].expired).toBe(true);
+          } else {
+            await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+          }
+        });
+      },
+    );
+    test.each(['mcp_oauth_grants', 'user_personal_access_tokens'] as const)(
+      'administrative sign-out commits when %s fails and still invalidates the other credential kind', async table => {
+        const { tokens } = await makeViewer();
+        await db.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-resilient-signout-pat','workspace',now()+interval '1 day')", [user.id, organizationId]);
+        await withCredentialWriteFailure(table, failure, async () => {
+          await SessionUtilService.prototype.terminateAllSessions.call(
+            { configService: new ConfigService({ TOOLJET_EDITION: 'cloud', MCP_OAUTH_ENABLED: 'false' }) }, user.id);
+          expect(await db.query('SELECT id FROM user_sessions WHERE user_id=$1', [user.id])).toEqual([]);
+          if (table === 'mcp_oauth_grants') {
+            expect((await db.query('SELECT expires_at <= now() AS expired FROM user_personal_access_tokens'))[0].expired).toBe(true);
+          } else {
+            await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+          }
+        });
+      },
+    );
+  });
   test('real workspace SSO saves preserve consent for unchanged secrets but revoke rotations', async () => {
     const previousKey = process.env.LOCKBOX_MASTER_KEY;
     process.env.LOCKBOX_MASTER_KEY = '7'.repeat(64);
