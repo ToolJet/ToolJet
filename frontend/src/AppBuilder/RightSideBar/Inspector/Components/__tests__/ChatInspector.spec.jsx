@@ -46,6 +46,10 @@ describe('Chat inspector', () => {
     const keys = Array.from(section.querySelectorAll('[data-testid^="inspector-properties-"]')).map((node) =>
       node.getAttribute('data-testid').replace('inspector-properties-', '')
     );
+    // Both must be present before their order means anything: if Visibility vanished, -1 + 1 would match a
+    // Collapse toggle that had become the first control.
+    expect(keys).toContain('visibility');
+    expect(keys).toContain('collapseWhenHidden');
     expect(keys.indexOf('collapseWhenHidden')).toBe(keys.indexOf('visibility') + 1);
   });
 });
