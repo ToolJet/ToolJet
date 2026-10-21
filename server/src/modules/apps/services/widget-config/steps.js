@@ -57,6 +57,12 @@ export const stepsConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     advanced: {
       type: 'toggle',
       displayName: 'Dynamic options',
@@ -100,7 +106,7 @@ export const stepsConfig = {
       params: [{ handle: 'visible', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
-      handle: 'setDisabled',
+      handle: 'setDisable',
       displayName: 'Set disable',
       params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
     },
@@ -140,6 +146,11 @@ export const stepsConfig = {
           type: 'toggle',
         },
       ],
+    },
+    {
+      handle: 'setDisabled',
+      displayName: 'Set disabled (deprecated)',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
     },
   ],
   events: {
@@ -207,6 +218,8 @@ export const stepsConfig = {
   },
   exposedVariables: {
     currentStepId: '3',
+    isVisible: true,
+    isDisabled: false,
   },
   definition: {
     others: {
@@ -232,10 +245,10 @@ export const stepsConfig = {
       stepsSelectable: { value: true },
       advanced: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       // color: { value: '' },
       // textColor: { value: '' },
       padding: { value: 'default' },

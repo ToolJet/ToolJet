@@ -156,6 +156,17 @@ export const Chat = ({
           componentMeta,
           paramUpdated,
           dataQueries,
+          'collapseWhenHidden',
+          'properties',
+          currentState,
+          components,
+          darkMode
+        )}
+        {renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
           'disableInput',
           'properties',
           currentState,

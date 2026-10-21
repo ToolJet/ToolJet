@@ -81,6 +81,13 @@ export const chatConfig = {
                 schema: { type: 'boolean' },
                 defaultValue: true,
             },
+            section: 'additionalActions',
+        },
+        collapseWhenHidden: {
+            type: 'toggle',
+            displayName: 'Collapse when hidden',
+            validation: { schema: { type: 'boolean' }, defaultValue: false },
+            section: 'additionalActions',
         },
         disableInput: {
             type: 'toggle',
@@ -351,6 +358,7 @@ export const chatConfig = {
             respondentName: { value: 'Assistant' },
             respondentAvatar: { value: '' },
             visibility: { value: '{{true}}' },
+            collapseWhenHidden: { value: '{{false}}' },
             disableInput: { value: '{{false}}' },
             loadingHistory: { value: '{{false}}' },
             loadingResponse: { value: '{{false}}' },

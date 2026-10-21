@@ -109,6 +109,15 @@ export const fileinputConfig = {
         defaultValue: true,
       },
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -496,6 +505,7 @@ export const fileinputConfig = {
       parseFileType: { value: 'auto-detect' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
       tooltipFormat: { value: 'plainText' },

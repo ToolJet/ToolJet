@@ -50,24 +50,20 @@ export const boundedBoxConfig = {
         defaultValue: `{{['Car', 'Tree']}}`,
       },
     },
-    collapseWhenHidden: {
-      type: 'toggle',
-      displayName: 'Collapse when hidden',
-      validation: { schema: { type: 'boolean' }, defaultValue: false },
-      section: 'additionalActions',
-    },
-  },
-  events: {
-    onChange: { displayName: 'On change' },
-  },
-  styles: {
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
+        defaultValue: true,
       },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
     },
     disabledState: {
       type: 'toggle',
@@ -76,8 +72,37 @@ export const boundedBoxConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
+    },
+    // Renders first in the Tooltip pair. Its displayName is the visible "Tooltip" label for the
+    // whole pair; the `tooltip` code field below hides its own label via showLabel:false.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
+  events: {
+    onChange: { displayName: 'On change' },
+  },
+  styles: {},
   exposedVariables: {
     annotations: [
       {
@@ -99,8 +124,21 @@ export const boundedBoxConfig = {
         id: 'b1a7315e-2b15-4bc8-a1c6-a042dab44f27',
       },
     ],
+    isVisible: true,
+    isDisabled: false,
   },
-  actions: [],
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -116,13 +154,13 @@ export const boundedBoxConfig = {
       },
       selector: { value: `RECTANGLE` },
       labels: { value: `{{['Tree', 'Car', 'Stree light']}}` },
+      visibility: { value: '{{true}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
-    styles: {
-      visibility: { value: '{{true}}' },
-
-      disabledState: { value: '{{false}}' },
-    },
+    styles: {},
   },
 };

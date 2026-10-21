@@ -1,4 +1,4 @@
-import { waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
@@ -18,7 +18,7 @@ import {
 //  - selectedEvent/selectedSlots are published by the REAL eventsSlice (not the widget);
 //    selectedEvent.start/end are timezone-dependent ISO strings, asserted shape-only.
 //  - currentDate/currentView are the deterministic exposed contract, seeded fixed.
-//  - Calendar has NO CSA, NO validation, NO loading/disabled - only visibility.
+//  - Calendar has NO validation, NO loading/disabled - only visibility (property + setVisibility CSA).
 
 const ID = 'calendar1';
 
@@ -36,10 +36,12 @@ const defaultProperties = {
   displayViewSwitcher: binding('{{true}}'),
   highlightToday: binding('{{true}}'),
   showPopOverOnEventClick: binding('{{false}}'),
+  visibility: binding('{{true}}'),
+  tooltip: binding(''),
+  tooltipFormat: binding('plainText'),
 };
 
 const defaultStyles = {
-  visibility: binding('{{true}}'),
   cellSizeInViewsClassifiedByResource: binding('spacious'),
   weekDateFormat: binding('DD MMM'),
   borderColor: binding('var(--cc-weak-border)'),
@@ -201,12 +203,55 @@ describe('Calendar widget', () => {
   });
 
   test('[Calendar-STYLE-001] visibility=false hides the root with display:none', async () => {
-    // Break this catches: dropping the visibility -> display:none mapping
-    // (Calendar.jsx:126).
-    widget.render({ styles: { visibility: binding('{{false}}') } });
+    // Break this catches: dropping the visibility -> display:none mapping, or still
+    // reading visibility from styles after it moved to properties.
+    widget.render({ properties: { visibility: binding('{{false}}') } });
     await waitFor(() => expect(calRoot()).toBeTruthy(), { timeout: 8000 });
 
     expect(calRoot()).toHaveStyle({ display: 'none' });
+  });
+
+  test('[Calendar-CSA-001] setVisibility hides and restores the Calendar and publishes isVisible', async () => {
+    // Break this catches: the CSA not being registered on mount, or toggling the DOM without publishing isVisible.
+    widget.render();
+    await waitCal();
+    await waitFor(() => expect(exposed()).toMatchObject({ isVisible: true }));
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(calRoot()).toHaveStyle({ display: 'none' }));
+    expect(exposed()).toMatchObject({ isVisible: false });
+
+    await widget.act('setVisibility', true);
+    await waitFor(() => expect(calRoot()).toHaveStyle({ display: 'block' }));
+    expect(exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[Calendar-CSA-002] a visibility property change overrides an earlier setVisibility', async () => {
+    // Break this catches: local CSA state no longer yielding to a later change of the Visibility property.
+    widget.render();
+    await waitCal();
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(calRoot()).toHaveStyle({ display: 'none' }));
+
+    await widget.session.store.act(async () => {
+      widget.setComponentProperty(ID, 'visibility', '{{false}}', 'properties');
+    });
+    await widget.session.store.act(async () => {
+      widget.setComponentProperty(ID, 'visibility', '{{true}}', 'properties');
+    });
+    await waitFor(() => expect(calRoot()).toHaveStyle({ display: 'block' }));
+    expect(exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[Calendar-TIP-001] a tooltip set under properties is shown on hover', async () => {
+    // Break this catches: RenderWidget still reading Calendar's tooltip from `general`
+    // after it moved to properties (SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY).
+    widget.render({ properties: { tooltip: binding('Team schedule') } });
+    await waitCal();
+
+    await widget.session.user.hover(calRoot());
+    await waitFor(() => expect(screen.getAllByText('Team schedule').length).toBeGreaterThan(0));
   });
 
   test('[Calendar-STYLE-002] borderColor is applied to the root inline border', async () => {

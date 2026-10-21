@@ -30,6 +30,7 @@ const CodeEditor = ({
   properties,
   styles,
   setExposedVariable,
+  setExposedVariables,
   dataCy,
   currentLayout,
   width,
@@ -39,9 +40,40 @@ const CodeEditor = ({
 }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState } = properties;
+  const [isVisible, setIsVisible] = useState(visibility);
+  const [isDisabled, setIsDisabled] = useState(disabledState);
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const [value, setValue] = useState('');
+
+  // A changed Visibility / Disable property wins over an earlier setVisibility / setDisable call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setIsDisabled(disabledState);
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      isDisabled: disabledState,
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+      setDisable: async function (value) {
+        setIsDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -50,7 +82,7 @@ const CodeEditor = ({
     value: forceDynamicHeightUpdate,
     currentLayout,
     width,
-    visibility,
+    visibility: isVisible,
     subContainerIndex,
     componentType,
   });
@@ -67,7 +99,7 @@ const CodeEditor = ({
 
   const editorStyles = {
     height: isDynamicHeightEnabled ? '100%' : height,
-    display: !visibility ? 'none' : 'block',
+    display: !isVisible ? 'none' : 'block',
   };
 
   const setupConfig = {
@@ -104,7 +136,7 @@ const CodeEditor = ({
   useFormClear(() => updateValue(''));
 
   return (
-    <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
+    <div data-disabled={isDisabled} style={editorStyles} data-cy={dataCy}>
       <div
         className={`code-hinter codehinter-default-input code-editor-widget scrollbar-container`}
         style={{
@@ -132,7 +164,7 @@ const CodeEditor = ({
           basicSetup={setupConfig}
           className={`codehinter-multi-line-input code-editor-component`}
           indentWithTab={true}
-          editable={!disabledState}
+          editable={!isDisabled}
         />
       </div>
     </div>

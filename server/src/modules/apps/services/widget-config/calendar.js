@@ -32,6 +32,42 @@ export const calendarConfig = {
       type: 'toggle',
       displayName: 'Show popover when event is clicked',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    // Renders first in the Tooltip pair. Its displayName is the visible "Tooltip" label for the
+    // whole pair; the `tooltip` code field below hides its own label via showLabel:false.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   events: {
     onCalendarEventSelect: { displayName: 'On Event Select' },
@@ -40,7 +76,6 @@ export const calendarConfig = {
     onCalendarViewChange: { displayName: 'On View Change' },
   },
   styles: {
-    visibility: { type: 'toggle', displayName: 'Visibility' },
     cellSizeInViewsClassifiedByResource: {
       type: 'select',
       displayName: 'Cell size in views classified by resource',
@@ -75,7 +110,15 @@ export const calendarConfig = {
     selectedSlots: {},
     currentView: 'month',
     currentDate: undefined,
+    isVisible: true,
   },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -116,10 +159,13 @@ export const calendarConfig = {
       showPopOverOnEventClick: {
         value: false,
       },
+      visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       cellSizeInViewsClassifiedByResource: { value: 'spacious' },
       weekDateFormat: { value: 'DD MMM' },
       borderColor: { value: 'var(--cc-weak-border)' },

@@ -12,9 +12,29 @@ const PasswordResponses = {
 // Using new URL keeps this portable across bundlers (Webpack 5, Vite, etc.)
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
-const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {
-  const { visibility, boxShadow, borderColor, borderRadius } = styles;
-  const { url, scale, pageControls, showDownloadOption } = properties;
+const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy, ...rest }) => {
+  const { setExposedVariable, setExposedVariables } = rest;
+  const { boxShadow, borderColor, borderRadius } = styles;
+  const { url, scale, pageControls, showDownloadOption, visibility } = properties;
+  const [isVisible, setIsVisible] = useState(visibility);
+
+  // A Visibility property change wins over an earlier setVisibility call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(null);
   const pageRef = useRef([]);
@@ -183,7 +203,7 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
   };
 
   return (
-    <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow }} data-cy={dataCy}>
+    <div style={{ display: isVisible ? 'flex' : 'none', width: width - 3, height, boxShadow }} data-cy={dataCy}>
       <div
         className="d-flex position-relative h-100 flex-column"
         style={{

@@ -68,6 +68,18 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'ModalV2',
   'Container',
   'Timeline',
+  'CustomComponent',
+  'Calendar',
+  'QrScanner',
+  'Spinner',
+  'Chart',
+  'BoundedBox',
+  'CodeEditor',
+  'Map',
+  'PDF',
+  'RichTextEditor',
+  'SvgImage',
+  'Timer',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];

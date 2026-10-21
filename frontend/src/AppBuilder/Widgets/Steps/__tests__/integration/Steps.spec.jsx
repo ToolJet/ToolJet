@@ -347,6 +347,30 @@ describe('Steps widget', () => {
     expect(widget.variables().selectCount).toBeUndefined();
   });
 
+  test('[Steps-STA-005] setDisable matches the deprecated setDisabled and yields to the property', async () => {
+    // Break this catches: setDisable not being exposed at runtime, or behaving differently from setDisabled.
+    const { container } = widget.render({ events: selectEvents() });
+
+    await widget.act('setDisable', { yes: true });
+    expect(widget.exposed().isDisabled).toBe(true);
+    expect(root(container)).toHaveClass('disabled');
+    expect(canvasNode(container)).toHaveClass('disabled');
+    expect(root(container)).toHaveAttribute('aria-disabled', 'false');
+
+    await widget.act('setDisable', null);
+    expect(widget.exposed().isDisabled).toBe(false);
+    expect(root(container)).not.toHaveClass('disabled');
+
+    await widget.act('setDisable', true);
+    await setProperty('disabledState', '{{true}}');
+    await widget.act('setDisabled', false);
+    expect(widget.exposed().isDisabled).toBe(false);
+    await setProperty('disabledState', '{{false}}');
+    await widget.act('setDisable', true);
+    await setProperty('disabledState', '{{true}}');
+    await waitFor(() => expect(widget.exposed().isDisabled).toBe(true));
+  });
+
   test('[Steps-STA-002] state actions survive non-changes and yield to changed owning properties', async () => {
     // Break this catches: unrelated/no-op resolution wiping CSA state, or property changes never regaining ownership.
     const { container } = widget.render();
@@ -581,6 +605,7 @@ describe('Steps widget', () => {
         'stepsSelectable',
         'disabledState',
         'visibility',
+        'collapseWhenHidden',
         'advanced',
         'currentStep',
       ],
@@ -593,14 +618,15 @@ describe('Steps widget', () => {
         'padding',
       ],
       eventKeys: ['onSelect'],
-      exposedVariables: { currentStepId: '3' },
+      exposedVariables: { currentStepId: '3', isVisible: true, isDisabled: false },
       actions: [
         { handle: 'setStep', params: ['option'] },
         { handle: 'setVisibility', params: ['visible'] },
-        { handle: 'setDisabled', params: ['disable'] },
+        { handle: 'setDisable', params: ['disable'] },
         { handle: 'resetSteps', params: [] },
         { handle: 'setStepVisible', params: ['id', 'visibility'] },
         { handle: 'setStepDisable', params: ['id', 'disabled'] },
+        { handle: 'setDisabled', params: ['disable'] },
       ],
       defaults: {
         variant: 'titles',
@@ -614,5 +640,10 @@ describe('Steps widget', () => {
     expect(project(frontendConfig)).toEqual(expected);
     expect(project(serverConfig)).toEqual(expected);
     expect(project(frontendConfig)).toEqual(project(serverConfig));
+    // setDisabled stays registered for saved apps but is labelled deprecated in favour of setDisable.
+    expect(frontendConfig.actions.find((a) => a.handle === 'setDisabled').displayName).toBe(
+      'Set disabled (deprecated)'
+    );
+    expect(frontendConfig.actions.find((a) => a.handle === 'setDisable').displayName).toBe('Set disable');
   });
 });

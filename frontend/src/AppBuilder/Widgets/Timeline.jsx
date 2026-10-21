@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { isArray } from 'lodash';
 import { getSafeRenderableValue } from './utils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -15,9 +15,30 @@ export const Timeline = function Timeline({
   currentMode,
   subContainerIndex,
   componentType,
+  setExposedVariable,
+  setExposedVariables,
 }) {
   const { boxShadow } = styles;
   const { data, hideDate, visibility } = properties;
+  const [isVisible, setIsVisible] = useState(visibility);
+
+  // A Visibility property change wins over an earlier setVisibility call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const darkModeStyle = darkMode && 'text-white-50';
 
@@ -32,7 +53,7 @@ export const Timeline = function Timeline({
     value: JSON.stringify({ data, hideDate }),
     currentLayout,
     width,
-    visibility,
+    visibility: isVisible,
     subContainerIndex,
     componentType,
   });
@@ -41,7 +62,7 @@ export const Timeline = function Timeline({
     <div
       className="card"
       style={{
-        display: visibility ? '' : 'none',
+        display: isVisible ? '' : 'none',
         height: isDynamicHeightEnabled ? 'auto' : height,
         ...(isDynamicHeightEnabled && { minHeight: height }),
         overflow: isDynamicHeightEnabled ? 'visible' : 'auto',

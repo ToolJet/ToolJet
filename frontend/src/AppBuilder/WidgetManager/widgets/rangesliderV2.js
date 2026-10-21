@@ -119,6 +119,15 @@ export const rangeSliderV2Config = {
       },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -374,6 +383,7 @@ export const rangeSliderV2Config = {
         value: "{{[\t{label: '25%',value: 25},{label: '50%',value: 50},{label: '75%',value: 75}\t]}}",
       },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
@@ -393,7 +403,6 @@ export const rangeSliderV2Config = {
       labelFontSize: { value: '{{12}}' },
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
-      visibility: { value: '{{true}}' },
       widthType: { value: 'ofComponent' },
     },
   },

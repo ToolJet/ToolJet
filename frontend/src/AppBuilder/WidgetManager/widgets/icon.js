@@ -63,6 +63,15 @@ export const iconConfig = {
       },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -120,7 +129,11 @@ export const iconConfig = {
       accordian: 'Icon',
     },
   },
-  exposedVariables: {},
+  exposedVariables: {
+    isVisible: true,
+    isLoading: false,
+    isDisabled: false,
+  },
   actions: [
     {
       handle: 'click',
@@ -152,6 +165,7 @@ export const iconConfig = {
       loadingState: { value: `{{false}}` },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       tooltip: { value: '' },
       tooltipFormat: { value: 'plainText' },
     },

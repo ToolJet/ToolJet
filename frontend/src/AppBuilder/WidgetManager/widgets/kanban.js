@@ -114,6 +114,24 @@ export const kanbanConfig = {
         defaultValue: 400,
       },
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     tooltipFormat: {
       type: 'switch',
       displayName: 'Tooltip',
@@ -139,12 +157,6 @@ export const kanbanConfig = {
       placeholder: 'Enter tooltip text',
       showLabel: false,
     },
-    collapseWhenHidden: {
-      type: 'toggle',
-      displayName: 'Collapse when hidden',
-      validation: { schema: { type: 'boolean' }, defaultValue: false },
-      section: 'additionalActions',
-    },
   },
   events: {
     onUpdate: { displayName: 'On update' },
@@ -155,8 +167,6 @@ export const kanbanConfig = {
     onCardSelected: { displayName: 'Card selected' },
   },
   styles: {
-    disabledState: { type: 'toggle', displayName: 'Disable' },
-    visibility: { type: 'toggle', displayName: 'Visibility' },
     accentColor: { type: 'colorSwatches', displayName: 'Accent color' },
   },
   actions: [
@@ -196,6 +206,16 @@ export const kanbanConfig = {
         },
       ],
     },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
   ],
   exposedVariables: {
     updatedCardData: {},
@@ -205,6 +225,8 @@ export const kanbanConfig = {
     lastSelectedCard: {},
     lastUpdatedCard: {},
     lastCardUpdate: [],
+    isVisible: true,
+    isDisabled: false,
   },
   definition: {
     others: {
@@ -242,12 +264,12 @@ export const kanbanConfig = {
       modalHeight: { value: 400 },
       tooltipFormat: { value: 'plainText' },
       tooltip: { value: '' },
+      visibility: { value: '{{true}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       accentColor: { value: 'var(--cc-primary-brand)' },
     },
   },

@@ -4,6 +4,9 @@ import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { EventManager } from '../EventManager';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
+// eslint-disable-next-line import/no-unresolved
+import i18next from 'i18next';
 
 class Chart extends React.Component {
   constructor(props) {
@@ -80,6 +83,9 @@ class Chart extends React.Component {
     const chartType = this.props.component.component.definition.properties.type.value;
 
     let items = [];
+    const additionalActions = Object.keys(componentMeta?.properties ?? {}).filter(
+      (key) => componentMeta.properties[key]?.section === 'additionalActions'
+    );
 
     items.push({
       title: 'Title',
@@ -187,15 +193,6 @@ class Chart extends React.Component {
       title: 'Options',
       children: (
         <>
-          {renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'loadingState',
-            'properties',
-            currentState
-          )}
           {chartType !== 'pie' &&
             renderElement(component, componentMeta, paramUpdated, dataQueries, 'showAxes', 'properties', currentState)}
           {chartType !== 'pie' &&
@@ -209,6 +206,26 @@ class Chart extends React.Component {
               currentState
             )}
         </>
+      ),
+    });
+
+    items.push({
+      id: ADDITIONAL_ACTIONS_ACCORDION_ID,
+      title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+      isOpen: true,
+      children: additionalActions.map((property) =>
+        renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          'properties',
+          currentState,
+          components,
+          darkMode,
+          componentMeta.properties?.[property]?.placeholder
+        )
       ),
     });
 

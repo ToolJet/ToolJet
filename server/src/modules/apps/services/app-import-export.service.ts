@@ -69,7 +69,20 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2';
+type PartialRevampedComponent =
+  | 'CodeEditor'
+  | 'PDF'
+  | 'Calendar'
+  | 'CustomComponent'
+  | 'RadioButtonV2'
+  | 'QrScanner'
+  | 'Spinner'
+  | 'Chart'
+  | 'BoundedBox'
+  | 'Map'
+  | 'RichTextEditor'
+  | 'SvgImage'
+  | 'Timer';
 
 type NewRevampedComponent =
   | 'Text'
@@ -179,6 +192,14 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'Calendar',
   'CustomComponent',
   'RadioButtonV2',
+  'QrScanner',
+  'Spinner',
+  'Chart',
+  'BoundedBox',
+  'Map',
+  'RichTextEditor',
+  'SvgImage',
+  'Timer',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -280,15 +301,20 @@ const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Accordion',
   'AudioRecorder',
+  'BoundedBox',
   'Button',
   'ButtonGroupV2',
+  'Calendar',
   'Camera',
   'Cascader',
+  'Chart',
   'Checkbox',
   'CircularProgressBar',
+  'CodeEditor',
   'ColorPicker',
   'Container',
   'CurrencyInput',
+  'CustomComponent',
   'DatePickerV2',
   'DaterangePicker',
   'DatetimePickerV2',
@@ -308,18 +334,24 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'KeyValuePair',
   'Link',
   'Listview',
+  'Map',
   'ModalV2',
   'MultiselectV2',
   'NumberInput',
   'PasswordInput',
+  'PDF',
   'PhoneInput',
   'PopoverMenu',
   'ProgressBar',
+  'QrScanner',
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',
+  'RichTextEditor',
+  'Spinner',
   'StarRating',
   'Statistics',
+  'SvgImage',
   'Tabs',
   'Tags',
   'TagsInput',
@@ -327,6 +359,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextArea',
   'TextInput',
   'TimePicker',
+  'Timer',
   'Timeline',
   'ToggleSwitchV2',
   'TreeSelect',
@@ -2976,6 +3009,212 @@ function migrateProperties(
         properties.layout = { value: 'wrap' };
       }
     }
+
+    if (componentType === 'Calendar') {
+      if (styles.visibility) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'CustomComponent') {
+      if (styles.visibility) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'QrScanner') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'Spinner') {
+      if (styles.visibility) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'Chart') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'BoundedBox') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'CodeEditor') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'Map') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'PDF') {
+      if (styles.visibility) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'RichTextEditor') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'SvgImage') {
+      if (styles.visibility) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
+
+    if (componentType === 'Timer') {
+      for (const key of ['visibility', 'disabledState']) {
+        if (styles[key]) {
+          if (properties[key] === undefined) {
+            properties[key] = styles[key];
+          }
+          delete styles[key];
+        }
+      }
+
+      if (general?.tooltip) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+    }
   }
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
@@ -3416,6 +3655,15 @@ function migrateProperties(
         properties.tooltip = general?.tooltip;
       }
       delete general?.tooltip;
+    }
+
+    for (const key of ['visibility', 'disabledState']) {
+      if (styles[key]) {
+        if (properties[key] === undefined) {
+          properties[key] = styles[key];
+        }
+        delete styles[key];
+      }
     }
   }
 

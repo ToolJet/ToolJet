@@ -6,6 +6,42 @@ export const customComponentConfig = {
   properties: {
     data: { type: 'code', displayName: 'Data', validation: { schema: { type: 'object' }, defaultValue: '{}' } },
     code: { type: 'code', displayName: 'Code' },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    // Renders first in the Tooltip pair. Its displayName is the visible "Tooltip" label for the
+    // whole pair; the `tooltip` code field below hides its own label via showLabel:false.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   defaultSize: {
     width: 20,
@@ -17,12 +53,6 @@ export const customComponentConfig = {
   },
   events: {},
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
-      accordian: 'container',
-    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border color',
@@ -47,14 +77,25 @@ export const customComponentConfig = {
   },
   exposedVariables: {
     data: { value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}` },
+    isVisible: true,
   },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      visible: { value: '{{true}}' },
+      visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       data: {
         value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
       },
@@ -81,7 +122,6 @@ export const customComponentConfig = {
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       borderRadius: { value: '{{6}}' },
       borderColor: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },

@@ -88,6 +88,12 @@ export const circularProgressbarConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {},
   styles: {
@@ -253,6 +259,7 @@ export const circularProgressbarConfig = {
       tooltipFormat: { value: 'plainText' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       allowNegativeProgress: { value: '{{false}}' },
     },
     events: [],

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'pdf1';
@@ -12,9 +12,11 @@ const widget = createWidgetHarness({
     scale: binding('{{true}}'),
     pageControls: binding('{{true}}'),
     showDownloadOption: binding('{{true}}'),
+    visibility: binding('{{true}}'),
+    tooltip: binding(''),
+    tooltipFormat: binding('plainText'),
   },
   defaultStyles: {
-    visibility: binding('{{true}}'),
     borderColor: binding('rgb(1, 2, 3)'),
     borderRadius: binding('{{6}}'),
   },
@@ -40,9 +42,9 @@ describe('PDF widget', () => {
   });
 
   test('[PDF-STYLE-001] the container is hidden (display:none) when visibility is false', async () => {
-    // Break this catches: dropping the `visibility ? 'flex' : 'none'` mapping
-    // (PDF.jsx:197) so a hidden PDF stays on screen in the running app.
-    widget.render({ styles: { visibility: binding('{{false}}') } });
+    // Break this catches: dropping the `visibility ? 'flex' : 'none'` mapping, or still reading
+    // visibility from styles after it moved to properties, so a hidden PDF stays on screen.
+    widget.render({ properties: { visibility: binding('{{false}}') } });
 
     await screen.findByText('No PDF file specified');
     expect(outer()).toHaveStyle({ display: 'none' });
@@ -73,5 +75,43 @@ describe('PDF widget', () => {
 
     await screen.findByText('No PDF file specified');
     expect(inner()).toHaveStyle({ borderRadius: '8px' });
+  });
+
+  test('[PDF-CSA-001] setVisibility hides and restores the PDF and publishes isVisible', async () => {
+    // Break this catches: the CSA not being registered on mount, or toggling the DOM without publishing isVisible.
+    widget.render({});
+    await screen.findByText('No PDF file specified');
+    await waitFor(() => expect(widget.exposed()).toMatchObject({ isVisible: true }));
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(outer()).toHaveStyle({ display: 'none' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: false });
+
+    await widget.act('setVisibility', true);
+    await waitFor(() => expect(outer()).toHaveStyle({ display: 'flex' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[PDF-CSA-002] a visibility property change overrides an earlier setVisibility', async () => {
+    // Break this catches: local CSA state no longer yielding to a later change of the Visibility property.
+    widget.render({});
+    await screen.findByText('No PDF file specified');
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(outer()).toHaveStyle({ display: 'none' }));
+
+    await widget.session.store.act(() => widget.setComponentProperty(ID, 'visibility', '{{false}}', 'properties'));
+    await widget.session.store.act(() => widget.setComponentProperty(ID, 'visibility', '{{true}}', 'properties'));
+    await waitFor(() => expect(outer()).toHaveStyle({ display: 'flex' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[PDF-TIP-001] a tooltip set under properties is shown on hover', async () => {
+    // Break this catches: RenderWidget still reading PDF's tooltip from `general`.
+    widget.render({ properties: { tooltip: binding('Signed contract') } });
+    await screen.findByText('No PDF file specified');
+
+    await widget.session.user.hover(outer());
+    await waitFor(() => expect(screen.getAllByText('Signed contract').length).toBeGreaterThan(0));
   });
 });

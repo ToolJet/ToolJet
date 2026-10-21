@@ -1,16 +1,45 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 const DASH_WIDTH = 4;
 const DASH_GAP = 4;
 
-export const VerticalDivider = function Divider({ styles, height, width, dataCy, darkMode, properties }) {
+export const VerticalDivider = function Divider({
+  styles,
+  height,
+  width,
+  dataCy,
+  darkMode,
+  properties,
+  setExposedVariable,
+  setExposedVariables,
+}) {
   const { dividerColor, boxShadow, dividerStyle } = styles;
+  const visibility = properties?.visibility;
+  const [isVisible, setIsVisible] = useState(visibility);
+
+  // A Visibility property change wins over an earlier setVisibility call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const color =
     dividerColor === '' || ['#000', '#000000'].includes(dividerColor) ? (darkMode ? '#fff' : '#000') : dividerColor;
 
   return (
     <div
       className="justify-content-center"
-      style={{ display: properties?.visibility ? 'flex' : 'none', width: '100%', height: '100%' }}
+      style={{ display: isVisible ? 'flex' : 'none', width: '100%', height: '100%' }}
       data-cy={dataCy}
     >
       <div

@@ -82,6 +82,12 @@ export const progressbarConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {},
   styles: {
@@ -254,6 +260,7 @@ export const progressbarConfig = {
       tooltip: { value: '' },
       tooltipFormat: { value: 'plainText' },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
     },
     events: [],

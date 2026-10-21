@@ -1,12 +1,40 @@
 import { max, min } from 'lodash';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const DASH_WIDTH = 4;
 const DASH_GAP = 4;
 
-export const Divider = function Divider({ dataCy, height, width, darkMode, styles, properties }) {
+export const Divider = function Divider({
+  dataCy,
+  height,
+  width,
+  darkMode,
+  styles,
+  properties,
+  setExposedVariable,
+  setExposedVariables,
+}) {
   const { labelAlignment, labelColor, dividerColor, boxShadow, dividerStyle, padding, textWrap } = styles;
   const { label, visibility } = properties;
+  const [isVisible, setIsVisible] = useState(visibility);
+
+  // A Visibility property change wins over an earlier setVisibility call.
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const color =
     dividerColor === '' || ['#000', '#000000'].includes(dividerColor) ? (darkMode ? '#fff' : '#000') : dividerColor;
 
@@ -56,7 +84,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
     return (
       <div
         style={{
-          display: visibility ? 'flex' : 'none',
+          display: isVisible ? 'flex' : 'none',
           width: '100%',
           height: '100%',
           alignItems: 'center',
@@ -72,7 +100,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
   return (
     <div
       style={{
-        display: visibility ? 'flex' : 'none',
+        display: isVisible ? 'flex' : 'none',
         width: '100%',
         height: '100%',
         alignItems: 'center',

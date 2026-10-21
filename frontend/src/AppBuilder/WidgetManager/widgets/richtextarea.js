@@ -46,39 +46,62 @@ export const richtextareaConfig = {
       },
       section: 'additionalActions',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
-  },
-  events: {},
-  styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: true,
-      },
-    },
-
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: {
-        schema: {
-          type: 'boolean',
-        },
+        schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
+    },
+    // Renders first in the Tooltip pair. Its displayName is the visible "Tooltip" label for the
+    // whole pair; the `tooltip` code field below hides its own label via showLabel:false.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
+  events: {},
+  styles: {},
   exposedVariables: {
     value: '',
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
   },
   actions: [
     {
@@ -112,12 +135,13 @@ export const richtextareaConfig = {
       defaultValue: { value: '' },
       loadingState: { value: `{{false}}` },
       dynamicHeight: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
-    styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
-    },
+    styles: {},
   },
 };

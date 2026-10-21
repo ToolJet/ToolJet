@@ -37,6 +37,58 @@ export const chartConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    // Renders first in the Tooltip pair. Its displayName is the visible "Tooltip" label for the
+    // whole pair; the `tooltip` code field below hides its own label via showLabel:false.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
     markerColor: {
       type: 'colorSwatches',
@@ -127,6 +179,21 @@ export const chartConfig = {
       handle: 'clearClickedPoint',
       displayName: 'Clear clicked point',
     },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
   ],
   events: {
     onClick: { displayName: 'On data point click' },
@@ -166,26 +233,6 @@ export const chartConfig = {
         defaultValue: 6,
       },
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: false,
-      },
-    },
   },
   exposedVariables: {
     show: null,
@@ -193,6 +240,9 @@ export const chartConfig = {
     xAxisTitle: null,
     yAxisTitle: null,
     clickedDataPoint: {},
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
   },
   definition: {
     others: {
@@ -206,6 +256,11 @@ export const chartConfig = {
       showGridLines: { value: '{{true}}' },
       plotFromJson: { value: '{{false}}' },
       loadingState: { value: `{{false}}` },
+      visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       barmode: { value: `group` },
       jsonDescription: {
         value: `{
@@ -240,8 +295,6 @@ export const chartConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       padding: { value: '50' },
       borderRadius: { value: '{{6}}' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       borderColor: { value: 'var(--cc-default-border)' },
     },
   },
