@@ -292,6 +292,8 @@ export class AuthService implements IAuthService {
       passwordExpiry,
     });
 
+    await this.sessionUtilService.terminateAllSessions(user.id);
+
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.defaultOrganizationId,

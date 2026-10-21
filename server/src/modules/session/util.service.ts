@@ -49,7 +49,7 @@ export class SessionUtilService {
     protected readonly jwtService: JwtService
   ) { }
 
-  async terminateAllSessions(userId: string): Promise<void> {
+  async terminateAllSessions(userId: string, exceptSessionId?: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Administrative termination also invalidates external credentials on the Cloud OAuth rollout.
       // Ordinary logout uses its separate session-only path.
@@ -59,7 +59,7 @@ export class SessionUtilService {
         await manager.query('UPDATE mcp_oauth_grants SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL', [userId]);
         await manager.query('UPDATE user_personal_access_tokens SET expires_at = LEAST(expires_at, now()) WHERE user_id = $1', [userId]);
       }
-      await manager.delete(UserSessions, { userId });
+      await manager.delete(UserSessions, { userId, ...(exceptSessionId ? { id: Not(exceptSessionId) } : {}) });
     });
   }
 
@@ -106,7 +106,8 @@ export class SessionUtilService {
           user.id,
           `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
           }`,
-          manager
+          manager,
+          user.passwordExpiry
         );
         sessionId = session.id;
       }
@@ -301,14 +302,19 @@ export class SessionUtilService {
     }, manager);
   }
 
-  async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
+  async createSession(
+    userId: string,
+    device: string,
+    manager?: EntityManager,
+    passwordExpiry?: Date | null
+  ): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const session = await manager.save(
         manager.create(UserSessions, {
           userId,
           device,
           createdAt: new Date(),
-          expiry: this.getSessionExpiry(),
+          expiry: this.getSessionExpiry(passwordExpiry),
           lastLoggedIn: new Date(),
         })
       );
@@ -317,16 +323,18 @@ export class SessionUtilService {
     }, manager);
   }
 
-  getSessionExpiry(): Date {
+  getSessionExpiry(passwordExpiry?: Date | null): Date {
     // default expiry 10 days (14400 minutes)
     const now = new Date();
-    return new Date(
+    const expiry = new Date(
       now.getTime() +
       (this.configService.get<string>('USER_SESSION_EXPIRY')
         ? this.configService.get<number>('USER_SESSION_EXPIRY')
         : 14400) *
       60000
     );
+    // A session must never outlive the user's password. Users without a password expiry are uncapped.
+    return passwordExpiry && passwordExpiry < expiry ? passwordExpiry : expiry;
   }
 
   async generateInviteSignupPayload(
@@ -343,7 +351,8 @@ export class SessionUtilService {
       user.id,
       `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
       }`,
-      manager
+      manager,
+      user.passwordExpiry
     );
     const sessionId = session.id;
 
@@ -550,7 +559,13 @@ export class SessionUtilService {
           throw new UnauthorizedException('User session expired');
         }
 
-        session.expiry = this.getSessionExpiry();
+        // Password expired while the session was live (e.g. expiry shortened after login)
+        const passwordExpiry = session.user?.passwordExpiry;
+        if (passwordExpiry && new Date(passwordExpiry) < now) {
+          throw new UnauthorizedException('Password expired');
+        }
+
+        session.expiry = this.getSessionExpiry(passwordExpiry ? new Date(passwordExpiry) : null);
       }
 
       // Update last_logged_in

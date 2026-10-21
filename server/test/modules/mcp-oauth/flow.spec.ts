@@ -435,12 +435,13 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       if (previousKey === undefined) delete process.env.LOCKBOX_MASTER_KEY; else process.env.LOCKBOX_MASTER_KEY = previousKey;
     }
   });
-  test('administrative session termination expires external credentials as well as browser sessions', async () => {
+  test.each([false, true])('session termination expires external credentials while preserving an explicitly exempt session: %s', async keepCurrentSession => {
     const { tokens, delegated } = await makeViewer();
+    await db.query("INSERT INTO user_sessions(id,user_id,expiry) VALUES ($1,$2,now()+interval '1 day')", [randomUUID(), user.id]);
     await db.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-admin-pat','workspace',now()+interval '1 day')", [user.id,organizationId]);
     // Turning the feature off temporarily must not let a later re-enable revive these credentials.
-    await SessionUtilService.prototype.terminateAllSessions.call({ configService: new ConfigService({ TOOLJET_EDITION: 'cloud', MCP_OAUTH_ENABLED: 'false' }) }, user.id);
-    expect(await db.query('SELECT id FROM user_sessions WHERE user_id=$1', [user.id])).toEqual([]);
+    await SessionUtilService.prototype.terminateAllSessions.call({ configService: new ConfigService({ TOOLJET_EDITION: 'cloud', MCP_OAUTH_ENABLED: 'false' }) }, user.id, keepCurrentSession ? user.sessionId : undefined);
+    expect(await db.query('SELECT id FROM user_sessions WHERE user_id=$1', [user.id])).toEqual(keepCurrentSession ? [{ id: user.sessionId }] : []);
     expect((await db.query('SELECT expires_at <= now() AS expired FROM user_personal_access_tokens'))[0].expired).toBe(true);
     await expect(refresh(tokens.refresh_token)).rejects.toMatchObject({ error: 'invalid_grant' });
     await expect(oauth.authenticateDelegation(delegated.access_token, organizationId)).rejects.toThrow(UnauthorizedException);
