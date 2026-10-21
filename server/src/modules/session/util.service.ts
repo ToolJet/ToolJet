@@ -112,7 +112,11 @@ export class SessionUtilService {
       }
 
       // Only actual login callers set this marker; workspace switching never invents new proof.
-      const { oauthAuthenticationMethod, oauthAuthenticationProviderId, oauthAuthenticationReset, ...publicExtraData } = extraData || {};
+      const { oauthAuthenticationMethod, oauthAuthenticationProviderId, oauthAuthenticationMcpVerified,
+        oauthAuthenticationReset: explicitReset, ...publicExtraData } = extraData || {};
+      // Legacy OIDC may use a configured verifier; its browser login cannot authorize MCP consent.
+      const oauthAuthenticationReset = explicitReset ||
+        (oauthAuthenticationMethod === 'openid' && oauthAuthenticationMcpVerified !== true);
       let workspaceAuthentication = !isPatLogin && !oauthAuthenticationReset && loggedInUser?.id === user.id ? loggedInUser.workspaceAuthentication : undefined;
       if (!isPatLogin && !oauthAuthenticationReset && oauthAuthenticationMethod) {
         try {

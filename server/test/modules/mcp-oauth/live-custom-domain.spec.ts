@@ -1,5 +1,5 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { resolveLiveCustomDomainHost } from '@modules/custom-domains/live-origin';
+import { resolveLiveCustomDomainHost, resolveSsoCustomDomainHost } from '@modules/custom-domains/live-origin';
 
 describe('live custom-domain SSO callback authority', () => {
   const canonical = 'https://tooljet.synthetic.example/tools';
@@ -42,5 +42,17 @@ describe('live custom-domain SSO callback authority', () => {
       ).resolves.toBeNull();
     }
     expect(resolveCustomDomain).not.toHaveBeenCalled();
+  });
+
+  test('ordinary SSO keeps its cached callback even when MCP live-domain checks reject it', async () => {
+    const cache = { getActiveDomainForOrg: jest.fn().mockResolvedValue('garden.synthetic.example') };
+    const live = { resolveCustomDomain: jest.fn().mockRejectedValue(new NotFoundException()) };
+    await expect(resolveSsoCustomDomainHost(canonical, 'garden.synthetic.example', organizationId, cache, live))
+      .resolves.toBe('https://garden.synthetic.example');
+    expect(live.resolveCustomDomain).not.toHaveBeenCalled();
+    await expect(resolveSsoCustomDomainHost(canonical, 'garden.synthetic.example', organizationId, cache, live, true))
+      .resolves.toBeNull();
+    expect(live.resolveCustomDomain).toHaveBeenCalledWith('garden.synthetic.example', { requireActiveSsl: true });
+    expect(cache.getActiveDomainForOrg).toHaveBeenCalledTimes(1);
   });
 });

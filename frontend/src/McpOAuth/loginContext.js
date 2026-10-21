@@ -1,6 +1,10 @@
 import config from 'config';
 import { isMcpOAuthConsentPath } from '@/_helpers/routes';
 
+export const isMcpOAuthLogin = (redirectTo) =>
+  window.public_config?.MCP_OAUTH_ENABLED === 'true' &&
+  isMcpOAuthConsentPath(redirectTo || new URLSearchParams(window.location.search).get('redirectTo'));
+
 export const ssoStateRedirect = (state) => {
   if (typeof state !== 'string') return null;
   try {

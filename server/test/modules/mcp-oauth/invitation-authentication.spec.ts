@@ -94,4 +94,20 @@ describe('Invitation login cannot mint OAuth authentication evidence', () => {
     expect(sessions.mcpOAuthService.captureAuthentication).not.toHaveBeenCalled();
     expect(response.cookie).toHaveBeenCalled();
   });
+
+  test.each([false, true])('ordinary OIDC login stays usable and only MCP-verified login can mint evidence: %s', async (verified) => {
+    const previous = { ...owner, sessionId: 'previous-session', organizationIds: [workspace.id], isSSOLogin: true,
+      workspaceAuthentication: { ...evidence, method: 'openid' } };
+    const result = await sessions.generateLoginResultPayload(response, owner, workspace, true, false, previous,
+      { update: jest.fn() }, undefined, { oauthAuthenticationMethod: 'openid', oauthAuthenticationMcpVerified: verified });
+    expect(response.cookie).toHaveBeenCalled();
+    expect(signed.isSSOLogin).toBe(true);
+    if (verified) expect(sessions.mcpOAuthService.captureAuthentication).toHaveBeenCalledWith(workspace.id, 'openid', undefined);
+    else {
+      expect(signed.workspaceAuthentication).toBeUndefined();
+      expect(sessions.mcpOAuthService.captureAuthentication).not.toHaveBeenCalled();
+    }
+    expect(result.oauthAuthenticationMcpVerified).toBeUndefined();
+    expect(result.oauth_authentication_mcp_verified).toBeUndefined();
+  });
 });

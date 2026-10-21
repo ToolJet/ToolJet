@@ -2,8 +2,29 @@ export interface LiveCustomDomainResolver {
   resolveCustomDomain(domain: string, options?: { requireActiveSsl?: boolean }): Promise<{ organizationId: string }>;
 }
 
-/** Resolve browser authority from live repository + license state. Callers must
- * not use the routing cache for OAuth callback selection. */
+/** Ordinary SSO retains its existing routing cache. Only MCP login requires live authority. */
+export async function resolveSsoCustomDomainHost(
+  tooljetHost: string,
+  requestHost: string | undefined,
+  organizationId: string | undefined,
+  cache: { getActiveDomainForOrg(organizationId: string): Promise<string> } | undefined,
+  live: LiveCustomDomainResolver | undefined,
+  mcpOAuthLogin = false,
+): Promise<string | null> {
+  if (mcpOAuthLogin) return resolveLiveCustomDomainHost(tooljetHost, requestHost, organizationId, live);
+  if (!requestHost || !organizationId || !cache) return null;
+  try {
+    if (requestHost === new URL(tooljetHost).hostname) return null;
+    const activeDomain = await cache.getActiveDomainForOrg(organizationId);
+    if (activeDomain === requestHost) return `https://${activeDomain}`;
+  } catch {
+    // Preserve the existing fallback to the configured ToolJet host.
+  }
+  return null;
+}
+
+/** Resolve MCP browser authority from live repository + license state.
+ * MCP callback selection must not use the routing cache. */
 export async function resolveLiveCustomDomainHost(
   tooljetHost: string,
   requestHost: string | undefined,
