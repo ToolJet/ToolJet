@@ -56,7 +56,8 @@ export interface IDataSourcesService {
     dataSourceId: string,
     environmentId: string,
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
-    user: User
+    user: User,
+    canConfigureDataSource: boolean
   ): Promise<void>;
 
   invokeMethod(
