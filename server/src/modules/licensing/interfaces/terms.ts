@@ -71,6 +71,7 @@ export interface Terms {
       jsLibraries: boolean;
       publicApp: boolean;
       customComponentLibraries?: boolean;
+      versionReview?: boolean;
     };
   };
   modules?: {
