@@ -35,11 +35,11 @@ const presetDefinition = (name) => {
     : undefined;
 };
 
-const SHADCN_SECTIONS = [
+export const SHADCN_SECTIONS = [
   { title: 'Page sections', items: ['ShadHero', 'ShadSummaryStrip', 'ShadCardGrid', 'ShadRecordList'] },
   {
     title: 'Layout',
-    items: ['FlexContainer', 'ShadTabs', 'ShadListView', 'ShadDialog', 'ShadSeparator', 'ShadAccordion'],
+    items: ['FlexContainer', 'ShadTabs', 'ShadListView', 'ShadDialog', 'ShadSeparator'],
   },
   { title: 'Typography', items: ['ShadHeading', 'ShadText'] },
   { title: 'Conversation', items: ['ShadChat', 'ShadQuestionnaire'] },
@@ -60,6 +60,8 @@ const SHADCN_SECTIONS = [
       'ShadSkeleton',
       'ShadKeyValue',
       'ShadTimeline',
+      // Text sections from its items: it holds no components, so it is not in Layout with the containers.
+      'ShadAccordion',
       'ShadTags',
       'ShadCircularProgress',
       'ShadSpinner',
