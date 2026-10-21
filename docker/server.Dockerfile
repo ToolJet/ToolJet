@@ -43,6 +43,11 @@ RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
     && rm node-v22.15.1-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
+
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget
