@@ -6,7 +6,7 @@ import { authenticationService } from '../_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
 import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
-import { hasBuilderRole } from '@/_helpers/utils';
+import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import './styles/styles.scss';
 
 export const TooljetDatabaseContext = createContext({
@@ -75,10 +75,9 @@ export const TooljetDatabase = (props) => {
   };
   const navigate = useNavigate();
   const { admin, user_permissions } = authenticationService.currentSessionValue;
-  const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
   const canEditTjdb = admin || !!user_permissions?.tjdb_c_r_u_d;
 
-  if (!admin && !isBuilder) {
+  if (!canAccessTooljetDbDashboard()) {
     navigate('/');
   }
 
