@@ -19,7 +19,8 @@ import { Skeleton } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
 import { itemKey, listLook, pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import { fitsContentInView, listRowHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { listRowHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { useListSelection } from './useListSelection';
@@ -94,9 +95,10 @@ export const ShadListView = (props: WidgetProps) => {
   useAutoHeight(props, rootRef);
   useDisableInert(rootRef, isDisabled);
   const look = listLook(styles);
-  // Dynamic height off: the widget keeps its drawn height, so the list fills that box and its rows scroll inside it,
-  // the pager staying under them (the rows spilled past the box onto the page). On, the list grows with its rows.
-  const fixed = !fitsContentInView(props.componentType ?? 'ShadListView', properties);
+  // In a fixed box (the editor, which draws the saved height, or dynamic height off) the list fills the box and its
+  // rows scroll inside it, the pager staying under them: the rows, and the padding style around them, spilled past the
+  // box onto the page. With dynamic height on in the viewer the list grows with its rows.
+  const fixed = inFixedBox({ ...props, componentType: props.componentType ?? 'ShadListView', properties });
 
   const mode: ListMode = properties.mode === 'grid' ? 'grid' : 'list';
   const columns = mode === 'grid' ? Math.min(24, Math.max(1, Math.floor(Number(properties.columns)) || 1)) : 1;
