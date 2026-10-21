@@ -1969,6 +1969,42 @@ describe('Table: add row and refresh', () => {
     expect(addRow.style.minHeight).toBe('39px');
   });
 
+  test('[Table-ADDROW-012] the add-new-row popup opens with legacy dropdown and multiselect columns', async () => {
+    const LEGACY_SELECT_COLUMNS = [
+      { name: 'name', key: 'name', id: 'col-name', columnType: 'string', columnSize: 120, isEditable: true },
+      {
+        name: 'role',
+        key: 'role',
+        id: 'col-role',
+        columnType: 'dropdown',
+        columnSize: 160,
+        isEditable: true,
+        values: { value: ['admin', 'user'] },
+        labels: { value: ['Admin', 'User'] },
+      },
+      {
+        name: 'skills',
+        key: 'skills',
+        id: 'col-skills',
+        columnType: 'multiselect',
+        columnSize: 160,
+        isEditable: true,
+        values: { value: ['js', 'py'] },
+        labels: { value: ['JavaScript', 'Python'] },
+      },
+    ];
+    widget.render({ properties: { columns: { value: LEGACY_SELECT_COLUMNS } } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-cy="role-column-0"] .select-search-container')).toBeInTheDocument();
+      expect(document.querySelector('[data-cy="skills-column-0"] .select-search-container')).toBeInTheDocument();
+    });
+    expect(table()).toBeInTheDocument();
+  });
+
   const MAXLEN_COLUMNS_ADDROW = [
     {
       name: 'name',
