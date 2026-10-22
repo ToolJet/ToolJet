@@ -69,10 +69,11 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       return;
     }
 
-    if (isCanCreate || isCanDelete) {
-      // Can create and can delete has master permissions
+    if (isCanCreate) {
+      // Create grants full management.
       can(
         [
+          FEATURE_KEY.CREATE,
           FEATURE_KEY.GET,
           FEATURE_KEY.UPDATE,
           FEATURE_KEY.GET_BY_ENVIRONMENT,
@@ -82,15 +83,14 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         ],
         DataSource
       );
-
-      if (isCanDelete) {
-        can([FEATURE_KEY.DELETE, FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE], DataSource);
-      }
-      if (isCanCreate) {
-        can(FEATURE_KEY.CREATE, DataSource);
-      }
-      return;
     }
+
+    if (isCanDelete) {
+      // Delete allows removal and its dependency check only — never UPDATE/configuration.
+      can([FEATURE_KEY.GET, FEATURE_KEY.DELETE, FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE], DataSource);
+    }
+
+    // No early return: a user who also has Configure still picks up UPDATE from the branches below.
 
     if (isAllEditable) {
       // All operations are available

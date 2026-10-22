@@ -39,7 +39,7 @@ export interface IDataQueriesService {
 
   bulkUpdateQueryOptions(
     user: User,
-    appVersionId: string,
+    versionId: string,
     dataQueriesOptions: IUpdatingReferencesOptions[]
   ): Promise<object[]>;
 
