@@ -1,3 +1,4 @@
+import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { ProfilePreferencesDto, ProfileUpdateDto } from '@modules/profile/dto';
@@ -76,6 +77,7 @@ export class ProfileService implements IProfileService {
         },
         manager
       );
+      await invalidateUserCredentials(manager, userId);
       // Sign the user out everywhere else, keeping the session that made this change
       await manager.delete(UserSessions, {
         userId,

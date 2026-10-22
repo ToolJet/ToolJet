@@ -1,3 +1,9 @@
+/**
+ * @jest-config-loader ts-node
+ *
+ * Node >= 22.18 strips TypeScript natively, so Jest would import this file as ESM
+ * and fail on the extensionless relative import below. Keep the ts-node loader.
+ */
 import type { Config } from '@jest/types';
 import { coverageConfig } from './test/jest-coverage.config';
 

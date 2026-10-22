@@ -1,3 +1,4 @@
+import { sanitizeOAuthRequest, sanitizeOAuthUrl } from '@otel/sanitize';
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -89,6 +90,13 @@ export class AppModuleLoader {
             // so both resolve to the same pino instance and both reach the OTLP stream.
             logger: buildBaseLogger(),
             autoLogging,
+            serializers: {
+              req: sanitizeOAuthRequest,
+              res: (response) => ({
+                ...response,
+                ...(response.headers ? { headers: { ...response.headers, location: sanitizeOAuthUrl(response.headers.location) } } : {}),
+              }),
+            },
             redact: {
               paths: [
                 'req.headers.authorization',
@@ -106,6 +114,14 @@ export class AppModuleLoader {
                 'req.body.invitation_token',
                 'req.body.access_token',
                 'req.body.refresh_token',
+                'req.body.subject_token',
+                'req.body.code',
+                'req.body.code_verifier',
+                'req.body.ticket',
+                'req.body.bootstrap',
+                'req.body.nonce',
+                'req.headers["x-tooljet-delegation"]',
+                'req.headers["x-tooljet-oauth-csrf"]',
                 'req.body.secret',
                 'req.body.api_key',
                 'req.headers["x-api-key"]',
