@@ -301,6 +301,14 @@ export const TableExposedVariables = ({
         selectedRow: lastClickedRow?.row ?? {},
         selectedRowId: isNaN(lastClickedRow?.index) ? String(lastClickedRow?.index) : lastClickedRow?.index,
       });
+    } else if (selectedRows.length > 0 && allowSelection && !showBulkSelector) {
+      // A selection made without a click (defaultSelectedRow, selectRow CSA) can be wiped by the reset branch
+      // above in a render that still holds the pre-selection state; re-sync from the real selection.
+      const [{ original, index }] = selectedRows;
+      setExposedVariables({
+        selectedRow: original,
+        selectedRowId: isNaN(index) ? String(index) : index,
+      });
     }
   }, [allowSelection, lastClickedRow, selectedRows, setExposedVariables, showBulkSelector]);
 
