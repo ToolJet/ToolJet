@@ -969,8 +969,15 @@ export const getBlockers = ({
     // an unrelated widget triggers reflow. Accordion's own
     // resolveContainerHeight already floors at canonical when expanded,
     // so trusting the temp here only takes effect for collapsed state.
+    //
+    // A UI 2.0 widget skips it too: it fits its content and may sit well below its drawn height (a Card Grid drawn 620
+    // tall showing one row at 240). Flooring it here put widgets under it back at the drawn height whenever another
+    // widget's reflow ran after its own.
     const candidateComponentType = currentPageComponents?.[candidateId]?.component?.component;
-    const skipCanonicalFloor = candidateId === changedComponentId || candidateComponentType === 'Accordion';
+    const skipCanonicalFloor =
+      candidateId === changedComponentId ||
+      candidateComponentType === 'Accordion' ||
+      keepsFittedHeightWhenMoved(candidateComponentType);
     const measuredHeight = skipCanonicalFloor
       ? Math.max(candidateLayout?.height ?? 0, resolvedHeights?.[candidateId] ?? 0)
       : Math.max(candidateLayout?.height ?? 0, candidateCanonical?.height ?? 0, resolvedHeights?.[candidateId] ?? 0);
@@ -1346,7 +1353,8 @@ export const buildReflowPatch = ({
           const w = blockers[wi];
           if (!w.isInFlow) continue;
           const wComponentType = currentPageComponents?.[w.id]?.component?.component;
-          const isShrinkableBlocker = w.id === changedComponentId || wComponentType === 'Accordion';
+          const isShrinkableBlocker =
+            w.id === changedComponentId || wComponentType === 'Accordion' || keepsFittedHeightWhenMoved(wComponentType);
           if (!isShrinkableBlocker) continue;
           const wTop = w.canonicalLayout?.top ?? 0;
           if (wTop < vCanonicalBottom || wTop >= targetTopCanonical) continue;
