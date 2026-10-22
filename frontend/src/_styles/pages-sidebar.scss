@@ -242,8 +242,10 @@
             }
         }
 
+        // In the side menu a long app title wraps onto more lines (the header grows): cut to one line, it lost
+        // everything past about 30 characters. The top bar keeps it to one line (position-top below).
         .app-name {
-            height: 80px;
+            min-height: 80px;
             display: flex;
             gap: 12px;
             font-weight: 500;
@@ -252,12 +254,10 @@
             padding: 24px 16px;
             align-items: center;
             width: 100% !important;
-            min-height: 28px;
 
             .app-text {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                white-space: normal;
+                overflow-wrap: anywhere;
                 max-width: 260px;
             }
 
@@ -502,11 +502,18 @@
 
             .app-name {
                 height: 60px;
+                min-height: 0;
                 width: auto !important;
                 max-width: 336px;
                 align-items: center;
                 padding: 14px 16px;
                 flex-shrink: 0;
+
+                .app-text {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
 
                 img {
                     flex-shrink: 0;
