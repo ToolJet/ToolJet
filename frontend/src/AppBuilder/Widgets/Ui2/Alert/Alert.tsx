@@ -32,17 +32,21 @@ export const alertVariant = (value: unknown): string => {
     .trim()
     .toLowerCase();
   if (name === 'danger' || name === 'error') return 'destructive';
-  return name in TONES ? name : 'default';
+  return name in TONES || name === 'custom' ? name : 'default';
 };
-export const alertTone = (variant: unknown): string | null => TONES[alertVariant(variant)] ?? null;
-const toneVars = (tone: string | null): React.CSSProperties | undefined =>
-  tone
-    ? ({
-        '--al-bg': `color-mix(in srgb, var(--sc-${tone}) 6%, var(--sc-background))`,
-        '--al-border': `color-mix(in srgb, var(--sc-${tone}) 50%, transparent)`,
-        '--al-ink': `var(--sc-${tone}-ink)`,
-      } as React.CSSProperties)
-    : undefined;
+// Custom is a status look in the author's own colour: the Custom accent style (the theme's primary while blank) gives
+// the tint, the border and the ink the way a theme colour does for Info or Warning. Each part's own style still wins.
+const CUSTOM_TONE = 'var(--lk-accent,var(--sc-primary))';
+const toneVars = (variant: string): React.CSSProperties | undefined => {
+  const token = TONES[variant];
+  if (!token && variant !== 'custom') return undefined;
+  const tone = token ? `var(--sc-${token})` : CUSTOM_TONE;
+  return {
+    '--al-bg': `color-mix(in srgb, ${tone} 6%, var(--sc-background))`,
+    '--al-border': `color-mix(in srgb, ${tone} 50%, transparent)`,
+    '--al-ink': token ? `var(--sc-${token}-ink)` : `color-mix(in srgb, ${tone} 60%, var(--sc-foreground))`,
+  } as React.CSSProperties;
+};
 
 export const ShadAlert = (props: WidgetProps) => {
   const { properties, setExposedVariables } = props;
@@ -56,7 +60,7 @@ export const ShadAlert = (props: WidgetProps) => {
   return (
     <Shell {...props} innerRef={ref} className={cn(fixed && 'tw-h-full')}>
       <Alert
-        style={toneVars(alertTone(properties.variant))}
+        style={toneVars(alertVariant(properties.variant))}
         className={cn(
           fixed && 'tw-h-full tw-overflow-y-auto',
           'tw-bg-[color:var(--lk-bg,var(--al-bg,var(--sc-background)))]',

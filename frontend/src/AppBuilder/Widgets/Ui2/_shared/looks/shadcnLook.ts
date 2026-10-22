@@ -35,6 +35,7 @@ export const LOOKS: LookMap = {
     ['borderRadius', '--lk-radius', px],
   ],
   ShadAlert: [
+    ['accentColor', '--lk-accent'],
     ['backgroundColor', '--lk-bg'],
     ['borderColor', '--lk-border'],
     ['titleColor', '--lk-title'],

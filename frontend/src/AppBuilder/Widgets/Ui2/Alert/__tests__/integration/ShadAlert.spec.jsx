@@ -146,13 +146,9 @@ describe('UI 2.0 Alert', () => {
     expect(alert.style.getPropertyValue('--al-bg')).toBe('');
     expect(alert.querySelector('svg')).toBeNull();
     const { shadAlertConfig } = jest.requireActual('@/AppBuilder/WidgetManager/widgets/shadAlert');
-    expect(shadAlertConfig.properties.variant.options.map((option) => option.value)).toEqual([
-      'default',
-      'info',
-      'success',
-      'warning',
-      'destructive',
-    ]);
+    expect(shadAlertConfig.properties.variant.options.map((option) => option.value)).toEqual(
+      expect.arrayContaining(['default', 'info', 'success', 'warning', 'destructive'])
+    );
   });
 
   test('[ShadAlert-PROP-005] the Variant takes a binding: any case, danger or error as destructive, else default', async () => {
@@ -171,5 +167,26 @@ describe('UI 2.0 Alert', () => {
     render({ properties: { variant: binding("{{'Overdue'}}") } });
     await waitFor(() => expect(screen.getByRole('alert').style.getPropertyValue('--al-ink')).toBe(''));
     expect(screen.getByRole('alert').querySelector('svg')).toBeNull();
+  });
+
+  test('[ShadAlert-PROP-006] the Custom variant draws its look from the Custom accent style', async () => {
+    // A variant of the author's own: one colour gives the tint, the border and the ink, as a theme colour does for
+    // Info or Warning; blank, it is the theme's primary.
+    const { container } = render({
+      properties: { variant: binding('custom') },
+      styles: { accentColor: binding('#7c3aed') },
+    });
+    const alert = await screen.findByRole('alert');
+    await waitFor(() =>
+      expect(alert.style.getPropertyValue('--al-bg')).toContain('var(--lk-accent,var(--sc-primary))')
+    );
+    expect(alert.style.getPropertyValue('--al-border')).toContain('var(--lk-accent,var(--sc-primary))');
+    expect(alert.style.getPropertyValue('--al-ink')).toBe(
+      'color-mix(in srgb, var(--lk-accent,var(--sc-primary)) 60%, var(--sc-foreground))'
+    );
+    expect(container.querySelector('.tj-shadcn').style.getPropertyValue('--lk-accent')).toBe('#7c3aed');
+    const { shadAlertConfig } = jest.requireActual('@/AppBuilder/WidgetManager/widgets/shadAlert');
+    expect(shadAlertConfig.properties.variant.options.map((option) => option.value)).toContain('custom');
+    expect(shadAlertConfig.styles.accentColor.type).toBe('colorSwatches');
   });
 });
