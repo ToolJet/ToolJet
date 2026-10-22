@@ -425,13 +425,13 @@ export const shadInputConfig = {
     },
     properties: {
       label: {
-        value: '',
+        value: 'Label',
       },
       description: {
         value: '',
       },
       placeholder: {
-        value: '',
+        value: 'Enter text',
       },
       defaultValue: {
         value: '',

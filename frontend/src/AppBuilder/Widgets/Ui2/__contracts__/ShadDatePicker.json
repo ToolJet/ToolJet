@@ -79,7 +79,7 @@
         "type": "string"
       },
       "default": "",
-      "initial": ""
+      "initial": "Date"
     },
     "loadingState": {
       "type": "boolean",

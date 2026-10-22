@@ -586,7 +586,7 @@ export const shadDatePickerConfig = {
     },
     properties: {
       label: {
-        value: '',
+        value: 'Date',
       },
       description: {
         value: '',

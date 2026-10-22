@@ -403,7 +403,7 @@ export const shadSelectConfig = {
     },
     properties: {
       label: {
-        value: '',
+        value: 'Label',
       },
       description: {
         value: '',
@@ -412,7 +412,7 @@ export const shadSelectConfig = {
         value: "{{[{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]}}",
       },
       placeholder: {
-        value: 'Select',
+        value: 'Select an option',
       },
       defaultValue: {
         value: '',

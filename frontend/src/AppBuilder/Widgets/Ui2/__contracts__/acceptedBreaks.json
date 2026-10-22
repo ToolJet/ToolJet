@@ -13,6 +13,69 @@
       "key": "value",
       "change": "initial",
       "reason": "A new Stat starts with the number 1250 ('{{1250}}'), so the Value format the builder picks applies to it; the old '$1,250.00' was text that no format changed."
+    },
+    {
+      "type": "ShadDatePicker",
+      "area": "property",
+      "key": "label",
+      "change": "initial",
+      "reason": "A new Date picker starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Date pickers keep what they saved."
+    },
+    {
+      "type": "ShadInput",
+      "area": "property",
+      "key": "label",
+      "change": "initial",
+      "reason": "A new Input starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Inputs keep what they saved."
+    },
+    {
+      "type": "ShadInput",
+      "area": "property",
+      "key": "placeholder",
+      "change": "initial",
+      "reason": "A new Input starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Inputs keep what they saved."
+    },
+    {
+      "type": "ShadPasswordInput",
+      "area": "property",
+      "key": "placeholder",
+      "change": "initial",
+      "reason": "A new Password input starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Password inputs keep what they saved."
+    },
+    {
+      "type": "ShadPhoneInput",
+      "area": "property",
+      "key": "placeholder",
+      "change": "initial",
+      "reason": "A new Phone input starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Phone inputs keep what they saved."
+    },
+    {
+      "type": "ShadSelect",
+      "area": "property",
+      "key": "label",
+      "change": "initial",
+      "reason": "A new Select starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Selects keep what they saved."
+    },
+    {
+      "type": "ShadSelect",
+      "area": "property",
+      "key": "placeholder",
+      "change": "initial",
+      "reason": "A new Select starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Selects keep what they saved."
+    },
+    {
+      "type": "ShadTextarea",
+      "area": "property",
+      "key": "label",
+      "change": "initial",
+      "reason": "A new Textarea starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Textareas keep what they saved."
+    },
+    {
+      "type": "ShadTextarea",
+      "area": "property",
+      "key": "placeholder",
+      "change": "initial",
+      "reason": "A new Textarea starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Textareas keep what they saved."
     }
   ]
 }

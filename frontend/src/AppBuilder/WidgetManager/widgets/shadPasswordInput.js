@@ -470,7 +470,7 @@ export const shadPasswordInputConfig = {
         value: '',
       },
       placeholder: {
-        value: '',
+        value: 'Enter password',
       },
       defaultValue: {
         value: '',

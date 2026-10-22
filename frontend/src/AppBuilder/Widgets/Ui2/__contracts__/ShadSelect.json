@@ -61,7 +61,7 @@
         "type": "string"
       },
       "default": "",
-      "initial": ""
+      "initial": "Label"
     },
     "loadingState": {
       "type": "boolean",
@@ -88,7 +88,7 @@
         "type": "string"
       },
       "default": "Select",
-      "initial": "Select"
+      "initial": "Select an option"
     },
     "tooltip": {
       "type": "string",
