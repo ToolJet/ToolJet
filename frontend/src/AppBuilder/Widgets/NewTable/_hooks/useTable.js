@@ -30,19 +30,28 @@ export function useTable({
 
   const [columnVisibility, setColumnVisibility] = useState({});
   const [columnFilters, setColumnFilters] = useState([]);
-  const [columnOrder, setColumnOrder] = useState(columns.map((column) => column.id));
 
+  // `columnOrder` is intentionally NOT controlled React state (unlike `sorting`/
+  // `columnSizing`, react-table manages it internally) — an end-user's live
+  // drag-to-reorder is session-only UX and must survive unrelated re-renders
+  // without any hand-written resync logic. See `onColumnOrderChange` (absent
+  // below, by design) and TableHeader.jsx's onDragEnd, which calls
+  // `table.setColumnOrder(...)` directly on the table instance.
+  //
+  // Pin-bucket ordering therefore can't read live `columnOrder` (it's computed
+  // before the table instance exists, and uncontrolled state only lives inside
+  // that instance) — it orders pinned columns by their AUTHORED position in
+  // `columns` instead. `pinPosition` is a builder-configured property, so this
+  // is also more correct: a pinned group's internal order shouldn't drift with
+  // a viewer's transient session reorder.
   const columnPinning = useMemo(() => {
-    const pinPositionByColumnId = columns.reduce((acc, column) => {
+    const leftPinned = [];
+    const rightPinned = [];
+    columns.forEach((column) => {
       const pinPosition = column?.meta?.pinPosition;
-      if (pinPosition === 'left' || pinPosition === 'right') {
-        acc[column.id] = pinPosition;
-      }
-      return acc;
-    }, {});
-
-    const leftPinned = columnOrder.filter((columnId) => pinPositionByColumnId[columnId] === 'left');
-    const rightPinned = columnOrder.filter((columnId) => pinPositionByColumnId[columnId] === 'right');
+      if (pinPosition === 'left') leftPinned.push(column.id);
+      else if (pinPosition === 'right') rightPinned.push(column.id);
+    });
 
     // Pin the selection (checkbox) column to the extreme left only when other columns are pinned
     const hasOtherLeftPins = leftPinned.some((id) => id !== 'selection');
@@ -51,7 +60,7 @@ export function useTable({
     }
 
     return { left: leftPinned, right: rightPinned };
-  }, [columns, columnOrder]);
+  }, [columns]);
 
   useEffect(() => {
     setPagination((prev) => ({
@@ -83,14 +92,12 @@ export function useTable({
     state: {
       pagination,
       columnVisibility,
-      columnOrder,
       columnPinning,
       globalFilter,
       columnFilters,
     },
     onPaginationChange: setPagination,
     onColumnVisibilityChange: setColumnVisibility,
-    onColumnOrderChange: setColumnOrder,
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
     filterFns: {
@@ -120,7 +127,5 @@ export function useTable({
     setGlobalFilter,
     columnFilters,
     setColumnFilters,
-    columnOrder,
-    setColumnOrder,
   };
 }

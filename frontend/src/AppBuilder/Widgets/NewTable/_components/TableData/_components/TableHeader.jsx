@@ -200,7 +200,7 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
   );
 };
 
-export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder, fireEvent, setExposedVariables }) => {
+export const TableHeader = ({ id, table, darkMode, fireEvent, setExposedVariables }) => {
   const { getLoadingState, getIsRefreshing } = useTableStore();
   const loadingState = getLoadingState(id);
   const isRefreshing = getIsRefreshing(id);
@@ -214,15 +214,25 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder, 
     })
   );
 
+  // `columnOrder` is uncontrolled react-table state (see useTable.js) — an
+  // end-user's drag-to-reorder here is session-only UX, kept entirely inside
+  // the table instance so it survives unrelated re-renders (resize, data
+  // refresh, ...) without any hand-written resync logic, the same way
+  // `sorting`/`columnSizing` already do. `table.getAllLeafColumns()` always
+  // reflects the CURRENTLY resolved order (live-reordered if the user has
+  // dragged, natural/authored order otherwise — react-table's own column-order
+  // resolution treats an empty/uninitialized order as "use authored order"),
+  // so it's always safe to compute the drag indices from directly.
   const onDragEnd = (event) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    setColumnOrder((currentOrder) => {
-      const oldIndex = currentOrder.indexOf(active.id);
-      const newIndex = currentOrder.indexOf(over.id);
-      return arrayMove(columnOrder, oldIndex, newIndex);
-    });
+    const resolvedOrder = table.getAllLeafColumns().map((column) => column.id);
+    const oldIndex = resolvedOrder.indexOf(active.id);
+    const newIndex = resolvedOrder.indexOf(over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    table.setColumnOrder(arrayMove(resolvedOrder, oldIndex, newIndex));
   };
 
   if (loadingState || isRefreshing) {
@@ -237,7 +247,11 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder, 
     <thead>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         {table.getHeaderGroups().map((headerGroup) => (
-          <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy} key={headerGroup.id}>
+          <SortableContext
+            items={headerGroup.headers.map((header) => header.id)}
+            strategy={horizontalListSortingStrategy}
+            key={headerGroup.id}
+          >
             <tr className="tr" style={{ display: 'flex' }}>
               {headerGroup.headers.map((header) => (
                 <DraggableHeader
