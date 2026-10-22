@@ -98,7 +98,9 @@ export const shadButtonConfig = {
     },
     fullWidth: {
       type: 'toggle',
-      displayName: 'Full width',
+      displayName: 'Stretch in flex container',
+      // On the grid the button always fills its box, so the toggle did nothing there and read as broken.
+      note: "In a Flex container: on, the button spans its slot's width; off, it keeps its label's width. On the grid it always fills its box: resize the box to change its width.",
       validation: {
         schema: {
           type: 'boolean',
