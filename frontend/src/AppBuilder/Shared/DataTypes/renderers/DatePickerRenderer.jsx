@@ -81,7 +81,8 @@ export const parseDate = ({
 
   let momentObj;
   if (parseInUnixTimestamp && unixTimestamp) {
-    momentObj = unixTimestamp === 'seconds' ? moment.unix(value) : moment(parseInt(value));
+    const epoch = Number(value);
+    momentObj = unixTimestamp === 'seconds' ? moment.unix(epoch) : moment(epoch);
   } else if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
     momentObj = moment.tz(value, parseDateFormat, true, timeZoneValue);
     if (!momentObj.isValid()) momentObj = parseAsIso(value, timeZoneValue);
