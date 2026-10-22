@@ -17,8 +17,6 @@ const failedRun = {
   fromVersion: '3.20.0',
   toVersion: '3.21.0',
   status: 'failed',
-  currentMigration: 'PocSlowBackfill1799999999999',
-  progress: '1200/5000',
   migrationsDone: 1,
   migrationsTotal: 2,
   migrations: [

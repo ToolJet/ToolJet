@@ -16,8 +16,6 @@ export interface RunProgress {
   hasPendingWork: boolean;
   migrations: MigrationStep[];
   currentMigration: string | null;
-  /** Latest progress of the current migration: `i/total` or `N%`. */
-  progress: string | null;
   logTail: string[];
   /** Inside a multi-line `parameters: [` block of an error dump: lines are dropped until it closes. */
   redactingParameters?: boolean;
@@ -26,7 +24,7 @@ export interface RunProgress {
 export const LOG_TAIL_LINES = 200;
 
 export function emptyRunProgress(): RunProgress {
-  return { hasPendingWork: false, migrations: [], currentMigration: null, progress: null, logTail: [] };
+  return { hasPendingWork: false, migrations: [], currentMigration: null, logTail: [] };
 }
 
 // eslint-disable-next-line no-control-regex
@@ -54,14 +52,14 @@ const DONE = /\[migrations\] DONE (\S+) (\d+)ms/;
 const COUNT_PROGRESS = /\[PROGRESS\]\D*?(\d+)\/(\d+)/;
 const PERCENT_PROGRESS = /\bProgress (\d+) %/;
 
-function parseProgress(line: string): { label: string; percent: number } | null {
+function parsePercent(line: string): number | null {
   const count = line.match(COUNT_PROGRESS);
   if (count) {
     const [done, total] = [Number(count[1]), Number(count[2])];
-    return { label: `${done}/${total}`, percent: total ? Math.min(100, Math.round((done / total) * 100)) : 0 };
+    return total ? Math.min(100, Math.round((done / total) * 100)) : 0;
   }
   const percent = line.match(PERCENT_PROGRESS);
-  return percent ? { label: `${percent[1]}%`, percent: Math.min(100, Number(percent[1])) } : null;
+  return percent ? Math.min(100, Number(percent[1])) : null;
 }
 
 const isSentinel = (name: string) => LOCK_SENTINEL_MIGRATION_NAMES.includes(name);
@@ -115,7 +113,6 @@ function foldLine(run: RunProgress, line: string, options?: LogLineOptions): Run
       ...run,
       logTail,
       currentMigration: started[1],
-      progress: null,
       migrations: setStatus(run, started[1], { status: 'running' }),
     };
   }
@@ -125,15 +122,15 @@ function foldLine(run: RunProgress, line: string, options?: LogLineOptions): Run
     return { ...run, logTail, migrations: setStatus(run, done[1], { status: 'done', durationMs: Number(done[2]) }) };
   }
 
-  const progress = run.currentMigration && parseProgress(line);
-  if (progress) {
+  const percent = run.currentMigration ? parsePercent(line) : null;
+  if (percent !== null) {
+    const current = run.migrations.find((step) => step.name === run.currentMigration);
+    // MigrationProgress logs once per row: keep one line per percent, not millions.
+    if (current?.percent === percent) return run;
     return {
       ...run,
       logTail,
-      progress: progress.label,
-      migrations: run.migrations.map((step) =>
-        step.name === run.currentMigration ? { ...step, percent: progress.percent } : step
-      ),
+      migrations: run.migrations.map((step) => (step === current ? { ...step, percent } : step)),
     };
   }
 

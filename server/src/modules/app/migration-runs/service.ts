@@ -31,8 +31,6 @@ export interface MigrationRun {
   fromVersion: string | null;
   toVersion: string;
   status: MigrationRunStatus;
-  currentMigration: string | null;
-  progress: string | null;
   migrationsDone: number;
   migrationsTotal: number;
   migrations: MigrationStep[];
@@ -48,8 +46,6 @@ interface MigrationRunRow {
   from_version: string | null;
   to_version: string;
   status: MigrationRunStatus;
-  current_migration: string | null;
-  progress: string | null;
   migrations: MigrationStep[];
   log_tail: string[];
   error: string | null;
@@ -84,8 +80,6 @@ export const MIGRATION_RUNS_DDL = `
     from_version text,
     to_version text NOT NULL,
     status text NOT NULL,
-    current_migration text,
-    progress text,
     migrations jsonb NOT NULL DEFAULT '[]',
     log_tail text[] NOT NULL DEFAULT '{}',
     error text,
@@ -134,8 +128,6 @@ function toRun(row: MigrationRunRow, detailed = true): MigrationRun {
     fromVersion: row.from_version,
     toVersion: row.to_version,
     status,
-    currentMigration: row.current_migration,
-    progress: row.progress,
     migrationsDone: migrations.filter((step) => step.status === 'done').length,
     migrationsTotal: migrations.length,
     migrations: detailed ? migrations : [],
@@ -555,10 +547,10 @@ export class MigrationRunsService implements OnApplicationShutdown {
     const finished = status !== 'running';
     await this.query(
       `UPDATE migration_runs
-         SET status = $2, current_migration = $3, progress = $4, migrations = $5::jsonb, log_tail = $6,
-             error = $7, heartbeat_at = now(), finished_at = CASE WHEN $8 THEN now() ELSE NULL END
+         SET status = $2, migrations = $3::jsonb, log_tail = $4,
+             error = $5, heartbeat_at = now(), finished_at = CASE WHEN $6 THEN now() ELSE NULL END
        WHERE id = $1`,
-      [id, status, run.currentMigration, run.progress, JSON.stringify(run.migrations), run.logTail, error, finished]
+      [id, status, JSON.stringify(run.migrations), run.logTail, error, finished]
     );
   }
 }
