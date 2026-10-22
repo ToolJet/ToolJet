@@ -84,7 +84,7 @@ export const BaseInput = ({
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
-  const hasValue = value !== '' && value !== null && value !== undefined;
+  const hasValue = value !== '' && value !== null && value !== undefined && !Number.isNaN(value);
   const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
   const shouldOverridePlaceholderTextColor =
     typeof placeholderTextColor === 'string' &&
