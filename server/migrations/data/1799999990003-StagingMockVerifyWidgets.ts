@@ -19,5 +19,7 @@ export class StagingMockVerifyWidgets1799999990003 implements MigrationInterface
     console.log('StagingMockVerifyWidgets: [SUCCESS] Verifying widgets finished.');
   }
 
-  public async down(): Promise<void> {}
+  public async down(): Promise<void> {
+    // Staging mock: dropping staging_mock_widgets in the schema mock undoes it.
+  }
 }

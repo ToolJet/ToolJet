@@ -19,5 +19,7 @@ export class StagingMockBackfillWidgets1799999990002 implements MigrationInterfa
     console.log('StagingMockBackfillWidgets: [SUCCESS] Backfilling widgets finished.');
   }
 
-  public async down(): Promise<void> {}
+  public async down(): Promise<void> {
+    // Staging mock: dropping staging_mock_widgets in the schema mock undoes it.
+  }
 }
