@@ -196,11 +196,11 @@ export class DataSourcesController implements IDataSourcesController {
   }
 
   @InitFeature(FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE)
-  @UseGuards(FeatureAbilityGuard)
-  @Get('dependent-queries/:datasource_id')
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Get('dependent-queries/:id')
   async findQueriesLinkedToDatasource(
     @User() user: UserEntity,
-    @Param('datasource_id') datasourceId: string,
+    @Param('id') datasourceId: string,
     @Query('branch_id') branchId?: string
   ) {
     return await this.dataSourcesService.findQueriesLinkedToDatasource(datasourceId, user.organizationId, branchId);
