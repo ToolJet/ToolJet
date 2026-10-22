@@ -4,7 +4,7 @@ import { MemoryRouter, useNavigate } from 'react-router-dom';
 import { GlobalDataSources } from '..';
 import { GlobalDataSourcesContext } from '../../../pages/GlobalDataSourcesPage';
 import { BreadCrumbContext } from '@/App';
-import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
+import MarketplacePlugins from '@/MarketplacePage/MarketplacePlugins';
 import { pluginsService, marketplaceService, globalDatasourceService } from '@/_services';
 
 jest.mock('../../../pages/GlobalDataSourcesPage', () => ({
@@ -22,17 +22,21 @@ jest.mock('@/modules/common/components/DataSourceComponents', () => ({
   AiSources: [],
   getCommonlyUsedDataSources: () => [],
 }));
+// GlobalDataSources imports the services barrel; MarketplacePlugins imports the service files directly.
+jest.mock('@/_services/plugins.service', () => ({ pluginsService: { findAll: jest.fn() } }));
+jest.mock('@/_services/marketplace.service', () => ({ marketplaceService: { findAll: jest.fn() } }));
 jest.mock('@/_services', () => ({
-  pluginsService: { findAll: jest.fn() },
-  marketplaceService: { findAll: jest.fn() },
+  pluginsService: jest.requireMock('@/_services/plugins.service').pluginsService,
+  marketplaceService: jest.requireMock('@/_services/marketplace.service').marketplaceService,
   globalDatasourceService: { create: jest.fn() },
   authenticationService: { currentSessionValue: {} },
 }));
 jest.mock('@/_ui/Card', () => ({ Card: ({ title }) => <div>{title}</div> }));
 jest.mock('@/MarketplacePage/MarketplaceCard', () => ({ MarketplaceCard: ({ name }) => <div>{name}</div> }));
-jest.mock('@/_components', () => ({
+jest.mock('@/_components/SearchBox', () => ({
   SearchBox: ({ initialValue, callBack }) => <input aria-label="Search" value={initialValue} onChange={callBack} />,
 }));
+jest.mock('@/_components', () => ({ SearchBox: jest.requireMock('@/_components/SearchBox').SearchBox }));
 jest.mock('@/_ui/AppButton/AppButton', () => ({ ButtonSolid: () => null }));
 jest.mock('@/_ui/Icon/SolidIcons', () => () => null);
 jest.mock('@/_components/ToolTip', () => ({ ToolTip: ({ children }) => children }));

@@ -5,8 +5,9 @@
  * Every test title starts with its approved scenario ID.
  */
 import { waitFor, fireEvent } from '@testing-library/react';
-import { linkConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/link';
-import { linkConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/link';
+import { linkConfig as frontendConfig } from '@tooljet/widget-definitions';
+// eslint-disable-next-line import/no-relative-packages
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
 import { componentDefinition } from '@/test/app-builder';
 import {
   createWidgetHarness,
@@ -15,6 +16,8 @@ import {
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+
+const serverConfig = serverWidgets.linkConfig;
 
 const ID = 'lnk1';
 const HANDLE = 'link1';

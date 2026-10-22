@@ -1,8 +1,9 @@
-import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEFolderPermissionActionContainer from '@ee/modules/WorkspaceSettings/components/FolderPermissionActionContainer';
 
-function FolderPermissionActionContainer() {
-  return <></>;
-}
+const FolderPermissionActionContainer = pickEditionSpecificComponent({
+  ee: EEFolderPermissionActionContainer,
+  cloudSameAsEE: true,
+});
 
-export default withEditionSpecificComponent(FolderPermissionActionContainer, 'WorkspaceSettings');
+export default FolderPermissionActionContainer;
