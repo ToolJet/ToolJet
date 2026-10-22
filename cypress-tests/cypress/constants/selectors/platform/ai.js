@@ -4,6 +4,7 @@ export const aiSelectors = {
   llmKeyInput: '[data-cy="llm-key-input"]',
   llmKeySaveButton: '[data-cy="llm-key-save-button"]',
   llmKeyEnvToggle: '[data-cy="llm-key-env-toggle"]',
+  llmProviderDropdown: '[data-cy="llm-provider"]',
   cardTitle: '[data-cy="card-title"]',
 
   // License - AI Credits subtab
