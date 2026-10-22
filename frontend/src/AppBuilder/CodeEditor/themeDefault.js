@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import useStore from '@/AppBuilder/_stores/store';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { LOOKS } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
@@ -298,17 +299,45 @@ const readTheme = (enabled, componentId, component, paramName) => {
   return { value, token: themeTokenOf(componentId, paramName, value) };
 };
 
-/** themeValueOf (and the theme token it is), read as the field first draws (so the colour picker opens on that
- *  token) and again after the canvas has drawn (a cleared colour reads the widget without it). */
+const sameTheme = (a, b) => a === b || (!!a && !!b && a.value === b.value && a.token === b.token);
+
+/**
+ * themeValueOf (and the theme token it is), read as the field first draws (so the colour picker opens on that token),
+ * and again after the canvas paints whenever the field renders or the widget's resolved properties or the app theme
+ * change: a field that stayed mounted kept its first value (a Button made destructive still showed its blue, a theme
+ * radius of 16 still showed 4). Reads that find the same value change nothing, so this never loops.
+ */
+// darkMode is kept in the signature for callers; a theme switch re-renders the field, which re-reads.
+// eslint-disable-next-line no-unused-vars
 export const useThemeValue = (enabled, componentId, component, paramName, darkMode) => {
   const [found, setFound] = useState(() => readTheme(enabled, componentId, component, paramName));
+  // Re-rendered by what redraws the widget: its resolved properties and styles (a bound variant), and the app theme.
+  useStore((state) =>
+    enabled && componentId ? state.resolvedStore?.modules?.canvas?.components?.[componentId] : null
+  );
+  useStore((state) => state.globalSettings?.theme);
   useEffect(() => {
-    const read = () => setFound(readTheme(enabled, componentId, component, paramName));
+    const read = () => {
+      const next = readTheme(enabled, componentId, component, paramName);
+      setFound((current) => (sameTheme(current, next) ? current : next));
+    };
     read();
     if (!enabled) return undefined;
-    const frame = requestAnimationFrame(read);
-    return () => cancelAnimationFrame(frame);
-  }, [enabled, componentId, component, paramName, darkMode]);
+    // After the canvas has painted the change: two frames, the first being the one that applies it. A colour that
+    // eases to its new value (a Button's variant change) is read again once its transition ends.
+    let second;
+    const first = requestAnimationFrame(() => {
+      read();
+      second = requestAnimationFrame(read);
+    });
+    const root = componentId ? document.getElementById(componentId) : null;
+    root?.addEventListener('transitionend', read);
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+      root?.removeEventListener('transitionend', read);
+    };
+  });
   return found;
 };
 
