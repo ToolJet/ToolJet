@@ -17,6 +17,11 @@ export interface IAppEnvironmentUtilService {
     versionId?: string,
     manager?: EntityManager
   ): Promise<{ shouldRenderPromoteButton: boolean; shouldRenderReleaseButton: boolean }>;
+  assertOwnedByOrganization(
+    organizationId: string,
+    ids: { appId?: string; environmentId?: string },
+    manager: EntityManager
+  ): Promise<void>;
   getSelectedVersion(selectedEnvironmentId: string, appId: string, manager?: EntityManager): Promise<any>;
   resolveEnvironmentId(
     organizationId: string,

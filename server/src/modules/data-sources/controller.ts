@@ -28,6 +28,8 @@ import { GitSyncDataSourceCreateGuard, GitSyncDataSourceEditGuard } from './guar
 import { WhitelistPluginGuard } from './guards/whitelist-plugin.guard';
 import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
 import { UserPermissions } from '@modules/ability/types';
+import { AbilityDecorator } from '@modules/app/decorators/ability.decorator';
+import { FeatureAbility } from './ability';
 import { DataSource, DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
@@ -138,9 +140,23 @@ export class DataSourcesController implements IDataSourcesController {
     @User() user,
     @Param('id') dataSourceId: string,
     @Body() testDataSourceDto: TestDataSourceDto,
+    @DataSource() dataSource: DataSourceEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
     @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.testConnection(testDataSourceDto, user.organizationId, dataSourceId, branchId);
+    // return this.dataSourcesService.testConnection(testDataSourceDto, user.organizationId, dataSourceId, branchId);
+    const dsPermissions = userPermissions?.[MODULES.GLOBAL_DATA_SOURCE];
+    const canEditDataSource =
+      !!userPermissions?.isSuperAdmin ||
+      !!userPermissions?.isAdmin ||
+      !!userPermissions?.dataSourceCreate ||
+      !!userPermissions?.dataSourceDelete ||
+      !!dsPermissions?.isAllConfigurable ||
+      !!dsPermissions?.configurableDataSourceId?.includes(dataSourceId);
+    return this.dataSourcesService.testConnection(testDataSourceDto, user.organizationId, dataSourceId, branchId, {
+      dataSource,
+      canEditDataSource,
+    });
   }
 
   @InitFeature(FEATURE_KEY.GET_OAUTH2_BASE_URL)
@@ -157,9 +173,18 @@ export class DataSourcesController implements IDataSourcesController {
     @User() user: UserEntity,
     @Param('id') id: string,
     @Query('environment_id') environmentId,
-    @Body() authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
+    @Body() authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
+    @AbilityDecorator() ability: FeatureAbility
   ) {
-    await this.dataSourcesService.authorizeOauth2(id, environmentId, authorizeDataSourceOauthDto, user);
+    // Object-level UPDATE here (ability built after ValidateDataSourceGuard sets tj_resource_id).
+    const canConfigureDataSource = ability.can(FEATURE_KEY.UPDATE, DataSourceEntity);
+    await this.dataSourcesService.authorizeOauth2(
+      id,
+      environmentId,
+      authorizeDataSourceOauthDto,
+      user,
+      canConfigureDataSource
+    );
     return;
   }
 
@@ -171,11 +196,11 @@ export class DataSourcesController implements IDataSourcesController {
   }
 
   @InitFeature(FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE)
-  @UseGuards(FeatureAbilityGuard)
-  @Get('dependent-queries/:datasource_id')
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Get('dependent-queries/:id')
   async findQueriesLinkedToDatasource(
     @User() user: UserEntity,
-    @Param('datasource_id') datasourceId: string,
+    @Param('id') datasourceId: string,
     @Query('branch_id') branchId?: string
   ) {
     return await this.dataSourcesService.findQueriesLinkedToDatasource(datasourceId, user.organizationId, branchId);
