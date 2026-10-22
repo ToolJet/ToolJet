@@ -6,6 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { getPinnedStyles } from '../pinColumnsUtils';
+import { getRowBackgroundStyles } from '../../../_utils/getRowBackgroundStyles';
 import {
   createTableRowEventOptions,
   createTableCellEventOptions,
@@ -31,10 +32,14 @@ export const TableRow = ({
   table,
 }) => {
   const selectRowOnCellEdit = useTableStore((state) => state.getTableProperties(id)?.selectRowOnCellEdit, shallow);
+  const rowBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.rowBackgroundColor, shallow);
   const hasHoveredEvent = useTableStore((state) => state.getHasHoveredEvent(id), shallow);
   const editedFields = useTableStore((state) => state.getEditedFieldsOnIndex(id, row.index), shallow);
 
   if (!row) return null;
+
+  const resolvedRowBackgroundColor = getResolvedValue(rowBackgroundColor, { rowData: row.original });
+  const rowBackgroundStyles = getRowBackgroundStyles(resolvedRowBackgroundColor);
 
   return (
     <tr
@@ -47,9 +52,11 @@ export const TableRow = ({
         left: 0,
         width: '100%',
         ...rowStyles,
+        ...rowBackgroundStyles,
       }}
       className={cx('table-row table-editor-component-row', {
         selected: allowSelection && highlightSelectedRow && row.getIsSelected(),
+        'has-row-background': !!resolvedRowBackgroundColor,
         'table-row-condensed': cellHeight === 'condensed',
       })}
       onClick={(e) => {

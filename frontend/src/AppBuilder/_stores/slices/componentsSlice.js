@@ -41,6 +41,11 @@ import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
 
+// Table styles evaluated per row at render time; the store keeps their `{{rowData...}}` template unresolved.
+const TABLE_ROW_SCOPED_STYLES = ['rowBackgroundColor'];
+const isTableRowScopedStyle = (componentType, paramType, property) =>
+  componentType === 'Table' && paramType === 'styles' && TABLE_ROW_SCOPED_STYLES.includes(property);
+
 // ======================
 // SECTION: Query re-run on dependency change
 // ======================
@@ -550,6 +555,9 @@ export const createComponentsSlice = (set, get) => ({
     } = get();
     const { componentId, paramType, property } = componentDetails;
     const length = Object.keys(customResolvables).length;
+    if (isTableRowScopedStyle(getComponentTypeFromId(componentId, moduleId), paramType, property)) {
+      shouldResolve = false;
+    }
 
     // Find nearest ListView for row-scoped component resolution
     const parentId = getComponentDefinition(componentId, moduleId)?.component?.parent;
@@ -658,7 +666,13 @@ export const createComponentsSlice = (set, get) => ({
       getComponentDefinition,
       getBaseParentId,
       updateRowScope,
+      getComponentTypeFromId,
     } = get();
+
+    if (isTableRowScopedStyle(getComponentTypeFromId(componentId, moduleId), paramType, property)) {
+      setResolvedComponentByProperty(componentId, paramType, property, unResolvedValue, null, moduleId);
+      return;
+    }
 
     let shouldResolve = false;
     const isInListview = !!findNearestSubcontainerAncestor(parentId, moduleId);
@@ -2901,6 +2915,22 @@ export const createComponentsSlice = (set, get) => ({
     const [entityType, entityId, type, ...keys] = dependency.split('.');
     const key = keys.join('.');
     const unResolvedValue = getNodeData(dependency, moduleId);
+
+    if (entityType === 'components' && isTableRowScopedStyle(getComponentTypeFromId(entityId, moduleId), type, key)) {
+      // Bumping shouldRender re-renders the Table so each row re-evaluates the template.
+      applyOrQueueMutation((state) => {
+        let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+        if (!entity) return;
+        if (Array.isArray(entity)) {
+          entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+          state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+        }
+        lodashSet(entity, [type, key], unResolvedValue);
+        lodashSet(entity, ['properties', 'shouldRender'], (entity?.properties?.shouldRender ?? 0) + 1);
+      });
+      return;
+    }
+
     const exposedValues = preloadedExposedValues || getAllExposedValues(moduleId);
     const resolvedValue = resolveDynamicValues(unResolvedValue, exposedValues, {}, false, []);
 

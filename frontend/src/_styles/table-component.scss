@@ -1751,7 +1751,7 @@
 
   .table-striped {
     tbody {
-      tr[data-index]:nth-child(odd) {
+      tr[data-index]:nth-child(odd):not(.has-row-background) {
         background-color: transparent !important;
       }
 
