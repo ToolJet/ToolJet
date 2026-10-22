@@ -5,13 +5,26 @@ import {
   MODAL_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
   TAB_CANVAS_PADDING,
+  isTabsType,
+  isModalType,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
+import {
+  heightHeldInView,
+  isUi2PerRowType,
+  keepsFittedHeightWhenMoved,
+  UI2_ROW_CHROME,
+  ui2RowFloor,
+} from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
 const TABS_TAB_BAR_HEIGHT = 50;
+
+// A UI 2.0 Kanban custom card with part of it hidden fits what is left, down to this (a collapsed deal card drawn at
+// 272px stayed 272px and mostly empty).
+const SHRUNK_CARD_MIN_HEIGHT = 40;
 
 // ═════════════════════════════════════════════════════════════════════════════
 // Dynamic-Height Reflow — max-over-all-blockers layout engine.
@@ -311,10 +324,12 @@ export const resolveWidgetVisibility = ({
 //   - Tabs: flat 40px for the tab bar.
 //   - Listview row context: subtract 40 to normalize against the widget-level
 //     allowance added elsewhere.
+//   - A UI 2.0 List view row or Kanban card: UI2_ROW_CHROME.
 const getExtraContainerHeight = ({
   componentId,
   componentType,
   contextIndices,
+  isUi2RowContext = false,
   element,
   currentMax,
   getResolvedComponent,
@@ -322,6 +337,7 @@ const getExtraContainerHeight = ({
   getComponentDefinition,
   isAccordionExpanded,
   hideTabs,
+  tabsExtraChrome = 0,
 }) => {
   let extraHeight = 0;
   let nextCurrentMax = currentMax;
@@ -364,15 +380,15 @@ const getExtraContainerHeight = ({
         extraHeight += footerHeight + 14;
       }
     }
-  } else if (componentType === 'Tabs') {
+  } else if (isTabsType(componentType)) {
     // Tab pane chrome: TAB_CANVAS_PADDING (8) top + bottom around the
     // SubContainer canvas, plus the tab strip (50) unless `hideTabs` is on
     // (strip becomes `display:none`). +16 covers the .real-canvas
     // `calc(100% + 3.5px)` extension plus the ~7px scrollHeight overshoot
     // that growing leaf widgets (e.g. TextArea labels) report past their
     // moveable-box height.
-    extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT);
-  } else if (componentType === 'ModalV2') {
+    extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT) + tabsExtraChrome;
+  } else if (isModalType(componentType)) {
     // Modal body chrome: MODAL_CANVAS_PADDING (5) top + bottom around the
     // SubContainer canvas (stylesFactory.js modalBody) + safety for the
     // `.real-canvas` `calc(100% + 1px)` extension. Plus 12px per shown
@@ -397,6 +413,9 @@ const getExtraContainerHeight = ({
     // a sub-pixel/safety margin against children that report `scrollHeight`
     // a few px past their `offsetHeight` (e.g. label-bumped TextArea).
     extraHeight = 15;
+  } else if (isUi2RowContext) {
+    // A UI 2.0 List view row or Kanban card keeps a little space under its lowest component.
+    extraHeight = UI2_ROW_CHROME;
   }
 
   return { extraHeight, currentMax: nextCurrentMax, skipContentHeightCalculation };
@@ -498,12 +517,20 @@ export const resolveContainerHeight = ({
   const context = normalizeLayoutContext(contextIndices);
   const scopedWrapperElement = document.querySelector(getDynamicElementSelector(componentId, context));
   const isScopedContextRenderable = !!scopedWrapperElement;
+  // A UI 2.0 List view or Kanban asked at a context it is not itself drawn at
+  // is being asked for one of its rows (or cards).
+  const isUi2RowContext = isUi2PerRowType(componentType) && !!context && !isScopedContextRenderable;
 
   // A Listview inside a context whose DOM isn't available (e.g., inactive tab)
   // falls back to the configured row height.
   if (componentType === 'Listview' && context && !isScopedContextRenderable) {
     const component = getResolvedComponent(componentId, context);
     containerHeight = component?.properties?.rowHeight ?? containerHeight;
+  }
+  // A UI 2.0 row or card is floored at its row (card) height the same way.
+  if (isUi2RowContext) {
+    const component = getResolvedComponent(componentId, context);
+    containerHeight = ui2RowFloor(componentType, component?.properties);
   }
 
   // Explicit dynamic-height opt-out: the container stays at its authored
@@ -521,7 +548,7 @@ export const resolveContainerHeight = ({
   // and the collapsed path (header height only) needs to run for siblings to
   // pull up.
   const gatedComponent = getResolvedComponent(componentId, context);
-  if (gatedComponent?.properties?.dynamicHeight === false && componentType !== 'Accordion') {
+  if (heightHeldInView(componentType, gatedComponent?.properties) && componentType !== 'Accordion') {
     return containerHeight;
   }
 
@@ -613,10 +640,9 @@ export const resolveContainerHeight = ({
 
   // ModalV2 uses a global class (modal is portal'd out), all others use a
   // scoped selector.
-  const dynamicSelector =
-    componentType === 'ModalV2'
-      ? `.dynamic-${componentId}`
-      : `${getDynamicElementSelector(componentId, context)} .dynamic-${componentId}`;
+  const dynamicSelector = isModalType(componentType)
+    ? `.dynamic-${componentId}`
+    : `${getDynamicElementSelector(componentId, context)} .dynamic-${componentId}`;
   const element = document.querySelector(dynamicSelector);
 
   let modifiedComponentId = componentId;
@@ -625,7 +651,7 @@ export const resolveContainerHeight = ({
   // Tabs: resolve active tab and pretend the container id is `<id>-<tabId>`
   // when looking up children. Fallback chain handles nested/inactive cases
   // where the DOM attribute isn't present.
-  if (componentType === 'Tabs') {
+  if (isTabsType(componentType)) {
     const activeTabFromElement = element?.getAttribute('activetab');
     const activeTabFromExposedState = getExposedPropertyForAdditionalActions(componentId, context, 'currentTab');
     const configuredTabs = component?.properties?.tabItems || component?.properties?.tabs;
@@ -675,9 +701,15 @@ export const resolveContainerHeight = ({
         canonical: childLayout,
         effective: effectiveLayout,
         inFlow: childInFlow,
+        visible: childVisibility,
       },
     };
   }, {});
+
+  // A UI 2.0 Kanban card leaves out what is hidden on it, slot and all: whether a card shows a component is decided
+  // per card (from cardData), while collapseWhenHidden is one setting for every card.
+  const isShrinkingCard = componentType === 'ShadKanban' && isUi2RowContext;
+  const anyChildHidden = Object.values(componentLayouts).some((entry) => !entry.visible);
 
   // Floor each child's flow height at `calculateMoveableBoxHeightWithId` —
   // for top-label input widgets this adds the +20px label bump that
@@ -687,7 +719,7 @@ export const resolveContainerHeight = ({
   // clipping the bottom of the control.
   let currentMax = Object.entries(componentLayouts).reduce((maxHeight, [childId, layoutEntry]) => {
     const effectiveLayout = layoutEntry?.effective;
-    if (!effectiveLayout) {
+    if (!effectiveLayout || (isShrinkingCard && !layoutEntry.visible)) {
       return maxHeight;
     }
 
@@ -718,7 +750,8 @@ export const resolveContainerHeight = ({
   } = getExtraContainerHeight({
     componentId: modifiedComponentId,
     componentType,
-    contextIndices: componentType === 'Tabs' ? null : context,
+    contextIndices: isTabsType(componentType) ? null : context,
+    isUi2RowContext,
     element,
     currentMax,
     getResolvedComponent,
@@ -726,6 +759,11 @@ export const resolveContainerHeight = ({
     getComponentDefinition,
     isAccordionExpanded,
     hideTabs: component?.properties?.hideTabs === true,
+    // ToolJet UI 2.0 Tabs: its 1px frame, and the wizard's Back/Next footer (ShadTabs STEP_NAV_HEIGHT).
+    tabsExtraChrome:
+      componentType === 'ShadTabs'
+        ? 2 + (component?.properties?.variant === 'steps' && component?.properties?.showStepNav !== false ? 56 : 0)
+        : 0,
   });
 
   currentMax = nextCurrentMax;
@@ -749,7 +787,25 @@ export const resolveContainerHeight = ({
   if (componentType === 'ModuleContainer' && component?.properties?.dynamicHeight === true) {
     return currentMax + extraHeight;
   }
+  // A Kanban card with something hidden on it may go below its card height.
+  if (isShrinkingCard && anyChildHidden) {
+    return Math.max(SHRUNK_CARD_MIN_HEIGHT, currentMax + extraHeight);
+  }
   return Math.max(currentMax + extraHeight, containerHeight);
+};
+
+// A widget stretched to its row's height by an Equal heights FlexContainer row (flexContainer.scss,
+// dynamicHeightPolicy.stretchesInRow) would measure as the row, and the row could then never drop back below it when
+// its tallest child shrinks. Measure it at its own content height and put the stretch back, in the same frame.
+const measureOwnHeight = (element) => {
+  if (!element?.classList?.contains('flex-stretch-child')) return element?.offsetHeight;
+  const { alignSelf, minHeight } = element.style;
+  element.style.alignSelf = 'flex-start';
+  element.style.minHeight = '0px';
+  const height = element.offsetHeight;
+  element.style.alignSelf = alignSelf;
+  element.style.minHeight = minHeight;
+  return height;
 };
 
 // The changed widget's target height:
@@ -836,7 +892,7 @@ export const resolveWidgetMeasuredHeight = ({
   // -350, collapsing every downstream sibling above its canonical top.
   // Treat 0 as "not yet measurable" and prefer the last known / canonical
   // height instead — no visible widget legitimately renders at 0.
-  const measuredHeight = element?.offsetHeight;
+  const measuredHeight = measureOwnHeight(element);
   if (measuredHeight === 0) {
     return existingHeight ?? fallbackHeight();
   }
@@ -1333,7 +1389,9 @@ export const buildReflowPatch = ({
         : resolvedHeights[componentId] ?? currentEffectiveLayout?.height ?? 0;
 
     // Floor a non-changed sibling at its calc-bumped canonical so a stale/raw temp can't pin a top-label input below its rendered label row.
-    if (componentId !== changedComponentId) {
+    // A UI 2.0 widget keeps the height its own reflow fitted: flooring it made its height depend on reflow order.
+    const movedType = currentPageComponents?.[componentId]?.component?.component;
+    if (componentId !== changedComponentId && !keepsFittedHeightWhenMoved(movedType)) {
       const bumpedHeight = getEffectiveCanonicalHeight(componentId);
       nextHeight = Math.max(nextHeight, bumpedHeight);
     }

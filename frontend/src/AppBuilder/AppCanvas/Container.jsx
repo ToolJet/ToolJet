@@ -25,6 +25,7 @@ import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveable
 import { findNewParentIdFromMousePosition, isPointerOverCanvasArea } from './Grid/gridUtils';
 import { computeFlexInsertIndex } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { FlexContainerDropIndicator } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerDropIndicator';
+import { usesFlexLayoutV2 } from '@/AppBuilder/_helpers/flexLayoutVersion';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const ModuleContainerBlank = lazy(() =>
@@ -81,6 +82,26 @@ const Container = React.memo(
       shallow
     );
     const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
+    const flexAlignItems = useStore(
+      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.alignItems : undefined),
+      shallow
+    );
+    // FlexContainer.jsx wraps a row unless flexWrap is false (the definition defaults it on).
+    const flexWraps = useStore(
+      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.flexWrap !== false : true),
+      shallow
+    );
+    const flexEqualHeights = useStore(
+      (state) => isFlexContainer && !!state.getResolvedComponent?.(id, null, moduleId)?.properties?.equalHeights,
+      shallow
+    );
+    // Read from the definition: the flag is static, and a resolved value inside a list row can be the row array.
+    const flexLayoutV2 = useStore(
+      (state) =>
+        isFlexContainer &&
+        usesFlexLayoutV2(state.getComponentDefinition?.(id, moduleId)?.component?.definition?.properties),
+      shallow
+    );
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
@@ -237,6 +258,9 @@ const Container = React.memo(
 
     const renderEmptyContainer = () => {
       if (components && components?.length !== 0) return;
+      // Only the page canvas and a module container ever show the empty state; every other empty container (a tab, a
+      // list row, a dialog body) mounted a hidden copy of it, AI build panel and modal included.
+      if (id !== 'canvas' && componentType !== 'ModuleContainer') return null;
 
       const styles = {
         display: showEmptyContainer ? 'block' : 'none',
@@ -325,6 +349,10 @@ const Container = React.memo(
                 layoutMode="flex"
                 containerWidth={containerCanvasWidth}
                 flexDirection={flexDirectionForFlex}
+                flexAlignItems={flexAlignItems}
+                flexEqualHeights={flexEqualHeights}
+                flexWraps={flexWraps}
+                flexLayoutV2={flexLayoutV2}
                 flexShouldStack={flexShouldStack}
               />
             ))}

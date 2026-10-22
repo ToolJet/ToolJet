@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-import { resolveFlexChildSizing } from './flexContainer.utils';
+import { computeFlexChildFlexStyle, computeFlexChildFlexStyleV1, resolveFlexChildSizing } from './flexContainer.utils';
 
 export const getFlexConfigWidgetTop = (widgetElement) => widgetElement?.offsetTop ?? 0;
 
@@ -17,6 +17,10 @@ export const useFlexWidgetLayout = ({
   measureWidth = false,
   dynamicHeight = false,
   temporaryHeight,
+  stretch = false,
+  wraps = true,
+  // The parent container's layout version (_helpers/flexLayoutVersion.js): false keeps the lts-3.16 child sizing.
+  layoutV2 = true,
 }) => {
   const wrapperRef = useRef(null);
   const [configWidgetTop, setConfigWidgetTop] = useState(0);
@@ -25,7 +29,7 @@ export const useFlexWidgetLayout = ({
   const gridDerivedWidthPx = gridWidth * (flexLayoutData?.width ?? 1);
   const isFlexRow = flexDirection === 'row';
 
-  const { fillWidth, widthPx, height } = resolveFlexChildSizing(flexLayoutData, {
+  const { fillWidth, widthPx, height, grow, minWidthPx } = resolveFlexChildSizing(flexLayoutData, {
     widthPx: gridDerivedWidthPx,
     height: flexLayoutData.height ?? 100,
   });
@@ -45,7 +49,16 @@ export const useFlexWidgetLayout = ({
     : height ?? flexLayoutData.height ?? 100;
   const effectiveHeightPx = visibility ? visibleHeightPx : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
   const availableWidth = containerWidth ?? effectiveWidthPx;
-  let widgetWidth = fillWidth ? availableWidth : effectiveWidthPx;
+  // A fill child in a row gets its share of the line from flexbox, so it is measured and rendered at that share. In a
+  // container saved before the UI 2.0 layout it takes the whole line, and a fixed child keeps its width (lts-3.16).
+  const isRowFill = layoutV2 && isFlexRow && fillWidth && !flexShouldStack;
+  const shouldMeasure = measureWidth || isRowFill;
+  let widgetWidth = fillWidth
+    ? availableWidth
+    : layoutV2
+    ? Math.min(effectiveWidthPx, availableWidth)
+    : effectiveWidthPx;
+  if (isRowFill && measuredWidth != null) widgetWidth = measuredWidth;
   // The flex SLOT (wrapper / flex-basis) grows to the measured temp height via
   // `effectiveHeightPx`, but the WIDGET itself must render at its authored
   // canonical height — exactly like the grid path passes `newLayoutData.height`,
@@ -61,9 +74,6 @@ export const useFlexWidgetLayout = ({
     : mode === 'edit'
     ? HIDDEN_COMPONENT_HEIGHT
     : 0;
-  const flexMainFill = isFlexRow ? fillWidth : false;
-  const flexMainPx = isFlexRow ? effectiveWidthPx : effectiveHeightPx;
-
   if (flexShouldStack && !isFlexRow) {
     if (fillWidth) {
       widgetWidth = availableWidth;
@@ -92,7 +102,7 @@ export const useFlexWidgetLayout = ({
   ]);
 
   useLayoutEffect(() => {
-    if (!enabled || !measureWidth) return undefined;
+    if (!enabled || !shouldMeasure) return undefined;
     const element = wrapperRef.current;
     if (!element) return undefined;
     const apply = () => {
@@ -105,30 +115,16 @@ export const useFlexWidgetLayout = ({
     const resizeObserver = new ResizeObserver(apply);
     resizeObserver.observe(element);
     return () => resizeObserver.disconnect();
-  }, [enabled, measureWidth]);
+  }, [enabled, shouldMeasure]);
 
+  const isStretched = stretch && isFlexRow && !flexShouldStack && !!visibility;
+  const flexSizing = { isFlexRow, flexShouldStack, fillWidth, effectiveWidthPx, effectiveHeightPx, availableWidth };
   const outerStyle = {
-    ...(flexShouldStack && !isFlexRow
-      ? {
-          flex: flexMainFill ? '1 0 auto' : `0 0 ${flexMainPx}px`,
-          height: `${effectiveHeightPx}px`,
-          minHeight: 0,
-          ...(fillWidth
-            ? { width: '100%', minWidth: 0 }
-            : { width: `${Math.min(effectiveWidthPx, availableWidth)}px`, maxWidth: '100%', minWidth: 0 }),
-        }
-      : {
-          flex: flexMainFill ? '1 0 auto' : `0 0 ${flexMainPx}px`,
-          ...(isFlexRow
-            ? {
-                height: `${effectiveHeightPx}px`,
-                minWidth: 0,
-              }
-            : {
-                width: fillWidth ? '100%' : `${effectiveWidthPx}px`,
-                minHeight: 0,
-              }),
-        }),
+    ...(layoutV2
+      ? computeFlexChildFlexStyle({ ...flexSizing, grow, minWidthPx, wraps })
+      : computeFlexChildFlexStyleV1(flexSizing)),
+    // A stretched child of a row fills the line's height (its own height stays the floor); the card inside fills it.
+    ...(isStretched ? { height: 'auto', minHeight: `${effectiveHeightPx}px`, alignSelf: 'stretch' } : {}),
     position: 'relative',
     display: !visibility && mode === 'view' ? 'none' : 'block',
     boxSizing: 'content-box',
@@ -142,8 +138,11 @@ export const useFlexWidgetLayout = ({
     widgetHeight,
     wrapperRef,
     configWidgetTop,
+    // Whether the child takes a share of the line (fill) or the width it was given (fixed); widgets read it as boxFit.
+    fillWidth,
     configWidgetHeight: effectiveHeightPx || flexLayoutData.height,
     configHandleClassName: 'flex-child-config-handle',
+    isStretched,
     refreshConfigWidgetTop,
   };
 };

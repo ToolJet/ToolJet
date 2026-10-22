@@ -27,6 +27,14 @@ export class Layout {
   @Column({ type: 'boolean', name: 'fill_width', nullable: true })
   fillWidth: boolean | null;
 
+  /** FlexContainer row child: share of the free width among fill children. */
+  @Column({ type: 'double precision', name: 'grow', nullable: true })
+  grow: number | null;
+
+  /** FlexContainer row child: narrowest width before a wrapping row moves the child down. */
+  @Column({ type: 'double precision', name: 'min_width_px', nullable: true })
+  minWidthPx: number | null;
+
   @Column({ name: 'component_id' })
   componentId: string;
 
