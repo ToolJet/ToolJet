@@ -143,7 +143,8 @@ export async function queryLibraryConsumers(
     queryFilter = `AND dq.options::jsonb ->> 'libraryQueryId' = $3`;
   }
   return manager.query(
-    `SELECT a.id AS "appId", a.name AS "appName", dq.id AS "queryId", dq.name AS "queryName",
+    // apps.name is NULL on the branch model; the name lives on app_versions.app_name.
+    `SELECT a.id AS "appId", COALESCE(av.app_name, a.name) AS "appName", dq.id AS "queryId", dq.name AS "queryName",
             dq.options::jsonb ->> 'libraryQueryId' AS "libraryQueryId"
        FROM data_queries dq
        JOIN data_sources ds ON ds.id = dq.data_source_id AND ds.kind = '${LIBRARY_KIND}'
@@ -152,7 +153,7 @@ export async function queryLibraryConsumers(
       WHERE a.organization_id = $1
         AND dq.options::jsonb ->> 'libraryAppId' = $2
         ${queryFilter}
-      ORDER BY a.name, dq.name`,
+      ORDER BY "appName", dq.name`,
     params
   );
 }
