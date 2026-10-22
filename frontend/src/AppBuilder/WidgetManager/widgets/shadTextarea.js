@@ -390,13 +390,13 @@ export const shadTextareaConfig = {
     },
     properties: {
       label: {
-        value: '',
+        value: 'Label',
       },
       description: {
         value: '',
       },
       placeholder: {
-        value: '',
+        value: 'Enter text',
       },
       defaultValue: {
         value: '',

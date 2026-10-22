@@ -53,7 +53,7 @@
         "type": "string"
       },
       "default": "",
-      "initial": ""
+      "initial": "Label"
     },
     "loadingState": {
       "type": "boolean",
@@ -71,7 +71,7 @@
         "type": "string"
       },
       "default": "",
-      "initial": ""
+      "initial": "Enter text"
     },
     "tooltip": {
       "type": "string",

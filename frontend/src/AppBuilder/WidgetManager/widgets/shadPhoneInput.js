@@ -522,7 +522,7 @@ export const shadPhoneInputConfig = {
         value: '',
       },
       placeholder: {
-        value: '',
+        value: 'Enter phone number',
       },
       defaultValue: {
         value: '',

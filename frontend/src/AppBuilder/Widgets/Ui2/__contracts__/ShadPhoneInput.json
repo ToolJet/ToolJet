@@ -89,7 +89,7 @@
         "type": "string"
       },
       "default": "",
-      "initial": ""
+      "initial": "Enter phone number"
     },
     "showFlag": {
       "type": "boolean",
