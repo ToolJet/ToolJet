@@ -82,4 +82,18 @@ describe('UI 2.0 Alert', () => {
     expect(description).toHaveClass('tw-text-ui2-sm');
     expect(description.className).not.toMatch(/font-(semibold|bold)/);
   });
+
+  test('[ShadAlert-LAY-001] in a fixed box the card fills the box; with Dynamic height it fits its content', async () => {
+    // Changing the Alert's height in the editor left the card at its content's height.
+    const { container } = render({ properties: { dynamicHeight: binding('{{false}}') } });
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveClass('tw-h-full', 'tw-overflow-y-auto');
+    expect(container.querySelector('.tj-shadcn')).toHaveClass('tw-h-full');
+
+    render({ currentMode: 'edit' });
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveClass('tw-h-full'));
+
+    render({ properties: { dynamicHeight: binding('{{true}}') } });
+    await waitFor(() => expect(screen.getByRole('alert')).not.toHaveClass('tw-h-full'));
+  });
 });
