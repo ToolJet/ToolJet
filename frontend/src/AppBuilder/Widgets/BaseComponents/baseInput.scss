@@ -1,4 +1,6 @@
 .tj-text-input-widget-container {
+  overflow: hidden;
+
   &:hover:not(:focus-within) {
     border: 1px solid var(--tblr-input-border-color-darker) !important;
   }

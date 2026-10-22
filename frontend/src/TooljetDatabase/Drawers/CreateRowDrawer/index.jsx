@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
-import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
@@ -22,7 +22,7 @@ const CreateRowDrawer = ({
     setSortFilters,
     setQueryFilters,
     columns,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const [shouldResetRowForm, setShouldResetRowForm] = useState(0);
 
   return (

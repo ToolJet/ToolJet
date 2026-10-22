@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
+import { PAGE_EVENTS_META } from './pageEventsMeta';
 
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -67,7 +68,7 @@ export const SettingsModal = ({ darkMode }) => {
             }}
             sourceId={page?.id}
             eventSourceType="page"
-            eventMetaDefinition={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
+            eventMetaDefinition={{ events: PAGE_EVENTS_META.default.events, name: 'page' }}
             components={components}
             pages={allpages}
             popOverCallback={(showing) => showing}

@@ -106,6 +106,7 @@ module.exports = {
     '^@white-label$': '<rootDir>/src/_helpers/white-label',
     '^@white-label/(.*)$': '<rootDir>/src/_helpers/white-label/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@tooljet/widget-definitions$': '<rootDir>/../packages/widget-definitions/src/index.js',
   },
   // jsdom patched to keep Node's native fetch/TextEncoder/BroadcastChannel —
   // required by MSW v2. Suites can still opt into `@jest-environment node`.
@@ -135,6 +136,8 @@ module.exports = {
     '!src/AppBuilder/**/__tests__/**',
     '!src/AppBuilder/**/*.(test|spec).{js,jsx,ts,tsx}',
     '!src/AppBuilder/**/__mocks__/**',
+    // Type-only declarations; validate-app-builder-coverage-manifest.js rejects runtime code there.
+    '!src/AppBuilder/types/**',
     '!src/test/**',
   ],
 };

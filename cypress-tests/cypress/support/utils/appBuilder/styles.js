@@ -8,6 +8,11 @@
 //   verifyLoaderColor                -                    → styles
 //   verifyStylesGeneralAccordion     -                    → styles
 //   checkPaddingOfContainer          -                    → styles
+//   openStyleAccordion               -                    → styles
+//   selectThemeColour                -                    → styles
+//   expectThemeColour                -                    → styles
+//   expectStyleVar                   -                    → styles
+//   expectFontWeight                 -                    → styles
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/styles: right-Inspector **Styles tab** helpers.
@@ -22,7 +27,7 @@
  */
 import { commonWidgetSelector, commonSelectors } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
-import { openEditorSidebar } from "./properties";
+import { openEditorSidebar, openAccordion } from "./properties";
 
 /**
  * @tjType   colorSwatches
@@ -297,3 +302,90 @@ export const checkPaddingOfContainer = (widgetName, value, mode = "Box") => {
     .parents(`[role=${mode}]`)
     .should("have.css", "padding", `${value}px`);
 };
+
+/**
+ * @tjBlock  styles
+ * @tjUsage  openStyleAccordion('checkbox1', 'label and icon')
+ * @tjDom    widget → Styles tab → the named accordion
+ */
+// Every style field sits behind the Styles tab AND its own accordion, and selecting any
+// companion widget flips the sidebar away — so each phase of a test has to re-open both.
+export const openStyleAccordion = (widgetName, accordion) => {
+  openEditorSidebar(widgetName);
+  cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+  openAccordion(accordion);
+};
+
+/**
+ * @tjType   colorSwatches
+ * @tjBlock  styles
+ * @tjUsage  selectThemeColour('Label color', 'SystemStatus/Error')
+ * @tjDom    stylePicker → togglr-button-swatches → .codebuilder-color-swatches-options
+ */
+// The THEME path, which selectColourFromColourPicker deliberately skips: it clicks past
+// the swatches to reach the RGBA inputs, so the theme branch — a separate code path that
+// writes a `var(--cc-*)` token instead of a literal — goes untested everywhere it is
+// used. Theme rows carry no data-cy: they are labelled "Category/Type" and write
+// var(--cc-<type>-<category>), note the inverted order.
+//
+// Pick a swatch that is neither the field's default nor its computed fallback, or the
+// assertion is already true before you start.
+export const selectThemeColour = (paramName, optionLabel) => {
+  cy.get(commonWidgetSelector.stylePicker(paramName)).last().click();
+  cy.get('[data-cy="togglr-button-swatches"]').click();
+  cy.get(".codebuilder-color-swatches-options")
+    .filter((_i, el) => el.innerText.trim().startsWith(optionLabel))
+    .first()
+    .click();
+  cy.forceClickOnCanvas();
+  cy.waitForAutoSave();
+};
+
+/**
+ * @tjBlock  styles
+ * @tjUsage  expectThemeColour(sel, 'color', 'var(--cc-error-systemStatus)')
+ * @tjDom    resolves the token through the APP's document, then compares computed style
+ */
+// Asserts a theme token exactly without hardcoding any theme's hex: append a probe div to
+// the app's OWN document, set the property to the token, read the computed value back.
+// Must use doc.defaultView.getComputedStyle, not the runner's global.
+export const expectThemeColour = (selector, cssProp, token) => {
+  cy.get(selector).should(($el) => {
+    const el = $el[0];
+    const doc = el.ownerDocument;
+    const probe = doc.createElement("div");
+    probe.style.color = token;
+    doc.body.appendChild(probe);
+    const expected = doc.defaultView.getComputedStyle(probe).color;
+    probe.remove();
+    expect(doc.defaultView.getComputedStyle(el)[cssProp]).to.equal(expected);
+  });
+};
+
+/**
+ * @tjBlock  styles
+ * @tjUsage  expectStyleVar(sel, '--button-primary', '#ff0000')
+ * @tjDom    an inline CSS custom property on the given element
+ */
+// Reads the CONFIGURED value from a custom property, never the rendered colour: widgets
+// derive hover/pressed/disabled shades from the configured one, so a cursor resting over
+// the element makes a rendered-colour assertion read the hover shade — passing headless
+// and failing in `cypress open`, which is the worst failure mode.
+//
+// Takes the property NAME so it works for any widget's var, not one family's.
+export const expectStyleVar = (selector, prop, expected) => {
+  cy.get(selector).should(($el) => {
+    expect($el[0].style.getPropertyValue(prop).trim()).to.equal(expected);
+  });
+};
+
+/**
+ * @tjBlock  styles
+ * @tjUsage  expectFontWeight(sel, '700')
+ * @tjDom    computed font-weight on the given element
+ */
+// A label-weight property maps to a Tailwind CLASS, not an inline style — Normal 400,
+// Medium 500, Bold 700 — so the COMPUTED weight is the only observable. scrollIntoView
+// first: selecting any companion widget re-centres the canvas away from the target.
+export const expectFontWeight = (selector, expected) =>
+  cy.get(selector).scrollIntoView().should("have.css", "font-weight", expected);
