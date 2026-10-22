@@ -232,4 +232,23 @@ describe('UI 2.0 Input', () => {
     await type('not an email');
     await waitFor(() => expect(exposed().isValid).toBe(true));
   });
+
+  test('[ShadInput-PROP-003] type number exposes a number (null when empty) and has arrows that step it', async () => {
+    // It exposed the typed text as a string and had no arrows.
+    render({ properties: { inputType: binding('number') } });
+    const spin = await screen.findByRole('spinbutton');
+    await act(async () => fireEvent.change(spin, { target: { value: '42' } }));
+    await act(async () => fireEvent.blur(spin));
+    await waitFor(() => expect(exposed().value).toBe(42));
+
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Increase' })));
+    await waitFor(() => expect(exposed().value).toBe(43));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Decrease' })));
+    await waitFor(() => expect(exposed().value).toBe(42));
+
+    await act(async () => fireEvent.change(spin, { target: { value: '' } }));
+    await act(async () => fireEvent.blur(spin));
+    await waitFor(() => expect(exposed().value).toBeNull());
+    expect(screen.getByText('Full name')).toBeInTheDocument();
+  });
 });
