@@ -6,7 +6,7 @@ import { initTestApp, closeTestApp, createAdmin, ensureAppEnvironments } from 't
  * Slug-update validation matrix on a NON-git workspace (git sync disabled).
  *
  * Covers the gaps that the git-sync specs don't: the plain update-path uniqueness
- * rules for a front-end app / module, independent of any git remote. Git-enabled
+ * rules for a front-end app, independent of any git remote. Git-enabled
  * single-branch and multi-branch slug rules live in the @group gitsync suite
  * (git-sync.spec.ts) since they need a configured provider.
  *
@@ -28,9 +28,8 @@ describe('PUT /apps/:id | slug update rules (git sync disabled)', () => {
   const agent = () => request(app.getHttpServer());
   const auth = (r: request.Test) => r.set('Cookie', cookie).set('tj-workspace-id', workspaceId);
 
-  const createApp = async (name: string, type: 'front-end' | 'module' = 'front-end'): Promise<string> => {
-    const path = type === 'module' ? '/api/modules' : '/api/apps';
-    const res = await auth(agent().post(path)).send({ icon: 'home', name, type }).expect(201);
+  const createApp = async (name: string): Promise<string> => {
+    const res = await auth(agent().post('/api/apps')).send({ icon: 'home', name, type: 'front-end' }).expect(201);
     return res.body.id;
   };
   const putSlug = (appId: string, slug: string) => auth(agent().put(`/api/apps/${appId}`)).send({ app: { slug } });

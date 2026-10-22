@@ -13,7 +13,7 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 - **Module (app type)** — reusable app embedded via moduleContainer/moduleViewer components; not a NestJS module.
 - **App metadata on versions** — for non-workflow apps, `appName`/`slug`/`icon`/`isPublic` live on `app_versions` rows (branch-aware); workflows keep `slug` on `apps` (see `subscribers/apps.subscriber.ts`).
 - **Slug namespaces are per `apps.type`** — an app and a module may share a slug; the same-type collision check in `AppsUtilService.update` joins `apps` on type.
-- **Clone renames custom data sources** — `AppImportExportService.import` (cloning only) dedupes each non-default data source name via `generateUniqueName`, else the copy violates `idx_unique_active_name_branch`. A later clone of the same app re-binds to the first copy (matched by `co_relation_id`); global data sources are reused, not copied.
+- **Clone renames app-level data sources** — `AppImportExportService.import` (cloning only) dedupes each non-default data source name via `generateUniqueName`, else the copy violates `idx_unique_active_name_branch`. A later clone of the same app re-binds to the first copy (matched by `co_relation_id`); global data sources are reused, not copied.
 - **Editing version hydration** — TypeORM `afterLoad` hydrates `app.editingVersion` per entity; list endpoints opt out via `skipAppEditingVersionHydration` (AsyncLocalStorage in the subscriber) and bulk-hydrate instead.
 
 ## Key files

@@ -28,6 +28,7 @@ import { App } from 'src/entities/app.entity';
 import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { Credential } from 'src/entities/credential.entity';
 import { Page } from 'src/entities/page.entity';
@@ -212,7 +213,6 @@ describe('AppsController', () => {
       const application = await App.findOneOrFail({ where: { id: appId } });
 
       const appVersion = await AppVersion.findOneOrFail({ where: { appId } });
-      // name/slug live on the draft app_version row, not apps.* (apps.* only keeps type/isMaintenanceOn).
       expect(appVersion.appName).toContain('My app');
       expect(application.id).toBe(appVersion.slug);
 
@@ -288,7 +288,6 @@ describe('AppsController', () => {
         .send({ app: { name: nameOfLength(100) } });
 
       expect(response.statusCode).toBe(200);
-      // name lives on the draft app_version row now, not apps.name.
       const appVersion = await AppVersion.findOneOrFail({ where: { appId: application.id } });
       expect(appVersion.appName).toBe(nameOfLength(100));
     });
@@ -723,7 +722,6 @@ describe('AppsController', () => {
       expect(response.body.success).toBe(true);
 
       const appId = response.body['imports']['app'][0]['id'];
-      // name lives on the draft app_version row now, not apps.name.
       const clonedAppVersion = await AppVersion.findOneOrFail({ where: { appId } });
       expect(clonedAppVersion.appName).toContain('App to clone');
 
@@ -783,6 +781,133 @@ describe('AppsController', () => {
 
       await logout(app, loggedUser.tokenCookie, anotherOrgAdminUserData.user.defaultOrganizationId);
     });
+
+    it('should not be able to clone the app if user is an instance user', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const instanceUserData = await createUser(app, {
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        userType: 'instance',
+      });
+      const { application } = await createAppWithDependencies(app, adminUserData.user, { name: 'App to clone' });
+      const loggedUser = await login(
+        app,
+        instanceUserData.user.email,
+        'password',
+        adminUserData.user.defaultOrganizationId
+      );
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v2/resources/clone')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({
+          app: [{ id: application.id, name: 'App to clone_' }],
+          organization_id: adminUserData.user.defaultOrganizationId,
+        });
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    describe('app-level data source naming', () => {
+      async function seedClonableApp(options: { isDataSourceNeeded?: boolean } = {}) {
+        const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+        const orgId = adminUserData.user.defaultOrganizationId;
+        const { tokenCookie } = await login(app, adminUserData.user.email, 'password', orgId);
+        const seeded = await createAppWithDependencies(app, adminUserData.user, {
+          dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
+          name: 'App to clone',
+          ...options,
+        });
+        let cloneCount = 0;
+        const clone = () =>
+          request(app.getHttpServer())
+            .post('/api/v2/resources/clone')
+            .set('tj-workspace-id', orgId)
+            .set('Cookie', tokenCookie)
+            .send({
+              app: [{ id: seeded.application.id, name: `App to clone_${++cloneCount}` }],
+              organization_id: orgId,
+            });
+        const workspaceSources = async () =>
+          (await findEntities(DataSource, { where: { organizationId: orgId } })).sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
+        const clonedQueryDataSourceId = async (response: request.Response) => {
+          const version = await findEntityOrFail(AppVersion, { appId: response.body['imports']['app'][0]['id'] });
+          return (await findEntityOrFail(DataQuery, { appVersionId: version.id })).dataSourceId;
+        };
+        return { ...seeded, orgId, clone, workspaceSources, clonedQueryDataSourceId };
+      }
+
+      it('should give the clone its own copy under a numbered name and leave the original untouched', async () => {
+        const { dataSource, dataQuery, clone, workspaceSources, clonedQueryDataSourceId } = await seedClonableApp();
+
+        const response = await clone();
+
+        expect(response.statusCode).toBe(201);
+        const sources = await workspaceSources();
+        expect(sources.map((source) => source.name)).toEqual([dataSource.name, `${dataSource.name}_2`]);
+        expect(sources.find((source) => source.name === dataSource.name)?.id).toBe(dataSource.id);
+        const clonedDataSourceId = await clonedQueryDataSourceId(response);
+        expect(sources.find((source) => source.id === clonedDataSourceId)?.name).toBe(`${dataSource.name}_2`);
+        expect((await findEntityOrFail(DataQuery, { id: dataQuery.id })).dataSourceId).toBe(dataSource.id);
+      });
+
+      it("should bind a second clone to the first clone's data source copy instead of creating another", async () => {
+        const { dataSource, clone, workspaceSources, clonedQueryDataSourceId } = await seedClonableApp();
+
+        const first = await clone();
+        const second = await clone();
+
+        expect(first.statusCode).toBe(201);
+        expect(second.statusCode).toBe(201);
+        // The first clone's copy keeps the source's co_relation_id, so the import matches it again.
+        expect((await workspaceSources()).map((source) => source.name)).toEqual([
+          dataSource.name,
+          `${dataSource.name}_2`,
+        ]);
+        expect(await clonedQueryDataSourceId(second)).toBe(await clonedQueryDataSourceId(first));
+      });
+
+      it('should reuse a global data source instead of duplicating it', async () => {
+        const { dataSource, dataQuery, clone, workspaceSources, clonedQueryDataSourceId } = await seedClonableApp();
+        await updateEntity(DataSource, dataSource.id, { scope: DataSourceScopes.GLOBAL, appVersionId: null });
+
+        const response = await clone();
+
+        expect(response.statusCode).toBe(201);
+        expect((await workspaceSources()).map((source) => source.name)).toEqual([dataSource.name]);
+        expect(await clonedQueryDataSourceId(response)).toBe(dataQuery.dataSourceId);
+      });
+
+      it('should keep the default data source a cloned query uses instead of copying it', async () => {
+        const { orgId, appVersion, clone, workspaceSources, clonedQueryDataSourceId } = await seedClonableApp({
+          isDataSourceNeeded: false,
+        });
+        const defaultDataSource = await saveEntity(DataSource, {
+          name: 'restapidefault',
+          kind: 'restapi',
+          type: DataSourceTypes.STATIC,
+          scope: DataSourceScopes.GLOBAL,
+          organizationId: orgId,
+        });
+        await createDataQuery(app, {
+          dataSource: defaultDataSource,
+          appVersion,
+          options: { method: 'get', url: 'https://example.com', url_params: [], headers: [], body: [] },
+        });
+
+        const response = await clone();
+
+        expect(response.statusCode).toBe(201);
+        expect((await workspaceSources()).map((source) => source.name)).toEqual(['restapidefault']);
+        expect(await clonedQueryDataSourceId(response)).toBe(defaultDataSource.id);
+      });
+    });
   });
 
   describe('PUT /api/apps/:id | Update application', () => {
@@ -807,7 +932,6 @@ describe('AppsController', () => {
         .send({ app: { name: 'new name' } });
 
       expect(response.statusCode).toBe(200);
-      // name lives on the draft app_version row now, not apps.name.
       const appVersion = await AppVersion.findOneOrFail({ where: { appId: application.id } });
       expect(appVersion.appName).toBe('new name');
 
@@ -2359,7 +2483,6 @@ describe('AppsController', () => {
         .send({ icon: 'new-icon-name' });
 
       expect(response.statusCode).toBe(200);
-      // icon lives on the draft app_version row now, not apps.icon.
       const appVersion = await AppVersion.findOneOrFail({ where: { appId: application.id } });
       expect(appVersion.icon).toBe('new-icon-name');
       await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
