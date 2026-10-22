@@ -41,6 +41,7 @@ export class ExternalApiModule extends SubModule {
       ExternalApisBanController,
       ExternalApisAppExportController,
       ExternalApisUsersControllerV2,
+      ExternalApisAppVersionsControllerV2,
     } = await this.getProviders(configs, 'external-apis', [
       'controller',
       'service',
@@ -52,6 +53,7 @@ export class ExternalApiModule extends SubModule {
       'controllers/ban.controller',
       'controllers/app-export.controller',
       'controllers/users.controller.v2',
+      'controllers/app-versions.controller.v2',
     ]);
 
     return this.cacheModule(cacheKey, {
@@ -97,6 +99,7 @@ export class ExternalApiModule extends SubModule {
             ExternalApisBanController,
             ExternalApisAppExportController,
             ExternalApisUsersControllerV2,
+            ExternalApisAppVersionsControllerV2,
           ]
         : [],
       exports: [ExternalApiUtilService],
