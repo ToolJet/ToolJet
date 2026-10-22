@@ -11,10 +11,10 @@ export const EditModal = ({ darkMode }) => {
   const editingPage = useStore((state) => state.editingPage);
   const updatePageHandle = useStore((state) => state.updatePageHandle);
 
+  const page = editingPage;
   const [pageHandle, setPageHandle] = useState(page?.handle);
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const page = editingPage;
   const windowUrl = window.location.href;
   const toggleEditPageHandleModal = useStore((state) => state.toggleEditPageHandleModal);
 
