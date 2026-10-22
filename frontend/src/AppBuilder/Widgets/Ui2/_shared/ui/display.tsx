@@ -203,8 +203,13 @@ export const Alert = React.forwardRef<
   <div ref={ref} role="alert" className={cn(alertVariants({ variant }), className)} {...props} />
 ));
 Alert.displayName = 'Alert';
+// The title sets its own size: an h5 takes the builder's global heading size (12px), smaller than the 14px description
+// under it. It is the larger, stronger line.
 export const AlertTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h5 className={cn('tw-mb-1 tw-font-medium tw-leading-none tw-tracking-tight', className)} {...props} />
+  <h5
+    className={cn('tw-m-0 tw-mb-1 tw-text-ui2-base tw-font-semibold tw-leading-snug tw-tracking-tight', className)}
+    {...props}
+  />
 );
 export const AlertDescription = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn('tw-text-ui2-sm tw-opacity-90 [&_p]:tw-leading-relaxed', className)} {...props} />

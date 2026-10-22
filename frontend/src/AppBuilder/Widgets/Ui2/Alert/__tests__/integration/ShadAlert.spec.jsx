@@ -71,4 +71,15 @@ describe('UI 2.0 Alert', () => {
     expect(screen.getByText('Payment overdue').className).toContain('tw-text-[color:var(--lk-title)]');
     expect(screen.getByText('Details').className).toContain('tw-text-[color:var(--lk-fg)]');
   });
+
+  test('[ShadAlert-STY-002] the title is the larger, stronger line over its description', async () => {
+    // An h5 took the builder's global heading size (12px), under the 14px description.
+    render({ properties: { description: binding('Invoice #1024 is 12 days late.') } });
+
+    const title = await screen.findByText('Payment overdue');
+    const description = screen.getByText('Invoice #1024 is 12 days late.');
+    expect(title).toHaveClass('tw-text-ui2-base', 'tw-font-semibold');
+    expect(description).toHaveClass('tw-text-ui2-sm');
+    expect(description.className).not.toMatch(/font-(semibold|bold)/);
+  });
 });
