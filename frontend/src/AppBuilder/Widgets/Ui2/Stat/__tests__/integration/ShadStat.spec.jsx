@@ -170,16 +170,22 @@ describe('UI 2.0 Stat', () => {
   });
 
   test('[ShadStat-LAYOUT-002] keeps its own height when the box is not stretched, without its card, or in a fixed box', async () => {
+    for (const options of [{}, { boxStretch: true, properties: { card: binding('{{false}}') } }]) {
+      const { container } = render(options);
+      await screen.findByText('$12,400');
+      expect(root(container)).not.toHaveClass('tw-h-full');
+      expect(container.querySelector('.tw-h-full')).toBeNull();
+    }
+    // In a fixed box the root takes the fixed-box policy (it fills the box and scrolls what does not fit, Shell); the
+    // card keeps the box's height of its own, not the stretched one.
     for (const options of [
-      {},
-      { boxStretch: true, properties: { card: binding('{{false}}') } },
       { boxStretch: true, properties: { dynamicHeight: binding('{{false}}') } },
       { boxStretch: true, currentMode: 'edit' },
     ]) {
       const { container } = render(options);
       await screen.findByText('$12,400');
-      expect(root(container)).not.toHaveClass('tw-h-full');
-      expect(container.querySelector('.tw-h-full')).toBeNull();
+      expect(root(container)).toHaveClass('tw-h-full', 'tw-min-h-0', 'tw-overflow-y-auto');
+      expect(root(container).firstChild).not.toHaveClass('tw-h-full');
     }
   });
 
