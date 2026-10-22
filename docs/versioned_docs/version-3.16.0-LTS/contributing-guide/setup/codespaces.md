@@ -11,12 +11,12 @@ Open the terminal and run the commands below.
 
 ### 1. Set up the environment
 
-1. Install Node.js ( version: v22.15.1 ) and npm (version: v10.9.2)
+1. Install Node.js ( version: v22.23.4 ) and npm (version: v10.9.9)
 
 ```
-nvm install 22.15.1
-nvm use 22.15.1
-npm install -g npm@10.9.2
+nvm install 22.23.4
+nvm use 22.23.4
+npm install -g npm@10.9.9
 ```
 
 2. Install Postgres
@@ -83,7 +83,7 @@ SERVE_CLIENT=true
 
 ### 3. Install and build dependencies
 
-Make sure node version is set to 22.15.1 before running the below command:
+Make sure node version is set to 22.23.4 before running the below command:
 
 ```
 npm install
