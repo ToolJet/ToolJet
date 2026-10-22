@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { EntityManager, FindOneOptions, In } from 'typeorm';
 import { AppVersion, AppVersionType } from 'src/entities/app_version.entity';
@@ -32,12 +32,15 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'branchId',
         ],
         relations: ['branch'],
-        where: { id: editingVersionId },
+        where: { id: editingVersionId, app: { organizationId } },
       });
+      if (!editorVersion) {
+        throw new NotFoundException();
+      }
 
       // For branch-type versions the `name` column holds a UUID. Replace with the
       // human-readable branch name so globals.appVersion.name resolves correctly.
-      if (editorVersion?.versionType === AppVersionType.BRANCH && editorVersion.branch?.name) {
+      if (editorVersion.versionType === AppVersionType.BRANCH && editorVersion.branch?.name) {
         editorVersion.displayName = editorVersion.branch.name;
       }
 
@@ -49,6 +52,12 @@ export class AppEnvironmentService implements IAppEnvironmentService {
     const { editorEnvironmentId, deletedVersionId, editorVersionId, appId } = actionParameters;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.appEnvironmentUtilService.assertOwnedByOrganization(
+        user.organizationId,
+        { appId, environmentId: editorEnvironmentId },
+        manager
+      );
+
       switch (action) {
         case AppEnvironmentActions.VERSION_DELETED: {
           const appEnvironmentResponse: Partial<IAppEnvironmentResponse> = {};
@@ -203,12 +212,18 @@ export class AppEnvironmentService implements IAppEnvironmentService {
 
   async getAll(organizationId: string, appId?: string, manager?: EntityManager): Promise<AppEnvironment[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.appEnvironmentUtilService.assertOwnedByOrganization(organizationId, { appId }, manager);
       return await this.appEnvironmentUtilService.getAll(organizationId, appId, manager);
     }, manager);
   }
 
   async getVersionsByEnvironment(organizationId: string, appId: string, currentEnvironmentId?: string) {
+    // TypeORM drops `undefined` from `where`, so a missing app_id would match every app in every workspace.
+    if (!appId) {
+      throw new BadRequestException('app_id is required');
+    }
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.appEnvironmentUtilService.assertOwnedByOrganization(organizationId, { appId }, manager);
       const conditions = { appId };
       if (currentEnvironmentId) {
         const env = await this.appEnvironmentUtilService.get(organizationId, currentEnvironmentId, false, manager);
