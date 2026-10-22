@@ -23,8 +23,8 @@ export const ShadButton = (props: WidgetProps) => {
     },
   });
   // Like ToolJet's Button, it fills its box's height, and its width when the box was sized for it (grid, or a
-  // fixed-width flex child); as a flex fill child it keeps its own width. Full width always fills. A fixed 36px
-  // button in a 36px box overflowed the box's padding and lost its bottom edge.
+  // fixed-width flex child); as a flex fill child it keeps its own width. Stretch in flex container (fullWidth) always
+  // fills. A fixed 36px button in a 36px box overflowed the box's padding and lost its bottom edge.
   const fillsBox = props.boxFit !== 'fill';
   // Each variant has its own colours, so a style replaces them only when set. A set background darkens a little on
   // hover unless the hover background is set too.
