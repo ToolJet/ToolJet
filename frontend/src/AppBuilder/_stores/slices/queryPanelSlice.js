@@ -12,6 +12,7 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { resolveNamedQueryParameters } from '@/AppBuilder/QueryManager/utils';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -458,13 +459,7 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       if (_.isEmpty(parameters)) {
-        parameters = dataQuery.options?.parameters?.reduce(
-          (parameters, parameter) => ({
-            ...parameters,
-            [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
-          }),
-          {}
-        );
+        parameters = resolveNamedQueryParameters(dataQuery.options?.parameters, resolveReferences);
       }
 
       //   const queryState = { ...getCurrentState(), parameters };
@@ -960,13 +955,7 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       if (_.isEmpty(parameters)) {
-        parameters = query.options?.parameters?.reduce(
-          (parameters, parameter) => ({
-            ...parameters,
-            [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
-          }),
-          {}
-        );
+        parameters = resolveNamedQueryParameters(query.options?.parameters, resolveReferences);
       }
 
       // const queryState = { ...getCurrentState(), parameters };
@@ -1683,14 +1672,7 @@ export const createQueryPanelSlice = (set, get) => ({
         };
       }
 
-      const defaultParams =
-        queryDetails?.options?.parameters?.reduce(
-          (paramObj, param) => ({
-            ...paramObj,
-            [param.name]: resolveReferences(param.defaultValue, undefined), //default values will not be resolved with currentState
-          }),
-          {}
-        ) || {};
+      const defaultParams = resolveNamedQueryParameters(queryDetails?.options?.parameters, resolveReferences);
 
       let formattedParams = {};
       if (queryDetails) {
@@ -1721,7 +1703,9 @@ export const createQueryPanelSlice = (set, get) => ({
             }
             const processedParams = {};
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
-            query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
+            if (Array.isArray(query.options.parameters)) {
+              query.options.parameters.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
+            }
             return actions.runQuery(query.name, processedParams, moduleId, callbackFns);
           },
           reset: () => {

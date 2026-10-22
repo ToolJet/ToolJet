@@ -34,6 +34,8 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 
 ## Invariants & gotchas
 
+- GitLab marketplace OAuth uses plugin-native token exchange in `authorizeOauth2`; its plugin derives both OAuth endpoints from the configured instance URL.
+
 - **Options are encrypted at rest**: values marked `encrypted` are stored in the `credentials` table via `CredentialsService`; the options JSON keeps only `{ credential_id, encrypted: true }`. Decryption happens in `parseSourceOptions` at query/test time only. Never return decrypted values in list APIs (`getAll` strips sample options and restapi `tokenData`).
 - **Options are per-Environment**: one `DataSourceVersionOptions` row per (DSV, environment). Creating a source writes options to every Environment of the workspace. There is no single "the options" — always resolve with an `environmentId`.
 - Workspace-constant references (`{{constants.x}}` / `{{secrets.x}}`) inside encrypted fields are stored as `workspace_constant` alongside the credential and resolved per-environment at runtime — value follows the environment, not the stored string.

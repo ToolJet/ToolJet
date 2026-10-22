@@ -2,7 +2,93 @@
  * @jest-environment node
  */
 
-const { resolveQueryEditor } = require('@/AppBuilder/QueryManager/utils');
+const {
+  resolveQueryEditor,
+  resolveNamedQueryParameters,
+  normalizeQueryDefaults,
+  changeQueryOperation,
+  getQueryInputValue,
+} = require('@/AppBuilder/QueryManager/utils');
+
+describe('query editor input values', () => {
+  test('passes an explicit empty string to the editor when an operation clears Parameters JSON', () => {
+    const schema = require('../../../../../marketplace/plugins/gitlab/lib/operations.json');
+    const updated = changeQueryOperation(
+      schema,
+      { operation: 'list_projects', parameters: '{"page":2}' },
+      'list_users'
+    );
+    expect(getQueryInputValue(updated.parameters, undefined)).toBe('');
+  });
+
+  test('uses the schema initial value only when the option is absent', () => {
+    expect(getQueryInputValue(undefined, '{}')).toBe('{}');
+    expect(getQueryInputValue({ page: 2 }, '{}')).toBe('{"page":2}');
+  });
+});
+
+describe('GitLab operation changes', () => {
+  const schema = require('../../../../../marketplace/plugins/gitlab/lib/operations.json');
+  const options = {
+    operation: 'create_issue',
+    project_id: 'team/project',
+    title: 'Old title',
+    parameters: '{"state":"opened"}',
+    body: '{"labels":"bug"}',
+    query_timeout: 10000,
+    enableTransformation: true,
+  };
+
+  test('clears operation inputs, including shared and hidden fields, but keeps query settings', () => {
+    const updated = changeQueryOperation(schema, options, 'get_project');
+    expect(updated.operation).toBe('get_project');
+    for (const key of ['project_id', 'title', 'parameters', 'body']) expect(updated[key]).toBe('');
+    expect(updated.query_timeout).toBe(10000);
+    expect(updated.enableTransformation).toBe(true);
+    expect(options.title).toBe('Old title');
+  });
+
+  test('selecting the same operation preserves entered values', () => {
+    expect(changeQueryOperation(schema, options, 'create_issue')).toEqual(options);
+  });
+});
+
+describe('query operation defaults', () => {
+  const schema = {
+    defaults: { operation: { value: 'list_projects' } },
+    properties: { operation: { type: 'dropdown-component-flip' } },
+  };
+
+  test('initializes a runnable operation from a legacy installed plugin schema', () => {
+    expect(normalizeQueryDefaults(schema)).toEqual({ operation: 'list_projects' });
+    expect(schema.defaults.operation).toEqual({ value: 'list_projects' });
+  });
+
+  test('repairs saved wrapped selections while preserving JSON request options', () => {
+    expect(
+      normalizeQueryDefaults(schema, { operation: { value: 'list_projects' }, parameters: '{invalid JSON' })
+    ).toEqual({ operation: 'list_projects', parameters: '{invalid JSON' });
+  });
+
+  test('preserves explicitly selected operations', () => {
+    expect(normalizeQueryDefaults(schema, { operation: 'list_users' })).toEqual({ operation: 'list_users' });
+  });
+});
+
+describe('named query parameters used by the editor and query execution', () => {
+  test.each(['{"membership":true}', '{invalid JSON', { membership: true }, null, undefined])(
+    'preserves plugin request parameters without trying to resolve them as named inputs: %p',
+    (parameters) => {
+      const resolveValue = jest.fn();
+      expect(resolveNamedQueryParameters(parameters, resolveValue)).toEqual({});
+      expect(resolveValue).not.toHaveBeenCalled();
+    }
+  );
+
+  test('resolves defaults for named inputs', () => {
+    expect(resolveNamedQueryParameters([{ name: 'page', defaultValue: '{{1 + 1}}' }], () => 2)).toEqual({ page: 2 });
+  });
+});
 
 // A query as the server actually returns it. `data_queries` has no plugin_id column and
 // neither serializer emits one, so the plugin binding is reachable only via the data source.

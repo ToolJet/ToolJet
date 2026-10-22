@@ -43,6 +43,8 @@ graph TD
 
 ## Core capabilities
 
+GitLab marketplace connector: personal/project access token or OAuth 2.0 authentication, configurable instance URL, and queries for projects, issues, merge requests, branches, repository files, pipelines, and users (`marketplace/plugins/gitlab/lib/{manifest,operations}.json`; `docs/docs/marketplace/plugins/gitlab.md`).
+
 | Capability | What users can do | Implementation evidence |
 |---|---|---|
 | Visual app building | Create multi-page apps, arrange components, configure properties/styles, bind dynamic values, and connect events to actions. | `frontend/src/AppBuilder/AppCanvas/`; `frontend/src/AppBuilder/WidgetManager/`; `server/src/modules/apps/services/{page,component,event}.service.ts` |

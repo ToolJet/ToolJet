@@ -348,6 +348,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'bigquery' ||
             dataSource.kind === 'databricks' ||
             dataSource.kind === 'asana' ||
+            dataSource.kind === 'gitlab' ||
             dataSource.kind === 'gmail' ||
             dataSource.kind === 'confluence'
           ) {

@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
-import { resolveQueryEditor } from '../utils';
+import { resolveQueryEditor, changeQueryOperation } from '../utils';
 import DataSourcePicker from './DataSourcePicker';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
@@ -99,7 +99,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   };
 
   const optionchanged = (option, value) => {
-    const newOptions = { ...options, [option]: value };
+    const operationsSchema =
+      selectedDataSource?.plugin?.operations_file?.data || selectedDataSource?.plugin?.operationsFile?.data;
+    const newOptions =
+      selectedQuery?.kind === 'gitlab' && option === 'operation'
+        ? changeQueryOperation(operationsSchema, options, value)
+        : { ...options, [option]: value };
     validateNewOptions(newOptions);
   };
 
