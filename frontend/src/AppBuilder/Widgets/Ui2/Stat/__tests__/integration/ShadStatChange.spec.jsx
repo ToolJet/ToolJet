@@ -89,6 +89,32 @@ describe('UI 2.0 Stat in a short box', () => {
     if (!reserves) expect(label).not.toHaveClass('tw-min-h-[2lh]');
     harness.teardown();
   });
+
+  // A 60px card has no room for even one label line over the figure: the figure (39 to 69px) fell below the card's
+  // content edge (45px). There the label sits beside the figure (in a browser "42" ends inside the card at 60px); a
+  // 90px card and a 60px plain Stat keep the label over the figure.
+  test.each([
+    [60, {}, true],
+    [90, {}, false],
+    [60, { card: binding('{{false}}') }, false],
+  ])('at %ipx (%o) the label sits beside the figure: %s', async (height, extra, beside) => {
+    const harness = short(height);
+    await harness.setup();
+    harness.render({
+      currentMode: 'view',
+      properties: {
+        label: binding('Open tickets'),
+        value: binding('{{42}}'),
+        dynamicHeight: binding('{{false}}'),
+        ...extra,
+      },
+    });
+    const row = (await screen.findByText('Open tickets')).parentElement.parentElement;
+    if (beside) expect(row).toHaveClass('tw-flex-row', 'tw-items-center');
+    else expect(row).toHaveClass('tw-flex-col');
+    expect(screen.getByText('42').parentElement).toHaveClass(beside ? 'tw-shrink-0' : 'tw-flex-wrap');
+    harness.teardown();
+  });
 });
 
 describe('UI 2.0 Stat in a narrow card', () => {
