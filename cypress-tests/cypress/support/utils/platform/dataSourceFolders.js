@@ -224,7 +224,7 @@ export const openGroupGranularAccess = (groupName) => {
   cy.get(groupTitle("Admin"), { timeout: 30000 }).should("be.visible");
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupTitle(groupName)).should("be.visible");
-  uiOpenGranularAccessTab();
+  uiOpenGranularAccessTab({ waitForUsers: !ROLE_GROUPS.includes(groupName) });
 };
 
 // The group's granular-permissions fetch decides which container holds the "Add permission"
@@ -235,12 +235,20 @@ export const openGroupGranularAccess = (groupName) => {
 //
 // The fetch fires when the GROUP is selected, not when the tab is clicked, so the alias has to
 // be registered before navigating. Register, navigate, then wait.
-export const uiWatchGranularPermissions = () =>
+// addable-users is fetched by the parent page component, so it re-renders the whole panel and
+// unmounts the menu a second time, after the granular fetch has already settled.
+export const uiWatchGranularPermissions = () => {
   cy.intercept("GET", "**/v2/group-permissions/*/granular-permissions").as("granularPermissions");
+  cy.intercept("GET", "**/users/addable-users*").as("addableUsers");
+};
 
-export const uiOpenGranularAccessTab = () => {
+// The built-in role groups never fetch addable-users, so only wait for it on a custom group.
+const ROLE_GROUPS = ["Admin", "Builder", "End-user"];
+
+export const uiOpenGranularAccessTab = ({ waitForUsers = true } = {}) => {
   cy.get(groupsSelector.granularLink).click();
   cy.wait("@granularPermissions");
+  if (waitForUsers) cy.wait("@addableUsers");
 };
 
 export const uiOpenAddDataSourceFolderGrant = () => {

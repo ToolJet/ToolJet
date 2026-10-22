@@ -1,5 +1,8 @@
 import { commonSelectors } from 'Selectors/common';
-import { dataSourceFolderPermissionSelectors as dsFolderPerm } from 'Selectors/platform/dataSourceFolders';
+import {
+  dataSourceFolderPermissionSelectors as dsFolderPerm,
+  dataSourceFolderSelectors as dsFolder,
+} from 'Selectors/platform/dataSourceFolders';
 import { groupsSelector } from 'Selectors/platform/manageGroups';
 import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
 import {
@@ -87,9 +90,9 @@ describe('Data Source Folders — End User Role', () => {
       uiOpenEditDataSourceFolderGrant();
       cy.get(dsFolderPerm.sharedModalBuildWithRadio).click({ force: true });
       cy.get(dsFolderPerm.sharedModalConfirmButton).click();
-      cy.get(commonSelectors.modalComponent).should('contain.text', roleConflictTitle);
-      cy.get(commonSelectors.modalComponent).should('contain.text', email);
-      cy.get(commonSelectors.cancelButton).click();
+      cy.get(dsFolder.roleConflictModal).should('contain.text', roleConflictTitle);
+      cy.get(dsFolder.roleConflictModal).should('contain.text', email);
+      cy.get(dsFolder.roleConflictModalClose).click();
 
       const tieredGroup = `QA Tier Group ${testId}`;
       const outsider = `ds-enduser-tier-${testId}@example.com`;
@@ -101,8 +104,8 @@ describe('Data Source Folders — End User Role', () => {
       cy.visit(`/${wsSlug}/workspace-settings/groups`);
       cy.get(groupsSelector.groupLink(tieredGroup)).click();
       uiAddUserToGroup(outsider);
-      cy.get(commonSelectors.modalComponent).should('contain.text', 'Cannot add an end-user to this group');
-      cy.get(commonSelectors.modalComponent).should('contain.text', outsider);
+      cy.get(dsFolder.roleConflictModal).should('contain.text', 'Cannot add an end-user to this group');
+      cy.get(dsFolder.roleConflictModal).should('contain.text', outsider);
     });
   });
 
