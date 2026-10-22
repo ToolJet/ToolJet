@@ -3,6 +3,100 @@ import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
 import { NO_OF_GRIDS } from '../appCanvasConstants';
+
+export const MOBILE_GRID_COLUMNS = NO_OF_GRIDS;
+// Vertical breathing room between stacked mobile items (top/height are in px).
+const MOBILE_STACK_GAP_PX = 10;
+// Side inset in grid columns; keeps the gutter on the components instead of the canvas padding.
+const MOBILE_SIDE_INSET_COLUMNS = 1;
+
+// Backstop for compactItem's move-down loop, which has no structural exit if a top goes NaN.
+const MAX_COMPACTION_STEPS = 10000;
+
+// Stack each parent's children into a full-width mobile column, bottom-up. Returns { [id]: box }.
+export function computeAutoMobileLayout(currentPageComponents) {
+  const ids = Object.keys(currentPageComponents);
+
+  // Bucket ids by parent key: ROOT for top-level, `${id}` / `${id}-${slot}` for children.
+  const ROOT = '__root__';
+  const childrenByParent = {};
+  ids.forEach((id) => {
+    const parent = currentPageComponents[id]?.component?.parent ?? ROOT;
+    (childrenByParent[parent] = childrenByParent[parent] || []).push(id);
+  });
+
+  const updatedBoxes = {};
+  const visited = new Set(); // guard against cyclic parent refs (corrupt data)
+
+  // Raw definition, not the resolved cache — the cache is empty in the viewer on first compute.
+  const getResolvedValue = useStore.getState().getResolvedValue;
+  const isVisibleOnMobile = (id) =>
+    getResolvedValue(currentPageComponents[id]?.component?.definition?.others?.showOnMobile?.value);
+
+  // Stack against the rendered height but store the unbumped one, or WidgetWrapper's re-applied
+  // 20px label bump doubles and overlaps the next sibling.
+  const calculateMoveableBoxHeightWithId = useStore.getState().calculateMoveableBoxHeightWithId;
+  const labelBumpById = {};
+  const renderedHeight = (id, desktop) => {
+    const base = desktop.height ?? 0;
+    const rendered =
+      calculateMoveableBoxHeightWithId(id, 'desktop', currentPageComponents[id]?.component?.definition?.styles) ?? base;
+    labelBumpById[id] = rendered - base;
+    return rendered;
+  };
+
+  // Stack a parent's direct children into one full-width column (children recursed first).
+  const stackGroup = (parentKey) => {
+    // Inset the root column only — a nested container already sits inside the root's inset.
+    const sideInset = parentKey === ROOT ? MOBILE_SIDE_INSET_COLUMNS : 0;
+    const layouts = (childrenByParent[parentKey] || []).filter(isVisibleOnMobile).map((id) => {
+      const desktop = currentPageComponents[id]?.layouts?.desktop || {};
+      const nestedExtent = stackContainer(id);
+      const height = renderedHeight(id, desktop);
+      return {
+        i: id,
+        top: desktop.top ?? 0,
+        left: sideInset,
+        width: MOBILE_GRID_COLUMNS - sideInset * 2,
+        height: nestedExtent != null ? Math.max(height, nestedExtent) : height,
+      };
+    });
+
+    // Not via correctBounds: it triples widths and resets left=1 to 0, both undoing the inset.
+    const stacked = compact(layouts, 'vertical', MOBILE_GRID_COLUMNS);
+
+    // compact() packs items flush; offset each by a cumulative 10px gap (top/height are in px).
+    let extent = 0;
+    [...stacked]
+      .sort((a, b) => a.top - b.top)
+      .forEach((l, idx) => {
+        // Leading gap at the root replaces the removed canvas top padding.
+        const top = l.top + (idx + (sideInset ? 1 : 0)) * MOBILE_STACK_GAP_PX;
+        // Spacing uses the rendered height; the stored height drops the bump the renderer re-adds.
+        updatedBoxes[l.i] = { left: l.left, top, width: l.width, height: l.height - (labelBumpById[l.i] ?? 0) };
+        extent = Math.max(extent, top + l.height);
+      });
+    return extent;
+  };
+
+  // Stack a component's own groups (direct + slots); returns max extent, or null if a leaf.
+  const stackContainer = (id) => {
+    if (visited.has(id)) return null;
+    visited.add(id);
+    const groupKeys = Object.keys(childrenByParent).filter((k) => k === id || k.startsWith(`${id}-`));
+    if (groupKeys.length === 0) return null;
+    return groupKeys.reduce((max, key) => Math.max(max, stackGroup(key)), 0);
+  };
+
+  stackGroup(ROOT);
+
+  // Fallback: anything not reached keeps its desktop layout.
+  ids.forEach((id) => {
+    if (!updatedBoxes[id]) updatedBoxes[id] = currentPageComponents[id]?.layouts?.desktop ?? {};
+  });
+
+  return updatedBoxes;
+}
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
@@ -138,8 +232,14 @@ function compactItem(compareWith, l, compactType, cols, fullLayout, allowOverlap
 
   // Move it down, and keep moving it down if it's colliding.
   let collides;
+  let steps = 0;
   // Checking the compactType null value to avoid breaking the layout when overlapping is allowed.
   while ((collides = getFirstCollision(compareWith, l)) && !(compactType === null && allowOverlap)) {
+    if (++steps > MAX_COMPACTION_STEPS) {
+      // eslint-disable-next-line no-console
+      console.error('compactItem: compaction did not converge, bailing out', { item: l.i, top: l.top });
+      break;
+    }
     if (compactH) {
       resolveCompactionCollision(fullLayout, l, collides.left + collides.width, 'x');
     } else {
@@ -200,7 +300,8 @@ function resolveCompactionCollision(layout, item, moveToCoord, axis) {
   item[axis] = moveToCoord;
 }
 
-const heightWidth = { x: 'width', y: 'height' };
+// Keyed by the axis names callers pass ('x' | 'top'), not react-grid-layout's ('x' | 'y').
+const heightWidth = { x: 'width', top: 'height' };
 
 function sortLayoutItems(layout, compactType) {
   if (compactType === 'horizontal') return sortLayoutItemsByColRow(layout);

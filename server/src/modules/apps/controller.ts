@@ -63,6 +63,13 @@ export class AppsController implements IAppsController {
     return this.appsService.getAppAuthenticationConfig(slug);
   }
 
+  @InitFeature(FEATURE_KEY.GET_RESTRICTED_ACCESS_INFO)
+  @UseGuards(JwtAuthGuard)
+  @Get('restricted-access-info/:slug')
+  getRestrictedAccessInfo(@Param('slug') slug: string, @User() user: UserEntity) {
+    return this.appsService.getRestrictedAccessInfo(slug, user);
+  }
+
   @InitFeature(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS)
   @UseGuards(PrivateAppAuthGuard, FeatureAbilityGuard)
   @Get('validate-private-app-access/:slug')
@@ -91,8 +98,8 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS)
   @UseGuards(AppAuthGuard, ValidatePublicAppGuard, FeatureAbilityGuard)
   @Get('validate-released-app-access/:slug')
-  validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity) {
-    return this.appsService.validateReleasedApp(ability, app);
+  validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity, @User() user: UserEntity) {
+    return this.appsService.validateReleasedApp(ability, app, user);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)

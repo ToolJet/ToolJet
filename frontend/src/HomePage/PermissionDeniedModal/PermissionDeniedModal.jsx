@@ -37,6 +37,8 @@ export const PermissionDeniedModal = ({ onHide, ...props }) => {
               },
             }
           );
+        } else if (error?.error && error.error.includes('reached the number of workspaces')) {
+          onHide();
         } else {
           handleHttpErrorMessages(error, 'workspace');
         }

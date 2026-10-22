@@ -196,6 +196,10 @@ npm install -g npm@10.9.2
 npm install -g @nestjs/cli
 NODE_OPTIONS='--max-old-space-size=8000' TOOLJET_EDITION=ee npm run build
 
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+sudo cp -r "$BUILD_DIR/docker/icu-tz" /usr/local/share/icu-tz
+ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
+
 # Remove marketplace folder after build (used during build but not needed in production)
 echo "Removing marketplace folder after build..."
 rm -rf "$BUILD_DIR/marketplace"
@@ -219,6 +223,10 @@ cp "$BUILD_DIR/server/package.json" "$PROD_DIR/server/"
 [ -d "$BUILD_DIR/server/scripts" ] && cp -r "$BUILD_DIR/server/scripts" "$PROD_DIR/server/"
 [ -d "$BUILD_DIR/server/ee/keys" ] && mkdir -p "$PROD_DIR/server/ee/keys" && cp -r "$BUILD_DIR/server/ee/keys" "$PROD_DIR/server/ee/"
 [ -d "$BUILD_DIR/server/ee/ai/assets" ] && mkdir -p "$PROD_DIR/server/ee/ai/assets" && cp -r "$BUILD_DIR/server/ee/ai/assets" "$PROD_DIR/server/ee/ai/"
+
+# Copy shared widget-definitions package (server/node_modules/@tooljet/widget-definitions symlinks to it).
+# Conditional because this script also builds branches that predate the package.
+[ -d "$BUILD_DIR/packages/widget-definitions" ] && mkdir -p "$PROD_DIR/packages" && cp -r "$BUILD_DIR/packages/widget-definitions" "$PROD_DIR/packages/"
 
 # Copy frontend build
 mkdir -p "$PROD_DIR/frontend"

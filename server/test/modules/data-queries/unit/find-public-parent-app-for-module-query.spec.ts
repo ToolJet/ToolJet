@@ -33,7 +33,7 @@ describe('DataQueryRepository.findPublicParentAppForModuleQuery', () => {
   let repository: DataQueryRepository;
 
   beforeAll(async () => {
-    ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app: nestApp } = await initTestApp());
     repository = nestApp.get<DataQueryRepository>(DataQueryRepository);
   });
 
