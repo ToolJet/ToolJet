@@ -50,6 +50,20 @@ describe('UI 2.0 Badge', () => {
     expect(badge()).not.toHaveClass('tw-bg-ui2-primary-strong');
   });
 
+  test('[ShadBadge-PROP-003] variant takes a binding, so a badge follows data; unknown values keep the default look', async () => {
+    const { shadBadgeConfig } = require('@/AppBuilder/WidgetManager/widgets/shadBadge');
+    expect(shadBadgeConfig.properties.variant.isFxNotRequired).toBeUndefined();
+
+    render({ properties: { variant: binding("{{ 'paid' === 'paid' ? 'Success' : 'warning' }}") } });
+    await waitFor(() => expect(badge()).toHaveClass('tw-text-ui2-success'));
+
+    render({ properties: { variant: binding("{{'danger'}}") } });
+    await waitFor(() => expect(badge()).toHaveClass('tw-text-ui2-destructive'));
+
+    render({ properties: { variant: binding("{{'Overdue'}}") } });
+    await waitFor(() => expect(badge()).toHaveClass('tw-bg-ui2-primary-strong'));
+  });
+
   test('[ShadBadge-STY-001] colour and radius styles reach the badge as CSS variables it reads', async () => {
     const { container } = render({
       styles: {

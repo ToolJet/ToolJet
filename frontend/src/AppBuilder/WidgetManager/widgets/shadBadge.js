@@ -65,7 +65,6 @@ export const shadBadgeConfig = {
         },
         defaultValue: 'default',
       },
-      isFxNotRequired: true,
       fullWidth: true,
     },
     loadingState: {
