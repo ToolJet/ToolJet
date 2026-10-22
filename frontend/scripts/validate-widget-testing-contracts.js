@@ -53,6 +53,8 @@ function changedFilesFromStdin() {
     });
 }
 
+const WIDGET_DEFINITIONS_PATHSPEC = '../packages/widget-definitions';
+
 function runGit(frontendRoot, args) {
   return execFileSync('git', args, {
     cwd: frontendRoot,
@@ -108,6 +110,34 @@ function changedFilesFromGit(frontendRoot, baseRef) {
       files.push({ status, path: entries[index + 1] });
     }
     for (const filePath of runGit(frontendRoot, ['ls-files', '--others', '--exclude-standard', '-z', '--', '.'])
+      .split('\0')
+      .filter(Boolean)) {
+      files.push({ status: 'added', path: filePath });
+    }
+    // Widget definitions live outside frontend/, so collect them with repo-relative paths.
+    const definitionEntries = runGit(frontendRoot, [
+      'diff',
+      '--name-status',
+      '-z',
+      '--no-renames',
+      base,
+      '--',
+      WIDGET_DEFINITIONS_PATHSPEC,
+    ]).split('\0');
+    for (let index = 0; index + 1 < definitionEntries.length; index += 2) {
+      const status =
+        definitionEntries[index] === 'A' ? 'added' : definitionEntries[index] === 'D' ? 'removed' : 'modified';
+      files.push({ status, path: definitionEntries[index + 1] });
+    }
+    for (const filePath of runGit(frontendRoot, [
+      'ls-files',
+      '--full-name',
+      '--others',
+      '--exclude-standard',
+      '-z',
+      '--',
+      WIDGET_DEFINITIONS_PATHSPEC,
+    ])
       .split('\0')
       .filter(Boolean)) {
       files.push({ status: 'added', path: filePath });

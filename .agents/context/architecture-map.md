@@ -147,6 +147,7 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 | Stale frontend chunks after deployment | `RootRouter.jsx::ChunkErrorBoundary` reloads once, then presents a manual refresh action. |
 | Main DB, ToolJet DB, or PostgREST unavailable at boot/runtime | Health/startup or dependent requests fail; Compose/Kubernetes declare these service dependencies. |
 | Server/frontend component config drift | Existing saved apps may render incorrectly; repository instructions require synchronized config and migrations for key changes. |
+| PAT write fails app validation | Enforced source (`pat`) gets 400 `APP_VALIDATION_FAILED` with `issues`+`warnings`; every other source saves and receives `validationWarnings` in the body and the `x-tooljet-validation-warnings` header (`server/src/modules/app-validation/`). |
 
 ## Inferences
 
