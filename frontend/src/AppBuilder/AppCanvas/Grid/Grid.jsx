@@ -42,7 +42,7 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
-import { computeFlexResizeStyles, computeFlexResizeEndPatch } from './helpers/gridResizeUtils';
+import { computeFlexResizeStyles, computeFlexResizeEndPatch, gridResizeEndHeight } from './helpers/gridResizeUtils';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
 import useStore from '@/AppBuilder/_stores/store';
@@ -795,10 +795,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             let topAlignmentAddedHeight =
               alignment === 'top' && directions[1] !== 0 && label?.length > 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
 
-            const height = Math.max(
-              GRID_HEIGHT,
-              Math.round((e?.lastEvent?.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT
-            );
+            const height = gridResizeEndHeight({
+              direction: directions,
+              lastHeight: e?.lastEvent?.height,
+              currentHeight: currentWidget?.height,
+              topAlignmentAddedHeight,
+              gridHeight: GRID_HEIGHT,
+            });
             const currentWidth = currentWidget.width * _gridWidth;
             const diffHeight = height - currentWidget?.height;
             const diffWidth = e.lastEvent?.width - currentWidth;
@@ -838,7 +841,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             }
             const resizeData = {
               id: e.target.id,
-              height: directions[1] !== 0 ? height : currentWidget.height,
+              height,
               width: width,
               x: transformX || 0,
               y: transformY || 0,
