@@ -59,10 +59,14 @@ export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {
     () => (themed ? { value: theme?.value ?? null, token: theme?.token ?? null } : null),
     [themed, theme]
   );
+  // A blank colour drawn in one of the theme's colours is shown as that token, as a picked token is: the field names it
+  // (Surface/Surface1) and the colour popover opens on the Theme tab with it selected. Nothing is saved until a colour
+  // is picked; the field still marks it as the theme's.
+  const shown = paramType === 'colorSwatches' && themeDefault?.token ? { value: themeDefault.token } : null;
 
   return (
     <ThemeDefaultContext.Provider value={themeDefault}>
-      <DynamicComponent {...restProps} />
+      <DynamicComponent {...restProps} {...shown} />
     </ThemeDefaultContext.Provider>
   );
 };
