@@ -183,8 +183,10 @@ describe("Workflows - folders and folder movement", () => {
     );
 
     // The folder view lists only its own workflows, so go back to the full list.
-    // The hovered folder's tooltip covers the link, hence the forced click.
-    cy.get(workflowSelector.allWorkflowsLink).click({ force: true });
+    // The hovered folder's tooltip covers the link; clicking the empty-folder image dismisses it.
+    cy.get(commonSelectors.empytyFolderImage).click();
+    cy.get(".tooltip-inner").should("not.exist");
+    cy.get(workflowSelector.allWorkflowsLink).click();
     cy.get(commonSelectors.appCard(data.workflowName)).should("exist");
     moveWorkflowToFolder(data.workflowName, data.folderName);
     cy.get(dashboardSelector.folderName(data.folderName)).should(
