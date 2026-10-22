@@ -3,10 +3,36 @@ import useStore from '@/AppBuilder/_stores/store';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonColumn } from './ButtonColumnAdapter';
+import { RowActionIcons, RowActionMenu } from './RowActions';
+import { buttonDisplayOf } from '../../../_utils/rowActionIcon';
 
-export const ButtonColumnGroup = ({ id, buttons = [], cellBackgroundColor, cellValue, rowData, onClick }) => {
+export const ButtonColumnGroup = ({ id, buttons = [], cellBackgroundColor, cellValue, rowData, onClick, display }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
   const getTableColumnEvents = useTableStore((state) => state.getTableColumnEvents, shallow);
+  // Icons and the "..." menu are drawings of the ToolJet UI 2.0 look; the ToolJet look keeps its labelled buttons.
+  const look = useTableStore((state) => state.getTableStyles?.(id)?.tableLook);
+  const mode = look === 'shadcn' ? buttonDisplayOf(display) : 'buttons';
+
+  if (mode !== 'buttons') {
+    const context = { cellValue, rowData };
+    const actions = buttons
+      .filter((button) => getResolvedValue(button.buttonVisibility, context) !== false)
+      .map((button) => ({
+        id: button.id,
+        label: getResolvedValue(button.buttonLabel, context) || 'Button',
+        iconName: getResolvedValue(button.buttonIconName, context),
+        iconVisible: getResolvedValue(button.buttonIconVisibility, context),
+        disabled: !!getResolvedValue(button.disableButton, context),
+        loading: !!getResolvedValue(button.loadingState, context),
+        tooltip: getResolvedValue(button.buttonTooltip, context),
+      }));
+    const run = (buttonId) => onClick?.(buttonId, getTableColumnEvents(id));
+    return mode === 'menu' ? (
+      <RowActionMenu actions={actions} onAction={run} />
+    ) : (
+      <RowActionIcons actions={actions} onAction={run} />
+    );
+  }
 
   return (
     <div
