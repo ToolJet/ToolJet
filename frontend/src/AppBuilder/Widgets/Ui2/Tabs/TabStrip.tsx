@@ -208,6 +208,7 @@ export const TabStrip = ({
         </TabButton>
       );
     });
+  // Underline tabs are square (radius 0): a rounded tab curved the ends of its 2px indicator.
   if (variant === 'underline') {
     return (
       <div
@@ -221,7 +222,7 @@ export const TabStrip = ({
       >
         {titledTabs((active) =>
           cn(
-            '-tw-mb-px tw-flex tw-h-10 tw-items-center tw-justify-center tw-gap-1.5 tw-whitespace-nowrap tw-rounded-t-ui2-sm tw-border-b-2 tw-px-3 tw-text-[length:var(--tb-font,0.875rem)] tw-font-medium tw-transition-colors disabled:tw-pointer-events-none disabled:tw-opacity-50',
+            '-tw-mb-px tw-flex tw-h-10 tw-items-center tw-justify-center tw-gap-1.5 tw-whitespace-nowrap tw-rounded-none tw-border-b-2 tw-px-3 tw-text-[length:var(--tb-font,0.875rem)] tw-font-medium tw-transition-colors disabled:tw-pointer-events-none disabled:tw-opacity-50',
             TAB_RING,
             stretch && 'tw-flex-1',
             active
