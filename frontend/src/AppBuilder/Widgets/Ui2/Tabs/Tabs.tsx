@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { selectionInsideTabs } from './tabsSelection';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useDynamicHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
@@ -132,6 +134,7 @@ export const ShadTabs = (props: WidgetProps) => {
     setExposedVariable
   );
   const setSelectedComponents = useStore((state: TabsStore) => state.setSelectedComponents);
+  const moduleId = useModuleId();
   const variant: TabsVariant = ['pills', 'underline', 'steps'].includes(properties.variant)
     ? properties.variant
     : 'pills';
@@ -215,8 +218,8 @@ export const ShadTabs = (props: WidgetProps) => {
       isLastStep: index === visible.length - 1,
     });
     if (fire) fireNow('onTabSwitch');
-    // The editor selection may hold a component of the tab that just went away.
-    deselect([]);
+    // A selected component of the tab that went away gives way to the Tabs; any other selection stays (tabsSelection).
+    if (selectionInsideTabs(useStore.getState(), String(props.id), moduleId)) deselect([String(props.id)]);
   };
   const patchTab = (tabId: unknown, patch: Partial<Tab>) =>
     setTabs((all) => all.map((tab) => (tab.id == tabId ? { ...tab, ...patch } : tab)));
