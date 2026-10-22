@@ -10,11 +10,17 @@
  */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { getDataSourceToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import {
   initTestApp,
   createAdmin,
+  createBuilder,
   createEndUser,
+  createGroupPermission,
+  createUserGroupPermissions,
+  grantAppPermission,
   createApplication,
   createApplicationVersion,
   closeTestApp,
@@ -34,6 +40,11 @@ import { Component } from '@entities/component.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { GranularPermissions } from '@entities/granular_permissions.entity';
+import { GroupUsers } from '@entities/group_users.entity';
+import { ResourceType } from '@modules/group-permissions/constants';
+import { InternalTable } from '@entities/internal_table.entity';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -205,6 +216,81 @@ describe('ImportExportResourcesController', () => {
           organization_id: endUser.user.defaultOrganizationId,
         })
         .expect(403);
+    });
+    /** A builder whose role keeps app-create but whose "all apps" grant is turned off. */
+    async function createBuilderWithoutAppAccess(admin: Admin, email: string) {
+      const orgId = admin.user.defaultOrganizationId;
+      const builder = await createBuilder(app, email, { workspace: admin.workspace });
+      const builderGroup = await findEntityOrFail(GroupPermissions, { organizationId: orgId, name: 'builder' } as any);
+      const appsGranular = await findEntityOrFail(GranularPermissions, {
+        groupId: builderGroup.id,
+        type: ResourceType.APP,
+      } as any);
+      await updateEntity(GranularPermissions, appsGranular.id, { isAll: false } as any);
+
+      expect(builderGroup.appCreate).toBe(true);
+      expect((await findEntityOrFail(GranularPermissions, { id: appsGranular.id } as any)).isAll).toBe(false);
+      const memberships = await findEntities(GroupUsers, { where: { userId: builder.user.id } } as any);
+      expect(memberships.map((m: GroupUsers) => m.groupId)).toEqual([builderGroup.id]);
+      return builder;
+    }
+
+    function exportAs(user: Admin, body: Record<string, unknown>) {
+      return request(app.getHttpServer())
+        .post('/api/v2/resources/export')
+        .set('tj-workspace-id', user.user.defaultOrganizationId)
+        .set('Cookie', user.cookie)
+        .send(body);
+    }
+
+    it("should not export another workspace's ToolJet Database table (403)", async () => {
+      const adminA = await createAdmin(app, 'admin@tooljet.io');
+      const adminB = await createAdmin(app, 'admin-b@tooljet.io');
+      const orgB = adminB.user.defaultOrganizationId;
+      expect(orgB).not.toBe(adminA.user.defaultOrganizationId);
+
+      const table = await saveEntity(InternalTable, {
+        id: uuidv4(),
+        organizationId: orgB,
+        tableName: 'workspace_b_table',
+      } as any);
+      const tjdb = app.get<DataSource>(getDataSourceToken('tooljetDb'));
+      await tjdb.query(`CREATE SCHEMA "workspace_${orgB}"`);
+      await tjdb.query(`CREATE TABLE "workspace_${orgB}"."${table.id}" (id integer PRIMARY KEY)`);
+
+      const response = await exportAs(adminA, {
+        organization_id: orgB,
+        tooljet_database: [{ table_id: table.id }],
+      }).expect(403);
+      expect(JSON.stringify(response.body)).not.toContain('workspace_b_table');
+    });
+
+    it('should deny export of an app the user cannot view, even with app-create (403)', async () => {
+      const admin = await createAdmin(app, 'admin@tooljet.io');
+      const application = await seedApp(admin);
+      const builder = await createBuilderWithoutAppAccess(admin, 'builder@tooljet.io');
+
+      await exportAs(builder, {
+        app: [{ id: application.id }],
+        organization_id: admin.user.defaultOrganizationId,
+      }).expect(403);
+    });
+
+    it('should allow export once the user is granted view on the app (201)', async () => {
+      const admin = await createAdmin(app, 'admin@tooljet.io');
+      const orgId = admin.user.defaultOrganizationId;
+      const application = await seedApp(admin);
+      const builder = await createBuilderWithoutAppAccess(admin, 'builder@tooljet.io');
+
+      const viewers = await createGroupPermission(app, { name: 'export-viewers', organizationId: orgId });
+      await grantAppPermission(app, application as any, viewers.id, { read: true });
+      await createUserGroupPermissions(app, { ...builder.user, organizationId: orgId } as any, ['export-viewers']);
+
+      const response = await exportAs(builder, {
+        app: [{ id: application.id }],
+        organization_id: orgId,
+      }).expect(201);
+      expect(response.body.app).toHaveLength(1);
     });
   });
 

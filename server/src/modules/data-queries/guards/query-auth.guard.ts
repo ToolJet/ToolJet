@@ -5,6 +5,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TransactionLogger } from '@modules/logging/service';
 import { APP_TYPES } from '@modules/apps/constants';
+import { App } from '@entities/app.entity';
 import { DataQueryRepository } from '../repository';
 
 @Injectable()
@@ -46,6 +47,21 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
       request.tj_resource_id = app.id;
 
       if (app.isPublic === true) {
+        // A public front-end app exposes only its RELEASED version to anonymous callers; a draft
+        // query requires auth. Scoped to front-end: workflows/modules keep is_public elsewhere and
+        // the module branch below handles public-parent embedding.
+        if (app.type === APP_TYPES.FRONT_END && !(await this.isQueryInReleasedVersion(id, app))) {
+          try {
+            // An authenticated builder may still preview a draft; an anonymous caller may not.
+            return await super.canActivate(context);
+          } catch {
+            throw new UnauthorizedException(
+              JSON.stringify({
+                message: 'App is not released yet',
+              })
+            );
+          }
+        }
         // No need to do user validation
         this.organizationRepository.touchLastAccessedAt(app.organizationId);
         return true;
@@ -91,6 +107,14 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
     } finally {
       this.transactionLogger.log(`QueryAuthGuard completed at ${new Date().toISOString()} for app id ${id}`);
     }
+  }
+
+  // True only when the query belongs to the app's released version (apps.current_version_id).
+  private async isQueryInReleasedVersion(dataQueryId: string, app: App): Promise<boolean> {
+    if (!app.currentVersionId) {
+      return false;
+    }
+    return this.dataQueryRepository.isQueryInVersion(dataQueryId, app.currentVersionId);
   }
 
   // Rejects a request whose caller does not belong to the app's workspace.

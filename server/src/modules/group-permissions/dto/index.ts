@@ -1,5 +1,5 @@
 import { User } from '@entities/user.entity';
-import { Transform } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsArray } from 'class-validator';
 
 export class CreateGroupPermissionDto {
@@ -149,4 +149,38 @@ export class DuplicateGroupDto extends DuplicateGroupDtoBase {
   @IsBoolean()
   @IsOptional()
   addModuleFolders?: boolean;
+}
+
+@Exclude()
+export class GroupUserMemberDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  firstName: string;
+
+  @Expose()
+  lastName: string;
+
+  @Expose()
+  avatarId: string;
+}
+
+@Exclude()
+export class GroupUserResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  userId: string;
+
+  @Expose()
+  groupId: string;
+
+  @Expose()
+  @Type(() => GroupUserMemberDto)
+  user: GroupUserMemberDto;
 }
