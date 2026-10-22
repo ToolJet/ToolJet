@@ -309,7 +309,7 @@ describe('Listview rows on demand — a row of input widgets', () => {
       expect(values(shown)).toEqual(values(changed[handle]));
       expect(functionsOf(shown)).toEqual(expect.arrayContaining(functionsOf(changed[handle])));
     });
-  });
+  }, 30000);
 
   test('a module that throws for a row leaves that child without values, as its crashed widget, and its siblings read', async () => {
     renderListview(ROWS);

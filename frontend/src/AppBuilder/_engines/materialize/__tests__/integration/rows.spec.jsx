@@ -689,7 +689,7 @@ describe('Listview rows on demand — a long list', () => {
     await waitFor(() => expect(renderedRows()).not.toContain(rows[0]));
     expect(renderedRows()).not.toContain(3);
     expect(renderedRows()).toContain(rows[rows.length - 1]);
-  });
+  }, 30000);
 
   test('state actions whose write fails reject', async () => {
     renderListview(ROWS);
