@@ -251,4 +251,20 @@ describe('UI 2.0 Input', () => {
     await waitFor(() => expect(exposed().value).toBeNull());
     expect(screen.getByText('Full name')).toBeInTheDocument();
   });
+
+  test('[ShadInput-PROP-004] Type takes a binding: a show/hide toggle switches password and text and keeps the text', async () => {
+    // Type was a fixed choice, so a password field could not show its text on a toggle.
+    const { shadInputConfig } = jest.requireActual('@/AppBuilder/WidgetManager/widgets/shadInput');
+    expect(shadInputConfig.properties.inputType.isFxNotRequired).toBeUndefined();
+
+    const { container } = render({ properties: { inputType: binding("{{'Password'}}") } });
+    const input = () => container.querySelector('input');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'password'));
+    await act(async () => fireEvent.change(input(), { target: { value: 's3cret' } }));
+    widget.setComponentProperty(ID, 'inputType', "{{'text'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'text'));
+    expect(input()).toHaveValue('s3cret');
+    widget.setComponentProperty(ID, 'inputType', "{{'checkbox'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'text'));
+  });
 });

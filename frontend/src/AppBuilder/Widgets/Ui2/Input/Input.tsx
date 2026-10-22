@@ -23,12 +23,23 @@ export const emailRule = (value: unknown): string =>
 // the typed text as a string and had no arrows. Its decimals are as typed, without thousands separators.
 const NUMBER_BOX = { stepper: 'stacked', step: 1, decimalPlaces: 10, thousandSeparator: false };
 
-export const ShadInput = (props: WidgetProps) =>
-  props.properties.inputType === 'number' ? (
+/** The Type, now that it can be bound (a password field's show/hide toggle: {{variables.show ? 'text' : 'password'}}):
+ *  read in any case, anything else a text box. Switching between text and password keeps what was typed. */
+export const inputType = (value: unknown): string => {
+  const type = String(value ?? '')
+    .trim()
+    .toLowerCase();
+  return type === 'number' || TYPES.includes(type) ? type : 'text';
+};
+
+export const ShadInput = (props: WidgetProps) => {
+  const type = inputType(props.properties.inputType);
+  return type === 'number' ? (
     <ShadNumberInput {...props} properties={{ ...props.properties, ...NUMBER_BOX }} />
   ) : (
-    <TextInput {...props} />
+    <TextInput {...props} properties={{ ...props.properties, inputType: type }} />
   );
+};
 
 const TextInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
