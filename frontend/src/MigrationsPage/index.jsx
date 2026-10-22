@@ -201,17 +201,17 @@ const StatusCard = ({ run, onRun, runPending }) => {
   );
 };
 
-const stepDetail = (step, run) => {
+const stepDetail = (step) => {
   if (step.status === 'running' && step.percent !== undefined) return `${step.percent}%`;
-  if (step.status === 'running' && run.progress) return run.progress;
   if (step.durationMs !== undefined) return formatMs(step.durationMs);
   return STEP[step.status]?.label ?? '';
 };
 
-/** One migration's own log lines, refetched as the run's log grows while it runs. */
-const StepLog = ({ runId, step, logSize }) => {
+/** One migration's own log lines, refetched on every poll while it runs. */
+const StepLog = ({ run, step }) => {
   const [log, setLog] = useState(null);
-  const refresh = step.status === 'running' ? logSize : 0;
+  const runId = run.id;
+  const refresh = step.status === 'running' ? run : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -277,12 +277,12 @@ const MigrationRow = ({ step, run }) => {
             live ? meta.tone : 'tw-text-text-placeholder'
           )}
         >
-          {stepDetail(step, run)}
+          {stepDetail(step)}
         </span>
       </button>
       {open && (
         <div className="tw-pb-2 tw-pl-9">
-          <StepLog runId={run.id} step={step} logSize={run.logTail.length} />
+          <StepLog run={run} step={step} />
         </div>
       )}
     </li>

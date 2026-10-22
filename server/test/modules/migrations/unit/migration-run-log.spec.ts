@@ -54,7 +54,6 @@ describe('migration run log', () => {
       expect(run).toMatchObject({
         hasPendingWork: true,
         currentMigration: 'BackfillX1800',
-        progress: '1200/5000',
         migrations: [
           { name: 'AddIndex1700', status: 'done', durationMs: 12 },
           { name: 'BackfillX1800', status: 'running', percent: 24 },
@@ -63,13 +62,16 @@ describe('migration run log', () => {
     });
 
     it.each([
-      ['BackfillX: [PROGRESS] Resolved 30/40 (75%)', '30/40', 75],
-      ['BackfillX1800 Progress 42 %', '42%', 42],
-    ])('should read the progress format %j', (line, label, percent) => {
+      ['BackfillX: [PROGRESS] Resolved 30/40 (75%)', 75],
+      ['BackfillX1800 Progress 42 %', 42],
+    ])('should read the progress format %j', (line, percent) => {
       const next = applyLogLine(run, line);
 
-      expect(next.progress).toBe(label);
       expect(next.migrations[1]).toEqual({ name: 'BackfillX1800', status: 'running', percent });
+    });
+
+    it('should drop a progress line that does not move the percent', () => {
+      expect(applyLogLine(run, 'BackfillX: [PROGRESS] 1201/5000 (24%)')).toBe(run);
     });
 
     it('should drop query log lines unless ORM_LOGGING asked for them', () => {
@@ -80,7 +82,7 @@ describe('migration run log', () => {
     });
 
     it('should ignore progress lines before any migration starts', () => {
-      expect(replay(['Seed Progress 50 %']).progress).toBeNull();
+      expect(replay(['Seed Progress 50 %']).migrations).toEqual([]);
     });
 
     it('should mark the running migration as the failed one', () => {
