@@ -107,7 +107,7 @@ Flag an RTL spec that exists only to reach a pure helper.
   without which `fireEvent` hard-returns (`eventsSlice.js:104`) and every event
   silently does nothing while the spec passes.
 - **Assert only on properties and events the widget's schema in
-  `src/AppBuilder/WidgetManager/widgets/` actually declares.** A test for a property
+  `packages/widget-definitions/src/widgets/` actually declares.** A test for a property
   the widget does not have passes while asserting nothing.
 - Cover, in priority order: exposed values published; events firing **and the handler
   seeing the new value, not the previous one**; falsy values (`false`, `0`, `''`)
