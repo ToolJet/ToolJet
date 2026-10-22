@@ -16,7 +16,7 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
-import { checkboxConfig } from '@/AppBuilder/WidgetManager/widgets/checkbox';
+import { checkboxConfig } from '@tooljet/widget-definitions';
 import { checkboxExposure } from '../../Checkbox';
 
 const ID = 'chk1';

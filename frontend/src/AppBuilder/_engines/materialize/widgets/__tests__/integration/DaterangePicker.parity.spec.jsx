@@ -15,7 +15,7 @@ import {
   widgetProps,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { daterangepickerConfig } from '@/AppBuilder/WidgetManager/widgets/daterangepicker';
+import { daterangepickerConfig } from '@tooljet/widget-definitions';
 import { daterangePickerExposure } from '../../DaterangePicker';
 import * as daterangePickerModule from '../../DaterangePicker';
 

@@ -16,7 +16,7 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
-import { toggleSwitchV2Config } from '@/AppBuilder/WidgetManager/widgets/toggleswitchv2';
+import { toggleSwitchV2Config } from '@tooljet/widget-definitions';
 import { toggleSwitchV2Exposure } from '../../ToggleSwitchV2';
 
 const ID = 'tgl1';

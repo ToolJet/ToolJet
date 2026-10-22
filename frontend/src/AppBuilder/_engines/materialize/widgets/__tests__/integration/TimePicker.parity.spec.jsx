@@ -14,7 +14,7 @@ import {
   widgetProps,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { timePickerConfig } from '@/AppBuilder/WidgetManager/widgets/timepicker';
+import { timePickerConfig } from '@tooljet/widget-definitions';
 import { timePickerExposure } from '../../TimePicker';
 import * as timePickerModule from '../../TimePicker';
 

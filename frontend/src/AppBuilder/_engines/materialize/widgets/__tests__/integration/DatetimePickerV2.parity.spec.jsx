@@ -15,7 +15,7 @@ import {
   widgetProps,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { datetimePickerV2Config } from '@/AppBuilder/WidgetManager/widgets/datetimepickerV2';
+import { datetimePickerV2Config } from '@tooljet/widget-definitions';
 import { datetimePickerV2Exposure } from '../../DatetimePickerV2';
 import * as datetimePickerV2Module from '../../DatetimePickerV2';
 

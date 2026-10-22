@@ -5,7 +5,7 @@
  * the first render, before anything was selected. A mandatory field with default tags exposed false.
  */
 import { binding, drain, createWidgetHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { tagsInputConfig } from '@/AppBuilder/WidgetManager/widgets/TagsInput';
+import { tagsInputConfig } from '@tooljet/widget-definitions';
 
 const { definition } = tagsInputConfig;
 const harness = createWidgetHarness({

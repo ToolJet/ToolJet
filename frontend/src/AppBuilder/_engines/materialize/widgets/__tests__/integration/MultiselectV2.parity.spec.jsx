@@ -17,7 +17,7 @@ import {
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
 import { createMultiselectHarness } from '@/AppBuilder/Widgets/MultiselectV2/__tests__/integration/multiselectV2Harness';
-import { multiselectV2Config } from '@/AppBuilder/WidgetManager/widgets/multiselectV2';
+import { multiselectV2Config } from '@tooljet/widget-definitions';
 import { multiselectV2Exposure } from '../../MultiselectV2';
 
 const ID = 'ms1';

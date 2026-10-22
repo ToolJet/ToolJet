@@ -17,7 +17,7 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
-import { dropdownV2Config } from '@/AppBuilder/WidgetManager/widgets/dropdownV2';
+import { dropdownV2Config } from '@tooljet/widget-definitions';
 import { dropdownV2Exposure } from '../../DropdownV2';
 
 const ID = 'dd1';

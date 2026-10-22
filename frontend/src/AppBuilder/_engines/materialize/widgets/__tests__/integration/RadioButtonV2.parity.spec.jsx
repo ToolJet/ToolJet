@@ -18,7 +18,7 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
-import { radiobuttonV2Config } from '@/AppBuilder/WidgetManager/widgets/radioButtonV2';
+import { radiobuttonV2Config } from '@tooljet/widget-definitions';
 import { radioButtonV2Exposure } from '../../RadioButtonV2';
 
 const ID = 'radio1';

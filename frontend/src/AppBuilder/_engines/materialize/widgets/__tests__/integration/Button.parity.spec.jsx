@@ -16,7 +16,7 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { AppBuilderTestSession, defineAppBuilderScenario, componentDefinition, seedApp } from '@/test/app-builder';
-import { buttonConfig } from '@/AppBuilder/WidgetManager/widgets/button';
+import { buttonConfig } from '@tooljet/widget-definitions';
 import { buttonExposure } from '../../Button';
 
 const ID = 'btn1';

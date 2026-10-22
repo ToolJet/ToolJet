@@ -9,7 +9,7 @@ import { waitFor } from '@testing-library/react';
 import { writeFileSync } from 'fs';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import useStore from '@/AppBuilder/_stores/store';
-import { tableConfig } from '@/AppBuilder/WidgetManager/widgets/table';
+import { tableConfig } from '@tooljet/widget-definitions';
 import { AppBuilderTestSession, defineAppBuilderScenario, seedApp, componentDefinition } from '@/test/app-builder';
 import { binding, drain, widgetProps, MODULE_ID } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
