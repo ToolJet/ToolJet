@@ -6,6 +6,8 @@ import { GROUP_LOADING } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
 import { LoadingBox, Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { avatarPeople } from './people';
 import type { LoadingLook, LoadingMap, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
+import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import './styles/shadcn.scss';
 
 // How each widget looks while loading (the loadingState property or the setLoading action). Controls stay in place,
@@ -121,6 +123,7 @@ export interface ShellProps {
   dataCy?: string;
   /** The widget's height in px: the size of its loading look. */
   height?: number;
+  currentMode?: string;
   innerRef?: React.Ref<HTMLDivElement>;
   className?: string;
   children?: React.ReactNode;
@@ -139,6 +142,15 @@ const DISMISS_ATTR = 'data-ui2-dismiss';
 /** Spread on a control that only closes an overlay: it keeps working inside a disabled Form. */
 export const DISMISS = { [DISMISS_ATTR]: '' } as const;
 const dismisses = (target: EventTarget | null) => !!(target as Element | null)?.closest?.(`[${DISMISS_ATTR}]`);
+
+/** The fixed-box policy: a widget with a Dynamic height setting, drawn in a fixed box (the editor, or Dynamic height
+ *  off), keeps its content inside the box. Its root fills the box and scrolls what does not fit: drawn at its
+ *  content's height, a Calendar, Card grid or Timeline in a short box painted over the widgets below it. With Dynamic
+ *  height on in the viewer the box follows the content (useAutoHeight) and nothing changes. */
+export const FIXED_BOX = 'tw-h-full tw-min-h-0 tw-overflow-y-auto';
+export const containedInBox = ({ componentType, properties, currentMode }: ShellProps): boolean =>
+  Boolean(componentTypeDefinitionMap[componentType]?.properties?.dynamicHeight) &&
+  inFixedBox({ componentType, properties, currentMode });
 
 export const Shell = (props: ShellProps) => {
   const { properties, styles, componentType, dataCy, children, innerRef, className } = props;
@@ -197,7 +209,7 @@ export const Shell = (props: ShellProps) => {
       onMouseDownCapture={blockInput}
       onClickCapture={blockInput}
       aria-busy={loading || undefined}
-      className={cn('tj-shadcn', className)}
+      className={cn('tj-shadcn', containedInBox(props) && FIXED_BOX, className)}
       style={{
         width: '100%',
         display: properties.visibility === false ? 'none' : 'block',
