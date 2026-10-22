@@ -40,6 +40,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - Branch-aware behavior (this branch line): delete on a branch soft-deletes (`DataSourceVersion.isActive = false`); released apps read the `is_default` DSV. `branchId` only applies to global-scope sources.
 - **`is_synced=false` on create in every mode** (git-off, multi-branch feature, single-branch default) — a brand-new DSV is never-committed, so it stays unsynced until a push (git-sync). There is no single-branch synced-on-create exemption (removed) — mirrors the apps/modules rule. A git-sync pull that finds a synced DSV absent from git **deactivates** it (`isActive=false`), it does not delete the row.
 - Scope change is one-way (local → global); sample sources can't be deleted; delete is blocked while dependent queries exist (`findQueriesLinkedToDatasource`).
+- **Plugin schemas are opaque**: `getForApp` restores `plugin.operations_file.data` / `manifest_file.data` / `icon_file.data` verbatim after `decamelizeKeys` — the frontend reads camelCase keys (`commonFields`, `dependsOn`, `autoFetch`, `invokeMethod`), so decamelizing them silently drops form fields (e.g. Cohere's Model selector). A plugin kind that calls `:id/invoke` must also be in `guards/whitelist-plugin.guard.ts`, or every invoke returns 403.
 - NEVER abbreviate `data_source` as `ds` in code or docs.
 
 ## Related modules
