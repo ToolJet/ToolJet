@@ -62,11 +62,13 @@ describe('A UI 2.0 style left blank follows the theme', () => {
     expect(swatch(container).style.backgroundColor).toBe('rgb(37, 99, 235)');
   });
 
-  it('a colour no part of the widget draws says Theme default, not an empty white swatch', () => {
+  it("a colour no part of the widget draws shows the theme's colour for its kind, not Theme default", async () => {
+    // A trend colour with no trend on the card: the theme's error colour (its default where the token cannot be read).
     const { container } = field({ paramName: 'negativeColor', value: '' });
-    expect(screen.getByText('Theme default')).toBeInTheDocument();
-    expect(swatch(container).style.backgroundColor).not.toBe('rgb(255, 255, 255)');
-    expect(swatch(container).style.borderStyle).toBe('dashed');
+    expect(await screen.findByText('Theme')).toBeInTheDocument();
+    expect(screen.queryByText('Theme default')).toBeNull();
+    expect(swatch(container).style.backgroundColor).toBe('rgb(220, 38, 38)');
+    expect(swatch(container).style.borderStyle).not.toBe('dashed');
   });
 
   it('a set colour shows as before, and clearing it returns to the theme', async () => {
