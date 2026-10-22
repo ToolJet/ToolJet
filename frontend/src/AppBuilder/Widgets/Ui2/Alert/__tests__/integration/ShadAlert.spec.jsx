@@ -42,10 +42,39 @@ describe('UI 2.0 Alert', () => {
   test('[ShadAlert-PROP-002] the destructive variant draws the alert in the error colour', async () => {
     render({ properties: { variant: binding('destructive') } });
 
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveClass('tw-text-ui2-destructive'));
+    await waitFor(() =>
+      expect(screen.getByRole('alert').style.getPropertyValue('--al-ink')).toBe('var(--sc-destructive-ink)')
+    );
 
     render({ properties: { variant: binding('default') } });
-    await waitFor(() => expect(screen.getByRole('alert')).not.toHaveClass('tw-text-ui2-destructive'));
+    await waitFor(() => expect(screen.getByRole('alert').style.getPropertyValue('--al-ink')).toBe(''));
+  });
+
+  test('[ShadAlert-STY-003] a set style overrides its own part; every blank part keeps the variant', async () => {
+    // Destructive drew only a border and a text colour: with the background, border and title set (as in the team's
+    // app) it showed only in the description. Each part now reads its style, then the variant, then the theme.
+    render({
+      properties: { variant: binding('destructive'), description: binding('Details') },
+      styles: { backgroundColor: binding('#f1f3f5'), titleColor: binding('#2563eb') },
+    });
+
+    const alert = await screen.findByRole('alert');
+    // The variant's tint, border and ink, for the parts left blank.
+    expect(alert.style.getPropertyValue('--al-bg')).toBe(
+      'color-mix(in srgb, var(--sc-destructive) 6%, var(--sc-background))'
+    );
+    expect(alert.style.getPropertyValue('--al-border')).toBe(
+      'color-mix(in srgb, var(--sc-destructive) 50%, transparent)'
+    );
+    expect(alert.className).toContain('tw-bg-[color:var(--lk-bg,var(--al-bg,var(--sc-background)))]');
+    expect(alert.className).toContain('tw-border-[color:var(--lk-border,var(--al-border,var(--sc-border)))]');
+    expect(screen.getByText('Payment overdue').className).toContain('var(--lk-title,var(--al-ink,');
+    expect(screen.getByText('Details').className).toContain('var(--lk-fg,var(--al-ink,');
+    // The set styles reach the variables the parts read first.
+    const root = alert.closest('.tj-shadcn');
+    expect(root.style.getPropertyValue('--lk-bg')).toBe('#f1f3f5');
+    expect(root.style.getPropertyValue('--lk-title')).toBe('#2563eb');
+    expect(root.style.getPropertyValue('--lk-border')).toBe('');
   });
 
   test('[ShadAlert-STY-001] colour and radius styles reach the alert as CSS variables it reads', async () => {
@@ -67,9 +96,9 @@ describe('UI 2.0 Alert', () => {
     expect(root.style.getPropertyValue('--lk-title')).toBe('#991b1b');
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#7f1d1d');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('10px');
-    expect(alert.className).toContain('tw-bg-[color:var(--lk-bg)]');
-    expect(screen.getByText('Payment overdue').className).toContain('tw-text-[color:var(--lk-title)]');
-    expect(screen.getByText('Details').className).toContain('tw-text-[color:var(--lk-fg)]');
+    expect(alert.className).toContain('tw-bg-[color:var(--lk-bg,');
+    expect(screen.getByText('Payment overdue').className).toContain('tw-text-[color:var(--lk-title,');
+    expect(screen.getByText('Details').className).toContain('tw-text-[color:var(--lk-fg,');
   });
 
   test('[ShadAlert-STY-002] the title is the larger, stronger line over its description', async () => {
