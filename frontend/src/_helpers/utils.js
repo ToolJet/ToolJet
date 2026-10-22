@@ -2,7 +2,6 @@
 import moment from 'moment';
 import { hasCycle } from '@/AppBuilder/_engines/data/cycles';
 import _, { isEmpty } from 'lodash';
-import JSON5 from 'json5';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
@@ -342,14 +341,18 @@ export function validateQueryName(name) {
 }
 
 export function validateKebabCase(slug) {
-  const pattern = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
+  // Unicode letters and digits: the handle generator (lodash kebabCase of the page name)
+  // keeps non-Latin scripts, and the viewer routes them via percent-encoding. Kept in sync
+  // with the backend rule (server app-validation catalog/pages.json handlePattern) by
+  // AppBuilder/__tests__/validationCatalogParity.spec.js.
+  const pattern = /^[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*$/u;
   if (slug === '') {
     return { isValid: false, error: 'Handle cannot be empty.' };
   }
-  if (!/^[a-zA-Z0-9]/.test(slug)) {
+  if (!/^[\p{L}\p{N}]/u.test(slug)) {
     return { isValid: false, error: 'Handle must start with a letter or number.' };
   }
-  if (/[^a-zA-Z0-9-]/.test(slug)) {
+  if (/[^\p{L}\p{N}-]/u.test(slug)) {
     return { isValid: false, error: 'Handle can only contain letters, numbers, and hyphens.' };
   }
   if (/--/.test(slug)) {
@@ -598,15 +601,6 @@ export function toQuery(params, delimiter = '&') {
     return query;
   }, '');
 }
-
-export const isJson = (str) => {
-  try {
-    JSON5.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
-};
 
 export const isStringValidJson = (str) => {
   try {

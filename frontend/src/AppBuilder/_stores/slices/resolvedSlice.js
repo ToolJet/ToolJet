@@ -381,6 +381,8 @@ export const createResolvedSlice = (set, get) => {
         false,
         'setResolvedComponents'
       );
+
+      return validatedComponents;
     },
 
     /*

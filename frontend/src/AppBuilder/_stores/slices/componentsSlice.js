@@ -1286,8 +1286,7 @@ export const createComponentsSlice = (set, get) => ({
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
-    let resolvedComponentValues = {};
-
+    const resolvedComponentValues = {};
     startDependencyBatch();
     Object.entries(components).forEach(([componentId, component]) => {
       resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
@@ -1295,7 +1294,6 @@ export const createComponentsSlice = (set, get) => ({
     flushDependencyBatch();
 
     setResolvedComponents(resolvedComponentValues, moduleId);
-    resolveOthers(moduleId);
 
     // Pre-populate default exposed values for all components in a single store write.
     // This prevents 600+ individual set() calls during component mount in RenderWidget
@@ -1333,7 +1331,10 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'batchSetDefaultExposedValues'
     );
-    // Register query option dependencies for queries with runOnDependencyChange enabled
+
+    resolveOthers(moduleId);
+
+    // Register query option dependencies for queries with runOnDependencyChange enabled.
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
     queries.forEach((query) => {
       if (query.options?.runOnDependencyChange) {
