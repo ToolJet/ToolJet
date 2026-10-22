@@ -3,9 +3,10 @@ export const shadButtonConfig = {
   displayName: 'Button',
   description: 'Button',
   component: 'ShadButton',
+  // A whole number of 10px grid rows: a 36px default sat between rows 3 and 4 on the canvas.
   defaultSize: {
     width: 6,
-    height: 36,
+    height: 40,
   },
   others: {
     showOnDesktop: {
