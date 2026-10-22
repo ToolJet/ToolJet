@@ -96,21 +96,13 @@ describe('GroupPermissionsControllerV2', () => {
     return result.tokenCookie;
   }
 
-  /** POST to create a custom group and return the response. */
-  /**
-   * Seeds a real custom group with one member. Several group endpoints look the group up
-   * (422 on an unknown id) before the ability guard runs, so a 403 can only be asserted
-   * against a group that exists.
-   */
-  async function seedGroupWithMember(organization: { id: string }, member: { id: string }) {
-    const [groupUser] = await createUserGroupPermissions(
-      nestApp,
-      { ...member, organizationId: organization.id } as Parameters<typeof createUserGroupPermissions>[1],
-      ['non-admin-probe-group']
-    );
+  // The existence guard answers 422 before the ability guard, so a 403 needs a real group.
+  async function seedGroupWithMember(member: Parameters<typeof createUserGroupPermissions>[1]) {
+    const [groupUser] = await createUserGroupPermissions(nestApp, member, ['non-admin-probe-group']);
     return groupUser;
   }
 
+  /** POST to create a custom group and return the response. */
   async function createGroupViaApi(cookie: any, workspaceId: string, name: string) {
     return request(nestApp.getHttpServer())
       .post('/api/v2/group-permissions')
@@ -239,10 +231,10 @@ describe('GroupPermissionsControllerV2', () => {
   describe('GET /api/v2/group-permissions/:id | Get group', () => {
     it('should not allow non-admin to get a group', async () => {
       const {
-        organization: { defaultUser, organization },
+        organization: { defaultUser },
       } = await setupOrganizations();
       const cookie = await authenticate('developer@tooljet.io');
-      const groupUser = await seedGroupWithMember(organization, defaultUser);
+      const groupUser = await seedGroupWithMember(defaultUser);
 
       const response = await request(nestApp.getHttpServer())
         .get(`/api/v2/group-permissions/${groupUser.groupId}`)
@@ -450,10 +442,10 @@ describe('GroupPermissionsControllerV2', () => {
   describe('POST /api/v2/group-permissions/:id/users | Add user to group', () => {
     it('should not allow non-admin to add users', async () => {
       const {
-        organization: { defaultUser, organization },
+        organization: { defaultUser },
       } = await setupOrganizations();
       const cookie = await authenticate('developer@tooljet.io');
-      const groupUser = await seedGroupWithMember(organization, defaultUser);
+      const groupUser = await seedGroupWithMember(defaultUser);
 
       const response = await request(nestApp.getHttpServer())
         .post(`/api/v2/group-permissions/${groupUser.groupId}/users`)
@@ -581,10 +573,10 @@ describe('GroupPermissionsControllerV2', () => {
   describe('GET /api/v2/group-permissions/:id/users | List group users', () => {
     it('should not allow non-admin to list group users', async () => {
       const {
-        organization: { defaultUser, organization },
+        organization: { defaultUser },
       } = await setupOrganizations();
       const cookie = await authenticate('developer@tooljet.io');
-      const groupUser = await seedGroupWithMember(organization, defaultUser);
+      const groupUser = await seedGroupWithMember(defaultUser);
 
       const response = await request(nestApp.getHttpServer())
         .get(`/api/v2/group-permissions/${groupUser.groupId}/users`)
@@ -625,10 +617,10 @@ describe('GroupPermissionsControllerV2', () => {
   describe('DELETE /api/v2/group-permissions/users/:id | Remove user from group', () => {
     it('should not allow non-admin to remove a user from a group', async () => {
       const {
-        organization: { defaultUser, organization },
+        organization: { defaultUser },
       } = await setupOrganizations();
       const cookie = await authenticate('developer@tooljet.io');
-      const groupUser = await seedGroupWithMember(organization, defaultUser);
+      const groupUser = await seedGroupWithMember(defaultUser);
 
       const response = await request(nestApp.getHttpServer())
         .delete(`/api/v2/group-permissions/users/${groupUser.id}`)
@@ -681,10 +673,10 @@ describe('GroupPermissionsControllerV2', () => {
   describe('GET /api/v2/group-permissions/:id/users/addable-users | List addable users', () => {
     it('should not allow non-admin to search addable users', async () => {
       const {
-        organization: { defaultUser, organization },
+        organization: { defaultUser },
       } = await setupOrganizations();
       const cookie = await authenticate('developer@tooljet.io');
-      const groupUser = await seedGroupWithMember(organization, defaultUser);
+      const groupUser = await seedGroupWithMember(defaultUser);
 
       const response = await request(nestApp.getHttpServer())
         .get(`/api/v2/group-permissions/${groupUser.groupId}/users/addable-users?input=test`)
