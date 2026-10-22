@@ -8,6 +8,8 @@ import {
   AppImportRequestDto,
   AutoDeployBodyDto,
   SaveVersionBodyDto,
+  ListAppVersionsV2QueryDto,
+  ListAppVersionsV2ResponseDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -59,4 +61,12 @@ export interface IExternalApisAppsController {
     appVersion: string,
     exportAllVersions: boolean
   ): Promise<any>;
+}
+
+export interface IExternalApisVersionsControllerV2 {
+  listVersions(
+    workspaceIdentifier: string,
+    resourceIdentifier: string,
+    query: ListAppVersionsV2QueryDto
+  ): Promise<ListAppVersionsV2ResponseDto>;
 }

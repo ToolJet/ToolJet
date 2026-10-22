@@ -776,3 +776,53 @@ export class ListWorkspaceAppUsersV2ResponseDto {
   @Type(() => PaginationV2ResponseDto)
   pagination: PaginationV2ResponseDto;
 }
+
+// draft = not yet saved; saved = saved but not live; released = the app's live version
+// (apps.current_version_id), not a stored status value.
+export enum AppVersionStatusV2 {
+  DRAFT = 'draft',
+  SAVED = 'saved',
+  RELEASED = 'released',
+}
+
+export class ListAppVersionsV2QueryDto {
+  @IsOptional()
+  @IsEnum(AppVersionStatusV2)
+  status?: AppVersionStatusV2;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+@Exclude()
+export class AppVersionV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  status: AppVersionStatusV2;
+}
+
+@Exclude()
+export class ListAppVersionsV2ResponseDto {
+  @Expose()
+  @Type(() => AppVersionV2ResponseDto)
+  data: AppVersionV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
