@@ -53,6 +53,37 @@ export class RolesUtilService implements IRolesUtilService {
     }, manager);
   }
 
+  async assertActiveAdminRemains(
+    organizationId: string,
+    adminGroupId: string,
+    removedUserIds: string[],
+    manager?: EntityManager
+  ): Promise<void> {
+    const groupUsers = await this.groupPermissionsRepository.getUsersInGroup(
+      adminGroupId,
+      organizationId,
+      null,
+      manager
+    );
+
+    // Filtering active admins
+    const admins = groupUsers
+      .map((group) => group.user)
+      .filter((user) => user.organizationUsers[0].status === USER_STATUS.ACTIVE);
+
+    const removedAdmins = admins.filter((admin) => removedUserIds.includes(admin.id));
+
+    if (removedAdmins.length && removedAdmins.length === admins.length) {
+      // Every active admin would be removed
+      throw new BadRequestException({
+        message: {
+          error: ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED,
+          title: 'Can not remove last active admin',
+        },
+      });
+    }
+  }
+
   async editDefaultGroupUserRole(
     organizationId: string,
     editRoleDto: EditUserRoleDto,
@@ -62,30 +93,7 @@ export class RolesUtilService implements IRolesUtilService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Removing an admin
       if (userRole.name == USER_ROLE.ADMIN) {
-        const groupUsers = await this.groupPermissionsRepository.getUsersInGroup(
-          userRole.id,
-          organizationId,
-          null,
-          manager
-        );
-
-        // Filtering active admins
-        const admins = groupUsers
-          .map((group) => group.user)
-          .filter((user) => user.organizationUsers[0].status === USER_STATUS.ACTIVE);
-
-        // Check if user to change role is admin
-        const isAdmin = admins.find((admin) => admin.id === userId);
-
-        if (isAdmin && admins.length < 2) {
-          // If the user is admin and there is only one admin left
-          throw new BadRequestException({
-            message: {
-              error: ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED,
-              title: 'Can not remove last active admin',
-            },
-          });
-        }
+        await this.assertActiveAdminRemains(organizationId, userRole.id, [userId], manager);
       }
 
       // Moving from admin/builder to end user

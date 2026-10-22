@@ -6,6 +6,11 @@ import { USER_ROLE, GROUP_PERMISSIONS_TYPE, USER_ROLE_PRECEDENCE } from '@module
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, In, Not, Repository } from 'typeorm';
 
+export const highestRole = (roles: GroupPermissions[]): GroupPermissions | null =>
+  [...roles].sort(
+    (a, b) => USER_ROLE_PRECEDENCE.indexOf(a.name as USER_ROLE) - USER_ROLE_PRECEDENCE.indexOf(b.name as USER_ROLE)
+  )[0] ?? null;
+
 @Injectable()
 export class RolesRepository extends Repository<GroupPermissions> {
   constructor(private dataSource: DataSource) {
@@ -56,26 +61,22 @@ export class RolesRepository extends Repository<GroupPermissions> {
     }, manager || this.manager);
   }
 
-  async getUserRole(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions> {
+  async getUserRole(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions | null> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const roles = await manager.find(GroupPermissions, {
-        where: {
-          type: GROUP_PERMISSIONS_TYPE.DEFAULT,
-          organizationId: organizationId,
-          groupUsers: {
-            userId: userId,
+      return highestRole(
+        await manager.find(GroupPermissions, {
+          where: {
+            type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+            organizationId: organizationId,
+            groupUsers: {
+              userId: userId,
+            },
           },
-        },
-        relations: {
-          groupUsers: true,
-        },
-      });
-
-      if (roles.length < 2) return roles[0] ?? null;
-
-      return roles.sort(
-        (a, b) => USER_ROLE_PRECEDENCE.indexOf(a.name as USER_ROLE) - USER_ROLE_PRECEDENCE.indexOf(b.name as USER_ROLE)
-      )[0];
+          relations: {
+            groupUsers: true,
+          },
+        })
+      );
     }, manager || this.manager);
   }
 

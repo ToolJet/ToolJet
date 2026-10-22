@@ -294,21 +294,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       // Validation - Group exist and Group is not default group
       this.validateAddGroupUserOperation(group);
 
-      // Enforce one DEFAULT group per user per org: drop any other default membership
-      // before adding this one — otherwise getUserRole()'s lookup can return either at random.
-      if (group.type === GROUP_PERMISSIONS_TYPE.DEFAULT) {
-        const otherDefaultGroups = await manager.find(GroupPermissions, {
-          where: { organizationId, type: GROUP_PERMISSIONS_TYPE.DEFAULT, id: Not(groupId) },
-          select: ['id'],
-        });
-        if (otherDefaultGroups.length) {
-          await manager.delete(GroupUsers, {
-            userId: In(userIds),
-            groupId: In(otherDefaultGroups.map((g) => g.id)),
-          });
-        }
-      }
-
       // Get end users
       const endUserRoleUsers = endUsers?.length
         ? endUsers
@@ -366,6 +351,24 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       if (users?.length !== new Set(userIds).size) {
         // Some users are not present in organization
         throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
+      }
+
+      // One DEFAULT group per user per workspace: runs after the end-user and unknown-user checks above
+      if (group.type === GROUP_PERMISSIONS_TYPE.DEFAULT) {
+        const otherDefaultGroups = await manager.find(GroupPermissions, {
+          where: { organizationId, type: GROUP_PERMISSIONS_TYPE.DEFAULT, id: Not(groupId) },
+          select: ['id', 'name'],
+        });
+        const adminGroup = otherDefaultGroups.find((g) => g.name === USER_ROLE.ADMIN);
+        if (adminGroup) {
+          await this.roleUtilService.assertActiveAdminRemains(organizationId, adminGroup.id, userIds, manager);
+        }
+        if (otherDefaultGroups.length) {
+          await manager.delete(GroupUsers, {
+            userId: In(userIds),
+            groupId: In(otherDefaultGroups.map((g) => g.id)),
+          });
+        }
       }
 
       const existingRelations = await manager.find(GroupUsers, {

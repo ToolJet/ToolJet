@@ -18,8 +18,7 @@ export const roleGroupFor = (p: UserPermissions): USER_ROLE =>
 
 export const HUMANIZED_USER_LIST = ['End-user', 'Builder', 'Admin'];
 
-// Tiebreak order for getUserRole() when a user unexpectedly holds more than one DEFAULT
-// group. Elevate, never demote.
+// Tiebreak for getUserRole() when a user holds several DEFAULT groups: elevate, never demote.
 export const USER_ROLE_PRECEDENCE: USER_ROLE[] = [USER_ROLE.ADMIN, USER_ROLE.BUILDER, USER_ROLE.END_USER];
 
 export enum ResourceType {
