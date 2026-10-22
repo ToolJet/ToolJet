@@ -112,6 +112,8 @@ export interface CreateAppWithDependenciesOptions {
   dsKind?: string;
   dsOptions?: Array<Partial<DataSourceOptionInput>>;
   name?: string;
+  /** Options of the seeded data query. Defaults to a GET against the GitHub stargazers API. */
+  queryOptions?: CreateDataQueryOptions['options'];
 }
 
 export interface CreateGroupPermissionParams {
@@ -933,6 +935,13 @@ export const createAppWithDependencies = async (
     dsKind = 'restapi',
     dsOptions = [{}],
     name = 'name',
+    queryOptions = {
+      method: 'get',
+      url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
+      url_params: [],
+      headers: [],
+      body: [],
+    },
   }: CreateAppWithDependenciesOptions
 ) => {
   const application = await createApplication(
@@ -967,13 +976,7 @@ export const createAppWithDependencies = async (
       dataQuery = await createDataQuery(app, {
         dataSource,
         appVersion,
-        options: {
-          method: 'get',
-          url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
-          url_params: [],
-          headers: [],
-          body: [],
-        },
+        options: queryOptions,
       });
     }
   }
