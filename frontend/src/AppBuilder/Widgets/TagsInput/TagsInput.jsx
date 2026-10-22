@@ -356,6 +356,8 @@ const TagsInput = ({
     setInputValue(value);
     // Only a keystroke counts as a search-text change; the many paths that clear the field on
     // commit are covered by the effect below, which keeps the variable fresh without re-firing.
+    // Published before firing: the effect runs after the handler, so the event would read the previous text.
+    setExposedVariable('searchText', value);
     fireEvent('onSearchTextChanged');
     setFocusedOptionIndex(-1);
   };

@@ -1317,6 +1317,35 @@ describe('TagsInput: search text is published for server side search', () => {
 
     expect(fireCount('searched')).toBe(3);
   });
+
+  test('[TagsInput-BUG-013] On search text changed reads the text including the letter just typed', async () => {
+    // Break this catches: firing the event before searchText is published, so a server side search
+    // query always runs on the previous text and the last letter typed is never searched.
+    await mount({
+      events: [
+        {
+          id: 'evt-search-capture',
+          index: 0,
+          sourceId: ID,
+          name: 'evt-search-capture',
+          target: 'component',
+          event: {
+            eventId: 'onSearchTextChanged',
+            actionId: 'set-custom-variable',
+            key: 'searchedFor',
+            value: `{{components.${NAME}.searchText}}`,
+          },
+        },
+      ],
+    });
+    await openMenu();
+
+    await typeText('n');
+    await waitFor(() => expect(store().getVariable('searchedFor', MODULE_ID)).toBe('n'));
+
+    await typeText('e');
+    await waitFor(() => expect(store().getVariable('searchedFor', MODULE_ID)).toBe('ne'));
+  });
 });
 
 describe('TagsInput: the deleted tag is readable from the delete event', () => {
