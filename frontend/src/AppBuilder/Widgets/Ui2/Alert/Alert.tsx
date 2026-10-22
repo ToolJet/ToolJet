@@ -25,7 +25,16 @@ const ICONS: Record<string, LucideIcon> = {
   warning: TriangleAlert,
   destructive: CircleAlert,
 };
-export const alertTone = (variant: unknown): string | null => TONES[String(variant ?? '')] ?? null;
+/** The variant, now that it can be bound to data: a known name in any case ("Warning"), danger or error as
+ *  destructive, and anything else the default look. */
+export const alertVariant = (value: unknown): string => {
+  const name = String(value ?? '')
+    .trim()
+    .toLowerCase();
+  if (name === 'danger' || name === 'error') return 'destructive';
+  return name in TONES ? name : 'default';
+};
+export const alertTone = (variant: unknown): string | null => TONES[alertVariant(variant)] ?? null;
 const toneVars = (tone: string | null): React.CSSProperties | undefined =>
   tone
     ? ({
@@ -43,7 +52,7 @@ export const ShadAlert = (props: WidgetProps) => {
   // In a fixed box (the editor, or Dynamic height off) the card fills the box, its content scrolling inside: sized to
   // its content, the card ignored the box's height.
   const fixed = inFixedBox(props);
-  const Icon = ICONS[String(properties.variant ?? '')];
+  const Icon = ICONS[alertVariant(properties.variant)];
   return (
     <Shell {...props} innerRef={ref} className={cn(fixed && 'tw-h-full')}>
       <Alert

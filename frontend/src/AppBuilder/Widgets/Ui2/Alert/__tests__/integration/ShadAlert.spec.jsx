@@ -154,4 +154,22 @@ describe('UI 2.0 Alert', () => {
       'destructive',
     ]);
   });
+
+  test('[ShadAlert-PROP-005] the Variant takes a binding: any case, danger or error as destructive, else default', async () => {
+    // The Variant was a fixed choice, so an alert could not follow query data.
+    const { shadAlertConfig } = jest.requireActual('@/AppBuilder/WidgetManager/widgets/shadAlert');
+    expect(shadAlertConfig.properties.variant.isFxNotRequired).toBeUndefined();
+
+    render({ properties: { variant: binding("{{'Warning'}}") } });
+    await waitFor(() =>
+      expect(screen.getByRole('alert').style.getPropertyValue('--al-ink')).toBe('var(--sc-warning-ink)')
+    );
+    render({ properties: { variant: binding("{{'danger'}}") } });
+    await waitFor(() =>
+      expect(screen.getByRole('alert').style.getPropertyValue('--al-ink')).toBe('var(--sc-destructive-ink)')
+    );
+    render({ properties: { variant: binding("{{'Overdue'}}") } });
+    await waitFor(() => expect(screen.getByRole('alert').style.getPropertyValue('--al-ink')).toBe(''));
+    expect(screen.getByRole('alert').querySelector('svg')).toBeNull();
+  });
 });

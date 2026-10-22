@@ -72,7 +72,6 @@ export const shadAlertConfig = {
         },
         defaultValue: 'default',
       },
-      isFxNotRequired: true,
       fullWidth: true,
     },
     dynamicHeight: {
