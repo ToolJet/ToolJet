@@ -71,10 +71,32 @@ export const FieldItem = ({
         >
           <OverlayTrigger
             trigger="click"
-            placement="left"
+            placement="left-start"
+            flip={false}
             rootClose={isRootCloseEnabled}
             overlay={renderFieldPopover(item, index)}
             onToggle={(show) => onTogglePopover(index, show)}
+            popperConfig={{
+              modifiers: [
+                {
+                  name: 'computeStyles',
+                  options: { gpuAcceleration: false },
+                },
+                {
+                  name: 'preventOverflow',
+                  options: { padding: 0 },
+                },
+                {
+                  name: 'pinToEditorTop',
+                  enabled: true,
+                  phase: 'beforeWrite',
+                  requires: ['computeStyles'],
+                  fn: ({ state }) => {
+                    state.styles.popper.top = '48px';
+                  },
+                },
+              ],
+            }}
           >
             <div className="table-column-lists">
               <List.Item

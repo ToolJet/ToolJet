@@ -1,0 +1,1210 @@
+/**
+ * KeyValuePair: rendering, inline editing/changeset, auto-generated fields,
+ * loading/disabled/visibility states, CSA actions, events, and per-fieldType
+ * adapter wiring, per the approved contract
+ * (frontend/ee/test/app-builder/widgets/KeyValuePair/TESTING.md).
+ *
+ * Real store, real RenderWidget, real KeyValuePair / KeyValueRow / FieldAdapters.
+ * Nothing about the widget is mocked.
+ *
+ * Deliberately NOT duplicated here (per contract decision D-01, wiring-only
+ * scope): exhaustive semantics of the shared `Shared/DataTypes` renderers and
+ * validation hooks (date parsing, markdown sanitization, react-select
+ * internals, …) — those are shared with the Table widget and belong to a
+ * future shared-layer/Table contract. What this file proves is that each
+ * `fieldType` reaches the correct adapter with the correct props.
+ *
+ * Test titles carry their approved scenario ID
+ * (frontend/ee/test/app-builder/widgets/KeyValuePair/TESTING.md) as a
+ * `[KeyValuePair-FAMILY-NNN]` prefix, per the widget-testing-contract validator.
+ */
+import React from 'react';
+import { waitFor, fireEvent } from '@testing-library/react';
+import useStore from '@/AppBuilder/_stores/store';
+import { widgets } from '@/AppBuilder/WidgetManager/configs/widgetConfig';
+import { createWidgetHarness, binding, store, MODULE_ID, setVariableOn } from '@/AppBuilder/Widgets/widgetHarness';
+
+const ID = 'kv1';
+const NAME = 'keyvaluepair1';
+
+const field = (overrides) => ({
+  id: overrides.key,
+  key: overrides.key,
+  name: overrides.key,
+  isEditable: false,
+  ...overrides,
+});
+
+const DEFAULT_FIELDS = [
+  field({ key: 'name', name: 'Name', fieldType: 'string', isEditable: true }),
+  field({ key: 'email', name: 'Email', fieldType: 'string', isEditable: false }),
+];
+const DEFAULT_DATA = { name: 'Ada Lovelace', email: 'ada@example.com' };
+
+const widget = createWidgetHarness({
+  componentType: 'KeyValuePair',
+  handle: NAME,
+  id: ID,
+  // Baseline mirrors keyValuePair.js's own `definition.properties` defaults.
+  defaultProperties: {
+    dataSourceSelector: binding('rawJson'),
+    data: binding(DEFAULT_DATA),
+    fields: binding(DEFAULT_FIELDS),
+    useDynamicField: binding('{{false}}'),
+    fieldDynamicData: binding([]),
+    fieldDeletionHistory: binding([]),
+    dynamicHeight: binding('{{false}}'),
+    showUpdateActions: binding('{{true}}'),
+    disableSaveChanges: binding('{{false}}'),
+    loadingState: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    disabledState: binding('{{false}}'),
+  },
+});
+
+const container = () => document.querySelector('.key-value-pair-container');
+const rows = () => document.querySelectorAll('.key-value-row');
+const rowLabelText = (row) => row.querySelector('.key-value-label')?.textContent;
+const valueContainer = (rowEl) => rowEl.querySelector('.key-value-render-value');
+const saveButton = () => document.querySelector('[data-cy="kv-button-save-changes"]');
+const cancelButton = () => document.querySelector('[data-cy="kv-button-cancel"]');
+const exposed = (key) => widget.exposed()?.[key];
+
+describe('KeyValuePair: rendering', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[KeyValuePair-SURFACE-001] renders one row per configured field, in order, from data', async () => {
+    widget.render();
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    expect(rowLabelText(rows()[0])).toBe('Name');
+    expect(rowLabelText(rows()[1])).toBe('Email');
+    expect(valueContainer(rows()[0]).textContent).toContain('Ada Lovelace');
+    expect(valueContainer(rows()[1]).textContent).toContain('ada@example.com');
+  });
+
+  test('[KeyValuePair-SURFACE-002] auto-generates rows from data keys when fields is empty', async () => {
+    widget.render({ properties: { fields: binding([]), data: binding({ city: 'Berlin' }) } });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(rowLabelText(rows()[0])).toBe('City');
+    expect(valueContainer(rows()[0]).textContent).toContain('Berlin');
+  });
+
+  test('[KeyValuePair-SURFACE-003] excludes a field with fieldVisibility: false', async () => {
+    widget.render({
+      properties: {
+        fields: binding([
+          field({ key: 'name', name: 'Name', fieldType: 'string' }),
+          field({ key: 'email', name: 'Email', fieldType: 'string', fieldVisibility: false }),
+        ]),
+      },
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(rowLabelText(rows()[0])).toBe('Name');
+  });
+});
+
+describe('KeyValuePair: inline editing and changeset', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[KeyValuePair-EDIT-001] clicking an editable field enters edit mode and focuses its input', async () => {
+    widget.render();
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+
+    await waitFor(() => expect(document.getElementById(`${ID}-name`)).toHaveFocus());
+  });
+
+  test('[KeyValuePair-EDIT-009] entering edit mode places the caret at the end of the string field text', async () => {
+    widget.render({ properties: { data: binding({ ...DEFAULT_DATA, name: 'Ada Lovelace' }) } });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    await waitFor(() => expect(input).toHaveFocus());
+
+    const selection = window.getSelection();
+    expect(selection.rangeCount).toBeGreaterThan(0);
+    const range = selection.getRangeAt(0);
+    expect(range.collapsed).toBe(true);
+
+    const expectedRange = document.createRange();
+    expectedRange.selectNodeContents(input);
+    expectedRange.collapse(false);
+    expect(range.endContainer).toBe(expectedRange.endContainer);
+    expect(range.endOffset).toBe(expectedRange.endOffset);
+  });
+
+  test('[KeyValuePair-EDIT-010] clicking again inside an already-editing string field does not force the caret back to the end', async () => {
+    widget.render({ properties: { data: binding({ ...DEFAULT_DATA, name: 'Ada Lovelace' }) } });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    await waitFor(() => expect(input).toHaveFocus());
+
+    // Stand in for a real click-to-reposition (jsdom has no layout to derive one from).
+    const midRange = document.createRange();
+    midRange.setStart(input.firstChild, 3);
+    midRange.collapse(true);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(midRange);
+
+    // fireEvent, not userEvent: userEvent's own contentEditable heuristics default to
+    // end-of-text, which would mask the regression this scenario checks for.
+    fireEvent.click(input);
+    await new Promise((resolve) => setTimeout(resolve, 0)); // flush handleEditClick's setTimeout(0)
+
+    const rangeAfter = window.getSelection().getRangeAt(0);
+    expect(rangeAfter.collapsed).toBe(true);
+    expect(rangeAfter.endContainer).toBe(input.firstChild);
+    expect(rangeAfter.endOffset).toBe(3);
+  });
+
+  test('[KeyValuePair-EDIT-002] editing stores the value in changeSet, leaving the exposed data and the original property untouched', async () => {
+    // The exposed `data` variable mirrors `properties.data` verbatim — it is
+    // never merged with `editedData`. An app reads pending edits from
+    // `changeSet`, not from `data`.
+    widget.render();
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    await waitFor(() => expect(exposed('changeSet')).toEqual({ name: 'Grace Hopper' }));
+    expect(exposed('data')).toEqual(DEFAULT_DATA);
+    // The original property input is untouched.
+    expect(store().getComponentDefinition(ID)?.component?.definition?.properties?.data?.value).toEqual(DEFAULT_DATA);
+  });
+
+  test('[KeyValuePair-EDIT-003] blur exits edit mode', async () => {
+    widget.render();
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.blur();
+
+    await waitFor(() => expect(document.getElementById(`${ID}-name`)).toBeNull());
+  });
+
+  test('[KeyValuePair-EDIT-004] a non-editable field never enters edit mode', async () => {
+    widget.render();
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[1]));
+
+    expect(document.getElementById(`${ID}-email`)).toBeNull();
+  });
+
+  test('[KeyValuePair-EDIT-005] disabledState blocks editing even when the field is isEditable', async () => {
+    widget.render({ properties: { disabledState: binding('{{true}}') } });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+
+    expect(document.getElementById(`${ID}-name`)).toBeNull();
+  });
+
+  test('[KeyValuePair-EDIT-006] the changeset popover appears only with pending changes; Save fires the event and clears changeSet, Cancel discards', async () => {
+    widget.render();
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    expect(saveButton()).toBeNull();
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    await waitFor(() => expect(saveButton()).toBeInTheDocument());
+
+    await widget.session.user.click(cancelButton());
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+    expect(saveButton()).toBeNull();
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input2 = await waitFor(() => document.getElementById(`${ID}-name`));
+    input2.textContent = 'Grace Hopper';
+    input2.blur();
+    await waitFor(() => expect(saveButton()).toBeInTheDocument());
+
+    await widget.session.user.click(saveButton());
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+    expect(saveButton()).toBeNull();
+  });
+
+  test('[KeyValuePair-EDIT-007] the popover never appears when showUpdateActions is false, even with pending changes', async () => {
+    widget.render({ properties: { showUpdateActions: binding('{{false}}') } });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    await waitFor(() => expect(exposed('changeSet')).toEqual({ name: 'Grace Hopper' }));
+    expect(saveButton()).toBeNull();
+  });
+
+  test('[KeyValuePair-EDIT-008] the exposed resetChanges function clears the changeset', async () => {
+    widget.render();
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+    await waitFor(() => expect(exposed('changeSet')).toEqual({ name: 'Grace Hopper' }));
+
+    await widget.act('resetChanges');
+
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+  });
+
+  const REGEX_FIELDS = [field({ key: 'name', name: 'Name', fieldType: 'string', isEditable: true, regex: '^[A-Z].*' })];
+
+  test('[KeyValuePair-EDIT-013] isValid is true at idle - no changeSet entries', async () => {
+    widget.render();
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    expect(exposed('isValid')).toBe(true);
+  });
+
+  test('[KeyValuePair-EDIT-014] isValid reflects the changeSet own per-field validity', async () => {
+    widget.render({ properties: { fields: binding(REGEX_FIELDS), data: binding({ name: 'Ada Lovelace' }) } });
+    await waitFor(() => expect(rows()).toHaveLength(1));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'lowercase';
+    input.blur();
+    await waitFor(() => expect(exposed('isValid')).toBe(false));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input2 = await waitFor(() => document.getElementById(`${ID}-name`));
+    input2.textContent = 'Uppercase';
+    input2.blur();
+    await waitFor(() => expect(exposed('isValid')).toBe(true));
+  });
+
+  test('[KeyValuePair-EDIT-015] disableSaveChanges disables the Save-changes button whenever the toggle is on, regardless of changeSet validity', async () => {
+    widget.render({ properties: { disableSaveChanges: binding('{{true}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    await waitFor(() => expect(saveButton()).toBeInTheDocument());
+    expect(saveButton()).toBeDisabled();
+  });
+
+  test('[KeyValuePair-EDIT-016] disableSaveChanges set falsy preserves the unconditional-enabled Save-changes button', async () => {
+    widget.render({ properties: { disableSaveChanges: binding('{{false}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    await waitFor(() => expect(saveButton()).toBeInTheDocument());
+    expect(saveButton()).not.toBeDisabled();
+
+    await widget.session.user.click(saveButton());
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+  });
+
+  test('[KeyValuePair-EDIT-017] disableSaveChanges disabled-gate is independent of showUpdateActions popover-mount gate', async () => {
+    widget.render({
+      properties: { showUpdateActions: binding('{{true}}'), disableSaveChanges: binding('{{true}}') },
+    });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    const button = await waitFor(() => {
+      const el = saveButton();
+      if (!el) throw new Error('save button not rendered');
+      return el;
+    });
+    expect(button).toBeInTheDocument();
+    expect(button).toBeDisabled();
+  });
+});
+
+describe('KeyValuePair: changeset bar responsive layout', () => {
+  const harnesses = [];
+
+  // `render()` has no per-call width override, so each width gets its own harness.
+  const atWidth = async (widgetWidth, { properties, events } = {}) => {
+    const w = createWidgetHarness({
+      componentType: 'KeyValuePair',
+      handle: NAME,
+      id: ID,
+      defaultProperties: {
+        dataSourceSelector: binding('rawJson'),
+        data: binding(DEFAULT_DATA),
+        fields: binding(DEFAULT_FIELDS),
+        useDynamicField: binding('{{false}}'),
+        fieldDynamicData: binding([]),
+        fieldDeletionHistory: binding([]),
+        dynamicHeight: binding('{{false}}'),
+        showUpdateActions: binding('{{true}}'),
+        disableSaveChanges: binding('{{false}}'),
+        loadingState: binding('{{false}}'),
+        visibility: binding('{{true}}'),
+        disabledState: binding('{{false}}'),
+      },
+      widgetWidth,
+    });
+    harnesses.push(w);
+    await w.setup();
+    w.render({ properties, events });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await w.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+    await waitFor(() => expect(saveButton()).toBeInTheDocument());
+    return w;
+  };
+
+  afterEach(() => {
+    harnesses.splice(0).forEach((w) => w.teardown());
+  });
+
+  const bar = () => document.querySelector('.kv-changeset-popover');
+  const content = () => document.querySelector('.key-value-pair-content');
+
+  const expectTextBar = () => {
+    expect(saveButton().textContent).toContain('Save changes');
+    expect(cancelButton().textContent).toContain('Cancel');
+    expect(bar()).not.toHaveClass('kv-changeset-docked');
+    expect(content()).not.toHaveClass('kv-content-docked');
+  };
+
+  const expectIconBar = () => {
+    expect(saveButton().textContent).toBe('');
+    expect(saveButton()).toHaveAttribute('aria-label', 'Save changes');
+    expect(saveButton().querySelector('svg.lucide-check')).toBeInTheDocument();
+    expect(cancelButton().textContent).toBe('');
+    expect(cancelButton()).toHaveAttribute('aria-label', 'Cancel');
+    expect(cancelButton().querySelector('svg.lucide-x')).toBeInTheDocument();
+  };
+
+  const expectDockedIconBar = () => {
+    expectIconBar();
+    expect(bar()).toHaveClass('kv-changeset-docked');
+    expect(content()).toHaveClass('kv-content-docked');
+  };
+
+  test('[KeyValuePair-EDIT-011] below 200px the bar is a docked footer of icon-only ✕ / ✓ buttons', async () => {
+    await atWidth(150);
+
+    expectDockedIconBar();
+  });
+
+  test('[KeyValuePair-EDIT-012] at 200px and above the bar floats with its full text labels', async () => {
+    await atWidth(200);
+
+    expectTextBar();
+  });
+
+  test('[KeyValuePair-EDIT-018] the docked footer lasts only while changes are pending, and the content reserves room for it meanwhile', async () => {
+    const w = await atWidth(60);
+
+    expectDockedIconBar();
+
+    await w.session.user.click(cancelButton());
+    await waitFor(() => expect(w.exposed()?.changeSet).toEqual({}));
+    expect(bar()).toBeNull();
+    expect(content()).not.toHaveClass('kv-content-docked');
+  });
+
+  test.each([
+    [200, 'text'],
+    [199, 'docked icons'],
+    [100, 'docked icons'],
+    [52, 'docked icons'],
+  ])('[KeyValuePair-EDIT-019] at widgetWidth %i the bar renders as %s', async (width, tier) => {
+    await atWidth(width);
+
+    if (tier === 'text') expectTextBar();
+    if (tier === 'docked icons') expectDockedIconBar();
+  });
+
+  describe.each([
+    [300, 'text'],
+    [150, 'docked icons'],
+    [60, 'docked icons'],
+  ])('at widgetWidth %i (%s)', (width) => {
+    test('[KeyValuePair-EDIT-020] Cancel fires its event and clears the changeSet', async () => {
+      const w = await atWidth(width, { events: setVariableOn(ID, 'onCancelKeyValuePairChanges') });
+
+      await w.session.user.click(cancelButton());
+
+      await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+      await waitFor(() => expect(w.exposed()?.changeSet).toEqual({}));
+    });
+
+    test('[KeyValuePair-EDIT-020] Save fires its event and clears the changeSet', async () => {
+      const w = await atWidth(width, { events: setVariableOn(ID, 'onSaveKeyValuePairChanges') });
+
+      await w.session.user.click(saveButton());
+
+      await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+      await waitFor(() => expect(w.exposed()?.changeSet).toEqual({}));
+    });
+
+    test('[KeyValuePair-EDIT-020] disableSaveChanges disables Save but never hides it, and leaves Cancel enabled', async () => {
+      await atWidth(width, { properties: { disableSaveChanges: binding('{{true}}') } });
+
+      expect(saveButton()).toBeDisabled();
+      expect(cancelButton()).toBeEnabled();
+    });
+  });
+});
+
+describe('KeyValuePair: auto-generated fields (store integration)', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[KeyValuePair-AUTOGEN-006] useDynamicField uses fieldDynamicData and ignores persisted fields', async () => {
+    widget.render({
+      properties: {
+        useDynamicField: binding('{{true}}'),
+        fieldDynamicData: binding([{ name: 'City', key: 'city' }]),
+        data: binding({ city: 'Berlin', name: 'Ada Lovelace' }),
+        // A persisted `fields` array that must be ignored while dynamic mode is on.
+        fields: binding(DEFAULT_FIELDS),
+      },
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(rowLabelText(rows()[0])).toBe('City');
+  });
+
+  test('[KeyValuePair-AUTOGEN-007] persists generated fields to the store only when changed, targeting the correct component', async () => {
+    const otherId = 'kv2';
+    widget.render({
+      properties: { fields: binding([]), data: binding({ city: 'Berlin' }) },
+      also: [{ id: otherId, componentType: 'KeyValuePair', name: 'keyvaluepair2' }],
+      afterSeed: () => {
+        const otherDef = require('@/test/app-builder').componentDefinition(otherId, 'keyvaluepair2', 'KeyValuePair', {
+          dataSourceSelector: binding('rawJson'),
+          data: binding({ country: 'Germany' }),
+          fields: binding([]),
+        });
+        useStore.getState().componentsSlice?.mergeComponents?.({ [otherId]: otherDef }, MODULE_ID);
+      },
+    });
+
+    await waitFor(() =>
+      expect(store().getComponentDefinition(ID)?.component?.definition?.properties?.fields?.value).toEqual(
+        expect.arrayContaining([expect.objectContaining({ key: 'city' })])
+      )
+    );
+    // The write targeted only this component's own id, not any sibling's fields.
+    const ownFields = store().getComponentDefinition(ID)?.component?.definition?.properties?.fields?.value;
+    expect(ownFields.every((f) => f.key === 'city')).toBe(true);
+  });
+
+  test('[KeyValuePair-AUTOGEN-008] a key in fieldDeletionHistory is never resurrected through the real store', async () => {
+    widget.render({
+      properties: {
+        fields: binding([]),
+        data: binding({ name: 'Ada Lovelace', email: 'ada@example.com' }),
+        fieldDeletionHistory: binding(['email']),
+      },
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(rowLabelText(rows()[0])).toBe('Name');
+  });
+});
+
+describe('KeyValuePair: loading, disabled, and visibility states', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[KeyValuePair-STATE-001] loadingState renders only the Loader, independent of visibility or pending changes', async () => {
+    widget.render({ properties: { loadingState: binding('{{true}}'), visibility: binding('{{false}}') } });
+
+    await waitFor(() => expect(document.querySelector('.key-value-pair-loading')).toBeInTheDocument());
+    expect(rows()).toHaveLength(0);
+    expect(saveButton()).toBeNull();
+  });
+
+  test('[KeyValuePair-STATE-002] visibility: false applies the invisible class without unmounting', async () => {
+    widget.render({ properties: { visibility: binding('{{false}}') } });
+
+    // `useExposeState`'s own initial state briefly defaults `isVisible` to
+    // `true` regardless of the passed prop (a pre-existing quirk outside this
+    // contract's scope) before its effect corrects it — wait for the exposed
+    // variable to settle before asserting the class, so this test isn't
+    // fooled by that transient.
+    await waitFor(() => expect(exposed('isVisible')).toBe(false));
+    expect(container()).toHaveClass('invisible');
+    expect(rows()).toHaveLength(2);
+  });
+
+  test('[KeyValuePair-STATE-003] disabledState resolves isDisabled, blocking edits (see KeyValuePair-EDIT-005)', async () => {
+    widget.render({ properties: { disabledState: binding('{{true}}') } });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    expect(document.getElementById(`${ID}-name`)).toBeNull();
+  });
+
+  test('[KeyValuePair-STATE-004] dynamicHeight only engages when currentMode is view', async () => {
+    widget.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'view' });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    expect(document.querySelector('.key-value-pair-content')).toHaveStyle({ overflowY: 'hidden' });
+  });
+
+  test('[KeyValuePair-STATE-004] dynamicHeight stays disengaged in edit mode even when the property is true', async () => {
+    widget.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'edit' });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    expect(document.querySelector('.key-value-pair-content')).toHaveStyle({ overflowY: 'auto' });
+  });
+});
+
+describe('KeyValuePair: CSA actions', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[KeyValuePair-CSA-001] setVisibility toggles visibility', async () => {
+    widget.render({ properties: { visibility: binding('{{true}}') } });
+    await waitFor(() => expect(container()).not.toHaveClass('invisible'));
+
+    await widget.act('setVisibility', false);
+
+    await waitFor(() => expect(container()).toHaveClass('invisible'));
+  });
+
+  test('[KeyValuePair-CSA-002] setDisable toggles disabled state', async () => {
+    widget.render({ properties: { disabledState: binding('{{false}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    await widget.act('setDisable', true);
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    expect(document.getElementById(`${ID}-name`)).toBeNull();
+  });
+
+  test('[KeyValuePair-CSA-003] setLoading toggles the Loader', async () => {
+    widget.render({ properties: { loadingState: binding('{{false}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    await widget.act('setLoading', true);
+
+    await waitFor(() => expect(document.querySelector('.key-value-pair-loading')).toBeInTheDocument());
+  });
+
+  test('[KeyValuePair-CSA-004] resetChanges is a declared component-specific action', () => {
+    // Break this catches: resetChanges stays callable at runtime but is missing from the widget's declared
+    // actions, so the "Control component" event picker never offers it.
+    const { actions } = widgets.find((w) => w.component === 'KeyValuePair');
+
+    expect(actions).toContainEqual({ handle: 'resetChanges', displayName: 'Reset changes' });
+  });
+
+  test('[KeyValuePair-CSA-005] saveChanges is a declared component-specific action', () => {
+    // Break this catches: saveChanges is callable at runtime but missing from the declared actions, so the
+    // "Control component" event picker never offers it.
+    const { actions } = widgets.find((w) => w.component === 'KeyValuePair');
+
+    expect(actions).toContainEqual({ handle: 'saveChanges', displayName: 'Save changes' });
+  });
+
+  const editNameField = async () => {
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+    await waitFor(() => expect(exposed('changeSet')).toEqual({ name: 'Grace Hopper' }));
+  };
+
+  test('[KeyValuePair-CSA-006] saveChanges fires onSaveKeyValuePairChanges and clears the changeSet', async () => {
+    // Break this catches: the action clears the changeSet without firing the save event (or vice versa).
+    widget.render({ events: setVariableOn(ID, 'onSaveKeyValuePairChanges') });
+    await editNameField();
+
+    await widget.act('saveChanges');
+
+    await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+  });
+
+  test('[KeyValuePair-CSA-007] saveChanges still saves while disableSaveChanges is on', async () => {
+    // Break this catches: the action inherits the Save button's disableSaveChanges guard and silently no-ops.
+    widget.render({
+      properties: { disableSaveChanges: binding('{{true}}') },
+      events: setVariableOn(ID, 'onSaveKeyValuePairChanges'),
+    });
+    await editNameField();
+
+    await widget.act('saveChanges');
+
+    await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+  });
+});
+
+describe('KeyValuePair: events', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[KeyValuePair-EVENT-001] onFieldClick fires and exposes lastClickedField', async () => {
+    widget.render({ events: setVariableOn(ID, 'onFieldClick') });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[1]));
+
+    await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+    expect(exposed('lastClickedField')).toEqual({ key: 'email', value: 'ada@example.com' });
+  });
+
+  test('[KeyValuePair-EVENT-002] onFieldValueChanged fires on edit', async () => {
+    widget.render({ events: setVariableOn(ID, 'onFieldValueChanged') });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+  });
+});
+
+describe('KeyValuePair: fieldType adapter wiring', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const renderField = (fieldOverrides, data) =>
+    widget.render({
+      properties: {
+        fields: binding([field({ key: 'v', name: 'Value', ...fieldOverrides })]),
+        data: binding(data),
+      },
+    });
+
+  test('[KeyValuePair-FIELDTYPE-001] string: read mode shows the value; editing gets an accent border; invalid value surfaces a row error', async () => {
+    renderField({ fieldType: 'string', isEditable: true, minLength: 5 }, { v: 'hi' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    await waitFor(() => expect(document.getElementById(`${ID}-v`)).toBeInTheDocument());
+    expect(valueContainer(rows()[0])).toHaveStyle({ border: `2px solid var(--primary)` });
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+  });
+
+  test('[KeyValuePair-FIELDTYPE-002] number: renders NumberField as a live numeric input, unconditional on isEditing', async () => {
+    renderField({ fieldType: 'number', isEditable: true, minValue: 5 }, { v: 1 });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    const input = document.querySelector(`#${ID}-v`);
+    expect(input).toHaveAttribute('type', 'number');
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+  });
+
+  test('[KeyValuePair-FIELDTYPE-003] boolean: renders a checkbox toggle; edit icon stays visible and no accent border is applied', async () => {
+    renderField({ fieldType: 'boolean', isEditable: true }, { v: true });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    const checkbox = document.querySelector('input[type="checkbox"]');
+    expect(checkbox).toBeChecked();
+    expect(document.querySelector('.kv-edit-icon')).toBeInTheDocument();
+    expect(valueContainer(rows()[0]).style.border).toBe('');
+  });
+
+  test('[KeyValuePair-FIELDTYPE-004] select: renders SelectField without isMulti', async () => {
+    renderField({ fieldType: 'select', isEditable: true, options: [{ label: 'A', value: 'a' }] }, { v: 'a' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(document.querySelector('.react-select__value-container')).toBeInTheDocument();
+    expect(document.querySelector('.react-select__value-container')).not.toHaveClass(
+      'react-select__value-container--is-multi'
+    );
+  });
+
+  test('[KeyValuePair-FIELDTYPE-005] text: renders TextField (multiline, pre-wrapped) via the same click-to-edit contract as string', async () => {
+    renderField({ fieldType: 'text', isEditable: true }, { v: 'hello' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-v`));
+    // `whiteSpace: pre-wrap` is TextRenderer's own editable style, absent from
+    // StringRenderer — this is what actually distinguishes the two adapters,
+    // since both otherwise produce a near-identical contentEditable div.
+    expect(input).toHaveStyle({ whiteSpace: 'pre-wrap' });
+  });
+
+  test('[KeyValuePair-FIELDTYPE-006] datepicker: renders DatepickerField', async () => {
+    renderField({ fieldType: 'datepicker', isEditable: true }, { v: '2024-01-15' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(valueContainer(rows()[0])).toHaveClass('kv-datepicker');
+    expect(document.querySelector('.react-datepicker-wrapper')).toBeInTheDocument();
+  });
+
+  test('[KeyValuePair-FIELDTYPE-007] newMultiSelect: renders SelectField with isMulti', async () => {
+    renderField(
+      {
+        fieldType: 'newMultiSelect',
+        isEditable: true,
+        options: [
+          { label: 'A', value: 'a' },
+          { label: 'B', value: 'b' },
+        ],
+      },
+      { v: ['a', 'b'] }
+    );
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await waitFor(() => expect(document.querySelectorAll('.react-select__multi-value__label')).toHaveLength(2));
+    expect(document.querySelector('.react-select__value-container')).toHaveClass(
+      'react-select__value-container--is-multi'
+    );
+  });
+
+  test('[KeyValuePair-FIELDTYPE-008] link: renders LinkField as an anchor', async () => {
+    renderField({ fieldType: 'link' }, { v: 'https://example.com' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    const anchor = document.querySelector('a');
+    expect(anchor).toHaveAttribute('href', 'https://example.com');
+  });
+
+  test('[KeyValuePair-FIELDTYPE-009] image: renders ImageField as an img', async () => {
+    renderField({ fieldType: 'image' }, { v: 'https://example.com/a.png' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(document.querySelector('img')).toHaveAttribute('src', 'https://example.com/a.png');
+  });
+
+  test("[KeyValuePair-FIELDTYPE-010] json: renders JsonField, applying JSONRenderer's own double-space formatting", async () => {
+    // `JSONRenderer.format()` renders `{  "a":  1  }` (its own distinctive
+    // double-space punctuation) — a raw/markdown/html passthrough of the same
+    // source string would show `{"a":1}` verbatim, so this is what actually
+    // distinguishes the adapter from a swapped one, not just substring 'a'.
+    renderField({ fieldType: 'json' }, { v: '{"a":1}' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(valueContainer(rows()[0]).textContent).toContain('{  "a":  1  }');
+  });
+
+  test("[KeyValuePair-FIELDTYPE-011] markdown: renders MarkdownField, not HTMLRenderer's .html-cell wrapper", async () => {
+    renderField({ fieldType: 'markdown' }, { v: 'hello world' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(valueContainer(rows()[0]).textContent).toContain('hello world');
+    expect(valueContainer(rows()[0]).querySelector('.html-cell')).toBeNull();
+  });
+
+  test('[KeyValuePair-FIELDTYPE-012] html: renders HtmlField, sanitized', async () => {
+    renderField({ fieldType: 'html' }, { v: '<em>hi</em><img src="x" onerror="window.__xss = true" />' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    const htmlCell = document.querySelector('.html-cell');
+    expect(htmlCell.querySelector('em')).toHaveTextContent('hi');
+    expect(htmlCell.querySelector('img')).not.toHaveAttribute('onerror');
+  });
+
+  test('[KeyValuePair-FIELDTYPE-013] string: shows the row validation error against the in-progress draft value while typing, before blur', async () => {
+    // Break this catches: validation only recomputed from the committed value (e.g. on blur),
+    // leaving an invalid in-progress draft looking valid while the user is still typing.
+    renderField({ fieldType: 'string', isEditable: true, regex: '^[A-Z].*' }, { v: 'Ada' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const editable = await waitFor(() => document.getElementById(`${ID}-v`));
+    expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument();
+
+    editable.textContent = 'lowercase';
+    fireEvent.input(editable);
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+
+    editable.textContent = 'Uppercase';
+    fireEvent.input(editable);
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument());
+  });
+
+  test('[KeyValuePair-FIELDTYPE-014] text: shows the row validation error against the in-progress draft value while typing, before blur', async () => {
+    // Break this catches: validation only recomputed from the committed value (e.g. on blur),
+    // leaving an invalid in-progress draft looking valid while the user is still typing.
+    renderField({ fieldType: 'text', isEditable: true, maxLength: 3 }, { v: 'ok' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const editable = await waitFor(() => document.getElementById(`${ID}-v`));
+    expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument();
+
+    editable.textContent = 'toolong';
+    fireEvent.input(editable);
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+
+    editable.textContent = 'ok';
+    fireEvent.input(editable);
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument());
+  });
+
+  test('[KeyValuePair-FIELDTYPE-015] number: shows the row validation error against the in-progress draft value while typing, before blur', async () => {
+    // Break this catches: validation only recomputed from the committed value (e.g. on blur),
+    // leaving an invalid in-progress draft looking valid while the user is still typing.
+    renderField({ fieldType: 'number', isEditable: true, maxValue: 40 }, { v: 30 });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    const input = document.querySelector(`#${ID}-v`);
+    expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument();
+
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: '99' } });
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+
+    fireEvent.change(input, { target: { value: '20' } });
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument());
+  });
+
+  test('[KeyValuePair-FIELDTYPE-016] datepicker: honors configured minDate/maxDate and surfaces a row validation error for an out-of-range value', async () => {
+    // Break this catches: field.minDate/maxDate are saved on the field config but never read by
+    // DatepickerFieldAdapter, so an out-of-range date never surfaces a row error (silently accepted).
+    renderField(
+      { fieldType: 'datepicker', isEditable: true, parseDateFormat: 'YYYY-MM-DD', minDate: '02/01/2024' },
+      {
+        v: '2024-01-15',
+      }
+    );
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+  });
+
+  test.each([
+    ['datepicker', { parseDateFormat: 'YYYY-MM-DD' }, '2024-01-15', "{{cellValue === '2024-01-15' ? 'Bad date' : ''}}"],
+    ['string', {}, 'abc', "{{cellValue === 'abc' ? 'Bad string' : ''}}"],
+    ['number', {}, 7, '{{cellValue === 7 ? "Bad number" : ""}}'],
+  ])(
+    '[KeyValuePair-BUG-CUSTOMRULE-001] %s field: a customRule referencing {{cellValue}} surfaces a row validation error',
+    async (fieldType, extra, value, customRule) => {
+      // Break this catches: field customRule is resolved at store-resolution time, before `cellValue`
+      // exists, collapsing to '' so the rule can never fail (Table keeps column rules unresolved).
+      renderField({ fieldType, isEditable: true, customRule, ...extra }, { v: value });
+
+      await waitFor(() => expect(rows()).toHaveLength(1));
+      await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+      expect(document.querySelector('.kv-row-validation-error').textContent).toMatch(/^Bad /);
+    }
+  );
+
+  test('[KeyValuePair-BUG-DATE-007] datepicker: with date disabled and time enabled the field is time-only', async () => {
+    // Break this catches: DatepickerFieldAdapter does `field.isDateSelectionEnabled || true`, so a saved `false`
+    // is forced back to true and a bare time value is parsed with the date+time format ("Invalid date").
+    renderField(
+      { fieldType: 'datepicker', isEditable: true, isTimeChecked: true, isDateSelectionEnabled: false },
+      { v: '09:30 AM' }
+    );
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await waitFor(() => expect(valueContainer(rows()[0]).textContent).toContain('9:30 AM'));
+    expect(valueContainer(rows()[0]).textContent).not.toContain('Invalid date');
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    await waitFor(() => expect(document.querySelector('.react-datepicker__input-container input')).toBeInTheDocument());
+    await widget.session.user.click(document.querySelector('.react-datepicker__input-container input'));
+    await waitFor(() => expect(document.querySelector('.react-datepicker__time-container')).toBeInTheDocument());
+    expect(document.querySelector('.react-datepicker__month')).not.toBeInTheDocument();
+  });
+
+  test.each([
+    ['markdown', '**bold text**', '[data-testid="react-markdown"]'],
+    ['html', '<em>italic text</em>', '.html-cell em'],
+  ])(
+    '[KeyValuePair-BUG-FIELDCLICK-001] %s field: the first click on the rendered content exposes lastClickedField and fires onFieldClick',
+    async (fieldType, value, renderedTag) => {
+      // Break this catches: focus on the contentEditable flips isEditing and swaps the rendered markup for raw text
+      // between mousedown and mouseup, so the pressed element is detached and the click never reaches the row.
+      widget.render({
+        properties: {
+          fields: binding([field({ key: 'v', name: 'Value', fieldType, isEditable: true })]),
+          data: binding({ v: value }),
+        },
+        events: setVariableOn(ID, 'onFieldClick'),
+      });
+
+      await waitFor(() => expect(rows()).toHaveLength(1));
+      await widget.session.user.click(valueContainer(rows()[0]).querySelector(renderedTag));
+
+      await waitFor(() => expect(exposed('lastClickedField')).toEqual({ key: 'v', value }));
+      expect(store().getVariable('seen', MODULE_ID)).toBe('YES');
+    }
+  );
+  test.each([
+    ['an object', { a: 1, b: [2, 3] }],
+    ['an array', [1, { a: 2 }]],
+    ['a compact JSON string', '{"a":1,"b":[2,3]}'],
+  ])(
+    '[KeyValuePair-BUG-JSON-001] json field with %s value: focusing and blurring without editing leaves the changeSet empty',
+    async (_label, value) => {
+      // Break this catches: JSONRenderer.handleChange compares the raw value to the field's formatted display text
+      // ("{  "a":  1  }"), which never match, so a no-op blur is committed through onChange as an edit.
+      widget.render({
+        properties: {
+          fields: binding([field({ key: 'v', name: 'Value', fieldType: 'json', isEditable: true })]),
+          data: binding({ v: value }),
+        },
+        events: setVariableOn(ID, 'onFieldValueChanged'),
+      });
+
+      await waitFor(() => expect(rows()).toHaveLength(1));
+      await widget.session.user.click(valueContainer(rows()[0]));
+      const input = await waitFor(() => document.getElementById(`${ID}-v`));
+      input.blur();
+
+      await waitFor(() => expect(document.querySelector('.kv-value-editing')).toBeNull());
+      expect(exposed('changeSet')).toEqual({});
+      expect(saveButton()).toBeNull();
+      expect(store().getVariable('seen', MODULE_ID)).not.toBe('YES');
+    }
+  );
+
+  test('[KeyValuePair-BUG-JSON-001] json field: a genuine edit still lands in the changeSet as compact JSON', async () => {
+    widget.render({
+      properties: {
+        fields: binding([field({ key: 'v', name: 'Value', fieldType: 'json', isEditable: true })]),
+        data: binding({ v: { a: 1 } }),
+      },
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-v`));
+    input.textContent = '{"a": 2}';
+    input.blur();
+
+    await waitFor(() => expect(exposed('changeSet')).toEqual({ v: '{"a":2}' }));
+  });
+
+  test('[KeyValuePair-BUG-MULTISELECT-001] newMultiSelect: the dropdown stays open after picking an option', async () => {
+    // Break this catches: SelectRenderer.handleChange calls setIsFocused(false) for every selection, so a multiselect
+    // menu closes after each pick instead of staying open until the user clicks outside.
+    // jsdom doesn't implement scrollIntoView, which the open menu calls once an option is selected.
+    Element.prototype.scrollIntoView = jest.fn();
+    renderField(
+      {
+        fieldType: 'newMultiSelect',
+        isEditable: true,
+        options: [
+          { label: 'A', value: 'a' },
+          { label: 'B', value: 'b' },
+        ],
+      },
+      { v: [] }
+    );
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    await waitFor(() => expect(document.querySelectorAll('.option-wrapper')).toHaveLength(2));
+
+    await widget.session.user.click(document.querySelectorAll('.option-wrapper')[0]);
+
+    await waitFor(() => expect(document.querySelectorAll('.react-select__multi-value__label')).toHaveLength(1));
+    expect(document.querySelectorAll('.option-wrapper')).toHaveLength(2);
+  });
+});
+
+describe('KeyValuePair: overflow tooltip placement', () => {
+  let canvas;
+  let clientHeightSpy;
+  let offsetHeightSpy;
+
+  beforeEach(() => {
+    widget.setup();
+    // The canvas is the clipping boundary of the editor's canvas area; the query panel sits outside it.
+    canvas = document.createElement('div');
+    canvas.id = 'real-canvas';
+    document.body.appendChild(canvas);
+    // jsdom has no layout: report every element as 10px visible against 100px of content so the renderer sees overflow.
+    clientHeightSpy = jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(10);
+    offsetHeightSpy = jest.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(100);
+  });
+
+  afterEach(() => {
+    clientHeightSpy.mockRestore();
+    offsetHeightSpy.mockRestore();
+    canvas.remove();
+    widget.teardown();
+  });
+
+  test.each([
+    ['markdown', '# Heading\n\nlong body'],
+    ['html', '<p>long body</p>'],
+  ])(
+    '[KeyValuePair-BUG-TOOLTIP-001] %s field: the overflow tooltip renders inside the canvas, not on document.body',
+    async (fieldType, value) => {
+      // Break this catches: the shared renderers portal the overflow tooltip to document.body, so the canvas's
+      // overflow clipping never applies and it paints over the query panel when the field sits at the canvas edge.
+      widget.render({
+        properties: {
+          fields: binding([field({ key: 'v', name: 'Value', fieldType })]),
+          data: binding({ v: value }),
+        },
+      });
+
+      await waitFor(() => expect(rows()).toHaveLength(1));
+      await widget.session.user.hover(valueContainer(rows()[0]).firstElementChild);
+
+      const tooltip = await waitFor(() => {
+        const el = document.querySelector('.overlay-cell-table');
+        expect(el).toBeInTheDocument();
+        return el;
+      });
+      expect(canvas.contains(tooltip)).toBe(true);
+    }
+  );
+
+  test.each([
+    ['markdown', '# Heading\n\nlong body'],
+    ['html', '<p>long body</p>'],
+  ])(
+    '[KeyValuePair-BUG-TOOLTIP-002] %s field: the overflow tooltip content is capped to the field width',
+    async (fieldType, value) => {
+      // Break this catches: KeyValueRow never passes containerWidth to the adapters, so the renderer builds
+      // `width: undefinedpx`, the browser drops it, and the tooltip grows to its content width.
+      const offsetWidthSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(240);
+      try {
+        widget.render({
+          properties: {
+            fields: binding([field({ key: 'v', name: 'Value', fieldType })]),
+            data: binding({ v: value }),
+          },
+        });
+
+        await waitFor(() => expect(rows()).toHaveLength(1));
+        await widget.session.user.hover(valueContainer(rows()[0]).firstElementChild);
+
+        const tooltip = await waitFor(() => {
+          const el = document.querySelector('.overlay-cell-table');
+          expect(el).toBeInTheDocument();
+          return el;
+        });
+        expect(tooltip.firstElementChild.style.width).toBe('240px');
+      } finally {
+        offsetWidthSpy.mockRestore();
+      }
+    }
+  );
+});
+
+describe('KeyValuePair: widget tooltip width', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[KeyValuePair-BUG-TOOLTIP-003] the widget tooltip is limited to the widget width', async () => {
+    // Break this catches: WidgetTooltip sets no max width, so a long single-line tooltip text grows wider than the
+    // widget and the container and spills over neighbouring panels.
+    widget.render({
+      properties: {
+        tooltip: binding('{ name: "Olivia Nguyen", date: "15/05/2022", email: "olivia.nguyen@example.com" }'),
+        tooltipFormat: binding('plainText'),
+      },
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.hover(container());
+
+    const tooltip = await waitFor(() => {
+      const el = document.querySelector('[data-cy="widget-tooltip"]');
+      expect(el).toBeInTheDocument();
+      return el;
+    });
+    // Radix exposes the trigger's rendered width as this CSS variable.
+    expect(tooltip.style.maxWidth).toBe('var(--radix-tooltip-trigger-width)');
+  });
+});
+
+describe('KeyValuePair: label overflow tooltip', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const renderWithLongLabel = () =>
+    widget.render({
+      properties: {
+        data: binding({ name: 'Olivia Nguyen' }),
+        fields: binding([field({ key: 'name', name: 'Name madhav madhav madadsadsadsad', fieldType: 'string' })]),
+      },
+      styles: { autoLabelWidth: false, labelWidth: 48, alignment: 'side' },
+    });
+  const labelText = () => document.querySelector('.key-value-label p');
+
+  test('[KeyValuePair-BUG-LABEL-TOOLTIP-001] a truncated label shows its full text on hover', async () => {
+    // Break this catches: the truncated label has an ellipsis but no overlay, so hovering never reveals the full text.
+    const scrollSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(300);
+    const clientSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+    try {
+      renderWithLongLabel();
+      await waitFor(() => expect(labelText()).toBeInTheDocument());
+      await widget.session.user.hover(labelText());
+
+      const tooltip = await waitFor(() => {
+        const el = document.querySelector('.overlay-cell-table');
+        expect(el).toBeInTheDocument();
+        return el;
+      });
+      expect(tooltip).toHaveTextContent('Name madhav madhav madadsadsadsad');
+    } finally {
+      scrollSpy.mockRestore();
+      clientSpy.mockRestore();
+    }
+  });
+
+  test('[KeyValuePair-BUG-LABEL-TOOLTIP-003] the label tooltip content is capped to the label width', async () => {
+    const offsetSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(120);
+    const scrollSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(300);
+    const clientSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+    try {
+      renderWithLongLabel();
+      await waitFor(() => expect(labelText()).toBeInTheDocument());
+      await widget.session.user.hover(labelText());
+
+      const tooltip = await waitFor(() => {
+        const el = document.querySelector('.overlay-cell-table');
+        expect(el).toBeInTheDocument();
+        return el;
+      });
+      expect(tooltip.firstElementChild.style.width).toBe('120px');
+    } finally {
+      offsetSpy.mockRestore();
+      scrollSpy.mockRestore();
+      clientSpy.mockRestore();
+    }
+  });
+
+  test('[KeyValuePair-BUG-LABEL-TOOLTIP-002] a label that fits shows no tooltip', async () => {
+    renderWithLongLabel();
+    await waitFor(() => expect(labelText()).toBeInTheDocument());
+    await widget.session.user.hover(labelText());
+
+    expect(document.querySelector('.overlay-cell-table')).not.toBeInTheDocument();
+  });
+});
