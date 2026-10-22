@@ -95,6 +95,10 @@
     > div {
         padding: 16px;
     }
+    // The table's box cuts part of it (EmptyState.jsx): hidden rather than sliced.
+    &.tj-ntable-empty-cut > div {
+        visibility: hidden;
+    }
 }
 
 // Shorter than the icon (44px), the gap and the message (20px) with their 16px padding: less padding. Shorter than
