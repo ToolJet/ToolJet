@@ -20,6 +20,13 @@ async function getTablesLimit() {
   return res;
 }
 
+async function getRowsLimit() {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const res = await tooljetAdapter.get(`/tooljet-db/rows/limits/${organizationId}`);
+  return res;
+}
+
 function createTable(organizationId, tableName, columns, foreignKeyColumns, checkingValues = false) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table`, {
     table_name: tableName,
@@ -150,6 +157,7 @@ export const tooljetDatabaseService = {
   deleteTable,
   renameTable,
   getTablesLimit,
+  getRowsLimit,
   bulkUpload,
   joinTables,
   updateColumn,

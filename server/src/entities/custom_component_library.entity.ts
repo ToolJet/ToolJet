@@ -1,0 +1,38 @@
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  BaseEntity,
+  JoinColumn,
+  ManyToOne,
+  Generated,
+} from 'typeorm';
+import { Organization } from '@entities/organization.entity';
+
+@Entity({ name: 'custom_component_libraries' })
+export class CustomComponentLibrary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column({ name: 'organization_id' })
+  organizationId: string;
+
+  @Column({ name: 'correlation_id', type: 'uuid' })
+  @Generated('uuid')
+  correlationId: string;
+
+  @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
+
+  @ManyToOne(() => Organization, (organization) => organization.id)
+  @JoinColumn({ name: 'organization_id' })
+  organization: Organization;
+}
