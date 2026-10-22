@@ -310,6 +310,7 @@ const LibraryComponent = ({
           bundleUrl={fileUrl('index.js')}
           cssUrl={fileUrl('index.css')}
           cacheKey={`${libraryId}|${effectiveRevision}|${devNonce ?? ''}`}
+          isDevBuild={isDevPin}
           componentName={componentName}
           componentProps={componentProps}
           componentStyles={componentStyles}

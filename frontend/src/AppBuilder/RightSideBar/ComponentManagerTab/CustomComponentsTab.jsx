@@ -3,11 +3,15 @@ import moment from 'moment';
 import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
 import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
+import {
+  findNewParentIdFromMousePosition,
+  handleDeactivateTargets,
+  hideGridLines,
+} from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { normalizePin, dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
@@ -210,7 +214,7 @@ const VersionPicker = ({ library }) => {
             className="custom-library-version-chip"
             data-cy={`custom-library-version-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
           >
-            {isDevPin ? 'dev' : current ?? 'Select version'}
+            {isDevPin ? 'dev' : (current ?? 'Select version')}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="custom-library-version-menu" onClick={(e) => e.stopPropagation()}>
@@ -283,10 +287,7 @@ const VersionPicker = ({ library }) => {
 const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
   const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight } = componentConfig;
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
-  const [isRightSidebarOpen, toggleRightSidebar] = useStore(
-    (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
-    shallow
-  );
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { handleDrop } = useCanvasDropHandler() || noop;
 
   const dragComponent = useMemo(() => {
@@ -313,9 +314,22 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
       type: 'box',
       item: { componentType: 'LibraryComponent', component: dragComponent },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
-      end: (item) => {
-        const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
-        handleDrop(item, currentDragCanvasId);
+      // Same rules as the built-in components' DragLayer.
+      end: (item, monitor) => {
+        // Released over the component panel: the drag is cancelled. The panel overlays the canvas, so the
+        // position lookup below would otherwise find the canvas underneath and add the component.
+        const releasedAt = monitor.getClientOffset();
+        if (releasedAt && document.elementFromPoint(releasedAt.x, releasedAt.y)?.closest('.editor-sidebar')) {
+          handleDeactivateTargets();
+          hideGridLines();
+          return;
+        }
+        // hover sets currentDragCanvasId only on a dragover, so it can be stale when the release follows the
+        // last move immediately; the release position is the source of truth.
+        const canvasId = releasedAt
+          ? findNewParentIdFromMousePosition(releasedAt.x, releasedAt.y)
+          : useGridStore.getState().currentDragCanvasId;
+        handleDrop(item, canvasId ?? useGridStore.getState().currentDragCanvasId);
         const { globalSettings, globalSettingsChanged } = useStore.getState();
         const pins = globalSettings?.customComponentLibraries ?? {};
         if (!normalizePin(pins[dashlessId(correlationId)] ?? pins[correlationId])) {
@@ -330,12 +344,13 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
 
+  // The panel stays open during a drag: closing it unmounts this card, the browser then never fires dragend,
+  // and react-dnd only finishes the drop on the next mouse move.
   useEffect(() => {
     if (isDragging && !isRightSidebarPinned) {
-      toggleRightSidebar(!isRightSidebarOpen);
+      setRightSidebarOpen(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDragging]);
+  }, [isDragging, isRightSidebarPinned, setRightSidebarOpen]);
 
   return (
     <div ref={drag} className="custom-component-card" data-cy={`custom-component-${name.toLowerCase()}`}>

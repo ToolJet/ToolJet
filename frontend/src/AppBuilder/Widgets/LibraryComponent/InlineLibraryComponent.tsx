@@ -51,6 +51,8 @@ interface InlineLibraryComponentProps {
   bundleUrl: string;
   cssUrl: string;
   cacheKey: string;
+  // A dev slot's files change behind the same URL on every push, so they bypass the browser cache.
+  isDevBuild?: boolean;
   componentName: string;
   componentProps: Record<string, unknown>;
   componentStyles: Record<string, unknown>;
@@ -67,6 +69,7 @@ const InlineLibraryComponent = ({
   bundleUrl,
   cssUrl,
   cacheKey,
+  isDevBuild = false,
   componentName,
   componentProps,
   componentStyles,
@@ -146,7 +149,7 @@ const InlineLibraryComponent = ({
     let cancelled = false;
     setComponent(null);
     setLoadError(null);
-    loadLibraryModule(bundleUrl, cacheKey)
+    loadLibraryModule(bundleUrl, cacheKey, { isDevBuild })
       .then((mod) => {
         const exported = mod[componentName] as React.ComponentType<any> | undefined;
         if (!exported) throw new Error(`export "${componentName}" not found in bundle`);
@@ -160,12 +163,12 @@ const InlineLibraryComponent = ({
     return () => {
       cancelled = true;
     };
-  }, [bundleUrl, cacheKey, componentName]);
+  }, [bundleUrl, cacheKey, isDevBuild, componentName]);
 
   useEffect(() => {
     if (!shadow) return;
     let cancelled = false;
-    loadLibraryCss(cssUrl, cacheKey).then((css) => {
+    loadLibraryCss(cssUrl, cacheKey, { isDevBuild }).then((css) => {
       if (cancelled) return;
       shadow.style.textContent = css ?? '';
       shadow.popupStyle.textContent = css ?? '';
@@ -173,7 +176,7 @@ const InlineLibraryComponent = ({
     return () => {
       cancelled = true;
     };
-  }, [shadow, cssUrl, cacheKey]);
+  }, [shadow, cssUrl, cacheKey, isDevBuild]);
 
   // Latest callbacks behind a stable facade, so the context value changes only when props do.
   const latest = useRef({ setExposedVariable, fireEvent });

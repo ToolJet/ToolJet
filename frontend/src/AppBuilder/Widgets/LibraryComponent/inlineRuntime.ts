@@ -228,13 +228,26 @@ const rewriteBareImports = async (source: string): Promise<string> => {
 const moduleCache = new Map<string, Promise<Record<string, unknown>>>();
 const cssCache = new Map<string, Promise<string | null>>();
 
+interface LoadOptions {
+  // Dev slot files change on every push behind the same URL, so they skip the browser cache. Published
+  // revision files are immutable and served with a year-long cache header, so the browser keeps them.
+  isDevBuild?: boolean;
+}
+
+const fetchInit = ({ isDevBuild = false }: LoadOptions): RequestInit | undefined =>
+  isDevBuild ? { cache: 'no-store' } : undefined;
+
 // cacheKey: published revisions are immutable; a dev slot appends its push nonce so a push re-imports.
-export const loadLibraryModule = (bundleUrl: string, cacheKey: string): Promise<Record<string, unknown>> => {
+export const loadLibraryModule = (
+  bundleUrl: string,
+  cacheKey: string,
+  options: LoadOptions = {}
+): Promise<Record<string, unknown>> => {
   installGlobals();
   let pending = moduleCache.get(cacheKey);
   if (!pending) {
     pending = (async () => {
-      const res = await fetch(bundleUrl, { cache: 'no-store' });
+      const res = await fetch(bundleUrl, fetchInit(options));
       if (!res.ok) throw new Error(`failed to fetch bundle (${res.status})`);
       const source = await rewriteBareImports(await res.text());
       const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
@@ -250,10 +263,10 @@ export const loadLibraryModule = (bundleUrl: string, cacheKey: string): Promise<
   return pending;
 };
 
-export const loadLibraryCss = (cssUrl: string, cacheKey: string): Promise<string | null> => {
+export const loadLibraryCss = (cssUrl: string, cacheKey: string, options: LoadOptions = {}): Promise<string | null> => {
   let pending = cssCache.get(cacheKey);
   if (!pending) {
-    pending = fetch(cssUrl, { cache: 'no-store' })
+    pending = fetch(cssUrl, fetchInit(options))
       .then((r) => (r.ok ? r.text() : null))
       .catch(() => null);
     cssCache.set(cacheKey, pending);
