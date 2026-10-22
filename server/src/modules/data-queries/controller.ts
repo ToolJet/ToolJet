@@ -114,8 +114,8 @@ export class DataQueriesController implements IDataQueriesController {
     GitSyncQueryEditGuard
   )
   @Delete(':id/versions/:versionId')
-  async delete(@Param('id') dataQueryId) {
-    await this.dataQueriesService.delete(dataQueryId);
+  async delete(@Param('id') dataQueryId, @Param('versionId') versionId) {
+    await this.dataQueriesService.delete(dataQueryId, versionId);
     return;
   }
 

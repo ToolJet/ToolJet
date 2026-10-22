@@ -30,7 +30,7 @@ export interface IDataQueriesController {
     updatingReferencesOptions: UpdatingReferencesOptionsDto
   ): Promise<object>;
 
-  delete(dataQueryId: string): Promise<void>;
+  delete(dataQueryId: string, versionId: string): Promise<void>;
 
   runQueryOnBuilder(
     user: UserEntity,
