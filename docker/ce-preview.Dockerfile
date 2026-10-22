@@ -19,6 +19,10 @@ COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
+# Copy shared widget-definitions package (required by frontend + server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
+
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
@@ -37,9 +41,14 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-FROM node:22.15.1-bullseye
+FROM node:22.15.1-bookworm
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -69,6 +78,8 @@ COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder /app/packages/widget-definitions ./app/packages/widget-definitions
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
@@ -81,9 +92,10 @@ WORKDIR /app
 
 # Install PostgreSQL
 USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+RUN install -d /usr/share/postgresql-common/pgdg && \
+    wget --quiet -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor redis-server
 
 # Explicitly create PG main directory with correct ownership
 RUN mkdir -p /var/lib/postgresql/13/main && \
@@ -107,6 +119,12 @@ RUN echo "[supervisord] \n" \
     "\n" \
     "[program:postgrest] \n" \
     "command=/bin/postgrest \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "\n" \
+    "[program:redis] \n" \
+    "command=/usr/bin/redis-server --bind 127.0.0.1 --port 6379 --daemonize no \n" \
+    "priority=10 \n" \
     "autostart=true \n" \
     "autorestart=true \n" \
     "\n" \
