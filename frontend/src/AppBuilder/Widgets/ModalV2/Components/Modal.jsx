@@ -22,6 +22,7 @@ export const ModalWidget = ({ ...restProps }) => {
     isLoading,
     modalBodyHeight,
     onHideModal,
+    onModalEntered,
     hideCloseButton,
     darkMode,
     modalWidth,
@@ -144,6 +145,7 @@ export const ModalWidget = ({ ...restProps }) => {
         isDynamicHeightEnabled && needsBodyScroll && 'tj-modal-allow-body-scroll'
       )}
       animation={true}
+      onEntered={onModalEntered}
       onEscapeKeyDown={(e) => {
         // A nested Radix overlay (PopoverMenu / Select) dismisses on Escape in the
         // capture phase and calls preventDefault() on the same event; this handler

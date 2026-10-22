@@ -67,6 +67,50 @@ export const useEventActions = (moduleId = 'canvas') => {
   };
 };
 
+// Callbacks waiting for a specific (moduleId, sourceId, eventName) to next actually fire —
+// e.g. ModalV2's open(callback) queues here instead of each widget reinventing its own
+// ref/promise bookkeeping for "run this once event X fires, with live current state."
+// fireEvent drains the matching queue right after running that event's own
+// declaratively-configured actions. A plain Map, not reactive Zustand state — this is
+// transient bookkeeping. Keyed off `get` (unique per store instance) via a WeakMap so each
+// store gets its own queue, lazily created, without needing a block-bodied slice factory.
+const createEventCallbackQueue = () => {
+  const pending = new Map();
+  const key = (moduleId, sourceId, eventName) => `${moduleId}::${sourceId}::${eventName}`;
+  return {
+    push: (moduleId, sourceId, eventName, callback) =>
+      new Promise((resolve, reject) => {
+        const k = key(moduleId, sourceId, eventName);
+        const queue = pending.get(k) ?? [];
+        queue.push({ callback, resolve, reject });
+        pending.set(k, queue);
+      }),
+    drain: async (moduleId, sourceId, eventName, buildArg) => {
+      const k = key(moduleId, sourceId, eventName);
+      const queue = pending.get(k);
+      if (!queue?.length) return;
+      pending.delete(k);
+      const arg = buildArg();
+      for (const { callback, resolve, reject } of queue) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          resolve(await callback(arg));
+        } catch (error) {
+          reject(error);
+        }
+      }
+    },
+  };
+};
+
+const eventCallbackQueuesByStore = new WeakMap();
+const getEventCallbackQueue = (get) => {
+  if (!eventCallbackQueuesByStore.has(get)) {
+    eventCallbackQueuesByStore.set(get, createEventCallbackQueue());
+  }
+  return eventCallbackQueuesByStore.get(get);
+};
+
 export const createEventsSlice = (set, get) => ({
   initializeEventsSlice: (moduleId) => {
     set(
@@ -109,6 +153,32 @@ export const createEventsSlice = (set, get) => ({
         moduleId,
         mode
       );
+      getEventCallbackQueue(get).drain(moduleId, id, eventName, () => get().eventsSlice.getLiveComponents(moduleId));
+    },
+    // Resolves once (moduleId, sourceId, eventName) next actually fires via fireEvent, with
+    // `callback` invoked first — receiving a live-reading components snapshot (see
+    // getLiveComponents). Queue rather than call directly: the event may not be ready to
+    // fire yet (e.g. a modal still mounting). Reusable for any "wait for this event, then
+    // run my callback with live state" need, not just ModalV2's open().
+    queueEventCallback: (sourceId, eventName, callback, moduleId = 'canvas') =>
+      getEventCallbackQueue(get).push(moduleId, sourceId, eventName, callback),
+    // A getter per component name, backed by getExposedValueOfComponent — the same
+    // lookup the control-component action already uses — re-resolving (and flushing the
+    // implicit exposed-value batch) on every access, so a read right after a write the
+    // caller itself just made (e.g. setText then reading .text) stays correct.
+    getLiveComponents: (moduleId = 'canvas') => {
+      const nameToId = get().modules[moduleId].componentNameIdMapping;
+      const liveComponents = {};
+      Object.keys(nameToId).forEach((name) => {
+        Object.defineProperty(liveComponents, name, {
+          enumerable: true,
+          get: () => {
+            get().flushImplicitBatchEntries();
+            return get().getExposedValueOfComponent(nameToId[name], moduleId);
+          },
+        });
+      });
+      return liveComponents;
     },
     onComponentClickEvent(id, mode = 'edit', moduleId = 'canvas') {
       const { eventsSlice } = get();
