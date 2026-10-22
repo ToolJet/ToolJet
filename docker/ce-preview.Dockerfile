@@ -41,7 +41,7 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-FROM node:22.15.1-bullseye
+FROM node:22.15.1-bookworm
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
@@ -92,8 +92,9 @@ WORKDIR /app
 
 # Install PostgreSQL
 USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN install -d /usr/share/postgresql-common/pgdg && \
+    wget --quiet -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 
 # Explicitly create PG main directory with correct ownership
