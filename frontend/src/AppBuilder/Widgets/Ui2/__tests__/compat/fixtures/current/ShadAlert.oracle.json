@@ -1,5 +1,8 @@
 {
   "loaded": {
+    "title": "Heads up (saved)",
+    "description": "Saved description",
+    "variant": "destructive",
     "isVisible": true,
     "isLoading": false,
     "isDisabled": false,

@@ -47,6 +47,8 @@ export interface WidgetProps {
   setExposedVariable: (key: string, value: unknown) => void;
   setExposedVariables: (values: Record<string, unknown>) => void;
   fireEvent: (event: string, options?: unknown) => void;
+  /** Hides or shows the widget as its setVisibility action does (withControlState): a dismissed Alert hides itself. */
+  setVisibility?: (visible: boolean) => void;
   validate?: (value: unknown) => ValidationStatus;
   resetComponent?: () => void;
   onComponentClick?: (id: string) => void;

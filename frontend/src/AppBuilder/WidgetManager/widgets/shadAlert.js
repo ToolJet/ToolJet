@@ -40,6 +40,28 @@ export const shadAlertConfig = {
         defaultValue: '',
       },
     },
+    actionLabel: {
+      type: 'code',
+      displayName: 'Action label',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    dismissible: {
+      type: 'toggle',
+      displayName: 'Show close button',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
     variant: {
       type: 'select',
       displayName: 'Variant',
@@ -201,7 +223,14 @@ export const shadAlertConfig = {
       showLabel: false,
     },
   },
-  events: {},
+  events: {
+    onActionClicked: {
+      displayName: 'On action clicked',
+    },
+    onClose: {
+      displayName: 'On close',
+    },
+  },
   styles: {
     boxShadow: {
       type: 'boxShadow',
@@ -294,11 +323,47 @@ export const shadAlertConfig = {
     },
   },
   exposedVariables: {
+    title: 'Heads up',
+    description: '',
+    variant: 'default',
     isVisible: true,
     isLoading: false,
     isDisabled: false,
   },
   actions: [
+    {
+      handle: 'setTitle',
+      displayName: 'Set title',
+      params: [
+        {
+          handle: 'title',
+          displayName: 'Title',
+          defaultValue: 'New title',
+        },
+      ],
+    },
+    {
+      handle: 'setDescription',
+      displayName: 'Set description',
+      params: [
+        {
+          handle: 'description',
+          displayName: 'Description',
+          defaultValue: 'New description',
+        },
+      ],
+    },
+    {
+      handle: 'setVariant',
+      displayName: 'Set variant',
+      params: [
+        {
+          handle: 'variant',
+          displayName: 'Variant (default, info, success, warning, destructive or custom)',
+          defaultValue: 'info',
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
@@ -351,6 +416,12 @@ export const shadAlertConfig = {
       },
       description: {
         value: '',
+      },
+      actionLabel: {
+        value: '',
+      },
+      dismissible: {
+        value: '{{false}}',
       },
       variant: {
         value: 'default',

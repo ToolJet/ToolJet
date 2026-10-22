@@ -1,6 +1,15 @@
 {
   "type": "ShadAlert",
   "properties": {
+    "actionLabel": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
     "collapseWhenHidden": {
       "type": "boolean",
       "schema": {
@@ -20,6 +29,15 @@
       "initial": ""
     },
     "disabledState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dismissible": {
       "type": "boolean",
       "schema": {
         "optional": true,
@@ -166,21 +184,36 @@
     }
   },
   "validation": {},
-  "events": [],
+  "events": [
+    "onActionClicked",
+    "onClose"
+  ],
   "actions": {
+    "setDescription": [
+      "description"
+    ],
     "setDisable": [
       "value"
     ],
     "setLoading": [
       "value"
     ],
+    "setTitle": [
+      "title"
+    ],
+    "setVariant": [
+      "variant"
+    ],
     "setVisibility": [
       "value"
     ]
   },
   "exposed": [
+    "description",
     "isDisabled",
     "isLoading",
-    "isVisible"
+    "isVisible",
+    "title",
+    "variant"
   ]
 }

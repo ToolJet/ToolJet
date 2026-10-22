@@ -175,8 +175,7 @@ export const useExposed = (
  *  the native useExposeState works. The widget receives the effective values as its properties, so it reads
  *  properties.visibility / loadingState / disabledState as before. An unset property means its default (visible,
  *  enabled, not loading): a widget created through the MCP carries only the properties it was given. */
-/** Runs `write` inside one exposed-value batch, flushed before it returns (nested in an action's batch, runNow's flush
- *  settles it). */
+/** Runs `write` inside one exposed-value batch, flushed before it returns (in an action's batch, runNow settles it). */
 const inBatch =
   <A extends unknown[], R>(write: (...args: A) => R) =>
   (...args: A): R => {
@@ -300,7 +299,7 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
     // Every action this instance publishes runs through runNow and belongs to this instance (useOwnedPublish); in a
     // List view row or Kanban card its writes land at once (usePublishNow).
     const { setExposedVariables, setExposedVariable } = useOwnedPublish(usePublishNow(props), useAlive(), props.id);
-    const { isVisible, isLoading, isDisabled } = useExposeState(
+    const { isVisible, isLoading, isDisabled, setVisibility } = useExposeState(
       properties.loadingState === true,
       properties.visibility !== false,
       properties.disabledState === true,
@@ -329,6 +328,7 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
       domId,
       setExposedVariable,
       setExposedVariables,
+      setVisibility,
     });
   };
   Controlled.displayName = `Controlled(${Widget.displayName || Widget.name || 'Widget'})`;
