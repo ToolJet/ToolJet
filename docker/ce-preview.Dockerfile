@@ -42,7 +42,6 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-# Runtime stage on bookworm: Debian 11 is end-of-life and no node:22.23.4-bullseye image exists.
 FROM node:22.23.4-bookworm
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
@@ -94,12 +93,10 @@ WORKDIR /app
 
 # Install PostgreSQL
 USER root
-# postgresql-13 is published for bookworm-pgdg, so the major version and paths stay at 13.
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-      | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
-RUN echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" \
-      | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+RUN install -d /usr/share/postgresql-common/pgdg && \
+    wget --quiet -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor redis-server
 
 # Explicitly create PG main directory with correct ownership
 RUN mkdir -p /var/lib/postgresql/13/main && \
@@ -123,6 +120,12 @@ RUN echo "[supervisord] \n" \
     "\n" \
     "[program:postgrest] \n" \
     "command=/bin/postgrest \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "\n" \
+    "[program:redis] \n" \
+    "command=/usr/bin/redis-server --bind 127.0.0.1 --port 6379 --daemonize no \n" \
+    "priority=10 \n" \
     "autostart=true \n" \
     "autorestart=true \n" \
     "\n" \
