@@ -267,4 +267,23 @@ describe('UI 2.0 Input', () => {
     widget.setComponentProperty(ID, 'inputType', "{{'checkbox'}}", 'properties');
     await waitFor(() => expect(input()).toHaveAttribute('type', 'text'));
   });
+
+  test('[ShadInput-PROP-005] type search clears with its x or Escape, firing onChange', async () => {
+    // It had no clear button and Escape did nothing.
+    render({ properties: { inputType: binding('search') } });
+    widget.setEvents(countInvocationsOn(ID, 'onChange'));
+    const search = await screen.findByRole('searchbox');
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
+    await act(async () => fireEvent.change(search, { target: { value: 'invoices' } }));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Clear' })));
+    expect(search).toHaveValue('');
+    await waitFor(() => expect(exposed().value).toBe(''));
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
+
+    await act(async () => fireEvent.change(search, { target: { value: 'orders' } }));
+    await act(async () => fireEvent.keyDown(search, { key: 'Escape' }));
+    expect(search).toHaveValue('');
+    // Two typings and two clears.
+    await waitFor(() => expect(widget.variables().calls).toBe(4));
+  });
 });
