@@ -125,4 +125,33 @@ describe('UI 2.0 Alert', () => {
     render({ properties: { dynamicHeight: binding('{{true}}') } });
     await waitFor(() => expect(screen.getByRole('alert')).not.toHaveClass('tw-h-full'));
   });
+
+  test.each([
+    ['info', 'primary', 'lucide-info'],
+    ['success', 'success', 'lucide-circle-check'],
+    ['warning', 'warning', 'lucide-triangle-alert'],
+    ['destructive', 'destructive', 'lucide-circle-alert'],
+  ])('[ShadAlert-PROP-003] the %s variant draws the theme %s colour with its icon', async (variant, token, icon) => {
+    render({ properties: { variant: binding(variant) } });
+
+    const alert = await screen.findByRole('alert');
+    await waitFor(() => expect(alert.style.getPropertyValue('--al-ink')).toBe(`var(--sc-${token}-ink)`));
+    expect(alert.style.getPropertyValue('--al-bg')).toContain(`var(--sc-${token})`);
+    expect(alert.querySelector(`svg.${icon}`)).not.toBeNull();
+  });
+
+  test('[ShadAlert-PROP-004] the default variant has no tint and no icon; the config offers all five', async () => {
+    render();
+    const alert = await screen.findByRole('alert');
+    expect(alert.style.getPropertyValue('--al-bg')).toBe('');
+    expect(alert.querySelector('svg')).toBeNull();
+    const { shadAlertConfig } = jest.requireActual('@/AppBuilder/WidgetManager/widgets/shadAlert');
+    expect(shadAlertConfig.properties.variant.options.map((option) => option.value)).toEqual([
+      'default',
+      'info',
+      'success',
+      'warning',
+      'destructive',
+    ]);
+  });
 });
