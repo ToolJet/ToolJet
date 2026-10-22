@@ -351,8 +351,12 @@ export class DataSourcesService implements IDataSourcesService {
     return;
   }
 
-  async findQueriesLinkedToDatasource(datasourceId: string, organizationId?: string, branchId?: string) {
-    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(datasourceId, branchId || null);
+  async findQueriesLinkedToDatasource(datasourceId: string, organizationId: string, branchId?: string) {
+    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(
+      datasourceId,
+      organizationId,
+      branchId || null
+    );
     if (dataSourceDetails.length == 0) return { datasources: 0, dependent_queries: 0 };
 
     const queries = [];
