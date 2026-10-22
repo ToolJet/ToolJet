@@ -156,16 +156,16 @@ describe("License Page", () => {
 
     cy.get(licenseSelectors.listOfItems("staging"))
       .should("be.visible")
-      .and("not.be.disabled")
-      .click();
+      .and("not.be.disabled");
+    cy.get(licenseSelectors.listOfItems("staging")).click();
     cy.get(workspaceConstantsSelectors.addNewConstantButton).should(
       "be.enabled"
     );
 
     cy.get(licenseSelectors.listOfItems("production"))
       .should("be.visible")
-      .and("not.be.disabled")
-      .click();
+      .and("not.be.disabled");
+    cy.get(licenseSelectors.listOfItems("production")).click();
     cy.get(workspaceConstantsSelectors.addNewConstantButton).should(
       "be.enabled"
     );

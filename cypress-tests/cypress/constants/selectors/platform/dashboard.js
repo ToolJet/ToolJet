@@ -1,11 +1,8 @@
 import { cyParamName } from "Selectors/common";
 
 export const dashboardSelector = {
-  emptyPageImage: '[data-cy="empty-home-page-image"]',
-  emptyPageHeader: "[data-cy=empty-homepage-welcome-header]",
-  emptyPageDescription: "[data-cy=empty-homepage-description]",
+  appsEmptyState: '[data-cy="apps-empty-state"]',
   createAppButton: "[data-cy=create-new-application]",
-  importAppButton: '[data-cy="button-import-an-app"]',
   chooseFromTemplate: "[data-cy=choose-from-template]",
   modeToggle: '[data-cy="mode-switch-button"]',
   dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
@@ -24,7 +21,6 @@ export const dashboardSelector = {
   moveAppText: "[data-cy=move-selected-app-to-text]",
   selectFolder: '[data-cy="select-folder"]>.css-nwhe5y-container > .react-select__control > .react-select__value-container',
   addToFolderButton: "[data-cy=add-to-folder-button]",
-  appTemplateRow: '[data-cy="app-template-row"]',
   homePageContent: '[data-cy="home-page-content"]',
   seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
   folderLabel: '[data-cy="folder-info"]',
@@ -71,8 +67,24 @@ export const dashboardSelector = {
   widgetCardDescription: '[data-cy="widget-card-description"]',
   homePagePromptTextArea: '[data-cy="prompt-textarea"] .cm-content',
   promptEnterButton: '[data-cy="prompt-enter-button"]',
+  buildAppButton: '[data-cy="build-app-button"]',
   aiIcon: '[data-cy="ai-icon"]',
   homePageIcon: (iconName) => {
     return `[data-cy="${iconName}s-icon"]`;
-  }
+  },
+
+  editorConnectDivider: '[data-cy="editor-connect-divider"]',
+  editorConnectCard: (cardId) => {
+    return `[data-cy="home-editor-card-${cardId}"]`;
+  },
+  buildFromEditorModal: '[data-cy="build-from-editor-modal"]',
+  byoaTab: (tabId) => {
+    return `[data-cy="byoa-tab-${tabId}"]`;
+  },
+  byoaCreateTokenLink: '[data-cy="byoa-create-token-link"]',
+  byoaCopyCommand: (index) => {
+    return `[data-cy="byoa-copy-command-${index}"]`;
+  },
+  byoaDocsLink: '[data-cy="byoa-docs-link"]',
+  byoaNotNowButton: '[data-cy="byoa-not-now"]',
 };

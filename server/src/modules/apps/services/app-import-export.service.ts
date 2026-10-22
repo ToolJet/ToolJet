@@ -22,6 +22,10 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { TransactionLogger } from '@modules/logging/service';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { AppValidationService } from '@modules/app-validation/service';
+import { inputsByArea, readAppVersionsFromExport, toIndexData } from '@modules/app-validation/export-reader';
+import { ValidationArea, ValidationResult, WriteSource } from '@modules/app-validation/types';
+import { VersionIndex } from '@modules/app-validation/version-index';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -375,7 +379,8 @@ export class AppImportExportService {
     protected appsRepository: AppsRepository,
     protected readonly transactionLogger: TransactionLogger,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
-    protected readonly abilityService: AbilityService
+    protected readonly abilityService: AbilityService,
+    protected readonly appValidationService: AppValidationService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -1388,7 +1393,8 @@ export class AppImportExportService {
     tooljetVersion = '',
     cloning = false,
     manager?: EntityManager,
-    branchId?: string
+    branchId?: string,
+    isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
@@ -1452,9 +1458,11 @@ export class AppImportExportService {
         undefined,
         branchId,
         cloning,
-        isGitApp
+        isGitApp,
+        isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -1694,6 +1702,15 @@ export class AppImportExportService {
     }
   }
 
+  // EE-only
+  protected async remapCustomComponentLibraries(
+    manager: EntityManager,
+    organizationId: string,
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    return;
+  }
+
   async createImportedAppForUser(
     //Overrides on EE to set userId to super admin's id
     manager: EntityManager,
@@ -1850,6 +1867,32 @@ export class AppImportExportService {
     };
   }
 
+  // Runs the app-validation rules over the in-memory app, one app version at a time, with a
+  // lookup built from the import data itself - no database reads. Nested modules skipped:
+  // each imports through its own import() call.
+  protected async checkImportedAppData(
+    appParams: any,
+    appType: string | undefined,
+    source: WriteSource
+  ): Promise<ValidationResult> {
+    const collected: ValidationResult = { errors: [], warnings: [] };
+    for (const version of readAppVersionsFromExport({ app: [appParams] })) {
+      if (appParams?.id && version.appId !== appParams.id) continue;
+      const index = VersionIndex.fromData(toIndexData(version));
+      for (const [area, inputs] of Object.entries(inputsByArea(version))) {
+        const result = await this.appValidationService.check(area as ValidationArea, inputs, {
+          appVersionId: version.appVersionId,
+          appType: version.appType ?? appType,
+          source,
+          index,
+        });
+        collected.errors.push(...result.errors);
+        collected.warnings.push(...result.warnings);
+      }
+    }
+    return collected;
+  }
+
   /*
    * With new multi-env changes. the imported apps will not have any released versions from now (if the importing schema has any currentVersionId).
    * All version's default environment will be development or least priority environment only.
@@ -1866,7 +1909,9 @@ export class AppImportExportService {
     createNewVersion?: boolean,
     branchId?: string,
     cloning = false,
-    isGitApp = false
+    isGitApp = false,
+    isTemplateApp = false,
+    source?: WriteSource
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -1876,6 +1921,12 @@ export class AppImportExportService {
       await this.performLegacyAppImport(manager, importedApp, appParams, externalResourceMappings, user);
       return;
     }
+
+    await this.checkImportedAppData(
+      appParams,
+      importedApp.type,
+      source ?? (cloning ? 'copy' : isGitApp ? 'git' : 'import')
+    );
 
     let appResourceMappings: AppResourceMappings = {
       defaultDataSourceIdMapping: {},
@@ -1979,7 +2030,8 @@ export class AppImportExportService {
       createNewVersion,
       branchId,
       isGitApp || cloning || !!branchId,
-      isGitApp
+      isGitApp,
+      isTemplateApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -3438,13 +3490,16 @@ export class AppImportExportService {
           }
         }
       }
-      await manager.save(
+      const newDsvo = await manager.save(
         manager.create(DataSourceVersionOptions, {
           dataSourceVersionId: branchDsv.id,
           environmentId: dOpt.environmentId,
           options: clonedOptions,
         })
       );
+      // Clone OAuth token rows too — only matters when this datasource already existed in the
+      // target org (import referencing an existing DS); a freshly-imported DS has no token yet.
+      await this.dataSourcesUtilService.duplicateTokenData(dOpt.id, newDsvo.id, manager);
     }
   }
 
@@ -3489,6 +3544,11 @@ export class AppImportExportService {
     }
 
     return appResourceMappings;
+  }
+
+  // EE-only
+  protected async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
+    return globalSettings;
   }
 
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
@@ -3679,7 +3739,8 @@ export class AppImportExportService {
     createNewVersion?: boolean,
     branchId?: string,
     useBranchVersionType = false,
-    isGitApp = false
+    isGitApp = false,
+    isTemplateApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -3877,7 +3938,10 @@ export class AppImportExportService {
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
-        version.globalSettings = appVersion.globalSettings;
+        // Only templates bring their theme into the workspace; every other import keeps the settings as exported
+        version.globalSettings = isTemplateApp
+          ? await this.importTheme(manager, organization.id, appVersion.globalSettings)
+          : appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation ?? true;
@@ -4684,7 +4748,8 @@ function migrateProperties(
       (shouldHandleBackwardCompatibility && ['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) ||
       (['TextArea', 'DaterangePicker', 'FilePicker'].includes(componentType) && !properties.label)
     ) {
-      properties.label = '';
+      // Keep the canonical { value: ... } shape — a bare string here is a malformed property.
+      properties.label = { value: '' };
     }
 
     // NumberInput

@@ -39,6 +39,7 @@ import { FolderAppsModule } from '@modules/folder-apps/module';
 import { DataQueryFoldersModule } from '@modules/data-query-folders/module';
 import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
 import { AppsModule } from '@modules/apps/module';
+import { AppValidationModule } from '@modules/app-validation/module';
 import { VersionModule } from '@modules/versions/module';
 import { DataQueriesModule } from '@modules/data-queries/module';
 import { PluginsModule } from '@modules/plugins/module';
@@ -48,6 +49,7 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { WorkflowsModule } from '@modules/workflows/module';
 import { AiModule } from '@modules/ai/module';
 import { CustomStylesModule } from '@modules/custom-styles/module';
+import { CustomComponentLibrariesModule } from '@modules/custom-component-libraries/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
@@ -140,6 +142,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await SetupOrganizationsModule.register(configs, true),
       await WhiteLabellingModule.register(configs, true),
       await EmailModule.register(configs),
+      await AppValidationModule.register(configs),
       await AppsModule.register(configs, true),
       await VersionModule.register(configs, true),
       await DataQueriesModule.register(configs, true),
@@ -150,6 +153,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await ModulesModule.register(configs, true),
       await AiModule.register(configs, true),
       await CustomStylesModule.register(configs, true),
+      await CustomComponentLibrariesModule.register(configs, true),
       await AppPermissionsModule.register(configs, true),
       await EventsModule.register(configs),
       await ExternalApiModule.register(configs, true),

@@ -2,11 +2,51 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSource } from '@entities/data_source.entity';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import {
   assertGitSyncEditAllowedForOrg,
   assertGitSyncCreateAllowedForOrg,
 } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+
+// OAuth-handshake keys that ride along with a save but aren't persisted data source content
+// (see parseOptionsForOauthDataSource, which strips them after the token exchange) — irrelevant
+// to whether this edit is "secrets only".
+const OAUTH_FLOW_KEYS = new Set(['code', 'oauth2', 'provider', 'plugin_id']);
+
+/**
+ * True when every option in the incoming payload that actually differs from what's stored is
+ * either an OAuth handshake key or explicitly marked encrypted. Encrypted fields (client_secret,
+ * password, ...) can never survive git sync's export/restore round trip in the first place
+ * (sanitizeOptionsForGit drops any encrypted value without a workspace_constant), so allowing
+ * their edit on a synced default branch doesn't let anything git-tracked drift — it just lets
+ * users complete setup for a data source git sync could never fully carry.
+ *
+ * Only scalar (string/number/boolean) values are strictly diffed. Array/object-valued options
+ * (headers, custom_auth_params, custom_query_params, access_token_custom_headers, ...) are
+ * excluded from the check entirely: the frontend's key-value editor (HttpHeaders/index.js)
+ * appends a fresh empty pair on any edit to the current last row, so the same field can arrive
+ * structurally different on every save even with no meaningful change — these are config
+ * plumbing, not git-tracked secrets, so they can't disqualify a secrets-only edit here.
+ */
+function isSecretsOnlyEdit(incomingOptions: unknown, storedOptions: Record<string, any> | undefined): boolean {
+  if (!Array.isArray(incomingOptions)) return false;
+  const stored = storedOptions || {};
+  for (const option of incomingOptions) {
+    const key = option?.['key'];
+    if (!key || OAUTH_FLOW_KEYS.has(key)) continue;
+    // encrypted arrives as either a boolean or the string "true" depending on the caller —
+    // same defensive check used throughout workspace-git-sync-adapter.ts (sanitizeOptionsForGit,
+    // restoreOptionsFromGit).
+    if (option?.['encrypted'] === true || option?.['encrypted'] === 'true') continue;
+    const value = option?.['value'];
+    if (value !== null && typeof value === 'object') continue;
+    const storedValue = stored[key]?.['value'];
+    if (value !== storedValue) return false;
+  }
+  return true;
+}
 
 /**
  * CREATE guard: a data source can't be created on the default branch when branching is enabled
@@ -33,7 +73,10 @@ export class GitSyncDataSourceCreateGuard implements CanActivate {
  */
 @Injectable()
 export class GitSyncDataSourceEditGuard implements CanActivate {
-  constructor(protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService) {}
+  constructor(
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -41,6 +84,7 @@ export class GitSyncDataSourceEditGuard implements CanActivate {
     const dataSourceId = request.params?.id;
     if (!organizationId || !dataSourceId) return true;
     const branchId = request.query?.branch_id;
+    const environmentId = request.query?.environment_id;
 
     const dsv = await dbTransactionWrap((manager: EntityManager) =>
       manager.findOne(DataSourceVersion, {
@@ -48,10 +92,35 @@ export class GitSyncDataSourceEditGuard implements CanActivate {
         select: ['id', 'branchId', 'isSynced'],
       })
     );
+
+    let secretsOnly = false;
+    if (dsv?.isSynced && Array.isArray(request.body?.options)) {
+      const [storedOptions, dataSource] = await Promise.all([
+        this.appEnvironmentUtilService.getOptions(
+          dataSourceId,
+          organizationId,
+          environmentId,
+          dsv.branchId ?? branchId
+        ),
+        dbTransactionWrap((manager: EntityManager) =>
+          manager.findOne(DataSource, {
+            where: { id: dataSourceId },
+            select: ['id', 'name'],
+          })
+        ),
+      ]);
+      const nameUnchanged = request.body?.name === undefined || request.body.name === dataSource?.name;
+      secretsOnly = nameUnchanged && isSecretsOnlyEdit(request.body.options, storedOptions?.options);
+    }
+
     await assertGitSyncEditAllowedForOrg(
       this.gitSyncConfigsUtilService,
       organizationId,
-      { branchId: dsv?.branchId ?? branchId, isSynced: !!dsv?.isSynced },
+      {
+        branchId: dsv?.branchId ?? branchId,
+        isSynced: !!dsv?.isSynced,
+        secretsOnly,
+      },
       'data source'
     );
     return true;

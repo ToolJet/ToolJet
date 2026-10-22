@@ -171,7 +171,7 @@ function extractRefsFromValue(obj) {
   const refs = new Set();
   const walk = (value) => {
     if (typeof value === 'string') {
-      const matches = value.match(/\{\{(.*?)\}\}/g);
+      const matches = value.match(/\{\{(.*?)\}\}/gs);
       if (matches) matches.forEach((m) => refs.add(m));
     } else if (Array.isArray(value)) {
       value.forEach(walk);

@@ -11,14 +11,11 @@ import InstanceSettings from './InstanceSettings';
 import onboarding from './onboarding';
 import Settings from './Settings';
 import Workflows from './workflows';
-import WorkspaceSettings from './WorkspaceSettings';
-import RenderWorkflow from './RenderWorkflow';
 import Modules from './Modules';
 
 export {
   onboarding,
   auth,
-  WorkspaceSettings,
   InstanceSettings,
   Settings,
   Dashboard,
@@ -26,7 +23,6 @@ export {
   getDataSourcesRoutes,
   Appbuilder,
   getAuditLogsRoutes,
-  RenderWorkflow,
   AiBuilder,
   Modules,
 };

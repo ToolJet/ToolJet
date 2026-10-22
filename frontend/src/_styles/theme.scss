@@ -1328,6 +1328,15 @@ button {
       object-fit: contain;
     }
 
+    // Tighter gaps than the image preview (85% x 75%) to use the modal space
+    iframe.template-image {
+      height: 96.25%;
+      width: 97.5%;
+      padding: 0;
+      border: 1px solid var(--slate5);
+      border-radius: 6px;
+    }
+
     .template-spinner {
       width: 3rem;
       height: 3rem;
@@ -3998,17 +4007,6 @@ input[type="text"] {
   }
 }
 
-.empty-welcome-header {
-  font-style: normal;
-  font-weight: 500;
-  font-size: 32px;
-  line-height: 40px;
-  margin-bottom: 16px;
-  margin-top: 40px;
-  color: var(--slate12);
-  font-family: Inter;
-}
-
 .homepage-empty-image {
   width: 100%;
 }
@@ -5467,6 +5465,28 @@ div#driver-page-overlay {
 
   .form-control {
     background: var(--base);
+  }
+
+  // Env-managed fields (masked {{ENV_KEY}} placeholders) render as disabled inputs — without
+  // this, the unconditional .form-control background above keeps them looking identical to
+  // normal editable fields. Matches the disabled styling already used for the same pattern in
+  // the Git Sync provider modals (see gitlab-configs.scss / https-configs.scss / ssh-configs.scss).
+  // .form-control-env-masked (not the bare "disabled" class) is used for the redirect-url div,
+  // which isn't a real input and has no :disabled pseudo-class — "disabled" collides with a
+  // global pointer-events:none utility class that would also block its copy button.
+  .form-control.form-control-env-masked,
+  .form-control:disabled {
+    background-color: var(--slate3) !important;
+    color: var(--slate9) !important;
+    -webkit-text-fill-color: var(--slate9) !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+  }
+
+  // The redirect-url copy icon stays a real action even when its wrapper looks disabled —
+  // reset the inherited not-allowed cursor so it reads as clickable on hover.
+  .form-control.form-control-env-masked [data-cy='copy-icon'] {
+    cursor: pointer;
   }
 
   .open-id-sso-card {
@@ -8126,10 +8146,6 @@ tbody {
   }
 }
 
-.empty-home-page-image {
-  margin-top: 14px;
-}
-
 .create-new-app-dropdown {
   width: 248px !important;
 
@@ -9665,6 +9681,20 @@ tbody {
     border-bottom: none;
   }
 }
+
+.layout-header .tj-dashboard-header-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--page-weak);
+  padding-left: 40px;
+  border-bottom: 1px solid var(--border-weak);
+
+  @media only screen and (max-width: 768px) {
+    border-bottom: none;
+  }
+}
+
 
 .dashboard-breadcrumb-header-name:hover {
   text-decoration: none !important;
@@ -14488,7 +14518,9 @@ tbody {
 
 .overflow-tooltip {
   .tooltip-inner {
-    max-width: 100%;
+    max-width: 280px;
+    white-space: normal;
+    word-break: break-word;
   }
 }
 
@@ -14885,12 +14917,6 @@ tbody {
   gap: 12px;
 }
 
-.overflow-tooltip {
-  .tooltip-inner {
-    max-width: 100%;
-  }
-}
-
 #inspector-tabpane-properties {
   .accordion {
     .accordion-item:last-child {
@@ -15096,12 +15122,6 @@ tbody {
   opacity: 0.4;
 }
 
-.overflow-tooltip {
-  .tooltip-inner {
-    max-width: 100%;
-  }
-}
-
 .card-table {
   overflow: visible;
 }
@@ -15234,23 +15254,6 @@ tbody {
   align-items: center;
   justify-content: center;
   padding-top: 1.5rem;
-}
-
-.blank-page-wrapper {
-  @media only screen and (max-width: 768px) {
-    display: none;
-  }
-}
-
-.blank-page-wrapper-mobile {
-  display: none !important;
-
-  @media only screen and (max-width: 768px) {
-    transform: translateY(50%);
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-  }
 }
 
 .reset-password-info-banner {

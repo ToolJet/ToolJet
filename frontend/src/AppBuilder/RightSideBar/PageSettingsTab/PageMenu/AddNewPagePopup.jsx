@@ -6,6 +6,7 @@ import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import { Icon } from '@/AppBuilder/CodeBuilder/Elements/Icon';
 import { EventManager } from '../../Inspector/EventManager';
+import { PAGE_EVENTS_META } from './pageEventsMeta';
 import { kebabCase } from 'lodash';
 import Select from '@/_ui/Select';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
@@ -643,21 +644,10 @@ const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
   const getComponents = useStore((state) => state.getCurrentPageComponents);
   const components = getComponents();
 
-  const eventMapping = {
-    default: {
-      title: 'Page events',
-      event: { onPageLoad: { displayName: 'On page load' } },
-    },
-    custom: {
-      title: 'Events',
-      event: { onClick: { displayName: 'On click' } },
-    },
-  };
-
   return (
     <div className="page-events">
-      <div className="section-header pb-2">{eventMapping[type].title}</div>
-      <div>
+      <div className="section-header pb-2">{PAGE_EVENTS_META[type].title}</div>
+      <div className="page-events-list">
         <EventManager
           component={{
             component: {
@@ -668,7 +658,7 @@ const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
           }}
           sourceId={page?.id}
           eventSourceType="page"
-          eventMetaDefinition={{ events: eventMapping[type].event, name: 'page' }}
+          eventMetaDefinition={{ events: PAGE_EVENTS_META[type].events, name: 'page' }}
           components={components}
           pages={allPages}
           popOverCallback={(showing) => onNestedPopoverOpenChange?.(showing)}

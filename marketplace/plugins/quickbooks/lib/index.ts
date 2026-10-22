@@ -1,4 +1,11 @@
-import { QueryError, QueryService, OAuthUnauthorizedClientError } from '@tooljet-marketplace/common';
+import {
+  QueryError,
+  QueryService,
+  OAuthUnauthorizedClientError,
+  getCurrentToken,
+  User,
+  App,
+} from '@tooljet-marketplace/common';
 import { SourceOptions, QueryResult } from './types';
 import got from 'got';
 import crypto from 'crypto';
@@ -102,7 +109,11 @@ export default class QuickBooks implements QueryService {
   }
 
   async refreshToken(sourceOptions: any, dataSourceId?: string, userId?: string, isAppPublic?: boolean) {
-    const refreshTokenValue = sourceOptions['refresh_token'];
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    const currentToken = isMultiAuthEnabled
+      ? getCurrentToken(true, sourceOptions['tokenData'], userId, isAppPublic)
+      : null;
+    const refreshTokenValue = isMultiAuthEnabled ? currentToken?.['refresh_token'] : sourceOptions['refresh_token'];
 
     if (!refreshTokenValue) {
       throw new QueryError('Query could not be completed', 'Missing refresh_token', { code: 'MISSING_REFRESH_TOKEN' });
@@ -152,8 +163,17 @@ export default class QuickBooks implements QueryService {
     }
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
-    const accessToken = sourceOptions['access_token'];
+  async run(
+    sourceOptions: any,
+    queryOptions: any,
+    dataSourceId: string,
+    dataSourceUpdatedAt?: string,
+    context?: { user?: User; app?: App }
+  ): Promise<QueryResult> {
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    const accessToken = isMultiAuthEnabled
+      ? getCurrentToken(true, sourceOptions['tokenData'], context?.user?.id, context?.app?.isPublic)?.['access_token']
+      : sourceOptions['access_token'];
     const companyId = sourceOptions['company_id'];
 
     if (!accessToken) {
