@@ -41,15 +41,27 @@ export const shadAlertConfig = {
       },
     },
     variant: {
-      type: 'switch',
+      type: 'select',
       displayName: 'Variant',
       options: [
         {
-          displayName: 'Default',
+          name: 'Default',
           value: 'default',
         },
         {
-          displayName: 'Destructive',
+          name: 'Info',
+          value: 'info',
+        },
+        {
+          name: 'Success',
+          value: 'success',
+        },
+        {
+          name: 'Warning',
+          value: 'warning',
+        },
+        {
+          name: 'Destructive',
           value: 'destructive',
         },
       ],
