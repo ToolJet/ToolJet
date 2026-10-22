@@ -6,8 +6,10 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
-import { spinnerConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/spinner';
-import { spinnerConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/spinner';
+import { spinnerConfig as frontendConfig } from '@tooljet/widget-definitions';
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
+
+const serverConfig = serverWidgets.spinnerConfig;
 
 const ID = 'spin1';
 const HANDLE = 'spinner1';
