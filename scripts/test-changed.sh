@@ -28,6 +28,21 @@ else
   SERVER_FILES=$(echo "$ALL_CHANGED" | grep "^server/" | grep -v '\.md$' || true)
 fi
 
+# server/ee is a submodule: the root diff only shows its moved pointer. Diff the pointer
+# range inside the submodule (three-dot, so release commits already on the base are
+# excluded) and feed the real EE file paths through the same classifier below.
+if echo "$SERVER_FILES" | grep -qx "server/ee"; then
+  OLD_SHA=$(git ls-tree "origin/${BASE_BRANCH}" server/ee | awk '{print $3}')
+  NEW_SHA=$(git ls-tree HEAD server/ee | awk '{print $3}')
+  if [[ -n "$OLD_SHA" && -n "$NEW_SHA" ]] && EE_FILES=$(git -C "$ROOT/server/ee" diff --name-only "${OLD_SHA}...${NEW_SHA}" 2>/dev/null); then
+    EE_FILES=$(echo "$EE_FILES" | grep -v '\.md$' | sed 's|^|server/ee/|' || true)
+    SERVER_FILES=$(printf '%s\n%s\n' "$(echo "$SERVER_FILES" | grep -vx 'server/ee' || true)" "$EE_FILES")
+  else
+    echo "warn: could not diff server/ee ${OLD_SHA:-?}...${NEW_SHA:-?} — running all server tests"
+    RUN_ALL=true
+  fi
+fi
+
 RUN_ALL="${RUN_ALL:-false}"
 
 if [[ -z "${SERVER_FILES:-}" && "$RUN_ALL" != "true" ]]; then
@@ -71,9 +86,19 @@ while IFS= read -r file; do
       mod=$(echo "$file" | sed 's|server/test/modules/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
       ;;
-    server/ee/*)
-      mod=$(echo "$file" | sed 's|server/ee/\([^/]*\)/.*|\1|')
+    server/ee/test/modules/*)
+      mod=$(echo "$file" | sed 's|server/ee/test/modules/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
+      ;;
+    server/ee/*/*)
+      mod=$(echo "$file" | sed 's|server/ee/\([^/]*\)/.*|\1|')
+      # a top-level EE dir that isn't a module (helpers, entities, ...) is cross-cutting
+      if [[ -d "$SERVER_DIR/src/modules/$mod" || -d "$SERVER_DIR/test/modules/$mod" || -d "$SERVER_DIR/ee/test/modules/$mod" ]]; then
+        MODULES+=("$mod")
+      else
+        echo "Cross-cutting EE change in: $file"
+        RUN_ALL=true
+      fi
       ;;
     server/src/helpers/*|server/src/entities/*|server/src/dto/*|server/lib/*)
       echo "Cross-cutting change in: $file"
