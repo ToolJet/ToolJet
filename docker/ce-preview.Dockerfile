@@ -95,7 +95,7 @@ USER root
 RUN install -d /usr/share/postgresql-common/pgdg && \
     wget --quiet -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
     echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor redis-server
 
 # Explicitly create PG main directory with correct ownership
 RUN mkdir -p /var/lib/postgresql/13/main && \
@@ -119,6 +119,12 @@ RUN echo "[supervisord] \n" \
     "\n" \
     "[program:postgrest] \n" \
     "command=/bin/postgrest \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "\n" \
+    "[program:redis] \n" \
+    "command=/usr/bin/redis-server --bind 127.0.0.1 --port 6379 --daemonize no \n" \
+    "priority=10 \n" \
     "autostart=true \n" \
     "autorestart=true \n" \
     "\n" \
