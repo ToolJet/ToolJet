@@ -683,7 +683,9 @@ describe('OrganizationUsersController', () => {
         .set('Cookie', tokenCookie);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.users.map((u: { email: string }) => u.email)).not.toContain(adminUserData.user.email);
+      const emails = response.body.users.map((u: { email: string }) => u.email);
+      expect(emails).toContain(anotherOrgAdminUserData.user.email);
+      expect(emails).not.toContain(adminUserData.user.email);
     });
   });
 
