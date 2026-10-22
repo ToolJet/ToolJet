@@ -86,16 +86,25 @@ export const useSkeletonHold = (
   enabled: boolean
 ): void => {
   const held = useRef<number | null>(null);
+  // Whether the root's min-height is the hold's: only that one is released, never one the widget set itself.
+  const holding = useRef(false);
   const skeletonLook = enabled && properties.loadingIndicator === 'skeleton';
   const loading = properties.loadingState === true;
   useLayoutEffect(() => {
     const el = ref.current;
-    if (!el || !skeletonLook) return;
-    if (loading) {
-      if (held.current) el.style.minHeight = `${held.current}px`;
-    } else {
-      el.style.minHeight = '';
-      held.current = el.offsetHeight || held.current;
+    if (!el) return;
+    if (skeletonLook && loading) {
+      if (held.current) {
+        el.style.minHeight = `${held.current}px`;
+        holding.current = true;
+      }
+      return;
     }
+    // Released when loading ends, and also when the look changes away from skeleton mid-load.
+    if (holding.current) {
+      el.style.minHeight = '';
+      holding.current = false;
+    }
+    if (skeletonLook) held.current = el.offsetHeight || held.current;
   });
 };

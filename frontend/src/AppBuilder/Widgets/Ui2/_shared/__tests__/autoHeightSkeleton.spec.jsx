@@ -77,6 +77,21 @@ describe('useAutoHeight while a skeleton shows', () => {
     expect(measured()).toBe(400);
   });
 
+  test('switching the look away from skeleton mid-load releases the hold', () => {
+    const view = render(<Probe loading={false} />);
+    view.rerender(<Probe loading />);
+    expect(root().style.minHeight).toBe('240px');
+    view.rerender(<Probe loading look="spinner" />);
+    expect(root().style.minHeight).toBe('');
+  });
+
+  test('a min-height the widget set itself is never cleared by the hook', () => {
+    const view = render(<Probe loading={false} />);
+    root().style.minHeight = '120px';
+    view.rerender(<Probe loading={false} />);
+    expect(root().style.minHeight).toBe('120px');
+  });
+
   test('a skeleton before the first content holds nothing; the spinner look and the editor hold nothing', () => {
     render(<Probe loading />);
     expect(root().style.minHeight).toBe('');
