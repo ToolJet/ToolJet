@@ -80,6 +80,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    can([FEATURE_KEY.VIEW_TABLE, FEATURE_KEY.VIEW_TABLES, FEATURE_KEY.JOIN_TABLES], InternalTable);
+    can([FEATURE_KEY.VIEW_TABLE, FEATURE_KEY.VIEW_TABLES], InternalTable);
   }
 }
