@@ -176,7 +176,7 @@ export const useTextField = <E extends HTMLInputElement | HTMLTextAreaElement>(p
     disabled: busy(properties),
     onChange: (e: ChangeEvent<E>) => change(e.target.value),
   };
-  return { check, fieldProps };
+  return { check, fieldProps, change };
 };
 
 /** Sets the checked state as a click does; only `true` checks (Radix passes 'indeterminate' too). */

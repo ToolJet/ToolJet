@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { Input } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { X } from 'lucide-react';
+import { Input, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useTextField } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -48,10 +49,53 @@ const TextInput = (props: WidgetProps) => {
   const { properties, fireEvent } = props;
   const type = TYPES.includes(properties.inputType) ? properties.inputType : 'text';
   // Type email checks the address's form first, then the Validation section's rules; isValid and the message follow.
-  const { check, fieldProps } = useTextField<HTMLInputElement>(type === 'email' ? withRule(props, emailRule) : props);
+  const { check, fieldProps, change } = useTextField<HTMLInputElement>(
+    type === 'email' ? withRule(props, emailRule) : props
+  );
+  // Type search clears as a browser's search box does: an x in the box and Escape empty it, firing onChange. The
+  // browser's own x is hidden (it drew in some browsers only, and did not fire onChange).
+  const search = type === 'search';
+  const clearable = search && !!fieldProps.value && !fieldProps.disabled;
+  const input = (
+    <Input
+      {...fieldProps}
+      type={type}
+      className={cn(
+        fieldProps.className,
+        search && '[&::-webkit-search-cancel-button]:tw-appearance-none',
+        clearable && 'tw-pr-8'
+      )}
+      onKeyDown={(e) => {
+        if (isEnter(e)) fireEvent('onEnterPressed');
+        else if (search && e.key === 'Escape' && fieldProps.value) {
+          e.preventDefault();
+          change('');
+        }
+      }}
+    />
+  );
   return (
     <FormField props={props} properties={properties} check={check} innerRef={fit}>
-      <Input {...fieldProps} type={type} onKeyDown={(e) => isEnter(e) && fireEvent('onEnterPressed')} />
+      {search ? (
+        <div className="tw-relative tw-w-full">
+          {input}
+          {clearable ? (
+            <button
+              type="button"
+              aria-label="Clear"
+              className="tw-absolute tw-right-2 tw-top-1/2 tw-flex tw-h-5 tw-w-5 -tw-translate-y-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-p-0 tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))] hover:tw-text-[color:var(--lk-fg,var(--sc-foreground))]"
+              onClick={() => {
+                change('');
+                fieldProps.ref.current?.focus();
+              }}
+            >
+              <X className="tw-h-4 tw-w-4" aria-hidden />
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        input
+      )}
     </FormField>
   );
 };
