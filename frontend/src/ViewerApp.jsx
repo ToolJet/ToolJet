@@ -139,7 +139,7 @@ const ViewerApp = () => {
 
   return (
     <>
-      <MigrationBanner darkMode={isAppDarkMode} floating />
+      <MigrationBanner darkMode={isAppDarkMode} floating endUser />
       <div className="main-wrapper" data-cy="main-wrapper">
         {isEmbedAppsPath ? (
           // Embedded app route: /embed-apps/:appId

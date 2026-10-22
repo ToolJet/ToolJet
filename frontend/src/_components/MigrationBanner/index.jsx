@@ -13,6 +13,12 @@ const MESSAGES = {
   failed: 'The latest ToolJet upgrade failed. Changes cannot be saved until an administrator retries it.',
 };
 
+// Released and embedded apps: end users see neither the product name nor admin steps.
+const END_USER_MESSAGES = {
+  running: 'Scheduled maintenance in progress. Some changes may not save until it finishes.',
+  failed: 'Maintenance is taking longer than expected. Some changes may not save right now.',
+};
+
 const readDismissed = () => {
   try {
     return sessionStorage.getItem(DISMISS_KEY);
@@ -30,7 +36,7 @@ const writeDismissed = (value) => {
 };
 
 /** floating: a fixed pill for full-height screens (editor, released and embedded apps) that must not shift layout. */
-export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false }) => {
+export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false, endUser = false }) => {
   const [status, setStatus] = useState({ state: 'idle' });
   const [dismissed, setDismissed] = useState(readDismissed);
 
@@ -50,7 +56,7 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false
     };
   }, []);
 
-  const message = MESSAGES[status.state];
+  const message = (endUser ? END_USER_MESSAGES : MESSAGES)[status.state];
   // Per run and state: a new run, or the same run failing, shows again after a dismissal.
   const runKey = `${status.state}:${status.startedAt ?? ''}`;
   const visible = !!message && dismissed !== runKey;

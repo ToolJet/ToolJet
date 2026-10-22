@@ -25,6 +25,17 @@ describe('MigrationBanner', () => {
     expect(screen.getByRole('status')).toHaveTextContent(text);
   });
 
+  test.each([
+    ['running', /Scheduled maintenance in progress/],
+    ['failed', /Maintenance is taking longer than expected/],
+  ])('shows end users a generic %s notice without the product name', async (state, text) => {
+    respondWith({ state, startedAt: '2026-10-19T10:00:00Z' });
+    render(<MigrationBanner endUser floating />);
+
+    await waitFor(() => expect(visibleBanner()).toHaveTextContent(text));
+    expect(visibleBanner()).not.toHaveTextContent(/ToolJet|administrator/);
+  });
+
   test('renders no banner when idle, keeping an empty announcement region', async () => {
     let called = false;
     server.use(
