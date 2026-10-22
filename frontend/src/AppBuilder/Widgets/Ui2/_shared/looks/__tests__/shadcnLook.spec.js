@@ -51,10 +51,10 @@ describe('seriesColor', () => {
 });
 
 describe('whenSet', () => {
-  it('returns the classes only when the style is set', () => {
+  it('returns the classes only when the style is set, else marks the part for the inspector', () => {
     expect(whenSet({ textColor: '#fff' }, 'textColor', 'a')).toBe('a');
-    expect(whenSet({ textColor: ' ' }, 'textColor', 'a')).toBeUndefined();
-    expect(whenSet(undefined, 'textColor', 'a')).toBeUndefined();
+    expect(whenSet({ textColor: ' ' }, 'textColor', 'a')).toBe('lk-theme-textColor');
+    expect(whenSet(undefined, 'textColor', 'a')).toBe('lk-theme-textColor');
   });
 });
 

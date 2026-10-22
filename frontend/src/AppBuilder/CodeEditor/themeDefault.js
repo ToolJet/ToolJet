@@ -35,10 +35,15 @@ const PROPERTIES = {
   stroke: 'stroke',
   outline: 'outlineColor',
   rounded: 'borderTopLeftRadius',
+  h: 'height',
+  w: 'width',
+  gap: 'columnGap',
 };
+// A length in a text class is the font size (tw-text-[length:var(--lk-size,...)]), not the colour.
+const propertyOf = (kind, prefix) => (kind === 'text' && prefix === 'length:' ? 'fontSize' : PROPERTIES[kind]);
 const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const classFor = (name) =>
-  new RegExp(`^tw-(${Object.keys(PROPERTIES).join('|')})-\\[(?:color:|length:)?var\\(${escape(name)}[,)]`);
+  new RegExp(`^tw-(${Object.keys(PROPERTIES).join('|')})-\\[(color:|length:)?var\\(${escape(name)}[,)]`);
 
 // The Kanban keeps its own look module (kanbanLook.ts): its colours are variables its classes read, or, for the column
 // and the card, inline values with the theme's as the fallback when unset (read from kanbanLook itself).
@@ -93,7 +98,7 @@ const drawnValue = (root, name) => {
   for (const element of root.querySelectorAll('[class], [style]')) {
     if (element.getAttribute('class')?.includes(needle)) {
       const match = [...element.classList].map((token) => token.match(pattern)).find(Boolean);
-      const drawn = match && getComputedStyle(element)[PROPERTIES[match[1]]];
+      const drawn = match && getComputedStyle(element)[propertyOf(match[1], match[2])];
       if (drawn) return drawn;
     }
     const inline = element.getAttribute('style');
@@ -113,8 +118,95 @@ const drawnValue = (root, name) => {
   return null;
 };
 
+// The property a style's name says it sets: a radius, a size, a background, a border, else a text colour.
+const SIZE_PROPERTIES = [
+  [/radius/i, 'borderTopLeftRadius'],
+  [/fontsize|textsize/i, 'fontSize'],
+  [/width/i, 'width'],
+  [/gap|padding/i, 'columnGap'],
+  [/size|height|thickness/i, 'height'],
+];
+const COLOR_PROPERTIES = [
+  [/background|bg$/i, 'backgroundColor'],
+  [/border|divider/i, 'borderTopColor'],
+];
+const propertyFor = (paramName) =>
+  [...SIZE_PROPERTIES, ...COLOR_PROPERTIES].find(([pattern]) => pattern.test(paramName))?.[1] ?? 'color';
+
+// A widget whose variants each draw their own colours (Button, Badge, Alert, ...) applies a style's class only when
+// it is set (shadcnLook.whenSet); unset, the part carries `lk-theme-<style>` instead, and its own colours are the
+// theme's. Its hover background is read from its hover class, which names the theme's token
+// (hover:tw-bg-ui2-primary/90).
+const hoverValue = (root, element) => {
+  for (const token of element.classList) {
+    // A theme colour (hover:tw-bg-ui2-primary/90) or an arbitrary one (hover:tw-bg-[color:color-mix(in_srgb,...)]).
+    const named = token.match(/^hover:tw-bg-ui2-([a-z0-9-]+?)(?:\/(\d+))?$/);
+    if (named) {
+      const color = `var(--sc-${named[1]})`;
+      return computeIn(
+        root,
+        named[2] ? `color-mix(in srgb, ${color} ${named[2]}%, transparent)` : color,
+        'backgroundColor'
+      );
+    }
+    const arbitrary = token.match(/^hover:tw-bg-\[(?:color:)?(.+)\]$/);
+    if (arbitrary) return computeIn(root, arbitrary[1].replace(/_/g, ' '), 'backgroundColor');
+  }
+  return null;
+};
+const markedValue = (root, paramName) => {
+  const element = root.querySelector(`.lk-theme-${paramName}`);
+  if (!element) return null;
+  if (/hover/i.test(paramName)) return hoverValue(root, element) ?? getComputedStyle(element).backgroundColor ?? null;
+  return getComputedStyle(element)[propertyFor(paramName)] || null;
+};
+
+/**
+ * The theme's value for a style that no part of the widget on the canvas draws (a trend colour with no trend, a menu
+ * that is closed): the theme token, or the widget's own size, that a style of that kind falls back to. Every UI 2.0
+ * colour and size style has one (themeDefaultCoverage.spec.js walks the configs), so no field is left blank.
+ */
+const FALLBACKS = [
+  [/hover/i, 'var(--sc-accent)'],
+  [/radius/i, 'var(--sc-radius)'],
+  [/fontsize|textsize/i, '0.875rem'],
+  [/^menuWidth$/, 'auto'],
+  [/^(cellSize|slotSize)$/, '2.25rem'],
+  [/^barHeight$/, '0.5rem'],
+  [/^thickness$/, '1px'],
+  [/gap|padding/i, '16px'],
+  [/error|negative|destructive|weak/i, 'var(--sc-destructive)'],
+  [/positive|success|strong/i, 'var(--sc-success)'],
+  [/warning|fair/i, 'var(--sc-warning)'],
+  [/background|bg$|bubble/i, 'var(--sc-card)'],
+  [/border|divider|grid|line|track|separator|^emptyColor$|^offColor$/i, 'var(--sc-border)'],
+  [
+    /placeholder|help|hint|muted|caption|description|axis|legend|timestamp|footnote|time|affix|incompleted|fallback/i,
+    'var(--sc-muted-foreground)',
+  ],
+  [
+    /accent|primary|progress|bar|indicator|filled|highlight|chart|spark|marker|dot|link|ring|spinner|icon|now|cluster|current|completed|active|band|chip|selected|striped/i,
+    'var(--sc-primary)',
+  ],
+  [/color|text|title|label|value|name|message|stepper/i, 'var(--sc-foreground)'],
+];
+export const themeFallback = (paramName) => {
+  const rule = FALLBACKS.find(([pattern]) => pattern.test(paramName));
+  return rule ? { value: rule[1], property: propertyFor(paramName) } : null;
+};
+const fallbackValue = (root, paramName) => {
+  const fallback = themeFallback(paramName);
+  if (!fallback) return null;
+  if (!fallback.value.includes('var(')) {
+    return /^\d/.test(fallback.value)
+      ? computeIn(root, fallback.value, fallback.property) ?? fallback.value
+      : fallback.value;
+  }
+  return computeIn(root, fallback.value, fallback.property);
+};
+
 /** What the widget on the canvas draws for a blank style, or null when no part of it draws the style. */
-export const themeValueOf = (componentId, component, paramName) => {
+const drawnThemeValue = (componentId, component, paramName) => {
   const root = componentId ? document.getElementById(componentId) : null;
   if (!root) return null;
   if (component === 'ShadKanban') {
@@ -137,7 +229,15 @@ export const themeValueOf = (componentId, component, paramName) => {
     const drawn = drawnValue(root, name);
     if (drawn) return drawn;
   }
-  return null;
+  return markedValue(root, paramName);
+};
+
+/** What the widget on the canvas draws for a blank style, else the theme's value for a style of its kind; null only
+ *  when the widget is not on the canvas. */
+export const themeValueOf = (componentId, component, paramName) => {
+  const root = componentId ? document.getElementById(componentId) : null;
+  if (!root) return null;
+  return drawnThemeValue(componentId, component, paramName) ?? fallbackValue(root, paramName);
 };
 
 /** themeValueOf, read after the canvas has drawn (a cleared colour reads the widget without it). */
@@ -157,4 +257,31 @@ export const useThemeValue = (enabled, componentId, component, paramName, darkMo
 };
 
 /** A colour react-color's picker can start from (it reads hex and rgb, not oklch or color-mix results). */
-export const pickerColor = (color) => (typeof color === 'string' && /^(#|rgba?\()/.test(color) ? color : undefined);
+export const pickerColor = (color) => {
+  const text = colorText(color);
+  return /^#/.test(text) ? text : undefined;
+};
+
+/** A drawn colour as the swatch's value text: hex for Chrome's computed forms, rgb()/rgba() and color(srgb ...) (what a
+ *  theme token mixed with color-mix() computes to), else as drawn. */
+export const colorText = (color) => {
+  if (typeof color !== 'string') return '';
+  const rgb = color.match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:[\s,/]+([\d.]+))?\s*\)$/);
+  const srgb = color.match(/^color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\s*\)$/);
+  if (!rgb && !srgb) return color;
+  const channels = rgb ? rgb.slice(1, 4).map(Number) : srgb.slice(1, 4).map((part) => Number(part) * 255);
+  const alphaText = (rgb ?? srgb)[4];
+  const alpha = alphaText === undefined ? 1 : Number(alphaText);
+  const hex = channels.map((part) =>
+    Math.round(Math.min(255, Math.max(0, part)))
+      .toString(16)
+      .padStart(2, '0')
+  );
+  if (alpha < 1)
+    hex.push(
+      Math.round(alpha * 255)
+        .toString(16)
+        .padStart(2, '0')
+    );
+  return `#${hex.join('').toUpperCase()}`;
+};
