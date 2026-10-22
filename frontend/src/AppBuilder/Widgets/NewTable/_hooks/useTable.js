@@ -6,9 +6,14 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
 } from '@tanstack/react-table';
-import { applyFilters } from '../_components/Header/_components/Filter/filterUtils';
+import {
+  applyFilters,
+  getComparableValues,
+  matchesAnyValue,
+} from '../_components/Header/_components/Filter/filterUtils';
 
 export function useTable({
+  id,
   data,
   columns,
   enableSorting,
@@ -21,6 +26,7 @@ export function useTable({
   globalFilter,
   setGlobalFilter,
   expandedRows,
+  getEditedFieldsOnIndex,
 }) {
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -70,6 +76,7 @@ export function useTable({
     data: newData,
     columns,
     enableSorting: true,
+    sortDescFirst: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -100,9 +107,16 @@ export function useTable({
         return applyFilters(row, columnId, filters);
       },
     },
+    // Overrides the raw cell value with its edited (changeset) value, if any, before matching.
     globalFilterFn: (row, columnId, filterValue) => {
-      const value = String(row.getValue(columnId) || '').toLowerCase();
-      return value.includes(String(filterValue).toLowerCase());
+      const accessorKey = row.getAllCells().find((cellItem) => cellItem.column.id === columnId)?.column
+        .columnDef.accessorKey;
+      const editedFields = accessorKey ? getEditedFieldsOnIndex?.(id, row.index) : undefined;
+      const cellValue =
+        editedFields && Object.prototype.hasOwnProperty.call(editedFields, accessorKey)
+          ? editedFields[accessorKey]
+          : undefined;
+      return matchesAnyValue(getComparableValues(row, columnId, cellValue), filterValue);
     },
     getColumnCanGlobalFilter: (column) => column.getIsVisible(),
     manualPagination: serverSidePagination,

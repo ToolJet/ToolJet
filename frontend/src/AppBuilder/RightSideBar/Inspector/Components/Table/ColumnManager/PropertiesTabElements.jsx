@@ -25,6 +25,7 @@ import { ButtonPropertiesTab } from './ButtonPropertiesTab';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { ArrowLeft, Minus, ArrowRight } from 'lucide-react';
+import { supportsCellClickEvent } from '@/AppBuilder/Widgets/NewTable/_utils/tableEventUtils';
 
 const CustomOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
@@ -364,6 +365,24 @@ export const PropertiesTabElements = ({
           </div>
         </>
       )}
+      {column.columnType === 'image' && (
+        <div data-cy={`input-and-label-alt-text`} className="field mb-2 px-3">
+          <label className="form-label">{t('widget.Table.altText', 'Alt text')}</label>
+          <CodeHinter
+            currentState={currentState}
+            initialValue={column?.altText}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            placeholder={'Image description'}
+            onChange={(value) => onColumnItemChange(index, 'altText', value)}
+            componentName={getPopoverFieldSource(column.columnType, 'altText')}
+            popOverCallback={(showing) => {
+              setColumnPopoverRootCloseBlocker('altText', showing);
+            }}
+          />
+        </div>
+      )}
       {column.columnType === 'number' && (
         <div className="field mb-2 px-3">
           <label className="form-label">{t('widget.Table.decimalPlaces', 'Decimal Places')}</label>
@@ -513,6 +532,26 @@ export const PropertiesTabElements = ({
           component={component}
           onColumnItemChange={onColumnItemChange}
         />
+      )}
+      {supportsCellClickEvent(column) && !selectedButtonId && (
+        <div className="px-3" data-cy="column-cell-events">
+          <EventManager
+            sourceId={props?.component?.id}
+            eventSourceType="table_column"
+            customEventRefs={{ ref: column.id }}
+            hideEmptyEventsAlert={true}
+            eventMetaDefinition={{ events: { onCellClicked: { displayName: 'Cell clicked' } } }}
+            currentState={currentState}
+            dataQueries={props.dataQueries}
+            components={props.components}
+            eventsChanged={(events) => columnEventChanged(column, events)}
+            apps={props.apps}
+            popOverCallback={(showing) => {
+              handleEventManagerPopoverCallback(showing);
+            }}
+            pages={props.pages}
+          />
+        </div>
       )}
     </>
   );

@@ -2,10 +2,12 @@ import React, { useState, useCallback, useEffect, useRef, forwardRef } from 'rea
 import DatePickerComponent from 'react-datepicker';
 import moment from 'moment-timezone';
 import cx from 'classnames';
+import toast from 'react-hot-toast';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import CustomDatePickerHeader from '@/AppBuilder/Widgets/NewTable/_components/DataTypes/_components/CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { ValidationErrorTooltip } from '../ValidationErrorTooltip';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
@@ -156,6 +158,11 @@ export const DatePickerRenderer = ({
   const textRef = useRef(null);
   // Ref to track if date change was already handled (prevents double-call from onChange + onCalendarClose)
   const dateChangeHandledRef = useRef(false);
+  // Tracks the value/date this component itself last emitted via onChange, so a later re-render
+  // carrying that same value back in (e.g. from the changeSet) doesn't get re-parsed with
+  // parseDateFormat — the emitted value is in dateDisplayFormat, not parseDateFormat, and the two
+  // are configured independently.
+  const lastEmittedRef = useRef({ value: undefined, date: undefined });
 
   const readOnly = !isEditable;
 
@@ -200,7 +207,7 @@ export const DatePickerRenderer = ({
     (newDate) => {
       let processedValue = newDate;
       if (parseInUnixTimestamp && unixTimestamp) {
-        processedValue = moment(newDate).unix();
+        processedValue = unixTimestamp === 'seconds' ? moment(newDate).unix() : moment(newDate).unix() * 1000;
       }
 
       const parsedDate = parseDate({
@@ -219,11 +226,14 @@ export const DatePickerRenderer = ({
       });
 
       setDate(parsedDate);
-      if (parseInUnixTimestamp && unixTimestamp) {
-        onChange?.(moment(parsedDate).unix());
-      } else {
-        onChange?.(computeDateString(parsedDate));
-      }
+      const emittedValue =
+        parseInUnixTimestamp && unixTimestamp
+          ? unixTimestamp === 'seconds'
+            ? moment(parsedDate).unix()
+            : moment(parsedDate).valueOf()
+          : computeDateString(parsedDate);
+      lastEmittedRef.current = { value: emittedValue, date: parsedDate };
+      onChange?.(emittedValue);
     },
     [
       parseInUnixTimestamp,
@@ -242,13 +252,23 @@ export const DatePickerRenderer = ({
   const handleInputDateChange = useCallback(
     (value) => {
       const inputDate = moment(value, parseDateFormat).toDate();
+      // Unparseable text is discarded, so the input reverts to the previous value.
+      if (value && isNaN(inputDate)) return;
+      if (excludedDates.some((excluded) => moment(excluded).isSame(inputDate, 'day'))) {
+        toast.error(`${moment(inputDate).format(DISABLED_DATE_FORMAT)} is a disabled date. Please enter a valid date`);
+        return;
+      }
       handleDateChange(inputDate);
     },
-    [parseDateFormat, handleDateChange]
+    [parseDateFormat, handleDateChange, excludedDates]
   );
 
   // Initialize date from value
   useEffect(() => {
+    if (lastEmittedRef.current.value !== undefined && value === lastEmittedRef.current.value) {
+      setDate(lastEmittedRef.current.date);
+      return;
+    }
     const parsedDate = parseDate({
       value,
       parseDateFormat: getDateTimeFormat(
@@ -278,12 +298,12 @@ export const DatePickerRenderer = ({
 
   // Handle disabled dates
   useEffect(() => {
-    if (Array.isArray(disabledDates) && disabledDates.length > 0) {
-      const excludedDates = disabledDates
-        .filter((date) => moment(date, DISABLED_DATE_FORMAT).isValid())
-        .map((date) => moment(date, DISABLED_DATE_FORMAT).toDate());
-      setExcludedDates(excludedDates);
-    }
+    const excludedDates = Array.isArray(disabledDates)
+      ? disabledDates
+          .filter((date) => moment(date, DISABLED_DATE_FORMAT).isValid())
+          .map((date) => moment(date, DISABLED_DATE_FORMAT).toDate())
+      : [];
+    setExcludedDates(excludedDates);
   }, [disabledDates]);
 
   useEffect(() => {
@@ -394,7 +414,9 @@ export const DatePickerRenderer = ({
             dateChangeHandledRef.current = false;
           }}
         />
-        {isEditable && !isValid && <div className="invalid-feedback-date text-truncate">{validationError}</div>}
+        {isEditable && !isValid && (
+          <ValidationErrorTooltip message={validationError} className="invalid-feedback-date" />
+        )}
       </div>
     </OverlayTrigger>
   );

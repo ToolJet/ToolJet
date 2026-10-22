@@ -431,3 +431,9 @@ td {
 .react-datepicker-popper {
     z-index: 4 !important;
 }
+
+#table-column-datepicker-portal {
+    .react-datepicker-popper {
+        z-index: 10000 !important;
+    }
+}

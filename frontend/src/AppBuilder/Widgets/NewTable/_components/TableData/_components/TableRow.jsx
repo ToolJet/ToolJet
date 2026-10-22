@@ -6,6 +6,13 @@ import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { getPinnedStyles } from '../pinColumnsUtils';
+import { getRowBackgroundStyles } from '../../../_utils/getRowBackgroundStyles';
+import {
+  createTableRowEventOptions,
+  createTableCellEventOptions,
+  getColumnCellClickEvents,
+  supportsCellClickEvent,
+} from '../../../_utils/tableEventUtils';
 
 export const TableRow = ({
   id,
@@ -25,10 +32,14 @@ export const TableRow = ({
   table,
 }) => {
   const selectRowOnCellEdit = useTableStore((state) => state.getTableProperties(id)?.selectRowOnCellEdit, shallow);
+  const rowBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.rowBackgroundColor, shallow);
   const hasHoveredEvent = useTableStore((state) => state.getHasHoveredEvent(id), shallow);
   const editedFields = useTableStore((state) => state.getEditedFieldsOnIndex(id, row.index), shallow);
 
   if (!row) return null;
+
+  const resolvedRowBackgroundColor = getResolvedValue(rowBackgroundColor, { rowData: row.original });
+  const rowBackgroundStyles = getRowBackgroundStyles(resolvedRowBackgroundColor);
 
   return (
     <tr
@@ -41,9 +52,11 @@ export const TableRow = ({
         left: 0,
         width: '100%',
         ...rowStyles,
+        ...rowBackgroundStyles,
       }}
       className={cx('table-row table-editor-component-row', {
         selected: allowSelection && highlightSelectedRow && row.getIsSelected(),
+        'has-row-background': !!resolvedRowBackgroundColor,
         'table-row-condensed': cellHeight === 'condensed',
       })}
       onClick={(e) => {
@@ -54,7 +67,7 @@ export const TableRow = ({
         if (hasHoveredEvent) {
           const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
           setExposedVariables(hoveredRowDetails);
-          fireEvent('onRowHovered');
+          fireEvent('onRowHovered', createTableRowEventOptions(row.id));
         }
       }}
       data-cy={`${generateCypressDataCy(componentName)}-row-${virtualRow.index}`}
@@ -151,6 +164,22 @@ export const TableRow = ({
                 },
               });
 
+              if (supportsCellClickEvent(cell.column.columnDef?.meta)) {
+                const tableState = useTableStore.getState();
+                const cellClickEvents = tableState.components[id]?.columnDetails?.useDynamicColumn
+                  ? []
+                  : getColumnCellClickEvents(tableState.getTableColumnEvents(id), cell.column.id);
+                if (cellClickEvents.length > 0) {
+                  fireEvent(
+                    'OnTableColumnCellClicked',
+                    createTableCellEventOptions(row.index, cell.column.id, {
+                      column: cell.column.columnDef?.meta,
+                      tableColumnEvents: cellClickEvents,
+                    })
+                  );
+                }
+              }
+
               // These cell clicks keep the current selection (already-selected action/button cells,
               // or an editable cell) and fire onRowClicked directly.
               const keepsSelectionAndFires =
@@ -160,7 +189,7 @@ export const TableRow = ({
 
               if (keepsSelectionAndFires) {
                 e.stopPropagation();
-                fireEvent('onRowClicked');
+                fireEvent('onRowClicked', createTableRowEventOptions(row.index));
               }
             }}
           >

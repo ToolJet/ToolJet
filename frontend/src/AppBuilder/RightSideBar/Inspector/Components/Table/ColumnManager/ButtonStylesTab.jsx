@@ -27,13 +27,19 @@ export const ButtonStylesTab = ({
     'var(--cc-primary-text)',
   ];
 
+  // Icon colors considered "default" that should be swapped on mode change
+  const DEFAULT_ICON = ['#FFFFFF', '#ffffff', 'var(--icon-on-solid)', 'var(--cc-default-icon)'];
+
   const handleTypeChange = (value) => {
     setButtonType(value);
 
-    // Batch buttonType + label color change in a single update to avoid stale closure
+    // Batch buttonType + label/icon color changes in a single update to avoid stale closure
     const updates = { buttonType: value };
     if (!button?.buttonLabelColor || DEFAULT_LABEL.includes(button.buttonLabelColor)) {
       updates.buttonLabelColor = value === 'outline' ? 'var(--cc-primary-text)' : '#FFFFFF';
+    }
+    if (!button?.buttonIconColor || DEFAULT_ICON.includes(button.buttonIconColor)) {
+      updates.buttonIconColor = value === 'outline' ? 'var(--cc-default-icon)' : '#FFFFFF';
     }
     onButtonPropertiesChange(updates);
   };

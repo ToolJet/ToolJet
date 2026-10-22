@@ -12,3 +12,5 @@ export const getMaxHeight = (isMaxRowHeightAuto, maxRowHeightValue, cellHeight) 
 };
 
 export const DEFAULT_EXPANSION_HEIGHT = 229;
+
+export const MAX_RATING_COUNT = 10;

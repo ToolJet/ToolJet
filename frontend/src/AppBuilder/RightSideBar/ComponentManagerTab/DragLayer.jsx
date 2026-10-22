@@ -14,6 +14,7 @@ import {
   handleDeactivateTargets,
   hideGridLines,
 } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import toast from 'react-hot-toast';
 
 export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
@@ -36,6 +37,12 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
           handleDeactivateTargets();
           hideGridLines();
           setShowModuleBorder(false);
+          return;
+        }
+        const { isHoveringRestrictedDropTarget, actions } = useGridStore.getState();
+        if (isHoveringRestrictedDropTarget) {
+          actions.setIsHoveringRestrictedDropTarget(false);
+          toast.error('Components can only be added to the first expanded row');
           return;
         }
         // hover on the target sets currentDragCanvasId, but hover only fires on a

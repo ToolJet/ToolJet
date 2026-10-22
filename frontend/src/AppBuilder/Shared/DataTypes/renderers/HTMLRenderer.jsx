@@ -163,6 +163,10 @@ export const HTMLRenderer = ({
             }}
             onMouseLeave={() => setHovered(false)}
             className={`${isEditing ? 'h-100 content-editing' : ''} h-100`}
+            style={{
+              maxHeight: maxHeight,
+              whiteSpace: 'pre-wrap',
+            }}
           >
             {renderEditable()}
           </div>

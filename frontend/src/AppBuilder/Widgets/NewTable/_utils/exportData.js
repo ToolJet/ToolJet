@@ -2,6 +2,7 @@ import zipcelx from 'zipcelx';
 import Papa from 'papaparse';
 import generateFile from '@/_lib/generate-file';
 import moment from 'moment';
+import { get } from 'lodash';
 
 // Helper function to get table data
 const getData = (table, forExcel = false) => {
@@ -27,14 +28,16 @@ const getData = (table, forExcel = false) => {
   const data = table.getCoreRowModel().rows.map((row) => {
     const rowData = [];
     accessorKeys.forEach((accessorKey) => {
-      const cellValue = row.original[accessorKey];
+      const cellValue = get(row.original, accessorKey);
       const isNumber = typeof cellValue === 'number';
+      const isObject = cellValue !== null && typeof cellValue === 'object';
+      const exportValue = isObject ? JSON.stringify(cellValue) : cellValue;
 
       rowData.push(
         !forExcel // Get formatted data for 'export to Excel' as expected by zipcelx's config
-          ? cellValue
+          ? exportValue
           : {
-              value: cellValue,
+              value: exportValue,
               type: isNumber ? 'number' : 'string',
             }
       );
@@ -42,11 +45,7 @@ const getData = (table, forExcel = false) => {
     return rowData;
   });
 
-  const headersWithUpperCase = headers.map((header) =>
-    !forExcel ? header.toUpperCase() : { ...header, value: header.value.toUpperCase() }
-  );
-
-  return { headers: headersWithUpperCase, data };
+  return { headers, data };
 };
 
 // Export to CSV
