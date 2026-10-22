@@ -37,11 +37,15 @@ export class MigrateTooltipForHtmlComponent1792137283395 implements MigrationInt
     const migrationProgress = new MigrationProgress(MIGRATION_NAME, totalComponents);
 
     while (hasMoreData) {
+      // `id` breaks ties in the ordering: created_at defaults to transaction-time now(), so every
+      // component of an imported app shares one timestamp. Ordering on it alone leaves row order
+      // undefined among ties, and across LIMIT/OFFSET batches that silently skips rows — which
+      // here means a tooltip left in general_properties that nothing reads any more.
       const components = await queryRunner.query(
         `SELECT id, properties, general_properties
            FROM components
            WHERE type = $1
-           ORDER BY "created_at" ASC
+           ORDER BY "created_at" ASC, "id" ASC
            LIMIT $2 OFFSET $3`,
         [TYPE, batchSize, offset]
       );

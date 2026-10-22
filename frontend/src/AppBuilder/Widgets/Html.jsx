@@ -93,9 +93,21 @@ export const Html = function ({
       contentRef.current.scrollIntoView({ block: 'start' });
       return;
     }
-    const escaped = window.CSS?.escape ? window.CSS.escape(fragment) : fragment;
     const searchRoot = contentRef.current.closest('.real-canvas') ?? contentRef.current;
-    const target = searchRoot.querySelector(`#${escaped}, [name="${escaped}"]`);
+    const escape = (value) => (window.CSS?.escape ? window.CSS.escape(value) : value);
+    const find = (value) => searchRoot.querySelector(`#${escape(value)}, [name="${escape(value)}"]`);
+
+    // A fragment is percent-encoded in the href but the id is not: `#caf%C3%A9` points at `id="café"`.
+    // Try the literal first so an id that really contains a `%` still wins, then the decoded form.
+    let target = find(fragment);
+    if (!target) {
+      try {
+        const decoded = decodeURIComponent(fragment);
+        if (decoded !== fragment) target = find(decoded);
+      } catch {
+        // Malformed encoding: nothing to scroll to.
+      }
+    }
     target?.scrollIntoView({ block: 'start' });
   };
 

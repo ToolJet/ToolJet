@@ -26,7 +26,13 @@ purify.addHook('afterSanitizeAttributes', (node) => {
   // previous code could not tell "the author chose _self" from "the author chose nothing".
   if (!node.hasAttribute('target')) node.setAttribute('target', '_blank');
 
-  if (node.getAttribute('target') === '_blank') {
+  // `_blank` AND any named target open a new browsing context, and a named one keeps
+  // `window.opener` pointing back at the app — browsers only imply `noopener` for `_blank`. That
+  // lets an untrusted destination navigate the opener. Only the keywords that stay in an existing
+  // context are exempt. Nothing is lost against the old behaviour: the previous hook rewrote every
+  // target to `_blank`, so a named window was never reusable here in the first place.
+  const target = node.getAttribute('target');
+  if (target && !['_self', '_parent', '_top'].includes(target)) {
     // Add to the author's `rel` rather than replacing it: overwriting silently dropped tokens
     // they set deliberately, such as `nofollow` and `noreferrer`.
     const tokens = new Set((node.getAttribute('rel') || '').split(/\s+/).filter(Boolean));

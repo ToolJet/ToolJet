@@ -157,6 +157,7 @@ describe('Html widget', () => {
       '<a id="self" href="https://example.com/self" target="_self">Same tab</a>' +
       '<a id="keeprel" href="https://example.com/rel" rel="nofollow noreferrer">Keeps rel</a>' +
       '<a id="plain" href="https://example.com/plain">Plain</a>' +
+      '<a id="named" href="https://example.com/named" target="preview">Named window</a>' +
       // The exact markup from issue #5794, which PR #5883's hook was written for.
       '<a id="issue5794" href="https://www.tooljet.io" target="_blank" rel="noopener noreferrer">Tooljet</a>' +
       '<h3 id="faq">FAQ</h3>';
@@ -174,6 +175,11 @@ describe('Html widget', () => {
     // The long-standing default for an outbound link is unchanged.
     expect(link('plain').getAttribute('target')).toBe('_blank');
     expect(link('plain').getAttribute('rel')).toBe('noopener');
+
+    // A NAMED target opens a new browsing context too, and browsers only imply `noopener` for
+    // `_blank` — so without this the opened page keeps `window.opener` and can navigate the app.
+    expect(link('named').getAttribute('target')).toBe('preview');
+    expect(link('named').getAttribute('rel')).toBe('noopener');
 
     // Issue #5794: `target` was being dropped silently. PR #5883 restored it but collapsed the
     // author's `rel` to `noopener`, losing `noreferrer`. Both halves have to survive now.
@@ -194,7 +200,11 @@ describe('Html widget', () => {
     Element.prototype.scrollIntoView = scrollIntoView;
 
     const authored =
-      '<a id="jump" href="#faq">Jump to the FAQ</a><div style="height:380px"></div><h3 id="faq">FAQ</h3>';
+      '<a id="jump" href="#faq">Jump to the FAQ</a><div style="height:380px"></div><h3 id="faq">FAQ</h3>' +
+      // A fragment is percent-encoded in the href while the id is not, and a malformed escape
+      // must not take the handler down.
+      '<a id="encoded" href="#caf%C3%A9">Jump to the caf\u00e9</a><h3 id="caf\u00e9">Caf\u00e9</h3>' +
+      '<a id="malformed" href="#%E0%A4">Broken escape</a>';
     const { container } = html.render({ properties: { rawHtml: binding(authored) } });
     await waitFor(() => expect(container.querySelector('#faq')).toBeInTheDocument());
 
@@ -205,6 +215,21 @@ describe('Html widget', () => {
     expect(clickEvent.defaultPrevented).toBe(true);
     expect(scrollIntoView).toHaveBeenCalledTimes(1);
     expect(scrollIntoView.mock.instances[0]).toBe(container.querySelector('#faq'));
+
+    // `#caf%C3%A9` has to reach `id="caf\u00e9"`. CSS escaping does not URL-decode, so without a
+    // decoded retry the lookup misses and — since the navigation is already prevented — the link
+    // does nothing at all.
+    scrollIntoView.mockClear();
+    container.querySelector('#encoded').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.instances[0]).toBe(container.querySelector('[id="caf\u00e9"]'));
+
+    // A malformed escape makes decodeURIComponent throw; the click must stay harmless.
+    scrollIntoView.mockClear();
+    const malformed = new MouseEvent('click', { bubbles: true, cancelable: true });
+    expect(() => container.querySelector('#malformed').dispatchEvent(malformed)).not.toThrow();
+    expect(malformed.defaultPrevented).toBe(true);
+    expect(scrollIntoView).not.toHaveBeenCalled();
   });
 
   test('[Html-STY-004] the background covers the whole document, not just the visible part', async () => {
