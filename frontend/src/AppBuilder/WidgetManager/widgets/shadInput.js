@@ -95,7 +95,6 @@ export const shadInputConfig = {
         },
         defaultValue: 'text',
       },
-      isFxNotRequired: true,
       fullWidth: true,
     },
     loadingState: {
