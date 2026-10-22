@@ -1230,22 +1230,19 @@ describe('Table: row selection', () => {
     expect(row(0).className).toContain('selected');
   });
 
-  // [Table-SEL-005] is deferred: defaultSelectedRow's mount-time selection is unreliable, see [Table-BUG-008] below.
+  // [Table-SEL-005] is deferred: see [Table-BUG-008] below for defaultSelectedRow's mount-time selection.
 
-  test.failing(
-    '[Table-BUG-008] defaultSelectedRow keeps its matching row selected once TableExposedVariables settles (currently clobbered by a stale-render race)',
-    async () => {
-      widget.render({ properties: { defaultSelectedRow: binding(`{{{"id":${ROWS[1].id}}}}`) } });
-      await waitFor(() => expect(table()).toBeInTheDocument());
+  test('[Table-BUG-008] defaultSelectedRow keeps its matching row selected once TableExposedVariables settles', async () => {
+    widget.render({ properties: { defaultSelectedRow: binding(`{{{"id":${ROWS[1].id}}}}`) } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
 
-      // An unrelated property change forces the re-render needed for the ref-based
-      // hasDataChanged prop to actually reach TableExposedVariables (see Table-BUG-008).
-      widget.setComponentProperty(ID, 'loadingState', '{{false}}', 'properties');
-      await drain();
+    // An unrelated property change forces the re-render needed for the ref-based
+    // hasDataChanged prop to actually reach TableExposedVariables.
+    widget.setComponentProperty(ID, 'loadingState', '{{false}}', 'properties');
+    await drain();
 
-      await waitFor(() => expect(exposed('selectedRow')).toEqual(ROWS[1]));
-    }
-  );
+    await waitFor(() => expect(exposed('selectedRow')).toEqual(ROWS[1]));
+  });
 
   describe('onRowSelectionChanged', () => {
     const selectionEvent = (extra = {}) => ({
