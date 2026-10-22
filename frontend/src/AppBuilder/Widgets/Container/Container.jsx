@@ -59,7 +59,6 @@ export const Container = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow, headerDividerColor } = styles;
-  const headerMaxHeight = isDynamicHeightEnabled ? 10000 : parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
     return {
       backgroundColor:
@@ -92,7 +91,6 @@ export const Container = ({
   const containerHeaderStyles = {
     flexShrink: 0,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
-    maxHeight: `${headerMaxHeight}px`,
     borderTopLeftRadius: `${borderRadius}px`,
     borderTopRightRadius: `${borderRadius}px`,
     overflow: 'hidden',
@@ -116,7 +114,7 @@ export const Container = ({
   return (
     <div
       ref={containerRef}
-      className={`jet-container ${isLoading ? 'jet-container-loading' : ''}`}
+      className={`jet-container tw-overflow-hidden ${isLoading ? 'jet-container-loading' : ''}`}
       id={id}
       data-disabled={isDisabled}
       style={computedStyles}
