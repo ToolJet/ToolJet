@@ -120,6 +120,22 @@ jobs:
         with:
           ref: refs/heads/lts-3.16
 
+      - name: Assert ee public key is the real key
+        env:
+          GH_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          EE_BRANCH: ${{ contains(github.event.release.tag_name, '-lts') && 'lts-3.16' || 'main' }}
+          EE_FALLBACK: ${{ contains(github.event.release.tag_name, '-lts') && 'lts-3.16' || 'main' }}
+        run: |
+          url="https://x-access-token:${GH_TOKEN}@github.com/ToolJet/ee-server.git"
+          git clone -q --depth 1 --branch "$EE_BRANCH" "$url" "$RUNNER_TEMP/ee-key" 2>/dev/null \
+            || git clone -q --depth 1 --branch "$EE_FALLBACK" "$url" "$RUNNER_TEMP/ee-key"
+          FP=$(openssl rsa -pubin -in "$RUNNER_TEMP/ee-key/keys/public.pem" -outform DER | sha256sum | cut -d' ' -f1)
+          rm -rf "$RUNNER_TEMP/ee-key"
+          if [ "$FP" != "d8c20ac83e914b68dd4c307f84aa43342e2b80919edd2b7059620dd0e4e1cdb0" ]; then
+            echo "::error::ee keys/public.pem on the branch being built is not the real key ($FP)"; exit 1
+          fi
+          echo "ee public key OK"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -207,6 +223,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: refs/heads/lts-3.16
+
+      - name: Assert ee public key is the real key
+        env:
+          GH_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          EE_BRANCH: ${{ contains(github.event.release.tag_name, '-lts') && 'lts-3.16' || 'main' }}
+          EE_FALLBACK: ${{ contains(github.event.release.tag_name, '-lts') && 'lts-3.16' || 'main' }}
+        run: |
+          url="https://x-access-token:${GH_TOKEN}@github.com/ToolJet/ee-server.git"
+          git clone -q --depth 1 --branch "$EE_BRANCH" "$url" "$RUNNER_TEMP/ee-key" 2>/dev/null \
+            || git clone -q --depth 1 --branch "$EE_FALLBACK" "$url" "$RUNNER_TEMP/ee-key"
+          FP=$(openssl rsa -pubin -in "$RUNNER_TEMP/ee-key/keys/public.pem" -outform DER | sha256sum | cut -d' ' -f1)
+          rm -rf "$RUNNER_TEMP/ee-key"
+          if [ "$FP" != "d8c20ac83e914b68dd4c307f84aa43342e2b80919edd2b7059620dd0e4e1cdb0" ]; then
+            echo "::error::ee keys/public.pem on the branch being built is not the real key ($FP)"; exit 1
+          fi
+          echo "ee public key OK"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
