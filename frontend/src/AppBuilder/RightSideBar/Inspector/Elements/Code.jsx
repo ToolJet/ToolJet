@@ -58,6 +58,13 @@ export const Code = ({
     onChange({ name: 'iconVisibility' }, 'value', value, 'styles');
   }
 
+  // A note under the field (a UI 2.0 config's `note`, or `noteFor` keyed by the field's value): Card content's Custom
+  // says how a card's components read the card's data. The value may be written as a literal binding ({{'custom'}}).
+  const noteKey = String(initialValue ?? '')
+    .trim()
+    .replace(/^\{\{\s*['"`]?|['"`]?\s*\}\}$/g, '');
+  const note = paramMeta?.noteFor?.[noteKey] ?? paramMeta?.note;
+
   if (isHidden) return null;
   return (
     <div className={`field tw-mb-2 last:tw-mb-0 ${options.className ?? ''}`}>
@@ -83,6 +90,15 @@ export const Code = ({
         setCodeEditorView={setCodeEditorView}
         canRefresh={canRefresh}
       />
+      {note ? (
+        <p
+          className="tw-m-0 tw-mt-1 tw-text-xs"
+          style={{ color: 'var(--text-placeholder, var(--slate10))' }}
+          data-cy={`${param.name}-field-note`}
+        >
+          {note}
+        </p>
+      ) : null}
     </div>
   );
 };

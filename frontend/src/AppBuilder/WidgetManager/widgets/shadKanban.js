@@ -87,6 +87,10 @@ export const shadKanbanConfig = {
       },
       isFxNotRequired: true,
       fullWidth: true,
+      noteFor: {
+        custom:
+          "Drop components on the card in the editor and bind them to the card's data: {{cardData.<field>}}, e.g. {{cardData.title}}.",
+      },
     },
     cardHeight: {
       type: 'code',

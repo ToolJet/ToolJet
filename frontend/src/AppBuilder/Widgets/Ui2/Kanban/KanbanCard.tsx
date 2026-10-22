@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, Badge, Progress, cn } from '@/AppBuilder/Widget
 import { badgeLook, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { cardClamp, cardDateLabel, cardDetails } from './kanbanBoard';
 import type { BoardCard } from './kanbanBoard';
+import { EmptyCardHint } from './EmptyCardHint';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { fromOwnSurface, isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
@@ -378,7 +379,7 @@ export const CustomCardBody = ({
     // In the editor, a press inside the card edits its components instead of starting a card drag.
     <div
       data-card-canvas=""
-      style={{ height }}
+      style={{ height, position: 'relative' }}
       onPointerDown={editing ? (e) => e.stopPropagation() : undefined}
       onKeyDownCapture={blocked ? blockInput : undefined}
       onPointerDownCapture={blocked ? blockInput : undefined}
@@ -386,6 +387,7 @@ export const CustomCardBody = ({
       onClickCapture={blocked ? blockInput : undefined}
     >
       <SubcontainerContext.Provider value={contextValue}>{canvas}</SubcontainerContext.Provider>
+      {editing ? <EmptyCardHint id={id} /> : null}
     </div>
   );
 };
