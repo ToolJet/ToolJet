@@ -11,6 +11,16 @@ import { colorText, pickerColor, useThemeDefault } from '@/AppBuilder/CodeEditor
 import { pickedColor } from './pickedColor';
 
 const coerceColorString = (v) => (typeof v === 'string' ? v : '');
+const capitalised = (name) =>
+  name
+    .split('/')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('/');
+// What a theme-following field shows: the theme token it draws (Surface/Surface1), else its colour's hex.
+const themeName = (themeDefault, colorMap) => {
+  if (themeDefault.token && colorMap?.[themeDefault.token]) return capitalised(colorMap[themeDefault.token]);
+  return themeDefault.value ? colorText(themeDefault.value) : null;
+};
 
 const BaseColorSwatches = ({
   value,
@@ -45,7 +55,9 @@ const BaseColorSwatches = ({
   // A blank UI 2.0 style follows the theme (AppBuilder/CodeEditor/themeDefault.js): the swatch shows the theme's colour
   // and says so, instead of an empty white swatch that read as a style that failed to load.
   const themeDefault = useThemeDefault();
-  const followsTheme = Boolean(themeDefault) && !value;
+  // Blank, or shown as the theme token the widget draws (DynamicFxTypeRenderer): either way it follows the theme.
+  const followsTheme = Boolean(themeDefault) && (!value || value === themeDefault.token);
+  const themeLabel = followsTheme ? themeName(themeDefault, colorMap) : null;
   const [showPicker, setShowPicker] = useState(false);
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
   const coverStyles = {
@@ -164,8 +176,10 @@ const BaseColorSwatches = ({
         >
           {followsTheme ? (
             <span title="Follows the app theme. Pick a colour to set your own.">
-              {themeDefault.value ? `${colorText(themeDefault.value)} ` : null}
-              <span style={{ color: 'var(--slate10)' }}>{themeDefault.value ? 'Theme' : 'Theme default'}</span>
+              {themeLabel}
+              <span style={{ color: 'var(--slate10)', marginLeft: themeLabel ? '6px' : 0, fontSize: '11px' }}>
+                {themeLabel ? 'Theme' : 'Theme default'}
+              </span>
             </span>
           ) : colorMap?.[value] ? (
             colorMap[value]
