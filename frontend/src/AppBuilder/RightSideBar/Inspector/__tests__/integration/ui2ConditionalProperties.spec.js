@@ -40,6 +40,7 @@ const CASES = [
   ['ShadCarousel', 'interval', 'autoplay', '{{true}}', '{{false}}'],
   ['ShadCarousel', 'pauseOnHover', 'autoplay', '{{true}}', '{{false}}'],
   ['ShadListView', 'columns', 'mode', 'grid', 'list'],
+  ['ShadKeyValue', 'labelWidth', 'layout', 'inline', 'stacked'],
 ];
 
 beforeEach(() => {
