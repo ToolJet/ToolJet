@@ -218,12 +218,37 @@ export const visitReleasedAppAndCaptureQueryRun = (slug) => {
 
 export const openGroupGranularAccess = (groupName) => {
   const groupTitle = (name) => `[data-cy="${cyParamName(name)}-title"]`;
+  uiWatchGranularPermissions();
   cy.visit(`/${Cypress.env("workspaceSlug")}/workspace-settings/groups`);
   // The page auto-selects Admin once it loads; a click that lands before that is overridden, so wait for Admin's header, click, then wait for the clicked group's header.
   cy.get(groupTitle("Admin"), { timeout: 30000 }).should("be.visible");
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupTitle(groupName)).should("be.visible");
+  uiOpenGranularAccessTab({ waitForUsers: !ROLE_GROUPS.includes(groupName) });
+};
+
+// The group's granular-permissions fetch decides which container holds the "Add permission"
+// menu: the empty-state box when the group has no grants, the side button strip when it has.
+// The menu therefore UNMOUNTS and remounts when the response arrives, and a popover opened
+// before that is destroyed with it — permanently, since only a click reopens it. A click that
+// lands while the fetch is in flight is lost, which is why this fails on CI and passes locally.
+//
+// The fetch fires when the GROUP is selected, not when the tab is clicked, so the alias has to
+// be registered before navigating. Register, navigate, then wait.
+// addable-users is fetched by the parent page component, so it re-renders the whole panel and
+// unmounts the menu a second time, after the granular fetch has already settled.
+export const uiWatchGranularPermissions = () => {
+  cy.intercept("GET", "**/v2/group-permissions/*/granular-permissions").as("granularPermissions");
+  cy.intercept("GET", "**/users/addable-users*").as("addableUsers");
+};
+
+// The built-in role groups never fetch addable-users, so only wait for it on a custom group.
+const ROLE_GROUPS = ["Admin", "Builder", "End-user"];
+
+export const uiOpenGranularAccessTab = ({ waitForUsers = true } = {}) => {
   cy.get(groupsSelector.granularLink).click();
+  cy.wait("@granularPermissions");
+  if (waitForUsers) cy.wait("@addableUsers");
 };
 
 export const uiOpenAddDataSourceFolderGrant = () => {
@@ -231,8 +256,13 @@ export const uiOpenAddDataSourceFolderGrant = () => {
   cy.get(dsFolderPerm.addDataSourceFolderButton).click();
 };
 
+// The edit pencil is mounted only while the row's React onHover state is true
+// ({onHover && <ButtonSolid …/>} in DataSourceFolderResourcePermissions). realHover moves the
+// real cursor, which lights up the CSS :hover styling but did not reliably drive React's
+// onMouseEnter here, leaving the button unmounted. Dispatching mouseover on the row sets the
+// state directly; realHover still follows so the cursor sits on the row for the click.
 export const uiOpenEditDataSourceFolderGrant = () => {
-  cy.get(dsFolderPerm.granularAccessRow).realHover();
+  cy.get(dsFolderPerm.granularAccessRow).trigger("mouseover").realHover();
   cy.get(dsFolderPerm.editGranularAccess).click({ force: true });
 };
 
