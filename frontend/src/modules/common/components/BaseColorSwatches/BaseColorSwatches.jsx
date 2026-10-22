@@ -135,7 +135,7 @@ const BaseColorSwatches = ({
             <div style={pickerStyle}>
               <SketchPicker
                 onFocus={() => setShowPicker(true)}
-                color={value || (followsTheme ? pickerColor(themeDefault.value) : undefined)}
+                color={followsTheme ? pickerColor(themeDefault.value) : value}
                 onChangeComplete={handleColorChange}
                 style={{ bottom: 0 }}
               />
