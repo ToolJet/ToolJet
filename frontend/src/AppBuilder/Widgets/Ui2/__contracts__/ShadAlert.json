@@ -97,6 +97,13 @@
     }
   },
   "styles": {
+    "accentColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
     "backgroundColor": {
       "type": "string",
       "schema": {

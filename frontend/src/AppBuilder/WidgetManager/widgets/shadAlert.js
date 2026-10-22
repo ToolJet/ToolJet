@@ -64,6 +64,10 @@ export const shadAlertConfig = {
           name: 'Destructive',
           value: 'destructive',
         },
+        {
+          name: 'Custom',
+          value: 'custom',
+        },
       ],
       validation: {
         schema: {
@@ -232,6 +236,17 @@ export const shadAlertConfig = {
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Alert border color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Custom accent',
+      note: "The Custom variant's colour: its tint, border, title and text. Blank, the theme's primary.",
       validation: {
         schema: {
           type: 'string',
