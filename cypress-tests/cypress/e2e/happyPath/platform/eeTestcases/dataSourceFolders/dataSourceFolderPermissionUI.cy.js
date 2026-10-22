@@ -11,6 +11,8 @@ import {
   uiOpenAddDataSourceFolderGrant,
   uiOpenEditDataSourceFolderGrant,
   uiSelectGrantFolders,
+  uiOpenGranularAccessTab,
+  uiWatchGranularPermissions,
 } from 'Support/utils/platform/dataSourceFolders';
 import { verifyGranularPermissionModalUI } from 'Support/utils/platform/groupsUI';
 
@@ -41,15 +43,18 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     apiCreateGroup(groupName);
     cy.apiCreateDataSourceFolder(`UI Folder ${testId}`);
 
+    uiWatchGranularPermissions();
     cy.visit(`/${wsSlug}/workspace-settings/groups`);
     cy.get(groupsSelector.groupLink(groupName)).click();
-    cy.get(groupsSelector.granularLink).click();
+    uiOpenGranularAccessTab();
 
     cy.get(groupsSelector.addPermissionButton).click();
     cy.get(dsFolderPerm.addDataSourceFolderButton).should('be.visible').click();
 
-    cy.get(dsFolder.modalTitle).should('have.text', 'Add data source folders permissions');
-    cy.get(dsFolder.modalCloseButton).should('be.visible');
+    // The shared permission modal is rendered three times over (once per render branch), all
+    // mounted and visible, so this data-cy matches three identical titles. Assert the first.
+    cy.get(dsFolder.modalTitle).first().should('have.text', 'Add data source folders permissions');
+    cy.get(dsFolder.modalCloseButton).first().should('be.visible');
 
     verifyGranularPermissionModalUI('data_source_folder');
 
@@ -111,7 +116,7 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     openDataSourcesList();
 
     cy.get(dsFolder.createFolderIcon).click();
-    cy.get(dsFolder.modalTitle).should('have.text', 'Create folder');
+    cy.get(dsFolder.folderModalTitle('Create folder')).should('have.text', 'Create folder');
     cy.get(dsFolder.folderNameInput)
       .should('be.visible')
       .and('have.attr', 'placeholder', dsFolder.folderNamePlaceholder);
@@ -144,7 +149,7 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.apiGetDataSourceFolderId(folderName).then((folderId) => {
       cy.get(dsFolder.folderMenuButton(folderId)).click({ force: true });
       cy.get(dsFolder.folderRenameOption(folderId)).click();
-      cy.get(dsFolder.modalTitle).should('have.text', 'Rename folder');
+      cy.get(dsFolder.folderModalTitle('Rename folder')).should('have.text', 'Rename folder');
       cy.get(dsFolder.folderNameInput).should('have.value', folderName);
       cy.get(dsFolder.renameFolderButton).should('be.disabled');
 
