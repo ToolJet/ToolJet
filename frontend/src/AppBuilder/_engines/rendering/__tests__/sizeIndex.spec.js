@@ -67,7 +67,8 @@ describe('createSizeIndex', () => {
     expect(big.total()).toBe(46000000);
     expect(big.indexAt(46 * 654321 + 1)).toBe(654321);
     expect(big.offsetOf(999999)).toBe(46 * 999999);
-    expect(performance.now() - start).toBeLessThan(200);
+    // A few hundred ms on a CI runner (a laptop: well under 100); an index of an object per item takes seconds.
+    expect(performance.now() - start).toBeLessThan(1000);
   });
 
   test('no items', () => {

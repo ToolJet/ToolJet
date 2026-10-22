@@ -20,6 +20,9 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
+// Integration specs that draw real rows: a CI runner takes several times as long as a laptop.
+jest.setTimeout(60000);
+
 const state = () => useStore.getState();
 
 const SCENARIO = defineAppBuilderScenario({
@@ -689,7 +692,7 @@ describe('Listview rows on demand — a long list', () => {
     await waitFor(() => expect(renderedRows()).not.toContain(rows[0]));
     expect(renderedRows()).not.toContain(3);
     expect(renderedRows()).toContain(rows[rows.length - 1]);
-  }, 30000);
+  });
 
   test('state actions whose write fails reject', async () => {
     renderListview(ROWS);

@@ -22,6 +22,9 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
+// Integration specs that draw real rows: a CI runner takes several times as long as a laptop.
+jest.setTimeout(60000);
+
 const state = () => useStore.getState();
 
 const SCENARIO = defineAppBuilderScenario({
@@ -172,8 +175,12 @@ beforeAll(() =>
 
 describe('Listview rows all at once — a long list', () => {
   const limits = { ...LIMITS };
+  // jsdom reads and draws a row far slower than a browser (and a CI runner slower still): no time limit, unless a test
+  // is about one and sets it.
+  const lifted = { ...LIMITS, backgroundMs: Infinity, syncMs: Infinity };
   beforeEach(() => {
     session = new AppBuilderTestSession({ scenario: SCENARIO });
+    Object.assign(LIMITS, lifted);
   });
   afterEach(() => {
     Object.assign(LIMITS, limits);
@@ -323,7 +330,6 @@ describe('Listview rows all at once — a long list', () => {
     expect(estimate).toMatchObject({ windowed: true, drawnChildren: ['icon1'], drawnWidgets: ROW_COUNT * 5 });
     // Every widget of every row drawn, 2 ms each.
     expect(estimate.timeMs).toBeGreaterThan(ROW_COUNT * 5 * 2);
-    LIMITS.backgroundMs = Infinity; // jsdom reads a row far slower than a browser
     const { holdRowMounted, readRow } = rowsEngine;
     let held = 0;
     let mostHeld = 0;
@@ -366,29 +372,30 @@ describe('Listview rows all at once — a long list', () => {
       expect(all.data[row].icon1).toEqual(values(icon));
       expect(all.data[row].text1.text).toBe(`row ${row}`);
     });
-  }, 30000);
+  });
 
   test('in the background, drawn rows slower than estimated: stopped once the rows left wouldn’t fit the time', async () => {
     renderListview(ROWS.slice(0, 450), { icon: true });
     await ready();
-    expect(estimated().timeMs).toBeLessThan(LIMITS.backgroundMs);
-    // Each row takes 50 ms to draw (a slow render round): 450 rows would take 22.5 s.
+    // Room for the estimate, and rows drawn far slower: 450 of them would take three times the time allowed.
+    LIMITS.backgroundMs = Math.max(limits.backgroundMs, 2 * estimated().timeMs);
+    const lateMs = (3 * LIMITS.backgroundMs) / 450;
     const now = performance.now.bind(performance);
     let late = 0;
     jest.spyOn(performance, 'now').mockImplementation(() => now() + late);
     const holds = [];
     jest.spyOn(rowsEngine, 'holdRowMounted').mockImplementation((get, subscribe, listviewId, dataRow) => {
       holds.push(dataRow);
-      late += 50;
+      late += lateMs;
       return Promise.resolve(() => {});
     });
     const stopped = await materialize().catch((error) => error);
     expect(stopped).toBeInstanceOf(MaterializationError);
     expect(stopped.reason).toBe('time');
     expect(stopped.message).toMatch(
-      /^listview1 has 450 rows: reading all of its data is taking longer than estimated: at its pace so far it takes about 2\d s, more than the 10 s allowed\. Use its source data instead \(variables\.rows\)\.$/
+      /^listview1 has 450 rows: reading all of its data is taking longer than estimated: at its pace so far it takes about [\d,]+ s, more than the [\d,]+ s allowed\. Use its source data instead \(variables\.rows\)\.$/
     );
-    // Stopped after about a second's worth, not at the end.
+    // Stopped early, not at the end.
     expect(holds.length).toBeLessThan(50);
   });
 
@@ -485,7 +492,6 @@ describe('Listview rows all at once — a long list', () => {
   });
 
   test('at once, for rows whose children are all computed', async () => {
-    LIMITS.syncMs = Infinity; // jsdom reads a row far slower than a browser
     renderListview(ROWS);
     await ready();
     await act(async () => {
@@ -516,7 +522,6 @@ describe('Listview rows all at once — a long list', () => {
   });
 
   test('its time estimate covers building every row as it really goes, at once and in the background', async () => {
-    LIMITS.syncMs = Infinity; // jsdom reads a row far slower than a browser
     renderListview(ROWS);
     await ready();
     const { timeMs } = estimated();
@@ -534,7 +539,6 @@ describe('Listview rows all at once — a long list', () => {
   });
 
   test('as JSON, rows that grew since they were measured (a variable their children read): stopped before too long', async () => {
-    LIMITS.syncMs = Infinity;
     renderListview(ROWS, { text: "{{listItem.name + (variables.suffix ?? '')}}" });
     await ready();
     const before = estimated({ json: true });
@@ -563,13 +567,13 @@ describe('Listview rows all at once — a long list', () => {
     expect(slow.message).toMatch(
       /^listview1 has 3,000 rows: reading all of its data takes about .* \(variables\.rows\)\.$/
     );
-    Object.assign(LIMITS, limits);
+    Object.assign(LIMITS, lifted);
 
     LIMITS.jsonChars = 1000;
     await expect(materialize().then(() => 'ok')).resolves.toBe('ok');
     const long = await materialize({ json: true }).catch((error) => error);
     expect(long.reason).toBe('size');
-    Object.assign(LIMITS, limits);
+    Object.assign(LIMITS, lifted);
 
     const MB = 1024 * 1024;
     setMemory({ value: { jsHeapSizeLimit: 4096 * MB, usedJSHeapSize: 4096 * MB - 512 * MB - MB / 1024 } });

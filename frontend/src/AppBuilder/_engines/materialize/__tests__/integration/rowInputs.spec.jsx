@@ -24,6 +24,9 @@ import {
 } from '@/AppBuilder/Widgets/MultiselectV2/__tests__/integration/multiselectV2Harness';
 import { numberInputExposure } from '../../widgets/NumberInput';
 
+// Integration specs that draw real rows: a CI runner takes several times as long as a laptop.
+jest.setTimeout(60000);
+
 const state = () => useStore.getState();
 
 const SCENARIO = defineAppBuilderScenario({
@@ -309,7 +312,7 @@ describe('Listview rows on demand — a row of input widgets', () => {
       expect(values(shown)).toEqual(values(changed[handle]));
       expect(functionsOf(shown)).toEqual(expect.arrayContaining(functionsOf(changed[handle])));
     });
-  }, 30000);
+  });
 
   test('a module that throws for a row leaves that child without values, as its crashed widget, and its siblings read', async () => {
     renderListview(ROWS);

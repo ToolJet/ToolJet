@@ -23,6 +23,9 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
+// Integration specs that draw real rows: a CI runner takes several times as long as a laptop.
+jest.setTimeout(60000);
+
 const state = () => useStore.getState();
 
 const SCENARIO = defineAppBuilderScenario({
