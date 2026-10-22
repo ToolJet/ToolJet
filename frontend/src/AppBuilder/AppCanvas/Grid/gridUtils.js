@@ -291,20 +291,55 @@ export const handleWidgetResize = (e, list, boxes, gridWidth) => {
   e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
 };
 
-export function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
+/**
+ * Offset of the dragged element's top-left corner from the parent canvas's, in px.
+ * Measures the element, not the cursor, so offsets can be negative — clamp before persisting.
+ */
+export function getElementOffsetFromParent(event, id, parentWidgetType) {
   let parentDiv = document.getElementById('canvas-' + id) || document.getElementById('real-canvas');
-  // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();
   const targetDivRect = event.target.getBoundingClientRect();
 
-  const mouseX = targetDivRect.left - parentDivRect.left;
-  const mouseY = targetDivRect.top - parentDivRect.top;
-
-  // Calculate the distance from the mouse pointer to the top and left edges of the parent div.
-  const top = mouseY;
-  const left = mouseX;
+  const top = targetDivRect.top - parentDivRect.top;
+  const left = targetDivRect.left - parentDivRect.left;
 
   return { top, left };
+}
+
+/**
+ * Enforces `1 <= width <= NO_OF_GRIDS` and `0 <= left <= NO_OF_GRIDS - width`, shifting left rather
+ * than shrinking width — a drop keeps the size it was dragged with. Identity when already valid.
+ */
+export function clampToGridBounds(left, width) {
+  const _width = Math.min(Math.max(Math.round(width), 1), NO_OF_GRIDS);
+  const _left = Math.min(Math.max(Math.round(left), 0), NO_OF_GRIDS - _width);
+  return { left: _left, width: _width };
+}
+
+/** Same invariant, but clips width rather than shifting left — a resize must not move the widget. */
+export function clampResizeToGridBounds(left, width) {
+  const _left = Math.min(Math.max(Math.round(left), 0), NO_OF_GRIDS - 1);
+  const _width = Math.min(Math.max(Math.round(width) || 1, 1), NO_OF_GRIDS - _left);
+  return { left: _left, width: _width };
+}
+
+/**
+ * Column shift bringing a group inside the grid without changing the spacing between its members.
+ * Returns 0 for a group wider than the grid, leaving the caller's per-member clamp to cope.
+ */
+export function getGridBoundsShift(placements) {
+  const minLeft = Math.min(...placements.map(({ left }) => left));
+  const maxRight = Math.max(...placements.map(({ left, width }) => left + width));
+
+  if (maxRight - minLeft > NO_OF_GRIDS) return 0;
+  if (minLeft < 0) return Math.min(-minLeft, Math.max(0, NO_OF_GRIDS - maxRight));
+  if (maxRight > NO_OF_GRIDS) return NO_OF_GRIDS - maxRight;
+  return 0;
+}
+
+/** Lower bound only — the canvas scrolls, so `top` has no meaningful maximum. */
+export function clampTop(top) {
+  return Math.max(0, top);
 }
 
 export function findHighestLevelofSelection(_selectedComponents) {
