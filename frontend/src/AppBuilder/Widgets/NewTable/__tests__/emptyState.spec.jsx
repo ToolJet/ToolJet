@@ -6,9 +6,10 @@
 import fs from 'fs';
 import path from 'path';
 import React from 'react';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import useTableStore from '../_stores/tableStore';
 import { TableData } from '../_components/TableData/TableData';
+import { EmptyState } from '../_components/TableData/_components/EmptyState';
 
 jest.mock('../_components/TableData/_components/TableHeader', () => ({
   TableHeader: () => (
@@ -103,5 +104,43 @@ describe('Table with no rows', () => {
     const look = scss('shadcnLook.scss');
     expect(look).toMatch(/&:has\(> \.table-responsive\.tj-ntable-empty\) \{\s*height: 100% !important;/);
     expect(look).toMatch(/> \.table-responsive\.tj-ntable-empty \{\s*flex: 1 1 auto !important;/);
+  });
+});
+
+describe('Table with no rows, too short for its message', () => {
+  // At 110px the toolbar and the header left 17px, and the table's box cut "No data" to a sliver of its top (message
+  // 101 to 121px, cut at 108). It shows whole or not at all.
+  let report;
+  let observed;
+  beforeEach(() => {
+    global.IntersectionObserver = class {
+      constructor(callback, options) {
+        report = (ratio) => act(() => callback([{ intersectionRatio: ratio, boundingClientRect: { height: 40 } }]));
+        this.options = options;
+      }
+      observe(el) {
+        observed = { el, root: this.options.root };
+      }
+      disconnect() {}
+    };
+  });
+  afterEach(() => {
+    delete global.IntersectionObserver;
+  });
+
+  it('hides the message while the table cuts any of it', () => {
+    const { container, getByText } = render(
+      <div className="card jet-table">
+        <EmptyState />
+      </div>
+    );
+    const body = container.querySelector('.tj-ntable-empty-body');
+    expect(observed.root).toBe(container.firstChild);
+    expect(observed.el.contains(getByText('No data'))).toBe(true);
+    report(0.3);
+    expect(body).toHaveClass('tj-ntable-empty-cut');
+    report(1);
+    expect(body).not.toHaveClass('tj-ntable-empty-cut');
+    expect(scss('table.scss')).toMatch(/&\.tj-ntable-empty-cut > div \{\s*visibility: hidden;/);
   });
 });
