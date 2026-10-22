@@ -19,6 +19,9 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import WidgetTooltip from '@/AppBuilder/AppCanvas/WidgetTooltip';
 
+// Upper bound on how long open() waits for the enter transition
+const OPEN_TIMEOUT_MS = 1000;
+
 export const ModalV2 = function Modal({
   id,
   component,
@@ -102,35 +105,70 @@ export const ModalV2 = function Modal({
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
-  useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        setExposedVariable('show', true);
-        setShowModal(true);
-      },
-      close: async function () {
-        setExposedVariable('show', false);
-        setShowModal(false);
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // open() resolves once the modal has finished entering, so `await open()` is followed by mounted children.
+  // It resolves to true if the modal opened, or false if it was closed or unmounted before it finished opening.
+  const pendingOpensRef = useRef([]);
+  const hasEnteredRef = useRef(false);
+
+  const settleOpens = (opens, opened) => {
+    if (!opens.length) return;
+    try {
+      useStore.getState().flushImplicitBatchEntries();
+    } finally {
+      // The entries are already removed, so they must settle here even if the flush throws
+      opens.forEach(({ resolve, timer }) => {
+        clearTimeout(timer);
+        resolve(opened);
+      });
+    }
+  };
+
+  const resolvePendingOpens = (opened) => {
+    const pending = pendingOpensRef.current;
+    pendingOpensRef.current = [];
+    settleOpens(pending, opened);
+  };
+
+  // Resolves only this open, so an earlier open's timeout can't resolve a later one early
+  const resolveOpen = (open) => {
+    if (!pendingOpensRef.current.includes(open)) return;
+    pendingOpensRef.current = pendingOpensRef.current.filter((pending) => pending !== open);
+    // Timed out while still entering: the modal is on its way open, so report it as opened
+    settleOpens([open], true);
+  };
+
+  const onModalEntered = () => {
+    hasEnteredRef.current = true;
+    resolvePendingOpens(true);
+  };
 
   function hideModal() {
+    hasEnteredRef.current = false;
     fireEvent('onClose');
     setExposedVariable('show', false);
     setShowModal(false);
+    resolvePendingOpens(false);
   }
 
   function openModal() {
+    const opened = new Promise((resolve) => {
+      const open = { resolve };
+      // Never block the caller if the modal doesn't finish entering
+      open.timer = setTimeout(() => resolveOpen(open), OPEN_TIMEOUT_MS);
+      pendingOpensRef.current.push(open);
+    });
     setExposedVariable('show', true);
-    setShowModal(true);
+    if (hasEnteredRef.current) {
+      resolvePendingOpens(true);
+    } else {
+      setShowModal(true);
+    }
+    return opened;
   }
 
   const onShowModal = () => {
-    openModal();
     setSelectedComponentAsModal(id);
+    return openModal();
   };
 
   const onHideModal = () => {
@@ -150,9 +188,9 @@ export const ModalV2 = function Modal({
     }
 
     if (showModal) {
-      onShowSideEffects();
+      onShowSideEffects(id);
     } else {
-      onHideSideEffects();
+      onHideSideEffects(id);
     }
 
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
@@ -166,10 +204,12 @@ export const ModalV2 = function Modal({
   // the next page unscrollable.
   useEffect(() => {
     return () => {
+      resolvePendingOpens(false);
       if (showModalRef.current) {
-        onHideSideEffects();
+        onHideSideEffects(id);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -322,7 +362,9 @@ export const ModalV2 = function Modal({
         restoreFocus={false}
         animation={false}
         onShow={() => {
-          onShowModal();
+          // Not onShowModal(): that would register a second pending open for the same show
+          setSelectedComponentAsModal(id);
+          setExposedVariable('show', true);
           fireEvent('onOpen');
         }}
         onHide={() => {
@@ -343,6 +385,7 @@ export const ModalV2 = function Modal({
           hideTitleBar,
           hideCloseButton,
           onHideModal,
+          onModalEntered,
           component,
           hideOnEsc,
           modalHeight,

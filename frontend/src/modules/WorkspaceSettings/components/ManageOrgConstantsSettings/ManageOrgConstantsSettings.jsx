@@ -1,6 +1,6 @@
 import React from 'react';
 import EmptyState from './EmptyState';
-import { ManageOrgConstants } from './components';
+import ManageOrgConstants from './components/ManageOrgConstants';
 import Footer from './Footer';
 import ConstantForm from './ConstantForm';
 import ConstantTable from './ConstantTable';
