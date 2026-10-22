@@ -549,6 +549,13 @@ export const tableConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'Container',
     },
+    rowBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Row background',
+      placeholder: 'Default',
+      validation: { schema: { type: 'string' } },
+      accordian: 'Container',
+    },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
@@ -906,6 +913,7 @@ export const tableConfig = {
       columnTitleColor: { value: 'var(--cc-primary-text)' },
       columnBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      rowBackgroundColor: { value: '' },
       textColor: { value: 'var(--cc-primary-text)' },
       selectedRowColor: { value: 'var(--cc-surface2-surface)' },
       columnHeaderWrap: { value: 'fixed' },

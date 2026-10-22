@@ -1,5 +1,6 @@
 import React from 'react';
 import { Code } from './Elements/Code';
+import { TableColumnContext } from './Components/Table/ColumnManager/TableColumnContext';
 import { QuerySelector } from './QuerySelector';
 import { convertToKebabCase } from '@/_helpers/utils';
 import { LabeledDivider } from './Components/Form/_components';
@@ -130,30 +131,34 @@ export function renderCustomStyles(
     }
   }
 
-  return (
-    <>
-      <Code
-        param={{ name: param, ...component.component.properties?.[param] }}
-        definition={definition}
-        dataQueries={dataQueries}
-        onChange={paramUpdated}
-        paramType={paramType}
-        components={components}
-        componentMeta={componentMeta}
-        darkMode={darkMode}
-        componentName={component.component.name || null}
-        type={meta?.type}
-        fxActive={definition.fxActive ?? false}
-        onFxPress={(active) => {
-          paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
-        }}
-        component={component}
-        accordian={accordian}
-        placeholder={placeholder}
-        customMeta={customMeta}
-      />
-    </>
+  const codeField = (
+    <Code
+      param={{ name: param, ...component.component.properties?.[param] }}
+      definition={definition}
+      dataQueries={dataQueries}
+      onChange={paramUpdated}
+      paramType={paramType}
+      components={components}
+      componentMeta={componentMeta}
+      darkMode={darkMode}
+      componentName={component.component.name || null}
+      type={meta?.type}
+      fxActive={definition.fxActive ?? false}
+      onFxPress={(active) => {
+        paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
+      }}
+      component={component}
+      accordian={accordian}
+      placeholder={placeholder}
+      customMeta={customMeta}
+    />
   );
+
+  if (componentConfig.component === 'Table' && paramType === 'styles' && param === 'rowBackgroundColor') {
+    return <TableColumnContext.Provider value={{ tableId: component.id }}>{codeField}</TableColumnContext.Provider>;
+  }
+
+  return <>{codeField}</>;
 }
 
 export function renderElement(
