@@ -414,6 +414,9 @@
     "setSecondaryValue": [
       "text"
     ],
+    "setTrend": [
+      "trend"
+    ],
     "setVisibility": [
       "value"
     ]
