@@ -14,12 +14,14 @@
     {
       "call": "setText",
       "changed": {
+        "isValid": false,
         "value": "Saved text"
       }
     },
     {
       "call": "clear",
       "changed": {
+        "isValid": true,
         "value": ""
       }
     },

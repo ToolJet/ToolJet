@@ -212,4 +212,24 @@ describe('UI 2.0 Input', () => {
     expect(root.getPropertyValue('--lk-error')).toBe('#b91c1c');
     expect(root.getPropertyValue('--lk-radius')).toBe('10px');
   });
+
+  test('[ShadInput-VAL-005] type email is invalid until the text is an email address', async () => {
+    // Any text passed as valid.
+    render({ properties: { inputType: binding('email') } });
+    await type('not an email');
+    await leave();
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter a valid email address');
+
+    await type('ada@example.com');
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+    expect(screen.queryByRole('alert')).toBeNull();
+
+    // Empty is left to Mandatory; a text box is not checked as an address.
+    await type('');
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+    render({ properties: { inputType: binding('text') } });
+    await type('not an email');
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+  });
 });
