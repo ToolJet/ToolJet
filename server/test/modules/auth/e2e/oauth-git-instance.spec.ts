@@ -19,8 +19,11 @@ describe('OAuthController', () => {
   let configService: ConfigService;
 
   const token = 'some-Token';
+  const originalDisableSignups = process.env.DISABLE_SIGNUPS;
 
   beforeAll(async () => {
+    // CE derives the instance signup setting from DISABLE_SIGNUPS; first-time instance SSO sign-in needs it on
+    process.env.DISABLE_SIGNUPS = 'false';
     ({ app } = await initTestApp());
     configService = app.get(ConfigService);
     userRepository = getEntityRepository(User);
@@ -34,6 +37,8 @@ describe('OAuthController', () => {
   });
 
   afterAll(async () => {
+    if (originalDisableSignups === undefined) delete process.env.DISABLE_SIGNUPS;
+    else process.env.DISABLE_SIGNUPS = originalDisableSignups;
     await closeTestApp(app);
   }, 60_000);
 
