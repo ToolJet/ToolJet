@@ -87,6 +87,8 @@ const LABEL_TWO_LINES = 40;
 const ROW_GAP = 6;
 const VALUE_LINE: Record<string, number> = { sm: 28, default: 32, lg: 40 };
 const NARROW_CARD = 160;
+// Height a one-line label over the figure needs (px): the short card's padding and border, a label line, the gap.
+const STACK_ROOM = 26 + 20 + 4;
 const TRENDS = ['up', 'down', 'neutral'];
 
 /** A part drawn as a skeleton of its own size while the Stat loads with the Skeleton look: the part keeps its place
@@ -170,6 +172,12 @@ export const ShadStat = (props: WidgetProps) => {
     ROW_GAP +
     (VALUE_LINE[size] ?? VALUE_LINE.default);
   const reserveLabel = !fixed || Number(props.height) >= labelRoom;
+  // A box too short even for one label line over the figure (a 60px card) sets the label beside the figure: stacked,
+  // the figure fell below the card's edge.
+  const inline =
+    fixed &&
+    Number(props.height) > 0 &&
+    Number(props.height) < (properties.card === false ? 0 : STACK_ROOM) + (VALUE_LINE[size] ?? VALUE_LINE.default);
   const context = [change.context, properties.changeLabel ? String(properties.changeLabel) : '']
     .filter(Boolean)
     .join(' · ');
@@ -219,15 +227,21 @@ export const ShadStat = (props: WidgetProps) => {
   const content = (
     <div
       className={cn(
-        'tw-flex tw-min-w-0 tw-flex-1 tw-flex-col',
+        'tw-flex tw-min-w-0 tw-flex-1',
         reserveLabel ? 'tw-gap-1.5' : 'tw-gap-1',
+        inline ? 'tw-flex-row tw-items-center tw-gap-3' : 'tw-flex-col',
         fixed && 'tw-min-h-0 tw-overflow-hidden'
       )}
     >
       {icon && iconPosition === 'top' ? <div className="tw-mb-1">{iconNode}</div> : null}
       {/* The chip wraps under the label when the card is too narrow for both (it was cut at the card's edge in a
           100px card); the label keeps at least 4rem beside it otherwise. */}
-      <div className="tw-flex tw-min-w-0 tw-flex-wrap tw-items-start tw-justify-between tw-gap-x-2 tw-gap-y-1">
+      <div
+        className={cn(
+          'tw-flex tw-min-w-0 tw-flex-wrap tw-items-start tw-justify-between tw-gap-x-2 tw-gap-y-1',
+          inline && 'tw-flex-1'
+        )}
+      >
         {/* The label takes the row's spare width and two lines' height whether it wraps or not, so Stats side by side
             start their figures level ("Spend this quarter" on two lines dropped its figure below its neighbours').
             Longer labels end in an ellipsis, the whole label the tooltip. */}
@@ -245,7 +259,12 @@ export const ShadStat = (props: WidgetProps) => {
         {badgeInHeader ? changeBadge : null}
         {icon && iconPosition === 'right' ? iconNode : null}
       </div>
-      <div className="tw-flex tw-min-w-0 tw-flex-wrap tw-items-baseline tw-gap-x-2 tw-gap-y-1">
+      <div
+        className={cn(
+          'tw-flex tw-min-w-0 tw-flex-wrap tw-items-baseline tw-gap-x-2 tw-gap-y-1',
+          inline && 'tw-shrink-0'
+        )}
+      >
         <span
           className={cn(
             statSize(size),
