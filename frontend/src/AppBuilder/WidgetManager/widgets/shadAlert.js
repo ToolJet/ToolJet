@@ -3,9 +3,11 @@ export const shadAlertConfig = {
   displayName: 'Alert',
   description: 'Alert',
   component: 'ShadAlert',
+  // A new Alert (its title alone) draws 56px tall with Dynamic height, so a 60px box (6 grid rows) holds it with no
+  // band under the card in the editor; 72px left one.
   defaultSize: {
     width: 20,
-    height: 72,
+    height: 60,
   },
   others: {
     showOnDesktop: {
