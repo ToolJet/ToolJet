@@ -7,6 +7,9 @@ import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
 import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
 import { FEATURE_KEY as DATA_QUERY_FOLDER_FEATURE } from '@modules/data-query-folders/constants';
+import { FEATURE_KEY as DATA_SOURCE_FEATURE } from '@modules/data-sources/constants';
+import { FEATURE_KEY as DATA_QUERY_FEATURE } from '@modules/data-queries/constants';
+import { FEATURE_KEY as APP_ENVIRONMENT_FEATURE } from '@modules/app-environments/constants';
 
 /**
  * What a WORKSPACE personal access token may reach.
@@ -190,6 +193,34 @@ export const PAT_APP_VIEWER_FEATURES: Partial<Record<MODULES, ReadonlySet<string
   [MODULES.VERSION]: new Set<string>([VERSION_FEATURE.GET_ONE]),
 
   [MODULES.DATA_QUERY_FOLDERS]: new Set<string>([DATA_QUERY_FOLDER_FEATURE.GET]),
+
+  /* Not FEATURE_KEY.GET: `GET /data-sources/:organizationId` is the workspace-wide list, carries no
+     app id so the pin never fires, and the editor does not use it (the store calls getForApp). */
+  [MODULES.GLOBAL_DATA_SOURCE]: new Set<string>([
+    DATA_SOURCE_FEATURE.GET_FOR_APP,
+    DATA_SOURCE_FEATURE.GET_BY_ENVIRONMENT,
+  ]),
+
+  /* The query LIST, and nothing that runs one.
+
+     The run routes are exempt from the read-only rule and execute whatever the query contains,
+     writes included — so a session that can reach them makes merely opening an app capable of
+     changing the customer's data. Withholding them is the boundary itself: the route refuses,
+     rather than the client choosing not to ask.
+
+     The cost is that the app renders without data, so an empty table says nothing about the query
+     behind it. Everything the gate can fail a build on — a crashed component, a collapsed box, a
+     layout off the canvas, a binding painted raw — is geometry and does not need data. */
+  [MODULES.DATA_QUERY]: new Set<string>([DATA_QUERY_FEATURE.GET]),
+
+  // The reads the editor boot makes; writes here are non-GET and already barred.
+  [MODULES.APP_ENVIRONMENTS]: new Set<string>([
+    APP_ENVIRONMENT_FEATURE.INIT,
+    APP_ENVIRONMENT_FEATURE.GET_ALL,
+    APP_ENVIRONMENT_FEATURE.GET_DEFAULT,
+    APP_ENVIRONMENT_FEATURE.GET_BY_ID,
+    APP_ENVIRONMENT_FEATURE.GET_VERSIONS_BY_ENVIRONMENT,
+  ]),
 };
 
 export const PAT_APP_VIEWER_NEVER_GRANTABLE: MODULES[] = [MODULES.PERSONAL_ACCESS_TOKENS];
