@@ -4,17 +4,22 @@ import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widget
 import { Alert, AlertDescription, AlertTitle, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 
 export const ShadAlert = (props: WidgetProps) => {
   const { properties, styles, setExposedVariables } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   useExposed(setExposedVariables, properties, {});
+  // In a fixed box (the editor, or Dynamic height off) the card fills the box, its content scrolling inside: sized to
+  // its content, the card ignored the box's height.
+  const fixed = inFixedBox(props);
   return (
-    <Shell {...props} innerRef={ref}>
+    <Shell {...props} innerRef={ref} className={cn(fixed && 'tw-h-full')}>
       <Alert
         variant={properties.variant === 'destructive' ? 'destructive' : 'default'}
         className={cn(
+          fixed && 'tw-h-full tw-overflow-y-auto',
           whenSet(styles, 'backgroundColor', 'tw-bg-[color:var(--lk-bg)]'),
           whenSet(styles, 'borderColor', 'tw-border-[color:var(--lk-border)]'),
           whenSet(styles, 'borderRadius', 'tw-rounded-[var(--lk-radius)]')
