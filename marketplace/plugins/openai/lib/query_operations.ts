@@ -1,12 +1,52 @@
 import OpenAI from 'openai'; // Updated SDK version
 import { QueryOptions } from './types';
 
-// Updated utility function to handle size validation based on model
-const getSizeEnum = (
-  model: string | undefined,
-  size: string | undefined
-): '256x256' | '512x512' | '1024x1024' | '1792x1024' | '1024x1792' => {
-  // If the model is DALL-E 3, only allow 1024x1024, 1792x1024, or 1024x1792
+// All GPT image family models — always return b64_json, never a URL
+const GPT_IMAGE_MODELS = new Set([
+  'gpt-image-2.5-flare',
+  'gpt-image-2.5-sunburst',
+  'gpt-image-1',
+  'gpt-image-1-mini',
+  'gpt-image-1.5',
+  'gpt-image-2',
+  'gpt-image-2-2026-04-21',
+]);
+
+// gpt-image-2 and the 2.5 family support arbitrary WIDTHxHEIGHT strings;
+// the standard fixed-size switch used by the other GPT image models does not apply
+const GPT_IMAGE_2_MODELS = new Set([
+  'gpt-image-2',
+  'gpt-image-2-2026-04-21',
+  'gpt-image-2.5-flare',
+  'gpt-image-2.5-sunburst',
+]);
+
+const GPT_IMAGE_2_SIZE_RE = /^\d+x\d+$/;
+
+const getSizeEnum = (model: string | undefined, size: string | undefined): string => {
+  // gpt-image-2: pass through any valid WIDTHxHEIGHT string or 'auto'; default 1024x1024
+  if (GPT_IMAGE_2_MODELS.has(model ?? '')) {
+    const s = size?.trim() ?? '';
+    if (s === 'auto' || GPT_IMAGE_2_SIZE_RE.test(s)) return s;
+    return '1024x1024';
+  }
+
+  // Standard GPT image models: fixed size set + auto
+  if (GPT_IMAGE_MODELS.has(model ?? '')) {
+    switch (size) {
+      case '1024x1024':
+        return '1024x1024';
+      case '1536x1024':
+        return '1536x1024';
+      case '1024x1536':
+        return '1024x1536';
+      case 'auto':
+        return 'auto';
+      default:
+        return '1024x1024';
+    }
+  }
+
   if (model === 'dall-e-3') {
     switch (size) {
       case '1024x1024':
@@ -16,11 +56,10 @@ const getSizeEnum = (
       case '1024x1792':
         return '1024x1792';
       default:
-        return '1024x1024'; // Default size for DALL-E 3
+        return '1024x1024';
     }
   }
 
-  // If the model is DALL-E 2, only allow 1024x1024, 512x512, or 256x256
   if (model === 'dall-e-2') {
     switch (size) {
       case '1024x1024':
@@ -30,11 +69,10 @@ const getSizeEnum = (
       case '256x256':
         return '256x256';
       default:
-        return '1024x1024'; // Default size for DALL-E 2
+        return '1024x1024';
     }
   }
 
-  // Default size if model is not recognized
   return '1024x1024';
 };
 
@@ -96,9 +134,9 @@ export async function getChatCompletion(openai: OpenAI, options: QueryOptions): 
     }
   }
 
-  // 2. Temperature Guard: Reasoning models (o-series, gpt-5) do not support temperature.
+  // 2. Temperature Guard: Reasoning models (o-series, gpt-5, gpt-6) do not support temperature.
   // GPT-4.1 (non-reasoning) DOES support it.
-  const isReasoning = modelName.startsWith('o') || modelName.startsWith('gpt-5');
+  const isReasoning = modelName.startsWith('o') || modelName.startsWith('gpt-5') || modelName.startsWith('gpt-6');
   if (!isReasoning) {
     requestPayload.temperature = typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0;
   }
@@ -122,8 +160,8 @@ export async function generateImage(
     size: getSizeEnum(finalModel, size),
   });
 
-  // gpt-image-1 → base64
-  if (finalModel === 'gpt-image-1') {
+  // GPT image models always return b64_json — URLs are not supported
+  if (GPT_IMAGE_MODELS.has(finalModel)) {
     return {
       status: 'success',
       message: 'Image generated successfully',
@@ -133,7 +171,7 @@ export async function generateImage(
     };
   }
 
-  //  DALL·E → URL
+  // DALL-E models return a URL by default
   return {
     status: 'success',
     message: 'Image generated successfully',

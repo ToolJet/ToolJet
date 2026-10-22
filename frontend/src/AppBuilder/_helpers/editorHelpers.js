@@ -7,7 +7,7 @@ import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
 import { DropDown } from '@/AppBuilder/Widgets/DropDown';
 import { DropdownV2 } from '@/AppBuilder/Widgets/DropdownV2/DropdownV2';
-import { Checkbox } from '@/AppBuilder/Widgets/Checkbox';
+import { Checkbox } from '@/AppBuilder/Widgets/Checkbox/Checkbox';
 import { Datepicker } from '@/AppBuilder/Widgets/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
 import { PopoverMenu } from '@/AppBuilder/Widgets/PopoverMenu/PopoverMenu';
@@ -23,8 +23,6 @@ import { RadioButton } from '@/AppBuilder/Widgets/RadioButton';
 import { RadioButtonV2 } from '@/AppBuilder/Widgets/RadioButtonV2/RadioButtonV2';
 import { Rating as StarRating } from '@/AppBuilder/Widgets/Rating/Rating';
 import { Divider } from '@/AppBuilder/Widgets/Divider';
-import { FileInput } from '@/AppBuilder/Widgets/FileInput';
-import { FileButton } from '@/AppBuilder/Widgets/FileButton/FileButton';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
 import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
 import { PhoneInput } from '@/AppBuilder/Widgets/PhoneCurrency/PhoneInput';
@@ -32,10 +30,10 @@ import { CurrencyInput } from '@/AppBuilder/Widgets/PhoneCurrency/CurrencyInput'
 import { IFrame } from '@/AppBuilder/Widgets/IFrame';
 import { Timer } from '@/AppBuilder/Widgets/Timer';
 import { Statistics } from '@/AppBuilder/Widgets/Statistics';
-import { Pagination } from '@/AppBuilder/Widgets/Pagination';
+import { Pagination } from '@/AppBuilder/Widgets/Pagination/Pagination';
 import { Tags } from '@/AppBuilder/Widgets/Tags/Tags';
 import { Spinner } from '@/AppBuilder/Widgets/Spinner';
-import { CircularProgressBar } from '@/AppBuilder/Widgets/CirularProgressbar';
+import { CircularProgressBar } from '@/AppBuilder/Widgets/CircularProgressBar/CirularProgressbar';
 import { RangeSlider } from '@/AppBuilder/Widgets/RangeSlider';
 import { RangeSliderV2 } from '@/AppBuilder/Widgets/RangeSliderV2';
 import { Timeline } from '@/AppBuilder/Widgets/Timeline';
@@ -85,6 +83,8 @@ const Calendar = lazy(() => import('@/AppBuilder/Widgets/Calendar/Calendar'));
 const Chart = lazy(() => import('@/AppBuilder/Widgets/Chart'));
 const Chat = lazy(() => import('@/AppBuilder/Widgets/Chat'));
 const FilePicker = lazy(() => import('@/AppBuilder/Widgets/FilePicker'));
+const FileInput = lazy(() => import('@/AppBuilder/Widgets/FileInput/FileInput'));
+const FileButton = lazy(() => import('@/AppBuilder/Widgets/FileButton/FileButton'));
 const Image = lazy(() => import('@/AppBuilder/Widgets/Image/Image'));
 const MapComponent = lazy(() => import('@/AppBuilder/Widgets/Map/Map'));
 const PDF = lazy(() => import('@/AppBuilder/Widgets/PDF'));
@@ -94,6 +94,7 @@ const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect/TreeSelect
 const Cascader = lazy(() => import('@/AppBuilder/Widgets/Cascader/Cascader'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
+const LibraryComponent = lazy(() => import('@/AppBuilder/Widgets/LibraryComponent'));
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -153,6 +154,7 @@ export const AllComponents = {
   Pagination,
   Tags,
   Spinner,
+  LibraryComponent,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,
