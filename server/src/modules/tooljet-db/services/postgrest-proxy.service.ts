@@ -28,6 +28,10 @@ export class PostgrestProxyService {
   async proxy(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
 
+    if (req.method === 'POST' && (await this.tableOperationsService.isRowLimitReached(organizationId))) {
+      throw new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451);
+    }
+
     const { dbUser, dbSchema } = isSQLModeDisabled()
       ? {
           dbUser: this.configService.get<string>('TOOLJET_DB_USER'),
@@ -193,7 +197,15 @@ export class PostgrestProxyService {
           ? JSON.parse(proxyResData.toString('utf8'))
           : proxyResData;
 
-        const errorMessage = postgrestResponse.message;
+        // PostgREST can return an empty object while its schema cache reloads after CREATE TABLE.
+        // Keep the explicit rejection visible to clients; an undefined message crashes the error
+        // formatter and leaves the insert hanging with an ambiguous outcome.
+        const errorMessage =
+          postgrestResponse.message ||
+          (proxyRes.statusCode === 404
+            ? 'Could not find the table in the PostgREST schema cache. Please retry.'
+            : `PostgREST rejected this request (HTTP ${proxyRes.statusCode}).`);
+        postgrestResponse.message = errorMessage;
         const errorContext: {
           origin: TooljetDbActions;
           internalTables: { id: string; tableName: string }[];

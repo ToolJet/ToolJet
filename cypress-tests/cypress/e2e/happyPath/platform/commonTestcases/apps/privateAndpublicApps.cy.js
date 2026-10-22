@@ -232,7 +232,7 @@ describe("Private and Public apps", () => {
 
     inviteUserToWorkspace(data.firstName, data.email);
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-    verifyRestrictedAccess();
+    verifyRestrictedAccess(data.appName);
     cy.get(commonSelectors.backToHomeButton).click();
     cy.get(commonSelectors.homePageLogo).should("be.visible");
 

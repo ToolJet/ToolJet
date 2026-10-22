@@ -4,7 +4,7 @@ import Layout from '@/_ui/Layout';
 import { globalDatasourceService, appEnvironmentService, authenticationService, licenseService } from '@/_services';
 import { GlobalDataSources } from '../../components/GlobalDataSources';
 import { toast } from 'react-hot-toast';
-import { BreadCrumbContext } from '@/App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import { returnDevelopmentEnv, getWorkspaceId } from '@/_helpers/utils';
 import _ from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
@@ -46,7 +46,13 @@ export const GlobalDataSourcesPage = (props) => {
 
   // Refetch datasources when the active branch changes (without hard reload)
   useEffect(() => {
-    if (prevBranchIdRef.current !== activeBranchId && activeBranchId && environments?.length) {
+    if (!activeBranchId || !environments?.length) return;
+    if (!prevBranchIdRef.current) {
+      prevBranchIdRef.current = activeBranchId;
+      selectedIdFromUrl ? fetchDataSources(false, selectedDataSource) : fetchDataSources(true);
+      return;
+    }
+    if (prevBranchIdRef.current !== activeBranchId) {
       prevBranchIdRef.current = activeBranchId;
       setSelectedDataSource(null);
       toggleDataSourceManagerModal(false);
