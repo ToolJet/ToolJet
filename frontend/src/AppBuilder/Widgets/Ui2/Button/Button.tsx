@@ -30,7 +30,10 @@ export const ShadButton = (props: WidgetProps) => {
   // hover unless the hover background is set too.
   const hover = isSet(styles?.hoverBackgroundColor)
     ? 'hover:tw-bg-[color:var(--lk-hover)]'
-    : whenSet(styles, 'backgroundColor', 'hover:tw-bg-[color:color-mix(in_srgb,var(--lk-bg)_88%,#000)]');
+    : cn(
+        'lk-theme-hoverBackgroundColor',
+        isSet(styles?.backgroundColor) && 'hover:tw-bg-[color:color-mix(in_srgb,var(--lk-bg)_88%,#000)]'
+      );
   return (
     <Shell {...props} className="tw-h-full">
       <Button

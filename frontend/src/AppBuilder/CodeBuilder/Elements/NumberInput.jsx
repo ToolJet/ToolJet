@@ -15,7 +15,14 @@ export const NumberInput = ({
   // A blank UI 2.0 style (a card radius) follows the theme: its placeholder is the theme's value (themeDefault.js).
   const themeDefault = useThemeDefault();
   const themeNumber = themeDefault ? parseFloat(themeDefault.value) : NaN;
-  const placeholder = themeDefault ? (Number.isFinite(themeNumber) ? String(themeNumber) : 'Theme') : '';
+  // A size the theme leaves to the content (a menu's width) says Auto.
+  const placeholder = themeDefault
+    ? Number.isFinite(themeNumber)
+      ? String(themeNumber)
+      : themeDefault.value === 'auto'
+      ? 'Auto'
+      : 'Theme'
+    : '';
   const prefixIcon = meta?.prefixIcon;
 
   const getStepValue = () => {

@@ -165,6 +165,7 @@ export const seriesColor = (colors: unknown, index: number): string => {
 };
 
 /** Classes that apply only when the author set the style: for widgets whose variants each have their own colours,
- *  where one theme fallback cannot stand in for all of them. */
-export const whenSet = (styles: Resolved | undefined, key: string, classes: string): string | undefined =>
-  isSet(styles?.[key]) ? classes : undefined;
+ *  where one theme fallback cannot stand in for all of them. Unset, the part is marked `lk-theme-<style>`: the
+ *  inspector reads the theme's value for the blank style off it (CodeEditor/themeDefault.js). */
+export const whenSet = (styles: Resolved | undefined, key: string, classes: string): string =>
+  isSet(styles?.[key]) ? classes : `lk-theme-${key}`;

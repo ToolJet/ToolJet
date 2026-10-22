@@ -7,7 +7,7 @@ import { computeColor } from '@/_helpers/utils';
 import { Tooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
-import { pickerColor, useThemeDefault } from '@/AppBuilder/CodeEditor/themeDefault';
+import { colorText, pickerColor, useThemeDefault } from '@/AppBuilder/CodeEditor/themeDefault';
 import { pickedColor } from './pickedColor';
 
 const coerceColorString = (v) => (typeof v === 'string' ? v : '');
@@ -163,8 +163,9 @@ const BaseColorSwatches = ({
           }}
         >
           {followsTheme ? (
-            <span style={{ color: 'var(--slate10)' }} title="Follows the app theme. Pick a colour to set your own.">
-              {themeDefault.value ? 'Theme' : 'Theme default'}
+            <span title="Follows the app theme. Pick a colour to set your own.">
+              {themeDefault.value ? `${colorText(themeDefault.value)} ` : null}
+              <span style={{ color: 'var(--slate10)' }}>{themeDefault.value ? 'Theme' : 'Theme default'}</span>
             </span>
           ) : colorMap?.[value] ? (
             colorMap[value]

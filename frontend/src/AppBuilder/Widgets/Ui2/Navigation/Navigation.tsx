@@ -6,8 +6,8 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
-import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
+import { isSet, own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { activeItemExposed, findNav, navItems, unwrap } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import { MenuContent, MenuLabel, MenuRows, SIZES } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import { ITEM_BASE, NAV_HEIGHT, NAV_LOOK, NAV_SQUARE, NavFace, SEPARATOR_LINE, patchNavItems } from './navParts';
@@ -319,7 +319,7 @@ export const ShadNavigation = (props: WidgetProps) => {
         aria-label="Navigation"
         className={cn(
           'tw-flex tw-bg-[color:var(--lk-bg,transparent)]',
-          whenSet(styles, 'backgroundColor', vertical ? 'tw-p-2' : 'tw-px-2'),
+          isSet(styles?.backgroundColor) && (vertical ? 'tw-p-2' : 'tw-px-2'),
           vertical
             ? cn('tw-flex-col tw-gap-1 tw-overflow-y-auto tw-overflow-x-hidden', iconRail && 'tw-items-center')
             : cn(
