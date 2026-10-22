@@ -6,8 +6,8 @@
  * this file covers what the Alert itself does. Titles carry [ShadAlert-<AREA>-<NNN>] scenario ids.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
-import { screen, waitFor } from '@testing-library/react';
-import { binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { binding, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const widget = createWidgetHarness({
   componentType: 'ShadAlert',
@@ -188,5 +188,54 @@ describe('UI 2.0 Alert', () => {
     const { shadAlertConfig } = jest.requireActual('@/AppBuilder/WidgetManager/widgets/shadAlert');
     expect(shadAlertConfig.properties.variant.options.map((option) => option.value)).toContain('custom');
     expect(shadAlertConfig.styles.accentColor.type).toBe('colorSwatches');
+  });
+
+  // The Alert had no actions or events: nothing could change it, and nothing it showed could be acted on.
+  test('[ShadAlert-EVT-001] the action button fires onActionClicked once', async () => {
+    render({ properties: { actionLabel: binding('Review invoice') } });
+    widget.setEvents(countInvocationsOn('alert1', 'onActionClicked'));
+    await act(async () => fireEvent.click(await screen.findByRole('button', { name: 'Review invoice' })));
+    await waitFor(() => expect(widget.variables().calls).toBe(1));
+  });
+
+  test('[ShadAlert-EVT-003] disabled, the action button takes no click and fires nothing', async () => {
+    render({ properties: { actionLabel: binding('Review invoice'), disabledState: binding('{{true}}') } });
+    widget.setEvents(countInvocationsOn('alert1', 'onActionClicked'));
+    const button = screen.getByRole('button', { name: 'Review invoice' });
+    expect(button).toBeDisabled();
+    await act(async () => fireEvent.click(button));
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(widget.variables().calls).toBeUndefined();
+  });
+
+  test('[ShadAlert-EVT-002] the close button hides the alert and fires onClose', async () => {
+    render();
+    expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
+
+    render({ properties: { dismissible: binding('{{true}}') } });
+    widget.setEvents(countInvocationsOn('alert1', 'onClose'));
+    await act(async () => fireEvent.click(await screen.findByRole('button', { name: 'Close' })));
+    await waitFor(() => expect(widget.variables().calls).toBe(1));
+    await waitFor(() => expect(widget.exposed().isVisible).toBe(false));
+  });
+
+  test('[ShadAlert-ACT-001] setTitle, setDescription and setVariant change the alert and its exposed values', async () => {
+    render({ properties: { description: binding('Invoice #1024 is 12 days late.') } });
+    await waitFor(() => expect(widget.exposed().title).toBe('Payment overdue'));
+    expect(widget.exposed().description).toBe('Invoice #1024 is 12 days late.');
+    expect(widget.exposed().variant).toBe('default');
+
+    await widget.act('setTitle', 'Payment received');
+    await widget.act('setDescription', 'Invoice #1024 is paid.');
+    await widget.act('setVariant', 'Success');
+
+    expect(await screen.findByText('Payment received')).toBeInTheDocument();
+    expect(screen.getByText('Invoice #1024 is paid.')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('alert').style.getPropertyValue('--al-ink')).toBe('var(--sc-success-ink)')
+    );
+    expect(widget.exposed()).toEqual(
+      expect.objectContaining({ title: 'Payment received', description: 'Invoice #1024 is paid.', variant: 'success' })
+    );
   });
 });
