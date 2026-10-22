@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
@@ -341,7 +341,8 @@ export class DataSourcesService implements IDataSourcesService {
     dataSourceId: string,
     environmentId: string,
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
-    user: User
+    user: User,
+    canConfigureDataSource: boolean
   ) {
     const { code } = authorizeDataSourceOauthDto;
 
@@ -354,7 +355,12 @@ export class DataSourcesService implements IDataSourcesService {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
-    // TODO: add privilege if user has data source privilege or user should have app read privilege of the apps using the data source
+
+    // Multi-auth off = shared token; rebinding it needs configure privilege. On = per-user, open to any app user.
+    const isMultiAuthEnabled = !!dataSource.options?.['multiple_auth_enabled']?.value;
+    if (!isMultiAuthEnabled && !canConfigureDataSource) {
+      throw new ForbiddenException('You do not have permission to configure this data source');
+    }
 
     await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
     return;

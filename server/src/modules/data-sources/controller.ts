@@ -28,6 +28,8 @@ import { GitSyncDataSourceCreateGuard, GitSyncDataSourceEditGuard } from './guar
 import { WhitelistPluginGuard } from './guards/whitelist-plugin.guard';
 import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
 import { UserPermissions } from '@modules/ability/types';
+import { AbilityDecorator } from '@modules/app/decorators/ability.decorator';
+import { FeatureAbility } from './ability';
 import { DataSource, DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
@@ -171,9 +173,18 @@ export class DataSourcesController implements IDataSourcesController {
     @User() user: UserEntity,
     @Param('id') id: string,
     @Query('environment_id') environmentId,
-    @Body() authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
+    @Body() authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
+    @AbilityDecorator() ability: FeatureAbility
   ) {
-    await this.dataSourcesService.authorizeOauth2(id, environmentId, authorizeDataSourceOauthDto, user);
+    // Object-level UPDATE here (ability built after ValidateDataSourceGuard sets tj_resource_id).
+    const canConfigureDataSource = ability.can(FEATURE_KEY.UPDATE, DataSourceEntity);
+    await this.dataSourcesService.authorizeOauth2(
+      id,
+      environmentId,
+      authorizeDataSourceOauthDto,
+      user,
+      canConfigureDataSource
+    );
     return;
   }
 
