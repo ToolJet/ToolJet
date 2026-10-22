@@ -9,7 +9,7 @@ import { SsoConfigOidcGroupSync } from '@entities/sso_config_oidc_group_sync.ent
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { AddGrantTypeKeyInSSOConfig1761556597329 } from '../../../data-migrations/1761556597329-AddGrantTypeKeyInSSOConfig';
 import { assertPatMintSession, assertPatExchange } from '@modules/personal-access-tokens/credential-lifecycle';
-jest.mock('@helpers/utils.helper', () => ({ getTooljetEdition: () => 'cloud', catchDbException: callback => callback(), validatePasswordServer: jest.fn(), cleanObject: object => { for (const key of Object.keys(object)) if (object[key] === undefined) delete object[key]; } }));
+jest.mock('@helpers/utils.helper', () => ({ getTooljetEdition: jest.fn(() => 'cloud'), catchDbException: callback => callback(), validatePasswordServer: jest.fn(), cleanObject: object => { for (const key of Object.keys(object)) if (object[key] === undefined) delete object[key]; } }));
 jest.mock('@helpers/bootstrap.helper', () => ({ createLogger: () => ({ log: jest.fn() }) }));
 jest.mock('@tooljet/plugins/dist/server', () => ({ QueryError: class extends Error {}, OAuthUnauthorizedClientError: class extends Error {} }), { virtual: true });
 import { join } from 'path';
@@ -20,6 +20,8 @@ import { EncryptionService } from '@modules/encryption/service';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { setConnectionInstance } from '@helpers/database.helper';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { OrganizationRepository } from '@modules/organizations/repository';
 import { McpOAuthIdentityService } from '@modules/mcp-oauth/identity.service';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
@@ -154,6 +156,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
     }
   });
   beforeEach(async () => {
+    jest.mocked(getTooljetEdition).mockReturnValue('cloud');
     await db.query(
       'TRUNCATE mcp_oauth_clients, users, organizations, organization_users, user_sessions, workspace_ban_list, user_ban_list, instance_settings, sso_configs, sso_config_oidc_group_sync, custom_domains CASCADE',
     );
@@ -458,6 +461,62 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       }
     }
   };
+  test.each(['ce', 'ee'])('%s platform writes and session termination do not depend on OAuth storage', async edition => {
+    jest.mocked(getTooljetEdition).mockReturnValue(edition);
+    const { UserRepository } = jest.requireActual('@modules/users/repositories/repository');
+    const users = new UserRepository(db);
+    const organizations = new OrganizationRepository(db);
+    const configs = new SSOConfigsRepository(db);
+    await db.query("INSERT INTO user_sessions(id,user_id,expiry) VALUES ($1,$2,now()+interval '1 day')", [randomUUID(), user.id]);
+    await db.query("INSERT INTO user_personal_access_tokens(user_id,organization_id,token_hash,scope,expires_at) VALUES ($1,$2,'synthetic-edition-pat','workspace',now()+interval '1 day')", [user.id, organizationId]);
+    await withCredentialWriteFailure('mcp_oauth_grants', 'missing-table', async () => {
+      await users.updateOne(user.id, { status: 'archived', firstName: 'Willow' });
+      expect(await db.manager.findOneByOrFail(User, { id: user.id })).toMatchObject({ status: 'archived', firstName: 'Willow' });
+      await users.updateOne(user.id, { status: 'active' });
+      const result = await organizations.updateOne(organizationId, { slug: 'willow-garden', status: 'archived' });
+      expect(result.affected).toBe(1);
+      expect(await db.manager.findOneByOrFail(Organization, { id: organizationId }))
+        .toMatchObject({ slug: 'willow-garden', status: 'archived' });
+      const provider = await configs.saveConfig({ organizationId, sso: 'google', configScope: 'organization',
+        enabled: true, configs: { clientId: 'synthetic-willow-client' } });
+      expect(await configs.updateConfig(provider.id, { enabled: false })).toMatchObject({ id: provider.id, enabled: false });
+      await configs.deleteConfig(provider.id);
+      expect(await configs.findOneBy({ id: provider.id })).toBeNull();
+      await SessionUtilService.prototype.terminateAllSessions.call(
+        { configService: new ConfigService({ TOOLJET_EDITION: edition }) }, user.id, user.sessionId);
+      expect(await db.query('SELECT id FROM user_sessions WHERE user_id=$1', [user.id])).toEqual([{ id: user.sessionId }]);
+      expect((await db.query('SELECT expires_at > now() AS active FROM user_personal_access_tokens'))[0].active).toBe(true);
+    });
+  });
+  test.each(['ce', 'ee', 'cloud'])('%s shared writes roll back together with their caller transaction', async edition => {
+    jest.mocked(getTooljetEdition).mockReturnValue(edition);
+    await redeem(await approve());
+    const { UserRepository } = jest.requireActual('@modules/users/repositories/repository');
+    const users = new UserRepository(db);
+    const organizations = new OrganizationRepository(db);
+    await expect(db.transaction(async manager => {
+      await users.updateOne(user.id, { status: 'archived' }, manager);
+      await organizations.updateOne(organizationId, { slug: 'rolled-back-garden' }, manager);
+      await saveSecurityEntity(manager, SSOConfigs, { organizationId, sso: 'google', configScope: 'organization', enabled: true });
+      await deleteSecurityEntity(manager, OrganizationUser, { userId: user.id, organizationId });
+      throw new Error('Synthetic later operation failed');
+    })).rejects.toThrow('Synthetic later operation failed');
+    expect(await db.manager.findOneByOrFail(User, { id: user.id })).toMatchObject({ status: 'active' });
+    expect(await db.manager.findOneByOrFail(Organization, { id: organizationId })).toMatchObject({ slug: 'garden' });
+    expect(await db.manager.countBy(SSOConfigs, { organizationId })).toBe(0);
+    expect(await db.manager.countBy(OrganizationUser, { userId: user.id, organizationId })).toBe(1);
+    expect((await db.query('SELECT revoked_at FROM mcp_oauth_grants'))[0].revoked_at).toBeNull();
+  });
+  test('ordinary profile and workspace display edits leave connected clients active', async () => {
+    const tokens = await redeem(await approve());
+    const { UserRepository } = jest.requireActual('@modules/users/repositories/repository');
+    await new UserRepository(db).updateOne(user.id, { firstName: 'Willow', lastName: 'Gardener' });
+    const organizations = new OrganizationRepository(db);
+    await organizations.updateOne(organizationId, { name: 'Willow garden' });
+    await organizations.changeDefaultWorkspace(organizationId);
+    expect((await db.query('SELECT revoked_at FROM mcp_oauth_grants'))[0].revoked_at).toBeNull();
+    await expect(exchange(tokens.access_token)).resolves.toHaveProperty('access_token');
+  });
   describe.each(['missing-table', 'sql-error'] as const)('optional credential revocation failure: %s', failure => {
     test.each(['user', 'workspace', 'membership', 'workspace-ban', 'client', 'sso', 'group-sync', 'instance-policy'])(
       '%s writes commit while failed OAuth revocation still leaves live access checks enforced', async kind => {
