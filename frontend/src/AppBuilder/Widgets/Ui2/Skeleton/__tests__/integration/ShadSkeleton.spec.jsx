@@ -13,6 +13,15 @@ const widget = createWidgetHarness({
   componentType: 'ShadSkeleton',
   handle: 'skeleton1',
   id: 'skel1',
+  // Tall enough for the 50 lines PROP-001 asks for (a 16px line and an 8px gap each).
+  widgetHeight: 1300,
+  widgetWidth: 300,
+});
+// A short box: as many lines as fit are drawn (FIT-001).
+const short = createWidgetHarness({
+  componentType: 'ShadSkeleton',
+  handle: 'skeleton2',
+  id: 'skel2',
   widgetHeight: 100,
   widgetWidth: 300,
 });
@@ -55,6 +64,20 @@ describe('UI 2.0 Skeleton', () => {
 
     await waitFor(() => expect(circle(container)).toBeInTheDocument());
     expect(circle(container)).toHaveClass('tw-h-12', 'tw-w-12');
+  });
+
+  test('[ShadSkeleton-FIT-001] in a short box only the lines that fit are drawn, the last one still shorter', async () => {
+    // 20 lines in a 100px box drew 476px of placeholders over the widgets below. A 96px box (its 2px padding off)
+    // fits 4: 4 x 16px + 3 x 8px = 88px. The widget keeps its box (it has no Dynamic height) and clips the rest.
+    await short.setup();
+    const { container } = short.render({ currentMode: 'view', properties: { lines: binding('{{20}}') } });
+    await waitFor(() => expect(lines(container)).toHaveLength(4));
+    expect(lines(container)[3]).toHaveClass('tw-w-3/5');
+    expect(container.querySelector('.tj-shadcn')).toHaveClass('tw-h-full', 'tw-overflow-hidden');
+
+    short.render({ currentMode: 'view', properties: { lines: binding('{{2}}') } });
+    await waitFor(() => expect(lines(container)).toHaveLength(2));
+    short.teardown();
   });
 
   test('[ShadSkeleton-STY-001] placeholderColor reaches the placeholders as a CSS variable they read', async () => {
