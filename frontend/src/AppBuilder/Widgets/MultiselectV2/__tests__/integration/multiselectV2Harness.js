@@ -4,7 +4,7 @@
  * Two things live here rather than in each facet spec:
  *
  *   1. The registered definition's defaults, transcribed from
- *      `WidgetManager/widgets/multiselectV2.js:409-497`. A spec that seeds only
+ *      `packages/widget-definitions/src/widgets/multiselectV2.js:409-497`. A spec that seeds only
  *      the keys it cares about is testing a widget nobody ships: every property
  *      it left out arrives as `undefined`, and the runtime's `??`/truthiness
  *      branches then take the path a real app never takes. So every spec starts
