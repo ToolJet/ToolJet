@@ -1,10 +1,10 @@
 /**
- * ToolJet-DB ability — proxy/join/view authorization
+ * ToolJet-DB ability — proxy/view authorization
  *
  * Regression for the TJDB proxy authorization bypass:
- *  - A logged-in end-user with NO data query could reach PROXY_POSTGREST / JOIN_TABLES
+ *  - A logged-in end-user with NO data query could reach PROXY_POSTGREST
  *    because the grant keyed on `!orgMismatch`, which is false when no data query is
- *    resolved (direct /proxy or /join call with no `data-query-id` header). Any member of
+ *    resolved (direct /proxy call with no `data-query-id` header). Any member of
  *    any role, including a foreign-workspace member switching via `tj-workspace-id`, was
  *    granted. Access now requires a resolved in-workspace data query (or builder/admin/tjdbCRUD).
  *  - VIEW_TABLE / VIEW_TABLES were granted unconditionally, letting end-users enumerate
@@ -72,11 +72,10 @@ async function buildAbility(opts: {
 }
 
 describe('ToolJet-DB FeatureAbilityFactory', () => {
-  describe('PROXY_POSTGREST / JOIN_TABLES — data access', () => {
+  describe('PROXY_POSTGREST — data access', () => {
     it('denies a logged-in end-user with NO data query (the bypass)', async () => {
       const ability = await buildAbility({ role: { isEndUser: true }, organizationId: ORG_A });
       expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(false);
-      expect(ability.can(FEATURE_KEY.JOIN_TABLES, InternalTable)).toBe(false);
     });
 
     it('denies a foreign-workspace end-user switching workspace by header with no data query', async () => {
@@ -93,7 +92,6 @@ describe('ToolJet-DB FeatureAbilityFactory', () => {
         dataQueryAppOrg: ORG_A,
       });
       expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(true);
-      expect(ability.can(FEATURE_KEY.JOIN_TABLES, InternalTable)).toBe(true);
     });
 
     it('denies an end-user whose data query belongs to a different workspace (orgMismatch)', async () => {
@@ -109,7 +107,6 @@ describe('ToolJet-DB FeatureAbilityFactory', () => {
     it('allows a builder without a data query', async () => {
       const ability = await buildAbility({ role: { isBuilder: true }, organizationId: ORG_A });
       expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(true);
-      expect(ability.can(FEATURE_KEY.JOIN_TABLES, InternalTable)).toBe(true);
     });
 
     it('allows an admin without a data query', async () => {
@@ -131,7 +128,6 @@ describe('ToolJet-DB FeatureAbilityFactory', () => {
         dataQueryIsPublic: true,
       });
       expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(true);
-      expect(ability.can(FEATURE_KEY.JOIN_TABLES, InternalTable)).toBe(true);
     });
   });
 

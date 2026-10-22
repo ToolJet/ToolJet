@@ -71,16 +71,16 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.BULK_UPLOAD], InternalTable);
     }
 
-    // Non-builder access to proxy/join requires a resolved in-workspace data query.
+    // Non-builder access to the proxy requires a resolved in-workspace data query.
     // `!orgMismatch` alone failed open (false when no data query is resolved).
     const isValidDataQueryForOrg = !isEmpty(dataQuery) && !orgMismatch;
 
     if (isPublicAppRequest) {
-      can([FEATURE_KEY.PROXY_POSTGREST, FEATURE_KEY.JOIN_TABLES], InternalTable);
+      can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
     if (isUserLoggedin && (isAdmin || isBuilder || userPermission.tjdbCRUD || isValidDataQueryForOrg)) {
-      can([FEATURE_KEY.PROXY_POSTGREST, FEATURE_KEY.JOIN_TABLES], InternalTable);
+      can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
     // Viewing table metadata is a builder/admin action, not for end-users.
