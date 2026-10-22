@@ -243,7 +243,7 @@ export class DataQueriesService implements IDataQueriesService {
       );
 
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
-      await this.dataQueryRepository.deleteOne(dataQueryId);
+      await this.dataQueryRepository.deleteOne(dataQueryId, manager);
     });
 
     const operationTimestamp = Date.now();
