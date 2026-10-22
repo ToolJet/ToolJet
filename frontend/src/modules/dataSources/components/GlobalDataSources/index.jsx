@@ -22,7 +22,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import { ToolTip } from '@/_components/ToolTip';
-import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
+import { canCreateDataSource, canUpdateDataSource } from '@/_helpers';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
@@ -186,8 +186,8 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         }
       });
       datasourceGroup.list = [...arr];
-      ((datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
-        (arr = []));
+      (datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
+        (arr = []);
       return datasourceGroup;
     });
     const filteredDsList = filtered.reduce((acc, filteredGroup) => [...acc, ...filteredGroup.list], []);
@@ -631,7 +631,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
             container={selectedDataSource ? containerRef?.current : null}
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
-            showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
+            showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id)}
             isWorkspaceBranchLocked={isWorkspaceBranchLocked}
             environmentLoading={environmentLoading}
           />
