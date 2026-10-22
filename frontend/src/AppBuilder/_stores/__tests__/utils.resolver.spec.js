@@ -27,7 +27,7 @@
  * NOTE: `ast.js` (reference extraction / dependency edges) is covered by `ast.spec.js`.
  * Nothing here duplicates it — these tests are about evaluation, not extraction.
  */
-import { resolveCode, resolveDynamicValues } from '@/AppBuilder/_stores/utils';
+import { resolveCode, resolveDynamicValues, removeNestedDoubleCurlyBraces } from '@/AppBuilder/_stores/utils';
 
 // The resolver receives the already-flattened exposed-value state; `components`,
 // `queries`, `variables`, ... become the argument names of the generated Function.
@@ -276,8 +276,60 @@ describe('resolveDynamicValues — whitespace, ternaries and object literals', (
   });
 
   test('a newline-padded binding resolves', () => {
-    // Multi-line bindings come out of the CodeEditor with real newlines.
+    // Multi-line bindings come out of the CodeEditor with real newlines. Leave the newline
+    // in and resolveCode builds `return \n expr`, which JavaScript's automatic semicolon
+    // insertion reduces to a bare `return;` — the binding silently resolves to undefined.
     expect(resolveDynamicValues('{{\n components.c1.value \n}}', withComponent(7))).toBe(7);
+    expect(resolveDynamicValues('x {{\n components.c1.value \n}} y', withComponent(7))).toBe('x 7 y');
+  });
+
+  test('removeNestedDoubleCurlyBraces strips space, tab and newline padding', () => {
+    // Asserted on the strip function rather than through resolveDynamicValues on purpose.
+    // Only `\n` is a line terminator, so a TAB-padded binding produces the right ANSWER
+    // either way — `return \tx\t` is valid JavaScript — and a test that only checked the
+    // resolved value pins nothing about tabs. The stripped code is also what the
+    // utils.js:140 `run()` guard string-matches on, so the strip output is the contract.
+    for (const pad of [' ', '\t', '\n', ' \n\t ']) {
+      expect(removeNestedDoubleCurlyBraces(`{{${pad}components.c1.value${pad}}}`)).toBe('components.c1.value');
+    }
+  });
+
+  test('only the OUTER padding is stripped — interior whitespace survives', () => {
+    // The half a `.trim()`-everything or `.replace(/\s/g, '')` implementation would break:
+    // a multi-line expression must still be multi-line when it reaches Function(), and
+    // interior spaces must survive or `a in b` becomes `ainb`. A template literal is the
+    // sharpest case, because there the newline is DATA, not padding.
+    expect(removeNestedDoubleCurlyBraces('{{\n a\nb \n}}')).toBe('a\nb');
+    expect(resolveDynamicValues('{{\n `a\nb`\n}}', {})).toBe('a\nb');
+    expect(resolveDynamicValues('{{\n components.c1.value\n ? "yes"\n : "no"\n}}', withComponent(true))).toBe('yes');
+  });
+
+  test('a newline-padded binding is resolved on the multi-binding path too', () => {
+    // getDynamicVariables (utils.js:193) uses `/\{\{(.*?)\}\}/gs`; the `s` flag is what lets
+    // `.` match the newline, so the binding is FOUND. The trim is what lets it EVALUATE.
+    // Both halves are required.
+    expect(
+      resolveDynamicValues('{{\n components.c1.value \n}} and {{\n components.c2.value \n}}', {
+        components: { c1: { value: 'A' }, c2: { value: 'B' } },
+      })
+    ).toBe('A and B');
+  });
+
+  test('tab or newline padding cannot smuggle a query past the run() refusal guard', () => {
+    // utils.js:140 refuses `queries.*.run()` by STRING MATCH on the stripped code, so a
+    // padding character the strip misses breaks `endsWith('run()')` — and a TRAILING one
+    // is not saved by ASI the way a leading one is, so the query really would fire on
+    // every recompute.
+    let calls = 0;
+    const state = { queries: { q1: { run: () => ++calls } } };
+
+    for (const pad of [' ', '\t', '\n']) {
+      expect(resolveDynamicValues(`{{queries.q1.run()${pad}}}`, state, {}, true)).toEqual([
+        '',
+        'Cannot resolve function call queries.q1.run()',
+      ]);
+    }
+    expect(calls).toBe(0);
   });
 
   test('a ternary over a component value evaluates', () => {
