@@ -53,17 +53,17 @@
   },
   "slack": {
     "authorize": "Autoriser",
-    "connectToolJetToSlack": "ToolJet peut se connecter aux utilisateurs de Slack et répertorier, envoyer des messages, etc. Veuillez sélectionner les étendues d'autorisation appropriées.",
+    "connectToolJetToSlack": "{{whiteLabelText}} peut se connecter à Slack, répertorier les utilisateurs, envoyer des messages, etc. Veuillez sélectionner les étendues d'autorisation appropriées.",
     "chatWrite": "Chat: écrire",
-    "listUsersAndSendMessage": "Votre application ToolJet pourra répertorier les utilisateurs et envoyer des messages aux utilisateurs et canaux.",
+    "listUsersAndSendMessage": "Votre application {{whiteLabelText}} pourra répertorier les utilisateurs et envoyer des messages aux utilisateurs et canaux.",
     "connectSlack": "Connectez-vous à Slack"
   },
   "googleSheets": {
     "readOnly": "Lecture seulement",
-    "enableReadAndWrite": "Si vous souhaitez que vos applications à outils modifient vos feuilles Google, assurez-vous de sélectionner l'accès à lire et à écrire",
-    "readDataFromSheets": "Vos applications ToolJet ne peuvent lire que les données de Google Sheets",
+    "enableReadAndWrite": "Si vous souhaitez que vos applications {{whiteLabelText}} modifient vos feuilles Google, assurez-vous de sélectionner l'accès en lecture et en écriture",
+    "readDataFromSheets": "Vos applications {{whiteLabelText}} ne peuvent lire que les données de Google Sheets",
     "readWrite": "Lire et écrire",
-    "readModifySheets": "Vos applications ToolJet peuvent lire les données à partir des feuilles, modifier les feuilles et plus encore.",
+    "readModifySheets": "Vos applications {{whiteLabelText}} peuvent lire les données à partir des feuilles, modifier les feuilles et plus encore.",
     "toGoogleSheets": "Vers Google Sheets"
   },
   "profile": {
@@ -108,7 +108,7 @@
       "save": "Sauvegarder",
       "create": "Créer une version",
       "editVersion": "Modifier la version",
-      "deleteVersion": "Voulez-vous vraiment supprimer cette version ?",
+      "deleteVersion": "Voulez-vous vraiment supprimer cette version ({{version}}) ?",
       "enterVersionName": "Entrez le nom de la version",
       "versionAlreadyReleased": "Version déjà publiée. Veuillez créer une nouvelle version ou passer à une version différente pour continuer à apporter des modifications."
     },
@@ -382,7 +382,7 @@
     "noApplicationFound": "Aucune application trouvée",
     "noWorkflowFound": "Aucun flux de travail trouvé",
     "thisFolderIsEmpty": "Ce dossier est vide",
-    "deleteAppAndData": "L'application et les données associées seront supprimées en permanence, voulez-vous continuer ?",
+    "deleteAppAndData": "L'application {{appName}} et les données associées seront supprimées en permanence, voulez-vous continuer ?",
     "deleteWorkflowAndData": "Le workflow {{appName}} et ses données associées seront définitivement supprimés. Continuer ?",
     "removeAppFromFolder": "L'application sera supprimée de ce dossier, voulez-vous continuer ?",
     "change": "Changer",
