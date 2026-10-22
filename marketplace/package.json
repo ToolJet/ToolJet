@@ -20,7 +20,9 @@
     "ts-jest": "^29.0.5"
   },
   "overrides": {
-    "axios": "^1.16.1"
+    "axios": "^1.16.1",
+    "tar": "^7.5.22",
+    "websocket-driver": "0.7.5"
   },
   "peerDependencies": {
     "typescript": "^4.9.5"
