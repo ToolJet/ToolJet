@@ -137,6 +137,13 @@ describe('UI 2.0 Tabs', () => {
     expect(tab('Activity')).toHaveClass('tw-flex-1');
   });
 
+  test('[ShadTabs-STY-004] underline tabs are square, so the indicator has straight ends', async () => {
+    // A rounded tab curved the ends of its 2px indicator.
+    render({ properties: { variant: binding('underline') } });
+    await waitFor(() => expect(selected()).toHaveClass('tw-rounded-none'));
+    expect(selected().className).not.toMatch(/tw-rounded-(t-)?ui2/);
+  });
+
   test('[ShadTabs-PROP-004] hideTabs hides the strip; renderOnlyActiveTab mounts only the current tab', async () => {
     render({ properties: { hideTabs: binding('{{true}}') }, extraComponents: CHILDREN });
     expect(await screen.findByText('Overview content')).toBeVisible();
