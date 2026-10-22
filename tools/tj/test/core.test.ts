@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { type Command, parse, resolve } from '../src/args.ts';
+import { otelEnv } from '../src/commands/obs.ts';
 import { installedFrom, nestedModules } from '../src/commands/setup.ts';
 import { unsavedWork } from '../src/commands/wt.ts';
 import { setKeys } from '../src/env.ts';
@@ -95,4 +96,15 @@ test('installedFrom accepts node_modules built from the same lock, skipping unin
   assert.equal(installedFrom(lock, { packages: { 'node_modules/x': { version: '1.0.1' } } }), false);
   assert.equal(installedFrom(lock, { packages: { 'node_modules/x': { version: '1.0.0' } } }), false);
   assert.deepEqual(nestedModules(hidden), ['packages/a/node_modules']);
+});
+
+test('otelEnv points every signal at the local collector', () => {
+  const env = otelEnv();
+  assert.equal(env.ENABLE_OTEL, 'true');
+  assert.equal(env.OTEL_EXPORTER_OTLP_ENDPOINT, 'http://localhost:4318');
+  for (const signal of ['TRACES', 'METRICS', 'LOGS']) {
+    assert.equal(env[`OTEL_EXPORTER_OTLP_${signal}`], `http://localhost:4318/v1/${signal.toLowerCase()}`);
+  }
+  assert.equal(env.OTEL_PROPAGATORS, 'tracecontext,baggage');
+  assert.equal(env.OTEL_RESOURCE_ATTRIBUTES, 'deployment.environment.name=development');
 });
