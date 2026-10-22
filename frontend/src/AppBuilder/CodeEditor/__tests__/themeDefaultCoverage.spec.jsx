@@ -43,6 +43,43 @@ describe('every UI 2.0 colour and size style has a theme value', () => {
   });
 });
 
+describe('every UI 2.0 colour and size field shows a value, never Theme default', () => {
+  // A Card grid's Selected card accent said "Theme default" over a dashed swatch: the theme tokens resolved to nothing
+  // outside the widget's own root. Each field is drawn here against a widget on the canvas that draws none of its
+  // parts, so every value comes from the fallbacks.
+  const ID = 'bare-widget';
+  let canvas;
+  beforeEach(() => {
+    canvas = document.createElement('div');
+    canvas.id = ID;
+    document.body.appendChild(canvas);
+  });
+  afterEach(() => canvas.remove());
+
+  test.each(themedStyles)('%s %s (%s)', async (type, key, fieldType) => {
+    const view = render(
+      <DynamicFxTypeRenderer
+        paramType={fieldType}
+        component={type}
+        componentId={ID}
+        paramName={key}
+        value=""
+        onChange={() => {}}
+        cyLabel="field"
+        meta={{}}
+      />
+    );
+    if (fieldType === 'numberInput') {
+      const placeholder = view.container.querySelector('input').getAttribute('placeholder');
+      expect(placeholder === 'Auto' || Number.isFinite(parseFloat(placeholder))).toBe(true);
+    } else {
+      expect(screen.queryByText('Theme default')).toBeNull();
+      expect(view.container.querySelector('.color-icon').style.backgroundColor).not.toBe('');
+    }
+    view.unmount();
+  });
+});
+
 describe('a part whose class applies only once its style is set', () => {
   const ID = 'button-theme-default';
   let canvas;

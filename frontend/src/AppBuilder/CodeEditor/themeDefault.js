@@ -78,15 +78,24 @@ const LONGHAND = {
 
 /** A CSS value as the widget would compute it: drawn into a hidden probe inside the widget, so its theme applies. */
 const computeIn = (root, value, property) => {
-  // Inside the widget's own root, where the theme's --sc-* tokens are set.
-  const host = root.querySelector('.tj-shadcn') ?? root;
+  // Inside the widget's own root, where the theme's --sc-* tokens are set. A widget drawing no pack root (loading, or
+  // hidden) gets a token scope of its own (tj-shad-tokens): outside one, a token resolved to nothing and the probe
+  // fell back to the inherited text colour, a transparent background or a 0 radius.
+  const shell = root.querySelector('.tj-shadcn');
+  const host = shell ?? document.createElement('div');
+  if (!shell) {
+    host.className = 'tj-shad-tokens';
+    host.setAttribute('style', 'position: absolute; visibility: hidden;');
+    root.appendChild(host);
+  }
   const probe = document.createElement('span');
   const cssName = property.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
   probe.setAttribute('style', `position: absolute; visibility: hidden; ${cssName}: ${value}`);
   host.appendChild(probe);
   const computed = getComputedStyle(probe)[property];
   probe.remove();
-  return computed || null;
+  if (!shell) host.remove();
+  return computed && !computed.includes('var(') ? computed : null;
 };
 
 /** The first part of the widget that draws `name` (the variable first, the theme's value as its fallback), read off
@@ -194,15 +203,31 @@ export const themeFallback = (paramName) => {
   const rule = FALLBACKS.find(([pattern]) => pattern.test(paramName));
   return rule ? { value: rule[1], property: propertyFor(paramName) } : null;
 };
+// The theme tokens' own defaults (shadcn.scss), for a canvas where a token cannot be computed: the field still shows
+// a value rather than "Theme default".
+const TOKEN_DEFAULTS = {
+  '--sc-accent': '#f5f5f5',
+  '--sc-radius': '10px',
+  '--sc-destructive': '#dc2626',
+  '--sc-success': '#16a34a',
+  '--sc-warning': '#d97706',
+  '--sc-card': '#ffffff',
+  '--sc-border': '#e5e5e5',
+  '--sc-muted-foreground': '#737373',
+  '--sc-primary': '#171717',
+  '--sc-foreground': '#0a0a0a',
+};
+const LENGTH_PX = { '0.875rem': '14px', '2.25rem': '36px', '0.5rem': '8px' };
 const fallbackValue = (root, paramName) => {
   const fallback = themeFallback(paramName);
   if (!fallback) return null;
-  if (!fallback.value.includes('var(')) {
+  const token = fallback.value.match(/^var\((--sc-[a-z-]+)\)$/)?.[1];
+  if (!token) {
     return /^\d/.test(fallback.value)
-      ? computeIn(root, fallback.value, fallback.property) ?? fallback.value
+      ? computeIn(root, fallback.value, fallback.property) ?? LENGTH_PX[fallback.value] ?? fallback.value
       : fallback.value;
   }
-  return computeIn(root, fallback.value, fallback.property);
+  return computeIn(root, fallback.value, fallback.property) ?? TOKEN_DEFAULTS[token] ?? null;
 };
 
 /** What the widget on the canvas draws for a blank style, or null when no part of it draws the style. */
