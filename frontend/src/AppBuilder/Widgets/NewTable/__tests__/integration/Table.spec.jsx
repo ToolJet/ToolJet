@@ -16,7 +16,7 @@ import { componentDefinition, seedApp, binding } from '@/test/app-builder';
 import { createWidgetHarness, store, MODULE_ID, drain } from '@/AppBuilder/Widgets/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
 import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
-import { tableConfig } from '@/AppBuilder/WidgetManager/widgets/table';
+import { tableConfig } from '@tooljet/widget-definitions';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 
 const ID = 'tbl1';
@@ -3622,6 +3622,122 @@ describe('Table: styling and misc', () => {
     await waitFor(() => expect(cell('age', 0)).toBeInTheDocument());
     expect(cell('age', 0).style.backgroundColor).toBe('rgb(0, 255, 0)');
     expect(cell('age', 1).style.backgroundColor).toBe('rgb(255, 0, 0)');
+  });
+
+  test('[Table-ROWBG-001] a rowBackgroundColor expression is evaluated per row with that row data', async () => {
+    widget.render({
+      styles: { rowBackgroundColor: binding('{{rowData.age > 32 ? "rgb(255, 0, 0)" : ""}}') },
+    });
+    // ROWS: Ada(30), Grace(40), Rosalind(35) — only Grace and Rosalind exceed 32.
+    await waitFor(() => expect(row(0)).toBeInTheDocument());
+    await waitFor(() => expect(row(1).style.backgroundColor).toBe('rgb(255, 0, 0)'));
+    expect(row(0).style.backgroundColor).toBe('');
+    expect(row(2).style.backgroundColor).toBe('rgb(255, 0, 0)');
+  });
+
+  test('[Table-ROWBG-002] a static rowBackgroundColor applies to every row', async () => {
+    widget.render({ styles: { rowBackgroundColor: binding('rgb(0, 0, 255)') } });
+    await waitFor(() => expect(row(2)).toBeInTheDocument());
+    expect([0, 1, 2].map((i) => row(i).style.backgroundColor)).toEqual([
+      'rgb(0, 0, 255)',
+      'rgb(0, 0, 255)',
+      'rgb(0, 0, 255)',
+    ]);
+  });
+
+  test('[Table-ROWBG-003] with no rowBackgroundColor configured, rows get no inline background', async () => {
+    widget.render();
+    await waitFor(() => expect(row(2)).toBeInTheDocument());
+    expect([0, 1, 2].map((i) => row(i).style.backgroundColor)).toEqual(['', '', '']);
+  });
+
+  test('[Table-ROWBG-004] the row color follows the row data when the table is sorted, not the visible position', async () => {
+    widget.render({
+      properties: { defaultSortColumn: binding('age'), defaultSortDirection: binding('desc') },
+      styles: { rowBackgroundColor: binding('{{rowData.name === "Grace" ? "rgb(255, 0, 0)" : ""}}') },
+    });
+    // Sorted by age desc: Grace(40), Rosalind(35), Ada(30) — Grace moves from data index 1 to row 0.
+    await waitFor(() => expect(bodyRowOrder('age')).toEqual(['40', '35', '30']));
+    await waitFor(() => expect(row(0).style.backgroundColor).toBe('rgb(255, 0, 0)'));
+    expect(row(1).style.backgroundColor).toBe('');
+    expect(row(2).style.backgroundColor).toBe('');
+  });
+
+  test('[Table-ROWBG-005] the row color supersedes the table background, including for pinned columns', async () => {
+    widget.render({
+      styles: {
+        containerBackgroundColor: binding('rgb(0, 0, 255)'),
+        rowBackgroundColor: binding('{{rowData.age > 32 ? "rgb(255, 0, 0)" : ""}}'),
+      },
+    });
+    await waitFor(() => expect(row(1)).toBeInTheDocument());
+    // Pinned cells paint `--cc-table-pinned-column-bg`, which defaults to the table background.
+    await waitFor(() => expect(row(1).style.getPropertyValue('--cc-table-pinned-column-bg')).toBe('rgb(255, 0, 0)'));
+    expect(row(0).style.getPropertyValue('--cc-table-pinned-column-bg')).toBe('');
+  });
+
+  test('[Table-ROWBG-006] the row color re-evaluates when a value its expression depends on changes', async () => {
+    store().setVariable('rowColor', 'rgb(255, 0, 0)', MODULE_ID);
+    widget.render({ styles: { rowBackgroundColor: binding('{{rowData.age > 32 ? variables.rowColor : ""}}') } });
+    await waitFor(() => expect(row(1).style.backgroundColor).toBe('rgb(255, 0, 0)'));
+
+    act(() => store().setVariable('rowColor', 'rgb(0, 128, 0)', MODULE_ID));
+
+    await waitFor(() => expect(row(1).style.backgroundColor).toBe('rgb(0, 128, 0)'));
+    expect(row(0).style.backgroundColor).toBe('');
+  });
+
+  test('[Table-ROWBG-007] editing rowBackgroundColor on a mounted table updates the rows', async () => {
+    widget.render({ styles: { rowBackgroundColor: binding('rgb(0, 0, 255)') } });
+    await waitFor(() => expect(row(0).style.backgroundColor).toBe('rgb(0, 0, 255)'));
+
+    widget.setComponentProperty(ID, 'rowBackgroundColor', '{{rowData.age > 32 ? "rgb(255, 0, 0)" : ""}}', 'styles');
+
+    await waitFor(() => expect(row(1).style.backgroundColor).toBe('rgb(255, 0, 0)'));
+    expect(row(0).style.backgroundColor).toBe('');
+  });
+
+  test('[Table-ROWBG-012] a colored row hovers to a darker shade of its own color, other rows keep the table hover color', async () => {
+    widget.render({
+      styles: { rowBackgroundColor: binding('{{rowData.age > 32 ? "rgb(255, 0, 0)" : ""}}') },
+    });
+    await waitFor(() => expect(row(1).style.backgroundColor).toBe('rgb(255, 0, 0)'));
+    // The table hover shade is the background darkened by 6 (lightness 50% -> 44%).
+    expect(row(1).style.getPropertyValue('--cc-table-row-hover')).toBe('rgb(224, 0, 0)');
+    expect(row(0).style.getPropertyValue('--cc-table-row-hover')).toBe('');
+  });
+
+  test('[Table-ROWBG-013] on a striped table a colored row uses a hover shade darkened by 9 from its own color', async () => {
+    widget.render({
+      styles: { tableType: binding('table-striped'), rowBackgroundColor: binding('rgb(255, 0, 0)') },
+    });
+    await waitFor(() => expect(row(0).style.backgroundColor).toBe('rgb(255, 0, 0)'));
+    expect(row(0).style.getPropertyValue('--cc-table-striped-row-hover')).toBe('rgb(209, 0, 0)');
+  });
+
+  test('[Table-ROWBG-015] a hovered editable cell in a colored row uses a shade darkened by 12 from the row color', async () => {
+    widget.render({
+      styles: { rowBackgroundColor: binding('{{rowData.age > 32 ? "rgb(255, 0, 0)" : ""}}') },
+    });
+    await waitFor(() => expect(row(1).style.backgroundColor).toBe('rgb(255, 0, 0)'));
+    // lightness 50% -> 38%
+    expect(row(1).style.getPropertyValue('--cc-table-editable-column-hover')).toBe('rgb(194, 0, 0)');
+    expect(row(0).style.getPropertyValue('--cc-table-editable-column-hover')).toBe('');
+  });
+
+  test('[Table-ROWBG-016] on a striped table the editable cell hover shade is darkened by 15 from the row color', async () => {
+    widget.render({
+      styles: { tableType: binding('table-striped'), rowBackgroundColor: binding('rgb(255, 0, 0)') },
+    });
+    await waitFor(() => expect(row(0).style.backgroundColor).toBe('rgb(255, 0, 0)'));
+    // lightness 50% -> 35%
+    expect(row(0).style.getPropertyValue('--cc-table-striped-editable-column-hover')).toBe('rgb(179, 0, 0)');
+  });
+
+  test('[Table-ROWBG-014] a color that cannot be parsed still applies but gets no derived hover shade', async () => {
+    widget.render({ styles: { rowBackgroundColor: binding('color-mix(in srgb, red 50%, white)') } });
+    await waitFor(() => expect(row(0)).toBeInTheDocument());
+    expect(row(0).style.getPropertyValue('--cc-table-row-hover')).toBe('');
   });
 
   test('[Table-COLTRANSFORM-001] a transformation resolving to null renders an empty cell, not the original value or the literal text "null"', async () => {
