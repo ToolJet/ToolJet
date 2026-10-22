@@ -35,7 +35,7 @@ export interface IDataQueriesService {
 
   update(user: User, versionId: string, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto): Promise<void>;
 
-  delete(dataQueryId: string): Promise<void>;
+  delete(dataQueryId: string, versionId: string): Promise<void>;
 
   bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]): Promise<object[]>;
 

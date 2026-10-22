@@ -39,6 +39,7 @@ import { FolderAppsModule } from '@modules/folder-apps/module';
 import { DataQueryFoldersModule } from '@modules/data-query-folders/module';
 import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
 import { AppsModule } from '@modules/apps/module';
+import { AppValidationModule } from '@modules/app-validation/module';
 import { VersionModule } from '@modules/versions/module';
 import { DataQueriesModule } from '@modules/data-queries/module';
 import { PluginsModule } from '@modules/plugins/module';
@@ -141,6 +142,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await SetupOrganizationsModule.register(configs, true),
       await WhiteLabellingModule.register(configs, true),
       await EmailModule.register(configs),
+      await AppValidationModule.register(configs),
       await AppsModule.register(configs, true),
       await VersionModule.register(configs, true),
       await DataQueriesModule.register(configs, true),
