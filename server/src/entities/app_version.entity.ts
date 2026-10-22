@@ -146,6 +146,13 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'is_synced', default: false })
   isSynced: boolean;
 
+  // Git-sync dirty flag: flipped true by an edit (component/page/event/query/version-metadata)
+  // made while isSynced is already true, i.e. content changed since the last push. Cleared back
+  // to false on the next successful push. Content-blind by design — an edit followed by a revert
+  // back to identical content still leaves this true until the next (no-op) push.
+  @Column({ name: 'has_uncommitted_changes', default: false })
+  hasUncommittedChanges: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

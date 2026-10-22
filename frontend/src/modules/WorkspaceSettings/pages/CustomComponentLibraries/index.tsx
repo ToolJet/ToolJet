@@ -31,7 +31,8 @@ interface CustomComponentLibrariesProps {
 
 export default function CustomComponentLibraries({ darkMode }: CustomComponentLibrariesProps) {
   const libraries = useCustomComponentLibrariesStore((state: any) => state.libraries) as
-    CustomComponentLibrary[] | null; // null = loading
+    | CustomComponentLibrary[]
+    | null; // null = loading
   const loadFailed = useCustomComponentLibrariesStore((state: any) => state.loadFailed) as boolean; // failed fetch ≠ empty list
   const [deleteTarget, setDeleteTarget] = useState<CustomComponentLibrary | null>(null);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
@@ -72,7 +73,7 @@ export default function CustomComponentLibraries({ darkMode }: CustomComponentLi
       toast.error(
         apps?.length
           ? `Cannot delete — in use by: ${apps.join(', ')}`
-          : (error?.data?.message ?? 'Could not delete library'),
+          : error?.data?.message ?? 'Could not delete library',
         { duration: 5000 }
       );
     }

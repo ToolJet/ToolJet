@@ -562,12 +562,12 @@ function DataSourceSelect({
           item.type === 'group-item' || item.type === 'sample-item' || item.type === 'folder-item'
             ? `${item.type}-${item.source.id}`
             : item.type === 'stray-item'
-              ? `stray-${item.source.id}`
-              : item.type === 'folder-header'
-                ? `folder-header-${item.folder.id}`
-                : item.type === 'group-end' || item.type === 'section-space'
-                  ? item.key
-                  : `${item.type}-${item.kind ?? 'defaults'}`
+            ? `stray-${item.source.id}`
+            : item.type === 'folder-header'
+            ? `folder-header-${item.folder.id}`
+            : item.type === 'group-end' || item.type === 'section-space'
+            ? item.key
+            : `${item.type}-${item.kind ?? 'defaults'}`
         }
         itemContent={(_, item) => renderItem(item)}
       />

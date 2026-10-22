@@ -368,6 +368,18 @@ class HomePageComponent extends React.Component {
         searchedAppCount: appSearchKey ? data.apps.length : this.state.currentFolder.count,
         isLoading: false,
       });
+      // Aggregate signal for the header tag, not per-app/module — kept separate per resource
+      // type since this component is shared between the Applications and Modules pages (see
+      // gitsync/uncomitted-cahnge-detection.md).
+      const anyUncommitted = (data.apps || []).some(
+        (a) => a?.has_uncommitted_changes === true || a?.hasUncommittedChanges === true
+      );
+      const branchActions = useWorkspaceBranchesStore.getState().actions;
+      if (this.props.appType === 'module') {
+        branchActions.setHasUncommittedModules(anyUncommitted);
+      } else {
+        branchActions.setHasUncommittedApps(anyUncommitted);
+      }
     });
   };
 
@@ -2106,8 +2118,8 @@ class HomePageComponent extends React.Component {
                   this.props.appType === 'workflow'
                     ? 'homePage.deleteWorkflowAndData'
                     : this.props.appType === 'front-end'
-                      ? 'homePage.deleteAppAndData'
-                      : deleteModuleText,
+                    ? 'homePage.deleteAppAndData'
+                    : deleteModuleText,
                   { appName: appToBeDeleted?.name }
                 )
               )
@@ -2439,8 +2451,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                          ? 'modules'
-                          : 'apps'
+                        ? 'modules'
+                        : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -2461,8 +2473,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                                ? 'modules'
-                                : 'apps'
+                              ? 'modules'
+                              : 'apps'
                           }-button`}
                         >
                           <>
@@ -2692,8 +2704,8 @@ class HomePageComponent extends React.Component {
                             !moduleEnabled
                               ? 'Modules are not available on your current plan.'
                               : this.isGitSyncLicenseLocked()
-                                ? 'Git sync is not enabled as per your current plan. Disable git sync to continue.'
-                                : "You don't have permission to create a module."
+                              ? 'Git sync is not enabled as per your current plan. Disable git sync to continue.'
+                              : "You don't have permission to create a module."
                           }
                           placement="bottom"
                         >
@@ -2710,8 +2722,8 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}
