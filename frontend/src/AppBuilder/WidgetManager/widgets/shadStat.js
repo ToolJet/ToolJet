@@ -157,7 +157,6 @@ export const shadStatConfig = {
         },
         defaultValue: 'up',
       },
-      isFxNotRequired: true,
       fullWidth: true,
     },
     changeLabel: {
@@ -740,6 +739,17 @@ export const shadStatConfig = {
           handle: 'text',
           displayName: 'Change',
           defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setTrend',
+      displayName: 'Set trend',
+      params: [
+        {
+          handle: 'trend',
+          displayName: 'Trend (up, down or neutral)',
+          defaultValue: 'up',
         },
       ],
     },

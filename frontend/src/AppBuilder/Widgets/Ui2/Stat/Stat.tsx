@@ -87,6 +87,7 @@ const LABEL_TWO_LINES = 40;
 const ROW_GAP = 6;
 const VALUE_LINE: Record<string, number> = { sm: 28, default: 32, lg: 40 };
 const NARROW_CARD = 160;
+const TRENDS = ['up', 'down', 'neutral'];
 
 /** A part drawn as a skeleton of its own size while the Stat loads with the Skeleton look: the part keeps its place
  *  (invisible) and a skeleton covers it, so the card is as tall loading as loaded. */
@@ -113,6 +114,11 @@ export const ShadStat = (props: WidgetProps) => {
     secondaryValue: toText(properties.change),
     setPrimaryValue: async (v: unknown) => override('value', typeof v === 'number' ? v : toText(v)),
     setSecondaryValue: async (v: unknown) => override('change', toText(v)),
+    // The Trend a change written as words points (a figure's own sign wins), until the property changes.
+    setTrend: async (v: unknown) => {
+      const trend = toText(v).trim().toLowerCase();
+      if (TRENDS.includes(trend)) override('trend', trend);
+    },
   });
   // "+8 vs semana passada" as change: the figure stays in the chip, the words join the context line (statModel). A
   // figure is formatted in the change format (+12.4%, −3.2) and its sign sets the direction: an agent's raw

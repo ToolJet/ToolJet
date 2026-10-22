@@ -245,6 +245,29 @@ describe('UI 2.0 Stat', () => {
     expect(root(container).querySelector('.tw-px-6')).toBeNull();
   });
 
+  test('[ShadStat-ACT-002] setTrend points a worded change; a figure still follows its sign; junk is ignored', async () => {
+    const arrow = (title) => chip(title).querySelector('svg');
+    render({ properties: { change: binding('Steady'), trend: binding('up') } });
+    await waitFor(() => expect(arrow('Steady')).toHaveClass('lucide-trending-up'));
+    await widget.act('setTrend', 'down');
+    await waitFor(() => expect(arrow('Steady')).toHaveClass('lucide-trending-down'));
+    await widget.act('setTrend', 'sideways');
+    await waitFor(() => expect(arrow('Steady')).toHaveClass('lucide-trending-down'));
+    await widget.act('setTrend', 'neutral');
+    await waitFor(() => expect(arrow('Steady')).toBeNull());
+
+    render({ properties: { change: binding('{{4.5}}'), trend: binding('up') } });
+    await widget.act('setTrend', 'down');
+    await waitFor(() => expect(arrow('4.5')).toHaveClass('lucide-trending-up'));
+  });
+
+  test('[ShadStat-PROP-014] trend takes a binding (fx), so it can follow data', async () => {
+    render({ properties: { change: binding('Steady'), trend: binding("{{'down'}}") } });
+    await waitFor(() => expect(chip('Steady').querySelector('svg')).toHaveClass('lucide-trending-down'));
+    const { shadStatConfig } = require('@/AppBuilder/WidgetManager/widgets/shadStat');
+    expect(shadStatConfig.properties.trend.isFxNotRequired).toBeUndefined();
+  });
+
   test('[ShadStat-ACT-001] setPrimaryValue and setSecondaryValue change the figure and the chip until those properties change', async () => {
     render({ properties: { change: binding('+1%') } });
 
