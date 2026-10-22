@@ -18,7 +18,7 @@ import {
 import { Skeleton } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
 import { itemKey, listLook, pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
-import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { LoadingBox, Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { listRowHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
@@ -226,6 +226,8 @@ export const ShadListView = (props: WidgetProps) => {
 
   // Measure the width a row's canvas lays its components out at.
   const gridRef = useRef<HTMLDivElement>(null);
+  // The rows under the loading look take no input (their fields out of the tab order too).
+  useDisableInert(gridRef, isLoading);
   const [itemWidth, setItemWidth] = useState(0);
   // The grid element exists only while the list shows items, so loading and the first items re-attach the observer.
   const hasItems = items.length > 0;
@@ -247,6 +249,19 @@ export const ShadListView = (props: WidgetProps) => {
   useExposedValueBatch(itemWidth > 0 ? shown.drawn : 0);
 
   const showPager = properties.enablePagination && !isLoading && (items.length > 0 || paged.page > 1);
+  const loadingLook = !isLoading ? null : wantsSkeleton(properties) ? (
+    <div className="tw-flex tw-flex-col" style={{ gap }}>
+      {[0, 1, 2].map((i) => (
+        <Skeleton key={i} style={{ height: rowHeight }} className="tw-w-full tw-rounded-ui2-lg" />
+      ))}
+    </div>
+  ) : shown.items.length ? (
+    <div className="tw-flex tw-h-full tw-items-center tw-justify-center">
+      <Spinner className="tw-h-6 tw-w-6" />
+    </div>
+  ) : (
+    <LoadingBox height={props.height} />
+  );
 
   return (
     <div
@@ -266,49 +281,54 @@ export const ShadListView = (props: WidgetProps) => {
         ...look.vars,
       }}
     >
-      {isLoading && !wantsSkeleton(properties) ? (
-        <LoadingBox height={props.height} />
-      ) : isLoading ? (
-        <div className="tw-flex tw-flex-col" style={{ gap }}>
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} style={{ height: rowHeight }} className="tw-w-full tw-rounded-ui2-lg" />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
+      {/* Loading, the rows stay mounted under the loading look (hidden and inert): swapping them for it unmounted
+          every row's components, and what was typed in them was lost. With no rows yet, the loading look stands in. */}
+      {isLoading && !shown.items.length ? (
+        loadingLook
+      ) : !isLoading && items.length === 0 ? (
         <div className="tw-flex tw-min-h-[96px] tw-items-center tw-justify-center tw-rounded-ui2-lg tw-border tw-border-dashed tw-text-ui2-sm tw-text-[color:var(--lv-empty,var(--sc-muted-foreground))]">
           {String(properties.emptyText ?? 'No items')}
         </div>
       ) : (
-        <div
-          ref={gridRef}
-          role="list"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-            gap: mode === 'list' && properties.showBorder ? 0 : gap,
-            // alignContent: a short list keeps its rows at the top instead of stretching the grid's tracks.
-            ...(fixed ? { flex: '1 1 0', minHeight: 0, overflowY: 'auto', alignContent: 'start' } : {}),
-          }}
-        >
-          {shown.items.map((item, index) => (
-            <Row
-              key={shown.keys[index]}
-              id={id}
-              index={index}
-              item={item}
-              parentPath={contextPath}
-              height={rowHeight}
-              fit={!fixed && props.currentMode === 'view'}
-              currentLayout={props.currentLayout}
-              width={itemWidth}
-              onPick={(i) => !isDisabled && pick(i)}
-              selected={properties.highlightSelectedRow !== false && index === selectedIndex}
-              look={look}
-              mode={mode}
-              showBorder={!!properties.showBorder}
-              darkMode={darkMode}
-            />
-          ))}
+        <div style={{ position: 'relative', ...(fixed ? { flex: '1 1 0', minHeight: 0, display: 'flex' } : {}) }}>
+          <div
+            ref={gridRef}
+            role="list"
+            aria-hidden={isLoading || undefined}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+              gap: mode === 'list' && properties.showBorder ? 0 : gap,
+              visibility: isLoading ? 'hidden' : undefined,
+              // alignContent: a short list keeps its rows at the top instead of stretching the grid's tracks.
+              ...(fixed ? { flex: '1 1 0', minHeight: 0, overflowY: 'auto', alignContent: 'start' } : {}),
+            }}
+          >
+            {shown.items.map((item, index) => (
+              <Row
+                key={shown.keys[index]}
+                id={id}
+                index={index}
+                item={item}
+                parentPath={contextPath}
+                height={rowHeight}
+                fit={!fixed && props.currentMode === 'view'}
+                currentLayout={props.currentLayout}
+                width={itemWidth}
+                onPick={(i) => !isDisabled && !isLoading && pick(i)}
+                selected={properties.highlightSelectedRow !== false && index === selectedIndex}
+                look={look}
+                mode={mode}
+                showBorder={!!properties.showBorder}
+                darkMode={darkMode}
+              />
+            ))}
+          </div>
+          {isLoading ? (
+            <div aria-busy="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+              {loadingLook}
+            </div>
+          ) : null}
         </div>
       )}
       {isLoading ? null : (
