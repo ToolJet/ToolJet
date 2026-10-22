@@ -10,6 +10,7 @@ import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibra
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import InlineLibraryComponent from './LibraryComponent/InlineLibraryComponent';
 import { getLibraryComponentRuntime } from './LibraryComponent/inlineRuntime';
+import LibrarySlotCanvas from './LibraryComponent/LibrarySlotCanvas';
 
 const DevBadge = ({ label }) => (
   <div className="tw-absolute tw-left-0 -tw-bottom-6 tw-h-5 tw-inline-flex tw-items-center tw-px-1 tw-py-0.5 tw-rounded-md tw-text-white tw-text-sm tw-font-medium tw-whitespace-nowrap tw-pointer-events-none tw-z-10 tw-bg-background-success-strong">
@@ -18,6 +19,8 @@ const DevBadge = ({ label }) => (
 );
 
 const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'componentName', 'visibility', 'loadingState']);
+// Styles the host widget applies itself; every other style key is the bundle's (ToolJet.useStyleX).
+const HOST_STYLE_KEYS = new Set(['boxShadow']);
 
 /* POC: renders inline by default (shadow root + host React, see LibraryComponent/inlineRuntime.ts);
    localStorage 'tj-cc-runtime' = 'iframe' falls back to the shell below.
@@ -28,8 +31,10 @@ const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'compone
    shell → stateChange/event → setExposedVariable / fireEvent
 */
 const LibraryComponent = ({
+  id,
   properties = {},
   styles = {},
+  darkMode,
   height,
   setExposedVariable,
   setExposedVariables,
@@ -160,6 +165,12 @@ const LibraryComponent = ({
     [properties]
   );
 
+  // Inspector Styles-tab values for the bundle — passed as styles, never set as exposed variables.
+  const componentStyles = useMemo(
+    () => Object.fromEntries(Object.entries(styles).filter(([k]) => !HOST_STYLE_KEYS.has(k))),
+    [styles]
+  );
+
   // Sends a message from this parent widget down into the widget's iframe.
   const postToShell = (msg) => iframeRef.current?.contentWindow?.postMessage(msg, '*');
 
@@ -188,6 +199,7 @@ const LibraryComponent = ({
     configured,
     componentName,
     componentProps,
+    componentStyles,
     bundleUrl: configured ? fileUrl('index.js') : null,
     cssUrl: configured ? fileUrl('index.css') : null,
   };
@@ -200,10 +212,10 @@ const LibraryComponent = ({
       if (type === 'ready') {
         rejectAllPending('component reloaded before the action completed');
         setShellReady(true);
-        const { configured, componentName, componentProps, bundleUrl, cssUrl } = latest.current;
+        const { configured, componentName, componentProps, componentStyles, bundleUrl, cssUrl } = latest.current;
         if (configured) {
           postToShell({ type: 'load', bundleUrl, cssUrl, componentName });
-          postToShell({ type: 'props', data: componentProps });
+          postToShell({ type: 'props', data: componentProps, styles: componentStyles });
         }
       }
       if (type === 'stateChange') setExposedVariable(key, value);
@@ -249,8 +261,13 @@ const LibraryComponent = ({
 
   useEffect(() => {
     if (!shellReady) return;
-    postToShell({ type: 'props', data: componentProps });
-  }, [shellReady, componentProps]);
+    postToShell({ type: 'props', data: componentProps, styles: componentStyles });
+  }, [shellReady, componentProps, componentStyles]);
+
+  // Slot drop areas exist only inline: the iframe shell has no way to host ToolJet components.
+  const renderSlot = (slotName) => (
+    <LibrarySlotCanvas id={`${id}-${slotName}`} darkMode={darkMode} isEditMode={currentMode === 'edit'} />
+  );
 
   if (!hasCustomComponentLibrariesAccess && currentMode === 'view') {
     return <></>;
@@ -295,6 +312,8 @@ const LibraryComponent = ({
           cacheKey={`${libraryId}|${effectiveRevision}|${devNonce ?? ''}`}
           componentName={componentName}
           componentProps={componentProps}
+          componentStyles={componentStyles}
+          renderSlot={renderSlot}
           setExposedVariable={setExposedVariable}
           fireEvent={fireEvent}
           actions={inlineActions}

@@ -1,7 +1,13 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { LibraryInstance, LibraryInstanceContext, loadLibraryCss, loadLibraryModule } from './inlineRuntime';
+import {
+  LibraryInstance,
+  LibraryInstanceContext,
+  loadLibraryCss,
+  loadLibraryModule,
+  slotAttributeName,
+} from './inlineRuntime';
 
 // Shadow-root baseline. ToolJet's global CSS stays out, while inherited properties and theme custom
 // properties (--cc-*, --text-*) still flow in. The body is non-scrollable and sized by the widget box.
@@ -47,6 +53,9 @@ interface InlineLibraryComponentProps {
   cacheKey: string;
   componentName: string;
   componentProps: Record<string, unknown>;
+  componentStyles: Record<string, unknown>;
+  // Renders the ToolJet drop area for a slot the bundle mounted (see ToolJet.Slot).
+  renderSlot: (name: string) => React.ReactNode;
   setExposedVariable: (key: string, value: unknown) => void;
   fireEvent: (name: string, options?: Record<string, unknown>) => void;
   actions: Map<string, (...args: unknown[]) => unknown>;
@@ -60,6 +69,8 @@ const InlineLibraryComponent = ({
   cacheKey,
   componentName,
   componentProps,
+  componentStyles,
+  renderSlot,
   setExposedVariable,
   fireEvent,
   actions,
@@ -74,6 +85,24 @@ const InlineLibraryComponent = ({
   } | null>(null);
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Slots the bundle currently renders, in mount order. Counted, so two ToolJet.Slot elements with the
+  // same name (e.g. during a keyed remount) share one drop area until the last one unmounts.
+  const [slotNames, setSlotNames] = useState<string[]>([]);
+  const slotCounts = useRef(new Map<string, number>());
+  const registerSlot = useCallback((name: string) => {
+    const counts = slotCounts.current;
+    counts.set(name, (counts.get(name) ?? 0) + 1);
+    if (counts.get(name) === 1) setSlotNames((names) => [...names, name]);
+    return () => {
+      const remaining = (counts.get(name) ?? 1) - 1;
+      if (remaining > 0) {
+        counts.set(name, remaining);
+        return;
+      }
+      counts.delete(name);
+      setSlotNames((names) => names.filter((n) => n !== name));
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const host = hostRef.current;
@@ -153,11 +182,13 @@ const InlineLibraryComponent = ({
   const instance = useMemo<LibraryInstance>(
     () => ({
       props: componentProps,
+      styles: componentStyles,
       setExposedVariable: (key, value) => latest.current.setExposedVariable(key, value),
       fireEvent: (name) => latest.current.fireEvent(name, { isCustomComponentEvent: true }),
       actions,
+      registerSlot,
     }),
-    [componentProps, actions]
+    [componentProps, componentStyles, actions, registerSlot]
   );
 
   let content: React.ReactNode = null;
@@ -172,6 +203,12 @@ const InlineLibraryComponent = ({
   return (
     <div ref={hostRef} data-cy={dataCy} className="tw-w-full tw-h-full tw-block" style={{ boxShadow }}>
       {shadow && createPortal(content, shadow.mount)}
+      {/* Light-DOM children, projected into the bundle's <slot> elements. */}
+      {slotNames.map((name) => (
+        <div key={name} slot={slotAttributeName(name)} className="tw-block tw-w-full tw-h-full">
+          {renderSlot(name)}
+        </div>
+      ))}
     </div>
   );
 };

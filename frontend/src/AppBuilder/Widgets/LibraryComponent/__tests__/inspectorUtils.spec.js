@@ -2,6 +2,9 @@ import {
   fieldMeta,
   additionalActionProps,
   groupPropsBySection,
+  groupStylesBySection,
+  styleFieldMeta,
+  withManifestDefaults,
 } from '@/AppBuilder/RightSideBar/Inspector/Components/LibraryComponent/utils';
 
 describe('fieldMeta', () => {
@@ -131,5 +134,60 @@ describe('groupPropsBySection', () => {
   it('[LibraryComponent-SECTION-003] returns [] for an empty prop list', () => {
     // Break this catches: emitting an empty "Properties" accordion for a component with no props.
     expect(groupPropsBySection([])).toEqual([]);
+  });
+});
+
+describe('styleFieldMeta', () => {
+  it('[LibraryComponent-STYLES-001] gives a color style the theme-aware swatch picker', () => {
+    // Break this catches: rendering style colors with the plain prop color input, which can't pick theme tokens.
+    expect(styleFieldMeta({ name: 'accent', type: 'string', inspector: 'color' })).toMatchObject({
+      type: 'colorSwatches',
+      validation: { schema: { type: 'string' } },
+    });
+  });
+
+  it('[LibraryComponent-STYLES-002] maps every other style like a prop', () => {
+    // Break this catches: style fields diverging from prop fields for the same declared type.
+    const style = { name: 'radius', type: 'number', default: 4 };
+    expect(styleFieldMeta(style)).toEqual(fieldMeta(style));
+  });
+});
+
+describe('groupStylesBySection', () => {
+  it('[LibraryComponent-STYLES-003] groups styles with no section under "Styles"', () => {
+    // Break this catches: unsectioned styles landing under "Properties" in the Styles tab.
+    const styles = [
+      { name: 'a', type: 'string' },
+      { name: 'b', type: 'string', section: 'Header' },
+    ];
+    expect(groupStylesBySection(styles).map((section) => section.title)).toEqual(['Styles', 'Header']);
+  });
+});
+
+describe('withManifestDefaults', () => {
+  const instance = (styles) => ({ id: 'c1', component: { definition: { properties: {}, styles } } });
+
+  it('[LibraryComponent-DEFAULTS-001] shows the manifest default for a style the instance never stored', () => {
+    // Break this catches: a style added in a newer revision rendering as an empty (and invalid) field
+    // while the component itself draws its initialValue.
+    const component = instance({ backgroundColor: { value: '#ff0000' } });
+    const styles = [
+      { name: 'backgroundColor', type: 'string', default: 'var(--cc-surface1-surface)' },
+      { name: 'borderRadius', type: 'number', default: 6 },
+    ];
+
+    const shown = withManifestDefaults(component, 'styles', styles).component.definition.styles;
+
+    expect(shown.backgroundColor.value).toBe('#ff0000');
+    expect(shown.borderRadius.value).toBe('{{6}}');
+    expect(component.component.definition.styles.borderRadius).toBeUndefined();
+  });
+
+  it('[LibraryComponent-DEFAULTS-002] returns the same object when every field is stored', () => {
+    // Break this catches: a fresh object on every render, which re-renders every Inspector field.
+    const component = instance({ borderRadius: { value: '{{4}}' } });
+    expect(withManifestDefaults(component, 'styles', [{ name: 'borderRadius', type: 'number', default: 6 }])).toBe(
+      component
+    );
   });
 });

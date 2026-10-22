@@ -210,7 +210,7 @@ const VersionPicker = ({ library }) => {
             className="custom-library-version-chip"
             data-cy={`custom-library-version-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
           >
-            {isDevPin ? 'dev' : (current ?? 'Select version')}
+            {isDevPin ? 'dev' : current ?? 'Select version'}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="custom-library-version-menu" onClick={(e) => e.stopPropagation()}>
@@ -281,7 +281,7 @@ const VersionPicker = ({ library }) => {
 };
 
 const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
-  const { displayName, description, props = [], defaultWidth, defaultHeight } = componentConfig;
+  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight } = componentConfig;
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const [isRightSidebarOpen, toggleRightSidebar] = useStore(
     (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
@@ -302,10 +302,11 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
         componentName: name,
         revisionId,
         props,
+        styles,
         defaultSize,
       },
     };
-  }, [libraryId, correlationId, libraryName, name, revisionId, props, defaultWidth, defaultHeight]);
+  }, [libraryId, correlationId, libraryName, name, revisionId, props, styles, defaultWidth, defaultHeight]);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({

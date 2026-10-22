@@ -33,10 +33,20 @@ type ActionHandler = (...args: unknown[]) => unknown;
 
 export interface LibraryInstance {
   props: Record<string, unknown>;
+  // Inspector Styles-tab values. Read-only for the bundle and never exposed.
+  styles: Record<string, unknown>;
   setExposedVariable: (key: string, value: unknown) => void;
   fireEvent: (name: string) => void;
   actions: Map<string, ActionHandler>;
+  // A mounted ToolJet.Slot asks the host for a drop area; the returned function releases it.
+  registerSlot: (name: string) => () => void;
 }
+
+// Slot names become part of the child canvas id (`<componentId>-<name>`), which the editor splits on
+// the last '-', so they stay to letters, digits and underscores.
+const SLOT_NAME = /^[A-Za-z][A-Za-z0-9_]*$/;
+
+export const slotAttributeName = (name: string): string => `tj-slot-${name}`;
 
 export const LibraryInstanceContext = React.createContext<LibraryInstance | null>(null);
 
@@ -81,7 +91,47 @@ const makeStateHook = (hookName: string) =>
     return [value, setAndSync] as const;
   };
 
-const toolJetSdk = {
+// Styles are builder-controlled: the hook returns the Inspector value, or initialValue while it is unset.
+// `expose: true` also reports that value as a read-only exposed variable; by default styles stay private.
+const makeStyleHook = (hookName: string) =>
+  function useTjStyle({ name, initialValue, expose }: { name: string; initialValue?: unknown; expose?: boolean }) {
+    const instance = useLibraryInstance(hookName);
+    const raw = instance.styles[name];
+    const value = raw === undefined || raw === '' ? initialValue : raw;
+    // The instance object changes with every prop change; report only when the value itself changes.
+    const instanceRef = React.useRef(instance);
+    instanceRef.current = instance;
+
+    React.useEffect(() => {
+      if (expose) instanceRef.current.setExposedVariable(name, value);
+    }, [expose, name, value]);
+    return value;
+  };
+
+// <ToolJet.Slot name="content" /> marks where builders can drop ToolJet components. It renders a native
+// shadow-DOM <slot>; the host renders the drop area as a light-DOM child of the shadow host, so the editor's
+// document-level drag and drop lookups still find it, and the browser lays it out at this position.
+const Slot = ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
+  const instance = useLibraryInstance('Slot');
+  const isValid = SLOT_NAME.test(name ?? '');
+
+  React.useLayoutEffect(() => {
+    if (!isValid) {
+      console.warn(`[ToolJet.Slot] invalid name "${name}": use letters, digits and underscores only.`);
+      return;
+    }
+    return instance.registerSlot(name);
+  }, [instance, name, isValid]);
+
+  return React.createElement(
+    'div',
+    { className, style: { position: 'relative', minWidth: 0, minHeight: 0, ...style }, 'data-tj-slot': name },
+    isValid ? React.createElement('slot', { name: slotAttributeName(name) }) : null
+  );
+};
+
+// The `ToolJet` object a bundle's `import { ToolJet } from '@tooljet/custom-component-sdk'` resolves to.
+export const toolJetSdk = {
   useStateString: makeStateHook('useStateString'),
   useStateNumber: makeStateHook('useStateNumber'),
   useStateBoolean: makeStateHook('useStateBoolean'),
@@ -107,6 +157,11 @@ const toolJetSdk = {
       };
     }, [instance, name]);
   },
+  useStyleString: makeStyleHook('useStyleString'),
+  useStyleNumber: makeStyleHook('useStyleNumber'),
+  useStyleBoolean: makeStyleHook('useStyleBoolean'),
+  useStyleEnumeration: makeStyleHook('useStyleEnumeration'),
+  Slot,
   // Build-time only (manifest-generator reads defaultWidth/Height); no runtime effect.
   useComponentSettings: () => {},
 };
