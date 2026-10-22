@@ -3,7 +3,8 @@ import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
-import { renderElement, renderCustomStyles, goToModule, getDocsLink } from './Utils';
+import { renderElement, renderCustomStyles, goToModule } from './Utils';
+import { DocumentationFooter } from './Components/DocumentationFooter';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, resolveReferences } from '@/_helpers/utils';
 import { DefaultComponent } from './Components/DefaultComponent';
@@ -25,8 +26,6 @@ import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
-import Student from '@/_ui/Icon/solidIcons/Student';
-import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import classNames from 'classnames';
@@ -531,38 +530,6 @@ export const Inspector = ({
     return <Accordion items={items} />;
   };
 
-  const renderDocumentationLink = () => {
-    // The UI 2.0 pack has no documentation pages yet, and its internal type name ("ShadLineChart") is not for users.
-    if (String(componentMeta?.component ?? '').startsWith('Shad')) return null;
-    return (
-      <span className="widget-documentation-link">
-        <a
-          href={getDocsLink(componentMeta?.component)}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="widget-documentation-link"
-        >
-          <span>
-            <Student width={13} fill={'#3E63DD'} />
-            <small className="widget-documentation-link-text">
-              {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta:
-                  componentMeta.displayName === 'Toggle Switch (Legacy)'
-                    ? 'Toggle (Legacy)'
-                    : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
-              })}
-            </small>
-          </span>
-          <span>
-            <ArrowRight width={20} fill={'#3E63DD'} />
-          </span>
-        </a>
-      </span>
-    );
-  };
-
   const propertiesTab = isMounted && (
     <FallbackBoundary
       label="Properties tab"
@@ -779,7 +746,7 @@ export const Inspector = ({
           {renderTabs()}
         </div>
       </div>
-      {renderDocumentationLink()}
+      <DocumentationFooter componentMeta={componentMeta} />
     </div>
   );
 };
