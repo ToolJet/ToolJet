@@ -28,7 +28,8 @@ const specPath = (type) => path.join(UI2, folderOf(type), '__tests__', 'integrat
 /** Everything a widget adds to the standard set, as section.key. */
 const ownKeys = (config) => [
   ...Object.keys(config.properties || {})
-    .filter((k) => !SHARED_PROPERTIES.has(k))
+    // An inspector heading is not a property.
+    .filter((k) => !SHARED_PROPERTIES.has(k) && config.properties[k]?.type !== 'sectionSubHeader')
     .map((k) => `properties.${k}`),
   ...Object.keys(config.validation || {}).map((k) => `validation.${k}`),
   ...Object.keys(config.events || {}).map((k) => `events.${k}`),

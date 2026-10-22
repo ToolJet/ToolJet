@@ -40,6 +40,7 @@ export const shadKeyValueConfig = {
       placeholder: "{ Status: 'Active' } or [{ label: 'Amount', value: 1250, type: 'currency' }]",
     },
     columns: {
+      note: 'As many as fit the width: about 300px a column side by side, 160px with the label above.',
       type: 'switch',
       displayName: 'Columns',
       options: [
@@ -94,6 +95,7 @@ export const shadKeyValueConfig = {
       fullWidth: true,
     },
     labelWidth: {
+      conditionallyRender: { key: 'layout', value: 'inline' },
       type: 'code',
       displayName: 'Label width (side by side; px or %)',
       validation: {
@@ -134,7 +136,12 @@ export const shadKeyValueConfig = {
         defaultValue: '—',
       },
     },
+    typedRowFormats: {
+      type: 'sectionSubHeader',
+      displayName: 'Formats for typed rows',
+    },
     currency: {
+      note: "Rows of type currency (a row's own currency wins).",
       type: 'code',
       displayName: 'Currency (currency rows)',
       validation: {
@@ -146,6 +153,7 @@ export const shadKeyValueConfig = {
       },
     },
     locale: {
+      note: 'Rows of type number, currency, date and datetime.',
       type: 'code',
       displayName: 'Number locale',
       validation: {
@@ -157,6 +165,7 @@ export const shadKeyValueConfig = {
       },
     },
     dateFormat: {
+      note: 'Rows of type date and datetime.',
       type: 'code',
       displayName: 'Date format (date rows)',
       validation: {
@@ -168,6 +177,7 @@ export const shadKeyValueConfig = {
       },
     },
     badgeColors: {
+      note: 'Rows of type badge: a value to its colour.',
       type: 'code',
       displayName: 'Badge colours by value',
       validation: {

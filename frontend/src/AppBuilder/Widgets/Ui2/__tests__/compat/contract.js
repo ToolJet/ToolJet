@@ -34,7 +34,11 @@ const canonical = (value) => {
 
 /** The keys a saved component carries: the inspector's, and those only its definition has (Tabs' tabItems, Dialog's
  *  headerHeight), which the editor saves too. */
-const savedKeys = (defs, created) => [...new Set([...Object.keys(defs || {}), ...Object.keys(created || {})])].sort();
+// An inspector heading (type sectionSubHeader) is not a property: nothing is saved under it.
+const savedKeys = (defs, created) =>
+  [...new Set([...Object.keys(defs || {}), ...Object.keys(created || {})])]
+    .filter((key) => defs?.[key]?.type !== 'sectionSubHeader')
+    .sort();
 
 const keyed = (defs, created) =>
   Object.fromEntries(
