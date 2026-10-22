@@ -44,3 +44,6 @@ lerna-debug.log*
 /coverage-gitsync
 /coverage-gitsync-combined
 /coverage-gitsync-unit
+
+# Local git-sync runtime storage (created by the dev server)
+/tooljet/

@@ -2,14 +2,35 @@
 
 React + Webpack. Edition composition (webpack aliases, registries, `fetchEdition()`) is covered in the root `AGENTS.md` — this file covers conventions and App Builder architecture.
 
-## Testing context
+## Testing
 
-Before adding or changing tests for `src/AppBuilder/**`, read
-`src/test/app-builder/README.md` for public seams and
-`ee/.agents/skills/app-builder-widget-tdd/SKILL.md` for research, approvals, and execution phases.
-Registered widget status and canonical contract paths live in `widget-testing-manifest.json`.
-Widget-specific facts stay in the manifest-linked EE `TESTING.md`; transfer sibling findings only
-when the public behavior, runtime, or infrastructure applies.
+> Tests are written first. A spec that still passes against broken production code certifies nothing.
+
+**Full reference: `src/test/README.md`** (all frontend code). Review rules: `.github/instructions/frontend-tests.instructions.md`.
+
+- **Stack:** Jest + Testing Library + MSW.
+- **Layout:**
+  - specs are `*.spec.*` in a colocated `__tests__/`; `*.test.*` files never run;
+  - specs that import the real store go in `__tests__/integration/`;
+  - `npm run test:layout` enforces this.
+- **Workflow:**
+  - **Red first.** A bug fix starts with a failing reproduction, using `test.failing` until the fix lands.
+  - **Break to prove.** Break the code once to confirm each test fails.
+- **Jest vs Cypress:** full route flows belong in Cypress (`cypress-tests/`), not Jest.
+- **Run** (from `frontend/`):
+  - `npx jest <path>`, or `npm test` for the full suite;
+  - `npx jest --changedSince=origin/<base>` to run what a branch touched. `test:unit:changed` (`--onlyChanged`) only sees uncommitted files.
+- **CI** runs `test:layout`, then the full `test:ci`, on any frontend change. There is no frontend coverage gate.
+
+### App Builder (`src/AppBuilder/**`)
+
+On top of the above:
+- Read `src/test/app-builder/README.md` for the test seams and the no-mock rule.
+- Run `npm run test:app-builder`, plus `:contracts` and `:parity -- --edition ce|ee` when a widget changes.
+- **Registered widgets** are listed in `widget-testing-manifest.json` with their status and contract path. Each has an EE `TESTING.md` contract that goes through `ee/.agents/skills/app-builder-widget-tdd/SKILL.md` (research, human approvals, execution).
+  - A widget whose contract isn't `approved` needs a human before its tests can change.
+  - Widget-specific facts stay in that widget's contract. Transfer sibling findings only when the public behavior, runtime, or infrastructure applies.
+- **Browser-level widget scenarios** are QA-owned Cypress specs (`cypress-tests/cypress/support/componentAutomation/README.md`).
 
 ## Component patterns
 
@@ -92,11 +113,15 @@ No change may break existing saved applications. Always ask: would an app saved 
 - AppBuilder store: `AppBuilder/_stores/store.js` (30+ slices), all namespaced by `moduleId` (default `'canvas'`)
 - Global stores (`appDataStore`, `currentStateStore`, `dataQueriesStore`, `resolverStore`) should not be used from AppBuilder code unless truly unavoidable — prefer the AppBuilder store
 
+### Released-app cache
+
+- The released-app link reuses the app definition saved in IndexedDB (`_helpers/appDefinitionCache.ts`) while its key matches the `appDataRevision` the server returns. The browser never judges freshness itself; what refreshes it is server-side (`server/src/modules/apps/AGENTS.md` § Released-app viewer cache). Logout wipes it via `clearAllViewerCaches()`.
+
 ## Widget config
 
-### Server-side sync (CRITICAL)
+### Single source of truth
 
-Changing a widget config in `frontend/src/AppBuilder/WidgetManager/widgets/` requires the matching update in `server/src/modules/apps/services/widget-config/`. The two are maintained independently; changing one without the other is a bug.
+Widget configs live in the shared `packages/widget-definitions` package (`src/widgets/`), imported as `@tooljet/widget-definitions` by both the frontend (`AppBuilder/WidgetManager/configs/widgetConfig.js`) and the server (`server/src/modules/apps/services/widget-config/index.js`). Edit a config once there; there is no second copy to keep in sync.
 
 ### Key changes require migrations
 
@@ -106,7 +131,7 @@ Moving, renaming, or removing a config key (e.g. moving `loadingState` from `sty
 
 ### Universal props (`universalProps`)
 
-Schema fields merged into **every** widget by `combineProperties()` in `AppBuilder/WidgetManager/componentTypes.js`. Sub-buckets: `general` (properties — e.g. `tooltip`), `generalStyles` (styles — e.g. `boxShadow`). Adding a field here applies it to all widgets at once, with no per-widget edits.
+Schema fields merged into **every** widget by `combineProperties()` (both defined in `packages/widget-definitions/src/utils.js`; applied in `AppBuilder/WidgetManager/componentTypes.js` and the server's `widget-config/index.js`). Revamped components (`NEW_REVAMPED_COMPONENTS`) get `universalProps`; the rest get `legacyUniversalProps`. Sub-buckets: `general` (properties — e.g. `tooltip`), `generalStyles` (styles — e.g. `boxShadow`). Adding a field here applies it to all widgets at once, with no per-widget edits.
 
 ### CSS class (widget-level)
 

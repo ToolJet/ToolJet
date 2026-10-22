@@ -1,0 +1,6 @@
+{
+  "name": "tj",
+  "private": true,
+  "type": "module",
+  "description": "ToolJet dev toolkit: worktrees, env, databases and dev servers"
+}
