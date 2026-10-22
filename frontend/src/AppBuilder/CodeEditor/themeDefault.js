@@ -265,16 +265,47 @@ export const themeValueOf = (componentId, component, paramName) => {
   return drawnThemeValue(componentId, component, paramName) ?? fallbackValue(root, paramName);
 };
 
-/** themeValueOf, read after the canvas has drawn (a cleared colour reads the widget without it). */
+// The theme's colour tokens a drawn colour may be (the ones the Theme tab lists, --cc-<type>-<category>), the kind
+// that suits the field first: a background is more likely a surface than a text colour of the same value.
+const PREFERRED_CATEGORY = { backgroundColor: 'surface', borderTopColor: 'border', color: 'text' };
+const themeTokens = (root) => {
+  const names = new Set();
+  for (const element of [root, document.documentElement]) {
+    const computed = getComputedStyle(element);
+    // The Theme tab's names only (--cc-surface1-surface, --cc-primary-brand): not the numbered text aliases
+    // (--cc-0-text) or the light/dark/strong variants of a colour.
+    for (let i = 0; i < computed.length; i++)
+      if (/^--cc-[a-z][a-zA-Z0-9]*-[a-zA-Z]+$/.test(computed[i])) names.add(computed[i]);
+  }
+  return [...names];
+};
+/** The theme token (`var(--cc-surface1-surface)`) whose colour the widget draws for a blank colour style, or null. */
+export const themeTokenOf = (componentId, paramName, drawn) => {
+  const root = componentId ? document.getElementById(componentId) : null;
+  if (!root || !drawn || /radius|size|width|gap|padding|height|thickness/i.test(paramName)) return null;
+  const property = propertyFor(paramName);
+  const target = colorText(drawn);
+  if (!/^#/.test(target)) return null;
+  const preferred = PREFERRED_CATEGORY[property];
+  const matches = themeTokens(root).filter((name) => colorText(computeIn(root, `var(${name})`, property)) === target);
+  const best = matches.find((name) => preferred && name.endsWith(`-${preferred}`)) ?? matches[0];
+  return best ? `var(${best})` : null;
+};
+
+const readTheme = (enabled, componentId, component, paramName) => {
+  if (!enabled) return null;
+  const value = themeValueOf(componentId, component, paramName);
+  return { value, token: themeTokenOf(componentId, paramName, value) };
+};
+
+/** themeValueOf (and the theme token it is), read as the field first draws (so the colour picker opens on that
+ *  token) and again after the canvas has drawn (a cleared colour reads the widget without it). */
 export const useThemeValue = (enabled, componentId, component, paramName, darkMode) => {
-  const [found, setFound] = useState(null);
+  const [found, setFound] = useState(() => readTheme(enabled, componentId, component, paramName));
   useEffect(() => {
-    if (!enabled) {
-      setFound(null);
-      return undefined;
-    }
-    const read = () => setFound(themeValueOf(componentId, component, paramName));
+    const read = () => setFound(readTheme(enabled, componentId, component, paramName));
     read();
+    if (!enabled) return undefined;
     const frame = requestAnimationFrame(read);
     return () => cancelAnimationFrame(frame);
   }, [enabled, componentId, component, paramName, darkMode]);

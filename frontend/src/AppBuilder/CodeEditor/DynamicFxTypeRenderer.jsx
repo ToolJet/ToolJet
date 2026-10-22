@@ -54,8 +54,11 @@ export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {
   // provider is always there, so setting a value does not remount the field (and close its open picker).
   const { component, componentId, paramName, value, darkMode } = restProps;
   const themed = followsTheme({ component, paramName, paramType, value });
-  const themeValue = useThemeValue(themed, componentId, component, paramName, darkMode);
-  const themeDefault = useMemo(() => (themed ? { value: themeValue } : null), [themed, themeValue]);
+  const theme = useThemeValue(themed, componentId, component, paramName, darkMode);
+  const themeDefault = useMemo(
+    () => (themed ? { value: theme?.value ?? null, token: theme?.token ?? null } : null),
+    [themed, theme]
+  );
 
   return (
     <ThemeDefaultContext.Provider value={themeDefault}>
