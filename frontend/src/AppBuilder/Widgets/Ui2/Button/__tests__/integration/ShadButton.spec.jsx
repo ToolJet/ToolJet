@@ -42,6 +42,16 @@ describe('UI 2.0 Button', () => {
     expect(button()).not.toHaveClass('tw-bg-ui2-primary-strong');
   });
 
+  test('[ShadButton-PROP-005] a bound variant or size is read in any case, and anything else is the default look', async () => {
+    // Variant and Size were fixed choices; bound, an unknown name drew an unstyled button.
+    render({ properties: { variant: binding("{{'Destructive'}}"), size: binding("{{'LG'}}") } });
+    await waitFor(() => expect(button()).toHaveClass('tw-bg-ui2-destructive'));
+    expect(button()).toHaveClass('tw-px-8');
+    render({ properties: { variant: binding("{{'danger-ish'}}"), size: binding('{{42}}') } });
+    await waitFor(() => expect(button()).toHaveClass('tw-bg-ui2-primary-strong'));
+    expect(button()).toHaveClass('tw-px-4');
+  });
+
   // On the grid, or as a fixed-width flex child, a button fills the box drawn for it (boxFit 'grid' or 'fixed', from
   // WidgetWrapper). As a fill child of a flex row it keeps its own width, and fullWidth makes it span the row.
   test('[ShadButton-PROP-002] a button fills a box sized for it; in a flex fill slot only fullWidth widens it', async () => {

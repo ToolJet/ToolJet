@@ -66,7 +66,6 @@ export const shadButtonConfig = {
         },
         defaultValue: 'default',
       },
-      isFxNotRequired: true,
       fullWidth: true,
     },
     size: {
@@ -93,7 +92,6 @@ export const shadButtonConfig = {
         },
         defaultValue: 'default',
       },
-      isFxNotRequired: true,
       fullWidth: true,
     },
     fullWidth: {

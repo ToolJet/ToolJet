@@ -87,3 +87,12 @@ test('a literal choice still shows its control', () => {
   const tabs = field('ShadTabs', 'variant', "{{'steps'}}");
   expect(inCode(tabs.container)).toBe(false);
 });
+
+test('the UI 2.0 Button Variant and Size take fx; Tabs Style stays a fixed choice', () => {
+  const { properties } = componentTypeDefinitionMap.ShadButton;
+  expect(properties.variant.isFxNotRequired).toBeUndefined();
+  expect(properties.size.isFxNotRequired).toBeUndefined();
+  expect(componentTypeDefinitionMap.ShadTabs.properties.variant.isFxNotRequired).toBe(true);
+  const { container } = field('ShadButton', 'variant', 'default');
+  expect(container.querySelector('[data-cy="variant-fx-button"]')).not.toBeNull();
+});
