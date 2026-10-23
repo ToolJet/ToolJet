@@ -74,12 +74,8 @@
         "ShadToggleGroup"
       ],
       "properties": {
-        "advanced": {
-          "dropped": "options are a plain list property; there is no separate JSON schema mode"
-        },
-        "schema": {
-          "dropped": "options are a plain list property; there is no separate JSON schema mode"
-        },
+        "advanced": "options",
+        "schema": "options",
         "layout": "orientation",
         "multiSelection": "mode"
       }
@@ -178,12 +174,8 @@
         "ShadCombobox"
       ],
       "properties": {
-        "advanced": {
-          "dropped": "options are a plain list property; there is no separate JSON schema mode"
-        },
-        "schema": {
-          "dropped": "options are a plain list property; there is no separate JSON schema mode"
-        },
+        "advanced": "options",
+        "schema": "options",
         "showSearchInput": "showSearch",
         "sort": {
           "gap": "no sorting of the options"
@@ -459,12 +451,8 @@
         "ShadMultiselect"
       ],
       "properties": {
-        "advanced": {
-          "dropped": "options are a plain list property; there is no separate JSON schema mode"
-        },
-        "schema": {
-          "dropped": "options are a plain list property; there is no separate JSON schema mode"
-        },
+        "advanced": "options",
+        "schema": "options",
         "maxLimit": "maxSelections",
         "showAllOption": "showSelectAll",
         "showAllSelectedLabel": {
@@ -548,12 +536,8 @@
         "ShadRadioGroup"
       ],
       "properties": {
-        "advanced": {
-          "dropped": "options are a plain list property; there is no separate JSON schema mode"
-        },
-        "schema": {
-          "dropped": "options are a plain list property; there is no separate JSON schema mode"
-        },
+        "advanced": "options",
+        "schema": "options",
         "dynamicHeight": {
           "dropped": "always fits its options"
         },
