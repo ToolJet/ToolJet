@@ -12,6 +12,7 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { OptionsCapNote, useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import { isDisabledOption } from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 
 export const ShadToggleGroup = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
@@ -56,14 +57,15 @@ export const ShadToggleGroup = (props: WidgetProps) => {
           'tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-bg-[color:var(--lk-bg,var(--sc-muted))] tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
           properties.fullWidth === true && 'tw-flex tw-w-full'
         )}
-        // A disabled option takes no click (the item is disabled too).
-        onValueChange={(next) => next && !byKey.get(next)?.disabled && change(next)}
+        // A disabled option (`disabled`, or the native Button group's `disable`) takes no click (the item is disabled
+        // too).
+        onValueChange={(next) => next && !isDisabledOption(byKey.get(next)) && change(next)}
       >
         {shownOptions(options, byKey.get(key), MAX_CHOICES).map((o) => (
           <ToggleGroupItem
             key={String(o.value)}
             value={choiceKey(o.value)}
-            disabled={o.disabled === true}
+            disabled={isDisabledOption(o)}
             className="tw-rounded-[calc(var(--lk-radius,var(--sc-radius))*0.8)] data-[state=on]:tw-bg-[color:var(--lk-on-bg,var(--sc-background))] data-[state=on]:tw-text-[color:var(--lk-on-fg,var(--sc-foreground))]"
           >
             {o.label}
