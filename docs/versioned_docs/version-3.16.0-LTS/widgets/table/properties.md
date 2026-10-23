@@ -46,6 +46,8 @@ Example - Passing a query data:
 
 Go to the **[Table Columns](/docs/widgets/table/table-columns)** guide to know more about supported column types.
 
+To stop columns from being added or removed when the shape of the data changes, turn on **[Lock column schema](/docs/widgets/table/table-columns#lock-column-schema)**.
+
 ## Action Buttons (Deprecated)
 
 :::warning
