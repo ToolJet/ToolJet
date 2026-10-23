@@ -32,6 +32,8 @@ export const shadIconConfig = {
       placeholder: "'trending-up', 'users', 'shopping-cart'",
     },
     size: {
+      minValue: 8,
+      maxValue: 512,
       type: 'code',
       displayName: 'Icon size (px)',
       validation: {
@@ -43,6 +45,8 @@ export const shadIconConfig = {
       },
     },
     strokeWidth: {
+      minValue: 0.5,
+      maxValue: 4,
       type: 'code',
       displayName: 'Stroke width',
       validation: {

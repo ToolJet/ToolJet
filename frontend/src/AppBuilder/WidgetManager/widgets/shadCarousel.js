@@ -32,6 +32,8 @@ export const shadCarouselConfig = {
       placeholder: "[{ image: 'https://…/1.jpg', title: 'Summer sale', description: 'Up to 40% off', link: '' }]",
     },
     defaultIndex: {
+      minValue: 0,
+      maxValue: 100000,
       type: 'code',
       displayName: 'Start at slide (0-based)',
       validation: {
@@ -134,6 +136,8 @@ export const shadCarouselConfig = {
       fullWidth: true,
     },
     slidesPerView: {
+      minValue: 1,
+      maxValue: 4,
       type: 'code',
       displayName: 'Slides per view (1 to 4)',
       validation: {
@@ -189,6 +193,8 @@ export const shadCarouselConfig = {
       },
     },
     interval: {
+      minValue: 1000,
+      maxValue: 600000,
       conditionallyRender: { key: 'autoplay', value: true },
       type: 'code',
       displayName: 'Autoplay interval (ms)',

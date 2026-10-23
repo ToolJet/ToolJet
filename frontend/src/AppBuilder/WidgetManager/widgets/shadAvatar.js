@@ -50,6 +50,8 @@ export const shadAvatarConfig = {
       },
     },
     size: {
+      minValue: 16,
+      maxValue: 256,
       type: 'code',
       displayName: 'Size (px)',
       validation: {
@@ -61,6 +63,8 @@ export const shadAvatarConfig = {
       },
     },
     maxVisible: {
+      minValue: 1,
+      maxValue: 50,
       type: 'code',
       displayName: 'Most avatars shown (rest as +N)',
       validation: {

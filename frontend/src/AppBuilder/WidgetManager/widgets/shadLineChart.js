@@ -100,6 +100,8 @@ export const shadLineChartConfig = {
       },
     },
     strokeWidth: {
+      minValue: 0.5,
+      maxValue: 12,
       type: 'code',
       displayName: 'Line width (px)',
       validation: {

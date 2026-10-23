@@ -72,6 +72,8 @@ export const shadNumberInputConfig = {
       },
     },
     decimalPlaces: {
+      minValue: 0,
+      maxValue: 10,
       type: 'code',
       displayName: 'Decimal places',
       validation: {

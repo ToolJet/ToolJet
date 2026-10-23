@@ -100,6 +100,8 @@ export const shadHeatmapChartConfig = {
       },
     },
     cellGap: {
+      minValue: 0,
+      maxValue: 12,
       type: 'code',
       displayName: 'Cell gap (px)',
       validation: {

@@ -87,6 +87,7 @@ export const shadFileUploadConfig = {
       },
     },
     maxFiles: {
+      minValue: 1,
       type: 'code',
       displayName: 'Max files',
       note: '1 to 100. A larger number is taken as 100.',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { maxValueCheck } from './maxValueCheck';
+import { limitCheck } from './maxValueCheck';
 import _ from 'lodash';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeEditor from '@/AppBuilder/CodeEditor';
@@ -86,8 +86,8 @@ export const Code = ({
         component={component?.component?.component}
         onVisibilityChange={onVisibilityChange}
         placeholder={placeholder}
-        // A config may bound its own number field (a UI 2.0 Max files past 100 is flagged).
-        validationFn={validationFn ?? maxValueCheck(paramMeta?.maxValue)}
+        // A config may bound its own number field (minValue/maxValue): a value outside is flagged with what the widget takes.
+        validationFn={validationFn ?? limitCheck(paramMeta)}
         cyLabel={paramMeta?.showLabel === false ? param.name?.toLowerCase() : ''}
         setCodeEditorView={setCodeEditorView}
         canRefresh={canRefresh}

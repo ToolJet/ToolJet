@@ -82,6 +82,8 @@ export const shadSparklineConfig = {
       fullWidth: true,
     },
     strokeWidth: {
+      minValue: 0.5,
+      maxValue: 6,
       type: 'code',
       displayName: 'Line width (px)',
       validation: {

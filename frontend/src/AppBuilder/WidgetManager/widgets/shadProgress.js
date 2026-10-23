@@ -19,6 +19,8 @@ export const shadProgressConfig = {
   },
   properties: {
     value: {
+      minValue: 0,
+      maxValue: 100,
       type: 'code',
       displayName: 'Percent',
       validation: {

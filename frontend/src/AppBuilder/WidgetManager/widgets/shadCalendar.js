@@ -167,6 +167,8 @@ export const shadCalendarConfig = {
       fullWidth: true,
     },
     numberOfMonths: {
+      minValue: 1,
+      maxValue: 3,
       type: 'code',
       displayName: 'Number of months',
       validation: {

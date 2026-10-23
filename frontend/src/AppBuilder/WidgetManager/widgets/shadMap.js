@@ -421,6 +421,8 @@ export const shadMapConfig = {
       },
     },
     heatRadius: {
+      minValue: 8,
+      maxValue: 120,
       conditionallyRender: { key: 'display', value: ['heat', 'both'] },
       type: 'code',
       displayName: 'Heat radius (px)',

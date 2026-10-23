@@ -225,6 +225,8 @@ export const shadScatterChartConfig = {
       placeholder: '60',
     },
     pointSize: {
+      minValue: 2,
+      maxValue: 40,
       type: 'code',
       displayName: 'Point size (px)',
       validation: {
@@ -244,6 +246,8 @@ export const shadScatterChartConfig = {
       },
     },
     fillOpacity: {
+      minValue: 0.1,
+      maxValue: 1,
       type: 'code',
       displayName: 'Fill opacity (0 to 1)',
       validation: {
