@@ -4,7 +4,7 @@ export const textinputConfig = {
   description: 'User text input field',
   component: 'TextInput',
   defaultSize: {
-    width: 10,
+    width: 3,
     height: 40,
   },
   others: {
