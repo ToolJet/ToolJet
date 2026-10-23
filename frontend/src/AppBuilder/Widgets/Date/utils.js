@@ -256,8 +256,8 @@ export const getUsableTimeBounds = (minTime, maxTime, timeFormat) => {
   const max = parse(maxTime);
   const conflict = Boolean(
     min.time &&
-      max.time &&
-      moment(min.time, [timeFormat, 'HH:mm'], true).isAfter(moment(max.time, [timeFormat, 'HH:mm'], true))
+    max.time &&
+    moment(min.time, [timeFormat, 'HH:mm'], true).isAfter(moment(max.time, [timeFormat, 'HH:mm'], true))
   );
   return {
     minTime: conflict ? null : min.time,
