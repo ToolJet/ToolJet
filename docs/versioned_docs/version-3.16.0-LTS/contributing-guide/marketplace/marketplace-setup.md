@@ -7,8 +7,8 @@ The Marketplace offers custom plugins that can be installed in your ToolJet inst
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/en/download/) **(v22.15.1)**
-- [npm](https://www.npmjs.com/get-npm) **(v10.9.2)**
+- [Node.js](https://nodejs.org/en/download/) **(v22.23.4)**
+- [npm](https://www.npmjs.com/get-npm) **(v10.9.9)**
 
 ## Getting Started
 

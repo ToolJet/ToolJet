@@ -54,9 +54,11 @@ The following actions of the component can be controlled using the component-spe
 
 ## Validation
 
+The **Email Input** component checks every value against a built-in email format, in addition to the options below. The built-in check rejects a dot (`.`) or hyphen (`-`) at the start or end of either part of the address, so values such as `.user@example.com`, `user.@example.com`, `user@.example.com`, `user@-example.com` and `user@example-.com` show a validation error.
+
 | <div style={{ width:"200px"}}> Validation Option </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{width: "500px"}}> Expected Value </div> |
 | :------------------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
-| Make this field mandatory | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Make this field mandatory | Displays a 'Field cannot be empty' message if no value is entered. The message also appears as soon as the field is emptied with the clear button or the `clear()` action. Resetting a **Form** clears the field without showing the message. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Regex | Regular Expression to validate the input. | Regular Expression Pattern (e.g., `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` ). |
 | Min length | Sets the minimum number of characters allowed. | Integer (e.g., `10` for a minimum of 10 characters). |
 | Max length | Sets the maximum number of characters allowed. | Integer (e.g., `10` for a maximum of 10 characters). |

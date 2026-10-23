@@ -7,7 +7,7 @@
 
 /* You can override the default Infima variables here. */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&display=swap');
+/* IBM Plex Sans is linked in the document head for early discovery. */
 
 :root {
   --ifm-color-primary: #4d72fa;
@@ -1157,4 +1157,35 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   pointer-events: none;
   z-index: 9999;
   box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+/* MCP client logo cards — official marks are monochrome, so flip the
+   dark-only and light-only ones to stay visible in both themes. */
+.mcp-logo {
+  width: 30px;
+  height: 30px;
+  display: inline-block;
+  /* opt out of the global img card treatment */
+  box-shadow: none;
+  border-radius: 0;
+  background: none;
+}
+
+/* Dark artwork (e.g. Codex): invert on the dark theme. */
+[data-theme='dark'] .mcp-logo--dark-art {
+  filter: invert(1);
+}
+
+/* Light artwork (e.g. Grok Build): invert on the light theme. */
+.mcp-logo--light-art {
+  filter: invert(1);
+}
+
+[data-theme='dark'] .mcp-logo--light-art {
+  filter: none;
+}
+
+/* AI model guide: let the model tabs wrap instead of scrolling sideways */
+.model-tabs {
+  flex-wrap: wrap;
+  overflow-x: visible;
 }

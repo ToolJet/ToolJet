@@ -89,7 +89,7 @@
                 "setup/migration/upgrade-to-lts",
                 {
                   "type": "category",
-                  "label": "PostgreSQL 13 → 16 Upgrade",
+                  "label": "PostgreSQL 13 \u2192 16 Upgrade",
                   "items": [
                     {
                       "type": "category",
@@ -176,32 +176,43 @@
         "build-with-ai/overview",
         {
           "type": "category",
-          "label": "Building Application",
+          "label": "Use AI in ToolJet",
+          "link": {
+            "type": "doc",
+            "id": "build-with-ai/use-ai-in-tooljet"
+          },
           "items": [
+            "build-with-ai/use-ai-in-tooljet",
             "build-with-ai/generate-applications",
-            "build-with-ai/integrating-data"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "AI Assitance",
-          "items": [
             "build-with-ai/referencing-app-resources",
-            "build-with-ai/debug-components",
-            "build-with-ai/ai-docs-assistant"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Concepts & References",
-          "items": [
+            "build-with-ai/ai-docs-assistant",
             "build-with-ai/ai-credits",
             "build-with-ai/model-selection",
-            "build-with-ai/prompting101",
-            "build-with-ai/ai-best-practices"
+            "build-with-ai/ai-model-performance"
           ]
         },
-        "build-with-ai/tooljet-mcp",
+        {
+          "type": "category",
+          "label": "ToolJet MCP Server",
+          "items": [
+            "build-with-ai/mcp/overview",
+            "build-with-ai/mcp/app-generation",
+            {
+              "type": "category",
+              "label": "Setup",
+              "items": [
+                "build-with-ai/mcp/setup/overview",
+                "build-with-ai/mcp/setup/claude-code",
+                "build-with-ai/mcp/setup/codex",
+                "build-with-ai/mcp/setup/microsoft-copilot",
+                "build-with-ai/mcp/setup/other-clients",
+                "build-with-ai/mcp/setup/troubleshooting"
+              ]
+            },
+            "build-with-ai/mcp/supported-tools",
+            "build-with-ai/mcp/security"
+          ]
+        },
         "build-with-ai/privacy"
       ]
     },
@@ -322,6 +333,23 @@
             "app-builder/modules/create-module",
             "app-builder/modules/input-output",
             "app-builder/modules/data-flow"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Custom Component Libraries",
+          "link": {
+            "type": "doc",
+            "id": "app-builder/custom-component-library/overview"
+          },
+          "items": [
+            "app-builder/custom-component-library/overview",
+            "app-builder/custom-component-library/setup",
+            "app-builder/custom-component-library/build-components",
+            "app-builder/custom-component-library/preview-and-publish",
+            "app-builder/custom-component-library/use-in-app-builder",
+            "app-builder/custom-component-library/manage-libraries",
+            "app-builder/custom-component-library/cli-reference"
           ]
         },
         {
@@ -792,6 +820,7 @@
                 "marketplace/plugins/marketplace-plugin-microsoft_graph",
                 "marketplace/plugins/marketplace-plugin-mistral_ai",
                 "marketplace/plugins/marketplace-plugin-openai",
+                "marketplace/plugins/marketplace-plugin-openrouter",
                 "marketplace/plugins/marketplace-plugin-pinecone",
                 "marketplace/plugins/marketplace-plugin-plivo",
                 "marketplace/plugins/marketplace-plugin-pocketbase",
@@ -804,6 +833,7 @@
                 "marketplace/plugins/marketplace-plugin-servicenow",
                 "marketplace/plugins/marketplace-plugin-sharepoint",
                 "marketplace/plugins/marketplace-plugin-supabase",
+                "marketplace/plugins/marketplace-plugin-typesafe",
                 "marketplace/plugins/marketplace-plugin-ups",
                 "marketplace/plugins/marketplace-plugin-weaviate",
                 "marketplace/plugins/marketplace-plugin-xero"
@@ -1136,60 +1166,7 @@
             },
             "development-lifecycle/gitsync/delete-gitsync",
             "development-lifecycle/gitsync/push",
-            "development-lifecycle/gitsync/pull",
-            {
-              "type": "category",
-              "label": "Branching",
-              "link": {
-                "type": "doc",
-                "id": "beta/branching/overview"
-              },
-              "items": [
-                "beta/branching/overview",
-                {
-                  "type": "category",
-                  "label": "Single-Branch Mode",
-                  "link": {
-                    "type": "doc",
-                    "id": "beta/branching/single-branch/overview"
-                  },
-                  "items": [
-                    "beta/branching/single-branch/overview",
-                    "beta/branching/single-branch/push-and-pull",
-                    "beta/branching/single-branch/sync-resources"
-                  ]
-                },
-                {
-                  "type": "category",
-                  "label": "Multi-Branch Mode",
-                  "link": {
-                    "type": "doc",
-                    "id": "beta/branching/multi-branch/overview"
-                  },
-                  "items": [
-                    "beta/branching/multi-branch/overview",
-                    "beta/branching/multi-branch/enable-and-manage-branches",
-                    "beta/branching/multi-branch/push-and-pull",
-                    "beta/branching/multi-branch/sync-resources",
-                    "beta/branching/multi-branch/pull-requests"
-                  ]
-                },
-                "beta/branching/versioning",
-                "beta/branching/auto-sync",
-                {
-                  "type": "category",
-                  "label": "Troubleshooting",
-                  "link": {
-                    "type": "doc",
-                    "id": "beta/branching/troubleshooting/overview"
-                  },
-                  "items": [
-                    "beta/branching/troubleshooting/overview",
-                    "beta/branching/troubleshooting/resolving-conflicts"
-                  ]
-                }
-              ]
-            }
+            "development-lifecycle/gitsync/pull"
           ]
         },
         {

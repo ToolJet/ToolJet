@@ -25,7 +25,7 @@ Components are highly customizable and interactive. Once you place a component o
 
 ### Using Components With Data
 
-In ToolJet, components can be easily connected to various data sources like databases, APIs, and third-party services through **[queries](what-are-queries)**. Once the data is fetched, you can bind it to components like tables, charts, and more. 
+In ToolJet, components can be easily connected to various data sources like databases, APIs, and third-party services through **[queries](/docs/3.0.0-LTS/tooljet-concepts/what-are-queries/)**. Once the data is fetched, you can bind it to components like tables, charts, and more.
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/tooljet-concepts/what-are-components/adding-data-to-component.png" alt="Adding Data To Component" />

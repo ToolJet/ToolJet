@@ -1,0 +1,90 @@
+---
+id: overview
+title: Actions Reference
+---
+
+import '../homepage.css';
+import Link from '@docusaurus/Link';
+
+export const Card = ({ className = '', href, children }) => {
+    const cardContent = (
+        <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] ${className}`}>
+            <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
+                style={{
+                    background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
+                    border: '0px',
+                    backgroundClip: 'padding-box, border-box',
+                    backgroundOrigin: 'border-box',
+                    pointerEvents: 'none'
+                }}>
+            </div>
+            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+                {children}
+            </div>
+        </div>
+    );
+    return href ? (
+        <Link to={href} className="no-underline hover:no-underline block h-full" style={{ textDecoration: 'none' }}>
+            {cardContent}
+        </Link>
+    ) : cardContent;
+};
+
+export const ActionCard = ({ title, description, href }) => (
+    <Card href={href} className="h-[104px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-4 h-full flex flex-col">
+            <h3 className="text-base font-semibold leading-snug text-black dark:text-white m-0">{title}</h3>
+            <p className="text-sm leading-snug text-gray-600 dark:text-gray-400 mt-1 mb-0 line-clamp-2">{description}</p>
+        </div>
+    </Card>
+);
+
+export const ActionSection = ({ title, description, children }) => (
+    <div style={{ marginBottom: '2rem', paddingBottom: '1.25rem', borderBottom: '1px solid #e5e7eb' }}>
+        <h2 className="text-lg font-bold text-black dark:text-white mb-1">{title}</h2>
+        {description && <p className="text-sm text-gray-500 dark:text-gray-300 mb-3">{description}</p>}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {children}
+        </div>
+    </div>
+);
+
+Actions define what happens when an [event](/docs/app-builder/events/overview) occurs in a ToolJet application — running a query, displaying an alert, navigating to a different page, updating a variable, and more. They can be configured declaratively through an event handler, or invoked programmatically from a RunJS query.
+
+<ActionSection title="Run Action" description="Operate on queries, or surface feedback to the user.">
+    <ActionCard title="Run Query" description="Executes a query when triggered." href="/docs/actions/run-query" />
+    <ActionCard title="Reset Query" description="Resets a query's data and state to default." href="/docs/actions/reset-query" />
+    <ActionCard title="Abort Query" description="Cancels an in-flight query request." href="/docs/actions/abort-query" />
+    <ActionCard title="Show Alert" description="Displays an info, success, warning, or error message." href="/docs/actions/show-alert" />
+</ActionSection>
+
+<ActionSection title="Control Component" description="Change a component's state, visibility, or invoke its component-specific actions (CSAs).">
+    <ActionCard title="Control Component" description="Invokes a component's own custom action (CSA)." href="/docs/actions/control-component" />
+    <ActionCard title="Show Modal" description="Opens a Modal component on the canvas." href="/docs/actions/show-modal" />
+    <ActionCard title="Close Modal" description="Closes an open Modal component." href="/docs/actions/close-modal" />
+    <ActionCard title="Set Table Page" description="Navigates a Table to a specific page index." href="/docs/actions/set-table-page" />
+    <ActionCard title="Scroll Component into View" description="Scrolls a component into the visible viewport." href="/docs/actions/scroll-component-into-view" />
+</ActionSection>
+
+<ActionSection title="Navigation" description="Move the user between pages or apps.">
+    <ActionCard title="Switch Page" description="Navigates to another page in a Multipage App." href="/docs/actions/switch-page" />
+    <ActionCard title="Go to App" description="Navigates to a different released app." href="/docs/actions/go-to-app" />
+    <ActionCard title="Open Web Page" description="Opens a URL in a new browser tab." href="/docs/actions/open-webpage" />
+</ActionSection>
+
+<ActionSection title="Variable" description="Create, update, or clear app-level and page-level variables.">
+    <ActionCard title="Set Page Variable" description="Sets a variable scoped to the current page." href="/docs/actions/set-page-variable" />
+    <ActionCard title="Unset Page Variable" description="Clears a single page-scoped variable." href="/docs/actions/unset-page-variable" />
+    <ActionCard title="Unset All Page Variable" description="Clears every variable on the current page." href="/docs/actions/unset-all-page-var" />
+    <ActionCard title="Set Variable" description="Sets a variable available across the app." href="/docs/actions/set-variable" />
+    <ActionCard title="Unset Variable" description="Clears a single app-level variable." href="/docs/actions/unset-variable" />
+    <ActionCard title="Unset All Variable" description="Clears every variable across the app." href="/docs/actions/unset-all-var" />
+</ActionSection>
+
+<ActionSection title="Other">
+    <ActionCard title="Logout" description="Logs the current user out of their session." href="/docs/actions/logout" />
+    <ActionCard title="Generate File" description="Builds a CSV, text, or PDF file to download." href="/docs/actions/generate-file" />
+    <ActionCard title="Set Local Storage" description="Writes a key-value pair to local storage." href="/docs/actions/set-localstorage" />
+    <ActionCard title="Copy to Clipboard" description="Copies text to the user's clipboard." href="/docs/actions/copy-to-clipboard" />
+    <ActionCard title="Toggle App Mode" description="Switches the app's theme between light and dark." href="/docs/actions/toggle-app-mode" />
+</ActionSection>

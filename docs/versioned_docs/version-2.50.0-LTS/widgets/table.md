@@ -410,13 +410,13 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 
 - **[Row hovered](/docs/2.50.0-LTS/widgets/table#row-hovered)**
 - **[Row clicked](/docs/2.50.0-LTS/widgets/table#row-clicked)**
-- **[Save changes](/docs/2.50.0-LTS/widgets/table#save-changes)**
-- **[Cancel changes](/docs/2.50.0-LTS/widgets/table#cancel-changes)**
-- **[Page changed](/docs/2.50.0-LTS/widgets/table#page-changed)**
+- **Save changes**
+- **Cancel changes**
+- **Page changed**
 - **[Search](/docs/2.50.0-LTS/widgets/table#search)**
-- **[Sort applied](/docs/2.50.0-LTS/widgets/table#sort-applied)**
-- **[Cell value changed](/docs/2.50.0-LTS/widgets/table#cell-value-changed)**
-- **[Filter changed](/docs/2.50.0-LTS/widgets/table#filter-changed)**
+- **Sort applied**
+- **Cell value changed**
+- **Filter changed**
 - **[Add new rows](/docs/2.50.0-LTS/widgets/table#add-new-rows)**
 
 ### Allow Selection

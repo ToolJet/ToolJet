@@ -5,11 +5,15 @@ title: Cohere
 
 Cohere can be integrated with ToolJet to use its advanced AI models for tasks such as text generation or building a chatbot assistant by configuring parameters to optimize results.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect with Cohere, you will need the **Access token**, which can be generated from **[Cohere Dashboard](https://dashboard.cohere.com/api-keys)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/cohere/config.png" alt="Cohere Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/cohere/config.png" alt="Cohere Configuration" />
 
 ## Supported Operations
 
@@ -58,7 +62,7 @@ Example Parameters:
 }
 ```
 
-<img className="screenshot-full" src="/img/marketplace/plugins/cohere/text-generation.png" alt="Cohere Text generation" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/cohere/text-gen-query.png" alt="Cohere Text generation" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -120,9 +124,8 @@ Use this operation for a chat-like conversation, where the model responds based 
 
 - **Advanced parameters**: Additional parameters to configure the model response. Refer [Advanced Parameters](#advanced-parameters) for more information.
 
-Example Parameters:
-
 ```js 
+ Advanced parameters :
 {
     "response_format": {"type": "text"},
     "temperature": 0.3,
@@ -138,7 +141,25 @@ Example Parameters:
 }
 ```
 
-<img className="screenshot-full" src="/img/marketplace/plugins/cohere/chat.png" alt="Cohere Chat" />
+**Example Parameters**:
+
+```yaml
+History :
+[{
+  "role": "system",
+  "content": "You are an advanced AI support chatbot for ToolJet."
+},
+ {
+"role": "user",
+"content": "Hello! I need help with Cohere and ToolJet."
+  },
+ {
+"role": "assistant",
+"content": "Hey! Can you please elaborate about your query?"
+ }]
+```
+
+<img className="screenshot-full" src="/img/marketplace/plugins/cohere/chat-query.png" alt="Cohere Chat" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>

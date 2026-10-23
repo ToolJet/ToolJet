@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useLocation, useHistory } from "@docusaurus/router";
 
 const GOOGLE_TRANSLATE_SCRIPT_ID = "tooljet-google-translate-script";
@@ -72,10 +72,7 @@ function ensureTranslateRuntimeContainer() {
 export default function Root({ children }) {
   const location = useLocation();
   const history = useHistory();
-
-  function getStoredUTMParams() {
-    return JSON.parse(sessionStorage.getItem("utmParams") || "{}");
-  }
+  const [translationRequested, setTranslationRequested] = useState(false);
 
   const initializeTranslate = useCallback(() => {
     if (!window.google?.translate?.TranslateElement) return;
@@ -114,26 +111,8 @@ export default function Root({ children }) {
     }
   }, []);
 
-  // Append UTMs on every route change
-  useEffect(() => {
-    const storedParams = getStoredUTMParams();
-    if (Object.keys(storedParams).length === 0) return;
-
-    const url = new URL(window.location.href);
-
-    // Append UTMs only if they're not already present
-    Object.entries(storedParams).forEach(([key, value]) => {
-      if (!url.searchParams.has(key)) {
-        url.searchParams.set(key, value);
-      }
-    });
-
-    const newUrl = url.pathname + url.search + url.hash;
-
-    if (newUrl !== location.pathname + location.search + location.hash) {
-      history.replace(newUrl); // update URL without reloading
-    }
-  }, [location.pathname, location.search, location.hash, history]);
+  // Keep documentation navigation URLs clean. Initial campaign attribution is
+  // stored above; the footer forwards it only to cross-domain conversion links.
 
   // Support ?lang=<code> links and sync through Google's cookie mechanism.
   useEffect(() => {
@@ -141,6 +120,20 @@ export default function Root({ children }) {
     const requestedLanguage = normalizeLanguageCode(
       url.searchParams.get(GOOGLE_TRANSLATE_PARAM)
     );
+    // A saved translation must continue to work on later visits and routes.
+    const savedTranslation = document.cookie.split(';').some((part) => {
+      const cookie = part.trim();
+      if (!cookie.startsWith('googtrans=')) return false;
+      try {
+        const language = normalizeLanguageCode(decodeURIComponent(cookie.slice(10)).split('/')[2]);
+        return Boolean(language && language !== GOOGLE_TRANSLATE_SOURCE_LANGUAGE);
+      } catch {
+        return false;
+      }
+    });
+    if (savedTranslation || (requestedLanguage && requestedLanguage !== GOOGLE_TRANSLATE_SOURCE_LANGUAGE)) {
+      setTranslationRequested(true);
+    }
     if (!requestedLanguage) return;
 
     setGoogleTranslateCookie(requestedLanguage);
@@ -158,8 +151,9 @@ export default function Root({ children }) {
     location.hash,
   ]);
 
-  // Initialize Google Translate globally once.
+  // Load the translation SDK only for requested or previously saved translations.
   useEffect(() => {
+    if (!translationRequested) return;
     window[GOOGLE_TRANSLATE_CALLBACK] = initializeTranslate;
 
     if (window.google?.translate?.TranslateElement) {
@@ -183,7 +177,7 @@ export default function Root({ children }) {
         container.remove();
       }
     };
-  }, [initializeTranslate]);
+  }, [initializeTranslate, translationRequested]);
 
   return <>{children}</>;
 }

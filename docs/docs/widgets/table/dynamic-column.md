@@ -5,8 +5,6 @@ title: Dynamic Columns
 
 ToolJet allows users to dynamically set the columns of a **Table** component using a JSON value. This guide explains how to configure dynamic columns in ToolJet.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Using Dynamic Column
 
 1. Drag a **Table** component from the right-side component library onto the canvas.
@@ -30,10 +28,6 @@ ToolJet allows users to dynamically set the columns of a **Table** component usi
 ```
 
 This configuration displays a column labeled Name with editable string data restricted to lengths between 5 and 20 characters, with white text on a black background.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Displaying Different Table Schema Based on the Current User
 
@@ -76,10 +70,6 @@ Here, two different schemas are to be displayed based on the current user.
 ]}}
 ```
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Specifiying the Column Type
 
 Dynamic columns in ToolJet support various types, such as strings, numbers, dates, and links. 
@@ -109,4 +99,27 @@ In this example, you can see how you can specify a column type using dynamic col
 
 This configuration will create a table with the specified column types.
 
-</div>
+## Setting a Default Column Width
+
+You can set the default width of a column in pixels by adding a `width` property to the column object. This is especially useful for dynamic columns where you cannot resize headers in the editor.
+
+```json
+{{[
+  {
+    "name": "Item Name",
+    "key": "item_name",
+    "columnType": "string",
+    "width": 150,
+    "id": "1"
+  },
+  {
+    "name": "Price",
+    "key": "price",
+    "columnType": "number",
+    "width": 100,
+    "id": "2"
+  }
+]}}
+```
+
+If a user manually resizes a column in the editor, their preference is saved. On the next reload, the `width` value in the JSON is applied again as the default — overriding any previously saved resize. This makes the JSON configuration the authoritative source for column widths.

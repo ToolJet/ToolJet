@@ -3,6 +3,7 @@ id: instance-as-environment
 title: Instance as Enviroment
 ---
 
+<PlanBadge type="enterprise" />
 
 In this guide, you will learn to manage a Multi-Instance ToolJet deployment. A Multi-Instance setup allows you to deploy multiple isolated ToolJet instances, each functioning as a separate environment, such as development, staging, and production, to support a structured Software Development Life Cycle (SDLC). In this setup each instance operates independently with a strict isolation of resources, users, and applications.
 

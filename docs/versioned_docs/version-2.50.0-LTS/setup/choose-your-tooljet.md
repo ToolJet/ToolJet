@@ -6,7 +6,7 @@ title: Choose Your ToolJet
 ToolJet versions are categorized into three main types: **Long-Term Support (LTS)**,  **Pre-Release**, and **Past versions**. Understanding these categories helps users choose the most suitable version for their needs.
 
 :::info
-ToolJet 3.0 LTS is now live! We encourage all users to upgrade to take advantage of the latest features and improvements. You can find more details about these changes in the 3.0 LTS [release notes](/docs/project-overview/release-notes).
+ToolJet 3.0 LTS is now live! We encourage all users to upgrade to take advantage of the latest features and improvements. You can find more details about these changes in the 3.0 LTS [release notes](/docs/3.0.0-LTS/project-overview/release-notes/).
 :::
 
 ## Long-Term Support (LTS) Versions

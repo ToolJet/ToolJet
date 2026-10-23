@@ -51,5 +51,5 @@ With this setup, each user can pick which LLM provider powers their own AI chats
 
 ## Switching to a Different Setup
 
-- To use your own LLM API key while continuing to route requests through ToolJet Managed AI Server, see [Setup ToolJet Cloud AI (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
+- On Self-hosted Enterprise, use your own LLM API key while continuing to route requests through ToolJet Managed AI Server with [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
 - To keep all AI traffic entirely within your own infrastructure with no data sent to ToolJet Managed AI Server, see [Setup ToolJet Enterprise AI](/docs/setup/tooljet-ai/tj-ai-enterprise).

@@ -66,7 +66,7 @@ Following actions of Button component can be controlled using the component spec
 ## General
 ### Tooltip
 
-A tooltip provides additional information when the user hovers over the component. Under the **General** settings, you can set the tooltip text in string format. Hovering over the component will display the string as the tooltip.
+A tooltip provides additional information when the user hovers over the component. Under the **General** settings, you can set the tooltip text as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field. Hovering over the component will display the tooltip.
 
 </div>
 
@@ -90,5 +90,15 @@ A tooltip provides additional information when the user hovers over the componen
 | Visibility   | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Box-shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
 
 </div>

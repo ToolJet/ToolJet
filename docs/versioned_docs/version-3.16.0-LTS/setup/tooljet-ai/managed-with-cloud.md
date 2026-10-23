@@ -26,7 +26,7 @@ None. Every ToolJet Cloud workspace has AI features enabled by default.
 There is no setup required:
 
 1. Sign in to your ToolJet Cloud workspace.
-2. Start using any [AI capability](/docs/build-with-ai/overview#ai-capabilities), for example, generating an application or fixing a component with AI.
+2. Start using any [AI capability](/docs/build-with-ai/use-ai-in-tooljet#ai-capabilities), for example, generating an application or fixing a component with AI.
 3. Usage is metered against your workspace's monthly and add-on AI credits. You can check consumption anytime under **Settings &rarr; Subscription**.
 
 ## Billing
@@ -39,4 +39,4 @@ With this setup, each user can pick which LLM provider powers their own AI chats
 
 ## Switching to a Different Setup
 
-If you'd rather use your own LLM API key while remaining on ToolJet Cloud, so usage is billed directly by your provider instead of consuming AI credits, see [Setup ToolJet Cloud AI (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
+On ToolJet Cloud Enterprise, you can use your own LLM API key so usage is billed directly by your provider instead of consuming ToolJet AI credits. See [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).

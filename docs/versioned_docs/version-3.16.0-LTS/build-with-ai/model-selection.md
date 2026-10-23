@@ -6,7 +6,7 @@ title: Selecting an AI Model
 ToolJet AI lets you control which LLM powers your AI chats. Depending on your workspace's AI setup, you can either switch between providers, or pick an exact model.
 
 :::info
-Switching the provider is available for workspaces using **ToolJet Managed AI Server**. Picking an exact model requires configuring **OpenRouter** as your LLM provider under [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
+Switching the provider is available for workspaces using **ToolJet Managed AI Server**. Picking an exact model requires configuring **OpenRouter** as your LLM provider under [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key), available on Enterprise plans for both ToolJet Cloud and Self-hosted deployments.
 :::
 
 ## Switching the AI Provider
@@ -38,7 +38,7 @@ If your admin has configured [BYOK](/docs/setup/tooljet-ai/bring-your-own-key) o
 
 ## Selecting an Exact Model
 
-To choose a specific model instead of just a provider, configure **OpenRouter** as your LLM provider under BYOK. Only models that are compatible with ToolJet AI are available.
+On ToolJet Cloud Enterprise or Self-hosted Enterprise, configure **OpenRouter** as your LLM provider under BYOK to choose a specific model instead of just a provider. Only models that are compatible with ToolJet AI are available.
 
 :::info
 This is configured at the instance level by an admin, like the rest of BYOK, it is not a per-user setting.

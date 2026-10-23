@@ -3,7 +3,7 @@ id: multi-environment
 title: Multi-Environment
 ---
 
-<PlanBadge type="team" />
+<PlanBadge type="enterprise" />
 
 Environments in ToolJet help manage different stages of application development, ensuring smooth transitions between development, testing, and production. This guide covers what environments are, their purpose, and how they function in ToolJet.
 

@@ -7,15 +7,11 @@ title: Privacy Policy
 
 ### 1. Data Sharing Commitments
 
-Your sensitive business data, customer information, and proprietary datasets remain protected and under your control.
+You decide which data sources ToolJet's AI features can reach, and this section describes what is shared when you use them.
 
 **Credential Security**: We do not share any data source credentials (such as database passwords or API keys) with our AI servers or third-party LLM providers. If you are self-hosting, these credentials never leave your deployment. If you are using ToolJet Cloud, this data never leaves our secure servers.
 
-We utilize multiple AI models from Anthropic and OpenAI to power our generation features.
-
-When you explicitly use our schema-aware AI features, we share your prompts, application metadata (such as UI components), and database schemas (e.g., table and column names) necessary for the AI to understand your data structure.
-
-This data is transmitted securely and exclusively for the purpose of fulfilling your immediate application generation request. It is not shared outside your deployment for any other reason.
+**Data Discovery**: Your schema is what the AI is designed to work from, but it is not a boundary we can enforce. When the AI explores a connected data source to identify the entities relevant to your application, we cannot guarantee that it will not read data within your tables. Discovery is not deterministic, and its behavior depends on the underlying model you select. If a table must never be read by the AI, do not expose it through the credentials you connect.
 
 ### 2. Deployment Options
 
