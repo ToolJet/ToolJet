@@ -9,6 +9,7 @@ import type { LoadingLook, LoadingMap, Resolved } from '@/AppBuilder/Widgets/Ui2
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { useBoxFit } from '@/AppBuilder/Widgets/Ui2/_shared/boxFit';
+import { showCutText } from '@/AppBuilder/Widgets/Ui2/_shared/cutText';
 import './styles/shadcn.scss';
 
 // How each widget looks while loading (the loadingState property or the setLoading action). Controls stay in place,
@@ -237,6 +238,8 @@ export const Shell = (props: ShellProps) => {
       onPointerUpCapture={blockInput}
       onMouseDownCapture={blockInput}
       onClickCapture={blockInput}
+      // A cut line (an ellipsis or a clamp) shows its whole text on hover (cutText.ts).
+      onPointerOver={(e) => showCutText(e.target)}
       aria-busy={loading || undefined}
       className={cn('tj-shadcn', contained && FIXED_BOX, fit.className, className)}
       style={{
