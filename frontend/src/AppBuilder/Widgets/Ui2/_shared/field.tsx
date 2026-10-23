@@ -1,7 +1,6 @@
 // A form control's label, help text and validation message, and the class names inputs share.
 import React, { useContext } from 'react';
-import { Label, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { Label, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { LoadingContext, Shell } from './Shell';
 import type { CssVars, Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -92,14 +91,19 @@ export const Field = ({ id, label, description, error, required, children }: Fie
   return (
     <div className="tw-flex tw-w-full tw-flex-col tw-gap-2" style={error ? INVALID_VARS : undefined}>
       {label ? <FieldLabel id={id} text={String(label)} required={required} /> : null}
-      {loading ? (
-        <div className="tw-relative">
-          {children}
-          <Spinner className="tw-pointer-events-none tw-absolute tw-right-3 tw-top-1/2 -tw-translate-y-1/2" />
-        </div>
-      ) : (
-        children
-      )}
+      {/* Loading, the control keeps its place and size under a calm skeleton block of its own shape: a spinner spun
+          inside the box, beside its chevron or affixes. The control stays mounted in the same place (out of sight), so
+          what was typed in it, and its focus, survive. */}
+      <div
+        className="tw-relative tw-w-full"
+        aria-busy={loading || undefined}
+        data-loading-skeleton={loading ? '' : undefined}
+      >
+        <div className={loading ? 'tw-invisible' : undefined}>{children}</div>
+        {loading ? (
+          <Skeleton className="tw-absolute tw-inset-0 tw-h-auto tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]" />
+        ) : null}
+      </div>
       <FieldNote error={error} description={description} size="tw-text-[0.8rem]" controlId={id} />
     </div>
   );

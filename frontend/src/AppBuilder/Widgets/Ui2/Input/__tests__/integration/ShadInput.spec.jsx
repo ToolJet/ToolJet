@@ -286,4 +286,27 @@ describe('UI 2.0 Input', () => {
     // Two typings and two clears.
     await waitFor(() => expect(widget.variables().calls).toBe(4));
   });
+
+  test('[ShadInput-LOAD-001] loading draws a calm skeleton the size of the box, keeping the box and what was typed', async () => {
+    // A spinner spun inside the box (beside a Select's chevron, an Input's text). The box now keeps its place and size
+    // under a skeleton block, and stays mounted.
+    const { container } = render();
+    await type('draft');
+    const before = box();
+    widget.setComponentProperty(ID, 'loadingState', '{{true}}', 'properties');
+    const skeleton = await waitFor(() => {
+      const el = container.querySelector('[data-loading-skeleton]');
+      expect(el).not.toBeNull();
+      return el;
+    });
+    expect(container.querySelector('.tw-animate-spin')).toBeNull();
+    expect(skeleton.querySelector('.tw-animate-pulse')).toHaveClass('tw-absolute', 'tw-inset-0');
+    expect(skeleton.firstChild).toHaveClass('tw-invisible');
+    expect(skeleton.contains(before)).toBe(true);
+
+    widget.setComponentProperty(ID, 'loadingState', '{{false}}', 'properties');
+    await waitFor(() => expect(container.querySelector('[data-loading-skeleton]')).toBeNull());
+    expect(box()).toBe(before);
+    expect(box()).toHaveValue('draft');
+  });
 });

@@ -172,13 +172,14 @@ export const Shell = (props: ShellProps) => {
   };
   const loading = !!properties.loadingState;
   const look: LoadingLook = LOADING_LOOK[componentType] || GROUP_LOADING[componentType] || 'block';
-  let content = children;
-  if (loading && ['field', 'inline', 'inline-top', 'wide'].includes(look)) {
+  // A field control sits in the same provider loading or not, so it is not remounted when loading starts (it kept
+  // what was typed, but lost focus).
+  let content =
+    look === 'field' ? <LoadingContext.Provider value={loading}>{children}</LoadingContext.Provider> : children;
+  if (loading && ['inline', 'inline-top', 'wide'].includes(look)) {
     content = (
-      <LoadingContext.Provider value={look === 'field'}>
-        {look === 'field' ? (
-          children
-        ) : look === 'wide' ? (
+      <LoadingContext.Provider value={false}>
+        {look === 'wide' ? (
           <div className="tw-flex tw-items-center tw-gap-3">
             <div className="tw-min-w-0 tw-flex-1">{children}</div>
             <Spinner />
@@ -196,7 +197,7 @@ export const Shell = (props: ShellProps) => {
         )}
       </LoadingContext.Provider>
     );
-  } else if (loading && look !== 'own') {
+  } else if (loading && look !== 'own' && look !== 'field') {
     content = wantsSkeleton(properties) ? loadingSkeleton(look, props) : <LoadingBox height={props.height} />;
   }
   return (
