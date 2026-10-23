@@ -72,23 +72,45 @@ To connect your agent, follow the [Setup](/docs/build-with-ai/mcp/setup) guide.
   padding: '1.25rem',
   background: 'var(--ifm-background-surface-color)'
 }}>
+<h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.05rem' }}>Manage Groups</h3>
+<p style={{ marginBottom: 0, color: 'var(--ifm-color-emphasis-700)' }}>Create, rename, duplicate, and delete custom groups, remove members, and set each group's permissions and its access to apps, modules, workflows, and data sources.</p>
+</div>
+
+<div style={{
+  border: '1px solid var(--ifm-color-emphasis-300)',
+  borderRadius: '8px',
+  padding: '1.25rem',
+  background: 'var(--ifm-background-surface-color)'
+}}>
+<h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.05rem' }}>Build Workflows</h3>
+<p style={{ marginBottom: 0, color: 'var(--ifm-color-emphasis-700)' }}>Create workflows, run them, and check their executions.</p>
+</div>
+
+<div style={{
+  border: '1px solid var(--ifm-color-emphasis-300)',
+  borderRadius: '8px',
+  padding: '1.25rem',
+  background: 'var(--ifm-background-surface-color)'
+}}>
 <h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.05rem' }}>Interact in Natural Language</h3>
 <p style={{ marginBottom: 0, color: 'var(--ifm-color-emphasis-700)' }}>Describe the outcome you want in plain language. Your agent picks the right tools on its own, so you never name them yourself.</p>
 </div>
 
 </div>
 
+<!-- TODO verify: the Manage Groups and Build Workflows tools (for example manage_workspace_groups, create_workflow, run_workflow) are not yet listed on /docs/build-with-ai/mcp/supported-tools. -->
+
 ## Benefits of Using ToolJet MCP
 
 - **No ToolJet credits**: Operations run on your AI client's own model subscription, so building through MCP doesn't draw down your ToolJet AI credits.
 - **Better output**: Agents build against ToolJet's governed first-party contracts, so they work from the platform's real schemas instead of guessing at its internals.
 - **Stays in your workflow**: Create and modify apps from the editor you already work in, with no context switching into ToolJet.
-- **Self-verifying**: Agents can run their own queries to confirm the data is right, and those with browser access can open the app they built and check it works before handing it back.
+- **Self-verifying**: Agents can run their own queries to confirm the data is right, and those with browser access can open the app they built and check it works before handing it back. To open the app, the agent uses a [read-only session pinned to that app](/docs/user-management/profile-management/personal-access-tokens#open-a-read-only-session-for-one-app).
 - **Extensible**: Pair ToolJet MCP with other skills, tools, and MCP servers to extend what your agent can do, such as reading a Figma design before building from it.
 
 ## ToolJet MCP Auditability
 
-ToolJet MCP authenticates using a Personal Access Token (PAT). The PAT is created by a ToolJet user, scoped to a specific workspace, and operates within the permissions assigned to its owner. As a result, the MCP agent cannot access workspaces or resources beyond the token’s authorized scope.
+ToolJet MCP authenticates using a [Personal Access Token](/docs/user-management/profile-management/personal-access-tokens) (PAT). The PAT is created by a ToolJet user, scoped to a specific workspace, and operates within the permissions assigned to its owner. On top of the owner's permissions, every token is limited to apps, data, workflows, and workspace users and groups, so it can't reach areas such as workspace settings, workspace constants and secrets, or audit logs. As a result, the MCP agent cannot access workspaces or resources beyond the token’s authorized scope.
 
 Because MCP requests are authenticated through a user-linked PAT, changes made by the MCP agent are executed within the PAT owner’s ToolJet permission context. ToolJet’s audit-log system records platform activities, including the acting user, action performed, timestamp, location, and relevant application, query, user, group, or permission event.
 
@@ -147,7 +169,8 @@ Clients outside this list connect by registering the bundled stdio server manual
 
 ## Requirements
 
-- A ToolJet personal access token for the workspace you want to build in
+- ToolJet Enterprise Edition or ToolJet Cloud. Personal access tokens aren't available on the Community Edition.
+- A ToolJet [personal access token](/docs/user-management/profile-management/personal-access-tokens) for the workspace you want to build in. Only Admins and Builders in that workspace can create one.
 - Node.js 20 or newer, available to your AI client
 - An MCP-compatible AI client
 

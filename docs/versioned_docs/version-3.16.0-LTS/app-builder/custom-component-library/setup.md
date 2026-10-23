@@ -29,7 +29,7 @@ Personal access tokens are in **Profile settings** → **Personal access tokens*
 3. Fill in the fields:
    - **Token name**: A name you will recognize later, for example "macbook-cli". Required.
    - **Workspace**: The workspace this token can act on. It defaults to your current workspace. The dropdown lists every workspace where you are an active member.
-   - **Expiration**: The date the token expires. The earliest date you can pick is tomorrow. You can't create a token that never expires from the UI.
+   - **Expiration**: The date the token expires. The earliest date you can pick is tomorrow. Every token must have an expiration date, so you can't create a token that never expires. See [Personal Access Tokens](/docs/user-management/profile-management/personal-access-tokens).
 4. Click **Create token**.
 
 The confirmation screen shows two values, each with a copy button:
