@@ -191,9 +191,6 @@
         "legacyInputSize": {
           "dropped": "sizing of the pre-2.0 input"
         },
-        "showClearBtn": {
-          "gap": "no clear button"
-        },
         "showFlag": {
           "gap": "no flag beside the currency"
         }
