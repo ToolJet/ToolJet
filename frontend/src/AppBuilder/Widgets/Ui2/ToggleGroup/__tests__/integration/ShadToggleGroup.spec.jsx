@@ -123,6 +123,32 @@ describe('UI 2.0 Toggle group', () => {
     expect(root.getPropertyValue('--lk-radius')).toBe('14px');
   });
 
+  test('[ShadToggleGroup-LAY-001] a strip wider than its box scrolls inside the widget, and End brings the last option into view', async () => {
+    // Six options in a 544px box drew a 703px strip that the canvas clipped; End focused a clipped option.
+    render({
+      properties: {
+        options: binding(
+          "{{['Basic plan', 'Premium plan', 'Enterprise plan', 'Partner plan', 'Nonprofit plan', 'Legacy disabled choice']}}"
+        ),
+        defaultValue: binding('Basic plan'),
+      },
+    });
+    const group = await screen.findByRole('group');
+    const scroller = group.parentElement;
+    // The strip scrolls in a box as wide as the widget (it is not cut off: every label is whole).
+    expect(scroller).toHaveAttribute('data-toggle-scroll');
+    expect(scroller).toHaveClass('tw-max-w-full', 'tw-overflow-x-auto', 'tw-overflow-y-hidden');
+    expect(item('Legacy disabled choice')).toHaveClass('tw-whitespace-nowrap');
+    // Keyboard End focuses the last option; focusing it scrolls the strip to it (the browser's focus scrolling).
+    await act(async () => item('Basic plan').focus());
+    await act(async () => fireEvent.keyDown(item('Basic plan'), { key: 'End' }));
+    await waitFor(() => expect(item('Legacy disabled choice')).toHaveFocus());
+
+    // Full width: the strip fills the widget, and grows past it to scroll rather than squeeze.
+    render({ properties: { fullWidth: binding('{{true}}') } });
+    await waitFor(() => expect(screen.getByRole('group')).toHaveClass('tw-w-full', 'tw-min-w-max'));
+  });
+
   test('[ShadToggleGroup-PROP-003] an option marked disable: true (the native Button group spelling) takes no click', async () => {
     // Only `disabled` was read, so a legacy option stayed clickable and published its value.
     render({
