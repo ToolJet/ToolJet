@@ -11,5 +11,6 @@ const OPTION_WIDGETS = ['ShadToggleGroup', 'ShadSelect', 'ShadRadioGroup', 'Shad
 test.each(OPTION_WIDGETS)('%s says under its options how labels differ from values', (type) => {
   const note = CONFIGS[type].properties.options.note;
   expect(note).toMatch(/label: '[^']+', value: '[^']+'/);
-  expect(note).toMatch(/^Labels that differ from values: \{\{\[.*\]\}\}$/);
+  // A Radio or Toggle group's note starts with its choice limit (choiceCapNotice.spec).
+  expect(note).toMatch(/(^|\. )Labels that differ from values: \{\{\[.*\]\}\}$/);
 });

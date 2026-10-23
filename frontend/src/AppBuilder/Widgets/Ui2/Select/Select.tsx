@@ -17,12 +17,11 @@ import {
   fieldIdOf,
   fieldName,
   FormField,
-  HELP,
   requiredAria,
 } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
-import { useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import { OptionsCapNote, useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import { isDisabledOption } from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -165,11 +164,7 @@ export const ShadSelect = (props: WidgetProps) => {
                 {o.label}
               </SelectItem>
             ))}
-            {options.length > shown.length ? (
-              <div className={cn('tw-px-2 tw-py-1.5 tw-text-xs', HELP)}>
-                {`Showing ${MAX_SELECT_OPTIONS} of ${options.length} options. A Combobox searches them all.`}
-              </div>
-            ) : null}
+            <OptionsCapNote max={MAX_SELECT_OPTIONS} total={options.length} className="tw-px-2 tw-py-1.5" />
           </SelectContent>
         </Select>
         {clearable && key ? (

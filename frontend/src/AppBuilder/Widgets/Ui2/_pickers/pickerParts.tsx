@@ -11,6 +11,7 @@ import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/typ
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { isStringOrNumber } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { missingIsGone, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { HELP } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 
 // ToolJet UI 2.0: the pickers widgets. Combobox and Multiselect are shadcn's Popover + Command (cmdk)
 // recipe; Tags input, Color picker and Rating follow shadcn's field look; File upload is react-dropzone in shadcn
@@ -170,6 +171,15 @@ export const useKeptSelection = (options: Option[], keys: string[], keep: boolea
  *  seen stays (a default whose options are still loading). With server-side search nothing is dropped: a missing
  *  option is off the current result page, not deleted (useKeptSelection keeps it). No event: the data changed, not
  *  the user's choice. */
+/** Says that a list draws only the first `max` of its `total` options (a Select's menu, a Radio group, a Toggle
+ *  group), and what reaches them all. Nothing when every option is drawn. */
+export const OptionsCapNote = ({ max, total, className }: { max: number; total: number; className?: string }) =>
+  total > max ? (
+    <div className={cn('tw-text-xs', HELP, className)}>
+      {`Showing ${max} of ${total} options. A Combobox searches them all.`}
+    </div>
+  ) : null;
+
 export const useDropRemovedChoices = (
   optionKeys: string[],
   selectedKeys: string[],

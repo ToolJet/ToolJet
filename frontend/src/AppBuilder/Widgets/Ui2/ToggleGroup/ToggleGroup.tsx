@@ -11,7 +11,7 @@ import {
   shownOptions,
 } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import { OptionsCapNote, useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 
 export const ShadToggleGroup = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
@@ -70,6 +70,8 @@ export const ShadToggleGroup = (props: WidgetProps) => {
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
+      {/* Past MAX_CHOICES the rest are not drawn (a 10,000-option binding froze the page); this says so. */}
+      <OptionsCapNote max={MAX_CHOICES} total={options.length} className="tw-mt-1.5" />
     </Shell>
   );
 };
