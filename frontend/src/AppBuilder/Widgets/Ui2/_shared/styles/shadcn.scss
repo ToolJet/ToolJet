@@ -156,6 +156,23 @@
   background-color: transparent;
   cursor: pointer;
 }
+// The browser's button padding (1px 6px), which preflight removes: a pack button with no padding class drew 6px wider
+// than its classes say (a Switch's thumb ran past its track). Only the pack's own buttons: a ToolJet widget in a pack
+// container's canvas (a List view row, a tab, a Dialog body, a Kanban card: `.sub-canvas`) keeps its padding, and a
+// pack widget in such a canvas is the pack's again, three canvases deep (the List view's nesting limit, and one more).
+// Fully inside :where(), so any padding class wins.
+:where(.tj-shadcn button:not(.tj-shadcn .sub-canvas button)),
+:where(.tj-shadcn .sub-canvas .tj-shadcn button:not(.tj-shadcn .sub-canvas .tj-shadcn .sub-canvas button)),
+:where(
+    .tj-shadcn
+      .sub-canvas
+      .tj-shadcn
+      .sub-canvas
+      .tj-shadcn
+      button:not(.tj-shadcn .sub-canvas .tj-shadcn .sub-canvas .tj-shadcn .sub-canvas button)
+  ) {
+  padding: 0;
+}
 :where(.tj-shadcn) :is(p, h1, h2, h3, h4, table) {
   margin: 0;
 }
