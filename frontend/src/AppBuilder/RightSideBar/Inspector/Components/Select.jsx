@@ -3,17 +3,9 @@ import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
-import List from '@/ToolJetUI/List/List';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useStore from '@/AppBuilder/_stores/store';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
-import ListGroup from 'react-bootstrap/ListGroup';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import SortableList from '@/_components/SortableList';
-import Trash from '@/_ui/Icon/solidIcons/Trash';
+import { OptionsListEditor } from './shared/OptionsListEditor';
 import { shallow } from 'zustand/shallow';
 import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
@@ -74,7 +66,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const [options, setOptions] = useState([]);
   const [markedAsDefault, setMarkedAsDefault] = useState(_markedAsDefault);
-  const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
@@ -92,11 +83,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       properties.push(key);
     }
   }
-
-  const getItemStyle = (isDragging, draggableStyle) => ({
-    userSelect: 'none',
-    ...draggableStyle,
-  });
 
   const updateAllOptionsParams = (options, props) => {
     paramUpdated({ name: 'options' }, 'value', options, 'properties', false, props);
@@ -194,13 +180,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     if (isSortingEnabled && sort !== 'none') {
       updateSortParam('none');
     }
-  };
-
-  const onDragEnd = ({ source, destination }) => {
-    if (!destination || source?.index === destination?.index) {
-      return;
-    }
-    reorderOptions(source.index, destination.index);
   };
 
   const handleMarkedAsDefaultChange = (value, index) => {
@@ -302,211 +281,136 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     isInitialRender.current = false;
   }, [isMultiSelect, component?.id]);
 
-  const _renderOverlay = (item, index) => {
+  const _renderOptionDetails = (item, index) => {
     return (
-      <Popover
-        className={`${darkMode && 'dark-theme theme-dark'} inspector-select-options-popover`}
-        style={{ minWidth: '248px' }}
-      >
-        <Popover.Body>
-          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
-              {'Option label'}
-            </label>
+      <>
+        <div className="field mb-3" data-cy={`input-and-label-column-name`}>
+          <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
+            {'Option label'}
+          </label>
+          <CodeHinter
+            type={'basic'}
+            initialValue={item?.label}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            placeholder={'Option label'}
+            onChange={(value) => handleLabelChange(value, index)}
+          />
+        </div>
+        <div className="field mb-3" data-cy={`input-and-label-column-name`}>
+          <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
+            {'Option value'}
+          </label>
+          <CodeHinter
+            type={'basic'}
+            initialValue={item?.value}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            placeholder={'Option value'}
+            onChange={(value) => handleValueChange(value, index)}
+          />
+        </div>
+        {isCaptionEnabled && (
+          <div className="field mb-3" data-cy={`input-and-label-option-caption`}>
+            <label className="font-weight-500 mb-1 font-size-12">{'Option caption'}</label>
             <CodeHinter
               type={'basic'}
-              initialValue={item?.label}
+              initialValue={item?.caption ?? ''}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
-              placeholder={'Option label'}
-              onChange={(value) => handleLabelChange(value, index)}
+              placeholder={'Optional description'}
+              onChange={(value) => handleCaptionChange(value, index)}
             />
           </div>
-          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
-              {'Option value'}
-            </label>
-            <CodeHinter
-              type={'basic'}
-              initialValue={item?.value}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'Option value'}
-              onChange={(value) => handleValueChange(value, index)}
-            />
-          </div>
-          {isCaptionEnabled && (
-            <div className="field mb-3" data-cy={`input-and-label-option-caption`}>
-              <label className="font-weight-500 mb-1 font-size-12">{'Option caption'}</label>
-              <CodeHinter
-                type={'basic'}
-                initialValue={item?.caption ?? ''}
-                theme={darkMode ? 'monokai' : 'default'}
-                mode="javascript"
-                lineNumbers={false}
-                placeholder={'Optional description'}
-                onChange={(value) => handleCaptionChange(value, index)}
-              />
-            </div>
-          )}
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
-            <CodeHinter
-              initialValue={
-                isMultiSelect || isTagsInput ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value
-              }
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              component={component}
-              type={'fxEditor'}
-              paramLabel={'Make this default option'}
-              paramName={'isEditable'}
-              onChange={(value) => handleMarkedAsDefaultChange(value, index)}
-              onFxPress={(active) => handleOnFxPress(active, index, 'default')}
-              fxActive={item?.default?.fxActive}
-              fieldMeta={{
-                type: 'toggle',
-                displayName: 'Make editable',
-                isFxNotRequired: true,
-              }}
-              paramType={'toggle'}
-            />
-          </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
-            <CodeHinter
-              initialValue={item?.visible?.value}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              component={component}
-              type={'fxEditor'}
-              paramLabel={'Visibility'}
-              onChange={(value) => handleVisibilityChange(value, index)}
-              paramName={'visible'}
-              onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
-              fxActive={item?.visible?.fxActive}
-              fieldMeta={{
-                type: 'toggle',
-                displayName: 'Make editable',
-              }}
-              paramType={'toggle'}
-            />
-          </div>
-          <div className="field" data-cy={`input-and-label-column-name`}>
-            <CodeHinter
-              initialValue={item?.disable?.value}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              component={component}
-              type={'fxEditor'}
-              paramLabel={'Disable'}
-              paramName={'disable'}
-              onChange={(value) => handleDisableChange(value, index)}
-              onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
-              fxActive={item?.disable?.fxActive}
-              fieldMeta={{
-                type: 'toggle',
-                displayName: 'Make editable',
-              }}
-              paramType={'toggle'}
-            />
-          </div>
-        </Popover.Body>
-      </Popover>
+        )}
+        <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <CodeHinter
+            initialValue={
+              isMultiSelect || isTagsInput ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value
+            }
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            component={component}
+            type={'fxEditor'}
+            paramLabel={'Make this default option'}
+            paramName={'isEditable'}
+            onChange={(value) => handleMarkedAsDefaultChange(value, index)}
+            onFxPress={(active) => handleOnFxPress(active, index, 'default')}
+            fxActive={item?.default?.fxActive}
+            fieldMeta={{
+              type: 'toggle',
+              displayName: 'Make editable',
+              isFxNotRequired: true,
+            }}
+            paramType={'toggle'}
+          />
+        </div>
+        <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <CodeHinter
+            initialValue={item?.visible?.value}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            component={component}
+            type={'fxEditor'}
+            paramLabel={'Visibility'}
+            onChange={(value) => handleVisibilityChange(value, index)}
+            paramName={'visible'}
+            onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
+            fxActive={item?.visible?.fxActive}
+            fieldMeta={{
+              type: 'toggle',
+              displayName: 'Make editable',
+            }}
+            paramType={'toggle'}
+          />
+        </div>
+        <div className="field" data-cy={`input-and-label-column-name`}>
+          <CodeHinter
+            initialValue={item?.disable?.value}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            component={component}
+            type={'fxEditor'}
+            paramLabel={'Disable'}
+            paramName={'disable'}
+            onChange={(value) => handleDisableChange(value, index)}
+            onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
+            fxActive={item?.disable?.fxActive}
+            fieldMeta={{
+              type: 'toggle',
+              displayName: 'Make editable',
+            }}
+            paramType={'toggle'}
+          />
+        </div>
+      </>
     );
   };
 
   const _renderOptions = () => {
     return (
-      <List style={{ marginBottom: '20px' }}>
-        <DragDropContext
-          onDragEnd={(result) => {
-            onDragEnd(result);
-          }}
-        >
-          <Droppable droppableId="droppable">
-            {({ innerRef, droppableProps, placeholder }) => (
-              <div className="w-100" {...droppableProps} ref={innerRef}>
-                {options?.map((item, index) => {
-                  return (
-                    <Draggable key={item?.value} draggableId={item?.value} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          key={index}
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-                        >
-                          <OverlayTrigger
-                            trigger="click"
-                            placement="left"
-                            rootClose
-                            onExited={() => {
-                              if (isSortingEnabled && sort !== 'none') {
-                                const sortedOptions = sortArray([...options], sort);
-                                updateOptions(sortedOptions);
-                              }
-                            }}
-                            overlay={_renderOverlay(item, index)}
-                            onToggle={(isOpen) => {
-                              if (!isOpen) {
-                                document.activeElement?.blur(); // Manually trigger blur when popover closes
-                              }
-                            }}
-                          >
-                            <div key={item?.value}>
-                              <ListGroup.Item
-                                style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
-                                onMouseEnter={() => setHoveredOptionIndex(index)}
-                                onMouseLeave={() => setHoveredOptionIndex(null)}
-                                {...restProps}
-                              >
-                                <div className="row">
-                                  <div className="col-auto d-flex align-items-center">
-                                    <SortableList.DragHandle show />
-                                  </div>
-                                  <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {getSafeRenderableValue(getResolvedValue(item?.label))}
-                                  </div>
-                                  <div className="col-auto">
-                                    {index === hoveredOptionIndex && (
-                                      <ButtonSolid
-                                        variant="danger"
-                                        size="xs"
-                                        className={'delete-icon-btn'}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDeleteOption(index);
-                                        }}
-                                      >
-                                        <span className="d-flex">
-                                          <Trash fill={'var(--tomato9)'} width={12} />
-                                        </span>
-                                      </ButtonSolid>
-                                    )}
-                                  </div>
-                                </div>
-                              </ListGroup.Item>
-                            </div>
-                          </OverlayTrigger>
-                        </div>
-                      )}
-                    </Draggable>
-                  );
-                })}
-                {placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-        <AddNewButton onClick={handleAddOption} dataCy="add-new-dropdown-option" className="mt-0">
-          Add new option
-        </AddNewButton>
-      </List>
+      <OptionsListEditor
+        options={options}
+        darkMode={darkMode}
+        renderLabel={(item) => getSafeRenderableValue(getResolvedValue(item?.label))}
+        renderDetails={_renderOptionDetails}
+        onAdd={handleAddOption}
+        onDelete={handleDeleteOption}
+        onReorder={reorderOptions}
+        onDetailsClosed={() => {
+          if (isSortingEnabled && sort !== 'none') {
+            const sortedOptions = sortArray([...options], sort);
+            updateOptions(sortedOptions);
+          }
+        }}
+        itemProps={restProps}
+      />
     );
   };
 
