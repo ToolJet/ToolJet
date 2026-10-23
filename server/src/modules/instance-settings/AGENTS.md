@@ -32,7 +32,7 @@ Owns instance-wide key/value settings (the `instance_settings` table) that only 
 - Fail closed: before the first successful read the publisher sets `{ enabled: true, empty allowlist }`. A change takes up to 30 s to apply.
 - Allowlist: max 200 entries, trimmed and lowercased, CIDR `/0` rejected.
 - Rows are `type: system`, seeded by a data migration; the SSRF keys must not be added to `BASIC_PLAN_SETTINGS` (no licence gate).
-- Test connection only runs the SSRF check for HTTP-style data source kinds (`SSRF_CHECKED_KINDS` in `data-sources/util.service.ts`).
+- Test connection runs the SSRF check for every data source kind; only the built-in database drivers in `SSRF_UNCHECKED_DATABASE_KINDS` (`data-sources/util.service.ts`) skip the `host` check (see `data-sources/AGENTS.md`).
 
 ## Related modules
 

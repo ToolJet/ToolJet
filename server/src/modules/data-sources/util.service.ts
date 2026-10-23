@@ -1250,7 +1250,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       // know about; this is a blanket check across every plugin kind reachable here,
       // covering the ones that haven't had a plugin-level fix applied yet.
       // GHSA-v64h-hqhj-2h7r.
-      await this.validateTestConnectionOptionsForSSRF(kind, sourceOptions);
+      await this.validateTestConnectionOptionsForSSRF(kind, plugin_id, sourceOptions);
 
       const service = await this.pluginsServiceSelector.getService(plugin_id, kind);
       if (!service?.testConnection) {
@@ -1453,27 +1453,27 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     'workspaceHost',
   ];
 
-  // Kinds that connect over HTTP(S) (or take a URL-like host). Database kinds are
-  // deliberately absent: their `host` is a hostname, not an HTTP endpoint.
-  private static readonly SSRF_CHECKED_KINDS = new Set([
-    'restapi',
-    'graphql',
-    'openapi',
-    'n8n',
-    'couchdb',
-    'influxdb',
-    'nocodb',
-    'baserow',
-    'elasticsearch',
-    'typesense',
-    'databricks',
-    'smtp',
-    'grpcv2',
+  // Built-in database drivers: `host` is a socket hostname, not an HTTP endpoint, so the
+  // host/port/protocol check is out of SSRF scope for them. Every other kind, and any request
+  // carrying a marketplace `plugin_id` (which picks the plugin whatever `kind` says), is checked.
+  private static readonly SSRF_UNCHECKED_DATABASE_KINDS = new Set([
+    'postgresql',
+    'mysql',
+    'mariadb',
+    'mssql',
+    'oracledb',
+    'mongodb',
+    'ibmdb',
+    'redis',
+    'saphana',
+    'rethinkdb',
   ]);
 
-  private async validateTestConnectionOptionsForSSRF(kind: string, sourceOptions: Record<string, any>): Promise<void> {
-    if (!DataSourcesUtilService.SSRF_CHECKED_KINDS.has(kind)) return;
-
+  private async validateTestConnectionOptionsForSSRF(
+    kind: string,
+    pluginId: string | null | undefined,
+    sourceOptions: Record<string, any>
+  ): Promise<void> {
     for (const key of DataSourcesUtilService.SSRF_SENSITIVE_OPTION_KEYS) {
       const value = sourceOptions?.[key];
       if (typeof value === 'string' && value.length > 0) {
@@ -1483,7 +1483,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     // host/port/protocol travel as separate fields on most plugins rather than one
     // URL string — validate the same way the fixed connectors do.
-    if (typeof sourceOptions?.host === 'string' && sourceOptions.host.length > 0) {
+    const isUncheckedDatabaseKind = !pluginId && DataSourcesUtilService.SSRF_UNCHECKED_DATABASE_KINDS.has(kind);
+    if (!isUncheckedDatabaseKind && typeof sourceOptions?.host === 'string' && sourceOptions.host.length > 0) {
       // `protocol` is only a scheme when it is http/https; other values (e.g. 'hostname') are not.
       const rawProtocol = typeof sourceOptions?.protocol === 'string' ? sourceOptions.protocol.replace(/:$/, '') : '';
       const protocol = rawProtocol === 'http' || rawProtocol === 'https' ? rawProtocol : 'https';
