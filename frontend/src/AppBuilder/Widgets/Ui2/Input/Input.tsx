@@ -13,9 +13,12 @@ import { ShadNumberInput } from '@/AppBuilder/Widgets/Ui2/NumberInput/NumberInpu
 // crashed the widget.
 const TYPES = ['text', 'email', 'password', 'search'];
 
-// An address of the form name@domain.tld, as browsers check type=email (no spaces, one @, a dot in the domain). An
-// empty box is left to the Mandatory check.
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// A valid email address as browsers check type=email (the WHATWG pattern): a local part of letters, digits and
+// .!#$%&'*+/=?^_`{|}~-, one @, and a domain of dot-separated labels (letters, digits, inner hyphens, at most 63
+// characters). A dot in the domain is not required: user@localhost is valid. An empty box is left to the Mandatory
+// check.
+const EMAIL =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 export const emailRule = (value: unknown): string =>
   typeof value === 'string' && value.trim() && !EMAIL.test(value.trim()) ? 'Enter a valid email address' : '';
 
