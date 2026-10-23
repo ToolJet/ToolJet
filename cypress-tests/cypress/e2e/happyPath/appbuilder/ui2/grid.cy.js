@@ -18,8 +18,10 @@ describe("UI 2.0 widgets drop on the grid", { testIsolation: false }, () => {
     ui2Login();
     sweepStaleApps();
     createUi2App("grid");
-    // The empty-canvas label the default selector waits for is not drawn in a UI 2.0 app; wait for the canvas.
-    cy.then(() => cy.openApp("", Cypress.env("workspaceId"), Cypress.env("ui2App").appId, "#real-canvas"));
+    // The empty-canvas label the default selector waits for is not drawn in a UI 2.0 app, and openApp waits only 10s:
+    // open with a selector that is there at once, then wait for the canvas.
+    cy.then(() => cy.openApp("", Cypress.env("workspaceId"), Cypress.env("ui2App").appId, "body"));
+    cy.get("#real-canvas", { timeout: 60000 }).should("exist");
   });
   after(() => deleteUi2App());
 

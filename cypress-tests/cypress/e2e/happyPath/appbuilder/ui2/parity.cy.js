@@ -58,7 +58,8 @@ describe("UI 2.0 editor and preview lay a widget out the same", { testIsolation:
     ui2Login();
     sweepStaleApps();
     createUi2App("parity");
-    buildGallery(widgets, (t) => widgetByType(t)).then((p) => (placements = p));
+    // One column: a widget is pushed only by the widgets above it, so a top is compared relative to the one above.
+    buildGallery(widgets, (t) => widgetByType(t), { sideBySide: false }).then((p) => (placements = p));
     cy.apiUpdateGlobalSettings({ canvasMaxWidth: CANVAS_WIDTH, canvasMaxWidthType: "px" });
   });
   after(() => deleteUi2App());

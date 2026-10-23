@@ -152,17 +152,18 @@ export const smallHeight = (widget) => Math.max(20, Math.floor(widget.defaultSiz
 
 /**
  * Lays every widget out twice, top to bottom: at its default size (default properties) and at the small fixed size
- * with Dynamic height off, side by side when both fit in the 43 columns. Returns the placements
+ * with Dynamic height off, side by side when both fit in the 43 columns (unless sideBySide is false: one column, so a
+ * height change pushes only the widgets below it, which the parity spec relies on). Returns the placements
  * [{ widget, size: 'default'|'small', name, id, layout }] and posts the components (children included).
  */
-export const buildGallery = (widgets, configOf, { gap = 30 } = {}) => {
+export const buildGallery = (widgets, configOf, { gap = 30, sideBySide: allowSideBySide = true } = {}) => {
   const placements = [];
   const diff = {};
   let top = 20;
   widgets.forEach((widget) => {
     const width = Math.min(widget.defaultSize.width, GRID_COLUMNS - 2);
     const small = smallHeight(widget);
-    const sideBySide = width * 2 + 3 <= GRID_COLUMNS;
+    const sideBySide = allowSideBySide && width * 2 + 3 <= GRID_COLUMNS;
     const rows = [
       { size: "default", left: 1, top, height: widget.defaultSize.height, properties: {} },
       {
@@ -210,7 +211,9 @@ export const openViewer = (names, settleMs) => {
 };
 
 export const openEditor = (names, settleMs) => {
-  cy.then(() => cy.openApp("", Cypress.env("workspaceId"), Cypress.env("ui2App").appId, '[data-cy^="draggable-widget-"]'));
+  // cy.openApp waits only 10s for its ready selector; a gallery editor on a loaded machine takes longer, so give it
+  // one that is there at once and let waitForWidgets wait (60s per widget) for the canvas.
+  cy.then(() => cy.openApp("", Cypress.env("workspaceId"), Cypress.env("ui2App").appId, "body"));
   waitForWidgets(names, settleMs);
   deselectAll();
 };
