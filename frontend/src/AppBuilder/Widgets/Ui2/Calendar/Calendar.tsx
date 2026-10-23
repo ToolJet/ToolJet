@@ -188,54 +188,59 @@ export const ShadCalendar = (props: WidgetProps) => {
   return (
     <Shell {...props} innerRef={ref}>
       <MarkerContext.Provider value={markers}>
-        <Calendar
-          {...selection}
-          month={shown}
-          onMonthChange={(next) => showMonth(next, true)}
-          // Disabled or loading, the month arrows are off too, not only the days (setMonth still moves it).
-          disableNavigation={disabled}
-          numberOfMonths={drawn}
-          weekStartsOn={properties.weekStartsOn === 'monday' ? 1 : 0}
-          showOutsideDays={properties.showOutsideDays !== false}
-          fixedWeeks={properties.fixedWeeks === true}
-          disabled={disabled ? true : matchers}
-          startMonth={toDate(properties.minDate)}
-          endMonth={toDate(properties.maxDate)}
-          components={{ DayButton: MarkedDayButton }}
-          className={cn(
-            'tw-p-3 tw-bg-[color:var(--lk-bg,transparent)] tw-text-[color:var(--lk-fg,var(--sc-foreground))]',
-            fullWidth ? 'tw-w-full' : 'tw-w-fit',
-            properties.showBorder !== false &&
-              'tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border tw-border-solid tw-border-[color:var(--lk-border,var(--sc-border))]',
-            disabled && 'sc-self-dim tw-opacity-60'
-          )}
-          classNames={{
-            months: cn('tw-relative tw-flex tw-flex-col tw-gap-4 sm:tw-flex-row', fullWidth && 'tw-w-full'),
-            month: 'tw-flex tw-w-full tw-flex-col tw-gap-4',
-            caption_label: 'tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]',
-            button_previous: NAV_BUTTON,
-            button_next: NAV_BUTTON,
-            weekday: cn(
-              'tw-rounded-ui2-md tw-text-[0.8rem] tw-font-normal tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))]',
-              fullWidth ? 'tw-flex-1' : 'tw-w-[var(--lk-cell,2rem)]'
-            ),
-            day: cn(
-              'tw-relative tw-p-0 tw-text-center tw-text-ui2-sm',
-              fullWidth ? 'tw-h-[var(--lk-cell,2.25rem)] tw-flex-1' : cell
-            ),
-            day_button: cn(
-              buttonVariants({ variant: 'ghost' }),
-              'tw-relative tw-h-full tw-w-full tw-rounded-ui2-md tw-p-0 tw-font-normal tw-text-[color:var(--lk-fg,var(--sc-foreground))] hover:tw-bg-[color:var(--lk-hover,var(--sc-accent))] hover:tw-text-[color:var(--lk-fg,var(--sc-accent-foreground))]'
-            ),
-            range_start: 'tw-rounded-l-ui2-md tw-bg-[color:var(--lk-range,var(--sc-accent))]',
-            range_middle: 'tw-bg-[color:var(--lk-range,var(--sc-accent))]',
-            range_end: 'tw-rounded-r-ui2-md tw-bg-[color:var(--lk-range,var(--sc-accent))]',
-            selected: '',
-            today: '',
-            outside: '',
-            disabled: '',
-          }}
-        />
+        {/* A month grid has a minimum width (seven day columns). In a narrower box, at phone width, it scrolls sideways
+            inside the widget: it painted 174px past a 78px box over the widgets beside it (the Cypress geometry
+            check). */}
+        <div className="tw-max-w-full tw-overflow-x-auto" data-calendar-scroll="">
+          <Calendar
+            {...selection}
+            month={shown}
+            onMonthChange={(next) => showMonth(next, true)}
+            // Disabled or loading, the month arrows are off too, not only the days (setMonth still moves it).
+            disableNavigation={disabled}
+            numberOfMonths={drawn}
+            weekStartsOn={properties.weekStartsOn === 'monday' ? 1 : 0}
+            showOutsideDays={properties.showOutsideDays !== false}
+            fixedWeeks={properties.fixedWeeks === true}
+            disabled={disabled ? true : matchers}
+            startMonth={toDate(properties.minDate)}
+            endMonth={toDate(properties.maxDate)}
+            components={{ DayButton: MarkedDayButton }}
+            className={cn(
+              'tw-p-3 tw-bg-[color:var(--lk-bg,transparent)] tw-text-[color:var(--lk-fg,var(--sc-foreground))]',
+              fullWidth ? 'tw-w-full' : 'tw-w-fit',
+              properties.showBorder !== false &&
+                'tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border tw-border-solid tw-border-[color:var(--lk-border,var(--sc-border))]',
+              disabled && 'sc-self-dim tw-opacity-60'
+            )}
+            classNames={{
+              months: cn('tw-relative tw-flex tw-flex-col tw-gap-4 sm:tw-flex-row', fullWidth && 'tw-w-full'),
+              month: 'tw-flex tw-w-full tw-flex-col tw-gap-4',
+              caption_label: 'tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]',
+              button_previous: NAV_BUTTON,
+              button_next: NAV_BUTTON,
+              weekday: cn(
+                'tw-rounded-ui2-md tw-text-[0.8rem] tw-font-normal tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))]',
+                fullWidth ? 'tw-flex-1' : 'tw-w-[var(--lk-cell,2rem)]'
+              ),
+              day: cn(
+                'tw-relative tw-p-0 tw-text-center tw-text-ui2-sm',
+                fullWidth ? 'tw-h-[var(--lk-cell,2.25rem)] tw-flex-1' : cell
+              ),
+              day_button: cn(
+                buttonVariants({ variant: 'ghost' }),
+                'tw-relative tw-h-full tw-w-full tw-rounded-ui2-md tw-p-0 tw-font-normal tw-text-[color:var(--lk-fg,var(--sc-foreground))] hover:tw-bg-[color:var(--lk-hover,var(--sc-accent))] hover:tw-text-[color:var(--lk-fg,var(--sc-accent-foreground))]'
+              ),
+              range_start: 'tw-rounded-l-ui2-md tw-bg-[color:var(--lk-range,var(--sc-accent))]',
+              range_middle: 'tw-bg-[color:var(--lk-range,var(--sc-accent))]',
+              range_end: 'tw-rounded-r-ui2-md tw-bg-[color:var(--lk-range,var(--sc-accent))]',
+              selected: '',
+              today: '',
+              outside: '',
+              disabled: '',
+            }}
+          />
+        </div>
       </MarkerContext.Provider>
     </Shell>
   );
