@@ -5,8 +5,6 @@ title: Airtable
 
 ToolJet can connect to your **Airtable** account to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the **Airtable** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard.
@@ -16,18 +14,11 @@ ToolJet requires the following to connect to your Airtable:
 
 You can generate the Personal Access Token by visiting **[Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions)**.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/airtable/airtableconnect-v2.gif" alt="Airtable Data Source Connection" />
-</div>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-connection.png" alt="Airtable Data Source Connection" />
 
 :::info
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API](https://airtable.com/api)**.
 :::
-
-
-<div style={{paddingTop:'24px'}}>
 
 ## Querying Airtable
 
@@ -36,11 +27,7 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 3. Select the desired operation from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/operations.png" alt="Airtable Data Source Operations" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-listops.png" alt="Airtable Data Source list Operations" />
 
 ## Supported Operations
 
@@ -49,8 +36,6 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 - **[Create record](#create-record)**
 - **[Update record](#update-record)**
 - **[Delete record](#delete-record)**
-
-</div>
 
 ### List Records
 
@@ -79,28 +64,7 @@ This operation retrieves a list of records from the specified table.
 Timezone and User locale are mutually dependent. If you provide a timezone, you must also provide a user locale and vice versa. These properties are only applied when cell format is set to string. To correctly format date and time fields, make sure the coloumn type is set to Date or Date Time in Airtable.
 :::
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/list-records-v3.png" alt="Airtable List Records Query" />
-
-
-<details id="tj-dropdown">
-<summary>**Example Values**</summary>
-
-```json
-Base ID: appO4WnRU3eTWnrDB
-Table name: tblAPbj6KMjS8pxhH // Can be Table name or Table ID
-Page size: 100
-Offset: itrU18e2y6ITuMs1n/recjR8UdOZKjZ7aK3
-Fields: ["Date", "Email", "Usage (# Weeks)"]
-Filter by formula: IF({Usage (# Weeks)} < 10, 1, 0) // Only records with Usage (# Weeks) less than 10
-Timezone: America/Chicago
-User locale: en-gb
-Cell format: string // Cell format needs to be string for Timezone and User locale to work
-View: All Responses
-Sort: createdTime // Select direction: Ascending or Descending
-```
-
-</details>
-
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-listrec.png" alt="Airtable List Records Query" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -150,7 +114,7 @@ This operation fetches a specific record from the specified table.
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/retrieve-record-v2.png" alt="Airtable Retrieve Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/retrieve-rec.png" alt="Airtable Retrieve Record Query" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -176,10 +140,10 @@ This operation creates a new record in the specified table.
 - **Table name**
 - **Records**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/create-record-v2.png" alt="Airtable Create Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/create-rec.png" alt="Airtable Create Record Query" />
 
-#### Example
-
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
 ```json title="Records"
 [{
     "fields": {
@@ -188,6 +152,8 @@ This operation creates a new record in the specified table.
     }
 }]
 ```
+</details>
+
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
   ```json
@@ -218,15 +184,17 @@ Update a specific record by providing new data.
 - **Record ID**
 - **Body**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/update-record-v2.png" alt="Airtable Update Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/update-rec.png" alt="Airtable Update Record Query" />
 
-#### Example
-
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
 ```json
 {
   "Email": "katrina.petersions2@example.com"
 }
 ```
+</details>
+
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
   ```json
@@ -256,7 +224,7 @@ This operation removes a record from the specified table.
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/delete-record-v2.png" alt="Airtable Delete Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/delete-rec.png" alt="Airtable Delete Record Query" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>

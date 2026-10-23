@@ -3,15 +3,7 @@ id: example
 title: Enable CI/CD with Jenkins
 ---
 
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
+<PlanBadge type="enterprise" />
 
 In modern software development, teams often rely on CI/CD tools like **GitHub Actions**, **Jenkins**, **GitLab CI**, and **CircleCI** to automate application testing, version control, and deployments. These tools help enforce consistency across instances, reduce manual overhead, and improve release cycles by introducing automation at every stage of the software delivery process.
 
@@ -85,7 +77,7 @@ The Jenkins pipeline should include several stages corresponding to various git 
 | **SYNC_FROM_GIT** | Pulls the latest changes from GitHub into the specified ToolJet app. |
 | **DEPLOY** | Deploys the app to the target environment. |
 
-Each of these actions maps to a specific REST API call handled within the pipeline functions like `setupGitConfig()`, `pushToGit()`, `syncFromGit()`, and `deployApp()`. Click [here](/docs/development-lifecycle/CI/CD/example#jenkins-pipeline-for-tooljet-git-sync) to see the full Jenkins file code snippet.
+Each of these actions maps to a specific REST API call handled within the pipeline functions like `setupGitConfig()`, `pushToGit()`, `syncFromGit()`, and `deployApp()`. Click [here](/docs/development-lifecycle/cicd/example#3-jenkins-pipeline-setup-with-git-sync-operations) to see the full Jenkins file code snippet.
 
 ## 5. Pipeline Example Flow 
 

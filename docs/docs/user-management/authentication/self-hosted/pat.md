@@ -3,6 +3,9 @@ id: pat
 title: Personal Access Token
 ---
 
+<PlanBadge type="enterprise" />
+<PlanBadge type="self-hosted" />
+
 You can seamlessly and securely embed your ToolJet applications inside customer portals, internal dashboards, and third-party systems, without requiring full user authentication flows.
 
 With Personal Access Tokens (PATs), ToolJet enables secure, scoped, and session-isolated access to embedded applications. Each token is tied to a specific user and application, allowing you to control exactly who can access what, and for how long, all without interfering with your main ToolJet session.
@@ -25,7 +28,7 @@ Use Personal Access Tokens when you want to:
 
 ## Generate PAT
 
-To create a Personal Access Token for a specific app-user combination, you can use the following endpoint:
+To create a Personal Access Token for a specific app–user combination, you can use the following endpoint through an API client such as Postman, cURL, or any other API testing tool.
 
 ```swift
 POST /api/ext/users/personal-access-token
@@ -57,8 +60,8 @@ curl --location 'http://localhost:3000/api/ext/users/personal-access-token' \
 <summary>Example Response</summary>
 ```js
 {
-  "personalAccessToken": "pat_469ed9...1a8b597",
-  "redirectUrl": "http://localhost:8082/embed-apps/8ba8bf0e...?personal-access-token=pat_469ed9..."
+  "personalAccessToken": "pat_XXXX",
+  "redirectUrl": "http://your-domain.com/embed-apps/:appId?personal-access-token=pat_XXXX..."
 }
 ```
 </details>

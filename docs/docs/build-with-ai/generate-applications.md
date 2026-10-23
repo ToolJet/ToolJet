@@ -1,58 +1,40 @@
 ---
 id: generate-applications
-title: Generate Applications
+title: App Generation
 ---
 
-This guide explains how to quickly generate and modify business applications using ToolJet. You can create an app from scratch with a single prompt or enhance an existing app with AI-powered assistance.
+This guide explains how to generate and modify applications and modules with ToolJet AI, using nothing but a prompt.
+
+:::info
+This page covers **Start with a prompt**, the AI built into ToolJet. To build the same apps from Claude Code, Codex, or another coding agent, see [ToolJet MCP](/docs/build-with-ai/mcp/app-generation) instead.
+:::
 
 ## Creating Application
-To create an application, follow these steps:
 
-1. **Enter a prompt** – Describe the business application you want to build in the prompt input on the dashboard.
-<div style={{textAlign: 'center',  marginBottom:'15px'}}>
+Enter a prompt on the home page describing the business application you want to build, and ToolJet generates it for you. There are no intermediate steps to confirm; the app is built directly from your prompt.
 
-<img className="screenshot-full" src="/img/tooljet-ai/generate01.png" alt="tooljet generate apps " />
- 
-</div>
+<img className="screenshot-full img-full" src="/img/tooljet-ai/generate-app/prompt-v2.png" alt="tooljet generate apps" />
 
-2. **Accept or modify requirements** – After submitting your prompt, the app will be created, and you’ll be taken to the App Builder, where a list of features, a database schema, design details, and query specifications will be generated based on your prompt. 
-<div style={{textAlign: 'center',  marginBottom:'15px'}}>
+Once generation finishes, you are taken to the App Builder with a fully functional app: UI components, queries, and data bindings are already configured, and you can customize anything from there.
 
-<img className="screenshot-full" src="/img/tooljet-ai/generate02.png" alt="tooljet generate apps " />
- 
-</div>
-
-You can accept or modify these application requirements after reviewing them thoroughly.
-<div style={{textAlign: 'center',  marginBottom:'15px'}}>
-
-<img className="screenshot-full" src="/img/tooljet-ai/generate03.png" alt="tooljet generate apps " />
- 
-</div>
-
-3. **App Generation** – Once you confirm the requirements, ToolJet will build the application inside the App Builder.
-
-<div style={{textAlign: 'center',  marginBottom:'15px'}}>
-
-<img className="screenshot-full" src="/img/tooljet-ai/generate04.png" alt="tooljet generate apps " />
- 
-</div>
+<img className="screenshot-full img-full" src="/img/tooljet-ai/generate-app/app-v2.png" alt="tooljet generate apps" />
 
 ## Modifying Application
 
-You can modify any application in ToolJet with AI assistance, whether it's a newly created app or an existing one. You can update components and queries within your application with just a prompt. 
+You can modify any application in ToolJet with AI assistance, whether it's a newly created app or an existing one. You can update components and queries within your application with just a prompt.
 
-For example, if you want to add a button in your app you can write a prompt for the same.
-<div style={{textAlign: 'center',  marginBottom:'15px'}}>
+<img className="screenshot-full img-full" src="/img/tooljet-ai/generate-app/modify.png" alt="tooljet generate apps" />
 
-<img className="screenshot-full" src="/img/tooljet-ai/generate05.png" alt="tooljet generate apps " />
- 
-</div>
+To change one specific component or query rather than letting the AI infer the target, [@mention it in the chat](/docs/build-with-ai/referencing-app-resources).
 
-## Limitations
+## Creating Modules
 
-ToolJet supports generating queries with AI for the following data sources:
+ToolJet AI can be used to quickly generate Modules, which can then be reused across multiple applications. To generate a module using ToolJet AI, open the Module Builder and enter your prompt describing the UI you want to create.
 
-- [Postgres](/docs/data-sources/postgresql/)
-- [MySQL](/docs/data-sources/mysql/)
-- [SQL Server](/docs/data-sources/mssql/)
-- [RunJS Queries](/docs/data-sources/run-js)
+<img className="screenshot-full img-full" src="/img/tooljet-ai/modules/generate.png" alt="tooljet generate modules" />
+
+## Related
+
+- [Query Generation](/docs/build-with-ai/generate-queries) — generate queries, code, and organize your query panel
+- [@mention in AI Chat](/docs/build-with-ai/referencing-app-resources) — target an exact component or query
+- [Understanding AI Credits](/docs/build-with-ai/ai-credits) — how much an operation costs

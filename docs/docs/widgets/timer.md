@@ -31,7 +31,7 @@ The **Timer** component allows users to track time by counting both upward and d
 | On reset                                    | Triggers whenever the user clicks on reset button.   |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>
@@ -62,7 +62,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field. Now hovering over the component will display the tooltip.
 
 </div>
 
@@ -88,6 +88,16 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Visibility                                     | Controls component visibility. Toggle or set dynamically.     | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable                                        | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Box shadow                                     | Sets the box shadow properties of the component.              | Select the box shadow color and adjust the related properties or programmatically set it using **fx**.                       |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.

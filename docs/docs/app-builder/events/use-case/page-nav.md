@@ -1,6 +1,7 @@
 ---
 id: page-nav
 title: Implementing Navigation Using Actions
+sidebar_label: Navigating Using Actions
 ---
 
 ToolJet offers page navigation out of the box. For any custom navigation needs, such as implementing a navigation bar, you can use event handlers and actions. You can also pass query parameters during navigation, making it easy to share context between pages. 

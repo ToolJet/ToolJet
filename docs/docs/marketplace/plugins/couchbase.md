@@ -3,21 +3,30 @@ id: marketplace-plugin-couchbase
 title: Couchbase
 ---
 
-ToolJet integrates with Couchbase to utilize its NoSQL database capabilities and advanced vector search features. This integration enables ToolJet to perform document operations such as creating, reading, updating, and deleting documents, as well as executing SQL++ queries, Full-Text Search (FTS) operations in Couchbase databases. With Couchbase's vector store capabilities, ToolJet can leverage semantic search, hybrid search combining traditional and AI-powered queries, and build intelligent applications.
+ToolJet integrates with Couchbase to leverage its NoSQL database and advanced vector search capabilities. This enables CRUD document operations, SQL++ queries, and Full-Text Search (FTS) within Couchbase databases. Vector store features support semantic search, hybrid queries, and intelligent application development.
 
-:::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
 
-For connecting to Couchbase, the following credentials are required:
+To connect with Couchbase, you will need the following credentials. Which you can generate from [Couchbase Console](https://www.couchbase.com/).
 
-- **Data API Endpoint**: Your Couchbase Data API endpoint URL 
-- **Username**: Your Couchbase username
-- **Password**: Your Couchbase password
+- **Data API Endpoint** 
+- **Username**
+- **Password**
 
-<img className="screenshot-full" src="/img/marketplace/plugins/couchbase/connection.png" alt="Configuring Couchbase in ToolJet" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/couchbase/connection-v2.png" alt="Configuring Couchbase in ToolJet" />
+
+### Connecting to Data API endpoint in ToolJet
+
+To connect ToolJet with the Couchbase Data API, you must first enable the Data API access and configure authentication properly.
+
+- **Configure Allowed IP Addresses**: For public connections, you must allow the IP address from which ToolJet will send requests. Add the required IP or CIDR block under Allowed IP Addresses.
+- **Set Up Cluster Access Credentials**: Create or use existing cluster credentials to authenticate Data API requests.
+- **Retrieve the Data API Endpoint URL**: Once enabled, Couchbase displays the Data API endpoint URL, which can be used as the base URL in ToolJet.
+
 
 ## Supported Operations
 
@@ -27,6 +36,8 @@ For connecting to Couchbase, the following credentials are required:
 - **[Delete Document](#delete-document)**
 - **[Query](#query)**
 - **[FTS Search](#fts-search)**
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/couchbase/listops.png" alt="Couchbase operations" />
 
 ### Get Document
 
@@ -39,7 +50,7 @@ This operation retrieves a specific document by its ID from a Couchbase collecti
 - **Scope**: The scope name 
 - **Collection**: The collection name
 
-<img className="screenshot-full" src="/img/marketplace/plugins/couchbase/get-document.png" alt="Get Document Operation" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/couchbase/get-doc.png" alt="Get Document Operation" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -50,7 +61,7 @@ This operation retrieves a specific document by its ID from a Couchbase collecti
   "name": "John Doe",
   "email": "john@example.com",
   "age": 30,
-  "created_at": "2023-01-15T10:30:00Z"
+  "created_at": "2026-02-04T12:15:00Z"
 }
 ```
 </details>
@@ -68,7 +79,7 @@ This operation creates a new document in a Couchbase collection.
 - **Document**: The document data as a JSON object
 
 
-<img className="screenshot-full" src="/img/marketplace/plugins/couchbase/create-document.png" alt="Create Document Operation" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/couchbase/create-doc.png" alt="Create Document Operation" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -91,7 +102,7 @@ This operation updates an existing document in a Couchbase collection.
 - **Document**: The updated document data as a JSON object
 
 
-<img className="screenshot-full" src="/img/marketplace/plugins/couchbase/update-document.png" alt="Update Document Operation" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/couchbase/update-doc.png" alt="Update Document Operation" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -114,7 +125,7 @@ This operation deletes a document from a Couchbase collection.
 - **Collection**: The collection name
 - **Document ID**: The unique identifier of the document to delete
 
-<img className="screenshot-full" src="/img/marketplace/plugins/couchbase/delete-document.png" alt="Delete Document Operation" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/couchbase/delete-doc.png" alt="Delete Document Operation" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -137,8 +148,6 @@ This operation executes SQL++ queries against your Couchbase database.
 - **Arguments (Key-Value)**: Key-value object for named parameters that replace `$parameter` placeholders in the query
 - **Query Options**: JSON object containing additional query options like `readonly`, `timeout`, etc.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/couchbase/query.png" alt="Query Operation" />
-
 <details id="tj-dropdown">
 <summary>**Example Query**</summary>
 
@@ -153,6 +162,8 @@ SELECT * FROM `travel-sample`.`inventory`.`airline` WHERE country = $country LIM
 Refer to the [request paramters](https://docs.couchbase.com/server/current/n1ql-rest-query/index.html#Request) for supported query options.
 
 </details>
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/couchbase/query-v2.png" alt="Query Operation" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -194,8 +205,6 @@ This operation performs Full-Text Search queries against a Couchbase FTS index.
 - **Index Name**: The name of the FTS index to search against
 - **Search Query**: The FTS search query as a JSON object
 
-<img className="screenshot-full" src="/img/marketplace/plugins/couchbase/fts-search.png" alt="FTS Search Operation" />
-
 <details id="tj-dropdown">
 <summary>**Example Search Query**</summary>
 
@@ -209,6 +218,8 @@ This operation performs Full-Text Search queries against a Couchbase FTS index.
 ```
 
 </details>
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/couchbase/fts-search-v2.png" alt="FTS Search Operation" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>

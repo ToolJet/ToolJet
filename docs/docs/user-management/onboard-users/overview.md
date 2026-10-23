@@ -1,6 +1,7 @@
 ---
 id: overview
-title: Overview
+title: Onboard and Offboard Users
+sidebar_label: Overview
 ---
 
 ToolJet provides flexible options for onboarding users and a straightforward process for offboarding users when needed.
@@ -13,7 +14,7 @@ Users can be added to ToolJet either through an invitation or by signing up.
 
 Admin users can onboard users by sending invitations:
 - **Individually**: Send a personalized invitation to a single user by entering their email address. For detailed steps, refer to the **[Invite User](/docs/user-management/onboard-users/invite-user)** guide.
-- **In Bulk**: Upload a CSV file containing user details to invite multiple users at once. For detailed steps, refer to the **[Bulk Invite Users](/docs/user-management/onboard-users/bulk-invite-users)** guide.
+- **In Bulk**: Upload a CSV file containing user details to invite multiple users at once, or to update existing users. For detailed steps, refer to the **[Bulk Upload Users](/docs/user-management/onboard-users/bulk-invite-users)** guide.
 
 Invited users will receive an email to join the ToolJet workspace.
 

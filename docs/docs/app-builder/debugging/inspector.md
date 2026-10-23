@@ -35,7 +35,7 @@ Under the Queries section, you can inspect the specifics of any query you’ve c
 - **rawData** – The original response fetched from the data source.
 - **id** – A unique identifier automatically assigned to every query in ToolJet.
 
-Refer to the [Binding Data with Component](/docs/beta/app-builder/connecting-with-data-sources/binding-data-to-components) guide to learn how to bind the query data to the component.
+Refer to the [Binding Data with Component](/docs/app-builder/connecting-with-data-sources/binding-data-to-components) guide to learn how to bind the query data to the component.
 
 ### Components
 
@@ -45,13 +45,14 @@ Each component exposes a different set of states and CSAs based on its functiona
 - A **Text** component exposes a `text` state and a `setText` CSA.
 - A **Checkbox** component exposes a `label` state and a `setValue` CSA.
 
-To learn more about a specific component and its exposed properties, refer to the [individual component](/docs/beta/app-builder/building-ui/component-library) guide.
+To learn more about a specific component and its exposed properties, refer to the [individual component](/docs/app-builder/building-ui/component-library) guide.
 
-Refer to the [Accessing Component State](/docs/beta/app-builder/building-ui/component-state) guide to learn how to use component state.
+Refer to the [Accessing Component State](/docs/app-builder/building-ui/component-state) guide to learn how to use component state.
 
 ### Globals
 
 By using the Globals properties in the Inspector, you can view various details about your application and its environment, such as:
+- **App Version** - Stores the current app version name.
 - **Current User** - Information about the logged-in user, including email, name, avatar, groups, roles, and SSO details. Useful for building role-based UI or showing personalized content.
 - **Environment** - Indicates the current ToolJet environment — development, staging, or production.
 - **Mode** - Indicates whether the app is opened in the editor or not.

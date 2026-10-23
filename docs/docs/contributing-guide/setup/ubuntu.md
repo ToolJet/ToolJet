@@ -25,12 +25,13 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
     Close and reopen your terminal to start using nvm
     ```bash
-    nvm install 18.18.2
+    nvm install 22.23.4
+    nvm use 22.23.4
     ```
 
     Ensure you have the correct version of npm, or it will cause an error about fsevents.
     ```bash
-    npm i -g npm@9.8.1
+    npm i -g npm@10.9.9
     ```
 
     1.2 Install Postgres

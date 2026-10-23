@@ -16,7 +16,17 @@ Admins and Super Admins can configure various permissions for a data source with
 | **Create and Delete** | Add new data sources and remove connected data sources from the workspace. |
 | **Neither Create nor Delete** | No access to the Data Sources page from the Dashboard. Error toast will popup on trying to access the Data Sources page using URL. |
 
-<img className="screenshot-full img-m" src="/img/datasource-reference/overview/ds-permissions.png" alt="Data Sources: Overview" />
+### ToolJet Database Permissions
+
+| Permission | Description |
+|:---|:---|
+| **Create/Update/Delete** | Allows users to perform all write operations on ToolJet Database tables, including creating, updating, and deleting records. |
+
+<img style={{marginBottom:'15px'}} className = "screenshot-full img-l" src="/img/datasource-reference/overview/permissions-v2.png" alt="Data Sources: Overview" />
+
+:::note
+The **Create/Update/Delete** permission can be assigned to any user group, including custom groups. Workspace Admins and Super Admins can configure this permission from **Workspace Settings > Groups**.
+:::
 
 ### Configure or Build with Data Sources
 
