@@ -47,40 +47,28 @@ describe('DashboardAppsController', () => {
         type: 'front-end',
       }).expect(200);
 
-      expect(res.body).toMatchObject({
-        dry_run: false,
-        applied: true,
-        blocked_ids: [],
-        counts: { allowed: 2, blocked: 0, done: 2 },
-      });
+      expect(res.body).toEqual({ blocked_ids: [] });
       expect(await exists(a.id)).toBe(false);
       expect(await exists(b.id)).toBe(false);
     });
 
-    it('should write nothing on dry_run or when any app is blocked, and delete the rest with skip_blocked', async () => {
+    it('should write nothing when any app is blocked, and act on the rest when resent without it', async () => {
       const admin = await createAdmin(nestApp, 'bulk-del-modes@tooljet.io');
       const other = await createAdmin(nestApp, 'bulk-del-modes-other@tooljet.io');
       const { app: mine } = await seedDashboardApp(nestApp, { user: admin.user, name: 'Mine' });
       const { app: foreign } = await seedDashboardApp(nestApp, { user: other.user, name: 'Foreign' });
       const body = { app_ids: [mine.id, foreign.id], type: 'front-end' };
 
-      const dry = await bulkDelete(admin.cookie, admin.workspace.id, { ...body, dry_run: true }).expect(200);
-      expect(dry.body).toMatchObject({
-        dry_run: true,
-        applied: false,
-        blocked_ids: [foreign.id],
-        counts: { allowed: 1, blocked: 1, done: 0 },
-      });
       const allOrNothing = await bulkDelete(admin.cookie, admin.workspace.id, body).expect(200);
-      expect(allOrNothing.body).toMatchObject({ applied: false, counts: { done: 0 } });
+      expect(allOrNothing.body).toEqual({ blocked_ids: [foreign.id] });
       expect(await exists(mine.id)).toBe(true);
+      expect(await exists(foreign.id)).toBe(true);
 
-      const skip = await bulkDelete(admin.cookie, admin.workspace.id, { ...body, skip_blocked: true }).expect(200);
-      expect(skip.body).toMatchObject({
-        applied: true,
-        blocked_ids: [foreign.id],
-        counts: { allowed: 1, blocked: 1, done: 1 },
-      });
+      const resent = await bulkDelete(admin.cookie, admin.workspace.id, {
+        app_ids: [mine.id],
+        type: 'front-end',
+      }).expect(200);
+      expect(resent.body).toEqual({ blocked_ids: [] });
       expect(await exists(mine.id)).toBe(false);
       expect(await exists(foreign.id)).toBe(true);
     });
@@ -109,10 +97,9 @@ describe('DashboardAppsController', () => {
       const res = await bulkDelete(admin.cookie, admin.workspace.id, {
         app_ids: [module.id],
         type: 'module',
-        dry_run: true,
       }).expect(200);
 
-      expect(res.body).toMatchObject({ blocked_ids: [module.id], counts: { allowed: 0, blocked: 1 } });
+      expect(res.body).toEqual({ blocked_ids: [module.id] });
     });
 
     it('should block apps the user cannot delete and apps of another type', async () => {
@@ -128,15 +115,13 @@ describe('DashboardAppsController', () => {
       const asEndUser = await bulkDelete(endUser.cookie, admin.workspace.id, {
         app_ids: [app.id],
         type: 'front-end',
-        dry_run: true,
       }).expect(200);
-      expect(asEndUser.body).toMatchObject({ blocked_ids: [app.id] });
+      expect(asEndUser.body).toEqual({ blocked_ids: [app.id] });
       const wrongType = await bulkDelete(admin.cookie, admin.workspace.id, {
         app_ids: [module.id],
         type: 'front-end',
-        dry_run: true,
       }).expect(200);
-      expect(wrongType.body).toMatchObject({ blocked_ids: [module.id] });
+      expect(wrongType.body).toEqual({ blocked_ids: [module.id] });
     });
 
     it('should 400 on a bad body', async () => {

@@ -32,24 +32,12 @@ export class BulkDeleteService {
       if (await this.canDelete(user, permissions, dto.type, app, dto.branch_id)) allowed.push(app);
       else blockedIds.push(id);
     }
-    const result = bulkResult(
-      dto,
-      allowed.map((app) => app.id),
-      blockedIds
-    );
-    if (!result.applied) return result;
-    let done = 0;
+    if (blockedIds.length) return bulkResult(blockedIds);
+    const refused: string[] = [];
     for (const app of allowed) {
-      if (await this.deleteOne(app, user, dto.branch_id)) {
-        done++;
-      } else {
-        result.blockedIds.push(app.id);
-        result.counts.allowed--;
-        result.counts.blocked++;
-      }
+      if (!(await this.deleteOne(app, user, dto.branch_id))) refused.push(app.id);
     }
-    result.counts.done = done;
-    return result;
+    return bulkResult(refused);
   }
 
   // The per-app check bulk app delete applies; the folder bulk delete reuses it for folder_and_apps.

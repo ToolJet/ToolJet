@@ -54,31 +54,21 @@ export class BulkFolderDeleteService {
       }
     }
 
-    const result = bulkResult(
-      dto,
-      plans.map((plan) => plan.folder.id),
-      blockedIds
-    );
+    if (blockedIds.length) return bulkResult(blockedIds);
 
-    if (!result.applied) return result;
-
-    let done = 0;
+    const refused: string[] = [];
     for (const plan of plans) {
       for (const app of plan.toDelete) {
         await this.bulkDeleteService.deleteOne(app, user, dto.branch_id);
       }
       try {
         await this.foldersService.deleteFolder(user, plan.folder.id);
-        done++;
       } catch (error) {
         if (!(error instanceof HttpException)) throw error;
-        result.blockedIds.push(plan.folder.id);
-        result.counts.allowed--;
-        result.counts.blocked++;
+        refused.push(plan.folder.id);
       }
     }
-    result.counts.done = done;
-    return result;
+    return bulkResult(refused);
   }
 
   private async passesFolderChecks(user: User, folder: Folder): Promise<boolean> {

@@ -33,15 +33,10 @@ export class BulkMoveService {
         .map((app) => app.id)
     );
     const allowedIds = dto.app_ids.filter((id) => allowed.has(id));
-    const result = bulkResult(
-      dto,
-      allowedIds,
-      dto.app_ids.filter((id) => !allowed.has(id))
-    );
-    if (result.applied && allowedIds.length > 0) {
-      const branchId = await this.dashboardService.resolveBranchId(user, dto.branch_id);
-      await this.folderAppsUtilService.bulkCreate(folder.id, allowedIds, branchId, !dto.branch_id);
-    }
-    return result;
+    const blockedIds = dto.app_ids.filter((id) => !allowed.has(id));
+    if (blockedIds.length) return bulkResult(blockedIds);
+    const branchId = await this.dashboardService.resolveBranchId(user, dto.branch_id);
+    await this.folderAppsUtilService.bulkCreate(folder.id, allowedIds, branchId, !dto.branch_id);
+    return bulkResult([]);
   }
 }
