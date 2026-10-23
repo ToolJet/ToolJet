@@ -19,21 +19,25 @@ The following actions of the Table component can be controlled using the compone
 | downloadTableData() | Retrieves the data from the table in the PDF, CSV, or Excel sheet. | Employ a RunJS query (for e.g., <br/> `await components.table1.downloadTableData('pdf')`) <br/> or trigger it using an event. |
 | setFilters() | Applies filters to the table data. | Employ a RunJS query (for e.g., <br/> `await components.table1.setFilters ([{column:'name',condition:'contains',value: 'Sarah'}])`) <br/> or trigger it using an event. |
 | clearFilters() | Removes all applied filters from the table. | Employ a RunJS query (for e.g., <br/> `await components.table1.clearFilters()`) <br/> or trigger it using an event. |
+| setSort() | Programmatically sets the sort state of the table by column key and direction. Use `'auto'` to toggle the sort direction automatically. | Employ a RunJS query (for e.g., <br/> `await components.table1.setSort('name', 'asc')`) <br/> or trigger it using an event. |
 
 ## Exposed variables
 
-| Variable      | Description |
-| :---------- | :---------- |
-| currentData     | Data that is currently being displayed by the table (including edits if any). |
-| currentPageData  | Data that is displayed on the current page if pagination is enabled (including edits if any).      |
-| pageIndex | Index of the current page, starting from 1
-| changeSet | Object with row number as the key and object of edited fields and their values as the value. |
-| dataUpdates | Similar to `changeSet`, but `dataUpdates` includes data for the entire row that is being edited. |
-| selectedRow | Contains the data of the row that was most recently clicked. When an action button is clicked, `selectedRow` is also updated. Its initial value is set to the data of the first row when the app is loaded. |
-| selectedRowId | Stores the ID of the row that was last clicked. Similar to `selectedRow`, it gets updated when an action button is clicked. You can access its value using `{{components.table1.selectedRowId}}`. By default, it is set to `0`, representing the ID of the first row when the app is loaded. |
-| selectedCell | The data of the cell that was last clicked on the table. |
-| searchText | The value of the search field if server-side pagination is enabled. |
-| newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
+| Variable             | Description |
+| :------------------- | :---------- |
+| currentData          | Data that is currently being displayed by the table (including edits if any). |
+| currentPageData      | Data that is displayed on the current page if pagination is enabled (including edits if any). |
+| pageIndex            | Index of the current page, starting from 1. |
+| changeSet            | Object with row number as the key and object of edited fields and their values as the value. |
+| dataUpdates          | Similar to `changeSet`, but `dataUpdates` includes data for the entire row that is being edited. |
+| selectedRow          | Contains the data of the row that was most recently clicked. When an action button is clicked, `selectedRow` is also updated. Its initial value is set to the data of the first row when the app is loaded. |
+| selectedRowId        | Stores the ID of the row that was last clicked. Similar to `selectedRow`, it gets updated when an action button is clicked. You can access its value using `{{components.table1.selectedRowId}}`. By default, it is set to `0`, representing the ID of the first row when the app is loaded. |
+| selectedCell         | The data of the cell that was last clicked on the table. |
+| searchText           | The value of the search field if server-side pagination is enabled. |
+| newRows              | The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared. |
+| lastExpandedRow      | The index of the most recently expanded row. Updated whenever a row is expanded. Only populated when **Enable expandable rows** is turned on. |
+| currentExpandedRows  | An array of row indices that are currently expanded. Updated on every expand or collapse action. Only populated when **Enable expandable rows** is turned on. |
+| selectedColumnHeader | An object updated when a column header is clicked. Contains three fields: `key` (the column's data key), `name` (the column's display name), and `index` (the column's position from the left). Updated before the **Header clicked** event fires. |
 
 If the data in a cell is changed, `changeSet` property of the Table object will have the index of the row and the field that changed.
 

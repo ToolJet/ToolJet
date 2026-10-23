@@ -1,0 +1,141 @@
+---
+id: overview
+title: Build with AI
+sidebar_label: Overview
+hide_title: true
+---
+
+import Link from '@docusaurus/Link';
+
+export const FeatureCard = ({ icon, title, description, href, badge }) => (
+    <Link to={href} style={{ textDecoration: 'none' }}>
+        <div style={{
+            border: '1px solid var(--ifm-toc-border-color)',
+            borderRadius: '10px',
+            padding: '20px',
+            height: '100%',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            background: 'var(--ifm-card-background-color)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.12)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '28px', lineHeight: 1 }}>{icon}</span>
+                {badge && (
+                    <span style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        padding: '2px 8px',
+                        borderRadius: '20px',
+                        background: badge === 'Paid' ? '#fef3c7' : '#dbeafe',
+                        color: badge === 'Paid' ? '#92400e' : '#1e40af',
+                        border: badge === 'Paid' ? '1px solid #fcd34d' : '1px solid #93c5fd',
+                    }}>{badge}</span>
+                )}
+            </div>
+            <div>
+                <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--ifm-font-color-base)', marginBottom: '6px' }}>{title}</div>
+                <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', lineHeight: '1.5' }}>{description}</div>
+            </div>
+        </div>
+    </Link>
+);
+
+export const SectionSubtitle = ({ text }) => (
+    <p style={{ color: 'var(--ifm-color-emphasis-600)', fontSize: '14px', marginTop: '-8px', marginBottom: '16px' }}>{text}</p>
+);
+
+<div style={{
+    padding: '28px 28px 24px',
+    borderRadius: '12px',
+    background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #e0f2fe 100%)',
+    border: '1px solid #e9d5ff',
+    marginBottom: '32px',
+}}>
+    <div style={{ fontSize: '13px', fontWeight: 600, color: '#7c3aed', marginBottom: '8px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>ToolJet AI</div>
+    <h1 style={{ fontSize: '28px', fontWeight: 700, margin: '0 0 10px', color: '#1e1b4b' }}>Build with AI</h1>
+    <p style={{ fontSize: '15px', color: '#4c1d95', margin: 0, maxWidth: '620px', lineHeight: '1.6' }}>
+        With ToolJet, you can build business applications effortlessly using natural language. Whether you're starting from scratch or enhancing an existing app, ToolJet AI accelerates development by generating UI, queries, and data bindings; so your team ships internal tools faster.
+    </p>
+</div>
+
+## Two Ways to Build with AI
+
+<SectionSubtitle text="Pick the one that matches where you want to work" />
+
+The ToolJet home page offers two entry points, and they are backed by two different systems:
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px', margin: '16px 0 24px' }}>
+    <FeatureCard
+        icon="✨"
+        title="Start with a prompt"
+        description="ToolJet AI, built into the product. Describe what you want to build and ToolJet generates a fully functioning app for you."
+        href="/docs/build-with-ai/use-ai-in-tooljet"
+    />
+    <FeatureCard
+        icon="🔌"
+        title="Build apps from your coding agents"
+        description="ToolJet MCP. Build ToolJet apps from Claude Code, Codex, and other MCP-compatible clients, without leaving your editor."
+        href="/docs/build-with-ai/mcp/app-generation"
+    />
+</div>
+
+## ToolJet AI vs ToolJet MCP
+
+Both can create and modify apps. The difference is where you drive them from, which model does the work, and who bills you for it.
+
+|  | ToolJet AI | ToolJet MCP |
+| --- | --- | --- |
+| **Where you build** | The AI chat inside ToolJet, in your browser | Your own coding agent, such as Claude Code or Codex |
+| **What it does** | Generates and modifies apps, modules, queries, and code; answers questions from the docs | Creates and modifies apps, manages users, and queries your instance in natural language |
+| **Which model runs it** | ToolJet Managed AI by default, or your own key via [BYOK](/docs/setup/tooljet-ai/bring-your-own-key) on Enterprise Cloud or Self-hosted deployments | Whichever model your AI client is already running |
+| **What it consumes** | [ToolJet AI credits](/docs/build-with-ai/ai-credits) by default; BYOK uses your own key and does not consume ToolJet AI credits | [AI model tokens](#credits-vs-tokens), billed by your model provider |
+| **Setup needed** | None, it is available out of the box | A personal access token and an [MCP server install](/docs/build-with-ai/mcp/setup) |
+
+### Credits vs Tokens
+
+Both are metered, but in different units and by different parties.
+
+|  | ToolJet AI credits | AI model tokens |
+| --- | --- | --- |
+| **What it measures** | One standardized unit of AI processing per ToolJet operation | The raw text units a model reads and writes |
+| **What consumes it** | Every AI action inside ToolJet: generating an app, editing a component, writing a query | Every exchange between your coding agent and the MCP server |
+| **What the cost depends on** | Complexity of the operation and the conversation context ToolJet carries | The model, its reasoning effort setting, and the complexity of the request |
+| **Who bills you** | ToolJet, against the monthly credits in your license plus any add-on credits | Your AI client's model provider, on your existing subscription with them |
+| **Where to check usage** | Settings → Subscription, or the credit icon in the AI chat | Your AI client or your model provider's dashboard |
+
+## Where to Go Next
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '14px', margin: '16px 0 8px' }}>
+    <FeatureCard
+        icon="✨"
+        title="Use AI in ToolJet"
+        description="Generate apps, queries, and code from ToolJet's own AI chat."
+        href="/docs/build-with-ai/use-ai-in-tooljet"
+    />
+    <FeatureCard
+        icon="🔌"
+        title="ToolJet MCP Server"
+        description="Connect a coding agent to your workspace and build from your editor."
+        href="/docs/build-with-ai/mcp/app-generation"
+    />
+    <FeatureCard
+        icon="🔒"
+        title="Privacy Policy"
+        description="What data is shared with AI, and how it's protected."
+        href="/docs/build-with-ai/privacy"
+    />
+</div>
+
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

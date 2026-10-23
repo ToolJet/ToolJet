@@ -6,7 +6,7 @@ title: gRPC
 <div className='badge badge--primary heading-badge'>Self-hosted only</div>
 
 :::caution
-Only self-hosted deployments will have access to a gRPC datasource that is capable of handling unary requests and responses.
+Only self-hosted deployments will have access to a gRPC data source that is capable of handling unary requests and responses.
 :::
 
 <div style={{paddingTop:'24px'}}>

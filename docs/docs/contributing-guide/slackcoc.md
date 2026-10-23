@@ -56,7 +56,7 @@ In addition, violations of this code outside our spaces may affect a person’s 
 ## Enforcement
 
 - Understand that speech and actions have consequences, and unacceptable behavior will not be tolerated.
-- If you are the subject of, or witness to any violations of this Code of Conduct, please contact us via email at hello@tooljet.com or dm @navaneeth on slack.
+- If you are the subject of, or witness to any violations of this Code of Conduct, please contact us via email at support@tooljet.com or dm @navaneeth on slack.
 - If violations occur, organizers will take any action they deem appropriate for the infraction, up to and including expulsion.
 
 :::info

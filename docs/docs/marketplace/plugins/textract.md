@@ -5,6 +5,10 @@ title: Amazon Textract
 
 ToolJet integrates with Amazon Textract to facilitate the extraction of text and data from various document types, such as scanned documents, forms, and tables. Supported document formats include PDF, JPEG/JPG, and PNG.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect ToolJet with Amazon Textract, you will need the following credentials:
@@ -19,11 +23,11 @@ To connect ToolJet with Amazon Textract, you will need the following credentials
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/credentials.png" alt="Amazon Textract Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/textract/connection-v2.png" alt="Amazon Textract Configuration" style={{ marginBottom:'15px' }} />
 
 </div>
 
-## Supported Queries
+## Supported Operations
 
 - **[Analyze Document](#analyze-document)**
 - **[Analyze document stored in AWS S3](#analyze-document-stored-in-aws-s3)**
@@ -45,6 +49,8 @@ This operation lets you analyze the document using the document data in **base64
   3. **Queries**: Extract data from databases and other structured sources.
   4. **Signature Detection**: Identify and extract signatures.
 
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/textract/analyze-query.png" alt="Amazon Textract querying" style={{ marginBottom:'15px' }} />
+
 ### Analyze Document Stored in AWS S3
 
 This operation let's you analyze the document stored in your AWS S3 buckets by providing the **bucket** and **object** name.
@@ -58,3 +64,5 @@ This operation let's you analyze the document stored in your AWS S3 buckets by p
   2. **Tables**: Extract data from tables, including headers and cell content.
   3. **Queries**: Extract data from databases and other structured sources.
   4. **Signature Detection**: Identify and extract signatures.
+
+  <img style={{ marginTop:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/textract/analyze-in-S3-query.png" alt="Amazon Textract querying" />

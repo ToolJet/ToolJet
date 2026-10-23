@@ -17,7 +17,7 @@ Use the following syntax to refer to any exposed variable from `ssoUserInfo`:
 {{globals.currentUser.ssoUserInfo.<variable-name>}}
 ```
 
-### Commonly Exposed SSO Variables
+## Commonly Exposed SSO Variables
 
 The exposed variables may vary depending on the identity provider. You can view all available variables in the Inspector panel under `globals` > `currentUser` > `ssoUserInfo`. Below are some commonly exposed variables:
 
@@ -34,3 +34,42 @@ The exposed variables may vary depending on the identity provider. You can view 
 | `access_token` | OAuth 2.0 access token for the current user session, used to authenticate requests to connected datasources. |
 | `id_token` | Encoded ID token containing user identity claims in JWT format. |
 | `id_token_decrypted` | Decrypted contents of the ID token, useful for accessing detailed user claims. |
+
+### Automatic Token Refresh and `ssoUserInfo` Freshness
+
+ToolJet automatically refreshes your OIDC access token in the background when it is near expiry, keeping your session active without requiring a page reload or re-login.
+
+#### How It Works
+
+ToolJet automatically refreshes your OIDC access token in the background when it expires, keeping your session active and `ssoUserInfo` up to date without a page reload.
+If the refresh fails, your session will be invalidated.
+
+#### Binding Recommendations
+
+Depending on your use case, choose the binding pattern that best suits your needs:
+
+| Binding | Behavior |
+|---|---|
+| `{{globals.currentUser.ssoUserInfo.<variable>}}` | May briefly reflect stale values immediately after a token refresh; auto-syncs shortly after |
+| `{{globals.server.currentUser.ssoUserInfo.<variable>}}` | Always reflects the latest values; recommended for token-sensitive queries and datasource authentication |
+
+:::tip
+For use cases where you are passing `access_token` or other credentials directly to a connected datasource, prefer `globals.server.currentUser.ssoUserInfo` to ensure the most up-to-date token is always used.
+:::
+
+
+
+## Custom SSO Variables (OIDC Claims)
+ToolJet allows you to use custom SSO variables provided by your Identity Provider (IdP) during login.
+
+Any custom claims (such as branch, location, or department) that are configured in your IdP and included in the authentication response will be available in ToolJet after successful login.
+
+These claims can be accessed within the App Builder using:
+```js
+{{globals.currentUser.ssoUserInfo.<claim_name>}}
+```
+:::note
+Custom attributes must be explicitly configured in the Identity Provider to be included in the OIDC token or UserInfo response.
+:::
+
+    <img className="screenshot-full img-s" src="/img/user-management/sso/oidc/ssouserinfo/ssouserinfo.png" alt="SSO User Info" />

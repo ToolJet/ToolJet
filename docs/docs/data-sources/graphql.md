@@ -5,54 +5,54 @@ title: GraphQL
 
 ToolJet can establish connections with GraphQL endpoints, enabling the execution of queries and mutations.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
-To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new global datasource** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new datasource** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-<div style={{textAlign: 'center'}}>
+ToolJet requires the following to connect to a GraphQL datasource.
 
-<img className="screenshot-full" src="/img/datasource-reference/graphql/graphgds-v2.png" alt="ToolJet - Data source - GraphQL" style={{marginBottom:'15px'}}/>
+### Credentials
 
-</div>
+- **Base URL**: The URL of the GraphQL API endpoint where requests are sent.
+- **Headers**: Key-value pairs sent with the request to provide metadata such as authentication tokens or content type.
+- **URL parameters**: Additional key-value pairs appended to the request URL as query string parameters.
+- **Body**: The request payload containing the GraphQL query, variables, or mutation data.
+- **Cookies**: Cookie values included with the request for session management or authentication.
 
-ToolJet requires the following to connect to a GraphQL datasource:
+<img className="screenshot-full img-l" src="/img/datasource-reference/graphql/connection-v4.png" alt="Data source GraphQL"/>
 
-- **URL**: URL of the GraphQL endpoint.
-- **Headers**: Any headers the GraphQL source requires.
-- **URL parameters**: Additional query string parameters.
-- **Authentication Type**: The method of authentication to use with GraphQL requests.
+### Authentication Types
+
+The method of authentication to use with GraphQL requests.
+
   - **None**: No credentials or tokens are required.
+
   - **Basic**: Requires Username and Password.
+  <img className="screenshot-full img-full" src= "/img/datasource-reference/graphql/basic-conenction.png" alt="basic GraphQL Connection" style={{marginBottom:'15px'}} />
+
   - **Bearer**: Requires a token, typically a JSON Web Token (JWT), to grant access.
-  - **OAuth 2.0**: The OAuth 2.0 protocol mandates the provision of the following parameters: access token URL, access token URL custom headers, client ID, client secret, scopes, custom query parameters, authorization URL, custom authentication parameters, and client authentication.
+  <img className="screenshot-full img-full" src="/img/datasource-reference/graphql/bearer-connection.png" alt="bearer-GraphQL-Connection" style={{marginBottom:'15px'}}/>
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
+  - **OAuth 2.0**: The OAuth 2.0 protocol mandates the provision of the following parameters: access token URL, access token URL custom headers, client ID, client secret, scopes, client authentication, access tokens, authorization URL, custom authentication parameters, and custom query parameters.
+  <img className="screenshot-full img-l" src="/img/datasource-reference/graphql/oauth-connection.png" alt="oauth 2.0-GraphQL-Connection"/>
 
 ## Querying GraphQL
 
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+1. Click on **+** button of the query manager at the bottom panel of the editor.
 2. Select the **GraphQL** datasource added in previous step.
 3. Add the Query.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
-### Required Parameters:
+**Required Parameters**
+- Query
 
-- **Query**
+**Optional Parameters**
+- Variables
+- Headers
+- Params
+- Cookies
 
-### Optional Parameters
-
-- **Variable**
-- **Headers**
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/graphql/headers-v2.png" alt="ToolJet - Data source - GraphQl" style={{marginBottom:'15px'}}/>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/graphql/query-v4.png" alt="GraphQl querying" style={{marginBottom:'15px'}}/>
 
 #### Example
 
@@ -66,10 +66,9 @@ ToolJet requires the following to connect to a GraphQL datasource:
 ```
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/beta/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
 :::
 
-</div>
 ## Metadata
 
 Metadata is additional information about the data returned by the GraphQL query. It includes details such as the request URL, method, headers, and response status code. You can access this information using the `metadata` object. REST API. The metadata can be accessed within queries and components using the `{{queries.<queryname>.metadata}}` syntax.

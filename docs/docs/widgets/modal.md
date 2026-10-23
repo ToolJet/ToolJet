@@ -11,70 +11,117 @@ Certain components, namely **Calendar** and **Kanban**, are restricted from bein
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div>   | <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"200px"}}> Expected Value </div>  |
-|:----------- |:----------- |:-----------|
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
 | Header | Enable or Disable header section in the modal. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Footer | Enable or Disable footer section in the modal. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Width | Select the width for modal component. | Select from dropdown - small, medium, large, fullscreen or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Height | Specifies the height of the modal. | Enter the height in pixel or dynamically configure the value by clicking on **fx** and entering a logical expression.  |
+| Height | Specifies the height of the modal. | Enter the height in pixel or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Events
 
-| Event    | Description   |
-|:---------|:--------------|
+| Event    | Description                            |
+| :------- | :------------------------------------- |
 | On open  | Triggers whenever the modal is opened. |
 | On close | Triggers whenever the modal is closed. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/actions/run-query) docs to get detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)
 
 The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
 
-| <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"170px"}}> Description </div> | <div style={{width: "200px"}}> RunJS Query </div>|
-| :------------ | :---------- | :------------ |
-| open  | Open a modal. | `components.modal1.open()` |
-| close | Close a modal. | `components.modal1.close()` |
-| setDisableTrigger | Disables the modal button. | `components.modal1.setDisableTrigger()` |
-| setDisableModal | Disables the modal pop-up. | `components.modal1.setDisableModal()` |
-| setVisibility( )| Sets the visibility of the component.  | `components.modal1.setVisibility(false)` |
-| setLoading( )   | Sets the loading state of the component.  | `components.modal1.setLoading(true)` |
+| <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"170px"}}> Description </div> | <div style={{width: "200px"}}> RunJS Query </div> |
+| :------------------------------------------- | :------------------------------------------------ | :------------------------------------------------ |
+| open                                         | Open a modal.                                     | `components.modal1.open()`                        |
+| close                                        | Close a modal.                                    | `components.modal1.close()`                       |
+| setDisableTrigger                            | Disables the modal button.                        | `components.modal1.setDisableTrigger()`           |
+| setDisableModal                              | Disables the modal pop-up.                        | `components.modal1.setDisableModal()`             |
+| setVisibility( )                             | Sets the visibility of the component.             | `components.modal1.setVisibility(false)`          |
+| setLoading( )                                | Sets the loading state of the component.          | `components.modal1.setLoading(true)`              |
 
 ## Exposed Variables
 
-| Variable | <div style={{ width:"250px"}}> Description </div> | How To Access |
-|:--------|:-----------|:------------|
-|  show | Indicates if the modal is open. | `{{components.modal1.show}}` |
-|  isDisabledModal | Indicates if the modal is disabled. | `{{components.modal1.isDisabledModal}}` |
-|  isDisabledTrigger | Indicates if the modal button is disabled. | `{{components.modal1.isDisabledTrigger}}` |
-|  isLoading | Indicates if the component is loading. | `{{components.modal1.isLoading}}`|
-|  isVisible | Indicates if the component is visible. | `{{components.modal1.isVisible}}`|
+| Variable          | <div style={{ width:"250px"}}> Description </div> | How To Access                             |
+| :---------------- | :------------------------------------------------ | :---------------------------------------- |
+| show              | Indicates if the modal is open.                   | `{{components.modal1.show}}`              |
+| isDisabledModal   | Indicates if the modal is disabled.               | `{{components.modal1.isDisabledModal}}`   |
+| isDisabledTrigger | Indicates if the modal button is disabled.        | `{{components.modal1.isDisabledTrigger}}` |
+| isLoading         | Indicates if the component is loading.            | `{{components.modal1.isLoading}}`         |
+| isVisible         | Indicates if the component is visible.            | `{{components.modal1.isVisible}}`         |
 
 ## Trigger
 
-| Property | Description |
-|----------|-------------|
-| Modal trigger visibility | Sets the visibility of modal button. |
-| Disable modal trigger | Disables modal button.  |
+| Property                   | Description                                            |
+| -------------------------- | ------------------------------------------------------ |
+| Modal trigger visibility   | Sets the visibility of modal button.                   |
+| Disable modal trigger      | Disables modal button.                                 |
 | Use default trigger button | Choose whether to use the default modal button or not. |
-| Trigger button label | Provide label for the modal button. |
+| Trigger button label       | Provide label for the modal button.                    |
 
 ## Additional Actions
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
-|:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the modal's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable modal window | Disables the modal pop-up. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Close on escape key | Closes the modal when escape key is pressed. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Close on clicking outside | Closes the modal when clicked outside the modal. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Hide close button | Hides close button from the modal header. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip            | Provides additional information on hover.    | String (e.g., `Enter your password here.` ).                      |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Enter your password here.` ). |
 
 ## Devices
 
-|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
-|:---------- |:----------- |:----------|
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+### Trigger Button
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Icon | Add an icon to the modal trigger button. | Choose from the icon library. |
+| Icon color | Sets the color of the icon. | Select a color from the color picker or set it programmatically using **fx**. |
+| Icon position | Sets the position of the icon. | Choose between **Left** or **Right**. |
+| Background | Sets the background color of the trigger button. | Select a color from the color picker or set it programmatically using **fx**. |
+| Text | Sets the text color of the trigger button. | Select a color from the color picker or set it programmatically using **fx**. |
+
+### Header
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the header. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Divider | Sets the color of the divider between header and body. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the modal body. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+
+### Footer
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the footer. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Divider | Sets the color of the divider between body and footer. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
+
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::

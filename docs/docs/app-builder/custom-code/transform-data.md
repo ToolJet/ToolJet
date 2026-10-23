@@ -10,7 +10,7 @@ Data isn’t always available in a ready-to-use format from a single source. Oft
 - Applying business logic such as filtering, sorting, or grouping
 - Formatting fields like dates, currency values, or nested JSON objects
 
-If you need to transform data from a single query, you can use the [transformation](/docs/beta/app-builder/connecting-with-data-sources/transforming-data) option within the query.
+If you need to transform data from a single query, you can use the [transformation](/docs/app-builder/connecting-with-data-sources/transforming-data) option within the query.
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/transformation_js.png" alt="App Builder: query transformations"/>
 

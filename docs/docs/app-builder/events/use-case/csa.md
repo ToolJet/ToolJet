@@ -7,7 +7,7 @@ Component-Specific Actions (CSAs) are built-in functions that allow you to contr
 
 For example, a Text component supports the `setText()` action, while a Radio Button component offers `selectOption()`. 
 
-You can trigger these actions via event handlers or by using expressions in your queries. Refer to the individual [component guide](/docs/beta/app-builder/building-ui/component-library) for a complete list of supported CSAs.
+You can trigger these actions via event handlers or by using expressions in your queries. Refer to the individual [component guide](/docs/app-builder/building-ui/component-library) for a complete list of supported CSAs.
 
 ## Controlling Components
 

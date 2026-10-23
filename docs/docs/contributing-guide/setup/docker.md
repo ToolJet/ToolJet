@@ -42,18 +42,26 @@ git clone https://github.com/<your-username>/ToolJet.git
 3. Create a `.env` file by copying `.env.internal.example`. More information on the variables that can be set is given in the **[environment variables reference](/docs/setup/env-vars)**.
 
 ```bash
-cp ./docker/.env.internal.example .env
+cp ./deploy/docker/.env.internal.example .env
 ```
 
 4. Populate the keys in the `.env` using the below the command:
 
 ```bash
-chmod +x ./docker/internal.sh && ./docker/internal.sh
+chmod +x ./deploy/docker/internal.sh && ./deploy/docker/internal.sh
 ```
 
 :::warning
 If you are setting up on a Windows machine, please ensure that the .env file line endings are set to LF, as they will be CRLF by default unless configured otherwise.
 :::
+
+Make sure to add these required envs along with the existing envs for PostgREST in your `.env` file:
+
+```
+PGRST_HOST=postgrest:3002
+PGRST_SERVER_PORT=3002
+PGRST_DB_PRE_CONFIG=postgrest.pre_config
+```
 
 5. Build Docker images.
 
@@ -90,7 +98,7 @@ Example:
 Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:
 
 ```bash
-FROM node:18.18.2-buster AS builder
+FROM node:22.23.4-bookworm AS builder
 
 RUN apt update && apt install -y \
 build-essential  \

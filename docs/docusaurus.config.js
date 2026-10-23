@@ -320,17 +320,16 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
-          includeCurrentVersion: false, // Set to true if you want to include the beta version in the sidebar
+          includeCurrentVersion: true, 
           lastVersion: '3.16.0-LTS',
           onlyIncludeVersions: process.env.build_lts ? ['3.16.0-LTS'] : undefined,
           versions: {
-            // Uncomment the following line to include the beta version in the sidebar
-            // current: {
-            //   label: 'beta 🚧',
-            //   path: 'beta',
-            //   banner: 'none',
-            //   badge: false,
-            // },
+            current: {
+              label: 'beta 🚧',
+              path: 'beta',
+              banner: 'none',
+              badge: false,
+            },
             "2.50.0-LTS": {
               // Keep legacy docs readable, but prefer current docs in search.
               noIndex: true,

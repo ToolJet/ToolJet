@@ -8,7 +8,7 @@ Using the **Form** component's property panel, you can control the form structur
 ## Structure
 
 | <div style={{ width:"120px"}}> Property </div> | Description | Expected Value |
-|----------|-------------|:---------------|
+|:----------|:-------------|:---------------|
 | Header | Show or hide the form header. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Footer | Show or hide the form footer. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Submit button | Select a **Button** that will be used to submit the form. | Choose any **Button** that is a child component inside the **Form** component from the dropdown or dynamically configure the value by clicking on **fx** and entering a logical expression. |
@@ -22,7 +22,7 @@ Choose how the form should be generated and manage all input fields from a singl
 - Using the Form Property Panel
 - By Dragging Components into the Form
 
-Refer to the [Generate Form](/docs/widgets/form/form) guide for more details.
+Refer to the [Generate Form](/docs/widgets/form/) guide for more details.
 
 ## Events
 
@@ -41,7 +41,7 @@ Refer to the [Generate Form](/docs/widgets/form/form) guide for more details.
 | Visibility                             | Controls whether the component is visible.       | Enable/disable the toggle, or use **fx** to enter a logical expression. |
 | Dynamic height                         | Automatically adjusts height based on content.   | Enable/disable the toggle, or use **fx** to enter a logical expression. |
 | Disable                                | Enables or disables the entire component.        | Enable/disable the toggle, or use **fx** to enter a logical expression. |
-| Tooltip                                | Displays a tooltip on hover.                     | String value (e.g., `Enter your password here.`) |
+| Tooltip | Displays a tooltip on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String value (e.g., `Enter your password here.`) |
 
 ## Devices
 
@@ -49,3 +49,41 @@ Refer to the [Generate Form](/docs/widgets/form/form) guide for more details.
 |:---------- |:----------- |:----------|
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+### Header
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the form header. | Select a color from the color picker or set it programmatically using **fx**. |
+| Divider | Sets the color of the divider line between the header and form body. | Select a color from the color picker or set it programmatically using **fx**. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the form body. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border color | Sets the border color of the form container. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border radius | Sets the corner radius of the form container. | Enter a numeric value (e.g., `6`) or set it programmatically using **fx**. |
+
+### Footer
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the form footer. | Select a color from the color picker or set it programmatically using **fx**. |
+| Divider | Sets the color of the divider line between the form body and footer. | Select a color from the color picker or set it programmatically using **fx**. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
+
+:::info
+Any property having an **fx** button next to its field can be **programmatically configured**.
+:::

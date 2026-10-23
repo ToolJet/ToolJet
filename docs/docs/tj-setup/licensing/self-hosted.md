@@ -3,13 +3,13 @@ id: self-hosted
 title: Self-Hosted
 ---
 
-This guide explains the different types of licenses present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self-Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:hello@tooljet.com)** to generate the key. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page or contact the **[ToolJet team](mailto:hello@tooljet.com)**.
+This guide explains the different types of licenses present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self-Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:support@tooljet.com)** to generate the key. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or contact the **[ToolJet team](mailto:support@tooljet.com)**.
 
 <div style={{paddingTop:'24px'}}>
 
 ## Types of Licenses
 
-ToolJet provides three types of licenses - **Basic**, **Trial**, and **Paid**. These can be further categorized into different subscription plans. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans.
+ToolJet provides three types of licenses - **Basic**, **Trial**, and **Paid**. These can be further categorized into different subscription plans. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans.
 
 ### Basic License
 
@@ -17,42 +17,17 @@ This is a free license where a user can access basic offerings such as creating 
 
 ### Trial License
 
-ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
+ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact **[ToolJet Team](mailto:support@tooljet.com)** to generate a trial license key.
 
 ### Paid License
 
-ToolJet offers various subscription plans for paid licenses. Visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans. Once you have decided on a suitable plan for your needs you can then contact the **[ToolJet Team](mailto:hello@tooljet.com)** to complete the onboarding process.
+ToolJet offers various subscription plans for paid licenses. Visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans. Once you have decided on a suitable plan for your needs you can then contact the **[ToolJet Team](mailto:support@tooljet.com)** to complete the onboarding process.
 
 </div>
 
 ## AI Credit System
 
-Starting from **`v3.5.0-ee-lts`** ToolJet supports **Build with AI** allowing you to build applications effortlessly using natural language. Refer to **[Build with AI](/docs/build-with-ai/overview)** guide for more information.
-
-The AI credits are consumed on every AI operation performed in ToolJet. Credits operate at an instance level and are allocated based on the pricing plan and are replenished monthly. Unused credits do not carry over to the next month, they expire at the end of each billing cycle. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
-
-### Credit Usage
-
-**Standard Operations**
-
-AI-powered assistance for the following actions consumes **3 credits**:
-
-- Generating or editing single UI components
-- Generating or modifying queries
-- Incorporating business logic
-- Debugging assistance
-- Generating database tables
-- Bulk modifying component styles
-- Generating or modifying multi-component layouts
-- Guidance from documentation
-
-**Advanced Builds**
-
-The entire app UI generation consumes **10 credits**.
-
-### Credit Calculation
-
-AI credits are calculated based on the pricing plan and are assigned per builder in an instance. These credits are then available for use by all users in the instance across all workspaces.
+Checkout [Understanding AI Credits](/docs/build-with-ai/ai-credits#credit-allocation) guide for more information.
 
 ## Updating License Key
 
@@ -86,7 +61,7 @@ Starting from the version **`v3.5.20-ee-lts`**, the basic license will have the 
 
 If a user is automatically archived due to the new pricing plan, the Super Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired user.
 
-If you have any questions, feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).
+If you have any questions, feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at [support@tooljet.com](mailto:support@tooljet.com).
 
 ## FAQs
 
