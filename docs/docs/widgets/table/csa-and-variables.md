@@ -19,7 +19,7 @@ The following actions of the Table component can be controlled using the compone
 | downloadTableData() | Retrieves the data from the table in the PDF, CSV, or Excel sheet. | Employ a RunJS query (for e.g., <br/> `await components.table1.downloadTableData('pdf')`) <br/> or trigger it using an event. |
 | setFilters() | Applies filters to the table data. | Employ a RunJS query (for e.g., <br/> `await components.table1.setFilters ([{column:'name',condition:'contains',value: 'Sarah'}])`) <br/> or trigger it using an event. |
 | clearFilters() | Removes all applied filters from the table. | Employ a RunJS query (for e.g., <br/> `await components.table1.clearFilters()`) <br/> or trigger it using an event. |
-| setSort() | Programmatically sets the sort state of the table by column key and direction. Use `'auto'` to toggle the sort direction automatically. | Employ a RunJS query (for e.g., <br/> `await components.table1.setSort('name', 'asc')`) <br/> or trigger it using an event. |
+| setSort() | Programmatically sorts the table by a column key and direction. The direction accepts `'asc'`, `'desc'`, or `'auto'`; `'auto'` reverses the column's current sort order, or sorts it in ascending order if the column isn't sorted yet. Calling `setSort()` without arguments clears sorting. It updates the `sortApplied` variable and fires the **Sort applied** event. | Employ a RunJS query (for e.g., <br/> `await components.table1.setSort('name', 'asc')`) <br/> or trigger it using an event. |
 
 ## Exposed variables
 
@@ -38,6 +38,7 @@ The following actions of the Table component can be controlled using the compone
 | lastExpandedRow      | The index of the most recently expanded row. Updated whenever a row is expanded. Only populated when **Enable expandable rows** is turned on. |
 | currentExpandedRows  | An array of row indices that are currently expanded. Updated on every expand or collapse action. Only populated when **Enable expandable rows** is turned on. |
 | selectedColumnHeader | An object updated when a column header is clicked. Contains three fields: `key` (the column's data key), `name` (the column's display name), and `index` (the column's position from the left). Updated before the **Header clicked** event fires. |
+| sortApplied          | An array holding the currently applied sort, updated when a column header is clicked to sort or when `setSort()` is called. Contains one object with `column` (the column's display name), `columnKey` (the column's data key), and `direction` (`asc` or `desc`). It is an empty array when no sort is applied. |
 
 If the data in a cell is changed, `changeSet` property of the Table object will have the index of the row and the field that changed.
 
