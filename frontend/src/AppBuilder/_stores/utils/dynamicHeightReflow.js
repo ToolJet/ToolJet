@@ -1312,7 +1312,23 @@ export const buildReflowPatch = ({
           return type === 'Accordion' || keepsFittedHeightWhenMoved(type);
         });
       const pullUpFromBlockers = allowShrinkPullUp || shrinkableAbove;
-      let otherMax = pullUpFromBlockers ? 0 : effectiveCollapsedCanonical;
+      // The shadower's floor uses the drawn gap from the shadower to the target, which still holds the drawn heights of
+      // the widgets between them. A UI 2.0 widget between them that fitted itself to another height changes that gap:
+      // without this, the target stayed as far below where it belongs as the fitted widget had shrunk (a Pagination 9px
+      // under a Key value, a Summary strip 93px), and every widget under it with it. Native widgets between them keep
+      // the drawn gap (their blocker height never drops below the drawn one).
+      let fittedBetweenShadower = 0;
+      if (shadower) {
+        const shadowerCanonicalBottom = shadowerCanonicalTop + getEffectiveCanonicalHeight(shadower.id);
+        for (const w of blockers) {
+          if (!w.isInFlow || w.id === shadower.id) continue;
+          const wTop = w.canonicalLayout?.top ?? 0;
+          if (wTop < shadowerCanonicalBottom || wTop >= targetTopCanonical) continue;
+          if (!keepsFittedHeightWhenMoved(currentPageComponents?.[w.id]?.component?.component)) continue;
+          fittedBetweenShadower += w.currentBottom - w.currentTop - getEffectiveCanonicalHeight(w.id);
+        }
+      }
+      let otherMax = pullUpFromBlockers ? 0 : effectiveCollapsedCanonical + fittedBetweenShadower;
       let hasInFlowBlocker = false;
       for (let vi = 0; vi < blockers.length; vi++) {
         const v = blockers[vi];
