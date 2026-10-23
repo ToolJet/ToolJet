@@ -8,6 +8,7 @@ import { avatarPeople } from './people';
 import type { LoadingLook, LoadingMap, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { inFixedBox } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
+import { useBoxFit } from '@/AppBuilder/Widgets/Ui2/_shared/boxFit';
 import './styles/shadcn.scss';
 
 // How each widget looks while loading (the loadingState property or the setLoading action). Controls stay in place,
@@ -225,6 +226,8 @@ export const Shell = (props: ShellProps) => {
   } else if (loading && look !== 'own' && look !== 'field') {
     content = lookNow();
   }
+  const contained = containedInBox(props);
+  const fit = useBoxFit(props, root, contained);
   return (
     <div
       ref={setRoot}
@@ -235,10 +238,11 @@ export const Shell = (props: ShellProps) => {
       onMouseDownCapture={blockInput}
       onClickCapture={blockInput}
       aria-busy={loading || undefined}
-      className={cn('tj-shadcn', containedInBox(props) && FIXED_BOX, className)}
+      className={cn('tj-shadcn', contained && FIXED_BOX, fit.className, className)}
       style={{
         width: '100%',
         display: properties.visibility === false ? 'none' : 'block',
+        ...(properties.visibility === false ? {} : fit.style),
         boxShadow: styles?.boxShadow,
         ...lookVars(componentType, styles),
       }}

@@ -30,16 +30,19 @@ export const ShadIcon = (props: WidgetProps) => {
   const size = clampCoerce(p.size, 8, 512, 20);
   const stroke = clampCoerce(p.strokeWidth, 0.5, 4, 2);
   const chip = p.chip === 'circle' || p.chip === 'square' ? p.chip : 'none';
-  const chipSize = chip === 'none' ? size : clampCoerce(p.chipSize, size, 1024, Math.round(size * 2));
+  const asked = chip === 'none' ? size : clampCoerce(p.chipSize, size, 1024, Math.round(size * 2));
+  // Drawn inside the box (`height`, the box less the canvas's padding): the default 40px chip in a 40px box stuck out
+  // 2px, and in a 20px box 22px over the widget below. A smaller box scales the chip and the icon down together.
+  const room = Math.max(8, Number(height) || asked);
+  const scale = Math.min(1, room / asked);
+  const chipSize = Math.floor(asked * scale);
+  const iconSize = Math.max(4, Math.floor(size * scale));
   const clickable = hasClick && !busy(p);
   const click = () => !busy(p) && fireEvent('onClick');
   const shape = chip === 'circle' ? 'tw-rounded-full' : 'tw-rounded-[var(--lk-radius,var(--sc-radius))]';
   return (
     <Shell {...props}>
-      <div
-        className={cn('tw-flex tw-items-center', justify(props.styles))}
-        style={{ minHeight: Math.min(height || 0, 2000) }}
-      >
+      <div className={cn('tw-flex tw-items-center', justify(props.styles))} style={{ minHeight: Math.min(room, 2000) }}>
         {p.loadingState ? (
           wantsSkeleton(p) ? (
             <Skeleton
@@ -81,7 +84,7 @@ export const ShadIcon = (props: WidgetProps) => {
               } as StyleWithVars
             }
           >
-            <Icon size={size} strokeWidth={stroke} aria-hidden="true" />
+            <Icon size={iconSize} strokeWidth={stroke} aria-hidden="true" />
           </span>
         )}
       </div>

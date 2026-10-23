@@ -58,6 +58,13 @@ const PACK_BOX_SIZED = [
 ];
 
 /**
+ * Whether a UI 2.0 widget is always drawn at its box's height (it never measures itself).
+ * @param {string | undefined} componentType
+ * @returns {boolean}
+ */
+export const isPackBoxSized = (componentType) => PACK_BOX_SIZED.includes(componentType);
+
+/**
  * Whether the editor marks the widget as dynamic height (the purple outline, handle and resize lines): its box follows
  * its content in the viewer. fitsContentInView says yes for every UI 2.0 widget whose Dynamic height is not off, so
  * widgets that never measure themselves and have no Dynamic height property (Skeleton, Button, the charts) were marked
