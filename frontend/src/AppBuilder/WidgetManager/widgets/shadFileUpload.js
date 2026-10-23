@@ -89,6 +89,9 @@ export const shadFileUploadConfig = {
     maxFiles: {
       type: 'code',
       displayName: 'Max files',
+      note: '1 to 100. A larger number is taken as 100.',
+      // The inspector flags a number past what the widget takes (it silently drew 100): Code.jsx checks maxValue.
+      maxValue: 100,
       validation: {
         schema: {
           type: 'union',
