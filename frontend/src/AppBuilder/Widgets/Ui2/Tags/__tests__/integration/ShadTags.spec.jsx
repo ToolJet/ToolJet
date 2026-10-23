@@ -137,4 +137,27 @@ describe('UI 2.0 Tags', () => {
     expect(root.style.getPropertyValue('--lk-radius')).toBe('4px');
     expect(chip('Design').className).toContain('tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]');
   });
+
+  test('[ShadTags-DATA-001] 5,000 tags: all are exposed, 500 are drawn with Show more for the rest', async () => {
+    // tags exposed only the first 500, and the list ended at Audit 500 with no word of the other 4,500.
+    render({ properties: { tags: binding('{{Array.from({ length: 5000 }, (_, i) => `Audit ${i + 1}`)}}') } });
+    await waitFor(() => expect(exposed().tags).toHaveLength(5000));
+    expect(exposed().tags[4999]).toBe('Audit 5000');
+    expect(screen.getAllByRole('listitem')).toHaveLength(500);
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Show 500 more of 4500' })));
+    expect(screen.getAllByRole('listitem')).toHaveLength(1000);
+    expect(chip('Audit 1000')).toBeInTheDocument();
+  });
+
+  test('[ShadTags-DATA-002] on one line, the +N chip counts every tag not drawn', async () => {
+    render({
+      properties: {
+        overflow: binding('single'),
+        tags: binding('{{Array.from({ length: 5000 }, (_, i) => `Audit ${i + 1}`)}}'),
+      },
+    });
+    await waitFor(() => expect(exposed().tags).toHaveLength(5000));
+    const shown = screen.getAllByRole('listitem').length;
+    expect(screen.getByText(`+${5000 - shown}`)).toBeInTheDocument();
+  });
 });

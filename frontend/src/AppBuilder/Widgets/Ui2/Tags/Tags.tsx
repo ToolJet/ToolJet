@@ -6,7 +6,8 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { colorFor, toTags } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import { MAX_ITEMS, colorFor, toTags } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import { ShowMoreBar, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Tags ------------------------------------------------------------------------------------------------------------
@@ -91,7 +92,10 @@ export const ShadTags = (props: WidgetProps) => {
   useExposed(setExposedVariables, p, { lastClickedTag: last, tags });
   const hasClick = useHasEvent(id, 'onTagClicked');
   const single = p.overflow === 'single';
-  const shown = useFit(single, tags, row, measureRef);
+  // Every tag is exposed; MAX_ITEMS are drawn at a time, with Show more for the next ones (one line shows +N instead).
+  const [shownCount, showMore] = useShownCount(MAX_ITEMS, tags);
+  const drawn = useMemo(() => tags.slice(0, shownCount), [tags, shownCount]);
+  const shown = useFit(single, drawn, row, measureRef);
   const variant = ['soft', 'outline', 'solid'].includes(p.variant) ? p.variant : 'soft';
   const size = own(TAG_SIZE, p.size) || TAG_SIZE.default;
   const radius = p.pill === true ? 'tw-rounded-full' : 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
@@ -160,7 +164,7 @@ export const ShadTags = (props: WidgetProps) => {
           aria-label="Tags"
           role="list"
         >
-          {tags.slice(0, shown).map((tag, i) => (
+          {drawn.slice(0, shown).map((tag, i) => (
             <span role="listitem" key={`${tag}-${i}`} className="tw-contents">
               {chip(tag, i, true)}
             </span>
@@ -168,7 +172,7 @@ export const ShadTags = (props: WidgetProps) => {
           {hidden > 0 ? (
             <span
               className={cn(base, tagClasses('outline', false), 'tw-text-[color:var(--sc-muted-foreground)]')}
-              title={tags.slice(shown).join(', ')}
+              title={drawn.slice(shown).join(', ') + (tags.length > drawn.length ? ', …' : '')}
             >
               +{hidden}
             </span>
@@ -182,10 +186,18 @@ export const ShadTags = (props: WidgetProps) => {
             className="tw-pointer-events-none tw-invisible tw-absolute tw-left-0 tw-top-0 tw-flex tw-whitespace-nowrap"
             style={GAP_STYLE}
           >
-            {tags.map((tag, i) => chip(tag, i, false))}
+            {drawn.map((tag, i) => chip(tag, i, false))}
             <span className={cn(base, tagClasses('outline', false))}>+{tags.length}</span>
           </div>
         ) : null}
+        {single ? null : (
+          <ShowMoreBar
+            remaining={tags.length - drawn.length}
+            step={MAX_ITEMS}
+            onMore={showMore}
+            borderColor="transparent"
+          />
+        )}
       </div>
     );
   }

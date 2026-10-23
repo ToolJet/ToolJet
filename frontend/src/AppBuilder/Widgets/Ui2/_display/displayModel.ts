@@ -17,7 +17,9 @@ import {
 /** A plain object as bound data (an entry of a bound list, an author's map). */
 export type Entry = Record<string, unknown>;
 
-const MAX_ITEMS = 500;
+/** How many entries a display list draws at a time (Tags and Timeline draw the next ones on Show more; Key-value draws
+ *  no more). */
+export const MAX_ITEMS = 500;
 
 /** A ToolJet definition value can arrive wrapped ({ value: true }); this unwraps it. */
 const unwrap = (v: unknown): unknown => (isRecord(v) && 'value' in v && Object.keys(v).length <= 2 ? v.value : v);
@@ -30,11 +32,12 @@ const truthy = (v: unknown, fallback: boolean): boolean => {
 // ---- Tags ------------------------------------------------------------------------------------------------------------
 
 /** Tags as strings, from an array (of text or { label | name | value }) or a comma-separated string. Empty entries
- *  are dropped; duplicates stay (a tag list may repeat a value on purpose). */
+ *  are dropped; duplicates stay (a tag list may repeat a value on purpose). Every tag is kept (the Tags widget exposes
+ *  them all and draws MAX_ITEMS at a time). */
 export const toTags = (value: unknown): string[] => {
   const source: unknown[] = Array.isArray(value) ? value : isScalar(value) ? String(value).split(',') : [];
   const tags: string[] = [];
-  for (const entry of source.slice(0, MAX_ITEMS)) {
+  for (const entry of source) {
     let text: string | undefined;
     if (isScalar(entry)) text = String(entry);
     else if (isRecord(entry)) {
@@ -228,28 +231,31 @@ export interface TimelineItem extends Entry {
 }
 
 /** Timeline items: objects with title, description, time, status or color, icon (text entries become titles), in the
- *  given order or newest first (reversed). */
-export const timelineItems = (items: unknown, newestFirst = false): TimelineItem[] => {
-  const out = (Array.isArray(items) ? items : [])
-    .slice(0, MAX_ITEMS)
-    .flatMap((entry: unknown, index: number): TimelineItem[] => {
-      if (isScalar(entry)) return [{ key: String(index), title: String(entry), index }];
-      if (!isRecord(entry)) return [];
-      const pick = (v: unknown): string => (isScalar(v) ? String(v) : '');
-      return [
-        {
-          ...entry,
-          key: isScalar(entry.id) ? String(entry.id) : String(index),
-          index,
-          title: pick(entry.title ?? entry.label ?? entry.name),
-          description: pick(entry.description ?? entry.content ?? entry.text),
-          time: pick(entry.time ?? entry.date ?? entry.timestamp),
-          status: pick(entry.status),
-          color: pick(entry.color),
-          icon: pick(entry.icon),
-        },
-      ];
-    });
+ *  given order or newest first (reversed). `limit` takes a window of that many entries from the start the list is read
+ *  from: the first ones, or newest first the last ones (the newest), so a long stream is cut at its oldest end. It took
+ *  the first 500 and then reversed them, dropping the newest. */
+export const timelineItems = (items: unknown, newestFirst = false, limit = Infinity): TimelineItem[] => {
+  const all: unknown[] = Array.isArray(items) ? items : [];
+  const start = newestFirst ? Math.max(0, all.length - limit) : 0;
+  const out = all.slice(start, start + limit).flatMap((entry: unknown, offset: number): TimelineItem[] => {
+    const index = start + offset;
+    if (isScalar(entry)) return [{ key: String(index), title: String(entry), index }];
+    if (!isRecord(entry)) return [];
+    const pick = (v: unknown): string => (isScalar(v) ? String(v) : '');
+    return [
+      {
+        ...entry,
+        key: isScalar(entry.id) ? String(entry.id) : String(index),
+        index,
+        title: pick(entry.title ?? entry.label ?? entry.name),
+        description: pick(entry.description ?? entry.content ?? entry.text),
+        time: pick(entry.time ?? entry.date ?? entry.timestamp),
+        status: pick(entry.status),
+        color: pick(entry.color),
+        icon: pick(entry.icon),
+      },
+    ];
+  });
   return newestFirst ? out.reverse() : out;
 };
 

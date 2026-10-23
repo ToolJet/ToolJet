@@ -140,4 +140,26 @@ describe('UI 2.0 Timeline', () => {
     expect(root.style.getPropertyValue('--lk-time')).toBe('#6366f1');
     expect(screen.getByText('11:30').className).toContain('var(--lk-time');
   });
+
+  const EVENTS = binding('{{Array.from({ length: 1000 }, (_, i) => ({ title: `Event ${i + 1}` }))}}');
+
+  test('[ShadTimeline-DATA-001] newest first with 1,000 events starts at the newest, 500 drawn with Show more', async () => {
+    // The first 500 were taken before reversing: it started at Event 500, and Event 1000 was missing.
+    render({ properties: { items: EVENTS, newestFirst: binding('{{true}}') } });
+    await waitFor(() => expect(items()).toHaveLength(500));
+    expect(titles()[0]).toBe('Event 1000');
+    expect(titles()[499]).toBe('Event 501');
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Show 500 more of 500' })));
+    expect(items()).toHaveLength(1000);
+    expect(titles()[999]).toBe('Event 1');
+    expect(screen.queryByRole('button', { name: /^Show \d+ more/ })).toBeNull();
+  });
+
+  test('[ShadTimeline-DATA-002] in the given order, 1,000 events start at the first, with Show more', async () => {
+    render({ properties: { items: EVENTS } });
+    await waitFor(() => expect(items()).toHaveLength(500));
+    expect(titles()[0]).toBe('Event 1');
+    expect(titles()[499]).toBe('Event 500');
+    expect(screen.getByRole('button', { name: 'Show 500 more of 500' })).toBeInTheDocument();
+  });
 });
