@@ -1,6 +1,15 @@
 {
   "type": "ShadSelect",
   "properties": {
+    "allowClear": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
     "collapseWhenHidden": {
       "type": "boolean",
       "schema": {

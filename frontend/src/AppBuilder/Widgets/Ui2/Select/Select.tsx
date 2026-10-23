@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
 import {
   runNow,
   toOptions,
@@ -81,6 +82,16 @@ export const ShadSelect = (props: WidgetProps) => {
       check.touch();
     },
   });
+  // Allow clear (on unless turned off, and never while mandatory): an x in the box and a click on the chosen option
+  // clear it, with onSelect. Once chosen, a value could not be taken back.
+  const clearable = properties.allowClear !== false && props.validation?.mandatory !== true && !busy(properties);
+  const clearChoice = () =>
+    runNow(() => {
+      setKey('');
+      setExposedVariable('value', '');
+      setExposedVariable('selectedOption', {});
+      fireEvent('onSelect');
+    });
   // A picked option counts even when its value is false, 0 or '' (an "All" choice); only no pick is empty.
   const check = useValidation(
     props,
@@ -94,54 +105,87 @@ export const ShadSelect = (props: WidgetProps) => {
   );
   return (
     <FormField props={props} properties={properties} check={check} innerRef={fit}>
-      <Select
-        value={key}
-        disabled={busy(properties)}
-        open={popup.open}
-        onOpenChange={(open) => {
-          if (open && popup.blocked) return;
-          popup.setOpen(open);
-          focus.opened(open);
-          if (!open) check.touch();
-        }}
-        onValueChange={(next) =>
-          !popup.blocked &&
-          !isDisabledOption(byKey.get(next)) &&
-          runNow(() => {
-            setKey(next);
-            setExposedVariable('value', byKey.get(next)?.value ?? '');
-            setExposedVariable('selectedOption', byKey.get(next) || {});
-            fireEvent('onSelect');
-          })
-        }
-      >
-        <SelectTrigger
-          ref={triggerRef}
-          id={fieldIdOf(props)}
-          // role="combobox" takes no name from its content: without a label, the placeholder names it.
-          aria-label={fieldName(props, 'Select')}
-          {...controlAria(props, check.error)}
-          {...requiredAria(props)}
-          {...focus.handlers}
-          className={cn(CONTROL, 'data-[placeholder]:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]')}
+      <div className="tw-relative tw-w-full">
+        <Select
+          value={key}
+          disabled={busy(properties)}
+          open={popup.open}
+          onOpenChange={(open) => {
+            if (open && popup.blocked) return;
+            popup.setOpen(open);
+            focus.opened(open);
+            if (!open) check.touch();
+          }}
+          onValueChange={(next) =>
+            !popup.blocked &&
+            !isDisabledOption(byKey.get(next)) &&
+            runNow(() => {
+              setKey(next);
+              setExposedVariable('value', byKey.get(next)?.value ?? '');
+              setExposedVariable('selectedOption', byKey.get(next) || {});
+              fireEvent('onSelect');
+            })
+          }
         >
-          <SelectValue placeholder={String(properties.placeholder ?? '')} />
-        </SelectTrigger>
-        {/* The list opens in the pack's portal root, outside the widget: it takes the widget's style variables itself. */}
-        <SelectContent style={lookVars(props.componentType, props.styles)} onCloseAutoFocus={popup.onCloseAutoFocus}>
-          {shown.map((o) => (
-            // A disabled option takes no click, and the keyboard skips it (End, arrows, typeahead).
-            <SelectItem key={optionKey(o.value)} value={optionKey(o.value)} disabled={isDisabledOption(o)}>
-              {o.label}
-            </SelectItem>
-          ))}
-          {options.length > shown.length ? (
-            <div className={cn('tw-px-2 tw-py-1.5 tw-text-xs', HELP)}>
-              {`Showing ${MAX_SELECT_OPTIONS} of ${options.length} options. A Combobox searches them all.`}
-            </div>
-          ) : null}
-        </SelectContent>
-      </Select>
+          <SelectTrigger
+            ref={triggerRef}
+            id={fieldIdOf(props)}
+            // role="combobox" takes no name from its content: without a label, the placeholder names it.
+            aria-label={fieldName(props, 'Select')}
+            {...controlAria(props, check.error)}
+            {...requiredAria(props)}
+            {...focus.handlers}
+            className={cn(
+              CONTROL,
+              'data-[placeholder]:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]',
+              clearable && key && 'tw-pr-9'
+            )}
+          >
+            <SelectValue placeholder={String(properties.placeholder ?? '')} />
+          </SelectTrigger>
+          {/* The list opens in the pack's portal root, outside the widget: it takes the widget's style variables itself. */}
+          <SelectContent style={lookVars(props.componentType, props.styles)} onCloseAutoFocus={popup.onCloseAutoFocus}>
+            {shown.map((o) => (
+              // A disabled option takes no click, and the keyboard skips it (End, arrows, typeahead).
+              <SelectItem
+                key={optionKey(o.value)}
+                value={optionKey(o.value)}
+                disabled={isDisabledOption(o)}
+                // The chosen option, clicked again, clears the choice when clearing is allowed.
+                onPointerUp={
+                  clearable && optionKey(o.value) === key
+                    ? (e) => {
+                        e.preventDefault();
+                        popup.setOpen(false);
+                        clearChoice();
+                      }
+                    : undefined
+                }
+              >
+                {o.label}
+              </SelectItem>
+            ))}
+            {options.length > shown.length ? (
+              <div className={cn('tw-px-2 tw-py-1.5 tw-text-xs', HELP)}>
+                {`Showing ${MAX_SELECT_OPTIONS} of ${options.length} options. A Combobox searches them all.`}
+              </div>
+            ) : null}
+          </SelectContent>
+        </Select>
+        {clearable && key ? (
+          <button
+            type="button"
+            aria-label="Clear selection"
+            className="tw-absolute tw-right-8 tw-top-1/2 tw-flex tw-h-5 tw-w-5 -tw-translate-y-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-p-0 tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))] hover:tw-text-[color:var(--lk-fg,var(--sc-foreground))]"
+            onClick={() => {
+              clearChoice();
+              triggerRef.current?.focus();
+            }}
+          >
+            <X className="tw-h-3.5 tw-w-3.5" aria-hidden />
+          </button>
+        ) : null}
+      </div>
     </FormField>
   );
 };
