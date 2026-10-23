@@ -41,7 +41,7 @@ describe('UI 2.0 Button group', () => {
     render();
 
     await waitFor(() => expect(pressed()).toEqual(['Week']));
-    expect(screen.getByRole('group', { name: 'Button group' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Label' })).toBeInTheDocument();
     expect(exposed()).toMatchObject({ value: 'week', selected: ['week'], lastClicked: null, isValid: true });
   });
 
