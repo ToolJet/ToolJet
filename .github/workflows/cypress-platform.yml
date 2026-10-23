@@ -9,6 +9,16 @@ on:
         type: string
         required: false
         default: 'ee'
+      # Prebuilt image (ci.yml → build-cypress-image); skips the in-job build.
+      image:
+        type: string
+        required: false
+        default: ''
+      # JSON list, one entry per machine the specs are split across, e.g. '[1,2,3,4]'.
+      shards:
+        type: string
+        required: false
+        default: '[1]'
   pull_request_target:
     types: [labeled]
   # workflow_dispatch:
@@ -48,6 +58,8 @@ jobs:
             }}
         label:
           - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'gitsync' || 'default' }}
+        # label-triggered runs have no inputs, so they stay on one machine
+        shard: ${{ fromJSON(inputs.shards || '[1]') }}
         exclude:
           - edition: ""
 
@@ -58,6 +70,7 @@ jobs:
           echo "Matrix edition: ${{ matrix.edition }}"
 
       - name: Free up disk space
+        if: ${{ !inputs.image }}
         run: |
           echo "Available disk space before cleanup:"
           df -h
@@ -117,7 +130,7 @@ jobs:
 
       # EE dockerfile build below
       - name: Build EE Docker image
-        if: matrix.edition == 'ee'
+        if: matrix.edition == 'ee' && !inputs.image
         run: |
           echo "Building EE Docker image..."
           docker buildx build \
@@ -198,7 +211,7 @@ jobs:
           if [ "${{ matrix.edition }}" = "ce" ]; then
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
           elif [ "${{ matrix.edition }}" = "ee" ]; then
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1${{ inputs.image || format('tooljet/tj-osv:{0}-ee', env.SAFE_BRANCH_NAME) }}|' docker-compose.yaml
           fi
 
       - name: view docker-compose file
@@ -214,9 +227,6 @@ jobs:
 
       - name: Checking containers
         run: docker ps -a
-
-      - name: sleep
-        run: sleep 80
 
       - name: docker logs
         run: docker-compose logs tooljet
@@ -410,7 +420,13 @@ jobs:
       - name: Run Cypress tests
         working-directory: ./cypress-tests
         env:
-          CELL: "Platform / ${{ matrix.edition }}"
+          CELL: "Platform / ${{ matrix.edition }}${{ strategy.job-total > 1 && format(' ({0}/{1})', matrix.shard, strategy.job-total) || '' }}"
+          SHARD_INDEX: ${{ strategy.job-index }}
+          SHARD_TOTAL: ${{ strategy.job-total }}
+          # every machine has its own fresh ToolJet: onboard the first user and set a
+          # valid license on each; licensing specs change the license, so keep them together
+          SHARD_SETUP_SPECS: firstUserOnboarding.cy.js,updateLicense.cy.js
+          SHARD_GROUP: /licensing/
           BROWSER: chrome
           CONFIG_FILE: ${{ matrix.label == 'gitsync' && 'cypress-gitsync.config.js' || matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
           CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
@@ -431,7 +447,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: cypress-summary-platform-${{ matrix.edition }}
+          name: cypress-summary-platform-${{ matrix.edition }}-${{ matrix.shard }}
           path: cypress-tests/summary.json
           retention-days: 7
 
@@ -439,7 +455,7 @@ jobs:
         uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: screenshots-${{ matrix.edition }}
+          name: screenshots-${{ matrix.edition }}-${{ matrix.shard }}
           path: cypress-tests/cypress/screenshots
 
   Cypress-Platform-Subpath:
