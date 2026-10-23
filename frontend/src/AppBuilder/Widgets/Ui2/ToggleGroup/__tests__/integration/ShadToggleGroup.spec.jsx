@@ -122,4 +122,21 @@ describe('UI 2.0 Toggle group', () => {
     expect(root.getPropertyValue('--lk-on-fg')).toBe('#fafafa');
     expect(root.getPropertyValue('--lk-radius')).toBe('14px');
   });
+
+  test('[ShadToggleGroup-PROP-003] an option marked disable: true (the native Button group spelling) takes no click', async () => {
+    // Only `disabled` was read, so a legacy option stayed clickable and published its value.
+    render({
+      properties: {
+        options: binding(
+          "{{[{ label: 'Basic', value: 'basic' }, { label: 'Legacy disabled choice', value: 'legacy', disable: true }]}}"
+        ),
+        defaultValue: binding('basic'),
+      },
+    });
+    widget.setEvents(countInvocationsOn(ID, 'onChange'));
+    expect(await screen.findByRole('radio', { name: 'Legacy disabled choice' })).toBeDisabled();
+    await click('Legacy disabled choice');
+    expect(exposed().value).toBe('basic');
+    expect(widget.variables().calls || 0).toBe(0);
+  });
 });
