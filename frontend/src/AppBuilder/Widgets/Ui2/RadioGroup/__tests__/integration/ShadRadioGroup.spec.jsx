@@ -150,4 +150,26 @@ describe('UI 2.0 Radio group', () => {
     expect(root.getPropertyValue('--lk-fg')).toBe('#333333');
     expect(root.getPropertyValue('--lk-error')).toBe('#b91c1c');
   });
+
+  test('[ShadRadioGroup-PROP-010] Allow deselect: a click on the chosen option clears the choice', async () => {
+    // Once chosen, an option could not be taken back, so every Radio group behaved as mandatory.
+    render({ properties: { defaultValue: binding('std'), allowDeselect: binding('{{true}}') } });
+    await waitFor(() => expect(exposed().value).toBe('std'));
+    await act(async () => fireEvent.click(radio('Standard')));
+    await waitFor(() => expect(exposed().value).toBe(''));
+    expect(radio('Standard')).not.toBeChecked();
+
+    // Off (the default), or mandatory, the click keeps the choice.
+    render({ properties: { defaultValue: binding('exp') } });
+    await waitFor(() => expect(exposed().value).toBe('exp'));
+    await act(async () => fireEvent.click(radio('Express')));
+    expect(exposed().value).toBe('exp');
+    render({
+      properties: { defaultValue: binding('pick'), allowDeselect: binding('{{true}}') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(exposed().value).toBe('pick'));
+    await act(async () => fireEvent.click(radio('Pickup')));
+    expect(exposed().value).toBe('pick');
+  });
 });

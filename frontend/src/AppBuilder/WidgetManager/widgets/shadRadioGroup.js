@@ -80,6 +80,18 @@ export const shadRadioGroupConfig = {
         defaultValue: '',
       },
     },
+    allowDeselect: {
+      type: 'toggle',
+      displayName: 'Allow deselect',
+      note: 'A click on the chosen option clears the choice. Off while the field is mandatory.',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
     horizontal: {
       type: 'toggle',
       displayName: 'Side by side',
@@ -351,6 +363,9 @@ export const shadRadioGroupConfig = {
       },
       defaultValue: {
         value: 'Standard',
+      },
+      allowDeselect: {
+        value: '{{false}}',
       },
       horizontal: {
         value: '{{false}}',

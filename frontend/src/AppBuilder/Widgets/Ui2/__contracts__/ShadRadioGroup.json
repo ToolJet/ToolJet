@@ -1,6 +1,15 @@
 {
   "type": "ShadRadioGroup",
   "properties": {
+    "allowDeselect": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "collapseWhenHidden": {
       "type": "boolean",
       "schema": {

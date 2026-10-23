@@ -49,6 +49,9 @@ export const ShadRadioGroup = (props: WidgetProps) => {
     options,
   });
   const check = useValidation(props, byKey.get(key)?.value ?? '', () => change(''), byKey.has(key));
+  // Allow deselect (off by default, and never while mandatory): a click on the chosen option clears the choice, with
+  // onSelectionChange. Once chosen, an option could not be taken back.
+  const deselectable = properties.allowDeselect === true && props.validation?.mandatory !== true && !busy(properties);
   return (
     <Shell {...props} innerRef={fit}>
       <Field
@@ -83,6 +86,15 @@ export const ShadRadioGroup = (props: WidgetProps) => {
                   id={itemId}
                   disabled={isDisabledOption(o)}
                   className="tw-border-[color:var(--lk-invalid,var(--sc-primary))]"
+                  onClick={
+                    deselectable && choiceKey(o.value) === key
+                      ? (e) => {
+                          e.preventDefault();
+                          change('', 'onSelectionChange');
+                          check.touch();
+                        }
+                      : undefined
+                  }
                 />
                 <Label
                   htmlFor={itemId}
