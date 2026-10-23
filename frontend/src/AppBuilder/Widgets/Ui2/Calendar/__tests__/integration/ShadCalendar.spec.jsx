@@ -360,4 +360,12 @@ describe('UI 2.0 Calendar', () => {
       expect(exposed()).toMatchObject({ visibleMonth: '2026-10', visibleStart: '2026-10-01', visibleEnd });
     }
   );
+
+  test('[ShadCalendar-STY-011] a box narrower than the month grid scrolls it sideways inside the widget', async () => {
+    // At phone width a 78px box held the 250px grid, which painted 174px past it (Cypress geometry).
+    render();
+    const grid = await screen.findByRole('grid');
+    const scroller = grid.closest('[data-calendar-scroll]');
+    expect(scroller).toHaveClass('tw-max-w-full', 'tw-overflow-x-auto');
+  });
 });
