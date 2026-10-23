@@ -17,6 +17,8 @@ export const Header = memo(
     setExposedVariables,
     setGlobalFilter,
     globalFilter,
+    isSearching,
+    searchProgress,
     table,
     setFilters,
     appliedFiltersLength,
@@ -107,6 +109,8 @@ export const Header = memo(
       <SearchBar
         globalFilter={globalFilter}
         setGlobalFilter={setGlobalFilter}
+        isSearching={isSearching}
+        searchProgress={searchProgress}
         // component={component}
         darkMode={darkMode}
         setExposedVariables={setExposedVariables}

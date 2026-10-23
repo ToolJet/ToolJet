@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { LoadingState } from './_components/LoadingState';
 import { EmptyState } from './_components/EmptyState';
+import { SearchingState } from './_components/SearchingState';
 import { TableHeader } from './_components/TableHeader';
 import { TableRow } from './_components/TableRow';
 import { TableCellSettingsProvider } from './TableCellSettings';
@@ -69,6 +70,11 @@ export const TableData = (props) => {
   );
 
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
+  // The search box, with its progress, is shown (else the Table says it's still searching over the rows it shows).
+  const hasSearchBox = useTableStore(
+    (state) => !!state.getHeaderVisibility(id) && !!state.getTableProperties(id)?.displaySearchBox,
+    shallow
+  );
   const highlightSelectedRow = useTableStore((state) => state.getTableProperties(id)?.highlightSelectedRow, shallow);
   const disableRowDeselection = useTableStore((state) => state.getTableProperties(id)?.disableRowDeselection, shallow);
 
@@ -103,10 +109,11 @@ export const TableData = (props) => {
     return styles;
   }, [cellHeight, contentWrap, isMaxRowHeightAuto, maxRowHeightValue, containerBackgroundColor]);
 
-  // The rows of this page, as positions in the data (see _utils/tableView.js). A TanStack row is made only for a row
-  // on screen (view.getRow). With expandable rows, expanded panels are interleaved; otherwise list position i is page
-  // row i, with nothing built per row. `in expandedRows` (not a truthy check): row 0's key is falsy.
-  const page = view.page;
+  // The rows of this page, as positions in the data (see _utils/tableView.js): while a search or filter runs on a large
+  // table, the matches found so far. A TanStack row is made only for a row on screen (view.getRow). With expandable
+  // rows, expanded panels are interleaved; otherwise list position i is page row i, with nothing built per row.
+  // `in expandedRows` (not a truthy check): row 0's key is falsy.
+  const page = view.shownPage;
   const virtualItemList = useMemo(() => {
     if (!enableExpandableRows) return null;
     const items = [];
@@ -330,7 +337,13 @@ export const TableData = (props) => {
               })}
             </tbody>
           </table>
+          {view.isProgressive && page.length === 0 && (
+            <SearchingState label={view.searchActivity} componentName={componentName} />
+          )}
         </div>
+        {view.isProgressive && page.length > 0 && !hasSearchBox && (
+          <SearchingState label={view.searchActivity} floating componentName={componentName} />
+        )}
       </TableCellSettingsProvider>
     </div>
   );

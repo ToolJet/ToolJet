@@ -27,6 +27,8 @@ export const createIndexBuilder = (capacity = 1024) => {
     get size() {
       return size;
     },
+    // The positions so far, as a view (no copy): later pushes don't change them.
+    peek: () => list.subarray(0, size),
     done: () => list.slice(0, size),
   };
 };

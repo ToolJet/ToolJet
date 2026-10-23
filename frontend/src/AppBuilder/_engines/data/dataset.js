@@ -22,8 +22,12 @@ export const filterIndexes = (count, passes, candidates = null) => {
   return kept.done();
 };
 
-/** filterIndexes a slice at a time (see runSliced): `onDone(list)` gets the same result. */
-export const filterIndexesInSlices = (count, passes, candidates, onDone, options) => {
+/**
+ * filterIndexes a slice at a time (see runSliced): `onDone(list)` gets the same result. `options.onProgress(fraction,
+ * found)`, if given, hears how far it has got (0 to 1) after each slice that doesn't finish; `found()` gives the
+ * positions kept so far, in order (a view, not a copy).
+ */
+export const filterIndexesInSlices = (count, passes, candidates, onDone, { onProgress, ...options } = {}) => {
   const total = candidates ? candidates.length : count;
   const kept = createIndexBuilder(Math.min(total, 1 << 16));
   let k = 0;
@@ -33,7 +37,10 @@ export const filterIndexesInSlices = (count, passes, candidates, onDone, options
         const index = candidates ? candidates[k] : k;
         k += 1;
         if (!passes || passes(index)) kept.push(index);
-        if ((k & 255) === 0 && !inTime()) return false;
+        if ((k & 255) === 0 && !inTime()) {
+          onProgress?.(k / total, kept.peek);
+          return false;
+        }
       }
       onDone(kept.done());
       return true;

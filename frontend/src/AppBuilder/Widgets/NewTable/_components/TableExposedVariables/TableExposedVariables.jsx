@@ -86,8 +86,8 @@ export const TableExposedVariables = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [view.filtered, view.data]
   );
-  // While a search, filter or sort runs in slices the table shows the previous rows (none for new data): the exposed
-  // rows stay as they were until it finishes, instead of passing through that interim state.
+  // While a search, filter or sort runs in slices the table shows the previous rows or the matches found so far (none
+  // for new data): the exposed rows stay as they were until it finishes, instead of passing through that interim state.
   const isViewPending = view.isFiltering || view.isSorting;
 
   const prevSortingLength = useRef(null);

@@ -116,6 +116,7 @@ How the App Builder handles data of any size without blocking the page or runnin
 - Scripts (RunJS, transformations, Python) get `lazyCopies` of the queries, `page` and `variables` (`clone.js`): a value is copied when first read. A copy that wouldn't fit in the tab's memory throws a `MemoryBudgetError` naming it (`memory.js`) instead of crashing the tab. A RunJS result is checked for cycles in slices (`cycles.js`)
 - A ListView/Kanban child property that reads nothing row-scoped (`readsNothingRowScoped`) resolves once, not once per row
 - Large query responses are parsed in a worker (`transport.js`); debugger logs keep the newest 1,000 entries and bounded snapshots of logged values (`bounded.js`)
+- A Table search or filter over more than `SLICED_ROWS` (100k) rows runs in slices (`Widgets/NewTable/_hooks/useTableView.js`). On an unsorted Table the body shows the matches found so far (`shownPage`, `shownCount`, `shownPageIndex`, `shownPageCount`; "Searching…"/"Filtering…" until the first), the search box its progress (`searchProgress`), and the header's select-all works on those rows; exposed values (`filteredData`, `currentPageData`, the selection) and events change only once it finishes. A sorted Table keeps its rows until the sorted result is ready
 
 ### Rendering engine (`src/AppBuilder/_engines/rendering/`)
 

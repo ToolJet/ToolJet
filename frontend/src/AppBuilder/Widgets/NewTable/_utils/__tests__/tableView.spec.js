@@ -236,6 +236,26 @@ describe('filtering in slices', () => {
     expect(result()).toEqual(filterRowIndexes(table, many));
   });
 
+  test('reports how far it has got after each slice, then gives the same rows', () => {
+    const table = tanstackTable({ globalFilter: 'a' });
+    const steps = [];
+    const progress = [];
+    let result = null;
+    let clock = 0;
+    filterRowIndexesInSlices(table, many, null, (kept) => (result = kept), {
+      schedule: (step) => steps.push(step),
+      now: () => (clock += 1),
+      sliceMs: 0,
+      onProgress: (fraction) => progress.push(fraction),
+    });
+    while (steps.length) steps.shift()();
+    expect(progress.length).toBeGreaterThan(1);
+    expect(
+      progress.every((fraction, i) => fraction > 0 && fraction < 1 && (i === 0 || fraction > progress[i - 1]))
+    ).toBe(true);
+    expect(result).toEqual(filterRowIndexes(table, many));
+  });
+
   test('stops when cancelled', () => {
     const { steps, result, cancel } = run({ globalFilter: 'a' });
     steps.shift()();
