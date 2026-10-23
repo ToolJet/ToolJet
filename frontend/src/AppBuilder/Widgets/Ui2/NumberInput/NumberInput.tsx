@@ -2,13 +2,13 @@ import React, { useRef } from 'react';
 import { ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
 import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { GroupClear, showsClear } from '@/AppBuilder/Widgets/Ui2/_shared/FieldClear';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Truncate, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import {
   AFFIX,
-  ClearX,
   EDGE,
   Group,
   INNER,
@@ -133,16 +133,13 @@ export const ShadNumberInput = (props: WidgetProps) => {
         ) : null}
         {/* Show clear button (the native Number input's showClearBtn, off by default): an x while there is a number
             or typed text empties the box with one onChange, and leaves the focus in it. */}
-        {properties.showClearBtn === true && !disabled && !loading && (value !== null || !!draft) ? (
-          <span className={cn('tw-flex tw-items-center', suffix ? 'tw-pr-2' : 'tw-px-2')}>
-            <ClearX
-              onClear={() => {
-                box.clearTyped(() => ({}));
-                textBox.ref.current?.focus();
-              }}
-            />
-          </span>
-        ) : null}
+        <GroupClear
+          show={showsClear(properties, value !== null || !!draft)}
+          onClear={() => {
+            box.clearTyped(() => ({}));
+            textBox.ref.current?.focus();
+          }}
+        />
         {steppers && layout === 'split' ? (
           <button
             type="button"

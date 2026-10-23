@@ -5,7 +5,8 @@ import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useTextField } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
-import { ClearX, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import { withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import { CLEAR_ROOM, WithClear, showsClear } from '@/AppBuilder/Widgets/Ui2/_shared/FieldClear';
 import { ShadNumberInput } from '@/AppBuilder/Widgets/Ui2/NumberInput/NumberInput';
 
 // The Type list (shadInput.js). A bound type outside it shows a text box: 'file' or 'checkbox' with the text value
@@ -124,7 +125,7 @@ const TextInput = (props: WidgetProps) => {
   // native inputs' showClearBtn, off by default) gives the other types the same x.
   const search = type === 'search';
   const withClear = search || properties.showClearBtn === true;
-  const clearable = withClear && !!fieldProps.value && !fieldProps.disabled;
+  const clearable = showsClear({ ...properties, showClearBtn: withClear }, !!fieldProps.value);
   const input = (
     <Input
       {...fieldProps}
@@ -134,7 +135,7 @@ const TextInput = (props: WidgetProps) => {
       className={cn(
         fieldProps.className,
         search && '[&::-webkit-search-cancel-button]:tw-appearance-none',
-        clearable && 'tw-pr-8'
+        clearable && CLEAR_ROOM
       )}
       onKeyDown={(e) => {
         if (isEnter(e)) fireEvent('onEnterPressed');
@@ -147,22 +148,16 @@ const TextInput = (props: WidgetProps) => {
   );
   return (
     <FormField props={props} properties={properties} check={check} innerRef={fit}>
-      {withClear ? (
-        <div className="tw-relative tw-w-full">
-          {input}
-          {clearable ? (
-            <ClearX
-              className="tw-absolute tw-right-2 tw-top-1/2 -tw-translate-y-1/2"
-              onClear={() => {
-                change('');
-                fieldProps.ref.current?.focus();
-              }}
-            />
-          ) : null}
-        </div>
-      ) : (
-        input
-      )}
+      <WithClear
+        enabled={withClear}
+        show={clearable}
+        onClear={() => {
+          change('');
+          fieldProps.ref.current?.focus();
+        }}
+      >
+        {input}
+      </WithClear>
     </FormField>
   );
 };
