@@ -76,7 +76,7 @@ describe('AI build cancellation', () => {
     );
   });
 
-  const start = async (util, shouldCancel, ownEvents = events) => {
+  const start = async (util, shouldCancel, ownEvents = events, options = {}) => {
     const pending = util.callAgent(
       'deep-agent',
       {
@@ -86,7 +86,7 @@ describe('AI build cancellation', () => {
       },
       { id: 'builder-a' },
       'workspace-a',
-      { shouldCancel }
+      { shouldCancel, ...options }
     );
     // Settle the credential/routing promises without advancing the cancellation poll.
     for (let i = 0; i < 20; i++) await Promise.resolve();
@@ -145,6 +145,38 @@ describe('AI build cancellation', () => {
     await jest.advanceTimersByTimeAsync(1000);
     expect((await pending)[1]).toMatchObject({ cancelled: true, reload: true, app_id: 'inventory-app' });
     expect(socket.disconnect).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it('does not start queued layout writes after an unanswered cancellation ends the turn', async () => {
+    const shouldCancel = jest.fn().mockResolvedValue(false);
+    const writes: string[] = [];
+    let releaseFirst: () => void;
+    const onLayoutCallback = jest.fn(async (layout) => {
+      writes.push(layout.step);
+      if (layout.step === 'first') await new Promise<void>((resolve) => (releaseFirst = resolve));
+    });
+    const { pending } = await start(util, shouldCancel, events, { onLayoutCallback });
+    await events['ingest-complete']({ data: { message: 'ingested' } });
+    const ackSecond = jest.fn();
+    events['layout:generated']({ request_id: 'layout-run', layout: JSON.stringify({ step: 'first' }) }, jest.fn());
+    events['layout:generated']({ request_id: 'layout-run', layout: JSON.stringify({ step: 'second' }) }, ackSecond);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(writes).toEqual(['first']);
+
+    shouldCancel.mockResolvedValue(true);
+    await jest.advanceTimersByTimeAsync(3000);
+    await jest.advanceTimersByTimeAsync(60_000);
+    let resolved = false;
+    void pending.then(() => (resolved = true));
+    await jest.advanceTimersByTimeAsync(0);
+    expect(resolved).toBe(false);
+
+    releaseFirst();
+    expect((await pending)[1]).toMatchObject({ cancelled: true, reload: true });
+    await jest.advanceTimersByTimeAsync(0);
+    expect(writes).toEqual(['first']);
+    expect(ackSecond).toHaveBeenCalledWith(expect.objectContaining({ status: 'failed' }));
     expect(jest.getTimerCount()).toBe(0);
   });
 
