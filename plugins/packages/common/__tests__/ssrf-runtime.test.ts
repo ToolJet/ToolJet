@@ -196,3 +196,35 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     await expect(validateUrlForSSRF('http://[::1]/')).resolves.toBeUndefined();
   });
 });
+
+describe('edition defaults without a runtime key', () => {
+  const originalEdition = process.env.TOOLJET_EDITION;
+  afterEach(() => {
+    if (originalEdition === undefined) delete process.env.TOOLJET_EDITION;
+    else process.env.TOOLJET_EDITION = originalEdition;
+  });
+
+  it('Cloud enforces with no env vars and rejects metadata and private literals', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    expect(getSSRFConfig()).toMatchObject({
+      enabled: true,
+      dnsResolutionCheck: true,
+      blockedSchemes: ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'],
+    });
+    await expect(validateUrlForSSRF('http://169.254.169.254/')).rejects.toThrow();
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).rejects.toThrow();
+  });
+
+  it('Cloud ignores SSRF_PROTECTION_ENABLED=false', () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    process.env.SSRF_PROTECTION_ENABLED = 'false';
+    expect(getSSRFConfig().enabled).toBe(true);
+  });
+
+  it.each(['ce', undefined])('edition %s stays opt-in and allows 10.0.0.1 with no env vars', async (edition) => {
+    if (edition === undefined) delete process.env.TOOLJET_EDITION;
+    else process.env.TOOLJET_EDITION = edition;
+    expect(getSSRFConfig().enabled).toBe(false);
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
+  });
+});

@@ -72,11 +72,11 @@ function isCloudMetadataEndpoint(hostname: string): boolean {
 
 /**
  * Loopback, link-local/cloud metadata, CGNAT, unspecified, multicast, reserved.
- * RFC1918 and fc00::/7 too, only when the EE runtime config is present.
+ * RFC1918 and fc00::/7 too, only when the EE runtime config is present or on Cloud.
  */
 function isDangerousPrivateIP(ip: string): boolean {
   if (isCloudMetadataEndpoint(ip)) return true;
-  const blockRFC1918 = !!getRuntimeConfig();
+  const blockRFC1918 = !!getRuntimeConfig() || getTooljetEdition() === 'cloud';
 
   const match = ip.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (match) {

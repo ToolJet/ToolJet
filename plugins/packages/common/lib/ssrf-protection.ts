@@ -68,6 +68,15 @@ export function getSSRFConfig(): SSRFProtectionOptions {
     };
   }
 
+  // Cloud is multi-tenant: always enforced, env vars ignored. Private networks are blocked by isPrivateIP.
+  if (process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud') {
+    return {
+      enabled: true,
+      dnsResolutionCheck: true,
+      blockedSchemes: DEFAULT_BLOCKED_SCHEMES,
+    };
+  }
+
   const enabled = process.env.SSRF_PROTECTION_ENABLED === 'true'; // Disabled by default (opt-in)
   const dnsResolutionCheck = process.env.SSRF_DNS_RESOLUTION_CHECK === 'true'; // Disabled by default
 

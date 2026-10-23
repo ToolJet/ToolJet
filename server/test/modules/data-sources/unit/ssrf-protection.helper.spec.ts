@@ -125,3 +125,27 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     await expect(validateUrlForSSRF('http://[::1]/')).resolves.toBeUndefined();
   });
 });
+
+describe('edition defaults without a runtime key', () => {
+  const originalEdition = process.env.TOOLJET_EDITION;
+  afterEach(() => {
+    if (originalEdition === undefined) delete process.env.TOOLJET_EDITION;
+    else process.env.TOOLJET_EDITION = originalEdition;
+  });
+
+  it.each([
+    'http://169.254.169.254/',
+    'http://10.0.0.1/',
+    'http://172.16.0.1/',
+    'http://192.168.1.1/',
+    'http://[fd00::1]/',
+  ])('Cloud blocks %s', async (url) => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    await expect(validateUrlForSSRF(url)).rejects.toThrow(BadRequestException);
+  });
+
+  it('CE still allows 10.0.0.1 with no env vars', async () => {
+    process.env.TOOLJET_EDITION = 'ce';
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
+  });
+});
