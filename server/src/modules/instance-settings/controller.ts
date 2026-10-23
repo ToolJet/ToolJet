@@ -1,5 +1,24 @@
-import { Controller, Get, Post, UseGuards, Body, Delete, Param, Patch, NotFoundException } from '@nestjs/common';
-import { CreateInstanceSettingsDto, UpdateUserSettingsDto } from './dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  UseGuards,
+  Body,
+  Delete,
+  Param,
+  Patch,
+  NotFoundException,
+  HttpCode,
+  ClassSerializerInterceptor,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  CreateInstanceSettingsDto,
+  SsrfSettingsResponseDto,
+  UpdateSsrfSettingsDto,
+  UpdateUserSettingsDto,
+} from './dto';
 import { IInstanceSettingsController } from './Interfaces/IController';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -13,6 +32,7 @@ import { User } from '@modules/app/decorators/user.decorator';
 @InitModule(MODULES.INSTANCE_SETTINGS)
 @Controller('instance-settings')
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 export class InstanceSettingsController implements IInstanceSettingsController {
   constructor() {}
 
@@ -37,6 +57,25 @@ export class InstanceSettingsController implements IInstanceSettingsController {
   @InitFeature(FEATURE_KEY.DELETE)
   @Delete(':id')
   async delete(@Param('id') id: string) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.GET)
+  @Get('ssrf')
+  async getSsrfSettings(): Promise<SsrfSettingsResponseDto> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE)
+  @Put('ssrf')
+  async updateSsrfSettings(@Body() body: UpdateSsrfSettingsDto): Promise<SsrfSettingsResponseDto> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE)
+  @Post('ssrf/dismiss-notice')
+  @HttpCode(204)
+  async dismissSsrfUpgradeNotice(): Promise<void> {
     throw new NotFoundException();
   }
 }
