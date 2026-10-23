@@ -36,6 +36,7 @@
   "viewer | OrganizationConstant | get_from_environment | GET | /organization-constants/environment/:environmentId | version=(default) | src/modules/organization-constants/controller.ts | OrganizationConstantController.getConstantsFromEnvironment",
   "viewer | SESSION | check_unique | GET | /session | version=(default) | src/modules/session/controller.ts | SessionController.getSessionDetails",
   "viewer | VERSION | GET_ONE | GET | /apps/:id/versions/:versionId | version=2 | src/modules/versions/controller.v2.ts | VersionControllerV2.getVersion",
+  "viewer | VERSION | GET_ONE | GET | /apps/module/by-correlation/:coRelationId/version | version=2 | src/modules/versions/controller.v2.ts | VersionControllerV2.getModuleVersionByStableIds",
   "viewer | appEnvironments | CREATE | POST | /app-environments/:versionId | version=(default) | src/modules/app-environments/controller.ts | AppEnvironmentsController.create",
   "viewer | appEnvironments | DELETE | DELETE | /app-environments/:versionId/:id | version=(default) | src/modules/app-environments/controller.ts | AppEnvironmentsController.delete",
   "viewer | appEnvironments | GET_ALL | GET | /app-environments | version=(default) | src/modules/app-environments/controller.ts | AppEnvironmentsController.index",
