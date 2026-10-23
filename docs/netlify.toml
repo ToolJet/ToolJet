@@ -5,5 +5,5 @@
   
   [template.environment]
   NODE_ENV = "production"  
-  NODE_VERSION = "18.18.2"
-  NPM_VERSION = "9.8.1"
+  NODE_VERSION = "22.23.4"
+  NPM_VERSION = "10.9.9"
