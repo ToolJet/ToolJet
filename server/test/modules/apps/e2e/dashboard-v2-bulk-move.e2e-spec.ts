@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { randomUUID } from 'crypto';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
 import { APP_TYPES } from '@modules/apps/constants';
@@ -111,6 +112,15 @@ describe('DashboardBulkMoveController', () => {
       }).expect(200);
       expect(res.body).toEqual({ blocked_ids: [foreignApp.id] });
       expect(await folderOf(foreignApp.id)).toBeNull();
+    });
+
+    it('should accept more than 50 app ids', async () => {
+      const admin = await createAdmin(nestApp, 'bulk-move-many@tooljet.io');
+      const folder = await createFolder(nestApp, { name: 'Target', organizationId: admin.workspace.id });
+      const ids = Array.from({ length: 51 }, () => randomUUID());
+
+      const res = await bulkMove(admin.cookie, admin.workspace.id, { app_ids: ids, folder_id: folder.id }).expect(200);
+      expect(res.body.blocked_ids).toHaveLength(51);
     });
 
     it('should 400 on a bad body', async () => {

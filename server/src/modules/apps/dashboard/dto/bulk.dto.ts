@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, ArrayUnique, IsArray, IsEnum, IsIn, IsOptional, IsUUID } from 'class-validator';
+import { ArrayMinSize, ArrayUnique, IsArray, IsEnum, IsIn, IsOptional, IsUUID } from 'class-validator';
 import { APP_TYPES } from '@modules/apps/constants';
 
 export class BulkFlagsDto {
@@ -11,7 +11,6 @@ export class BulkFlagsDto {
 export class BulkMoveAppsDto extends BulkFlagsDto {
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(50)
   @ArrayUnique()
   @IsUUID('all', { each: true })
   app_ids: string[];
@@ -23,7 +22,6 @@ export class BulkMoveAppsDto extends BulkFlagsDto {
 export class BulkDeleteAppsDto extends BulkFlagsDto {
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(50)
   @ArrayUnique()
   @IsUUID('all', { each: true })
   app_ids: string[];
@@ -40,7 +38,6 @@ export class BulkResultResponseDto {
 export class BulkDeleteFoldersDto extends BulkFlagsDto {
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(50)
   @ArrayUnique()
   @IsUUID('all', { each: true })
   folder_ids: string[];

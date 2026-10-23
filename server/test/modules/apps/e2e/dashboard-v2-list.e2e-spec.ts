@@ -189,6 +189,25 @@ describe('DashboardAppsController', () => {
       expect(p2.body).toMatchObject({ total: 6, counts: { pinned: 4, folders: 0, apps: 2 } });
     });
 
+    it('should continue from the last folder to the first app across a page break', async () => {
+      const admin = await createAdmin(nestApp, 'dash-list-folder-break@tooljet.io');
+      const fa = await createFolder(nestApp, { name: 'FA', organizationId: admin.workspace.id });
+      const fb = await createFolder(nestApp, { name: 'FB', organizationId: admin.workspace.id });
+      await seedDashboardApp(nestApp, { user: admin.user, name: 'In FA', folder: fa });
+      await seedDashboardApp(nestApp, { user: admin.user, name: 'In FB', folder: fb });
+      const { app: a } = await seedDashboardApp(nestApp, { user: admin.user, name: 'A stray' });
+      const { app: b } = await seedDashboardApp(nestApp, { user: admin.user, name: 'B stray' });
+
+      const page = (n: number) =>
+        list(nestApp, admin.cookie, admin.workspace.id, { type: 'front-end', page: n, page_size: 3 });
+      const [p1, p2] = [await page(1), await page(2)];
+      const ids = (res: { body: { items: { id: string }[] } }) => res.body.items.map((i) => i.id);
+
+      expect(ids(p1)).toEqual([fa.id, fb.id, a.id]);
+      expect(ids(p2)).toEqual([b.id]);
+      expect(p2.body).toMatchObject({ total: 4, counts: { pinned: 0, folders: 2, apps: 2 } });
+    });
+
     it('should hide apps with no version row on the requested branch, including their pins', async () => {
       const admin = await createAdmin(nestApp, 'dash-list-branch@tooljet.io');
       const main = await resolveOrSeedDefaultBranch(admin.workspace.id);
@@ -407,6 +426,24 @@ describe('DashboardAppsController', () => {
       const res = await list(nestApp, admin.cookie, admin.workspace.id, { type: 'front-end', search: 'report' });
 
       expect(res.body.items.map((i: { id: string }) => i.id)).toEqual([inNewer.id, inOlder.id, stray.id]);
+    });
+
+    it('should page search results without gap or overlap', async () => {
+      const admin = await createAdmin(nestApp, 'dash-search-paging@tooljet.io');
+      const apps: App[] = [];
+      for (let i = 0; i < 4; i++)
+        apps.push((await seedDashboardApp(nestApp, { user: admin.user, name: `Find ${i}` })).app);
+      await seedDashboardApp(nestApp, { user: admin.user, name: 'Other' });
+
+      const page = (n: number) =>
+        list(nestApp, admin.cookie, admin.workspace.id, { type: 'front-end', search: 'find', page: n, page_size: 3 });
+      const [p1, p2] = [await page(1), await page(2)];
+      const ids = (res: { body: { items: { id: string }[] } }) => res.body.items.map((i) => i.id);
+
+      expect(ids(p1)).toHaveLength(3);
+      expect(ids(p2)).toHaveLength(1);
+      expect([...ids(p1), ...ids(p2)].sort()).toEqual(apps.map((app) => app.id).sort());
+      expect(p2.body).toMatchObject({ total: 4, page: 2 });
     });
   });
 });
