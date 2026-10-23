@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import DOMPurify from 'dompurify';
 import { Table as AntTable, Tag } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
@@ -21,6 +22,17 @@ type Column = {
 
 // A status word's tone (Paid green, Overdue red) as Ant's Tag status colour, when the column names no colours.
 const TONE_TAG: Record<string, string | undefined> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: undefined };
+
+// An html cell (columnType 'html', as UI 2.0's Table): sanitised as the Table does (DOMPurify's defaults drop
+// <script>, event-handler attributes and javascript: URLs). Its text sorts.
+const sanitize = (v: unknown) =>
+  typeof window === 'undefined' ? '' : DOMPurify.sanitize((v === undefined || v === null ? '' : String(v)).trim());
+const textOf = (v: unknown) => {
+  if (typeof document === 'undefined') return str(v);
+  const el = document.createElement('div');
+  el.innerHTML = sanitize(v);
+  return (el.textContent ?? '').replace(/\s+/g, ' ').trim();
+};
 
 const humanize = (k: string) => k.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 
@@ -52,7 +64,10 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
         ellipsis: r.ellipsis === undefined ? undefined : Boolean(r.ellipsis),
         sorter: r.sorter === undefined ? undefined : Boolean(r.sorter),
         ...(() => {
-          const f = parseFormat(r.format ?? r.type);
+          // UI 2.0's Table names an html column with columnType (or type) 'html'.
+          const kind = str(r.columnType ?? r.type ?? r.format).trim().toLowerCase();
+          if (kind === 'html' || str(r.format).trim().toLowerCase() === 'html') return { format: 'html' };
+          const f = parseFormat(r.format ?? r.columnType ?? r.type);
           return { format: f.format, currency: str(r.currency) || f.currency };
         })(),
         colors: Object.keys(map).length ? map : undefined,
@@ -74,7 +89,7 @@ const compare = (a: unknown, b: unknown) => {
 
 // Ant's Table: dataSource, columns, title, rowKey, pagination with pageSize, bordered, size, showHeader, rowSelection type,
 // emptyText (locale.emptyText); a column may set format (number, currency or currency:EUR, percent, date, datetime,
-// tag, boolean), align, width, sorter
+// tag, boolean, html: sanitised markup, also columnType 'html'), align, width, sorter
 // and, for tags, colors { value: color }. Numbers are grouped and right-aligned. Events: onRowClick (Ant's
 // onRow onClick), onChange (page or sort), onSelectionChange (rowSelection onChange).
 export const Table = () => {
@@ -135,8 +150,13 @@ export const Table = () => {
       align: c.align ?? (numeric ? 'right' : undefined),
       width: c.width,
       ellipsis: c.ellipsis,
-      sorter: c.sorter ? (a: Row, b: Row) => compare(readField(a, c.dataIndex), readField(b, c.dataIndex)) : undefined,
+      sorter: c.sorter
+        ? format === 'html'
+          ? (a: Row, b: Row) => compare(textOf(readField(a, c.dataIndex)), textOf(readField(b, c.dataIndex)))
+          : (a: Row, b: Row) => compare(readField(a, c.dataIndex), readField(b, c.dataIndex))
+        : undefined,
       render: (v: unknown) => {
+        if (format === 'html') return <div className="tj-ant-html-cell" dangerouslySetInnerHTML={{ __html: sanitize(v) }} />;
         if (c.format === 'tag') {
           if (v === undefined || v === null || v === '') return null;
           const colors = { ...(tagColors && typeof tagColors === 'object' ? (tagColors as Record<string, string>) : {}), ...(c.colors ?? {}) };

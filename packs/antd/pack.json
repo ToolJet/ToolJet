@@ -307,7 +307,7 @@
       "role": "table",
       "fit": true,
       "loading": "own",
-      "usage": "Ant's Table: dataSource, columns (Ant's [{title, dataIndex, format?, align?, width?, sorter?}] or UI 2.0's [{name, key, type}]; format/type number, currency or currency:EUR, percent, date, datetime, tag/badge/status, boolean; empty shows every field), rowKey, pagination with pageSize, rowSelection (none, checkbox, radio), size, bordered, currency, tagColors. selectedRow (clicked), selectedRowKeys and selectedRows are exposed; onRowClick.",
+      "usage": "Ant's Table: dataSource, columns (Ant's [{title, dataIndex, format?, align?, width?, sorter?}] or UI 2.0's [{name, key, type}]; format/type number, currency or currency:EUR, percent, date, datetime, tag/badge/status, boolean, html (sanitised markup; columnType 'html' too); empty shows every field), rowKey, pagination with pageSize, rowSelection (none, checkbox, radio), size, bordered, currency, tagColors. selectedRow (clicked), selectedRowKeys and selectedRows are exposed; onRowClick.",
       "roleProps": {
         "data": "dataSource",
         "rowsPerPage": "pageSize",

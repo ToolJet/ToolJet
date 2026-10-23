@@ -79,7 +79,9 @@ export const Segmented = (props: Record<string, unknown>) => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 4 });
   const options = toOptions(rawOptions);
-  const current = options.some((o) => o.value === value) ? value : options[0]?.value;
+  // An empty value selects nothing (null; undefined would make Ant select the first option), so a required
+  // Segmented does not look filled.
+  const current = options.some((o) => o.value === value) ? value : (null as unknown as string);
   const change = (v: unknown) => {
     setValue(str(v));
     check.touch();

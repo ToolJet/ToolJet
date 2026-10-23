@@ -116,7 +116,7 @@ export const Upload = () => {
   return (
     <AntProvider tokens={tokens} fill={type === 'drag'} className="tj-ant-upload">
       <FormField {...field} check={check}>
-        <SpinOver loading={loading} as="block">
+        <SpinOver loading={loading} as="fill">
           {type === 'drag' ? (
             <AntUpload.Dragger {...props}>
               <p className="ant-upload-drag-icon">

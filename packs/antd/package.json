@@ -18,6 +18,7 @@
     "@types/leaflet": "^1.9.22",
     "antd": "^5.29.3",
     "dayjs": "^1.11.23",
+    "dompurify": "^3.4.17",
     "leaflet": "^1.9.4"
   },
   "peerDependencies": {
