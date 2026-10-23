@@ -46,8 +46,9 @@ export const Tabs = () => {
   });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The open tab; empty opens the first.', initialValue: '' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['standard', 'scrollable', 'fullWidth'], initialValue: 'standard' });
-  const [textColor] = ToolJet.useStateEnumeration({ name: 'textColor', label: 'Text color', enumDefinition: ['primary', 'secondary', 'inherit'], initialValue: 'primary' });
-  const [indicatorColor] = ToolJet.useStateEnumeration({ name: 'indicatorColor', label: 'Indicator color', enumDefinition: ['primary', 'secondary'], initialValue: 'primary' });
+  // MUI's colour options are styles (ToolJet keeps colours under styles).
+  const textColor = ToolJet.useStyleEnumeration({ name: 'textColor', label: 'Text color', enumDefinition: ['primary', 'secondary', 'inherit'], initialValue: 'primary' });
+  const indicatorColor = ToolJet.useStyleEnumeration({ name: 'indicatorColor', label: 'Indicator color', enumDefinition: ['primary', 'secondary'], initialValue: 'primary' });
   const [centered] = ToolJet.useStateBoolean({ name: 'centered', label: 'Centered', initialValue: false });
   const [orientation] = ToolJet.useStateEnumeration({ name: 'orientation', label: 'Orientation', enumDefinition: ['horizontal', 'vertical'], initialValue: 'horizontal' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });

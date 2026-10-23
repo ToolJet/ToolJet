@@ -94,3 +94,17 @@
   max-width: 100%;
   max-height: 100%;
 }
+
+/* DataGrid html cells: the sanitised markup wraps, and the row (auto height) grows to it, at least the density's
+   row height (set by the grid), content centred as in MUI's cells. */
+.tj-mui-html-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  white-space: normal;
+  line-height: 1.43;
+  overflow-wrap: anywhere;
+  padding-block: 8px;
+  min-width: 0;
+}

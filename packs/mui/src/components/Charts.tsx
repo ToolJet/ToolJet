@@ -128,7 +128,6 @@ export const BarChart = () => {
     enumDefinition: ['vertical', 'horizontal'],
     initialValue: 'vertical',
   });
-  const [borderRadius] = ToolJet.useStateNumber({ name: 'borderRadius', label: 'Bar border radius', initialValue: 0, min: 0, max: 24 });
   const [, setClickedSeries] = ToolJet.useStateString({ name: 'clickedSeries', initialValue: '', inspector: 'hidden' });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
   const overrides = useThemeStyles();
@@ -146,7 +145,8 @@ export const BarChart = () => {
           yAxis={horizontal ? [{ ...band[0], width: 90 }] : [{ ...values[0], width: 56 }]}
           series={muiSeries(c)}
           colors={c.colors.length ? c.colors : undefined}
-          borderRadius={Number(borderRadius) || 0}
+          // The Border radius style rounds the bars (x-charts' borderRadius); none: MUI's square bars.
+        borderRadius={overrides.borderRadius ?? 0}
           grid={horizontal ? { vertical: c.grid } : { horizontal: c.grid }}
           hideLegend={c.hideLegend || c.list.length < 2}
           onItemClick={(_, item) => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import DOMPurify from 'dompurify';
 import { Chip } from '@mui/material';
 import { DataGrid as MuiDataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridPaginationModel, GridRowSelectionModel, GridSortModel } from '@mui/x-data-grid';
@@ -8,15 +9,26 @@ import { rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, toNumber } from '../lib/format';
 
 const ID = '__tjRowId';
+const ROW_HEIGHT = { compact: 36, standard: 52, comfortable: 67 };
 // The free DataGrid pages at most 100 rows (more is a Pro feature).
 const MAX_PAGE_SIZE = 100;
+// An html cell (columnType 'html', as UI 2.0's Table): sanitised as the Table does (DOMPurify's defaults drop
+// <script>, event-handler attributes and javascript: URLs); its text sorts, filters and exports.
+const sanitize = (v: unknown) => DOMPurify.sanitize((v === undefined || v === null ? '' : String(v)).trim());
+const textOf = (v: unknown) => {
+  if (typeof document === 'undefined') return str(v);
+  const el = document.createElement('div');
+  el.innerHTML = sanitize(v);
+  return (el.textContent ?? '').replace(/\s+/g, ' ').trim();
+};
 const humanize = (k: string) => k.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 
 type Column = GridColDef & { format?: string; currency?: string; colors?: Record<string, string> };
 
 // MUI's column shape ({ field, headerName, type, width, flex, align, sortable }); also { key, label }, { dataIndex,
-// title } and plain field names. A column may add format (currency, percent, compact, chip) with currency and, for
-// chips, colors { value: palette colour }. None: every field of the first row.
+// title } and plain field names. A column may add format (currency, percent, compact, chip, html) with currency and,
+// for chips, colors { value: palette colour }; type or columnType 'html' (UI 2.0's Table) is the html format. None:
+// every field of the first row.
 const toColumns = (raw: unknown, rows: Row[]): Column[] => {
   const given = toArray(raw)
     .map((c): Column | null => {
@@ -25,8 +37,10 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
       const r = c as Row;
       const field = str(r.field ?? r.key ?? r.dataIndex ?? r.name);
       if (!field) return null;
-      const type = str(r.type);
-      const col: Column = { field, headerName: str(r.headerName ?? r.label ?? r.title) || humanize(field) };
+      const type = str(r.type ?? r.columnType);
+      // UI 2.0's Table names a column { key, name }: name is then the header.
+      const named = r.field !== undefined || r.key !== undefined || r.dataIndex !== undefined ? r.name : undefined;
+      const col: Column = { field, headerName: str(r.headerName ?? r.label ?? r.title ?? named) || humanize(field) };
       if (['string', 'number', 'date', 'dateTime', 'boolean'].includes(type)) col.type = type as 'string';
       const width = toNumber(r.width);
       const flex = toNumber(r.flex);
@@ -35,7 +49,7 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
       if (!width && !flex) col.flex = 1;
       if (r.align) col.align = col.headerAlign = r.align as 'left';
       if (r.sortable !== undefined) col.sortable = Boolean(r.sortable);
-      col.format = str(r.format) || undefined;
+      col.format = type === 'html' ? 'html' : str(r.format) || undefined;
       col.currency = str(r.currency) || undefined;
       if (r.colors && typeof r.colors === 'object') col.colors = r.colors as Record<string, string>;
       return col;
@@ -57,6 +71,14 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
   if (col.type === 'number') {
     col.valueGetter = (v: unknown) => toNumber(v);
     if (format) col.valueFormatter = (v: unknown) => (v === null || v === undefined ? '' : formatCell(v, format, currency));
+  } else if (format === 'html') {
+    col.renderCell = (p) => (
+      <div className="tj-mui-html-cell">
+        <div dangerouslySetInnerHTML={{ __html: sanitize(p.value) }} />
+      </div>
+    );
+    col.valueFormatter = (v: unknown) => textOf(v);
+    col.sortComparator = (a: unknown, b: unknown) => textOf(a).localeCompare(textOf(b));
   } else if (format === 'chip') {
     col.renderCell = (p) =>
       p.value === undefined || p.value === null || p.value === '' ? null : <Chip size="small" label={str(p.value)} color={(colors?.[str(p.value)] ?? 'default') as 'default'} />;
@@ -111,7 +133,10 @@ export const DataGrid = () => {
     });
     return { rows, byId };
   }, [source, field]);
-  const columns = useMemo(() => toColumns(rawColumns, source).map((c) => toGridColumn(c, source)), [rawColumns, source]);
+  const defs = useMemo(() => toColumns(rawColumns, source), [rawColumns, source]);
+  const columns = useMemo(() => defs.map((c) => toGridColumn(c, source)), [defs, source]);
+  // Html cells can hold several blocks (a name over a detail line): rows grow to fit them, as MUI's auto row height.
+  const htmlCells = defs.some((c) => c.format === 'html');
   const selection: GridRowSelectionModel = useMemo(() => ({ type: 'include', ids: new Set(toArray(selectionIds).map(str)) }), [selectionIds]);
 
   const select = (ids: string[]) => {
@@ -139,6 +164,7 @@ export const DataGrid = () => {
         rows={rows}
         columns={columns}
         getRowId={(r) => String(r[ID])}
+        getRowHeight={htmlCells ? () => 'auto' : undefined}
         density={density as 'standard'}
         checkboxSelection={checkboxSelection}
         rowSelectionModel={selection}
@@ -151,7 +177,15 @@ export const DataGrid = () => {
         hideFooter={hideFooter}
         loading={loading}
         localeText={{ noRowsLabel: noRowsLabel || 'No rows' }}
-        sx={{ height: '100%', border: 1, borderColor: 'divider' }}
+        sx={{
+          height: '100%',
+          border: 1,
+          borderColor: 'divider',
+          // With auto row heights a one-line row keeps the density's height (MUI's 36, 52, 67px).
+          '& .tj-mui-html-cell': { minHeight: ROW_HEIGHT[density as keyof typeof ROW_HEIGHT] ?? 52 },
+          // ... and every cell of a grown row centres its content, as in a fixed-height row.
+          ...(htmlCells ? { '& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' } } : {}),
+        }}
         onRowClick={(params) => {
           const id = String(params.id);
           setSelectedRow(byId.get(id) ?? {});

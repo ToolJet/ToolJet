@@ -457,7 +457,7 @@
     "Tabs": {
       "role": "tabs",
       "fit": false,
-      "usage": "MUI's Tabs: tabs [{value, label}], value (the open tab), variant (standard, scrollable, fullWidth), textColor, indicatorColor, centered, orientation; each tab panel holds ToolJet components (slot tab_<value>). onChange; setValue.",
+      "usage": "MUI's Tabs: tabs [{value, label}], value (the open tab), variant (standard, scrollable, fullWidth), centered, orientation; styles textColor and indicatorColor; each tab panel holds ToolJet components (slot tab_<value>). onChange; setValue.",
       "roleProps": {
         "tabs": "tabs",
         "currentTab": "value"
@@ -537,7 +537,7 @@
     "BarChart": {
       "role": "barchart",
       "fit": false,
-      "usage": "MUI X BarChart: dataset (rows), xAxis (the category: [{dataKey}] or a field name), series ([{dataKey, label, color}] or field names; empty: every numeric field), layout (vertical, horizontal), stack ('total' stacks), valueFormat, colors, grid, hideLegend, borderRadius. onItemClick with clickedItem (the row) and clickedSeries.",
+      "usage": "MUI X BarChart: dataset (rows), xAxis (the category: [{dataKey}] or a field name), series ([{dataKey, label, color}] or field names; empty: every numeric field), layout (vertical, horizontal), stack ('total' stacks), valueFormat, colors, grid, hideLegend; the borderRadius style rounds the bars. onItemClick with clickedItem (the row) and clickedSeries.",
       "roleProps": {
         "data": "dataset",
         "xField": "xAxis",
@@ -684,7 +684,7 @@
     "Divider": {
       "role": "separator",
       "fit": false,
-      "usage": "MUI's Divider: orientation, variant (fullWidth, inset, middle), children (text in the line) with textAlign.",
+      "usage": "MUI's Divider: orientation, variant (fullWidth, inset, middle), children (text in the line); the textAlign style places it.",
       "roleProps": {
         "label": "children"
       },

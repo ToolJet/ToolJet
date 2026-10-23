@@ -295,12 +295,12 @@ export const Avatar = () => {
   );
 };
 
-// MUI's Divider: orientation, variant (fullWidth, inset, middle), children (text in the line) with textAlign.
+// MUI's Divider: orientation, variant (fullWidth, inset, middle), children (text in the line); style textAlign.
 export const Divider = () => {
   const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', description: 'Text in the line; empty for none.', initialValue: '' });
   const [orientation] = ToolJet.useStateEnumeration({ name: 'orientation', label: 'Orientation', enumDefinition: ['horizontal', 'vertical'], initialValue: 'horizontal' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['fullWidth', 'inset', 'middle'], initialValue: 'fullWidth' });
-  const [textAlign] = ToolJet.useStateEnumeration({ name: 'textAlign', label: 'Text align', enumDefinition: ['center', 'left', 'right'], initialValue: 'center' });
+  const textAlign = ToolJet.useStyleEnumeration({ name: 'textAlign', label: 'Text align', enumDefinition: ['center', 'left', 'right'], initialValue: 'center' });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 2 });
   const vertical = orientation === 'vertical';
