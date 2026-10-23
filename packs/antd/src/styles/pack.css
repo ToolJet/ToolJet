@@ -1,0 +1,861 @@
+/* Layout around antd's own CSS (antd.css): component roots, filling the widget box, and the few pieces ToolJet adds
+   (the stat trend, selected rows, chart frames). Colours only through antd's token variables. */
+/* The component root; popups carry .tj-ant for the token variables only. */
+.tj-ant-root {
+  width: 100%;
+  min-width: 0;
+  font-family: var(--ant-font-family);
+  font-size: var(--ant-font-size);
+  color: var(--ant-color-text);
+}
+.tj-ant--fill {
+  height: 100%;
+}
+.tj-ant-center {
+  display: flex;
+  align-items: center;
+}
+.tj-ant-center.tj-ant-start {
+  justify-content: flex-start;
+}
+.tj-ant-center:not(.tj-ant-start) > :only-child {
+  margin-inline: auto;
+}
+.tj-ant-center > .ant-btn-block {
+  width: 100%;
+}
+.tj-ant-required {
+  color: var(--ant-color-error);
+}
+
+/* Statistic */
+.tj-ant-stat--card {
+  padding: 15px 20px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-container);
+}
+.tj-ant-stat-trend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 13px;
+}
+.tj-ant-stat-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 500;
+  color: var(--ant-color-text-secondary);
+}
+.tj-ant-stat-change.is-up {
+  color: var(--ant-color-success);
+}
+.tj-ant-stat-change.is-down {
+  color: var(--ant-color-error);
+}
+.tj-ant-stat-extra {
+  color: var(--ant-color-text-description);
+}
+
+.tj-ant-badge-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Progress */
+.tj-ant-progress-line {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.tj-ant-progress-line .ant-progress {
+  margin: 0;
+}
+.tj-ant-progress-title {
+  color: var(--ant-color-text-secondary);
+  margin-bottom: 2px;
+}
+
+/* Table and List: the selected row */
+.tj-ant-table .ant-table-tbody > tr {
+  cursor: pointer;
+}
+.tj-ant-table .ant-table-tbody > tr.tj-ant-row-selected > td {
+  background: var(--ant-control-item-bg-active);
+}
+.tj-ant-item {
+  cursor: pointer;
+  transition: background var(--ant-motion-duration-mid);
+}
+.tj-ant-item:hover {
+  background: var(--ant-control-item-bg-hover);
+}
+.tj-ant-item.is-selected {
+  background: var(--ant-control-item-bg-active);
+}
+.tj-ant-list .ant-list-bordered .ant-list-item.tj-ant-item--rows,
+.tj-ant-list .ant-list-item.tj-ant-item--rows {
+  padding: 0;
+}
+
+/* Containers fill the widget box; their drop areas fill the rest */
+.tj-ant-tabs .ant-tabs {
+  height: 100%;
+}
+.tj-ant-tabs .ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+}
+.tj-ant-tabs .ant-tabs-content,
+.tj-ant-tabs .ant-tabs-tabpane {
+  height: 100%;
+}
+.tj-ant-card .ant-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.tj-ant-card .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
+}
+.tj-ant-modal-content {
+  margin: 0 0 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+/* Charts */
+.tj-ant-chart {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tj-ant-chart-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.tj-ant-chart-body > div:not(.ant-empty) {
+  /* @ant-design/plots sizes its container `height: inherit`, which is auto here: pin it to the body for autoFit. */
+  position: absolute !important;
+  inset: 0;
+  height: auto !important;
+}
+.tj-ant-chart-body > .ant-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+/* Upload, Collapse, Menu, Spin, Image, Calendar, Tree, Carousel, Transfer */
+.tj-ant-upload.tj-ant--fill .ant-form-item,
+.tj-ant-upload.tj-ant--fill .ant-form-item-row,
+.tj-ant-upload.tj-ant--fill .ant-form-item-control,
+.tj-ant-upload.tj-ant--fill .ant-form-item-control-input-content {
+  height: 100%;
+}
+/* The dropzone takes the space left above the help or validation message, which stays in the box. */
+.tj-ant-upload.tj-ant--fill .ant-form-item-control {
+  display: flex;
+  flex-direction: column;
+}
+.tj-ant-upload.tj-ant--fill .ant-form-item-control-input {
+  flex: 1;
+  min-height: 0;
+}
+.tj-ant-otp {
+  display: inline-block;
+}
+.tj-ant-upload.tj-ant--fill .ant-form-item-row {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+.tj-ant-upload.tj-ant--fill .ant-form-item-control {
+  flex: 1;
+  min-height: 0;
+}
+.tj-ant-upload .ant-upload-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.tj-ant-upload .ant-upload-drag {
+  flex: 1;
+  min-height: 96px;
+}
+.tj-ant-upload .ant-upload-list {
+  overflow: auto;
+  max-height: 40%;
+}
+.tj-ant-collapse,
+.tj-ant-menu,
+.tj-ant-tree,
+.tj-ant-calendar {
+  overflow: auto;
+}
+.tj-ant-menu .ant-menu-inline,
+.tj-ant-menu .ant-menu-vertical {
+  min-height: 100%;
+  border-inline-end: 0 !important;
+}
+.tj-ant-spin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-inline: auto;
+}
+.tj-ant-spin-tip {
+  color: var(--ant-color-text-secondary);
+}
+.tj-ant-image .ant-image {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--ant-border-radius);
+}
+.tj-ant-image .ant-image-img {
+  height: 100%;
+}
+.tj-ant-cal-events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.tj-ant-cal-events li {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-inline-start: 10px;
+  position: relative;
+}
+.tj-ant-cal-events li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ant-color-primary);
+}
+.tj-ant-cal-events li.is-success::before {
+  background: var(--ant-color-success);
+}
+.tj-ant-cal-events li.is-warning::before {
+  background: var(--ant-color-warning);
+}
+.tj-ant-cal-events li.is-error::before {
+  background: var(--ant-color-error);
+}
+.tj-ant-carousel .ant-carousel,
+.tj-ant-carousel .slick-slider,
+.tj-ant-carousel .slick-list,
+.tj-ant-carousel .slick-track,
+.tj-ant-carousel .slick-slide,
+.tj-ant-carousel .slick-slide > div,
+.tj-ant-slide {
+  height: 100%;
+}
+.tj-ant-slide {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-fill-tertiary);
+}
+.tj-ant-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tj-ant-slide-caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 24px 16px 28px;
+  color: #fff;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+}
+.tj-ant-transfer .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+}
+.tj-ant-transfer .ant-transfer {
+  flex: 1;
+  min-height: 0;
+}
+/* The validation message under the lists, as Form.Item draws its help. */
+.tj-ant-transfer-error {
+  color: var(--ant-color-error);
+  font-size: var(--ant-font-size);
+  line-height: var(--ant-line-height);
+  margin-top: 2px;
+}
+.tj-ant-transfer .ant-transfer-list {
+  flex: 1;
+  height: 100%;
+}
+
+/* Kanban */
+.tj-ant-kanban-board {
+  display: flex;
+  gap: 12px;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+}
+.tj-ant-kanban-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--ant-color-fill-quaternary);
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius-lg);
+  transition: background var(--ant-motion-duration-mid);
+}
+.tj-ant-kanban-col.is-over {
+  background: var(--ant-color-primary-bg);
+  border-color: var(--ant-color-primary-border);
+}
+.tj-ant-kanban-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 6px;
+}
+.tj-ant-kanban-add {
+  margin-inline-start: auto;
+}
+.tj-ant-kanban-cards {
+  flex: 1;
+  min-height: 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 8px 10px;
+}
+.tj-ant-kanban-card {
+  cursor: grab;
+}
+.tj-ant-kanban-card-top,
+.tj-ant-kanban-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.tj-ant-kanban-foot {
+  margin-top: 8px;
+}
+.tj-ant-kanban-title {
+  min-width: 0;
+}
+.tj-ant-kanban-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+.tj-ant-kanban-tags .ant-tag {
+  margin-inline-end: 0;
+}
+.tj-ant-kanban-empty {
+  padding: 16px 8px;
+  text-align: center;
+  color: var(--ant-color-text-quaternary);
+}
+.tj-ant-kanban-none {
+  margin: auto;
+}
+
+/* Hero */
+.tj-ant-hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 28px;
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-container);
+  background-size: cover;
+  background-position: center;
+}
+.tj-ant-hero.is-tint {
+  background: var(--ant-color-primary-bg);
+}
+.tj-ant-hero.is-gradient {
+  background: linear-gradient(135deg, var(--ant-color-primary-bg) 0%, var(--ant-color-bg-container) 70%);
+}
+.tj-ant-hero.is-dark {
+  background: #001529;
+}
+.tj-ant-hero.is-solid {
+  background: var(--ant-color-primary);
+}
+.tj-ant-hero.is-compact {
+  padding: 16px 20px;
+}
+.tj-ant-hero.is-large {
+  padding: 40px 40px;
+}
+.tj-ant-hero.is-center {
+  flex-direction: column;
+  text-align: center;
+}
+.tj-ant-hero.is-center .tj-ant-hero-actions {
+  justify-content: center;
+}
+.tj-ant-hero-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tj-ant-hero.is-center .tj-ant-hero-main {
+  align-items: center;
+}
+.tj-ant-hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  border-radius: var(--ant-border-radius-lg);
+  color: var(--ant-color-primary);
+  background: var(--ant-color-primary-bg);
+}
+.tj-ant-hero-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ant-color-primary);
+}
+.tj-ant-hero-sub {
+  margin: 0 !important;
+  font-size: 16px;
+  color: var(--ant-color-text-secondary);
+}
+.tj-ant-hero-meta {
+  color: var(--ant-color-text-tertiary);
+}
+.tj-ant-hero-actions {
+  margin-top: 8px;
+}
+.tj-ant-hero.on-dark,
+.tj-ant-hero.on-dark h1.ant-typography,
+.tj-ant-hero.on-dark h2.ant-typography,
+.tj-ant-hero.on-dark h3.ant-typography,
+.tj-ant-hero.on-dark .tj-ant-hero-sub,
+.tj-ant-hero.on-dark .tj-ant-hero-meta,
+.tj-ant-hero.on-dark .tj-ant-hero-eyebrow,
+.tj-ant-hero.on-dark .ant-statistic-title,
+.tj-ant-hero.on-dark .ant-statistic-content {
+  color: #fff;
+}
+.tj-ant-hero.is-solid .ant-btn-primary {
+  background: #fff;
+  color: var(--ant-color-primary);
+}
+.tj-ant-hero-aside {
+  flex: none;
+  padding-inline-start: 24px;
+  border-inline-start: 1px solid var(--ant-color-split);
+}
+
+/* SummaryStrip */
+.tj-ant-strip {
+  display: grid;
+  gap: 0;
+}
+.tj-ant-strip.is-panel {
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-container);
+}
+.tj-ant-strip-item {
+  padding: 16px 20px;
+  min-width: 0;
+}
+.tj-ant-strip.is-panel .tj-ant-strip-item + .tj-ant-strip-item {
+  border-inline-start: 1px solid var(--ant-color-split);
+}
+.tj-ant-strip.is-cards {
+  gap: 12px;
+}
+.tj-ant-strip.is-cards .tj-ant-strip-item {
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-container);
+}
+.tj-ant-strip.is-center .tj-ant-strip-item {
+  text-align: center;
+}
+.tj-ant-strip.is-center .tj-ant-stat-trend {
+  justify-content: center;
+}
+
+/* CardGrid, ProgressList */
+.tj-ant-cardgrid {
+  display: grid;
+  gap: 16px;
+}
+.tj-ant-gridcard.is-selected {
+  border-color: var(--ant-color-primary);
+  box-shadow: 0 0 0 1px var(--ant-color-primary);
+}
+.tj-ant-gridcard .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tj-ant-gridcard.is-row {
+  flex-direction: row;
+}
+.tj-ant-progress-row.ant-list-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.tj-ant-progress-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.tj-ant-progress-row .ant-progress {
+  margin: 0;
+}
+.tj-ant-progress-caption {
+  font-size: 12px;
+}
+
+/* Tags, Link, Icon, ButtonGroup, rings */
+.tj-ant-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tj-ant-tags.is-single {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.tj-ant-tags.is-scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+.tj-ant-link.is-always {
+  text-decoration: underline;
+}
+.tj-ant-link.is-none:hover {
+  text-decoration: none;
+}
+.tj-ant-link.is-hover:hover {
+  text-decoration: underline;
+}
+.tj-ant-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.tj-ant-field-label {
+  margin-bottom: 4px;
+  line-height: 20px;
+  color: var(--ant-color-text);
+}
+.tj-ant-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.tj-ant-ring--fill {
+  justify-content: center;
+}
+.tj-ant-ring-box {
+  cursor: pointer;
+}
+.tj-ant-ring-center {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+}
+.tj-ant-ring-center small {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+}
+.tj-ant-spark-body {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tj-ant-spark-body > div {
+  position: absolute !important;
+  inset: 0;
+  height: auto !important;
+}
+.tj-ant-chart-frame > div {
+  height: 100%;
+}
+.tj-ant-strength {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+/* Chat */
+.tj-ant-chat.ant-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.tj-ant-chat .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+.tj-ant-chat-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tj-ant-chat-empty {
+  margin: auto;
+}
+.tj-ant-chat-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 88%;
+}
+.tj-ant-chat-row.is-first {
+  margin-top: 8px;
+}
+.tj-ant-chat-row.is-mine {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.tj-ant-chat-face {
+  width: 32px;
+  flex: none;
+}
+.tj-ant-chat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tj-ant-chat-row.is-mine .tj-ant-chat-body {
+  align-items: flex-end;
+}
+.tj-ant-chat-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+.tj-ant-chat-meta .ant-typography {
+  font-size: 12px;
+}
+.tj-ant-chat-bubble {
+  padding: 8px 12px;
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-fill-tertiary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.tj-ant-chat-row.is-mine .tj-ant-chat-bubble {
+  background: var(--ant-color-primary);
+  color: var(--ant-color-text-light-solid);
+}
+.tj-ant-chat-row.is-error .tj-ant-chat-bubble {
+  background: var(--ant-color-error-bg);
+  color: var(--ant-color-error);
+}
+.tj-ant-chat-bubble .ui2c-markdown > :first-child {
+  margin-top: 0;
+}
+.tj-ant-chat-bubble .ui2c-markdown > :last-child {
+  margin-bottom: 0;
+}
+.tj-ant-chat-typing {
+  display: inline-flex;
+  gap: 4px;
+  padding: 12px 14px;
+}
+.tj-ant-chat-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ant-color-text-tertiary);
+  animation: tj-ant-typing 1.2s infinite ease-in-out;
+}
+.tj-ant-chat-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.tj-ant-chat-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes tj-ant-typing {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+.tj-ant-chat-input {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 10px 12px;
+  border-top: 1px solid var(--ant-color-split);
+}
+
+/* Questionnaire */
+.tj-ant-quiz-card.ant-card {
+  height: 100%;
+  overflow: auto;
+}
+.tj-ant-quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  outline: none;
+}
+.tj-ant-quiz-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tj-ant-quiz-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius-lg);
+  cursor: pointer;
+  transition: all var(--ant-motion-duration-mid);
+}
+.tj-ant-quiz-choice:hover {
+  border-color: var(--ant-color-primary-hover);
+}
+.tj-ant-quiz-choice.is-picked {
+  border-color: var(--ant-color-primary);
+  background: var(--ant-color-primary-bg);
+}
+.tj-ant-quiz-label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tj-ant-quiz-key {
+  font-size: 12px;
+  padding: 0 6px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius-sm);
+  color: var(--ant-color-text-tertiary);
+}
+.tj-ant-quiz-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+/* Field heights on ToolJet's grid: a box of n rows draws n x 10 - 4 px. A labelled field is 6 rows (a 20px label
+   line and a 4px gap above Ant's 32px control: 56px); a checkbox or switch row 3 rows (26px). */
+.tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label {
+  padding-bottom: 4px;
+  line-height: 20px;
+}
+.tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label > label {
+  height: 20px;
+  line-height: 20px;
+}
+.tj-ant-root.tj-ant-compact .ant-form-item-control-input,
+.tj-ant-root.tj-ant-compact .ant-form-item-label > label {
+  min-height: 26px;
+  height: 26px;
+}
+.tj-ant-root .ant-form-item-control-input-content > .ant-color-picker-trigger {
+  vertical-align: top;
+}
+.tj-ant-root .ant-form-item-control-input-content .ant-slider-horizontal {
+  margin-block: 9px;
+}
+
+.tj-ant-cell-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tj-ant-cell-tags .ant-tag {
+  margin-inline-end: 0;
+}
+
+/* Loading ("loading": "own"): Ant's Spin nested over the content, Skeleton shapes in its place. */
+.tj-ant-loadable {
+  display: contents;
+}
+.tj-ant-spin-fill,
+.tj-ant-spin-fill > .ant-spin-container {
+  height: 100%;
+  min-height: 0;
+}
+.tj-ant-spin-fill {
+  flex: 1 1 auto;
+  width: 100%;
+}
+.tj-ant-spin-inline {
+  display: inline-block;
+  max-width: 100%;
+}
+.tj-ant-spin-block {
+  width: 100%;
+}
+/* Keep the content's margins (a slider's) inside the wrapper, so the spinner centres on the whole control. */
+.tj-ant-spin-block > .ant-spin-container {
+  display: flow-root;
+}
+.tj-ant-root .ant-skeleton.ant-skeleton-element.ant-skeleton-block {
+  width: 100%;
+}
+.tj-ant-chart-body > .charts-loading-container {
+  z-index: 2;
+}
+.tj-ant-chart-veil {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}

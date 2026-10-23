@@ -1,0 +1,5 @@
+{
+  "packs": [
+    { "dir": "packs/antd", "version": "1.3.0" }
+  ]
+}

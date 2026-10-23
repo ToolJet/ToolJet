@@ -1,0 +1,1234 @@
+{
+  "pack": "antd",
+  "displayName": "Ant Design",
+  "themeMode": "own",
+  "surface": {
+    "page": "#f5f5f5",
+    "card": {
+      "background": "#ffffff",
+      "border": "#f0f0f0",
+      "radius": 8,
+      "shadow": "none",
+      "titleSize": 16,
+      "titleWeight": 600,
+      "headerDivider": true,
+      "padding": 24
+    }
+  },
+  "components": {
+    "Button": {
+      "role": "button",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Button: children is its text; color (primary, default, danger) with variant (solid, outlined, dashed, filled, text, link); block fills the width; onClick. For a destructive button set color danger.",
+      "roleProps": {
+        "text": "children",
+        "variant": "variant"
+      },
+      "roleValues": {
+        "variant": {
+          "default": "solid",
+          "secondary": "filled",
+          "outline": "outlined",
+          "ghost": "text",
+          "destructive": "solid",
+          "link": "link"
+        }
+      }
+    },
+    "Input": {
+      "role": "input",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Input in a Form.Item: label, value, placeholder, extra (help text), allowClear, prefix/suffix, addonBefore/addonAfter; onChange, onPressEnter; setFieldValue, resetFields (back to the value property). The Validation section sets isValid.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleEvents": {
+        "onEnterPressed": "onPressEnter"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "TextArea": {
+      "role": "textarea",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Input.TextArea: label, value, placeholder, extra, minRows/maxRows (autoSize), showCount with maxLength.",
+      "roleProps": {
+        "description": "extra",
+        "rows": "minRows"
+      },
+      "roleEvents": {
+        "onEnterPressed": "onPressEnter"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "InputNumber": {
+      "role": "numberinput",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's InputNumber: label, value (a number, empty for none), min, max, step, precision, prefix, addonAfter; onChange, onStep.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleEvents": {
+        "onEnterPressed": "onPressEnter"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "Select": {
+      "role": "select",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Select: label, options [{label, value}], mode ('' single, 'multiple', 'tags' for free-text tags), value (the picked value; an array in multiple and tags modes, with selectedOptions), placeholder, allowClear, showSearch; selectedOption is exposed in single mode; onChange fires on every change, clearing included.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "DatePicker": {
+      "role": "datepicker",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's DatePicker: label, value YYYY-MM-DD (YYYY-MM-DDTHH:mm:ss with showTime), showTime (a date-time picker), format (display), picker (date, week, month, quarter, year), minDate, maxDate; onChange.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "Checkbox": {
+      "role": "checkbox",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Checkbox: children is its label; checked; onChange; setFieldValue(checked), toggle.",
+      "roleProps": {
+        "label": "children",
+        "description": "extra"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "Switch": {
+      "role": "switch",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Switch with a Form.Item label beside it (layout horizontal): checked, checkedChildren/unCheckedChildren; onChange.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "RadioGroup": {
+      "role": "radio",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Radio.Group: label, options [{label, value}], value, optionType (default, button), buttonStyle, vertical; onChange.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "Segmented": {
+      "role": "togglegroup",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Segmented: options [{label, value}], value (empty: the first), block; onChange.",
+      "roleActions": {
+        "setValue": "setFieldValue"
+      }
+    },
+    "Rate": {
+      "role": "rating",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Rate: value, count, allowHalf; onChange.",
+      "roleProps": {
+        "max": "count"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "Slider": {
+      "role": "slider",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Slider: value, min, max, step; onChange while dragging, onChangeComplete on release.",
+      "roleActions": {
+        "setValue": "setFieldValue"
+      }
+    },
+    "Tag": {
+      "role": "badge",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Tag: children is its text; color is a status (success, processing, warning, error), a palette name (blue, gold, purple...) or any CSS colour.",
+      "roleProps": {
+        "text": "children",
+        "variant": "color"
+      },
+      "roleValues": {
+        "color": {
+          "default": "default",
+          "secondary": "default",
+          "info": "processing",
+          "success": "success",
+          "warning": "warning",
+          "destructive": "error"
+        }
+      }
+    },
+    "Badge": {
+      "role": "status",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's status Badge: a coloured dot with text (status success, processing, default, error, warning), or a count bubble.",
+      "roleProps": {
+        "variant": "status"
+      },
+      "roleValues": {
+        "status": {
+          "default": "default",
+          "secondary": "default",
+          "info": "processing",
+          "success": "success",
+          "warning": "warning",
+          "destructive": "error"
+        }
+      }
+    },
+    "Alert": {
+      "role": "alert",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Alert: message (the title), description, type (info, success, warning, error), showIcon, closable, banner.",
+      "roleProps": {
+        "title": "message",
+        "variant": "type"
+      },
+      "roleValues": {
+        "type": {
+          "default": "info",
+          "info": "info",
+          "success": "success",
+          "warning": "warning",
+          "destructive": "error"
+        }
+      }
+    },
+    "Title": {
+      "role": "heading",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Typography.Title: children is the text, level 1 (largest) to 5, type (secondary, success, warning, danger).",
+      "roleProps": {
+        "text": "children",
+        "level": "level",
+        "tone": "type"
+      },
+      "roleValues": {
+        "level": {
+          "h1": 1,
+          "h2": 2,
+          "h3": 3,
+          "h4": 4
+        },
+        "type": {
+          "default": "default",
+          "muted": "secondary",
+          "success": "success",
+          "warning": "warning",
+          "danger": "danger"
+        }
+      }
+    },
+    "Text": {
+      "role": "text",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Typography.Paragraph: children is the text, type (secondary, success, warning, danger), strong, italic, code, ellipsis (rows).",
+      "roleProps": {
+        "text": "children",
+        "tone": "type"
+      },
+      "roleValues": {
+        "type": {
+          "default": "default",
+          "muted": "secondary",
+          "success": "success",
+          "warning": "warning",
+          "danger": "danger"
+        }
+      }
+    },
+    "Statistic": {
+      "role": "stat",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Statistic (in a card by default): title, value (a number, formatted by formatter auto, number, currency, percent, compact; currency; precision), prefix, suffix, and a trend line: trend up/down/neutral, trendValue, extra.",
+      "roleProps": {
+        "label": "title",
+        "valueFormat": "formatter",
+        "change": "trendValue",
+        "changeLabel": "extra"
+      }
+    },
+    "Table": {
+      "role": "table",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Table: dataSource, columns (Ant's [{title, dataIndex, format?, align?, width?, sorter?}] or UI 2.0's [{name, key, type}]; format/type number, currency or currency:EUR, percent, date, datetime, tag/badge/status, boolean; empty shows every field), rowKey, pagination with pageSize, rowSelection (none, checkbox, radio), size, bordered, currency, tagColors. selectedRow (clicked), selectedRowKeys and selectedRows are exposed; onRowClick.",
+      "roleProps": {
+        "data": "dataSource",
+        "rowsPerPage": "pageSize",
+        "enablePagination": "pagination",
+        "idField": "rowKey",
+        "badgeColors": "tagColors"
+      }
+    },
+    "Tabs": {
+      "role": "tabs",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Tabs: items [{key, label}], each tab a canvas of child components (slot tab_<key>); activeKey; type (line, card); onChange; setActiveKey.",
+      "roleProps": {
+        "tabs": "items",
+        "currentTab": "activeKey"
+      },
+      "roleActions": {
+        "setTab": "setActiveKey"
+      }
+    },
+    "Card": {
+      "role": "card",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Card: title, extra (top right text), variant (outlined, borderless), size; its body is a canvas of child components (slot body)."
+    },
+    "Modal": {
+      "role": "dialog",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Modal: title, content (text), a body canvas of components (slot body, bodyHeight), okText, cancelText, okType (primary, danger), footer, width; open is exposed; a trigger button on the canvas (showTrigger, triggerText); actions show, hide; events onOk, onCancel, afterOpen, afterClose.",
+      "roleProps": {
+        "description": "content",
+        "confirmText": "okText",
+        "show": "open",
+        "showFooter": "footer",
+        "destructive": "okType"
+      },
+      "roleValues": {
+        "okType": {
+          "true": "danger",
+          "false": "primary"
+        }
+      },
+      "roleEvents": {
+        "onConfirm": "onOk",
+        "onOpen": "afterOpen",
+        "onClose": "afterClose"
+      },
+      "roleActions": {
+        "open": "show",
+        "close": "hide"
+      },
+      "slots": [
+        {
+          "name": "body",
+          "kind": "popup"
+        }
+      ]
+    },
+    "List": {
+      "role": "listview",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's List: dataSource; renderItem 'meta' (List.Item.Meta: titleField, descriptionField, avatarField (image URL or a name), extraField, badgeField (status Tag)) or 'components' (rows of child components reading {{listItem}}, rowHeight); header, footer, bordered, pageSize; selectedItem; onItemClick.",
+      "roleProps": {
+        "data": "dataSource",
+        "itemContent": "renderItem",
+        "rowsPerPage": "pageSize",
+        "subtitleField": "descriptionField",
+        "imageField": "avatarField",
+        "metaField": "extraField",
+        "idField": "rowKey",
+        "showBorder": "bordered"
+      },
+      "roleValues": {
+        "renderItem": {
+          "fields": "meta",
+          "components": "components"
+        }
+      },
+      "roleEvents": {
+        "onRecordClicked": "onItemClick"
+      },
+      "slots": [
+        {
+          "name": "row",
+          "kind": "rows"
+        }
+      ]
+    },
+    "Column": {
+      "role": "barchart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Column chart (@ant-design/plots): data, xField, yField (one field or several, each a series; or long data with colorField), stack, horizontal (Ant's Bar), yFormatter, legend; onElementClick with selectedDatum.",
+      "roleProps": {
+        "yFields": "yField"
+      }
+    },
+    "Line": {
+      "role": "linechart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Line chart: data, xField, yField (one or several), colorField, smooth, point, yFormatter.",
+      "roleProps": {
+        "yFields": "yField"
+      }
+    },
+    "Area": {
+      "role": "areachart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Area chart: data, xField, yField (one or several), colorField, stack, smooth.",
+      "roleProps": {
+        "yFields": "yField"
+      }
+    },
+    "Pie": {
+      "role": "piechart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Pie chart: data, angleField (the value), colorField (the category), innerRadius (0 pie, 0.6 donut), label, legend.",
+      "roleProps": {
+        "valueField": "angleField",
+        "categoryField": "colorField"
+      }
+    },
+    "Progress": {
+      "role": "progress",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Progress: percent (0 to 100), type (line, circle, dashboard), status (normal, active, success, exception), steps, title.",
+      "roleProps": {
+        "value": "percent",
+        "label": "title"
+      }
+    },
+    "Avatar": {
+      "role": "avatar",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Avatar: src, children (text without an image; a full name shows initials), shape, size (px).",
+      "roleProps": {
+        "imageUrl": "src",
+        "name": "children"
+      }
+    },
+    "Divider": {
+      "role": "separator",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Divider: children (text in the line), orientation, dashed, type (horizontal, vertical)."
+    },
+    "Empty": {
+      "role": "empty",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Empty: description, image (default, simple)."
+    },
+    "Result": {
+      "role": "result",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Result: status (success, info, warning, error, 404, 403, 500), title, subTitle."
+    },
+    "Descriptions": {
+      "role": "keyvalue",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Descriptions: items ([{label, children or value, format or type}], [label, value] pairs, or an object of label: value; types number, currency, percent, date, datetime, boolean, tag, link), title, extra, column, bordered, layout, currency.",
+      "roleProps": {
+        "data": "items",
+        "columns": "column",
+        "dividers": "bordered"
+      },
+      "roleValues": {
+        "layout": {
+          "stacked": "vertical",
+          "inline": "horizontal"
+        }
+      }
+    },
+    "Steps": {
+      "role": "steps",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Steps: items [{title, description}], current (from 0), direction, type, status, progressDot; next, prev, setCurrent; onChange when clickable.",
+      "roleProps": {
+        "steps": "items",
+        "currentStep": "current"
+      }
+    },
+    "Timeline": {
+      "role": "timeline",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Timeline: items [{children, label, color}], mode (left, alternate, right), pending, reverse."
+    },
+    "Upload": {
+      "role": "filepicker",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Upload: type drag (Upload.Dragger area, fills the box) or select (a button); text, hint, accept, multiple, maxCount, listType. Files stay in the browser: fileList exposes [{uid, name, size, type, base64, content}] for a query; onChange, onRemove; resetFields clears.",
+      "roleProps": {
+        "files": "fileList",
+        "instructionText": "text",
+        "fileType": "accept",
+        "enableMultiple": "multiple",
+        "maxFileCount": "maxCount"
+      },
+      "roleEvents": {
+        "onFileSelected": "onChange",
+        "onFileDeselected": "onRemove"
+      },
+      "roleActions": {
+        "clearFiles": "resetFields",
+        "clear": "resetFields"
+      }
+    },
+    "TimePicker": {
+      "role": "timepicker",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's TimePicker: label, value as 24-hour text (HH:mm, or HH:mm:ss when format has seconds), format (display), use12Hours, minuteStep; onChange.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "RangePicker": {
+      "role": "daterangepicker",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's DatePicker.RangePicker: label, value [start, end] as YYYY-MM-DD (startDate and endDate also exposed), format, picker, minDate, maxDate; onChange.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "AutoComplete": {
+      "role": "autocomplete",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's AutoComplete: free text with suggestions; label, options [{label, value}] or strings, value, placeholder, filterOption; onChange, onSelect, onSearch.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "TreeSelect": {
+      "role": "treeselect",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's TreeSelect: label, treeData [{title, value, children}], value (an array when multiple or treeCheckable), placeholder, showSearch, treeDefaultExpandAll; onChange.",
+      "roleProps": {
+        "description": "extra",
+        "options": "treeData",
+        "data": "treeData"
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "Cascader": {
+      "role": "cascader",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Cascader: label, options [{label, value, children}], value (the path array), changeOnSelect, expandTrigger; onChange.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "ColorPicker": {
+      "role": "colorpicker",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's ColorPicker: label, value (hex, or rgb() with format rgb), showText, presets [{label, colors}], allowClear; onChange while picking, onChangeComplete when done.",
+      "roleProps": {
+        "description": "extra"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields"
+      }
+    },
+    "Transfer": {
+      "role": "transfer",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Transfer: two lists; dataSource [{key, title}], targetKeys (the chosen keys, exposed), titles, showSearch, oneWay; onChange.",
+      "roleProps": {
+        "data": "dataSource",
+        "value": "targetKeys"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue"
+      }
+    },
+    "Collapse": {
+      "role": "accordion",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Collapse: items [{key, label}], each panel a canvas of child components (slot panel_<key>, panelHeight); activeKey (open panel keys), accordion (one at a time), ghost, bordered; onChange.",
+      "roleProps": {
+        "value": "activeKey"
+      },
+      "roleActions": {
+        "setValue": "setActiveKey"
+      }
+    },
+    "Dropdown": {
+      "role": "dropdownmenu",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Dropdown on a Button: children (button text), items [{key, label, danger?}], type (default, primary), trigger, placement, split (Dropdown.Button). onClick fires for a menu item with selectedKey exposed; onButtonClick for a split button's own half.",
+      "roleProps": {
+        "text": "children",
+        "options": "items"
+      },
+      "roleEvents": {
+        "onSelect": "onClick",
+        "onItemClick": "onClick"
+      }
+    },
+    "Menu": {
+      "role": "navigation",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Menu: items [{key, label, children?}], mode (inline, vertical, horizontal), theme (light, dark), selectedKey (exposed, settable); onClick and onSelect carry the key.",
+      "roleProps": {
+        "value": "selectedKey",
+        "links": "items"
+      },
+      "roleEvents": {
+        "onChange": "onClick"
+      },
+      "roleActions": {
+        "setValue": "setSelectedKey"
+      }
+    },
+    "Breadcrumb": {
+      "role": "breadcrumb",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Breadcrumb: items [{title, key}] or strings, separator; onClick for an item with clickedKey exposed (the last item is the current page and not a link).",
+      "roleProps": {
+        "links": "items"
+      }
+    },
+    "Pagination": {
+      "role": "pagination",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Pagination: current, pageSize, total, showSizeChanger, simple, size, showTotal text with {start} {end} {total}, align; onChange (current and pageSize exposed).",
+      "roleProps": {
+        "page": "current",
+        "totalItems": "total"
+      },
+      "roleEvents": {
+        "onPageChange": "onChange"
+      },
+      "roleActions": {
+        "setPage": "setCurrent"
+      }
+    },
+    "Drawer": {
+      "role": "drawer",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Drawer: a side panel; title, extra, placement (right, left, top, bottom), size (default, large) or width, body is a canvas of child components (slot body); open exposed; trigger button (showTrigger, triggerText); actions show, hide; events onClose, afterOpen, afterClose.",
+      "roleProps": {
+        "show": "open"
+      },
+      "roleEvents": {
+        "onOpen": "afterOpen"
+      },
+      "roleActions": {
+        "open": "show",
+        "close": "hide"
+      },
+      "slots": [
+        {
+          "name": "body",
+          "kind": "popup"
+        }
+      ]
+    },
+    "Skeleton": {
+      "role": "skeleton",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Skeleton placeholder: active, avatar, title, rows; loading false hides it."
+    },
+    "Spin": {
+      "role": "spinner",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Spin: spinning, tip, size (small, default, large).",
+      "roleProps": {
+        "label": "tip"
+      }
+    },
+    "Image": {
+      "role": "image",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Image: src, alt, preview (click to enlarge), fallback, objectFit; empty src shows a placeholder.",
+      "roleProps": {
+        "source": "src",
+        "url": "src"
+      }
+    },
+    "Calendar": {
+      "role": "calendar",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Calendar: value (YYYY-MM-DD, exposed), fullscreen (month grid) or a small card, events [{date, title, type}] drawn in the cells; onSelect, onPanelChange.",
+      "roleEvents": {
+        "onChange": "onSelect"
+      }
+    },
+    "Tree": {
+      "role": "tree",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Tree: treeData [{title, key, children}], checkable, defaultExpandAll, showLine; selectedKeys and checkedKeys exposed; onSelect, onCheck.",
+      "roleProps": {
+        "data": "treeData"
+      }
+    },
+    "Carousel": {
+      "role": "carousel",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Carousel of images: items [{src, title, description}], autoplay, autoplaySpeed, dots, arrows, effect; afterChange with current exposed.",
+      "roleProps": {
+        "slides": "items",
+        "images": "items"
+      }
+    },
+    "QRCode": {
+      "role": "qrcode",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's QRCode: value (text or URL), size, color, bgColor, errorLevel, icon, bordered."
+    },
+    "Bar": {
+      "role": "horizontalbarchart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Bar chart (horizontal bars): data, xField (the category), yField (one or several series), colorField, stack; onElementClick.",
+      "roleProps": {
+        "yFields": "yField"
+      }
+    },
+    "DualAxes": {
+      "role": "combochart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's DualAxes: data, xField, yField [left, right] each on its own axis, geometry [left, right] of column or line, yFormatter; onElementClick.",
+      "roleProps": {
+        "yFields": "yField"
+      }
+    },
+    "Funnel": {
+      "role": "funnelchart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Funnel: data [{stage, value}], xField (the stage), yField (the value); labels show the value and the share of the first stage.",
+      "roleProps": {
+        "categoryField": "xField",
+        "valueField": "yField"
+      }
+    },
+    "Gauge": {
+      "role": "gauge",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Gauge: target (the value), total (the end of the scale), name, thresholds (ends of colour bands, e.g. [40, 70, 100]), formatter.",
+      "roleProps": {
+        "value": "target",
+        "max": "total",
+        "label": "title"
+      }
+    },
+    "Radar": {
+      "role": "radarchart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Radar: data (one row per axis), xField (the axis name), yField (one or several series), area.",
+      "roleProps": {
+        "yFields": "yField"
+      }
+    },
+    "Scatter": {
+      "role": "scatterchart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Scatter: data, xField and yField (numbers), colorField (a group), sizeField (bubbles).",
+      "roleProps": {
+        "yFields": "yField"
+      }
+    },
+    "Heatmap": {
+      "role": "heatmapchart",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Heatmap of cells: data [{x, y, value}], xField, yField (categories), colorField (the value), label.",
+      "roleProps": {
+        "valueField": "colorField"
+      }
+    },
+    "Kanban": {
+      "role": "kanban",
+      "fit": false,
+      "loading": "own",
+      "usage": "A board of Ant Cards: dataSource (the cards) grouped by statusField into columns [{id, title}] (empty: the statuses found); titleField, descriptionField, badgeField (status Tag, badgeColors), tagsField, avatarField, progressField, metaField. Cards drag between columns (allowDrag): onCardMoved with lastCardMovement {cardId, from, to, card} and updatedCardData (every card, with its new status). onCardSelected (lastSelectedCard), allowAdd (onAddCardClick, addCardColumn), allowDelete (onCardRemoved); actions addCard(card, columnId), moveCard(cardId, columnId), deleteCard(cardId), updateCardData(cardId, values).",
+      "roleProps": {
+        "data": "dataSource"
+      }
+    },
+    "Chat": {
+      "role": "chat",
+      "fit": false,
+      "loading": "own",
+      "usage": "A chat in Ant parts: title, initialChat (history [{message, type: message|response}]), userName/userAvatar, respondentName/respondentAvatar, placeholder, emptyText, showAvatars, showTimestamps, allowClear, allowDownload, responseLoading (typing dots), historyLoading, inputDisabled. onMessageSent with lastMessage (and history) exposed; answer with appendHistory({message, type: 'response'}) and setResponseLoading(false).",
+      "roleProps": {
+        "chatTitle": "title",
+        "loadingHistory": "historyLoading",
+        "loadingResponse": "responseLoading",
+        "disableInput": "inputDisabled",
+        "enableClearHistoryButton": "allowClear",
+        "enableDownloadHistoryButton": "allowDownload",
+        "isHistoryLoading": "historyLoading",
+        "isResponseLoading": "responseLoading",
+        "isInputDisabled": "inputDisabled"
+      }
+    },
+    "Hero": {
+      "role": "hero",
+      "fit": true,
+      "loading": "own",
+      "usage": "A page header: eyebrow, title, subTitle, meta, actionLabel and secondaryActionLabel (Ant Buttons; onActionClicked, onSecondaryActionClicked), asideValue/asideLabel (a Statistic), icon (Ant icon name or word), background (plain, tint, gradient, image with imageUrl, dark, solid), align, size.",
+      "roleProps": {
+        "subtitle": "subTitle"
+      }
+    },
+    "SummaryStrip": {
+      "role": "summarystrip",
+      "fit": true,
+      "loading": "own",
+      "usage": "A row of Ant Statistics: items [{label, value, format?, delta, deltaFormat?, tone?, lowerIsBetter?, caption}], valueFormat, currency, deltaFormat, appearance (panel, plain, cards), size, align."
+    },
+    "Schedule": {
+      "role": "schedule",
+      "fit": false,
+      "loading": "own",
+      "usage": "Resources down the side, time across: resources, bookings (resourceField, startField, endField, titleField, subtitleField, statusField), scale hours (date, dayStart, dayEnd, slotMinutes) or days (days); onBookingClicked (selectedBooking), onSlotClicked (selectedSlot)."
+    },
+    "RecordList": {
+      "role": "recordlist",
+      "fit": true,
+      "loading": "own",
+      "usage": "An Ant List of records: dataSource, titleField, avatarField, metaFields, statusField (Tag), valueField (valueFormat, currency), progressField; size, split, bordered; onItemClicked with selectedItem, selectedItemId, selectedItemIndex.",
+      "roleProps": {
+        "data": "dataSource",
+        "showDividers": "split",
+        "density": "size",
+        "listStyle": "bordered",
+        "avatarShape": "avatarShape"
+      },
+      "roleValues": {
+        "size": {
+          "compact": "small",
+          "default": "default",
+          "comfortable": "large"
+        },
+        "bordered": {
+          "card": "{{true}}",
+          "plain": "{{false}}"
+        },
+        "avatarShape": {
+          "rounded": "square",
+          "circle": "circle"
+        }
+      }
+    },
+    "CardGrid": {
+      "role": "cardgrid",
+      "fit": true,
+      "loading": "own",
+      "usage": "A grid of Ant Cards: dataSource, titleField, subtitleField, imageField (cover), badgeField/badgeFields (Tags), eyebrowField, avatarField, descriptionField, progressField, metaFields; columns (0 fits minCardWidth), imageAspect, variant, hoverable; onCardClicked with selectedItem.",
+      "roleProps": {
+        "data": "dataSource",
+        "cardStyle": "variant"
+      },
+      "roleValues": {
+        "variant": {
+          "elevated": "outlined",
+          "outline": "outlined",
+          "flat": "borderless"
+        }
+      }
+    },
+    "Questionnaire": {
+      "role": "questionnaire",
+      "fit": false,
+      "loading": "own",
+      "usage": "One question at a time: items [{name, prompt, type: single|multiple|text, choices, other?, required?}], defaultAnswers, shortcuts, showProgress, submitLabel, completeTitle, completeText. answers, currentIndex, isComplete exposed; onStepChanged, onSubmit; actions reset, goTo.",
+      "roleProps": {
+        "surface": "bordered"
+      },
+      "roleValues": {
+        "bordered": {
+          "card": "{{true}}",
+          "plain": "{{false}}"
+        }
+      }
+    },
+    "ProgressList": {
+      "role": "progresslist",
+      "fit": true,
+      "loading": "own",
+      "usage": "Rows of Ant Progress bars: dataSource, labelField, valueField, targetField or percentField, captionField, statusField, valueFormat, currency, autoTone (goal, limit), showValues, showPercent, size; onItemClicked.",
+      "roleProps": {
+        "data": "dataSource",
+        "barSize": "size",
+        "listStyle": "bordered"
+      },
+      "roleValues": {
+        "size": {
+          "thin": "small",
+          "default": "default",
+          "thick": "large"
+        },
+        "bordered": {
+          "card": "{{true}}",
+          "plain": "{{false}}"
+        }
+      }
+    },
+    "Sparkline": {
+      "role": "sparkline",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Tiny chart: data (numbers or rows with valueField), type (line, area, column), smooth, colorByTrend, lowerIsBetter, color; trend and lastValue exposed; onClick.",
+      "roleProps": {
+        "curve": "smooth"
+      },
+      "roleValues": {
+        "type": {
+          "bar": "column",
+          "line": "line",
+          "area": "area"
+        },
+        "smooth": {
+          "monotone": "{{true}}",
+          "linear": "{{false}}",
+          "step": "{{false}}"
+        }
+      }
+    },
+    "RadialChart": {
+      "role": "radialchart",
+      "fit": false,
+      "loading": "own",
+      "usage": "A ring: mode progress (value of maxValue, Ant Progress dashboard or circle, centerValue, centerLabel) or categories (Ant RadialBar of data with categoryField, valueField); strokeWidth, colors, showLegend; onClick with clickedDataPoint.",
+      "roleProps": {
+        "thickness": "strokeWidth"
+      }
+    },
+    "Map": {
+      "role": "map",
+      "fit": false,
+      "loading": "own",
+      "usage": "Leaflet map: data (rows with latField/lngField), titleField, subtitleField, statusField (colours), popupFields, clusterMarkers, routes, areas, display (markers, heat, both), pickLocation, showSearch, mapStyle, fitToMarkers; selectedMarker, clickedLocation, pickedLocation, center, zoom exposed; onMarkerClick, onMapClicked, onLocationPicked, onBoundsChange."
+    },
+    "Tags": {
+      "role": "tags",
+      "fit": true,
+      "loading": "own",
+      "usage": "A row of Ant Tags: tags (strings or {label, color}), tagColors, variant (filled, outlined, solid), overflow (wrap, single, scroll), round; onTagClicked with lastClickedTag.",
+      "roleProps": {
+        "pill": "round"
+      },
+      "roleValues": {
+        "variant": {
+          "soft": "filled",
+          "outline": "outlined",
+          "solid": "solid"
+        }
+      }
+    },
+    "Link": {
+      "role": "link",
+      "fit": false,
+      "loading": "own",
+      "usage": "Ant's Typography.Link: children (text), href, target (_blank, _self), underline (hover, always, none), strong, showIcon; onClick, onHover; actions click, setHref, setChildren.",
+      "roleProps": {
+        "linkText": "children",
+        "linkTarget": "href",
+        "targetType": "target"
+      },
+      "roleValues": {
+        "target": {
+          "new": "_blank",
+          "same": "_self"
+        },
+        "underline": {
+          "underline": "always",
+          "on-hover": "hover",
+          "no-underline": "none"
+        }
+      },
+      "roleActions": {
+        "setLinkTarget": "setHref",
+        "setLinkText": "setChildren"
+      }
+    },
+    "Icon": {
+      "role": "icon",
+      "fit": false,
+      "loading": "own",
+      "usage": "An @ant-design/icons icon: icon (Ant name such as TeamOutlined, or a word such as users, cart, trending-up), size, type (default, muted, primary, success, warning, danger), chip (none, circle, square), chipSize; onClick.",
+      "roleProps": {
+        "tone": "type"
+      },
+      "roleValues": {
+        "type": {
+          "destructive": "danger"
+        }
+      }
+    },
+    "ButtonGroup": {
+      "role": "buttongroup",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant Buttons joined (Space.Compact): buttons [{value, label, icon?}], mode (actions: onClick with lastClicked; single or multiple: value, onChange), type, size, direction, block, label; actions setSelected, clear.",
+      "roleProps": {
+        "variant": "type",
+        "orientation": "direction",
+        "fullWidth": "block",
+        "defaultValue": "value",
+        "selected": "value"
+      },
+      "roleValues": {
+        "type": {
+          "outline": "default",
+          "secondary": "default",
+          "default": "primary",
+          "ghost": "text"
+        },
+        "size": {
+          "sm": "small",
+          "default": "middle",
+          "lg": "large"
+        }
+      }
+    },
+    "CircularProgress": {
+      "role": "circularprogress",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Progress type circle (or dashboard): percent, size, strokeWidth, strokeLinecap, format (percent, custom with text, none), label, status; action setPercent.",
+      "roleProps": {
+        "value": "percent",
+        "thickness": "strokeWidth",
+        "lineCap": "strokeLinecap",
+        "centerText": "format"
+      },
+      "roleValues": {
+        "strokeLinecap": {
+          "flat": "butt",
+          "round": "round"
+        },
+        "format": {
+          "value": "percent"
+        }
+      },
+      "roleActions": {
+        "setValue": "setPercent"
+      }
+    },
+    "Combobox": {
+      "role": "combobox",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's searchable Select: label, options [{label, value}], value, placeholder, notFoundContent, allowClear, filterOption (off when a query fetches options on onSearch, reading searchValue); selectedOption, selectedLabel exposed; onChange, onSelect, onSearch.",
+      "roleProps": {
+        "description": "extra",
+        "emptyText": "notFoundContent",
+        "showClearBtn": "allowClear",
+        "defaultValue": "value",
+        "searchText": "searchValue",
+        "serverSideSearch": "filterOption"
+      },
+      "roleValues": {
+        "filterOption": {
+          "true": "{{false}}",
+          "false": "{{true}}"
+        }
+      },
+      "roleEvents": {
+        "onSearchTextChanged": "onSearch"
+      },
+      "roleActions": {
+        "selectOption": "setFieldValue",
+        "setValue": "setFieldValue",
+        "clear": "resetFields",
+        "setFocus": "focus",
+        "setBlur": "blur"
+      }
+    },
+    "OTP": {
+      "role": "otpinput",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Input.OTP: label, length, characters (numeric, alphanumeric), mask, value; isComplete exposed; onChange, onComplete.",
+      "roleProps": {
+        "description": "extra",
+        "masked": "mask",
+        "defaultValue": "value"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "setText": "setFieldValue",
+        "clear": "resetFields",
+        "setFocus": "focus"
+      }
+    },
+    "CurrencyInput": {
+      "role": "currencyinput",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's InputNumber with a currency formatter: label, value (a number), currency, currencyOptions (a currency Select before it), locale, precision, currencyDisplay, min, max; formattedValue exposed; onChange, onPressEnter.",
+      "roleProps": {
+        "description": "extra",
+        "defaultValue": "value",
+        "decimalPlaces": "precision",
+        "minValue": "min",
+        "maxValue": "max"
+      },
+      "roleEvents": {
+        "onEnterPressed": "onPressEnter"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields",
+        "setFocus": "focus",
+        "setBlur": "blur"
+      }
+    },
+    "PhoneInput": {
+      "role": "phoneinput",
+      "fit": true,
+      "loading": "own",
+      "usage": "An Ant Input with a country Select (flag, calling code): label, value (E.164), defaultCountry, onlyCountries, allowCountryChange, showFlag, allowClear; country, countryCode, formattedValue, isValidNumber exposed; onChange, onPressEnter.",
+      "roleProps": {
+        "description": "extra",
+        "defaultValue": "value",
+        "isCountryChangeEnabled": "allowCountryChange",
+        "showClearBtn": "allowClear"
+      },
+      "roleEvents": {
+        "onEnterPressed": "onPressEnter"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clear": "resetFields",
+        "setFocus": "focus",
+        "setBlur": "blur"
+      }
+    },
+    "Password": {
+      "role": "passwordinput",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's Input.Password: label, value, placeholder, visibilityToggle, showStrength, minLength, allowClear; strength exposed; onChange, onPressEnter.",
+      "roleProps": {
+        "description": "extra",
+        "defaultValue": "value",
+        "showToggle": "visibilityToggle"
+      },
+      "roleEvents": {
+        "onEnterPressed": "onPressEnter"
+      },
+      "roleActions": {
+        "setText": "setFieldValue",
+        "setValue": "setFieldValue",
+        "clear": "resetFields",
+        "setFocus": "focus",
+        "setBlur": "blur"
+      }
+    }
+  }
+}
