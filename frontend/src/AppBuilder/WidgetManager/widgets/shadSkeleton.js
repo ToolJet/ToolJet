@@ -19,6 +19,8 @@ export const shadSkeletonConfig = {
   },
   properties: {
     lines: {
+      minValue: 1,
+      maxValue: 50,
       type: 'code',
       displayName: 'Lines',
       validation: {

@@ -43,6 +43,8 @@ export const shadSpinnerConfig = {
       fullWidth: true,
     },
     size: {
+      minValue: 8,
+      maxValue: 200,
       type: 'code',
       displayName: 'Size (sm, default, lg or px)',
       validation: {

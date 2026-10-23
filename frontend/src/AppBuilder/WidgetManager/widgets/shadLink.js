@@ -103,6 +103,8 @@ export const shadLinkConfig = {
       },
     },
     fontSize: {
+      minValue: 8,
+      maxValue: 96,
       type: 'code',
       displayName: 'Font size (px)',
       validation: {

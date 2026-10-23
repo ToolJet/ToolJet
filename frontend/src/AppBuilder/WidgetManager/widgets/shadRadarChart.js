@@ -82,6 +82,8 @@ export const shadRadarChartConfig = {
       placeholder: '100',
     },
     fillOpacity: {
+      minValue: 0,
+      maxValue: 1,
       type: 'code',
       displayName: 'Fill opacity (0 to 1)',
       validation: {

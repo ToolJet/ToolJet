@@ -40,6 +40,8 @@ export const shadKeyValueConfig = {
       placeholder: "{ Status: 'Active' } or [{ label: 'Amount', value: 1250, type: 'currency' }]",
     },
     columns: {
+      minValue: 1,
+      maxValue: 4,
       note: 'As many as fit the width: about 300px a column side by side, 160px with the label above.',
       type: 'switch',
       displayName: 'Columns',

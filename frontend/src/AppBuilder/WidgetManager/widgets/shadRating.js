@@ -61,6 +61,8 @@ export const shadRatingConfig = {
       },
     },
     max: {
+      minValue: 1,
+      maxValue: 10,
       type: 'code',
       displayName: 'Number of icons (1 to 10)',
       validation: {

@@ -128,6 +128,8 @@ export const shadListViewConfig = {
       fullWidth: true,
     },
     columns: {
+      minValue: 1,
+      maxValue: 24,
       conditionallyRender: { key: 'mode', value: 'grid' },
       type: 'code',
       displayName: 'Grid columns',
@@ -151,6 +153,8 @@ export const shadListViewConfig = {
       },
     },
     gap: {
+      minValue: 0,
+      maxValue: 200,
       type: 'code',
       displayName: 'Gap between items (px)',
       validation: {

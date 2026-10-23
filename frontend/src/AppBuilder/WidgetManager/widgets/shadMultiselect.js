@@ -154,6 +154,8 @@ export const shadMultiselectConfig = {
       },
     },
     maxVisibleChips: {
+      minValue: 0,
+      maxValue: 10000,
       type: 'code',
       displayName: 'Max visible chips (0 shows all)',
       validation: {
@@ -173,6 +175,8 @@ export const shadMultiselectConfig = {
       },
     },
     maxSelections: {
+      minValue: 0,
+      maxValue: 10000,
       type: 'code',
       displayName: 'Max selections (0 for no limit)',
       validation: {

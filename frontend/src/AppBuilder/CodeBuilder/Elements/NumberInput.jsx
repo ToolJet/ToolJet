@@ -24,6 +24,11 @@ export const NumberInput = ({
       : 'Theme'
     : '';
   const prefixIcon = meta?.prefixIcon;
+  // A config's declared range (a UI 2.0 style's minValue/maxValue): the stepper stays inside it and the field says it.
+  const min = typeof meta?.minValue === 'number' ? meta.minValue : undefined;
+  const max = typeof meta?.maxValue === 'number' ? meta.maxValue : undefined;
+  const range = min !== undefined && max !== undefined ? `${min} to ${max}` : undefined;
+  const inRange = (n) => Math.min(max ?? Infinity, Math.max(min ?? -Infinity, n));
 
   const getStepValue = () => {
     const numericValue = Number(value);
@@ -31,7 +36,7 @@ export const NumberInput = ({
   };
 
   const handleStepChange = (direction) => {
-    onChange(getStepValue() + direction * step);
+    onChange(inRange(getStepValue() + direction * step));
   };
 
   return (
@@ -58,7 +63,10 @@ export const NumberInput = ({
         className="tj-input-element tj-text-xsm"
         value={value}
         placeholder={placeholder}
-        title={themeDefault ? 'Follows the app theme. Enter a value to set your own.' : undefined}
+        title={themeDefault ? 'Follows the app theme. Enter a value to set your own.' : range}
+        min={min}
+        max={max}
+        aria-invalid={value !== '' && value != null && Number(value) !== inRange(Number(value)) ? true : undefined}
         id={inputId}
         step={step}
         readOnly={!allowTyping}
