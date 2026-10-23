@@ -1,0 +1,768 @@
+{
+  "pack": "mui",
+  "displayName": "Material UI",
+  "themeMode": "own",
+  "surface": {
+    "page": "#fafafa",
+    "card": {
+      "background": "#ffffff",
+      "border": "transparent",
+      "radius": 4,
+      "shadow": "0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)",
+      "titleSize": 20,
+      "titleWeight": 500
+    }
+  },
+  "components": {
+    "Button": {
+      "role": "button",
+      "fit": false,
+      "usage": "MUI's Button: children is its text; variant (text, outlined, contained) with color (inherit, primary, secondary, success, error, info, warning); size, fullWidth, disableElevation, startIcon/endIcon (MUI icon names such as Add, Save, Delete), href, tooltip; onClick.",
+      "roleProps": {
+        "text": "children",
+        "variant": "variant"
+      },
+      "roleValues": {
+        "variant": {
+          "default": {
+            "variant": "contained",
+            "color": "primary"
+          },
+          "secondary": {
+            "variant": "outlined",
+            "color": "inherit"
+          },
+          "outline": {
+            "variant": "outlined",
+            "color": "primary"
+          },
+          "ghost": {
+            "variant": "text",
+            "color": "inherit"
+          },
+          "destructive": {
+            "variant": "contained",
+            "color": "error"
+          },
+          "link": {
+            "variant": "text",
+            "color": "primary"
+          }
+        }
+      },
+      "loading": "own"
+    },
+    "TextField": {
+      "role": "input",
+      "fit": true,
+      "usage": "MUI's TextField: label, value, placeholder, helperText, type, variant (outlined, filled, standard), size (small, medium), startAdornment/endAdornment (text or an icon name); onChange, onEnterKeyDown, onFocus, onBlur; setValue, clear, focus, blur. The Validation section sets error and required.",
+      "roleProps": {
+        "description": "helperText",
+        "inputType": "type"
+      },
+      "roleEvents": {
+        "onEnterPressed": "onEnterKeyDown"
+      },
+      "roleActions": {
+        "setText": "setValue",
+        "setFocus": "focus",
+        "setBlur": "blur"
+      },
+      "loading": "own"
+    },
+    "MultilineTextField": {
+      "role": "textarea",
+      "fit": true,
+      "usage": "MUI's TextField multiline: label, value, placeholder, helperText, minRows/maxRows (grows between them), variant, size; onChange; Ctrl/Cmd+Enter fires onEnterKeyDown.",
+      "roleProps": {
+        "description": "helperText",
+        "rows": "minRows"
+      },
+      "roleEvents": {
+        "onEnterPressed": "onEnterKeyDown"
+      },
+      "roleActions": {
+        "setText": "setValue",
+        "setFocus": "focus",
+        "setBlur": "blur"
+      },
+      "loading": "own"
+    },
+    "NumberField": {
+      "role": "numberinput",
+      "fit": true,
+      "usage": "A number in MUI's TextField (type number): label, value (a number, empty for none), min, max, step, startAdornment (e.g. $) / endAdornment (e.g. kg), helperText; onChange, onEnterKeyDown; out-of-range input is clamped on blur.",
+      "roleProps": {
+        "description": "helperText",
+        "minValue": "min",
+        "maxValue": "max",
+        "prefix": "startAdornment",
+        "suffix": "endAdornment"
+      },
+      "roleEvents": {
+        "onEnterPressed": "onEnterKeyDown"
+      },
+      "roleActions": {
+        "setText": "setValue",
+        "setFocus": "focus",
+        "setBlur": "blur"
+      },
+      "loading": "own"
+    },
+    "Select": {
+      "role": "select",
+      "fit": true,
+      "usage": "MUI's Select (TextField select): label, options [{label, value}], value (the picked value), helperText, displayEmpty with placeholder, variant, size; selectedOption is exposed; onChange, onOpen, onClose. The menu opens in the popup layer.",
+      "roleProps": {
+        "description": "helperText"
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "selectOption": "setValue",
+        "setFocus": "focus"
+      },
+      "loading": "own"
+    },
+    "Autocomplete": {
+      "role": "combobox",
+      "fit": true,
+      "usage": "MUI's Autocomplete: label, options [{label, value}], value in MUI's shape (the picked option {label, value} or null; a bare value or label also picks), freeSolo, disableClearable, noOptionsText; inputValue (typed text) exposed; onChange, onInputChange, onOpen, onClose.",
+      "roleProps": {
+        "description": "helperText",
+        "emptyText": "noOptionsText",
+        "searchText": "inputValue",
+        "showClearBtn": "disableClearable"
+      },
+      "roleValues": {
+        "disableClearable": {
+          "true": false,
+          "false": true
+        }
+      },
+      "roleEvents": {
+        "onSelect": "onChange",
+        "onSearchTextChanged": "onInputChange"
+      },
+      "roleActions": {
+        "selectOption": "setValue",
+        "setFocus": "focus"
+      },
+      "loading": "own"
+    },
+    "AutocompleteMultiple": {
+      "role": "multiselect",
+      "fit": true,
+      "usage": "MUI's Autocomplete multiple: picked options as Chips; value in MUI's shape, an array of options [{label, value}] (bare values also pick); limitTags, disableCloseOnSelect, filterSelectedOptions, chipColor; onChange, onInputChange.",
+      "roleProps": {
+        "description": "helperText",
+        "values": "value",
+        "emptyText": "noOptionsText",
+        "searchText": "inputValue",
+        "maxVisibleChips": "limitTags",
+        "showClearBtn": "disableClearable"
+      },
+      "roleValues": {
+        "disableClearable": {
+          "true": false,
+          "false": true
+        }
+      },
+      "roleEvents": {
+        "onSelect": "onChange",
+        "onSearchTextChanged": "onInputChange"
+      },
+      "roleActions": {
+        "selectOptions": "setValue",
+        "setValues": "setValue",
+        "setFocus": "focus"
+      },
+      "loading": "own"
+    },
+    "DatePicker": {
+      "role": "datepicker",
+      "fit": true,
+      "usage": "MUI X DatePicker: label, value YYYY-MM-DD, format (display, dayjs tokens, default MM/DD/YYYY), views/openTo (year, month, day), minDate, maxDate, disablePast, disableFuture, helperText; onChange (each edit), onAccept (committed), onOpen, onClose. The calendar opens in the popup layer.",
+      "roleProps": {
+        "description": "helperText"
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "setDate": "setValue",
+        "clearValue": "clear"
+      },
+      "loading": "own"
+    },
+    "TimePicker": {
+      "role": "timepicker",
+      "fit": true,
+      "usage": "MUI X TimePicker: label, value HH:mm (24-hour), ampm (12-hour display), minutesStep, minTime, maxTime, helperText; onChange, onAccept, onOpen, onClose.",
+      "roleProps": {
+        "description": "helperText",
+        "minuteStep": "minutesStep"
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "clearValue": "clear"
+      },
+      "loading": "own"
+    },
+    "Checkbox": {
+      "role": "checkbox",
+      "fit": true,
+      "usage": "MUI's Checkbox in a FormControlLabel: label, checked, indeterminate, color, size, labelPlacement, helperText; onChange; setChecked, toggle.",
+      "roleProps": {
+        "description": "helperText",
+        "value": "checked"
+      },
+      "roleActions": {
+        "setValue": "setChecked"
+      },
+      "loading": "own"
+    },
+    "Switch": {
+      "role": "switch",
+      "fit": true,
+      "usage": "MUI's Switch in a FormControlLabel: label, checked, color, size, labelPlacement (end, start, top, bottom), helperText; onChange; setChecked, toggle.",
+      "roleProps": {
+        "description": "helperText",
+        "value": "checked"
+      },
+      "roleActions": {
+        "setValue": "setChecked"
+      },
+      "loading": "own"
+    },
+    "RadioGroup": {
+      "role": "radio",
+      "fit": true,
+      "usage": "MUI's RadioGroup with a FormLabel: label, options [{label, value}], value, row (side by side), color, size, helperText; onChange.",
+      "roleProps": {
+        "description": "helperText",
+        "horizontal": "row"
+      },
+      "roleEvents": {
+        "onSelectionChange": "onChange"
+      },
+      "roleActions": {
+        "selectOption": "setValue"
+      },
+      "loading": "own"
+    },
+    "ToggleButtonGroup": {
+      "role": "togglegroup",
+      "fit": true,
+      "usage": "MUI's ToggleButtonGroup: options [{label, value}], exclusive (one value; off, value is an array, MUI's shape), value, color, size, orientation, fullWidth; onChange.",
+      "roleProps": {
+        "multiple": "exclusive",
+        "values": "value"
+      },
+      "roleValues": {
+        "exclusive": {
+          "true": false,
+          "false": true
+        }
+      },
+      "roleActions": {
+        "setSelected": "setValue"
+      },
+      "loading": "own"
+    },
+    "Rating": {
+      "role": "rating",
+      "fit": true,
+      "usage": "MUI's Rating: label, value (a number, null for none), max, precision ('1', or '0.5' for halves), size, readOnly, highlightSelectedOnly; onChange, onChangeActive (hover, exposed as hover).",
+      "roleProps": {
+        "description": "helperText",
+        "allowHalf": "precision"
+      },
+      "roleValues": {
+        "precision": {
+          "true": "0.5",
+          "false": "1"
+        }
+      },
+      "roleActions": {
+        "resetValue": "clear"
+      },
+      "loading": "own"
+    },
+    "Slider": {
+      "role": "slider",
+      "fit": true,
+      "usage": "MUI's Slider: label, value, min, max, step, marks, valueLabelDisplay (auto, on, off), color, size; onChange while dragging, onChangeCommitted on release.",
+      "roleProps": {
+        "description": "helperText",
+        "showValue": "valueLabelDisplay"
+      },
+      "roleValues": {
+        "valueLabelDisplay": {
+          "true": "auto",
+          "false": "off"
+        }
+      },
+      "loading": "own"
+    },
+    "Chip": {
+      "role": "badge",
+      "fit": true,
+      "usage": "MUI's Chip: label, color (default, primary, secondary, success, error, info, warning), variant (filled, outlined), size, icon (a MUI icon name), deletable; onClick, onDelete.",
+      "roleProps": {
+        "text": "label",
+        "variant": "variant"
+      },
+      "roleValues": {
+        "variant": {
+          "default": {
+            "color": "primary",
+            "variant": "filled"
+          },
+          "secondary": {
+            "color": "default",
+            "variant": "filled"
+          },
+          "outline": {
+            "color": "default",
+            "variant": "outlined"
+          },
+          "info": {
+            "color": "info",
+            "variant": "filled"
+          },
+          "success": {
+            "color": "success",
+            "variant": "filled"
+          },
+          "warning": {
+            "color": "warning",
+            "variant": "filled"
+          },
+          "destructive": {
+            "color": "error",
+            "variant": "filled"
+          }
+        }
+      },
+      "loading": "own"
+    },
+    "Alert": {
+      "role": "alert",
+      "fit": true,
+      "usage": "MUI's Alert: severity (success, info, warning, error), variant (standard, filled, outlined), title (AlertTitle), children (the message), icon, closable (close button, onClose), actionText (a button, onAction); show, close.",
+      "roleProps": {
+        "description": "children",
+        "variant": "severity",
+        "dismissible": "closable",
+        "actionLabel": "actionText"
+      },
+      "roleValues": {
+        "severity": {
+          "default": "info",
+          "info": "info",
+          "success": "success",
+          "warning": "warning",
+          "destructive": "error"
+        }
+      },
+      "roleEvents": {
+        "onActionClicked": "onAction",
+        "onDismiss": "onClose"
+      },
+      "roleActions": {
+        "dismiss": "close"
+      },
+      "loading": "own"
+    },
+    "TypographyHeading": {
+      "role": "heading",
+      "fit": true,
+      "usage": "MUI's Typography for headings: children, variant h1 to h6 (MUI's scale: h1 is a 96px display size; h4 to h6 suit page and section titles), color (a theme path: text.primary, text.secondary, primary.main...), align, noWrap, gutterBottom.",
+      "roleProps": {
+        "text": "children",
+        "level": "variant",
+        "tone": "color"
+      },
+      "roleValues": {
+        "variant": {
+          "h1": "h4",
+          "h2": "h5",
+          "h3": "h6",
+          "h4": "h6"
+        },
+        "color": {
+          "default": "text.primary",
+          "muted": "text.secondary",
+          "success": "success.main",
+          "warning": "warning.main",
+          "danger": "error.main"
+        }
+      },
+      "loading": "own"
+    },
+    "Typography": {
+      "role": "text",
+      "fit": true,
+      "usage": "MUI's Typography for body text: children, variant (body1, body2, subtitle1, subtitle2, caption, overline), color (a theme path such as text.secondary), align, noWrap.",
+      "roleProps": {
+        "text": "children",
+        "tone": "color"
+      },
+      "roleValues": {
+        "color": {
+          "default": "text.primary",
+          "muted": "text.secondary",
+          "success": "success.main",
+          "warning": "warning.main",
+          "danger": "error.main"
+        }
+      },
+      "loading": "own"
+    },
+    "StatCard": {
+      "role": "stat",
+      "fit": false,
+      "usage": "The stat card of MUI's dashboard template (Card, Typography, Chip): title, value with format (auto, number, currency, percent, compact), trend (up, down, neutral) as a coloured Chip with trendLabel (e.g. +25%), interval (e.g. Last 30 days), variant.",
+      "roleProps": {
+        "label": "title",
+        "valueFormat": "format",
+        "change": "trendLabel",
+        "changeLabel": "interval"
+      },
+      "loading": "own"
+    },
+    "DataGrid": {
+      "role": "table",
+      "fit": false,
+      "usage": "MUI X DataGrid (free MIT grid): rows, columns [{field, headerName, type (number, date, boolean), width or flex, align, format (currency, percent, compact, chip), colors}], rowIdField, density (compact, standard, comfortable), checkboxSelection, pageSize (max 100) or autoPageSize, showToolbar (filter, export, quick search), noRowsLabel. Exposes selectedRow, rowSelectionModel (ids), selectedRows, paginationModel, sortModel. onRowClick, onRowSelectionModelChange, onPaginationModelChange, onSortModelChange.",
+      "roleProps": {
+        "data": "rows",
+        "idField": "rowIdField",
+        "rowsPerPage": "pageSize",
+        "allowSelection": "checkboxSelection",
+        "emptyText": "noRowsLabel"
+      },
+      "roleEvents": {
+        "onRowClicked": "onRowClick",
+        "onSelectionChanged": "onRowSelectionModelChange",
+        "onPageChanged": "onPaginationModelChange",
+        "onSort": "onSortModelChange"
+      },
+      "loading": "own"
+    },
+    "Tabs": {
+      "role": "tabs",
+      "fit": false,
+      "usage": "MUI's Tabs: tabs [{value, label}], value (the open tab), variant (standard, scrollable, fullWidth), textColor, indicatorColor, centered, orientation; each tab panel holds ToolJet components (slot tab_<value>). onChange; setValue.",
+      "roleProps": {
+        "tabs": "tabs",
+        "currentTab": "value"
+      },
+      "roleEvents": {
+        "onTabSwitch": "onChange"
+      },
+      "roleActions": {
+        "setTab": "setValue"
+      },
+      "loading": "own"
+    },
+    "Card": {
+      "role": "card",
+      "fit": false,
+      "usage": "MUI's Card: CardHeader title and subheader, variant (outlined, elevation), elevation, raised; CardContent holds ToolJet components (slot body). onClick.",
+      "roleProps": {
+        "description": "subheader"
+      },
+      "loading": "own"
+    },
+    "Dialog": {
+      "role": "dialog",
+      "fit": false,
+      "usage": "MUI's Dialog with a trigger Button on the canvas: title, contentText, confirmText/cancelText (DialogActions), confirmColor (error for destructive), maxWidth (xs to xl), fullWidth, fullScreen, scroll; the body holds ToolJet components in the popup layer (slot body, bodyHeight). onClose, onConfirm, onCancel, onEntered; open, close.",
+      "roleProps": {
+        "description": "contentText",
+        "destructive": "confirmColor"
+      },
+      "roleValues": {
+        "confirmColor": {
+          "true": "error",
+          "false": "primary"
+        }
+      },
+      "roleEvents": {
+        "onOpen": "onEntered"
+      },
+      "slots": [
+        {
+          "name": "body",
+          "kind": "popup"
+        }
+      ],
+      "loading": "own"
+    },
+    "List": {
+      "role": "listview",
+      "fit": false,
+      "usage": "MUI's List: items; renderItem 'listItemText' draws ListItemText from primaryField/secondaryField with an Avatar from avatarField, 'components' draws a row of ToolJet components reading {{listItem}} (rowHeight). subheader, dense, divider, pageSize, emptyText. onItemClick with selectedItem exposed.",
+      "roleProps": {
+        "data": "items",
+        "itemContent": "renderItem",
+        "titleField": "primaryField",
+        "subtitleField": "secondaryField",
+        "imageField": "avatarField",
+        "idField": "itemKey",
+        "rowsPerPage": "pageSize"
+      },
+      "roleValues": {
+        "renderItem": {
+          "fields": "listItemText",
+          "components": "components"
+        }
+      },
+      "roleEvents": {
+        "onRecordClicked": "onItemClick"
+      },
+      "slots": [
+        {
+          "name": "row",
+          "kind": "rows"
+        }
+      ],
+      "loading": "own"
+    },
+    "BarChart": {
+      "role": "barchart",
+      "fit": false,
+      "usage": "MUI X BarChart: dataset (rows), xAxis (the category: [{dataKey}] or a field name), series ([{dataKey, label, color}] or field names; empty: every numeric field), layout (vertical, horizontal), stack ('total' stacks), valueFormat, colors, grid, hideLegend, borderRadius. onItemClick with clickedItem (the row) and clickedSeries.",
+      "roleProps": {
+        "data": "dataset",
+        "xField": "xAxis",
+        "yFields": "series",
+        "showLegend": "hideLegend",
+        "showGrid": "grid",
+        "horizontal": "layout",
+        "stack": "stack"
+      },
+      "roleValues": {
+        "hideLegend": {
+          "true": false,
+          "false": true
+        },
+        "stack": {
+          "true": "total",
+          "false": ""
+        },
+        "layout": {
+          "true": "horizontal",
+          "false": "vertical"
+        }
+      },
+      "roleEvents": {
+        "onClick": "onItemClick"
+      },
+      "loading": "own"
+    },
+    "LineChart": {
+      "role": "linechart",
+      "fit": false,
+      "usage": "MUI X LineChart: dataset, xAxis ([{dataKey, scaleType}] or a field name), series ([{dataKey, label, color}] or field names), curve (linear, monotoneX, natural, step), showMark, valueFormat, colors, grid, hideLegend. onAxisClick (nearest x) with clickedItem and clickedIndex.",
+      "roleProps": {
+        "data": "dataset",
+        "xField": "xAxis",
+        "yFields": "series",
+        "showLegend": "hideLegend",
+        "showGrid": "grid",
+        "showDots": "showMark"
+      },
+      "roleValues": {
+        "hideLegend": {
+          "true": false,
+          "false": true
+        },
+        "stack": {
+          "true": "total",
+          "false": ""
+        },
+        "curve": {
+          "monotone": "monotoneX",
+          "linear": "linear",
+          "step": "step",
+          "natural": "natural"
+        }
+      },
+      "roleEvents": {
+        "onClick": "onAxisClick"
+      },
+      "loading": "own"
+    },
+    "AreaChart": {
+      "role": "areachart",
+      "fit": false,
+      "usage": "MUI X LineChart with area series (MUI has no separate area chart): the LineChart props; stack 'total' stacks the areas. onAxisClick.",
+      "roleProps": {
+        "data": "dataset",
+        "xField": "xAxis",
+        "yFields": "series",
+        "showLegend": "hideLegend",
+        "showGrid": "grid",
+        "stack": "stack",
+        "showDots": "showMark"
+      },
+      "roleValues": {
+        "hideLegend": {
+          "true": false,
+          "false": true
+        },
+        "stack": {
+          "true": "total",
+          "false": ""
+        },
+        "curve": {
+          "monotone": "monotoneX",
+          "linear": "linear",
+          "step": "step",
+          "natural": "natural"
+        }
+      },
+      "roleEvents": {
+        "onClick": "onAxisClick"
+      },
+      "loading": "own"
+    },
+    "PieChart": {
+      "role": "piechart",
+      "fit": false,
+      "usage": "MUI X PieChart: data (MUI's [{id, value, label}], or rows read with labelKey/valueKey), innerRadius (0 pie, e.g. 60 donut), outerRadius, paddingAngle, cornerRadius, arcLabel (none, value, label, percent), valueFormat, colors, hideLegend. onItemClick with clickedItem.",
+      "roleProps": {
+        "categoryField": "labelKey",
+        "valueField": "valueKey",
+        "donut": "innerRadius",
+        "showLegend": "hideLegend"
+      },
+      "roleValues": {
+        "innerRadius": {
+          "true": 60,
+          "false": 0
+        },
+        "hideLegend": {
+          "true": false,
+          "false": true
+        }
+      },
+      "roleEvents": {
+        "onClick": "onItemClick"
+      },
+      "loading": "own"
+    },
+    "LinearProgress": {
+      "role": "progress",
+      "fit": false,
+      "usage": "MUI's LinearProgress with a label: value 0 to 100, variant (determinate, indeterminate, buffer with valueBuffer), color, label, showValue; setValue.",
+      "loading": "own"
+    },
+    "Avatar": {
+      "role": "avatar",
+      "fit": false,
+      "usage": "MUI's Avatar: src (image URL), alt (the name; its initials show without an image), variant (circular, rounded, square), size in px, color; onClick.",
+      "roleProps": {
+        "imageUrl": "src",
+        "name": "alt",
+        "shape": "variant"
+      },
+      "roleValues": {
+        "variant": {
+          "circle": "circular",
+          "square": "rounded"
+        }
+      },
+      "loading": "own"
+    },
+    "Divider": {
+      "role": "separator",
+      "fit": false,
+      "usage": "MUI's Divider: orientation, variant (fullWidth, inset, middle), children (text in the line) with textAlign.",
+      "roleProps": {
+        "label": "children"
+      },
+      "loading": "own"
+    },
+    "Stepper": {
+      "role": "steps",
+      "fit": true,
+      "usage": "MUI's Stepper: steps [{id, label, optional}], activeStep (an index from 0; an id or label also works), orientation, alternativeLabel, nonLinear (clickable steps, onStepClick); onChange; setActiveStep, next, back, reset.",
+      "roleProps": {
+        "currentStep": "activeStep",
+        "stepsSelectable": "nonLinear"
+      },
+      "roleEvents": {
+        "onSelect": "onStepClick"
+      },
+      "roleActions": {
+        "setStep": "setActiveStep",
+        "nextStep": "next",
+        "previousStep": "back",
+        "resetSteps": "reset"
+      },
+      "loading": "own"
+    },
+    "Pagination": {
+      "role": "pagination",
+      "fit": true,
+      "usage": "MUI's Pagination: count (pages), page (from 1), siblingCount, boundaryCount, variant (text, outlined), shape (circular, rounded), color, size, showFirstButton/showLastButton; onChange; setPage.",
+      "roleProps": {
+        "numberOfPages": "count",
+        "totalPages": "count",
+        "showFirstLast": "showFirstButton"
+      },
+      "roleEvents": {
+        "onPageChange": "onChange"
+      },
+      "loading": "own"
+    },
+    "Menu": {
+      "role": "dropdownmenu",
+      "fit": false,
+      "usage": "MUI's Menu opened from a Button: children (button text), variant, color, size, items [{label, value, icon, disabled, divider}], anchorOrigin; clickedItem exposed. onItemClick, onOpen, onClose; open, close. The menu opens in the popup layer.",
+      "roleProps": {
+        "label": "children",
+        "variant": "variant"
+      },
+      "roleValues": {
+        "variant": {
+          "default": {
+            "variant": "contained",
+            "color": "primary"
+          },
+          "secondary": {
+            "variant": "outlined",
+            "color": "inherit"
+          },
+          "outline": {
+            "variant": "outlined",
+            "color": "primary"
+          },
+          "ghost": {
+            "variant": "text",
+            "color": "inherit"
+          },
+          "destructive": {
+            "variant": "contained",
+            "color": "error"
+          },
+          "link": {
+            "variant": "text",
+            "color": "primary"
+          }
+        }
+      },
+      "roleEvents": {
+        "onSelect": "onItemClick"
+      },
+      "loading": "own"
+    }
+  }
+}
