@@ -1250,7 +1250,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       // know about; this is a blanket check across every plugin kind reachable here,
       // covering the ones that haven't had a plugin-level fix applied yet.
       // GHSA-v64h-hqhj-2h7r.
-      await this.validateTestConnectionOptionsForSSRF(sourceOptions);
+      await this.validateTestConnectionOptionsForSSRF(kind, sourceOptions);
 
       const service = await this.pluginsServiceSelector.getService(plugin_id, kind);
       if (!service?.testConnection) {
@@ -1453,7 +1453,27 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     'workspaceHost',
   ];
 
-  private async validateTestConnectionOptionsForSSRF(sourceOptions: Record<string, any>): Promise<void> {
+  // Kinds that connect over HTTP(S) (or take a URL-like host). Database kinds are
+  // deliberately absent: their `host` is a hostname, not an HTTP endpoint.
+  private static readonly SSRF_CHECKED_KINDS = new Set([
+    'restapi',
+    'graphql',
+    'openapi',
+    'n8n',
+    'couchdb',
+    'influxdb',
+    'nocodb',
+    'baserow',
+    'elasticsearch',
+    'typesense',
+    'databricks',
+    'smtp',
+    'grpcv2',
+  ]);
+
+  private async validateTestConnectionOptionsForSSRF(kind: string, sourceOptions: Record<string, any>): Promise<void> {
+    if (!DataSourcesUtilService.SSRF_CHECKED_KINDS.has(kind)) return;
+
     for (const key of DataSourcesUtilService.SSRF_SENSITIVE_OPTION_KEYS) {
       const value = sourceOptions?.[key];
       if (typeof value === 'string' && value.length > 0) {
@@ -1464,7 +1484,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     // host/port/protocol travel as separate fields on most plugins rather than one
     // URL string — validate the same way the fixed connectors do.
     if (typeof sourceOptions?.host === 'string' && sourceOptions.host.length > 0) {
-      const protocol = typeof sourceOptions?.protocol === 'string' ? sourceOptions.protocol : 'https';
+      // `protocol` is only a scheme when it is http/https; other values (e.g. 'hostname') are not.
+      const rawProtocol = typeof sourceOptions?.protocol === 'string' ? sourceOptions.protocol.replace(/:$/, '') : '';
+      const protocol = rawProtocol === 'http' || rawProtocol === 'https' ? rawProtocol : 'https';
       const port = sourceOptions?.port ? `:${sourceOptions.port}` : '';
       await validateHostForSSRF(`${sourceOptions.host}${port}`, protocol);
     }

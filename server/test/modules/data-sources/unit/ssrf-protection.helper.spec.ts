@@ -1,0 +1,95 @@
+import * as net from 'net';
+import { BadRequestException } from '@nestjs/common';
+import {
+  validateUrlForSSRF,
+  SSRF_RUNTIME_CONFIG_KEY,
+  SSRFRuntimeConfig,
+} from '../../../../src/helpers/ssrf-protection.helper';
+
+const ranges = (...cidrs: string[]) => {
+  const list = new net.BlockList();
+  cidrs.forEach((cidr) => {
+    const [address, prefix] = cidr.split('/');
+    list.addSubnet(address, +prefix, net.isIP(address) === 6 ? 'ipv6' : 'ipv4');
+  });
+  return list;
+};
+
+const publish = (config: Partial<SSRFRuntimeConfig> = {}) => {
+  (globalThis as any)[SSRF_RUNTIME_CONFIG_KEY] = {
+    enabled: true,
+    allowedHostnames: new Set<string>(),
+    allowedRanges: ranges(),
+    ...config,
+  };
+};
+
+describe('validateUrlForSSRF with runtime config', () => {
+  const originalEdition = process.env.TOOLJET_EDITION;
+
+  beforeEach(() => {
+    process.env.TOOLJET_EDITION = 'ee';
+    publish({ allowedHostnames: new Set(['jira.corp']), allowedRanges: ranges('10.0.4.0/24') });
+  });
+
+  afterEach(() => {
+    delete (globalThis as any)[SSRF_RUNTIME_CONFIG_KEY];
+    delete process.env.SSRF_PROTECTION_ENABLED;
+    if (originalEdition === undefined) delete process.env.TOOLJET_EDITION;
+    else process.env.TOOLJET_EDITION = originalEdition;
+  });
+
+  it('blocks an RFC1918 literal that is not allowlisted', async () => {
+    await expect(validateUrlForSSRF('http://192.168.1.5/')).rejects.toThrow(BadRequestException);
+  });
+
+  it('blocks 10.x when the runtime key is present', async () => {
+    await expect(validateUrlForSSRF('http://10.1.2.3/')).rejects.toThrow(BadRequestException);
+  });
+
+  it('allows an IP inside an allowlisted CIDR', async () => {
+    await expect(validateUrlForSSRF('http://10.0.4.12:11434/')).resolves.toBeUndefined();
+  });
+
+  it('allows an allowlisted hostname without DNS', async () => {
+    await expect(validateUrlForSSRF('http://jira.corp/')).resolves.toBeUndefined();
+  });
+
+  it('blocks localhost unless allowlisted', async () => {
+    await expect(validateUrlForSSRF('http://localhost/')).rejects.toThrow(BadRequestException);
+    publish({ allowedHostnames: new Set(['localhost']) });
+    await expect(validateUrlForSSRF('http://localhost/')).resolves.toBeUndefined();
+  });
+
+  it('blocks the metadata IP', async () => {
+    await expect(validateUrlForSSRF('http://169.254.169.254/')).rejects.toThrow(BadRequestException);
+  });
+
+  it('blocks disallowed schemes', async () => {
+    await expect(validateUrlForSSRF('file:///etc/passwd')).rejects.toThrow(BadRequestException);
+  });
+
+  it('allows anything when disabled', async () => {
+    publish({ enabled: false });
+    await expect(validateUrlForSSRF('http://127.0.0.1/')).resolves.toBeUndefined();
+  });
+
+  it('ignores SSRF_PROTECTION_ENABLED once the runtime key is present', async () => {
+    process.env.SSRF_PROTECTION_ENABLED = 'false';
+    await expect(validateUrlForSSRF('http://127.0.0.1/')).rejects.toThrow(BadRequestException);
+  });
+});
+
+describe('validateUrlForSSRF without runtime config', () => {
+  const originalEdition = process.env.TOOLJET_EDITION;
+
+  afterEach(() => {
+    if (originalEdition === undefined) delete process.env.TOOLJET_EDITION;
+    else process.env.TOOLJET_EDITION = originalEdition;
+  });
+
+  it('keeps CE env behaviour when the runtime key is absent', async () => {
+    process.env.TOOLJET_EDITION = 'ce';
+    await expect(validateUrlForSSRF('http://10.1.2.3/')).resolves.toBeUndefined();
+  });
+});

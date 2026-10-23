@@ -29,12 +29,37 @@ const CLOUD_METADATA_ENDPOINTS = [/^169\.254\.169\.25[34]$/, /^metadata\.google\
 
 const ALLOWED_SCHEMES = ['http:', 'https:'];
 
+// EE publishes its admin-managed SSRF settings on globalThis under this key (see the
+// plugin-side copies, which read the same key). When absent (CE/Cloud) behaviour is unchanged.
+export const SSRF_RUNTIME_CONFIG_KEY = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
+
+export type SSRFRuntimeConfig = {
+  enabled: boolean;
+  allowedHostnames: Set<string>;
+  allowedRanges: net.BlockList;
+};
+
+function getRuntimeConfig(): SSRFRuntimeConfig | undefined {
+  return (globalThis as any)[SSRF_RUNTIME_CONFIG_KEY];
+}
+
+/** True if the hostname or IP is on the admin allowlist (exact hostname, or an IP inside an allowed IP/CIDR). */
+function isAllowlisted(hostOrIp: string, config: SSRFRuntimeConfig | undefined): boolean {
+  if (!config || !hostOrIp) return false;
+  const host = hostOrIp.toLowerCase().replace(/^\[|\]$/g, '');
+  if (config.allowedHostnames?.has(host)) return true;
+  const family = net.isIP(host);
+  return family !== 0 && !!config.allowedRanges?.check(host, family === 6 ? 'ipv6' : 'ipv4');
+}
+
 // Self-hosted (EE/CE) only: hostnames that always mean "this box" and are safe to
 // exempt outright, matching the plugin-side allowlist. Not extended to literal
 // 127.0.0.1 — same gap the plugin side has, kept for parity rather than guessed at.
 const LOOPBACK_HOSTNAME_ALLOWLIST = new Set(['localhost', 'ip6-localhost', 'ip6-loopback']);
 
 function isSSRFProtectionEnabled(): boolean {
+  const runtime = getRuntimeConfig();
+  if (runtime) return runtime.enabled;
   const edition = getTooljetEdition();
   if (edition === 'cloud') return true; // multi-tenant — not configurable
   if (edition === 'ee') return process.env.SSRF_PROTECTION_ENABLED === 'true'; // off by default: on-prem/air-gapped
@@ -54,6 +79,7 @@ function isCloudMetadataEndpoint(hostname: string): boolean {
  */
 function isDangerousPrivateIP(ip: string): boolean {
   if (isCloudMetadataEndpoint(ip)) return true;
+  const blockRFC1918 = !!getRuntimeConfig();
 
   const match = ip.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (match) {
@@ -66,12 +92,18 @@ function isDangerousPrivateIP(ip: string): boolean {
     if (a === 255 && b === 255 && c === 255 && d === 255) return true; // broadcast
     if (a >= 224 && a <= 239) return true; // multicast
     if (a >= 240) return true; // reserved
+    if (blockRFC1918) {
+      if (a === 10) return true;
+      if (a === 172 && b >= 16 && b <= 31) return true;
+      if (a === 192 && b === 168) return true;
+    }
     return false;
   }
 
   const normalized = ip.toLowerCase();
   if (normalized === '::1') return true; // loopback
   if (normalized.startsWith('fe80:')) return true; // link-local
+  if (blockRFC1918 && /^f[cd][0-9a-f]{2}:/.test(normalized)) return true; // unique local fc00::/7
   return false;
 }
 
@@ -93,7 +125,8 @@ async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
   // Fail closed: an unresolvable host can't be verified safe.
   if (addresses.length === 0) return true;
 
-  return addresses.some((addr) => isDangerousPrivateIP(addr));
+  const runtime = getRuntimeConfig();
+  return addresses.some((addr) => isDangerousPrivateIP(addr) && !isAllowlisted(addr, runtime));
 }
 
 /**
@@ -123,7 +156,13 @@ export async function validateUrlForSSRF(urlString: string): Promise<void> {
 
   const hostname = url.hostname.toLowerCase();
 
-  if (getTooljetEdition() !== 'cloud' && LOOPBACK_HOSTNAME_ALLOWLIST.has(hostname)) return;
+  const runtime = getRuntimeConfig();
+
+  // Allowlisted hostnames / IPs skip every check below
+  if (isAllowlisted(hostname, runtime)) return;
+
+  // With a runtime config there is no hardcoded localhost exemption — admins allowlist it explicitly.
+  if (!runtime && getTooljetEdition() !== 'cloud' && LOOPBACK_HOSTNAME_ALLOWLIST.has(hostname)) return;
 
   const isRawIP = net.isIP(hostname) !== 0;
 
