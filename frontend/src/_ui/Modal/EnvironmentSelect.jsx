@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import Select, { components } from 'react-select';
 import { OverlayTrigger, Tooltip as BSTooltip } from 'react-bootstrap';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components/ToolTip';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import './appSelect.theme.scss';
 
 const ENVIRONMENT_OPTIONS = [
@@ -9,6 +12,27 @@ const ENVIRONMENT_OPTIONS = [
   { label: 'Production', value: 'canAccessProduction', key: 'canAccessProduction' },
   { label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' },
 ];
+
+const isMultiEnvironmentOnly = (value) => value === 'canAccessStaging' || value === 'canAccessProduction';
+
+export function MultiEnvironmentPaidIcon() {
+  const licenseStatus = useLicenseStore((state) => state.featureAccess?.licenseStatus);
+  const isLicenseValid = !!licenseStatus?.isLicenseValid && !licenseStatus?.isExpired;
+  return (
+    <ToolTip
+      message={
+        isLicenseValid
+          ? 'Multi-environments are not included in your current plan'
+          : 'Multi-environments are available only in paid plans'
+      }
+      placement="top"
+    >
+      <span className="d-inline-flex" data-cy="multi-environment-upgrade-icon">
+        <SolidIcon name="premium-plan" width="16" height="16" />
+      </span>
+    </ToolTip>
+  );
+}
 
 export function EnvironmentSelect(props) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -29,7 +53,9 @@ export function EnvironmentSelect(props) {
       rest.data.value === 'canAccessStaging';
     // Only disable non-released environments for end-users in basic/starter plans (without valid license)
     // In paid plans, end-users can access all environments
-    const shouldDisable = isDisabled || (isEndUserGroup && isBuilderOnlyEnvironment && props.isBasicPlan);
+    const isPaidEnvironment = props.isMultiEnvironmentRestricted && isMultiEnvironmentOnly(rest.data.value);
+    const shouldDisable =
+      isDisabled || (isEndUserGroup && isBuilderOnlyEnvironment && props.isBasicPlan) || isPaidEnvironment;
 
     const style = {
       alignItems: 'center',
@@ -64,7 +90,10 @@ export function EnvironmentSelect(props) {
           disabled={shouldDisable}
           data-cy={`environment-check-${rest.data.value}`}
         />
-        <div className="select-option">{children}</div>
+        <div className="select-option d-flex align-items-center" style={{ gap: '4px' }}>
+          {children}
+          {isPaidEnvironment && <MultiEnvironmentPaidIcon />}
+        </div>
       </components.Option>
     );
   };
@@ -191,7 +220,13 @@ export function EnvironmentSelect(props) {
             return props.onChange([...releasedEnvironmentOnly, props.allOption]);
           }
 
-          return props.onChange([...props.options, props.allOption]);
+          // Without multi-environments, "All" must not grant staging/production that weren't already granted
+          const selectableOptions = props.isMultiEnvironmentRestricted
+            ? props.options.filter(
+                (env) => !isMultiEnvironmentOnly(env.value) || props.value.some((v) => v?.value === env.value)
+              )
+            : props.options;
+          return props.onChange([...selectableOptions, props.allOption]);
         }
         if (isCurrentSelectAll && !isSelectAllPresentInSelection) return props.onChange([]);
         return props.onChange(selected.filter((env) => !env?.isAllField));

@@ -1,4 +1,10 @@
-import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
+import {
+  DEFAULT_PAGES_LIMIT,
+  ENTERPRISE_DEFAULT_PAGES_LIMIT,
+  LICENSE_LIMIT,
+  LICENSE_TYPE,
+  NON_ENTERPRISE_PLANS,
+} from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
@@ -7,6 +13,7 @@ import {
   ENTERPRISE_PLAN_TERMS,
   WORKFLOW_TEAM_PLAN_TERMS,
 } from '@modules/licensing/constants/PlanTerms';
+
 export default class LicenseBase {
   private _appsCount: number | string;
   private _tablesCount: number | string;
@@ -153,7 +160,7 @@ export default class LicenseBase {
 
     // license with these set explicitly to true rather than being grandfathered in.
     this._isPublicApp = this._app?.features?.['publicApp'] === true;
-    this._isAutomaticSsoLogin = this._features?.['automaticSsoLogin'] === true;
+    this._isAutomaticSsoLogin = this.getEnterpriseOnlyFlag(this._features?.['automaticSsoLogin']);
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isGitSyncMultiBranch = this.getFeatureValue('gitSyncMultiBranch');
@@ -254,8 +261,8 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return this.BASIC_PLAN_TERMS.app?.pages?.count || LICENSE_LIMIT.UNLIMITED;
     }
-    if (!this._app || this._app['pages']?.count === undefined) {
-      return ''; //Not passed set to infinite for older licenses and trial
+    if (this._app?.['pages']?.count === undefined) {
+      return this.defaultPagesLimit;
     }
     return this._app['pages']?.count;
   }
@@ -264,10 +271,22 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return this.BASIC_PLAN_TERMS.app?.pages?.groupCount || LICENSE_LIMIT.UNLIMITED;
     }
-    if (!this._app || this._app['pages']?.groupCount === undefined) {
-      return ''; //Not passed set to infinite for older licenses and trial
+    if (this._app?.['pages']?.groupCount === undefined) {
+      return this.defaultPagesLimit;
     }
     return this._app['pages']?.groupCount;
+  }
+
+  private get isEnterprisePlan(): boolean {
+    return !NON_ENTERPRISE_PLANS.includes(this._plan?.toLowerCase());
+  }
+
+  private get defaultPagesLimit(): number {
+    return this.isEnterprisePlan ? ENTERPRISE_DEFAULT_PAGES_LIMIT : DEFAULT_PAGES_LIMIT;
+  }
+
+  private getEnterpriseOnlyFlag(value: unknown): boolean {
+    return typeof value === 'boolean' ? value : this.isEnterprisePlan;
   }
 
   public get appPagesHeaderAndLogoEnabled(): boolean {
@@ -738,10 +757,7 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.release;
     }
-    if (this._app?.features?.release === undefined) {
-      return true;
-    }
-    return !!this._app?.features?.release;
+    return this.getEnterpriseOnlyFlag(this._app?.features?.release);
   }
 
   public get appHistory(): boolean {

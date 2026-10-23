@@ -58,6 +58,7 @@ import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
+import { LicensePageService } from '@modules/licensing/interfaces/IService';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
@@ -374,7 +375,8 @@ export class AppImportExportService {
     protected appsRepository: AppsRepository,
     protected readonly transactionLogger: TransactionLogger,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
-    protected readonly abilityService: AbilityService
+    protected readonly abilityService: AbilityService,
+    protected readonly licensePageService: LicensePageService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -2204,6 +2206,12 @@ export class AppImportExportService {
             homePageId: updateHomepageId,
           }
         );
+        await this.licensePageService.disablePagesOverLimit(
+          manager,
+          appResourceMappings.appVersionMapping[importingAppVersion.id],
+          user.organizationId,
+          updateHomepageId
+        );
       }
     }
 
@@ -2850,6 +2858,12 @@ export class AppImportExportService {
         {
           homePageId: updateHomepageId,
         }
+      );
+      await this.licensePageService.disablePagesOverLimit(
+        manager,
+        appResourceMappings.appVersionMapping[importingAppVersion.id],
+        user.organizationId,
+        updateHomepageId
       );
     }
 

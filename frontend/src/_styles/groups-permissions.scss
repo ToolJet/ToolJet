@@ -134,6 +134,11 @@
 
 .permission-manager-modal {
     color: none;
+    .modal-title {
+        flex: 1;
+        min-width: 0;
+    }
+
     .permission-manager-title {
         display: flex;
         align-items: center;
@@ -164,7 +169,7 @@
 
 
 .delete-icon-cont {
-    margin-left: 130px;
+    margin-left: auto;
 
     .icon-class{
         border: none !important;

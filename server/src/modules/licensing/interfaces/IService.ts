@@ -2,6 +2,7 @@ import { EntityManager } from 'typeorm';
 import { LIMIT_TYPE } from '@modules/users/constants/lifecycle';
 import LicenseBase from '../configs/LicenseBase';
 import { User } from '@entities/user.entity';
+import { Page } from '@entities/page.entity';
 
 export interface ILicenseWorkflowsService {
   getWorkflowLimit(params: { limitFor: string; workspaceId?: string }): Promise<any>;
@@ -84,6 +85,15 @@ export abstract class LicensePageService {
     organizationId: string,
     isPageGroup: boolean
   ): Promise<void>;
+  abstract disablePagesOverLimit(
+    manager: EntityManager,
+    appVersionId: string,
+    organizationId: string,
+    homePageId?: string | null
+  ): Promise<void>;
+  abstract applyPagesLimit<
+    T extends Pick<Page, 'id' | 'index' | 'pageGroupIndex' | 'isPageGroup'> & { disabled: boolean },
+  >(pages: T[], appVersionId: string, manager?: EntityManager): Promise<T[]>;
   abstract getPagesLimit(organizationId: string): Promise<any>;
 }
 

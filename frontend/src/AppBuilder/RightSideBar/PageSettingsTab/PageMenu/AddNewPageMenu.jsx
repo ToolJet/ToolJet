@@ -9,6 +9,14 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const isLimitReached = (count, limit) => typeof limit === 'number' && count >= limit;
 
+const PAGE_LIMIT_TOOLTIP = "You've reached your page limit. Upgrade your plan to create more pages.";
+
+const NAV_ITEM_OPTIONS = [
+  { type: 'url', icon: 'link-2', label: 'Add nav item with URL' },
+  { type: 'app', icon: 'app-window', label: 'Add nav item ToolJet app' },
+  { type: 'custom', icon: 'mouse-pointer-click', label: 'Add custom nav item' },
+];
+
 export function AddNewPageMenu({ darkMode }) {
   const newPageBtnRef = useRef(null);
   const addPageBtnRef = useRef(null);
@@ -41,7 +49,7 @@ export function AddNewPageMenu({ darkMode }) {
       className={`page-type-buttons-container d-flex justify-content-between custom-gap-12 ${darkMode && 'dark-mode'}`}
     >
       <LicenseTooltip
-        message="You've reached your page limit. Upgrade your plan to create more pages."
+        message={PAGE_LIMIT_TOOLTIP}
         placement="bottom"
         show={isPagesLimitReached}
         tooltipClassName="page-limit-tooltip"
@@ -107,33 +115,28 @@ export function AddNewPageMenu({ darkMode }) {
         <Popover className={`!tw-rounded-[8px] !tw-border-[var(--border-weak)] ${darkMode && 'dark-theme theme-dark'}`}>
           <div className="add-new-page-popover-header">Add new nav item</div>
           <div className="add-new-page-options">
-            <Button
-              variant="ghost"
-              onClick={() => handleOpenPopup('url')}
-              leadingIcon="link-2"
-              isLucid
-              className="tw-w-full tw-justify-start"
-            >
-              Add nav item with URL
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => handleOpenPopup('app')}
-              leadingIcon="app-window"
-              isLucid
-              className="tw-w-full tw-justify-start"
-            >
-              Add nav item ToolJet app
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => handleOpenPopup('custom')}
-              leadingIcon="mouse-pointer-click"
-              isLucid
-              className="tw-w-full tw-justify-start"
-            >
-              Add custom nav item
-            </Button>
+            {NAV_ITEM_OPTIONS.map(({ type, icon, label }) => (
+              <LicenseTooltip
+                key={type}
+                message={PAGE_LIMIT_TOOLTIP}
+                placement="bottom"
+                show={isPagesLimitReached}
+                tooltipClassName="page-limit-tooltip"
+              >
+                <div className="tw-w-full">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleOpenPopup(type)}
+                    leadingIcon={icon}
+                    isLucid
+                    className={`tw-w-full tw-justify-start ${isPagesLimitReached ? 'tw-opacity-[0.5]' : ''}`}
+                    disabled={isPagesLimitReached}
+                  >
+                    {label}
+                  </Button>
+                </div>
+              </LicenseTooltip>
+            ))}
             <div className={`${isAddNavGroupDisabled && 'd-flex'}`}>
               <LicenseTooltip
                 message={addNavGroupTooltipMessage}

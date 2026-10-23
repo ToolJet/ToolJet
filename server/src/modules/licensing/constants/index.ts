@@ -166,8 +166,8 @@ export enum LICENSE_LIMITS_LABEL {
   //Apps
   APPS = 'Apps',
   WORKFLOWS = 'Workflows',
-  PAGES = 'pages',
-  PAGE_GROUPS = 'page groups',
+  PAGES = 'Pages per App',
+  PAGE_GROUPS = 'Page groups per App',
 
   //Workspaces
   WORKSPACES = 'Workspaces',
@@ -189,6 +189,11 @@ export enum LICENSE_TYPE {
 export enum LICENSE_LIMIT {
   UNLIMITED = 'UNLIMITED',
 }
+
+export const NON_ENTERPRISE_PLANS = ['basic', 'starter', 'basicplus', 'pro', 'team'];
+
+export const ENTERPRISE_DEFAULT_PAGES_LIMIT = 100;
+export const DEFAULT_PAGES_LIMIT = 20;
 
 export enum FEATURE_KEY {
   GET_LICENSE = 'get_license',
