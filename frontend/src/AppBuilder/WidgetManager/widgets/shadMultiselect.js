@@ -42,7 +42,9 @@ export const shadMultiselectConfig = {
       },
     },
     options: {
-      type: 'code',
+      type: 'optionsList',
+      defaultParam: 'defaultValue',
+      multipleDefaults: true,
       displayName: 'Options',
       validation: {
         schema: {

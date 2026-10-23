@@ -42,7 +42,7 @@ export const shadButtonGroupConfig = {
       },
     },
     buttons: {
-      type: 'code',
+      type: 'optionsList',
       displayName: 'Buttons',
       validation: {
         schema: {

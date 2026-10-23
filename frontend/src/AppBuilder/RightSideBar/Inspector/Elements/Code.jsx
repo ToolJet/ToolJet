@@ -5,6 +5,8 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeEditor from '@/AppBuilder/CodeEditor';
 import { getFlexAxisAwareMeta } from '../Components/FlexContainer/flexChildInspectorUtils';
 import { getDefinitionInitialValue } from './utils';
+import { OptionsListFieldContext } from '@/AppBuilder/CodeBuilder/Elements/OptionsList';
+import { optionsListBlockReason } from '../Components/shared/utils/optionsLiteral';
 
 const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
 
@@ -64,10 +66,28 @@ export const Code = ({
   const noteKey = String(initialValue ?? '')
     .trim()
     .replace(/^\{\{\s*['"`]?|['"`]?\s*\}\}$/g, '');
-  const note = paramMeta?.noteFor?.[noteKey] ?? paramMeta?.note;
+  // A UI 2.0 options field drawn as a list (type optionsList) reads its code and the widget's default value, and
+  // sets the default; its note is about the code, so it shows only while the field is in code.
+  const isOptionsList = paramMeta?.type === 'optionsList';
+  const listShown = isOptionsList && !fxActive && !optionsListBlockReason(initialValue);
+  const note = listShown ? null : paramMeta?.noteFor?.[noteKey] ?? paramMeta?.note;
+  const withOptionsList = (field) =>
+    isOptionsList ? (
+      <OptionsListFieldContext.Provider
+        value={{
+          code: initialValue,
+          properties: component?.component?.definition?.properties ?? {},
+          setProperty: (name, value) => onChange({ name }, 'value', value, paramType),
+        }}
+      >
+        {field}
+      </OptionsListFieldContext.Provider>
+    ) : (
+      field
+    );
 
   if (isHidden) return null;
-  return (
+  return withOptionsList(
     <div className={`field tw-mb-2 last:tw-mb-0 ${options.className ?? ''}`}>
       <CodeEditor
         type="fxEditor"

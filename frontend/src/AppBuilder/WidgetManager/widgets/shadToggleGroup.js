@@ -19,7 +19,8 @@ export const shadToggleGroupConfig = {
   },
   properties: {
     options: {
-      type: 'code',
+      type: 'optionsList',
+      defaultParam: 'defaultValue',
       displayName: 'Options',
       validation: {
         schema: {
