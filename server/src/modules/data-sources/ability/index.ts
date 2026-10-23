@@ -37,7 +37,21 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const dataSourceId = request?.tj_resource_id;
     const toolJetEdition = getTooljetEdition();
     // Oauth end points available to all
-    can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
+    // can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
+    // OAuth URL generation resolves workspace secrets/constants into the returned URL,
+    // so restrict it to users who can configure data sources — plain viewers/end-users
+    // (who are denied the dedicated secret routes) must not reach secrets through it.
+    const canConfigureDataSource =
+      isAdmin ||
+      superAdmin ||
+      isBuilder ||
+      isCanCreate ||
+      isCanDelete ||
+      isAllEditable ||
+      !!resourcePermissions?.configurableDataSourceId?.length;
+    if (canConfigureDataSource) {
+      can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
+    }
     can(FEATURE_KEY.AUTHORIZE, DataSource);
     if ((toolJetEdition === TOOLJET_EDITIONS.EE && superAdmin) || (toolJetEdition !== TOOLJET_EDITIONS.EE && isAdmin)) {
       can(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN, DataSource);

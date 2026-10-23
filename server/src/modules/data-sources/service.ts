@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
@@ -333,8 +339,23 @@ export class DataSourcesService implements IDataSourcesService {
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }
 
-  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
-    return this.dataSourcesUtilService.getAuthUrl(getDataSourceOauthUrlDto);
+  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto, user: User): Promise<{ url: string }> {
+    const organizationId = user.organizationId;
+    const { organization_id, environment_id } = getDataSourceOauthUrlDto;
+
+    if (organization_id && organization_id !== organizationId) {
+      throw new ForbiddenException();
+    }
+
+    if (environment_id) {
+      try {
+        await this.appEnvironmentsUtilService.get(organizationId, environment_id);
+      } catch {
+        throw new NotFoundException('Environment not found');
+      }
+    }
+
+    return this.dataSourcesUtilService.getAuthUrl({ ...getDataSourceOauthUrlDto, organization_id: organizationId });
   }
 
   async authorizeOauth2(
