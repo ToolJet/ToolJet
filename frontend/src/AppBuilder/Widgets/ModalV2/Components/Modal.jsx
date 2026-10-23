@@ -218,10 +218,13 @@ export const ModalWidget = ({ ...restProps }) => {
           />
         )}
         {/* Loading, the body's canvas stays mounted, hidden and inert under the spinner: swapping it for the spinner
-            unmounted the modal's components, and what was typed in them was lost. */}
+            unmounted the modal's components, and what was typed in them was lost. Disabled, it stays drawn but is
+            inert and aria-disabled: the overlay only stopped the pointer, so Tab reached the body and an open Select
+            in it still took a choice (the pack's popups close and refuse one in an inert or aria-disabled part). */}
         <div
-          inert={isLoading ? '' : undefined}
+          inert={isLoading || isDisabled ? '' : undefined}
           aria-hidden={isLoading || undefined}
+          aria-disabled={isDisabled && !isLoading ? 'true' : undefined}
           style={isLoading ? { visibility: 'hidden', height: '100%' } : { display: 'contents' }}
         >
           <SubContainer
