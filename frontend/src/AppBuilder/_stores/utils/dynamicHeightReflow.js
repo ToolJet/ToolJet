@@ -1298,7 +1298,21 @@ export const buildReflowPatch = ({
       // `collapsedCanonical` is the long-standing contract that widgets
       // (including Listview row templates) rely on to stay stable; only
       // the Accordion-shrink-below-canonical case needs to bypass it.
-      let otherMax = allowShrinkPullUp ? 0 : effectiveCollapsedCanonical;
+      // A target wider than the widget above it has no shadower, so its floor stayed its authored top: below a UI 2.0
+      // widget that fitted itself shorter (or an Accordion that collapsed), it stayed put while everything above it
+      // moved up, and every widget under it lost that move too (a Carousel under a Calendar, a Heatmap under a Funnel
+      // chart). When an in-flow blocker over it can sit below its drawn height, the blockers' own constraints place
+      // it, as a shadower's would. A native widget above keeps the authored floor (its blocker height never drops
+      // below its drawn height).
+      const shrinkableAbove =
+        !shadower &&
+        blockers.some((b) => {
+          if (!b.isInFlow) return false;
+          const type = currentPageComponents?.[b.id]?.component?.component;
+          return type === 'Accordion' || keepsFittedHeightWhenMoved(type);
+        });
+      const pullUpFromBlockers = allowShrinkPullUp || shrinkableAbove;
+      let otherMax = pullUpFromBlockers ? 0 : effectiveCollapsedCanonical;
       let hasInFlowBlocker = false;
       for (let vi = 0; vi < blockers.length; vi++) {
         const v = blockers[vi];
@@ -1373,7 +1387,7 @@ export const buildReflowPatch = ({
         const constraint = v.currentBottom + canonicalGap + inFlowDelta;
         if (constraint > otherMax) otherMax = constraint;
       }
-      if (allowShrinkPullUp && !hasInFlowBlocker) {
+      if (pullUpFromBlockers && !hasInFlowBlocker) {
         otherMax = effectiveCollapsedCanonical;
       }
 
