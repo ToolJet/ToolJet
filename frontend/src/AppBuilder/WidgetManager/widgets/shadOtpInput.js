@@ -42,6 +42,8 @@ export const shadOtpInputConfig = {
       },
     },
     length: {
+      minValue: 4,
+      maxValue: 8,
       type: 'code',
       displayName: 'Length (4 to 8)',
       validation: {

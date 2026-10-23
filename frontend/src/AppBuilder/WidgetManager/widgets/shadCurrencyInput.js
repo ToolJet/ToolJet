@@ -107,6 +107,9 @@ export const shadCurrencyInputConfig = {
       placeholder: 'en-US, de-DE, en-IN',
     },
     decimalPlaces: {
+      minValue: 0,
+      maxValue: 10,
+      note: "0 to 10, or empty for the currency's own. A number outside is taken as the nearest.",
       type: 'code',
       displayName: "Decimal places (empty: the currency's own)",
       validation: {

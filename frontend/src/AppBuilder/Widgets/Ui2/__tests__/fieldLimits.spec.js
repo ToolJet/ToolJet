@@ -37,16 +37,20 @@ const CLAMPS = [
   // Math.min(hi, Math.max(lo, ...p.x...))
   new RegExp(`Math\\.min\\(\\s*${NUM}\\s*,\\s*Math\\.max\\(\\s*${NUM}\\s*,[^;]*?${PROP}`, 'g'),
 ];
-// Model helpers that clamp what they are given: `export const clampFiles = (v: unknown): number => clampInt(v, 1, 100,`
-// or `... Math.max(1, Math.min(10, n))`.
+// Model helpers that clamp one of their parameters with literal bounds: `export const clampFiles = (v: unknown): number =>
+// clampInt(v, 1, 100,` or `... Math.max(1, Math.min(10, n))` (the first parameter), and `currencyDecimals = (currency:
+// unknown, decimalPlaces: unknown) => ... clampInt(decimalPlaces, 0, 10, 2)` (another one): { name: { index, min, max } }.
 const HELPERS = Object.fromEntries(
   FILES.flatMap(({ src }) =>
-    [...src.matchAll(/export const (clamp\w+) = \(v: unknown\): number => \{?([\s\S]*?)\n(?:\};|export)/g)].flatMap(
-      ([, name, body]) => {
-        const m =
-          body.match(new RegExp(`clampInt\\(v,\\s*${NUM},\\s*${NUM}`)) ||
-          body.match(new RegExp(`Math\\.max\\(${NUM},\\s*Math\\.min\\(${NUM},`));
-        return m ? [[name, [Number(m[1]), Number(m[2])]]] : [];
+    [...src.matchAll(/export const (\w+) = \(([^)]*)\)[^=]*=>\s*\{?([\s\S]*?)\n(?:\};|export|\/\*\*|\n)/g)].flatMap(
+      ([, name, params, body]) => {
+        const names = params.split(',').map((param) => param.split(':')[0].trim());
+        const clamped = body.match(new RegExp(`clampInt\\((\\w+),\\s*${NUM},\\s*${NUM}`));
+        if (clamped && names.includes(clamped[1])) {
+          return [[name, { index: names.indexOf(clamped[1]), min: Number(clamped[2]), max: Number(clamped[3]) }]];
+        }
+        const minMax = names.length === 1 && body.match(new RegExp(`Math\\.max\\(${NUM},\\s*Math\\.min\\(${NUM},`));
+        return minMax ? [[name, { index: 0, min: Number(minMax[1]), max: Number(minMax[2]) }]] : [];
       }
     )
   )
@@ -66,8 +70,13 @@ const caps = () => {
         out.push([type, key, { min: Number(lo), max: Number(hi) }, where]);
       }
     });
-    for (const [, helper, key] of src.matchAll(new RegExp(`\\b(?:\\w+\\.)?(clamp\\w+)\\(${PROP}\\)`, 'g'))) {
-      if (HELPERS[helper]) out.push([type, key, { min: HELPERS[helper][0], max: HELPERS[helper][1] }, where]);
+    // A helper call with a property in the place the helper clamps (`M.currencyDecimals(code, properties.decimalPlaces)`).
+    for (const [, helper, args] of src.matchAll(/\b(?:\w+\.)?(\w+)\(([^()]*)\)/g)) {
+      const h = HELPERS[helper];
+      if (!h) continue;
+      const arg = args.split(',')[h.index]?.trim() ?? '';
+      const prop = arg.match(new RegExp(`^${PROP}$`));
+      if (prop) out.push([type, prop[1], { min: h.min, max: h.max }, where]);
     }
     for (const [, key, n] of src.matchAll(new RegExp(`toText\\(${PROP}\\)\\.slice\\(0,\\s*(\\d+)\\)`, 'g'))) {
       out.push([type, key, { maxLength: Number(n) }, where]);
@@ -81,7 +90,12 @@ const metaOf = (type, key) => CONFIGS[type].properties?.[key] || CONFIGS[type].s
 describe('[UI2-FIELD-LIMITS] inspector fields and widgets agree on limits', () => {
   it('finds the caps the widgets apply', () => {
     expect(CAPS.map(([type, key]) => `${type}.${key}`)).toEqual(
-      expect.arrayContaining(['ShadOtpInput.placeholder', 'ShadFileUpload.maxFiles', 'ShadRating.max'])
+      expect.arrayContaining([
+        'ShadOtpInput.placeholder',
+        'ShadFileUpload.maxFiles',
+        'ShadRating.max',
+        'ShadCurrencyInput.decimalPlaces',
+      ])
     );
   });
 

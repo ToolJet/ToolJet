@@ -110,6 +110,9 @@ export const shadTimePickerConfig = {
       fullWidth: true,
     },
     minuteStep: {
+      minValue: 1,
+      maxValue: 60,
+      note: '1 to 60. A number outside is taken as the nearest.',
       type: 'code',
       displayName: 'Minute step',
       validation: {
