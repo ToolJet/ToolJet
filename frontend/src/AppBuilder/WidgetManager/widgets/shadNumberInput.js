@@ -156,6 +156,17 @@ export const shadNumberInputConfig = {
         defaultValue: true,
       },
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -547,6 +558,9 @@ export const shadNumberInputConfig = {
       },
       thousandSeparator: {
         value: '{{true}}',
+      },
+      showClearBtn: {
+        value: '{{false}}',
       },
       loadingState: {
         value: '{{false}}',

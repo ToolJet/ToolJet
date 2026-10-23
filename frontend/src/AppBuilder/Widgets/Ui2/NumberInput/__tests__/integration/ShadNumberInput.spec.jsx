@@ -218,4 +218,27 @@ describe('UI 2.0 Number input', () => {
     expect(root.getPropertyValue('--lk-step-hover')).toBe('#e4e4e7');
     expect(root.getPropertyValue('--lk-affix')).toBe('#71717a');
   });
+
+  test('[ShadNumberInput-PROP-006] Show clear button: an x while the box has a number clears it, firing onChange once', async () => {
+    const { shadNumberInputConfig } = jest.requireActual('@/AppBuilder/WidgetManager/widgets/shadNumberInput');
+    expect(shadNumberInputConfig.properties.showClearBtn).toMatchObject({
+      type: 'toggle',
+      displayName: 'Show clear button',
+    });
+    expect(shadNumberInputConfig.definition.properties.showClearBtn.value).toBe('{{false}}');
+
+    render({ properties: { showClearBtn: binding('{{true}}'), disabledState: binding('{{false}}') } });
+    widget.setEvents(countInvocationsOn(ID, 'onChange'));
+    await waitFor(() => expect(exposed().value).toBe(1));
+    await act(async () => fireEvent.click(button('Clear')));
+    await waitFor(() => expect(exposed().value).toBeNull());
+    expect(box()).toHaveValue('');
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
+    await waitFor(() => expect(widget.variables().calls).toBe(1));
+
+    // Off: no x.
+    render({ properties: { showClearBtn: binding('{{false}}') } });
+    await type('7');
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
+  });
 });

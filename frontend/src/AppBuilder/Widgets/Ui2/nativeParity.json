@@ -321,9 +321,6 @@
       "properties": {
         "legacyInputSize": {
           "dropped": "sizing of the pre-2.0 input"
-        },
-        "showClearBtn": {
-          "gap": "a clear button only on the Search type"
         }
       },
       "actions": {
@@ -483,9 +480,6 @@
         "disableStepControls": "stepper",
         "legacyInputSize": {
           "dropped": "sizing of the pre-2.0 input"
-        },
-        "showClearBtn": {
-          "gap": "no clear button"
         }
       }
     },

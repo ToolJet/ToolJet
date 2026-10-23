@@ -8,6 +8,7 @@ import { Truncate, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import {
   AFFIX,
+  ClearX,
   EDGE,
   Group,
   INNER,
@@ -128,6 +129,18 @@ export const ShadNumberInput = (props: WidgetProps) => {
         {suffix ? (
           <span className={cn(AFFIX, 'tw-pr-3')}>
             <Truncate>{suffix}</Truncate>
+          </span>
+        ) : null}
+        {/* Show clear button (the native Number input's showClearBtn, off by default): an x while there is a number
+            or typed text empties the box with one onChange, and leaves the focus in it. */}
+        {properties.showClearBtn === true && !disabled && !loading && (value !== null || !!draft) ? (
+          <span className={cn('tw-flex tw-items-center', suffix ? 'tw-pr-2' : 'tw-px-2')}>
+            <ClearX
+              onClear={() => {
+                box.clearTyped(() => ({}));
+                textBox.ref.current?.focus();
+              }}
+            />
           </span>
         ) : null}
         {steppers && layout === 'split' ? (

@@ -90,6 +90,15 @@
       "default": "",
       "initial": ""
     },
+    "showClearBtn": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "step": {
       "type": "number",
       "schema": {

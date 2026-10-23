@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
 import dayjs from 'dayjs';
 import { CONTROL } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -55,6 +56,22 @@ export const EDGE = 'tw-border-[color:var(--lk-invalid,var(--lk-border,var(--sc-
 // button out of the box.
 export const AFFIX =
   'tw-flex tw-min-w-0 tw-max-w-[40%] tw-select-none tw-items-center tw-whitespace-nowrap tw-text-ui2-sm tw-text-[color:var(--lk-affix,var(--sc-muted-foreground))]';
+
+/** The x that empties a text or number box: a search box's own, and any box with Show clear button (the native
+ *  inputs' showClearBtn) while it holds a value. A 20px round button in the placeholder's colour, darker on hover. */
+export const ClearX = ({ onClear, className }: { onClear: () => void; className?: string }) => (
+  <button
+    type="button"
+    aria-label="Clear"
+    className={cn(
+      'tw-flex tw-h-5 tw-w-5 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-p-0 tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))] hover:tw-text-[color:var(--lk-fg,var(--sc-foreground))]',
+      className
+    )}
+    onClick={onClear}
+  >
+    <X className="tw-h-4 tw-w-4" aria-hidden />
+  </button>
+);
 
 // A segment at the start of the box (the country or currency picker).
 export const ADDON =

@@ -453,4 +453,47 @@ describe('UI 2.0 Input', () => {
     expect(box()).toBe(before);
     expect(box()).toHaveValue('draft');
   });
+
+  test.each(['text', 'email', 'url', 'password', 'number'])(
+    '[ShadInput-PROP-009] Show clear button (%s): an x while the box has a value clears it, firing onChange once',
+    async (kind) => {
+      // The native Text and Number inputs offer a clear button; the UI 2.0 Input had none but for search.
+      const { shadInputConfig } = jest.requireActual('@/AppBuilder/WidgetManager/widgets/shadInput');
+      expect(shadInputConfig.properties.showClearBtn).toMatchObject({
+        type: 'toggle',
+        displayName: 'Show clear button',
+      });
+      expect(shadInputConfig.properties.showClearBtn.validation.defaultValue).toBe(false);
+      expect(shadInputConfig.definition.properties.showClearBtn.value).toBe('{{false}}');
+
+      const value = {
+        text: 'Ada',
+        email: 'ada@example.com',
+        url: 'https://example.com',
+        password: 's3cret',
+        number: '42',
+      }[kind];
+      const { container } = render({ properties: { inputType: binding(kind), showClearBtn: binding('{{true}}') } });
+      widget.setEvents(countInvocationsOn(ID, 'onChange'));
+      const input = () => container.querySelector('input');
+      expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
+      await act(async () => fireEvent.change(input(), { target: { value } }));
+      await waitFor(() => expect(exposed().value).toBe(kind === 'number' ? 42 : value));
+      await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Clear' })));
+      await waitFor(() => expect(exposed().value).toBe(kind === 'number' ? null : ''));
+      expect(input()).toHaveValue('');
+      expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
+      // One typing and one clear.
+      await waitFor(() => expect(widget.variables().calls).toBe(2));
+    }
+  );
+
+  test('[ShadInput-PROP-010] off by default: no x for text; search keeps its own x either way', async () => {
+    const { container } = render();
+    await type('Ada');
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
+    render({ properties: { inputType: binding('search'), showClearBtn: binding('{{false}}') } });
+    await act(async () => fireEvent.change(container.querySelector('input'), { target: { value: 'orders' } }));
+    expect(screen.getByRole('button', { name: 'Clear' })).toBeInTheDocument();
+  });
 });
