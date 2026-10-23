@@ -3,7 +3,7 @@ id: marketplace-plugin-microsoft_graph
 title: Microsoft Graph
 ---
 
-By integrating Microsoft Graph with ToolJet, you can interact with Microsoft 365 services such as Outlook Mail, Calendar, Users, and OneDrive.
+By integrating Microsoft Graph with ToolJet, you can interact with Microsoft 365 services such as Outlook Mail, Calendar, Users, Teams, OneDrive, SharePoint, and OneNote.
 
 :::info NOTE
 Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
@@ -21,6 +21,13 @@ To connect ToolJet with Microsoft Graph, you’ll need the following credentials
 
 Follow this [Microsoft guide](https://learn.microsoft.com/en-us/graph/auth-register-app-v2) to register an app and generate the required credentials.
 
+:::info Required API permissions
+The data source requests the `https://graph.microsoft.com/.default` and `offline_access` scopes, so what a query can access is decided by the **API permissions** granted to your app registration in Azure, not by the ToolJet connection form. Add the Microsoft Graph delegated permissions for the entities you use, for example:
+
+- **SharePoint**: `Sites.Read.All` for read operations, and `Sites.ReadWrite.All` for operations that create, update, upload or delete.
+- **OneNote**: `Notes.Read` to read, `Notes.Create` to create notebooks, sections and pages, and `Notes.ReadWrite` to update page content or delete pages. `Notes.Read.All` and `Notes.ReadWrite.All` give access to all notebooks the signed-in user can access.
+:::
+
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/microsoft-graph/connection-v3.png" alt="Microsoft Graph data source configuration" />
 
 You can enable the **Authentication required for all users** toggle in the configuration panel. When enabled, each user will be redirected to the OAuth consent screen the first time a query from this data source is triggered in your application. This ensures that every user connects with their own Microsoft account securely.
@@ -36,8 +43,10 @@ After completing the OAuth flow, the query must be triggered again to fetch data
 - **[Users](#users)**
 - **[Teams](#teams)**
 - **[One Drive](#onedrive)**
+- **[Share Point](#sharepoint)**
+- **[One Note](#onenote)**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/microsoft-graph/listops.png" alt="Microsoft Graph supoorted entities" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/microsoft-graph/listops-v2.png" alt="Microsoft Graph Entity dropdown listing Outlook, Calendar, Users, Teams, One Drive, Share Point and One Note" />
 
 ### Outlook
 
@@ -224,6 +233,7 @@ After completing the OAuth flow, the query must be triggered again to fetch data
 
 | Method | API Endpoint                                | Description                         |
 | ------ | ------------------------------------------- | ----------------------------------- |
+| GET    | `/me/drive`                                 | Get the user's default drive        |
 | GET    | `/me/drive/root/children`                   | List items in root folder           |
 | POST   | `/me/drive/root/children`                   | Create a new file or folder in root |
 | GET    | `/me/drive/recent`                          | List recent files                   |
@@ -244,6 +254,137 @@ After completing the OAuth flow, the query must be triggered again to fetch data
 | PUT    | `/drives/{drive-id}/items/{item-id}/content`     | Upload file content                   |
 | POST   | `/drives/{drive-id}/items/{item-id}/createLink`  | Create sharing link                   |
 | GET    | `/drives/{drive-id}/items/{item-id}/permissions` | Get item permissions                  |
+
+**Download file content** returns the file as base64 rather than as raw content:
+
+```json
+{
+  "base64": "<base64-encoded file content>",
+  "mimeType": "<MIME type from the response, for example application/pdf>",
+  "size": <file size in bytes>
+}
+```
+
+<!-- TODO verify: whether OneDrive Upload file content (PUT on the drives/drive-id/items/item-id/content endpoint) uploads a file correctly. The plugin sends its body as JSON, not as binary content, unlike the SharePoint Upload file to folder operation. -->
+
+### SharePoint
+
+Select **Share Point** in the **Entity** dropdown to work with SharePoint sites, lists, list items, document libraries (drives), files and folders through Microsoft Graph.
+
+:::note
+This entity is part of the Microsoft Graph plugin. ToolJet also has a separate **[SharePoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)** marketplace plugin with its own connection and operations.
+:::
+
+#### Sites
+
+| Method | API Endpoint                 | Description         | Parameters                                                      |
+| ------ | ---------------------------- | ------------------- | --------------------------------------------------------------- |
+| GET    | `/sites`                     | List sites          | `search`, `$filter`, `$select`, `$expand`, `$top`, `$skip`      |
+| GET    | `/sites/{site-id}`           | Get site            | `site-id` (required), `$select`, `$expand`                      |
+| GET    | `/sites/{site-id}/analytics` | Get site analytics  | `site-id` (required)                                            |
+| GET    | `/sites/{site-id}/pages`     | List site pages     | `site-id` (required), `$filter`, `$select`, `$orderby`, `$top`, `$skip` |
+
+#### Lists and List Items
+
+| Method | API Endpoint                                       | Description      | Parameters                                                                                         |
+| ------ | -------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
+| GET    | `/sites/{site-id}/lists`                           | List lists       | `site-id` (required), `$filter`, `$select`, `$expand`, `$top`, `$skip`                             |
+| POST   | `/sites/{site-id}/lists`                           | Create list      | `site-id` (required). Body: `displayName` (required), `description`, `list`                       |
+| GET    | `/sites/{site-id}/lists/{list-id}`                 | Get list         | `site-id`, `list-id` (required), `$select`, `$expand`                                              |
+| PATCH  | `/sites/{site-id}/lists/{list-id}`                 | Update list      | `site-id`, `list-id` (required). Body: `displayName`, `description`                               |
+| DELETE | `/sites/{site-id}/lists/{list-id}`                 | Delete list      | `site-id`, `list-id` (required)                                                                    |
+| GET    | `/sites/{site-id}/lists/{list-id}/items`           | List list items  | `site-id`, `list-id` (required), `$filter`, `$select`, `$expand`, `$orderby`, `$top`, `$skip`      |
+| POST   | `/sites/{site-id}/lists/{list-id}/items`           | Create list item | `site-id`, `list-id` (required). Body: `fields` (required)                                        |
+| GET    | `/sites/{site-id}/lists/{list-id}/items/{item-id}` | Get list item    | `site-id`, `list-id`, `item-id` (required), `$select`, `$expand`                                   |
+| PATCH  | `/sites/{site-id}/lists/{list-id}/items/{item-id}` | Update list item | `site-id`, `list-id`, `item-id` (required). Body: `fields` (required)                             |
+| DELETE | `/sites/{site-id}/lists/{list-id}/items/{item-id}` | Delete list item | `site-id`, `list-id`, `item-id` (required)                                                         |
+
+#### Drives
+
+| Method | API Endpoint                         | Description          | Parameters                                          |
+| ------ | ------------------------------------ | -------------------- | --------------------------------------------------- |
+| GET    | `/sites/root/drive`                  | Get root site drive  | `$select`                                           |
+| GET    | `/sites/{site-id}/drive`             | Get site drive       | `site-id` (required), `$select`                     |
+| GET    | `/sites/{site-id}/drives`            | List site drives     | `site-id` (required), `$select`, `$top`, `$skip`    |
+| GET    | `/sites/{site-id}/drives/{drive-id}` | Get site drive by ID | `site-id`, `drive-id` (required), `$select`         |
+
+#### Files and Folders
+
+| Method | API Endpoint                                                      | Description                 | Parameters                                                                                   |
+| ------ | ----------------------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
+| GET    | `/drives/{drive-id}/items/{item-id}/children`                     | List folder contents        | `drive-id`, `item-id` (required), `$select`, `$filter`, `$orderby`, `$top`, `$skip`          |
+| GET    | `/drives/{drive-id}/items/{item-id}`                              | Get file or folder metadata | `drive-id`, `item-id` (required), `$select`, `$expand`                                       |
+| DELETE | `/drives/{drive-id}/items/{item-id}`                              | Delete file or folder       | `drive-id`, `item-id` (required)                                                             |
+| PUT    | `/drives/{drive-id}/items/{parent-item-id}:/{filename}:/content`  | Upload file to folder       | `drive-id`, `parent-item-id`, `filename` (required). Body: `fileContent` (required), `mimeType` |
+| GET    | `/drives/{drive-id}/items/{item-id}/content`                      | Download file               | `drive-id`, `item-id` (required)                                                             |
+
+**Upload file to folder** uploads a file into the folder `parent-item-id` with the name `filename`:
+
+- **fileContent**: The file content, base64-encoded. A data URL prefix such as `data:application/pdf;base64,` is removed automatically.
+- **mimeType**: The file's MIME type, for example `application/pdf`, `image/png` or `text/plain`. If left empty, `application/octet-stream` is used.
+
+**Download file** returns the file as `{ "base64": "...", "mimeType": "...", "size": ... }`, the same shape as the OneDrive download.
+
+### OneNote
+
+Select **One Note** in the **Entity** dropdown to work with the signed-in user's OneNote notebooks, section groups, sections, pages and page resources. All endpoints are under `/me/onenote`.
+
+#### Notebooks and Section Groups
+
+| Method | API Endpoint                                         | Description                  | Parameters                                     |
+| ------ | ---------------------------------------------------- | ---------------------------- | ---------------------------------------------- |
+| GET    | `/me/onenote/notebooks`                              | List notebooks               | OData parameters                               |
+| POST   | `/me/onenote/notebooks`                              | Create notebook              | Body: `displayName` (required)                 |
+| GET    | `/me/onenote/notebooks/{notebook-id}`                | Get notebook                 | `notebook-id` (required), `$select`, `$expand` |
+| GET    | `/me/onenote/notebooks/{notebook-id}/sectionGroups`  | List notebook section groups | `notebook-id` (required), OData parameters     |
+| GET    | `/me/onenote/sectionGroups`                          | List section groups          | OData parameters                               |
+
+#### Sections
+
+| Method | API Endpoint                                              | Description                     | Parameters                                                  |
+| ------ | --------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------- |
+| GET    | `/me/onenote/notebooks/{notebook-id}/sections`            | List notebook sections          | `notebook-id` (required), OData parameters                  |
+| POST   | `/me/onenote/notebooks/{notebook-id}/sections`            | Create section in notebook      | `notebook-id` (required). Body: `displayName` (required)    |
+| GET    | `/me/onenote/sectionGroups/{sectionGroup-id}/sections`    | List section group sections     | `sectionGroup-id` (required), OData parameters              |
+| POST   | `/me/onenote/sectionGroups/{sectionGroup-id}/sections`    | Create section in section group | `sectionGroup-id` (required). Body: `displayName` (required) |
+| GET    | `/me/onenote/sections`                                    | List sections                   | OData parameters                                            |
+| GET    | `/me/onenote/sections/{section-id}`                       | Get section                     | `section-id` (required), `$select`, `$expand`               |
+
+#### Pages and Resources
+
+| Method | API Endpoint                                    | Description              | Parameters                                                 |
+| ------ | ----------------------------------------------- | ------------------------ | ---------------------------------------------------------- |
+| GET    | `/me/onenote/sections/{section-id}/pages`       | List section pages       | `section-id` (required), OData parameters, `pagelevel`     |
+| POST   | `/me/onenote/sections/{section-id}/pages`       | Create page              | `section-id` (required). Body: `htmlContent` (required)    |
+| GET    | `/me/onenote/pages`                             | List pages               | OData parameters, `pagelevel`                              |
+| GET    | `/me/onenote/pages/{page-id}`                   | Get page                 | `page-id` (required), `$select`, `$expand`                 |
+| DELETE | `/me/onenote/pages/{page-id}`                   | Delete page              | `page-id` (required)                                       |
+| GET    | `/me/onenote/pages/{page-id}/content`           | Get page content         | `page-id` (required), `includeIDs`, `preAuthenticated`     |
+| PATCH  | `/me/onenote/pages/{page-id}/content`           | Update page content      | `page-id` (required). Body: `commands` (required)          |
+| GET    | `/me/onenote/pages/{page-id}/parentNotebook`    | Get page parent notebook | `page-id` (required), `$select`, `$expand`                 |
+| GET    | `/me/onenote/pages/{page-id}/parentSection`     | Get page parent section  | `page-id` (required), `$select`, `$expand`                 |
+| GET    | `/me/onenote/resources/{resource-id}/content`   | Get resource content     | `resource-id` (required)                                   |
+
+OData parameters are `$filter`, `$select`, `$expand`, `$orderby`, `$top`, `$skip`, `$count` and `$search`.
+
+A notebook `displayName` can't contain `? * \ / : < > | ' " # %`, and a section `displayName` can't contain `? * \ / : < > | & # ' " % ~`. Neither can start or end with a space.
+
+Some OneNote operations don't use a plain JSON request or response:
+
+- **Create page**: Put the page's OneNote HTML in the `htmlContent` field. ToolJet sends it to Microsoft Graph as a `text/html` body. The HTML `<title>` becomes the page title. For example:
+
+  ```html
+  <!DOCTYPE html><html><head><title>Sprint planning</title></head><body><p>Agenda</p><ul><li>Roadmap review</li></ul></body></html>
+  ```
+
+- **Get page content**: Returns the page HTML as a string. Set `includeIDs` to `true` to get the `data-id` values you can use as targets in **Update page content**.
+- **Update page content**: Put a JSON array of patch commands in the `commands` field. Each command has `target` (required; a `data-id`, a generated ID, or `body` or `title`), `action` (required; `append`, `insert`, `prepend`, `replace` or `delete`), `position` (`after` or `before`) and `content` (OneNote HTML, not used by `delete`). If `commands` isn't an array, the query fails with *OneNote page content updates expect "commands" to be a JSON array of patch commands*. For example:
+
+  ```json
+  [{ "target": "#para-id", "action": "insert", "position": "after", "content": "<p>Added by ToolJet</p>" }]
+  ```
+
+- **Get resource content**: Downloads an image or file embedded in a page and returns it as `{ "base64": "...", "mimeType": "...", "size": ... }`.
 
 ## Example Queries
 
