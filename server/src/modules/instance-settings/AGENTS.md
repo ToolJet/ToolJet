@@ -29,6 +29,7 @@ Owns instance-wide key/value settings (the `instance_settings` table) that only 
 - Runtime key name is identical in three copies: `plugins/packages/common/lib/ssrf-protection.ts`, `marketplace/plugins/common/lib/ssrf-protection.ts`, `server/src/helpers/ssrf-protection.helper.ts`. Change all or none.
 - When the key is present, env vars are ignored: DNS resolution check always on, fixed blocked-scheme list, private ranges (10/8, 172.16/12, 192.168/16) blocked, no `localhost` exemption.
 - An allowlist match skips every check, including the SSRF-safe `lookup` hook.
+- Allowlisted addresses are reachable by anyone who can run a query, including through public apps; the settings UI says so.
 - Fail closed: before the first successful read the publisher sets `{ enabled: true, empty allowlist }`. A change takes up to 30 s to apply.
 - Allowlist: max 200 entries, trimmed and lowercased, CIDR `/0` rejected.
 - Rows are `type: system`, seeded by a data migration; the SSRF keys must not be added to `BASIC_PLAN_SETTINGS` (no licence gate).
