@@ -2,7 +2,7 @@ export const shadNumberInputConfig = {
   name: 'ShadNumberInput',
   displayName: 'Number input',
   description:
-    "Number input: value is a number (null when empty), rounded to decimalPlaces; step buttons (stepper: split -/+ at both ends, stacked arrows at the right, or none) and ArrowUp/ArrowDown move by step and stop at the Min/Max value validation; optional prefix/suffix text inside the box (e.g. '$', 'kg') and thousands separators. Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
+    "Number input: value is a number (null when empty), rounded to decimalPlaces (0 to 10); step buttons (stepper: split -/+ at both ends, stacked arrows at the right, or none) and ArrowUp/ArrowDown move by step and stop at the Min/Max value validation; optional prefix/suffix text inside the box (e.g. '$', 'kg') and thousands separators. Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
   component: 'ShadNumberInput',
   defaultSize: {
     width: 10,
@@ -76,6 +76,7 @@ export const shadNumberInputConfig = {
       maxValue: 10,
       type: 'code',
       displayName: 'Decimal places',
+      note: '0 to 10. A number outside is taken as the nearest.',
       validation: {
         schema: {
           type: 'number',
