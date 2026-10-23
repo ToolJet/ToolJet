@@ -233,6 +233,36 @@ describe('UI 2.0 Input', () => {
     await waitFor(() => expect(exposed().isValid).toBe(true));
   });
 
+  test('[ShadInput-VAL-006] type email accepts what a browser email box accepts, user@localhost too', async () => {
+    // A dot was required in the domain, so user@localhost was rejected where a browser's type=email accepts it.
+    const { emailRule } = jest.requireActual('@/AppBuilder/Widgets/Ui2/Input/Input');
+    // As the browser's input[type=email] judges each (the WHATWG valid email address).
+    const browser = {
+      'user@localhost': true,
+      'person@example.com': true,
+      "o'brien+tag@sub-domain.example.co.uk": true,
+      'a@b': true,
+      'not-an-email': false,
+      'two@@example.com': false,
+      'space @example.com': false,
+      'user@-example.com': false,
+      'user@example-.com': false,
+      'user@example..com': false,
+      'user@exa_mple.com': false,
+      '@example.com': false,
+      'user@': false,
+    };
+    Object.entries(browser).forEach(([address, valid]) =>
+      expect([address, emailRule(address) === '']).toEqual([address, valid])
+    );
+
+    render({ properties: { inputType: binding('email') } });
+    await type('user@localhost');
+    await leave();
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
   test('[ShadInput-PROP-003] type number exposes a number (null when empty) and has arrows that step it', async () => {
     // It exposed the typed text as a string and had no arrows.
     render({ properties: { inputType: binding('number') } });
