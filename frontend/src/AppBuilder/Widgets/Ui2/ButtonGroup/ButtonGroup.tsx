@@ -144,14 +144,16 @@ export const ShadButtonGroup = (props: WidgetProps) => {
         required={check.required}
       >
         {buttons.length ? (
-          <div className={cn('tw-flex tw-items-center tw-gap-3', fullWidth && 'tw-w-full')}>
+          // A group wider than its box scrolls sideways inside it (at 390px the three default buttons ran 125px past
+          // the box's right edge, over the widgets beside it).
+          <div className={cn('tw-flex tw-max-w-full tw-items-center tw-gap-3', fullWidth && 'tw-w-full')}>
             <div
               id={fieldIdOf(props)}
               role="group"
               aria-label={properties.label ? String(properties.label) : 'Button group'}
               {...controlAria(props, check.error)}
               className={cn(
-                'tw-inline-flex tw-w-fit tw-items-stretch',
+                'tw-inline-flex tw-w-fit tw-min-w-0 tw-max-w-full tw-items-stretch tw-overflow-x-auto',
                 orientation === 'vertical' ? 'tw-flex-col' : 'tw-flex-row',
                 fullWidth && 'tw-flex tw-w-full',
                 variant === 'outline' && 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] tw-shadow-sm',

@@ -239,4 +239,11 @@ describe('UI 2.0 Button group', () => {
     Object.entries(vars).forEach(([name, value]) => expect(root.style.getPropertyValue(name)).toBe(value));
     expect(button('Day').className).toContain('tw-bg-[color:var(--lk-bg)]');
   });
+
+  test('[ShadButtonGroup-STY-010] a group wider than its box scrolls sideways inside it', async () => {
+    // At 390px the three default buttons ran 125px past the box's right edge (Cypress geometry).
+    render();
+    const group = await screen.findByRole('group', { name: 'Label' });
+    expect(group).toHaveClass('tw-min-w-0', 'tw-max-w-full', 'tw-overflow-x-auto');
+  });
 });
