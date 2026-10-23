@@ -147,4 +147,20 @@ describe('UI 2.0 Slider', () => {
     expect(root.getPropertyValue('--lk-help')).toBe('#222222');
     expect(root.getPropertyValue('--lk-track')).toBe('#e5e7eb');
   });
+
+  test('[ShadSlider-PROP-010] the Range toggle gives two thumbs, from the minimum to the maximum, without an array', async () => {
+    // A range was only reachable by typing an array as the default value.
+    render({ properties: { range: binding('{{true}}'), min: binding('{{10}}'), max: binding('{{90}}') } });
+    await waitFor(() => expect(thumbs()).toHaveLength(2));
+    await waitFor(() => expect(exposed().value).toEqual([10, 90]));
+
+    // An array default keeps working, with the toggle on or off; off with a number, one thumb.
+    render({ properties: { range: binding('{{true}}'), defaultValue: binding('{{[20, 40]}}') } });
+    await waitFor(() => expect(exposed().value).toEqual([20, 40]));
+    render({ properties: { range: binding('{{false}}'), defaultValue: binding('{{[25, 45]}}') } });
+    await waitFor(() => expect(exposed().value).toEqual([25, 45]));
+    render({ properties: { range: binding('{{false}}'), defaultValue: binding('{{30}}') } });
+    await waitFor(() => expect(thumbs()).toHaveLength(1));
+    expect(exposed().value).toBe(30);
+  });
 });

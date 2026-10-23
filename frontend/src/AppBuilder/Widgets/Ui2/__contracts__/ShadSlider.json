@@ -81,6 +81,15 @@
       "default": 0,
       "initial": "{{0}}"
     },
+    "range": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "step": {
       "type": "number",
       "schema": {

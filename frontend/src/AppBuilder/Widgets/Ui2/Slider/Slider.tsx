@@ -14,9 +14,11 @@ export const ShadSlider = (props: WidgetProps) => {
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties } = props;
-  const raw = properties.defaultValue;
-  const isRange = Array.isArray(raw);
+  // Range: two thumbs. The Range toggle, or a default given as an array (as before); a range whose default is one
+  // number (or none) starts at the minimum and the maximum. A range was only reachable by typing an array.
+  const isRange = properties.range === true || Array.isArray(properties.defaultValue);
   const bounds = useStable(sliderBounds(properties));
+  const raw = isRange && !Array.isArray(properties.defaultValue) ? [bounds.min, bounds.max] : properties.defaultValue;
   const initial = sliderValues(raw, bounds);
   // The native Range slider's actions: setValue(n) for one value (a range's start), setRangeValue(start, end) for a
   // range, reset() back to the default. Values are kept inside min and max; a non-number changes nothing. As the
@@ -59,7 +61,8 @@ export const ShadSlider = (props: WidgetProps) => {
       },
     }),
     undefined,
-    raw
+    // Turning Range on or off starts the value again, as a new default does.
+    [raw, isRange]
   );
   // New bounds (a smaller maximum, a larger minimum) fit the value the user set, so what is exposed is what is drawn.
   // It fits the value queued before it (an updater): a new default arriving in the same update has reset it already.
