@@ -11,6 +11,8 @@ You decide which data sources ToolJet's AI features can reach, and this section 
 
 **Credential Security**: We do not share any data source credentials (such as database passwords or API keys) with our AI servers or third-party LLM providers. If you are self-hosting, these credentials never leave your deployment. If you are using ToolJet Cloud, this data never leaves our secure servers.
 
+**File Attachments**: Files you [attach to an AI chat](/docs/build-with-ai/generate-applications#attaching-files) are stored privately by the ToolJet AI server and shared with the LLM provider you selected so the model can read them. Your ToolJet database keeps only each file's name, type, size, and checksum.
+
 **Data Discovery**: Your schema is what the AI is designed to work from, but it is not a boundary we can enforce. When the AI explores a connected data source to identify the entities relevant to your application, we cannot guarantee that it will not read data within your tables. Discovery is not deterministic, and its behavior depends on the underlying model you select. If a table must never be read by the AI, do not expose it through the credentials you connect.
 
 ### 2. Deployment Options

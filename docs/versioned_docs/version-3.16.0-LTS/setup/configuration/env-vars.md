@@ -404,6 +404,25 @@ By default, only public apps can be embedded. To allow embedding of private Tool
 
 **Note: Available in ToolJet Enterprise 2.8.0+ and Community/Cloud 2.10.0+.**
 
+#### ToolJet AI Attachments
+
+Files attached to [AI chat messages](/docs/build-with-ai/generate-applications#attaching-files) are stored by the ToolJet AI server. The ToolJet database keeps only each file's metadata. These variables limit attachment storage and upload attempts. All three are optional.
+
+| Variable | Description | Default | Unit |
+|-----------|-------------|---------|-------|
+| `AI_ATTACHMENTS_MAX_WORKSPACE_BYTES` | Maximum total size of unexpired attachments per workspace. A workspace is also limited to 10,000 unexpired attachments. | 1073741824 (1 GiB) | bytes |
+| `AI_ATTACHMENTS_MAX_UPLOADS` | Maximum number of file upload attempts in a rolling window of about 48 hours. On self-hosted deployments, the count is shared across the whole deployment (per license). | 100 | uploads |
+| `AI_ATTACHMENTS_MAX_PROVIDER_UPLOADS` | Maximum number of times, in the same rolling window, that the AI server can copy an attached file to the LLM provider during builds. Counted the same way as `AI_ATTACHMENTS_MAX_UPLOADS`. | 1000 | copies |
+
+- When the storage limit is reached, uploads fail with `This workspace has reached its attachment storage limit. Contact your administrator.`
+- When an upload budget is reached, requests fail with HTTP `429` and `Attachment upload limit reached. Try again later.` or `Attachment provider-copy limit reached. Try again later.`
+- `AI_ATTACHMENTS_MAX_UPLOADS` and `AI_ATTACHMENTS_MAX_PROVIDER_UPLOADS` must be positive integers. If either is set to any other value, the ToolJet server will not start.
+- If `AI_ATTACHMENTS_MAX_WORKSPACE_BYTES` is not a positive integer, uploads fail with `Attachment storage limit is not configured correctly. Contact your administrator.`
+
+:::info
+Attachments need the database migrations shipped with this feature (`CreateAiAttachments1789689600000`, `HardenAiAttachmentLifecycle1790683200000`, and `IndexAiAttachmentReconciliation1790683260000`). These run automatically with ToolJet's standard migrations. Until they are applied, uploads fail with `File uploads are unavailable because attachment setup is incomplete. Ask your administrator to apply the latest database updates.`
+:::
+
 #### Default Language
 
 Set the default language using the `LANGUAGE` variable. Supported options:
