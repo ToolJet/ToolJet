@@ -338,4 +338,14 @@ describe('UI 2.0 Date and time picker', () => {
     await waitFor(() => expect(exposed().value).toBe('2026-10-19T08:00'));
     await waitFor(() => expect(exposed().isValid).toBe(false));
   });
+
+  test('[ShadDateTimePicker-STY-010] every day column keeps its width, so Saturday sits under its heading', async () => {
+    // In the popover, wider than the calendar (its time row), the global `tbody tr td:last-child { flex: 1 1 auto }`
+    // grew each week's last cell to fill the row: the Saturday column stood 72px right of "Sa". Each heading and day
+    // cell is a fixed 32px, important so that rule cannot grow it.
+    render({ properties: DEFAULT });
+    await open();
+    const grid = screen.getByRole('grid');
+    for (const cell of grid.querySelectorAll('th, td')) expect(cell).toHaveClass('tw-w-8', '!tw-flex-none');
+  });
 });

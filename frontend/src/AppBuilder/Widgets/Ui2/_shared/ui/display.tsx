@@ -38,9 +38,12 @@ export const Calendar = ({
       ),
       month_grid: 'tw-w-full tw-border-collapse',
       weekdays: 'tw-flex',
-      weekday: 'tw-w-8 tw-rounded-ui2-md tw-text-[0.8rem] tw-font-normal tw-text-ui2-muted-foreground',
+      // Every column keeps its 32px (flex none, important): in a popover wider than the calendar (the Date and time
+      // picker, whose time row is wider) ToolJet's global `tbody tr td:last-child { flex: 1 1 auto }` grew the last day
+      // cell of each week to fill the row, so the Saturday column stood 72px right of its heading.
+      weekday: 'tw-w-8 !tw-flex-none tw-rounded-ui2-md tw-text-[0.8rem] tw-font-normal tw-text-ui2-muted-foreground',
       week: 'tw-mt-2 tw-flex tw-w-full',
-      day: 'tw-relative tw-h-8 tw-w-8 tw-p-0 tw-text-center tw-text-ui2-sm',
+      day: 'tw-relative tw-h-8 tw-w-8 !tw-flex-none tw-p-0 tw-text-center tw-text-ui2-sm',
       day_button: cn(
         buttonVariants({ variant: 'ghost' }),
         'tw-h-8 tw-w-8 tw-p-0 tw-font-normal aria-selected:tw-opacity-100'
