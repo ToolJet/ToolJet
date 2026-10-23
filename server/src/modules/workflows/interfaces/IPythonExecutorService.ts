@@ -1,6 +1,7 @@
 export enum SandboxMode {
   ENABLED = 'ENABLED', // Sandboxed execution via nsjail
-  BYPASSED = 'BYPASSED', // No sandbox - development/restricted environments
+  BYPASSED = 'BYPASSED', // No sandbox - explicit operator opt-in via TOOLJET_WORKFLOW_SANDBOX_BYPASS=true
+  DISABLED = 'DISABLED', // nsjail missing and no explicit bypass - refuse to run (fail closed)
 }
 
 export interface ExecutionResult {

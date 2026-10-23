@@ -3,17 +3,14 @@ import { CreatePluginDto, UpdatePluginDto } from './dto';
 import { EntityManager } from 'typeorm';
 import { FilesRepository } from '@modules/files/repository';
 import { ConfigService } from '@nestjs/config';
-import { InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { Plugin } from '@entities/plugin.entity';
 import { encode } from 'js-base64';
 import { File } from 'src/entities/file.entity';
-import * as jszip from 'jszip';
 import * as fs from 'fs';
 import { CreateFileDto, UpdateFileDto } from '@modules/files/dto';
 import { IPluginsUtilService } from './interfaces/IUtilService';
 import { Injectable } from '@nestjs/common';
-
-const jszipInstance = new jszip();
 
 /**
  * Extracts @spec/ references from operations.json content to discover spec file names.
@@ -121,64 +118,11 @@ export class PluginsUtilService implements IPluginsUtilService {
   }
 
   fetchPluginFiles(id: string, repo: string) {
-    //Don't fetch from any repo due to security concerns ty.
-    // if (repo && repo.length > 0) {
-    //   return this.fetchPluginFilesFromRepo(repo);
-    // }
+    // id is interpolated into S3 URLs and local paths
+    if (!/^[A-Za-z0-9_-]+$/.test(id ?? '')) throw new BadRequestException('Invalid plugin id');
 
-    //Plugins will only be fetched from S3
+    // Plugins are only fetched from the ToolJet marketplace, never from user-supplied repos
     return this.fetchPluginFilesFromS3(id);
-  }
-
-  async fetchPluginFilesFromRepo(repo: string) {
-    const releaseResponse = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
-    const latestRelease = await releaseResponse.json();
-    const [zipballResponse, indexResponse] = await Promise.all([
-      fetch(`${latestRelease.zipball_url}`),
-      fetch(`${latestRelease.assets[0].browser_download_url}`),
-    ]);
-    const zipball = await zipballResponse.arrayBuffer();
-    const index = await indexResponse.arrayBuffer();
-
-    const result = await jszipInstance.loadAsync(zipball);
-
-    let manifestFileKey: string;
-    let iconFileKey: string;
-    let operationsFileKey: string;
-    const specFileKeys: { name: string; key: string }[] = [];
-
-    Object.keys(result.files).forEach((key) => {
-      if (key.includes('manifest.json')) {
-        manifestFileKey = key;
-      } else if (key.includes('icon.svg')) {
-        iconFileKey = key;
-      } else if (key.includes('operations.json')) {
-        operationsFileKey = key;
-      } else if (key.includes('openapi-specs/') && (key.endsWith('.yaml') || key.endsWith('.json'))) {
-        const fileName = key.split('/').pop();
-        const specName = fileName.replace(/\.(yaml|json)$/, '');
-        specFileKeys.push({ name: specName, key });
-      }
-    });
-
-    const [manifestFile, iconFile, operations] = await Promise.all([
-      result.files[manifestFileKey].async('arraybuffer'),
-      result.files[iconFileKey].async('arraybuffer'),
-      result.files[operationsFileKey].async('arraybuffer'),
-    ]);
-
-    // Extract spec files from zip
-    const specFiles: Record<string, string> = {};
-    await Promise.all(
-      specFileKeys.map(async ({ name, key }) => {
-        const content = await result.files[key].async('string');
-        specFiles[name] = content;
-      })
-    );
-
-    const version = latestRelease.name.replace('v', '');
-
-    return [index, operations, iconFile, manifestFile, version, specFiles];
   }
 
   private async fetchPluginFilesFromS3(id: string): Promise<any> {
