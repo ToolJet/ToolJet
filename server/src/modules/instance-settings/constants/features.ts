@@ -15,5 +15,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UPDATE]: {
       license: LICENSE_FIELD.VALID,
     },
+    // No licence: super admins must be able to change SSRF protection on any plan, including an expired one.
+    [FEATURE_KEY.SSRF_GET]: {},
+    [FEATURE_KEY.SSRF_UPDATE]: {},
   },
 };

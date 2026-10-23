@@ -3,6 +3,9 @@ export enum FEATURE_KEY {
   UPDATE = 'update',
   DELETE = 'delete',
   CREATE = 'create',
+  // SSRF settings are deliberately not licence-gated, so they get their own keys.
+  SSRF_GET = 'ssrf_get',
+  SSRF_UPDATE = 'ssrf_update',
 }
 
 export enum INSTANCE_SETTINGS_TYPE {

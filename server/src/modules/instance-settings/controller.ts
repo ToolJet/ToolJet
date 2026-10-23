@@ -60,19 +60,19 @@ export class InstanceSettingsController implements IInstanceSettingsController {
     throw new NotFoundException();
   }
 
-  @InitFeature(FEATURE_KEY.GET)
+  @InitFeature(FEATURE_KEY.SSRF_GET)
   @Get('ssrf')
   async getSsrfSettings(): Promise<SsrfSettingsResponseDto> {
     throw new NotFoundException();
   }
 
-  @InitFeature(FEATURE_KEY.UPDATE)
+  @InitFeature(FEATURE_KEY.SSRF_UPDATE)
   @Put('ssrf')
   async updateSsrfSettings(@Body() body: UpdateSsrfSettingsDto): Promise<SsrfSettingsResponseDto> {
     throw new NotFoundException();
   }
 
-  @InitFeature(FEATURE_KEY.UPDATE)
+  @InitFeature(FEATURE_KEY.SSRF_UPDATE)
   @Post('ssrf/dismiss-notice')
   @HttpCode(204)
   async dismissSsrfUpgradeNotice(): Promise<void> {
