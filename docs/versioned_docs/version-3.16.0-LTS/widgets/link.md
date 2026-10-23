@@ -36,13 +36,16 @@ The following actions of the link component can be controlled using the componen
 
 There are currently no exposed variables for the component.
 
-## General
+## Additional Actions
 
-### Tooltip
-
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
-
-Under the **General** accordion, you can set the value as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field. Now hovering over the component will display the tooltip.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Track shipment`). |
 
 ## Devices
 
@@ -58,8 +61,6 @@ Under the **General** accordion, you can set the value as **Plain text**, **Mark
 | Text color | You can change the background color of the text by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Text size | By default, the text size is set to 14. You can enter any value from 1-100 to set a custom text size. |
 | Underline | You can change the underline of the text in the following ways: **on-hover (default), never, always**. |
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. Off by default. Toggle it on, or set it dynamically by clicking **fx**. |
 
 ### Advanced
 

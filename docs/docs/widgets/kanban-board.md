@@ -88,13 +88,12 @@ Following actions of Kanban component can be controlled using the component spec
 | addCard | Add a card onto the kanban via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.kanban1.addCard('c1', {title: 'New Title'})`. |
 | deleteCard | Delete a card from the kanban via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.kanban1.deleteCard('card id')` ex: `await components.kanban1.deleteCard('c2')`. | 
 
-## General
+## Additional Actions
 
-### Tooltip
-
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
-
-Under the <b>General</b> accordion, you can set the value as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field. Now hovering over the component will display the tooltip.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Drag cards to update their status`). |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Devices
 
@@ -109,7 +108,6 @@ Under the <b>General</b> accordion, you can set the value as **Plain text**, **M
 | :------------------------------------------ | :------------------------------------------------ |
 | Disable | If disabled or set to `{{false}}` the component will be locked and becomes non-functional. By default, its disabled i.e. its value is set to `{{true}}`. |
 | Visibility | This is to control the visibility of the component. If `{{false}}`/disabled the component will not visible after the app is deployed. By default, it's enabled (set to `{{true}}`). |
-| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. Off by default. Toggle it on, or set it dynamically by clicking **fx**. |
 | Accent color | You can change the accent color of the column title by entering the Hex color code or choosing a color of your choice from the color picker. |
 
 ### Advanced
