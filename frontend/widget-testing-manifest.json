@@ -287,7 +287,8 @@
     },
     {
       "componentType": "JSONExplorer",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/JSONExplorer/TESTING.md"
     },
     {
       "componentType": "CustomComponent",
@@ -314,7 +315,8 @@
     },
     {
       "componentType": "CodeEditor",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CodeEditor/TESTING.md"
     },
     {
       "componentType": "ColorPicker",
@@ -340,7 +342,8 @@
     },
     {
       "componentType": "JSONEditor",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/JSONEditor/TESTING.md"
     },
     {
       "componentType": "Modal",

@@ -333,6 +333,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'FileInput',
   'FilePicker',
   'Form',
+  'Html',
   'Icon',
   'IFrame',
   'Image',
