@@ -51,7 +51,7 @@ export const shadRadioGroupConfig = {
         },
         defaultValue: [],
       },
-      note: "Labels that differ from values: {{[{ label: 'Standard', value: 'std' }, { label: 'Express', value: 'exp' }]}}",
+      note: "Draws the first 100 options; a Select or Combobox takes more. Labels that differ from values: {{[{ label: 'Standard', value: 'std' }, { label: 'Express', value: 'exp' }]}}",
       placeholder: "['Standard', 'Premium'] or [{ label, value }]",
     },
     defaultValue: {

@@ -13,7 +13,7 @@ import {
   shownOptions,
 } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import { isDisabledOption } from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
-import { useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import { OptionsCapNote, useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const ShadRadioGroup = (props: WidgetProps) => {
@@ -106,6 +106,8 @@ export const ShadRadioGroup = (props: WidgetProps) => {
             );
           })}
         </RadioGroup>
+        {/* Past MAX_CHOICES the rest are not drawn (a 10,000-option binding froze the page); this says so. */}
+        <OptionsCapNote max={MAX_CHOICES} total={options.length} className="tw-mt-1" />
       </Field>
     </Shell>
   );
