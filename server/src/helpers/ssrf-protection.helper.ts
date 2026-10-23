@@ -1,7 +1,9 @@
 import { URL } from 'url';
 import * as dns from 'dns/promises';
+import { lookup as dnsLookup, LookupAddress, LookupAllOptions, LookupOneOptions } from 'dns';
 import * as net from 'net';
 import { BadRequestException } from '@nestjs/common';
+import type { Options as GotOptions } from 'got';
 import { getTooljetEdition } from './utils.helper';
 
 /**
@@ -18,11 +20,12 @@ import { getTooljetEdition } from './utils.helper';
  * port rather than a cross-package import because server has no build-time
  * dependency on @tooljet-plugins/common.
  *
- * ponytail: DNS-rebinding-as-a-service hostnames (nip.io, sslip.io, ...) and
- * the got-level `lookup` TOCTOU guard from the plugin version are not ported
- * here — these call sites are single request-response exchanges, not a
- * general-purpose HTTP client with redirects. Add them if this helper grows
- * more callers.
+ * createSSRFSafeLookup() is the connect-time half: pass it as got's `lookup` so
+ * the address actually dialled is re-checked (closes the DNS-rebinding window
+ * between validateUrlForSSRF's resolve and got's own resolve).
+ *
+ * ponytail: DNS-rebinding-as-a-service hostnames (nip.io, sslip.io, ...) from the
+ * plugin version are not ported; the connect-time lookup covers what they resolve to.
  */
 
 const CLOUD_METADATA_ENDPOINTS = [/^169\.254\.169\.25[34]$/, /^metadata\.google\.internal$/i, /^100\.100\.100\.200$/];
@@ -237,4 +240,59 @@ export async function validateHostForSSRF(host: string, protocol?: string): Prom
   if (!host) return;
   const scheme = protocol ? `${protocol.replace(/:$/, '')}:` : 'https:';
   await validateUrlForSSRF(`${scheme}//${host}`);
+}
+
+type LookupCallback = (err: NodeJS.ErrnoException | null, address?: string | LookupAddress[], family?: number) => void;
+
+/**
+ * A `lookup` for got/http that re-validates every resolved address at connect time with the same
+ * predicate, allowlist and edition policy as validateUrlForSSRF. Handles `options.all` (Node 22's
+ * autoSelectFamily asks for an array). Undefined when protection is off, so got uses the default lookup.
+ * Accepts every dns.lookup call shape; typed as got's `lookup` option (got 11's typing rejects dns.lookup itself).
+ */
+export function createSSRFSafeLookup(): GotOptions['lookup'] | undefined {
+  if (!isSSRFProtectionEnabled()) return undefined;
+
+  const safeLookup = (
+    hostname: string,
+    optionsOrCallback: number | LookupOneOptions | LookupAllOptions | LookupCallback,
+    maybeCallback?: LookupCallback
+  ) => {
+    const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback : maybeCallback;
+    const options: LookupOneOptions | LookupAllOptions =
+      typeof optionsOrCallback === 'number'
+        ? { family: optionsOrCallback }
+        : typeof optionsOrCallback === 'function'
+          ? {}
+          : optionsOrCallback || {};
+
+    const runtime = getRuntimeConfig();
+    const host = hostname.toLowerCase();
+    // Same hostname-level exemptions as validateUrlForSSRF, so the two never disagree.
+    const hostExempt =
+      isAllowlisted(host, runtime) ||
+      (!runtime && getTooljetEdition() !== 'cloud' && LOOPBACK_HOSTNAME_ALLOWLIST.has(host));
+
+    dnsLookup(hostname, options as LookupAllOptions, (err, address: string | LookupAddress[], family?: number) => {
+      if (err) return callback(err);
+
+      const resolved = Array.isArray(address) ? address.map((a) => a.address) : [address];
+      const blocked = hostExempt
+        ? undefined
+        : resolved.find((addr) => isDangerousPrivateIP(addr) && !isAllowlisted(addr, runtime));
+
+      if (blocked !== undefined) {
+        const error = new Error(
+          `Hostname "${hostname}" resolves to blocked private/internal address "${blocked}"`
+        ) as NodeJS.ErrnoException & { address?: string; hostname?: string };
+        error.code = 'SSRF_BLOCKED';
+        error.hostname = hostname;
+        error.address = blocked;
+        return callback(error);
+      }
+
+      return Array.isArray(address) ? callback(null, address) : callback(null, address, family);
+    });
+  };
+  return safeLookup as unknown as GotOptions['lookup'];
 }

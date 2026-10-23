@@ -22,7 +22,7 @@ import { DataSourcesRepository } from './repository';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { cleanObject, resolveOptionsArrayForOAuth, resolveSourceOptionsForOAuth } from '@helpers/utils.helper';
-import { validateUrlForSSRF, validateHostForSSRF } from '@helpers/ssrf-protection.helper';
+import { validateUrlForSSRF, validateHostForSSRF, createSSRFSafeLookup } from '@helpers/ssrf-protection.helper';
 import { decode } from 'js-base64';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
@@ -1569,13 +1569,30 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       };
     }
 
+    let response: { statusCode: number; body: string };
     try {
-      const response = await got(accessTokenUrl, {
+      // Token endpoints answer the POST directly (RFC 6749 §3.2): never follow a redirect, which would
+      // re-send client_secret to an unchecked host, and re-check the dialled IP at connect time.
+      response = await got(accessTokenUrl, {
         method: 'post',
         headers,
         form: bodyData,
+        followRedirect: false,
+        lookup: createSSRFSafeLookup(),
       });
+    } catch (err) {
+      if (err?.code === 'SSRF_BLOCKED') throw new BadRequestException(err.message);
+      throw new BadRequestException(this.parseErrorResponse(err?.response?.body, err?.response?.statusCode));
+    }
 
+    // With followRedirect off, got resolves 3xx instead of throwing.
+    if (response.statusCode >= 300 && response.statusCode < 400) {
+      throw new BadRequestException(
+        `OAuth token endpoint responded with a redirect (${response.statusCode}); redirects are not followed`
+      );
+    }
+
+    try {
       const result = JSON.parse(response.body);
 
       return {
