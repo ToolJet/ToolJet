@@ -17,6 +17,7 @@ const ROWS = [
   ['ShadNumberInput', { defaultValue: '{{5}}' }, null, 'onChange', true],
   ['ShadCurrencyInput', { defaultValue: '{{12.5}}' }, null, 'onChange', true],
   ['ShadPhoneInput', { defaultValue: '+14155550123' }, '', 'onChange', true],
+  ['ShadDatePicker', { defaultValue: '2026-10-17' }, '', 'onSelect', true],
 ];
 
 const harnesses = Object.fromEntries(

@@ -204,10 +204,7 @@
         "ShadDatePicker"
       ],
       "properties": {
-        "customDateFormat": "format",
-        "showClearBtn": {
-          "gap": "no clear button"
-        }
+        "customDateFormat": "format"
       },
       "actions": {
         "setDate": "setValue"

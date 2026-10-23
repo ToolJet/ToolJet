@@ -21,6 +21,7 @@ import {
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useFocusEvents, useOverrides, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { CLEAR_ROOM, WithClear, showsClear } from '@/AppBuilder/Widgets/Ui2/_shared/FieldClear';
 import { CONTROL, controlAria, fieldIdOf, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { DateRange } from 'react-day-picker';
@@ -206,27 +207,38 @@ export const ShadDatePicker = (props: WidgetProps) => {
     // Focus the selected (or today's) day on open, so arrow keys move between days.
     autoFocus: true,
   };
+  // Show clear button (the native Date picker's showClearBtn): an x while a day (or a range's start) is picked empties
+  // it, as clearValue does, firing onSelect once; the field is then touched, so a required one says so.
+  const clearable = showsClear(properties, !!text);
+  const clearPick = () => {
+    runNow(() => commit(range ? {} : undefined, true));
+    check.touch();
+    triggerRef.current?.focus();
+  };
   return (
     <FormField props={props} properties={properties} check={check} innerRef={fit}>
       <Popover open={open} onOpenChange={openChange}>
-        <PopoverTrigger asChild>
-          <Button
-            ref={triggerRef}
-            id={fieldIdOf(props)}
-            variant="outline"
-            disabled={busy(properties)}
-            {...controlAria(props, check.error)}
-            {...focus.handlers}
-            className={cn(
-              'tw-w-full tw-justify-start tw-text-left tw-font-normal',
-              CONTROL,
-              !text && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
-            )}
-          >
-            <CalendarIcon className="tw-h-4 tw-w-4" />
-            {text || String(properties.placeholder ?? '')}
-          </Button>
-        </PopoverTrigger>
+        <WithClear enabled={properties.showClearBtn === true} show={clearable} onClear={clearPick}>
+          <PopoverTrigger asChild>
+            <Button
+              ref={triggerRef}
+              id={fieldIdOf(props)}
+              variant="outline"
+              disabled={busy(properties)}
+              {...controlAria(props, check.error)}
+              {...focus.handlers}
+              className={cn(
+                'tw-w-full tw-justify-start tw-text-left tw-font-normal',
+                CONTROL,
+                clearable && CLEAR_ROOM,
+                !text && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
+              )}
+            >
+              <CalendarIcon className="tw-h-4 tw-w-4" />
+              {text || String(properties.placeholder ?? '')}
+            </Button>
+          </PopoverTrigger>
+        </WithClear>
         <PopoverContent
           aria-label={range ? 'Choose dates' : 'Choose a date'}
           className="tw-w-auto tw-p-0"
