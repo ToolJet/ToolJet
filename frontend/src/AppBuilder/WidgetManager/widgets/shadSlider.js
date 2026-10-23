@@ -74,6 +74,18 @@ export const shadSliderConfig = {
         defaultValue: 1,
       },
     },
+    range: {
+      type: 'toggle',
+      displayName: 'Range',
+      note: 'Two thumbs: the value is [start, end]. A one-number default starts at the minimum and the maximum.',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
     defaultValue: {
       type: 'code',
       displayName: 'Default value (number, or [start, end] for a range)',
@@ -347,6 +359,9 @@ export const shadSliderConfig = {
       },
       step: {
         value: '{{1}}',
+      },
+      range: {
+        value: '{{false}}',
       },
       defaultValue: {
         value: '{{50}}',
