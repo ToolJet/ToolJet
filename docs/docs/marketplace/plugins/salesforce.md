@@ -49,9 +49,7 @@ To connect:
 After completing the OAuth flow, the query must be triggered again to load the data.
 :::
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/connection-v4.png" alt="Salesforece datasource configuration" />
-
-<!-- TODO screenshot: Salesforce connection form showing API version, Login type, Custom domain, Authentication type, Grant type (set to Authorization code with PKCE so Code challenge method and Code verifier are visible), Client ID, Client secret, Scope(s), Redirect URI and the Connect to Salesforce button (to replace connection-v4.png) -->
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/salesforce/connection-v5.png" alt="Salesforce connection form with Grant type set to Authorization code with PKCE, showing the Code challenge method and Code verifier fields and the Connect to Salesforce button" />
 
 ### Login type and custom domain
 
@@ -113,7 +111,7 @@ Salesforce returns large SOQL results in batches. When there are more records, t
 
 The value can be the relative path Salesforce returns, such as `/services/data/v50.0/query/<locator>`, or the full `https://<instance>/services/data/...` URL. Only the path is used, and it's always sent to the instance you authenticated with. Any other value fails with an *Invalid next records URL* error.
 
-<!-- TODO screenshot: SOQL Query operation with the Next records URL field set to the nextRecordsUrl of a previous query -->
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/soql-next-records-url.png" alt="SOQL Query operation with the Next records URL field set to the nextRecordsUrl returned by the listAccounts query" />
 
 :::info
 Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
