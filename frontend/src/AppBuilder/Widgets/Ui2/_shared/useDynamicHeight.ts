@@ -76,35 +76,40 @@ export const useFittedRowHeight = ({ id, path, index, value, fit, height, curren
   return fit ? fitted ?? height : height;
 };
 
-/** While a loading skeleton shows, the widget's measured root keeps the height its content last had (a min-height), so
- *  the box useAutoHeight fits neither shrinks to the skeleton nor moves the page when the content comes back. It did
- *  first by skipping the adjustment (useDynamicHeight's skipAdjustment), which held the box at a height that could be
- *  the authored one, not the content's: after a loading cycle a Card grid's 380px band stayed under it. */
+/** While a widget shows its loading look, its measured root keeps the height its content last had, so the box
+ *  useAutoHeight fits neither moves to the look's size nor moves the page when the content comes back. The root is set
+ *  to that height exactly (overflow hidden), and the look reads it as --ui2-held-height to draw inside it (LoadingBox,
+ *  the block skeleton). Only the skeleton look was held before (a min-height): with the spinner, the default, a fitted
+ *  widget jumped to its authored height while loading (a Card grid 119px to 620px). Earlier still the adjustment was
+ *  skipped (useDynamicHeight's skipAdjustment), which held the box at a height that could be the authored one. A load
+ *  before the first content holds nothing: there is no content height yet. */
 export const useSkeletonHold = (
   ref: RefObject<HTMLElement>,
   properties: Record<string, unknown>,
   enabled: boolean
 ): void => {
   const held = useRef<number | null>(null);
-  // Whether the root's min-height is the hold's: only that one is released, never one the widget set itself.
+  // Whether the root's height is the hold's: only that one is released, never one the widget set itself.
   const holding = useRef(false);
-  const skeletonLook = enabled && properties.loadingIndicator === 'skeleton';
-  const loading = properties.loadingState === true;
+  const loading = enabled && properties.loadingState === true;
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (skeletonLook && loading) {
-      if (held.current) {
-        el.style.minHeight = `${held.current}px`;
+    if (loading) {
+      if (held.current && !holding.current) {
+        el.style.height = `${held.current}px`;
+        el.style.overflow = 'hidden';
+        el.style.setProperty('--ui2-held-height', `${held.current}px`);
         holding.current = true;
       }
       return;
     }
-    // Released when loading ends, and also when the look changes away from skeleton mid-load.
     if (holding.current) {
-      el.style.minHeight = '';
+      el.style.height = '';
+      el.style.overflow = '';
+      el.style.removeProperty('--ui2-held-height');
       holding.current = false;
     }
-    if (skeletonLook) held.current = el.offsetHeight || held.current;
+    if (enabled) held.current = el.offsetHeight || held.current;
   });
 };

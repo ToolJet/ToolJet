@@ -94,7 +94,7 @@ export const TableBody = ({
       {isLoading && !wantsSkeleton(properties) ? (
         <tr>
           <td colSpan={colCount} style={{ padding: 0 }}>
-            <LoadingBox height={rowHeight * Math.min(5, Number(properties.rowsPerPage) || 5)} />
+            <LoadingBox fill={false} height={rowHeight * Math.min(5, Number(properties.rowsPerPage) || 5)} />
           </td>
         </tr>
       ) : isLoading ? (

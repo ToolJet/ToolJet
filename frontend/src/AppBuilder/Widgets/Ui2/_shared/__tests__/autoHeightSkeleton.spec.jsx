@@ -1,10 +1,12 @@
 import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 /**
- * While a UI 2.0 widget shows its loading skeleton, its measured root keeps the height its content last had (a
- * min-height), so the box neither shrinks to the skeleton nor moves the page when the content comes back. An earlier
- * version skipped the adjustment instead (useDynamicHeight's skipAdjustment), which held the box at a height that
- * could be the authored one: after a loading cycle a Card grid authored at 620px and drawn at 240px left a 380px band
- * under it. The adjustment now always runs, through full loaded -> skeleton -> loaded cycles.
+ * While a UI 2.0 widget shows its loading look, its measured root keeps the height its content last had, so the box
+ * neither changes to the look's size nor moves the page when the content comes back. An earlier version skipped the
+ * adjustment instead (useDynamicHeight's skipAdjustment), which held the box at a height that could be the authored
+ * one: after a loading cycle a Card grid authored at 620px and drawn at 240px left a 380px band under it. Then only
+ * the skeleton look was held (a min-height): with the spinner, the default, a fitted widget jumped to its authored
+ * height while loading (a Card grid 119px to 620px, a Table 254px to 315px; the Cypress loading-height check). Every
+ * look is now held at the exact height (the look draws inside it, reading --ui2-held-height), through full cycles.
  */
 import React, { useRef } from 'react';
 import { render } from '@testing-library/react';
@@ -35,7 +37,7 @@ const Probe = ({ loading, look = 'skeleton', mode = 'view' }) => {
         ref.current = el;
         if (el && !Object.getOwnPropertyDescriptor(el, 'offsetHeight')) {
           Object.defineProperty(el, 'offsetHeight', {
-            get: () => Math.max(contentHeight, parseFloat(el.style.minHeight) || 0),
+            get: () => parseFloat(el.style.height) || Math.max(contentHeight, parseFloat(el.style.minHeight) || 0),
           });
         }
       }}
@@ -58,11 +60,15 @@ describe('useAutoHeight while a skeleton shows', () => {
     for (let cycle = 0; cycle < 2; cycle++) {
       contentHeight = 70; // the skeleton
       view.rerender(<Probe loading />);
-      expect(root().style.minHeight).toBe('240px');
+      expect(root().style.height).toBe('240px');
+      expect(root().style.overflow).toBe('hidden');
+      expect(root().style.getPropertyValue('--ui2-held-height')).toBe('240px');
       expect(measured()).toBe(240);
       contentHeight = 240; // the content again
       view.rerender(<Probe loading={false} />);
-      expect(root().style.minHeight).toBe('');
+      expect(root().style.height).toBe('');
+      expect(root().style.overflow).toBe('');
+      expect(root().style.getPropertyValue('--ui2-held-height')).toBe('');
       expect(measured()).toBe(240);
     }
     expect(calls.every((args) => args.isDynamicHeightEnabled && !args.skipAdjustment)).toBe(true);
@@ -73,16 +79,25 @@ describe('useAutoHeight while a skeleton shows', () => {
     view.rerender(<Probe loading />);
     contentHeight = 400;
     view.rerender(<Probe loading={false} />);
-    expect(root().style.minHeight).toBe('');
+    expect(root().style.height).toBe('');
     expect(measured()).toBe(400);
   });
 
-  test('switching the look away from skeleton mid-load releases the hold', () => {
+  test.each(['spinner', 'skeleton', undefined])('the %s look holds the content height too', (look) => {
+    const view = render(<Probe loading={false} look={look} />);
+    contentHeight = 620; // a loading look drawn at the authored height
+    view.rerender(<Probe loading look={look} />);
+    expect(measured()).toBe(240);
+    contentHeight = 240;
+    view.rerender(<Probe loading={false} look={look} />);
+    expect(root().style.height).toBe('');
+  });
+
+  test('switching the look mid-load keeps the hold', () => {
     const view = render(<Probe loading={false} />);
     view.rerender(<Probe loading />);
-    expect(root().style.minHeight).toBe('240px');
     view.rerender(<Probe loading look="spinner" />);
-    expect(root().style.minHeight).toBe('');
+    expect(root().style.height).toBe('240px');
   });
 
   test('a min-height the widget set itself is never cleared by the hook', () => {
@@ -92,11 +107,11 @@ describe('useAutoHeight while a skeleton shows', () => {
     expect(root().style.minHeight).toBe('120px');
   });
 
-  test('a skeleton before the first content holds nothing; the spinner look and the editor hold nothing', () => {
+  test('a load before the first content holds nothing; the editor holds nothing', () => {
     render(<Probe loading />);
-    expect(root().style.minHeight).toBe('');
-    const spinner = render(<Probe loading={false} look="spinner" />);
-    spinner.rerender(<Probe loading look="spinner" />);
-    expect(document.querySelectorAll('[data-probe]')[1].style.minHeight).toBe('');
+    expect(root().style.height).toBe('');
+    const editor = render(<Probe loading={false} mode="edit" />);
+    editor.rerender(<Probe loading mode="edit" />);
+    expect(document.querySelectorAll('[data-probe]')[1].style.height).toBe('');
   });
 });

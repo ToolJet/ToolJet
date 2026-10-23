@@ -3,7 +3,7 @@ import React, { createContext, useCallback, useRef } from 'react';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { GROUP_LOADING } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
-import { LoadingBox, Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { LoadingBox, Spinner, heldHeight, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { avatarPeople } from './people';
 import type { LoadingLook, LoadingMap, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
@@ -100,7 +100,7 @@ export const loadingSkeleton = (
       );
     case 'columns':
       return (
-        <div className="tw-grid tw-grid-cols-3 tw-gap-3" style={{ height: h }}>
+        <div className="tw-grid tw-grid-cols-3 tw-gap-3" style={{ height: heldHeight(h) }}>
           {[0, 1, 2].map((i) => (
             <div
               key={i}
@@ -114,7 +114,7 @@ export const loadingSkeleton = (
         </div>
       );
     default:
-      return <Skeleton className="tw-w-full tw-rounded-[var(--sc-radius)]" style={{ height: h }} />;
+      return <Skeleton className="tw-w-full tw-rounded-[var(--sc-radius)]" style={{ height: heldHeight(h) }} />;
   }
 };
 
