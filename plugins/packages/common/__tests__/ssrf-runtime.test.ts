@@ -172,7 +172,8 @@ describe('built-in check: IP literals and DNS failures', () => {
 });
 
 describe('cross-copy SSRF parity (runtime key present)', () => {
-  const publish = (...cidrs: string[]) => {
+  // Keep this block identical in all three SSRF suites (built-in, marketplace, server).
+  const publishRanges = (...cidrs: string[]) => {
     (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges(...cidrs) };
   };
   it.each([
@@ -183,15 +184,15 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     'http://[::ffff:169.254.169.254]/',
     'http://[fe80::1]/',
   ])('blocks %s with an empty allowlist', async (url) => {
-    publish();
+    publishRanges();
     await expect(validateUrlForSSRF(url)).rejects.toThrow();
   });
   it('allows a hostname that resolves into an allowlisted CIDR', async () => {
-    publish('127.0.0.0/8', '::1/128');
+    publishRanges('127.0.0.0/8', '::1/128');
     await expect(validateUrlForSSRF('http://localhost/')).resolves.toBeUndefined();
   });
   it('allows an IPv6 literal inside an allowlisted CIDR', async () => {
-    publish('::1/128');
+    publishRanges('::1/128');
     await expect(validateUrlForSSRF('http://[::1]/')).resolves.toBeUndefined();
   });
 });

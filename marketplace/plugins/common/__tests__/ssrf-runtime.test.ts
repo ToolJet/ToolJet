@@ -161,3 +161,29 @@ describe('lookup with options.all (Node 22 autoSelectFamily)', () => {
     expect(res.statusCode).toBe(200);
   }, 20000);
 });
+
+describe('cross-copy SSRF parity (runtime key present)', () => {
+  // Keep this block identical in all three SSRF suites (built-in, marketplace, server).
+  const publishRanges = (...cidrs: string[]) => {
+    (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges(...cidrs) };
+  };
+  it.each([
+    'http://[::1]/',
+    'http://[fd00::1]/',
+    'http://[fd00:ec2::254]/',
+    'http://[::ffff:127.0.0.1]/',
+    'http://[::ffff:169.254.169.254]/',
+    'http://[fe80::1]/',
+  ])('blocks %s with an empty allowlist', async (url) => {
+    publishRanges();
+    await expect(validateUrlForSSRF(url)).rejects.toThrow();
+  });
+  it('allows a hostname that resolves into an allowlisted CIDR', async () => {
+    publishRanges('127.0.0.0/8', '::1/128');
+    await expect(validateUrlForSSRF('http://localhost/')).resolves.toBeUndefined();
+  });
+  it('allows an IPv6 literal inside an allowlisted CIDR', async () => {
+    publishRanges('::1/128');
+    await expect(validateUrlForSSRF('http://[::1]/')).resolves.toBeUndefined();
+  });
+});
