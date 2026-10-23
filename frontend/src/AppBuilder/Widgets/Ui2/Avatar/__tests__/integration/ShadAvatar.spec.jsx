@@ -13,7 +13,7 @@ const widget = createWidgetHarness({
   componentType: 'ShadAvatar',
   handle: 'avatar1',
   id: 'avatar1',
-  widgetHeight: 40,
+  widgetHeight: 600,
   widgetWidth: 240,
   defaultProperties: { names: binding('Ada Lovelace') },
 });
@@ -136,5 +136,26 @@ describe('UI 2.0 Avatar', () => {
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#3730a3');
     expect(root.style.getPropertyValue('--lk-ring')).toBe('#ffffff');
     expect(screen.getByText('AL').className).toContain('tw-bg-[color:var(--lk-bg,var(--sc-muted))]');
+  });
+
+  test('[ShadAvatar-STY-010] a box shorter than the avatar draws it at the box height', async () => {
+    // A 32px avatar in a 20px box painted 14px over the widget below (the Cypress geometry check). The box is its
+    // height less the canvas's 2px padding above and below.
+    const small = createWidgetHarness({
+      componentType: 'ShadAvatar',
+      handle: 'avatar2',
+      id: 'avatar2',
+      widgetHeight: 20,
+      widgetWidth: 240,
+      defaultProperties: { names: binding('Ada Lovelace') },
+    });
+    await small.setup();
+    try {
+      small.render({ currentMode: 'view' });
+      const avatar = await screen.findByText('AL');
+      expect(avatar.closest('[style*="--av-size"]').style.getPropertyValue('--av-size')).toBe('16px');
+    } finally {
+      small.teardown();
+    }
   });
 });

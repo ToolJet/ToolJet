@@ -9,7 +9,10 @@ import { avatarPeople } from '@/AppBuilder/Widgets/Ui2/_shared/people';
 export const ShadAvatar = (props: WidgetProps) => {
   const { properties, setExposedVariables } = props;
   useExposed(setExposedVariables, properties, {});
-  const size = Math.max(16, Math.min(256, Number(properties.size) || 32));
+  const asked = Math.max(16, Math.min(256, Number(properties.size) || 32));
+  // Drawn inside the box (`height`, the box less the canvas's padding): a 32px avatar in a 20px box painted 14px over
+  // the widget below.
+  const size = Number(props.height) > 0 ? Math.max(12, Math.min(asked, Number(props.height))) : asked;
   const people = avatarPeople(properties.names, properties.src);
   const max = Math.max(1, Math.min(50, Math.floor(Number(properties.maxVisible)) || 5));
   const shown = people.slice(0, max);

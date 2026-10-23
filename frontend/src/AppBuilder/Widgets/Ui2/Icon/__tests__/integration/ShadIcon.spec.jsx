@@ -14,7 +14,7 @@ const widget = createWidgetHarness({
   componentType: 'ShadIcon',
   handle: 'icon1',
   id: ID,
-  widgetHeight: 48,
+  widgetHeight: 1100,
   widgetWidth: 120,
   defaultProperties: { icon: binding('users') },
 });
@@ -121,5 +121,20 @@ describe('UI 2.0 Icon', () => {
     expect(root.style.getPropertyValue('--lk-chip')).toBe('#cffafe');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('6px');
     expect(box().parentElement).toHaveClass('tw-justify-center');
+  });
+
+  test('[ShadIcon-STY-010] a box shorter than the chip scales the chip and the icon to fit inside it', async () => {
+    // A 40px chip in a 20px box painted 22px over the widget below (the Cypress geometry check). The box is its height
+    // less the canvas's 2px padding above and below.
+    const small = createWidgetHarness({ componentType: 'ShadIcon', handle: 'icon2', id: 'icon2', widgetHeight: 20 });
+    await small.setup();
+    try {
+      small.render({ currentMode: 'view', properties: { size: binding('{{20}}'), chip: binding('circle') } });
+      const glyph = await screen.findByRole('img');
+      expect(parseFloat(glyph.style.height)).toBeLessThanOrEqual(16);
+      expect(Number(glyph.querySelector('svg').getAttribute('width'))).toBeLessThanOrEqual(8);
+    } finally {
+      small.teardown();
+    }
   });
 });
