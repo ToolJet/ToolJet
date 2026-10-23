@@ -4,6 +4,7 @@ import SwitchComponent from '@/components/ui/Switch/Index';
 import { shallow } from 'zustand/shallow';
 import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const MaintenanceMode = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
@@ -15,6 +16,10 @@ const MaintenanceMode = ({ darkMode }) => {
     }),
     shallow
   );
+  const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+
+  if (isOnFeatureBranch) return null;
 
   return (
     <>

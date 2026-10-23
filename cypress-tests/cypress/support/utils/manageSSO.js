@@ -1,5 +1,5 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
-import { ssoSelector } from "Selectors/manageSSO";
+import { ssoSelector } from "Selectors/platform/manageSSO";
 import * as common from "Support/utils/common";
 import {
   instanceSSOConfig,
@@ -8,7 +8,7 @@ import {
   verifyTooltipDisabled,
 } from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
-import { ssoText } from "Texts/manageSSO";
+import { ssoText } from "Texts/platform/manageSSO";
 
 export const verifyLoginSettings = (pageName) => {
   //Verify Password and SSO Domain section

@@ -35,6 +35,9 @@ const Authentication = ({
   client_secret,
   client_auth,
   company_id,
+  site_url,
+  code_verifier,
+  code_challenge_method,
   audience,
   custom_auth_params,
   custom_query_params,
@@ -79,6 +82,9 @@ const Authentication = ({
             client_secret,
             client_auth,
             company_id,
+            site_url,
+            code_verifier,
+            code_challenge_method,
           }}
           tokenConfig={{
             access_token_url,
@@ -100,6 +106,7 @@ const Authentication = ({
           }}
           oauth_configs={oauth_configs}
           isFieldAllowed={isFieldAllowed}
+          isDisabled={isDisabled}
         />
       </div>
     );

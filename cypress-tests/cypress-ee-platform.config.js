@@ -16,7 +16,13 @@ module.exports = defineConfig({
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
 
-      return require("./cypress/plugins/index.js")(on, config);
+      config = require("./cypress/plugins/index.js")(on, config);
+      // cypress-live-reporter — self-disables when no CLR sink is set in cypress env.
+      return require("cypress-live-reporter/plugin").livePlugin(on, config);
+    },
+
+    env: {
+      CLR_PROJECT_ID: "platform-ee",
     },
 
     baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)
@@ -31,6 +37,7 @@ module.exports = defineConfig({
       "cypress/e2e/happyPath/platform/eeTestcases/externalApi/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/userMetadata/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/superAdmin/**/*.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/modules/**/*.cy.js",
       "cypress/e2e/happyPath/platform/ceTestcases/**/*.cy.js",
       "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
     ],

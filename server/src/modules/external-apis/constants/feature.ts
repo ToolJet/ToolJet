@@ -49,6 +49,14 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.UPDATE_USER_METADATA]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.GET_USER_METADATA]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.PULL_NEW_APP]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
@@ -69,11 +77,35 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.SAVE_APP_VERSION]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.GENERATE_PAT]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
     [FEATURE_KEY.VALIDATE_PAT_SESSION]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.CREATE_GROUP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.UPDATE_GROUP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.LIST_GROUPS]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.GET_GROUP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.DELETE_GROUP]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
@@ -105,14 +137,6 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
-    [FEATURE_KEY.UPDATE_USER_METADATA]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
-      isPublic: true,
-    },
-    [FEATURE_KEY.GET_USER_METADATA]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
-      isPublic: true,
-    },
     [FEATURE_KEY.BAN_USER]: {
       isPublic: true,
     },
@@ -130,6 +154,14 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.GET_WORKSPACE_USERS_BY_GROUPS]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.LIST_WORKSPACE_USER_APPS_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.LIST_WORKSPACE_APP_USERS_V2]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },

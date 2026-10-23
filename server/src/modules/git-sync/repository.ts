@@ -1,4 +1,5 @@
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 
@@ -12,7 +13,7 @@ export class OrganizationGitSyncRepository extends Repository<OrganizationGitSyn
     const repository = manager ? manager.getRepository(this.target) : this;
     return await repository.findOne({
       where: { organizationId: organizationId },
-      relations: ['gitSsh', 'gitHttps', 'gitLab'],
+      relations: ['gitHttps', 'gitLab'],
     });
   }
 
@@ -26,5 +27,22 @@ export class OrganizationGitSyncRepository extends Repository<OrganizationGitSyn
       },
     });
     return orgGit;
+  }
+
+  // Whether the org has git sync configured (and therefore every app in the org is considered git-synced).
+  // Source of truth: presence of a default workspace branch row.
+  async isOrganizationGitSynced(organizationId: string, manager?: EntityManager): Promise<boolean> {
+    const repo = manager ? manager.getRepository(WorkspaceBranch) : this.dataSource.getRepository(WorkspaceBranch);
+    const count = await repo.count({ where: { organizationId, isDefault: true } });
+    return count > 0;
+  }
+
+  async findDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | undefined> {
+    const repo = manager ? manager.getRepository(WorkspaceBranch) : this.dataSource.getRepository(WorkspaceBranch);
+    const defaultBranch = await repo.findOne({
+      where: { organizationId, isDefault: true },
+      select: ['id'],
+    });
+    return defaultBranch?.id;
   }
 }

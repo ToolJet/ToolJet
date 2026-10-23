@@ -13,7 +13,8 @@ function ChangeRoleModal({
   darkMode,
   isLoading,
 }) {
-  const isAddUserScenario = autoRoleChangeMessageType === 'USER_ROLE_CHANGE_ADD_USERS';
+  const isAdminRequired = autoRoleChangeMessageType === 'USER_ROLE_CHANGE_ADMIN_REQUIRED';
+  const isAddUserScenario = autoRoleChangeMessageType === 'USER_ROLE_CHANGE_ADD_USERS' || isAdminRequired;
 
   const renderModalContent = () => {
     if (isAddUserScenario && autoRoleChangeModalList.length === 1) {
@@ -39,6 +40,7 @@ function ChangeRoleModal({
                 Learn more
               </a>
             </p>
+            {isAdminRequired && <p>Only a workspace admin can change user roles.</p>}
           </div>
           <ol
             style={{
@@ -82,6 +84,7 @@ function ChangeRoleModal({
               </a>
             </p>
             <p>If you wish to add this permission, kindly change the following users role from end-user to builder -</p>
+            {isAdminRequired && <p>Only a workspace admin can change user roles.</p>}
           </div>
           <ol
             style={{

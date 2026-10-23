@@ -45,10 +45,8 @@ jest.mock('@modules/request-context/service', () => ({
 describe('SessionService', () => {
   let service: SessionService;
   let sessionUtilService: jest.Mocked<SessionUtilService>;
-  let appsRepository: jest.Mocked<AppsRepository>;
   let organizationRepository: jest.Mocked<OrganizationRepository>;
   let organizationUserRepository: jest.Mocked<OrganizationUsersRepository>;
-  let userRepository: jest.Mocked<UserRepository>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -98,10 +96,8 @@ describe('SessionService', () => {
 
     service = module.get<SessionService>(SessionService);
     sessionUtilService = module.get(SessionUtilService);
-    appsRepository = module.get(AppsRepository);
     organizationRepository = module.get(OrganizationRepository);
     organizationUserRepository = module.get(OrganizationUsersRepository);
-    userRepository = module.get(UserRepository);
   });
 
   afterEach(() => {
@@ -128,10 +124,7 @@ describe('SessionService', () => {
       await service.terminateSession(user, sessionId, response);
 
       // Cookie must be cleared
-      expect(response.clearCookie).toHaveBeenCalledWith(
-        'tj_auth_token',
-        expect.objectContaining({ httpOnly: true }),
-      );
+      expect(response.clearCookie).toHaveBeenCalledWith('tj_auth_token', expect.objectContaining({ httpOnly: true }));
 
       // The mock manager.delete should have been called with correct entity & criteria
       expect(mockManager.delete).toHaveBeenCalledWith(UserSessions, {
@@ -160,12 +153,7 @@ describe('SessionService', () => {
       const result = await service.getSessionDetails(baseUser, 'test-org', '', null);
 
       expect(organizationRepository.fetchOrganization).toHaveBeenCalledWith('test-org');
-      expect(sessionUtilService.generateSessionPayload).toHaveBeenCalledWith(
-        baseUser,
-        mockOrg,
-        undefined,
-        null,
-      );
+      expect(sessionUtilService.generateSessionPayload).toHaveBeenCalledWith(baseUser, mockOrg, undefined, null);
       expect(result).toEqual({
         current_organization_id: 'org-1',
         current_organization_name: 'Test Org',
@@ -175,9 +163,9 @@ describe('SessionService', () => {
     it('should throw NotFoundException when workspace slug does not resolve', async () => {
       organizationRepository.fetchOrganization.mockResolvedValue(null);
 
-      await expect(
-        service.getSessionDetails(baseUser, 'nonexistent-slug', '', null),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.getSessionDetails(baseUser, 'nonexistent-slug', '', null)).rejects.toThrow(
+        NotFoundException
+      );
     });
 
     it('should return session details when no workspace slug or appId provided', async () => {
@@ -185,12 +173,7 @@ describe('SessionService', () => {
 
       // When neither workspaceSlug nor appId is provided, the service should
       // still call generateSessionPayload with undefined currentOrganization
-      expect(sessionUtilService.generateSessionPayload).toHaveBeenCalledWith(
-        baseUser,
-        undefined,
-        undefined,
-        null,
-      );
+      expect(sessionUtilService.generateSessionPayload).toHaveBeenCalledWith(baseUser, undefined, undefined, null);
       expect(result).toBeDefined();
     });
   });

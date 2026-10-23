@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { SSOConfigs, SSOType } from '@entities/sso_config.entity';
+import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 
 @Injectable()
 export class SSOConfigsRepository extends Repository<SSOConfigs> {
@@ -55,5 +55,37 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
       relations: ['organization', 'oidcGroupSyncs'],
     });
     return result;
+  }
+
+  async findOrgSsoConfig(organizationId: string, sso: SSOType): Promise<SSOConfigs | null> {
+    return this.findOne({
+      where: { organizationId, sso, configScope: ConfigScope.ORGANIZATION },
+    });
+  }
+
+  async findOrgSamlConfig(organizationId: string): Promise<SSOConfigs | null> {
+    return this.findOrgSsoConfig(organizationId, SSOType.SAML);
+  }
+
+  async findOrgLdapConfig(organizationId: string): Promise<SSOConfigs | null> {
+    return this.findOrgSsoConfig(organizationId, SSOType.LDAP);
+  }
+
+  async setUseEnvConfig(organizationId: string, useEnvConfig: boolean, sso: SSOType): Promise<SSOConfigs | null> {
+    const existing = await this.findOrgSsoConfig(organizationId, sso);
+    if (!existing) {
+      if (!useEnvConfig) return null;
+      return this.save(
+        this.create({
+          organizationId,
+          sso,
+          configScope: ConfigScope.ORGANIZATION,
+          configs: {} as SSOConfigs['configs'],
+          enabled: false,
+          useEnvConfig,
+        })
+      );
+    }
+    return this.save({ ...existing, useEnvConfig });
   }
 }

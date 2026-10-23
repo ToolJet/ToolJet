@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 
-import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
+import { ToolTip } from '@/_components';
+import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { ActionTypes } from './ActionTypes';
+import {
+  mergeStaticAndDynamicActions,
+  resolveLibraryComponentActions,
+} from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import {
   Popover,
   PopoverTrigger,
@@ -46,7 +53,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
@@ -71,6 +78,8 @@ export const EventManager = ({
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const components = useStore((state) => state.getCurrentPageComponents());
+  const libraryPins = useStore((state) => state.globalSettings?.customComponentLibraries);
+  const libraryManifests = useCustomComponentLibrariesStore((state) => state.manifests);
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
   );
@@ -87,6 +96,7 @@ export const EventManager = ({
   const { createAppVersionEventHandlers, deleteAppVersionEventHandler, updateAppVersionEventHandlers } =
     useEventActions();
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
+  const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
 
   const eventsUpdatedLoader = useStore((state) => state.eventsSlice.getEventsUpdatedLoader(), shallow);
   const eventsCreatedLoader = useStore((state) => state.eventsSlice.getEventsCreatedLoader(), shallow);
@@ -229,13 +239,25 @@ export const EventManager = ({
     return componentOptions;
   }
 
+  function resolveComponentActions(componentId, componentDef) {
+    const targetComponentMeta = componentTypes.find(
+      (componentType) => componentDef?.component?.component === componentType.component
+    );
+    const staticActions = targetComponentMeta?.actions ?? [];
+
+    if (componentDef?.component?.component === 'LibraryComponent') {
+      // libraryManifests is real Zustand state, so this re-evaluates (and the open action
+      // picker re-renders) once an in-flight manifest fetch resolves elsewhere.
+      const dynamicActions = resolveLibraryComponentActions(componentDef, libraryManifests, libraryPins);
+      return mergeStaticAndDynamicActions(staticActions, dynamicActions);
+    }
+    return staticActions;
+  }
+
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
-      const targetComponentMeta = componentTypes.find(
-        (componentType) => components[key].component.component === componentType.component
-      );
-      if ((targetComponentMeta?.actions?.length ?? 0) > 0) {
+      if ((resolveComponentActions(key, components[key])?.length ?? 0) > 0) {
         if (componentType === '' || components[key].component.component === componentType) {
           componentOptions.push({
             name: components[key].component.name,
@@ -252,10 +274,7 @@ export const EventManager = ({
     const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
     if (_.isEmpty(filteredComponents)) return [];
     const component = filteredComponents[0][1];
-    const targetComponentMeta = componentTypes.find(
-      (componentType) => component.component.component === componentType.component
-    );
-    const actions = targetComponentMeta.actions;
+    const actions = resolveComponentActions(componentId, component);
 
     const options = (actions || []).map((action) => ({
       name: action?.displayName,
@@ -270,10 +289,7 @@ export const EventManager = ({
     const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
     if (_.isEmpty(filteredComponents)) return {};
     const component = filteredComponents[0][1];
-    const targetComponentMeta = componentTypes.find(
-      (componentType) => component.component.component === componentType.component
-    );
-    const actions = targetComponentMeta.actions;
+    const actions = resolveComponentActions(componentId, component);
     return (actions || []).find((action) => action.handle === actionHandle);
   }
 
@@ -286,13 +302,14 @@ export const EventManager = ({
     return defaultParams;
   }
 
-  const fetchApps = async (page) => {
-    const { apps } = await appService.getAllAddableApps();
+  const fetchApps = async () => {
+    const { apps } = await appsService.getAllAddableApps();
     updateState({
       apps: apps.map((app) => ({
         id: app.id,
         name: app.name,
         slug: app.slug,
+        co_relation_id: app.co_relation_id,
         current_version_id: app.current_version_id,
       })),
     });
@@ -301,14 +318,16 @@ export const EventManager = ({
   };
 
   async function getAllApps() {
-    const apps = await fetchApps(0);
+    const apps = await fetchApps();
     let appsOptionsList = [];
     apps
-      .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
+      .filter((item) => item.slug !== undefined && item.id !== appId)
       .forEach((item) => {
         appsOptionsList.push({
           name: item.name,
-          value: item.slug,
+          value: item.co_relation_id,
+          slug: item.slug,
+          currentVersionId: item.current_version_id,
         });
       });
     return appsOptionsList;
@@ -361,6 +380,16 @@ export const EventManager = ({
 
     if (param === 'name') {
       updatedEvent.name = value;
+    } else if (typeof param === 'object' && param !== null) {
+      // Object diff form: merge each key into the event blob, deleting undefined keys
+      // so callers can drop legacy fields (e.g. `slug: undefined` when re-picking a target app).
+      for (const [k, v] of Object.entries(param)) {
+        if (v === undefined) {
+          delete updatedEvent.event[k];
+        } else {
+          updatedEvent.event[k] = v;
+        }
+      }
     } else {
       updatedEvent.event[param] = value;
     }
@@ -1171,7 +1200,12 @@ export const EventManager = ({
               <div {...droppableProps} ref={innerRef}>
                 {events.map((event, index) => {
                   const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
-                  // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
+                  const goToAppValidation =
+                    event.event.actionId === 'go-to-app'
+                      ? isLinkedAppValid(event.event.correlationId, linkedAppsMap)
+                      : null;
+                  const goToAppErrorMessage =
+                    goToAppValidation && !goToAppValidation.isValid ? goToAppValidation.errorMessage : null;
                   return (
                     // Keyed by event id, not position, so rows keep their identity across a reorder
                     <Draggable key={event.id} draggableId={event.id} index={index}>
@@ -1224,6 +1258,22 @@ export const EventManager = ({
                                         {event?.name}
                                       </TooltipContent>
                                     </Tooltip>
+                                    {goToAppErrorMessage && (
+                                      <ToolTip
+                                        message={goToAppErrorMessage}
+                                        maxWidth="360px"
+                                        placement="top-end"
+                                        popperConfig={{
+                                          modifiers: [{ name: 'offset', options: { offset: [10, 2] } }],
+                                        }}
+                                      >
+                                        <AlertTriangle
+                                          className="tw-h-[14px] tw-w-[14px] tw-shrink-0 tw-text-[var(--icon-warning)]"
+                                          onClick={(e) => e.stopPropagation()}
+                                          data-cy="event-row-broken-link-warning"
+                                        />
+                                      </ToolTip>
+                                    )}
                                     {(index === focusedEventIndex && (actionsUpdatedLoader || eventsUpdatedLoader)) ||
                                     index === eventToDeleteLoaderIndex ? (
                                       <Spinner size="default" className="tw-text-icon-brand" />

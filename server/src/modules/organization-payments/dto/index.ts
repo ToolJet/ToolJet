@@ -14,28 +14,11 @@ export class PortalDto {
   returnUrl: string;
 }
 
-class ItemDto {
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-
-  @IsString()
-  @IsOptional()
-  quantity: string;
-
-  @IsString()
-  @IsNotEmpty()
-  interval: string;
-
-  @IsString()
-  @IsNotEmpty()
-  planId: string;
-}
-
 enum PlanType {
   TEAM = 'team',
   PRO = 'pro',
   STARTER = 'starter',
+  BASICPLUS = 'basicplus',
 }
 
 export enum SubscriptionMode {
@@ -69,6 +52,7 @@ export enum Plans {
   TEAM = 'team',
   PRO = 'pro',
   STARTER = 'starter',
+  BASICPLUS = 'basicplus',
 }
 
 export class PaymentRedirectDto {

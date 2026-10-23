@@ -1,4 +1,5 @@
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import { DATA_QUERY_EVENTS_META } from './dataQueryEvents';
 
 const allStaticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API', shortName: 'REST API' },
@@ -81,10 +82,7 @@ export const mockDataQueryAsComponent = (events) => {
   return {
     component: { component: { definition: { events: events } } },
     componentMeta: {
-      events: {
-        onDataQuerySuccess: { displayName: 'Query Success' },
-        onDataQueryFailure: { displayName: 'Query Failure' },
-      },
+      events: DATA_QUERY_EVENTS_META,
     },
   };
 };
@@ -162,3 +160,9 @@ export const AI_QUERY_SUPPORTED_KINDS = [
   'quickbooks',
   'hubspot',
 ];
+
+// ToolJet-synthesized query error kinds (errorData.data.type); mirrors server TJ_QUERY_ERROR_TYPE
+export const TJ_QUERY_ERROR_TYPE = {
+  UNAUTHORIZED: 'tj-401', // app-level Query Access denied
+  FORBIDDEN: 'tj-403', // data-source query-run restricted
+};

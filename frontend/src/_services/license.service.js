@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const licenseService = {
   get,
   update,
+  updateEnvSetting,
   getFeatureAccess,
   generateCloudTrial,
   getDomainsList,
@@ -18,6 +19,7 @@ export const licenseService = {
   addTopUpCredits,
   getAiCreditsBalance,
   getSelfhostCustomer,
+  getPlanPrices,
 };
 
 function get() {
@@ -29,6 +31,11 @@ async function update(body) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   const updatedData = await fetch(`${config.apiUrl}/license`, requestOptions).then(handleResponse);
   return updatedData;
+}
+
+async function updateEnvSetting(body) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/env-setting`, requestOptions).then(handleResponse);
 }
 
 function getFeatureAccess() {
@@ -170,6 +177,12 @@ function getAiCreditsBalance() {
   return fetch(`${config.apiUrl}/organization/payment/${organizationId}/ai-credits-balance`, requestOptions).then(
     handleResponse
   );
+}
+
+// Per-builder plan prices from Stripe. Cloud reads them directly; self-hosted relays cloud's.
+function getPlanPrices() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization/payment/plan-prices`, requestOptions).then(handleResponse);
 }
 
 function getSelfhostCustomer() {

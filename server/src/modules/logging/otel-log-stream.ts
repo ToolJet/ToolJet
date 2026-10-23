@@ -24,6 +24,7 @@ export class OtelLogStream {
 
       // trace_id/span_id/trace_flags kept out of attributes — emit() already fills the
       // record's native spanContext with them.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { level, msg, time, pid, hostname, trace_id, span_id, trace_flags, ...attributes } = record as Record<
         string,
         unknown

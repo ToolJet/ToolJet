@@ -13,6 +13,7 @@ export interface Terms {
   };
   database?: {
     table?: number | string;
+    row?: number | string;
   };
   domains?: Array<{ hostname?: string; subpath?: string }>;
   features?: {
@@ -25,6 +26,8 @@ export interface Terms {
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
     gitSync?: boolean;
+    gitSyncMultiBranch?: boolean;
+    workspaceEnv?: boolean;
     comments?: boolean;
     customThemes?: boolean;
     serverSideGlobalResolve?: boolean;
@@ -68,6 +71,11 @@ export interface Terms {
       release: boolean;
       history: boolean;
       jsLibraries: boolean;
+      publicApp: boolean;
+      customComponentLibraries?: boolean;
+    };
+    components?: {
+      navigation: boolean;
     };
   };
   modules?: {

@@ -29,6 +29,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.TABLE_COUNT:
       return licenseInstance.tables;
 
+    case LICENSE_FIELD.TJDB_ROW_COUNT:
+      return licenseInstance.rows;
+
     case LICENSE_FIELD.TOTAL_USERS:
       return licenseInstance.users;
 
@@ -52,6 +55,12 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.GIT_SYNC:
       return licenseInstance.gitSync;
+
+    case LICENSE_FIELD.GIT_SYNC_MULTI_BRANCH:
+      return licenseInstance.gitSyncMultiBranch;
+
+    case LICENSE_FIELD.WORKSPACE_ENV:
+      return licenseInstance.workspaceEnv;
 
     case LICENSE_FIELD.CUSTOM_STYLE:
       return licenseInstance.customStyling;
@@ -172,8 +181,14 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.QUERY_FOLDERS:
       return licenseInstance.queryFolders;
 
+    case LICENSE_FIELD.CUSTOM_COMPONENT_LIBRARIES:
+      return licenseInstance.customComponentLibraries;
+
     case LICENSE_FIELD.APP_JS_LIBRARIES:
       return licenseInstance.appJsLibraries;
+
+    case LICENSE_FIELD.PUBLIC_APP:
+      return licenseInstance.publicApp;
 
     default:
       return licenseInstance.terms;

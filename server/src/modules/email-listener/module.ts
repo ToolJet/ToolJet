@@ -5,13 +5,17 @@ import { getImportPath } from '@modules/app/constants';
 
 export class EmailListenerModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { EmailListener } = await import(`${importPath}/email-listener/listener`);
-    return {
+    return this.cacheModule(cacheKey, {
       module: EmailListenerModule,
       imports: [await EmailModule.register(configs)],
       providers: [EmailListener],
       exports: [],
-    };
+    });
   }
 }

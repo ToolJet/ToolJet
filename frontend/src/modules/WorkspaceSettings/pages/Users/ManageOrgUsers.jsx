@@ -13,8 +13,11 @@ import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { getQueryParams, getHostURL } from '@/_helpers/routes';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import EditRoleErrorModal from '@/modules/common/components/ErrorModal';
+import ChangeRoleModal from '../Groups/components/ChangeRoleModal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { isBulkUpsertEnabled } from './bulkUploadLimits';
+import BulkUploadUsersDrawer from './components/BulkUploadUsersDrawer';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -37,6 +40,7 @@ class ManageOrgUsersComponent extends React.Component {
       options: {},
       file: null,
       isInviteUsersDrawerOpen: false,
+      isBulkUploadDrawerOpen: false,
       userLimits: {},
       currentEditingUser: null,
       userDrawerMode: USER_DRAWER_MODES.CREATE,
@@ -48,6 +52,9 @@ class ManageOrgUsersComponent extends React.Component {
       errorTitle: '',
       errorIconName: 'usergear',
       resetSearch: false,
+      showAutoRoleChangeModal: false,
+      autoRoleChangeModalList: [],
+      autoRoleChangeMessageType: '',
     };
   }
 
@@ -297,47 +304,52 @@ class ManageOrgUsersComponent extends React.Component {
         ...(role && { role: role }),
         userMetadata: userMetadataObject,
       };
-      service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
-        .then(() => {
-          posthogHelper.captureEvent('click_invite_users', {
-            workspace_id:
-              authenticationService?.currentUserValue?.organization_id ||
-              authenticationService?.currentSessionValue?.current_organization_id,
-          });
-          this.fetchUserLimits();
-          toast.success(`User has been ${isEditing ? 'updated' : 'created'}`);
-          this.fetchUsers();
-          this.setState({
-            creatingUser: false,
-            fields: fields,
-            isInviteUsersDrawerOpen: false,
-            currentEditingUser: null,
-            userDrawerMode: USER_DRAWER_MODES.CREATE,
-            resetSearch: !this.state.resetSearch,
-          });
-        })
-        .catch(({ error, statusCode }) => {
-          if (!error?.error && error.includes('User is archived')) {
-            this.setState({
-              errors: {
-                ...this.state.errors,
-                email: error,
-              },
+
+      const proceed = () => {
+        service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
+          .then(() => {
+            posthogHelper.captureEvent('click_invite_users', {
+              workspace_id:
+                authenticationService?.currentUserValue?.organization_id ||
+                authenticationService?.currentSessionValue?.current_organization_id,
             });
-          } else if (error?.error) {
+            this.fetchUserLimits();
+            toast.success(`User has been ${isEditing ? 'updated' : 'created'}`);
+            this.fetchUsers();
             this.setState({
-              showErrorModal: true,
-              errorModalMessage: error.error,
-              errorTitle: error?.title || 'Conflicting permissions',
-              errorItemList: error?.data,
-              errorIconName: 'usergear',
               creatingUser: false,
+              fields: fields,
+              isInviteUsersDrawerOpen: false,
+              currentEditingUser: null,
+              userDrawerMode: USER_DRAWER_MODES.CREATE,
+              resetSearch: !this.state.resetSearch,
             });
-            return;
-          }
-          this.setState({ creatingUser: false, uploadingUsers: false });
-          statusCode !== 451 && toast.error(error);
-        });
+          })
+          .catch(({ error, statusCode }) => {
+            if (!error?.error && error.includes('User is archived')) {
+              this.setState({
+                errors: {
+                  ...this.state.errors,
+                  email: error,
+                },
+              });
+            } else if (error?.error) {
+              this.setState({
+                showErrorModal: true,
+                errorModalMessage: error.error,
+                errorTitle: error?.title || 'Conflicting permissions',
+                errorItemList: error?.data,
+                errorIconName: 'usergear',
+                creatingUser: false,
+              });
+              return;
+            }
+            this.setState({ creatingUser: false, uploadingUsers: false });
+            statusCode !== 451 && toast.error(error);
+          });
+      };
+
+      proceed();
     } else {
       this.setState({ creatingUser: false, file: null, isInviteUsersDrawerOpen: true });
     }
@@ -386,6 +398,14 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
+  handleAutoRoleChangeModalClose = () => {
+    this.setState({
+      showAutoRoleChangeModal: false,
+      autoRoleChangeModalList: [],
+      autoRoleChangeMessageType: '',
+    });
+  };
+
   pageChanged = (page) => {
     this.fetchUsers(page, this.state.options);
   };
@@ -431,10 +451,20 @@ class ManageOrgUsersComponent extends React.Component {
       errorTitle,
       errorIconName,
       resetSearch,
+      showAutoRoleChangeModal,
+      autoRoleChangeModalList,
+      autoRoleChangeMessageType,
     } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="org-wrapper org-users-page animation-fade">
+          <ChangeRoleModal
+            showAutoRoleChangeModal={showAutoRoleChangeModal}
+            autoRoleChangeModalList={autoRoleChangeModalList}
+            autoRoleChangeMessageType={autoRoleChangeMessageType}
+            handleAutoRoleChangeModalClose={this.handleAutoRoleChangeModalClose}
+            darkMode={this.props.darkMode}
+          />
           <EditRoleErrorModal
             darkMode={this.props.darkMode}
             show={showErrorModal}
@@ -444,6 +474,16 @@ class ManageOrgUsersComponent extends React.Component {
             iconName={errorIconName}
             onClose={this.clearErrorState}
           />
+          {this.state.isBulkUploadDrawerOpen && (
+            <BulkUploadUsersDrawer
+              isOpen={this.state.isBulkUploadDrawerOpen}
+              onClose={() => this.setState({ isBulkUploadDrawerOpen: false })}
+              onUploaded={() => {
+                this.fetchUsers();
+                this.fetchUserLimits();
+              }}
+            />
+          )}
           {this.state.isInviteUsersDrawerOpen && (
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}
@@ -477,15 +517,45 @@ class ManageOrgUsersComponent extends React.Component {
                       {meta?.total_count} users
                     </div>
                     <div className=" workspace-setting-buttons-wrap">
-                      <ButtonSolid
-                        data-cy="button-invite-new-user"
-                        className="singleuser-btn"
-                        onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
-                        leftIcon="usergroup"
-                        fill={'#FDFDFE'}
-                      >
-                        {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
-                      </ButtonSolid>
+                      {isBulkUpsertEnabled() && (
+                        <ButtonSolid
+                          data-cy="button-bulk-upload-users"
+                          variant="tertiary"
+                          size="md"
+                          className="bulk-upload-header-btn"
+                          onClick={() => this.setState({ isBulkUploadDrawerOpen: true })}
+                          leftIcon="IconUsers"
+                          isTablerIcon
+                          iconWidth="16"
+                          fill="var(--icon-default)"
+                        >
+                          Bulk upload users
+                        </ButtonSolid>
+                      )}
+                      {isBulkUpsertEnabled() ? (
+                        <ButtonSolid
+                          data-cy="button-invite-new-user"
+                          size="md"
+                          className="bulk-upload-header-btn"
+                          onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
+                          leftIcon="IconPlus"
+                          isTablerIcon
+                          iconWidth="16"
+                          fill="#FDFDFE"
+                        >
+                          Add user
+                        </ButtonSolid>
+                      ) : (
+                        <ButtonSolid
+                          data-cy="button-invite-new-user"
+                          className="singleuser-btn"
+                          onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
+                          leftIcon="usergroup"
+                          fill={'#FDFDFE'}
+                        >
+                          {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
+                        </ButtonSolid>
+                      )}
                     </div>
                   </div>
                 </div>

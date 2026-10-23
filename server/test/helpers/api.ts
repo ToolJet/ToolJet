@@ -37,10 +37,7 @@ export const logout = async (app: INestApplication, tokenCookie: string[], organ
  * Avoids login-flow side effects (workspace creation, event emitter, async handlers)
  * that cause deadlocks and FK violations in tests.
  */
-export const buildTestSession = async (
-  user: User,
-  organizationId?: string
-): Promise<{ tokenCookie: string[] }> => {
+export const buildTestSession = async (user: User, organizationId?: string): Promise<{ tokenCookie: string[] }> => {
   const ds = getDefaultDataSource();
   const configService = new ConfigService();
   const jwtService = new JwtService({
@@ -77,3 +74,7 @@ export const buildTestSession = async (
   return { tokenCookie: cookie };
 };
 
+/** Builds the Basic-auth header external API endpoints expect, from EXTERNAL_API_ACCESS_TOKEN. */
+export function getExternalApiAuthHeader(app: INestApplication): string {
+  return `Basic ${app.get(ConfigService).get('EXTERNAL_API_ACCESS_TOKEN')}`;
+}

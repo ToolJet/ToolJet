@@ -8,10 +8,14 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class EmailModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { EmailService } = await import(`${importPath}/email/service`);
     const { EmailUtilService } = await import(`${importPath}/email/util.service`);
-    return {
+    return this.cacheModule(cacheKey, {
       module: EmailModule,
       imports: [
         await WhiteLabellingModule.register(configs),
@@ -21,6 +25,6 @@ export class EmailModule extends SubModule {
       ],
       providers: [EmailService, EmailUtilService],
       exports: [EmailUtilService, EmailService],
-    };
+    });
   }
 }

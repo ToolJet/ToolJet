@@ -11,13 +11,15 @@ import { RolesUtilService } from '@modules/roles/util.service';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { GroupPermissionsDuplicateService } from './services/duplicate.service';
 import { AddGroupUserDto, DuplicateGroupDtoBase, UpdateGroupPermissionDto } from './dto';
-import { ResourceType } from './constants';
+import { ResourceType, USER_ROLE } from './constants';
+import { isSuperAdmin } from '@helpers/utils.helper';
 import { RolesRepository } from '@modules/roles/repository';
 import { IGroupPermissionsService } from './interfaces/IService';
 import { GroupPermissionLicenseUtilService } from './util-services/license.util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { User } from '@entities/user.entity';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 
 @Injectable()
 export class GroupPermissionsService implements IGroupPermissionsService {
@@ -29,7 +31,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     protected readonly groupPermissionsDuplicateService: GroupPermissionsDuplicateService,
     protected readonly roleRepository: RolesRepository,
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService
-  ) { }
+  ) {}
 
   async create(user: User, name: string): Promise<GroupPermissions> {
     const groupPermissionResponse = await this.groupPermissionsUtilService.create(user, name);
@@ -53,7 +55,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     return this.groupPermissionsUtilService.getGroupWithBuilderLevel(id, organizationId);
   }
 
-  getAllGroup(organizationId: string): Promise<GetUsersResponse> {
+  getAllGroup(organizationId: string, _user?: User): Promise<GetUsersResponse> {
     return this.groupPermissionsUtilService.getAllGroupByOrganization(organizationId);
   }
 
@@ -146,7 +148,9 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await this.groupPermissionsUtilService.addUsersToGroup(addGroupUserDto, organizationId, manager);
+      // Only workspace admins may promote end-users (via allowRoleChange) to satisfy a builder-level group
+      const canChangeRole = isSuperAdmin(user) || user.roleGroup === USER_ROLE.ADMIN;
+      await this.groupPermissionsUtilService.addUsersToGroup(addGroupUserDto, organizationId, manager, canChangeRole);
       await this.licenseUserService.validateUser(manager, organizationId);
       const group = await this.groupPermissionsRepository.getGroup(
         { id: addGroupUserDto.groupId, organizationId: organizationId },
@@ -164,7 +168,10 @@ export class GroupPermissionsService implements IGroupPermissionsService {
   }
 
   async getAllGroupUsers(group: GroupPermissions, organizationId: string, searchInput?: string): Promise<GroupUsers[]> {
-    return await this.groupPermissionsRepository.getUsersInGroup(group.id, organizationId, searchInput);
+    // Muzzle AppsSubscriber in case the user/permission joins fan out to App rows.
+    return skipAppEditingVersionHydration.run(true, () =>
+      this.groupPermissionsRepository.getUsersInGroup(group.id, organizationId, searchInput)
+    );
   }
 
   async deleteGroupUser(id: string, user: User, manager?: EntityManager): Promise<void> {
@@ -172,6 +179,8 @@ export class GroupPermissionsService implements IGroupPermissionsService {
   }
 
   async getAddableUser(groupId: string, organizationId: string, searchInput?: string) {
-    return await this.groupPermissionsRepository.addableUsersToGroup(groupId, organizationId, searchInput);
+    return skipAppEditingVersionHydration.run(true, () =>
+      this.groupPermissionsRepository.addableUsersToGroup(groupId, organizationId, searchInput)
+    );
   }
 }

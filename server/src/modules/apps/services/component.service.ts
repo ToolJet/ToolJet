@@ -1,16 +1,18 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
-import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { Page } from 'src/entities/page.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EventsService } from './event.service';
 import { LayoutData } from '../dto/component';
 import { CreateEventHandlerDto } from '../dto/event';
 import { APP_TYPES, LayoutDimensionUnits } from '../constants';
+import { AppValidationService } from '@modules/app-validation/service';
+import { lockForValidation } from '@modules/app-validation/lock';
+import { ComponentWrite, LayoutWrite } from '@modules/app-validation/types';
 import {
   IComponentsService,
   ComponentCreateContext,
@@ -19,11 +21,19 @@ import {
   ComponentLayoutContext,
 } from '../interfaces/services/IComponentService';
 import { RequestContext } from '@modules/request-context/service';
-const _ = require('lodash');
+import { AbilityService } from '@modules/ability/interfaces/IService';
+import { MODULES } from '@modules/app/constants/modules';
+import { AppsRepository } from '../repository';
+import * as _ from 'lodash';
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
-  constructor(protected eventHandlerService: EventsService) {}
+  constructor(
+    protected eventHandlerService: EventsService,
+    private readonly abilityService: AbilityService,
+    private readonly appsRepository: AppsRepository,
+    protected readonly appValidationService: AppValidationService
+  ) {}
 
   findOne(id: string): Promise<Component> {
     return dbTransactionWrap((manager: EntityManager) => {
@@ -55,10 +65,10 @@ export class ComponentsService implements IComponentsService {
       ? null
       : await this.beforeComponentCreate(componentIds, pageId, appVersionId, componentDiff);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       await this.createComponentsAndLayouts(componentDiff, pageId, appVersionId, manager);
       return {};
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
@@ -104,12 +114,12 @@ export class ComponentsService implements IComponentsService {
 
     const context = await this.beforeComponentUpdate(componentIds, appVersionId, componentDiff);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.updateComponents(componentDiff, appVersionId, manager);
       if (result?.error) {
         return result;
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterComponentUpdate(context, componentDiff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -123,12 +133,12 @@ export class ComponentsService implements IComponentsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeComponentDelete(componentIds, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.deleteComponents(componentIds, appVersionId, isComponentCut, manager);
       if (result?.error) {
         return result;
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterComponentDelete(context, componentIds, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -145,7 +155,12 @@ export class ComponentsService implements IComponentsService {
   ) {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.appValidationService.check('layouts', this.layoutWritesFromDiff(componenstLayoutDiff), {
+        appVersionId,
+        manager,
+      });
+
       const parentWrites = this.collectParentWritesFromDiff(componenstLayoutDiff);
       if (Object.keys(parentWrites).length > 0) {
         await this.assertNoParentCycle(parentWrites, appVersionId, manager);
@@ -195,7 +210,7 @@ export class ComponentsService implements IComponentsService {
           await manager.update(Component, { id: componentId }, { parent: resolvedParent });
         }
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
@@ -211,52 +226,71 @@ export class ComponentsService implements IComponentsService {
     return result;
   }
 
-  async getAllComponents(pageId: string, externalManager?: EntityManager) {
+  async getAllComponents(pageId: string, externalManager?: EntityManager): Promise<Record<string, any>> {
+    const byPage = await this.getAllComponentsForPages([pageId], externalManager);
+    return byPage.get(pageId) ?? {};
+  }
+
+  async getAllComponentsForPages(
+    pageIds: string[],
+    externalManager?: EntityManager
+  ): Promise<Map<string, Record<string, any>>> {
+    if (pageIds.length === 0) return new Map();
+
     return dbTransactionWrap(async (manager: EntityManager) => {
       const rawComponents = await manager
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
-        .where('component.pageId = :pageId', { pageId })
+        .where('component.pageId IN (:...pageIds)', { pageIds })
         .andWhere('layout.type IN (:...types)', {
           types: ['desktop', 'mobile'],
         })
-        .orderBy('component.id', 'ASC')
+        .orderBy('component.pageId', 'ASC')
+        .addOrderBy('component.id', 'ASC')
         .addOrderBy('layout.updatedAt', 'DESC')
         .getMany();
 
-      const result: Record<string, any> = {};
-      const layoutsToUpdate: Layout[] = [];
+      const { componentsByPage, layoutsNeedingMigration } = this.assembleComponentsByPage(rawComponents);
 
-      for (const component of rawComponents) {
-        const processedLayoutsForComponent: Layout[] = [];
+      if (layoutsNeedingMigration.length > 0) {
+        await manager.save(Layout, layoutsNeedingMigration);
+      }
 
-        (component.layouts || []).forEach((layout) => {
-          if (layout && layout.type) {
-            const currentLayout = { ...layout };
+      return componentsByPage;
+    }, externalManager);
+  }
 
-            if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
-              currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
-              currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
-              layoutsToUpdate.push(currentLayout);
-            }
-            processedLayoutsForComponent.push(currentLayout);
+  private assembleComponentsByPage(rawComponents: Component[]): {
+    componentsByPage: Map<string, Record<string, any>>;
+    layoutsNeedingMigration: Layout[];
+  } {
+    const componentsByPage = new Map<string, Record<string, any>>();
+    const layoutsNeedingMigration: Layout[] = [];
+
+    for (const component of rawComponents) {
+      const normalisedLayouts = (component.layouts || [])
+        .filter((l) => l && l.type)
+        .map((layout) => {
+          const next = { ...layout };
+          if (next.dimensionUnit === LayoutDimensionUnits.PERCENT) {
+            next.left = this.resolveGridPositionForComponent(next.left, next.type);
+            next.dimensionUnit = LayoutDimensionUnits.COUNT;
+            layoutsNeedingMigration.push(next);
           }
+          return next;
         });
 
-        const relevantLayouts = processedLayoutsForComponent
-          .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
-          .slice(0, 2);
+      const mostRecentLayouts = [...normalisedLayouts]
+        .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
+        .slice(0, 2);
 
-        const transformedData = this.createComponentWithLayout(component, relevantLayouts);
-        result[component.id] = transformedData[component.id];
-      }
+      const transformed = this.createComponentWithLayout(component, mostRecentLayouts);
+      const bucket = componentsByPage.get(component.pageId) ?? {};
+      bucket[component.id] = transformed[component.id];
+      componentsByPage.set(component.pageId, bucket);
+    }
 
-      if (layoutsToUpdate.length > 0) {
-        await manager.save(Layout, layoutsToUpdate);
-      }
-
-      return result;
-    }, externalManager);
+    return { componentsByPage, layoutsNeedingMigration };
   }
 
   transformComponentData(data: object): Component[] {
@@ -287,10 +321,7 @@ export class ComponentsService implements IComponentsService {
    * For module-type apps, resolves the ModuleContainer component id for the given version.
    * Returns null for non-module apps or if no ModuleContainer exists.
    */
-  protected async resolveModuleContainerId(
-    appVersionId: string,
-    manager: EntityManager
-  ): Promise<string | null> {
+  protected async resolveModuleContainerId(appVersionId: string, manager: EntityManager): Promise<string | null> {
     const appVersion = await manager.findOne(AppVersion, {
       where: { id: appVersionId },
       select: ['id', 'appId', 'homePageId'],
@@ -393,7 +424,7 @@ export class ComponentsService implements IComponentsService {
     },
     appVersionId: string
   ) {
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const results: {
         created?: number;
         updated?: number;
@@ -426,6 +457,11 @@ export class ComponentsService implements IComponentsService {
       // Handle layout operation if present
       if (batchOperations.layout) {
         const { diff } = batchOperations.layout;
+        // With `manager`, the lookup also sees components created earlier in this transaction.
+        await this.appValidationService.check('layouts', this.layoutWritesFromDiff(diff), {
+          appVersionId,
+          manager,
+        });
         await this.updateComponentLayouts(diff, manager);
         results.layout = Object.keys(diff).length;
       }
@@ -442,7 +478,7 @@ export class ComponentsService implements IComponentsService {
       }
 
       return results;
-    }, appVersionId);
+    });
 
     // History capture is handled by EE override
     return result;
@@ -465,7 +501,9 @@ export class ComponentsService implements IComponentsService {
     proposedParentById: Record<string, string | null | undefined>,
     appVersionId: string,
     manager: EntityManager,
-    options: { newComponentParents?: Record<string, string | null | undefined> } = {}
+    options: {
+      newComponentParents?: Record<string, string | null | undefined>;
+    } = {}
   ): Promise<void> {
     const affectedIds = Object.keys(proposedParentById);
     if (affectedIds.length === 0) return;
@@ -537,6 +575,102 @@ export class ComponentsService implements IComponentsService {
     return writes;
   }
 
+  // One validation write per (component, layout type) in a layout diff. `touched` lists the
+  // fields the request sends, so the rules only judge what this save changes.
+  private layoutWritesFromDiff(
+    diff: Record<string, { layouts: LayoutData; component?: { parent?: string | null } }>
+  ): LayoutWrite[] {
+    const writes: LayoutWrite[] = [];
+    for (const componentId in diff) {
+      const layouts = diff[componentId]?.layouts ?? {};
+      for (const key in layouts) {
+        const layout = layouts[key] ?? {};
+        writes.push({
+          op: 'update',
+          id: componentId,
+          data: { componentId, type: layout.type ?? key, ...layout },
+          touched: Object.keys(layout),
+        });
+      }
+    }
+    return writes;
+  }
+
+  // Validation writes for components this request creates, after module-parent resolution.
+  private createWritesFromComponents(components: Component[], pageId: string): ComponentWrite[] {
+    return components.map((c) => ({
+      op: 'create',
+      id: c.id,
+      data: {
+        name: c.name,
+        type: c.type,
+        pageId,
+        parent: c.parent ?? null,
+        properties: c.properties,
+        styles: c.styles,
+        general: c.general,
+        generalStyles: c.generalStyles,
+        validation: c.validation,
+        displayPreferences: c.displayPreferences,
+      },
+    }));
+  }
+
+  // Validation writes for an update diff. `data` carries the request's values plus the stored
+  // type and page (partial MCP updates don't send them); `touched` lists what the request
+  // changes - `name` only when it differs from the stored row, since the editor's property
+  // saves send the whole component and must not re-trip the name rules (or the name lock).
+  // Definition sections arrive under the editor's names ('others'), stored under their
+  // column names.
+  private async updateWritesFromDiff(diff: Record<string, any>, manager: EntityManager): Promise<ComponentWrite[]> {
+    const ids = Object.keys(diff);
+    if (!ids.length) return [];
+    const storedRows = await manager.find(Component, {
+      where: { id: In(ids) },
+      select: ['id', 'name', 'type', 'pageId', 'properties'],
+    });
+    const storedById = new Map(storedRows.map((row) => [row.id, row]));
+
+    return ids.map((componentId) => {
+      const request = diff[componentId]?.component ?? {};
+      const stored = storedById.get(componentId);
+      const touched: string[] = [];
+      const data: Record<string, any> = {
+        name: stored?.name,
+        type: stored?.type,
+        pageId: stored?.pageId,
+      };
+
+      for (const field of ['name', 'type', 'parent'] as const) {
+        if (!(field in request)) continue;
+        data[field] = request[field];
+        if (field !== 'name' || request.name !== stored?.name) touched.push(field);
+      }
+
+      const definition = request.definition ?? {};
+      for (const section of Object.keys(definition)) {
+        const column = section === 'others' ? 'displayPreferences' : section;
+        data[column] = definition[section];
+        for (const key of Object.keys(definition[section] ?? {})) {
+          touched.push(`${section}.${key}`);
+        }
+      }
+
+      // The save's mergeWith keeps a stored `skipResolve` (render as-is, don't compile
+      // {{ }}) unless the request overwrites it - mirror that for the checked entries, or
+      // an update to a Custom Component's code would be judged as {{ }} code it is not.
+      const storedProperties = (stored?.properties ?? {}) as Record<string, any>;
+      for (const [key, entry] of Object.entries((data.properties ?? {}) as Record<string, any>)) {
+        const storedFlag = storedProperties[key]?.skipResolve;
+        if (_.isPlainObject(entry) && entry.skipResolve === undefined && storedFlag !== undefined) {
+          data.properties = { ...data.properties, [key]: { ...entry, skipResolve: storedFlag } };
+        }
+      }
+
+      return { op: 'update', id: componentId, data, touched } as ComponentWrite;
+    });
+  }
+
   // Common methods used by both the original methods and batch operations
   protected async createComponentsAndLayouts(
     diff: object,
@@ -554,12 +688,45 @@ export class ComponentsService implements IComponentsService {
     // instead of being placed on the root canvas (parent: null).
     const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
     if (moduleContainerId) {
+      // A module cannot embed another module. The editor hides the Modules tab while
+      // editing a module, but direct API/MCP callers bypass that client-side guard —
+      // reject a ModuleViewer here so invalid module-in-module data can't be persisted.
+      // Such data later surfaces as "Module not found" when the embedded reference
+      // fails to resolve (the nested module is never bundled on export/import).
+      const nestedModuleViewer = newComponents.find((component) => component.type === 'ModuleViewer');
+      if (nestedModuleViewer) {
+        const exc = new BadRequestException({
+          message: `Component ${nestedModuleViewer.id} cannot be added because a module cannot contain another module.`,
+          code: 'NESTED_MODULE_NOT_ALLOWED',
+          componentId: nestedModuleViewer.id,
+        });
+        (exc as any).code = 'NESTED_MODULE_NOT_ALLOWED';
+        throw exc;
+      }
+
       for (const component of newComponents) {
         if (!component.parent && component.type !== 'ModuleContainer') {
           component.parent = moduleContainerId;
         }
       }
     }
+
+    // Name lock before cycle lock - every component write path takes them in this order.
+    // The overlay adds the components this request creates, so siblings can reference each
+    // other as parents and in-batch duplicate names are caught.
+    await lockForValidation(manager, 'component_name', appVersionId);
+    await this.appValidationService.check('components', this.createWritesFromComponents(newComponents, pageId), {
+      appVersionId,
+      appType: moduleContainerId ? APP_TYPES.MODULE : undefined,
+      manager,
+      overlayComponents: newComponents.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        parent: c.parent ?? null,
+        pageId,
+      })),
+    });
 
     // Validate the proposed graph BEFORE inserting. New components overlay the
     // existing tree so a cycle introduced by a buggy paste/import gets caught
@@ -611,15 +778,19 @@ export class ComponentsService implements IComponentsService {
           where: { componentId, type: layout.type },
         });
         if (existing) {
-          await manager.update(Layout, { id: existing.id }, {
-            top: layout.top,
-            left: layout.left,
-            width: layout.width,
-            height: layout.height,
-            widthPx: layout.widthPx,
-            fillWidth: layout.fillWidth,
-            dimensionUnit: layout.dimensionUnit,
-          });
+          await manager.update(
+            Layout,
+            { id: existing.id },
+            {
+              top: layout.top,
+              left: layout.left,
+              width: layout.width,
+              height: layout.height,
+              widthPx: layout.widthPx,
+              fillWidth: layout.fillWidth,
+              dimensionUnit: layout.dimensionUnit,
+            }
+          );
         } else {
           layoutsToInsert.push(layout);
         }
@@ -633,13 +804,26 @@ export class ComponentsService implements IComponentsService {
   }
 
   protected async updateComponents(diff: object, appVersionId: string, manager: EntityManager) {
+    // For module apps, resolve ModuleContainer id once for the entire batch
+    const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
+
+    const writes = await this.updateWritesFromDiff(diff as Record<string, any>, manager);
+    // Name lock before cycle lock - same order as the create path. Only a real rename
+    // needs it: the editor's property saves send the whole component, and serialising
+    // every one of them would make two builders in one version wait on each other.
+    if (writes.some((write) => write.touched?.includes('name'))) {
+      await lockForValidation(manager, 'component_name', appVersionId);
+    }
+    await this.appValidationService.check('components', writes, {
+      appVersionId,
+      appType: moduleContainerId ? APP_TYPES.MODULE : undefined,
+      manager,
+    });
+
     const parentWrites = this.collectParentWritesFromDiff(diff as any);
     if (Object.keys(parentWrites).length > 0) {
       await this.assertNoParentCycle(parentWrites, appVersionId, manager);
     }
-
-    // For module apps, resolve ModuleContainer id once for the entire batch
-    const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
 
     for (const componentId in diff) {
       let { component } = diff[componentId];
@@ -660,6 +844,15 @@ export class ComponentsService implements IComponentsService {
         where: { id: componentId },
       });
 
+      const incomingProperties = component.definition?.properties;
+      if (
+        componentData.type === 'ModuleViewer' &&
+        incomingProperties &&
+        ('moduleAppId' in incomingProperties || 'moduleVersionId' in incomingProperties)
+      ) {
+        await this.assertModulePinPermission(componentData, incomingProperties);
+      }
+
       const isComponentDefinitionChanged = component.definition ? true : false;
 
       if (isComponentDefinitionChanged) {
@@ -671,7 +864,13 @@ export class ComponentsService implements IComponentsService {
             componentData[column === 'others' ? 'displayPreferences' : column],
             updatedDefinition[column],
             (objValue, srcValue) => {
-              if ((componentData.type === 'Table' || componentData.type === 'Form') && _.isArray(objValue)) {
+              if (
+                (componentData.type === 'Table' ||
+                  componentData.type === 'Form' ||
+                  componentData.type === 'KeyValuePair') &&
+                _.isArray(objValue)
+              ) {
+                // Arrays are sent whole, so replace: merging keeps stored tail entries and resurrects deletions
                 return srcValue;
               } else if (componentData.type === 'Form' && _.isObject(srcValue)) {
                 // Handle Form component with object srcValue like JSONData & JSONSchema
@@ -721,12 +920,60 @@ export class ComponentsService implements IComponentsService {
     }
   }
 
+  // A ModuleViewer's version list is deliberately readable read-only by any builder who
+  // can edit the parent app (see FeatureAbilityFactory's isEmbeddedInEditableParentApp
+  // bypass) so the pinned version can be displayed. Persisting a pin change is a
+  // different action and requires the caller to actually hold Build-with or Edit on the
+  // referenced module — that check never happens upstream of this save path.
+  private async assertModulePinPermission(
+    componentData: Component,
+    incomingProperties: Record<string, any>
+  ): Promise<void> {
+    const user = (RequestContext.currentContext?.req as any)?.user;
+    if (!user) return;
+
+    const coRelationId = incomingProperties.moduleAppId?.value ?? componentData.properties?.moduleAppId?.value;
+    if (!coRelationId) return;
+
+    const organizationId = user.organizationId || user.defaultOrganizationId;
+    const moduleApp = await this.appsRepository.findOne({
+      where: { co_relation_id: coRelationId, organizationId },
+    });
+    if (!moduleApp) {
+      throw new ForbiddenException('You do not have permission to pin this module version');
+    }
+
+    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
+      organizationId,
+      resources: [{ resource: MODULES.MODULES }],
+    });
+
+    if (userPermissions.isAdmin || userPermissions.isSuperAdmin) return;
+
+    const modulePermissions = userPermissions[MODULES.MODULES];
+    const hasPermission =
+      !!modulePermissions?.isAllEditable ||
+      !!modulePermissions?.isAllViewable ||
+      !!modulePermissions?.editableAppsId?.includes(moduleApp.id) ||
+      !!modulePermissions?.viewableAppsId?.includes(moduleApp.id);
+
+    if (!hasPermission) {
+      throw new ForbiddenException('You do not have permission to pin this module version');
+    }
+  }
+
   protected async deleteComponents(
     componentIds: string[],
     appVersionId: string,
     isComponentCut: boolean,
     manager: EntityManager
   ) {
+    await this.appValidationService.check(
+      'components',
+      componentIds.map((id): ComponentWrite => ({ op: 'delete', id })),
+      { appVersionId, manager }
+    );
+
     const components = await manager.findBy(Component, {
       id: In(componentIds),
     });

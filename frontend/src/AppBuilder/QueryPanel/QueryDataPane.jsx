@@ -17,11 +17,14 @@ import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { shallow } from 'zustand/shallow';
 import { appPermissionService } from '@/_services';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 import QueryCardMenuBase from './QueryCardMenu';
+import QueryDeleteConfirmation from './QueryDeleteConfirmation';
 import { withEditionSpecificComponent } from '@/modules/common/helpers';
 
 const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
@@ -51,9 +54,10 @@ export const QueryDataPane = ({ darkMode }) => {
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
   const sortBy = useStore((state) => state.dataQuery.sortBy);
-  const isFreezed = useStore((state) => state.getShouldFreeze());
   const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
   const folders = allFolders;
+  const { isModuleEditor } = useModuleContext();
+  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -115,7 +119,7 @@ export const QueryDataPane = ({ darkMode }) => {
         <div className="queries-header">
           <AddDataSourceButton darkMode={darkMode} />
           <div className="queries-header-actions">
-            <AutoSortButton darkMode={darkMode} />
+            {INLINE_AI_FEATURES_ENABLED && <AutoSortButton darkMode={darkMode} />}
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
@@ -202,6 +206,7 @@ export const QueryDataPane = ({ darkMode }) => {
                 shouldFreeze={isFreezed}
               />
               {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
+              <QueryDeleteConfirmation darkMode={darkMode} />
               {licenseValid && (
                 <AppPermissionsModal
                   modalType="query"
@@ -304,10 +309,11 @@ const AutoSortButton = ({ darkMode: _darkMode }) => {
 };
 
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
+  const { isModuleEditor } = useModuleContext();
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   // const { isVersionReleased, isEditorFreezed } = useStore(
   //   (state) => ({
   //     isVersionReleased: state.isVersionReleased,

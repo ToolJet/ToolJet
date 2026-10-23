@@ -10,13 +10,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormconfig, tooljetDbOrmconfig } from '../../../ormconfig';
 import { RequestContextModule } from '@modules/request-context/module';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+import { join, sep } from 'path';
 import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
 import { buildBaseLogger } from '@modules/logging/base-logger';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
+import { RedisModule } from '@modules/redis/module';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -50,7 +51,10 @@ export class AppModuleLoader {
       }),
       // ScheduleModule registers cron timers that accumulate across test files.
       // Excluding it in test mode makes @Cron decorators inert (no timers fire).
-      ...(isTest ? [] : [ScheduleModule.forRoot()]),
+      // Also excluded in migration/get-context mode: a data migration only needs DB + DI, not
+      // cron timers — booting them (and the schedulers they drive) idles the shared migration
+      // transaction long enough to be killed. See AppModule.register conditional providers.
+      ...(isTest || configs.IS_GET_CONTEXT ? [] : [ScheduleModule.forRoot()]),
       BullModule.forRoot({
         connection: {
           host: process.env.REDIS_HOST || 'localhost',
@@ -134,6 +138,7 @@ export class AppModuleLoader {
       RequestContextModule,
       GuardValidatorModule,
       LoggingModule.forRoot(),
+      RedisModule.forRoot(),
     ];
 
     // Add OpenTelemetry Module if enabled
@@ -153,6 +158,15 @@ export class AppModuleLoader {
           // Have to remove trailing slash of SUB_PATH.
           serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, ''),
           rootPath: join(__dirname, '../../../../../', 'frontend/build'),
+          serveStaticOptions: {
+            setHeaders: (res, filePath) => {
+              // Sandboxed shell iframe sends `Origin: null` — see
+              // ee/custom-component-libraries/controller.ts's allowSandboxedIframeOrigin.
+              if (filePath.includes(`${sep}custom-components${sep}`)) {
+                res.setHeader('Access-Control-Allow-Origin', 'null');
+              }
+            },
+          },
         })
       );
     }

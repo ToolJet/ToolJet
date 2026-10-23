@@ -44,6 +44,7 @@ const DynamicFormV2 = ({
   showValidationErrors,
   clearValidationErrorBanner,
   elementsProps = null,
+  isWorkspaceBranchLocked = false,
   createDataSource = null,
   isSaving = false,
 }) => {
@@ -113,7 +114,7 @@ const DynamicFormV2 = ({
       .map((item) => item.key);
   };
   React.useEffect(() => {
-    if (isGDS) {
+    if (isGDS && currentAppEnvironmentId) {
       orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
         const constants = {
           globals: {},
@@ -138,15 +139,54 @@ const DynamicFormV2 = ({
   }, [currentAppEnvironmentId]);
 
   // --- Validation ---
-  React.useEffect(() => {
-    if (!hasUserInteracted) return;
+  const processAllOfConditions = React.useCallback((schema, options, path = []) => {
+    let requiredFields = [];
 
-    const timeout = setTimeout(() => {
-      validateOptions();
-    }, 300);
+    if (schema.allOf) {
+      schema.allOf.forEach((condition) => {
+        if (condition.if && condition.then) {
+          const conditionMatches = Object.entries(condition.if.properties || {}).every(([propName, propCondition]) => {
+            const propertyPath = [...path, propName];
 
-    return () => clearTimeout(timeout);
-  }, [options, hasUserInteracted, validateOptions]);
+            let currentValue = options;
+            for (const segment of propertyPath) {
+              if (!currentValue || typeof currentValue !== 'object') {
+                return false;
+              }
+              currentValue = currentValue[segment]?.value;
+            }
+
+            return propCondition.const === currentValue;
+          });
+
+          if (conditionMatches) {
+            if (condition.then.required) {
+              requiredFields = [...requiredFields, ...condition.then.required];
+            }
+
+            if (condition.then.allOf) {
+              const nestedRequired = processAllOfConditions({ allOf: condition.then.allOf }, options, path);
+              requiredFields = [...requiredFields, ...nestedRequired];
+            }
+
+            if (condition.then.properties) {
+              Object.entries(condition.then.properties).forEach(([propName, propSchema]) => {
+                if (propSchema.allOf) {
+                  const nestedRequired = processAllOfConditions({ allOf: propSchema.allOf }, options, [
+                    ...path,
+                    propName,
+                  ]);
+                  requiredFields = [...requiredFields, ...nestedRequired];
+                }
+              });
+            }
+          }
+        }
+      });
+    }
+
+    return requiredFields;
+  }, []);
 
   const validateOptions = React.useCallback(async () => {
     try {
@@ -220,54 +260,15 @@ const DynamicFormV2 = ({
     autoFillStrategy,
   ]);
 
-  const processAllOfConditions = React.useCallback((schema, options, path = []) => {
-    let requiredFields = [];
+  React.useEffect(() => {
+    if (!hasUserInteracted) return;
 
-    if (schema.allOf) {
-      schema.allOf.forEach((condition) => {
-        if (condition.if && condition.then) {
-          const conditionMatches = Object.entries(condition.if.properties || {}).every(([propName, propCondition]) => {
-            const propertyPath = [...path, propName];
+    const timeout = setTimeout(() => {
+      validateOptions();
+    }, 300);
 
-            let currentValue = options;
-            for (const segment of propertyPath) {
-              if (!currentValue || typeof currentValue !== 'object') {
-                return false;
-              }
-              currentValue = currentValue[segment]?.value;
-            }
-
-            return propCondition.const === currentValue;
-          });
-
-          if (conditionMatches) {
-            if (condition.then.required) {
-              requiredFields = [...requiredFields, ...condition.then.required];
-            }
-
-            if (condition.then.allOf) {
-              const nestedRequired = processAllOfConditions({ allOf: condition.then.allOf }, options, path);
-              requiredFields = [...requiredFields, ...nestedRequired];
-            }
-
-            if (condition.then.properties) {
-              Object.entries(condition.then.properties).forEach(([propName, propSchema]) => {
-                if (propSchema.allOf) {
-                  const nestedRequired = processAllOfConditions({ allOf: propSchema.allOf }, options, [
-                    ...path,
-                    propName,
-                  ]);
-                  requiredFields = [...requiredFields, ...nestedRequired];
-                }
-              });
-            }
-          }
-        }
-      });
-    }
-
-    return requiredFields;
-  }, []);
+    return () => clearTimeout(timeout);
+  }, [options, hasUserInteracted, validateOptions]);
 
   React.useEffect(() => {
     if (showValidationErrors) {
@@ -446,12 +447,23 @@ const DynamicFormV2 = ({
     } = uiProperties;
 
     const isRequired = required || conditionallyRequiredProperties.includes(key);
-    const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
+    const isEncrypted =
+      widget === 'password-v3' ||
+      widget === 'password-v3-textarea' ||
+      widget === 'password' ||
+      encryptedProperties.includes(key);
     const currentValue = options?.[key]?.value;
     const skipValidation =
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
+
+    // On locked master branch, disable non-encrypted fields (encrypted fields remain editable)
+    const isFieldDisabledByBranchLock = isWorkspaceBranchLocked && !isEncrypted;
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
+    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
+    const finalHelpText = showEncryptedLockedHelpText
+      ? 'Encrypted values are not pushed to git and are updated directly in Tooljet'
+      : helpText;
 
     const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
@@ -484,7 +496,7 @@ const DynamicFormV2 = ({
             'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: helpText,
+          helpText: finalHelpText,
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
@@ -492,6 +504,8 @@ const DynamicFormV2 = ({
           onBlur,
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
+          disabled: isFieldDisabledByBranchLock,
+          isDisabled: isFieldDisabledByBranchLock,
         };
       }
       case 'password-v3':
@@ -512,12 +526,12 @@ const DynamicFormV2 = ({
           autoFillStrategy && key === autoFillStrategy.connectionStringKey && customValidation.valid !== null
             ? customValidation
             : skipValidation
-            ? { valid: null, message: '' }
-            : validationMessages[key]
-            ? { valid: false, message: validationMessages[key] }
-            : isRequired
-            ? { valid: true, message: '' }
-            : { valid: null, message: '' };
+              ? { valid: null, message: '' }
+              : validationMessages[key]
+                ? { valid: false, message: validationMessages[key] }
+                : isRequired
+                  ? { valid: true, message: '' }
+                  : { valid: null, message: '' };
 
         return {
           propertyKey: key,
@@ -528,7 +542,7 @@ const DynamicFormV2 = ({
             'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: helpText,
+          helpText: finalHelpText,
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
@@ -536,7 +550,10 @@ const DynamicFormV2 = ({
           onBlur,
           isRequired: isRequired,
           isValidatedMessages: validationStatus,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
           isEditing: isEditing,
@@ -568,12 +585,13 @@ const DynamicFormV2 = ({
         return {
           getter: key,
           options: isRenderedAsQueryEditor
-            ? options?.[key] ?? schema?.defaults?.[key]
-            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
+            ? (options?.[key] ?? schema?.defaults?.[key])
+            : (options?.[key]?.value ?? schema?.defaults?.[key]?.value),
           handleOptionChange,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: isEncrypted,
           buttonText,
           width: width,
@@ -607,6 +625,8 @@ const DynamicFormV2 = ({
           defaultChecked: currentValue,
           checked: currentValue,
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
         };
       case 'toggle-flip':
         // eslint-disable-next-line no-case-declarations
@@ -615,7 +635,8 @@ const DynamicFormV2 = ({
           checked: isEnabled,
           label: label,
           helpText: helpText,
-          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           onChange: (e) => {
             // Determine boolean-mode from the schema's declared type rather than the current
             // value, since an old datasource that never stored this field has value === undefined
@@ -633,7 +654,8 @@ const DynamicFormV2 = ({
           checked: currentValue,
           label: label,
           helpText: helpText,
-          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'dropdown':
@@ -644,6 +666,7 @@ const DynamicFormV2 = ({
           onChange: (value) => handleOptionChange(key, value, true),
           width: width || '100%',
           encrypted: options?.[key]?.encrypted,
+          isDisabled: isFieldDisabledByBranchLock,
         };
       case 'checkbox':
         return {
@@ -654,7 +677,10 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
           helpText: helpText,
           isRequired: isRequired,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
         };
       case 'checkbox-group':
         return {

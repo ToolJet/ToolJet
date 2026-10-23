@@ -26,7 +26,7 @@ export default class Servicenow implements QueryService {
   private async authHeaders(
     sourceOptions: SourceOptions,
     context?: { user?: User; app?: App }
-  ): Promise<Record<string, string>> {
+  ): Promise<Record<string, string> | { needsOAuth: QueryResult }> {
     const baseHeaders: Record<string, string> = {};
 
     try {
@@ -35,8 +35,8 @@ export default class Servicenow implements QueryService {
       } as any);
 
       if (validated && validated.status === 'needs_oauth') {
-        // Let the caller handle initiating OAuth; surface an informative error here.
-        throw new QueryError('OAuth authorization required', 'OAuth flow must be completed for this datasource', {});
+        // No token for this user yet: hand the OAuth redirect back to the caller.
+        return { needsOAuth: validated };
       }
 
       const resolved = (validated && (validated.data as any)) || { headers: baseHeaders };
@@ -60,7 +60,7 @@ export default class Servicenow implements QueryService {
   // getAuthUrl() helper never adds one, so we build the URL ourselves here
   // instead of modifying shared code.
   authUrl(sourceOptions: SourceOptions): string {
-    const host = process.env.TOOLJET_HOST;
+    const host = (sourceOptions as any).tj_redirect_host || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
 
@@ -215,10 +215,11 @@ export default class Servicenow implements QueryService {
     context: { user?: User; app?: App } | undefined,
     method: string,
     params: Record<string, unknown>
-  ): Promise<unknown> {
+  ): Promise<unknown | { needsOAuth: QueryResult }> {
     const url = this.mcpEndpoint(sourceOptions);
     await validateUrlForSSRF(url);
     const authHeaders = await this.authHeaders(sourceOptions, context);
+    if ('needsOAuth' in authHeaders) return authHeaders;
     const baseHeaders: Record<string, string> = {
       ...authHeaders,
       'Content-Type': 'application/json',
@@ -404,7 +405,9 @@ export default class Servicenow implements QueryService {
         case 'get_field_choices': {
           const url = `${baseUrl}/sys_choice`;
           const language =
-            queryOptions.language !== undefined && `${queryOptions.language}` !== '' ? `${queryOptions.language}` : 'en';
+            queryOptions.language !== undefined && `${queryOptions.language}` !== ''
+              ? `${queryOptions.language}`
+              : 'en';
           const searchParams = {
             sysparm_query: `name=${table}^element=${queryOptions.field}^inactive=false^language=${language}^ORDERBYsequence`,
             sysparm_fields: 'label,value,sequence',
@@ -440,9 +443,9 @@ export default class Servicenow implements QueryService {
 
         case 'list_workflows': {
           // Action Fabric MCP: enumerate available workflow tools (subflows).
-          const mcpResult = (await this.mcpRequest(sourceOptions, context, 'tools/list', {})) as {
-            tools?: Array<{ name?: string }>;
-          };
+          const listed = await this.mcpRequest(sourceOptions, context, 'tools/list', {});
+          if ((listed as any)?.needsOAuth) return this.patchNeedsOauth((listed as any).needsOAuth);
+          const mcpResult = listed as { tools?: Array<{ name?: string }> };
           let tools = Array.isArray(mcpResult?.tools) ? mcpResult.tools : [];
           const nameFilter = queryOptions.name_filter;
           if (nameFilter !== undefined && nameFilter !== null && `${nameFilter}` !== '') {
@@ -454,10 +457,12 @@ export default class Servicenow implements QueryService {
 
         case 'invoke_workflow': {
           // Action Fabric MCP: invoke a workflow tool (synchronous subflow).
-          const mcpResult = (await this.mcpRequest(sourceOptions, context, 'tools/call', {
+          const invoked = await this.mcpRequest(sourceOptions, context, 'tools/call', {
             name: queryOptions.workflow,
             arguments: this.parseBody(queryOptions.arguments),
-          })) as { content?: unknown; isError?: boolean } | undefined;
+          });
+          if ((invoked as any)?.needsOAuth) return this.patchNeedsOauth((invoked as any).needsOAuth);
+          const mcpResult = invoked as { content?: unknown; isError?: boolean } | undefined;
           if (mcpResult?.isError) {
             throw new QueryError(
               'Workflow invocation returned an error',
@@ -488,14 +493,17 @@ export default class Servicenow implements QueryService {
             { url: new URL(flowUrl) }
           );
           if (validated && (validated as any).status === 'needs_oauth') return this.patchNeedsOauth(validated);
-          const finalOptions = getSSRFProtectionOptions(undefined, (validated as any).data || _requestOptions) as OptionsOfJSONResponseBody;
+          const finalOptions = getSSRFProtectionOptions(
+            undefined,
+            (validated as any).data || _requestOptions
+          ) as OptionsOfJSONResponseBody;
           const flowRes = await got.post(flowUrl, finalOptions);
           // Scripted REST wraps a returned value in { result: ... }; unwrap for consistency
           // (so bindings are queries.X.data.outputs, not data.result.outputs).
           const flowBody = flowRes.body as { result?: object | object[] };
-          const flowData = (flowBody && typeof flowBody === 'object' && 'result' in flowBody
-            ? flowBody.result
-            : flowBody) as object | object[];
+          const flowData = (
+            flowBody && typeof flowBody === 'object' && 'result' in flowBody ? flowBody.result : flowBody
+          ) as object | object[];
           return { status: 'ok', data: flowData };
         }
 
@@ -538,7 +546,11 @@ export default class Servicenow implements QueryService {
       };
     } catch (error) {
       if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode === 401) {
-        throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, error.response?.body || {});
+        throw new OAuthUnauthorizedClientError(
+          'Unauthorized status from API server',
+          error.message,
+          error.response?.body || {}
+        );
       }
       throw new QueryError('Query could not be completed', error.message, error.response?.body || {});
     }
@@ -559,7 +571,6 @@ export default class Servicenow implements QueryService {
       return { status: 'failed', message: error.message };
     }
   }
-
 
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
     return getRefreshedToken(sourceOptions, error, userId, isAppPublic);

@@ -4,27 +4,44 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
+import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
+import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
 import { HomePage } from '@/HomePage';
-import { TooljetDatabase } from '@/TooljetDatabase';
+import './lazyPageStyles';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 // Viewer import removed - now handled by ViewerApp.jsx
 // import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
-import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { MarketplacePage } from '@/MarketplacePage';
-import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
-import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
+
+const TooljetDatabase = React.lazy(() => import('@/TooljetDatabase'));
+
+const ProfileSettingsPage = React.lazy(() => import('@/SettingsPage'));
+
+const MarketplacePage = React.lazy(() => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage'));
+const InstalledPlugins = React.lazy(
+  () => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage/InstalledPlugins')
+);
+const MarketplacePlugins = React.lazy(
+  () => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage/MarketplacePlugins')
+);
+
+const WorkspaceSettings = React.lazy(() => import('@/modules/WorkspaceSettings'));
+
+const WorkspaceConstants = React.lazy(() => import('@/WorkspaceConstants'));
+
+import LayoutRouteWrapper from '@/_ui/Layout/LayoutRouteWrapper';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
+import { toast } from 'react-hot-toast';
 import '@/_styles/theme.scss';
 import AppLoader from '@/AppLoader';
-export const BreadCrumbContext = React.createContext({});
+import { BreadCrumbContext } from './BreadCrumbContext';
+
+export { BreadCrumbContext };
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
-import WorkspaceConstants from '@/WorkspaceConstants';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
@@ -32,13 +49,13 @@ import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import {
   onboarding,
   auth,
-  WorkspaceSettings,
   InstanceSettings,
   Settings,
   Workflows,
   getDataSourcesRoutes,
   getAuditLogsRoutes,
 } from '@/modules';
+import './workspaceSettingsStyles';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
@@ -50,6 +67,7 @@ import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+import UpgradePlanModal from '@/modules/common/components/UpgradePlanModal';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -120,6 +138,15 @@ class AppComponent extends React.Component {
   }
 
   async componentDidMount() {
+    // Set before a window.location.reload() (e.g. after resolving git sync conflicts) —
+    // a toast fired right before a full reload gets torn down with the DOM before it's
+    // ever visible, so the message is persisted and shown here once the fresh page mounts.
+    const pendingSyncToast = sessionStorage.getItem('sync_success_toast');
+    if (pendingSyncToast) {
+      sessionStorage.removeItem('sync_success_toast');
+      setTimeout(() => toast.success(pendingSyncToast), 500);
+    }
+
     setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
@@ -198,7 +225,8 @@ class AppComponent extends React.Component {
     };
     let toastOptions = {
       style: {
-        wordBreak: 'break-all',
+        maxWidth: '400px',
+        overflowWrap: 'anywhere',
       },
     };
 
@@ -209,7 +237,8 @@ class AppComponent extends React.Component {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
-          wordBreak: 'break-all',
+          maxWidth: '400px',
+          overflowWrap: 'anywhere',
         },
       };
     }
@@ -270,17 +299,78 @@ class AppComponent extends React.Component {
                     </AppsRoute>
                   }
                 />
+
+                {/* Layout routes, grouped by the guard each page needs */}
                 <Route
-                  exact
-                  path="/:workspaceId/workspace-constants"
                   element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
+                    <LayoutRouteWrapper
+                      guard={DesktopOnlyPrivateRoute}
+                      darkMode={darkMode}
+                      switchDarkMode={this.switchDarkMode}
+                    />
                   }
-                />
+                >
+                  <Route
+                    exact
+                    path="/:workspaceId/workspace-constants"
+                    element={<WorkspaceConstants darkMode={darkMode} />}
+                  />
+
+                  <Route path="/:workspaceId/workspace-settings/*" element={<WorkspaceSettings {...mergedProps} />} />
+
+                  <Route
+                    path="settings/*"
+                    element={
+                      <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
+                    }
+                  />
+                  <Route
+                    path="/:workspaceId/settings/*"
+                    element={
+                      <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
+                    }
+                  />
+
+                  <Route
+                    exact
+                    path="/:workspaceId/profile-settings"
+                    element={<ProfileSettingsPage darkMode={darkMode} />}
+                  />
+
+                  <Route exact path="/:workspaceId/database" element={<TooljetDatabase />} />
+                </Route>
+
+                <Route
+                  element={
+                    <LayoutRouteWrapper
+                      guard={DesktopOnlyAdminRoute}
+                      darkMode={darkMode}
+                      switchDarkMode={this.switchDarkMode}
+                    />
+                  }
+                >
+                  {getAuditLogsRoutes({ ...mergedProps, darkMode })}
+                </Route>
+
+                {this.state.tooljetVersion && !checkIfToolJetCloud(this.state.tooljetVersion) && (
+                  <Route
+                    element={
+                      <LayoutRouteWrapper
+                        guard={MarketplaceRoute}
+                        darkMode={darkMode}
+                        switchDarkMode={this.switchDarkMode}
+                      />
+                    }
+                  >
+                    <Route exact path="/integrations" element={<MarketplacePage />}>
+                      <Route path="installed" element={<InstalledPlugins />} />
+                      <Route
+                        path="marketplace"
+                        element={<DesktopOnlyRoute>{<MarketplacePlugins />}</DesktopOnlyRoute>}
+                      />
+                    </Route>
+                  </Route>
+                )}
                 {/* VIEWER ROUTES REMOVED - Now handled by ViewerApp.jsx via RootRouter.jsx */}
                 {/* These routes are now in ViewerApp.jsx for bundle isolation: */}
                 {/* - /applications/:slug/:pageHandle? */}
@@ -308,36 +398,6 @@ class AppComponent extends React.Component {
                   />
                 )}
                 <Route
-                  path="/:workspaceId/workspace-settings/*"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <WorkspaceSettings {...mergedProps} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                <Route
-                  path="settings/*"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                <Route
-                  path="/:workspaceId/settings/*"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                <Route
                   exact
                   path="/:workspaceId/modules"
                   element={
@@ -349,18 +409,6 @@ class AppComponent extends React.Component {
                   }
                 />
 
-                {getAuditLogsRoutes({ ...mergedProps, darkMode })}
-                <Route
-                  exact
-                  path="/:workspaceId/profile-settings"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
                 {getDataSourcesRoutes({ ...mergedProps, darkMode })}
                 {/* DUPLICATE VIEWER ROUTES REMOVED - handled by ViewerApp.jsx */}
                 <Route
@@ -378,33 +426,6 @@ class AppComponent extends React.Component {
                     </DesktopOnlyRoute>
                   }
                 />
-
-                <Route
-                  exact
-                  path="/:workspaceId/database"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-
-                {this.state.tooljetVersion && !checkIfToolJetCloud(this.state.tooljetVersion) && (
-                  <Route
-                    exact
-                    path="/integrations"
-                    element={
-                      <MarketplaceRoute>
-                        <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </MarketplaceRoute>
-                    }
-                  >
-                    <Route path="installed" element={<InstalledPlugins />} />
-                    <Route path="marketplace" element={<DesktopOnlyRoute>{<MarketplacePlugins />}</DesktopOnlyRoute>} />
-                  </Route>
-                )}
 
                 <Route
                   exact
@@ -487,6 +508,7 @@ class AppComponent extends React.Component {
               </Routes>
             </BreadCrumbContext.Provider>
             <div id="modal-div" />
+            <UpgradePlanModal />
           </div>
 
           <Toast toastOptions={toastOptions} />

@@ -101,6 +101,9 @@ const MobileNavigationMenu = ({
       ? styles.pillSelectedBackgroundColor.value
       : 'var(--cc-appBackground-surface, #F6F6F6)',
     '--nav-item-pill-radius': `${styles.pillRadius.value}px`,
+    '--app-title-color': !styles.appTitleColor?.isDefault
+      ? styles.appTitleColor?.value
+      : 'var(--cc-primary-text, #1B1F24)',
   };
 
   const MenuHeader = () => {
@@ -137,7 +140,7 @@ const MobileNavigationMenu = ({
     const { toggleSidebar } = useSidebar();
 
     const switchPageWrapper = (page, currentPageId) => {
-      const isPageSwitched = switchPage(page, currentPageId);
+      const isPageSwitched = switchPage(page, currentPageId, moduleId);
       if (isPageSwitched) {
         toggleSidebar();
       }
@@ -190,8 +193,8 @@ const MobileNavigationMenu = ({
           isMobilePreviewMode && !isPreviewInEditor
             ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
             : currentMode === 'view' && !isMobilePreviewMode
-            ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
-            : 'tw-h-full'
+              ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
+              : 'tw-h-full'
         }`,
         style: bgStyles,
       }}

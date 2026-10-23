@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
 import { authenticationService, appService, sessionService } from '@/_services';
@@ -38,14 +38,13 @@ function BaseSettingsMenu({
   const admin = currentUserValue?.admin;
   const superAdmin = currentUserValue?.super_admin;
   const isBuilder = !!currentUserValue?.user_permissions?.is_builder;
-  const isCloudEdition = edition === 'cloud' || checkIfToolJetCloud(tooljetVersion);
+  const isCloudEdition = edition === 'cloud' || (!!tooljetVersion && checkIfToolJetCloud(tooljetVersion));
   const marketplaceEnabled = !options.hideMarketPlaceMenuItem && !isCloudEdition && (admin || superAdmin || isBuilder);
-  const canAccessWorkspaceSettings = !!admin || (isEEorCloud && isBuilder);
   const isValidUrl = (url) => {
     try {
       new URL(url);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -65,17 +64,38 @@ function BaseSettingsMenu({
         }
         sessionService.logout();
       })
-      .catch((error) => {
+      .catch(() => {
         sessionService.logout();
       });
   }
+  const hasCustomGroupsLicense = useMemo(() => {
+    if (!featureAccess) return false;
+    return featureAccess.customGroups === true && featureAccess.licenseStatus?.isLicenseValid !== false;
+  }, [featureAccess]);
+
+  const isGroupAdmin = !!currentUserValue?.is_group_admin && hasCustomGroupsLicense;
+  const canAccessWorkspaceSettings = !!admin || (isEEorCloud && isBuilder) || isGroupAdmin;
 
   const getWorkspaceSettingsRoute = () => {
+    if (isGroupAdmin) {
+      return getPrivateRoute('workspace_settings_groups');
+    }
     if (isBuilder && isEEorCloud) {
       return getPrivateRoute('workspace_settings_builder');
     }
     return getPrivateRoute('workspace_settings');
   };
+  // Closing the overlay used to happen incidentally whenever navigation remounted this whole
+  // component tree. Now that the shared Layout/sidebar can persist across navigation, that implicit
+  // reset no longer happens, so each item must close the overlay explicitly — but only when
+  // navigation actually proceeds (checkForUnsavedChanges calls preventDefault() to block it when
+  // there are unsaved changes, in which case the overlay should stay as-is).
+  const closeOverlayIfNotPrevented = (event) => {
+    if (!event.defaultPrevented) {
+      setShowOverlay(false);
+    }
+  };
+
   const getOverlay = () => {
     // Get the extension items with the required context
     const preWorkspaceContent = getPreWorkspaceItems({
@@ -83,12 +103,14 @@ function BaseSettingsMenu({
       superAdmin,
       featureAccess,
       checkForUnsavedChanges,
+      closeOverlay: closeOverlayIfNotPrevented,
     });
     const midMenuContent = getMidMenuItems({
       admin,
       superAdmin,
       featureAccess,
       checkForUnsavedChanges,
+      closeOverlay: closeOverlayIfNotPrevented,
     });
     const currentVersion = localStorage.getItem('currentVersion');
     return (
@@ -100,7 +122,10 @@ function BaseSettingsMenu({
         {/* Marketplace section */}
         {marketplaceEnabled && tooljetVersion && !checkIfToolJetCloud(tooljetVersion) && (
           <Link
-            onClick={(event) => checkForUnsavedChanges('/integrations/marketplace', event)}
+            onClick={(event) => {
+              checkForUnsavedChanges('/integrations/marketplace', event);
+              closeOverlayIfNotPrevented(event);
+            }}
             to={'/integrations/marketplace'}
             className="dropdown-item tj-text-xsm"
             data-cy="marketplace-option"
@@ -126,7 +151,10 @@ function BaseSettingsMenu({
             Builder can access for themes.  */}
         {canAccessWorkspaceSettings && (
           <Link
-            onClick={(event) => checkForUnsavedChanges(getWorkspaceSettingsRoute(), event)}
+            onClick={(event) => {
+              checkForUnsavedChanges(getWorkspaceSettingsRoute(), event);
+              closeOverlayIfNotPrevented(event);
+            }}
             to={getWorkspaceSettingsRoute()}
             className="dropdown-item tj-text-xsm"
             data-cy="workspace-settings"
@@ -137,7 +165,10 @@ function BaseSettingsMenu({
 
         {/* Profile settings */}
         <Link
-          onClick={(event) => checkForUnsavedChanges(getPrivateRoute('profile_settings'), event)}
+          onClick={(event) => {
+            checkForUnsavedChanges(getPrivateRoute('profile_settings'), event);
+            closeOverlayIfNotPrevented(event);
+          }}
           to={getPrivateRoute('profile_settings')}
           className="dropdown-item tj-text-xsm"
           data-cy="profile-settings"
@@ -163,7 +194,14 @@ function BaseSettingsMenu({
   };
 
   return (
-    <OverlayTrigger onToggle={setShowOverlay} rootClose={true} trigger="click" placement="top" overlay={getOverlay()}>
+    <OverlayTrigger
+      show={showOverlay}
+      onToggle={setShowOverlay}
+      rootClose={true}
+      trigger="click"
+      placement="top"
+      overlay={getOverlay()}
+    >
       <div className={cx('settings-nav-item cursor-pointer', { active: showOverlay })} data-cy="settings-icon">
         <div className="d-xl-block">
           <SolidIcon name="settings" fill={showOverlay ? '#3E63DD' : 'var(--slate8)'} width={28} />

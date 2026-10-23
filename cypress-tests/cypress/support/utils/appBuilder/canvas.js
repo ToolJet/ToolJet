@@ -1,0 +1,410 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// canvas.js
+//   grantClipboardAccess             -                    → canvas
+//   copyWidget                       -                    → canvas
+//   pasteWidget                      -                    → canvas
+//   copyPasteWidget                  -                    → canvas
+//   duplicateWidgetByKeyboard        -                    → canvas
+//   openComponentInspectorMenu       -                    → canvas
+//   selectComponentInspectorMenuOption -                    → canvas
+//   duplicateWidgetFromMenu          -                    → canvas
+//   renameWidgetFromMenu             -                    → canvas
+//   deleteWidgetFromMenu             -                    → canvas
+//   selectAllWidgets                 -                    → canvas
+//   multiSelectWidgets               -                    → canvas
+//   verifySelectedWidgetCount        -                    → canvas
+//   undo                             -                    → canvas
+//   redo                             -                    → canvas
+//   nudgeWidget                      -                    → canvas
+//   cutWidget                        -                    → canvas
+//   getWidgetRect                    -                    → canvas
+//   verifyWidgetMoved                -                    → canvas
+//   verifyWidgetResized              -                    → canvas
+//   verifyWidgetCount                -                    → canvas
+//   waitForDropSettle                -                    → canvas
+//   dropWidget                       -                    → canvas
+//   clickWidgetInput                 -                    → canvas
+// └──────────────────────────────────────────────────────────────────┘
+/**
+ * MODULE — appBuilder/canvas: on-canvas **component lifecycle** helpers
+ * (copy · paste · duplicate · menu actions). Complements the canvas COMMANDS
+ * cy.dragAndDropWidget / cy.moveComponent / cy.resizeWidget / cy.getPosition.
+ * FOR AI: to clone a widget choose the mechanism the case names —
+ *   keyboard copy-paste → copyPasteWidget (Cmd/Ctrl+C then +V)
+ *   keyboard duplicate  → duplicateWidgetByKeyboard (Cmd/Ctrl+D)
+ *   ⋮ inspector menu     → duplicateWidgetFromMenu / selectComponentInspectorMenuOption
+ * The clone is always the next auto-name (button1 → button2). Delete via
+ * deleteWidgetFromMenu (⋮ menu) or the existing deleteComponentAndVerify
+ * (config-handle trash) in basicComponents.js.
+ * MODIFIER: the shortcut modifier is platform-aware — Meta (Cmd) on macOS,
+ * Control elsewhere (Linux CI) — because ToolJet binds the "mod" combo.
+ * CAVEAT (verified): the pasted/duplicated clone is created with DEFAULT config —
+ * this build has a clone-persistence gap for Cmd+D / menu Duplicate. These helpers
+ * assert the clone is CREATED (+ toast), NOT that live property edits carry over.
+ * Clipboard paste is NOT empty in headless: readText is permission-DENIED until
+ * grantClipboardAccess() runs, which copyWidget/cutWidget now do.
+ * NOT here: styling → styles.js · properties → properties.js · exposed-value
+ * tree / inspector-delete → inspectorTree.js.
+ */
+import { commonWidgetSelector, commonSelectors } from "Selectors/common";
+import { openEditorSidebar } from "./properties";
+
+// Meta (Cmd) on macOS, Control on Linux/Windows CI — ToolJet binds "mod".
+const modKey = () => (Cypress.platform === "darwin" ? "Meta" : "Control");
+
+// Cypress's Chrome starts `clipboard-read` at "prompt"; headless cannot answer it, so
+// readText is DENIED and the paste handler swallows it (HotkeyProvider.jsx:47 only logs).
+// Measured: writeText resolves fine without this — only the READ side is blocked.
+// The empty catch is deliberate: without CDP the callers fail as they did before.
+/**
+ * @tjBlock  canvas
+ * @tjUsage  grantClipboardAccess()
+ * @tjDom    CDP Browser.grantPermissions for the baseUrl origin
+ */
+export const grantClipboardAccess = () =>
+  cy.then(() =>
+    Cypress.automation("remote:debugger:protocol", {
+      command: "Browser.grantPermissions",
+      params: {
+        origin: Cypress.config("baseUrl"),
+        permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"],
+      },
+    }).catch(() => {})
+  );
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  copyWidget('button1')
+ * @tjDom    select widget on canvas → Cmd/Ctrl+C → "Component copied successfully" toast
+ */
+export const copyWidget = (widgetName) => {
+  grantClipboardAccess();
+  cy.forceClickOnCanvas();
+  // Select the widget ON THE CANVAS so it is the editor's active component when
+  // the copy fires (otherwise the copy captures nothing).
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .first()
+    .click({ force: true });
+  openEditorSidebar(widgetName);
+  cy.realPress([modKey(), "c"]);
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "Component copied successfully"
+  );
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  pasteWidget()                                            // onto the root canvas
+ *           pasteWidget('[data-cy="draggable-widget-container1"]>')  // into a container
+ * @tjDom    focus paste target → Cmd/Ctrl+V → pasted clone appears
+ */
+export const pasteWidget = (targetSelector = '[data-cy="real-canvas"]') => {
+  cy.get(targetSelector).realPress([modKey(), "v"]);
+  // The clone lands on top of the original; give the editor a beat to render it.
+  cy.wait(1000);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  copyPasteWidget('button1')   // clones button1 → button2 via clipboard
+ */
+export const copyPasteWidget = (widgetName) => {
+  copyWidget(widgetName);
+  cy.forceClickOnCanvas();
+  pasteWidget();
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  duplicateWidgetByKeyboard('button1')
+ * @tjDom    select widget → Cmd/Ctrl+D → "Component cloned successfully" toast
+ */
+export const duplicateWidgetByKeyboard = (widgetName) => {
+  cy.forceClickOnCanvas();
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .first()
+    .click({ force: true });
+  openEditorSidebar(widgetName);
+  cy.realPress([modKey(), "d"]);
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "Component cloned successfully"
+  );
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  openComponentInspectorMenu('button1')
+ * @tjDom    openEditorSidebar → component-inspector-options (⋮) button
+ */
+export const openComponentInspectorMenu = (widgetName) => {
+  openEditorSidebar(widgetName);
+  cy.get('[data-cy="component-inspector-options"]').click();
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  selectComponentInspectorMenuOption('button1', 'duplicate')
+ *           option ∈ inspect | rename | duplicate | permission | delete
+ * @tjDom    ⋮ menu → component-inspector-<option>-button
+ */
+export const selectComponentInspectorMenuOption = (widgetName, option) => {
+  openComponentInspectorMenu(widgetName);
+  cy.get(`[data-cy="component-inspector-${option}-button"]`).click();
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  duplicateWidgetFromMenu('button1')
+ * @tjDom    ⋮ menu → Duplicate → "Component cloned successfully" toast
+ */
+export const duplicateWidgetFromMenu = (widgetName) => {
+  selectComponentInspectorMenuOption(widgetName, "duplicate");
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "Component cloned successfully"
+  );
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  renameWidgetFromMenu('button1', 'submitBtn')
+ * @tjDom    ⋮ menu → Rename → inline edit-widget-name input → type + Enter
+ */
+export const renameWidgetFromMenu = (widgetName, newName) => {
+  selectComponentInspectorMenuOption(widgetName, "rename");
+  cy.get('[data-cy="edit-widget-name"]')
+    .should("be.visible")
+    .clear()
+    .type(newName)
+    .blur();
+  // The rename commits on BLUR — pressing Enter alone does NOT apply it
+  // (verified via probe). Click the canvas to force the blur/commit.
+  cy.forceClickOnCanvas();
+  cy.wait(500);
+  cy.get(commonWidgetSelector.draggableWidget(newName)).should("exist");
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  deleteWidgetFromMenu('button1')
+ * @tjDom    ⋮ menu → Delete → confirm modal-component → Yes
+ */
+export const deleteWidgetFromMenu = (widgetName) => {
+  selectComponentInspectorMenuOption(widgetName, "delete");
+  // Deleting from the ⋮ menu raises the same confirmation modal as the
+  // config-handle trash (deleteComponentAndVerify) — confirm it.
+  cy.get('[data-cy="modal-component"]').should("be.visible");
+  cy.get(commonSelectors.yesButton).click();
+  cy.wait(1000);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  selectAllWidgets()   // Cmd/Ctrl+A — selects every widget on the canvas
+ * @tjDom    click empty canvas → Cmd/Ctrl+A → each wrapper gains `.active-target`
+ *           + a group `.moveable-area` box appears
+ */
+export const selectAllWidgets = () => {
+  cy.forceClickOnCanvas();
+  cy.get('[data-cy="real-canvas"]')
+    .click("topLeft", { force: true })
+    .realPress([modKey(), "a"]);
+  cy.wait(500);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  multiSelectWidgets(['button1', 'button2'])
+ * @tjDom    click the first widget, shift-click the rest → each selected
+ *           wrapper gains `.active-target`
+ */
+export const multiSelectWidgets = (widgetNames = []) => {
+  cy.forceClickOnCanvas();
+  widgetNames.forEach((name, i) => {
+    cy.get(commonWidgetSelector.draggableWidget(name)).click(
+      i === 0 ? { force: true } : { shiftKey: true, force: true }
+    );
+  });
+  cy.wait(300);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  verifySelectedWidgetCount(2)   // after selectAll / multiSelect
+ * @tjDom    counts `[component-type].active-target` (selected wrappers)
+ */
+export const verifySelectedWidgetCount = (expectedCount) => {
+  cy.get("[component-type].active-target").should("have.length", expectedCount);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  undo()   // Cmd/Ctrl+Z — reverts the last canvas action
+ * @tjDom    focus canvas → Cmd/Ctrl+Z
+ */
+export const undo = () => {
+  cy.get('[data-cy="real-canvas"]').realPress([modKey(), "z"]);
+  cy.wait(500);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  redo()   // Cmd/Ctrl+Shift+Z — re-applies the last undone action
+ * @tjDom    focus canvas → Cmd/Ctrl+Shift+Z
+ */
+export const redo = () => {
+  cy.get('[data-cy="real-canvas"]').realPress([modKey(), "Shift", "z"]);
+  cy.wait(500);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  nudgeWidget('button1', 'ArrowRight', 10)   // arrow-key move the selected widget
+ *           direction ∈ ArrowUp | ArrowDown | ArrowLeft | ArrowRight
+ * @tjDom    select widget → press an arrow key `times` (each press nudges 1px)
+ */
+export const nudgeWidget = (widgetName, direction = "ArrowRight", times = 1) => {
+  cy.forceClickOnCanvas();
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .first()
+    .click({ force: true });
+  for (let i = 0; i < times; i++) {
+    cy.realPress(direction);
+  }
+  cy.wait(300);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  cutWidget('button1')   // removes it from canvas; pasteWidget() restores it
+ * @tjDom    select widget → Cmd/Ctrl+X → widget removed (NO toast, unlike copy)
+ */
+export const cutWidget = (widgetName) => {
+  grantClipboardAccess();
+  cy.forceClickOnCanvas();
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .first()
+    .click({ force: true });
+  openEditorSidebar(widgetName);
+  cy.realPress([modKey(), "x"]);
+  // Cut removes the widget from the canvas immediately (no confirmation, no
+  // toast) and holds it on the clipboard for a subsequent pasteWidget().
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("not.exist");
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  getWidgetRect('button1').as('r0')   // capture BEFORE a move/resize
+ * @tjDom    reads a placed widget's bounding rect → {x, y, w, h} (rounded)
+ */
+export const getWidgetRect = (widgetName) =>
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).then(($w) => {
+    const r = $w[0].getBoundingClientRect();
+    return {
+      x: Math.round(r.x),
+      y: Math.round(r.y),
+      w: Math.round(r.width),
+      h: Math.round(r.height),
+    };
+  });
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  verifyWidgetMoved('button1', before)   // before = getWidgetRect result
+ * @tjDom    asserts the widget's x OR y differs from the captured rect (>2px)
+ */
+export const verifyWidgetMoved = (widgetName, before) => {
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should(($w) => {
+    const r = $w[0].getBoundingClientRect();
+    const movedX = Math.abs(Math.round(r.x) - before.x) > 2;
+    const movedY = Math.abs(Math.round(r.y) - before.y) > 2;
+    expect(movedX || movedY, "widget position changed").to.be.true;
+  });
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  verifyWidgetResized('button1', before) // before = getWidgetRect result
+ * @tjDom    asserts the widget's width OR height differs from the captured rect (>2px)
+ */
+export const verifyWidgetResized = (widgetName, before) => {
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should(($w) => {
+    const r = $w[0].getBoundingClientRect();
+    const dW = Math.abs(Math.round(r.width) - before.w) > 2;
+    const dH = Math.abs(Math.round(r.height) - before.h) > 2;
+    expect(dW || dH, "widget size changed").to.be.true;
+  });
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  verifyWidgetCount('button', 2)   // button1 + button2 after a clone
+ * @tjDom    asserts N placed widgets whose name starts with the given prefix
+ */
+export const verifyWidgetCount = (namePrefix, expectedCount) => {
+  cy.get(`[data-cy^="draggable-widget-${namePrefix}"]`).should(
+    "have.length",
+    expectedCount
+  );
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  waitForDropSettle('checkbox1')
+ * @tjDom    draggable-widget-<name> bounding rect, polled until stable
+ */
+// The canvas keeps settling after a drop: a position assertion made straight after one
+// can miss, and a widget dropped near the top can end up scrolled out of view for the
+// rest of the test. Poll the dropped widget's top edge across ~150ms reads until it
+// stops moving.
+export const waitForDropSettle = (widgetName, attemptsLeft = 6) => {
+  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).then(($el) => {
+    const top = $el[0].getBoundingClientRect().top;
+    cy.wrap(null).then(() => {
+      cy.wait(150);
+      cy.get(`[data-cy="draggable-widget-${widgetName}"]`).then(($el2) => {
+        const top2 = $el2[0].getBoundingClientRect().top;
+        if (Math.abs(top2 - top) > 1 && attemptsLeft > 0) {
+          waitForDropSettle(widgetName, attemptsLeft - 1);
+        }
+      });
+    });
+  });
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  dropWidget('Text Input', 'textinput1', 500, 300)
+ * @tjDom    right-sidebar-components-button toggle + widget-search-box-search-bar
+ */
+// cy.dragAndDropWidget opens the Components panel by clicking a button that TOGGLES it,
+// so it only works from a CLOSED panel: a drop straight after another drop clicks it
+// shut and then times out on the search box. Collapse first so a drop works from either
+// state. Specs that chain drops without this pass only by accident, because an
+// openEditorSidebar in between happened to swap the sidebar to the Inspector.
+//
+// The instance name is passed, not derived, because callers reference it in bindings.
+export const dropWidget = (widgetName, instanceName, x = 500, y = 300) => {
+  cy.get("body").then(($body) => {
+    if ($body.find('[data-cy="widget-search-box-search-bar"]:visible').length) {
+      cy.get('[data-cy="right-sidebar-components-button"]').click();
+    }
+  });
+  cy.dragAndDropWidget(widgetName, x, y);
+  waitForDropSettle(instanceName);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  clickWidgetInput('toggleswitch1')
+ * @tjDom    <name> widget root → nested <input>, force-clicked
+ */
+// Flips a companion source widget from the canvas. Driving the SOURCE rather than the
+// bound field is what proves a binding stays live instead of having resolved once at
+// bind time.
+export const clickWidgetInput = (name) => {
+  cy.get(`[data-cy="${name}"]`).find("input").click({ force: true });
+  cy.waitForAutoSave();
+};

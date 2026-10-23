@@ -66,6 +66,12 @@ module.exports = {
     // markdown *parsing* — only that the widget renders its text — so a
     // renderable pass-through component is the cheap equivalent.
     '^react-markdown$': '<rootDir>/__mocks__/reactMarkdown.jsx',
+    // Same reasoning, one tree further out: @mdxeditor/editor is ESM-only and
+    // carries the whole Lexical stack. It is only reached because the EE
+    // AiBuilder doc previewer sits on an import chain that rendering a
+    // sub-container widget (Form field, ListView row) walks.
+    '^@mdxeditor/editor$': '<rootDir>/__mocks__/mdxEditor.jsx',
+    '^@mdxeditor/editor/style\\.css$': '<rootDir>/__mocks__/style.js',
     // The remark/rehype plugins are only ever passed as opaque values into the
     // (now stubbed) markdown renderer, so a plain string stub suffices.
     '^(remark|rehype)-.*$': '<rootDir>/__mocks__/fileMock.js',
@@ -100,6 +106,7 @@ module.exports = {
     '^@white-label$': '<rootDir>/src/_helpers/white-label',
     '^@white-label/(.*)$': '<rootDir>/src/_helpers/white-label/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@tooljet/widget-definitions$': '<rootDir>/../packages/widget-definitions/src/index.js',
   },
   // jsdom patched to keep Node's native fetch/TextEncoder/BroadcastChannel —
   // required by MSW v2. Suites can still opt into `@jest-environment node`.
@@ -129,6 +136,8 @@ module.exports = {
     '!src/AppBuilder/**/__tests__/**',
     '!src/AppBuilder/**/*.(test|spec).{js,jsx,ts,tsx}',
     '!src/AppBuilder/**/__mocks__/**',
+    // Type-only declarations; validate-app-builder-coverage-manifest.js rejects runtime code there.
+    '!src/AppBuilder/types/**',
     '!src/test/**',
   ],
 };

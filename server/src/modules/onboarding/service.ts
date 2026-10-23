@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   GoneException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -30,7 +31,6 @@ import {
   generateInviteURL,
   generateNextNameAndSlug,
   generateOrgInviteURL,
-  isValidDomain,
   generateWorkspaceSlug,
   validatePasswordServer,
   validatePasswordDomain,
@@ -54,6 +54,7 @@ import { OnboardingUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { OrganizationUsersUtilService } from '../organization-users/util.service';
 import { OrganizationUsersRepository } from '../organization-users/repository';
+import { MAX_CLOUD_WORKSPACES_PER_USER } from '../organization-users/constants';
 import { LicenseUserService } from '../licensing/services/user.service';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { MetadataUtilService } from '@modules/meta/util.service';
@@ -83,9 +84,7 @@ export class OnboardingService implements IOnboardingService {
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
   ) {}
 
-  private async getDefaultOrOldestWorkspaceOfInstance(
-    manager: EntityManager
-  ): Promise<Organization | null> {
+  private async getDefaultOrOldestWorkspaceOfInstance(manager: EntityManager): Promise<Organization | null> {
     const defaultWorkspace = await manager.findOne(Organization, {
       where: { isDefault: true },
     });
@@ -125,16 +124,23 @@ export class OnboardingService implements IOnboardingService {
           throw new ForbiddenException('Workspace signup has been disabled. Please contact the workspace admin.');
         }
         if (
-          !(await validatePasswordDomain(email, passwordAllowedDomains, passwordRestrictedDomains, this.instanceSettingsUtilService))
+          !(await validatePasswordDomain(
+            email,
+            passwordAllowedDomains,
+            passwordRestrictedDomains,
+            this.instanceSettingsUtilService
+          ))
         ) {
-          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+          throw new ForbiddenException(
+            'This login method is not available for your domain. Please contact admin or try another method.'
+          );
         }
       } else {
         // No organization provided - validate against instance-level settings
-        if (
-          !(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))
-        ) {
-          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+        if (!(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))) {
+          throw new ForbiddenException(
+            'This login method is not available for your domain. Please contact admin or try another method.'
+          );
         }
       }
 
@@ -167,7 +173,7 @@ export class OnboardingService implements IOnboardingService {
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
           const edition = getTooljetEdition();
-          const isCE = edition === 'ce'; 
+          const isCE = edition === 'ce';
           if (isCE && !defaultWorkspace.enableSignUp) {
             throw new ForbiddenException(
               'Signup is disabled for the default workspace. Please contact the workspace admin.'
@@ -196,7 +202,7 @@ export class OnboardingService implements IOnboardingService {
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
       userCreateDto;
-    validatePasswordServer(password); 
+    validatePasswordServer(password);
     const nameObj = this.onboardingUtilService.splitName(name);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
@@ -487,6 +493,20 @@ export class OnboardingService implements IOnboardingService {
       await this.userRepository.updateOne(user.id, { defaultOrganizationId: organizationUser.organizationId }, manager);
       const organization = await this.organizationRepository.get(organizationUser.organizationId);
       const activeWorkspacesCount = await this.organizationUsersRepository.getActiveWorkspacesCount(user.id);
+
+      if (getTooljetEdition() === 'cloud') {
+        const activeOrganizationsCount = await this.organizationUsersRepository.countActiveOrganizationsForUser(
+          user.id,
+          manager
+        );
+        if (activeOrganizationsCount >= MAX_CLOUD_WORKSPACES_PER_USER) {
+          throw new HttpException(
+            `You have reached the number of workspaces (${activeOrganizationsCount}/${MAX_CLOUD_WORKSPACES_PER_USER}) which can be created in ToolJet Cloud. Contact us at support@tooljet.com to increase this limit.`,
+            451
+          );
+        }
+      }
+
       await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
       const personalWorkspacesCount = await this.organizationUsersUtilService.personalWorkspaceCount(user.id);
       if (personalWorkspacesCount === 1 && activeWorkspacesCount === 0) {
@@ -645,9 +665,10 @@ export class OnboardingService implements IOnboardingService {
       }
 
       const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-      const passwordExpiry = (password && !isNaN(rawExpiryDays) && rawExpiryDays > 0)
-        ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
-        : null;
+      const passwordExpiry =
+        password && !isNaN(rawExpiryDays) && rawExpiryDays > 0
+          ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+          : null;
 
       await this.userRepository.updateOne(
         signupUser.id,

@@ -21,11 +21,16 @@ const OAuthWrapper = ({
   workspaceConstants,
   optionsChanged,
   isDisabled,
+  isWorkspaceBranchLocked = false,
   multiple_auth_enabled,
   scopes,
   oauth_configs,
   currentAppEnvironmentId,
 }) => {
+  // Inner OAuth fields stay locked when the workspace branch is locked (default
+  // branch + branching enabled). The save button uses `isDisabled` alone so an
+  // edit to an encrypted field on the default branch can still be saved.
+  const isFieldsDisabled = isDisabled || isWorkspaceBranchLocked;
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
   const [initialOptions, setInitialOptions] = useState(null);
@@ -56,10 +61,11 @@ const OAuthWrapper = ({
     }
     return false;
   };
+  const isAuthorizationCodeGrant = ['authorization_code', 'authorization_code_pkce'].includes(
+    options?.grant_type?.value
+  );
   const needConnectionButton =
-    selectedDataSource.kind !== 'openapi' &&
-    options?.auth_type?.value === 'oauth2' &&
-    options?.grant_type?.value === 'authorization_code';
+    selectedDataSource.kind !== 'openapi' && options?.auth_type?.value === 'oauth2' && isAuthorizationCodeGrant;
   const dataSourceNameCapitalize = capitalize(
     selectedDataSource?.plugin?.manifestFile?.data?.source?.name || selectedDataSource?.kind
   );
@@ -123,6 +129,9 @@ const OAuthWrapper = ({
           client_secret={options?.client_secret?.value}
           client_auth={options?.client_auth?.value}
           company_id={options?.company_id?.value}
+          site_url={options?.site_url?.value}
+          code_verifier={options?.code_verifier?.value}
+          code_challenge_method={options?.code_challenge_method?.value}
           scopes={options?.scopes?.value}
           username={options?.username?.value}
           password={options?.password?.value}
@@ -137,7 +146,7 @@ const OAuthWrapper = ({
           multiple_auth_enabled={options?.multiple_auth_enabled?.value}
           optionchanged={optionchanged}
           workspaceConstants={workspaceConstants}
-          isDisabled={isDisabled}
+          isDisabled={isFieldsDisabled}
           options={options}
           optionsChanged={optionsChanged}
           selectedDataSource={selectedDataSource}
@@ -171,7 +180,7 @@ const OAuthWrapper = ({
           className="form-control"
         />
       </div>
-      {options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code' && (
+      {options?.auth_type?.value === 'oauth2' && isAuthorizationCodeGrant && (
         <div>
           <label className="form-check form-switch mt-3">
             <input
@@ -179,6 +188,7 @@ const OAuthWrapper = ({
               type="checkbox"
               checked={multiple_auth_enabled}
               onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
+              disabled={isFieldsDisabled}
             />
             <div>
               <span className="form-check-label">Authentication required for all users</span>

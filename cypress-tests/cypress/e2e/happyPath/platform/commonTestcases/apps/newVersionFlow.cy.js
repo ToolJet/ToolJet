@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors, versionModalSelector } from "Selectors/eeCommon";
-import { versionSwitcherSelectors } from "Selectors/version";
+import { commonEeSelectors, versionModalSelector } from "Selectors/platform/eeCommon";
+import { versionSwitcherSelectors } from "Selectors/platform/version";
 import {createDraftVersion,
   openVersionSwitcher,
   openCreateDraftVersionModal
@@ -129,6 +129,7 @@ describe("New Version Creation Flow", () => {
 
     openVersionSwitcher();
     openCreateDraftVersionModal();
+    cy.get(versionModalSelector.versionNameInput).type("v1");
     cy.get(
       versionModalSelector.createDraftVersionModal.createDraftVersionFromInput
     ).click();
@@ -171,7 +172,7 @@ const verifySaveVersionModal = (expectedVersionName) => {
 
   cy.get(versionModalSelector.versionNameHelperText).verifyVisibleElement(
     "have.text",
-    "Version name must be unique and max 25 characters"
+    "Version name cannot contain spaces, special characters or exceed 25 characters"
   );
 
   cy.get(versionModalSelector.versionDescriptionLabel).verifyVisibleElement(
@@ -244,7 +245,7 @@ const verifyCreateDraftVersionModal = (availableVersions = []) => {
 
   cy.get(versionModalSelector.versionNameHelperText).verifyVisibleElement(
     "have.text",
-    "Version name must be unique and max 25 characters"
+    "Version name cannot contain spaces, special characters or exceed 25 characters"
   );
 
   cy.get(

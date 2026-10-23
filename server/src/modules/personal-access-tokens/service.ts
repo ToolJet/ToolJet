@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
 import { User } from '@entities/user.entity';
 import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
-import { IPersonalAccessTokensService, PatSession, PatView } from './interface/IService';
+import { IPersonalAccessTokensService, PatSession, PatView, ServicePatOptions } from './interface/IService';
 
 @Injectable()
 export class PersonalAccessTokensService implements IPersonalAccessTokensService {
@@ -23,7 +23,16 @@ export class PersonalAccessTokensService implements IPersonalAccessTokensService
     throw new Error('Method not implemented.');
   }
 
-  async createSessionFromPat(pat: UserPersonalAccessToken, response: Response): Promise<PatSession> {
+  async createSessionFromPat(pat: UserPersonalAccessToken, response: Response, appId?: string): Promise<PatSession> {
+    throw new Error('Method not implemented.');
+  }
+
+  async getOrCreateServicePat(
+    user: User,
+    organizationId: string,
+    name: string,
+    opts: ServicePatOptions
+  ): Promise<UserPersonalAccessToken> {
     throw new Error('Method not implemented.');
   }
 }

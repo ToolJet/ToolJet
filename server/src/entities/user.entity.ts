@@ -1,3 +1,4 @@
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import {
   Entity,
   Column,
@@ -221,6 +222,10 @@ export class User extends BaseEntity {
   componentUsers: ComponentUser[];
 
   organizationId: string;
+  // Active Git branch for the request, resolved once in the JWT strategy from the
+  // `branch_id` query param (falls back to the org's default branch). Mirrors how
+  // organizationId is resolved per-request from the tj-workspace-id header.
+  branchId?: string;
   invitedOrganizationId: string;
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;
@@ -228,9 +233,8 @@ export class User extends BaseEntity {
   sessionId: string;
   roleGroup: USER_ROLE;
   tjApiSource?: string;
-  /* Session provenance, mirrored from the JWT. isPATLogin covers BOTH personal-access-token
-     species; patAppId is set only by the app-scoped embed flow, so `isPATLogin && !patAppId`
-     identifies a workspace PAT session. */
+  // Session provenance, mirrored from the JWT. Session kinds: personal-access-tokens/AGENTS.md.
   isPATLogin?: boolean;
+  patScope?: PersonalAccessTokenScope;
   patAppId?: string;
 }

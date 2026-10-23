@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
 import { CreatePageDto, UpdatePageDto } from '../dto/page';
-import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { EventsService } from './event.service';
 import { Component } from 'src/entities/component.entity';
@@ -26,6 +26,9 @@ import {
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
 import { TransactionLogger } from '@modules/logging/service';
+import { AppValidationService } from '@modules/app-validation/service';
+import { lockForValidation } from '@modules/app-validation/lock';
+import { PageWrite } from '@modules/app-validation/types';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -33,8 +36,26 @@ export class PageService implements IPageService {
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
-    protected readonly transactionLogger: TransactionLogger
-  ) { }
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly appValidationService: AppValidationService
+  ) {}
+
+  protected toPageWrite(op: 'create' | 'update', page: Page): PageWrite {
+    return {
+      op,
+      id: page.id,
+      data: {
+        name: page.name,
+        handle: page.handle,
+        index: page.index,
+        hidden: page.hidden,
+        disabled: page.disabled,
+        isPageGroup: page.isPageGroup,
+        pageGroupId: page.pageGroupId,
+        type: page.type,
+      },
+    };
+  }
 
   /**
    * Hook called before page creation - override in EE to capture state for history
@@ -150,14 +171,12 @@ export class PageService implements IPageService {
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
-    const pagesWithComponents = await Promise.all(
-      allPages.map(async (page) => {
-        const components = await this.componentsService.getAllComponents(page.id, manager);
-        delete page.appVersionId;
-        return { ...page, components, restricted: false };
-      })
-    );
-    return pagesWithComponents;
+    const pageIds = allPages.map((p) => p.id);
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(pageIds, manager);
+    return allPages.map((page) => {
+      delete page.appVersionId;
+      return { ...page, components: componentsByPage.get(page.id) ?? {}, restricted: false };
+    }) as unknown as Page[];
   }
 
   async findOne(id: string): Promise<Page> {
@@ -170,10 +189,16 @@ export class PageService implements IPageService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageCreate(page, appVersionId, organizationId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+    const result = await dbTransactionWrap(async (manager) => {
       const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
+      await lockForValidation(manager, 'page_handle', appVersionId);
+      await this.appValidationService.check('pages', [this.toPageWrite('create', newPage)], {
+        appVersionId,
+        organizationId,
+        manager,
+      });
       return await manager.save(Page, newPage);
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterPageCreate(context, result, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -189,13 +214,13 @@ export class PageService implements IPageService {
 
     let clonedPage: Page | null = null;
 
-    await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+    await dbTransactionWrap(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
         where: { id: pageId, appVersionId },
       });
 
       if (!pageToClone) {
-        throw new Error('Page not found');
+        throw new NotFoundException('Page not found');
       }
 
       let pageName = `${pageToClone.name} (copy)`;
@@ -222,11 +247,19 @@ export class PageService implements IPageService {
       newPage.icon = pageToClone.icon || 'IconFile';
       newPage.openIn = pageToClone.openIn;
       newPage.appId = pageToClone.appId;
+      newPage.targetCorelationId = pageToClone.targetCorelationId;
       newPage.url = pageToClone.url;
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;
       newPage.pageHeader = pageToClone.pageHeader;
       newPage.pageFooter = pageToClone.pageFooter;
+
+      await lockForValidation(manager, 'page_handle', appVersionId);
+      await this.appValidationService.check('pages', [this.toPageWrite('create', newPage)], {
+        appVersionId,
+        organizationId,
+        manager,
+      });
 
       clonedPage = await manager.save(newPage);
 
@@ -236,7 +269,7 @@ export class PageService implements IPageService {
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (clonedPage) {
@@ -319,11 +352,15 @@ export class PageService implements IPageService {
         pageComponents.map(async (component) => {
           const newComponentId = componentsIdMap[component.id];
 
+          // Git stores one file per co_relation_id — an inherited one makes the clone overwrite its source on push.
           const newComponent = manager.create(Component, {
             ...component,
             id: newComponentId,
             pageId: clonePageId,
             parent: null,
+            co_relation_id: undefined,
+            createdAt: undefined,
+            updatedAt: undefined,
           });
           Object.assign(newComponent, {
             name: component.name,
@@ -357,6 +394,8 @@ export class PageService implements IPageService {
               ...layout,
               id: undefined, // Let TypeORM generate a new ID
               componentId: newComponent.id,
+              co_relation_id: undefined,
+              updatedAt: undefined,
             })
           );
           newComponentLayouts.push(...clonedLayouts);
@@ -478,6 +517,14 @@ export class PageService implements IPageService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageReorder(diff, appVersionId, organizationId);
 
+    const reorderWrites: PageWrite[] = Object.entries(diff?.diff ?? {}).map(([pageId, change]: [string, any]) => ({
+      op: 'update',
+      id: pageId,
+      data: { index: change?.index, pageGroupId: change?.pageGroupId },
+      touched: Object.keys(change ?? {}),
+    }));
+    await this.appValidationService.check('pages', reorderWrites, { appVersionId, organizationId });
+
     const result = await this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
 
     const operationTimestamp = Date.now();
@@ -497,13 +544,21 @@ export class PageService implements IPageService {
     const context = await this.beforePageUpdate(pageUpdates.pageId, pageUpdates.diff, appVersionId);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      // Scoped to the version being edited: another version's page id is a 404, not a hit.
       const currentPage = await manager.findOne(Page, {
-        where: { id: pageUpdates.pageId },
+        where: { id: pageUpdates.pageId, appVersionId },
       });
 
       if (!currentPage) {
-        throw new Error('Page not found');
+        throw new NotFoundException('Page not found');
       }
+      const touched = Object.keys(pageUpdates.diff);
+      if (touched.includes('handle')) await lockForValidation(manager, 'page_handle', appVersionId);
+      await this.appValidationService.check(
+        'pages',
+        [{ ...this.toPageWrite('update', { ...currentPage, ...pageUpdates.diff } as Page), touched }],
+        { appVersionId, manager }
+      );
       return manager.update(Page, pageUpdates.pageId, pageUpdates.diff);
     });
 
@@ -525,14 +580,22 @@ export class PageService implements IPageService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageDelete(pageId, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      // Scoped to the version being edited; a missing (or foreign) page id is a controlled
+      // 404 — a replayed delete must not surface as HTTP 500 (MCP report 2026-10-15, N1).
       const pageExists = await manager.findOne(Page, {
-        where: { id: pageId },
+        where: { id: pageId, appVersionId },
       });
 
       if (!pageExists) {
-        throw new Error('Page not found');
+        throw new NotFoundException('Page not found');
       }
+
+      await this.appValidationService.check('pages', [{ op: 'delete', id: pageId, data: { deleteAssociatedPages } }], {
+        appVersionId,
+        organizationId,
+        manager,
+      });
 
       if (editingVersion?.homePageId === pageId) {
         throw new Error('Cannot delete home page');
@@ -562,7 +625,7 @@ export class PageService implements IPageService {
       }
 
       return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterPageDelete(context, pageId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -593,8 +656,14 @@ export class PageService implements IPageService {
     });
 
     if (!pageExists) {
-      throw new Error('Page not found');
+      throw new NotFoundException('Page not found');
     }
+
+    await this.appValidationService.check('pages', [{ op: 'delete', id: pageId, data: { deleteAssociatedPages } }], {
+      appVersionId: pageExists.appVersionId,
+      organizationId,
+      manager,
+    });
 
     // Handle page group deletion (EE feature - will be overridden in EE service)
     if (pageExists.isPageGroup) {
@@ -646,5 +715,31 @@ export class PageService implements IPageService {
 
   async findModuleContainer(appVersionId: string, organizationId: string): Promise<any> {
     return this.pageHelperService.findModuleContainer(appVersionId, organizationId);
+  }
+
+  async findModuleContainersForVersions(
+    appVersionIds: string[],
+    _organizationId: string,
+    manager: EntityManager
+  ): Promise<Map<string, any>> {
+    const versionIds = appVersionIds.filter(Boolean);
+    if (versionIds.length === 0) return new Map();
+
+    const pagesByVersion = await this.pageHelperService.findFirstPagesByVersionIds(versionIds, manager);
+    if (pagesByVersion.size === 0) return new Map();
+
+    const pageIds = [...pagesByVersion.values()].map((p) => p.id);
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(pageIds, manager);
+
+    const moduleContainerByVersion = new Map<string, any>();
+    for (const [versionId, page] of pagesByVersion) {
+      const components = componentsByPage.get(page.id) ?? {};
+      const moduleContainer = _.find(
+        Object.values(components),
+        (c: any) => c?.component?.component === 'ModuleContainer'
+      );
+      if (moduleContainer) moduleContainerByVersion.set(versionId, moduleContainer);
+    }
+    return moduleContainerByVersion;
   }
 }

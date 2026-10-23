@@ -7,7 +7,7 @@ export const commonSelectors = {
   globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
   createWorkFlowsButton: '[data-cy="+-create-workflow"]',
   workFlowNameInputField: '[data-cy="app-name-input"]',
-  toastMessage: ".go3958317564",
+  toastMessage: ".go4109123758",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
   newToastMessage:
@@ -39,7 +39,6 @@ export const commonSelectors = {
   loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
-  dashboardAppCreateButton: '[data-cy="button-new-application-from-scratch"]',
   appCreateButton: "[data-cy=create-new-apps-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
@@ -116,7 +115,7 @@ export const commonSelectors = {
   emptyNotificationIcon: '[data-cy="empty-notification-icon"]',
   emptyNotificationTitle: '[data-cy="empty-notification-title"]',
   emptyNotificationSubtitle: '[data-cy="empty-notification-subtitle"]',
-  notificationsCardFooter: '[data-cy="notifications-card-footer"]',
+  loadMoreNotifications: '[data-cy="load-more-notifications"]',
   allApplicationLink: '[data-cy="all-applications-link"]',
   logoutLink: "[data-cy=logout-link]",
   exportAllButton: '[data-cy="export-all-button"]',
@@ -400,6 +399,10 @@ export const commonWidgetSelector = {
   inspectorIcon: '[data-cy="left-sidebar-inspector-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
+  togglrButton: (value) => `[data-cy="togglr-button-${value}"]`,
+  // Radix, not bootstrap's `.tooltip-inner`. Renders its content twice (once
+  // VisuallyHidden), so scope every match with .first() or `have.text` sees it doubled.
+  widgetTooltip: '[data-cy="widget-tooltip"]',
   homePageLogo: '[data-cy="home-page-logo"]',
 
   noEventHandlerMessage: "[data-cy='no-items-banner']",

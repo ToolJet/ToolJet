@@ -36,6 +36,15 @@ export class CreateWorkflowExecutionDto {
   @IsOptional()
   startNodeId?: string;
 
+  /*
+   * The app-builder sends this on every workflow-query trigger, but it was never declared
+   * here, so the global ValidationPipe ({ whitelist: true }) silently stripped it before the
+   * handler ran. Guards read the raw body, which is why WorkflowTriggerAuthGuard still sees it.
+   */
+  @IsString()
+  @IsOptional()
+  queryId?: string;
+
   @IsOptional()
   @IsObject()
   injectedState?: object;

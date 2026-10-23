@@ -1,11 +1,11 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import { workspaceConstantsSelectors } from "Selectors/platform/workspaceConstants";
 import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
-import { groupsSelector } from "Constants/selectors/manageGroups";
+import { groupsSelector } from "Constants/selectors/platform/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
-import { versionSwitcherSelectors } from "Constants/selectors/version";
-import { multiEnvSelector } from "Constants/selectors/eeCommon";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { versionSwitcherSelectors } from "Constants/selectors/platform/version";
+import { multiEnvSelector } from "Constants/selectors/platform/eeCommon";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { commonText } from "Texts/common";
 
 export const constantsOperations = {
@@ -56,13 +56,22 @@ export const getGroupPermissionInput = (isEnterprise, flag) => {
       workflowDelete: flag,
       dataSourceCreate: flag,
       dataSourceDelete: flag,
-      folderCRUD: flag,
+      folderCreate: flag,
+      folderDelete: flag,
       orgConstantCRUD: flag,
+      workflowFolderCreate: flag,
+      workflowFolderDelete: flag,
+      tjdbCRUD: flag,
+      moduleFolderCreate: flag,
+      moduleFolderDelete: flag,
+      moduleCreate: flag,
+      moduleDelete: flag,
     }
     : {
       appCreate: flag,
       appDelete: flag,
-      folderCRUD: flag,
+      folderCreate: flag,
+      folderDelete: flag,
       orgConstantCRUD: flag,
     };
 };
@@ -109,8 +118,8 @@ export const verifyBuilderPermissions = (
 };
 
 export const verifyBasicPermissions = (canCreate = true) => {
-  cy.get(commonSelectors.dashboardAppCreateButton).should(
-    canCreate ? "be.enabled" : "be.disabled"
+  cy.get(commonSelectors.appCreateButton).should(
+    canCreate ? "be.enabled" : "not.exist"
   );
   cy.get(commonSelectors.createNewFolderButton).should(
     canCreate ? "exist" : "not.exist"

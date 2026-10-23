@@ -1,14 +1,17 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
+import { AlertTriangle } from 'lucide-react';
+import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import { Icon } from '@/AppBuilder/CodeBuilder/Elements/Icon';
 import { EventManager } from '../../Inspector/EventManager';
+import { PAGE_EVENTS_META } from './pageEventsMeta';
 import { kebabCase } from 'lodash';
 import Select from '@/_ui/Select';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { ToolTip } from '@/_components';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -65,11 +68,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
   const togglePageHeader = useStore((state) => state.togglePageHeader);
   const togglePageFooter = useStore((state) => state.togglePageFooter);
-  const updatePageAppId = useStore((state) => state.updatePageAppId);
+  const updatePageTargetApp = useStore((state) => state.updatePageTargetApp);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
-  const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   const [page, setPage] = useState(editingPage || props?.page);
 
@@ -106,6 +109,14 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   //Nav item with app
   const [appOptions, setAppOptions] = useState([]);
   const [appOptionsLoading, setAppOptionsLoading] = useState(true);
+
+  const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
+  const { isValid: isLinkValid, errorMessage: linkedAppErrorMessage } = isLinkedAppValid(
+    page?.targetCorelationId,
+    linkedAppsMap
+  );
+  const isInvalid = type === 'app' && !isLinkValid;
+  const isTargetMissing = page?.targetCorelationId && !appOptions.some((opt) => opt.value === page?.targetCorelationId);
 
   useEffect(() => {
     setError(null);
@@ -162,8 +173,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
 
   //Nav item with app hooks
   useEffect(() => {
-    const fetchApps = async (page) => {
-      const { apps } = await appService.getAll(page);
+    const fetchApps = async () => {
+      const { apps } = await appsService.getAllAddableApps();
       return apps;
     };
 
@@ -172,11 +183,13 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
       const apps = await fetchApps(0);
       let appsOptionsList = [];
       apps
-        .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
+        .filter((item) => item.slug !== undefined && item.id !== appId)
         .forEach((item) => {
           appsOptionsList.push({
-            name: item.name,
-            value: item.slug,
+            label: item.name,
+            value: item.co_relation_id,
+            slug: item.slug,
+            currentVersionId: item.current_version_id,
           });
         });
       return appsOptionsList;
@@ -406,19 +419,40 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <Select
                 options={appOptions}
                 search={true}
-                value={page?.appId}
+                value={
+                  isTargetMissing
+                    ? { label: 'Undefined app', value: page?.targetCorelationId }
+                    : page?.targetCorelationId
+                }
                 onChange={(value) => {
-                  updatePageAppId(page?.id, value);
+                  const selected = appOptions.find((opt) => opt.value === value);
+                  updatePageTargetApp(
+                    page?.id,
+                    value,
+                    selected?.slug ?? null,
+                    selected?.currentVersionId ?? null,
+                    moduleId
+                  );
                 }}
                 isLoading={appOptionsLoading}
                 placeholder={'Select...'}
                 useMenuPortal={false}
                 width={'168px'}
                 borderRadius="6px"
-                styles={{ border: '1px solid var(--border-default) !important' }}
+                styles={{
+                  border: `1px solid ${isInvalid ? 'var(--border-danger-strong)' : 'var(--border-default)'} !important`,
+                }}
                 className={`app-select ${darkMode ? 'select-search-dark' : 'select-search'}`}
               />
             </div>
+            {isInvalid && (
+              <div className="tw-mt-1 tw-flex tw-items-center tw-gap-1">
+                <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
+                <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">
+                  {linkedAppErrorMessage}
+                </span>
+              </div>
+            )}
           </div>
         )}
         {['url', 'app'].includes(type) && (
@@ -610,21 +644,10 @@ const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
   const getComponents = useStore((state) => state.getCurrentPageComponents);
   const components = getComponents();
 
-  const eventMapping = {
-    default: {
-      title: 'Page events',
-      event: { onPageLoad: { displayName: 'On page load' } },
-    },
-    custom: {
-      title: 'Events',
-      event: { onClick: { displayName: 'On click' } },
-    },
-  };
-
   return (
     <div className="page-events">
-      <div className="section-header pb-2">{eventMapping[type].title}</div>
-      <div>
+      <div className="section-header pb-2">{PAGE_EVENTS_META[type].title}</div>
+      <div className="page-events-list">
         <EventManager
           component={{
             component: {
@@ -635,7 +658,7 @@ const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
           }}
           sourceId={page?.id}
           eventSourceType="page"
-          eventMetaDefinition={{ events: eventMapping[type].event, name: 'page' }}
+          eventMetaDefinition={{ events: PAGE_EVENTS_META[type].events, name: 'page' }}
           components={components}
           pages={allPages}
           popOverCallback={(showing) => onNestedPopoverOpenChange?.(showing)}

@@ -75,6 +75,7 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
         constantName,
         organizationId
       );
+
       return manager.findOneOrFail(OrgEnvironmentConstantValue, {
         where: { organizationConstantId: constant.id, environmentId },
       });

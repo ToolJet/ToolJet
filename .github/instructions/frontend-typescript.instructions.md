@@ -9,6 +9,9 @@ applyTo: "frontend/src/**/*"
 - All new files created under `frontend/src/` MUST use `.tsx` or `.ts` extensions.
 - `.jsx` and `.js` files are legacy and must NOT be added.
 - If a file contains JSX, use `.tsx`. If it is logic-only with no JSX, use `.ts`.
+- **Exception — test specs.** A `*.spec.*` file matches the extension of the module
+  it covers (`.spec.js` for a `.js` source). Do not flag a new `.spec.js`/`.spec.jsx`.
+  See `frontend-tests.instructions.md`.
 
 ## Enforcement
 
