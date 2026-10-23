@@ -37,10 +37,6 @@ Click the **+** icon in the Query Panel header. From the menu that appears, sele
 
 There are three ways to add queries to a folder.
 
-:::info
-You can also use ToolJet AI's [Auto-sort Queries](/docs/build-with-ai/generate-queries#auto-sort-queries) feature to add queries inside the folder using AI.
-:::
-
 - **Create directly inside a folder**: Click the three-dot menu on a folder and select **Add new query**. The new query will be created inside that folder.
   <img className="screenshot-full img-m" src="/img/app-builder/connecting-with-datasouces/query-folder-add-query.png" alt="App Builder: Add query to folder"/>
 - **Move an existing query**: Click the three-dot menu on a query and select **Move to a folder**, then choose the destination folder. <br/>
