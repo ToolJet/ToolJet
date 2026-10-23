@@ -55,7 +55,7 @@ ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
-    apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget supervisor && \
+    apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget supervisor tini && \
     apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
     apt-get -y autoremove && \
     apt-get -y autoclean
@@ -126,4 +126,4 @@ WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
 
-ENTRYPOINT ["./server/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "-g", "--", "./server/entrypoint.sh"]

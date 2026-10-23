@@ -2,13 +2,13 @@
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import * as ts from 'typescript';
+import { MIGRATION_AUTHORING_RULES_CUTOFF } from 'src/migration-helpers/migration-status';
 
 /**
  * Async mode applies schema migrations at boot, while the previous release still serves.
- * So a schema migration may only add, and every migration needs a way back. Older migrations predate
- * the rules and are not checked.
+ * So a migration may only add schema, and every migration needs a way back. Older migrations predate
+ * the rules and are not checked; async mode runs them the blocking way.
  */
-const CUTOFF_TIMESTAMP = 1790700000000;
 const SERVER_ROOT = join(__dirname, '../../../..');
 const OPT_OUT = /\/\/\s*migration-lint:\s*allow-destructive\s+\S/;
 const RULES_DOC = 'Rules: server/AGENTS.md § Migrations.';
@@ -23,6 +23,9 @@ const DESTRUCTIVE_SQL: [string, RegExp][] = [
   ['DROP TYPE', /\bDROP\s+TYPE\b/i],
   // The previous release's inserts do not set the column.
   ['ADD COLUMN … NOT NULL without DEFAULT', /\bADD\s+COLUMN\b(?![^,;]*\bDEFAULT\b)[^,;]*\bNOT\s+NULL\b/i],
+  // On an existing table it rejects the previous release's writes. New table: opt out.
+  ['ADD CONSTRAINT', /\bADD\s+(?:CONSTRAINT|UNIQUE|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|EXCLUDE)\b/i],
+  ['CREATE UNIQUE INDEX', /\bCREATE\s+UNIQUE\s+INDEX\b/i],
 ];
 const DESTRUCTIVE_API = new Set([
   'dropTable',
@@ -32,7 +35,16 @@ const DESTRUCTIVE_API = new Set([
   'renameTable',
   'changeColumn',
   'changeColumns',
+  'createUniqueConstraint',
+  'createUniqueConstraints',
+  'createCheckConstraint',
+  'createCheckConstraints',
+  'createForeignKey',
+  'createForeignKeys',
+  'createExclusionConstraint',
+  'createExclusionConstraints',
 ]);
+const UNIQUE_INDEX_API = ['createIndex', 'createIndices'];
 
 interface MigrationSource {
   file: string;
@@ -65,7 +77,7 @@ function codeIn(node: ts.Node): { sql: string; identifiers: Set<string> } {
   return { sql: sql.join(' '), identifiers };
 }
 
-function authoringViolations({ file, text }: MigrationSource, { schema }: { schema: boolean }): string[] {
+function authoringViolations({ file, text }: MigrationSource): string[] {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const cls = migrationClass(source);
   if (!cls) return [`${file}: no migration class found. ${RULES_DOC}`];
@@ -77,15 +89,17 @@ function authoringViolations({ file, text }: MigrationSource, { schema }: { sche
   }
 
   const up = method(cls, 'up');
-  if (schema && up?.body && !OPT_OUT.test(text)) {
+  if (up?.body && !OPT_OUT.test(text)) {
     const { sql, identifiers } = codeIn(up.body);
+    const uniqueIndex = identifiers.has('isUnique') && UNIQUE_INDEX_API.some((name) => identifiers.has(name));
     const found = [
       ...DESTRUCTIVE_SQL.filter(([, pattern]) => pattern.test(sql)).map(([label]) => label),
       ...[...DESTRUCTIVE_API].filter((name) => identifiers.has(name)),
+      ...(uniqueIndex ? ['createIndex({ isUnique })'] : []),
     ];
     if (found.length) {
       violations.push(
-        `${file}: up() is destructive (${found.join(', ')}); schema migrations only add. Ship it a release later, ` +
+        `${file}: up() is destructive (${found.join(', ')}); migrations only add schema. Ship it a release later, ` +
           `or add "// migration-lint: allow-destructive <reason>". ${RULES_DOC}`
       );
     }
@@ -99,7 +113,7 @@ function migrationsNewerThanCutoff(directory: string): MigrationSource[] {
     .map((name) => ({ file: `${directory}/${name}`, text: readFileSync(join(SERVER_ROOT, directory, name), 'utf8') }))
     .filter(({ text }) => {
       const [, timestamp] = text.match(/class\s+\w*?(\d{13})\b/) ?? [];
-      return Number(timestamp) > CUTOFF_TIMESTAMP;
+      return Number(timestamp) > MIGRATION_AUTHORING_RULES_CUTOFF;
     });
 }
 
@@ -116,11 +130,9 @@ export class Sample1799999999999 implements MigrationInterface {
 describe('Migration authoring rules | migrations newer than the cutoff', () => {
   describe('the checker', () => {
     it('should pass an additive migration whose down() only explains itself', () => {
-      expect(
-        authoringViolations(sample('await queryRunner.query(`ALTER TABLE apps ADD COLUMN slug text`);'), {
-          schema: true,
-        })
-      ).toEqual([]);
+      expect(authoringViolations(sample('await queryRunner.query(`ALTER TABLE apps ADD COLUMN slug text`);'))).toEqual(
+        []
+      );
     });
 
     it.each([
@@ -137,47 +149,57 @@ describe('Migration authoring rules | migrations newer than the cutoff', () => {
         'await queryRunner.query(`ALTER TABLE apps ADD COLUMN slug text NOT NULL`);',
         'ADD COLUMN … NOT NULL without DEFAULT',
       ],
-    ])('should flag a destructive schema up() written with %s', (_how, up, label) => {
-      expect(authoringViolations(sample(up), { schema: true })).toEqual([
-        expect.stringContaining(`up() is destructive (${label})`),
-      ]);
+      [
+        'a constraint',
+        "await queryRunner.query(`ALTER TABLE apps ADD CONSTRAINT apps_slug_check CHECK (slug <> '')`);",
+        'ADD CONSTRAINT',
+      ],
+      ['an unnamed unique key', 'await queryRunner.query(`ALTER TABLE apps ADD UNIQUE (slug)`);', 'ADD CONSTRAINT'],
+      [
+        'a unique index',
+        'await queryRunner.query(`CREATE UNIQUE INDEX apps_slug ON apps (slug)`);',
+        'CREATE UNIQUE INDEX',
+      ],
+      [
+        'the TypeORM foreign key API',
+        "await queryRunner.createForeignKey('apps', new TableForeignKey({ columnNames: ['org_id'] }));",
+        'createForeignKey',
+      ],
+      [
+        'the TypeORM unique index API',
+        "await queryRunner.createIndex('apps', new TableIndex({ columnNames: ['slug'], isUnique: true }));",
+        'createIndex({ isUnique })',
+      ],
+    ])('should flag a destructive up() written with %s', (_how, up, label) => {
+      expect(authoringViolations(sample(up))).toEqual([expect.stringContaining(`up() is destructive (${label})`)]);
     });
 
     it('should pass a NOT NULL column that has a default', () => {
       const up =
         "await queryRunner.query(`ALTER TABLE apps ADD COLUMN slug text NOT NULL DEFAULT '', ADD COLUMN n int`);";
-      expect(authoringViolations(sample(up), { schema: true })).toEqual([]);
+      expect(authoringViolations(sample(up))).toEqual([]);
     });
 
-    it('should not flag destructive SQL in down(), a comment, a data migration, or a file that opts out', () => {
+    it('should not flag destructive SQL in down(), a comment, or a file that opts out', () => {
       const drop = 'await queryRunner.query(`DROP TABLE apps`);';
-      expect(authoringViolations(sample('// we used to DROP TABLE here', drop), { schema: true })).toEqual([]);
-      expect(authoringViolations(sample(drop), { schema: false })).toEqual([]);
+      expect(authoringViolations(sample('// we used to DROP TABLE here', drop))).toEqual([]);
       expect(
-        authoringViolations(sample(drop, undefined, '// migration-lint: allow-destructive table unused since 3.20'), {
-          schema: true,
-        })
+        authoringViolations(sample(drop, undefined, '// migration-lint: allow-destructive table unused since 3.20'))
       ).toEqual([]);
     });
 
     it('should flag an empty down()', () => {
-      expect(authoringViolations(sample('', ''), { schema: false })).toEqual([
-        expect.stringContaining('down() is missing or empty'),
-      ]);
+      expect(authoringViolations(sample('', ''))).toEqual([expect.stringContaining('down() is missing or empty')]);
     });
   });
 
   it('should keep schema migrations additive and reversible', () => {
-    const violations = migrationsNewerThanCutoff('migrations').flatMap((source) =>
-      authoringViolations(source, { schema: true })
-    );
+    const violations = migrationsNewerThanCutoff('migrations').flatMap((source) => authoringViolations(source));
     expect(violations).toEqual([]);
   });
 
-  it('should give data migrations a down()', () => {
-    const violations = migrationsNewerThanCutoff('data-migrations').flatMap((source) =>
-      authoringViolations(source, { schema: false })
-    );
+  it('should keep data migrations additive and reversible', () => {
+    const violations = migrationsNewerThanCutoff('data-migrations').flatMap((source) => authoringViolations(source));
     expect(violations).toEqual([]);
   });
 });

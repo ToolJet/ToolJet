@@ -117,7 +117,6 @@ const Bar = ({ percent, label, className }) => (
   </div>
 );
 
-/** One line under the headline: how many, how long, when, who. */
 const facts = (run) => {
   const parts = [];
   if (run.migrationsTotal) parts.push(plural(run.migrationsTotal, 'migration'));
@@ -129,7 +128,7 @@ const facts = (run) => {
   return parts.join(' · ');
 };
 
-const StatusCard = ({ run, onRun, runPending }) => {
+const RunCard = ({ run, children }) => {
   const meta = STATUS[run.status] ?? STATUS.running;
   const percent = run.migrationsTotal ? Math.round((run.migrationsDone / run.migrationsTotal) * 100) : 0;
   const current = run.migrations.find((step) => step.status === 'running');
@@ -155,11 +154,6 @@ const StatusCard = ({ run, onRun, runPending }) => {
             {facts(run)}
           </p>
         </div>
-        {run.status === 'failed' && (
-          <Button className="tw-shrink-0" onClick={onRun} disabled={runPending}>
-            {runPending ? 'Starting' : 'Retry migration'}
-          </Button>
-        )}
       </div>
 
       {run.status === 'running' && run.migrationsTotal > 0 && (
@@ -184,7 +178,7 @@ const StatusCard = ({ run, onRun, runPending }) => {
       {run.status === 'failed' && (
         <InlineInfo
           type="danger"
-          title="The data migrations were rolled back. Changes made in ToolJet are refused until a retry succeeds."
+          title="The data migrations were rolled back. Changes made in ToolJet are refused until they succeed."
           description={
             <>
               {run.error && (
@@ -192,14 +186,24 @@ const StatusCard = ({ run, onRun, runPending }) => {
                   {run.error}
                 </code>
               )}
-              <span className="tw-block">Retrying runs the pending data migrations again, in one transaction.</span>
+              <span className="tw-block">
+                Fix the cause, then deploy a new image or restart ToolJet. Servers run the pending data migrations again
+                when they start.
+              </span>
             </>
           }
         />
       )}
+      {children}
     </Card>
   );
 };
+
+const Section = ({ children }) => (
+  <div className="tw-flex tw-flex-col tw-gap-2 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-pt-4">
+    {children}
+  </div>
+);
 
 const stepDetail = (step) => {
   if (step.status === 'running' && step.percent !== undefined) return `${step.percent}%`;
@@ -207,24 +211,33 @@ const stepDetail = (step) => {
   return STEP[step.status]?.label ?? '';
 };
 
-/** One migration's own log lines, refetched on every poll while it runs. */
+const LOG_FETCH_FAILED = Symbol('log fetch failed');
+
+/** One migration's own log lines. `run` is a new object on every poll, so a running or failed log refetches each poll. */
 const StepLog = ({ run, step }) => {
   const [log, setLog] = useState(null);
   const runId = run.id;
-  const refresh = step.status === 'running' ? run : null;
+  const refresh = step.status === 'running' || log === LOG_FETCH_FAILED ? run : null;
 
   useEffect(() => {
     let cancelled = false;
     migrationsService
       .getLog(runId, step.name)
       .then((text) => !cancelled && setLog(text))
-      .catch(() => !cancelled && setLog(''));
+      .catch(() => !cancelled && setLog(LOG_FETCH_FAILED));
     return () => {
       cancelled = true;
     };
   }, [runId, step.name, refresh]);
 
   if (log === null) return <Skeleton className="tw-h-16 tw-w-full" />;
+  if (log === LOG_FETCH_FAILED) {
+    return (
+      <p className="tw-m-0 tw-text-text-danger">
+        Could not load the log for this migration. It retries on the next refresh.
+      </p>
+    );
+  }
   return (
     <pre
       tabIndex={0}
@@ -243,43 +256,58 @@ const MigrationRow = ({ step, run }) => {
   const hasLog = step.status !== 'pending';
   return (
     <li className="tw-flex tw-flex-col tw-gap-1">
-      <button
-        type="button"
-        disabled={!hasLog}
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-        className="tw-flex tw-w-full tw-items-center tw-gap-3 tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-py-1.5 tw-text-left enabled:tw-cursor-pointer enabled:hover:tw-bg-interactive-hover"
-      >
-        <IconChevronRight
-          size={14}
-          aria-hidden
-          className={cx(
-            'tw-shrink-0 tw-text-icon-default tw-transition-transform',
-            open && 'tw-rotate-90',
-            !hasLog && 'tw-invisible'
-          )}
-        />
-        <meta.Icon
-          size={16}
-          stroke={2}
-          aria-label={meta.label}
-          className={cx('tw-shrink-0', meta.tone, meta.spin && 'tw-animate-spin')}
-        />
-        <span className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-code-regular tw-text-text-default" title={step.name}>
-          {step.name}
-        </span>
-        {live && (
-          <Bar percent={step.percent} label={`${step.name} progress`} className="tw-h-1.5 tw-w-24 tw-shrink-0" />
-        )}
-        <span
-          className={cx(
-            'tw-w-16 tw-shrink-0 tw-text-right tw-font-body-small',
-            live ? meta.tone : 'tw-text-text-placeholder'
-          )}
+      <div className="tw-group tw-flex tw-items-center tw-gap-1">
+        <button
+          type="button"
+          disabled={!hasLog}
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+          className="tw-flex tw-w-full tw-items-center tw-gap-3 tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-py-1.5 tw-text-left enabled:tw-cursor-pointer enabled:hover:tw-bg-interactive-hover"
         >
-          {stepDetail(step)}
-        </span>
-      </button>
+          <IconChevronRight
+            size={14}
+            aria-hidden
+            className={cx(
+              'tw-shrink-0 tw-text-icon-default tw-transition-transform',
+              open && 'tw-rotate-90',
+              !hasLog && 'tw-invisible'
+            )}
+          />
+          <meta.Icon
+            size={16}
+            stroke={2}
+            aria-label={meta.label}
+            className={cx('tw-shrink-0', meta.tone, meta.spin && 'tw-animate-spin')}
+          />
+          <span
+            className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-code-regular tw-text-text-default"
+            title={step.name}
+          >
+            {step.name}
+          </span>
+          {live && (
+            <Bar percent={step.percent} label={`${step.name} progress`} className="tw-h-1.5 tw-w-24 tw-shrink-0" />
+          )}
+          <span
+            className={cx(
+              'tw-w-16 tw-shrink-0 tw-text-right tw-font-body-small',
+              live ? meta.tone : 'tw-text-text-placeholder'
+            )}
+          >
+            {stepDetail(step)}
+          </span>
+        </button>
+        <Button
+          variant="ghost"
+          size="small"
+          iconOnly
+          aria-label={`Copy ${step.name}`}
+          onClick={() => copyToClipboard(step.name)}
+          className="tw-shrink-0 tw-opacity-0 focus-visible:tw-opacity-100 group-hover:tw-opacity-100"
+        >
+          <IconCopy size={14} aria-hidden />
+        </Button>
+      </div>
       {open && (
         <div className="tw-pb-2 tw-pl-9">
           <StepLog run={run} step={step} />
@@ -309,17 +337,17 @@ const EMPTY_MIGRATIONS_MESSAGE = {
   failed: 'The run stopped before it could list its migrations. The log shows why.',
 };
 
-const MigrationsCard = ({ run }) => {
+const MigrationsSection = ({ run }) => {
   if (run.migrationsTotal === 0) {
     return (
-      <Card>
+      <Section>
         <h3 className="tw-m-0 tw-font-title-large tw-text-text-default">Migrations</h3>
         <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">{EMPTY_MIGRATIONS_MESSAGE[run.status]}</p>
-      </Card>
+      </Section>
     );
   }
   return (
-    <Card className="tw-gap-2">
+    <Section>
       <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
         <h3 className="tw-m-0 tw-font-title-large tw-text-text-default">Migrations</h3>
         <span className="tw-font-body-small tw-text-text-placeholder">
@@ -331,91 +359,121 @@ const MigrationsCard = ({ run }) => {
           <MigrationRow key={step.name} step={step} run={run} />
         ))}
       </ul>
-    </Card>
+    </Section>
   );
 };
 
-const LogCard = ({ run, open }) => {
+const LogSection = ({ run, open }) => {
   const { logTail } = run;
   const ref = useRef(null);
+  const following = useRef(true);
   const text = logTail.join('\n');
 
   // Follow the tail while it grows, unless the reader scrolled up.
   useLayoutEffect(() => {
     const el = ref.current;
-    if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 80) el.scrollTop = el.scrollHeight;
+    if (el && following.current) el.scrollTop = el.scrollHeight;
   }, [text]);
+
+  const onScroll = ({ currentTarget: el }) => {
+    following.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
 
   if (logTail.length === 0) return null;
   return (
-    // Re-keyed so a run that starts or fails opens the log on its own.
-    <Collapsible defaultOpen={open} key={String(open)}>
-      <CollapsibleTrigger>
-        <span className="tw-flex tw-flex-1 tw-items-center tw-gap-2">
-          <span className="tw-font-title-large tw-text-text-default">Log</span>
-          <span className="tw-font-body-small tw-text-text-placeholder">{plural(logTail.length, 'line')}</span>
-        </span>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <div className="tw-flex tw-flex-col tw-gap-2">
-          <pre
-            ref={ref}
-            tabIndex={0}
-            aria-label="Migration log"
-            className="tw-m-0 tw-max-h-80 tw-overflow-auto tw-rounded-md tw-bg-background-surface-layer-02 tw-p-3 tw-font-code-regular tw-text-text-default"
-          >
-            {text}
-          </pre>
-          <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
-            <span className="tw-font-body-small tw-text-text-placeholder">
-              Last 200 lines. Click a migration to see its own lines. Sensitive information is redacted.
-            </span>
-            <div className="tw-flex tw-gap-1">
-              <Button variant="ghost" size="small" onClick={() => copyToClipboard(text)}>
-                <IconCopy size={14} aria-hidden /> Copy
-              </Button>
-              <Button variant="ghost" size="small" onClick={() => downloadLog(run)}>
-                <IconDownload size={14} aria-hidden /> Download full log
-              </Button>
+    <Section>
+      {/* Re-keyed so a new run or a failure opens the log; succeeding keeps the reader's choice. */}
+      <Collapsible variant="ghost" defaultOpen={open} key={`${run.id}:${run.status === 'failed'}`}>
+        <CollapsibleTrigger>
+          <span className="tw-flex tw-flex-1 tw-items-center tw-gap-2">
+            <span className="tw-font-title-large tw-text-text-default">Full log</span>
+            <span className="tw-font-body-small tw-text-text-placeholder">{plural(logTail.length, 'line')}</span>
+          </span>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="tw-flex tw-flex-col tw-gap-2">
+            <pre
+              ref={ref}
+              onScroll={onScroll}
+              tabIndex={0}
+              aria-label="Migration log"
+              className="tw-m-0 tw-max-h-80 tw-overflow-auto tw-rounded-md tw-bg-background-surface-layer-02 tw-p-3 tw-font-code-regular tw-text-text-default"
+            >
+              {text}
+            </pre>
+            <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
+              <span className="tw-font-body-small tw-text-text-placeholder">
+                Last 200 lines. Click a migration to see its own lines. Sensitive information is redacted.
+              </span>
+              <div className="tw-flex tw-gap-1">
+                <Button variant="ghost" size="small" onClick={() => copyToClipboard(text)}>
+                  <IconCopy size={14} aria-hidden /> Copy
+                </Button>
+                <Button variant="ghost" size="small" onClick={() => downloadLog(run)}>
+                  <IconDownload size={14} aria-hidden /> Download full log
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
+        </CollapsibleContent>
+      </Collapsible>
+    </Section>
   );
 };
+
+// Header and rows are two fixed-layout tables sharing these widths, so only the rows scroll.
+const HistoryColumns = () => (
+  <colgroup>
+    <col className="tw-w-[18%]" />
+    <col className="tw-w-[22%]" />
+    <col className="tw-w-[18%]" />
+    <col className="tw-w-[12%]" />
+    <col />
+  </colgroup>
+);
 
 const HistoryCard = ({ runs }) => (
   <Card className="tw-gap-2">
     <h3 className="tw-m-0 tw-font-title-large tw-text-text-default">Earlier runs</h3>
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Status</TableHead>
-          <TableHead>Version</TableHead>
-          <TableHead>Started</TableHead>
-          <TableHead>Took</TableHead>
-          <TableHead>By</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {runs.map((run) => (
-          <TableRow key={run.id}>
-            <TableCell>
-              <StatusPill status={run.status} />
-            </TableCell>
-            <TableCell>
-              {run.fromVersion && run.fromVersion !== run.toVersion
-                ? `${run.fromVersion} → ${run.toVersion}`
-                : run.toVersion}
-            </TableCell>
-            <TableCell title={moment(run.startedAt).format('lll')}>{moment(run.startedAt).fromNow()}</TableCell>
-            <TableCell>{run.status === 'running' ? '-' : formatMs(elapsed(run))}</TableCell>
-            <TableCell className="tw-max-w-[220px] tw-truncate">{triggeredBy(run)}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-solid tw-border-border-weak">
+      {/* Same gutter as the rows below, so the columns line up when the rows show a scrollbar. */}
+      <div className="tw-overflow-y-hidden [scrollbar-gutter:stable]">
+        <Table className="tw-table-fixed">
+          <HistoryColumns />
+          <TableHeader>
+            <TableRow>
+              <TableHead>Status</TableHead>
+              <TableHead>Version</TableHead>
+              <TableHead>Started</TableHead>
+              <TableHead>Took</TableHead>
+              <TableHead>By</TableHead>
+            </TableRow>
+          </TableHeader>
+        </Table>
+      </div>
+      <div className="tw-max-h-72 tw-overflow-y-auto [scrollbar-gutter:stable]">
+        <Table className="tw-table-fixed">
+          <HistoryColumns />
+          <TableBody>
+            {runs.map((run) => (
+              <TableRow key={run.id}>
+                <TableCell>
+                  <StatusPill status={run.status} />
+                </TableCell>
+                <TableCell className="tw-truncate">
+                  {run.fromVersion && run.fromVersion !== run.toVersion
+                    ? `${run.fromVersion} → ${run.toVersion}`
+                    : run.toVersion}
+                </TableCell>
+                <TableCell title={moment(run.startedAt).format('lll')}>{moment(run.startedAt).fromNow()}</TableCell>
+                <TableCell>{run.status === 'running' ? '-' : formatMs(elapsed(run))}</TableCell>
+                <TableCell className="tw-truncate">{triggeredBy(run)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   </Card>
 );
 
@@ -441,7 +499,6 @@ const EmptyState = () => (
 const MigrationsContent = () => {
   const [runs, setRuns] = useState(null);
   const [loadFailed, setLoadFailed] = useState(false);
-  const [runPending, setRunPending] = useState(false);
   const requestSeq = useRef(0);
   const latest = runs?.[0];
 
@@ -458,31 +515,12 @@ const MigrationsContent = () => {
       .catch(() => seq === requestSeq.current && setLoadFailed(true));
   }, []);
 
-  const active = latest?.status === 'running' || runPending;
+  const active = latest?.status === 'running';
   useEffect(() => {
     load();
     const timer = setInterval(load, active ? ACTIVE_POLL_MS : IDLE_POLL_MS);
     return () => clearInterval(timer);
   }, [active, load]);
-
-  // Acknowledged once the latest run changes: a new row.
-  useEffect(() => {
-    setRunPending(false);
-  }, [latest?.id, latest?.status]);
-
-  const startRun = () => {
-    setRunPending(true);
-    migrationsService
-      .run()
-      .then(load)
-      .catch((err) => {
-        setRunPending(false);
-        toast.error(
-          err?.statusCode === 409 ? err.error || 'There is nothing to run.' : 'Could not start the migrations.'
-        );
-        load();
-      });
-  };
 
   if (runs === null) {
     return loadFailed ? (
@@ -504,9 +542,10 @@ const MigrationsContent = () => {
   return (
     <div className="tw-flex tw-flex-col tw-gap-4">
       {loadFailed && <InlineInfo type="warning" title="Lost connection to the server. Showing the last known state." />}
-      <StatusCard run={latest} onRun={startRun} runPending={runPending} />
-      <MigrationsCard run={latest} />
-      <LogCard run={latest} open={latest.status === 'running' || latest.status === 'failed'} />
+      <RunCard run={latest}>
+        <MigrationsSection run={latest} />
+        <LogSection run={latest} open={latest.status === 'running' || latest.status === 'failed'} />
+      </RunCard>
       {runs.length > 1 && <HistoryCard runs={runs.slice(1)} />}
     </div>
   );
@@ -519,7 +558,6 @@ export const MigrationsPanel = () => (
   </div>
 );
 
-/** CE has no instance settings shell, so the panel gets its own page. */
 export const MigrationsPage = ({ switchDarkMode, darkMode }) => (
   <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
     <div className="tw-h-full tw-w-full tw-overflow-y-auto tw-pt-8">

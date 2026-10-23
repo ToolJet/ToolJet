@@ -1,10 +1,10 @@
-import { DataSource, MigrationExecutor, QueryRunner } from 'typeorm';
+import { DataSource, Migration, MigrationExecutor, QueryRunner } from 'typeorm';
 import schemaDataSource from './db-migrations-datasource';
 import dataDataSource from './data-migrations-datasource';
 import { extractEnumValueAdditions, EnumValueAddition } from './enum-value-additions';
 import {
-  excludeLockSentinels,
   getLockWaitOptions,
+  LOCK_SENTINEL_MIGRATION_NAMES,
   getSchemaPhaseOptions,
   isLockNotAvailableError,
   LockSession,
@@ -13,7 +13,7 @@ import {
   SKIPPED_EXIT_CODE,
   withMigrationAdvisoryLock,
 } from './migrations-table-gate';
-import { MigrationPhase, parseMigrationPhase } from './migration-status';
+import { MIGRATION_AUTHORING_RULES_CUTOFF, MigrationPhase, parseMigrationPhase } from './migration-status';
 import { getEnvVars } from '../../scripts/database-config-utils';
 
 /**
@@ -50,17 +50,6 @@ import { getEnvVars } from '../../scripts/database-config-utils';
  * one data source — TypeORM sorts by the timestamp in the class name and schema/data
  * timestamps interleave, which would reorder them and break that invariant. Instead we
  * drive two MigrationExecutor passes.
- *
- * Phases (`MIGRATION_PHASE`, set per spawn in async mode; unset keeps the joint run above):
- *   - `schema`: at boot, before Nest starts. Only schema migrations, in one short transaction under
- *     `lock_timeout`, retried on 55P03 so a queued ALTER never stalls readers of released apps.
- *   - `data`: the server-spawned run. Schema (normally empty, catch-up) then data, in two
- *     transactions, so a data failure rolls back the data only.
- *
- * Concurrency (`migrations-table-gate.ts`): one pod at a time holds the migration advisory lock
- * from "what is pending?" to commit; the others wait their turn instead of crash-looping. While
- * real migrations run it also holds the active lock, which serving pods read to answer writes
- * with 503 rather than serve them against a half-migrated schema.
  */
 
 /**
@@ -197,7 +186,7 @@ const DATA_PHASE_REASON =
 const SCHEMA_LOCK_RETRY_DELAY_MS = 2000;
 
 async function runSchemaPhase(schemaDS: DataSource, options: SchemaPhaseOptions): Promise<boolean> {
-  // Most boots (restart, scale-up, a pod booting during a long data phase) end here without the lock.
+  // Most boots (restart, scale-up, a pod booting during a long data phase) end here without the advisory lock.
   if ((await realPendingMigrationNames(schemaDS)).length === 0) {
     console.log('[migrations] No schema migrations pending before boot.');
     return true;
@@ -218,9 +207,8 @@ async function applySchemaUnderLockTimeout(
   schemaDS: DataSource,
   { lockTimeoutMs, lockAttempts }: SchemaPhaseOptions
 ): Promise<void> {
-  announceEachMigration(schemaDS);
-  // Same enum handling as the joint run, so a schema migration can use a value an earlier one added.
   await precommitEnumValueAdditions((await planEnumAdditions(schemaDS)).precommittable, schemaDS);
+  announceEachMigration(schemaDS);
   for (let attempt = 1; ; attempt++) {
     const queryRunner = schemaDS.createQueryRunner();
     await queryRunner.connect();
@@ -258,10 +246,48 @@ async function holdingActiveLock(session: LockSession, work: () => Promise<void>
   }
 }
 
-/** Pending migrations that represent real work — see `excludeLockSentinels`. */
-async function realPendingMigrationNames(dataSourceWithMigrations: DataSource): Promise<string[]> {
+async function realPendingMigrations(dataSourceWithMigrations: DataSource): Promise<Migration[]> {
   const pending = await new MigrationExecutor(dataSourceWithMigrations).getPendingMigrations();
-  return excludeLockSentinels(pending.map(({ name }) => name));
+  return pending.filter(({ name }) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(name));
+}
+
+async function realPendingMigrationNames(dataSourceWithMigrations: DataSource): Promise<string[]> {
+  return (await realPendingMigrations(dataSourceWithMigrations)).map(({ name }) => name);
+}
+
+// ponytail: probe-then-read; a joint run starting between the two can still stall the read.
+async function migrationsTableLocked(dataSource: DataSource, lockTimeoutMs: number): Promise<boolean> {
+  const queryRunner = dataSource.createQueryRunner();
+  await queryRunner.connect();
+  await queryRunner.startTransaction();
+  try {
+    // A role statement_timeout below lockTimeoutMs would cancel with 57014 instead of 55P03.
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+    await queryRunner.query(`SET LOCAL lock_timeout = ${lockTimeoutMs}`);
+    const [{ table }] = await queryRunner.query(`SELECT to_regclass('migrations') AS table`);
+    if (table) await queryRunner.query('LOCK TABLE migrations IN ACCESS SHARE MODE');
+    return false;
+  } catch (error) {
+    if (isLockNotAvailableError(error)) return true;
+    throw error;
+  } finally {
+    await queryRunner.rollbackTransaction().catch(() => undefined);
+    await queryRunner.release();
+  }
+}
+
+/** Older migrations may drop, rename or SET NOT NULL, which breaks the release still serving. */
+async function pendingBeforeAuthoringRules(schemaDS: DataSource, dataDS: DataSource): Promise<string[]> {
+  const pending = [...(await realPendingMigrations(schemaDS)), ...(await realPendingMigrations(dataDS))];
+  return pending.filter(({ timestamp }) => timestamp <= MIGRATION_AUTHORING_RULES_CUTOFF).map(({ name }) => name);
+}
+
+/** Split phases are serialised by the advisory lock; the sentinels' LOCK TABLE would stall booting pods. */
+function withoutLockSentinels(dataSource: DataSource): void {
+  const kept = dataSource.migrations.filter(
+    (migration) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(migration.name || migration.constructor.name)
+  );
+  dataSource.migrations.splice(0, dataSource.migrations.length, ...kept);
 }
 
 /** False when MIGRATION_SKIP_IF_LOCKED found another server migrating and left the run to it. */
@@ -270,7 +296,7 @@ export async function run(
   dataDS: DataSource = dataDataSource
 ): Promise<boolean> {
   // process.env, not getEnvVars(): set by the parent per spawn.
-  const phase = parseMigrationPhase(process.env.MIGRATION_PHASE);
+  let phase = parseMigrationPhase(process.env.MIGRATION_PHASE);
   if (!schemaDS.isInitialized) await schemaDS.initialize();
   // dataDS is initialized to load its migration classes; queries run through whichever
   // query runner each pass uses.
@@ -279,12 +305,30 @@ export async function run(
   // getEnvVars(), not process.env: this process never boots ConfigModule, so settings that
   // live only in the env file would otherwise be invisible here.
   const env = getEnvVars();
-  if (phase === 'schema') return runSchemaPhase(schemaDS, getSchemaPhaseOptions(env));
+  const schemaOptions = getSchemaPhaseOptions(env);
+  if (phase === 'schema') {
+    // A joint or blocking run holds LOCK TABLE migrations to the end; reading behind it hits statement_timeout.
+    if (await migrationsTableLocked(schemaDS, schemaOptions.lockTimeoutMs)) {
+      console.log('[migrations] Another server is migrating with the migrations table locked; waiting for it.');
+      await withMigrationAdvisoryLock(schemaDS, schemaOptions.lockWait, {}, async () => undefined);
+    }
+    const legacy = await pendingBeforeAuthoringRules(schemaDS, dataDS);
+    if (legacy.length) {
+      console.log(
+        `[migrations] ${legacy[0]} predates the async-mode authoring rules (${legacy.length} such pending); ` +
+          'running the whole upgrade before boot in one transaction, the blocking way.'
+      );
+      phase = 'joint';
+    }
+  }
+  if (phase !== 'joint') {
+    withoutLockSentinels(schemaDS);
+    withoutLockSentinels(dataDS);
+  }
+
+  if (phase === 'schema') return runSchemaPhase(schemaDS, schemaOptions);
   const lockWaitOptions = getLockWaitOptions(env);
 
-  // Everything from "what is pending?" to "migrations committed" happens as the cluster's only
-  // migrating pod. Reading the pending list outside this lock is what lets a losing pod wake up
-  // with a stale list and re-run an already-applied migration.
   // Server-managed modes: another server already migrating owns the run. Waiting would make this one
   // re-run the same migrations after that run ends, even a failed one.
   const skipIfBusy = process.env.MIGRATION_SKIP_IF_LOCKED === 'true';
@@ -335,10 +379,12 @@ function announceEachMigration(dataSource: DataSource): void {
 }
 
 async function executeMigrations(schemaDS: DataSource, dataDS: DataSource, phase: MigrationPhase): Promise<void> {
+  // Plan before announcing: it scans up() source, which the announcing wrapper hides.
+  const plan = phase === 'data' ? null : await planEnumAdditions(schemaDS);
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
-  if (phase === 'data') return runTwoPhase(schemaDS, dataDS, DATA_PHASE_REASON);
-  const { precommittable, hasMissingType } = await planEnumAdditions(schemaDS);
+  if (!plan) return runTwoPhase(schemaDS, dataDS, DATA_PHASE_REASON);
+  const { precommittable, hasMissingType } = plan;
 
   if (hasMissingType) {
     await runTwoPhase(schemaDS, dataDS, ENUM_TWO_PHASE_REASON);

@@ -3,15 +3,19 @@ import cx from 'classnames';
 import CloseIcon from '@/_ui/Icon/bulkIcons/CloseIcon';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { migrationsService } from '@/_services/migrations.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { getSubpath } from '@/_helpers/routes';
 
 const DISMISS_KEY = 'migration-banner-dismissed';
 const POLL_MS = 30000;
-const RUNNING_POLL_MS = 10000;
+const RUNNING_POLL_MS = 3000;
 
 const MESSAGES = {
   running: 'ToolJet is being upgraded. Some features may not work and changes may not save until it finishes.',
-  failed: 'The latest ToolJet upgrade failed. Changes cannot be saved until an administrator retries it.',
+  failed: 'The latest ToolJet upgrade failed. Changes cannot be saved until an administrator fixes it.',
 };
+
+const SUPER_ADMIN_FAILED_MESSAGE = 'The latest ToolJet upgrade failed. Changes cannot be saved. See what failed';
 
 // Released and embedded apps: end users see neither the product name nor admin steps.
 const END_USER_MESSAGES = {
@@ -39,6 +43,14 @@ const writeDismissed = (value) => {
 export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false, endUser = false }) => {
   const [status, setStatus] = useState({ state: 'idle' });
   const [dismissed, setDismissed] = useState(readDismissed);
+  const [superAdmin, setSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    const subscription = authenticationService.currentSession.subscribe((session) =>
+      setSuperAdmin(!!session?.super_admin)
+    );
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     let timer;
@@ -56,7 +68,10 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false
     };
   }, []);
 
-  const message = (endUser ? END_USER_MESSAGES : MESSAGES)[status.state];
+  const linkToMigrations = superAdmin && status.state === 'failed';
+  const message = linkToMigrations
+    ? SUPER_ADMIN_FAILED_MESSAGE
+    : (endUser ? END_USER_MESSAGES : MESSAGES)[status.state];
   // Per run and state: a new run, or the same run failing, shows again after a dismissal.
   const runKey = `${status.state}:${status.startedAt ?? ''}`;
   const visible = !!message && dismissed !== runKey;
@@ -93,9 +108,19 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false
       >
         <div className="tw-ml-auto tw-flex tw-min-w-0 tw-items-center tw-gap-2">
           <SolidIcon name="warning" width="16" fill="var(--icon-warning)" className="tw-shrink-0" />
-          <p title={message} className="tw-m-0 tw-truncate tw-font-body-small tw-text-text-warning">
-            {message}
-          </p>
+          {linkToMigrations ? (
+            <a
+              href={`${getSubpath() ?? ''}/settings/migrations`}
+              title={message}
+              className="tw-truncate tw-font-body-small tw-text-text-warning tw-underline hover:tw-text-text-warning"
+            >
+              {message}
+            </a>
+          ) : (
+            <p title={message} className="tw-m-0 tw-truncate tw-font-body-small tw-text-text-warning">
+              {message}
+            </p>
+          )}
         </div>
         <button
           type="button"

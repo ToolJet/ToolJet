@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { NextFunction, Request, Response } from 'express';
+import * as parseurl from 'parseurl';
 import { MigrationRunsService, MigrationState } from '../migration-runs/service';
 import {
   isServerManagedMigrationMode,
@@ -36,7 +37,6 @@ const ASYNC_MODE_WRITE_ALLOWLIST = [
   /^\/sso\//,
   /^\/data-queries\/[^/]+\/run$/,
   /^\/data-queries\/[^/]+\/versions\/[^/]+\/run\/[^/]+$/,
-  /^\/migration-runs\/run$/,
 ];
 
 /** How often to repeat the "requests are being rejected" line. */
@@ -48,7 +48,7 @@ export const MIGRATION_IN_PROGRESS_MESSAGE =
   'ToolJet is being upgraded — database migrations are in progress. Please retry in a few moments.';
 
 export const MIGRATION_FAILED_MESSAGE =
-  'The latest ToolJet upgrade failed. Changes cannot be saved until an administrator retries it.';
+  'The latest ToolJet upgrade failed. Changes cannot be saved until it is fixed and ToolJet restarts.';
 
 /** What each refusing state answers; other states pass. */
 const REFUSALS: Partial<Record<MigrationState, { code: string; message: string }>> = {
@@ -87,9 +87,10 @@ export class MigrationGateMiddleware implements NestMiddleware {
   }
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
-    // req.path is '/' under forRoutes('*') on Nest 11; originalUrl keeps the full path.
-    // Lowercased: Express matches routes case-insensitively, so /API/apps reaches /api/apps.
-    const path = req.originalUrl.split('?')[0].toLowerCase();
+    // The raw pathname Express routes on (req.path is '/' under forRoutes('*')). Not a WHATWG URL: that
+    // resolves `..`, `\` and `%2e`, so the gate would check a different route than the one that runs.
+    // Lowercased: Express matches routes case-insensitively.
+    const path = (parseurl.original(req)?.pathname ?? '/').toLowerCase();
     if (!this.enabled || !this.shouldGate(path, req.method)) return next();
     const { state } = await this.migrationRuns.status();
     const refusal = REFUSALS[state];

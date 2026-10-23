@@ -9,13 +9,15 @@
  * its own exit code — the thing that used to crash-loop.
  *
  * Contract with the spec: everything the runner logs goes to stdout, and the last line is
- * `__POD_RESULT__{json}`. Exit code 0 means the pod booted successfully.
+ * `__POD_RESULT__{json}`. Exit code 0 means the pod booted successfully, 75 that it left the run to another.
  */
 import { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { run } from '../../../../../src/migration-helpers/run-all-migrations';
+import { SKIPPED_EXIT_CODE } from '../../../../../src/migration-helpers/migrations-table-gate';
 
 const podId = process.env.POD_ID ?? 'pod-?';
+const fixtureSet = process.env.FIXTURE_SET ?? 'concurrent-pods';
 
 function dataSourceFor(migrationsDirectory: string): DataSource {
   const options: DataSourceOptions = {
@@ -29,7 +31,10 @@ function dataSourceFor(migrationsDirectory: string): DataSource {
     synchronize: false,
     migrationsRun: false,
     migrationsTransactionMode: 'all',
-    migrations: [join(__dirname, migrationsDirectory, '*.ts')],
+    migrations: [
+      join(__dirname, migrationsDirectory, 'LockMigrationsTable*.ts'),
+      join(__dirname, '..', fixtureSet, migrationsDirectory, '1*.ts'),
+    ],
   };
   return new DataSource(options);
 }
@@ -46,8 +51,9 @@ async function main() {
 
   const startedAt = Date.now();
   let error: string | null = null;
+  let skipped = false;
   try {
-    await run(schemaDS, dataDS);
+    skipped = !(await run(schemaDS, dataDS));
   } catch (caught) {
     error = caught instanceof Error ? caught.message : String(caught);
   }
@@ -56,7 +62,7 @@ async function main() {
   await dataDS.destroy().catch(() => undefined);
 
   console.log(`__POD_RESULT__${JSON.stringify({ podId, error, durationMs: Date.now() - startedAt })}`);
-  process.exit(error ? 1 : 0);
+  process.exit(error ? 1 : skipped ? SKIPPED_EXIT_CODE : 0);
 }
 
 main();
