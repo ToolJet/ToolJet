@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import React, { useMemo, useRef, useState } from 'react';
+import { useAutoHeight, useLatest, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { X } from 'lucide-react';
 import { Input, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
@@ -33,12 +33,61 @@ export const inputType = (value: unknown): string => {
   return type === 'number' || TYPES.includes(type) ? type : 'text';
 };
 
+// A valid floating-point number, as HTML reads a number box's value: an optional minus, digits with an optional
+// fraction (or a bare fraction) and an optional exponent. Anything else empties the box when its type turns number.
+const FLOAT = /^-?(?:\d+|\d*\.\d+)(?:[eE][-+]?\d+)?$/;
+
+/** The value a box keeps when its Type switches between text and number, as a browser's input keeps its value
+ *  through a type change: number text becomes the number ("123" is 123), a number its text, anything else empty. */
+export const carryValue = (value: unknown, toNumber: boolean): unknown => {
+  if (toNumber) {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    const text = typeof value === 'string' ? value.trim() : '';
+    return FLOAT.test(text) ? Number(text) : null;
+  }
+  return value === null || value === undefined ? '' : String(value);
+};
+
+/** Keeps what was typed when a bound Type swaps the text box and the number box, which are different components and
+ *  so start again from the Default value. The box's published value is watched; on a swap the new box starts from it,
+ *  converted (carryValue), until the authored Default value changes, which starts the box again as before. */
+const useTypeSwitchCarry = (props: WidgetProps, isNumber: boolean) => {
+  const last = useRef<unknown>(undefined);
+  const setters = useLatest({ one: props.setExposedVariable, many: props.setExposedVariables });
+  const watched = useMemo(
+    () => ({
+      setExposedVariable: (key: string, value: unknown) => {
+        if (key === 'value') last.current = value;
+        return setters.current.one(key, value);
+      },
+      setExposedVariables: (values: Record<string, unknown>) => {
+        if (values && 'value' in values) last.current = values.value;
+        return setters.current.many(values);
+      },
+    }),
+    [setters]
+  );
+  const authored = useStable(props.properties.defaultValue);
+  const [carry, setCarry] = useState<{ isNumber: boolean; value?: unknown; over?: unknown }>({ isNumber });
+  if (carry.isNumber !== isNumber) {
+    const next =
+      last.current === undefined
+        ? { isNumber }
+        : { isNumber, value: carryValue(last.current, isNumber), over: authored };
+    setCarry(next);
+    return { ...watched, defaultValue: 'over' in next ? next.value : authored };
+  }
+  const kept = 'over' in carry && Object.is(carry.over, authored);
+  return { ...watched, defaultValue: kept ? carry.value : authored };
+};
+
 export const ShadInput = (props: WidgetProps) => {
   const type = inputType(props.properties.inputType);
+  const { defaultValue, ...setters } = useTypeSwitchCarry(props, type === 'number');
   return type === 'number' ? (
-    <ShadNumberInput {...props} properties={{ ...props.properties, ...NUMBER_BOX }} />
+    <ShadNumberInput {...props} {...setters} properties={{ ...props.properties, defaultValue, ...NUMBER_BOX }} />
   ) : (
-    <TextInput {...props} properties={{ ...props.properties, inputType: type }} />
+    <TextInput {...props} {...setters} properties={{ ...props.properties, defaultValue, inputType: type }} />
   );
 };
 
