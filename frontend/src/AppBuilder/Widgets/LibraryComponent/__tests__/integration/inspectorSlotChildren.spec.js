@@ -1,3 +1,4 @@
+import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition } from '@/test/app-builder';
 
 const CARD_ID = '11111111-1111-4111-8111-111111111111';
@@ -22,7 +23,8 @@ describe('state inspector: components inside a library component slot', () => {
   it('[LibraryComponent-INSPECTOR-001] lists the components of every slot under the library component', () => {
     // Break this catches: falling through to the default `<componentId>` lookup, which finds no children
     // for a library component, so slot children vanish from the inspector (they are not roots either).
-    const state = seed()();
+    seed();
+    const state = useStore.getState();
     const nodes = state.formatInspectorComponentData(state.getComponentIdNameMapping(), {});
 
     expect(nodes.map((n) => n.name)).toEqual(['card1', 'text1']);

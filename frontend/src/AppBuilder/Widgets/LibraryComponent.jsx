@@ -265,9 +265,7 @@ const LibraryComponent = ({
   }, [shellReady, componentProps, componentStyles]);
 
   // Slot drop areas exist only inline: the iframe shell has no way to host ToolJet components.
-  const renderSlot = (slotName) => (
-    <LibrarySlotCanvas id={`${id}-${slotName}`} darkMode={darkMode} isEditMode={currentMode === 'edit'} />
-  );
+  const renderSlot = (slotName) => <LibrarySlotCanvas id={`${id}-${slotName}`} darkMode={darkMode} />;
 
   if (!hasCustomComponentLibrariesAccess && currentMode === 'view') {
     return <></>;
