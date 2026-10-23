@@ -240,4 +240,21 @@ describe('UI 2.0 File upload', () => {
     await waitFor(() => expect(list.querySelectorAll('li')).toHaveLength(8));
     expect(list).toHaveClass('tw-max-h-[296px]', 'tw-overflow-y-auto');
   });
+
+  test('[ShadFileUpload-ACT-020] Clear all, shown for two or more files, clears them as clearFiles does', async () => {
+    // A user could only remove files one by one.
+    const { container } = render({ properties: { multiple: binding('{{true}}') } });
+    widget.setEvents(countInvocationsOn(ID, 'onFileDeselected'));
+    await upload(container, textFile('a.txt', 'a'));
+    await waitFor(() => expect(exposed().file).toHaveLength(1));
+    expect(screen.queryByRole('button', { name: 'Clear all' })).toBeNull();
+
+    await upload(container, textFile('b.txt', 'b'));
+    await waitFor(() => expect(exposed().file).toHaveLength(2));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Clear all' })));
+    await waitFor(() => expect(exposed().file).toEqual([]));
+    // One onFileDeselected, as the clearFiles action fires.
+    await waitFor(() => expect(widget.variables().calls).toBe(1));
+    expect(screen.queryByRole('button', { name: 'Clear all' })).toBeNull();
+  });
 });
