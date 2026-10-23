@@ -96,4 +96,16 @@ describe('UI 2.0 Switch', () => {
     expect(root.getPropertyValue('--lk-help')).toBe('#222222');
     expect(root.getPropertyValue('--lk-off')).toBe('#d4d4d8');
   });
+
+  test('[ShadSwitch-STY-010] the thumb stays inside the track, on and off', async () => {
+    // The root is a button and kept the browser's padding (1px 6px, ToolJet has no preflight): a checked switch's thumb
+    // ran 4px past the track's end. Track 36px less two 2px borders and no padding holds a 16px thumb moved 16px.
+    render();
+    const root = await screen.findByRole('switch');
+    const thumb = root.querySelector('span');
+    expect(root).toHaveClass('tw-p-0', 'tw-w-9', 'tw-h-5', 'tw-border-2');
+    expect(thumb).toHaveClass('tw-h-4', 'tw-w-4', 'data-[state=checked]:tw-translate-x-4');
+    const px = { 'tw-w-9': 36, 'tw-border-2': 2, 'tw-w-4': 16, 'tw-translate-x-4': 16 };
+    expect(px['tw-w-9'] - 2 * px['tw-border-2']).toBe(px['tw-w-4'] + px['tw-translate-x-4']);
+  });
 });
