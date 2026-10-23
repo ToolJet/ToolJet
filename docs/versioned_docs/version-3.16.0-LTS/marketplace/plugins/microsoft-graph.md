@@ -43,12 +43,10 @@ After completing the OAuth flow, the query must be triggered again to fetch data
 - **[Users](#users)**
 - **[Teams](#teams)**
 - **[One Drive](#onedrive)**
-- **[SharePoint](#sharepoint)**
-- **[OneNote](#onenote)**
+- **[Share Point](#sharepoint)**
+- **[One Note](#onenote)**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/microsoft-graph/listops.png" alt="Microsoft Graph supoorted entities" />
-
-<!-- TODO screenshot: Microsoft Graph query editor with the entity list open, showing SharePoint and OneNote alongside Outlook, Calendar, Users, Teams and OneDrive (to replace listops.png) -->
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/microsoft-graph/listops-v2.png" alt="Microsoft Graph Entity dropdown listing Outlook, Calendar, Users, Teams, One Drive, Share Point and One Note" />
 
 ### Outlook
 
@@ -271,7 +269,7 @@ After completing the OAuth flow, the query must be triggered again to fetch data
 
 ### SharePoint
 
-Use the **SharePoint** entity to work with SharePoint sites, lists, list items, document libraries (drives), files and folders through Microsoft Graph.
+Select **Share Point** in the **Entity** dropdown to work with SharePoint sites, lists, list items, document libraries (drives), files and folders through Microsoft Graph.
 
 :::note
 This entity is part of the Microsoft Graph plugin. ToolJet also has a separate **[SharePoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)** marketplace plugin with its own connection and operations.
@@ -329,7 +327,7 @@ This entity is part of the Microsoft Graph plugin. ToolJet also has a separate *
 
 ### OneNote
 
-Use the **OneNote** entity to work with the signed-in user's OneNote notebooks, section groups, sections, pages and page resources. All endpoints are under `/me/onenote`.
+Select **One Note** in the **Entity** dropdown to work with the signed-in user's OneNote notebooks, section groups, sections, pages and page resources. All endpoints are under `/me/onenote`.
 
 #### Notebooks and Section Groups
 
