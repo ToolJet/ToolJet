@@ -290,6 +290,15 @@ function isPrivateIPv6(ip: string): boolean {
       if (ipv4Part.includes('.')) {
         return isPrivateIP(ipv4Part);
       }
+      // Hex form (what `new URL()` produces): two 16-bit groups encoding the IPv4 address
+      const hexParts = ipv4Part.split(':');
+      if (hexParts.length === 2) {
+        const high = parseInt(hexParts[0], 16);
+        const low = parseInt(hexParts[1], 16);
+        if (!isNaN(high) && !isNaN(low)) {
+          return isPrivateIP(`${(high >> 8) & 0xff}.${high & 0xff}.${(low >> 8) & 0xff}.${low & 0xff}`);
+        }
+      }
     }
   }
 
@@ -301,6 +310,11 @@ function isPrivateIPv6(ip: string): boolean {
  * This includes all RFC1918, link-local, loopback, and cloud metadata ranges
  */
 export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtectionOptions): Promise<boolean> {
+  // IP literals have no DNS answer; the caller has already run isPrivateIP on them.
+  if (net.isIP(hostname)) {
+    return false;
+  }
+
   try {
     // Try to resolve as both IPv4 and IPv6
     const addresses: string[] = [];
@@ -319,10 +333,10 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
       // IPv6 resolution failed, continue
     }
 
-    // If no addresses resolved, fail open for self-hosted compatibility
+    // No answer: fail closed under the EE runtime config, fail open otherwise (self-hosted compatibility)
     if (addresses.length === 0) {
       console.warn(`DNS resolution failed for ${hostname}`);
-      return false;
+      return !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__;
     }
 
     // Check if any resolved address is a private IP
@@ -372,7 +386,8 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
     throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
-  const hostname = url.hostname.toLowerCase();
+  // `new URL()` keeps the brackets on IPv6 literals ([::1]); strip them so the IP checks see the address
+  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   const scheme = url.protocol;
 
   // Allowlisted hostnames / IPs skip every check below
@@ -635,7 +650,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
     throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
-  const hostname = url.hostname.toLowerCase();
+  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   const scheme = url.protocol;
 
   // Check for blocked schemes

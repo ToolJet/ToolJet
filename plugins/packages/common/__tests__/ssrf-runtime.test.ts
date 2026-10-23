@@ -1,6 +1,13 @@
 import * as net from 'net';
 import got from 'got';
-import { getSSRFConfig, validateUrlForSSRF, createSSRFSafeLookup, isAllowlisted, getSSRFProtectionOptions } from '../lib/ssrf-protection';
+import {
+  getSSRFConfig,
+  validateUrlForSSRF,
+  validateUrlForSSRFSync,
+  createSSRFSafeLookup,
+  isAllowlisted,
+  getSSRFProtectionOptions,
+} from '../lib/ssrf-protection';
 
 const KEY = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
 const ranges = (...cidrs: string[]) => {
@@ -131,4 +138,56 @@ describe('lookup with options.all (Node 22 autoSelectFamily)', () => {
     const res = await got('https://example.com', getSSRFProtectionOptions(undefined, { timeout: { request: 10000 }, retry: 0 }));
     expect(res.statusCode).toBe(200);
   }, 20000);
+});
+
+describe('built-in check: IP literals and DNS failures', () => {
+  const publish = () => {
+    (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges() };
+  };
+  it('blocks a hostname with no DNS answer when the runtime key is present', async () => {
+    publish();
+    await expect(validateUrlForSSRF('http://no-such-host-xyz.invalid/')).rejects.toThrow();
+  });
+  it('allows public IP literals when the runtime key is present', async () => {
+    publish();
+    await expect(validateUrlForSSRF('http://8.8.8.8/')).resolves.toBeUndefined();
+    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).resolves.toBeUndefined();
+  });
+  it('keeps failing open on a hostname with no DNS answer when the runtime key is absent', async () => {
+    const options = { enabled: true, dnsResolutionCheck: true, blockedSchemes: [] };
+    await expect(validateUrlForSSRF('http://no-such-host-xyz.invalid/', options)).resolves.toBeUndefined();
+  });
+  it('blocks a bracketed loopback literal when the runtime key is absent', async () => {
+    const options = { enabled: true, dnsResolutionCheck: false, blockedSchemes: [] };
+    await expect(validateUrlForSSRF('http://[::1]/', options)).rejects.toThrow();
+  });
+  it('blocks a bracketed unique-local literal in the sync check too', () => {
+    const options = { enabled: true, blockedSchemes: [] };
+    expect(() => validateUrlForSSRFSync('http://[fd00::1]/', options)).toThrow();
+  });
+});
+
+describe('cross-copy SSRF parity (runtime key present)', () => {
+  const publish = (...cidrs: string[]) => {
+    (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges(...cidrs) };
+  };
+  it.each([
+    'http://[::1]/',
+    'http://[fd00::1]/',
+    'http://[fd00:ec2::254]/',
+    'http://[::ffff:127.0.0.1]/',
+    'http://[::ffff:169.254.169.254]/',
+    'http://[fe80::1]/',
+  ])('blocks %s with an empty allowlist', async (url) => {
+    publish();
+    await expect(validateUrlForSSRF(url)).rejects.toThrow();
+  });
+  it('allows a hostname that resolves into an allowlisted CIDR', async () => {
+    publish('127.0.0.0/8', '::1/128');
+    await expect(validateUrlForSSRF('http://localhost/')).resolves.toBeUndefined();
+  });
+  it('allows an IPv6 literal inside an allowlisted CIDR', async () => {
+    publish('::1/128');
+    await expect(validateUrlForSSRF('http://[::1]/')).resolves.toBeUndefined();
+  });
 });
