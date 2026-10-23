@@ -82,13 +82,12 @@ export class PostgrestProxyService {
 
     if (['PATCH', 'POST'].includes(req.method)) {
       const { path: resolvedTableId } = extractTableRefs(rewrittenUrl);
-      const updatedRequestBody = await this.validateJSONBInputs(
+      req.body = await this.validateJSONBInputs(
         organizationId,
         tableInfo[resolvedTableId],
         req.body,
         environmentId
       );
-      req.body = { ...req.body, ...updatedRequestBody };
     }
 
     return this.httpProxy(req, res, next);
@@ -141,13 +140,12 @@ export class PostgrestProxyService {
 
       if (['PATCH', 'POST'].includes(method)) {
         const { path: resolvedTableId } = extractTableRefs(rewrittenPath);
-        const updatedRequestBody = await this.validateJSONBInputs(
+        body = await this.validateJSONBInputs(
           headers['tj-workspace-id'],
           tableInfo[resolvedTableId],
           body,
           environmentId
         );
-        body = { ...body, ...updatedRequestBody };
       }
 
       const reqHeaders = {
@@ -371,10 +369,11 @@ export class PostgrestProxyService {
       .filter((column) => column.data_type === 'jsonb')
       .map((column) => column.column_name);
 
-    if (jsonbColumns.length) {
+    if (!jsonbColumns.length) return body;
+    const validateRow = (row) => {
       const { inValidValueColumnsList: inValidJsonbColumns, updatedRequestBody } = validateTjdbJSONBColumnInputs(
         jsonbColumns,
-        body
+        row
       );
       if (inValidJsonbColumns.length) {
         throw new HttpException(
@@ -383,8 +382,8 @@ export class PostgrestProxyService {
         );
       }
       return updatedRequestBody;
-    }
-    return body;
+    };
+    return Array.isArray(body) ? body.map(validateRow) : validateRow(body);
   }
 }
 
