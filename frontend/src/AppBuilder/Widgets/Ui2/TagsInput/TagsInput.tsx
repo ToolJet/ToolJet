@@ -92,7 +92,10 @@ export const ShadTagsInput = (props: WidgetProps) => {
         (!query || s.label.toLowerCase().includes(query) || s.tag.toLowerCase().includes(query))
     )
     .slice(0, 50);
-  const menuOpen = focused && !dismissed && !disabled && visible.length > 0;
+  // At Max tags the box takes no more: no placeholder, no typing (read-only; Backspace still removes the last tag) and
+  // no suggestions. The placeholder kept inviting a tag the box would refuse.
+  const full = maxTags > 0 && tags.length >= maxTags;
+  const menuOpen = focused && !dismissed && !disabled && !full && visible.length > 0;
 
   const commit = (next: string[], event: 'onTagAdded' | 'onTagDeleted', tag: string) =>
     runNow(() => {
@@ -214,7 +217,9 @@ export const ShadTagsInput = (props: WidgetProps) => {
               autoComplete="off"
               value={text}
               disabled={disabled}
-              placeholder={String(properties.placeholder ?? '')}
+              readOnly={full}
+              aria-readonly={full || undefined}
+              placeholder={full ? '' : String(properties.placeholder ?? '')}
               onChange={onChange}
               onCompositionStart={() => {
                 composing.current = true;

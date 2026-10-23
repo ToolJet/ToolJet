@@ -150,13 +150,24 @@ describe('UI 2.0 Tags input', () => {
   });
 
   test('[ShadTagsInput-VAL-003] maxTags stops new tags past the limit and says why', async () => {
+    render({ properties: { maxTags: binding('{{3}}') } });
+
+    await type('node, python,');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('You can add up to 3 tags');
+    expect(exposed().values).toEqual(['react', 'typescript', 'node']);
+  });
+
+  test('[ShadTagsInput-VAL-004] at maxTags the box hides its placeholder and takes no more typing', async () => {
+    // The placeholder kept inviting a tag the box would refuse.
     render({ properties: { maxTags: binding('{{2}}') } });
-
-    await type('node');
-    await press('Enter');
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('You can add up to 2 tags');
-    expect(exposed().values).toEqual(['react', 'typescript']);
+    const box = await screen.findByRole('combobox');
+    expect(box).toHaveAttribute('placeholder', '');
+    expect(box).toHaveAttribute('readonly');
+    // Removing a tag opens the box again.
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Remove typescript' })));
+    await waitFor(() => expect(box).toHaveAttribute('placeholder', 'Add a tag...'));
+    expect(box).not.toHaveAttribute('readonly');
   });
 
   test('[ShadTagsInput-PROP-004] addOnBlur adds what was typed when the box loses focus', async () => {
