@@ -6,6 +6,8 @@ import {
 } from '@modules/instance-settings/constants';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
+const MIGRATION_NAME = 'AddSsrfProtectionInstanceSettings1790600000000';
+
 export const SSRF_INSTANCE_SETTINGS_ROWS = [
   {
     key: INSTANCE_SYSTEM_SETTINGS.SSRF_PROTECTION_ENABLED,
@@ -39,17 +41,25 @@ export const SSRF_INSTANCE_SETTINGS_ROWS = [
 export class AddSsrfProtectionInstanceSettings1790600000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
+    const total = SSRF_INSTANCE_SETTINGS_ROWS.length;
+    console.log(`${MIGRATION_NAME}: [START] SSRF instance settings to add: ${total}`);
 
-    for (const row of SSRF_INSTANCE_SETTINGS_ROWS) {
+    let inserted = 0;
+    for (const [index, row] of SSRF_INSTANCE_SETTINGS_ROWS.entries()) {
       // Insert only where the key is missing, so a re-run never overwrites an admin's choice.
       const existing = await entityManager.findOne(InstanceSettings, { where: { key: row.key } });
-      if (existing) continue;
-      await entityManager.insert(InstanceSettings, {
-        ...row,
-        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
-        createdAt: new Date(),
-      });
+      if (!existing) {
+        await entityManager.insert(InstanceSettings, {
+          ...row,
+          type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+          createdAt: new Date(),
+        });
+        inserted++;
+      }
+      console.log(`${MIGRATION_NAME}: [PROGRESS] ${index + 1}/${total} (${Math.round(((index + 1) / total) * 100)}%)`);
     }
+
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Adding SSRF instance settings finished. Inserted: ${inserted}`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
