@@ -5,7 +5,8 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { statusColor, timelineItems } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import { MAX_ITEMS, statusColor, timelineItems } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import { ShowMoreBar, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import type { Entry, TimelineItem } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { iconFor } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 import { formatDate } from '@/AppBuilder/Widgets/Ui2/_shared/format';
@@ -23,7 +24,10 @@ export const ShadTimeline = (props: WidgetProps) => {
   useAutoHeight(props, ref);
   const source = useStable(p.items);
   const newestFirst = p.newestFirst === true;
-  const items = useMemo(() => timelineItems(source, newestFirst), [source, newestFirst]);
+  // Drawn MAX_ITEMS at a time from the end it is read from (the newest, newest first), with Show more for the rest.
+  const [shownCount, showMore] = useShownCount(MAX_ITEMS, source);
+  const items = useMemo(() => timelineItems(source, newestFirst, shownCount), [source, newestFirst, shownCount]);
+  const total = Array.isArray(source) ? source.length : 0;
   const [last, setLast] = useState<Entry>({});
   useExposed(setExposedVariables, p, { lastClickedItem: last });
   const hasClick = useHasEvent(id, 'onItemClicked');
@@ -153,9 +157,19 @@ export const ShadTimeline = (props: WidgetProps) => {
       </ol>
     );
   }
+  const more =
+    !p.loadingState && items.length ? (
+      <ShowMoreBar
+        remaining={Math.max(0, total - shownCount)}
+        step={MAX_ITEMS}
+        onMore={showMore}
+        borderColor="transparent"
+      />
+    ) : null;
   return (
     <Shell {...props} innerRef={ref}>
       {body}
+      {more}
     </Shell>
   );
 };
