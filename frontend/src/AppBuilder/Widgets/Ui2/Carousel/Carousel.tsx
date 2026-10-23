@@ -324,7 +324,9 @@ export const ShadCarousel = (props: WidgetProps) => {
           ) : null}
         </div>
         {properties.showDots !== false && positions > 1 ? (
-          <div className="tw-flex tw-h-7 tw-shrink-0 tw-items-center tw-justify-center">
+          // The dots sit at the bottom of their row, so the widget ends at its last painted mark: centred in a 28px row
+          // they left a 13px blank band under the carousel (the Cypress geometry check).
+          <div className="tw-flex tw-h-6 tw-shrink-0 tw-items-end tw-justify-center">
             {Array.from({ length: Math.min(positions, 30) }, (_, i) => (
               <button
                 key={i}
@@ -334,7 +336,7 @@ export const ShadCarousel = (props: WidgetProps) => {
                 disabled={disabled}
                 onClick={() => go(i)}
                 // A 24px touch target (WCAG 2.5.8) around the small dot it draws.
-                className="tw-group tw-inline-flex tw-h-6 tw-w-6 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-p-0 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring"
+                className="tw-group tw-inline-flex tw-h-6 tw-w-6 tw-items-end tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-p-0 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring"
               >
                 <span
                   className={cn(

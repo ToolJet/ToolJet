@@ -243,4 +243,12 @@ describe('UI 2.0 Carousel', () => {
     Object.entries(vars).forEach(([name, value]) => expect(root.style.getPropertyValue(name)).toBe(value));
     expect(screen.getByRole('button', { name: 'Go to slide 1' }).firstChild.className).toContain('var(--lk-dot-active');
   });
+
+  test('[ShadCarousel-STY-010] the dots sit at the bottom of their row, so no blank band shows under the carousel', async () => {
+    // Centred in a 28px row they left a 13px band under the widget (Cypress geometry).
+    render();
+    const dot = await screen.findByRole('button', { name: 'Go to slide 1' });
+    expect(dot).toHaveClass('tw-items-end');
+    expect(dot.parentElement).toHaveClass('tw-h-6', 'tw-items-end');
+  });
 });
