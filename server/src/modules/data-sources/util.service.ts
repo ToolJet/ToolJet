@@ -22,7 +22,12 @@ import { DataSourcesRepository } from './repository';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { cleanObject, resolveOptionsArrayForOAuth, resolveSourceOptionsForOAuth } from '@helpers/utils.helper';
-import { validateUrlForSSRF, validateHostForSSRF, createSSRFSafeLookup } from '@helpers/ssrf-protection.helper';
+import {
+  validateUrlForSSRF,
+  validateHostForSSRF,
+  createSSRFSafeLookup,
+  SSRF_RUNTIME_CONFIG_KEY,
+} from '@helpers/ssrf-protection.helper';
 import { decode } from 'js-base64';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
@@ -1453,9 +1458,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     'workspaceHost',
   ];
 
-  // Built-in database drivers: `host` is a socket hostname, not an HTTP endpoint, so the
-  // host/port/protocol check is out of SSRF scope for them. Every other kind, and any request
-  // carrying a marketplace `plugin_id` (which picks the plugin whatever `kind` says), is checked.
+  // Built-in database drivers: `host` is a socket hostname, not an HTTP endpoint, so on EE (runtime
+  // config present) the host/port/protocol check is skipped for them. CE and Cloud check every kind, as
+  // does any request carrying a marketplace `plugin_id` (which picks the plugin whatever `kind` says).
   private static readonly SSRF_UNCHECKED_DATABASE_KINDS = new Set([
     'postgresql',
     'mysql',
@@ -1483,7 +1488,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     // host/port/protocol travel as separate fields on most plugins rather than one
     // URL string — validate the same way the fixed connectors do.
-    const isUncheckedDatabaseKind = !pluginId && DataSourcesUtilService.SSRF_UNCHECKED_DATABASE_KINDS.has(kind);
+    // The database-kind skip is EE-only (runtime config present); CE and Cloud check the host for every kind.
+    const isUncheckedDatabaseKind =
+      !!(globalThis as Record<string, unknown>)[SSRF_RUNTIME_CONFIG_KEY] &&
+      !pluginId &&
+      DataSourcesUtilService.SSRF_UNCHECKED_DATABASE_KINDS.has(kind);
     if (!isUncheckedDatabaseKind && typeof sourceOptions?.host === 'string' && sourceOptions.host.length > 0) {
       // `protocol` is only a scheme when it is http/https; other values (e.g. 'hostname') are not.
       const rawProtocol = typeof sourceOptions?.protocol === 'string' ? sourceOptions.protocol.replace(/:$/, '') : '';

@@ -40,6 +40,29 @@ describe('DataSourcesUtilService.validateTestConnectionOptionsForSSRF', () => {
     });
   });
 
+  describe('database kinds without the EE runtime config', () => {
+    const originalEdition = process.env.TOOLJET_EDITION;
+
+    beforeEach(() => {
+      delete (globalThis as Record<string, unknown>)[SSRF_RUNTIME_CONFIG_KEY];
+    });
+
+    afterEach(() => {
+      if (originalEdition === undefined) delete process.env.TOOLJET_EDITION;
+      else process.env.TOOLJET_EDITION = originalEdition;
+    });
+
+    it('checks the host of a built-in database kind on CE', async () => {
+      process.env.TOOLJET_EDITION = 'ce';
+      await expect(validate('postgresql', { host: '127.0.0.1', port: 5432 })).rejects.toThrow();
+    });
+
+    it('checks the host of a built-in database kind on Cloud', async () => {
+      process.env.TOOLJET_EDITION = 'cloud';
+      await expect(validate('postgresql', { host: '169.254.169.254', port: 5432 })).rejects.toThrow();
+    });
+  });
+
   describe('every other kind', () => {
     it('checks host/port/protocol on an HTTP-style kind', async () => {
       await expect(validate('influxdb', { host: '127.0.0.1', port: 8086, protocol: 'http' })).rejects.toThrow();
