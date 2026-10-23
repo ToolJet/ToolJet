@@ -1,4 +1,5 @@
 import { waitFor, fireEvent } from '@testing-library/react';
+import moment from 'moment-timezone';
 import {
   createWidgetHarness,
   binding,
@@ -13,15 +14,17 @@ import { sharedDateStyleTests } from './sharedDateStyles';
 // Characterization specs: each is GREEN against current production and proven
 // RED by the fault named in its `// Break this catches:` note.
 //
-// Range facts pinned here (all characterized as-is, no production change):
+// Range facts pinned here:
 //  - The exposed selectedDateRange uses the ` - ` separator (the display uses ` → `, QA).
 //  - The range CSA (setStartDate/setEndDate/setDateRange/clearStartDate/clearEndDate/
 //    clearDateRange) update exposed variables but NEVER fire onSelect; only the clear
 //    BUTTON and a user calendar pick (QA) fire onSelect.
-//  - setStartDate/setEndDate update only their date + selectedDateRange (not the *InUnix).
-//  - setDateRange stores an end<start range verbatim (no reorder); a defaultStart>defaultEnd
-//    rebind instead nulls the end.
-//  - The two console.log smells (useDateInput.js:10, utils.js isDateRangeValid) are stubbed.
+//  - setStartDate/setEndDate update their date + selectedDateRange + their *InUnix
+//    (stale-unix bug fixed 2026-10-15; D-01 superseded in part).
+//  - setDateRange stores an end<start range verbatim (no reorder) but the ordering
+//    rule drives isValid false; a defaultStart>defaultEnd rebind keeps BOTH dates
+//    and flips isValid false (D-02 superseded 2026-10-05/15 — no more silent end drop).
+//  - The useDateInput.js console.log smell is stubbed.
 
 const ID = 'daterangepicker1';
 
@@ -143,9 +146,11 @@ describe('DaterangePicker widget', () => {
     expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
-  test('[DaterangePicker-BIND-002] a defaultStart>defaultEnd rebind nulls the end and fires zero onSelect', async () => {
-    // Break this catches: dropping the start>end branch that nulls the end
-    // (DaterangePicker.jsx:127-131 onChange([start,null],true)).
+  test('[DaterangePicker-BIND-002] a defaultStart>defaultEnd rebind keeps both dates, flips isValid false, and fires zero onSelect', async () => {
+    // Break this catches: regressing to the old silent end-date drop
+    // (onChange([start,null]) in the defaults effect) or losing the
+    // isDateRangeValid ordering rule — 'Start date cannot be greater than end
+    // date' (user-approved 2026-10-05; supersedes D-02's characterization).
     widget.render({ events: onSelectCounter() });
     await waitFor(() => expect(typeof exposed().endDateInUnix).toBe('number'));
 
@@ -154,13 +159,16 @@ describe('DaterangePicker widget', () => {
     });
 
     await waitFor(() => expect(exposed().startDate).toBe('15/04/2022'));
-    expect(exposed().endDateInUnix).toBeNull();
+    expect(exposed().endDate).toBe('10/04/2022');
+    expect(exposed().selectedDateRange).toBe('15/04/2022 - 10/04/2022');
+    await waitFor(() => expect(exposed().isValid).toBe(false));
     expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
-  test('[DaterangePicker-CSA-001] setStartDate updates the start + range string (not the unix) and fires no onSelect', async () => {
-    // Break this catches: setStartDate not updating startDate/selectedDateRange
-    // or wrongly firing onSelect (DaterangePicker.jsx:204-223).
+  test('[DaterangePicker-CSA-001] setStartDate updates the start + range string + startDateInUnix and fires no onSelect', async () => {
+    // Break this catches: setStartDate not updating startDate/selectedDateRange,
+    // leaving startDateInUnix at the OLD date (bug fixed 2026-10-15; supersedes
+    // D-01's "unix not updated" characterization), or wrongly firing onSelect.
     widget.render({ events: onSelectCounter() });
     await waitFor(() => expect(exposed().setStartDate).toBeInstanceOf(Function));
 
@@ -168,12 +176,14 @@ describe('DaterangePicker widget', () => {
 
     await waitFor(() => expect(exposed().startDate).toBe('05/04/2022'));
     expect(exposed().selectedDateRange).toBe('05/04/2022 - 10/04/2022');
+    expect(exposed().startDateInUnix).toBe(moment('05/04/2022', 'DD/MM/YYYY').valueOf());
     expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
-  test('[DaterangePicker-CSA-002] setEndDate updates the end + range string (not the unix) and fires no onSelect', async () => {
-    // Break this catches: setEndDate not updating endDate/selectedDateRange
-    // or wrongly firing onSelect (DaterangePicker.jsx:189-197).
+  test('[DaterangePicker-CSA-002] setEndDate updates the end + range string + endDateInUnix and fires no onSelect', async () => {
+    // Break this catches: setEndDate not updating endDate/selectedDateRange,
+    // leaving endDateInUnix at the OLD date (bug fixed 2026-10-15; supersedes
+    // D-01's "unix not updated" characterization), or wrongly firing onSelect.
     widget.render({ events: onSelectCounter() });
     await waitFor(() => expect(exposed().setEndDate).toBeInstanceOf(Function));
 
@@ -181,12 +191,14 @@ describe('DaterangePicker widget', () => {
 
     await waitFor(() => expect(exposed().endDate).toBe('15/04/2022'));
     expect(exposed().selectedDateRange).toBe('01/04/2022 - 15/04/2022');
+    expect(exposed().endDateInUnix).toBe(moment('15/04/2022', 'DD/MM/YYYY').valueOf());
     expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
-  test('[DaterangePicker-CSA-003] setDateRange updates all five vars, stores end<start verbatim, and fires no onSelect', async () => {
-    // Break this catches: setDateRange reordering the range or not updating all
-    // five range variables (DaterangePicker.jsx:137-149).
+  test('[DaterangePicker-CSA-003] setDateRange updates all five vars, stores end<start verbatim, drives isValid false, and fires no onSelect', async () => {
+    // Break this catches: setDateRange reordering the range, not updating all
+    // five range variables, or losing the isDateRangeValid ordering rule that
+    // flags the inverted range (user-approved 2026-10-05).
     widget.render({ events: onSelectCounter() });
     await waitFor(() => expect(exposed().setDateRange).toBeInstanceOf(Function));
 
@@ -197,6 +209,7 @@ describe('DaterangePicker widget', () => {
     expect(exposed().selectedDateRange).toBe('10/04/2022 - 01/04/2022');
     expect(typeof exposed().startDateInUnix).toBe('number');
     expect(typeof exposed().endDateInUnix).toBe('number');
+    await waitFor(() => expect(exposed().isValid).toBe(false));
     expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
