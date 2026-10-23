@@ -15,13 +15,10 @@ const shared: Config.InitialProjectOptions = {
   globalSetup: '<rootDir>/test/jest-global-setup.ts',
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts', '<rootDir>/test/jest-retry-setup.ts'],
-  testRegex: 'test/modules/.*/e2e/.*spec\\.ts$',
-  // Explicitly setting this key drops Jest's own default ('/node_modules/'), so it's
-  // restored here — rootDir now covers server/node_modules too.
   // NOTE: git-sync-gitlab.spec.ts is NOT quarantined — it self-guards, skipping the whole
   // suite at runtime when the GitLab env (TEST_GITLAB_TOKEN et al.) is absent instead of
   // throwing at import, so it runs for real wherever the GitLab simulator env is configured.
-  testPathIgnorePatterns: ['/node_modules/', 'modules/workflows/e2e/workflow-lifecycle\\.spec\\.ts$'],
+  testRegex: 'test/modules/.*/e2e/.*spec\\.ts$',
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   runner: 'groups',
   transformIgnorePatterns: [
