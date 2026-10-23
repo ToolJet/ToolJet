@@ -813,6 +813,7 @@ const sidebars = {
                 "marketplace/plugins/marketplace-plugin-azurerepos",
                 "marketplace/plugins/marketplace-plugin-clickup",
                 "marketplace/plugins/marketplace-plugin-cohere",
+                "marketplace/plugins/marketplace-plugin-confluence",
                 "marketplace/plugins/marketplace-plugin-couchbase",
                 "marketplace/plugins/marketplace-plugin-easypost",
                 "marketplace/plugins/marketplace-plugin-engagespot",
