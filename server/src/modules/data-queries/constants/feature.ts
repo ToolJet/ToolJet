@@ -5,11 +5,12 @@ import { FeaturesConfig } from '../types';
 export const FEATURES: FeaturesConfig = {
   [MODULES.DATA_QUERY]: {
     [FEATURE_KEY.GET]: {},
-    [FEATURE_KEY.CREATE]: {},
-    [FEATURE_KEY.UPDATE]: {},
-    [FEATURE_KEY.DELETE]: {},
-    [FEATURE_KEY.UPDATE_DATA_SOURCE]: {},
-    [FEATURE_KEY.UPDATE_ONE]: {},
+    // Public-app skip covers reads/run only; mutations keep the permission check.
+    [FEATURE_KEY.CREATE]: { shouldNotSkipPublicApp: true },
+    [FEATURE_KEY.UPDATE]: { shouldNotSkipPublicApp: true },
+    [FEATURE_KEY.DELETE]: { shouldNotSkipPublicApp: true },
+    [FEATURE_KEY.UPDATE_DATA_SOURCE]: { shouldNotSkipPublicApp: true },
+    [FEATURE_KEY.UPDATE_ONE]: { shouldNotSkipPublicApp: true },
     [FEATURE_KEY.RUN_EDITOR]: {
       auditLogsKey: 'DATA_QUERY_RUN',
       shouldNotSkipPublicApp: true,

@@ -8,7 +8,6 @@ export enum FEATURE_KEY {
   ADD_COLUMN = 'add_column',
   DROP_COLUMN = 'drop_column',
   BULK_UPLOAD = 'bulk_upload',
-  JOIN_TABLES = 'join_tables',
   EDIT_COLUMN = 'edit_column',
   ADD_FOREIGN_KEY = 'add_foreign_key',
   UPDATE_FOREIGN_KEY = 'update_foreign_key',
