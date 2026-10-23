@@ -55,6 +55,7 @@ Allows you to add options to the multiselect component field. You can click on `
 | Options Loading State                        | Allows you to add a loading state to the dynamically generated options. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Enable select all option                     | Adds "Select all" option in the list to select all the option at once.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show "All items are selected"                | Shows "All items are selected" when all the options are selected.       | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Max selection limit                          | Sets the maximum number of options a user can select. Once the limit is reached, the remaining unselected options and the **Select all** option are disabled until an option is deselected. Leave it empty for no limit. | Number (e.g., `{{2}}`). |
 | Sort options                                 | Sort all the options in the selected pattern.                           | Choose from **None**, **a-z** or **z-a**.                                                                                    |
 
 ## Search
@@ -162,6 +163,8 @@ The following actions of the component can be controlled using the component-spe
    ```
 
 2. When using the Control Component action to trigger selectOption in CSA, the values should be passed within `{{ }}`, e.g., `{{["1", "2"]}}`.
+
+3. If **Max selection limit** is set, `selectOptions()` selects values only up to the limit. Any values beyond the limit are ignored.
 
 ## Exposed Variables
 
