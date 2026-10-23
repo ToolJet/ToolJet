@@ -261,7 +261,7 @@ export const modalV2Config = {
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: false,
+        defaultValue: 'var(--cc-primary-brand)',
       },
       accordian: 'trigger button',
     },
@@ -282,7 +282,7 @@ export const modalV2Config = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
-        defaultValue: false,
+        defaultValue: 'var(--cc-primary-brand)',
       },
       conditionallyRender: {
         key: 'triggerButtonHoverBackgroundMode',
@@ -295,7 +295,7 @@ export const modalV2Config = {
       displayName: 'Text',
       validation: {
         schema: { type: 'string' },
-        defaultValue: false,
+        defaultValue: 'var(--cc-surface1-surface)',
       },
       accordian: 'trigger button',
     },

@@ -31,6 +31,7 @@ import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity
 import { EncryptionService } from '@modules/encryption/service';
 import {
   parseParentIdAndSuffix,
+  SLOTTED_PARENT_TYPES,
   remapFlexContainerChildOrder,
   remapParentIdForVersionCopy,
   shouldSkipComponentOnVersionCopy,
@@ -445,7 +446,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         const parentComponent = allComponents.find((comp) => comp.id === baseId);
 
         if (parentComponent) {
-          return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+          return SLOTTED_PARENT_TYPES.includes(parentComponent.type);
         }
       }
       return false;
@@ -608,6 +609,8 @@ export class VersionsCreateService implements IVersionsCreateService {
           newLayout.height = layout.height;
           if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
           if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+          if (layout.grow != null) newLayout.grow = layout.grow;
+          if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
           newLayout.componentId = newComponent.id;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 

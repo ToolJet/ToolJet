@@ -1,3 +1,50 @@
 .pac-container:not(:has(.pac-item)) {
   display: none !important;
 }
+
+// ToolJet UI 2.0 look (styles.mapLook = 'shadcn'): the same map in the pack's frame. Colours and radius come from the
+// pack's tokens (.tj-shad-tokens maps them to the app theme), so the frame follows light, dark and brand themes. As the
+// Table's look does, the frame overrides the widget's own box shadow (set inline from its styles).
+.map-widget.tj-map-look-shadcn {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--sc-border);
+  border-radius: calc(var(--sc-radius) + 4px);
+  background: var(--sc-card);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+}
+
+// No Google Maps API key: a clear empty state instead of Google's error over a grey box.
+.map-widget {
+  position: relative;
+}
+.map-widget-no-key {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px;
+  text-align: center;
+  border: 1px dashed var(--cc-default-border, #d1d5db);
+  border-radius: inherit;
+  background: var(--cc-surface2-surface, #f8fafc);
+}
+.tj-map-look-shadcn .map-widget-no-key {
+  border: 0;
+  background: var(--sc-muted);
+}
+.map-widget-no-key-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cc-primary-text, #111827);
+}
+.map-widget-no-key-hint {
+  max-width: 360px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cc-placeholder-text, #6b7280);
+}
