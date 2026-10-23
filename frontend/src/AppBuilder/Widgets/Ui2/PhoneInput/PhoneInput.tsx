@@ -6,6 +6,7 @@ import { isValidPhoneNumber } from 'react-phone-number-input';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { GroupClear, showsClear } from '@/AppBuilder/Widgets/Ui2/_shared/FieldClear';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
   missingIsGone,
@@ -280,6 +281,15 @@ export const ShadPhoneInput = (props: WidgetProps) => {
           onBlur={textBox.onBlur}
           onChange={(v) => update({ ...stateRef.current, value: v || '' })}
           onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => isEnter(e) && fireEvent('onEnterPressed')}
+        />
+        {/* Show clear button (the native Phone input's showClearBtn): empties the number, keeping the country, with
+            one onChange, as the clear action does; the box then takes the focus (refocus, once it is started again). */}
+        <GroupClear
+          show={showsClear(properties, !!state.value)}
+          onClear={() => {
+            set({ ...stateRef.current, value: '' });
+            refocus.current = true;
+          }}
         />
       </Group>
     </FormField>

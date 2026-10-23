@@ -16,6 +16,7 @@ const ROWS = [
   ['ShadInput', { inputType: 'number', defaultValue: '42' }, null, 'onChange', true],
   ['ShadNumberInput', { defaultValue: '{{5}}' }, null, 'onChange', true],
   ['ShadCurrencyInput', { defaultValue: '{{12.5}}' }, null, 'onChange', true],
+  ['ShadPhoneInput', { defaultValue: '+14155550123' }, '', 'onChange', true],
 ];
 
 const harnesses = Object.fromEntries(
