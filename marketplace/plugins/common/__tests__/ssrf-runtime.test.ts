@@ -173,6 +173,10 @@ describe('IPv6 forms that embed an IPv4', () => {
     '::',
     'febf::1',
     'ff02::1',
+    '64:ff9b:1:7f00:0:100:808:808',
+    '64:ff9b:1::808:808',
+    'fe80::1%eth0',
+    '::FFFF:7F00:1',
   ])('self-hosted policy (isDangerousPrivateIP) blocks %s', (ip) => {
     expect(isDangerousPrivateIP(ip)).toBe(true);
   });
@@ -223,6 +227,10 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     'http://[64:ff9b::a9fe:a9fe]/',
     'http://[64:ff9b::7f00:1]/',
     'http://[64:ff9b:1::a9fe:a9fe]/',
+    'http://[64:ff9b:1:7f00:0:100:808:808]/',
+    'http://[64:ff9b:1::808:808]/',
+    'http://[FE80::1]/',
+    'http://[::FFFF:7F00:1]/',
     'http://[2002:7f00:1::]/',
     'http://[2002:a9fe:a9fe::]/',
     'http://[2001:0:4136:e378:8000:63bf:80ff:fffe]/',

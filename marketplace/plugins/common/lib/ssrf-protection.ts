@@ -351,18 +351,22 @@ function ipv6Hextets(ip: string): number[] | null {
   return [...left, ...new Array(8 - left.length - right.length).fill(0), ...right];
 }
 
-/** ::, ::1, link-local fe80::/10, site-local fec0::/10 and multicast ff00::/8: blocked by every policy. */
+/**
+ * ::, ::1, link-local fe80::/10, site-local fec0::/10, multicast ff00::/8 and NAT64 local-use 64:ff9b:1::/48:
+ * blocked by every policy. The local-use prefix can carry its IPv4 at any RFC 6052 offset, so it is not decoded.
+ */
 function isReservedIPv6(ip: string): boolean {
   const h = ipv6Hextets(ip);
   if (!h) return false;
   if (h.slice(0, 7).every((g) => g === 0) && h[7] <= 1) return true;
+  if (h[0] === 0x64 && h[1] === 0xff9b && h[2] === 1) return true;
   return (h[0] & 0xffc0) === 0xfe80 || (h[0] & 0xffc0) === 0xfec0 || (h[0] & 0xff00) === 0xff00;
 }
 
 /**
  * The IPv4 address an IPv6 address carries, so it can be classified like that IPv4: IPv4-mapped ::ffff:0:0/96,
- * SIIT ::ffff:0:0:0/96, IPv4-compatible ::/96 (not :: or ::1), NAT64 64:ff9b::/96 and 64:ff9b:1::/48,
- * 6to4 2002::/16, Teredo 2001::/32 (client address, bit-inverted). Null when there is none.
+ * SIIT ::ffff:0:0:0/96, IPv4-compatible ::/96 (not :: or ::1), NAT64 64:ff9b::/96, 6to4 2002::/16,
+ * Teredo 2001::/32 (client address, bit-inverted). Null when there is none.
  */
 function embeddedIPv4(ip: string): string | null {
   const h = ipv6Hextets(ip);
@@ -372,9 +376,7 @@ function embeddedIPv4(ip: string): string | null {
   if (zeroUpTo(5) && h[5] === 0xffff) return dotted(h[6], h[7]);
   if (zeroUpTo(4) && h[4] === 0xffff && h[5] === 0) return dotted(h[6], h[7]);
   if (zeroUpTo(6) && (h[6] !== 0 || h[7] > 1)) return dotted(h[6], h[7]);
-  if (h[0] === 0x64 && h[1] === 0xff9b && (h[2] === 1 || h.slice(2, 6).every((g) => g === 0))) {
-    return dotted(h[6], h[7]);
-  }
+  if (h[0] === 0x64 && h[1] === 0xff9b && h.slice(2, 6).every((g) => g === 0)) return dotted(h[6], h[7]);
   if (h[0] === 0x2002) return dotted(h[1], h[2]);
   if (h[0] === 0x2001 && h[1] === 0) return dotted(h[6] ^ 0xffff, h[7] ^ 0xffff);
   return null;

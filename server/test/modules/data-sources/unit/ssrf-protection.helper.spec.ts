@@ -1,4 +1,5 @@
 import * as net from 'net';
+import * as dnsPromises from 'dns/promises';
 import { BadRequestException } from '@nestjs/common';
 import {
   validateUrlForSSRF,
@@ -124,6 +125,10 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     'http://[64:ff9b::a9fe:a9fe]/',
     'http://[64:ff9b::7f00:1]/',
     'http://[64:ff9b:1::a9fe:a9fe]/',
+    'http://[64:ff9b:1:7f00:0:100:808:808]/',
+    'http://[64:ff9b:1::808:808]/',
+    'http://[FE80::1]/',
+    'http://[::FFFF:7F00:1]/',
     'http://[2002:7f00:1::]/',
     'http://[2002:a9fe:a9fe::]/',
     'http://[2001:0:4136:e378:8000:63bf:80ff:fffe]/',
@@ -173,7 +178,34 @@ describe('edition defaults without a runtime key', () => {
 
   it('Cloud allows a public IPv6 literal without a DNS lookup', async () => {
     process.env.TOOLJET_EDITION = 'cloud';
-    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).resolves.toBeUndefined();
+    const resolve4 = jest.spyOn(dnsPromises, 'resolve4');
+    const resolve6 = jest.spyOn(dnsPromises, 'resolve6');
+    try {
+      await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).resolves.toBeUndefined();
+      expect(resolve4).not.toHaveBeenCalled();
+      expect(resolve6).not.toHaveBeenCalled();
+    } finally {
+      resolve4.mockRestore();
+      resolve6.mockRestore();
+    }
+  });
+
+  it.each([
+    ['fe80::1%eth0', 'blocks'],
+    ['64:ff9b:1:7f00:0:100:808:808', 'blocks'],
+    ['2606:4700:4700::1111', 'allows'],
+  ])('CE classifies a resolved address %s and %s the hostname', async (address, verdict) => {
+    process.env.TOOLJET_EDITION = 'ce';
+    const resolve4 = jest.spyOn(dnsPromises, 'resolve4').mockRejectedValue(new Error('ENODATA'));
+    const resolve6 = jest.spyOn(dnsPromises, 'resolve6').mockResolvedValue([address]);
+    try {
+      const check = expect(validateUrlForSSRF('http://answer.example/'));
+      if (verdict === 'blocks') await check.rejects.toThrow(BadRequestException);
+      else await check.resolves.toBeUndefined();
+    } finally {
+      resolve4.mockRestore();
+      resolve6.mockRestore();
+    }
   });
 
   it('CE keeps sending a bracketed public literal to the DNS step (verdict unchanged)', async () => {
