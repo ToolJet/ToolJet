@@ -6,7 +6,7 @@ export const shadRatingConfig = {
   component: 'ShadRating',
   defaultSize: {
     width: 6,
-    height: 24,
+    height: 50,
   },
   others: {
     showOnDesktop: {

@@ -6,7 +6,7 @@ export const shadTimelineConfig = {
   component: 'ShadTimeline',
   defaultSize: {
     width: 14,
-    height: 224,
+    height: 230,
   },
   others: {
     showOnDesktop: {

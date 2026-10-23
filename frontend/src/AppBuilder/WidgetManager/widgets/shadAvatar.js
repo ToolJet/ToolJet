@@ -6,7 +6,7 @@ export const shadAvatarConfig = {
   component: 'ShadAvatar',
   defaultSize: {
     width: 6,
-    height: 36,
+    height: 40,
   },
   others: {
     showOnDesktop: {

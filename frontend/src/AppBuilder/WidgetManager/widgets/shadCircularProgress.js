@@ -6,7 +6,7 @@ export const shadCircularProgressConfig = {
   component: 'ShadCircularProgress',
   defaultSize: {
     width: 5,
-    height: 104,
+    height: 100,
   },
   others: {
     showOnDesktop: {

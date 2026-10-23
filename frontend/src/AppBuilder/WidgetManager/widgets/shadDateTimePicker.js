@@ -6,7 +6,7 @@ export const shadDateTimePickerConfig = {
   component: 'ShadDateTimePicker',
   defaultSize: {
     width: 12,
-    height: 64,
+    height: 70,
   },
   others: {
     showOnDesktop: {

@@ -6,7 +6,7 @@ export const shadTextConfig = {
   component: 'ShadText',
   defaultSize: {
     width: 16,
-    height: 32,
+    height: 40,
   },
   others: {
     showOnDesktop: {

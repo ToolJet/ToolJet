@@ -6,7 +6,7 @@ export const shadInputConfig = {
   component: 'ShadInput',
   defaultSize: {
     width: 10,
-    height: 64,
+    height: 70,
   },
   others: {
     showOnDesktop: {

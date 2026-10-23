@@ -5,7 +5,7 @@ export const shadSwitchConfig = {
   component: 'ShadSwitch',
   defaultSize: {
     width: 8,
-    height: 24,
+    height: 30,
   },
   others: {
     showOnDesktop: {

@@ -6,7 +6,7 @@ export const shadSliderConfig = {
   component: 'ShadSlider',
   defaultSize: {
     width: 14,
-    height: 64,
+    height: 60,
   },
   others: {
     showOnDesktop: {

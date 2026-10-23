@@ -6,7 +6,7 @@ export const shadSpinnerConfig = {
   component: 'ShadSpinner',
   defaultSize: {
     width: 6,
-    height: 32,
+    height: 30,
   },
   others: {
     showOnDesktop: {

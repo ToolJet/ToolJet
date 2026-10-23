@@ -5,7 +5,7 @@ export const shadToggleGroupConfig = {
   component: 'ShadToggleGroup',
   defaultSize: {
     width: 14,
-    height: 36,
+    height: 40,
   },
   others: {
     showOnDesktop: {

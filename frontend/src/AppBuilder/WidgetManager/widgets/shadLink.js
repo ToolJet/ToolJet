@@ -6,7 +6,7 @@ export const shadLinkConfig = {
   component: 'ShadLink',
   defaultSize: {
     width: 6,
-    height: 24,
+    height: 30,
   },
   others: {
     showOnDesktop: {

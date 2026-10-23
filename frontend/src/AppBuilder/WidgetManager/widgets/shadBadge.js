@@ -5,7 +5,7 @@ export const shadBadgeConfig = {
   component: 'ShadBadge',
   defaultSize: {
     width: 4,
-    height: 24,
+    height: 30,
   },
   others: {
     showOnDesktop: {

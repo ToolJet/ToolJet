@@ -5,7 +5,7 @@ export const shadCheckboxConfig = {
   component: 'ShadCheckbox',
   defaultSize: {
     width: 8,
-    height: 24,
+    height: 20,
   },
   others: {
     showOnDesktop: {
