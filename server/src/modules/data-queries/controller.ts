@@ -94,7 +94,7 @@ export class DataQueriesController implements IDataQueriesController {
   @Patch('versions/:versionId')
   async bulkUpdate(
     @User() user: UserEntity,
-    @Param('versionId') versionId,
+    @Param('versionId') versionId: string,
     @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto
   ) {
     return await this.dataQueriesService.bulkUpdateQueryOptions(
