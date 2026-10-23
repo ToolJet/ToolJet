@@ -354,7 +354,10 @@ export class OauthService implements IOAuthService {
         false,
         user,
         manager,
-        isInviteRedirect ? loginOrganiaztionId : null
+        isInviteRedirect ? loginOrganiaztionId : null,
+        isInviteRedirect
+          ? { oauthAuthenticationReset: true }
+          : { oauthAuthenticationMethod: sso, oauthAuthenticationProviderId: configId || null }
       );
     });
   }

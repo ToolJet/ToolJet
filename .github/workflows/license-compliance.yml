@@ -86,6 +86,23 @@ jobs:
               return packages;
             }
 
+            // ── Dependency names in the PR head's package.json ────────────────
+            // The patch scan matches any "key": "version" line, so engines
+            // (node, npm), version bumps etc. would be treated as packages.
+
+            const DEP_SECTIONS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
+
+            async function getDependencyNames(path) {
+              const { data } = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path,
+                ref: context.payload.pull_request.head.sha,
+              });
+              const pkg = JSON.parse(Buffer.from(data.content, 'base64').toString());
+              return new Set(DEP_SECTIONS.flatMap(s => Object.keys(pkg[s] || {})));
+            }
+
             // ── Main scan ─────────────────────────────────────────────────────
 
             const violations = [];
@@ -94,7 +111,11 @@ jobs:
             for (const file of pkgFiles) {
               console.log(`\n── Scanning: ${file.filename}`);
 
-              const addedPackages = extractAddedPackages(file.patch);
+              let addedPackages = extractAddedPackages(file.patch);
+              if (addedPackages.length > 0) {
+                const depNames = await getDependencyNames(file.filename);
+                addedPackages = addedPackages.filter(pkg => depNames.has(pkg));
+              }
 
               if (addedPackages.length === 0) {
                 console.log('  No new packages added.');

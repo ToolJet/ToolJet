@@ -1,4 +1,4 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -155,7 +155,7 @@ RUN npm --prefix server run build
 # apt-get update fails with exit 100. Bookworm also matches the builder stage,
 # which fixes the libprotobuf ABI mismatch for the copied nsjail binary.
 # ---------------------------------------------------------------------------
-FROM node:22.15.1-bookworm
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
@@ -164,6 +164,11 @@ RUN apt-get update -yq \
 
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
