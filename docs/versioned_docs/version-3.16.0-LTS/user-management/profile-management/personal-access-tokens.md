@@ -32,7 +32,7 @@ The role check happens only when the token is created. After that, the token act
 1. Open **Profile settings**. See [Profile Settings](/docs/user-management/profile-management/user-profile).
 2. Find the **Personal access tokens** card and click **Create new token**. The button is disabled if your role in the current workspace isn't Admin or Builder.
 
-   <!-- TODO screenshot: Profile settings page showing the Personal access tokens card with at least one token in the list (Name, Workspace, Last used, Revoke columns) -->
+   <img className="screenshot-full img-full" src="/img/user-management/profile-management/personal-access-tokens/tokens-list.png" alt="Personal access tokens card listing the macbook-cli and github-actions-deploy tokens with their workspace and last-used status" />
 
 3. In the **Create personal access token** dialog, fill in the fields:
 
