@@ -143,6 +143,17 @@ export const shadColorPickerConfig = {
       },
       section: 'additionalActions',
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -470,6 +481,9 @@ export const shadColorPickerConfig = {
       },
       dynamicHeight: {
         value: '{{true}}',
+      },
+      showClearBtn: {
+        value: '{{false}}',
       },
       loadingState: {
         value: '{{false}}',

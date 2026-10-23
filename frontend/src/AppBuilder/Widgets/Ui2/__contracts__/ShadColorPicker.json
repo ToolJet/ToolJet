@@ -82,6 +82,15 @@
       "default": "Pick a color",
       "initial": "Pick a color"
     },
+    "showClearBtn": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "showPicker": {
       "type": "boolean",
       "schema": {

@@ -2,79 +2,34 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Check, Pipette } from 'lucide-react';
 import { CONTROL, Field, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { CLEAR_ROOM, ClearX, WithClear, showsClear } from '@/AppBuilder/Widgets/Ui2/_shared/FieldClear';
+import {
+  runNow,
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
 import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { MENU_SURFACE, PLACEHOLDER } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
-import type { Hsv } from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
+import type { KeyboardEvent } from 'react';
+import {
+  CHECKERBOARD,
+  SLIDER_FOCUS,
+  THUMB,
+  swatchStyle,
+  toHsva,
+  useDrag,
+} from '@/AppBuilder/Widgets/Ui2/_pickers/colorParts';
+import type { EyeDropperWindow, Hsva } from '@/AppBuilder/Widgets/Ui2/_pickers/colorParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 import { useFormClearNow } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 
 // ---- Color picker --------------------------------------------------------------------------------------------------
-
-/** A colour as hue, saturation, value and alpha (0-1). */
-export type Hsva = Hsv & { a: number };
-
-/** The EyeDropper API (Chromium only), missing from TypeScript's DOM types. */
-interface EyeDropperWindow {
-  EyeDropper?: new () => { open: () => Promise<{ sRGBHex?: string }> };
-}
-
-const CHECKERBOARD = 'repeating-conic-gradient(#d4d4d4 0% 25%, #ffffff 0% 50%) 50% / 8px 8px';
-
-/** A swatch's fill: the colour over a checkerboard when it is see-through. */
-export const swatchStyle = (hex: string): CSSProperties | undefined => {
-  if (!hex) return undefined;
-  return hex.length === 9 ? { background: `linear-gradient(${hex}, ${hex}), ${CHECKERBOARD}` } : { background: hex };
-};
-
-export const toHsva = (hex: unknown, keepHue?: number): Hsva => {
-  const c = M.hexToRgba(hex);
-  if (!c) return { h: keepHue ?? 0, s: 0, v: 1, a: 1 };
-  const hsv = M.rgbToHsv(c);
-  return { ...hsv, h: (hsv.s === 0 || hsv.v === 0) && keepHue !== undefined ? keepHue : hsv.h, a: c.a };
-};
-
-export const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
-
-export const THUMB =
-  'tw-pointer-events-none tw-absolute tw-h-4 tw-w-4 -tw-translate-x-1/2 -tw-translate-y-1/2 tw-rounded-full tw-border-2 tw-border-white tw-shadow-[0_0_0_1px_rgba(0,0,0,0.25),0_1px_3px_rgba(0,0,0,0.3)]';
-
-export const SLIDER_FOCUS =
-  'tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring focus-visible:tw-ring-offset-1';
-
-/** Pointer dragging over an element: onMove({ x, y }) with both from 0 to 1, onEnd when released. */
-export const useDrag = (onMove: (point: { x: number; y: number }) => void, onEnd: () => void) => {
-  const el = useRef<HTMLDivElement>(null);
-  const at = (e: PointerEvent<HTMLElement>) => {
-    const r = el.current?.getBoundingClientRect?.() || { left: 0, top: 0, width: 0, height: 0 };
-    return {
-      x: r.width ? clamp01((e.clientX - r.left) / r.width) : 0,
-      y: r.height ? clamp01((e.clientY - r.top) / r.height) : 0,
-    };
-  };
-  return {
-    ref: el,
-    onPointerDown: (e: PointerEvent<HTMLElement>) => {
-      if (e.button !== undefined && e.button !== 0) return;
-      e.preventDefault();
-      e.currentTarget.setPointerCapture?.(e.pointerId);
-      e.currentTarget.focus?.();
-      onMove(at(e));
-    },
-    onPointerMove: (e: PointerEvent<HTMLElement>) => {
-      if (e.currentTarget.hasPointerCapture?.(e.pointerId)) onMove(at(e));
-    },
-    onPointerUp: (e: PointerEvent<HTMLElement>) => {
-      e.currentTarget.releasePointerCapture?.(e.pointerId);
-      onEnd();
-    },
-  };
-};
 
 export const ShadColorPicker = (props: WidgetProps) => {
   const { properties, styles, setExposedVariables, fireEvent, componentType } = props;
@@ -216,41 +171,65 @@ export const ShadColorPicker = (props: WidgetProps) => {
   };
   const swatchOnly = properties.triggerStyle === 'swatch';
   const disabled = busy(properties);
+  const clearable = showsClear(properties, !!value);
+  const clearColor = () => {
+    runNow(() => {
+      setValue('');
+      setExposedVariables(colorExposed(''));
+      fireEvent('onChange');
+    });
+    triggerRef.current?.focus();
+  };
+  const trigger = (
+    <PopoverTrigger asChild>
+      <Button
+        ref={triggerRef}
+        id={fieldIdOf(props)}
+        type="button"
+        variant="outline"
+        disabled={disabled}
+        {...focus.handlers}
+        aria-label={swatchOnly ? `Color ${value || 'not set'}` : undefined}
+        className={cn(
+          'tw-font-normal',
+          CONTROL,
+          swatchOnly ? 'tw-h-9 tw-w-9 tw-p-1.5' : 'tw-w-full tw-justify-start tw-gap-2 tw-px-3',
+          swatchOnly && 'tw-shrink-0',
+          clearable && !swatchOnly && CLEAR_ROOM
+        )}
+      >
+        <span
+          className={cn(
+            'tw-shrink-0 tw-rounded-[calc(var(--sc-radius)-4px)] tw-border tw-border-[color:var(--sc-border)] tw-shadow-sm',
+            swatchOnly ? 'tw-h-full tw-w-full' : 'tw-h-5 tw-w-5',
+            !live && 'tw-border-dashed'
+          )}
+          style={swatchStyle(live)}
+        />
+        {swatchOnly ? null : (
+          <span className={cn('tw-truncate', live ? 'tw-uppercase tw-tabular-nums' : PLACEHOLDER)}>
+            {live || String(properties.placeholder ?? '')}
+          </span>
+        )}
+      </Button>
+    </PopoverTrigger>
+  );
   return (
     <Shell {...props} innerRef={ref}>
       <Field id={fieldIdOf(props)} label={properties.label} description={properties.description}>
         <Popover open={open} onOpenChange={openChange}>
-          <PopoverTrigger asChild>
-            <Button
-              ref={triggerRef}
-              id={fieldIdOf(props)}
-              type="button"
-              variant="outline"
-              disabled={disabled}
-              {...focus.handlers}
-              aria-label={swatchOnly ? `Color ${value || 'not set'}` : undefined}
-              className={cn(
-                'tw-font-normal',
-                CONTROL,
-                swatchOnly ? 'tw-h-9 tw-w-9 tw-p-1.5' : 'tw-w-full tw-justify-start tw-gap-2 tw-px-3',
-                swatchOnly && 'tw-shrink-0'
-              )}
-            >
-              <span
-                className={cn(
-                  'tw-shrink-0 tw-rounded-[calc(var(--sc-radius)-4px)] tw-border tw-border-[color:var(--sc-border)] tw-shadow-sm',
-                  swatchOnly ? 'tw-h-full tw-w-full' : 'tw-h-5 tw-w-5',
-                  !live && 'tw-border-dashed'
-                )}
-                style={swatchStyle(live)}
-              />
-              {swatchOnly ? null : (
-                <span className={cn('tw-truncate', live ? 'tw-uppercase tw-tabular-nums' : PLACEHOLDER)}>
-                  {live || String(properties.placeholder ?? '')}
-                </span>
-              )}
-            </Button>
-          </PopoverTrigger>
+          {/* Show clear button (the native Color picker's showClearBtn): an x while a colour is set empties it, as a
+              Form's clearForm does, firing onChange once. Over the button's right end, or beside a swatch-only one. */}
+          {swatchOnly && properties.showClearBtn === true ? (
+            <div className="tw-flex tw-items-center tw-gap-1.5">
+              {trigger}
+              {clearable ? <ClearX onClear={clearColor} /> : null}
+            </div>
+          ) : (
+            <WithClear enabled={properties.showClearBtn === true} show={clearable} onClear={clearColor}>
+              {trigger}
+            </WithClear>
+          )}
           <PopoverContent
             aria-label="Choose a colour"
             align="start"
