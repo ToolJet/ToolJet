@@ -91,6 +91,15 @@
       "default": "",
       "initial": "Enter phone number"
     },
+    "showClearBtn": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "showFlag": {
       "type": "boolean",
       "schema": {

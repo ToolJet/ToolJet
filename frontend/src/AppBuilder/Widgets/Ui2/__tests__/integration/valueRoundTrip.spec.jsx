@@ -135,6 +135,13 @@ const CLEARS = [
   ],
   // Show clear button's x, on every field that offers it (showClearButton.spec covers its required and disabled cases).
   [
+    'ShadPhoneInput',
+    'press:Clear',
+    { showClearBtn: '{{true}}', defaultValue: '+14155550123' },
+    { value: '', isValid: true },
+    { onChange: 1 },
+  ],
+  [
     'ShadCurrencyInput',
     'press:Clear',
     { showClearBtn: '{{true}}', defaultValue: '{{12.5}}' },
