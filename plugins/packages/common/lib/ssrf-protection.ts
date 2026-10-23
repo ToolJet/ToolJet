@@ -449,14 +449,17 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
   }
 
   // DNS resolution cache to prevent TOCTOU rebinding attacks
-  // Key: hostname, Value: { address, family, timestamp }
-  const dnsCache = new Map<string, { address: string; family: number; timestamp: number }>();
+  // Key: hostname (prefixed by request shape), Value: { address, family, timestamp }
+  // For options.all requests, address holds the validated array and family is undefined.
+  const dnsCache = new Map<string, { address: any; family?: number; timestamp: number }>();
   const CACHE_TTL = 60000; // 60 seconds
 
   // Return custom lookup function
   return (hostname: string, options: any, callback: (...args: any[]) => any) => {
     // Check cache first to prevent DNS rebinding between validation and connection
-    const cached = dnsCache.get(hostname);
+    // (separate keys so an all:true request never gets a single-address entry or vice versa)
+    const cacheKey = `${options?.all ? 'all' : 'one'}:${hostname}`;
+    const cached = dnsCache.get(cacheKey);
     const now = Date.now();
 
     if (cached && now - cached.timestamp < CACHE_TTL) {
@@ -465,24 +468,30 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
     }
 
     // Use Node's callback-based dns.lookup
-    dnsLookup(hostname, options, (err, address, family) => {
+    dnsLookup(hostname, options, (err, address: any, family) => {
       if (err) {
         return callback(err);
       }
 
-      // Validate the resolved IP address (allowlisted hostnames / resolved IPs are exempt)
-      if (isPrivateIP(address) && !isAllowlisted(hostname, config) && !isAllowlisted(address, config)) {
+      // With options.all (Node 22 autoSelectFamily) the result is an array of { address, family }
+      const resolved: string[] = options?.all ? address.map((a: any) => a.address) : [address];
+
+      // Validate every resolved IP address (allowlisted hostnames / resolved IPs are exempt)
+      const blocked = resolved.find(
+        (addr) => isPrivateIP(addr) && !isAllowlisted(hostname, config) && !isAllowlisted(addr, config)
+      );
+      if (blocked !== undefined) {
         const error: any = new Error(
-          `Hostname "${hostname}" resolves to private IP address "${address}" which is blocked for security reasons`
+          `Hostname "${hostname}" resolves to private IP address "${blocked}" which is blocked for security reasons`
         );
         error.code = 'SSRF_BLOCKED';
         error.hostname = hostname;
-        error.address = address;
+        error.address = blocked;
         return callback(error);
       }
 
       // Cache the validated resolution to prevent TOCTOU attacks
-      dnsCache.set(hostname, { address, family, timestamp: now });
+      dnsCache.set(cacheKey, { address, family, timestamp: now });
 
       // Clean up old cache entries to prevent memory leak
       if (dnsCache.size > 1000) {

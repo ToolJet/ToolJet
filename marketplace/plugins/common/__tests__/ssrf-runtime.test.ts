@@ -1,5 +1,6 @@
 import * as net from 'net';
-import { getSSRFConfig, validateUrlForSSRF, createSSRFSafeLookup, isAllowlisted } from '../lib/ssrf-protection';
+import got from 'got';
+import { getSSRFConfig, validateUrlForSSRF, createSSRFSafeLookup, isAllowlisted, getSSRFProtectionOptions } from '../lib/ssrf-protection';
 
 const KEY = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
 const ranges = (...cidrs: string[]) => {
@@ -110,4 +111,39 @@ describe('createSSRFSafeLookup with runtime config', () => {
       done();
     });
   });
+});
+
+describe('lookup with options.all (Node 22 autoSelectFamily)', () => {
+  const enable = (...hosts: string[]) => {
+    (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(hosts), allowedRanges: ranges() };
+  };
+  it('lookup with all:true returns the array for a public host', (done) => {
+    enable();
+    (createSSRFSafeLookup() as any)('example.com', { all: true }, (err: any, addresses: any) => {
+      expect(err).toBeNull();
+      expect(Array.isArray(addresses)).toBe(true);
+      expect(addresses[0]).toHaveProperty('address');
+      done();
+    });
+  });
+  it('lookup with all:true blocks when a resolved address is private', (done) => {
+    enable();
+    (createSSRFSafeLookup() as any)('localhost', { all: true }, (err: any) => {
+      expect(err?.code).toBe('SSRF_BLOCKED');
+      done();
+    });
+  });
+  it('lookup with all:true passes an allowlisted hostname', (done) => {
+    enable('localhost');
+    (createSSRFSafeLookup() as any)('localhost', { all: true }, (err: any, addresses: any) => {
+      expect(err).toBeNull();
+      expect(Array.isArray(addresses)).toBe(true);
+      done();
+    });
+  });
+  it('real got request succeeds with protection enabled', async () => {
+    enable();
+    const res = await got('https://example.com', getSSRFProtectionOptions(undefined, { timeout: { request: 10000 }, retry: 0 }));
+    expect(res.statusCode).toBe(200);
+  }, 20000);
 });
