@@ -22,7 +22,7 @@ Owns instance-wide key/value settings (the `instance_settings` table) that only 
 ## Edition split
 
 - EE override: `server/ee/instance-settings/` publishes the runtime config on boot and refreshes it every 30 s from the `SSRF_PROTECTION_ENABLED` and `SSRF_ALLOWED_ADDRESSES` rows.
-- CE and Cloud never publish the runtime key, so every SSRF check keeps its env-var behaviour (`SSRF_PROTECTION_ENABLED`, `SSRF_DNS_RESOLUTION_CHECK`, `SSRF_BLOCKED_SCHEMES`). The SSRF endpoints return 404 there.
+- CE and Cloud never publish the runtime key. CE keeps its env-var behaviour (`SSRF_PROTECTION_ENABLED`, `SSRF_DNS_RESOLUTION_CHECK`, `SSRF_BLOCKED_SCHEMES`). Cloud ignores those env vars: protection is always on, with the DNS check, the fixed blocked-scheme list and private ranges (10/8, 172.16/12, 192.168/16) blocked in every SSRF check. The SSRF endpoints return 404 on both.
 
 ## Invariants & gotchas
 

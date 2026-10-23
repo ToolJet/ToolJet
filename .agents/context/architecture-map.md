@@ -147,7 +147,7 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 | Stale frontend chunks after deployment | `RootRouter.jsx::ChunkErrorBoundary` reloads once, then presents a manual refresh action. |
 | Main DB, ToolJet DB, or PostgREST unavailable at boot/runtime | Health/startup or dependent requests fail; Compose/Kubernetes declare these service dependencies. |
 | Server/frontend component config drift | Existing saved apps may render incorrectly; repository instructions require synchronized config and migrations for key changes. |
-| SSRF allowlist or toggle change not yet applied (EE) | The server publishes the SSRF runtime config in-process and refreshes it every 30 s, so a change can lag by up to 30 s; before the first read it fails closed (protection on, empty allowlist). EE blocks private ranges (10/8, 172.16/12, 192.168/16) by default; CE and Cloud keep env-var behaviour (`server/src/modules/instance-settings/AGENTS.md`). |
+| SSRF allowlist or toggle change not yet applied (EE) | The server publishes the SSRF runtime config in-process and refreshes it every 30 s, so a change can lag by up to 30 s; before the first read it fails closed (protection on, empty allowlist). EE blocks private ranges (10/8, 172.16/12, 192.168/16) by default; CE keeps env-var behaviour; Cloud ignores the env vars and always blocks private ranges (`server/src/modules/instance-settings/AGENTS.md`). |
 | PAT write fails app validation | Enforced source (`pat`) gets 400 `APP_VALIDATION_FAILED` with `issues`+`warnings`; every other source saves and receives `validationWarnings` in the body and the `x-tooljet-validation-warnings` header (`server/src/modules/app-validation/`). |
 
 ## Inferences

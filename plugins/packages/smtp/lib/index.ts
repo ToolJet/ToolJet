@@ -12,7 +12,7 @@ import type { Address } from 'nodemailer/lib/mailer';
 
 // Message fields come from builder-controlled query options and are untyped at runtime.
 // Nodemailer treats `{ path }` / `{ href }` objects as "read this local file / fetch this URL",
-// so only plain strings (or arrays of strings for recipients) are ever handed to it.
+// so only plain strings, or for recipients `{ name, address }` address objects and arrays of either, are ever handed to it.
 const toMailString = (value: unknown, field: string): string | undefined => {
   if (value === undefined || value === null) return undefined;
   if (typeof value === 'string') return value;
