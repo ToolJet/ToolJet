@@ -1394,6 +1394,12 @@ export const hasBuilderRole = (roleObj) => {
   return false;
 };
 
+export const canAccessTooljetDbDashboard = () => {
+  const { admin, super_admin, role } = authenticationService.currentSessionValue ?? {};
+  if (admin || super_admin) return true;
+  return hasBuilderRole(role ?? {}) && window.public_config?.TOOLJET_DB_DISABLE_BUILDER_EDIT !== 'true';
+};
+
 export function checkIfToolJetCloud(version) {
   if (!version) return false;
   const parsed = version.split('-');
