@@ -157,6 +157,17 @@
     transform-origin: 100% 0%;
   }
 
+  // Same Beta pill as the components panel, scaled onto the 16px search glyph.
+  .search-icon .code-search-beta-tag {
+    position: absolute;
+    top: -4px;
+    right: -2px;
+    z-index: 1;
+    pointer-events: none;
+    transform: scale(0.75);
+    transform-origin: top right;
+  }
+
   .left-sidebar-inspector {
     .card-body {
       padding: 1rem 0rem 1rem 1rem;

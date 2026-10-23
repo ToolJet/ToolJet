@@ -29,6 +29,7 @@ import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
+import Beta from '@/_ui/Beta';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // Human names for the error-boundary label/location of each sidebar panel.
@@ -228,11 +229,12 @@ export const BaseLeftSidebar = ({
           onClick={() => handleSelectedSidebarItem('search')}
           darkMode={darkMode}
           icon="search"
-          className={`left-sidebar-item left-sidebar-layout`}
+          className={`left-sidebar-item left-sidebar-layout tw-overflow-visible`}
           tip="Code search"
           ref={setSideBarBtnRefs('search')}
         >
           <Search width="16" height="16" className="tw-text-icon-strong" />
+          <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
         </SidebarItem>
 
         <SidebarItem
