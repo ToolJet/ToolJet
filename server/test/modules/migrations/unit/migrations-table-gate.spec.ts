@@ -3,7 +3,6 @@ import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
 import {
-  excludeLockSentinels,
   LOCK_SENTINEL_MIGRATION_NAMES,
   DEAD_CLIENT_KEEPALIVE_SQL,
   DEFAULT_MAX_WAIT_MINUTES,
@@ -44,28 +43,15 @@ function lockSentinelClassNamesOnDisk(directory: string): string[] {
 }
 
 describe('migration-helpers/migrations-table-gate', () => {
-  describe('excludeLockSentinels | an ordinary restart must not look like an upgrade', () => {
-    // Exactly one sentinel is always pending — that is how the lock is taken on every boot.
-    // If this list ever stops matching the files, every pod restart and scale-up would raise
-    // the upgrade gate and answer live API traffic with 503.
+  describe('LOCK_SENTINEL_MIGRATION_NAMES | an ordinary restart must not look like an upgrade', () => {
+    // If this list stops matching the files, every pod restart and scale-up would raise the
+    // upgrade gate and answer live API traffic with 503.
     it.each([['migrations'], ['data-migrations']])(
       'should list every LockMigrationsTable class actually shipped in %s',
       (directory) => {
         expect(lockSentinelClassNamesOnDisk(directory)).toEqual([...LOCK_SENTINEL_MIGRATION_NAMES].sort());
       }
     );
-
-    it('should report nothing pending when only the boot-time lock sentinel is, so writes are not refused', () => {
-      expect(excludeLockSentinels([LOCK_SENTINEL_MIGRATION_NAMES[0]])).toEqual([]);
-      expect(excludeLockSentinels([LOCK_SENTINEL_MIGRATION_NAMES[1]])).toEqual([]);
-      expect(excludeLockSentinels([])).toEqual([]);
-    });
-
-    it('should report real migrations so the upgrade gate goes up for them', () => {
-      expect(excludeLockSentinels([LOCK_SENTINEL_MIGRATION_NAMES[0], 'AddBranchIdToApps1783372800000'])).toEqual([
-        'AddBranchIdToApps1783372800000',
-      ]);
-    });
   });
 
   describe('getLockWaitOptions | reads the operator-facing knobs', () => {

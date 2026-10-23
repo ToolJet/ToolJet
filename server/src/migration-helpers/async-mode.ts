@@ -30,8 +30,8 @@ export function mainDbConnectionConfig(): ClientConfig {
 }
 
 /** No database, or no `migrations` table: the server cannot boot before migrating. */
-async function isFreshInstall(): Promise<boolean> {
-  const client = new Client(mainDbConnectionConfig());
+async function isFreshInstall(connection: ClientConfig): Promise<boolean> {
+  const client = new Client(connection);
   try {
     await client.connect();
     const [{ table }] = (await client.query(`SELECT to_regclass('migrations') AS table`)).rows;
@@ -49,9 +49,12 @@ async function isFreshInstall(): Promise<boolean> {
  * on any column the release adds. Apply schema migrations here first, blocking; data runs after boot.
  * A fresh install runs the full setup, exactly like blocking mode would have.
  */
-export async function migrateSchemaBeforeBoot(env: Env = process.env): Promise<void> {
+export async function migrateSchemaBeforeBoot(
+  env: Env = process.env,
+  connection: ClientConfig = mainDbConnectionConfig()
+): Promise<void> {
   if (!isServerManagedMigrationMode(env)) return;
-  const freshInstall = await isFreshInstall();
+  const freshInstall = await isFreshInstall(connection);
   console.log(
     freshInstall
       ? '[migrations] Fresh install: migrating before the server starts.'

@@ -1,8 +1,17 @@
 /** @group database */
 import { migrateSchemaBeforeBoot } from 'src/migration-helpers/async-mode';
+import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/concurrent-pods/harness';
 
 // The test database is migrated, so it is never a fresh install. The command stands in for setup.
 const exitsZeroOnlyInSchemaPhase = `node -e "process.exit(process.env.MIGRATION_PHASE === 'schema' ? 0 : 7)"`;
+const exitsZeroOnlyWithoutPhase = `node -e "process.exit(process.env.MIGRATION_PHASE ? 7 : 0)"`;
+const scratch = (database: string) => ({
+  host: postgres.host,
+  port: postgres.port,
+  user: postgres.username,
+  password: postgres.password,
+  database,
+});
 
 describe('migration-helpers/async-mode', () => {
   describe('migrateSchemaBeforeBoot | schema before Nest boots', () => {
@@ -17,6 +26,24 @@ describe('migration-helpers/async-mode', () => {
       await expect(
         migrateSchemaBeforeBoot({ MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: exitsZeroOnlyInSchemaPhase })
       ).resolves.toBeUndefined();
+    });
+
+    describe('on a fresh install | full setup, no MIGRATION_PHASE', () => {
+      const emptyDatabase = `tooljet_async_mode_empty_${process.pid}`;
+      const freshSetup = { MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: exitsZeroOnlyWithoutPhase };
+
+      afterAll(() => dropScratchDatabase(emptyDatabase), 60_000);
+
+      it('should run the full setup when the database does not exist', async () => {
+        await expect(
+          migrateSchemaBeforeBoot(freshSetup, scratch(`tooljet_async_mode_missing_${process.pid}`))
+        ).resolves.toBeUndefined();
+      });
+
+      it('should run the full setup when the database has no migrations table', async () => {
+        await createScratchDatabase(emptyDatabase);
+        await expect(migrateSchemaBeforeBoot(freshSetup, scratch(emptyDatabase))).resolves.toBeUndefined();
+      }, 60_000);
     });
 
     it('should fail the boot when the schema run fails', async () => {

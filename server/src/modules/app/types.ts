@@ -34,7 +34,6 @@ interface Features {
   [FEATURE_KEY.ROOT]: FeatureConfig;
   [FEATURE_KEY.MIGRATION_STATUS]: FeatureConfig;
   [FEATURE_KEY.MIGRATION_RUNS]: FeatureConfig;
-  [FEATURE_KEY.MIGRATION_RUN]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

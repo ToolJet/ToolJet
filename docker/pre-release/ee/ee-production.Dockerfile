@@ -135,6 +135,7 @@ FROM debian:12-slim
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
+    tini \
     wget \
     gnupg \
     unzip \
@@ -299,4 +300,4 @@ WORKDIR /app
 
 RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
 
-ENTRYPOINT ["./server/ee-entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "-g", "--", "./server/ee-entrypoint.sh"]

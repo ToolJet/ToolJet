@@ -51,7 +51,6 @@ export enum FEATURE_KEY {
   HEALTH = 'health',
   MIGRATION_STATUS = 'migration-status',
   MIGRATION_RUNS = 'migration-runs',
-  MIGRATION_RUN = 'migration-run',
   ROOT = 'root',
 }
 

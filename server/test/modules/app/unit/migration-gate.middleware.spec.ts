@@ -4,7 +4,6 @@ import { Logger } from 'nestjs-pino';
 import {
   buildApiPrefix,
   MigrationGateMiddleware,
-  MIGRATION_FAILED_MESSAGE,
   MIGRATION_IN_PROGRESS_MESSAGE,
 } from '@modules/app/middlewares/migration-gate.middleware';
 import { MigrationRunsService, MigrationState } from '@modules/app/migration-runs/service';
@@ -12,6 +11,11 @@ import { MigrationRunsService, MigrationState } from '@modules/app/migration-run
 /** Nest 11 mounts forRoutes('*') middleware on the full path, so req.path is always '/'. */
 function buildRequest(path: string, method = 'GET'): Request {
   return { path: '/', originalUrl: `${path}?x=1`, method } as Request;
+}
+
+/** Absolute-form request target (`POST http://host/api/apps HTTP/1.1`): Express routes on its pathname. */
+function buildAbsoluteFormRequest(url: string, method: string): Request {
+  return { path: '/', originalUrl: url, method } as Request;
 }
 
 function buildResponse() {
@@ -184,10 +188,12 @@ describe('MigrationGateMiddleware', () => {
     it.each([
       ['GET', '/api/apps'],
       ['POST', '/api/authenticate'],
+      ['POST', '/api/authenticate/w1'],
       ['GET', '/api/session'],
+      ['POST', '/api/session/invited-user-session'],
+      ['POST', '/api/oauth/sign-in/c1'],
       ['POST', '/api/data-queries/q1/run'],
       ['POST', '/api/data-queries/q1/versions/v1/run/e1'],
-      ['POST', '/api/migration-runs/run'],
       ['POST', '/api/sso/saml/c1'],
     ])('should let %s %s through', async (method, path) => {
       const { middleware } = buildMiddleware('running');
@@ -203,6 +209,8 @@ describe('MigrationGateMiddleware', () => {
       ['PUT', '/api/apps/a1'],
       ['DELETE', '/api/data-queries/q1'],
       ['POST', '/API/apps'],
+      ['POST', '/api/sessions'],
+      ['POST', '/api/data-queries/q1/run/extra'],
     ])('should answer %s %s with 503', async (method, path) => {
       const { middleware } = buildMiddleware('running');
       const res = buildResponse();
@@ -214,14 +222,42 @@ describe('MigrationGateMiddleware', () => {
       expect(res.status).toHaveBeenCalledWith(503);
     });
 
-    it('should answer writes with 503 MIGRATION_FAILED after a failed run, until a super admin retries', async () => {
+    it('should answer an absolute-form write with 503, as Express routes it to the same handler', async () => {
+      const { middleware } = buildMiddleware('running');
+      const res = buildResponse();
+      const next = jest.fn() as NextFunction;
+
+      await middleware.use(buildAbsoluteFormRequest('http://tooljet.local/API/apps?x=1', 'POST'), res, next);
+
+      expect(next).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(503);
+    });
+
+    it.each([['/api/apps/..\\..\\..\\x'], ['/api/tooljet-db/proxy/%2e%2e/%2e%2e/%2e%2e/x']])(
+      'should gate %s on the path Express routes, not a dot-segment-resolved one',
+      async (url) => {
+        const { middleware } = buildMiddleware('running');
+        const res = buildResponse();
+        const next = jest.fn() as NextFunction;
+
+        await middleware.use(buildAbsoluteFormRequest(url, 'PUT'), res, next);
+
+        expect(next).not.toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(503);
+      }
+    );
+
+    it('should answer writes with 503 MIGRATION_FAILED after a failed run, until a fixed server restarts', async () => {
       const { middleware } = buildMiddleware('failed');
       const res = buildResponse();
 
       await middleware.use(buildRequest('/api/apps', 'POST'), res, jest.fn() as NextFunction);
 
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ code: 'MIGRATION_FAILED', message: MIGRATION_FAILED_MESSAGE })
+        expect.objectContaining({
+          code: 'MIGRATION_FAILED',
+          message: 'The latest ToolJet upgrade failed. Changes cannot be saved until it is fixed and ToolJet restarts.',
+        })
       );
     });
 

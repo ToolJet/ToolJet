@@ -1,24 +1,34 @@
-import { Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { User } from '@modules/app/decorators/user.decorator';
-import { User as UserEntity } from '@entities/user.entity';
 import { InitModule } from '../decorators/init-module';
 import { InitFeature } from '../decorators/init-feature.decorator';
 import { MODULES } from '../constants/modules';
 import { FEATURE_KEY } from '../constants';
 import { FeatureAbilityGuard } from '../ability/guard';
-import { MigrationRun, MigrationRunsService } from './service';
+import { MigrationRunsService } from './service';
+import { MigrationRunLogQueryDto, MigrationRunLogResponseDto, MigrationRunsResponseDto } from './dto';
 
 @InitModule(MODULES.ROOT)
 @Controller('migration-runs')
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 export class MigrationRunsController {
   constructor(private readonly migrationRunsService: MigrationRunsService) {}
 
   @Get()
   @InitFeature(FEATURE_KEY.MIGRATION_RUNS)
-  async list(): Promise<{ runs: MigrationRun[] }> {
-    return { runs: await this.migrationRunsService.runs() };
+  async list(): Promise<MigrationRunsResponseDto> {
+    return plainToInstance(MigrationRunsResponseDto, { runs: await this.migrationRunsService.runs() });
   }
 
   /** Full log of a run, or of one migration in it (`?migration=<name>`). */
@@ -26,17 +36,9 @@ export class MigrationRunsController {
   @InitFeature(FEATURE_KEY.MIGRATION_RUNS)
   async log(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Query('migration') migration?: string
-  ): Promise<{ log: string }> {
-    return { log: await this.migrationRunsService.log(id, migration || undefined) };
-  }
-
-  /** Retries a failed run. */
-  @Post('run')
-  @HttpCode(201)
-  @InitFeature(FEATURE_KEY.MIGRATION_RUN)
-  async run(@User() user: UserEntity): Promise<{ ok: true }> {
-    await this.migrationRunsService.run(user.email);
-    return { ok: true };
+    @Query() { migration }: MigrationRunLogQueryDto
+  ): Promise<MigrationRunLogResponseDto> {
+    const log = await this.migrationRunsService.log(id, migration || undefined);
+    return plainToInstance(MigrationRunLogResponseDto, { log });
   }
 }

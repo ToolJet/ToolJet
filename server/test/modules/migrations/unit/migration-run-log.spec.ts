@@ -10,7 +10,7 @@ import {
 } from 'src/migration-helpers/migration-run-log';
 
 function replay(lines: string[]): RunProgress {
-  return lines.reduce(applyLogLine, emptyRunProgress());
+  return lines.reduce((run, line) => applyLogLine(run, line), emptyRunProgress());
 }
 
 describe('migration run log', () => {
@@ -78,7 +78,7 @@ describe('migration run log', () => {
       const query = 'query is slow: SELECT 1 -- PARAMETERS: ["secret"]';
 
       expect(applyLogLine(run, query).logTail).toBe(run.logTail);
-      expect(applyLogLine(run, query, { keepQueries: true }).logTail.at(-1)).toBe('query is slow: SELECT 1');
+      expect(applyLogLine(run, query, { keepQueries: true }).logTail.slice(-1)).toEqual(['query is slow: SELECT 1']);
     });
 
     it('should ignore progress lines before any migration starts', () => {

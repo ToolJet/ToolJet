@@ -1,9 +1,8 @@
 import '@/test/setupMsw';
 import React from 'react';
 import { http, HttpResponse } from 'msw';
-import { toast } from 'react-hot-toast';
 import { server } from '@/test/msw/server';
-import { render, screen, userEvent, waitFor } from '@/test/test-utils';
+import { fireEvent, render, screen, userEvent, waitFor } from '@/test/test-utils';
 import { MigrationsPage, formatMs } from '../index';
 
 // App shell (sidebar, header, license) is out of scope here.
@@ -48,47 +47,19 @@ const runs = (...list) => http.get(`${API}/migration-runs`, () => HttpResponse.j
 describe('MigrationsPage', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test('shows a failed run with its error and retries it', async () => {
-    let started = 0;
-    server.use(
-      runs(failedRun),
-      http.post(`${API}/migration-runs/run`, () => {
-        started += 1;
-        return HttpResponse.json({ ok: true }, { status: 201 });
-      })
-    );
+  test('shows a failed run with its error, view-only', async () => {
+    server.use(runs(failedRun));
 
     render(<MigrationsPage />);
 
     expect(await screen.findByText('Upgrade to 3.21.0 failed')).toBeInTheDocument();
     expect(
-      screen.getByText(
-        'The data migrations were rolled back. Changes made in ToolJet are refused until a retry succeeds.'
-      )
+      screen.getByText('The data migrations were rolled back. Changes made in ToolJet are refused until they succeed.')
     ).toBeInTheDocument();
     expect(screen.getByText('deadlock detected')).toBeInTheDocument();
     expect(screen.getByText('12.4s')).toBeInTheDocument();
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Retry migration' }));
-
-    expect(await screen.findByRole('button', { name: 'Starting' })).toBeDisabled();
-    expect(started).toBe(1);
-  });
-
-  test('shows the server reason when there is nothing to run', async () => {
-    server.use(
-      runs(failedRun),
-      http.post(`${API}/migration-runs/run`, () =>
-        HttpResponse.json({ message: 'A migration is already running.' }, { status: 409 })
-      )
-    );
-
-    render(<MigrationsPage />);
-    await userEvent.click(await screen.findByRole('button', { name: 'Retry migration' }));
-
-    expect(await screen.findByRole('button', { name: 'Retry migration' })).toBeEnabled();
-    expect(toast.error).toHaveBeenCalledWith('A migration is already running.');
+    expect(screen.queryByRole('button', { name: /retry/i })).not.toBeInTheDocument();
   });
 
   test('shows a running upgrade with overall and per-migration progress and keeps polling', async () => {
@@ -111,7 +82,104 @@ describe('MigrationsPage', () => {
     expect(screen.getByText(/by admin@example\.com/)).toBeInTheDocument();
     expect(screen.getByText('Earlier runs')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Retry migration' })).not.toBeInTheDocument();
-    await waitFor(() => expect(calls).toBeGreaterThan(1), { timeout: 3500 });
+    // mount + re-run on going active = 2; a third needs the running interval
+    await waitFor(() => expect(calls).toBeGreaterThan(2), { timeout: 3500 });
+  });
+
+  test('refreshes an open migration log while that migration runs', async () => {
+    let calls = 0;
+    server.use(
+      runs(runningRun),
+      http.get(`${API}/migration-runs/run-2/log`, () => {
+        calls += 1;
+        return HttpResponse.json({ log: calls === 1 ? 'Backfill: 1/4' : 'Backfill: 2/4' });
+      })
+    );
+
+    render(<MigrationsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: /^(?!Copy).*PocSlowBackfill1799999999999/ }));
+
+    expect(await screen.findByText('Backfill: 1/4')).toBeInTheDocument();
+    expect(await screen.findByText('Backfill: 2/4', {}, { timeout: 3500 })).toBeInTheDocument();
+  });
+
+  test('keeps the full log open when the run it follows succeeds', async () => {
+    let calls = 0;
+    server.use(
+      http.get(`${API}/migration-runs`, () => {
+        calls += 1;
+        const run = calls < 3 ? runningRun : { ...runningRun, status: 'succeeded', finishedAt: '2026-10-19T10:05:00Z' };
+        return HttpResponse.json({ runs: [run] });
+      })
+    );
+
+    render(<MigrationsPage />);
+    const fullLog = await screen.findByRole('button', { name: /Full log/ });
+    expect(fullLog).toHaveAttribute('aria-expanded', 'true');
+
+    expect(await screen.findByText('Upgraded to 3.21.0', {}, { timeout: 3500 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Full log/ })).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  describe('full log scrolling', () => {
+    const scrollTops = new WeakMap();
+    const props = {
+      scrollHeight: { get: () => 1000 },
+      clientHeight: { get: () => 300 },
+      scrollTop: {
+        get() {
+          return scrollTops.get(this) ?? 0;
+        },
+        set(value) {
+          scrollTops.set(this, value);
+        },
+      },
+    };
+    let originals;
+
+    beforeEach(() => {
+      originals = Object.fromEntries(
+        Object.keys(props).map((key) => [key, Object.getOwnPropertyDescriptor(Element.prototype, key)])
+      );
+      Object.keys(props).forEach((key) =>
+        Object.defineProperty(Element.prototype, key, { configurable: true, ...props[key] })
+      );
+    });
+
+    afterEach(() =>
+      Object.entries(originals).forEach(([key, descriptor]) =>
+        descriptor ? Object.defineProperty(Element.prototype, key, descriptor) : delete Element.prototype[key]
+      )
+    );
+
+    const longLog = (lines) => Array.from({ length: lines }, (_, i) => `line ${i + 1}`);
+
+    test('opens at the newest line when the page loads mid-run', async () => {
+      server.use(runs({ ...runningRun, logTail: longLog(60) }));
+
+      render(<MigrationsPage />);
+
+      const log = await screen.findByLabelText('Migration log');
+      expect(log.scrollTop).toBe(1000);
+    });
+
+    test('stops following once the reader scrolls up', async () => {
+      let calls = 0;
+      server.use(
+        http.get(`${API}/migration-runs`, () => {
+          calls += 1;
+          return HttpResponse.json({ runs: [{ ...runningRun, logTail: longLog(60 + calls) }] });
+        })
+      );
+
+      render(<MigrationsPage />);
+      const log = await screen.findByLabelText('Migration log');
+      log.scrollTop = 0;
+      fireEvent.scroll(log);
+
+      await waitFor(() => expect(calls).toBeGreaterThan(2), { timeout: 3500 });
+      expect(log.scrollTop).toBe(0);
+    });
   });
 
   test('says the database was up to date when a run had nothing to migrate', async () => {
@@ -122,7 +190,7 @@ describe('MigrationsPage', () => {
     render(<MigrationsPage />);
 
     expect(await screen.findByText('Nothing to migrate. The database was already up to date.')).toBeInTheDocument();
-    expect(screen.queryByText('Log')).not.toBeInTheDocument();
+    expect(screen.queryByText('Full log')).not.toBeInTheDocument();
   });
 
   test('does not claim nothing to migrate when a run failed before listing its migrations', async () => {
@@ -146,10 +214,23 @@ describe('MigrationsPage', () => {
     );
 
     render(<MigrationsPage />);
-    await userEvent.click(await screen.findByRole('button', { name: /AddColumn1700000000000/ }));
+    await userEvent.click(await screen.findByRole('button', { name: /^(?!Copy).*AddColumn1700000000000/ }));
 
     expect(await screen.findByText('AddColumn: [PROGRESS] 3/3')).toBeInTheDocument();
     expect(asked).toBe('AddColumn1700000000000');
+  });
+
+  test("says the log could not be loaded when a migration's log request fails", async () => {
+    server.use(
+      runs(failedRun),
+      http.get(`${API}/migration-runs/run-1/log`, () => HttpResponse.json({}, { status: 500 }))
+    );
+
+    render(<MigrationsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: /^(?!Copy).*AddColumn1700000000000/ }));
+
+    expect(await screen.findByText(/Could not load the log for this migration/)).toBeInTheDocument();
+    expect(screen.queryByText('This migration logged nothing.')).not.toBeInTheDocument();
   });
 
   test('shows the empty state when no runs exist', async () => {

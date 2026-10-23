@@ -35,6 +35,7 @@ import {
   createLogger,
   logStartupInfo,
   logShutdownInfo,
+  onceWithDeadline,
   initSentry,
   initializeOtel,
   initializeEnvConfigRegistry,
@@ -168,23 +169,26 @@ async function bootstrap() {
 }
 
 function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
-  const gracefulShutdown = async (signal: string) => {
-    logShutdownInfo(signal, logger);
-    let exitCode = 0;
-    try {
-      await app.close();
-      logger.log('✅ Application closed successfully');
-    } catch (error) {
-      logger.error('❌ Error during application shutdown:', error);
-      exitCode = 1;
-    }
-    // Flush the OTel log queue before exiting, regardless of how app.close() went.
-    await shutdownOtelLogs();
-    process.exit(exitCode);
-  };
+  const gracefulShutdown = onceWithDeadline(
+    async (signal) => {
+      logShutdownInfo(signal, logger);
+      let exitCode = 0;
+      try {
+        await app.close();
+        logger.log('✅ Application closed successfully');
+      } catch (error) {
+        logger.error('❌ Error during application shutdown:', error);
+        exitCode = 1;
+      }
+      // Flush the OTel log queue before exiting, regardless of how app.close() went.
+      await shutdownOtelLogs();
+      return exitCode;
+    },
+    (code) => process.exit(code)
+  );
 
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', gracefulShutdown);
+  process.on('SIGTERM', gracefulShutdown);
 }
 
 async function setupApplicationMiddleware(app: NestExpressApplication, appLogger: any) {

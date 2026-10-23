@@ -139,7 +139,7 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 
 | Failure | Handling/evidence |
 |---|---|
-| Database migration on upgrade (many pods; `MIGRATION_MODE=blocking\|async`) | Advisory locks serialise pods; `/api/*` answers 503 while a migration runs (async: writes only, also while failed). Async applies additive schema migrations at boot before Nest starts (a failure stops the new pod; old pods serve), then data migrations in one background transaction (a failure rolls back data only). `server/docs/MIGRATION_FLOW.md`. |
+| Database migration on upgrade (many pods; `MIGRATION_MODE=blocking\|async`) | Advisory locks serialise pods. The upgrade gate answers `/api/*` with 503 while a migration runs (async mode: writes only, also after a failed run). Async mode applies schema migrations before boot and data migrations in the background. `server/docs/MIGRATION_FLOW.md` §3–§5, §7. |
 | Invalid/expired session or insufficient permission | Guards return authorization errors before service execution. |
 | Public/private or unreleased app mismatch | App access guards and release validation prevent hydration. |
 | Query timeout, connector error, OAuth refresh requirement, or throttling | Data query services return structured failed/`needs_oauth` states; throttler limits per-app runs. |

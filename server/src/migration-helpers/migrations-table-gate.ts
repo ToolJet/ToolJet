@@ -1,19 +1,9 @@
 import { DataSource } from 'typeorm';
 
 /**
- * Turn-taking for pods that all boot at once during a rolling upgrade.
- *
- * Every pod runs the migration process on boot. `withMigrationAdvisoryLock` lets one of them in
- * before anyone reads the pending list; the rest wait on an interval instead of exiting into a
- * crash loop, then find nothing left to do. The winner also holds `MIGRATION_ACTIVE_LOCK_KEY`
- * while real migrations run, which is what serving pods read to refuse writes. Both are
- * session locks: a killed pod's locks go with its connection, so nothing can leak.
- */
-
-/**
  * The two concurrency sentinels, present in BOTH migration dirs. Each deletes the other's row
- * so that exactly one of them is always pending — that is how the lock gets taken on every
- * boot. It also means they say nothing about whether a deploy has real work to do, so they are
+ * so that exactly one of them is always pending — that is how a joint run takes the table lock
+ * on every boot (split phases skip them). It also means they say nothing about whether a deploy has real work to do, so they are
  * filtered out before deciding whether to raise the upgrade gate. Counting them would answer
  * every ordinary pod restart and scale-up with 503.
  */
@@ -21,10 +11,6 @@ export const LOCK_SENTINEL_MIGRATION_NAMES: readonly string[] = [
   'LockMigrationsTable1234567890000',
   'LockMigrationsTable1234567891000',
 ];
-
-export function excludeLockSentinels(migrationNames: string[]): string[] {
-  return migrationNames.filter((name) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(name));
-}
 
 export const DEFAULT_RETRY_INTERVAL_SECONDS = 60;
 export const DEFAULT_MAX_WAIT_MINUTES = 30;
@@ -83,17 +69,8 @@ export function isLockNotAvailableError(error: unknown): boolean {
 
 /**
  * Session-scoped advisory lock that serialises migration runs across pods.
- *
- * Why the `migrations` table lock is not enough on its own: `LockMigrationsTable1/2` take it
- * *inside* the migration transaction, by which point every pod has already computed its own
- * list of pending migrations. The pods that lose the race wake up holding a stale list and
- * re-run migrations the winner just applied — which fails with "already exists", not a lock
- * error, so it is not retryable and the pod dies. (Before this gate existed the crash-restart
- * is what hid the problem: a restarted pod re-reads a fresh list.)
- *
- * Taking an advisory lock BEFORE reading the pending list makes that race structurally
- * impossible. PostgreSQL releases the lock when the session ends, so a killed pod cannot leak
- * it — no TTL or recovery path needed.
+ * Before reading pending: the table lock is taken too late to stop a stale list.
+ * Released when the session ends, so a killed pod cannot leak it.
  */
 export const MIGRATION_ADVISORY_LOCK_KEY = 6273975241000;
 

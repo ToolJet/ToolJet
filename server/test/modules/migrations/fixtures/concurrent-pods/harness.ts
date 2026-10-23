@@ -39,6 +39,8 @@ export interface PodOptions {
   /** Shared wall-clock release instant, so start-up jitter cannot decide who wins a race. */
   startAt?: number;
   migrationSleepSeconds?: number;
+  /** Fixture directory next to `concurrent-pods/` (default) whose migrations the pod runs. */
+  fixtureSet?: string;
   /** Extra env for the pod. Keys absent from `.env.test` survive `getEnvVars()`. */
   env?: Record<string, string>;
 }
@@ -48,7 +50,14 @@ export interface RunningPod {
   done: Promise<PodOutcome>;
 }
 
-export function spawnPod({ podId, database, startAt, migrationSleepSeconds = 6, env = {} }: PodOptions): RunningPod {
+export function spawnPod({
+  podId,
+  database,
+  startAt,
+  migrationSleepSeconds = 6,
+  fixtureSet = 'concurrent-pods',
+  env = {},
+}: PodOptions): RunningPod {
   // `process.execPath` rather than `npx ts-node`: the child must BE the node process, so that
   // a signal the spec sends lands on the pod itself. An `npx` wrapper cannot forward SIGKILL —
   // it dies and orphans the real process, which then finishes normally.
@@ -64,6 +73,7 @@ export function spawnPod({ podId, database, startAt, migrationSleepSeconds = 6, 
         POD_ID: podId,
         START_AT: String(startAt ?? Date.now()),
         FIXTURE_MIGRATION_SLEEP_SECONDS: String(migrationSleepSeconds),
+        FIXTURE_SET: fixtureSet,
         SCRATCH_PG_HOST: postgres.host,
         SCRATCH_PG_PORT: String(postgres.port),
         SCRATCH_PG_USER: postgres.username,

@@ -32,3 +32,6 @@ export function parseMigrationPhase(raw: string | undefined): MigrationPhase {
   if (raw === 'schema' || raw === 'data') return raw;
   throw new Error(`Unknown MIGRATION_PHASE '${raw}': use 'schema' or 'data', or leave it unset.`);
 }
+
+/** Migrations at or before this timestamp predate the async-mode authoring rules (`server/AGENTS.md` § Migrations). */
+export const MIGRATION_AUTHORING_RULES_CUTOFF = 1790700000000;

@@ -5,7 +5,6 @@ export const migrationsService = {
   getStatus,
   getRuns,
   getLog,
-  run,
 };
 
 const IDLE = { state: 'idle' };
@@ -21,12 +20,6 @@ function getStatus() {
 function getRuns() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/migration-runs`, requestOptions).then(handleResponse);
-}
-
-/** Retries a failed run. */
-function run() {
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/migration-runs/run`, requestOptions).then(handleResponse);
 }
 
 /** Whole run, or one migration's lines when `migration` is given. */

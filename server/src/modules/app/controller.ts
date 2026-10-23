@@ -1,11 +1,13 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Get, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { InitModule } from './decorators/init-module';
 import { MODULES } from './constants/modules';
 import { InitFeature } from './decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
 import { AppService } from './service';
-import { MigrationRunsService, MigrationStatus } from './migration-runs/service';
+import { MigrationRunsService } from './migration-runs/service';
+import { MigrationStatusResponseDto } from './migration-runs/dto';
 
 @InitModule(MODULES.ROOT)
 @Controller()
@@ -25,8 +27,9 @@ export class AppController {
   // Public: the upgrade banner polls it for every user, including public released apps.
   @Get('migration-status')
   @InitFeature(FEATURE_KEY.MIGRATION_STATUS)
-  migrationStatus(): Promise<MigrationStatus> {
-    return this.migrationRunsService.status();
+  @UseInterceptors(ClassSerializerInterceptor)
+  async migrationStatus(): Promise<MigrationStatusResponseDto> {
+    return plainToInstance(MigrationStatusResponseDto, await this.migrationRunsService.status());
   }
 
   @Get('/')

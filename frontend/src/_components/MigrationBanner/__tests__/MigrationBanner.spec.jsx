@@ -3,6 +3,7 @@ import React from 'react';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import { act, render, screen, userEvent, waitFor } from '@/test/test-utils';
+import { authenticationService } from '@/_services/authentication.service';
 import { MigrationBanner } from '../index';
 
 const STATUS_URL = 'http://localhost:3000/api/migration-status';
@@ -11,7 +12,13 @@ const respondWith = (body, init) => server.use(http.get(STATUS_URL, () => HttpRe
 const visibleBanner = () => document.querySelector('[data-cy="migration-banner"]');
 const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 20)));
 
+const initialSession = authenticationService.currentSessionValue;
+
 beforeEach(() => sessionStorage.clear());
+afterEach(() => authenticationService.updateCurrentSession(initialSession));
+
+const asSuperAdmin = (superAdmin) =>
+  act(() => authenticationService.updateCurrentSession({ ...initialSession, super_admin: superAdmin }));
 
 describe('MigrationBanner', () => {
   test.each([
@@ -23,6 +30,40 @@ describe('MigrationBanner', () => {
 
     await waitFor(() => expect(visibleBanner()).toHaveTextContent(text));
     expect(screen.getByRole('status')).toHaveTextContent(text);
+  });
+
+  test('links a super admin to the migrations page when the upgrade failed', async () => {
+    asSuperAdmin(true);
+    respondWith({ state: 'failed', startedAt: '2026-10-19T10:00:00Z' });
+    render(<MigrationBanner endUser floating />);
+
+    expect(await screen.findByRole('link', { name: /See what failed/ })).toHaveAttribute(
+      'href',
+      '/settings/migrations'
+    );
+  });
+
+  test('adds the link when the super admin session loads after the banner', async () => {
+    respondWith({ state: 'failed', startedAt: '2026-10-19T10:00:00Z' });
+    render(<MigrationBanner />);
+    await waitFor(() => expect(visibleBanner()).toBeInTheDocument());
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+
+    asSuperAdmin(true);
+
+    expect(await screen.findByRole('link', { name: /See what failed/ })).toBeInTheDocument();
+  });
+
+  test.each([
+    ['a super admin while it runs', true, 'running'],
+    ['other users when it failed', false, 'failed'],
+  ])('shows no link to %s', async (_case, superAdmin, state) => {
+    asSuperAdmin(superAdmin);
+    respondWith({ state, startedAt: '2026-10-19T10:00:00Z' });
+    render(<MigrationBanner />);
+
+    await waitFor(() => expect(visibleBanner()).toBeInTheDocument());
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
   test.each([
