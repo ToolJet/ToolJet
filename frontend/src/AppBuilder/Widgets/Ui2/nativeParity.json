@@ -217,9 +217,6 @@
       "properties": {
         "isTimezoneEnabled": {
           "gap": "no time zones"
-        },
-        "showClearBtn": {
-          "gap": "no clear button"
         }
       },
       "actions": {
