@@ -70,6 +70,10 @@ describe('validateUrlForSSRF with runtime config', () => {
   it('blocks the metadata IP', async () => {
     await expect(validateUrlForSSRF('http://169.254.169.254/')).rejects.toThrow();
   });
+  it('blocks a dangerous scheme even when the host is allowlisted', async () => {
+    await expect(validateUrlForSSRF('gopher://jira.corp:70/_x')).rejects.toThrow(/scheme/i);
+    await expect(validateUrlForSSRF('ftp://10.0.4.12/')).rejects.toThrow(/scheme/i);
+  });
   it('allows anything when disabled', async () => {
     (globalThis as any)[KEY].enabled = false;
     await expect(validateUrlForSSRF('http://127.0.0.1/')).resolves.toBeUndefined();

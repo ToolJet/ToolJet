@@ -130,6 +130,20 @@ export function getSSRFConfig(): SSRFProtectionOptions {
   return { enabled, dnsResolutionCheck, blockedSchemes, allowPrivateNetworks, allowedHostnames };
 }
 
+function hasRuntimeConfig(): boolean {
+  return !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__;
+}
+
+function throwIfSchemeBlocked(scheme: string, config: SSRFProtectionOptions): void {
+  if (isSchemeBlocked(scheme, config.blockedSchemes)) {
+    throw new QueryError(
+      'URL scheme blocked',
+      `The URL scheme '${scheme}' is not allowed. Blocked schemes: ${config.blockedSchemes.join(', ')}`,
+      { scheme, blockedSchemes: config.blockedSchemes }
+    );
+  }
+}
+
 /**
  * Check if a URL scheme is blocked based on configuration
  * @param scheme - The URL scheme (protocol) to check
@@ -517,8 +531,14 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
   const hostname = url.hostname.toLowerCase();
   const scheme = url.protocol;
 
-  // Allowlist check — self-hosted instances can whitelist specific hostnames via
-  // SSRF_ALLOWED_HOSTNAMES env var. Bypasses all checks below for that hostname.
+  // Under the EE runtime config an allowlist entry vouches for an address, never for a
+  // dangerous scheme. Without it (CE/Cloud) the order below is unchanged.
+  if (hasRuntimeConfig()) {
+    throwIfSchemeBlocked(scheme, config);
+  }
+
+  // Allowlisted hostnames / IPs (the CE/EE default loopback names, or the EE runtime allowlist)
+  // bypass all checks below.
   if ((config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) || isInAllowedRanges(hostname, config)) {
     return;
   }
@@ -792,6 +812,10 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
 
   const hostname = url.hostname.toLowerCase();
   const scheme = url.protocol;
+
+  if (hasRuntimeConfig()) {
+    throwIfSchemeBlocked(scheme, config);
+  }
 
   if ((config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) || isInAllowedRanges(hostname, config)) {
     return;

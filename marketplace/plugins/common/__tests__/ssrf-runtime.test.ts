@@ -1,6 +1,13 @@
 import * as net from 'net';
 import got from 'got';
-import { getSSRFConfig, validateUrlForSSRF, createSSRFSafeLookup, isAllowlisted, getSSRFProtectionOptions } from '../lib/ssrf-protection';
+import {
+  getSSRFConfig,
+  validateUrlForSSRF,
+  validateUrlForSSRFSync,
+  createSSRFSafeLookup,
+  isAllowlisted,
+  getSSRFProtectionOptions,
+} from '../lib/ssrf-protection';
 
 const KEY = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
 const ranges = (...cidrs: string[]) => {
@@ -77,6 +84,13 @@ describe('validateUrlForSSRF with runtime config', () => {
   });
   it('blocks the metadata IP', async () => {
     await expect(validateUrlForSSRF('http://169.254.169.254/')).rejects.toThrow();
+  });
+  it('blocks a dangerous scheme even when the host is allowlisted', async () => {
+    await expect(validateUrlForSSRF('gopher://jira.corp:70/_x')).rejects.toThrow(/scheme/i);
+    await expect(validateUrlForSSRF('ftp://10.0.4.12/')).rejects.toThrow(/scheme/i);
+  });
+  it('blocks a dangerous scheme on an allowlisted host in the sync check too', () => {
+    expect(() => validateUrlForSSRFSync('gopher://jira.corp:70/_x')).toThrow(/scheme/i);
   });
   it('allows anything when disabled', async () => {
     (globalThis as any)[KEY].enabled = false;

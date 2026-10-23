@@ -390,6 +390,19 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
   const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   const scheme = url.protocol;
 
+  // 1. Check for blocked schemes (before the allowlist: an entry vouches for an address, not a scheme)
+  // By default, all schemes are allowed for self-hosted flexibility
+  // Users can configure blocked schemes via SSRF_BLOCKED_SCHEMES env variable
+  if (config.blockedSchemes && config.blockedSchemes.length > 0) {
+    if (isSchemeBlocked(scheme, config.blockedSchemes)) {
+      throw new QueryError(
+        'URL scheme blocked',
+        `The URL scheme '${scheme}' is not allowed. Blocked schemes: ${config.blockedSchemes.join(', ')}`,
+        { scheme, blockedSchemes: config.blockedSchemes }
+      );
+    }
+  }
+
   // Allowlisted hostnames / IPs skip every check below
   if (isAllowlisted(hostname, config)) {
     return;
@@ -405,19 +418,6 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
         'Private IP in URL credentials blocked',
         'URL contains private IP address in credentials section which could be used for SSRF',
         { hostname, credentials: potentialIP }
-      );
-    }
-  }
-
-  // 1. Check for blocked schemes
-  // By default, all schemes are allowed for self-hosted flexibility
-  // Users can configure blocked schemes via SSRF_BLOCKED_SCHEMES env variable
-  if (config.blockedSchemes && config.blockedSchemes.length > 0) {
-    if (isSchemeBlocked(scheme, config.blockedSchemes)) {
-      throw new QueryError(
-        'URL scheme blocked',
-        `The URL scheme '${scheme}' is not allowed. Blocked schemes: ${config.blockedSchemes.join(', ')}`,
-        { scheme, blockedSchemes: config.blockedSchemes }
       );
     }
   }
