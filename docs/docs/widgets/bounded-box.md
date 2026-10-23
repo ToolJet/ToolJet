@@ -105,6 +105,7 @@ A Tooltip is often used to specify the extra information when the user hovers th
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div> |
 | :------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
 | Visibility | Toggle on or off to control the visibility of the component when the app is loaded. | `{{true}}` or `{{false}}`, By default, it's set to `{{true}}`. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | `{{true}}` or `{{false}}`. By default, it's set to `{{false}}`. |
 | Disable | Toggle on to disable the component. | `{{true}}` or `{{false}}`, By default, it's set to `{{false}}`. |
 | Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets (through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x, y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040`. |
 

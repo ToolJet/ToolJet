@@ -145,6 +145,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 | Text color                                  | Change the color of the text in the component by providig the `Hex color code` or choosing a color from the picker.                                                                                 |                                                     |
 | Checkbox color                              | Change the color of the toggle switch in the component by providig the `Hex color code` or choosing a color from the picker.                                                                        |                                                     |
 | Visibility                                  | This is to control the visibility of the component. If `{{false}}` the component will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}`.                 |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | By default, it's set to `{{false}}`. |
 | Disable                                     | This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional.                                                                           | By default, its value is set to `{{false}}`.        |
 
 ### Advanced

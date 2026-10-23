@@ -54,6 +54,7 @@ To display instructional text when a user hovers over the PDF component, add som
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
 | Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Border color | Sets the border color of the PDF viewer. | Select a color from the color picker or set it programmatically using **fx**. |
 | Border radius | Sets the corner radius of the PDF viewer. | Enter a numeric value (default: `6`) or set it programmatically using **fx**. |
 

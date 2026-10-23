@@ -109,6 +109,7 @@ Under the <b>General</b> accordion, you can set the value as **Plain text**, **M
 | :------------------------------------------ | :------------------------------------------------ |
 | Disable | If disabled or set to `{{false}}` the component will be locked and becomes non-functional. By default, its disabled i.e. its value is set to `{{true}}`. |
 | Visibility | This is to control the visibility of the component. If `{{false}}`/disabled the component will not visible after the app is deployed. By default, it's enabled (set to `{{true}}`). |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. Off by default. Toggle it on, or set it dynamically by clicking **fx**. |
 | Accent color | You can change the accent color of the column title by entering the Hex color code or choosing a color of your choice from the color picker. |
 
 ### Advanced

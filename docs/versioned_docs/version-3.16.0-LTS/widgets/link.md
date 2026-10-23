@@ -59,6 +59,7 @@ Under the **General** accordion, you can set the value as **Plain text**, **Mark
 | Text size | By default, the text size is set to 14. You can enter any value from 1-100 to set a custom text size. |
 | Underline | You can change the underline of the text in the following ways: **on-hover (default), never, always**. |
 | Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. Off by default. Toggle it on, or set it dynamically by clicking **fx**. |
 
 ### Advanced
 
