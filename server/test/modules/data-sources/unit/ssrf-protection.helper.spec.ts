@@ -112,10 +112,32 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     'http://[::ffff:127.0.0.1]/',
     'http://[::ffff:169.254.169.254]/',
     'http://[fe80::1]/',
+    'http://[febf::1]/',
+    'http://[fec0::1]/',
+    'http://[ff02::1]/',
+    'http://[::]/',
+    'http://[::ffff:7f00:1]/',
+    'http://[0:0:0:0:0:ffff:7f00:1]/',
+    'http://[::ffff:10.0.0.1]/',
+    'http://[::ffff:0:7f00:1]/',
+    'http://[::127.0.0.1]/',
+    'http://[64:ff9b::a9fe:a9fe]/',
+    'http://[64:ff9b::7f00:1]/',
+    'http://[64:ff9b:1::a9fe:a9fe]/',
+    'http://[2002:7f00:1::]/',
+    'http://[2002:a9fe:a9fe::]/',
+    'http://[2001:0:4136:e378:8000:63bf:80ff:fffe]/',
   ])('blocks %s with an empty allowlist', async (url) => {
     publishRanges();
     await expect(validateUrlForSSRF(url)).rejects.toThrow();
   });
+  it.each(['http://[2606:4700:4700::1111]/', 'http://[64:ff9b::808:808]/', 'http://[2002:808:808::]/'])(
+    'allows the public IPv6 literal %s with an empty allowlist',
+    async (url) => {
+      publishRanges();
+      await expect(validateUrlForSSRF(url)).resolves.toBeUndefined();
+    }
+  );
   it('allows a hostname that resolves into an allowlisted CIDR', async () => {
     publishRanges('127.0.0.0/8', '::1/128');
     await expect(validateUrlForSSRF('http://localhost/')).resolves.toBeUndefined();
@@ -142,6 +164,21 @@ describe('edition defaults without a runtime key', () => {
   ])('Cloud blocks %s', async (url) => {
     process.env.TOOLJET_EDITION = 'cloud';
     await expect(validateUrlForSSRF(url)).rejects.toThrow(BadRequestException);
+  });
+
+  it('Cloud blocks an IPv4-mapped RFC1918 literal', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    await expect(validateUrlForSSRF('http://[::ffff:10.0.0.1]/')).rejects.toThrow(BadRequestException);
+  });
+
+  it('Cloud allows a public IPv6 literal without a DNS lookup', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).resolves.toBeUndefined();
+  });
+
+  it('CE keeps sending a bracketed public literal to the DNS step (verdict unchanged)', async () => {
+    process.env.TOOLJET_EDITION = 'ce';
+    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).rejects.toThrow(BadRequestException);
   });
 
   it('CE still allows 10.0.0.1 with no env vars', async () => {

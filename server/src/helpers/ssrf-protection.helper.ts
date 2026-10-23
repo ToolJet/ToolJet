@@ -70,6 +70,54 @@ function isCloudMetadataEndpoint(hostname: string): boolean {
   return CLOUD_METADATA_ENDPOINTS.some((pattern) => pattern.test(hostname));
 }
 
+// Same code in plugins/packages/common, marketplace/plugins/common and server/src/helpers ssrf-protection; keep them identical.
+/** The 8 16-bit groups of an IPv6 address (any spelling, incl. `::` and a dotted-quad tail), or null if not IPv6. */
+function ipv6Hextets(ip: string): number[] | null {
+  if (!ip || !net.isIPv6(ip)) return null;
+  let address = ip.toLowerCase().replace(/%.*$/, '');
+  const dotted = address.match(/^(.*:)(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (dotted) {
+    const [a, b, c, d] = dotted.slice(2).map(Number);
+    address = `${dotted[1]}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
+  }
+  const groups = (part: string) => (part ? part.split(':').map((g) => parseInt(g, 16)) : []);
+  const [head, tail] = address.split('::');
+  if (tail === undefined) return groups(head);
+  const left = groups(head);
+  const right = groups(tail);
+  return [...left, ...new Array(8 - left.length - right.length).fill(0), ...right];
+}
+
+/** ::, ::1, link-local fe80::/10, site-local fec0::/10 and multicast ff00::/8: blocked by every policy. */
+function isReservedIPv6(ip: string): boolean {
+  const h = ipv6Hextets(ip);
+  if (!h) return false;
+  if (h.slice(0, 7).every((g) => g === 0) && h[7] <= 1) return true;
+  return (h[0] & 0xffc0) === 0xfe80 || (h[0] & 0xffc0) === 0xfec0 || (h[0] & 0xff00) === 0xff00;
+}
+
+/**
+ * The IPv4 address an IPv6 address carries, so it can be classified like that IPv4: IPv4-mapped ::ffff:0:0/96,
+ * SIIT ::ffff:0:0:0/96, IPv4-compatible ::/96 (not :: or ::1), NAT64 64:ff9b::/96 and 64:ff9b:1::/48,
+ * 6to4 2002::/16, Teredo 2001::/32 (client address, bit-inverted). Null when there is none.
+ */
+function embeddedIPv4(ip: string): string | null {
+  const h = ipv6Hextets(ip);
+  if (!h) return null;
+  const dotted = (hi: number, lo: number) => `${hi >> 8}.${hi & 0xff}.${lo >> 8}.${lo & 0xff}`;
+  const zeroUpTo = (n: number) => h.slice(0, n).every((g) => g === 0);
+  if (zeroUpTo(5) && h[5] === 0xffff) return dotted(h[6], h[7]);
+  if (zeroUpTo(4) && h[4] === 0xffff && h[5] === 0) return dotted(h[6], h[7]);
+  if (zeroUpTo(6) && (h[6] !== 0 || h[7] > 1)) return dotted(h[6], h[7]);
+  if (h[0] === 0x64 && h[1] === 0xff9b && (h[2] === 1 || h.slice(2, 6).every((g) => g === 0))) {
+    return dotted(h[6], h[7]);
+  }
+  if (h[0] === 0x2002) return dotted(h[1], h[2]);
+  if (h[0] === 0x2001 && h[1] === 0) return dotted(h[6] ^ 0xffff, h[7] ^ 0xffff);
+  return null;
+}
+// End of the shared IPv6 helpers.
+
 /**
  * Loopback, link-local/cloud metadata, CGNAT, unspecified, multicast, reserved.
  * RFC1918 and fc00::/7 too, only when the EE runtime config is present or on Cloud.
@@ -98,10 +146,11 @@ function isDangerousPrivateIP(ip: string): boolean {
   }
 
   const normalized = ip.toLowerCase();
-  if (normalized === '::1') return true; // loopback
-  if (normalized.startsWith('fe80:')) return true; // link-local
+  if (isReservedIPv6(normalized)) return true; // unspecified, loopback, link-local, site-local, multicast
   if (blockRFC1918 && /^f[cd][0-9a-f]{2}:/.test(normalized)) return true; // unique local fc00::/7
-  return false;
+  // IPv4 carried inside the address (mapped, NAT64, 6to4, ...): same verdict as that IPv4
+  const ipv4 = embeddedIPv4(normalized);
+  return ipv4 !== null && isDangerousPrivateIP(ipv4);
 }
 
 async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
@@ -159,13 +208,18 @@ export async function validateUrlForSSRF(urlString: string): Promise<void> {
   // With a runtime config there is no hardcoded localhost exemption — admins allowlist it explicitly.
   if (!runtime && getTooljetEdition() !== 'cloud' && LOOPBACK_HOSTNAME_ALLOWLIST.has(hostname)) return;
 
-  const isRawIP = net.isIP(hostname) !== 0;
+  // `new URL()` keeps the brackets on IPv6 literals ([::1]); the IP check needs the bare address.
+  const address = hostname.replace(/^\[|\]$/g, '');
+  const isRawIP = net.isIP(address) !== 0;
 
-  if (isRawIP && isDangerousPrivateIP(hostname)) {
+  if (isRawIP && isDangerousPrivateIP(address)) {
     throw new BadRequestException('URL points to a blocked private/internal address');
   }
 
-  if (!isRawIP && (await resolvesToPrivateIP(hostname))) {
+  // Under the runtime key and on Cloud an IP literal is decided by the check above. Elsewhere a bracketed
+  // IPv6 literal still goes to the DNS step (which fails closed on it), as before.
+  const literalDecided = isRawIP && (!!runtime || getTooljetEdition() === 'cloud');
+  if (!literalDecided && (await resolvesToPrivateIP(hostname))) {
     throw new BadRequestException('URL resolves to a blocked private/internal address');
   }
 }

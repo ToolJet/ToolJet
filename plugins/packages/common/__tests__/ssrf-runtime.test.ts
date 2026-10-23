@@ -7,6 +7,7 @@ import {
   createSSRFSafeLookup,
   isAllowlisted,
   getSSRFProtectionOptions,
+  isPrivateIP,
 } from '../lib/ssrf-protection';
 
 const KEY = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
@@ -171,6 +172,32 @@ describe('built-in check: IP literals and DNS failures', () => {
   });
 });
 
+describe('isPrivateIP on IPv6 forms that embed an IPv4', () => {
+  it.each([
+    '::ffff:127.0.0.1',
+    '0:0:0:0:0:ffff:7f00:1',
+    '::ffff:10.0.0.1',
+    '::ffff:0:7f00:1',
+    '::7f00:1',
+    '64:ff9b::a9fe:a9fe',
+    '64:ff9b:1::7f00:1',
+    '2002:a00:1::',
+    '2001:0:4136:e378:8000:63bf:80ff:fffe',
+    '::',
+    'febf::1',
+    'fec0::1',
+    'ff02::1',
+  ])('classifies %s as private', (ip) => {
+    expect(isPrivateIP(ip)).toBe(true);
+  });
+  it.each(['64:ff9b::808:808', '2002:808:808::', '::ffff:8.8.8.8', '2606:4700:4700::1111', '2001:db8::1'])(
+    'classifies %s as public',
+    (ip) => {
+      expect(isPrivateIP(ip)).toBe(false);
+    }
+  );
+});
+
 describe('cross-copy SSRF parity (runtime key present)', () => {
   // Keep this block identical in all three SSRF suites (built-in, marketplace, server).
   const publishRanges = (...cidrs: string[]) => {
@@ -183,10 +210,32 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     'http://[::ffff:127.0.0.1]/',
     'http://[::ffff:169.254.169.254]/',
     'http://[fe80::1]/',
+    'http://[febf::1]/',
+    'http://[fec0::1]/',
+    'http://[ff02::1]/',
+    'http://[::]/',
+    'http://[::ffff:7f00:1]/',
+    'http://[0:0:0:0:0:ffff:7f00:1]/',
+    'http://[::ffff:10.0.0.1]/',
+    'http://[::ffff:0:7f00:1]/',
+    'http://[::127.0.0.1]/',
+    'http://[64:ff9b::a9fe:a9fe]/',
+    'http://[64:ff9b::7f00:1]/',
+    'http://[64:ff9b:1::a9fe:a9fe]/',
+    'http://[2002:7f00:1::]/',
+    'http://[2002:a9fe:a9fe::]/',
+    'http://[2001:0:4136:e378:8000:63bf:80ff:fffe]/',
   ])('blocks %s with an empty allowlist', async (url) => {
     publishRanges();
     await expect(validateUrlForSSRF(url)).rejects.toThrow();
   });
+  it.each(['http://[2606:4700:4700::1111]/', 'http://[64:ff9b::808:808]/', 'http://[2002:808:808::]/'])(
+    'allows the public IPv6 literal %s with an empty allowlist',
+    async (url) => {
+      publishRanges();
+      await expect(validateUrlForSSRF(url)).resolves.toBeUndefined();
+    }
+  );
   it('allows a hostname that resolves into an allowlisted CIDR', async () => {
     publishRanges('127.0.0.0/8', '::1/128');
     await expect(validateUrlForSSRF('http://localhost/')).resolves.toBeUndefined();

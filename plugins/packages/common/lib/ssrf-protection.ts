@@ -269,19 +269,62 @@ export function isPrivateIP(ip: string): boolean {
   return false;
 }
 
+// Same code in plugins/packages/common, marketplace/plugins/common and server/src/helpers ssrf-protection; keep them identical.
+/** The 8 16-bit groups of an IPv6 address (any spelling, incl. `::` and a dotted-quad tail), or null if not IPv6. */
+function ipv6Hextets(ip: string): number[] | null {
+  if (!ip || !net.isIPv6(ip)) return null;
+  let address = ip.toLowerCase().replace(/%.*$/, '');
+  const dotted = address.match(/^(.*:)(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (dotted) {
+    const [a, b, c, d] = dotted.slice(2).map(Number);
+    address = `${dotted[1]}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
+  }
+  const groups = (part: string) => (part ? part.split(':').map((g) => parseInt(g, 16)) : []);
+  const [head, tail] = address.split('::');
+  if (tail === undefined) return groups(head);
+  const left = groups(head);
+  const right = groups(tail);
+  return [...left, ...new Array(8 - left.length - right.length).fill(0), ...right];
+}
+
+/** ::, ::1, link-local fe80::/10, site-local fec0::/10 and multicast ff00::/8: blocked by every policy. */
+function isReservedIPv6(ip: string): boolean {
+  const h = ipv6Hextets(ip);
+  if (!h) return false;
+  if (h.slice(0, 7).every((g) => g === 0) && h[7] <= 1) return true;
+  return (h[0] & 0xffc0) === 0xfe80 || (h[0] & 0xffc0) === 0xfec0 || (h[0] & 0xff00) === 0xff00;
+}
+
+/**
+ * The IPv4 address an IPv6 address carries, so it can be classified like that IPv4: IPv4-mapped ::ffff:0:0/96,
+ * SIIT ::ffff:0:0:0/96, IPv4-compatible ::/96 (not :: or ::1), NAT64 64:ff9b::/96 and 64:ff9b:1::/48,
+ * 6to4 2002::/16, Teredo 2001::/32 (client address, bit-inverted). Null when there is none.
+ */
+function embeddedIPv4(ip: string): string | null {
+  const h = ipv6Hextets(ip);
+  if (!h) return null;
+  const dotted = (hi: number, lo: number) => `${hi >> 8}.${hi & 0xff}.${lo >> 8}.${lo & 0xff}`;
+  const zeroUpTo = (n: number) => h.slice(0, n).every((g) => g === 0);
+  if (zeroUpTo(5) && h[5] === 0xffff) return dotted(h[6], h[7]);
+  if (zeroUpTo(4) && h[4] === 0xffff && h[5] === 0) return dotted(h[6], h[7]);
+  if (zeroUpTo(6) && (h[6] !== 0 || h[7] > 1)) return dotted(h[6], h[7]);
+  if (h[0] === 0x64 && h[1] === 0xff9b && (h[2] === 1 || h.slice(2, 6).every((g) => g === 0))) {
+    return dotted(h[6], h[7]);
+  }
+  if (h[0] === 0x2002) return dotted(h[1], h[2]);
+  if (h[0] === 0x2001 && h[1] === 0) return dotted(h[6] ^ 0xffff, h[7] ^ 0xffff);
+  return null;
+}
+// End of the shared IPv6 helpers.
+
 /**
  * Check if an IPv6 address is private/internal
  */
 function isPrivateIPv6(ip: string): boolean {
   const normalized = ip.toLowerCase().trim();
 
-  // Loopback: ::1
-  if (normalized === '::1' || normalized === '0:0:0:0:0:0:0:1') {
-    return true;
-  }
-
-  // Link-local: fe80::/10
-  if (normalized.startsWith('fe80:')) {
+  // Unspecified, loopback, link-local, site-local, multicast
+  if (isReservedIPv6(normalized)) {
     return true;
   }
 
@@ -290,28 +333,9 @@ function isPrivateIPv6(ip: string): boolean {
     return true;
   }
 
-  // IPv4-mapped IPv6: ::ffff:0:0/96
-  if (normalized.includes('::ffff:')) {
-    // Extract the IPv4 part and check it
-    const ipv4Part = normalized.split('::ffff:')[1];
-    if (ipv4Part) {
-      // Handle both ::ffff:192.168.1.1 and ::ffff:c0a8:101 formats
-      if (ipv4Part.includes('.')) {
-        return isPrivateIP(ipv4Part);
-      }
-      // Hex form (what `new URL()` produces): two 16-bit groups encoding the IPv4 address
-      const hexParts = ipv4Part.split(':');
-      if (hexParts.length === 2) {
-        const high = parseInt(hexParts[0], 16);
-        const low = parseInt(hexParts[1], 16);
-        if (!isNaN(high) && !isNaN(low)) {
-          return isPrivateIP(`${(high >> 8) & 0xff}.${high & 0xff}.${(low >> 8) & 0xff}.${low & 0xff}`);
-        }
-      }
-    }
-  }
-
-  return false;
+  // IPv4 carried inside the address (mapped, NAT64, 6to4, ...): classify it as that IPv4
+  const ipv4 = embeddedIPv4(normalized);
+  return ipv4 !== null && isPrivateIP(ipv4);
 }
 
 /**

@@ -134,6 +134,18 @@ function hasRuntimeConfig(): boolean {
   return !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__;
 }
 
+/**
+ * `new URL()` keeps the brackets on IPv6 literals ([::1]). The IP checks always get the bare address.
+ * Under the runtime key and on Cloud the allowlist and DNS step get it too, so an IP literal is decided by
+ * the IP check alone (no DNS lookup of a literal). Elsewhere they keep the bracketed form as before.
+ */
+function urlHosts(url: URL): { hostname: string; address: string } {
+  const bracketed = url.hostname.toLowerCase();
+  const address = bracketed.replace(/^\[|\]$/g, '');
+  const strict = hasRuntimeConfig() || process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud';
+  return { hostname: strict ? address : bracketed, address };
+}
+
 function throwIfSchemeBlocked(scheme: string, config: SSRFProtectionOptions): void {
   if (isSchemeBlocked(scheme, config.blockedSchemes)) {
     throw new QueryError(
@@ -321,19 +333,62 @@ export function isPrivateIP(ip: string): boolean {
   return false;
 }
 
+// Same code in plugins/packages/common, marketplace/plugins/common and server/src/helpers ssrf-protection; keep them identical.
+/** The 8 16-bit groups of an IPv6 address (any spelling, incl. `::` and a dotted-quad tail), or null if not IPv6. */
+function ipv6Hextets(ip: string): number[] | null {
+  if (!ip || !net.isIPv6(ip)) return null;
+  let address = ip.toLowerCase().replace(/%.*$/, '');
+  const dotted = address.match(/^(.*:)(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (dotted) {
+    const [a, b, c, d] = dotted.slice(2).map(Number);
+    address = `${dotted[1]}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
+  }
+  const groups = (part: string) => (part ? part.split(':').map((g) => parseInt(g, 16)) : []);
+  const [head, tail] = address.split('::');
+  if (tail === undefined) return groups(head);
+  const left = groups(head);
+  const right = groups(tail);
+  return [...left, ...new Array(8 - left.length - right.length).fill(0), ...right];
+}
+
+/** ::, ::1, link-local fe80::/10, site-local fec0::/10 and multicast ff00::/8: blocked by every policy. */
+function isReservedIPv6(ip: string): boolean {
+  const h = ipv6Hextets(ip);
+  if (!h) return false;
+  if (h.slice(0, 7).every((g) => g === 0) && h[7] <= 1) return true;
+  return (h[0] & 0xffc0) === 0xfe80 || (h[0] & 0xffc0) === 0xfec0 || (h[0] & 0xff00) === 0xff00;
+}
+
+/**
+ * The IPv4 address an IPv6 address carries, so it can be classified like that IPv4: IPv4-mapped ::ffff:0:0/96,
+ * SIIT ::ffff:0:0:0/96, IPv4-compatible ::/96 (not :: or ::1), NAT64 64:ff9b::/96 and 64:ff9b:1::/48,
+ * 6to4 2002::/16, Teredo 2001::/32 (client address, bit-inverted). Null when there is none.
+ */
+function embeddedIPv4(ip: string): string | null {
+  const h = ipv6Hextets(ip);
+  if (!h) return null;
+  const dotted = (hi: number, lo: number) => `${hi >> 8}.${hi & 0xff}.${lo >> 8}.${lo & 0xff}`;
+  const zeroUpTo = (n: number) => h.slice(0, n).every((g) => g === 0);
+  if (zeroUpTo(5) && h[5] === 0xffff) return dotted(h[6], h[7]);
+  if (zeroUpTo(4) && h[4] === 0xffff && h[5] === 0) return dotted(h[6], h[7]);
+  if (zeroUpTo(6) && (h[6] !== 0 || h[7] > 1)) return dotted(h[6], h[7]);
+  if (h[0] === 0x64 && h[1] === 0xff9b && (h[2] === 1 || h.slice(2, 6).every((g) => g === 0))) {
+    return dotted(h[6], h[7]);
+  }
+  if (h[0] === 0x2002) return dotted(h[1], h[2]);
+  if (h[0] === 0x2001 && h[1] === 0) return dotted(h[6] ^ 0xffff, h[7] ^ 0xffff);
+  return null;
+}
+// End of the shared IPv6 helpers.
+
 /**
  * Check if an IPv6 address is private/internal
  */
 function isPrivateIPv6(ip: string): boolean {
   const normalized = ip.toLowerCase().trim();
 
-  // Loopback: ::1
-  if (normalized === '::1' || normalized === '0:0:0:0:0:0:0:1') {
-    return true;
-  }
-
-  // Link-local: fe80::/10
-  if (normalized.startsWith('fe80:')) {
+  // Unspecified, loopback, link-local, site-local, multicast
+  if (isReservedIPv6(normalized)) {
     return true;
   }
 
@@ -342,29 +397,9 @@ function isPrivateIPv6(ip: string): boolean {
     return true;
   }
 
-  // IPv4-mapped IPv6: ::ffff:0:0/96
-  if (normalized.includes('::ffff:')) {
-    const ipv4Part = normalized.split('::ffff:')[1];
-    if (ipv4Part) {
-      if (ipv4Part.includes('.')) {
-        // Dotted notation: ::ffff:192.168.1.1
-        return isPrivateIP(ipv4Part);
-      } else {
-        // Hex notation: ::ffff:c0a8:101 (two 16-bit groups encoding the IPv4 address)
-        const hexParts = ipv4Part.split(':');
-        if (hexParts.length === 2) {
-          const high = parseInt(hexParts[0], 16);
-          const low = parseInt(hexParts[1], 16);
-          if (!isNaN(high) && !isNaN(low)) {
-            const dotted = `${(high >> 8) & 0xff}.${high & 0xff}.${(low >> 8) & 0xff}.${low & 0xff}`;
-            return isPrivateIP(dotted);
-          }
-        }
-      }
-    }
-  }
-
-  return false;
+  // IPv4 carried inside the address (mapped, NAT64, 6to4, ...): classify it as that IPv4
+  const ipv4 = embeddedIPv4(normalized);
+  return ipv4 !== null && isPrivateIP(ipv4);
 }
 
 /**
@@ -414,31 +449,13 @@ export function isDangerousPrivateIP(ip: string): boolean {
 function isDangerousPrivateIPv6(ip: string): boolean {
   const normalized = ip.toLowerCase().trim();
 
-  if (normalized === '::1' || normalized === '0:0:0:0:0:0:0:1') return true; // Loopback
-  if (normalized.startsWith('fe80:')) return true; // Link-local fe80::/10
+  if (isReservedIPv6(normalized)) return true; // Unspecified, loopback, link-local, site-local, multicast
 
   // fc/fd (ULA) ranges are NOT blocked — legitimate private IPv6 on self-hosted networks.
 
-  if (normalized.includes('::ffff:')) {
-    const ipv4Part = normalized.split('::ffff:')[1];
-    if (ipv4Part) {
-      if (ipv4Part.includes('.')) {
-        return isDangerousPrivateIP(ipv4Part);
-      } else {
-        const hexParts = ipv4Part.split(':');
-        if (hexParts.length === 2) {
-          const high = parseInt(hexParts[0], 16);
-          const low = parseInt(hexParts[1], 16);
-          if (!isNaN(high) && !isNaN(low)) {
-            const dotted = `${(high >> 8) & 0xff}.${high & 0xff}.${(low >> 8) & 0xff}.${low & 0xff}`;
-            return isDangerousPrivateIP(dotted);
-          }
-        }
-      }
-    }
-  }
-
-  return false;
+  // IPv4 carried inside the address: same verdict as that IPv4 (so ::ffff:10.0.0.1 is allowed like 10.0.0.1)
+  const ipv4 = embeddedIPv4(normalized);
+  return ipv4 !== null && isDangerousPrivateIP(ipv4);
 }
 
 /**
@@ -528,7 +545,7 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
     throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
-  const hostname = url.hostname.toLowerCase();
+  const { hostname, address } = urlHosts(url);
   const scheme = url.protocol;
 
   // Under the EE runtime config an allowlist entry vouches for an address, never for a
@@ -577,7 +594,7 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
   // On self-hosted (allowPrivateNetworks=true) only block dangerous ranges
   // (metadata endpoints, loopback) — RFC1918 is allowed for internal services.
   const ipCheckFn = config.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
-  if (ipCheckFn(hostname)) {
+  if (ipCheckFn(address)) {
     throw new QueryError(
       'Private IP address blocked',
       'Direct access to private IP addresses is not allowed for security reasons',
@@ -810,7 +827,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
     throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
-  const hostname = url.hostname.toLowerCase();
+  const { hostname, address } = urlHosts(url);
   const scheme = url.protocol;
 
   if (hasRuntimeConfig()) {
@@ -839,7 +856,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
   // Check if hostname is a private IP.
   // On self-hosted (allowPrivateNetworks=true) only block dangerous ranges.
   const ipCheckFnSync = config.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
-  if (ipCheckFnSync(hostname)) {
+  if (ipCheckFnSync(address)) {
     throw new QueryError(
       'Private IP address blocked',
       'Direct access to private IP addresses is not allowed for security reasons',
