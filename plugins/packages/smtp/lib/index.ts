@@ -9,6 +9,21 @@ import { SourceOptions, QueryOptions } from './types';
 import nodemailer, { Transporter } from 'nodemailer';
 import type { Attachment } from 'nodemailer/lib/mailer';
 
+// Message fields come from builder-controlled query options and are untyped at runtime.
+// Nodemailer treats `{ path }` / `{ href }` objects as "read this local file / fetch this URL",
+// so only plain strings (or arrays of strings for recipients) are ever handed to it.
+const toMailString = (value: unknown, field: string): string | undefined => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  throw new QueryError('Query could not be completed', `${field} must be a string`, {});
+};
+
+const toMailAddresses = (value: unknown, field: string): string | string[] | undefined => {
+  if (Array.isArray(value)) return value.map((v) => toMailString(v, field) as string);
+  return toMailString(value, field);
+};
+
 export default class Smtp implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const nodemailerTransport: Transporter = await this.getConnection(sourceOptions);
@@ -27,15 +42,15 @@ export default class Smtp implements QueryService {
 
     const mailOptions = {
       from: {
-        name: from_name,
-        address: from,
+        name: toMailString(from_name, 'From name'),
+        address: toMailString(from, 'From'),
       },
-      to,
-      cc,
-      bcc,
-      subject,
-      text: textContent,
-      html: htmlContent,
+      to: toMailAddresses(to, 'To'),
+      cc: toMailAddresses(cc, 'CC'),
+      bcc: toMailAddresses(bcc, 'BCC'),
+      subject: toMailString(subject, 'Subject'),
+      text: toMailString(textContent, 'Text content'),
+      html: toMailString(htmlContent, 'HTML content'),
       attachments: attachments && filesData(attachments),
     };
 
@@ -79,15 +94,19 @@ export default class Smtp implements QueryService {
     // Covers both run() and testConnection(), which both go through this method.
     await validateUrlForSSRF(`https://${host}:${port}`);
 
-    const transport: Transporter = nodemailer.createTransport({
-      port,
-      host,
-      secure: port === 465,
-      auth: {
-        user,
-        pass: password,
+    // Defense in depth: never let message content read local files or fetch URLs.
+    const transport: Transporter = nodemailer.createTransport(
+      {
+        port,
+        host,
+        secure: port === 465,
+        auth: {
+          user,
+          pass: password,
+        },
       },
-    });
+      { disableFileAccess: true, disableUrlAccess: true }
+    );
 
     return transport;
   }

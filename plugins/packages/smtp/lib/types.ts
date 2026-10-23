@@ -8,7 +8,7 @@ export type QueryOptions = {
   operation: string;
   from: string;
   from_name: string;
-  to: string;
+  to: string | string[];
   cc: string[];
   bcc: string[];
   subject: string;
