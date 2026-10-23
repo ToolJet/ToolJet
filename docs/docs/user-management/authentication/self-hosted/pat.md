@@ -20,7 +20,6 @@ With Personal Access Tokens (PATs), ToolJet enables secure, scoped, and session-
 - **Session isolation**: Embedded sessions don’t interfere with regular ToolJet usage.
 - **Expiration control**: Define how long each token and session should stay valid.
 - **Workspace-level compatibility**: Extend PAT usage across workspace when needed.
-<!-- TODO verify: the meaning of "Workspace-level compatibility". The /api/ext endpoint creates a workspace-scoped embed token when appId and appSlug are both omitted, but the generated embed URL needs an app and the embed session lookup matches on appId, so it is unclear whether this works. -->
 
 ## When to Use PAT
 
