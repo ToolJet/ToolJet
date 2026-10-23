@@ -81,6 +81,13 @@ export const getLeftPanelHeight = (isExpanded, measuredHeight) =>
 // right configuration panel overlays/resizes independently when it is open.
 export const EDITOR_CANVAS_WIDTH = 'calc(100% - 54px)';
 
+// A drawer tab behaves like a left-rail icon: clicking the tab that's already showing closes the
+// drawer; any other click opens it (or switches tabs while it stays open).
+export const getRuntimeTabClickAction = (tab, activeTab, isExpanded) => {
+  if (!isExpanded) return 'open';
+  return tab === activeTab ? 'close' : 'switch';
+};
+
 export const RUNTIME_PANEL_ITEMS = [
   { id: 'inspect', label: 'Inspector' },
   { id: 'debugger', label: 'Debugger' },
@@ -105,12 +112,6 @@ export const getLeftPanelOverflow = (panel) => (panel === 'pages' ? 'hidden' : '
 
 export const shouldShowLibraries = (isModuleEditor, hasAppJsLibrariesAccess) =>
   !isModuleEditor && Boolean(hasAppJsLibrariesAccess);
-
-export const getRightPanelAfterClearingSelection = (activePanel, isOpen) => {
-  if (!isOpen) return activePanel;
-  if (activePanel === 'pages' || activePanel === 'page-configuration' || activePanel === 'query') return activePanel;
-  return 'components';
-};
 
 export const getComponentPickerClassName = (surface) =>
   `components-container${surface === 'left' ? ' components-container--left' : ''}`;

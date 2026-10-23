@@ -11,7 +11,6 @@ import {
   getRightPanelForSelection,
   getPageSettingsSections,
   getLeftPanelOverflow,
-  getRightPanelAfterClearingSelection,
   getComponentPickerClassName,
   getQueryListClassName,
   getQueryPanelHeaderClassName,
@@ -29,6 +28,7 @@ import {
   getQueryManagerClassName,
   getRightPanelStyle,
   getRuntimePanelRightOffset,
+  getRuntimeTabClickAction,
   getQueryHeaderClassName,
   getQueryHeaderControlPresentation,
   getQueryDetailsClassName,
@@ -228,14 +228,6 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getLeftPanelOverflow('dependencies')).toBe('auto');
   });
 
-  // Break this catches: async page-switch cleanup replaces individual page configuration with Add components.
-  it('preserves page configuration while page switching clears component selection', () => {
-    expect(getRightPanelAfterClearingSelection('page-configuration', true)).toBe('page-configuration');
-    expect(getRightPanelAfterClearingSelection('pages', true)).toBe('pages');
-    expect(getRightPanelAfterClearingSelection('query', true)).toBe('query');
-    expect(getRightPanelAfterClearingSelection('configuration', true)).toBe('components');
-  });
-
   // Break this catches: component tiles lose their compact styling when rendered outside the old right sidebar.
   it('marks the left component picker with its context-independent tile surface', () => {
     expect(getComponentPickerClassName('left')).toBe('components-container components-container--left');
@@ -329,6 +321,14 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       width: 'min(496px, calc(100vw - 54px))',
     });
     expect(getRightPanelStyle('configuration')).toEqual({ overflow: 'auto' });
+  });
+
+  // Break this catches: clicking the open tab again does nothing, so the drawer can't be closed from its tab.
+  it('closes the drawer when its active tab is clicked again, and opens or switches otherwise', () => {
+    expect(getRuntimeTabClickAction('debugger', 'debugger', true)).toBe('close');
+    expect(getRuntimeTabClickAction('inspect', 'debugger', true)).toBe('switch');
+    expect(getRuntimeTabClickAction('debugger', 'debugger', false)).toBe('open');
+    expect(getRuntimeTabClickAction('inspect', 'debugger', false)).toBe('open');
   });
 
   // Break this catches: the bottom runtime panel slides under the wide query sidebar and clips its right edge.

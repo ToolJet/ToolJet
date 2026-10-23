@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { ComponentConfigurationTab } from './ComponentConfigurationTab';
-import ComponentsManagerTab from './ComponentManagerTab';
 import cx from 'classnames';
 import { PageSettings } from './PageSettingsTab';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
@@ -91,15 +90,7 @@ export const RightSideBar = ({ darkMode }) => {
                 </div>
               </FallbackBoundary>
             )}
-            {displayedTab === RIGHT_SIDE_BAR_TAB.COMPONENTS && (
-              <FallbackBoundary
-                label="Components manager"
-                location="Right SideBar Components manager"
-                darkMode={darkMode}
-              >
-                <ComponentsManagerTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
-              </FallbackBoundary>
-            )}
+            {/* Add component lives only in the left panel; the right side never shows it. */}
             {displayedTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION && (
               <ComponentConfigurationTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
             )}

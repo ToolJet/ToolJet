@@ -12,9 +12,13 @@ import {
   Globe,
   Link2,
   Lock,
+  LocateFixed,
   LogIn,
   MousePointerClick,
+  Play,
   Search,
+  SquareCode,
+  Trash2,
   Variable,
   X,
 } from 'lucide-react';
@@ -53,6 +57,20 @@ const CATEGORY_ICONS = {
   page: FileText,
   constants: Lock,
   input: LogIn,
+};
+
+// Lucide icons for the entity actions from useCallbackActions (keyed by action name, which that
+// hook owns). Unmapped actions fall back to their legacy SolidIcon.
+const ENTITY_ACTION_ICONS = {
+  'Run Query': Play,
+  'View query': SquareCode,
+  'Go to component': LocateFixed,
+  'Delete Component': Trash2,
+};
+
+const EntityActionIcon = ({ name, iconName }) => {
+  const Icon = ENTITY_ACTION_ICONS[name];
+  return Icon ? <Icon size={14} /> : <SolidIcon name={iconName} width="14" height="14" fill="currentColor" />;
 };
 
 const EntryIcon = ({ name, iconsList, darkMode }) => {
@@ -205,7 +223,7 @@ const DetailHeader = ({ path }) => {
               aria-label={name}
               data-cy={`inspector-${generateCypressDataCy(name)}-action`}
             >
-              <SolidIcon name={iconName} width="14" height="14" fill="currentColor" />
+              <EntityActionIcon name={name} iconName={iconName} />
             </button>
           </ToolTip>
         ))}

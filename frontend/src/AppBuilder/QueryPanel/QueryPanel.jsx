@@ -20,6 +20,7 @@ import {
   getRuntimePanelMeasuredHeight,
   getRuntimePanelRightOffset,
   getRuntimePanelTheme,
+  getRuntimeTabClickAction,
 } from '@/AppBuilder/panelLayout';
 
 const RUNTIME_PANEL_ICONS = { inspect: ScanSearch, debugger: Bug };
@@ -103,6 +104,10 @@ export const QueryPanel = ({ darkMode }) => {
   }, [height, isQueryPaneExpanded, persistPanel, setIsQueryPaneExpanded, setQueryPanelHeight]);
 
   const selectTab = (tab) => {
+    if (getRuntimeTabClickAction(tab, activeTab, isQueryPaneExpanded) === 'close') {
+      toggleRuntimePanel();
+      return;
+    }
     const tabIndex = (id) => RUNTIME_PANEL_ITEMS.findIndex((item) => item.id === id);
     setTabDirection(Math.sign(tabIndex(tab) - tabIndex(activeTab)));
     setActiveTab(tab);

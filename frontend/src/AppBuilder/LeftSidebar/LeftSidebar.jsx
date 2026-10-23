@@ -22,7 +22,6 @@ import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { PageSettings } from '@/AppBuilder/RightSideBar/PageSettingsTab';
 import ComponentsManagerTab from '@/AppBuilder/RightSideBar/ComponentManagerTab';
 import { QueryDataPane } from '@/AppBuilder/QueryPanel/QueryDataPane';
-import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { getLeftPanelHeight, getLeftPanelOverflow, PANEL_MOTION, shouldShowLibraries } from '@/AppBuilder/panelLayout';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
@@ -64,6 +63,8 @@ export const BaseLeftSidebar = ({
     isSidebarOpen,
     isDraggingQueryPane,
     isQueryPaneExpanded,
+    isAiChatOpen,
+    setAiChatOpen,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
@@ -75,6 +76,8 @@ export const BaseLeftSidebar = ({
       state.isSidebarOpen,
       state.queryPanel.isDraggingQueryPane,
       state.queryPanel.isQueryPaneExpanded,
+      state.isAiChatOpen,
+      state.setAiChatOpen,
     ],
     shallow
   );
@@ -83,7 +86,7 @@ export const BaseLeftSidebar = ({
     getLeftPanelHeight(isQueryPaneExpanded, queryPanelHeight)
   );
   const [isPanelContentMounted, setIsPanelContentMounted] = useState(isSidebarOpen);
-  const [isAiChatMounted, setIsAiChatMounted] = useState(isSidebarOpen && selectedSidebarItem === 'tooljetai');
+  const [isAiChatMounted, setIsAiChatMounted] = useState(isAiChatOpen);
   const [animatePanelSwitch, setAnimatePanelSwitch] = useState(false);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
@@ -91,17 +94,20 @@ export const BaseLeftSidebar = ({
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
   const { isLeftPanelOpen, isRightChatOpen, isFabVisible, shouldMountLeftPanel } = getAiChatSurfaceState(
     selectedSidebarItem,
-    isSidebarOpen
+    isSidebarOpen,
+    isAiChatOpen
   );
   const aiChatMotionClassNames = getAiChatMotionClassNames();
 
   const handleSelectedSidebarItem = (item) => {
-    const store = useStore.getState();
-    setAnimatePanelSwitch(!isSidebarOpen || item !== selectedSidebarItem);
-    if (item !== 'queries' && store.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.QUERY) {
-      store.setActiveRightSideBarTab(null);
-      store.setRightSidebarOpen(false);
+    // The AI icon only opens the chat (which replaces the right panel); the chat's own × closes it.
+    // It never opens, switches, or closes the left panel.
+    if (item === 'tooljetai') {
+      setAiChatOpen(true);
+      return;
     }
+    // Left-rail clicks never close the right panel; it closes only from its own ×.
+    setAnimatePanelSwitch(!isSidebarOpen || item !== selectedSidebarItem);
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
     // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
@@ -333,18 +339,9 @@ export const BaseLeftSidebar = ({
         {shouldMountLeftPanel && (
           <Popover
             forceMount
-            onInteractOutside={(e) => {
-              if (
-                ['pages', 'components', 'queries', 'libraries', 'dependencies', 'apphistory', 'settings'].includes(
-                  selectedSidebarItem
-                )
-              )
-                return;
-              const isWithinSidebar = e.target.closest('.left-sidebar');
-              const isClickOnInspect = e.target.closest('.config-handle-inspect');
-              if (pinned || isWithinSidebar || isClickOnInspect) return;
-              toggleLeftSidebar(false);
-            }}
+            // Left panels close only from their own close button or rail icon — never from an
+            // outside click (canvas, right panel, bottom panel, AI chat).
+            onInteractOutside={(e) => e.preventDefault()}
             open={isLeftPanelOpen}
             popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${selectedSidebarItem} left-sidebar-overflow-${getLeftPanelOverflow(
               selectedSidebarItem
@@ -380,7 +377,7 @@ export const BaseLeftSidebar = ({
           {renderAISideBarTrigger({
             darkMode,
             setSideBarBtnRefs,
-            selectedSidebarItem,
+            selectedSidebarItem: isAiChatOpen ? 'tooljetai' : selectedSidebarItem,
             handleSelectedSidebarItem,
             isFab: true,
           })}
