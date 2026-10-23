@@ -85,6 +85,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
+import { MigrationGateMiddleware } from './middlewares/migration-gate.middleware';
 import { WorkspaceContextModule } from '@modules/workspace-context/module';
 import { NotificationsModule } from '@modules/notifications/module';
 
@@ -96,7 +97,9 @@ export class AppModule implements OnModuleInit, NestModule {
   ) {}
 
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(OtelMiddleware).forRoutes('*'); // global
+    // MigrationGateMiddleware first: while a deploy is migrating there is nothing worth
+    // tracing about a request we are about to reject.
+    consumer.apply(MigrationGateMiddleware, OtelMiddleware).forRoutes('*'); // global
   }
 
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
