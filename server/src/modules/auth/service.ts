@@ -193,7 +193,10 @@ export class AuthService implements IAuthService {
         false,
         true,
         loggedInUser,
-        manager
+        manager,
+        undefined,
+        // Invitation login intentionally skips MFA; it cannot authorize a new OAuth connection.
+        isInviteRedirect ? { oauthAuthenticationReset: true } : { oauthAuthenticationMethod: 'form' }
       );
     });
   }
@@ -208,12 +211,15 @@ export class AuthService implements IAuthService {
 
   async authorizeOrganization(user: User) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (user.defaultOrganizationId !== user.organizationId)
+      if (!user.oauthAppId && user.defaultOrganizationId !== user.organizationId)
         await this.userRepository.updateOne(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
       const organization = await this.organizationRepository.get(user.organizationId);
 
       const permissionData = await this.sessionUtilService.getPermissionDataToAuthorize(user, manager);
+      // This is a browser response boundary. Do not expose stored IdP tokens to an OAuth
+      // viewer or mutate the shared permission data used by server-side SSO query bindings.
+      const responsePermissionData = user.oauthGrantId ? { ...permissionData, ssoUserInfo: {} } : permissionData;
 
       return decamelizeKeysExcept(
         {
@@ -227,11 +233,11 @@ export class AuthService implements IAuthService {
             lastName: user.lastName,
             avatarId: user.avatarId,
             aiBuildNotificationsEnabled: user.aiBuildNotificationsEnabled,
-            ssoUserInfo: permissionData.ssoUserInfo,
-            metadata: permissionData.metadata,
+            ssoUserInfo: responsePermissionData.ssoUserInfo,
+            metadata: responsePermissionData.metadata,
             createdAt: user.createdAt,
           },
-          ...permissionData,
+          ...responsePermissionData,
         },
         ['metadata']
       );
@@ -285,6 +291,8 @@ export class AuthService implements IAuthService {
       passwordRetryCount: 0,
       passwordExpiry,
     });
+
+    await this.sessionUtilService.terminateAllSessions(user.id);
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
