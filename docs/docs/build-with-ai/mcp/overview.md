@@ -98,8 +98,6 @@ To connect your agent, follow the [Setup](/docs/build-with-ai/mcp/setup) guide.
 
 </div>
 
-<!-- TODO verify: the Manage Groups and Build Workflows tools (for example manage_workspace_groups, create_workflow, run_workflow) are not yet listed on /docs/build-with-ai/mcp/supported-tools. -->
-
 ## Benefits of Using ToolJet MCP
 
 - **No ToolJet credits**: Operations run on your AI client's own model subscription, so building through MCP doesn't draw down your ToolJet AI credits.
