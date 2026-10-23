@@ -307,6 +307,22 @@ export const ShadFileUpload = (props: WidgetProps) => {
           )}
           <p className="tw-m-0 tw-text-xs tw-text-[color:var(--lk-hint,var(--sc-muted-foreground))]">{hint}</p>
         </div>
+        {/* Clear all, once two or more files are chosen: what the clearFiles action does, with its onFileDeselected. A
+            user could only remove files one by one. */}
+        {files.length >= 2 && !disabled ? (
+          <div className="tw-flex tw-items-center tw-justify-between">
+            <span className={cn('tw-text-xs', MUTED)}>{`${files.length} files`}</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={cn('tw-h-7 tw-px-2 tw-text-xs', MUTED)}
+              onClick={() => runNow(() => clearFiles())}
+            >
+              Clear all
+            </Button>
+          </div>
+        ) : null}
         {files.length ? (
           // The list scrolls past about five files: drawn whole, a hundred files took over the page below the widget.
           <ul
