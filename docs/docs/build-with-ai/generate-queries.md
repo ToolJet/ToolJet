@@ -3,7 +3,7 @@ id: generate-queries
 title: Query Generation
 ---
 
-Beyond generating whole applications, ToolJet AI works at the query level: it can create fully configured queries, write JavaScript and Python snippets, and tidy up a query panel that has grown unwieldy.
+Beyond generating whole applications, ToolJet AI works at the query level: it can create fully configured queries and modify existing ones from the AI chat.
 
 ## Generate Query
 
@@ -18,29 +18,27 @@ To generate a query:
 
 You can use [@mention in AI Chat](/docs/build-with-ai/referencing-app-resources) to reference an existing query and ask the AI to modify it.
 
-## Generating Code
+:::note
+The AI buttons in the query panel (**Write query**, **Write custom code**, **Write transformation**, the AI code generator, and **Auto-sort unsorted queries into folders**) are currently hidden. To generate or change a query, including the code in a **Run JavaScript code** query, @mention the query in the AI chat and describe what you need.
+:::
 
-ToolJet lets you generate JavaScript and Python code snippets directly using AI.
+<!-- TODO verify: whether the AI agent writes RunJS code through the chat. The server's list of AI-supported data sources (AI_SUPPORTED_DATASOURCE_KINDS) doesn't include runjs, while the hidden query-panel button (AI_QUERY_SUPPORTED_KINDS) does. -->
 
-1. Click the AI icon in the query panel to open the AI code generator. <br/>
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/gen-code/icon.png" alt="tooljet generate code" />
-2. Enter a prompt describing the logic or query you want to build. <br/>
-    <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/tooljet-ai/gen-code/prompt.png" alt="tooljet generate code" />
-3. Check the generated code and either insert it directly or click Regenerate to try a different version. <br/>
-    <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/tooljet-ai/gen-code/results.png" alt="tooljet generate code" />
+## Supported Data Sources
 
-## Auto-sort Queries
+ToolJet AI can work with queries for these data sources. They are also the data sources you can @mention in the AI chat.
 
-As applications grow, queries can accumulate without clear organization. The Auto-sort feature groups your queries into folders automatically based on their names.
-
-To use Auto-sort:
-1. Open the query panel.
-2. Click the **Auto-sort unsorted queries into folders** option. <br/>
-    <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/auto-sort.png" alt="tooljet auto-sort queries" />
-3. The AI analyzes your query names and organizes them into folders.
-
-**How it works:**
-- If folders already exist in your app, queries are mapped to the closest matching folder where applicable, and new folders are created for the rest.
-- If no folders exist, new folders are created based on query name groupings.
-- Only query names are sent to the AI - no query content or data source credentials are shared, for compliance reasons.
-- Results depend on descriptive query names. Generic names like `postgres_1`, `postgres_2` will produce less precise groupings.
+- PostgreSQL
+- MySQL
+- MS SQL Server
+- Snowflake
+- Databricks
+- MongoDB
+- BigQuery
+- OpenAPI
+- OpenAI
+- Gmail
+- Google Calendar
+- HubSpot
+- ServiceNow
+- QuickBooks

@@ -35,6 +35,6 @@ ToolJet AI can be used to quickly generate Modules, which can then be reused acr
 
 ## Related
 
-- [Query Generation](/docs/build-with-ai/generate-queries) — generate queries, code, and organize your query panel
+- [Query Generation](/docs/build-with-ai/generate-queries) — generate and modify queries from the AI chat
 - [@mention in AI Chat](/docs/build-with-ai/referencing-app-resources) — target an exact component or query
 - [Understanding AI Credits](/docs/build-with-ai/ai-credits) — how much an operation costs
