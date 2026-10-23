@@ -45,7 +45,10 @@ if (shardTotal > 1) {
     index: Number(process.env.SHARD_INDEX || 0),
     total: shardTotal,
     setupSpecs: (process.env.SHARD_SETUP_SPECS || "").split(",").filter(Boolean),
-    group: process.env.SHARD_GROUP,
+    groups: (process.env.SHARD_GROUPS || "")
+      .split(";")
+      .map((group) => group.split(",").filter(Boolean))
+      .filter((group) => group.length),
   });
   console.log(`Shard ${Number(process.env.SHARD_INDEX || 0) + 1}/${shardTotal} runs ${specs.length} specs:`);
   specs.forEach((spec) => console.log(`  ${spec}`));

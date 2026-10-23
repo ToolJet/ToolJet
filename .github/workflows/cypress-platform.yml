@@ -424,9 +424,11 @@ jobs:
           SHARD_INDEX: ${{ strategy.job-index }}
           SHARD_TOTAL: ${{ strategy.job-total }}
           # every machine has its own fresh ToolJet: onboard the first user and set a
-          # valid license on each; licensing specs change the license, so keep them together
+          # valid license on each; licensing specs change the license, so keep them together.
+          # manageSSO.cy.js needs the instance SSO state the sso/ and settings/ specs leave
+          # behind (it fails on a fresh instance), so it runs after them on one machine.
           SHARD_SETUP_SPECS: firstUserOnboarding.cy.js,updateLicense.cy.js
-          SHARD_GROUP: /licensing/
+          SHARD_GROUPS: /licensing/;/eeTestcases/sso/,/eeTestcases/settings/,workspace/manageSSO.cy.js
           BROWSER: chrome
           CONFIG_FILE: ${{ matrix.label == 'gitsync' && 'cypress-gitsync.config.js' || matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
           CYPRESS_CONFIG: "baseUrl=http://localhost:3000"

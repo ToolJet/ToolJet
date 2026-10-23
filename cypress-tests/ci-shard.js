@@ -4,8 +4,9 @@
 // machine, and specs that change instance-wide state must stay together:
 //   SHARD_SETUP_SPECS  comma-separated path suffixes run on every shard, e.g.
 //                      "firstUserOnboarding.cy.js,updateLicense.cy.js"
-//   SHARD_GROUP        path substring; every matching spec goes to the same
-//                      shard as one unit, e.g. "/licensing/"
+//   SHARD_GROUPS       groups separated by ";", each a comma-separated list of
+//                      path substrings; every spec matching a group goes to the
+//                      same shard as one unit, e.g. "/licensing/;/sso/,manageSSO.cy.js"
 // Everything else is spread by spec count. Each shard keeps the config's
 // original spec order, so setup specs still run before the specs needing them.
 const fs = require("fs");
@@ -44,15 +45,16 @@ function listSpecs(configFile) {
   return [...new Set(patterns.flatMap(expandPattern))];
 }
 
-function pickShardSpecs({ configFile, index, total, setupSpecs, group }) {
+function pickShardSpecs({ configFile, index, total, setupSpecs, groups }) {
   const specs = listSpecs(configFile);
   const isSetup = (spec) => setupSpecs.some((suffix) => spec.endsWith(suffix));
-  const inGroup = (spec) => Boolean(group) && spec.includes(group);
+  // index of the first group the spec matches, -1 for none
+  const groupOf = (spec) => groups.findIndex((group) => group.some((part) => spec.includes(part)));
 
-  const grouped = specs.filter((spec) => inGroup(spec) && !isSetup(spec));
+  const runnable = specs.filter((spec) => !isSetup(spec));
   const units = [
-    ...(grouped.length ? [grouped] : []),
-    ...specs.filter((spec) => !inGroup(spec) && !isSetup(spec)).map((spec) => [spec]),
+    ...groups.map((_, i) => runnable.filter((spec) => groupOf(spec) === i)).filter((unit) => unit.length),
+    ...runnable.filter((spec) => groupOf(spec) === -1).map((spec) => [spec]),
   ];
 
   // Same input on every machine, so every machine computes the same split.
