@@ -237,6 +237,62 @@ describe('DataSourcesController', () => {
     });
   });
 
+  describe('GET /api/data-sources/dependent-queries/:id | Dependent query count', () => {
+    it('should return the dependent query count for a data source in the same workspace', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { dataSource } = await createAppWithDependencies(nestApp, adminUserData.user, {
+        isQueryNeeded: true,
+      });
+      await updateEntity(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+      });
+
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/data-sources/dependent-queries/${dataSource.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toMatchObject({ datasources: 1, dependent_queries: expect.any(Number) });
+    });
+
+    it('should not reveal a data source from another workspace', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(nestApp, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { dataSource } = await createAppWithDependencies(nestApp, adminUserData.user, {
+        isQueryNeeded: true,
+      });
+      await updateEntity(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+      });
+
+      const loggedAnotherUser = await login(nestApp, anotherOrgAdminUserData.user.email);
+
+      // A data source id from another workspace must not be resolvable: the route
+      // is guarded by ValidateDataSourceGuard, which 404s when the source does not
+      // belong to the caller's workspace. Previously this returned 200 with the
+      // existence flag and dependent-query count, leaking cross-tenant metadata.
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/data-sources/dependent-queries/${dataSource.id}`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedAnotherUser.tokenCookie);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).not.toHaveProperty('dependent_queries');
+    });
+  });
+
   describe('POST /api/data-sources/:id/authorize_oauth2 | OAuth2 authorization', () => {
     it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
       const adminUserData = await createUser(nestApp, {

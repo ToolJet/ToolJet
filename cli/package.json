@@ -15,6 +15,11 @@
     "inquirer": "^7.3.3",
     "rimraf": "^3.0.2"
   },
+  "overrides": {
+    "mocha": {
+      "nanoid": "^3.3.12"
+    }
+  },
   "devDependencies": {
     "@oclif/test": "^2",
     "@types/chai": "^4",

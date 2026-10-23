@@ -11,6 +11,7 @@ import {
 } from '../dto';
 import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+import { FeatureAbility } from '../ability';
 
 export interface IDataSourcesController {
   fetchGlobalDataSources(
@@ -47,6 +48,8 @@ export interface IDataSourcesController {
     user: User,
     dataSourceId: string,
     testDataSourceDto: TestDataSourceDto,
+    dataSource: DataSourceEntity,
+    userPermissions: UserPermissions,
     branchId?: string
   ): Promise<object>;
 
@@ -58,7 +61,8 @@ export interface IDataSourcesController {
     user: User,
     id: string,
     environmentId: string,
-    authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
+    authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
+    ability: FeatureAbility
   ): Promise<void>;
 
   validateOptions(
