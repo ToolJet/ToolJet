@@ -7,7 +7,7 @@
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent, within } from '@testing-library/react';
-import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'dt1';
 const widget = createWidgetHarness({
@@ -347,5 +347,16 @@ describe('UI 2.0 Date and time picker', () => {
     await open();
     const grid = screen.getByRole('grid');
     for (const cell of grid.querySelectorAll('th, td')) expect(cell).toHaveClass('tw-w-8', '!tw-flex-none');
+  });
+
+  test('[ShadDateTimePicker-PROP-011] Show clear button: an x while it holds a value empties it, firing onSelect once', async () => {
+    // The native widget's showClearBtn; every field's x is the shared one (showClearButton.spec: required, disabled).
+    render({ properties: { showClearBtn: binding('{{true}}'), defaultValue: binding('2026-10-15 09:30') } });
+    widget.setEvents(countInvocationsOn(ID, 'onSelect'));
+    const clear = await screen.findByRole('button', { name: 'Clear' });
+    await act(async () => fireEvent.click(clear));
+    await waitFor(() => expect(exposed().value).toEqual(''));
+    expect(widget.variables().calls).toBe(1);
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
   });
 });

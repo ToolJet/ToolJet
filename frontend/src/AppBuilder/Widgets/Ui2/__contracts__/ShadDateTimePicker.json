@@ -117,6 +117,15 @@
       "default": "Pick a date and time",
       "initial": "Pick a date and time"
     },
+    "showClearBtn": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "timeFormat": {
       "type": "string",
       "schema": {

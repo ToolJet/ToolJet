@@ -151,6 +151,17 @@ export const shadDateTimePickerConfig = {
       },
       placeholder: "['2026-12-25', '2027-01-01']",
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -616,6 +627,9 @@ export const shadDateTimePickerConfig = {
       },
       disabledDates: {
         value: '{{[]}}',
+      },
+      showClearBtn: {
+        value: '{{false}}',
       },
       loadingState: {
         value: '{{false}}',
