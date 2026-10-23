@@ -3,6 +3,7 @@
 // the viewer and editor views, theme and canvas settings, and cleanup. Every app is named "Cypress UI2 ..." and
 // deleted by the spec that made it; a stale one from an aborted run is swept before the next run.
 import { GRID_COLUMNS } from "./widgets";
+import { findWidget } from "./geometry";
 
 export const APP_PREFIX = "Cypress UI2";
 
@@ -198,24 +199,64 @@ export const setTheme = (theme) => cy.apiUpdateGlobalSettings({ appMode: theme }
 export const viewerUrl = (app) =>
   `/applications/${app.appId}/${app.pageHandle}?env=development&version=${encodeURIComponent(app.versionName)}`;
 
-/** Waits until the named widgets have mounted, web fonts are in, and animations (charts) have settled. */
-export const waitForWidgets = (names, settleMs = 2500) => {
+/** Every named widget's canvas top, box height and root height, as one comparable snapshot. */
+const boxSnapshot = (win, names) =>
+  Object.fromEntries(
+    names.map((n) => {
+      const f = findWidget(win.document, n);
+      if (!f) return [n, null];
+      const b = f.box.getBoundingClientRect();
+      const canvas = f.el.closest(".real-canvas");
+      const top = b.top - (canvas ? canvas.getBoundingClientRect().top - canvas.scrollTop : 0);
+      const root = (f.el.firstElementChild || f.el).getBoundingClientRect();
+      return [n, [Math.round(top * 2) / 2, Math.round(b.height * 2) / 2, Math.round(root.height * 2) / 2]];
+    })
+  );
+
+/**
+ * Waits until the named widgets' boxes stop changing: their tops, heights and root heights are read every `interval`
+ * ms until two reads in a row match (a fitted widget first renders at its saved height and then fits its content, a
+ * Table once its rows arrive). Fails after `timeout` naming the widgets still moving and their last two reads.
+ */
+export const waitForStableBoxes = (names, { interval = 300, timeout = 30000 } = {}) => {
+  // The clock starts at the first read, not when the command is queued (a page visit queued before it can take longer
+  // than the whole budget).
+  let started = null;
+  const poll = (previous) =>
+    cy.window({ log: false }).then((win) => {
+      if (started === null) started = Date.now();
+      const current = boxSnapshot(win, names);
+      const moving = previous ? names.filter((n) => JSON.stringify(previous[n]) !== JSON.stringify(current[n])) : names;
+      if (!moving.length) return;
+      if (Date.now() - started > timeout) {
+        const detail = moving.slice(0, 8).map((n) => `${n} [top, height, root] ${JSON.stringify(previous[n])} -> ${JSON.stringify(current[n])}`);
+        throw new Error(`widget boxes still changing after ${timeout}ms (${moving.length}): ${detail.join("; ")}`);
+      }
+      cy.wait(interval, { log: false });
+      poll(current);
+    });
+  poll(null);
+};
+
+/** Waits until the named widgets have mounted, web fonts are in, and every box has stopped changing. */
+export const waitForWidgets = (names) => {
   names.forEach((n) => cy.get(`[data-cy="draggable-widget-${n}"]`, { timeout: 60000 }).should("exist"));
   cy.document({ log: false }).then((doc) => doc.fonts && doc.fonts.ready);
-  cy.wait(settleMs, { log: false });
+  waitForStableBoxes(names);
 };
 
-export const openViewer = (names, settleMs) => {
+export const openViewer = (names) => {
   cy.then(() => cy.visit(viewerUrl(Cypress.env("ui2App"))));
-  waitForWidgets(names, settleMs);
+  waitForWidgets(names);
 };
 
-export const openEditor = (names, settleMs) => {
+export const openEditor = (names) => {
   // cy.openApp waits only 10s for its ready selector; a gallery editor on a loaded machine takes longer, so give it
   // one that is there at once and let waitForWidgets wait (60s per widget) for the canvas.
   cy.then(() => cy.openApp("", Cypress.env("workspaceId"), Cypress.env("ui2App").appId, "body"));
-  waitForWidgets(names, settleMs);
+  waitForWidgets(names);
   deselectAll();
+  waitForStableBoxes(names);
 };
 
 /** Clears the editor selection so no handle or selection outline sits on a widget. */

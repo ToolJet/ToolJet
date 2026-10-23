@@ -63,6 +63,11 @@ entry when its fix lands. The list is empty: the 36 off-grid default heights it 
 
 ## Tolerances and what is not checked
 
+- Nothing is measured on a timer. After a page opens, and again for each widget after it is scrolled into view, the
+  suite reads every measured widget's canvas top, box height and root height every 300ms until two reads in a row
+  match (`waitForStableBoxes`): a fitted widget first renders at its saved height and then fits its content, a Table
+  once its rows arrive. It fails after 30s, naming the widgets still moving and their last two reads.
+
 - Fill: 2px per side (the canvas wrapper's 2px padding), plus 0.5px rounding. Containment: 1px. Parity: 1px.
 - Bands are checked only against a painted surface at least half the box wide and tall (a card, a field, a chart):
   text-only widgets and small controls are vertically centred on purpose.

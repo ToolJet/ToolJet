@@ -1,6 +1,6 @@
 // Shared bodies of the data-driven specs, so the viewer and editor variants stay one definition.
 import { ui2Widgets, widgetByType } from "./widgets";
-import { ui2Login, sweepStaleApps, createUi2App, buildGallery, setTheme, openViewer, openEditor, deleteUi2App, smallHeight } from "./app";
+import { ui2Login, sweepStaleApps, createUi2App, buildGallery, setTheme, openViewer, openEditor, deleteUi2App, smallHeight, waitForStableBoxes } from "./app";
 import { measureWidget, geometryFailures } from "./geometry";
 import { resetReport, assertNoFailures } from "./report";
 import { knownFailure } from "./known";
@@ -53,7 +53,8 @@ export const geometrySuite = (mode, { widths, themes }) => {
               SIZES.forEach((size) => {
                 const name = galleryName(widget, size);
                 cy.get(`[data-cy="draggable-widget-${name}"]`).first().scrollIntoView({ offset: { top: -120, left: 0 } });
-                cy.wait(150, { log: false });
+                // Scrolling can mount lazy content (a chart sizing itself): measure once this box is still.
+                waitForStableBoxes([name]);
                 cy.window({ log: false }).then((win) => {
                   const m = measureWidget(win, name);
                   data[size] = m;
