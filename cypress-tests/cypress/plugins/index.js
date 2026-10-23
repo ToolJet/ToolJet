@@ -34,6 +34,9 @@ module.exports = (on, config) => {
   // every config that loads this plugin file (all current configs do).
   require("cypress-real-dnd/plugin").realDragDropPlugin(on);
 
+  // UI 2.0 widget configs for the data-driven specs in e2e/happyPath/appbuilder/ui2 (Cypress.env("ui2Widgets")).
+  require("./ui2Widgets")(on, config);
+
   // Temporary diagnostic log task (used by _probe.cy.js). Safe to keep.
   on("task", {
     log(message) {
