@@ -187,6 +187,25 @@
   border: 1px solid var(--t2-border, var(--ui-border));
   border-radius: var(--t2-radius, calc(var(--ui-radius) + 2px));
 }
+@supports not selector(::-webkit-scrollbar) {
+  .t2-box {
+    scrollbar-width: thin;
+  }
+}
+/* An overlay scrollbar (macOS) hides until a scroll starts: a styled one stays, so columns past the edge read as there. */
+.t2-box::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.t2-box::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ui-muted-fg) 45%, transparent) padding-box;
+}
+.t2-box::-webkit-scrollbar-track,
+.t2-box::-webkit-scrollbar-corner {
+  background: transparent;
+}
 .t2-box.more-right {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
   mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
@@ -258,6 +277,26 @@
 }
 .t2-grid td.is-wrap {
   white-space: normal;
+}
+/* A cell's content box: capped at 360px, or at its share of the width when the columns are wider than the table. */
+.t2-clip {
+  max-width: var(--t2-cell-max, 360px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* An html cell keeps its blocks (a bold name over a muted line); each line ends in an ellipsis when it is cut. */
+.t2-clip > .t2-html {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t2-clip > .t2-html > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t2-html {
+  line-height: 1.35;
 }
 .t2-grid.is-bordered th,
 .t2-grid.is-bordered td {
@@ -360,6 +399,10 @@
 .t2-badge--destructive {
   background: color-mix(in srgb, var(--ui-destructive) 10%, transparent);
   color: var(--ui-destructive);
+}
+.t2-badge--info {
+  background: color-mix(in srgb, var(--ui-info) 10%, transparent);
+  color: var(--ui-info);
 }
 .t2-badge--custom {
   background: var(--t2-badge-bg);

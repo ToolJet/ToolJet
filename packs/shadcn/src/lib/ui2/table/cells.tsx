@@ -1,7 +1,9 @@
 import React from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Check } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { cn } from '../../cn';
+import { avatarHue, chipLabel, chipTone } from '../display/lists/model';
 import {
   BADGE_BY_STATUS,
   badgeLook,
@@ -42,20 +44,39 @@ export class CellBoundary extends React.Component<{ resetKey: unknown; children:
   }
 }
 
-// An HTML cell is the row's data: without a sanitiser in the pack it shows as its text, never as markup.
-const htmlText = (html: string): string => {
-  try {
-    return new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '';
-  } catch {
-    return html.replace(/<[^>]*>/g, '');
-  }
+// An HTML cell is the row's data, sanitised as UI 2.0's Table does: DOMPurify's defaults keep <style> (which restyles
+// the whole page) and forms (a password box in a cell), so both are dropped too.
+const CELL_HTML = { FORBID_TAGS: ['style', 'form', 'input', 'button', 'select', 'textarea'] };
+
+// A badge's tone from its value: UI 2.0's Table's status words first, then the native Table's chip words ("Medium" and
+// "At risk" warning, "Critical" destructive, "In progress" info), then a calm tone for a low priority.
+const TONE_CLASS: Record<string, string> = { success: 'success', warning: 'warning', danger: 'destructive', info: 'info' };
+const CALM = /^(low|minor|trivial|normal|standard|routine|p[34])$/i;
+const toneOf = (value: string): string | null => {
+  const known = BADGE_BY_STATUS[value.toLowerCase()];
+  if (known) return known;
+  const tone = TONE_CLASS[chipTone(value)];
+  if (tone) return tone;
+  return CALM.test(value.trim()) ? 'info' : null;
+};
+// Any other value (a tier, a region, a category) takes a colour of its own from a seven-hue palette, the same for the
+// same value on every row and every table, instead of an uncoloured outline beside coloured badges.
+// The hues keep clear of the status tones' red, amber and green, so a tier or a region never reads as a state.
+const PALETTE_HUES = [262, 199, 172, 330, 230, 290, 186];
+const paletteLook = (value: string): CSSProperties => {
+  // avatarHue spreads values over seven slots (12 + 51n degrees); each slot takes one of the palette's hues.
+  const hue = PALETTE_HUES[Math.round((avatarHue(value.trim().toLowerCase()) - 12) / 51) % PALETTE_HUES.length];
+  return {
+    '--t2-badge-fg': `color-mix(in srgb, hsl(${hue} 70% 34%) 85%, var(--ui-fg))`,
+    '--t2-badge-bg': `hsl(${hue} 75% 50% / 0.13)`,
+  } as CSSProperties;
 };
 
 const BadgeCell = ({ value, column, badgeColors }: { value: unknown; column: TableColumn; badgeColors: unknown }) => {
   if (!isSet(value)) return null;
   const own = badgeLook(value, column.badgeColors) ?? badgeLook(value, badgeColors);
   const option = column.options?.find((o: Loose) => String(o?.value ?? o) === String(value));
-  const label = String(option?.label ?? value);
+  const label = option?.label !== undefined ? String(option.label) : chipLabel(value);
   if (own) {
     return (
       <span className="t2-badge t2-badge--custom" style={own}>
@@ -63,7 +84,14 @@ const BadgeCell = ({ value, column, badgeColors }: { value: unknown; column: Tab
       </span>
     );
   }
-  return <span className={cn('t2-badge', `t2-badge--${BADGE_BY_STATUS[String(value).toLowerCase()] || 'outline'}`)}>{label}</span>;
+  const tone = toneOf(String(value));
+  return tone ? (
+    <span className={cn('t2-badge', `t2-badge--${tone}`)}>{label}</span>
+  ) : (
+    <span className="t2-badge t2-badge--custom" style={paletteLook(String(value))}>
+      {label}
+    </span>
+  );
 };
 
 const BUTTON_VARIANTS = new Set(['default', 'outline', 'secondary', 'ghost', 'destructive', 'link']);
@@ -199,7 +227,9 @@ export const renderCell = ({ value: cellValue, row, column, defaults, onAction, 
         </span>
       );
     case 'html':
-      return isSet(value) ? htmlText(String(value)) : null;
+      return isSet(value) ? (
+        <span className="t2-html" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(value), CELL_HTML) }} />
+      ) : null;
     case 'json':
       return isSet(value) || (value && typeof value === 'object') ? (
         <code className="t2-json">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</code>

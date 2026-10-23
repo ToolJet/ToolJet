@@ -2,6 +2,7 @@
 // with the same conventions: native column keys, filter conditions, sortApplied, rows keyed by idField. Plain TS with no
 // dayjs: dates are parsed and formatted here with the dayjs format tokens the UI 2.0 table accepts.
 import type { CSSProperties } from 'react';
+import { seriesLabel } from '../charts/chartModel';
 
 export type Row = Record<string, unknown>;
 type Loose = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -10,6 +11,7 @@ export type ColumnType =
   | 'string'
   | 'number'
   | 'currency'
+  | 'percent'
   | 'date'
   | 'datetime'
   | 'badge'
@@ -30,6 +32,8 @@ export interface ColumnFormat {
   dateFormat?: string;
   prefix?: string;
   suffix?: string;
+  /** A percent column whose values are fractions (0.184 shows 18.4%). */
+  fraction?: boolean;
 }
 
 export interface TableColumn {
@@ -41,6 +45,8 @@ export interface TableColumn {
   width?: number;
   minWidth?: number;
   visible: boolean;
+  /** Off until the column chooser shows it: an id column of columns derived from the data. */
+  hiddenByDefault: boolean;
   sortable: boolean;
   searchable: boolean;
   wrap: boolean;
@@ -107,6 +113,8 @@ const TYPE_ALIASES: Record<string, ColumnType> = {
   number: 'number',
   currency: 'currency',
   money: 'currency',
+  percent: 'percent',
+  percentage: 'percent',
   date: 'date',
   datepicker: 'date',
   datetime: 'datetime',
@@ -127,7 +135,8 @@ const TYPE_ALIASES: Record<string, ColumnType> = {
   json: 'json',
   html: 'html',
 };
-const RIGHT_ALIGNED = new Set<string>(['number', 'currency']);
+const RIGHT_ALIGNED = new Set<string>(['number', 'currency', 'percent']);
+const NUMERIC = new Set<string>(['number', 'currency', 'percent']);
 export const NOT_DATA = new Set<string>(['button']);
 
 /** A cell's value; `key` may be dotted (meta.team). */
@@ -143,17 +152,124 @@ export const readCell = (row: unknown, key: unknown): unknown => {
 const inferType = (value: unknown): ColumnType =>
   typeof value === 'number' ? 'number' : typeof value === 'boolean' ? 'boolean' : 'string';
 
+// ---- What a column holds, from its name and values ------------------------------------------------------------------
+// UI 2.0's Table types columns from the data only by JavaScript type (a number column, a string column) and shows the
+// key as the header, so derived tables read "total_amount" over "12,500" and "margin" over "0.18". The pack reads the
+// field's words as well, the way the AI-built apps name them: money, percentages, dates, statuses and ids.
+
+const tokens = (...texts: unknown[]): string[] =>
+  texts
+    .filter((t) => typeof t === 'string' || typeof t === 'number')
+    .map((t) => String(t).replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase())
+    .join(' ')
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+
+const MONEY_WORDS = new Set([
+  'amount', 'amt', 'price', 'prices', 'cost', 'costs', 'revenue', 'revenues', 'subtotal', 'total', 'balance', 'budget',
+  'fee', 'fees', 'salary', 'salaries', 'spend', 'spent', 'payout', 'payouts', 'mrr', 'arr', 'ltv', 'aov', 'gmv', 'acv',
+  'tcv', 'income', 'expense', 'expenses', 'profit', 'earnings', 'refund', 'refunds', 'charge', 'charges', 'deposit',
+  'wage', 'wages', 'payment', 'payments', 'invoiced', 'billed', 'outstanding', 'owed', 'paid', 'due', 'sales', 'rent',
+  'premium', 'arrears', 'msrp', 'valuation', 'capex', 'opex', 'ebitda',
+]);
+// Money words that also lead a count ("total_orders", "paid_invoices").
+const WEAK_MONEY = new Set(['total', 'paid', 'due', 'sales', 'outstanding']);
+// "Value" is money beside a deal, an order or a contract; alone it is any figure.
+const MONEY_PAIRS = new Set(['deal', 'order', 'contract', 'invoice', 'pipeline', 'lifetime', 'policy', 'claim', 'stock', 'inventory']);
+const PERCENT_WORDS = new Set(['pct', 'percent', 'percentage', 'ratio', 'margin', 'utilisation', 'utilization', 'occupancy', 'rate', 'conversion', 'churn', 'apr', 'apy', 'yield']);
+// A rate per hour, night or unit is money ("hourly_rate"), not a share.
+const PER_UNIT = new Set(['hourly', 'daily', 'nightly', 'weekly', 'monthly', 'day', 'hour', 'night', 'unit', 'room', 'base', 'flat']);
+// Words that make a figure a count or a score, never money or a share.
+const COUNT_WORDS = new Set([
+  'count', 'qty', 'quantity', 'number', 'num', 'no', 'units', 'items', 'orders', 'seats', 'users', 'hours', 'days',
+  'minutes', 'mins', 'visits', 'views', 'clicks', 'score', 'rating', 'age', 'year', 'years', 'points', 'sessions',
+  'tickets', 'calls', 'leads', 'headcount', 'employees', 'nights', 'guests', 'pages', 'weight', 'kg', 'lbs', 'km', 'miles',
+]);
+// Figures that are labels: grouping their digits ("2,026") misreads them.
+const LABEL_NUMBER_WORDS = new Set(['year', 'zip', 'zipcode', 'postcode', 'pin', 'phone', 'mobile', 'code', 'ext', 'extension', 'sku', 'version']);
+const STATUS_WORDS = new Set(['status', 'state', 'stage', 'priority', 'severity', 'tier', 'level', 'health', 'risk', 'urgency', 'phase', 'sentiment']);
+const CURRENCY_MARKS: [RegExp, string][] = [
+  [/€|\beur\b/i, 'EUR'],
+  [/£|\bgbp\b/i, 'GBP'],
+  [/₹|\binr\b/i, 'INR'],
+  [/¥|\bjpy\b/i, 'JPY'],
+  [/\baud\b/i, 'AUD'],
+  [/\bcad\b/i, 'CAD'],
+  [/\$|\busd\b/i, 'USD'],
+];
+
+const NUMERIC_TEXT = /^-?(0|[1-9]\d{0,2}(,\d{3})+|[1-9]\d*)(\.\d+)?$/;
+const isNumeric = (v: unknown): boolean =>
+  (typeof v === 'number' && Number.isFinite(v)) || (typeof v === 'string' && NUMERIC_TEXT.test(v.trim()));
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_TIME = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/;
+
+/** Whether a field is an id: the row id field, "id", or a key ending in id ("customer_id", "orderId", "uuid"). */
+export const isIdField = (key: string, idField: string): boolean =>
+  key === idField || /^(id|uuid|guid|_id)$/i.test(key) || /(_id|Id|_uuid|Uuid)$/.test(key);
+
+/** The currency a column's name gives ("Price (€)", "amount_gbp"), if any. */
+const currencyIn = (text: string): string | undefined => CURRENCY_MARKS.find(([re]) => re.test(text))?.[1];
+
+/** A column's kind from its key, header and values: currency, percent, date, badge, boolean, number or string. */
+const inferKind = (key: string, name: unknown, values: unknown[]): { type: ColumnType; format?: ColumnFormat } => {
+  const present = values.filter((v) => !isEmptyValue(v));
+  if (!present.length) return { type: 'string' };
+  const words = tokens(key, name);
+  const has = (set: Set<string>) => words.some((w) => set.has(w));
+  if (present.every((v) => typeof v === 'boolean')) return { type: 'boolean' };
+  if (present.every(isNumeric)) {
+    if (has(LABEL_NUMBER_WORDS)) return { type: 'string' };
+    const figure = numericFigureKind(key, name, present);
+    return figure ?? { type: 'number' };
+  }
+  if (present.every((v) => typeof v === 'string')) {
+    const texts = present as string[];
+    if (texts.every((t) => ISO_TIME.test(t.trim()) && !Number.isNaN(Date.parse(t)))) return { type: 'datetime' };
+    if (texts.every((t) => ISO_DAY.test(t.trim()))) return { type: 'date' };
+    // A status reads as a badge: a field named for one, holding a few short words.
+    if (has(STATUS_WORDS) && new Set(texts).size <= 12 && texts.every((t) => t.length <= 32)) return { type: 'badge' };
+  }
+  return { type: inferType(present[0]) };
+};
+
+/** A numeric column's money or percent kind from its words, or null for a plain figure. */
+const numericFigureKind = (key: string, name: unknown, present: unknown[]): { type: ColumnType; format?: ColumnFormat } | null => {
+  const words = tokens(key, name);
+  const has = (set: Set<string>) => words.some((w) => set.has(w));
+  const text = `${key} ${typeof name === 'string' ? name : ''}`;
+  // "total_orders" and "paid_invoices" are counts; "order_amount" is money.
+  if (has(COUNT_WORDS) && !words.some((w) => MONEY_WORDS.has(w) && !WEAK_MONEY.has(w))) return null;
+  const perUnit = has(PER_UNIT);
+  if (/%/.test(text) || (has(PERCENT_WORDS) && !(perUnit && words.includes('rate')))) {
+    const numbers = present.map((v) => Number(String(v).replace(/,/g, '')));
+    // Shares stored as fractions (0.184) show as 18.4%; shares stored in percent (12.5) as written.
+    const fraction = numbers.every((n) => Math.abs(n) <= 1) && numbers.some((n) => !Number.isInteger(n));
+    return { type: 'percent', format: { fraction } };
+  }
+  const code = currencyIn(text);
+  const money = has(MONEY_WORDS) || (words.includes('value') && has(MONEY_PAIRS)) || (perUnit && words.includes('rate'));
+  if (code || money) return { type: 'currency', format: code ? { currency: code } : {} };
+  return null;
+};
+
+/** A header from a key: "order_ref" reads "Order ref", "customerId" "Customer ID". */
+export const headerLabel = (key: string): string => seriesLabel(key).replace(/\b(pct|percent)$/i, '%');
+// A header the author left as the raw key ("order_date", "company") is a key, not a label.
+const IDENTIFIER = /^[a-z][a-z0-9]*([_-][a-z0-9]+)*$|^[a-z]+([A-Z][a-z0-9]*)+$/;
+
 /** Past this many columns a binding of rows bound as columns froze the page. */
 export const MAX_COLUMNS = 100;
 
 /** Columns as one shape, from native column objects ({key, name, columnType, ...}), the pack's earlier keys ({key,
  *  label, align}), or, when none are given, the keys of the first rows (nested objects skipped). */
-export const normalizeColumns = (columns: unknown, data: unknown): TableColumn[] => {
+export const normalizeColumns = (columns: unknown, data: unknown, idField = 'id'): TableColumn[] => {
   let source: Loose[] = Array.isArray(columns)
     ? columns.filter((c) => c && typeof c === 'object' && !Array.isArray(c))
     : [];
-  if (!source.length) {
-    const sample: Row[] = (Array.isArray(data) ? data : []).filter((row) => row && typeof row === 'object').slice(0, 50);
+  const sample: Row[] = (Array.isArray(data) ? data : []).filter((row) => row && typeof row === 'object').slice(0, 50);
+  const derived = !source.length;
+  if (derived) {
     const seen = new Map<string, unknown>();
     sample.forEach((row) =>
       Object.keys(row).forEach((key) => {
@@ -163,34 +279,58 @@ export const normalizeColumns = (columns: unknown, data: unknown): TableColumn[]
     );
     source = [...seen.entries()]
       .filter(([, value]) => !(value !== null && typeof value === 'object'))
-      .map(([key, value]) => ({ key, name: key, columnType: inferType(value) }));
+      .map(([key]) => ({ key }));
   }
   const ids = new Set<string>();
   return source.slice(0, MAX_COLUMNS).map((c, index): TableColumn => {
     const key = String(c.key ?? c.dataIndex ?? c.accessor ?? c.name ?? c.title ?? c.label ?? `column${index + 1}`);
-    const type = TYPE_ALIASES[c.columnType ?? c.kind ?? c.type] ?? 'string';
+    const given = c.columnType ?? c.kind ?? c.type;
+    const values = () => sample.map((row) => readCell(row, key));
+    const ownName = c.name ?? c.title ?? c.header ?? c.label;
+    // A column with no type is typed from its values and words, as a derived one is. A number column named for money
+    // or a share ("budget", "Utilisation %") shows as one, unless the author gave it a prefix or a suffix.
+    let inferred: { type: ColumnType; format?: ColumnFormat } | null = null;
+    if (!isSet(given)) inferred = inferKind(key, ownName, values());
+    else if (TYPE_ALIASES[given] === 'number' && !isSet(c.prefix) && !isSet(c.suffix)) {
+      const present = values().filter((v) => !isEmptyValue(v));
+      inferred = isSet(c.currency)
+        ? { type: 'currency' }
+        : present.length && present.every(isNumeric)
+          ? numericFigureKind(key, ownName, present)
+          : null;
+    }
+    const type = inferred?.type ?? TYPE_ALIASES[given] ?? 'string';
+    const named = isSet(ownName) && !(String(ownName) === key && IDENTIFIER.test(key));
+    const name = named ? String(ownName) : headerLabel(key);
+    // Derived columns leave the ids out (they stay in the column chooser); a set column named only "id" or "Id" too.
+    const hiddenByDefault =
+      isIdField(key, idField) &&
+      !isSet(c.columnVisibility ?? c.visible) &&
+      (derived || /^(id|Id)$/.test(String(ownName ?? key)));
     let id = String(c.id ?? key);
     for (let n = 2; ids.has(id); n += 1) id = `${c.id ?? key}-${n}`;
     ids.add(id);
     return {
       id,
       key,
-      name: String(c.name ?? c.title ?? c.header ?? c.label ?? key),
+      name,
       type,
       align: c.horizontalAlignment ?? c.align ?? (RIGHT_ALIGNED.has(type) ? 'right' : 'left'),
       width: Number(c.columnSize ?? c.width) || undefined,
       minWidth: Number(c.minWidth) || undefined,
       visible: !falsy(c.columnVisibility ?? c.visible),
+      hiddenByDefault,
       sortable: !NOT_DATA.has(type) && !falsy(c.sortable),
       searchable: !NOT_DATA.has(type) && !falsy(c.searchable),
       wrap: c.wrap === true,
       format: {
         decimalPlaces: isSet(c.decimalPlaces) ? Math.max(0, Math.min(10, Number(c.decimalPlaces) || 0)) : undefined,
-        currency: c.currency,
+        currency: c.currency ?? inferred?.format?.currency,
         locale: c.locale,
         dateFormat: c.dateFormat,
         prefix: c.prefix,
         suffix: c.suffix,
+        fraction: c.fraction === true || (c.fraction !== false && inferred?.format?.fraction === true),
       },
       options: Array.isArray(c.options) ? c.options : undefined,
       badgeColors: c.badgeColors && typeof c.badgeColors === 'object' ? c.badgeColors : undefined,
@@ -299,6 +439,18 @@ const usableFormatter = (locale: unknown, options: Intl.NumberFormatOptions): In
   return numberFormatter('en-US', {});
 };
 
+const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'" };
+/** An html cell's text for search and export: each block, line break and cell is a word apart ("Pinecrest Schools Lena
+ *  Duarte", never "Pinecrest SchoolsLena Duarte"). */
+export const htmlToText = (html: string): string =>
+  html
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, ' ')
+    .replace(/<\/?(br|div|p|li|ul|ol|tr|td|th|h[1-6]|section|article|header|footer|table|blockquote)\b[^>]*>/gi, ' ')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&(amp|lt|gt|quot|apos|nbsp|#39);/g, (_, e: string) => ENTITIES[e])
+    .replace(/\s+/g, ' ')
+    .trim();
+
 const DEFAULT_DATE = 'DD MMM YYYY';
 const DEFAULT_DATETIME = 'DD MMM YYYY, HH:mm';
 
@@ -310,6 +462,15 @@ export const formatCell = (value: unknown, column: ColumnLike = {}): string => {
     if (isEmptyValue(value)) return '';
     const { type = 'string', format = {} } = column;
     const wrap = (text: string) => `${format.prefix ?? ''}${text}${format.suffix ?? ''}`;
+    if (type === 'percent') {
+      const raw = typeof value === 'number' ? value : Number(String(value).replace(/[,%\s]/g, ''));
+      if (!Number.isFinite(raw)) return String(value);
+      const digits = format.decimalPlaces;
+      const n = format.fraction ? raw * 100 : raw;
+      const text = usableFormatter(format.locale, { minimumFractionDigits: digits ?? 0, maximumFractionDigits: digits ?? 1 }).format(n);
+      return wrap(`${text}%`);
+    }
+    if (type === 'html') return htmlToText(String(value));
     if (type === 'number' || type === 'currency') {
       const n = typeof value === 'number' ? value : Number(String(value).replace(/,/g, ''));
       if (!Number.isFinite(n)) return String(value);
@@ -352,7 +513,8 @@ export const matchesSearch = (row: unknown, columns: TableColumn[], text: unknow
     if (isEmptyValue(value)) return false;
     return (
       formatCell(value, column).toLowerCase().includes(needle) ||
-      (typeof value !== 'object' && String(value).toLowerCase().includes(needle))
+      // An html cell is searched by its text, not its markup ("div" matched every row).
+      (typeof value !== 'object' && column.type !== 'html' && String(value).toLowerCase().includes(needle))
     );
   });
 };
@@ -370,7 +532,7 @@ const asTime = (value: unknown): number => {
 
 /** Numbers as numbers, dates as dates, else natural text order. */
 export const compareCells = (a: unknown, b: unknown, type?: string): number => {
-  if (type === 'number' || type === 'currency' || (typeof a === 'number' && typeof b === 'number')) {
+  if ((type && NUMERIC.has(type)) || (typeof a === 'number' && typeof b === 'number')) {
     const x = asNumber(a);
     const y = asNumber(b);
     if (Number.isFinite(x) && Number.isFinite(y)) return x - y;

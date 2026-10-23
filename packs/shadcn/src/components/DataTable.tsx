@@ -317,12 +317,12 @@ export const DataTable = () => {
     [rawData]
   );
   const idField = isSet(rawIdField) ? String(rawIdField) : 'id';
-  const autogen = !(Array.isArray(rawColumns) && rawColumns.length);
-  // The data shapes the columns only when none are set, so new data does not rebuild set columns.
-  const columnSample = autogen ? data : null;
-  const columns = useMemo(() => normalizeColumns(rawColumns, columnSample), [rawColumns, columnSample]);
+  // The data types the columns that set no type (money, shares, dates and statuses read from the values and the
+  // field's words) and makes the columns when none are set.
+  const columns = useMemo(() => normalizeColumns(rawColumns, data, idField), [rawColumns, data, idField]);
+  // The columns the viewer turned on or off in the chooser, against each column's default (an id column starts off).
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
-  const shownColumns = useMemo(() => columns.filter((c) => c.visible && !hiddenIds.has(c.id)), [columns, hiddenIds]);
+  const shownColumns = useMemo(() => columns.filter((c) => c.visible && hiddenIds.has(c.id) === c.hiddenByDefault), [columns, hiddenIds]);
   const entries = useMemo<Entry[]>(() => data.map((row, index) => ({ row, index, key: rowKey(row, idField, index) })), [data, idField]);
 
   // ---- search, sort, filters, page --------------------------------------------------------------------------------
@@ -658,6 +658,10 @@ export const DataTable = () => {
   const [box, setBox] = useState({ width: 0, height: 0 });
   const boxWidth = box.width;
   const [edges, setEdges] = useState({ right: false, below: false });
+  // Columns wider than the table together: each text column is capped at a fair share of the width, so long text ends in
+  // an ellipsis and every column fits; when they still do not, the table scrolls sideways with a scrollbar shown.
+  const [tight, setTight] = useState(false);
+  const lastWidth = useRef(-1);
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return undefined;
@@ -666,6 +670,12 @@ export const DataTable = () => {
       const width = el.clientWidth;
       const height = el.clientHeight - (head ? head.getBoundingClientRect().height : 0);
       setBox((b) => (b.width === width && b.height === height ? b : { width, height }));
+      // A new width measures the columns again uncapped; a table still wider than its box caps them.
+      const over = el.scrollWidth > el.clientWidth + 1;
+      if (lastWidth.current !== width) {
+        lastWidth.current = width;
+        setTight(over);
+      } else if (over) setTight(true);
       const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
       const below = el.scrollTop + el.clientHeight < el.scrollHeight - 1;
       setEdges((e) => (e.right === right && e.below === below ? e : { right, below }));
@@ -690,6 +700,8 @@ export const DataTable = () => {
   const showColumnSelector = hideColumnSelectorButton !== true;
   const toolbar = displaySearchBox !== false || showFilterButton !== false || showColumnSelector || showDownloadButton === true || showRefreshButton === true;
   const colCount = shownColumns.length + (bulk ? 1 : 0) || 1;
+  // Each column's share of the width, less its padding; never below 96px.
+  const cellCap = tight && boxWidth ? Math.max(96, Math.floor((boxWidth - (bulk ? 40 : 0)) / Math.max(1, shownColumns.length)) - 24) : null;
   const skeletonRows = Math.min(5, Math.max(1, Number(rowsPerPage) || 5));
   const empty = !loading && !paged.items.length;
   const defaults = { currency, locale, dateFormat, badgeColors };
@@ -709,6 +721,7 @@ export const DataTable = () => {
     ['--t2-striped', stripedRowColor],
     ['--t2-radius', px(borderRadius)],
     ['--t2-shadow', boxShadow],
+    ['--t2-cell-max', cellCap ? `${cellCap}px` : undefined],
   ]);
   const rootStyle: CSSProperties = { ...look, ...(px(fontSize) ? { fontSize: px(fontSize) } : {}) };
   const count = serverPaging && Number(totalRecords) ? Number(totalRecords) : processed.length;
@@ -851,7 +864,14 @@ export const DataTable = () => {
                           style={style}
                         >
                           <CellBoundary resetKey={value}>
-                            {renderCell({ value, row, column, defaults, onAction, rowIndex: entry.index, disabled, resolve })}
+                            {column.wrap || column.type === 'button' ? (
+                              renderCell({ value, row, column, defaults, onAction, rowIndex: entry.index, disabled, resolve })
+                            ) : (
+                              // A table cell takes no max-width: the content's own box caps and ellipses it.
+                              <div className="t2-clip">
+                                {renderCell({ value, row, column, defaults, onAction, rowIndex: entry.index, disabled, resolve })}
+                              </div>
+                            )}
                           </CellBoundary>
                         </td>
                       );
