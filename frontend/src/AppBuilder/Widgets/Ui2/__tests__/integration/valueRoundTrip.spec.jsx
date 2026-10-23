@@ -135,6 +135,13 @@ const CLEARS = [
   ],
   // Show clear button's x, on every field that offers it (showClearButton.spec covers its required and disabled cases).
   [
+    'ShadDatePicker',
+    'press:Clear',
+    { showClearBtn: '{{true}}', defaultValue: '2026-10-17' },
+    { value: '', isValid: true },
+    { onSelect: 1 },
+  ],
+  [
     'ShadPhoneInput',
     'press:Clear',
     { showClearBtn: '{{true}}', defaultValue: '+14155550123' },

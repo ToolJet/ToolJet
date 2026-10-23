@@ -126,6 +126,15 @@
       "default": "Pick a date",
       "initial": "Pick a date"
     },
+    "showClearBtn": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "tooltip": {
       "type": "string",
       "schema": {
