@@ -51,9 +51,44 @@ interface SSRFProtectionOptions {
   blockedSchemes?: string[];
   allowedHostnames?: Set<string>;
   allowPrivateNetworks?: boolean;
+  allowedRanges?: net.BlockList;
+}
+
+/**
+ * True if the IP is inside an admin-allowed IP/CIDR range. Only ever true when the server
+ * published a runtime config (allowedRanges is otherwise undefined).
+ */
+function isInAllowedRanges(ip: string, config: SSRFProtectionOptions): boolean {
+  if (!ip || !config.allowedRanges) return false;
+  const host = ip.toLowerCase().replace(/^\[|\]$/g, '');
+  const family = net.isIP(host);
+  return family !== 0 && config.allowedRanges.check(host, family === 6 ? 'ipv6' : 'ipv4');
+}
+
+/**
+ * True if the hostname or IP is on the admin allowlist (exact hostname, or an IP inside an allowed IP/CIDR).
+ */
+export function isAllowlisted(hostOrIp: string, config: SSRFProtectionOptions): boolean {
+  if (!hostOrIp) return false;
+  if (config.allowedHostnames?.has(hostOrIp.toLowerCase())) return true;
+  return isInAllowedRanges(hostOrIp, config);
 }
 
 export function getSSRFConfig(): SSRFProtectionOptions {
+  // Written by the server on EE only. When present it is the source of truth: the env vars and
+  // edition defaults (incl. the hardcoded localhost allowance) are not read.
+  const runtime = (globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__;
+  if (runtime) {
+    return {
+      enabled: runtime.enabled,
+      dnsResolutionCheck: true,
+      blockedSchemes: DEFAULT_BLOCKED_SCHEMES,
+      allowPrivateNetworks: false,
+      allowedHostnames: runtime.allowedHostnames,
+      allowedRanges: runtime.allowedRanges,
+    };
+  }
+
   const edition = process.env.TOOLJET_EDITION?.toLowerCase();
   const isCloud = edition === 'cloud';
   const isEE = edition === 'ee';
@@ -433,7 +468,7 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
     // On self-hosted (allowPrivateNetworks=true) only block dangerous ranges
     // (metadata, loopback) — not RFC1918, which are legitimate internal services.
     const ipCheckFn = config?.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
-    return addresses.some((addr) => ipCheckFn(addr));
+    return addresses.some((addr) => ipCheckFn(addr) && !(config && isInAllowedRanges(addr, config)));
   } catch (error) {
     // Fail-closed here too: a resolver error is exactly as unverifiable as an
     // empty answer above, and shouldn't be treated as "safe" (was previously
@@ -484,7 +519,7 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
 
   // Allowlist check — self-hosted instances can whitelist specific hostnames via
   // SSRF_ALLOWED_HOSTNAMES env var. Bypasses all checks below for that hostname.
-  if (config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) {
+  if ((config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) || isInAllowedRanges(hostname, config)) {
     return;
   }
 
@@ -588,7 +623,7 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
 
       // Respect the allowlist — if the hostname is explicitly allowed (e.g. localhost
       // on self-hosted), skip the private IP check so the connection proceeds.
-      if (config.allowedHostnames?.has(hostname.toLowerCase())) {
+      if (config.allowedHostnames?.has(hostname.toLowerCase()) || isInAllowedRanges(address, config)) {
         return callback(null, address, family);
       }
 
@@ -753,7 +788,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
   const hostname = url.hostname.toLowerCase();
   const scheme = url.protocol;
 
-  if (config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) {
+  if ((config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) || isInAllowedRanges(hostname, config)) {
     return;
   }
 
