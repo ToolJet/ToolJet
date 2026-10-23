@@ -1,10 +1,11 @@
-import React, { useState, useContext, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService, appsService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { appsService } from '@/_services/apps.service';
 import { ListItemPopover } from './ActionsPopover';
-import { TooljetDatabaseContext } from '../index';
-import { ToolTip } from '@/_components';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { ToolTip } from '@/_components/ToolTip';
 import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
@@ -25,7 +26,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     setForeignKeys,
     setConfigurations,
     canEditTjdb,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);

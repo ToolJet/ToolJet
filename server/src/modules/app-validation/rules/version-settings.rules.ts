@@ -1,0 +1,101 @@
+import { isPlainObject } from 'lodash';
+import { Issue, Rule, RuleContext, VersionSettingsWrite } from '../types';
+import { touchedField } from '../core/severity';
+import { isLiterallyTrue } from '../core/values';
+
+// The DTO only checks that homePageId is a UUID; nothing checks it is a page of this
+// version, and an app whose home page is missing cannot open.
+export const versionHomePageExists: Rule<VersionSettingsWrite> = {
+  id: 'version-home-page-exists',
+  description: 'The home page is a page of this app version',
+  async check(write, ctx: RuleContext) {
+    // Imports remap page ids after this check would run, so only updates are judged.
+    if (write.op !== 'update' || !write.data?.homePageId || !touchedField(write, 'homePageId')) return [];
+    const index = await ctx.index();
+    const page = index.page(write.data.homePageId);
+
+    if (!page) {
+      return [
+        {
+          code: 'VERSION_HOME_PAGE_NOT_FOUND',
+          severity: 'high',
+          confidence: 'certain',
+          path: 'homePageId',
+          message: `home page: no page with id ${write.data.homePageId} exists in this app version`,
+          entity: { type: 'version', id: write.id },
+          fix: 'Use the id of one of the version\u2019s pages.',
+        },
+      ];
+    }
+    if (page.isPageGroup) {
+      return [
+        {
+          code: 'VERSION_HOME_PAGE_IS_GROUP',
+          severity: 'high',
+          confidence: 'certain',
+          path: 'homePageId',
+          message: `home page: ${page.name ?? write.data.homePageId} is a page group, not a page`,
+          entity: { type: 'version', id: write.id },
+        },
+      ];
+    }
+    // `hidden` is fx-able jsonb, so only a literal true is judged - dynamic expressions pass.
+    if (isLiterallyTrue(page.hidden)) {
+      return [
+        {
+          code: 'VERSION_HOME_PAGE_HIDDEN',
+          // The page menu's "Mark home" allows hidden pages and a hidden home still renders
+          // when opened; only the settings popup forbids it. Report-only until product
+          // settles whether a hidden page may be home (same stance as PAGE_HOME_HIDDEN).
+          severity: 'medium',
+          confidence: 'certain',
+          path: 'homePageId',
+          message: `home page: ${page.name ?? write.data.homePageId} is hidden, the app would open on an invisible page`,
+          entity: { type: 'version', id: write.id },
+          fix: 'Unhide the page or pick a visible one as home.',
+        },
+      ];
+    }
+    if (page.disabled === true) {
+      return [
+        {
+          code: 'VERSION_HOME_PAGE_DISABLED',
+          severity: 'high',
+          confidence: 'certain',
+          path: 'homePageId',
+          message: `home page: ${page.name ?? write.data.homePageId} is disabled and cannot be opened`,
+          entity: { type: 'version', id: write.id },
+          fix: 'Enable the page or pick an enabled one as home.',
+        },
+      ];
+    }
+    return [];
+  },
+};
+
+// updateVersion spreads these into the stored settings; spreading a non-object writes
+// corrupt keys ({"0":"f","1":"o",...}) that persist silently.
+export const versionSettingsAreObjects: Rule<VersionSettingsWrite> = {
+  id: 'version-settings-are-objects',
+  description: 'Global and page settings are plain objects',
+  check(write) {
+    if (write.op === 'delete' || !write.data) return [];
+    const issues: Issue[] = [];
+    for (const field of ['globalSettings', 'pageSettings'] as const) {
+      if (!touchedField(write, field)) continue;
+      const value = write.data[field];
+      if (value === undefined || value === null || isPlainObject(value)) continue;
+      issues.push({
+        code: 'VERSION_SETTINGS_NOT_OBJECT',
+        severity: 'high',
+        confidence: 'certain',
+        path: field,
+        message: `${field}: must be an object, got ${Array.isArray(value) ? 'an array' : `a ${typeof value}`}`,
+        entity: { type: 'version', id: write.id },
+      });
+    }
+    return issues;
+  },
+};
+
+export const versionSettingsRules: Rule<VersionSettingsWrite>[] = [versionHomePageExists, versionSettingsAreObjects];

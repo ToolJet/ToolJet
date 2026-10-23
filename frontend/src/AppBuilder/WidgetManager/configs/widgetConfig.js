@@ -82,7 +82,7 @@ import {
   fileButtonConfig,
   buttonGroupV2Config,
   flexContainerConfig,
-} from '../widgets';
+} from '@tooljet/widget-definitions';
 
 export const widgets = [
   // Buttons

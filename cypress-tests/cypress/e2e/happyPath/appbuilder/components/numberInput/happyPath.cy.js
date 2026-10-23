@@ -17,7 +17,7 @@ import { commonWidgetText } from "Texts/common";
 // popover event model, the reworked real-dnd drag command and cy.hideTooltip(),
 // modelled on the already-green datePickerHappyPath.cy.js.
 //
-// Surface (source: frontend/src/AppBuilder/WidgetManager/widgets/numberInput.js):
+// Surface (source: packages/widget-definitions/src/widgets/numberInput.js):
 //   - properties: label, value (Default value, default 0), placeholder
 //     (default "Enter your input"), decimalPlaces (default 2)  :14-97
 //   - validation: regex, minValue (Min value), maxValue (Max value)  :314-324
@@ -29,7 +29,7 @@ import { commonWidgetText } from "Texts/common";
 // error is `<name>-invalid-feedback`
 // (source: frontend/src/AppBuilder/Widgets/BaseComponents/BaseInput.jsx:267,297).
 // First dropped widget is `numberinput1`
-// (source: frontend/src/AppBuilder/WidgetManager/widgets/index.js — name NumberInput).
+// (source: packages/widget-definitions/src/index.js — name NumberInput).
 //
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec run;
 // per-test AUT reset leaves that client stale -> 2nd+ drag throws

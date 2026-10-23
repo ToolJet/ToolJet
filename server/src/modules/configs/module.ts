@@ -1,6 +1,7 @@
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { DynamicModule, Module } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
+import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 
 @Module({})
 export class AppConfigModule extends SubModule {
@@ -13,7 +14,7 @@ export class AppConfigModule extends SubModule {
 
     return this.cacheModule(cacheKey, {
       module: AppConfigModule,
-      imports: [await InstanceSettingsModule.register(configs)],
+      imports: [await InstanceSettingsModule.register(configs), await InMemoryCacheModule.register(configs)],
       controllers: isMainImport ? [ConfigController] : [],
       providers: [ConfigService],
     });

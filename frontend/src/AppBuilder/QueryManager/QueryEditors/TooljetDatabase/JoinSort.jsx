@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Col, Row } from 'react-bootstrap';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import DropDownSelect from './DropDownSelect';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
@@ -12,7 +12,7 @@ import { ToolTip } from '@/_components';
 
 export default function JoinSort({ darkMode }) {
   const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, joinOptions, findTableDetails } =
-    useContext(TooljetDatabaseContext);
+    useToolJetDbOperationsContext();
 
   const tableSet = new Set();
   (joinOptions || []).forEach((join) => {

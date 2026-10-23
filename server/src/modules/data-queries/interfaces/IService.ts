@@ -35,7 +35,7 @@ export interface IDataQueriesService {
 
   update(user: User, versionId: string, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto): Promise<void>;
 
-  delete(dataQueryId: string): Promise<void>;
+  delete(dataQueryId: string, versionId: string): Promise<void>;
 
   getLibraryUsage(app: App): Promise<object>;
 

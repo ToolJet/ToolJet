@@ -22,7 +22,7 @@ import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPan
 
 // ---------------------------------------------------------------------------
 // Chunk 2 — Table component-specific actions (CSAs).
-// All 16 CSAs from WidgetManager/widgets/table.js:545-660.
+// All 16 CSAs from packages/widget-definitions/src/widgets/table.js:545-660.
 //
 // Each test wires one CSA onto the Table's own `Row hovered` event (wireTableCSA),
 // fires it by hovering a row (triggerTableCSA), and asserts through the DOM.

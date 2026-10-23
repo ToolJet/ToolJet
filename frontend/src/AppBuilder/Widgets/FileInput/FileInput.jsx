@@ -30,7 +30,7 @@ export const CustomClearIndicator = (props) => {
   );
 };
 
-export const FileInput = (props) => {
+const FileInput = (props) => {
   const {
     id,
     height,
