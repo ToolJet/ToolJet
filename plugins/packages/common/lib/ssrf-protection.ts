@@ -342,10 +342,10 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
       // IPv6 resolution failed, continue
     }
 
-    // No answer: fail closed under the EE runtime config, fail open otherwise (self-hosted compatibility)
+    // No answer: fail closed under the EE runtime config and on Cloud, fail open otherwise (self-hosted compatibility)
     if (addresses.length === 0) {
       console.warn(`DNS resolution failed for ${hostname}`);
-      return !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__;
+      return !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__ || process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud';
     }
 
     // Check if any resolved address is a private IP

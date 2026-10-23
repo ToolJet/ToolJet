@@ -202,6 +202,17 @@ describe('edition defaults without a runtime key', () => {
   afterEach(() => {
     if (originalEdition === undefined) delete process.env.TOOLJET_EDITION;
     else process.env.TOOLJET_EDITION = originalEdition;
+    delete process.env.SSRF_PROTECTION_ENABLED;
+  });
+
+  it('Cloud blocks a hostname that resolves to a private IP', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    await expect(validateUrlForSSRF('http://localhost/')).rejects.toThrow();
+  });
+
+  it('Cloud fails closed when DNS returns no addresses', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    await expect(validateUrlForSSRF('http://no-such-host.invalid/')).rejects.toThrow();
   });
 
   it('Cloud enforces with no env vars and rejects metadata and private literals', async () => {
