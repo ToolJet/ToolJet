@@ -58,7 +58,6 @@ import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
-import { LicensePageService } from '@modules/licensing/interfaces/IService';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
@@ -381,8 +380,7 @@ export class AppImportExportService {
     protected appsRepository: AppsRepository,
     protected readonly transactionLogger: TransactionLogger,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
-    protected readonly abilityService: AbilityService,
-    protected readonly licensePageService: LicensePageService
+    protected readonly abilityService: AbilityService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -1731,7 +1729,7 @@ export class AppImportExportService {
         slug: null,
         icon: null,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
-        isPublic: false,
+        isPublic: null,
         co_relation_id: coRelationId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -2211,12 +2209,6 @@ export class AppImportExportService {
             definition: updatedDefinition,
             homePageId: updateHomepageId,
           }
-        );
-        await this.licensePageService.disablePagesOverLimit(
-          manager,
-          appResourceMappings.appVersionMapping[importingAppVersion.id],
-          user.organizationId,
-          updateHomepageId
         );
       }
     }
@@ -2864,12 +2856,6 @@ export class AppImportExportService {
         {
           homePageId: updateHomepageId,
         }
-      );
-      await this.licensePageService.disablePagesOverLimit(
-        manager,
-        appResourceMappings.appVersionMapping[importingAppVersion.id],
-        user.organizationId,
-        updateHomepageId
       );
     }
 

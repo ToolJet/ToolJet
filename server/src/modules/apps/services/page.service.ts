@@ -151,11 +151,7 @@ export class PageService implements IPageService {
   }
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
-    const allPages = await this.licensePageService.applyPagesLimit(
-      await this.pageHelperService.fetchPages(appVersionId, manager),
-      appVersionId,
-      manager
-    );
+    const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
     const pageIds = allPages.map((p) => p.id);
     const componentsByPage = await this.componentsService.getAllComponentsForPages(pageIds, manager);
     return allPages.map((page) => {

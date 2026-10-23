@@ -13,16 +13,13 @@ import { WorkspaceBanList } from '@entities/workspace_ban_list.entity';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
   constructor(
     protected readonly appUtilService: AppsUtilService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly appRepository: AppsRepository,
-    protected readonly dataSource: DataSource,
-    protected readonly licenseTermsService: LicenseTermsService
+    protected readonly dataSource: DataSource
   ) {
     super();
   }
@@ -63,24 +60,12 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     request.tj_resource_id = app.id;
     request.headers['tj-workspace-id'] = app.organizationId;
 
-    const isAppPublicLicensed =
-      app.isPublic === true
-        ? await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.PUBLIC_APP, app.organizationId)
-        : false;
-
-    if (app.isPublic === true && isAppPublicLicensed) {
+    if (app.isPublic === true) {
       // No need to do user validation
       this.organizationRepository.touchLastAccessedAt(app.organizationId);
       return true;
     }
 
-    if (app.isPublic === true && !isAppPublicLicensed) {
-      // License no longer covers public apps: treat this app as private for the rest of the
-      // guard chain (group-permission check decides access), without rewriting the DB row.
-      app.isPublic = false;
-    }
-
-    // Fall back to JWT authentication
     try {
       const authResult = await super.canActivate(context);
       return authResult;

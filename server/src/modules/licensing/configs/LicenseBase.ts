@@ -6,8 +6,6 @@ import {
   NON_ENTERPRISE_PLANS,
 } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import {
   BUSINESS_PLAN_TERMS,
   ENTERPRISE_PLAN_TERMS,
@@ -31,7 +29,6 @@ export default class LicenseBase {
   private _isServerSideGlobalResolve: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
-  private _isPublicApp: boolean;
   private _isAutomaticSsoLogin: boolean;
   private _isComments: boolean;
   private _expiryDate: Date;
@@ -95,7 +92,6 @@ export default class LicenseBase {
       this._isServerSideGlobalResolve = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
-      this._isPublicApp = true;
       this._isAutomaticSsoLogin = true;
       this._isAi = true;
       this._aiPlan = 'credits';
@@ -157,9 +153,6 @@ export default class LicenseBase {
     this._isServerSideGlobalResolve = this.getFeatureValue('serverSideGlobalResolve');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
-
-    // license with these set explicitly to true rather than being grandfathered in.
-    this._isPublicApp = this._app?.features?.['publicApp'] === true;
     this._isAutomaticSsoLogin = this.getEnterpriseOnlyFlag(this._features?.['automaticSsoLogin']);
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
@@ -794,13 +787,13 @@ export default class LicenseBase {
   }
 
   public get publicApp(): boolean {
-    // Public apps are a plan entitlement on Cloud only; self-hosted EE and CE always allow them.
-    if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
-      return true;
-    }
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.publicApp;
     }
-    return this._isPublicApp;
+
+    if (this._app?.features?.publicApp === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.publicApp;
   }
 }

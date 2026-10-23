@@ -93,7 +93,6 @@ export const PreviewAndShareIcons = () => {
             <ManageAppUsers
               currentEnvironment={selectedEnvironment}
               multiEnvironmentEnabled={featureAccess?.multiEnvironment}
-              appPublicEnabled={featureAccess?.publicApp}
               app={app}
               appId={appId}
               slug={slug}
