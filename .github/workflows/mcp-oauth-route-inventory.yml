@@ -49,9 +49,6 @@ jobs:
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci --ignore-scripts
-      # Install scripts stay off, but the migrations load main's module graph, which reaches
-      # isolated-vm; build just that native addon.
-      - run: npm --prefix server rebuild isolated-vm
       - name: Apply real schema migrations and run all OAuth security tests
         working-directory: server
         run: npm run test:mcp-oauth
