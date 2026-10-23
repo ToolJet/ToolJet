@@ -254,3 +254,45 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     await expect(validateUrlForSSRF('http://[::1]/')).resolves.toBeUndefined();
   });
 });
+
+describe('redirect hook resolves the target before validating', () => {
+  const http = require('http');
+  let server: any;
+  afterEach(async () => {
+    if (server) await new Promise((r) => server.close(r));
+    server = undefined;
+  });
+  const start = async (handler: (req: any, res: any) => void) => {
+    server = http.createServer(handler);
+    await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
+    return `http://127.0.0.1:${server.address().port}`;
+  };
+  const allowLoopback = () => {
+    (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges('127.0.0.0/8') };
+  };
+
+  it('follows a relative Location against the request URL', async () => {
+    allowLoopback();
+    const base = await start((req, res) => {
+      if (req.url === '/start') {
+        res.writeHead(302, { Location: '/next' });
+        res.end();
+      } else {
+        res.end('next-body');
+      }
+    });
+    const res = await got(`${base}/start`, getSSRFProtectionOptions(undefined, {}));
+    expect(res.body).toBe('next-body');
+  });
+
+  it('still blocks a redirect to a metadata address', async () => {
+    allowLoopback();
+    const base = await start((req, res) => {
+      res.writeHead(302, { Location: 'http://169.254.169.254/' });
+      res.end();
+    });
+    await expect(got(`${base}/start`, getSSRFProtectionOptions(undefined, {}))).rejects.toMatchObject({
+      message: 'Redirect blocked by SSRF protection',
+    });
+  });
+});

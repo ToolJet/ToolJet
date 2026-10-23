@@ -764,8 +764,16 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
   // This validates redirect URLs using the same SSRF rules as the initial request,
   // blocking attacks where an allowed domain redirects to a private IP/endpoint
   const beforeRedirectHook = async (options: any, response: any) => {
-    // Validate redirect URL
-    const redirectUrl = response.headers.location;
+    // Validate the resolved target: got has already resolved a relative Location against the
+    // request URL (options.url). The raw header may be "/next", which is not a parseable URL.
+    let redirectUrl: string | undefined = options?.url?.toString();
+    if (!redirectUrl && response?.headers?.location) {
+      try {
+        redirectUrl = new URL(response.headers.location, response.url).toString();
+      } catch {
+        redirectUrl = response.headers.location;
+      }
+    }
     if (redirectUrl) {
       try {
         // Validate the redirect URL
