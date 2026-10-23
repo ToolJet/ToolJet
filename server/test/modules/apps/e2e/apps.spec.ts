@@ -1408,9 +1408,7 @@ describe('AppsController', () => {
       });
 
       describe('Data source and query versioning', () => {
-        // QUARANTINE(git-sync-phase-2): per-version local ds clone vs idx_unique_active_name_branch
-        // — clone path and new schema contradict for same-named locals; design question for git-sync owners
-        it.skip('should be able create data sources and queries for each version creation', async () => {
+        it('should be able create data sources and queries for each version creation', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
             groups: ['all_users', 'admin'],
@@ -1497,10 +1495,12 @@ describe('AppsController', () => {
           expect(dataQueries).toHaveLength(3);
           expect(dataSources.map((s) => s.appVersionId).includes(version3.body.id)).toBeTruthy();
           expect(dataQueries.map((q) => q.dataSource.appVersionId).includes(version3.body.id)).toBeTruthy();
+          // each copy gets a unique name (idx_unique_active_name_branch is unique per workspace); a copy of a copy suffixes again
+          expect(dataSources.map((s) => s.name).sort()).toEqual(['name', 'name_2', 'name_2_2']);
 
           // creating a new version from a non existing version id will throw error when more than 1 versions exist
           await createDataSource(app, {
-            name: 'name',
+            name: 'another_name',
             kind: 'postgres',
             application: application,
             user: adminUserData.user,
@@ -1526,9 +1526,7 @@ describe('AppsController', () => {
           await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
         });
 
-        //will fix this
-        // QUARANTINE(git-sync-phase-2): same DSV name-per-branch unique-index conflict as above.
-        it.skip('creates new credentials and copies cipher text on data source', async () => {
+        it('creates new credentials and copies cipher text on data source', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
           });
