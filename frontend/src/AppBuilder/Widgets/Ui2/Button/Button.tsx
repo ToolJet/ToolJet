@@ -8,6 +8,17 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { isSet, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
+const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
+const SIZES = ['sm', 'default', 'lg'];
+/** A variant or size, now that they can be bound (a Delete button that turns destructive past a limit): a known name in
+ *  any case, anything else the default rather than an unstyled button. */
+const oneOf = (names: string[], value: unknown) => {
+  const name = String(value ?? '')
+    .trim()
+    .toLowerCase();
+  return names.includes(name) ? name : 'default';
+};
+
 export const ShadButton = (props: WidgetProps) => {
   const { styles, setExposedVariables, fireEvent, id } = props;
   const moduleId = useModuleId();
@@ -37,8 +48,8 @@ export const ShadButton = (props: WidgetProps) => {
   return (
     <Shell {...props} className="tw-h-full">
       <Button
-        variant={properties.variant || 'default'}
-        size={properties.size || 'default'}
+        variant={oneOf(VARIANTS, properties.variant) as 'default'}
+        size={oneOf(SIZES, properties.size) as 'default'}
         className={cn(
           'tw-h-full',
           (properties.fullWidth === true || fillsBox) && 'tw-w-full',
