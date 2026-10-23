@@ -1891,3 +1891,18 @@ describe('Listview: state and layout that must follow the rows', () => {
     expect(exposed('selectedRecordId')).toBe(0);
   });
 });
+
+describe('Listview: row canvases are told apart from the app canvas', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BUG-039] a row canvas does not answer to the app canvas selector', async () => {
+    // Break this catches: every row canvas reusing the app canvas's data-cy, so a browser test that
+    // clicks the app canvas matches one element per row and cannot run once a List View is placed.
+    await mount();
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    expect(container().querySelectorAll('[data-cy="real-canvas"]')).toHaveLength(0);
+    expect(container().querySelectorAll('[data-cy="sub-canvas"]')).toHaveLength(3);
+  });
+});

@@ -301,7 +301,8 @@ const Container = React.memo(
           'flex-container-canvas': isFlexContainer,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
-        data-cy="real-canvas"
+        // Sub-canvases get their own data-cy so the app canvas selector matches one element.
+        data-cy={id === 'canvas' ? 'real-canvas' : 'sub-canvas'}
         data-parentId={id}
         canvas-height={canvasHeight}
         onClick={handleCanvasClick}
