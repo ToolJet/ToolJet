@@ -41,7 +41,8 @@ export const shadSelectConfig = {
       },
     },
     options: {
-      type: 'code',
+      type: 'optionsList',
+      defaultParam: 'defaultValue',
       displayName: 'Options',
       validation: {
         schema: {

@@ -41,7 +41,8 @@ export const shadRadioGroupConfig = {
       },
     },
     options: {
-      type: 'code',
+      type: 'optionsList',
+      defaultParam: 'defaultValue',
       displayName: 'Options',
       validation: {
         schema: {

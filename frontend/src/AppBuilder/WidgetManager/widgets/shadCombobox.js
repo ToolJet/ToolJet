@@ -42,7 +42,8 @@ export const shadComboboxConfig = {
       },
     },
     options: {
-      type: 'code',
+      type: 'optionsList',
+      defaultParam: 'defaultValue',
       displayName: 'Options',
       validation: {
         schema: {

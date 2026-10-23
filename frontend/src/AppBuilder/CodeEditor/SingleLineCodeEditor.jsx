@@ -39,6 +39,7 @@ import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
+import { optionsListBlockReason } from '@/AppBuilder/RightSideBar/Inspector/Components/shared/utils/optionsLiteral';
 
 // Hoisted to module scope so their identity never changes: anything fed into the
 // CodeMirror `extensions` prop must stay referentially stable, otherwise
@@ -677,10 +678,14 @@ const DynamicEditorBridge = (props) => {
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
-  const codeShow = paramType === 'code' || forceCodeBox;
+  // A UI 2.0 options field shows its options as a list unless fx is on, or they are not a fixed list (bound to a
+  // query, say): then they stay in code, and pressing fx says why instead of switching.
+  const listBlocked = paramType === 'optionsList' ? optionsListBlockReason(initialValue) : null;
+  const [listNotice, setListNotice] = React.useState(false);
+  const codeShow = paramType === 'code' || forceCodeBox || !!listBlocked;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
   const segmented = segmentedLayout({ component, paramType, fieldMeta });
-  const { isFxNotRequired, newLine = segmented === 'stacked', section = '' } = fieldMeta;
+  const { isFxNotRequired, newLine = segmented === 'stacked' || paramType === 'optionsList', section = '' } = fieldMeta;
   const isDeprecated = section === 'deprecated';
   const { t } = useTranslation();
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
@@ -709,6 +714,11 @@ const DynamicEditorBridge = (props) => {
     setForceCodeBox(fxActive);
   }, [component, fxActive]);
 
+  // The note on why options stay in code goes once they can be a list again.
+  useEffect(() => {
+    if (!listBlocked) setListNotice(false);
+  }, [listBlocked]);
+
   let modifiedValue = initialValue;
   if (paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue?.includes('var(')) {
     modifiedValue = getCssVarValue(document.documentElement, initialValue);
@@ -728,7 +738,9 @@ const DynamicEditorBridge = (props) => {
         <FxButton
           active={codeShow}
           onPress={() => {
-            if (codeShow) {
+            if (codeShow && listBlocked) {
+              setListNotice(true);
+            } else if (codeShow) {
               setForceCodeBox(false);
               onFxPress(false);
               if (paramType === 'colorSwatches') {
@@ -824,6 +836,15 @@ const DynamicEditorBridge = (props) => {
             <div className="d-flex">
               <SingleLineCodeEditor {...props} initialValue={modifiedValue} />
             </div>
+            {listBlocked && listNotice ? (
+              <p
+                className="tw-m-0 tw-mt-1 tw-text-xs"
+                style={{ color: 'var(--text-placeholder, var(--slate10))' }}
+                data-cy={`${cyLabel}-list-blocked`}
+              >
+                {listBlocked}
+              </p>
+            ) : null}
           </div>
         </div>
       )}
