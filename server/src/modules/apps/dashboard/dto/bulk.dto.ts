@@ -52,7 +52,6 @@ export class BulkDeleteFoldersDto extends BulkFlagsDto {
   type: APP_TYPES;
 }
 
-// Shared by every bulk endpoint: blocked ids non-empty ⇒ nothing was written.
 export function bulkResult(blockedIds: string[]): BulkResultResponseDto {
   return Object.assign(new BulkResultResponseDto(), { blockedIds });
 }
