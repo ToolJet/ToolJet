@@ -231,4 +231,13 @@ describe('UI 2.0 File upload', () => {
     expect(root.style.getPropertyValue('--lk-drop-bg')).toBe('#f0f9ff');
     expect(root.style.getPropertyValue('--sc-primary')).toBe('#e11d48');
   });
+
+  test('[ShadFileUpload-STY-010] the selected files list scrolls past about five files', async () => {
+    // With many files the list was drawn whole and took over the page below the widget (Dynamic height on).
+    const { container } = render({ properties: { multiple: binding('{{true}}'), maxFiles: binding('{{20}}') } });
+    await upload(container, ...Array.from({ length: 8 }, (_, i) => textFile(`notes-${i}.txt`, 'x')));
+    const list = await screen.findByRole('list', { name: 'Selected files' });
+    await waitFor(() => expect(list.querySelectorAll('li')).toHaveLength(8));
+    expect(list).toHaveClass('tw-max-h-[296px]', 'tw-overflow-y-auto');
+  });
 });
