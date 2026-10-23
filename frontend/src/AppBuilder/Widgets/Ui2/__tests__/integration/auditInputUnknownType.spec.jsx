@@ -26,7 +26,7 @@ test.each(['file', 'checkbox', 'not-a-type'])('a bound Type of %s shows a workin
   expect(input).toHaveValue('After');
 });
 
-test.each(['email', 'password', 'search'])('a Type from the list (%s) is kept', (type) => {
+test.each(['email', 'url', 'password', 'search'])('a Type from the list (%s) is kept', (type) => {
   w.render({ currentMode: 'view', properties: { inputType: binding(type) } });
   expect(document.querySelector('input')).toHaveAttribute('type', type);
 });

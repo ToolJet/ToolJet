@@ -298,6 +298,70 @@ describe('UI 2.0 Input', () => {
     await waitFor(() => expect(input()).toHaveAttribute('type', 'text'));
   });
 
+  test('[ShadInput-VAL-007] type url is invalid until the text is a URL a browser url box accepts, and stays a string', async () => {
+    const { urlRule } = jest.requireActual('@/AppBuilder/Widgets/Ui2/Input/Input');
+    const { shadInputConfig } = jest.requireActual('@/AppBuilder/WidgetManager/widgets/shadInput');
+    expect(shadInputConfig.properties.inputType.options).toContainEqual({ name: 'URL', value: 'url' });
+    // As Chrome's input[type=url] judges each: an absolute URL of any scheme.
+    const browser = {
+      'https://example.com': true,
+      'http://localhost:3000/x?y=1': true,
+      'ftp://files.example.com': true,
+      'mailto:a@b.com': true,
+      ' https://example.com ': true,
+      'http://[::1]/': true,
+      'example.com': false,
+      'www.example.com': false,
+      'not a url': false,
+      'http://': false,
+      'http//example.com': false,
+      '/relative/path': false,
+      'http://example.com:99999': false,
+    };
+    Object.entries(browser).forEach(([url, valid]) => expect([url, urlRule(url) === '']).toEqual([url, valid]));
+
+    const { container } = render({ properties: { inputType: binding('url') } });
+    const input = () => container.querySelector('input');
+    expect(input()).toHaveAttribute('type', 'url');
+    expect(input()).toHaveAttribute('inputmode', 'url');
+    await type('example.com');
+    await leave();
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter a valid URL');
+    await type('https://example.com/a');
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+    expect(exposed().value).toBe('https://example.com/a');
+    // Empty is left to Mandatory.
+    await type('');
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+  });
+
+  test('[ShadInput-PROP-008] a bound Type switching url, number and text keeps what was typed', async () => {
+    const { container } = render({ properties: { inputType: binding('url') } });
+    const input = () => container.querySelector('input');
+    await type('https://example.com');
+    widget.setComponentProperty(ID, 'inputType', "{{'text'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'text'));
+    expect(input()).toHaveValue('https://example.com');
+    widget.setComponentProperty(ID, 'inputType', "{{'url'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'url'));
+    expect(input()).toHaveValue('https://example.com');
+    // A URL is not a number: the number box is empty, and back in url so is the box (as a browser's input).
+    widget.setComponentProperty(ID, 'inputType', "{{'number'}}", 'properties');
+    await waitFor(() => expect(exposed().value).toBeNull());
+    widget.setComponentProperty(ID, 'inputType', "{{'url'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'url'));
+    expect(input()).toHaveValue('');
+    // A number round-trips through url as its text.
+    await type('42');
+    widget.setComponentProperty(ID, 'inputType', "{{'number'}}", 'properties');
+    await waitFor(() => expect(exposed().value).toBe(42));
+    widget.setComponentProperty(ID, 'inputType', "{{'URL'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'url'));
+    expect(input()).toHaveValue('42');
+    await waitFor(() => expect(exposed().value).toBe('42'));
+  });
+
   test('[ShadInput-PROP-006] a bound Type switching text and number keeps what was typed, converted as a browser does', async () => {
     // Switching to number dropped the draft: "123" became null, and back to text it was "".
     const { container } = render({ properties: { inputType: binding('text') } });

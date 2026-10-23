@@ -50,6 +50,13 @@ const OPTIONS_12 = "{{[{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]}}
 // a field's value); a boolean is a checkbox's or switch's state.
 const DEFAULTS = [
   ['ShadInput', 'string', { defaultValue: 'Hello' }, { value: 'Hello', isValid: true }, 'Hello'],
+  [
+    'ShadInput',
+    'string',
+    { inputType: 'url', defaultValue: 'https://example.com' },
+    { value: 'https://example.com', isValid: true },
+    'https://example.com',
+  ],
   ['ShadTextarea', 'string', { defaultValue: 'Hello' }, { value: 'Hello', isValid: true }, 'Hello'],
   ['ShadPasswordInput', 'string', { defaultValue: 's3cret' }, { value: 's3cret', isValid: true }, 's3cret'],
   ['ShadNumberInput', 'number', { defaultValue: '{{5}}' }, { value: 5, isValid: true }, '5'],
