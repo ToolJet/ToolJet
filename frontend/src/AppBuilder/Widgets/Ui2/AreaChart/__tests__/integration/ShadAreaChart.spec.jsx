@@ -209,4 +209,15 @@ describe('UI 2.0 Area chart', () => {
 
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
+
+  test('[ShadAreaChart-PROP-020] Highlight clicked point marks the clicked point until the clicked point is cleared', async () => {
+    render({ properties: { highlightClicked: binding('{{true}}') } });
+    await drawn();
+    const marks = () => document.querySelectorAll('.recharts-reference-dot').length;
+    expect(marks()).toBe(0);
+    await pointer(['mousemove', 'click']);
+    await waitFor(() => expect(marks()).toBeGreaterThan(0));
+    await widget.act('clearClickedPoint');
+    await waitFor(() => expect(marks()).toBe(0));
+  });
 });

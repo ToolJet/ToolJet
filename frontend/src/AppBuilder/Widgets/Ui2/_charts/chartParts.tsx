@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { highlightOf } from './highlight';
 import dayjs from 'dayjs';
 import { ResponsiveContainer } from 'recharts';
 import { useExposed, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -118,8 +119,9 @@ export const useExposedClick = (props: WidgetProps) => {
   return click;
 };
 
-/** The chart a frame draws, given the handler for a clicked datum. */
-type ChartRender = (onDatum: (datum: unknown) => void) => React.ReactElement;
+/** The chart a frame draws, given the handler for a clicked datum and the datum to draw emphasised (Highlight clicked
+ *  point), or null. */
+type ChartRender = (onDatum: (datum: unknown) => void, highlighted: unknown) => React.ReactElement;
 
 /** A chart's name for assistive tech, from its type: ShadScatterChart reads "Scatter chart". */
 export const chartName = (componentType?: string): string => {
@@ -310,6 +312,9 @@ export const SafeFrame = ({
   const { properties, setExposedVariables, height } = props;
   const click = useClickedDatum(props);
   useExposed(setExposedVariables, properties, clickable ? { ...click.exposed, ...exposed } : exposed);
+  // Highlight clicked point: the clicked datum draws emphasised (the others fade) until clearClickedPoint empties it.
+  const highlighted =
+    clickable && properties.highlightClicked === true ? highlightOf(click.exposed.clickedDataPoint) : null;
   const onDatum = (datum: unknown) => {
     if (!datum || typeof datum !== 'object') return;
     click.pick(datum);
@@ -330,7 +335,7 @@ export const SafeFrame = ({
             ) : (
               <ChartArea label={label || chartName(props.componentType)}>
                 <ResponsiveContainer width="100%" height="100%">
-                  {children(onDatum)}
+                  {children(onDatum, highlighted)}
                 </ResponsiveContainer>
               </ChartArea>
             )}

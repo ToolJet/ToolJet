@@ -175,4 +175,17 @@ describe('UI 2.0 Funnel chart', () => {
 
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
+
+  test('[ShadFunnelChart-PROP-020] Highlight clicked point fades the other stages until the clicked point is cleared', async () => {
+    render({ properties: { highlightClicked: binding('{{true}}') } });
+    await drawn(5);
+    const bar = (stage) => stage.querySelector('[style*="width"]');
+    const opacity = () => stages().map((s) => Number(bar(s).style.opacity));
+    const before = opacity();
+    await act(async () => fireEvent.click(stages()[2]));
+    await waitFor(() => expect(opacity()[0]).toBeCloseTo(before[0] * 0.35));
+    expect(opacity()[2]).toBeCloseTo(before[2]);
+    await widget.act('clearClickedPoint');
+    await waitFor(() => expect(opacity()).toEqual(before));
+  });
 });

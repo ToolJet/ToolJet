@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Cell, PolarAngleAxis, RadialBar, RadialBarChart, Tooltip } from 'recharts';
+import { emphasis } from '@/AppBuilder/Widgets/Ui2/_charts/highlight';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { arcAngles, arcBox, radialRows } from './radialModel';
@@ -54,9 +55,11 @@ interface RadialBodyProps {
   progress: boolean;
   centre: { value: string; label: string };
   onDatum: (datum: unknown) => void;
+  /** Highlight clicked point: the clicked ring's row, or null. */
+  highlighted?: unknown;
 }
 
-export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum }: RadialBodyProps) => {
+export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum, highlighted }: RadialBodyProps) => {
   const w = Number(width) || 0;
   const legend = !progress && p.showLegend !== false;
   const chartHeight = Math.max(0, (Number(height) || 0) - (legend ? 32 : 0));
@@ -103,7 +106,7 @@ export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum 
           onClick={(entry) => onDatum(entry?.payload?.row ?? entry?.row)}
         >
           {rings.map((g, i) => (
-            <Cell key={i} fill={g.fill} className="tw-cursor-pointer" />
+            <Cell key={i} fill={g.fill} fillOpacity={emphasis(g.row, highlighted)} className="tw-cursor-pointer" />
           ))}
         </RadialBar>
       </RadialBarChart>
@@ -196,7 +199,16 @@ export const ShadRadialChart = (props: WidgetProps) => {
       // The centre figure is part of the drawing: in the name, a gauge reads as its label and value.
       label={[chartName(props.componentType), centre.label, centre.value].filter(Boolean).join(', ')}
     >
-      {(onDatum) => <RadialBody p={p} rings={rings} progress={progress} centre={centre} onDatum={onDatum} />}
+      {(onDatum, highlighted) => (
+        <RadialBody
+          p={p}
+          rings={rings}
+          progress={progress}
+          centre={centre}
+          onDatum={onDatum}
+          highlighted={highlighted}
+        />
+      )}
     </SafeFrame>
   );
 };

@@ -75,6 +75,15 @@
       "default": "",
       "initial": ""
     },
+    "highlightClicked": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "horizontal": {
       "type": "boolean",
       "schema": {

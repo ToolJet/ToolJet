@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Cell, Label as ChartLabel, Legend, Pie, PieChart, Tooltip } from 'recharts';
+import { emphasis } from '@/AppBuilder/Widgets/Ui2/_charts/highlight';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { statusColors, centreValueFit, hiddenNote } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
@@ -34,7 +35,7 @@ export const ShadPieChart = (props: WidgetProps) => {
   const format = affixFormatter(p, false);
   return (
     <ChartFrame props={props} empty={!data.length} notes={[hiddenNote(list(bound).length - data.length, 'slice')]}>
-      {(onDatum) => (
+      {(onDatum, highlighted) => (
         <PieChart>
           <Tooltip content={<ChartTooltip format={format} />} />
           {p.showLegend !== false ? <Legend content={<LegendContent />} /> : null}
@@ -52,7 +53,7 @@ export const ShadPieChart = (props: WidgetProps) => {
             isAnimationActive={animated(p, data.length)}
           >
             {data.map((d, i) => (
-              <Cell key={i} fill={d.fill} />
+              <Cell key={i} fill={d.fill} fillOpacity={emphasis(d, highlighted)} />
             ))}
             {donut && (p.centerValue || p.centerLabel) ? (
               <ChartLabel

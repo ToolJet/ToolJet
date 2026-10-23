@@ -250,4 +250,19 @@ describe('UI 2.0 Combo chart', () => {
 
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
+
+  test('[ShadComboChart-PROP-020] Highlight clicked point fades the other bars and rings the line point until cleared', async () => {
+    render({ properties: { highlightClicked: binding('{{true}}') } });
+    await drawn();
+    const faded = () =>
+      [
+        ...document.querySelectorAll('.recharts-bar-rectangle path, .recharts-bar-rectangle .recharts-rectangle'),
+      ].filter((b) => b.getAttribute('fill-opacity') === '0.35').length;
+    await pointer(['mousemove', 'click']);
+    await waitFor(() => expect(faded()).toBeGreaterThan(0));
+    expect(document.querySelectorAll('.recharts-reference-dot').length).toBeGreaterThan(0);
+    await widget.act('clearClickedPoint');
+    await waitFor(() => expect(faded()).toBe(0));
+    expect(document.querySelectorAll('.recharts-reference-dot')).toHaveLength(0);
+  });
 });

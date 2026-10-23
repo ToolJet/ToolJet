@@ -232,4 +232,16 @@ describe('UI 2.0 Line chart', () => {
 
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
+
+  test('[ShadLineChart-PROP-020] Highlight clicked point rings the clicked point on each line until cleared', async () => {
+    render({ properties: { highlightClicked: binding('{{true}}') } });
+    await drawn();
+    expect(document.querySelectorAll('.recharts-reference-dot')).toHaveLength(0);
+    await pointer(['mousemove', 'click']);
+    await waitFor(() => expect(Object.keys(exposed().clickedDataPoint).length).toBeGreaterThan(0));
+    await waitFor(() => expect(document.querySelectorAll('.recharts-reference-dot').length).toBeGreaterThan(0));
+
+    await widget.act('clearClickedPoint');
+    await waitFor(() => expect(document.querySelectorAll('.recharts-reference-dot')).toHaveLength(0));
+  });
 });

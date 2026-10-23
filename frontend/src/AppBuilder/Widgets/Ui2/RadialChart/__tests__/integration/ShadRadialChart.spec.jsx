@@ -236,4 +236,17 @@ describe('UI 2.0 Radial chart', () => {
 
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
+
+  test('[ShadRadialChart-PROP-020] Highlight clicked point fades the other rings until the clicked point is cleared', async () => {
+    render({ properties: { ...CATEGORIES, highlightClicked: binding('{{true}}') } });
+    await drawn(4);
+    const faded = () =>
+      [...document.querySelectorAll('.recharts-radial-bar-sector')].filter(
+        (b) => b.getAttribute('fill-opacity') === '0.35'
+      ).length;
+    await act(async () => fireEvent.click(bars()[3]));
+    await waitFor(() => expect(faded()).toBe(3));
+    await widget.act('clearClickedPoint');
+    await waitFor(() => expect(faded()).toBe(0));
+  });
 });

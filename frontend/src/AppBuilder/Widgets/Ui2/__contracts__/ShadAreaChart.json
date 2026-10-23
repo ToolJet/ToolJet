@@ -55,6 +55,15 @@
       "default": "No data",
       "initial": "No data"
     },
+    "highlightClicked": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "lineOnly": {
       "type": "boolean",
       "schema": {

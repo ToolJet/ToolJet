@@ -29,7 +29,12 @@ import {
   useValueFormat,
   withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
-import { tooltipAndLegend, useSeriesInputs, valueAxis } from '@/AppBuilder/Widgets/Ui2/_charts/cartesianParts';
+import {
+  clickedMarks,
+  tooltipAndLegend,
+  useSeriesInputs,
+  valueAxis,
+} from '@/AppBuilder/Widgets/Ui2/_charts/cartesianParts';
 import { clamp, isRecord, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
@@ -88,7 +93,7 @@ export const ShadLineChart = (props: WidgetProps) => {
   const refColor = 'var(--lk-ref, var(--sc-muted-foreground))';
   return (
     <SafeFrame props={props} empty={empty} notes={notes}>
-      {(onDatum) => (
+      {(onDatum, highlighted) => (
         <LineChart
           data={rows}
           margin={{ left: 4, right: 12, top: target !== null && targetLabel ? 20 : 8 }}
@@ -129,6 +134,7 @@ export const ShadLineChart = (props: WidgetProps) => {
               isAnimationActive={animated(p, rows.length)}
             />
           ))}
+          {clickedMarks(highlighted, xField, series, fills)}
         </LineChart>
       )}
     </SafeFrame>

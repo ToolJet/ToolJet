@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { DIMMED, highlightOf } from '@/AppBuilder/Widgets/Ui2/_charts/highlight';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -48,6 +49,12 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
     click.pick(datum);
   };
   const columns = `${rowLabelWidth}px repeat(${grid.xs.length}, minmax(0, 1fr))`;
+  // Highlight clicked point: the clicked cell is outlined and the others fade, until clearClickedPoint.
+  const highlighted = p.highlightClicked === true ? highlightOf(click.exposed.clickedDataPoint) : null;
+  const isClicked = (y: string, x: string) =>
+    !!highlighted &&
+    (highlighted as Record<string, unknown>)[p.yField || 'y'] === y &&
+    (highlighted as Record<string, unknown>)[p.xField || 'x'] === x;
   return (
     <Shell {...props}>
       <div
@@ -83,8 +90,11 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
                         onClick={() => onCell(y, x, value)}
                         // The shade arrives as --heat, which the cell's background class reads.
                         className="tw-flex tw-min-h-0 tw-min-w-0 tw-items-center tw-justify-center tw-rounded-[4px] tw-bg-[color:var(--heat)] tw-text-[11px] tw-tabular-nums tw-text-[color:var(--heat-fg)] tw-outline-none tw-transition-[filter] hover:tw-brightness-95 focus-visible:tw-ring-2 focus-visible:tw-ring-[color:var(--sc-ring)]"
+                        data-clicked={isClicked(y, x) || undefined}
                         style={
                           {
+                            opacity: highlighted && !isClicked(y, x) ? DIMMED : undefined,
+                            boxShadow: isClicked(y, x) ? '0 0 0 2px var(--sc-foreground)' : undefined,
                             '--heat': shade(strength),
                             '--heat-fg':
                               strength !== null && strength > 0.55
