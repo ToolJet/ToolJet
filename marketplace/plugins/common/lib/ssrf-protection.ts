@@ -460,6 +460,24 @@ function isDangerousPrivateIPv6(ip: string): boolean {
   return ipv4 !== null && isDangerousPrivateIP(ipv4);
 }
 
+// Shared hosts-file fallback (keep identical in all three SSRF copies).
+/**
+ * dns.resolve4/resolve6 query DNS servers only and never see /etc/hosts. Under the EE runtime config, when they
+ * return nothing, ask dns.lookup (which reads the hosts file) so the resolved IP can still be classified and
+ * allowlisted. Without the runtime config the answer is returned unchanged.
+ */
+async function withHostsFileFallback(hostname: string, addresses: string[]): Promise<string[]> {
+  const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
+  if (addresses.length > 0 || !(globalThis as unknown as Record<string, unknown>)[runtimeKey]) return addresses;
+  try {
+    const answers = await dns.lookup(hostname, { all: true });
+    return answers.map((answer) => answer.address);
+  } catch {
+    return [];
+  }
+}
+// End of the shared hosts-file fallback.
+
 /**
  * Check if a hostname resolves to any private IP address
  * This includes all RFC1918, link-local, loopback, and cloud metadata ranges
@@ -489,10 +507,11 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
     } catch (error) {
       // IPv6 resolution failed, continue
     }
+    const checked = await withHostsFileFallback(hostname, addresses);
 
     // Fail-closed: if DNS returns no addresses we cannot verify the destination
     // is safe, so block it rather than allowing the request through.
-    if (addresses.length === 0) {
+    if (checked.length === 0) {
       console.warn(`DNS resolution returned no addresses for ${hostname}, blocking as precaution`);
       return true;
     }
@@ -501,7 +520,7 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
     // On self-hosted (allowPrivateNetworks=true) only block dangerous ranges
     // (metadata, loopback) — not RFC1918, which are legitimate internal services.
     const ipCheckFn = config?.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
-    return addresses.some((addr) => ipCheckFn(addr) && !(config && isInAllowedRanges(addr, config)));
+    return checked.some((addr) => ipCheckFn(addr) && !(config && isInAllowedRanges(addr, config)));
   } catch (error) {
     // Fail-closed here too: a resolver error is exactly as unverifiable as an
     // empty answer above, and shouldn't be treated as "safe" (was previously
@@ -558,7 +577,10 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
 
   // Allowlisted hostnames / IPs (the CE/EE default loopback names, or the EE runtime allowlist)
   // bypass all checks below.
-  if ((config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) || isInAllowedRanges(hostname, config)) {
+  if (
+    (config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) ||
+    isInAllowedRanges(hostname, config)
+  ) {
     return;
   }
 
@@ -844,7 +866,10 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
     throwIfSchemeBlocked(scheme, config);
   }
 
-  if ((config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) || isInAllowedRanges(hostname, config)) {
+  if (
+    (config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) ||
+    isInAllowedRanges(hostname, config)
+  ) {
     return;
   }
 

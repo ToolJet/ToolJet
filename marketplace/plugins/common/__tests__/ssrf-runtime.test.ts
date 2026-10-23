@@ -1,4 +1,5 @@
 import * as net from 'net';
+import { promises as dnsPromises } from 'dns';
 import got from 'got';
 import {
   getSSRFConfig,
@@ -48,7 +49,7 @@ describe('edition-aware defaults are bypassed when the runtime key is present', 
     expect(getSSRFConfig().allowPrivateNetworks).toBe(false);
     await expect(validateUrlForSSRF('http://10.1.2.3/')).rejects.toThrow();
   });
-  it('keeps today\'s EE behaviour when the key is absent', async () => {
+  it("keeps today's EE behaviour when the key is absent", async () => {
     process.env.TOOLJET_EDITION = 'ee';
     process.env.SSRF_PROTECTION_ENABLED = 'true';
     await expect(validateUrlForSSRF('http://10.1.2.3/')).resolves.toBeUndefined();
@@ -159,7 +160,10 @@ describe('lookup with options.all (Node 22 autoSelectFamily)', () => {
   });
   it('real got request succeeds with protection enabled', async () => {
     enable();
-    const res = await got('https://example.com', getSSRFProtectionOptions(undefined, { timeout: { request: 10000 }, retry: 0 }));
+    const res = await got(
+      'https://example.com',
+      getSSRFProtectionOptions(undefined, { timeout: { request: 10000 }, retry: 0 })
+    );
     expect(res.statusCode).toBe(200);
   }, 20000);
 });
@@ -252,6 +256,35 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
   it('allows an IPv6 literal inside an allowlisted CIDR', async () => {
     publishRanges('::1/128');
     await expect(validateUrlForSSRF('http://[::1]/')).resolves.toBeUndefined();
+  });
+  describe('hosts-file fallback when resolve4/resolve6 find nothing', () => {
+    let spies: jest.SpyInstance[] = [];
+    const mockDns = (lookupAnswer: { address: string; family: number }[]) => {
+      const notFound = Object.assign(new Error('queryA ENOTFOUND tooljet.localhost'), { code: 'ENOTFOUND' });
+      spies = [
+        jest.spyOn(dnsPromises, 'resolve4').mockRejectedValue(notFound),
+        jest.spyOn(dnsPromises, 'resolve6').mockRejectedValue(notFound),
+        jest.spyOn(dnsPromises, 'lookup').mockResolvedValue(lookupAnswer as never),
+      ];
+    };
+    afterEach(() => spies.forEach((spy) => spy.mockRestore()));
+
+    it('allows a hosts-file name whose address is inside an allowlisted CIDR', async () => {
+      mockDns([{ address: '192.168.49.2', family: 4 }]);
+      publishRanges('192.168.49.0/24');
+      await expect(validateUrlForSSRF('http://tooljet.localhost/')).resolves.toBeUndefined();
+    });
+    it('blocks it as resolving to a private IP when the allowlist is empty', async () => {
+      mockDns([{ address: '192.168.49.2', family: 4 }]);
+      publishRanges();
+      const privateIP = /resolves to (a blocked )?private/i;
+      await expect(validateUrlForSSRF('http://tooljet.localhost/')).rejects.toThrow(privateIP);
+    });
+    it('blocks it when the hosts-file lookup finds nothing either', async () => {
+      mockDns([]);
+      publishRanges('192.168.49.0/24');
+      await expect(validateUrlForSSRF('http://tooljet.localhost/')).rejects.toThrow();
+    });
   });
 });
 

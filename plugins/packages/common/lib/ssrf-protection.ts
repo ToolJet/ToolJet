@@ -340,6 +340,24 @@ function isPrivateIPv6(ip: string): boolean {
   return ipv4 !== null && isPrivateIP(ipv4);
 }
 
+// Shared hosts-file fallback (keep identical in all three SSRF copies).
+/**
+ * dns.resolve4/resolve6 query DNS servers only and never see /etc/hosts. Under the EE runtime config, when they
+ * return nothing, ask dns.lookup (which reads the hosts file) so the resolved IP can still be classified and
+ * allowlisted. Without the runtime config the answer is returned unchanged.
+ */
+async function withHostsFileFallback(hostname: string, addresses: string[]): Promise<string[]> {
+  const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
+  if (addresses.length > 0 || !(globalThis as unknown as Record<string, unknown>)[runtimeKey]) return addresses;
+  try {
+    const answers = await dns.lookup(hostname, { all: true });
+    return answers.map((answer) => answer.address);
+  } catch {
+    return [];
+  }
+}
+// End of the shared hosts-file fallback.
+
 /**
  * Check if a hostname resolves to any private IP address
  * This includes all RFC1918, link-local, loopback, and cloud metadata ranges
@@ -367,15 +385,18 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
     } catch (error) {
       // IPv6 resolution failed, continue
     }
+    const checked = await withHostsFileFallback(hostname, addresses);
 
     // No answer: fail closed under the EE runtime config and on Cloud, fail open otherwise (self-hosted compatibility)
-    if (addresses.length === 0) {
+    if (checked.length === 0) {
       console.warn(`DNS resolution failed for ${hostname}`);
-      return !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__ || process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud';
+      return (
+        !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__ || process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud'
+      );
     }
 
     // Check if any resolved address is a private IP
-    return addresses.some((addr) => isPrivateIP(addr) && !(config && isAllowlisted(addr, config)));
+    return checked.some((addr) => isPrivateIP(addr) && !(config && isAllowlisted(addr, config)));
   } catch (error) {
     // Fail-closed here too: a resolver error is exactly as unverifiable as an
     // empty answer above, and shouldn't be treated as "safe" (was previously

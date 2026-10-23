@@ -158,6 +158,24 @@ function isDangerousPrivateIP(ip: string): boolean {
   return ipv4 !== null && isDangerousPrivateIP(ipv4);
 }
 
+// Shared hosts-file fallback (keep identical in all three SSRF copies).
+/**
+ * dns.resolve4/resolve6 query DNS servers only and never see /etc/hosts. Under the EE runtime config, when they
+ * return nothing, ask dns.lookup (which reads the hosts file) so the resolved IP can still be classified and
+ * allowlisted. Without the runtime config the answer is returned unchanged.
+ */
+async function withHostsFileFallback(hostname: string, addresses: string[]): Promise<string[]> {
+  const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
+  if (addresses.length > 0 || !(globalThis as unknown as Record<string, unknown>)[runtimeKey]) return addresses;
+  try {
+    const answers = await dns.lookup(hostname, { all: true });
+    return answers.map((answer) => answer.address);
+  } catch {
+    return [];
+  }
+}
+// End of the shared hosts-file fallback.
+
 async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
   if (net.isIP(hostname)) return false; // raw IPs are checked by the caller before DNS
 
@@ -172,12 +190,13 @@ async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
       .then((a) => addresses.push(...a))
       .catch(() => undefined),
   ]);
+  const checked = await withHostsFileFallback(hostname, addresses);
 
   // Fail closed: an unresolvable host can't be verified safe.
-  if (addresses.length === 0) return true;
+  if (checked.length === 0) return true;
 
   const runtime = getRuntimeConfig();
-  return addresses.some((addr) => isDangerousPrivateIP(addr) && !isAllowlisted(addr, runtime));
+  return checked.some((addr) => isDangerousPrivateIP(addr) && !isAllowlisted(addr, runtime));
 }
 
 /**
@@ -187,7 +206,7 @@ async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
  *
  * With the EE runtime config: its `enabled` flag and allowlist decide, and RFC1918 is blocked too.
  * Without it: on by default on CE (opt out via SSRF_PROTECTION_ENABLED=false), opt in on EE, always
- * on for Cloud; RFC1918 is not blocked.
+ * on for Cloud; RFC1918 is blocked only on Cloud.
  */
 export async function validateUrlForSSRF(urlString: string): Promise<void> {
   if (!isSSRFProtectionEnabled()) return;

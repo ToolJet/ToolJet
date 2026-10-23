@@ -151,6 +151,35 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     publishRanges('::1/128');
     await expect(validateUrlForSSRF('http://[::1]/')).resolves.toBeUndefined();
   });
+  describe('hosts-file fallback when resolve4/resolve6 find nothing', () => {
+    let spies: jest.SpyInstance[] = [];
+    const mockDns = (lookupAnswer: { address: string; family: number }[]) => {
+      const notFound = Object.assign(new Error('queryA ENOTFOUND tooljet.localhost'), { code: 'ENOTFOUND' });
+      spies = [
+        jest.spyOn(dnsPromises, 'resolve4').mockRejectedValue(notFound),
+        jest.spyOn(dnsPromises, 'resolve6').mockRejectedValue(notFound),
+        jest.spyOn(dnsPromises, 'lookup').mockResolvedValue(lookupAnswer as never),
+      ];
+    };
+    afterEach(() => spies.forEach((spy) => spy.mockRestore()));
+
+    it('allows a hosts-file name whose address is inside an allowlisted CIDR', async () => {
+      mockDns([{ address: '192.168.49.2', family: 4 }]);
+      publishRanges('192.168.49.0/24');
+      await expect(validateUrlForSSRF('http://tooljet.localhost/')).resolves.toBeUndefined();
+    });
+    it('blocks it as resolving to a private IP when the allowlist is empty', async () => {
+      mockDns([{ address: '192.168.49.2', family: 4 }]);
+      publishRanges();
+      const privateIP = /resolves to (a blocked )?private/i;
+      await expect(validateUrlForSSRF('http://tooljet.localhost/')).rejects.toThrow(privateIP);
+    });
+    it('blocks it when the hosts-file lookup finds nothing either', async () => {
+      mockDns([]);
+      publishRanges('192.168.49.0/24');
+      await expect(validateUrlForSSRF('http://tooljet.localhost/')).rejects.toThrow();
+    });
+  });
 });
 
 describe('edition defaults without a runtime key', () => {
