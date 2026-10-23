@@ -82,7 +82,8 @@ describe('UI 2.0 Tags input', () => {
     render();
     await type('React');
     await press('Enter');
-    expect(await screen.findByRole('alert')).toHaveTextContent('"React" is already added');
+    // Typed in another case, it is the suggestion react, already added.
+    expect(await screen.findByRole('alert')).toHaveTextContent('"react" is already added');
     expect(exposed().values).toHaveLength(2);
 
     render({ properties: { caseSensitive: binding('{{true}}') } });
@@ -270,5 +271,32 @@ describe('UI 2.0 Tags input', () => {
     const root = container.querySelector('.tj-shadcn');
     expect(root.style.getPropertyValue('--sc-primary')).toBe('#e11d48');
     expect(root.style.getPropertyValue('--lk-chip-fg')).toBe('#14532d');
+  });
+
+  test('[ShadTagsInput-PROP-010] a chip shows its suggestion’s label and keeps its value', async () => {
+    // Picking "Billing team" from [{ label, value }] suggestions added a chip reading "billing".
+    render({
+      properties: {
+        defaultValue: binding("{{['support']}}"),
+        suggestions: binding(
+          "{{[{ label: 'Billing team', value: 'billing' }, { label: 'Support desk', value: 'support' }, { label: 'Sales', value: 'sales' }]}}"
+        ),
+      },
+    });
+    // A chip restored from the default value reads its label.
+    await waitFor(() => expect(chips()).toEqual(['Support desk']));
+
+    // A typed value, or a typed label, adds the suggestion: its label on the chip, its value in values.
+    await type('billing');
+    await press('Enter');
+    await type('Sales');
+    await press('Enter');
+    await waitFor(() => expect(chips()).toEqual(['Support desk', 'Billing team', 'Sales']));
+    expect(exposed().values).toEqual(['support', 'billing', 'sales']);
+
+    // A tag no suggestion holds reads as itself.
+    await type('vip');
+    await press('Enter');
+    await waitFor(() => expect(chips()).toContain('vip'));
   });
 });
