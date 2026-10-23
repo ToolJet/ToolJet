@@ -1126,7 +1126,8 @@ const sidebars = {
           "items": [
             "user-management/profile-management/user-details",
             "user-management/profile-management/reset-password",
-            "user-management/profile-management/user-profile"
+            "user-management/profile-management/user-profile",
+            "user-management/profile-management/personal-access-tokens"
           ]
         }
       ]
