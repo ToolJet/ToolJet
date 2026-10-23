@@ -55,12 +55,21 @@ const RUNTIME_PANEL_THEMES = {
 
 export const getRuntimePanelTheme = (darkMode) => RUNTIME_PANEL_THEMES[darkMode ? 'dark' : 'light'];
 
+// Content sits on top of the tab bar (never over it) so Inspector/Debugger stay switchable while open.
+// panelTop is the content's top edge as a percent of the viewport.
 export const getRuntimePanelContentStyle = (isExpanded, panelTop) =>
-  isExpanded ? { height: `calc(100% - ${panelTop}%)`, borderTopWidth: 2 } : { height: 0, borderTopWidth: 0 };
+  isExpanded
+    ? {
+        bottom: RUNTIME_PANEL_COLLAPSED_HEIGHT,
+        height: `calc(100% - ${panelTop}% - ${RUNTIME_PANEL_COLLAPSED_HEIGHT}px)`,
+        borderTopWidth: 2,
+      }
+    : { bottom: RUNTIME_PANEL_COLLAPSED_HEIGHT, height: 0, borderTopWidth: 0 };
 
 export const getCanvasReservedBottom = (runtimeContentHeight, isDragging) => (isDragging ? 0 : runtimeContentHeight);
 
-export const getRuntimePanelMeasuredHeight = (isExpanded, measuredHeight) => (isExpanded ? measuredHeight : 0);
+export const getRuntimePanelMeasuredHeight = (isExpanded, measuredHeight) =>
+  isExpanded ? measuredHeight + RUNTIME_PANEL_COLLAPSED_HEIGHT : 0;
 
 export const getLeftPanelReservedBottom = (isExpanded, measuredHeight) =>
   isExpanded ? Math.max(measuredHeight, RUNTIME_PANEL_COLLAPSED_HEIGHT) : RUNTIME_PANEL_COLLAPSED_HEIGHT;
@@ -151,14 +160,22 @@ export const getAppBuilderTypographyStyle = () => ({
   '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
 });
 
+const QUERY_RIGHT_PANEL_WIDTH = 'min(496px, calc(100vw - 54px))';
+
 export const getRightPanelStyle = (activeTab) =>
   activeTab === 'query'
     ? {
         maxWidth: 'calc(100vw - 54px)',
         overflow: 'hidden',
-        width: 'min(496px, calc(100vw - 54px))',
+        width: QUERY_RIGHT_PANEL_WIDTH,
       }
     : { overflow: 'auto' };
+
+// The bottom runtime panel stops where the right sidebar starts, so it must track the wider query surface.
+export const getRuntimePanelRightOffset = (isRightSidebarOpen, activeTab) => {
+  if (!isRightSidebarOpen) return 0;
+  return activeTab === 'query' ? QUERY_RIGHT_PANEL_WIDTH : '300px';
+};
 
 export const getQueryManagerClassName = (surface, darkMode) =>
   `query-manager${darkMode ? ' theme-dark' : ''}${surface === 'right' ? ' query-manager--right' : ''}`;

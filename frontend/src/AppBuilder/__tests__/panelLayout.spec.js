@@ -28,6 +28,7 @@ import {
   getRightPanelClassName,
   getQueryManagerClassName,
   getRightPanelStyle,
+  getRuntimePanelRightOffset,
   getQueryHeaderClassName,
   getQueryHeaderControlPresentation,
   getQueryDetailsClassName,
@@ -122,8 +123,18 @@ describe('AB-PANEL-001 app builder panel composition', () => {
   // Break this catches: the zero-height legacy query pane leaves its top border visible below the runtime bar.
   it('fully removes the runtime content surface when the drawer is collapsed', () => {
     expect(getRuntimePanelContentStyle(false, 70)).toEqual({
+      bottom: 38,
       height: 0,
       borderTopWidth: 0,
+    });
+  });
+
+  // Break this catches: opening Inspector or Debugger covers the tab bar, so the user can't switch tabs.
+  it('stacks open drawer content above the tab bar instead of over it', () => {
+    expect(getRuntimePanelContentStyle(true, 70)).toEqual({
+      bottom: 38,
+      height: 'calc(100% - 70% - 38px)',
+      borderTopWidth: 2,
     });
   });
 
@@ -137,7 +148,8 @@ describe('AB-PANEL-001 app builder panel composition', () => {
   // Break this catches: closing the drawer stores an in-flight expanded height and restores the blank canvas gap.
   it('never measures transitional content height for a collapsed drawer', () => {
     expect(getRuntimePanelMeasuredHeight(false, 222)).toBe(0);
-    expect(getRuntimePanelMeasuredHeight(true, 222)).toBe(222);
+    // Open content sits on the tab bar, so the reserved height includes the bar.
+    expect(getRuntimePanelMeasuredHeight(true, 222)).toBe(260);
   });
 
   // Break this catches: either side panel snaps shut or the bottom drawer uses a different motion curve.
@@ -317,6 +329,13 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       width: 'min(496px, calc(100vw - 54px))',
     });
     expect(getRightPanelStyle('configuration')).toEqual({ overflow: 'auto' });
+  });
+
+  // Break this catches: the bottom runtime panel slides under the wide query sidebar and clips its right edge.
+  it('reserves the right sidebar width under the runtime panel, including the wide query surface', () => {
+    expect(getRuntimePanelRightOffset(false, 'query')).toBe(0);
+    expect(getRuntimePanelRightOffset(true, 'configuration')).toBe('300px');
+    expect(getRuntimePanelRightOffset(true, 'query')).toBe('min(496px, calc(100vw - 54px))');
   });
 
   // Break this catches: right-side query fields return to the legacy horizontal label/control layout.

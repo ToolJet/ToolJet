@@ -75,8 +75,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Workspace Constant** | A reusable, non-secret value available across all apps in a workspace; resolved server-side; syntax: `{{constants.name}}` | Global Constant (acceptable), Workspace Variable / Environment Variable (deprecated docs terms) |
 | **Workspace Secret** | An encrypted workspace constant for sensitive data; masked in frontend; syntax: `{{secrets.name}}` | — |
 | **Environment-Specific Configuration** | Constants and secrets can hold different values per environment (dev/staging/prod) | — |
-| **Inspector** | The Runtime Drawer tab for viewing runtime state (sections: Queries, Components, Globals, Variables, Page, Constants) | Debugger (separate tab) |
-| **Debugger** | The Runtime Drawer tab for debugging code execution errors | Console (the browser console is separate) |
+| **Inspector** | The Runtime Drawer tab for viewing runtime state: a split view with an entity list (sections: Queries, Components, Globals, Variables, Page, Constants) beside the selected entity's values | Debugger (separate tab) |
+| **Debugger** | The Runtime Drawer tab listing runtime logs (errors, warnings, info, success) from queries, transformations, events and component validation, filterable by level and page, beside the selected log's details | Console (the browser console is separate) |
 | **Runtime Drawer** | The collapsible bottom App-Builder panel containing Inspector and Debugger | Query Panel (legacy bottom panel) |
 | **Transformation** | A JavaScript/Python transform applied to query results before binding to components | — |
 

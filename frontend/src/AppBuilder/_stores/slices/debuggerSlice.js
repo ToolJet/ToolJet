@@ -29,10 +29,13 @@ export const createDebuggerSlice = (set, get) => ({
       );
     },
 
+    // Logs are kept newest first. Several producers (query runs, transformations, page navigation)
+    // send no timestamp, so the store records when each entry arrived.
     log: (log) => {
       set(
         (state) => {
           log.page = get().getCurrentPageId('canvas');
+          log.timestamp = log.timestamp ?? new Date().toISOString();
           state.debugger.logs.unshift(log);
           if (log.logLevel === 'error') state.debugger.unreadErrorCount++;
         },
@@ -44,8 +47,10 @@ export const createDebuggerSlice = (set, get) => ({
     logMultiple: (logs) => {
       set(
         (state) => {
-          state.debugger.logs.push(...logs.map((log) => ({ ...log, page: get().getCurrentPageId('canvas') })));
-          state.debugger.unreadErrorCount += logs.length;
+          const page = get().getCurrentPageId('canvas');
+          const timestamp = new Date().toISOString();
+          state.debugger.logs.unshift(...logs.map((log) => ({ ...log, page, timestamp: log.timestamp ?? timestamp })));
+          state.debugger.unreadErrorCount += logs.filter((log) => log.logLevel === 'error').length;
         },
         false,
         'logMultiple'

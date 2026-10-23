@@ -124,10 +124,55 @@ $border-radius: 4px;
   }
 }
 
+.runtime-panel-tab {
+  transition: color 0.18s ease;
+}
+
 .runtime-panel-tab.active {
   color: var(--runtime-panel-text);
   background: transparent;
-  border-bottom: 2px solid var(--runtime-panel-accent);
+}
+
+// Shared underline that slides between tabs (positioned by QueryPanel from the active tab's box).
+.query-pane.runtime-panel-bar .runtime-panel-tab-indicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--runtime-panel-accent);
+  pointer-events: none;
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+// Tab content cross-fades and slides slightly toward the tab that was picked.
+.runtime-panel-view {
+  height: 100%;
+  animation: runtime-panel-view-enter 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes runtime-panel-view-enter {
+  from {
+    opacity: 0;
+    transform: translateX(var(--runtime-panel-view-offset, 0px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .runtime-panel-view {
+    animation: none;
+  }
+
+  .query-pane.runtime-panel-bar .runtime-panel-tab-indicator {
+    transition: none;
+  }
 }
 
 .runtime-panel-toggle {
@@ -168,6 +213,8 @@ $border-radius: 4px;
 .runtime-panel-body {
   height: 100%;
   overflow: auto;
+  // The tab-switch slide offsets content sideways; never let that show a horizontal scrollbar.
+  overflow-x: hidden;
 
   > div,
   .inspector-component,

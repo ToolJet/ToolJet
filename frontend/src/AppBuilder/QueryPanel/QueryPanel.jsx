@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Bug, PanelBottomClose, PanelBottomOpen, ScanSearch } from 'lucide-react';
 import { isEmpty, isEqual } from 'lodash';
 import { diff } from 'deep-object-diff';
 import cx from 'classnames';
@@ -10,17 +10,19 @@ import useWindowResize from '@/_hooks/useWindowResize';
 import useStore from '@/AppBuilder/_stores/store';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
-import LeftSidebarInspector from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/LeftSidebarInspector';
-import Debugger from '@/AppBuilder/LeftSidebar/Debugger/Debugger';
+import RuntimeInspector from '@/AppBuilder/QueryPanel/RuntimeInspector/RuntimeInspector';
+import RuntimeDebugger from '@/AppBuilder/QueryPanel/RuntimeDebugger/RuntimeDebugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import {
-  RUNTIME_PANEL_COLLAPSED_HEIGHT,
   RUNTIME_PANEL_ITEMS,
   PANEL_MOTION,
   getRuntimePanelContentStyle,
   getRuntimePanelMeasuredHeight,
+  getRuntimePanelRightOffset,
   getRuntimePanelTheme,
 } from '@/AppBuilder/panelLayout';
+
+const RUNTIME_PANEL_ICONS = { inspect: ScanSearch, debugger: Bug };
 
 export const QueryPanel = ({ darkMode }) => {
   const { moduleId, appType } = useModuleContext();
@@ -30,12 +32,17 @@ export const QueryPanel = ({ darkMode }) => {
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
+  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const unreadErrorCount = useStore((state) => state.debugger.unreadErrorCount);
   const resetUnreadErrorCount = useStore((state) => state.debugger.resetUnreadErrorCount);
   const selectedQueryId = useStore((state) => state.queryPanel.selectedQuery?.id);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const [activeTab, setActiveTab] = useState('inspect');
+  // -1 / 1 when moving left / right across the tabs; drives the content's enter slide.
+  const [tabDirection, setTabDirection] = useState(0);
+  const tabRefs = useRef({});
+  const [tabIndicator, setTabIndicator] = useState(null);
   const [renderPanelContent, setRenderPanelContent] = useState(isQueryPaneExpanded);
   const panelPreferences = useRef(
     JSON.parse(localStorage.getItem('runtimePanelPreferences')) ?? { isExpanded: false, panelTop: 70 }
@@ -63,7 +70,7 @@ export const QueryPanel = ({ darkMode }) => {
   }, []);
 
   useEffect(() => {
-    const measuredHeight = panelRef.current?.offsetHeight ?? RUNTIME_PANEL_COLLAPSED_HEIGHT;
+    const measuredHeight = panelRef.current?.offsetHeight ?? 0;
     setQueryPanelHeight(getRuntimePanelMeasuredHeight(isQueryPaneExpanded, measuredHeight));
   }, [windowSize.height, isQueryPaneExpanded, isWindowResizing, setQueryPanelHeight]);
 
@@ -96,6 +103,8 @@ export const QueryPanel = ({ darkMode }) => {
   }, [height, isQueryPaneExpanded, persistPanel, setIsQueryPaneExpanded, setQueryPanelHeight]);
 
   const selectTab = (tab) => {
+    const tabIndex = (id) => RUNTIME_PANEL_ITEMS.findIndex((item) => item.id === id);
+    setTabDirection(Math.sign(tabIndex(tab) - tabIndex(activeTab)));
     setActiveTab(tab);
     if (tab === 'debugger') resetUnreadErrorCount();
     if (!isQueryPaneExpanded) {
@@ -103,6 +112,12 @@ export const QueryPanel = ({ darkMode }) => {
       persistPanel(true, height);
     }
   };
+
+  // Sliding underline: measured from the active tab so it glides between tabs of different widths.
+  useLayoutEffect(() => {
+    const tab = tabRefs.current[activeTab];
+    if (tab) setTabIndicator({ left: tab.offsetLeft, width: tab.offsetWidth });
+  }, [activeTab, unreadErrorCount]);
 
   const onMouseMove = useCallback(
     (event) => {
@@ -122,12 +137,12 @@ export const QueryPanel = ({ darkMode }) => {
       if (!isDraggingQueryPane) return;
       setIsDraggingQueryPane(false);
       persistPanel(true, height);
-      setQueryPanelHeight(panelRef.current?.offsetHeight ?? RUNTIME_PANEL_COLLAPSED_HEIGHT);
+      setQueryPanelHeight(getRuntimePanelMeasuredHeight(true, panelRef.current?.offsetHeight ?? 0));
     },
     document
   );
 
-  const rightPanelOffset = { right: isRightSidebarOpen ? '300px' : 0 };
+  const rightPanelOffset = { right: getRuntimePanelRightOffset(isRightSidebarOpen, activeRightSideBarTab) };
   const runtimePanelTheme = getRuntimePanelTheme(darkMode);
   const runtimePanelBarStyle = {
     ...rightPanelOffset,
@@ -141,18 +156,33 @@ export const QueryPanel = ({ darkMode }) => {
   return (
     <div className={cx('runtime-panel', { 'dark-theme theme-dark': darkMode })}>
       <div className="query-pane runtime-panel-bar" style={runtimePanelBarStyle}>
-        {RUNTIME_PANEL_ITEMS.map(({ id, label }) => (
-          <button
-            key={id}
-            className={cx('runtime-panel-tab', { active: activeTab === id })}
-            onClick={() => selectTab(id)}
-          >
-            <span>{label}</span>
-            {id === 'debugger' && unreadErrorCount > 0 && (
-              <span className="runtime-panel-badge">{unreadErrorCount}</span>
-            )}
-          </button>
-        ))}
+        {RUNTIME_PANEL_ITEMS.map(({ id, label }) => {
+          const Icon = RUNTIME_PANEL_ICONS[id];
+          return (
+            <button
+              key={id}
+              ref={(node) => {
+                tabRefs.current[id] = node;
+              }}
+              className={cx('runtime-panel-tab', { active: activeTab === id })}
+              onClick={() => selectTab(id)}
+              data-cy={`runtime-panel-tab-${id}`}
+            >
+              {Icon && <Icon size={14} aria-hidden="true" />}
+              <span>{label}</span>
+              {id === 'debugger' && unreadErrorCount > 0 && (
+                <span className="runtime-panel-badge">{unreadErrorCount}</span>
+              )}
+            </button>
+          );
+        })}
+        {tabIndicator && (
+          <span
+            className="runtime-panel-tab-indicator"
+            style={{ width: tabIndicator.width, transform: `translateX(${tabIndicator.left}px)` }}
+            aria-hidden="true"
+          />
+        )}
         <button className="runtime-panel-toggle" onClick={toggleRuntimePanel} aria-label="Toggle runtime panel">
           {isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}
         </button>
@@ -175,15 +205,22 @@ export const QueryPanel = ({ darkMode }) => {
         {renderPanelContent && (
           <FallbackBoundary label="Runtime panel" location="Runtime Panel" darkMode={darkMode} resetKeys={[activeTab]}>
             <div className="runtime-panel-body">
-              {activeTab === 'inspect' && (
-                <LeftSidebarInspector
-                  darkMode={darkMode}
-                  onClose={toggleRuntimePanel}
-                  moduleId={moduleId}
-                  appType={appType}
-                />
-              )}
-              {activeTab === 'debugger' && <Debugger darkMode={darkMode} onClose={toggleRuntimePanel} />}
+              {/* Keyed by tab so each switch replays the enter animation. */}
+              <div
+                key={activeTab}
+                className="runtime-panel-view"
+                style={{ '--runtime-panel-view-offset': `${tabDirection * 12}px` }}
+              >
+                {activeTab === 'inspect' && (
+                  <RuntimeInspector
+                    darkMode={darkMode}
+                    moduleId={moduleId}
+                    appType={appType}
+                    onClose={toggleRuntimePanel}
+                  />
+                )}
+                {activeTab === 'debugger' && <RuntimeDebugger darkMode={darkMode} onClose={toggleRuntimePanel} />}
+              </div>
             </div>
           </FallbackBoundary>
         )}
