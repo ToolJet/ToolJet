@@ -82,6 +82,6 @@ export const LOADING: LoadingMap = {
   ShadDropdownMenu: 'own',
   ShadButtonGroup: 'own',
   ShadNavigation: 'own',
-  ShadCalendar: 'block',
+  ShadCalendar: 'kept',
   ShadCarousel: 'block',
 };

@@ -74,6 +74,7 @@ export type LookMap = Record<string, readonly LookEntry[]>;
 /** How a widget looks while loading (Shell's LOADING_LOOK). */
 export type LoadingLook =
   | 'own'
+  | 'kept'
   | 'field'
   | 'inline'
   | 'inline-top'

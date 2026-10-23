@@ -13,6 +13,7 @@ import './styles/shadcn.scss';
 // How each widget looks while loading (the loadingState property or the setLoading action). Controls stay in place,
 // non-interactive, with a spinner: 'field' inside the text box (Field draws it), 'inline' right after the control,
 // 'inline-top' after a multi-line control on its first line, 'wide' at the end of a control that spans the widget.
+// 'kept': a block look over content the user works in, which stays mounted under it.
 // Text and media become skeletons in their own shape ('heading', 'text', 'line', 'pill', 'avatar', 'bar',
 // 'columns'); the rest a skeleton block at the widget's size ('block', the default). 'own': the widget draws its
 // loading state itself (or has none to draw). Groups in their own modules add theirs in looks/<group>.ts (LOADING).
@@ -41,6 +42,11 @@ const LOADING_LOOK: LoadingMap = {
   ShadProgress: 'bar',
   ShadKanban: 'columns',
 };
+
+// The looks that put a spinner beside the control (Shell keeps the control where it is).
+const INLINE_LOOKS: LoadingLook[] = ['inline', 'inline-top', 'wide'];
+// React 18 does not know `inert`, so it goes on as a plain attribute.
+const inert = (on: boolean) => (on ? { inert: '' } : {});
 
 /** A control is non-interactive while it is disabled or loading. */
 export const busy = (properties: Resolved): boolean => !!properties.disabledState || !!properties.loadingState;
@@ -176,29 +182,48 @@ export const Shell = (props: ShellProps) => {
   // what was typed, but lost focus).
   let content =
     look === 'field' ? <LoadingContext.Provider value={loading}>{children}</LoadingContext.Provider> : children;
-  if (loading && ['inline', 'inline-top', 'wide'].includes(look)) {
+  const lookNow = () =>
+    wantsSkeleton(properties) ? loadingSkeleton(look, props) : <LoadingBox height={props.height} />;
+  if (INLINE_LOOKS.includes(look)) {
+    // The same wrappers loading or not (display: contents while idle), so the control is not remounted when loading
+    // starts or ends: a Checkbox, Switch, Slider or Radio group lost focus and anything it held of its own.
     content = (
       <LoadingContext.Provider value={false}>
         {look === 'wide' ? (
-          <div className="tw-flex tw-items-center tw-gap-3">
-            <div className="tw-min-w-0 tw-flex-1">{children}</div>
-            <Spinner />
+          <div className={loading ? 'tw-flex tw-items-center tw-gap-3' : 'tw-contents'}>
+            <div className={loading ? 'tw-min-w-0 tw-flex-1' : 'tw-contents'}>{children}</div>
+            {loading ? <Spinner /> : null}
           </div>
         ) : (
           <div
-            className={cn(
-              'tw-inline-flex tw-max-w-full tw-gap-3',
-              look === 'inline-top' ? 'tw-items-start [&>[role=status]]:tw-mt-0.5' : 'tw-items-center'
-            )}
+            className={
+              loading
+                ? cn(
+                    'tw-inline-flex tw-max-w-full tw-gap-3',
+                    look === 'inline-top' ? 'tw-items-start [&>[role=status]]:tw-mt-0.5' : 'tw-items-center'
+                  )
+                : 'tw-contents'
+            }
           >
             {children}
-            <Spinner />
+            {loading ? <Spinner /> : null}
           </div>
         )}
       </LoadingContext.Provider>
     );
+  } else if (look === 'kept') {
+    // A block look over content the user works in (a Calendar's chosen dates): the content stays mounted, hidden and
+    // inert, under the loading look, and comes back as it was.
+    content = (
+      <>
+        <div className={loading ? 'tw-hidden' : 'tw-contents'} aria-hidden={loading || undefined} {...inert(loading)}>
+          {children}
+        </div>
+        {loading ? lookNow() : null}
+      </>
+    );
   } else if (loading && look !== 'own' && look !== 'field') {
-    content = wantsSkeleton(properties) ? loadingSkeleton(look, props) : <LoadingBox height={props.height} />;
+    content = lookNow();
   }
   return (
     <div

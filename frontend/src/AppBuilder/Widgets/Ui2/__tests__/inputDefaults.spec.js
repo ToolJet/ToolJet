@@ -8,19 +8,9 @@ import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
  * property that exposes what the user enters (value, values or file) and fires an event when it changes; a choice
  * widget is one with an options-like list property.
  */
-import { CONFIGS, TYPES, defaultsOf } from './packWidgets';
+import { CONFIGS, INPUT_TYPES, TYPES, defaultsOf } from './packWidgets';
 
-const EXPOSES_INPUT = ['value', 'values', 'file'];
-const CHANGE_EVENT = /change|select|file/i;
-const isInput = (type) => {
-  const c = CONFIGS[type];
-  return (
-    !!c.properties?.label &&
-    EXPOSES_INPUT.some((k) => k in (c.exposedVariables || {})) &&
-    Object.keys(c.events || {}).some((e) => CHANGE_EVENT.test(e))
-  );
-};
-export const INPUTS = TYPES.filter(isInput);
+const INPUTS = INPUT_TYPES;
 
 // The one-time code fills its own slots; a placeholder would sit in each slot.
 const NO_PLACEHOLDER = ['ShadOtpInput'];
