@@ -80,6 +80,12 @@ interface AppResourceMappings {
   versionGitIdMapping: Record<string, string>;
 }
 
+/** The parts of export()'s appV2 that are not App columns: its queries and its modules' exports. */
+interface ExportedAppParts {
+  dataQueries?: { kind?: string; options?: Record<string, unknown> }[];
+  modules?: { appV2: App }[];
+}
+
 type DefaultDataSourceName =
   | 'restapidefault'
   | 'runjsdefault'
@@ -4244,6 +4250,29 @@ export class AppImportExportService {
     );
   }
 
+  // An export names each ToolJet DB table by its co_relation_id; import maps tables by that id, so the
+  // exported queries must name them the same way. Runs import's remap in reverse, on copies of the options.
+  pointTooljetDbQueriesAtCoRelationIds(
+    definition: { appV2: App },
+    coRelationIdByTableId: Record<string, string>
+  ): void {
+    const mapping = Object.fromEntries(
+      Object.entries(coRelationIdByTableId).map(([tableId, coRelationId]) => [tableId, { id: coRelationId }])
+    );
+    const { dataQueries = [], modules = [] } = definition.appV2 as unknown as ExportedAppParts;
+    for (const dataQuery of dataQueries) {
+      if (dataQuery.kind !== 'tooljetdb' || !dataQuery.options) continue;
+      dataQuery.options = this.replaceTooljetDbTableIds(
+        structuredClone(dataQuery.options),
+        mapping,
+        dataQuery.options.organization_id as string
+      );
+    }
+    for (const module of modules) {
+      this.pointTooljetDbQueriesAtCoRelationIds(module, coRelationIdByTableId);
+    }
+  }
+
   // Entire function should be santised for Undefined values
   replaceTooljetDbTableIds(queryOptions, tooljetDatabaseMapping, organizationId: string) {
     let transformedQueryOptions = { ...queryOptions };
@@ -4361,7 +4390,7 @@ export class AppImportExportService {
 
     return {
       ...queryOptions,
-      table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id,
+      table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id ?? queryOptions.table_id,
       join_table: joinOptions,
       organization_id: organizationId,
     };

@@ -40,16 +40,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       if (ownerCanCreate) can(FEATURE_KEY.CREATE_FOLDER_DATA_SOURCE, FolderDataSource);
       if (ownerCanDelete) can(FEATURE_KEY.DELETE_FOLDER_DATA_SOURCE, FolderDataSource);
 
-      if (folderPermissions) {
-        if (folderPermissions.isAllEditable) {
-          can([FEATURE_KEY.CREATE_FOLDER_DATA_SOURCE, FEATURE_KEY.DELETE_FOLDER_DATA_SOURCE], FolderDataSource);
-        } else if (folderPermissions.editableFoldersId?.length > 0) {
-          const folderId = request?.tj_resource_id;
-          if (folderId && folderPermissions.editableFoldersId.includes(folderId)) {
-            can([FEATURE_KEY.CREATE_FOLDER_DATA_SOURCE, FEATURE_KEY.DELETE_FOLDER_DATA_SOURCE], FolderDataSource);
-          }
-        }
-      } else if (dataSourceFolderCreate) {
+      // The coarse flag and a granular per-folder grant are independent, additive routes to the
+      // same permission — NOT "granular if present, else coarse". A user with dataSourceFolderCreate
+      // but no granular DATA_SOURCE_FOLDER grant at all (folderPermissions still resolves to an
+      // object with every id-list empty, not undefined) must keep authorizing on the coarse flag
+      // alone, same as before granular per-folder DATA_SOURCE_FOLDER permissions existed.
+      const folderId = request?.tj_resource_id;
+      const hasGranularGrant =
+        folderPermissions?.isAllEditable || (folderId && folderPermissions?.editableFoldersId?.includes(folderId));
+      if (hasGranularGrant || dataSourceFolderCreate) {
         can([FEATURE_KEY.CREATE_FOLDER_DATA_SOURCE, FEATURE_KEY.DELETE_FOLDER_DATA_SOURCE], FolderDataSource);
       }
     }

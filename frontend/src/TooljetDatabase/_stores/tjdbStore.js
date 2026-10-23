@@ -6,7 +6,7 @@ import { immer } from 'zustand/middleware/immer';
 import { appEnvironmentService } from '@/_services/app_environment.service';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
-import { getColumnDataType } from '@/TooljetDatabase/constants';
+import { getColumnDataType, isEnvironmentLocked } from '@/TooljetDatabase/constants';
 
 const initialState = {
   environments: [],
@@ -50,15 +50,16 @@ export const useTjdbStore = create(
       actions: {
         // Org-scoped (no app_id) - CE gets back a single-entry list (its one licensed environment),
         // EE/licensed orgs get dev/staging/production ordered by priority. Default selection is
-        // the tab's last selection when it is still in the list (a licence downgrade drops it), else
-        // the lowest-priority entry (development).
+        // the tab's last selection when it is still licensed (after a lapse the list keeps the locked
+        // environments, flagged `enabled: false`), else the lowest-priority entry (development).
         loadEnvironments: async () => {
           const { environments: fetchedEnvironments = [] } = await appEnvironmentService.getAllEnvironments();
           const sorted = [...fetchedEnvironments].sort((a, b) => a.priority - b.priority);
           const restoredId = readSelectedEnvironmentId();
           set((state) => {
             state.environments = sorted;
-            state.selectedEnvironment = sorted.find((env) => env.id === restoredId) ?? sorted[0] ?? null;
+            state.selectedEnvironment =
+              sorted.find((env) => env.id === restoredId && !isEnvironmentLocked(env)) ?? sorted[0] ?? null;
           });
           return sorted;
         },

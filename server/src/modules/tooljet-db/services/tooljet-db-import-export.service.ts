@@ -139,8 +139,11 @@ export class TooljetDbImportExportService {
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       return { tableNameMapping, tooljet_database: tjdbDatabase };
     } catch (err) {
-      await tjdbQueryRunner.rollbackTransaction();
-      await queryRunner.rollbackTransaction();
+      // A table op's own catch may already have rolled the shared transaction back; a rollback failure
+      // here must not replace the error that caused it.
+      for (const runner of [tjdbQueryRunner, queryRunner]) {
+        if (runner.isTransactionActive) await runner.rollbackTransaction().catch(() => undefined);
+      }
       throw err;
     } finally {
       await tjdbQueryRunner.release();

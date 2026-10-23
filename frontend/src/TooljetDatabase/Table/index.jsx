@@ -14,7 +14,13 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
-import { renderDatatypeIcon, listAllPrimaryKeyColumns, isSqlModeDisabled, SCHEMA_ENV_TOOLTIP } from '../constants';
+import {
+  renderDatatypeIcon,
+  listAllPrimaryKeyColumns,
+  isSqlModeDisabled,
+  SCHEMA_ENV_TOOLTIP,
+  envHasRelation,
+} from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
@@ -32,7 +38,7 @@ import {
   getUTCOffset,
 } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import { shallow } from 'zustand/shallow';
-import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import { useTjdbStore, useTjdbActions, useIsDevelopmentEnvironment } from '../_stores/tjdbStore';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import { CHANGE_TYPE } from '../MigrationConfirmModal';
 import './styles.scss';
@@ -40,6 +46,7 @@ import './styles.scss';
 const Table = ({ collapseSidebar }) => {
   const {
     organizationId,
+    tables,
     columns,
     selectedTable,
     selectedTableData,
@@ -58,6 +65,15 @@ const Table = ({ collapseSidebar }) => {
   } = useContext(TooljetDatabaseContext);
   // Only an environment block gets the environment tooltip; a missing TJDB permission is a different reason.
   const schemaBlockedByEnvironment = canEditTjdb && !canEditSchema;
+  const isDevelopmentEnvironment = useIsDevelopmentEnvironment();
+  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  const developmentEnvironment = useTjdbStore((state) => state.environments.find((env) => env.priority === 1));
+  // Unknown (tables not loaded yet) counts as present: only a table the list says is missing falls back.
+  const relationsForSelectedTable = tables?.find((table) => table.id === selectedTable.id)?.environments;
+  const selectedTableMissingFromEnvironment =
+    !isDevelopmentEnvironment &&
+    !!relationsForSelectedTable &&
+    !envHasRelation(relationsForSelectedTable, selectedEnvironment?.id);
   const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
     (state) => ({
       queryFilters: state.queryFilters,
@@ -72,6 +88,7 @@ const Table = ({ collapseSidebar }) => {
     fetchTableMetadata: fetchMetadata,
     setQueryFilters,
     setSortFilters,
+    switchEnvironment,
   } = useTjdbActions();
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -400,7 +417,12 @@ const Table = ({ collapseSidebar }) => {
   };
 
   useEffect(() => {
-    if (prevSelectedTableRef.current.id !== selectedTable.id && !isEmpty(selectedTable)) {
+    // A table staging lacks cannot load there; the fallback effect below moves to Development and loads it.
+    if (
+      prevSelectedTableRef.current.id !== selectedTable.id &&
+      !isEmpty(selectedTable) &&
+      !selectedTableMissingFromEnvironment
+    ) {
       onSelectedTableChange();
     }
     prevSelectedTableRef.current = selectedTable;
@@ -433,6 +455,12 @@ const Table = ({ collapseSidebar }) => {
     registerEnvironmentSwitchHandler(handleEnvironmentSwitch);
     return () => registerEnvironmentSwitchHandler(null);
   });
+
+  // After the handler registration above, so the switch runs the handler for this render's table.
+  useEffect(() => {
+    if (selectedTableMissingFromEnvironment && developmentEnvironment) switchEnvironment(developmentEnvironment);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTableMissingFromEnvironment, selectedTable.id]);
 
   useEffect(() => {
     if (!isEditRowDrawerOpen && isDirectRowExpand) {
@@ -1161,7 +1189,8 @@ const Table = ({ collapseSidebar }) => {
           height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
         className={cx(
-          `table-responsive border-0 tj-db-table animation-fade ${rows.length === 0 ? 'tj-table-empty' : 'tj-table'}`
+          `table-responsive border-0 tj-db-table animation-fade ${rows.length === 0 ? 'tj-table-empty' : 'tj-table'}`,
+          { 'tj-table-no-add-column': !isDevelopmentEnvironment }
         )}
         ref={tooljetDbTableRef}
       >
@@ -1300,7 +1329,7 @@ const Table = ({ collapseSidebar }) => {
                       </div>
                     </th>
                   ))}
-                  <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={schemaBlockedByEnvironment}>
+                  {isDevelopmentEnvironment && (
                     <th
                       onClick={() => {
                         if (canEditSchema) {
@@ -1313,7 +1342,7 @@ const Table = ({ collapseSidebar }) => {
                     >
                       <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
                     </th>
-                  </ToolTip>
+                  )}
                 </tr>
               ))}
             </thead>

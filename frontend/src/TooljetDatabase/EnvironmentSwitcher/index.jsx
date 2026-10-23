@@ -6,12 +6,14 @@ import { IconChevronRight } from '@tabler/icons-react';
 import { TooljetDatabaseContext } from '../context';
 import { tooljetDatabaseService } from '@/_services';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { isMultiEnvLicenseInvalid, getMultiEnvLicenseLockMessage } from '@/_helpers/multiEnvLicense';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
 import { History } from 'lucide-react';
 import MigrationHistoryDrawer from '../Drawers/MigrationHistoryDrawer';
-import { envHasRelation, formatMigrationNumber, TABLE_ABSENT_TOOLTIP } from '../constants';
+import { envHasRelation, formatMigrationNumber, isEnvironmentLocked, TABLE_ABSENT_TOOLTIP } from '../constants';
 
 /**
  * Per-environment status for the currently open table, derived from two backend shapes:
@@ -54,6 +56,7 @@ const EnvironmentSwitcher = () => {
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
   const migrationsVersion = useTjdbStore((state) => state.migrationsVersion);
   const { switchEnvironment } = useTjdbActions();
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
   const [isOpen, setIsOpen] = useState(false);
   const [tableMigrations, setTableMigrations] = useState(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
@@ -166,8 +169,8 @@ const EnvironmentSwitcher = () => {
               {environments.map((environment) => {
                 const isSelected = environment.id === selectedEnvironment.id;
                 const status = statusFor(environment);
-                // A table open, and absent here: switching to this environment can't show it.
-                const disabled = hasTableContext && !status.hasRelation && !isSelected;
+                const locked = !isSelected && isEnvironmentLocked(environment, isMultiEnvLicenseInvalid(featureAccess));
+                const disabled = locked || (hasTableContext && !status.hasRelation && !isSelected);
                 const row = (
                   <button
                     key={environment.id}
@@ -187,6 +190,9 @@ const EnvironmentSwitcher = () => {
                         <div className={cx('tjdb-environment-switcher__dot', status.dot)} />
                       </span>
                       <span className="tjdb-environment-switcher__row-name">{capitalize(environment.name)}</span>
+                      {locked && (
+                        <SolidIcon className="tjdb-environment-switcher__row-upgrade-icon" name="enterprisesmall" />
+                      )}
                     </span>
                     {status.lastMigrationName && (
                       <span className="tjdb-environment-switcher__row-badge" title={status.lastMigrationName}>
@@ -197,7 +203,12 @@ const EnvironmentSwitcher = () => {
                 );
                 if (!disabled) return row;
                 return (
-                  <ToolTip key={environment.id} message={TABLE_ABSENT_TOOLTIP} placement="left" show>
+                  <ToolTip
+                    key={environment.id}
+                    message={locked ? getMultiEnvLicenseLockMessage(featureAccess) : TABLE_ABSENT_TOOLTIP}
+                    placement="left"
+                    show
+                  >
                     <div>{row}</div>
                   </ToolTip>
                 );
