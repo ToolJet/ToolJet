@@ -23,12 +23,34 @@ This directory is the Docusaurus source for docs.tooljet.com. It lives on the `d
 - Sidebar entries are doc IDs: `<folder path>/<front matter id>`, e.g. `setup/configuration/env-vars`. A new page isn't visible until it's added to the right category in the versioned sidebar JSON.
 - Plan availability badges go right under the front matter or a heading: `<PlanBadge type="enterprise" />` (also `team`, `self-hosted`, `pro`).
 - Admonitions: `:::info`, `:::tip`, `:::note`, `:::warning`, `:::caution`, `:::danger`. An optional title follows the type, e.g. `:::info OAuth authorization modes`.
-- Screenshots:
-  ```mdx
-  <img className="screenshot-full img-full" src="/img/<topic>/<page>/<name>.png" alt="Descriptive alt text" />
-  ```
-  Never invent image files. When a screenshot is needed but doesn't exist yet, leave `<!-- TODO screenshot: <what to capture> -->`.
+- Screenshots: see the **Screenshots** section below.
 - Internal links are absolute site paths without the version, e.g. `/docs/data-sources/overview`.
+
+## Screenshots
+
+- **Widget pages (`widgets/`) never get screenshots.** Don't add images or screenshot TODOs there.
+- **Style:**
+  - A tight crop of the one UI element the text is about (panel, form, modal, card).
+  - PNG at 2× device scale, light theme.
+  - No annotations (arrows, boxes, numbers).
+  - No borders or shadows in the image itself; the size class adds them.
+- **Polished, enterprise-looking content only:**
+  - Realistic company data.
+  - No default names (`button1`, `query1`, `Untitled`).
+  - No placeholder or test text, no error toasts, no empty states unless the page is about them.
+  - Secrets, tokens and keys blurred.
+- **Markup:**
+  ```mdx
+  <img className="screenshot-full img-l" src="/img/<section>/<page>/<name>.png" alt="What the screenshot shows" />
+  ```
+  Pick the size class from the crop's CSS width (PNG width ÷ 2):
+  - ≤ 400 px → `img-s`
+  - ≤ 540 px → `img-m`
+  - ≤ 720 px → `img-l`
+  - otherwise → `img-full`
+- **Files:** `static/img/<section>/<page>/<name>.png`, lowercase with dashes.
+- **Refreshing an existing screenshot:** never overwrite it. Older doc versions may still use it. Save the new capture as the next version (`name.png` → `name-v2.png`, `name-v2.png` → `name-v3.png`) and point only the current version's page at it.
+- **Never invent image files.** When a screenshot is needed but can't be captured yet, leave `<!-- TODO screenshot: <what to capture> -->`.
 
 ## Writing style
 
