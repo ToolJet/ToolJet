@@ -122,6 +122,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Folder** | A container for organizing apps within a workspace | — |
 | **Public App** | An app accessible without authentication via its shareable URL | — |
 | **Shareable URL** | The public URL for a released app that can be shared with end users | — |
+| **SSRF allowlist** | Hostnames, IP addresses and CIDR ranges a Super Admin permits through SSRF protection (EE, Settings -> Security); a match skips all SSRF checks | Allowed addresses (`SSRF_ALLOWED_ADDRESSES` setting) |
 | **Embeddable Link** | A URL for embedding a ToolJet app in an iframe within another application | — |
 | **Thread** | A spatially-positioned comment thread on an app canvas (x/y coordinates) | — |
 | **Comment** | An individual message within a thread | — |
