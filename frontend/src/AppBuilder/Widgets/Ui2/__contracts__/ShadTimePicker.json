@@ -100,6 +100,15 @@
       "default": "Pick a time",
       "initial": "Pick a time"
     },
+    "showClearBtn": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "timeFormat": {
       "type": "string",
       "schema": {

@@ -777,11 +777,7 @@
       "ui2": [
         "ShadTimePicker"
       ],
-      "properties": {
-        "showClearBtn": {
-          "gap": "no clear button"
-        }
-      },
+      "properties": {},
       "actions": {
         "setTime": "setValue"
       }

@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Clock } from 'lucide-react';
 import { CONTROL, controlAria, fieldIdOf, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { CLEAR_ROOM, WithClear, showsClear } from '@/AppBuilder/Widgets/Ui2/_shared/FieldClear';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { runNow, useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -235,28 +236,39 @@ export const ShadTimePicker = (props: WidgetProps) => {
   const disabled = busy(properties);
   const shown = M.formatTime(minutes, use24);
   const listMode = properties.pickerStyle === 'list';
+  // Show clear button (the native Time picker's showClearBtn): an x while a time is picked empties it, as clearValue
+  // does, firing onSelect once; the field is then touched, so a required one says so.
+  const clearable = showsClear(properties, minutes !== null);
+  const clearPick = () => {
+    pick(null);
+    check.touch();
+    triggerRef.current?.focus();
+  };
   return (
     <FormField props={props} properties={properties} check={check} innerRef={fit}>
       <Popover open={open} onOpenChange={openChange}>
-        <PopoverTrigger asChild>
-          <Button
-            ref={triggerRef}
-            id={fieldIdOf(props)}
-            variant="outline"
-            disabled={disabled}
-            {...controlAria(props, check.error)}
-            {...focus.handlers}
-            className={cn(
-              TRIGGER,
-              CONTROL,
-              'tw-tabular-nums',
-              !shown && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
-            )}
-          >
-            <Clock className={ICON} />
-            {shown || toText(properties.placeholder)}
-          </Button>
-        </PopoverTrigger>
+        <WithClear enabled={properties.showClearBtn === true} show={clearable} onClear={clearPick}>
+          <PopoverTrigger asChild>
+            <Button
+              ref={triggerRef}
+              id={fieldIdOf(props)}
+              variant="outline"
+              disabled={disabled}
+              {...controlAria(props, check.error)}
+              {...focus.handlers}
+              className={cn(
+                TRIGGER,
+                CONTROL,
+                'tw-tabular-nums',
+                clearable && CLEAR_ROOM,
+                !shown && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
+              )}
+            >
+              <Clock className={ICON} />
+              {shown || toText(properties.placeholder)}
+            </Button>
+          </PopoverTrigger>
+        </WithClear>
         <PopoverContent
           aria-label="Choose a time"
           align="start"
