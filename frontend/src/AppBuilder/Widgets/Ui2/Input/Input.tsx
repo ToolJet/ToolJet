@@ -11,7 +11,7 @@ import { ShadNumberInput } from '@/AppBuilder/Widgets/Ui2/NumberInput/NumberInpu
 
 // The Type list (shadInput.js). A bound type outside it shows a text box: 'file' or 'checkbox' with the text value
 // crashed the widget.
-const TYPES = ['text', 'email', 'password', 'search'];
+const TYPES = ['text', 'email', 'url', 'password', 'search'];
 
 // A valid email address as browsers check type=email (the WHATWG pattern): a local part of letters, digits and
 // .!#$%&'*+/=?^_`{|}~-, one @, and a domain of dot-separated labels (letters, digits, inner hyphens, at most 63
@@ -21,6 +21,22 @@ const EMAIL =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 export const emailRule = (value: unknown): string =>
   typeof value === 'string' && value.trim() && !EMAIL.test(value.trim()) ? 'Enter a valid email address' : '';
+
+// A valid URL as browsers check type=url: an absolute URL of any scheme (https://example.com, mailto:a@b.com), read
+// by the URL parser after trimming, as the browser trims the value. example.com has no scheme and is not one. An empty
+// box is left to the Mandatory check.
+export const urlRule = (value: unknown): string => {
+  if (typeof value !== 'string' || !value.trim()) return '';
+  try {
+    new URL(value.trim()); // eslint-disable-line no-new
+    return '';
+  } catch {
+    return 'Enter a valid URL';
+  }
+};
+
+// The format check each text Type adds before the Validation section's rules.
+const TYPE_RULES: Record<string, (value: unknown) => string> = { email: emailRule, url: urlRule };
 
 // Type number is the Number input's box (NumberInput.tsx) with the Input's label, help text and placeholder: its value
 // is a number (null when empty), with arrows at the right that step it by 1, as a browser's number box has. It kept
@@ -100,10 +116,10 @@ const TextInput = (props: WidgetProps) => {
   useAutoHeight(props, fit);
   const { properties, fireEvent } = props;
   const type = TYPES.includes(properties.inputType) ? properties.inputType : 'text';
-  // Type email checks the address's form first, then the Validation section's rules; isValid and the message follow.
-  const { check, fieldProps, change } = useTextField<HTMLInputElement>(
-    type === 'email' ? withRule(props, emailRule) : props
-  );
+  // Type email and url check the text's form first, then the Validation section's rules; isValid and the message
+  // follow.
+  const rule = TYPE_RULES[type];
+  const { check, fieldProps, change } = useTextField<HTMLInputElement>(rule ? withRule(props, rule) : props);
   // Type search clears as a browser's search box does: an x in the box and Escape empty it, firing onChange. The
   // browser's own x is hidden (it drew in some browsers only, and did not fire onChange).
   const search = type === 'search';
@@ -112,6 +128,8 @@ const TextInput = (props: WidgetProps) => {
     <Input
       {...fieldProps}
       type={type}
+      // A phone shows its URL keyboard (/, .com) for a url box.
+      inputMode={type === 'url' ? 'url' : undefined}
       className={cn(
         fieldProps.className,
         search && '[&::-webkit-search-cancel-button]:tw-appearance-none',

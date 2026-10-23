@@ -78,6 +78,10 @@ export const shadInputConfig = {
           value: 'email',
         },
         {
+          name: 'URL',
+          value: 'url',
+        },
+        {
           name: 'Number',
           value: 'number',
         },
