@@ -12,9 +12,9 @@ import { getTooljetEdition } from './utils.helper';
  * Mirrors the policy already enforced on the plugin side
  * (plugins/packages/common/lib/ssrf-protection.ts) so a request behaves the
  * same whether it's issued by a plugin or by server-core — including the
- * edition split: Cloud is multi-tenant and always enforces this; EE customers
- * are frequently deployed air-gapped/on-prem and need it off by default
- * (opt in); CE defaults on but can opt out. Kept as a smaller, server-local
+ * edition split: Cloud always enforces this; CE defaults on (opt out); EE follows
+ * the admin-managed runtime config when published (on by default), else the env
+ * var (opt in). Kept as a smaller, server-local
  * port rather than a cross-package import because server has no build-time
  * dependency on @tooljet-plugins/common.
  *
@@ -71,11 +71,8 @@ function isCloudMetadataEndpoint(hostname: string): boolean {
 }
 
 /**
- * Dangerous ranges that stay blocked even on self-hosted deployments:
- * loopback, link-local/cloud metadata, CGNAT, unspecified, multicast, reserved.
- * RFC1918 (10.x, 172.16.x, 192.168.x) is intentionally NOT blocked — self-hosted
- * customers legitimately run internal services (OAuth providers, databases, etc.)
- * on their own private network.
+ * Loopback, link-local/cloud metadata, CGNAT, unspecified, multicast, reserved.
+ * RFC1918 and fc00::/7 too, only when the EE runtime config is present.
  */
 function isDangerousPrivateIP(ip: string): boolean {
   if (isCloudMetadataEndpoint(ip)) return true;
@@ -134,11 +131,9 @@ async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
  * Throws BadRequestException if the URL is malformed, uses a disallowed
  * scheme, or points at a loopback/link-local/cloud-metadata address.
  *
- * Edition-aware: off by default on EE (air-gapped/on-prem, opt in via
- * SSRF_PROTECTION_ENABLED=true), on by default on CE (opt out via
- * SSRF_PROTECTION_ENABLED=false), always on for Cloud. RFC1918 ranges
- * (10.x/172.16.x/192.168.x) are never blocked — only loopback, link-local /
- * cloud metadata, CGNAT, and reserved ranges are, on every edition.
+ * With the EE runtime config: its `enabled` flag and allowlist decide, and RFC1918 is blocked too.
+ * Without it: on by default on CE (opt out via SSRF_PROTECTION_ENABLED=false), opt in on EE, always
+ * on for Cloud; RFC1918 is not blocked.
  */
 export async function validateUrlForSSRF(urlString: string): Promise<void> {
   if (!isSSRFProtectionEnabled()) return;
