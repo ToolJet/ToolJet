@@ -9,7 +9,7 @@ export async function resolveSsoCustomDomainHost(
   organizationId: string | undefined,
   cache: { getActiveDomainForOrg(organizationId: string): Promise<string> } | undefined,
   live: LiveCustomDomainResolver | undefined,
-  mcpOAuthLogin = false,
+  mcpOAuthLogin = false
 ): Promise<string | null> {
   if (mcpOAuthLogin) return resolveLiveCustomDomainHost(tooljetHost, requestHost, organizationId, live);
   if (!requestHost || !organizationId || !cache) return null;

@@ -5,12 +5,20 @@ import { parseOAuthSettings, parseRegistration } from './parsers';
 import { loadLoginPolicy, lockMcpOAuthConsent } from './policy';
 import { Cron } from '@nestjs/schedule';
 import type { ILoginConfigsUtilService } from '@modules/login-configs/interfaces/IUtilsService';
-import { ForbiddenException, Inject, Injectable, NotFoundException, OnModuleInit, Optional, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  Optional,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DataSource, EntityManager } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { createHmac, randomUUID } from 'crypto';
-import OAuth2Server = require('@node-oauth/oauth2-server');
+import * as OAuth2Server from '@node-oauth/oauth2-server';
 import { User } from '@entities/user.entity';
 import { OAuthStore } from './store';
 import { createOAuthEngine } from './engine';
@@ -52,8 +60,9 @@ export class McpOAuthService implements OnModuleInit {
     private readonly jwt: JwtService,
     @Inject('MCP_LOGIN_CONFIGS')
     private readonly loginConfigs: Pick<ILoginConfigsUtilService, 'fetchOrganizationDetails'>,
-    @Optional() @Inject('MCP_CUSTOM_DOMAINS')
-    private readonly customDomains?: { resolveCustomDomain(domain: string): Promise<{ organizationId: string }> },
+    @Optional()
+    @Inject('MCP_CUSTOM_DOMAINS')
+    private readonly customDomains?: { resolveCustomDomain(domain: string): Promise<{ organizationId: string }> }
   ) {}
 
   onModuleInit() {
@@ -64,14 +73,12 @@ export class McpOAuthService implements OnModuleInit {
   async cleanExpiredCredentials() {
     if (!this.enabled()) return;
     await this.dataSource.transaction(async (manager) => {
-      const [lock] = await manager.query(
-        "SELECT pg_try_advisory_xact_lock(hashtext('mcp-oauth-cleanup')) AS acquired",
-      );
+      const [lock] = await manager.query("SELECT pg_try_advisory_xact_lock(hashtext('mcp-oauth-cleanup')) AS acquired");
       if (!lock.acquired) return;
       await manager.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-registration'))");
       await manager.query('DELETE FROM mcp_oauth_grants WHERE expires_at < now()');
       await manager.query(
-        "DELETE FROM mcp_oauth_artifacts WHERE expires_at < now() AND kind IN ('access','interaction')",
+        "DELETE FROM mcp_oauth_artifacts WHERE expires_at < now() AND kind IN ('access','interaction')"
       );
       // Keep approved registrations for cached clients; collect abandoned registrations only.
       await manager.query(`DELETE FROM mcp_oauth_clients c WHERE first_authorized_at IS NULL
@@ -80,29 +87,53 @@ export class McpOAuthService implements OnModuleInit {
         AND NOT EXISTS (SELECT 1 FROM mcp_oauth_artifacts a WHERE a.client_id = c.id)`);
     });
   }
-  private loginPolicy(organizationId: string) { return loadLoginPolicy(this.dataSource, this.loginConfigs, organizationId); }
-  async captureAuthentication(organizationId: string, method: string, providerId?: string): Promise<WorkspaceAuthentication | undefined> {
+  private loginPolicy(organizationId: string) {
+    return loadLoginPolicy(this.dataSource, this.loginConfigs, organizationId);
+  }
+  async captureAuthentication(
+    organizationId: string,
+    method: string,
+    providerId?: string
+  ): Promise<WorkspaceAuthentication | undefined> {
     if (!this.enabled() || !organizationId) return undefined;
     const policy = await this.loginPolicy(organizationId);
-    const provider = policy.providers.find((candidate) =>
-      candidate.enabled && candidate.type === method &&
-      (method === 'form' || (candidate.id || null) === (providerId || null)),
+    const provider = policy.providers.find(
+      (candidate) =>
+        candidate.enabled &&
+        candidate.type === method &&
+        (method === 'form' || (candidate.id || null) === (providerId || null))
     );
     if (!provider) return undefined;
-    return { organizationId, method, providerId: provider.id || null, verifiedAt: Math.floor(Date.now() / 1000), policyFingerprint: policy.fingerprint };
+    return {
+      organizationId,
+      method,
+      providerId: provider.id || null,
+      verifiedAt: Math.floor(Date.now() / 1000),
+      policyFingerprint: policy.fingerprint,
+    };
   }
   async assertCurrentAuthentication(user: User, organizationId: string): Promise<WorkspaceAuthentication> {
     this.assertBrowserUser(user, organizationId);
     const evidence = user.workspaceAuthentication;
     const now = Math.floor(Date.now() / 1000);
-    if (!evidence || evidence.organizationId !== organizationId ||
-        !Number.isInteger(evidence.verifiedAt) || evidence.verifiedAt > now + 30 || now - evidence.verifiedAt > 600) {
+    if (
+      !evidence ||
+      evidence.organizationId !== organizationId ||
+      !Number.isInteger(evidence.verifiedAt) ||
+      evidence.verifiedAt > now + 30 ||
+      now - evidence.verifiedAt > 600
+    ) {
       throw new UnauthorizedException('Sign in to this workspace again before authorizing a connection');
     }
     const policy = await this.loginPolicy(organizationId);
-    if (evidence.policyFingerprint !== policy.fingerprint || !policy.providers.some((provider) =>
-      provider.enabled && provider.type === evidence.method && (provider.id || null) === evidence.providerId,
-    )) throw new UnauthorizedException('Sign in using a current workspace login method');
+    if (
+      evidence.policyFingerprint !== policy.fingerprint ||
+      !policy.providers.some(
+        (provider) =>
+          provider.enabled && provider.type === evidence.method && (provider.id || null) === evidence.providerId
+      )
+    )
+      throw new UnauthorizedException('Sign in using a current workspace login method');
     return evidence;
   }
   private store(manager = this.dataSource.manager) {
@@ -126,7 +157,7 @@ export class McpOAuthService implements OnModuleInit {
         // would undo revocation and let an old policy/account state revive this consent.
         await this.dataSource.query(
           'UPDATE mcp_oauth_grants SET revoked_at = COALESCE(revoked_at, now()) WHERE id = $1',
-          [error.grantId],
+          [error.grantId]
         );
       }
       throw error;
@@ -139,7 +170,9 @@ export class McpOAuthService implements OnModuleInit {
   assertEnabled() {
     if (!this.enabled()) throw new NotFoundException();
   }
-  settings() { return parseOAuthSettings(this.config); }
+  settings() {
+    return parseOAuthSettings(this.config);
+  }
   /** Read current domain ownership directly: stale cache entries must not authorize a removed domain. */
   async browserTarget(organizationId: string, manager: EntityManager = this.dataSource.manager, lock = false) {
     const { browser } = this.settings();
@@ -149,7 +182,7 @@ export class McpOAuthService implements OnModuleInit {
       `SELECT id,domain FROM custom_domains
        WHERE organization_id = $1 AND status = 'active' AND ssl_status = 'active'
        ${lock ? 'FOR SHARE' : ''}`,
-      [organizationId],
+      [organizationId]
     );
     if (!domain) return primary;
     if (typeof domain.domain !== 'string' || !/^[a-z0-9.-]+$/i.test(domain.domain))
@@ -180,7 +213,12 @@ export class McpOAuthService implements OnModuleInit {
     if (origin !== new URL((await this.browserTarget(organizationId)).url).origin)
       throw new OAuthFailure('access_denied', 'Invalid browser origin', 403);
   }
-  private async assertInteractionOrigin(row, origin: string, manager: EntityManager = this.dataSource.manager, lock = false) {
+  private async assertInteractionOrigin(
+    row,
+    origin: string,
+    manager: EntityManager = this.dataSource.manager,
+    lock = false
+  ) {
     const primary = new URL(this.settings().browser).origin;
     const target = row.payload.browserTarget || { url: this.settings().browser, revision: 'primary' };
     if (origin !== primary && origin !== new URL(target.url).origin)
@@ -225,14 +263,11 @@ export class McpOAuthService implements OnModuleInit {
       await manager.query(`DELETE FROM mcp_oauth_clients WHERE id IN (
         SELECT id FROM mcp_oauth_clients WHERE first_authorized_at IS NULL
         ORDER BY created_at DESC, id DESC OFFSET 999)`);
-      await manager.query(`INSERT INTO mcp_oauth_clients
-        (id,name,redirect_uris,token_endpoint_auth_method,client_secret_hash) VALUES ($1,$2,$3,$4,$5)`, [
-        id,
-        name,
-        JSON.stringify(redirects),
-        authMethod,
-        clientSecret ? hash(clientSecret) : null,
-      ]);
+      await manager.query(
+        `INSERT INTO mcp_oauth_clients
+        (id,name,redirect_uris,token_endpoint_auth_method,client_secret_hash) VALUES ($1,$2,$3,$4,$5)`,
+        [id, name, JSON.stringify(redirects), authMethod, clientSecret ? hash(clientSecret) : null]
+      );
     });
     return {
       client_id: id,
@@ -248,11 +283,10 @@ export class McpOAuthService implements OnModuleInit {
     const base = this.settings().resource;
     if (!resource.startsWith(`${base}/`)) throw new OAuthFailure('invalid_target', 'Unknown MCP resource');
     const workspace = resource.slice(base.length + 1);
-    if (!/^[a-zA-Z0-9_-]{1,128}$/.test(workspace))
-      throw new OAuthFailure('invalid_target', 'Use a workspace MCP URL');
+    if (!/^[a-zA-Z0-9_-]{1,128}$/.test(workspace)) throw new OAuthFailure('invalid_target', 'Use a workspace MCP URL');
     const [org] = await manager.query(
       "SELECT id,name,slug FROM organizations WHERE (id::text = $1 OR slug = $1) AND status = 'active'",
-      [workspace],
+      [workspace]
     );
     if (!org) throw new OAuthFailure('invalid_target', 'Workspace is unavailable');
     return org;
@@ -276,7 +310,7 @@ export class McpOAuthService implements OnModuleInit {
             'code_challenge',
             'code_challenge_method',
             'resource',
-          ].map((key) => [key, stringParam(query[key], key)]),
+          ].map((key) => [key, stringParam(query[key], key)])
         );
         if (
           params.response_type !== 'code' ||
@@ -293,7 +327,8 @@ export class McpOAuthService implements OnModuleInit {
         const redirect = new URL(redirectUri);
         redirect.searchParams.set('error', error.error);
         redirect.searchParams.set('iss', this.settings().issuer);
-        if (typeof query.state === 'string' && query.state.length <= 4096) redirect.searchParams.set('state', query.state);
+        if (typeof query.state === 'string' && query.state.length <= 4096)
+          redirect.searchParams.set('state', query.state);
         throw new OAuthRedirectFailure(error, redirect.href);
       }
     })();
@@ -317,9 +352,14 @@ export class McpOAuthService implements OnModuleInit {
         browserTarget,
         ...(bootstrap ? { bootstrapHash: hash(bootstrap) } : {}),
       },
-      new Date(Date.now() + INTERACTION_SECONDS * 1000),
+      new Date(Date.now() + INTERACTION_SECONDS * 1000)
     );
-    return { id, csrf, browser, location: `${browserTarget.url}/mcp/consent?request=${encodeURIComponent(id)}${bootstrap ? `#bootstrap=${bootstrap}` : ''}` };
+    return {
+      id,
+      csrf,
+      browser,
+      location: `${browserTarget.url}/mcp/consent?request=${encodeURIComponent(id)}${bootstrap ? `#bootstrap=${bootstrap}` : ''}`,
+    };
   }
   cookieName(id: string) {
     return `tj_mcp_${hash(id).slice(0, 16)}`;
@@ -335,8 +375,13 @@ export class McpOAuthService implements OnModuleInit {
       await manager.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-registration'))");
       await manager.query('SELECT id FROM mcp_oauth_artifacts WHERE id = $1 FOR UPDATE', [hash(id)]);
       const row = await this.store(manager).artifact(id, 'interaction');
-      if (!row || row.consumed_at || row.expires_at <= new Date() ||
-          !row.payload.bootstrapHash || !equalSecret(hash(token), row.payload.bootstrapHash))
+      if (
+        !row ||
+        row.consumed_at ||
+        row.expires_at <= new Date() ||
+        !row.payload.bootstrapHash ||
+        !equalSecret(hash(token), row.payload.bootstrapHash)
+      )
         throw new OAuthFailure('invalid_request', 'Connection request expired or already opened');
       await this.assertInteractionOrigin(row, origin, manager, true);
       if (origin !== new URL(row.payload.browserTarget.url).origin)
@@ -351,12 +396,19 @@ export class McpOAuthService implements OnModuleInit {
         .update(`${id}\0${token}\0${browserNonce}`)
         .digest('base64url');
       const payload = row.payload;
-      await manager.query('UPDATE mcp_oauth_artifacts SET payload = $2 WHERE id = $1',
-        [row.id, JSON.stringify({ ...payload, bootstrapNonceHash: nonceHash, customCsrfHash: hash(csrf) })]);
+      await manager.query('UPDATE mcp_oauth_artifacts SET payload = $2 WHERE id = $1', [
+        row.id,
+        JSON.stringify({ ...payload, bootstrapNonceHash: nonceHash, customCsrfHash: hash(csrf) }),
+      ]);
       return csrf;
     });
   }
-  async interaction(id: string, csrf: string, manager = this.dataSource.manager, origin = new URL(this.settings().browser).origin) {
+  async interaction(
+    id: string,
+    csrf: string,
+    manager = this.dataSource.manager,
+    origin = new URL(this.settings().browser).origin
+  ) {
     this.assertEnabled();
     stringParam(id, 'request');
     const row = await this.store(manager).artifact(id, 'interaction');
@@ -365,23 +417,29 @@ export class McpOAuthService implements OnModuleInit {
       row.consumed_at ||
       row.expires_at <= new Date() ||
       typeof csrf !== 'string' ||
-      !equalSecret(hash(csrf), origin === new URL(this.settings().browser).origin
-        ? row.payload.csrfHash : row.payload.customCsrfHash || '')
+      !equalSecret(
+        hash(csrf),
+        origin === new URL(this.settings().browser).origin ? row.payload.csrfHash : row.payload.customCsrfHash || ''
+      )
     ) {
       throw new OAuthFailure('invalid_request', 'Connection request expired or belongs to another browser');
     }
     await this.assertInteractionOrigin(row, origin, manager);
     return row;
   }
-  async preview(id: string, csrf: string, origin = new URL(this.settings().browser).origin): Promise<InteractionPreviewResponse> {
+  async preview(
+    id: string,
+    csrf: string,
+    origin = new URL(this.settings().browser).origin
+  ): Promise<InteractionPreviewResponse> {
     const row = await this.interaction(id, csrf, this.dataSource.manager, origin);
     const client = await this.store().client(row.client_id);
     if (!client) throw new OAuthFailure('invalid_client', 'Client is unavailable');
     const org = await this.workspace(row.payload.params.resource);
     // A primary-domain SSO callback stays on the primary host with its original
     // transaction cookie. Custom-domain callbacks use the separately bootstrapped cookie.
-    const browser = origin === new URL(this.settings().browser).origin
-      ? this.settings().browser : row.payload.browserTarget.url;
+    const browser =
+      origin === new URL(this.settings().browser).origin ? this.settings().browser : row.payload.browserTarget.url;
     return {
       clientName: client.name,
       clientId: client.id,
@@ -405,7 +463,13 @@ export class McpOAuthService implements OnModuleInit {
       throw new UnauthorizedException('Sign in to this workspace before authorizing a connection');
     }
   }
-  async consent(id: string, csrf: string, user: User, allow: boolean, origin = new URL(this.settings().browser).origin) {
+  async consent(
+    id: string,
+    csrf: string,
+    user: User,
+    allow: boolean,
+    origin = new URL(this.settings().browser).origin
+  ) {
     const { issuer } = this.settings();
     return this.dataSource.transaction(async (manager) => {
       await manager.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-registration'))");
@@ -429,20 +493,23 @@ export class McpOAuthService implements OnModuleInit {
         return { redirectUrl: redirect.href };
       }
       const grantId = randomUUID();
-      const [session] = await manager.query(
-        'SELECT created_at FROM user_sessions WHERE id = $1 AND user_id = $2',
-        [user.sessionId, user.id],
-      );
+      const [session] = await manager.query('SELECT created_at FROM user_sessions WHERE id = $1 AND user_id = $2', [
+        user.sessionId,
+        user.id,
+      ]);
       if (!session) throw new UnauthorizedException();
-      const [capacity] = await manager.query(`SELECT
+      const [capacity] = await manager.query(
+        `SELECT
         (SELECT count(*) FROM mcp_oauth_clients WHERE first_authorized_at IS NOT NULL) AS approved,
-        (SELECT first_authorized_at IS NOT NULL FROM mcp_oauth_clients WHERE id = $1) AS existing`, [interaction.client_id]);
+        (SELECT first_authorized_at IS NOT NULL FROM mcp_oauth_clients WHERE id = $1) AS existing`,
+        [interaction.client_id]
+      );
       if (!capacity.existing && Number(capacity.approved) >= 10000)
         throw new OAuthFailure('temporarily_unavailable', 'Approved client limit reached', 503);
       // Lock the client before the grant's policy lock, matching the client-disable transaction.
       await manager.query(
         'UPDATE mcp_oauth_clients SET first_authorized_at = now() WHERE id = $1 AND first_authorized_at IS NULL',
-        [interaction.client_id],
+        [interaction.client_id]
       );
       await lockMcpOAuthConsent(manager);
       await manager.query(
@@ -457,20 +524,19 @@ export class McpOAuthService implements OnModuleInit {
           JSON.stringify(params.scope.split(' ')),
           JSON.stringify(authentication),
           new Date(Date.now() + GRANT_SECONDS * 1000),
-        ],
+        ]
       );
       await store.activeGrant(grantId);
       // Administrative termination may have committed while INSERT waited for the policy lock.
-      const [liveSession] = await manager.query('SELECT id FROM user_sessions WHERE id = $1 AND user_id = $2', [user.sessionId, user.id]);
+      const [liveSession] = await manager.query('SELECT id FROM user_sessions WHERE id = $1 AND user_id = $2', [
+        user.sessionId,
+        user.id,
+      ]);
       if (!liveSession) throw new UnauthorizedException();
       const request = new OAuth2Server.Request({ method: 'GET', headers: {}, query: params });
-      const code = await createOAuthEngine(store, params.resource).authorize(
-        request,
-        new OAuth2Server.Response(),
-        {
-          authenticateHandler: { handle: async () => ({ id: user.id, grantId }) },
-        },
-      );
+      const code = await createOAuthEngine(store, params.resource).authorize(request, new OAuth2Server.Response(), {
+        authenticateHandler: { handle: async () => ({ id: user.id, grantId }) },
+      });
       redirect.searchParams.set('code', code.authorizationCode);
       return { redirectUrl: redirect.href };
     });
@@ -478,15 +544,22 @@ export class McpOAuthService implements OnModuleInit {
   private async authenticateClient(body: Record<string, unknown>, authorization?: string, store = this.store()) {
     const credentials = clientAuthentication(body, authorization);
     const client = await store.client(credentials.clientId);
-    if (!client || client.authMethod !== credentials.method ||
-        (credentials.method !== 'none' && !equalSecret(hash(credentials.clientSecret), client.secretHash))) {
+    if (
+      !client ||
+      client.authMethod !== credentials.method ||
+      (credentials.method !== 'none' && !equalSecret(hash(credentials.clientSecret), client.secretHash))
+    ) {
       throw new OAuthFailure('invalid_client', 'Invalid client authentication', authorization ? 401 : 400);
     }
     return { client, credentials };
   }
   /** Only proof of a stored credential or verified delegation selects a grant's rate bucket.
    * A public client_id or unverified JWT claim never lets an attacker spend another grant's quota. */
-  async rateLimitGrant(route: string, body: Record<string, unknown>, headers: Record<string, any>): Promise<string | undefined> {
+  async rateLimitGrant(
+    route: string,
+    body: Record<string, unknown>,
+    headers: Record<string, any>
+  ): Promise<string | undefined> {
     try {
       if (route === 'viewer') {
         const user = await this.authenticateDelegation(headers['x-tooljet-delegation'], headers['tj-workspace-id']);
@@ -494,17 +567,34 @@ export class McpOAuthService implements OnModuleInit {
       }
       if (route !== 'token' && route !== 'revoke') return undefined;
       const { client } = await this.authenticateClient(body, headers.authorization);
-      const kind = route === 'revoke' ? null : body.grant_type === 'refresh_token' ? 'refresh' : body.grant_type === 'authorization_code' ? 'code' : null;
-      const raw = stringParam(route === 'revoke' ? body.token : body[kind === 'code' ? 'code' : 'refresh_token'], 'credential');
-      const artifact = kind ? await this.store().artifact(raw, kind) :
-        await this.store().artifact(raw, 'access') || await this.store().artifact(raw, 'refresh');
+      const kind =
+        route === 'revoke'
+          ? null
+          : body.grant_type === 'refresh_token'
+            ? 'refresh'
+            : body.grant_type === 'authorization_code'
+              ? 'code'
+              : null;
+      const raw = stringParam(
+        route === 'revoke' ? body.token : body[kind === 'code' ? 'code' : 'refresh_token'],
+        'credential'
+      );
+      const artifact = kind
+        ? await this.store().artifact(raw, kind)
+        : (await this.store().artifact(raw, 'access')) || (await this.store().artifact(raw, 'refresh'));
       if (artifact?.client_id === client.id && artifact.grant_id && artifact.expires_at > new Date()) {
         // Preserve the bounded refresh retry, but spent/revoked credentials cannot populate grant buckets.
-        if (artifact.consumed_at && !(kind === 'refresh' && Date.now() - artifact.consumed_at.getTime() <= 5000)) return undefined;
-        const [grant] = await this.dataSource.query('SELECT id FROM mcp_oauth_grants WHERE id=$1 AND revoked_at IS NULL AND expires_at > now()', [artifact.grant_id]);
+        if (artifact.consumed_at && !(kind === 'refresh' && Date.now() - artifact.consumed_at.getTime() <= 5000))
+          return undefined;
+        const [grant] = await this.dataSource.query(
+          'SELECT id FROM mcp_oauth_grants WHERE id=$1 AND revoked_at IS NULL AND expires_at > now()',
+          [artifact.grant_id]
+        );
         return grant?.id;
       }
-    } catch { /* Invalid callers share only their own network-address bucket. */ }
+    } catch {
+      /* Invalid callers share only their own network-address bucket. */
+    }
     return undefined;
   }
   async token(body: Record<string, unknown>, authorization?: string) {
@@ -513,24 +603,16 @@ export class McpOAuthService implements OnModuleInit {
   private async issueTokens(body: Record<string, unknown>, authorization?: string) {
     this.settings();
     const kind =
-      body.grant_type === 'authorization_code'
-        ? 'code'
-        : body.grant_type === 'refresh_token'
-          ? 'refresh'
-          : null;
+      body.grant_type === 'authorization_code' ? 'code' : body.grant_type === 'refresh_token' ? 'refresh' : null;
     if (!kind)
-      throw new OAuthFailure(
-        'unsupported_grant_type',
-        'Only authorization_code and refresh_token are supported',
-      );
+      throw new OAuthFailure('unsupported_grant_type', 'Only authorization_code and refresh_token are supported');
     const raw = stringParam(body[kind === 'code' ? 'code' : 'refresh_token'], kind);
     const resource = stringParam(body.resource, 'resource');
     const result = await this.dataSource.transaction(async (manager) => {
       const store = this.store(manager);
       const { client, credentials } = await this.authenticateClient(body, authorization, store);
       const artifact = await store.artifact(raw, kind);
-      if (!artifact || artifact.client_id !== client.id)
-        throw new OAuthFailure('invalid_grant', 'Invalid credential');
+      if (!artifact || artifact.client_id !== client.id) throw new OAuthFailure('invalid_grant', 'Invalid credential');
       const grant = await store.activeGrant(artifact.grant_id, true);
       // Lock the parent so concurrent refreshes cannot rotate the same token twice.
       const current = await store.artifact(raw, kind);
@@ -544,18 +626,36 @@ export class McpOAuthService implements OnModuleInit {
         // Invalid retry parameters must not bypass consumed-token replay detection.
         if (!current.consumed_at) throw error;
       }
-      if (current.consumed_at && kind === 'refresh' && retryKey !== undefined && current.expires_at > new Date() &&
-          current.payload.retryKey === retryKey && typeof current.payload.retryResponse === 'string') {
+      if (
+        current.consumed_at &&
+        kind === 'refresh' &&
+        retryKey !== undefined &&
+        current.expires_at > new Date() &&
+        current.payload.retryKey === retryKey &&
+        typeof current.payload.retryResponse === 'string'
+      ) {
         const [clock] = await manager.query('SELECT clock_timestamp() AS now');
         const age = (clock.now.getTime() - current.consumed_at.getTime()) / 1000;
-        const cached = age >= 0 && age <= REFRESH_RETRY_SECONDS
-          ? openRefreshRetry(this.config.get('SECRET_KEY_BASE'), current.id, current.payload.retryResponse) : undefined;
+        const cached =
+          age >= 0 && age <= REFRESH_RETRY_SECONDS
+            ? openRefreshRetry(this.config.get('SECRET_KEY_BASE'), current.id, current.payload.retryResponse)
+            : undefined;
         if (cached && typeof cached.access_token === 'string' && typeof cached.refresh_token === 'string') {
           const access = await store.artifact(cached.access_token, 'access');
           const refresh = await store.artifact(cached.refresh_token, 'refresh');
-          if (access?.grant_id === grant.id && refresh?.grant_id === grant.id && !refresh.consumed_at &&
-              access.expires_at > clock.now && refresh.expires_at > clock.now) {
-            return { body: { ...cached, expires_in: Math.max(0, Math.floor((access.expires_at.getTime() - clock.now.getTime()) / 1000)) } };
+          if (
+            access?.grant_id === grant.id &&
+            refresh?.grant_id === grant.id &&
+            !refresh.consumed_at &&
+            access.expires_at > clock.now &&
+            refresh.expires_at > clock.now
+          ) {
+            return {
+              body: {
+                ...cached,
+                expires_in: Math.max(0, Math.floor((access.expires_at.getTime() - clock.now.getTime()) / 1000)),
+              },
+            };
           }
         }
       }
@@ -565,21 +665,25 @@ export class McpOAuthService implements OnModuleInit {
           failure: new OAuthFailure('invalid_grant', 'Credential was already used; reconnect the client'),
         };
       }
-      if (
-        body.scope !== undefined &&
-        scopesParam(body.scope).some((scope) => !current.payload.scope.includes(scope))
-      ) {
+      if (body.scope !== undefined && scopesParam(body.scope).some((scope) => !current.payload.scope.includes(scope))) {
         throw new OAuthFailure('invalid_scope', 'Cannot increase the permissions of a connection');
       }
       // Validate syntax before the engine consumes the code. Incorrect but well-formed
       // PKCE still goes through the engine's one-attempt check and revokes the grant.
-      if (kind === 'code' && (body.redirect_uri !== current.payload.redirectUri ||
-          typeof body.code_verifier !== 'string' || !/^[A-Za-z0-9._~-]{43,128}$/.test(body.code_verifier))) {
+      if (
+        kind === 'code' &&
+        (body.redirect_uri !== current.payload.redirectUri ||
+          typeof body.code_verifier !== 'string' ||
+          !/^[A-Za-z0-9._~-]{43,128}$/.test(body.code_verifier))
+      ) {
         throw new OAuthFailure('invalid_request', 'Invalid redirect URI or PKCE verifier');
       }
       const response = new OAuth2Server.Response();
-      const tokenBody = { ...body, client_id: client.id,
-        ...(credentials.clientSecret === undefined ? {} : { client_secret: credentials.clientSecret }) };
+      const tokenBody = {
+        ...body,
+        client_id: client.id,
+        ...(credentials.clientSecret === undefined ? {} : { client_secret: credentials.clientSecret }),
+      };
       try {
         await createOAuthEngine(store, resource, client).token(
           new OAuth2Server.Request({
@@ -587,25 +691,30 @@ export class McpOAuthService implements OnModuleInit {
             headers: {
               'content-type': 'application/x-www-form-urlencoded',
               'content-length': String(
-                Buffer.byteLength(new URLSearchParams(tokenBody as Record<string, string>).toString()),
+                Buffer.byteLength(new URLSearchParams(tokenBody as Record<string, string>).toString())
               ),
             },
             query: {},
             body: tokenBody,
           }),
-          response,
+          response
         );
         if (kind === 'refresh') {
-          await manager.query('UPDATE mcp_oauth_artifacts SET payload = $2 WHERE id = $1', [current.id,
-            JSON.stringify({ ...current.payload, retryKey,
-              retryResponse: sealRefreshRetry(this.config.get('SECRET_KEY_BASE'), current.id, response.body) })]);
+          await manager.query('UPDATE mcp_oauth_artifacts SET payload = $2 WHERE id = $1', [
+            current.id,
+            JSON.stringify({
+              ...current.payload,
+              retryKey,
+              retryResponse: sealRefreshRetry(this.config.get('SECRET_KEY_BASE'), current.id, response.body),
+            }),
+          ]);
         }
         return { body: response.body };
       } catch (error) {
         // Never leave an active grant with an irretrievably consumed code and no tokens.
         if (error instanceof OAuth2Server.OAuthError && error.code < 500) {
-          if (error.name === 'invalid_grant' ||
-              (kind === 'code' && (await store.artifact(raw, kind))?.consumed_at)) await store.revoke(grant.id);
+          if (error.name === 'invalid_grant' || (kind === 'code' && (await store.artifact(raw, kind))?.consumed_at))
+            await store.revoke(grant.id);
           return { failure: new OAuthFailure(error.name, 'Invalid OAuth credential or request', error.code) };
         }
         throw error;
@@ -646,7 +755,7 @@ export class McpOAuthService implements OnModuleInit {
     const org = await this.workspace(resource);
     const seconds = Math.max(
       0,
-      Math.min(ACCESS_SECONDS, Math.floor((artifact.expires_at.getTime() - Date.now()) / 1000)),
+      Math.min(ACCESS_SECONDS, Math.floor((artifact.expires_at.getTime() - Date.now()) / 1000))
     );
     if (seconds === 0) throw new OAuthFailure('invalid_token', 'Access token expired', 401);
     const identity: DelegationIdentity = {
@@ -654,15 +763,12 @@ export class McpOAuthService implements OnModuleInit {
       oauthGrantId: grant.id,
       oauthTokenId: artifact.id,
     };
-    const accessToken = this.jwt.sign(
-      identity,
-      {
-        secret: this.config.get('SECRET_KEY_BASE'),
-        issuer,
-        audience: DELEGATION_AUDIENCE,
-        expiresIn: seconds,
-      },
-    );
+    const accessToken = this.jwt.sign(identity, {
+      secret: this.config.get('SECRET_KEY_BASE'),
+      issuer,
+      audience: DELEGATION_AUDIENCE,
+      expiresIn: seconds,
+    });
     return {
       access_token: accessToken,
       issued_token_type: 'urn:ietf:params:oauth:token-type:access_token',
@@ -680,14 +786,23 @@ export class McpOAuthService implements OnModuleInit {
   /** A browser render credential never contains the full delegation or creates a PAT/session. */
   async viewer(credential: string, workspaceId: string, appId: unknown) {
     const user = await this.authenticateDelegation(credential, workspaceId);
-    if (!user.oauthScopes.includes('apps') || !user.oauthScopes.includes('data') ||
-        typeof appId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(appId))
+    if (
+      !user.oauthScopes.includes('apps') ||
+      !user.oauthScopes.includes('data') ||
+      typeof appId !== 'string' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(appId)
+    )
       throw new OAuthFailure('access_denied', 'App rendering requires apps and data access', 403);
-    const [app] = await this.dataSource.query('SELECT id FROM apps WHERE id = $1 AND organization_id = $2', [appId, workspaceId]);
+    const [app] = await this.dataSource.query('SELECT id FROM apps WHERE id = $1 AND organization_id = $2', [
+      appId,
+      workspaceId,
+    ]);
     if (!app) throw new OAuthFailure('access_denied', 'App is unavailable in this workspace', 403);
     const parent = this.jwt.verify(credential, {
-      secret: this.config.get('SECRET_KEY_BASE'), issuer: this.settings().issuer,
-      audience: DELEGATION_AUDIENCE, algorithms: ['HS256'],
+      secret: this.config.get('SECRET_KEY_BASE'),
+      issuer: this.settings().issuer,
+      audience: DELEGATION_AUDIENCE,
+      algorithms: ['HS256'],
     });
     if (!isDelegationClaims(parent)) throw new UnauthorizedException();
     const store = this.store();
@@ -697,28 +812,49 @@ export class McpOAuthService implements OnModuleInit {
     // An independent, hashed artifact keeps the viewer usable through a parent access-token
     // expiry while retaining live grant/policy checks and its own short expiry.
     const viewerArtifact = secret();
-    await store.put(viewerArtifact, 'access', grant.client_id, grant.id, { scope: ['apps', 'data'] }, new Date(Date.now() + seconds * 1000));
-    const identity: ViewerIdentity = { sub: user.id, oauthGrantId: parent.oauthGrantId,
-      oauthTokenId: hash(viewerArtifact), oauthAppId: appId };
+    await store.put(
+      viewerArtifact,
+      'access',
+      grant.client_id,
+      grant.id,
+      { scope: ['apps', 'data'] },
+      new Date(Date.now() + seconds * 1000)
+    );
+    const identity: ViewerIdentity = {
+      sub: user.id,
+      oauthGrantId: parent.oauthGrantId,
+      oauthTokenId: hash(viewerArtifact),
+      oauthAppId: appId,
+    };
     return {
       access_token: this.jwt.sign(identity, {
-        secret: this.config.get('SECRET_KEY_BASE'), issuer: this.settings().issuer,
-        audience: VIEWER_AUDIENCE, expiresIn: seconds,
+        secret: this.config.get('SECRET_KEY_BASE'),
+        issuer: this.settings().issuer,
+        audience: VIEWER_AUDIENCE,
+        expiresIn: seconds,
       }),
-      token_type: 'Bearer', expires_in: seconds, organization_id: workspaceId, app_id: appId,
+      token_type: 'Bearer',
+      expires_in: seconds,
+      organization_id: workspaceId,
+      app_id: appId,
     };
   }
-  authenticateViewer(credential: string, workspaceId?: string) { return this.identity.authenticateViewer(credential, workspaceId); }
-  authenticateDelegation(credential: string, workspaceId: string) { return this.identity.authenticateDelegation(credential, workspaceId); }
+  authenticateViewer(credential: string, workspaceId?: string) {
+    return this.identity.authenticateViewer(credential, workspaceId);
+  }
+  authenticateDelegation(credential: string, workspaceId: string) {
+    return this.identity.authenticateDelegation(credential, workspaceId);
+  }
   async connections(user: User): Promise<ConnectedClientResponse[]> {
     this.assertEnabled();
     this.assertBrowserUser(user, user.organizationId);
-    const rows: { id: string; client_name: string; scopes: string[]; created_at: Date; expires_at: Date }[] = await this.dataSource.query(
-      `SELECT g.id, c.name AS client_name, g.scopes, g.created_at, g.expires_at FROM mcp_oauth_grants g
+    const rows: { id: string; client_name: string; scopes: string[]; created_at: Date; expires_at: Date }[] =
+      await this.dataSource.query(
+        `SELECT g.id, c.name AS client_name, g.scopes, g.created_at, g.expires_at FROM mcp_oauth_grants g
        JOIN mcp_oauth_clients c ON c.id = g.client_id WHERE g.user_id = $1 AND g.organization_id = $2
        AND g.revoked_at IS NULL AND g.expires_at > now() ORDER BY g.created_at DESC`,
-      [user.id, user.organizationId],
-    );
+        [user.id, user.organizationId]
+      );
     return rows.map((row) => ({
       id: row.id,
       client_name: row.client_name,
@@ -732,7 +868,7 @@ export class McpOAuthService implements OnModuleInit {
     this.assertBrowserUser(user, user.organizationId);
     await this.dataSource.query(
       'UPDATE mcp_oauth_grants SET revoked_at = now() WHERE id::text = $1 AND user_id = $2 AND organization_id = $3',
-      [id, user.id, user.organizationId],
+      [id, user.id, user.organizationId]
     );
   }
 }

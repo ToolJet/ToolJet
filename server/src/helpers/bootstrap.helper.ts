@@ -340,7 +340,8 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
     if (
       isMcpOAuthEnabled(configService.get('TOOLJET_EDITION'), configService.get('MCP_OAUTH_ENABLED')) &&
       isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
-    ) return next();
+    )
+      return next();
     if (exemptPrefixes.some((p) => req.path === p || req.path.startsWith(p))) return next();
 
     let origin = req.headers.origin as string | undefined;
@@ -412,7 +413,8 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
       if (
         !isMcpOAuthEnabled(configService.get('TOOLJET_EDITION'), configService.get('MCP_OAUTH_ENABLED')) ||
         !isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
-      ) return next();
+      )
+        return next();
       res.setHeader('Access-Control-Allow-Origin', '*');
       if (req.method === 'OPTIONS') {
         res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');

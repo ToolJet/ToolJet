@@ -18,6 +18,13 @@ export interface InteractionPreviewResponse {
   loginUrl: string;
 }
 // Inputs remain unknown until the existing protocol validation has checked them.
-export interface ConsentInput { allow: unknown }
-export interface BootstrapInput { ticket: unknown; nonce: unknown }
-export interface ViewerInput { app_id: unknown }
+export interface ConsentInput {
+  allow: unknown;
+}
+export interface BootstrapInput {
+  ticket: unknown;
+  nonce: unknown;
+}
+export interface ViewerInput {
+  app_id: unknown;
+}

@@ -29,8 +29,7 @@ describe('OAuth delegated scope enforcement', () => {
   const next = { handle: jest.fn(() => of('allowed')) };
   beforeEach(() => next.handle.mockClear());
   test('preserves normal browser and PAT behavior', () => {
-    for (const principal of [{}, { isPATLogin: true }])
-      interceptor.intercept(context({ user: principal }), next);
+    for (const principal of [{}, { isPATLogin: true }]) interceptor.intercept(context({ user: principal }), next);
     expect(next.handle).toHaveBeenCalledTimes(2);
   });
   test('permits only an approved module after the existing permission guard', () => {
@@ -38,33 +37,27 @@ describe('OAuth delegated scope enforcement', () => {
     expect(next.handle).toHaveBeenCalledTimes(1);
     expect(() => interceptor.intercept(context({ user }, MODULES.GLOBAL_DATA_SOURCE), next)).toThrow();
   });
-  test.each([
-    MODULES.AUTH,
-    MODULES.SESSION,
-    MODULES.PERSONAL_ACCESS_TOKENS,
-    MODULES.AI,
-    MODULES.INSTANCE_SETTINGS,
-  ])('cannot reach credential/admin/spending module %s', (module) => {
-    expect(() =>
-      interceptor.intercept(
-        context({ user: { ...user, oauthScopes: ['apps', 'data', 'workspace_users'] } }, module),
-        next,
-      ),
-    ).toThrow();
-  });
+  test.each([MODULES.AUTH, MODULES.SESSION, MODULES.PERSONAL_ACCESS_TOKENS, MODULES.AI, MODULES.INSTANCE_SETTINGS])(
+    'cannot reach credential/admin/spending module %s',
+    (module) => {
+      expect(() =>
+        interceptor.intercept(
+          context({ user: { ...user, oauthScopes: ['apps', 'data', 'workspace_users'] } }, module),
+          next
+        )
+      ).toThrow();
+    }
+  );
   test('matches the existing PAT contract for allowed routes with service-level authorization', () => {
     interceptor.intercept(context({ user }, MODULES.APP, []), next);
     expect(next.handle).toHaveBeenCalledTimes(1);
   });
   test('cannot switch workspace or bypass restrictions by replacing request.user', () => {
     expect(() =>
-      interceptor.intercept(context({ user, tj_app: { organizationId: 'another-workspace' } }), next),
+      interceptor.intercept(context({ user, tj_app: { organizationId: 'another-workspace' } }), next)
     ).toThrow();
     expect(() =>
-      interceptor.intercept(
-        context({ user: {}, oauthDelegatedUser: user }, MODULES.GLOBAL_DATA_SOURCE),
-        next,
-      ),
+      interceptor.intercept(context({ user: {}, oauthDelegatedUser: user }, MODULES.GLOBAL_DATA_SOURCE), next)
     ).toThrow();
   });
   test('data scope permits GET_SPEC only and cannot administer plugins', () => {
@@ -84,17 +77,27 @@ describe('OAuth delegated scope enforcement', () => {
   test('workflows are available only when consented and administration remains excluded', () => {
     interceptor.intercept(context({ user: { ...user, oauthScopes: ['workflows'] } }, MODULES.WORKFLOWS), next);
     expect(() => interceptor.intercept(context({ user }, MODULES.WORKFLOWS), next)).toThrow();
-    expect(() => interceptor.intercept(context({ user: { ...user, oauthScopes: ['workspace_admin'] } }, MODULES.ORGANIZATIONS), next)).toThrow();
+    expect(() =>
+      interceptor.intercept(
+        context({ user: { ...user, oauthScopes: ['workspace_admin'] } }, MODULES.ORGANIZATIONS),
+        next
+      )
+    ).toThrow();
   });
   test('viewer shares the PAT app pin, boot features and write ceiling', () => {
     const appId = '00000000-0000-4000-8000-000000000001';
-    const request: any = { user: { ...user, oauthAppId: appId }, method: 'GET', tj_app: { id: appId, organizationId: 'garden' } };
+    const request: any = {
+      user: { ...user, oauthAppId: appId },
+      method: 'GET',
+      tj_app: { id: appId, organizationId: 'garden' },
+    };
     const ctx = context(request);
     Reflect.defineMetadata('tjFeatureId', 'get_one', action);
     interceptor.intercept(ctx, next);
     request.method = 'PUT';
     expect(() => interceptor.intercept(ctx, next)).toThrow();
-    request.method = 'GET'; request.tj_app.id = 'another-app';
+    request.method = 'GET';
+    request.tj_app.id = 'another-app';
     expect(() => interceptor.intercept(ctx, next)).toThrow();
     delete request.tj_app;
     Reflect.defineMetadata('tjFeatureId', 'get', action); // Workspace-wide app listing.
@@ -128,12 +131,14 @@ describe('OAuth delegated scope enforcement', () => {
   test('HTTP telemetry removes OAuth URLs, interaction IDs and callback codes', () => {
     const result = sanitizeOAuthRequest({
       url: '/api/mcp-oauth/interactions/synthetic-handle/session?state=synthetic-state',
-      params: { id: 'synthetic-handle' }, query: { state: 'synthetic-state' },
+      params: { id: 'synthetic-handle' },
+      query: { state: 'synthetic-state' },
       headers: { referer: 'https://tooljet.example/mcp/consent?request=synthetic-handle' },
     });
     expect(JSON.stringify(result)).not.toContain('synthetic');
-    expect(sanitizeOAuthUrl('http://127.0.0.1:1234/callback?code=synthetic-code&state=synthetic-state'))
-      .toBe('http://127.0.0.1:1234/callback');
+    expect(sanitizeOAuthUrl('http://127.0.0.1:1234/callback?code=synthetic-code&state=synthetic-state')).toBe(
+      'http://127.0.0.1:1234/callback'
+    );
     expect(sanitizeOAuthUrl('/api/health')).toBe('/api/health');
   });
   test('redacts nested OAuth secrets in telemetry', () => {

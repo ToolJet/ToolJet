@@ -8,7 +8,7 @@ export function sanitizeTraceObject(value: any): any {
   return Object.fromEntries(
     Object.entries(value)
       .filter(([, item]) => typeof item !== 'function')
-      .map(([key, item]) => [key, CREDENTIAL_KEYS.test(key) ? '[REDACTED]' : sanitizeTraceObject(item)]),
+      .map(([key, item]) => [key, CREDENTIAL_KEYS.test(key) ? '[REDACTED]' : sanitizeTraceObject(item)])
   );
 }
 

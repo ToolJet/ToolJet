@@ -151,7 +151,9 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         where: { userId },
         relations: ['user'],
       });
-      await updateSecurityEntity(manager, OrganizationUser,
+      await updateSecurityEntity(
+        manager,
+        OrganizationUser,
         { userId },
         { status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null }
       );

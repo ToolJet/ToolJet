@@ -2,14 +2,19 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { McpOAuthService } from './service';
 import { hash, OAuthFailure } from './protocol';
-const proxyaddr = require('proxy-addr');
-const ipaddr = require('ipaddr.js');
+import * as proxyaddr from 'proxy-addr';
+import * as ipaddr from 'ipaddr.js';
 
 export function oauthAddressBucket(address: string): string {
   const ip = ipaddr.process(address);
   if (ip.kind() === 'ipv4') return ip.toString();
   // IPv6 privacy addresses in one /64 share an anonymous budget.
-  return ip.parts.slice(0, 4).map((part: number) => part.toString(16)).join(':') + '::/64';
+  return (
+    (ip as ipaddr.IPv6).parts
+      .slice(0, 4)
+      .map((part: number) => part.toString(16))
+      .join(':') + '::/64'
+  );
 }
 
 /** Fixed-size, per-replica admission windows. Anonymous traffic cannot evict grant buckets. */
@@ -25,7 +30,10 @@ export class OAuthRateWindows {
       this.nextSweep = now + 1000;
     }
     let bucket = buckets.get(key);
-    if (bucket && bucket.until <= now) { buckets.delete(key); bucket = undefined; }
+    if (bucket && bucket.until <= now) {
+      buckets.delete(key);
+      bucket = undefined;
+    }
     if (!bucket) {
       // Bound memory without making capacity a global admission gate. Existing windows
       // are insertion-ordered; discard the oldest rather than denying every new caller.
@@ -41,9 +49,15 @@ export class OAuthRateWindows {
 export class McpOAuthThrottleGuard implements CanActivate {
   private readonly windows = new OAuthRateWindows();
   private readonly trust: (address: string) => boolean;
-  constructor(private readonly oauth: McpOAuthService, config: ConfigService) {
+  constructor(
+    private readonly oauth: McpOAuthService,
+    config: ConfigService
+  ) {
     // Trust only explicitly configured proxy networks, never a caller-controlled leftmost XFF.
-    const proxies = (config.get<string>('MCP_OAUTH_TRUSTED_PROXIES') || '').split(',').map(x => x.trim()).filter(Boolean);
+    const proxies = (config.get<string>('MCP_OAUTH_TRUSTED_PROXIES') || '')
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean);
     this.trust = proxies.length ? proxyaddr.compile(proxies) : () => false;
   }
   async canActivate(context: ExecutionContext): Promise<boolean> {

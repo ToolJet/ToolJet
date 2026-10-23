@@ -1,6 +1,6 @@
 import { PAT_ALLOWED_BUNDLES } from '@modules/personal-access-tokens/constants/scopes';
 import { createHash, randomBytes, timingSafeEqual } from 'crypto';
-import basicAuth = require('basic-auth');
+import * as basicAuth from 'basic-auth';
 
 export const OAUTH_SCOPES = [...PAT_ALLOWED_BUNDLES];
 export const DEFAULT_SCOPES = [...PAT_ALLOWED_BUNDLES];
@@ -19,17 +19,25 @@ export class OAuthFailure extends Error {
   constructor(
     public readonly error: string,
     message: string,
-    public readonly status = 400,
+    public readonly status = 400
   ) {
     super(message);
   }
 }
 export class OAuthRedirectFailure extends OAuthFailure {
-  constructor(error: OAuthFailure, readonly redirectUrl: string) { super(error.error, error.message, error.status); }
+  constructor(
+    error: OAuthFailure,
+    readonly redirectUrl: string
+  ) {
+    super(error.error, error.message, error.status);
+  }
 }
 /** Carries only a database grant ID so callers can persist revocation after a failed transaction. */
 export class RejectedOAuthGrant extends OAuthFailure {
-  constructor(readonly grantId: string, message: string) {
+  constructor(
+    readonly grantId: string,
+    message: string
+  ) {
     super('invalid_grant', message);
   }
 }
@@ -40,11 +48,7 @@ export function secret(prefix = ''): string {
   return prefix + randomBytes(32).toString('base64url');
 }
 export function equalSecret(a: string, b: string): boolean {
-  return (
-    typeof a === 'string' &&
-    typeof b === 'string' &&
-    timingSafeEqual(Buffer.from(hash(a)), Buffer.from(hash(b)))
-  );
+  return typeof a === 'string' && typeof b === 'string' && timingSafeEqual(Buffer.from(hash(a)), Buffer.from(hash(b)));
 }
 export function stringParam(value: unknown, name: string, optional = false): string | undefined {
   if (optional && value === undefined) return undefined;
@@ -54,8 +58,13 @@ export function stringParam(value: unknown, name: string, optional = false): str
   return value;
 }
 /** Keep authentication transport unambiguous; OAuth Basic fields are form-encoded before Base64. */
-export function clientAuthentication(body: Record<string, unknown>, authorization?: string): {
-  method: ClientAuthMethod; clientId: string; clientSecret?: string;
+export function clientAuthentication(
+  body: Record<string, unknown>,
+  authorization?: string
+): {
+  method: ClientAuthMethod;
+  clientId: string;
+  clientSecret?: string;
 } {
   if (authorization !== undefined) {
     if (body.client_id !== undefined || body.client_secret !== undefined)
@@ -118,10 +127,9 @@ export function validateRedirects(value: unknown): string[] {
       value.map((entry) => {
         const uri = stringParam(entry, 'redirect_uri');
         validateRedirectUrl(uri);
-        if (uri.includes('*'))
-          throw new OAuthFailure('invalid_client_metadata', 'Wildcard redirects are not allowed');
+        if (uri.includes('*')) throw new OAuthFailure('invalid_client_metadata', 'Wildcard redirects are not allowed');
         return uri;
-      }),
+      })
     ),
   ];
 }
@@ -151,7 +159,7 @@ export function canonicalJson(value: any): string {
         ? Object.fromEntries(
             Object.keys(item)
               .sort()
-              .map((key) => [key, ordered(item[key])]),
+              .map((key) => [key, ordered(item[key])])
           )
         : item;
   return JSON.stringify(ordered(value));
