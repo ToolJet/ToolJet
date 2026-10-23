@@ -84,7 +84,12 @@ export class LoginConfigsService implements ILoginConfigsService {
       throw new BadRequestException('Invalid SSO type');
     }
 
-    await this.loginConfigsUtilService.encryptSecret(configs);
+    const previousConfig = type === SSOType.OPENID && !configId ? undefined :
+      await this.ssoConfigsRepository.findOne({ where: {
+        organizationId, sso: type, configScope: ConfigScope.ORGANIZATION,
+        ...(type === SSOType.OPENID ? { id: configId } : {}),
+      } });
+    await this.loginConfigsUtilService.encryptSecret(configs, previousConfig?.configs);
     const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });
     const auditLogsData = {
       userId: user.id,
@@ -109,7 +114,7 @@ export class LoginConfigsService implements ILoginConfigsService {
 
         if (existingConfig) {
           // Config exists - UPDATE
-          await this.ssoConfigsRepository.update(configId, { configs, enabled });
+          await this.ssoConfigsRepository.updateConfig(configId, { configs, enabled });
           ssoConfig = await this.ssoConfigsRepository.findOne({ where: { id: configId } });
         } else {
           // configId provided but doesn't exist - CREATE new (use frontend-provided name)
@@ -120,7 +125,7 @@ export class LoginConfigsService implements ILoginConfigsService {
             enabled,
             configScope: ConfigScope.ORGANIZATION,
           });
-          ssoConfig = await this.ssoConfigsRepository.save(newConfig);
+          ssoConfig = await this.ssoConfigsRepository.saveConfig(newConfig);
         }
       } else {
         // No configId - CREATE new config (use frontend-provided name)
@@ -131,7 +136,7 @@ export class LoginConfigsService implements ILoginConfigsService {
           enabled,
           configScope: ConfigScope.ORGANIZATION,
         });
-        ssoConfig = await this.ssoConfigsRepository.save(newConfig);
+        ssoConfig = await this.ssoConfigsRepository.saveConfig(newConfig);
       }
     } else {
       // Other SSO types (single config per organization)
@@ -222,7 +227,7 @@ export class LoginConfigsService implements ILoginConfigsService {
   async updateInheritSSO(user: User, param: boolean): Promise<void> {
     const organizationId = user.organizationId;
     const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });
-    await this.organizationsRepository.update({ id: organizationId }, { inheritSSO: param });
+    await this.organizationsRepository.updateOne(organizationId, { inheritSSO: param });
 
     //INSTANCE_SSO_INHERIT audit
     const auditLogsData = {
@@ -280,13 +285,8 @@ export class LoginConfigsService implements ILoginConfigsService {
       throw new NotFoundException('SSO configuration not found');
     }
 
-    // Delete associated group syncs if OIDC
-    if (config.sso === SSOType.OPENID) {
-      await this.oidcGroupSyncRepository.delete({ ssoConfigId: configId });
-    }
-
-    // Delete the config
-    await this.ssoConfigsRepository.delete(configId);
+    // Group mappings cascade with the configuration in the same transaction.
+    await this.ssoConfigsRepository.deleteConfig(configId);
 
     // Audit log
     const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });

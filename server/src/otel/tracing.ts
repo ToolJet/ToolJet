@@ -1,3 +1,4 @@
+import { sanitizeTraceObject as sanitizeObject } from './sanitize';
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
 import { getWorkspaceLabel, getWorkspaceNameLabel } from './org-plan-cache';
 import {
@@ -33,18 +34,6 @@ import { shutdownOtelLogs } from './logs';
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 }
-
-const sanitizeObject = (obj: any) => {
-  const sanitized: any = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'object' && value !== null) {
-      sanitized[key] = sanitizeObject(value);
-    } else if (typeof value !== 'function') {
-      sanitized[key] = value;
-    }
-  }
-  return sanitized;
-};
 
 // SDK instance - created lazily in startOpenTelemetry()
 let sdk: NodeSDK | null = null;
@@ -95,12 +84,13 @@ function createSDK(): NodeSDK {
       new HttpInstrumentation({
         ignoreIncomingRequestHook: (request: any) => {
           const url = request.url || '';
-          return url.includes('/api/health') || url === '/api/health';
+          return url.includes('/api/health') || url.includes('/api/mcp-oauth/');
         },
       }),
       new ExpressInstrumentation({
         requestHook: (span: Span, { request }) => {
           const path = request.route?.path || request.path || '';
+          if (path.includes('/mcp-oauth/')) return;
           if (path.startsWith('/api/') && path !== '/api/health') {
             span.updateName(`${request.method} ${path}`);
             span.setAttribute('http.route', path);

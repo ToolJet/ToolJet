@@ -1,3 +1,4 @@
+import { updateSecurityEntity } from '@modules/mcp-oauth/revocation';
 import { Injectable } from '@nestjs/common';
 import { User } from '../../entities/user.entity';
 import { EntityManager } from 'typeorm';
@@ -114,7 +115,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       });
 
       await this.organizationUsersUtilService.throwErrorIfUserIsLastActiveAdmin(organizationUser?.user, organizationId);
-      await manager.update(OrganizationUser, id, {
+      await updateSecurityEntity(manager, OrganizationUser, id, {
         status: WORKSPACE_USER_STATUS.ARCHIVED,
         invitationToken: null,
       });
@@ -150,8 +151,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         where: { userId },
         relations: ['user'],
       });
-      await manager.update(
-        OrganizationUser,
+      await updateSecurityEntity(manager, OrganizationUser,
         { userId },
         { status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null }
       );
@@ -233,7 +233,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0 ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000) : null;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, id, {
+      await updateSecurityEntity(manager, OrganizationUser, id, {
         status: WORKSPACE_USER_STATUS.INVITED,
         source: WORKSPACE_USER_SOURCE.INVITE,
         invitationToken,
