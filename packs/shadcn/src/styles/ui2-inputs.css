@@ -1,0 +1,1014 @@
+/* UI 2.0 look for the inputs group (Input, Textarea, Number, Currency, Password, Phone, OTP, Tags, Color picker, File
+   upload, Slider, Rating). Scoped to .ui2-in, set on each component's root and on its popup. The --lk-* variables are
+   UI 2.0's style variables (src/lib/ui2/inputs/looks.ts sets them from the Styles tab); unset, the theme applies. */
+
+.ui2-in {
+  --ui2-ring: var(--ui-primary);
+  --ui2-control-radius: var(--lk-radius, calc(var(--ui-radius) - 2px));
+  --ui2-edge: var(--lk-invalid, var(--lk-border, var(--ui-border)));
+}
+
+/* The label, gap and note are the shared field's (ui.css .ui-field); the field fits its content. */
+.ui2-in .ui-field {
+  height: auto;
+}
+
+.ui2-in .ui-field--invalid {
+  --lk-invalid: var(--lk-error, var(--ui-destructive));
+}
+
+/* ---- The control's box: background, text, placeholder, border, radius, error border, a 1px accent focus ring ---- */
+.ui2-in .ui-input,
+.ui2-in .ui-textarea,
+.ui2-box {
+  background: var(--lk-bg, var(--ui-bg));
+  color: var(--lk-fg, var(--ui-fg));
+  border-color: var(--ui2-edge);
+  border-radius: var(--ui2-control-radius);
+  box-shadow: var(--ui-shadow);
+}
+
+.ui2-in .ui-input:focus-visible,
+.ui2-in .ui-textarea:focus-visible,
+.ui2-in .ui2-group:focus-within,
+.ui2-in .ui2-tags:focus-within {
+  outline: none;
+  border-color: var(--ui2-edge);
+  box-shadow:
+    var(--ui-shadow),
+    0 0 0 1px var(--ui2-ring);
+}
+
+.ui2-in .ui-field--invalid .ui-input,
+.ui2-in .ui-field--invalid .ui-textarea {
+  border-color: var(--ui2-edge);
+}
+
+.ui2-in .ui-input::placeholder,
+.ui2-in .ui-textarea::placeholder,
+.ui2-in .ui2-inner::placeholder {
+  color: var(--lk-placeholder, var(--ui-muted-fg));
+}
+
+/* The text area takes the box's height less the label and help text, and never less than 60px. */
+.ui2-textarea-root .ui-field {
+  height: 100%;
+}
+.ui2-in .ui-textarea {
+  flex: 1;
+  min-height: 60px;
+  padding: 8px 12px;
+}
+
+.ui2-in input[type='search']::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* A field with UI 2.0's clear x over its right end. */
+.ui2-with-clear {
+  position: relative;
+  width: 100%;
+}
+.ui2-with-clear > .ui2-clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+}
+.ui2-with-clear.has-x > .ui-input {
+  padding-right: 32px;
+}
+
+.ui2-clear {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lk-placeholder, var(--ui-muted-fg));
+  cursor: pointer;
+}
+.ui2-clear:hover,
+.ui2-clear:focus-visible {
+  color: var(--lk-fg, var(--ui-fg));
+  outline: none;
+}
+
+/* ---- A box made of parts (sign, input, buttons): the Number, Currency, Password and Phone inputs ---- */
+.ui2-group {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 36px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ui2-edge);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.ui2-group.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui2-inner {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 4px 12px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--lk-fg, var(--ui-fg));
+  font: inherit;
+  box-shadow: none;
+}
+.ui2-inner:disabled {
+  cursor: not-allowed;
+}
+.ui2-inner.is-centered {
+  text-align: center;
+}
+.ui2-inner.has-start {
+  padding-left: 6px;
+}
+.ui2-inner.has-end {
+  padding-right: 6px;
+}
+.ui2-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Prefix, suffix or currency sign: at most 40% of the box, ending in an ellipsis. */
+.ui2-affix {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 40%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  user-select: none;
+  color: var(--lk-affix, var(--ui-muted-fg));
+}
+.ui2-affix > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui2-affix.is-start {
+  padding-left: 12px;
+}
+.ui2-affix.is-end {
+  padding-right: 12px;
+}
+
+.ui2-group > .ui2-clear {
+  align-self: center;
+  margin: 0 8px;
+}
+
+/* Stepper buttons attached to the box. */
+.ui2-step {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  padding: 0;
+  border: 0;
+  background: var(--lk-step-bg, transparent);
+  color: var(--lk-step-fg, var(--ui-muted-fg));
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+.ui2-step:hover:not(:disabled) {
+  background: var(--lk-step-hover, var(--ui-muted));
+  color: var(--lk-step-fg, var(--ui-fg));
+}
+.ui2-step:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.ui2-step.is-start {
+  border-right: 1px solid var(--ui2-edge);
+}
+.ui2-step.is-end {
+  border-left: 1px solid var(--ui2-edge);
+}
+.ui2-steps {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 28px;
+  border-left: 1px solid var(--ui2-edge);
+}
+.ui2-steps > .ui2-step {
+  width: 100%;
+  height: 50%;
+}
+.ui2-steps > .ui2-step + .ui2-step {
+  border-top: 1px solid var(--ui2-edge);
+}
+
+/* A segment at the start of the box: the country or currency picker. */
+.ui2-addon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0 12px;
+  border: 0;
+  border-right: 1px solid var(--ui2-edge);
+  border-radius: 0;
+  background: var(--lk-addon-bg, transparent);
+  color: var(--lk-addon-fg, var(--lk-fg, var(--ui-fg)));
+  font: inherit;
+  font-weight: 500;
+  box-shadow: none;
+  transition: background-color 0.15s;
+}
+button.ui2-addon {
+  cursor: pointer;
+}
+button.ui2-addon:hover:not(:disabled),
+button.ui2-addon:focus-visible {
+  outline: none;
+  background: var(--lk-pop-hover, var(--ui-muted));
+}
+button.ui2-addon:disabled {
+  cursor: not-allowed;
+}
+.ui2-addon-chevron {
+  opacity: 0.5;
+}
+.ui2-flag {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* An icon button at the end of the box: the password's eye. */
+.ui2-end-btn {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--lk-icon, var(--ui-muted-fg));
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.ui2-end-btn:hover,
+.ui2-end-btn:focus-visible {
+  outline: none;
+  color: var(--lk-fg, var(--ui-fg));
+}
+
+/* Password strength meter: three segments and a word. */
+.ui2-meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ui2-meter-bars {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+}
+.ui2-meter-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--lk-track, var(--ui-muted));
+  transition: background-color 0.2s;
+}
+.ui2-meter-bar.is-weak {
+  background: var(--lk-weak, var(--ui-destructive));
+}
+.ui2-meter-bar.is-fair {
+  background: var(--lk-fair, var(--ui-warning));
+}
+.ui2-meter-bar.is-strong {
+  background: var(--lk-strong, var(--ui-success));
+}
+.ui2-meter-word {
+  min-width: 3rem;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--lk-help, var(--ui-muted-fg));
+}
+.ui2-meter-word.is-weak {
+  color: var(--lk-weak, var(--ui-destructive));
+}
+.ui2-meter-word.is-fair {
+  color: var(--lk-fair, var(--ui-warning));
+}
+.ui2-meter-word.is-strong {
+  color: var(--lk-strong, var(--ui-success));
+}
+
+/* ---- Popovers opening from a field: the country and currency lists, the tags menu, the colour editor ---- */
+.ui2-pop {
+  z-index: 50;
+  padding: 4px;
+  overflow: hidden auto;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--lk-pop-bg, var(--lk-menu-bg, var(--ui-bg)));
+  color: var(--lk-pop-fg, var(--lk-menu-fg, var(--ui-fg)));
+  box-shadow: var(--ui-shadow-lg);
+  animation: ui-pop-in 0.12s ease-out;
+}
+.ui2-pop-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px -4px 4px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--ui-border);
+}
+.ui2-pop-search > svg {
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+.ui2-pop-search > input {
+  flex: 1;
+  height: 40px;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.ui2-pop-search > input::placeholder {
+  color: var(--ui-muted-fg);
+}
+.ui2-pop-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+.ui2-pop-empty {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--ui-muted-fg);
+}
+.ui2-pop-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  outline: none;
+  cursor: default;
+  user-select: none;
+}
+.ui2-pop-item[data-active],
+.ui2-pop-item[data-highlighted] {
+  background: var(--lk-pop-hover, var(--lk-hl, var(--ui-muted)));
+}
+.ui2-pop-item[data-state='checked'],
+.ui2-pop-item.is-selected {
+  color: var(--lk-pop-selected, inherit);
+}
+.ui2-pop-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui2-pop-item-note {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-muted-fg);
+}
+.ui2-pop-check {
+  flex-shrink: 0;
+  opacity: 0;
+}
+.ui2-pop-item.is-selected .ui2-pop-check,
+.ui2-pop-item[data-state='checked'] .ui2-pop-check {
+  opacity: 1;
+}
+
+/* ---- OTP ---- */
+.ui2-otp {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+}
+.ui2-otp.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ui2-otp-group {
+  display: flex;
+  align-items: center;
+}
+.ui2-otp-group.is-separate {
+  gap: 8px;
+}
+.ui2-otp-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--lk-slot, 36px);
+  height: var(--lk-slot, 36px);
+  font-size: calc(var(--lk-slot, 36px) * 0.42);
+  background: var(--lk-bg, var(--ui-bg));
+  color: var(--lk-fg, var(--ui-fg));
+  border: 1px solid var(--ui2-edge);
+  box-shadow: var(--ui-shadow);
+  transition: box-shadow 0.15s;
+}
+.ui2-otp-group.is-separate .ui2-otp-slot {
+  border-radius: var(--ui2-control-radius);
+}
+.ui2-otp-group.is-joined .ui2-otp-slot {
+  border-left-width: 0;
+}
+.ui2-otp-group.is-joined .ui2-otp-slot:first-child {
+  border-left-width: 1px;
+  border-radius: var(--ui2-control-radius) 0 0 var(--ui2-control-radius);
+}
+.ui2-otp-group.is-joined .ui2-otp-slot:last-child {
+  border-radius: 0 var(--ui2-control-radius) var(--ui2-control-radius) 0;
+}
+.ui2-otp-slot.is-active {
+  z-index: 1;
+  box-shadow: 0 0 0 1px var(--ui2-ring);
+}
+.ui2-otp-placeholder {
+  color: var(--lk-placeholder, var(--ui-muted-fg));
+}
+.ui2-otp-caret {
+  width: 1px;
+  height: 16px;
+  background: var(--lk-fg, var(--ui-fg));
+  animation: ui2-blink 1s step-end infinite;
+}
+@keyframes ui2-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.ui2-otp-sep {
+  display: flex;
+  align-items: center;
+  color: var(--lk-sep, var(--ui-muted-fg));
+}
+.ui2-otp-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  opacity: 0;
+  outline: none;
+  cursor: text;
+}
+.ui2-otp-input:disabled {
+  cursor: not-allowed;
+}
+
+/* ---- Tags ---- */
+.ui2-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 36px;
+  padding: 4px 8px;
+  border: 1px solid var(--ui2-edge);
+  cursor: text;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.ui2-tags.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ui2-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 2px 4px 2px 10px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: var(--lk-chip-bg, var(--ui-muted));
+  color: var(--lk-chip-fg, var(--ui-fg));
+  font-size: 12px;
+  line-height: 16px;
+}
+.ui2-chip-text {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui2-chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+}
+.ui2-chip-x:hover,
+.ui2-chip-x:focus-visible {
+  opacity: 1;
+  outline: none;
+}
+.ui2-tags-input {
+  flex: 1;
+  min-width: 6rem;
+  height: 28px;
+  padding: 0 4px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--lk-fg, var(--ui-fg));
+  font: inherit;
+}
+.ui2-tags-input::placeholder {
+  color: var(--lk-placeholder, var(--ui-muted-fg));
+}
+.ui2-tags-menu {
+  width: var(--radix-popover-trigger-width);
+  min-width: 10rem;
+  max-height: 240px;
+  background: var(--lk-menu-bg, var(--ui-bg));
+  color: var(--lk-menu-fg, var(--ui-fg));
+}
+.ui2-tags-menu .ui2-pop-item[data-active] {
+  background: var(--lk-hl, var(--ui-muted));
+}
+
+/* ---- Color picker ---- */
+.ui2-color-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--ui2-edge);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ui2-color-trigger:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--ui-shadow),
+    0 0 0 1px var(--ui2-ring);
+}
+.ui2-color-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ui2-color-trigger.is-swatch {
+  width: 36px;
+  padding: 6px;
+}
+.ui2-with-clear.has-x > .ui2-color-trigger {
+  padding-right: 32px;
+}
+.ui2-color-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ui2-color-chip {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--ui-border);
+  border-radius: calc(var(--ui-radius) - 4px);
+  box-shadow: var(--ui-shadow);
+}
+.ui2-color-chip.is-empty {
+  border-style: dashed;
+}
+.ui2-color-trigger.is-swatch .ui2-color-chip {
+  width: 100%;
+  height: 100%;
+}
+.ui2-color-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.ui2-color-text.is-placeholder {
+  text-transform: none;
+  color: var(--lk-placeholder, var(--ui-muted-fg));
+}
+.ui2-color-pop {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 256px;
+  padding: 12px;
+  background: var(--lk-menu-bg, var(--ui-bg));
+}
+.ui2-color-area {
+  position: relative;
+  width: 100%;
+  height: 144px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  cursor: crosshair;
+  touch-action: none;
+}
+.ui2-color-bar {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: none;
+}
+.ui2-color-area:focus-visible,
+.ui2-color-bar:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1px var(--ui-bg),
+    0 0 0 3px var(--ui2-ring);
+}
+.ui2-color-thumb {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.25),
+    0 1px 3px rgb(0 0 0 / 0.3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.ui2-color-bar .ui2-color-thumb {
+  top: 50%;
+}
+.ui2-color-hex-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ui2-color-preview {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--ui-border);
+  border-radius: calc(var(--ui-radius) - 2px);
+  box-shadow: var(--ui-shadow);
+}
+.ui2-color-hex {
+  height: 32px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.ui2-color-dropper {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  cursor: pointer;
+}
+.ui2-color-dropper:hover {
+  background: var(--ui-muted);
+}
+.ui2-color-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+.ui2-color-swatch {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: calc(var(--ui-radius) - 4px);
+  box-shadow: var(--ui-shadow);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.ui2-color-swatch:hover {
+  transform: scale(1.1);
+}
+.ui2-color-swatch:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1px var(--ui-bg),
+    0 0 0 3px var(--ui2-ring);
+}
+.ui2-color-swatch > svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+
+/* ---- File upload ---- */
+.ui2-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 20px 24px;
+  border: 2px dashed var(--lk-invalid, var(--lk-drop-border, var(--ui-border)));
+  border-radius: var(--lk-radius, var(--ui-radius));
+  background: var(--lk-drop-bg, transparent);
+  text-align: center;
+  outline: none;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+.ui2-drop:hover {
+  background: color-mix(in srgb, var(--ui-muted) 50%, var(--lk-drop-bg, transparent));
+}
+.ui2-drop:focus-visible {
+  box-shadow: 0 0 0 1px var(--ui2-ring);
+}
+.ui2-drop.is-over {
+  border-color: var(--ui-primary);
+  background: color-mix(in srgb, var(--ui-primary) 6%, transparent);
+}
+.ui2-drop.is-off {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.ui2-drop.is-off:hover {
+  background: var(--lk-drop-bg, transparent);
+}
+.ui2-drop-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  background: var(--lk-icon-bg, var(--ui-muted));
+  color: var(--lk-icon, var(--ui-muted-fg));
+}
+.ui2-drop-title {
+  margin: 0;
+  font-weight: 500;
+  color: var(--lk-title, var(--ui-fg));
+}
+.ui2-drop-browse {
+  margin: 0;
+  color: var(--ui-muted-fg);
+}
+.ui2-drop-browse > span {
+  font-weight: 500;
+  color: var(--ui-primary);
+  text-underline-offset: 4px;
+}
+.ui2-drop-browse > span:hover {
+  text-decoration: underline;
+}
+.ui2-drop-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--lk-hint, var(--ui-muted-fg));
+}
+.ui2-files-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ui-muted-fg);
+}
+.ui2-files-clear {
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--ui-radius);
+  background: transparent;
+  color: var(--ui-muted-fg);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ui2-files-clear:hover {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+.ui2-files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 296px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.ui2-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px 8px 8px;
+  border: 1px solid var(--lk-item-border, var(--ui-border));
+  border-radius: var(--lk-radius, calc(var(--ui-radius) - 2px));
+  background: var(--lk-item-bg, var(--ui-bg));
+}
+.ui2-file-thumb {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ui-radius);
+  background: var(--ui-muted);
+  color: var(--ui-muted-fg);
+  object-fit: cover;
+}
+img.ui2-file-thumb {
+  border: 1px solid var(--ui-border);
+}
+.ui2-file-body {
+  flex: 1;
+  min-width: 0;
+}
+.ui2-file-name {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.ui2-file-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ui-muted-fg);
+}
+.ui2-file-x {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ui-radius);
+  background: transparent;
+  color: var(--ui-muted-fg);
+  cursor: pointer;
+}
+.ui2-file-x:hover {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+.ui2-file-x:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.ui2-spin {
+  animation: ui2-spin 0.8s linear infinite;
+}
+@keyframes ui2-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- Slider ---- */
+.ui2-slider-row {
+  display: flex;
+  align-items: center;
+  height: 20px;
+}
+.ui2-in .ui-slider-track {
+  height: 6px;
+  background: var(--lk-track, color-mix(in srgb, var(--ui-primary) 20%, transparent));
+}
+.ui2-in .ui-slider-thumb {
+  border-color: color-mix(in srgb, var(--ui-primary) 50%, transparent);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
+}
+.ui2-in .ui-slider-thumb:focus-visible {
+  box-shadow: 0 0 0 1px var(--ui2-ring);
+}
+
+/* ---- Rating ---- */
+.ui2-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ui2-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ui2-rating.is-lg {
+  gap: 6px;
+}
+.ui2-rating-item {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 4px;
+  outline: none;
+  transition: transform 0.1s;
+}
+.ui2-rating-item.is-interactive {
+  cursor: pointer;
+}
+.ui2-rating-item.is-interactive:hover {
+  transform: scale(1.1);
+}
+.ui2-rating-item:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--ui-bg),
+    0 0 0 4px var(--ui2-ring);
+}
+.ui2-rating-item > svg {
+  position: absolute;
+  inset: 0;
+}
+.ui2-rating-half {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 50%;
+  overflow: hidden;
+}
+.ui2-rating-half > svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.ui2-rating-off {
+  fill: var(--lk-off, color-mix(in srgb, var(--ui-muted-fg) 22%, transparent));
+  color: var(--lk-off, color-mix(in srgb, var(--ui-muted-fg) 22%, transparent));
+}
+.ui2-rating-on.is-star {
+  fill: var(--lk-on, #f59e0b);
+  color: var(--lk-on, #f59e0b);
+}
+.ui2-rating-on.is-heart {
+  fill: var(--lk-on, var(--ui-destructive));
+  color: var(--lk-on, var(--ui-destructive));
+}
+.ui2-rating-on.is-circle {
+  fill: var(--lk-on, var(--ui-primary));
+  color: var(--lk-on, var(--ui-primary));
+}
+.ui2-rating-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--lk-value, var(--ui-muted-fg));
+}

@@ -1,0 +1,112 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { ToolJet } from '@tooljet/custom-component-sdk';
+import { cn } from '../lib/cn';
+import { isSet, lookVars, px } from '../lib/ui2/nav/look';
+import '../styles/ui2-nav.css';
+
+const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
+const SIZES = ['sm', 'default', 'lg'];
+/** A variant or size, now that they can be bound: a known name in any case, anything else the default. */
+const oneOf = (names: string[], value: unknown) => {
+  const name = String(value ?? '').trim().toLowerCase();
+  return names.includes(name) ? name : 'default';
+};
+
+// UI 2.0 Button: the shadcn variants, filling its box as ToolJet's Button does. Each variant keeps its own colours;
+// a style replaces them only when set.
+export const Button = () => {
+  const [text] = ToolJet.useStateString({ name: 'text', label: 'Label', initialValue: 'Button' });
+  const [variant] = ToolJet.useStateEnumeration({
+    name: 'variant',
+    label: 'Variant',
+    enumDefinition: ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'],
+    enumLabels: { default: 'Default', secondary: 'Secondary', outline: 'Outline', ghost: 'Ghost', destructive: 'Destructive', link: 'Link' },
+    initialValue: 'default',
+    section: 'Appearance',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['sm', 'default', 'lg'],
+    enumLabels: { sm: 'Sm', default: 'Default', lg: 'Lg' },
+    initialValue: 'default',
+    inspector: 'switch',
+    section: 'Appearance',
+  });
+  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Stretch in flex container', initialValue: false, section: 'Appearance' });
+  const [legacyDisabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable (legacy)', initialValue: false });
+  const [legacyLoading] = ToolJet.useStateBoolean({ name: 'loading', label: 'Show spinner', initialValue: false });
+  const [, setButtonText] = ToolJet.useStateString({ name: 'buttonText', initialValue: 'Button', inspector: 'hidden' });
+  const onClickEvent = ToolJet.useEventCallback({ name: 'onClick' });
+  // Inside a Form whose submit button this is, a click submits it first, as UI 2.0's and the native Button do.
+  const submitForm = (ToolJet as { useFormSubmit?: () => () => void }).useFormSubmit?.();
+  const onClick = () => {
+    submitForm?.();
+    onClickEvent();
+  };
+  const onHover = ToolJet.useEventCallback({ name: 'onHover' });
+  const control = ToolJet.useControlState();
+
+  // setText changes the label until the Label property itself changes, like the native Button's.
+  const [override, setOverride] = useState<string | null>(null);
+  useEffect(() => setOverride(null), [text]);
+  const label = override ?? String(text ?? '');
+  useEffect(() => setButtonText(label), [label, setButtonText]);
+
+  const loading = control.loading || legacyLoading;
+  const busy = control.disabled || legacyDisabled || loading;
+  const latest = useRef(busy);
+  latest.current = busy;
+  ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => {
+    if (!latest.current) onClick();
+  });
+  ToolJet.useAction({ name: 'setText', displayName: 'Set text', params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }] }, (t) =>
+    setOverride(t === undefined || t === null ? '' : String(t))
+  );
+  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Button background', inspector: 'color', initialValue: '' });
+  const hoverBackgroundColor = ToolJet.useStyleString({ name: 'hoverBackgroundColor', label: 'Button hover background', inspector: 'color', initialValue: '' });
+  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Button text color', inspector: 'color', initialValue: '' });
+  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Button border color', inspector: 'color', initialValue: '' });
+  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Button radius', initialValue: '' });
+  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
+
+  const look = oneOf(VARIANTS, variant);
+  const scale = oneOf(SIZES, size);
+  return (
+    <div
+      className="ui"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        ...lookVars([
+          [backgroundColor, '--lk-bg'],
+          [hoverBackgroundColor, '--lk-hover'],
+          [textColor, '--lk-fg'],
+          [borderColor, '--lk-border'],
+          [radius, '--lk-radius', px],
+        ]),
+      }}
+    >
+      <button
+        type="button"
+        className={cn(
+          'ui-btn n2-btn n2-btn-fill',
+          `ui-btn--${look}`,
+          scale !== 'default' && `ui-btn--${scale}`,
+          fullWidth && 'is-full',
+          isSet(backgroundColor) && 'has-bg',
+          isSet(hoverBackgroundColor) && 'has-hover',
+          isSet(textColor) && 'has-fg',
+          isSet(borderColor) && 'has-border'
+        )}
+        disabled={busy}
+        onClick={onClick}
+        onMouseEnter={onHover}
+      >
+        {/* Loading (the host's Loading or the pack's Show spinner), UI 2.0's spinner before the label, disabled. */}
+        {loading ? <span className="n2-spinner" role="status" aria-label="Loading" /> : null}
+        {label}
+      </button>
+    </div>
+  );
+};
