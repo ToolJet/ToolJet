@@ -178,9 +178,8 @@ describe('MultiselectV2: exposed variables, styling, and accessibility', () => {
   });
 
   test('[MultiselectV2-STYLE-001] `padding` is read at two layers for two effects', async () => {
-    // Break this catches: dropping either reader — the platform's box padding
-    // (AppCanvas/RenderWidget.jsx:318) or the widget's own `height + 4`
-    // compensation (MultiselectV2.jsx:83) — which would leave the field either
+    // Break this catches: the platform box padding (AppCanvas/RenderWidget.jsx) not
+    // being reflected in the height handed to the widget — leaving the field either
     // inset or 4px short of the widget it sits in.
     harness.render({ properties: EMPTY_SELECTION, styles: { padding: binding('default') } });
     await drain();

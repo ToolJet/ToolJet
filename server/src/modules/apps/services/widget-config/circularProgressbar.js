@@ -204,7 +204,7 @@ export const circularProgressbarConfig = {
     },
     padding: {
       type: 'switch',
-      displayName: 'Padding',
+      displayName: 'Margin',
       validation: { schema: { type: 'string' }, defaultValue: 'default' },
       options: [
         { displayName: 'Default', value: 'default' },

@@ -123,6 +123,16 @@ export const audioRecorderConfig = {
             defaultValue: '0px 0px 0px 0px #00000040',
             accordian: 'container',
         },
+        padding: {
+            type: 'switch',
+            displayName: 'Margin',
+            validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+            options: [
+                { displayName: 'Default', value: 'default' },
+                { displayName: 'None', value: 'none' },
+            ],
+            accordian: 'container',
+        },
     },
     exposedVariables: {
         isVisible: true,
@@ -166,6 +176,7 @@ export const audioRecorderConfig = {
         },
         events: [],
         styles: {
+            padding: { value: 'default' },
             recorderIcon: { value: 'IconMicrophone' },
             recorderIconColor: { value: '#F6430D' },
             labelColor: { value: 'var(--cc-primary-text)' },
