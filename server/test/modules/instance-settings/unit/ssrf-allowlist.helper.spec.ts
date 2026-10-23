@@ -11,6 +11,10 @@ describe('ssrf-allowlist.helper', () => {
       ['10.0.0.0/33', null],
       ['foo..bar', null],
       ['-x.com', null],
+      ['my_service', 'my_service'],
+      ['a_b.com', 'a_b.com'],
+      ['_x', null],
+      ['x_', null],
       ['', null],
     ])('normalises %j to %j', (input, expected) => {
       expect(normalizeSSRFAllowlistEntry(input)).toBe(expected);

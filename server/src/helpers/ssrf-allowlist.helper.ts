@@ -1,7 +1,8 @@
 import * as net from 'net';
 import type { SSRFRuntimeConfig } from './ssrf-protection.helper';
 
-const HOSTNAME_LABEL = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+// Underscores are allowed inside a label (Docker Compose service names such as `my_service`), not at either end.
+const HOSTNAME_LABEL = /^[a-z0-9]([a-z0-9_-]*[a-z0-9])?$/;
 
 function isValidHostname(host: string): boolean {
   if (host.length === 0 || host.length > 253) return false;
