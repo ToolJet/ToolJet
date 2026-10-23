@@ -161,7 +161,7 @@ Retrieves and displays rows from the selected table based on optional filters, s
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/list-rows-gui.png" alt="List Rows GUI Postgresql"/>
 
-### Create Rows
+### Create Row
 
 Inserts a new row into the selected table with the specified column values.
 
@@ -181,43 +181,61 @@ In the editor, ensure to the input the **Columns** in `string` format.
 
 #### Required Parameters
 
+- **Filter**: Defines conditions to select which rows should be updated. At least one filter condition is required. Without one, the query fails with `Update rows requires at least one filter condition when multiple row updates are not allowed.`
 - **Columns**: Specify the columns and their new values that should be updated for the matching rows.
 
 #### Optional Parameters
 
-- **Filter**: Defines conditions to select which rows should be updated.
+- **Allow this query to update multiple rows**: When enabled, the query can modify multiple rows at once. When disabled, the query fails with `Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.` if the filter matches more than one row.
+- **Consider query that updates zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails with `No rows were updated.` if no row matches the filter.
+
+Both toggles are off by default. When a toggle's condition is violated, the update is rolled back, so no rows are changed.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/update-rows-gui.png" alt="Update Rows GUI Postgresql"/>
 
 ### Delete Rows
 
-Removes either all rows from the table or that match the specified filter conditions.
+Removes the rows that match the specified filter conditions.
+
+#### Required Parameters
+
+- **Filter**: Specifies conditions to determine which rows should be deleted from the table. At least one filter condition is required, even when **Limit** is set. This prevents deleting every row in the table by accident.
 
 #### Optional Parameters
 
-- **Filter**: Specifies conditions to determine which rows should be deleted from the table.
 - **Limit**: Restricts the maximum number of rows that can be deleted in the operation.
+- **Allow this query to delete multiple rows**: When enabled, the query can delete multiple rows at once. When disabled, the query fails with `Query matches more than one row. Enable "Allow this Query to delete multiple rows" to permit this.` if more than one row would be deleted.
+- **Consider query that deletes zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails with `No rows were deleted.` if no row matches the filter.
+
+Both toggles are off by default. The delete runs in a transaction, so when a toggle's condition is violated, it is rolled back and no rows are deleted. A successful query returns the deleted rows.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/delete-rows-gui.png" alt="Delete Rows GUI Postgresql"/>
 
-### Upsert Rows
+### Upsert Row
 
 Inserts a new row or updates an existing row if a matching primary key already exists. In the editor, ensure to the input the **Columns** in `string` format.
 
 #### Required Parameters
 
-- **Primary Key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
+- **Primary key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted. Enter a single column name, such as `id`, or an array for composite keys, such as `{{ ["id", "tenant_id"] }}`.
 - **Columns**: Defines the column–value pairs that will be inserted or updated in the row.
+
+#### Optional Parameters
+
+- **Allow this query to update multiple rows**: When enabled, the query can modify multiple rows at once. When disabled, the query fails with `Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.` if more than one row is affected.
+- **Consider query that updates zero records as success**: When enabled, a query that affects no rows is still treated as successful. When disabled, the query fails with `No rows were upserted.` if no row is affected.
+
+Both toggles are off by default. When a toggle's condition is violated, the upsert is rolled back.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/upsert-rows-gui.png" alt="Upsert Rows GUI Postgresql"/>
 
 ### Bulk Insert
 
-Inserts multiple rows into the table in a single operation using an array of records.
+Inserts multiple rows into the table using an array of records. All records are inserted in a single transaction. See [Transactions and batching](#transactions-and-batching-in-bulk-operations).
 
 #### Required Parameters
 
-- **Records to Insert**: An array of objects representing multiple rows to be inserted into the selected table in a single operation.
+- **Records to insert**: An array of objects representing multiple rows to be inserted into the selected table. If a record doesn't include a column that other records in the same batch include, that column is inserted as `NULL` for the record.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -250,12 +268,12 @@ Inserts multiple rows into the table in a single operation using an array of rec
 
 ### Bulk Update using Primary Key
 
-Updates multiple rows at once by matching each record with its corresponding primary key.
+Updates multiple rows at once by matching each record with its corresponding primary key. All records are updated in a single transaction. See [Transactions and batching](#transactions-and-batching-in-bulk-operations).
 
 #### Required Parameters
 
-- **Primary Key columns**: Specifies the column(s) used to uniquely identify the rows that should be updated.
-- **Records to Update**: An array of objects containing the primary key and the column values to be updated for each row.
+- **Primary key column(s)**: Specifies the column(s) used to uniquely identify the rows that should be updated. Enter a single column name, such as `id`, or an array for composite keys, such as `{{ ["id", "tenant_id"] }}`.
+- **Records to update**: An array of objects containing the primary key and the column values to be updated for each row. Every record must include all primary key columns and at least one column to update, otherwise the query fails with an error such as `Row 2 is missing primary key column "id"`.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -280,14 +298,17 @@ Updates multiple rows at once by matching each record with its corresponding pri
 
 ### Bulk Upsert using Primary Key
 
-Inserts new rows or updates existing rows in bulk based on matching primary key values.
+Inserts new rows or updates existing rows in bulk based on matching primary key values. All records are upserted in a single transaction. See [Transactions and batching](#transactions-and-batching-in-bulk-operations).
+
+<!-- TODO verify: In lts-3.16, the PostgreSQL operations.json form for bulk_upsert_pkey uses the key `primary_key_column` (label "Primary key column", free-text Table, no Schema field), but the server handler reads `primary_key_columns`. Confirm in the UI that Bulk upsert using primary key runs successfully from GUI mode, and which field labels it shows, before documenting further. -->
 
 #### Required Parameters
 
-- **Primary Key columns**: Specifies the column(s) used to determine whether a row already exists for updating or if a new row should be inserted.
-- **Records to Update**: An array of objects containing primary key values and column data that will be inserted as new rows or used to update existing rows.
+- **Table**: Enter the name of the table to upsert into.
+- **Primary key column**: Specifies the column used to determine whether a row already exists for updating or if a new row should be inserted.
+- **Records to upsert**: An array of objects containing primary key values and column data that will be inserted as new rows or used to update existing rows.
 
-This basically means If the row exists then update, if not do insert.
+If a row with the matching primary key exists, it is updated. Otherwise, a new row is inserted.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -311,6 +332,14 @@ This basically means If the row exists then update, if not do insert.
 </details>
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-upsert-gui.png" alt="Bulk Upsert using GUI Postgresql"/>
+
+### Transactions and Batching in Bulk Operations
+
+**Bulk insert**, **Bulk update using primary key**, and **Bulk upsert using primary key** run all of their statements inside a single transaction. If any statement fails, for example because of a constraint violation or a record with a missing primary key column, the whole operation is rolled back and no records are written. The query either applies every record or none of them.
+
+You don't need to split large arrays yourself. ToolJet automatically splits the records into batches so that no statement exceeds PostgreSQL's limit on bound parameters. Each batch holds up to 60,000 parameters, so the number of records per batch is 60,000 divided by the number of columns in the records. For example, records with 6 columns are inserted in batches of 10,000. All batches still run in the same transaction.
+
+**Bulk insert** sends one multi-row `INSERT` statement per batch. **Bulk update using primary key** and **Bulk upsert using primary key** send one statement per record. Each operation returns the affected rows.
 
 :::tip
 
