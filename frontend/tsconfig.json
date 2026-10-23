@@ -2,16 +2,19 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "strict": true,
     "esModuleInterop": true,
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
-    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./src/*"],
+      "@ee/*": ["./ee/*"],
+      "@cloud/*": ["./cloud/*"],
+      "@assets/*": ["./assets/*"],
+      "@white-label/*": ["./src/_helpers/white-label/*"],
       "@tooljet/widget-definitions": ["../packages/widget-definitions/src/index.js"],
       "@tooljet/widget-definitions/*": ["../packages/widget-definitions/src/*"]
     },
@@ -19,8 +22,10 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUncheckedSideEffectImports": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "build"],
-  "no-unused-vars": "off", // disable base rule — @typescript-eslint/no-unused-vars handles it
+  "exclude": ["node_modules", "build"]
 }

@@ -2,21 +2,26 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
 import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
+import { Separator } from '@/components/ui/Rocket/Separator/Separator';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+
+import NewLayoutHeader from './NewLayoutHeader';
 
 function Header({
   featureAccess,
   enableCollapsibleSidebar = false,
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
+  showNewHeader = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const isBranchStoreInitialized = useWorkspaceBranchesStore((s) => s.isInitialized);
@@ -85,6 +90,18 @@ function Header({
     return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules'].includes(parts[1]));
   };
   const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
+
+  const showBranchingBtns =
+    (featureAccess?.gitSync || isGitSyncConfigured) &&
+    canAccessGitControls &&
+    isBranchStoreInitialized &&
+    pathname !== 'Workspace constants' &&
+    isGitSupportedPage;
+
+  if (showNewHeader) {
+    return <NewLayoutHeader featureAccess={featureAccess} showBranchingBtns={showBranchingBtns} />;
+  }
+
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -183,18 +200,21 @@ function Header({
                   // When configured-but-unlicensed the controls stay visible but frozen (the whole
                   // workspace is read-only until git is turned off).
                   <div
-                    className={cx('tw-flex tw-items-center tw-gap-3', {
+                    className={cn('tw-flex tw-items-center tw-gap-1', {
                       'tw-pointer-events-none tw-opacity-50': gitLicenseLocked,
                     })}
-                    aria-disabled={gitLicenseLocked || undefined}
                   >
                     <WorkspaceBranchDropdown />
+
+                    <Separator orientation="vertical" className="tw-h-4 tw-hidden has-[+*]:tw-block" />
+
                     {/* Single "Pull commit" button. WorkspaceGitCTA decides whether the modal
                         offers push based on the page + branch state (push only on the data-sources
                         page, and never on the multi-branch default branch). */}
                     <WorkspaceGitCTA isDataSourcesPage={location.pathname.split('/').includes('data-sources')} />
                   </div>
                 )}
+
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}

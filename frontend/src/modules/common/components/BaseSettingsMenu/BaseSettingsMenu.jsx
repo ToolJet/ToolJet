@@ -1,38 +1,34 @@
 import React, { useState, useMemo } from 'react';
-import cx from 'classnames';
 import { Link } from 'react-router-dom';
-import { authenticationService, appService, sessionService } from '@/_services';
-import { teardownFrontendMetrics } from '@/_services/frontend-metrics.service';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { useTranslation } from 'react-i18next';
+import { Bolt, MonitorCloud, Store } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+import DropdownMenu from '@/components/ui/Rocket/DropdownMenu';
+import { authenticationService } from '@/_services/authentication.service';
 import { getPrivateRoute } from '@/_helpers/routes';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 
 function BaseSettingsMenu({
-  darkMode,
   checkForUnsavedChanges,
   featureAccess,
-  getPreWorkspaceItems = () => null,
-  getMidMenuItems = () => null,
+  getPreWorkspaceItems = () => [],
+  getMidMenuItems = () => [],
   options = {
     hideMarketPlaceMenuItem: false,
   },
 }) {
   const edition = fetchEdition();
   const isEEorCloud = edition === 'ee' || edition === 'cloud';
-  const [showOverlay, setShowOverlay] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const { tooljetVersion } = useAppDataStore(
     (state) => ({
       tooljetVersion: state?.metadata?.installed_version,
     }),
     shallow
   );
-  const { t } = useTranslation();
-
   // Get common user values
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
@@ -40,34 +36,7 @@ function BaseSettingsMenu({
   const isBuilder = !!currentUserValue?.user_permissions?.is_builder;
   const isCloudEdition = edition === 'cloud' || (!!tooljetVersion && checkIfToolJetCloud(tooljetVersion));
   const marketplaceEnabled = !options.hideMarketPlaceMenuItem && !isCloudEdition && (admin || superAdmin || isBuilder);
-  const isValidUrl = (url) => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-  async function handleLogout() {
-    teardownFrontendMetrics();
-    // Get latest config first to ensure we have the most up-to-date custom logout url
-    await appService
-      .getConfig()
-      .then((config) => {
-        window.public_config = config;
-        const customLogoutUrl = window.public_config?.CUSTOM_LOGOUT_URL;
-        if (customLogoutUrl && isValidUrl(customLogoutUrl)) {
-          sessionService.logout().then(() => {
-            window.location.href = customLogoutUrl;
-          });
-          return;
-        }
-        sessionService.logout();
-      })
-      .catch(() => {
-        sessionService.logout();
-      });
-  }
+
   const hasCustomGroupsLicense = useMemo(() => {
     if (!featureAccess) return false;
     return featureAccess.customGroups === true && featureAccess.licenseStatus?.isLicenseValid !== false;
@@ -85,129 +54,83 @@ function BaseSettingsMenu({
     }
     return getPrivateRoute('workspace_settings');
   };
-  // Closing the overlay used to happen incidentally whenever navigation remounted this whole
-  // component tree. Now that the shared Layout/sidebar can persist across navigation, that implicit
-  // reset no longer happens, so each item must close the overlay explicitly — but only when
-  // navigation actually proceeds (checkForUnsavedChanges calls preventDefault() to block it when
-  // there are unsaved changes, in which case the overlay should stay as-is).
-  const closeOverlayIfNotPrevented = (event) => {
-    if (!event.defaultPrevented) {
-      setShowOverlay(false);
-    }
-  };
+  const workspaceSettingsRoute = getWorkspaceSettingsRoute();
+  const marketplaceRoute = '/integrations/marketplace';
 
-  const getOverlay = () => {
-    // Get the extension items with the required context
-    const preWorkspaceContent = getPreWorkspaceItems({
-      admin,
-      superAdmin,
-      featureAccess,
-      checkForUnsavedChanges,
-      closeOverlay: closeOverlayIfNotPrevented,
-    });
-    const midMenuContent = getMidMenuItems({
-      admin,
-      superAdmin,
-      featureAccess,
-      checkForUnsavedChanges,
-      closeOverlay: closeOverlayIfNotPrevented,
-    });
-    const currentVersion = localStorage.getItem('currentVersion');
-    return (
-      <div className={`settings-card tj-text card ${darkMode ? 'dark-theme' : ''}`}>
-        <div className="tw-px-2.5 tw-py-2 tw-text-xs tw-font-light tw-text-text-placeholder" data-cy="version-label">
-          <span>Version {currentVersion}</span>
-        </div>
-        <div className="divider" />
-        {/* Marketplace section */}
-        {marketplaceEnabled && tooljetVersion && !checkIfToolJetCloud(tooljetVersion) && (
+  // Context for the edition-specific item extension points
+  const extensionContext = { admin, superAdmin, featureAccess };
+  const canSeeMidMenuItems = superAdmin || (edition === 'cloud' && admin);
+
+  const items = [
+    marketplaceEnabled &&
+      tooljetVersion &&
+      !checkIfToolJetCloud(tooljetVersion) && {
+        id: 'marketplace',
+        label: 'Marketplace',
+        icon: <Store />,
+        asChild: true,
+        render: ({ children }) => (
           <Link
-            onClick={(event) => {
-              checkForUnsavedChanges('/integrations/marketplace', event);
-              closeOverlayIfNotPrevented(event);
-            }}
-            to={'/integrations/marketplace'}
-            className="dropdown-item tj-text-xsm"
-            data-cy="marketplace-option"
+            className="hover:tw-no-underline hover:tw-text-inherit"
+            to={marketplaceRoute}
+            onClick={(event) => checkForUnsavedChanges(marketplaceRoute, event)}
           >
-            <span>Marketplace</span>
+            {children}
           </Link>
-        )}
-
-        {/* Pre-workspace extension point (Audit logs) */}
-        {preWorkspaceContent}
-
-        {/* Add divider if either marketplace or pre-workspace items exist */}
-        {(marketplaceEnabled || preWorkspaceContent) && <div className="divider"></div>}
-
-        {/* Super Admin Settings */}
-        {superAdmin && midMenuContent}
-
-        {/* Specifically for Cloud Edition */}
-        {edition === 'cloud' && admin && !superAdmin && midMenuContent}
-
-        {/* Admin section - Workspace settings */}
-        {/* Admin and builder both can access workspace setting.
-            Builder can access for themes.  */}
-        {canAccessWorkspaceSettings && (
-          <Link
-            onClick={(event) => {
-              checkForUnsavedChanges(getWorkspaceSettingsRoute(), event);
-              closeOverlayIfNotPrevented(event);
-            }}
-            to={getWorkspaceSettingsRoute()}
-            className="dropdown-item tj-text-xsm"
-            data-cy="workspace-settings"
-          >
-            <span>Workspace settings</span>
-          </Link>
-        )}
-
-        {/* Profile settings */}
+        ),
+        'data-cy': 'marketplace-option',
+      },
+    ...(getPreWorkspaceItems(extensionContext) ?? []),
+    ...((canSeeMidMenuItems && getMidMenuItems(extensionContext)) || []),
+    canAccessWorkspaceSettings && {
+      id: 'workspace-settings',
+      label: 'Workspace settings',
+      icon: <MonitorCloud />,
+      asChild: true,
+      render: ({ children }) => (
         <Link
-          onClick={(event) => {
-            checkForUnsavedChanges(getPrivateRoute('profile_settings'), event);
-            closeOverlayIfNotPrevented(event);
-          }}
-          to={getPrivateRoute('profile_settings')}
-          className="dropdown-item tj-text-xsm"
-          data-cy="profile-settings"
+          className="hover:tw-no-underline hover:tw-text-inherit"
+          to={workspaceSettingsRoute}
+          onClick={(event) => checkForUnsavedChanges(workspaceSettingsRoute, event)}
         >
-          <span>Profile settings</span>
+          {children}
         </Link>
-
-        {/* Add divider before logout */}
-        <div className="divider"></div>
-
-        {/* Logout */}
-        <Link
-          data-testid="logoutBtn"
-          to="#"
-          onClick={handleLogout}
-          className="dropdown-item text-danger tj-text-xsm"
-          data-cy="logout-link"
-        >
-          <span>{t('header.logout', 'Logout')}</span>
-        </Link>
-      </div>
-    );
-  };
+      ),
+      'data-cy': 'workspace-settings',
+    },
+  ].filter(Boolean);
 
   return (
-    <OverlayTrigger
-      show={showOverlay}
-      onToggle={setShowOverlay}
-      rootClose={true}
-      trigger="click"
-      placement="top"
-      overlay={getOverlay()}
-    >
-      <div className={cx('settings-nav-item cursor-pointer', { active: showOverlay })} data-cy="settings-icon">
-        <div className="d-xl-block">
-          <SolidIcon name="settings" fill={showOverlay ? '#3E63DD' : 'var(--slate8)'} width={28} />
-        </div>
-      </div>
-    </OverlayTrigger>
+    <DropdownMenu
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      side="right"
+      align="end"
+      classes={{ content: 'tw-w-60' }}
+      trigger={
+        <button
+          type="button"
+          aria-label="Settings menu"
+          className={cn('tj-leftsidebar-icon-items tw-border-0 tw-bg-transparent tw-p-0', { active: isOpen })}
+          data-cy="settings-icon"
+        >
+          <Bolt size={16} />
+        </button>
+      }
+      sections={[
+        { items },
+        {
+          content: (
+            <div
+              className="tw-flex tw-h-10 tw-items-center tw-px-4 tw-font-body-default tw-text-text-placeholder"
+              data-cy="version-label"
+            >
+              Version {localStorage.getItem('currentVersion')}
+            </div>
+          ),
+        },
+      ]}
+    />
   );
 }
 

@@ -49,6 +49,17 @@
     --icon-danger: #D72D39;
     --icon-disabled: #E4E7EB;
 
+    // app and folder icon colors; no dark variants in Figma yet, so dark mode inherits these
+    --list-icon-purple: #C1A1FC;
+    --list-icon-green: #7FBF92;
+    --list-icon-indigo: #97aefc;
+    --list-icon-yellow: #CEAD69;
+    --list-icon-pink: #E998C8;
+    --list-icon-blue: #86B9FB;
+    --list-icon-red: #FFB8B9;
+    --folder-icon-back: #F7C9A3;
+    --folder-icon-front: #FDE7D6;
+
 
     //border
     --border-strong: #ACB2B9;
@@ -68,10 +79,12 @@
     //interactive overlays 
     --interactive-weak: rgba(255, 255, 255, 0);
     --interactive-default: rgba(136, 144, 153, 0.08);
+    --controls-base-inactive: rgba(136, 144, 153, 0.12);
     --interactive-hover: rgba(136, 144, 153, 0.12);
     --interactive-selected: rgba(136, 144, 153, 0.18);
     --interactive-disabled: rgba(255, 255, 255, 0);
     --interactive-focus-outline: #4368E3;
+    // Figma: Interactive/focusActive
     --interactive-focus-active: #4368E3;
     --interactive-focus-inner-shadow: #FFFFFF;
 
@@ -113,11 +126,18 @@
     --upgrade-weak: #FFAF4140;
 
     // Radius
+    // sm and xl already match the design tokens `small` (4px) and `x-large` (12px), so they keep their names
     --radius-sm: 4px;
+    // @deprecated Use --radius-default (tw-rounded-default): the design token for 6px is `default`, not `md`
     --radius-md: 6px;
+    // @deprecated Use --radius-medium (tw-rounded-medium): the design token for 8px is `medium`, not `lg`
     --radius-lg: 8px;
     --radius-xl: 12px;
     --radius-full: 9999px;
+
+    --radius-default: 0.375rem;
+    --radius-medium: 0.5rem;
+    --radius-large: 0.625rem;
 
     // Overlay
     --overlay-backdrop: rgba(0, 0, 0, 0.5);
@@ -247,10 +267,14 @@
     //interactive overlays 
     --interactive-weak: rgba(0, 0, 0, 0);
     --interactive-default: rgba(133, 140, 148, 0.08);
+    // dark value inferred from --interactive-default's dark base; Figma has no dark spec yet
+    --controls-base-inactive: rgba(133, 140, 148, 0.12);
     --interactive-hover: rgba(133, 140, 148, 0.12);
     --interactive-selected: rgba(133, 140, 148, 0.18);
     --interactive-disabled: rgba(0, 0, 0, 0);
     --interactive-focus-outline: #4A6DD9;
+    // Figma: Interactive/focusActive
+    --interactive-focus-active: #4A6DD9;
     --interactive-focus-inner-shadow: #121518;
 
 
