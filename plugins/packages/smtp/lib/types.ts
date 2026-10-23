@@ -4,13 +4,15 @@ export type SourceOptions = {
   user: string;
   password: string;
 };
+type MailAddress = string | { name?: string; address: string };
+type MailAddresses = MailAddress | MailAddress[];
 export type QueryOptions = {
   operation: string;
   from: string;
   from_name: string;
-  to: string | string[];
-  cc: string[];
-  bcc: string[];
+  to: MailAddresses;
+  cc: MailAddresses;
+  bcc: MailAddresses;
   subject: string;
   textContent: string;
   htmlContent: string;

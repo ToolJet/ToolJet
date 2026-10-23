@@ -8,6 +8,7 @@ import {
 import { SourceOptions, QueryOptions } from './types';
 import nodemailer, { Transporter } from 'nodemailer';
 import type { Attachment } from 'nodemailer/lib/mailer';
+import type { Address } from 'nodemailer/lib/mailer';
 
 // Message fields come from builder-controlled query options and are untyped at runtime.
 // Nodemailer treats `{ path }` / `{ href }` objects as "read this local file / fetch this URL",
@@ -19,9 +20,24 @@ const toMailString = (value: unknown, field: string): string | undefined => {
   throw new QueryError('Query could not be completed', `${field} must be a string`, {});
 };
 
-const toMailAddresses = (value: unknown, field: string): string | string[] | undefined => {
-  if (Array.isArray(value)) return value.map((v) => toMailString(v, field) as string);
-  return toMailString(value, field);
+const toMailAddress = (value: unknown, field: string): string | Address => {
+  if (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.keys(value).every((k) => k === 'name' || k === 'address') &&
+    typeof (value as any).address === 'string' &&
+    ((value as any).name === undefined || typeof (value as any).name === 'string')
+  ) {
+    return value as Address;
+  }
+  return toMailString(value, field) as string;
+};
+
+const toMailAddresses = (value: unknown, field: string) => {
+  if (Array.isArray(value)) return value.map((v, i) => toMailAddress(v, `${field}[${i}]`));
+  if (value === undefined || value === null) return undefined;
+  return toMailAddress(value, field);
 };
 
 export default class Smtp implements QueryService {

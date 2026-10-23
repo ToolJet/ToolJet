@@ -58,6 +58,18 @@ describe('SMTP connector content hardening', () => {
     expect(sendMailSpy!.mock.calls[0][0]).toMatchObject({ to: ['b@example.com', 'c@example.com'], cc: ['d@example.com'] });
   });
 
+  it('accepts nodemailer address objects unchanged', async () => {
+    await run({ to: { name: 'Dev', address: 'dev@x.io' }, cc: ['a@x.io', { address: 'b@x.io' }] });
+    expect(sendMailSpy!.mock.calls[0][0]).toMatchObject({
+      to: { name: 'Dev', address: 'dev@x.io' },
+      cc: ['a@x.io', { address: 'b@x.io' }],
+    });
+  });
+
+  it('rejects address objects carrying extra keys', async () => {
+    await expect(run({ to: { address: 'a@x.io', path: '/etc/passwd' } })).rejects.toThrow();
+  });
+
   it('still sends base64 attachments', async () => {
     const dataURL = Buffer.from('file body').toString('base64');
     await expect(run({ attachment_array: [{ name: 'a.txt', dataURL }] })).resolves.toMatchObject({ status: 'ok' });
