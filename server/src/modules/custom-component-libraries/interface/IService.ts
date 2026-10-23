@@ -10,6 +10,8 @@ export interface LibraryListItem {
   id: string;
   name: string;
   correlationId: string;
+  /** Shipped with ToolJet (builtin-packs): installed in every workspace, not deletable. */
+  builtIn?: boolean;
   createdAt: Date;
   manifest: Record<string, any> | null; // latest revision's; null = nothing published yet
   revisions: { id: string; version: string; message: string | null; createdAt: Date }[]; // newest first

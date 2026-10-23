@@ -47,3 +47,4 @@ lerna-debug.log*
 
 # Local git-sync runtime storage (created by the dev server)
 /tooljet/
+builtin-packs/

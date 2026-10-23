@@ -68,6 +68,8 @@ const DEFAULT_PROPERTIES = {
   footerHeight: { value: 80 },
   tooltipFormat: binding('plainText'),
   tooltip: binding(''),
+  variant: binding('dialog'),
+  side: binding('right'),
 };
 
 const DEFAULT_STYLES = {
@@ -839,6 +841,52 @@ describe('ModalV2: size', () => {
     renderModal({ properties: { size: binding('lg') } });
     await openModal();
     expect(bodyCanvas()).toHaveAttribute('canvas-height', '240px');
+  });
+});
+
+describe('ModalV2: sheet', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const dialog = () => document.querySelector('.modal-dialog');
+
+  test('[ModalV2-SHEET-001] the default kind opens a centred dialog', async () => {
+    renderModal();
+    await openModal();
+    expect(dialog()).not.toHaveClass('tj-modal-sheet');
+  });
+
+  test('[ModalV2-SHEET-002] kind sheet opens against the chosen side, the right by default', async () => {
+    renderModal({ properties: { variant: binding('sheet') } });
+    await openModal();
+    expect(dialog()).toHaveClass('tj-modal-sheet', 'tj-modal-sheet--right');
+
+    for (const side of ['left', 'top', 'bottom']) {
+      renderModal({ properties: { variant: binding('sheet'), side: binding(side) } });
+      await openModal();
+      expect(dialog()).toHaveClass('tj-modal-sheet', `tj-modal-sheet--${side}`);
+    }
+  });
+
+  test('[ModalV2-SHEET-003] a sheet keeps its header, body and footer, and closes from its close button', async () => {
+    renderModal({ properties: { variant: binding('sheet'), side: binding('left') } });
+    await openModal();
+    expect(dialog().querySelector('.modal-header')).toBeInTheDocument();
+    expect(dialog().querySelector('.modal-footer')).toBeInTheDocument();
+    rtlFireEvent.click(closeButton());
+    await waitFor(() => expect(exposed()).toBe(false));
+  });
+
+  test('[ModalV2-SHEET-004] an unknown side falls back to the right', async () => {
+    renderModal({ properties: { variant: binding('sheet'), side: binding('middle') } });
+    await openModal();
+    expect(dialog()).toHaveClass('tj-modal-sheet--right');
+  });
+
+  test('[ModalV2-SHEET-005] a side without kind sheet changes nothing', async () => {
+    renderModal({ properties: { side: binding('left') } });
+    await openModal();
+    expect(dialog()).not.toHaveClass('tj-modal-sheet');
   });
 });
 
