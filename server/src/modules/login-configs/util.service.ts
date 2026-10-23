@@ -162,8 +162,12 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
             const previous = previousConfigs?.[key];
             let unchanged = false;
             if (previous) {
-              try { unchanged = await this.encryptionService.decryptColumnValue('ssoConfigs', key, previous) === configs[key]; }
-              catch { /* A replacement secret also repairs unreadable legacy ciphertext. */ }
+              try {
+                unchanged =
+                  (await this.encryptionService.decryptColumnValue('ssoConfigs', key, previous)) === configs[key];
+              } catch {
+                /* A replacement secret also repairs unreadable legacy ciphertext. */
+              }
             }
             if (unchanged) {
               configs[key] = previous;

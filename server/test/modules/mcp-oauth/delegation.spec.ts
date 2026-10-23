@@ -64,6 +64,7 @@ describe('OAuth delegation boundary', () => {
   test('the JWT strategy reuses the globally validated principal only for its workspace', async () => {
     const strategy: any = Object.create(JwtStrategy.prototype);
     strategy.mcpOAuthIdentityService = { validateDelegation: jest.fn() };
+    strategy.sessionUtilService = { getDefaultBranchId: jest.fn().mockResolvedValue('garden-default-branch') };
     expect(await strategy.validate({ headers, oauthDelegatedUser: user }, payload)).toBe(user);
     expect(
       await strategy.validate(
@@ -71,8 +72,8 @@ describe('OAuth delegation boundary', () => {
           headers: { ...headers, 'tj-workspace-id': 'another-workspace' },
           oauthDelegatedUser: user,
         },
-        payload,
-      ),
+        payload
+      )
     ).toBe(false);
     expect(strategy.mcpOAuthIdentityService.validateDelegation).not.toHaveBeenCalled();
   });

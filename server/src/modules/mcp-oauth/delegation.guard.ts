@@ -21,10 +21,7 @@ export class McpDelegationGuard implements CanActivate {
     }
     if (typeof credential !== 'string' || typeof req.headers['tj-workspace-id'] !== 'string')
       throw new UnauthorizedException();
-    req.oauthDelegatedUser = await this.oauth.authenticateDelegation(
-      credential,
-      req.headers['tj-workspace-id'],
-    );
+    req.oauthDelegatedUser = await this.oauth.authenticateDelegation(credential, req.headers['tj-workspace-id']);
     req.user = req.oauthDelegatedUser;
     return true;
   }

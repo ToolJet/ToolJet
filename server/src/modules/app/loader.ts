@@ -98,7 +98,9 @@ export class AppModuleLoader {
               req: sanitizeOAuthRequest,
               res: (response) => ({
                 ...response,
-                ...(response.headers ? { headers: { ...response.headers, location: sanitizeOAuthUrl(response.headers.location) } } : {}),
+                ...(response.headers
+                  ? { headers: { ...response.headers, location: sanitizeOAuthUrl(response.headers.location) } }
+                  : {}),
               }),
             },
             redact: {

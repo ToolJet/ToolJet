@@ -77,37 +77,36 @@ export class PatScopeInterceptor implements NestInterceptor {
 
     return next.handle();
   }
-
 }
 
 /** Shared app-pinned render ceiling for workspace PAT and OAuth viewer credentials. */
 export function appViewerDenial(
-    appId: string,
-    request: { method?: string; originalUrl?: string; url?: string; tj_app?: { id: string } },
-    module: MODULES | undefined,
-    feature: string | undefined
-  ): string | undefined {
-    if (request?.method && request.method !== 'GET' && !isViewerWriteException(request)) {
-      return `This session is read-only. App-scoped render sessions may only issue GET requests.`;
-    }
-
-    /* Pin to the app. Guards resolved it already (slug routes and query runs never carry the uuid
-       in the path); the regex is the fallback for routes with no app guard. */
-    const requestedAppId: string | undefined =
-      request?.tj_app?.id ?? extractAppIdFromPath(request?.originalUrl || request?.url);
-    if (requestedAppId && requestedAppId !== appId) {
-      return `This session is scoped to a single app and cannot access ${requestedAppId}.`;
-    }
-
-    if (!patAppViewerCanAccess(module, feature)) {
-      return (
-        `This app-scoped session cannot access ${feature ?? module ?? 'this resource'}. ` +
-        `Render sessions are limited to: ${PAT_APP_VIEWER_MODULES.join(', ')}.`
-      );
-    }
-
-    return undefined;
+  appId: string,
+  request: { method?: string; originalUrl?: string; url?: string; tj_app?: { id: string } },
+  module: MODULES | undefined,
+  feature: string | undefined
+): string | undefined {
+  if (request?.method && request.method !== 'GET' && !isViewerWriteException(request)) {
+    return `This session is read-only. App-scoped render sessions may only issue GET requests.`;
   }
+
+  /* Pin to the app. Guards resolved it already (slug routes and query runs never carry the uuid
+       in the path); the regex is the fallback for routes with no app guard. */
+  const requestedAppId: string | undefined =
+    request?.tj_app?.id ?? extractAppIdFromPath(request?.originalUrl || request?.url);
+  if (requestedAppId && requestedAppId !== appId) {
+    return `This session is scoped to a single app and cannot access ${requestedAppId}.`;
+  }
+
+  if (!patAppViewerCanAccess(module, feature)) {
+    return (
+      `This app-scoped session cannot access ${feature ?? module ?? 'this resource'}. ` +
+      `Render sessions are limited to: ${PAT_APP_VIEWER_MODULES.join(', ')}.`
+    );
+  }
+
+  return undefined;
+}
 
 // Local copy of the @otel/tracing helper: importing it drags an ESM-only uuid into Jest.
 const APP_ID_IN_PATH = /\/apps\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:[/?#]|$)/i;

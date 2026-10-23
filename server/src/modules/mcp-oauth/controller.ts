@@ -31,10 +31,17 @@ export class McpOAuthExceptionFilter implements ExceptionFilter {
     const status =
       error instanceof OAuthFailure ? error.status : error instanceof HttpException ? error.getStatus() : 500;
     res.setHeader('Cache-Control', 'no-store');
-    if (error instanceof OAuthRedirectFailure) { res.redirect(302, error.redirectUrl); return; }
+    if (error instanceof OAuthRedirectFailure) {
+      res.redirect(302, error.redirectUrl);
+      return;
+    }
     const req = host.switchToHttp().getRequest<Request>();
-    if (error instanceof OAuthFailure && error.error === 'invalid_client' &&
-        req.headers.authorization && !/\/exchange\/?$/i.test(req.path)) {
+    if (
+      error instanceof OAuthFailure &&
+      error.error === 'invalid_client' &&
+      req.headers.authorization &&
+      !/\/exchange\/?$/i.test(req.path)
+    ) {
       res.setHeader('WWW-Authenticate', 'Basic realm="ToolJet MCP OAuth"');
     }
     res.status(status).json({
@@ -47,11 +54,7 @@ export class McpOAuthExceptionFilter implements ExceptionFilter {
               ? 'not_found'
               : 'server_error',
       error_description:
-        error instanceof OAuthFailure
-          ? error.message
-          : status === 500
-            ? 'OAuth request failed'
-            : 'Request denied',
+        error instanceof OAuthFailure ? error.message : status === 500 ? 'OAuth request failed' : 'Request denied',
     });
   }
 }
@@ -69,8 +72,7 @@ export class McpOAuthController {
     const cookie = req.cookies?.[this.oauth.cookieName(id)];
     if (
       req.method !== 'GET' &&
-      (typeof req.headers.origin !== 'string' ||
-        req.headers['x-tooljet-oauth-csrf'] !== cookie)
+      (typeof req.headers.origin !== 'string' || req.headers['x-tooljet-oauth-csrf'] !== cookie)
     ) {
       throw new OAuthFailure('access_denied', 'Invalid browser authorization request', 403);
     }
@@ -81,10 +83,7 @@ export class McpOAuthController {
     return typeof origin === 'string' ? origin : new URL(this.oauth.settings().browser).origin;
   }
   private async browserMutation(req: Request) {
-    if (
-      typeof req.headers.origin !== 'string' ||
-      req.headers['x-tooljet-oauth'] !== '1'
-    ) {
+    if (typeof req.headers.origin !== 'string' || req.headers['x-tooljet-oauth'] !== '1') {
       throw new OAuthFailure('access_denied', 'Invalid browser request', 403);
     }
     await this.oauth.assertBrowserOrigin((req.user as User).organizationId, req.headers.origin);
@@ -95,8 +94,11 @@ export class McpOAuthController {
     if (typeof req.headers.origin !== 'string') throw new OAuthFailure('access_denied', 'Missing browser origin', 403);
     const csrf = await this.oauth.bootstrapBrowser(id, body.ticket, body.nonce, req.headers.origin);
     res.cookie(this.oauth.cookieName(id), csrf, {
-      httpOnly: true, secure: req.headers.origin.startsWith('https:'), sameSite: 'lax',
-      path: new URL(this.oauth.settings().issuer).pathname, maxAge: 600000,
+      httpOnly: true,
+      secure: req.headers.origin.startsWith('https:'),
+      sameSite: 'lax',
+      path: new URL(this.oauth.settings().issuer).pathname,
+      maxAge: 600000,
     });
     res.status(204).end();
   }
@@ -145,16 +147,14 @@ export class McpOAuthController {
   async token(@Body() body: Record<string, unknown>, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    if (!req.is('application/x-www-form-urlencoded'))
-      throw new OAuthFailure('invalid_request', 'Use form encoding');
+    if (!req.is('application/x-www-form-urlencoded')) throw new OAuthFailure('invalid_request', 'Use form encoding');
     res.status(200).json(await this.oauth.token(body, req.headers.authorization));
   }
   @Post('revoke')
   async revoke(@Body() body: Record<string, unknown>, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    if (!req.is('application/x-www-form-urlencoded'))
-      throw new OAuthFailure('invalid_request', 'Use form encoding');
+    if (!req.is('application/x-www-form-urlencoded')) throw new OAuthFailure('invalid_request', 'Use form encoding');
     await this.oauth.revoke(body, req.headers.authorization);
     res.status(200).end();
   }
@@ -168,8 +168,13 @@ export class McpOAuthController {
   @SetMetadata('mcpOAuthViewerMint', true)
   async viewer(@Body() body: ViewerInput, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
-    res.json(await this.oauth.viewer(req.headers['x-tooljet-delegation'] as string,
-      req.headers['tj-workspace-id'] as string, body.app_id));
+    res.json(
+      await this.oauth.viewer(
+        req.headers['x-tooljet-delegation'] as string,
+        req.headers['tj-workspace-id'] as string,
+        body.app_id
+      )
+    );
   }
   @Get('connections')
   @UseGuards(JwtAuthGuard)

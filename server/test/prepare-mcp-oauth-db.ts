@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { execFileSync } from 'child_process';
+import { randomBytes } from 'crypto';
 
 async function prepare() {
   const connection = process.env.MCP_OAUTH_TEST_DATABASE_URL;
@@ -19,27 +21,51 @@ async function prepare() {
   delete process.env.DATABASE_URL;
   delete process.env.TOOLJET_DB_URL;
   Object.assign(process.env, {
-    NODE_ENV: 'test', PG_HOST: url.hostname, PG_PORT: url.port || '5432', PG_USER: decodeURIComponent(url.username),
-    PG_PASS: decodeURIComponent(url.password), PG_DB: url.pathname.slice(1),
-    TOOLJET_DB_HOST: url.hostname, TOOLJET_DB_PORT: url.port || '5432', TOOLJET_DB_USER: decodeURIComponent(url.username),
-    TOOLJET_DB_PASS: decodeURIComponent(url.password), TOOLJET_DB: url.pathname.slice(1),
+    NODE_ENV: 'test',
+    PG_HOST: url.hostname,
+    PG_PORT: url.port || '5432',
+    PG_USER: decodeURIComponent(url.username),
+    PG_PASS: decodeURIComponent(url.password),
+    PG_DB: url.pathname.slice(1),
+    TOOLJET_DB_HOST: url.hostname,
+    TOOLJET_DB_PORT: url.port || '5432',
+    TOOLJET_DB_USER: decodeURIComponent(url.username),
+    TOOLJET_DB_PASS: decodeURIComponent(url.password),
+    TOOLJET_DB: url.pathname.slice(1),
   });
   const bootstrap = new DataSource({ type: 'postgres', url: connection });
   await bootstrap.initialize();
   try {
-    await bootstrap.query('DROP SCHEMA IF EXISTS oauth_test CASCADE');
-    await bootstrap.query('CREATE SCHEMA oauth_test');
-  } finally { await bootstrap.destroy(); }
-  const db = new DataSource({
-    type: 'postgres', url: connection, schema: 'oauth_test', synchronize: false,
-    extra: { options: '-c search_path=oauth_test,public' },
-    entities: [join(__dirname, '../src/**/*.entity.ts'), join(__dirname, '../ee/**/*.entity.ts')],
-    migrations: [join(__dirname, '../migrations/*.ts')],
-  });
-  await db.initialize();
-  try {
-    const applied = await db.runMigrations({ transaction: 'all' });
-    console.log(`OAuth integration database: applied ${applied.length} real ToolJet migrations`);
-  } finally { await db.destroy(); }
+    // The database name and host are checked above. Historical migrations target
+    // public explicitly, so isolation must be at the database boundary.
+    await bootstrap.query('DROP SCHEMA public CASCADE');
+    await bootstrap.query('CREATE SCHEMA public');
+  } finally {
+    await bootstrap.destroy();
+  }
+  // Reuse the production runner, including enum-safe fresh installs and data migrations.
+  execFileSync(
+    process.execPath,
+    [
+      require.resolve('ts-node/dist/bin.js'),
+      '-r',
+      'tsconfig-paths/register',
+      '--transpile-only',
+      join(__dirname, '../src/migration-helpers/run-all-migrations.ts'),
+    ],
+    {
+      env: {
+        ...process.env,
+        NODE_ENV: 'development',
+        TOOLJET_EDITION: 'ce',
+        SECRET_KEY_BASE: randomBytes(32).toString('hex'),
+        LOCKBOX_MASTER_KEY: randomBytes(32).toString('hex'),
+      },
+      stdio: 'inherit',
+    }
+  );
 }
-prepare().catch(error => { console.error(error); process.exit(1); });
+prepare().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

@@ -2,11 +2,13 @@ import { sanitizeOAuthRequest, sanitizeOAuthUrl, sanitizeTraceObject } from '@ot
 
 const mockInfo = jest.fn();
 jest.mock('@modules/logging/base-logger', () => ({ buildBaseLogger: () => ({ info: mockInfo }) }));
-jest.mock('@modules/request-context/service', () => ({ RequestContext: {
-  getTransactionId: () => 'synthetic-transaction',
-  getRoute: () => '/api/mcp-oauth/interactions/synthetic-interaction/bootstrap',
-  getStartTime: () => Date.now(),
-} }));
+jest.mock('@modules/request-context/service', () => ({
+  RequestContext: {
+    getTransactionId: () => 'synthetic-transaction',
+    getRoute: () => '/api/mcp-oauth/interactions/synthetic-interaction/bootstrap',
+    getStartTime: () => Date.now(),
+  },
+}));
 import { TransactionLogger } from '@modules/logging/service';
 
 const body = { ticket: 'synthetic-bootstrap-ticket', nonce: 'synthetic-browser-nonce', safe: 'metadata' };
@@ -23,8 +25,9 @@ test('request traces and HTTP log serialization redact bootstrap credentials wit
 test('nested bootstrap values and redirect fragments are redacted', () => {
   const nested = sanitizeTraceObject({ attempts: [{ bootstrap: 'synthetic-fragment', ...body }] });
   expect(nested.attempts[0].bootstrap).toBe('[REDACTED]');
-  expect(sanitizeOAuthUrl('https://orchard.synthetic.example/mcp/consent?request=synthetic#bootstrap=synthetic-fragment'))
-    .toBe('https://orchard.synthetic.example/mcp/consent');
+  expect(
+    sanitizeOAuthUrl('https://orchard.synthetic.example/mcp/consent?request=synthetic#bootstrap=synthetic-fragment')
+  ).toBe('https://orchard.synthetic.example/mcp/consent');
 });
 
 test('transaction logging removes bootstrap credentials before stringifying objects', () => {

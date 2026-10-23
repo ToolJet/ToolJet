@@ -1,16 +1,53 @@
+import { parseRegistration } from '@modules/mcp-oauth/parsers';
 import { isPublicOAuthProtocolPath } from '@modules/mcp-oauth/http-security';
-import { scopesParam, validateRedirects, trustedUrl, hash, equalSecret, matchesRedirectUri, clientAuthentication } from '@modules/mcp-oauth/protocol';
+import {
+  scopesParam,
+  validateRedirects,
+  trustedUrl,
+  hash,
+  equalSecret,
+  matchesRedirectUri,
+  clientAuthentication,
+} from '@modules/mcp-oauth/protocol';
 
 describe('MCP OAuth protocol validation', () => {
+  test('rejects every ASCII control character in registered client names', () => {
+    const redirect_uris = ['https://client.synthetic.example/callback'];
+    for (const code of [...Array.from({ length: 32 }, (_, index) => index), 127]) {
+      expect(() => parseRegistration({ redirect_uris, client_name: `Client${String.fromCharCode(code)}name` })).toThrow(
+        expect.objectContaining({ error: 'invalid_client_metadata' })
+      );
+    }
+  });
+  test('preserves Unicode client names and the existing length boundary', () => {
+    const redirect_uris = ['https://client.synthetic.example/callback'];
+    const name = 'é'.repeat(120);
+    expect(parseRegistration({ redirect_uris, client_name: name }).name).toBe(name);
+    expect(() => parseRegistration({ redirect_uris, client_name: name + 'x' })).toThrow(
+      expect.objectContaining({ error: 'invalid_client_metadata' })
+    );
+  });
   test('parses public, post, and form-encoded Basic client credentials', () => {
-    expect(clientAuthentication({ client_id: 'synthetic-client' })).toEqual({ method: 'none', clientId: 'synthetic-client' });
-    expect(clientAuthentication({ client_id: 'synthetic-client', client_secret: 'synthetic-secret' }))
-      .toEqual({ method: 'client_secret_post', clientId: 'synthetic-client', clientSecret: 'synthetic-secret' });
+    expect(clientAuthentication({ client_id: 'synthetic-client' })).toEqual({
+      method: 'none',
+      clientId: 'synthetic-client',
+    });
+    expect(clientAuthentication({ client_id: 'synthetic-client', client_secret: 'synthetic-secret' })).toEqual({
+      method: 'client_secret_post',
+      clientId: 'synthetic-client',
+      clientSecret: 'synthetic-secret',
+    });
     const header = `Basic ${Buffer.from('synthetic%3Aclient:synthetic%2Bsecret').toString('base64')}`;
-    expect(clientAuthentication({}, header)).toEqual({ method: 'client_secret_basic', clientId: 'synthetic:client', clientSecret: 'synthetic+secret' });
+    expect(clientAuthentication({}, header)).toEqual({
+      method: 'client_secret_basic',
+      clientId: 'synthetic:client',
+      clientSecret: 'synthetic+secret',
+    });
   });
   test.each([
-    'Bearer synthetic-token', 'Basic !', 'Basic Og==',
+    'Bearer synthetic-token',
+    'Basic !',
+    'Basic Og==',
     `Basic ${Buffer.from('synthetic-client:').toString('base64')}`,
     `Basic ${Buffer.from('synthetic-client:%zz').toString('base64')}`,
   ])('rejects invalid header client authentication: %s', (header) => {
@@ -32,13 +69,12 @@ describe('MCP OAuth protocol validation', () => {
   ])('rejects unsafe redirect %s', (url) => {
     expect(() => validateRedirects([url])).toThrow();
   });
-  test.each([
-    'https://client.example/callback',
-    'http://127.0.0.1:4242/callback',
-    'http://[::1]:4242/callback',
-  ])('accepts exact secure/native redirect %s', (url) => {
-    expect(validateRedirects([url])).toEqual([url]);
-  });
+  test.each(['https://client.example/callback', 'http://127.0.0.1:4242/callback', 'http://[::1]:4242/callback'])(
+    'accepts exact secure/native redirect %s',
+    (url) => {
+      expect(validateRedirects([url])).toEqual([url]);
+    }
+  );
   test('accepts Cursor desktop registration without trusting its native callback as an issuer or resource', () => {
     const native = 'cursor://anysphere.cursor-mcp/oauth/callback';
     const redirects = [native, 'https://www.cursor.com/agents/mcp/oauth/callback', 'http://localhost:8787/callback'];

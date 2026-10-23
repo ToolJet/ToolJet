@@ -25,12 +25,10 @@ export interface OAuthArtifact {
 export class OAuthStore {
   constructor(
     readonly manager: EntityManager,
-    private readonly validatePolicy?: (grant: OAuthGrant) => Promise<void>,
+    private readonly validatePolicy?: (grant: OAuthGrant) => Promise<void>
   ) {}
   async client(id: string) {
-    const [row] = await this.manager.query('SELECT * FROM mcp_oauth_clients WHERE id = $1 AND NOT disabled', [
-      id,
-    ]);
+    const [row] = await this.manager.query('SELECT * FROM mcp_oauth_clients WHERE id = $1 AND NOT disabled', [id]);
     return (
       row && {
         id: row.id,
@@ -55,17 +53,17 @@ export class OAuthStore {
     clientId: string,
     grantId: string | null,
     payload: object,
-    expiry: Date,
+    expiry: Date
   ) {
     await this.manager.query(
       'INSERT INTO mcp_oauth_artifacts(id, kind, client_id, grant_id, payload, expires_at) VALUES ($1,$2,$3,$4,$5,$6)',
-      [hash(raw), kind, clientId, grantId, JSON.stringify(payload), expiry],
+      [hash(raw), kind, clientId, grantId, JSON.stringify(payload), expiry]
     );
   }
   async consume(id: string): Promise<boolean> {
     const rows = await this.manager.query(
       'WITH consumed AS (UPDATE mcp_oauth_artifacts SET consumed_at = now() WHERE id = $1 AND consumed_at IS NULL RETURNING id) SELECT id FROM consumed',
-      [id],
+      [id]
     );
     return rows.length === 1;
   }
@@ -80,16 +78,15 @@ export class OAuthStore {
                      AND ou.organization_id = g.organization_id AND ou.status = 'active')
          AND NOT EXISTS (SELECT 1 FROM workspace_ban_list b WHERE b.organization_id = g.organization_id)
        ${lock ? 'FOR UPDATE OF g' : ''}`,
-      [id],
+      [id]
     );
     if (!grant) throw new RejectedOAuthGrant(id, 'Connection expired or access was removed');
     await this.validatePolicy?.(grant);
     return grant;
   }
   async revoke(grantId: string) {
-    await this.manager.query(
-      'UPDATE mcp_oauth_grants SET revoked_at = COALESCE(revoked_at, now()) WHERE id = $1',
-      [grantId],
-    );
+    await this.manager.query('UPDATE mcp_oauth_grants SET revoked_at = COALESCE(revoked_at, now()) WHERE id = $1', [
+      grantId,
+    ]);
   }
 }

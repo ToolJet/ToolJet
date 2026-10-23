@@ -32,9 +32,13 @@ export class SsoConfigOidcGroupSyncRepository extends Repository<SsoConfigOidcGr
         },
       });
       if (existingGroupSync) {
-        results.push(await saveSecurityEntity(this.manager, SsoConfigOidcGroupSync, { ...existingGroupSync, ...groupSync }));
+        results.push(
+          await saveSecurityEntity(this.manager, SsoConfigOidcGroupSync, { ...existingGroupSync, ...groupSync })
+        );
       } else {
-        results.push(await saveSecurityEntity(this.manager, SsoConfigOidcGroupSync, this.create({ ...groupSync, ssoConfigId })));
+        results.push(
+          await saveSecurityEntity(this.manager, SsoConfigOidcGroupSync, this.create({ ...groupSync, ssoConfigId }))
+        );
       }
     }
 
@@ -48,7 +52,11 @@ export class SsoConfigOidcGroupSyncRepository extends Repository<SsoConfigOidcGr
         },
       });
       if (groupSyncsToDelete.length > 0) {
-        await deleteSecurityEntity(this.manager, SsoConfigOidcGroupSync, groupSyncsToDelete.map(row => row.id));
+        await deleteSecurityEntity(
+          this.manager,
+          SsoConfigOidcGroupSync,
+          groupSyncsToDelete.map((row) => row.id)
+        );
         results.push(...groupSyncsToDelete);
       }
     }

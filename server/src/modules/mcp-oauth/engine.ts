@@ -1,11 +1,12 @@
-import OAuth2Server = require('@node-oauth/oauth2-server');
+import * as OAuth2Server from '@node-oauth/oauth2-server';
 import { OAuthStore, OAuthArtifactKind } from './store';
 import { ACCESS_SECONDS, CODE_SECONDS, REFRESH_SECONDS, OAuthFailure, secret, matchesRedirectUri } from './protocol';
 
 /** A fresh model per transaction; no user, client or grant is held in singleton state. */
 export function createOAuthEngine(
-  store: OAuthStore, resource: string,
-  tokenClient?: NonNullable<Awaited<ReturnType<OAuthStore['client']>>>,
+  store: OAuthStore,
+  resource: string,
+  tokenClient?: NonNullable<Awaited<ReturnType<OAuthStore['client']>>>
 ): OAuth2Server {
   const load = async (raw: string, kind: OAuthArtifactKind): Promise<any> => {
     const artifact = await store.artifact(raw, kind);
@@ -34,9 +35,8 @@ export function createOAuthEngine(
       getAccessToken: async () => false,
       // Browser authorization has no client secret. Token calls supply the client already
       // authenticated by the boundary, before any replay or credential-consumption effects.
-      getClient: async (id, clientSecret) => tokenClient
-        ? (id === tokenClient.id ? tokenClient : false)
-        : (clientSecret ? false : store.client(id)),
+      getClient: async (id, clientSecret) =>
+        tokenClient ? (id === tokenClient.id ? tokenClient : false) : clientSecret ? false : store.client(id),
       validateRedirectUri: async (redirectUri, client) =>
         Array.isArray(client.redirectUris) &&
         client.redirectUris.some((registered) => matchesRedirectUri(redirectUri, registered)),
@@ -45,9 +45,7 @@ export function createOAuthEngine(
       generateAuthorizationCode: async () => secret('tj_oauth_code_'),
       validateScope: async (user, client, scopes) => {
         const grant = await store.activeGrant(user.grantId);
-        return client.id === grant.client_id && scopes?.every((scope) => grant.scopes.includes(scope))
-          ? scopes
-          : false;
+        return client.id === grant.client_id && scopes?.every((scope) => grant.scopes.includes(scope)) ? scopes : false;
       },
       saveAuthorizationCode: async (code, client, user) => {
         await store.put(
@@ -61,7 +59,7 @@ export function createOAuthEngine(
             codeChallenge: code.codeChallenge,
             codeChallengeMethod: code.codeChallengeMethod,
           },
-          code.expiresAt,
+          code.expiresAt
         );
         return { ...code, client, user };
       },
@@ -71,12 +69,8 @@ export function createOAuthEngine(
       revokeToken: (token) => store.consume(token.artifactId),
       saveToken: async (token, client, user) => {
         const grant = await store.activeGrant(user.grantId);
-        const accessExpiry = new Date(
-          Math.min(token.accessTokenExpiresAt.getTime(), grant.expires_at.getTime()),
-        );
-        const refreshExpiry = new Date(
-          Math.min(token.refreshTokenExpiresAt.getTime(), grant.expires_at.getTime()),
-        );
+        const accessExpiry = new Date(Math.min(token.accessTokenExpiresAt.getTime(), grant.expires_at.getTime()));
+        const refreshExpiry = new Date(Math.min(token.refreshTokenExpiresAt.getTime(), grant.expires_at.getTime()));
         const payload = { scope: token.scope };
         await store.put(token.accessToken, 'access', client.id, grant.id, payload, accessExpiry);
         await store.put(token.refreshToken, 'refresh', client.id, grant.id, payload, refreshExpiry);

@@ -19,5 +19,7 @@ export function openRefreshRetry(secret: string, artifactId: string, sealed: str
     decipher.setAAD(Buffer.from(artifactId));
     decipher.setAuthTag(bytes.subarray(12, 28));
     return JSON.parse(Buffer.concat([decipher.update(bytes.subarray(28)), decipher.final()]).toString());
-  } catch { return undefined; }
+  } catch {
+    return undefined;
+  }
 }

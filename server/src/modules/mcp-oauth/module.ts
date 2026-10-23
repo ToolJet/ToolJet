@@ -18,6 +18,9 @@ import { McpOAuthController, McpOAuthMetadataController } from './controller';
 })
 export class McpOAuthModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    return { module: McpOAuthModule, imports: [await LoginConfigsModule.register(configs), await CustomDomainsModule.register(configs)] };
+    return {
+      module: McpOAuthModule,
+      imports: [await LoginConfigsModule.register(configs), await CustomDomainsModule.register(configs)],
+    };
   }
 }

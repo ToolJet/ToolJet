@@ -14,10 +14,17 @@ import { loadLoginPolicy } from './policy';
 /** Per-request identity checks, independent of registration and browser consent. */
 @Injectable()
 export class McpOAuthIdentityService {
-  constructor(readonly dataSource: DataSource, private readonly config: ConfigService,
-    private readonly jwt: JwtService, private readonly users: UserRepository,
-    @Inject('MCP_LOGIN_CONFIGS') private readonly loginConfigs: Pick<ILoginConfigsUtilService, 'fetchOrganizationDetails'>) {}
-  private settings() { return parseOAuthSettings(this.config); }
+  constructor(
+    readonly dataSource: DataSource,
+    private readonly config: ConfigService,
+    private readonly jwt: JwtService,
+    private readonly users: UserRepository,
+    @Inject('MCP_LOGIN_CONFIGS')
+    private readonly loginConfigs: Pick<ILoginConfigsUtilService, 'fetchOrganizationDetails'>
+  ) {}
+  private settings() {
+    return parseOAuthSettings(this.config);
+  }
   private store(manager = this.dataSource.manager) {
     const policies = new Map<string, ReturnType<typeof loadLoginPolicy>>();
     return new OAuthStore(manager, async (grant) => {
@@ -39,7 +46,7 @@ export class McpOAuthIdentityService {
         // would undo revocation and let an old policy/account state revive this consent.
         await this.dataSource.query(
           'UPDATE mcp_oauth_grants SET revoked_at = COALESCE(revoked_at, now()) WHERE id = $1',
-          [error.grantId],
+          [error.grantId]
         );
       }
       throw error;
@@ -49,17 +56,25 @@ export class McpOAuthIdentityService {
   async authenticateViewer(credential: string, workspaceId?: string): Promise<User> {
     let payload: unknown;
     try {
-      payload = this.jwt.verify(credential, { secret: this.config.get('SECRET_KEY_BASE'),
-        issuer: this.settings().issuer, audience: VIEWER_AUDIENCE, algorithms: ['HS256'] });
-    } catch { throw new UnauthorizedException(); }
+      payload = this.jwt.verify(credential, {
+        secret: this.config.get('SECRET_KEY_BASE'),
+        issuer: this.settings().issuer,
+        audience: VIEWER_AUDIENCE,
+        algorithms: ['HS256'],
+      });
+    } catch {
+      throw new UnauthorizedException();
+    }
     return this.validateViewer(payload, workspaceId);
   }
   async validateViewer(payload: unknown, workspaceId?: string): Promise<User> {
     if (!isViewerClaims(payload)) throw new UnauthorizedException();
     const user = await this.validateDelegation({ ...payload, aud: DELEGATION_AUDIENCE }, workspaceId);
     if (!user.oauthScopes.includes('apps') || !user.oauthScopes.includes('data')) throw new UnauthorizedException();
-    const [app] = await this.dataSource.query('SELECT id FROM apps WHERE id = $1 AND organization_id = $2',
-      [payload.oauthAppId, user.organizationId]);
+    const [app] = await this.dataSource.query('SELECT id FROM apps WHERE id = $1 AND organization_id = $2', [
+      payload.oauthAppId,
+      user.organizationId,
+    ]);
     if (!app) throw new UnauthorizedException();
     user.oauthAppId = payload.oauthAppId;
     return user;
@@ -81,11 +96,7 @@ export class McpOAuthIdentityService {
   }
   async validateDelegation(payload: unknown, workspaceId?: string): Promise<User> {
     const { issuer } = this.settings();
-    if (
-      !isDelegationClaims(payload) ||
-      payload.iss !== issuer ||
-      payload.exp <= Date.now() / 1000
-    ) {
+    if (!isDelegationClaims(payload) || payload.iss !== issuer || payload.exp <= Date.now() / 1000) {
       throw new UnauthorizedException();
     }
     const store = this.store();
@@ -97,7 +108,7 @@ export class McpOAuthIdentityService {
     }
     const [artifact] = await this.dataSource.query(
       "SELECT * FROM mcp_oauth_artifacts WHERE id = $1 AND grant_id = $2 AND kind = 'access' AND expires_at > now()",
-      [payload.oauthTokenId, grant.id],
+      [payload.oauthTokenId, grant.id]
     );
     if (!artifact || payload.sub !== grant.user_id || (workspaceId && workspaceId !== grant.organization_id))
       throw new UnauthorizedException();
