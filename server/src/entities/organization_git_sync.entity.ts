@@ -5,18 +5,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BaseEntity,
-  JoinTable,
-  OneToMany,
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { AppGitSync } from './app_git_sync.entity';
 import { Organization } from './organization.entity';
-import { OrganizationGitSsh } from './gitsync_entities/organization_git_ssh.entity';
 import { OrganizationGitHttps } from './gitsync_entities/organization_git_https.entity';
 import { OrganizationGitLab } from './gitsync_entities/organization_gitlab.entity';
 export enum GITConnectionType {
-  GITHUB_SSH = 'github_ssh',
   GITHUB_HTTPS = 'github_https',
   GITLAB = 'gitlab',
   DISABLED = 'disabled',
@@ -38,28 +33,41 @@ export class OrganizationGitSync extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => AppGitSync, (appGitSync) => appGitSync.orgGit, { onDelete: 'CASCADE' })
-  @JoinTable({
-    name: 'app_git_sync',
-    joinColumn: {
-      name: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'organization_git_id',
-    },
-  })
-  appGitSync: AppGitSync[];
+  @Column({ name: 'is_branching_enabled', nullable: false, default: false })
+  isBranchingEnabled: boolean = false;
+
+  @Column({ name: 'schema_version', nullable: false, default: '1.0.0' })
+  schemaVersion: string;
+
+  @Column({ name: 'use_env_config', type: 'boolean', default: false })
+  useEnvConfig: boolean;
+
+  @Column({ name: 'webhook_enabled', type: 'boolean', default: false })
+  webhookEnabled: boolean;
+
+  @Column({ name: 'webhook_secret', type: 'varchar', length: 64, nullable: true })
+  webhookSecret: string;
+
+  @Column({ name: 'webhook_events', type: 'jsonb', default: () => `'["push","pull_request","delete"]'` })
+  webhookEvents: string[];
+
+  // Not persisted — populated at runtime from OrganizationEnvRegistryService
+  envGitProvider: GITConnectionType | null;
 
   @OneToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
 
-  @OneToOne(() => OrganizationGitSsh, (gitSsh) => gitSsh.orgGitSync, {})
-  gitSsh: OrganizationGitSsh;
-
+  // For env-config orgs the relation rows usually don't exist in the DB; runtime hydration
+  // (see GitSyncConfigsUtilService.getDetails + BaseGitUtilService.findOrgGitByOrganizationId)
+  // overwrites these fields with env-resolved configs via an `as` cast at the assignment site.
   @OneToOne(() => OrganizationGitHttps, (gitHttps) => gitHttps.orgGitSync, {})
   gitHttps: OrganizationGitHttps;
 
   @OneToOne(() => OrganizationGitLab, (gitLab) => gitLab.orgGitSync, {})
   gitLab: OrganizationGitLab;
+
+  get isEnabled(): boolean {
+    return !!(this.gitHttps?.isEnabled || this.gitLab?.isEnabled);
+  }
 }

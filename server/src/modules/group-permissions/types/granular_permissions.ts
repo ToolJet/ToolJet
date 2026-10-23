@@ -7,13 +7,17 @@ import { APP_TYPES } from '@modules/apps/constants';
 export interface AddableResourceItem {
   name: string;
   id: string;
+  type?: APP_TYPES;
 }
 type CreateResourcePermissionMap = {
   [ResourceType.APP]: CreateAppsPermissionsObject;
   [ResourceType.DATA_SOURCE]: CreateDataSourcePermissionsObject;
   [ResourceType.WORKFLOWS]: CreateWorkflowPermissionsObject;
+  [ResourceType.FOLDER]: CreateFolderPermissionsObject;
   // Modules reuse the apps permission shape (Edit→canEdit, Build-with→canView).
   [ResourceType.MODULE]: CreateAppsPermissionsObject;
+  [ResourceType.WORKFLOW_FOLDER]: CreateFolderPermissionsObject;
+  [ResourceType.MODULE_FOLDER]: CreateFolderPermissionsObject;
 };
 
 export type CreateResourcePermissionObject<T extends ResourceType> = CreateResourcePermissionMap[T];
@@ -33,8 +37,6 @@ export interface CreateAppsPermissionsObject extends CreateBaseAppsPermissionsOb
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.APP>;
 }
 
-export interface CreateWorkflowPermissionsObject extends CreateBaseAppsPermissionsObject {}
-
 export interface CreateWorkflowPermissionsObject extends CreateBaseAppsPermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.WORKFLOWS>;
 }
@@ -44,9 +46,17 @@ export interface CreateDataSourcePermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.DATA_SOURCE>;
 }
 
+export interface CreateFolderPermissionsObject {
+  canEditFolder?: boolean;
+  canEditApps?: boolean;
+  canViewApps?: boolean;
+  resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.FOLDER>;
+}
+
 export interface DataSourcesGroupPermissionsActions {
   canConfigure: boolean;
   canUse: boolean;
+  canRunQuery?: boolean;
 }
 
 export interface CreateGranularPermissionObject {
@@ -58,7 +68,10 @@ type ResourceToPermissionItemMap = {
   [ResourceType.APP]: AppsPermissionAddResourceItem[];
   [ResourceType.DATA_SOURCE]: DataSourcesPermissionResourceItem[];
   [ResourceType.WORKFLOWS]: WorkflowsPermissionAddResourceItem[];
+  [ResourceType.FOLDER]: FolderPermissionAddResourceItem[];
   [ResourceType.MODULE]: AppsPermissionAddResourceItem[];
+  [ResourceType.WORKFLOW_FOLDER]: FolderPermissionAddResourceItem[];
+  [ResourceType.MODULE_FOLDER]: FolderPermissionAddResourceItem[];
 };
 
 export type GranularPermissionAddResourceItems<T extends ResourceType> = ResourceToPermissionItemMap[T];
@@ -67,9 +80,9 @@ interface BaseAppsPermissionAddResourceItem {
   appId: string;
 }
 
-export interface AppsPermissionAddResourceItem extends BaseAppsPermissionAddResourceItem {}
+export type AppsPermissionAddResourceItem = BaseAppsPermissionAddResourceItem;
 
-export interface WorkflowsPermissionAddResourceItem extends BaseAppsPermissionAddResourceItem {}
+export type WorkflowsPermissionAddResourceItem = BaseAppsPermissionAddResourceItem;
 
 interface BaseAppsGroupPermissionsActions {
   canEdit: boolean;
@@ -84,6 +97,10 @@ export interface DataSourcesPermissionResourceItem {
   dataSourceId: string;
 }
 
+export interface FolderPermissionAddResourceItem {
+  folderId: string;
+}
+
 export interface AppsGroupPermissionsActions extends BaseAppsGroupPermissionsActions {
   hideFromDashboard: boolean;
   canAccessDevelopment?: boolean;
@@ -92,7 +109,13 @@ export interface AppsGroupPermissionsActions extends BaseAppsGroupPermissionsAct
   canAccessReleased?: boolean;
 }
 
-export interface WorkflowsGroupPermissionsActions extends BaseAppsGroupPermissionsActions {}
+export type WorkflowsGroupPermissionsActions = BaseAppsGroupPermissionsActions;
+
+export interface FoldersGroupPermissionsActions {
+  canEditFolder: boolean;
+  canEditApps: boolean;
+  canViewApps: boolean;
+}
 
 export interface ResourcePermissionMetaData {
   granularPermissions: GranularPermissions;
@@ -112,7 +135,14 @@ export interface UpdateGranularPermissionObject {
 }
 
 export interface UpdateResourceGroupPermissionsObject<
-  T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.WORKFLOWS | ResourceType.MODULE,
+  T extends
+    | ResourceType.APP
+    | ResourceType.DATA_SOURCE
+    | ResourceType.WORKFLOWS
+    | ResourceType.FOLDER
+    | ResourceType.MODULE
+    | ResourceType.WORKFLOW_FOLDER
+    | ResourceType.MODULE_FOLDER,
 > {
   group: GroupPermissions;
   granularPermissions: GranularPermissions;
@@ -132,7 +162,10 @@ type ResourceActionMap = {
   [ResourceType.APP]: AppsGroupPermissionsActions;
   [ResourceType.DATA_SOURCE]: DataSourcesGroupPermissionsActions;
   [ResourceType.WORKFLOWS]: WorkflowsGroupPermissionsActions;
+  [ResourceType.FOLDER]: FoldersGroupPermissionsActions;
   [ResourceType.MODULE]: AppsGroupPermissionsActions;
+  [ResourceType.WORKFLOW_FOLDER]: FoldersGroupPermissionsActions;
+  [ResourceType.MODULE_FOLDER]: FoldersGroupPermissionsActions;
 };
 
 export type ResourceGroupActions<T extends ResourceType> = ResourceActionMap[T];

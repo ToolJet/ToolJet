@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
+import { dbTransactionWrap, getDBConnection } from 'src/helpers/database.helper';
 import { CreateEventHandlerDto, UpdateEvent, BulkCreateEventHandlerDto } from '../dto/event';
 import { App } from '@entities/app.entity';
+import { AppValidationService } from '@modules/app-validation/service';
+import { EventWrite } from '@modules/app-validation/types';
 import {
   IEventsService,
   EventCreateContext,
@@ -13,8 +15,25 @@ import {
 } from '../interfaces/services/IEventService';
 import { RequestContext } from '@modules/request-context/service';
 
+// Validation input for an event the request creates. The id is not known yet; rules only
+// use it to exclude the row from "already exists" lookups.
+function toCreateEventWrite(eventHandler: CreateEventHandlerDto): EventWrite {
+  return {
+    op: 'create',
+    id: 'new',
+    data: {
+      name: eventHandler.name,
+      target: eventHandler.eventType,
+      sourceId: eventHandler.attachedTo,
+      index: eventHandler.index,
+      event: eventHandler.event,
+    },
+  };
+}
+
 @Injectable()
 export class EventsService implements IEventsService {
+  constructor(protected readonly appValidationService: AppValidationService) {}
   /**
    * Hook called before event creation - override in EE to capture state for history
    */
@@ -90,10 +109,7 @@ export class EventsService implements IEventsService {
   /**
    * Hook called before event deletion - override in EE to capture state for history
    */
-  protected async beforeEventDelete(
-    eventId: string,
-    appVersionId: string
-  ): Promise<EventDeleteContext | null> {
+  protected async beforeEventDelete(eventId: string, appVersionId: string): Promise<EventDeleteContext | null> {
     return null; // No-op in CE, EE overrides
   }
 
@@ -120,12 +136,8 @@ export class EventsService implements IEventsService {
   }
 
   async findEventsForVersion(appVersionId: string, manager?: EntityManager): Promise<EventHandler[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId },
-      });
-      return allEvents;
-    }, manager);
+    const m = manager ?? getDBConnection();
+    return m.find(EventHandler, { where: { appVersionId } });
   }
 
   async findAllEventsWithSourceId(sourceId: string): Promise<EventHandler[]> {
@@ -162,7 +174,12 @@ export class EventsService implements IEventsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = skipHistoryCapture ? null : await this.beforeEventCreate(eventHandler, versionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.appValidationService.check('events', [toCreateEventWrite(eventHandler)], {
+        appVersionId: versionId,
+        manager,
+      });
+
       if (
         eventHandler.eventType === 'component' ||
         eventHandler.eventType === 'table_column' ||
@@ -204,7 +221,7 @@ export class EventsService implements IEventsService {
       }
 
       const newEvent = new EventHandler();
-      newEvent.name = eventHandler?.name
+      newEvent.name = eventHandler?.name;
       newEvent.sourceId = eventHandler.attachedTo;
       newEvent.target = eventHandler.eventType;
       newEvent.event = eventHandler.event;
@@ -213,11 +230,12 @@ export class EventsService implements IEventsService {
 
       const event = await manager.save(EventHandler, newEvent);
       return event;
-    }, versionId);
+    });
 
     const operationTimestamp = Date.now();
-    this.afterEventCreate(context, result, versionId, skipHistoryCapture, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventCreate failed:', err.message));
+    this.afterEventCreate(context, result, versionId, skipHistoryCapture, historyUserId, operationTimestamp).catch(
+      (err) => console.error('[AppHistory] Fire-and-forget afterEventCreate failed:', err.message)
+    );
 
     return result;
   }
@@ -236,6 +254,14 @@ export class EventsService implements IEventsService {
     options: { skipValidation?: boolean } = {}
   ): Promise<EventHandler[]> {
     const createdEvents: EventHandler[] = [];
+
+    // Through `manager` the lookup also sees sources created earlier in this transaction
+    // (batchOperations saves components before their events).
+    const completeEvents = events.filter((event) => event.attachedTo && event.eventType && event.event);
+    await this.appValidationService.check('events', completeEvents.map(toCreateEventWrite), {
+      appVersionId: versionId,
+      manager,
+    });
 
     for (const eventHandler of events) {
       // Skip events with missing required fields
@@ -299,10 +325,7 @@ export class EventsService implements IEventsService {
    * Bulk create events with its own transaction and history capture
    * Use this when creating events as a standalone operation (not part of a larger batch)
    */
-  async bulkCreateEvents(
-    bulkEventHandlerDto: BulkCreateEventHandlerDto,
-    versionId: string
-  ): Promise<EventHandler[]> {
+  async bulkCreateEvents(bulkEventHandlerDto: BulkCreateEventHandlerDto, versionId: string): Promise<EventHandler[]> {
     const { events: eventHandlers } = bulkEventHandlerDto;
 
     if (!eventHandlers || eventHandlers.length === 0) {
@@ -312,13 +335,14 @@ export class EventsService implements IEventsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeBulkEventCreate(eventHandlers, versionId);
 
-    const results = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const results = await dbTransactionWrap(async (manager: EntityManager) => {
       return this.createEventsInTransaction(eventHandlers, versionId, manager);
-    }, versionId);
+    });
 
     const operationTimestamp = Date.now();
-    this.afterBulkEventCreate(context, results, versionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterBulkEventCreate failed:', err.message));
+    this.afterBulkEventCreate(context, results, versionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterBulkEventCreate failed:', err.message)
+    );
 
     return results;
   }
@@ -327,15 +351,39 @@ export class EventsService implements IEventsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeEventUpdate(events, updateType, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      const found = await Promise.all(
+        events.map(async (event) => ({
+          event,
+          stored: await manager.findOne(EventHandler, { where: { id: event.event_id } }),
+        }))
+      );
+
+      if (updateType === 'update') {
+        // The save replaces the whole payload, so the diff is validated as the new content.
+        const writes: EventWrite[] = found
+          .filter(({ stored }) => !!stored)
+          .map(({ event, stored }) => ({
+            op: 'update',
+            id: stored.id,
+            data: {
+              name: event.diff?.name,
+              target: stored.target,
+              sourceId: stored.sourceId,
+              index: stored.index,
+              event: event.diff?.event,
+            },
+            touched: ['event', 'name'],
+          }));
+        await this.appValidationService.check('events', writes, { appVersionId, manager });
+      }
+
       return await Promise.all(
-        events.map(async (event) => {
-          const { event_id, diff } = event;
+        found.map(async ({ event, stored }) => {
+          const { diff } = event;
 
           const eventDiff = diff?.event;
-          const eventToUpdate = await manager.findOne(EventHandler, {
-            where: { id: event_id },
-          });
+          const eventToUpdate = stored;
 
           if (!eventToUpdate) {
             return new BadRequestException('No event found');
@@ -347,7 +395,7 @@ export class EventsService implements IEventsService {
 
           if (updateType === 'update') {
             updatedEvent.name = diff?.name;
-            updatedEvent.event = eventDiff
+            updatedEvent.event = eventDiff;
           }
 
           if (updateType === 'reorder') {
@@ -357,11 +405,17 @@ export class EventsService implements IEventsService {
           return await manager.save(EventHandler, updatedEvent);
         })
       );
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
-    this.afterEventUpdate(context, result as EventHandler[], updateType, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventUpdate failed:', err.message));
+    this.afterEventUpdate(
+      context,
+      result as EventHandler[],
+      updateType,
+      appVersionId,
+      historyUserId,
+      operationTimestamp
+    ).catch((err) => console.error('[AppHistory] Fire-and-forget afterEventUpdate failed:', err.message));
 
     return result;
   }
@@ -370,7 +424,7 @@ export class EventsService implements IEventsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeEventDelete(eventId, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const event = await manager.findOne(EventHandler, {
         where: { id: eventId },
       });
@@ -387,11 +441,12 @@ export class EventsService implements IEventsService {
       // Siblings keep their index. Gaps are fine, and renumbering here scoped by sourceId alone
       // also renumbered unrelated panels (a Table's column/action handlers share its sourceId).
       return deleteResponse;
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
-    this.afterEventDelete(context, eventId, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventDelete failed:', err.message));
+    this.afterEventDelete(context, eventId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterEventDelete failed:', err.message)
+    );
 
     return result;
   }

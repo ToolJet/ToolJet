@@ -1,4 +1,4 @@
-import { create, zustandDevTools } from '@/_stores/utils';
+import { create, zustandDevTools } from '@/AppBuilder/_stores/utils';
 import { immer } from 'zustand/middleware/immer';
 // eslint-disable-next-line import/no-unresolved
 import { enableMapSet } from 'immer';

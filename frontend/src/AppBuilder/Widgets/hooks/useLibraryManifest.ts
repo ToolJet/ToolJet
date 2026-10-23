@@ -8,10 +8,10 @@ import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types'
 // many components/panels need it. Reads real Zustand state, so every consumer re-renders
 // once an in-flight fetch resolves.
 export const useLibraryManifest = (libraryId?: string, revision?: string): LibraryManifest | null => {
-    // const currentMode = useStore((state) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
-    // const hasCustomComponentLibrariesAccess = useStore(
-    //   (state) => state.license?.featureAccess?.customComponentLibraries === true
-    // );
+  // const currentMode = useStore((state) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
+  // const hasCustomComponentLibrariesAccess = useStore(
+  //   (state) => state.license?.featureAccess?.customComponentLibraries === true
+  // );
 
   // Not part of the cache key — only here to re-trigger the fetch after a live push
   // invalidates the manifest.

@@ -27,7 +27,7 @@ export class ImportExportResourcesController {
   @UseGuards(JwtAuthGuard, AppFeatureAbilityGuard)
   @Post('/export')
   async export(@User() user, @Body() exportResourcesDto: ExportResourcesDto) {
-    const result = await this.importExportResourcesService.export(user, exportResourcesDto);
+    const result = await this.importExportResourcesService.export(user, exportResourcesDto, user.branchId);
     return {
       ...result,
       tooljet_version: globalThis.TOOLJET_VERSION,
@@ -42,6 +42,9 @@ export class ImportExportResourcesController {
     if (isNotCompatibleVersion) {
       throw new BadRequestException(APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.UNSUPPORTED_VERSION_ERROR);
     }
+    // Resolved branch (user.branchId) takes precedence over body. Body's branchId is kept for
+    // backward compatibility with callers that already plumb it that way (e.g. clone).
+    if (user.branchId) importResourcesDto.branchId = user.branchId;
     const imports = await this.importExportResourcesService.import(user, importResourcesDto);
     return { imports, success: true };
   }

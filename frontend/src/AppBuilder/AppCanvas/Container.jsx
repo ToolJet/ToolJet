@@ -68,6 +68,7 @@ const Container = React.memo(
     );
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
+    const isMobileMainCanvas = currentLayout === 'mobile' && id === 'canvas';
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const isWidgetInSubContainerDragging = useStore(
       (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
@@ -77,10 +78,25 @@ const Container = React.memo(
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
     const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
     const flexDirection = useStore(
-      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.direction ?? 'column' : 'column'),
+      (state) => (isFlexContainer ? (state.getResolvedComponent?.(id)?.properties?.direction ?? 'column') : 'column'),
       shallow
     );
-    const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
+    const flexDirectionForFlex = isFlexContainer ? (flexEffectiveDirection ?? flexDirection) : flexDirection;
+
+    function getContainerCanvasWidth() {
+      if (canvasWidth !== undefined) {
+        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
+        if (id === 'canvas') return canvasWidth;
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
+      }
+      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
+        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
+      }
+      return realCanvasRef?.current?.offsetWidth;
+    }
+
+    const containerCanvasWidth = getContainerCanvasWidth();
+    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
@@ -195,21 +211,6 @@ const Container = React.memo(
       components.length === 0 &&
       !isDragging;
 
-    function getContainerCanvasWidth() {
-      if (canvasWidth !== undefined) {
-        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
-        if (id === 'canvas') return canvasWidth;
-        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
-      }
-      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
-        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
-      }
-      return realCanvasRef?.current?.offsetWidth;
-    }
-
-    const containerCanvasWidth = getContainerCanvasWidth();
-    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
-
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -266,13 +267,15 @@ const Container = React.memo(
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : getSubContainerHeightAfterPadding(componentType),
           backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
-          padding: `${HOVER_CLICK_OUTLINE_BORDER}px`, // This is required to prevent the hover click outline from being cut off
+          // Stops the hover outline being clipped. Skipped on mobile, where widget widths come from
+          // the unpadded outer width and this would push them past the content box.
+          padding: isMobileMainCanvas ? 0 : `${HOVER_CLICK_OUTLINE_BORDER}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-              ? canvasBgColor
-              : '#f0f0f0',
+                ? canvasBgColor
+                : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas

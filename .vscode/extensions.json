@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "editorconfig.editorconfig",
+    "mgmcdermott.vscode-language-babel",
+    "formulahendry.auto-rename-tag",
+    "xabikos.javascriptsnippets",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

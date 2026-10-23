@@ -21,6 +21,8 @@ export enum APP_TYPES {
   MODULE = 'module',
 }
 
+export const APPS_PAGE_SIZE = 9;
+
 export enum LayoutDimensionUnits {
   COUNT = 'count',
   PERCENT = 'percent',

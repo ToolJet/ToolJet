@@ -95,7 +95,7 @@ describe("App Export", () => {
       const filePath = `./cypress/downloads/${downloadedAppExportFileName}`;
 
       expect(downloadedAppExportFileName).to.contain(
-        data.appName.toLowerCase()
+        data.appName
       );
 
       cy.readFile(filePath).then((appData) => {
@@ -121,7 +121,7 @@ describe("App Export", () => {
       const filePath = `./cypress/downloads/${downloadedAppExportFileName}`;
 
       expect(downloadedAppExportFileName).to.contain(
-        data.appName.toLowerCase()
+        data.appName
       );
 
       cy.readFile(filePath).then((appData) => {

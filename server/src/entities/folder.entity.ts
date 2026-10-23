@@ -5,13 +5,16 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   AfterLoad,
+  JoinColumn,
   JoinTable,
   Unique,
 } from 'typeorm';
 import { FolderApp } from './folder_app.entity';
 import { App } from './app.entity';
+import { User } from './user.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 @Entity({ name: 'folders' })
@@ -29,11 +32,18 @@ export class Folder {
   @Column({ name: 'organization_id' })
   organizationId: string;
 
+  @Column({ name: 'created_by', nullable: true })
+  createdBy: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  creator: User;
 
   @OneToMany(() => FolderApp, (folderApp) => folderApp.folder, { eager: true })
   folderApps: FolderApp[];

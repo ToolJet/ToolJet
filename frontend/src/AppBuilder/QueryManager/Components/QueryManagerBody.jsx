@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
+import { resolveQueryEditor } from '../utils';
 import DataSourcePicker from './DataSourcePicker';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
@@ -22,6 +23,7 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { getSubpath } from '@/_helpers/routes';
+import { appendBranchName } from '@/_helpers/active-branch';
 import { SquarePen } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
@@ -33,6 +35,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const getResolvedValue = useStore((state) => state.getResolvedValue);
+  const { isModuleEditor } = useModuleContext();
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
   const sampleDataSource = useStore((state) => state.sampleDataSource);
@@ -52,12 +55,14 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
   const queryName = selectedQuery?.name ?? '';
-  const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
-  const ElementToRender = selectedDataSource?.plugin_id ? source : allSources[sourcecomponentName];
+  const editor = resolveQueryEditor({ selectedDataSource, selectedQuery });
+  const ElementToRender =
+    editor.type === 'none' ? null : editor.type === 'plugin' ? source : allSources[editor.componentName];
+
   const defaultOptions = useRef({});
 
-  const isFreezed = useStore((state) => state.getShouldFreeze());
+  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   useEffect(() => {
     setDataSourceMeta(
@@ -236,21 +241,23 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
               </>
             )}
         </div>
-        <ElementToRender
-          renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
-          key={selectedQuery?.id}
-          pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
-          selectedDataSource={selectedDataSource}
-          options={selectedQuery?.options}
-          optionsChanged={optionsChanged}
-          optionchanged={optionchanged}
-          darkMode={darkMode}
-          isEditMode={true} // Made TRUE always to avoid setting default options again
-          queryName={queryName}
-          currentEnvironment={currentEnvironment}
-          currentAppEnvironmentId={currentEnvironment?.id}
-          onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
-        />
+        {ElementToRender && (
+          <ElementToRender
+            renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
+            key={selectedQuery?.id}
+            pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
+            selectedDataSource={selectedDataSource}
+            options={selectedQuery?.options}
+            optionsChanged={optionsChanged}
+            optionchanged={optionchanged}
+            darkMode={darkMode}
+            isEditMode={true} // Made TRUE always to avoid setting default options again
+            queryName={queryName}
+            currentEnvironment={currentEnvironment}
+            currentAppEnvironmentId={currentEnvironment?.id}
+            onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
+          />
+        )}
       </div>
     );
   };
@@ -444,14 +451,17 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   };
 
   const handleEditDatasource = () => {
-    const url = `${getSubpath() ?? ''}/${getWorkspaceId()}/data-sources/${selectedDataSource.id}`;
+    const url = appendBranchName(`${getSubpath() ?? ''}/${getWorkspaceId()}/data-sources/${selectedDataSource.id}`);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const renderChangeDataSource = () => {
     const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
       .filter(Boolean)
-      .filter((ds) => ds.kind === selectedQuery?.kind && ds.type !== DATA_SOURCE_TYPE.STATIC);
+      .filter((ds) => ds.kind === selectedQuery?.kind && ds.type !== DATA_SOURCE_TYPE.STATIC)
+      // Hide dummy DSes from the picker — they aren't valid switch targets.
+      // Keep the currently bound dummy in the list so the dropdown can render its label.
+      .filter((ds) => !ds.is_dummy || ds.id === selectedDataSource?.id);
     const showEditDatasourceButton =
       selectedDataSource?.scope === 'global' &&
       selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE &&
@@ -463,8 +473,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className={cx({ 'disabled ': isFreezed })} ref={paramListContainerRef}>
@@ -516,6 +526,18 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
                 </button>
               )}
             </div>
+            {selectedDataSource?.is_dummy && (
+              <div
+                className="tw-text-text-danger tw-mt-1 tw-font-body-small tw-pointer-events-auto tw-select-text tw-cursor-text"
+                data-cy="query-manager-source-missing-warning"
+              >
+                {t(
+                  'editor.queryManager.datasourceMissingPullFromGit',
+                  'Data source #{{id}} is missing, pull from git to resolve this',
+                  { id: selectedDataSource?.co_relation_id }
+                )}
+              </div>
+            )}
             <div
               className={cx({ 'disabled ': isFreezed })}
               style={{ marginBottom: '2px' }}

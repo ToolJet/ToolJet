@@ -5,8 +5,9 @@
  * This is characterization-only: production changes are forbidden.
  */
 import { screen, waitFor, within } from '@testing-library/react';
-import { stepsConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/steps';
-import { stepsConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/steps';
+import { stepsConfig as frontendConfig } from '@tooljet/widget-definitions';
+// eslint-disable-next-line import/no-relative-packages
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
 import { componentDefinition } from '@/test/app-builder';
 import {
   binding,
@@ -14,6 +15,8 @@ import {
   MODULE_ID,
   store,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+
+const serverConfig = serverWidgets.stepsConfig;
 
 const ID = 'steps1';
 const HANDLE = 'steps1';

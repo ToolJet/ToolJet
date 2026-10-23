@@ -83,6 +83,7 @@ export class AiAttachmentService {
       throw new BadRequestException('Choose a file of up to 10 MB.');
     }
     const name = file.originalname
+      // eslint-disable-next-line no-control-regex -- strip control chars from uploaded filenames
       ?.replace(/[\u0000-\u001f\u007f]/g, '')
       .split(/[\\/]/)
       .pop()

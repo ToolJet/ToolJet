@@ -4,11 +4,11 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Warning from '@/_ui/Icon/solidIcons/Warning';
 import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
@@ -21,13 +21,17 @@ const CreateVersionModal = ({
   handleCommitOnVersionCreation = () => {},
   versionId,
   onVersionCreated,
+  isBranchingEnabled,
+  getSuccessMessage,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
-  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isGitSyncEnabled = orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const { current_organization_id } = authenticationService.currentSessionValue;
+
   const {
     changeEditorVersionAction,
     environmentChangedAction,
@@ -38,7 +42,8 @@ const CreateVersionModal = ({
     currentMode,
     currentEnvironment,
     environments,
-    setIsEditorFreezed,
+    branchingEnabled,
+    isEditorReadOnly,
   } = useStore(
     (state) => ({
       changeEditorVersionAction: state.changeEditorVersionAction,
@@ -54,10 +59,15 @@ const CreateVersionModal = ({
       currentMode: state.currentMode,
       currentEnvironment: state.selectedEnvironment,
       environments: state.environments,
-      setIsEditorFreezed: state.setIsEditorFreezed,
+      branchingEnabled: state.branchingEnabled,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
+
+  // isBranchingEnabled may not be passed as a prop when rendered from VersionManagerDropdown;
+  // fall back to the store value set by fetchAppGit.
+  const effectiveIsBranchingEnabled = isBranchingEnabled ?? branchingEnabled;
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   const textareaRef = React.useRef(null);
@@ -95,9 +105,7 @@ const CreateVersionModal = ({
     if (versionId) {
       const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
       if (versionToPromote) {
-        setSelectedVersionForCreation(versionToPromote);
-        setVersionName(versionToPromote.name);
-        setVersionDescription(versionToPromote.description || '');
+        selectVersionForCreation(versionToPromote);
       }
       return;
     }
@@ -106,25 +114,39 @@ const CreateVersionModal = ({
     if (selectedVersion?.id) {
       const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id);
       if (selected) {
-        setSelectedVersionForCreation(selected);
-        setVersionName(selected.name);
-        setVersionDescription(selected.description || '');
+        selectVersionForCreation(selected);
         return;
       }
     }
 
     // Fallback: if no version is selected or found, use the first development version
     if (developmentVersions.length > 0) {
-      setSelectedVersionForCreation(developmentVersions[0]);
-      setVersionName(developmentVersions[0].name);
-      setVersionDescription(developmentVersions[0].description || '');
+      const fallback = developmentVersions[0];
+      selectVersionForCreation(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [developmentVersions, versionId, showCreateAppVersion]);
 
+  const selectVersionForCreation = (version) => {
+    setSelectedVersionForCreation(version);
+    // New git-sync drafts get a throwaway uuid() name (see createVersion in
+    // versions/util.service.ts) — the user names it here, so that placeholder shouldn't be
+    // pre-filled. A draft that predates git sync, or otherwise already carries a real name,
+    // should still be auto-filled instead of blanked just because git sync happens to be on.
+    const isUuidPlaceholderName = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      version.name || ''
+    );
+    setVersionName(isUuidPlaceholderName ? '' : version.name);
+    setVersionDescription(isUuidPlaceholderName ? '' : version.description || '');
+  };
+
   const { t } = useTranslation();
 
   const createVersion = async () => {
+    if (isEditorReadOnly) {
+      toast.error('You do not have permission to save this version');
+      return;
+    }
     if (versionName.trim().length > 25) {
       toast.error('Version name should not be longer than 25 characters');
       return;
@@ -143,16 +165,52 @@ const CreateVersionModal = ({
       return;
     }
 
+    if (/[\s~^:?*[\]\\@{]/.test(versionName.trim())) {
+      toast.error(
+        'Version name cannot contain spaces or special characters (`~ ^ : ? * [ \\ @ {`). Please remove them and try again.'
+      );
+      return;
+    }
+
     setIsCreatingVersion(true);
 
     try {
-      await appVersionService.save(appId, selectedVersionForCreation.id, {
-        name: versionName,
-        description: versionDescription,
-        // need to add commit changes logic here
-        status: 'PUBLISHED',
-      });
-      toast.success('Version Created successfully');
+      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
+        try {
+          const tagCheck = await gitSyncService.checkTagExists(appId, versionName.trim());
+          if (tagCheck.exists) {
+            toast.error(
+              `Cannot save: Tag '${tagCheck.tagName}' already exists. ` +
+                `Please rename your version to a unique name before saving.`
+            );
+            setIsCreatingVersion(false);
+            return;
+          }
+          if (tagCheck.invalidFormat) {
+            toast.error(
+              'Version name cannot contain spaces or special characters (`~ ^ : ? * [ \\ @ {`). Please remove them and try again.'
+            );
+            setIsCreatingVersion(false);
+            return;
+          }
+        } catch (error) {
+          console.warn('Tag existence check failed, proceeding with save', error);
+        }
+      }
+
+      // Save the version. Git-tag creation is OWNED BY THE BACKEND: for a git-enabled workspace we
+      // call the app-git save endpoint, which performs the DB save AND creates the git tag in one
+      // server-side call. Non-git workspaces (incl. community edition) keep using the versions
+      // endpoint. The client no longer fires a separate createGitTag call — the pre-save
+      // checkTagExists above is retained purely for the "rename before saving" duplicate-name UX.
+      const saveValues = { name: versionName, description: versionDescription, status: 'PUBLISHED' };
+      if (isGitSyncEnabled) {
+        await gitSyncService.saveVersion(appId, selectedVersionForCreation.id, saveValues);
+      } else {
+        await appVersionService.save(appId, selectedVersionForCreation.id, saveValues);
+      }
+
+      toast.success(getSuccessMessage ? getSuccessMessage(versionName.trim()) : 'Version Created successfully');
       setVersionName('');
       setVersionDescription('');
       setSelectedVersionForCreation(null);
@@ -175,11 +233,6 @@ const CreateVersionModal = ({
           currentMode
         );
 
-        // Set editor freeze state based on should_freeze_editor
-        if (newVersionData.should_freeze_editor !== undefined) {
-          setIsEditorFreezed(newVersionData.should_freeze_editor);
-        }
-
         if (newVersionData.editing_version?.id) {
           const newVersionEnvironmentId = newVersionData.editing_version.currentEnvironmentId;
           const isDifferentEnvironment = newVersionEnvironmentId !== currentEnvironment?.id;
@@ -194,10 +247,7 @@ const CreateVersionModal = ({
                 changeEditorVersionAction(
                   appId,
                   newVersionData.editing_version.id,
-                  () => {
-                    console.log('Successfully switched environment and version');
-                    handleCommitOnVersionCreation(newVersionData, selectedVersion);
-                  },
+                  () => {},
                   (error) => {
                     console.error('Error switching to newly created version:', error);
                     toast.error('Version created but failed to switch to it');
@@ -210,9 +260,7 @@ const CreateVersionModal = ({
             await changeEditorVersionAction(
               appId,
               newVersionData.editing_version.id,
-              () => {
-                handleCommitOnVersionCreation(newVersionData, selectedVersion);
-              },
+              () => {},
               (error) => {
                 console.error('Error switching to newly created version:', error);
                 toast.error('Version created but failed to switch to it');
@@ -227,10 +275,22 @@ const CreateVersionModal = ({
     } catch (error) {
       if (error?.data?.code === '23505') {
         toast.error('Version name already exists.');
-      } else if (error?.error) {
-        toast.error(error?.error);
       } else {
-        toast.error('Error while creating version. Please try again.');
+        const rawError = error?.error || error?.message;
+        const errorMessage =
+          typeof rawError === 'object' ? rawError.error : rawError || 'Error while creating version. Please try again.';
+        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
+        toast.error(errorMessage);
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          key: 'Save Failed',
+          message: errorMessage,
+          description: errorDetails,
+          error: { message: errorMessage, description: errorDetails },
+          errorTarget: 'Version',
+          timestamp: new Date().toISOString(),
+        });
       }
     } finally {
       setIsCreatingVersion(false);
@@ -262,6 +322,28 @@ const CreateVersionModal = ({
           }}
         >
           <div className="create-version-body mb-3">
+            {isGitSyncEnabled && (
+              <div
+                className="mb-3 d-flex align-items-start"
+                style={{
+                  backgroundColor: 'var(--background-warning-weak)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  gap: '6px',
+                }}
+                data-cy="version-immutability-info"
+              >
+                <span style={{ flexShrink: 0, display: 'inline-flex', marginTop: '1px' }}>
+                  <Warning fill="var(--text-warning)" width="18" />
+                </span>
+                <span
+                  className="tj-text-xsm"
+                  style={{ color: 'var(--text-medium)', lineHeight: '18px', fontSize: '12px' }}
+                >
+                  Name and description cannot be edited after saving
+                </span>
+              </div>
+            )}
             <div className="col">
               <label className="form-label mb-1 ms-1" data-cy="version-name-label">
                 {t('editor.appVersionManager.versionName', 'Version Name')}
@@ -279,7 +361,10 @@ const CreateVersionModal = ({
                 maxLength="25"
               />
               <small className="version-name-helper-text" data-cy="version-name-helper-text">
-                {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
+                {t(
+                  'editor.appVersionManager.versionNameHelper',
+                  'Version name cannot contain spaces, special characters or exceed 25 characters'
+                )}
               </small>
             </div>
             <div className="col mt-2">
@@ -296,7 +381,7 @@ const CreateVersionModal = ({
                 placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
                 disabled={isCreatingVersion}
                 value={versionDescription}
-                autoFocus={true}
+                autoFocus={!isGitSyncEnabled}
                 minLength="0"
                 maxLength="500"
                 rows={1}
@@ -324,7 +409,8 @@ const CreateVersionModal = ({
             </div>
           </div> */}
 
-            {isGitSyncEnabled && (
+            {/* Disabling autoCommit */}
+            {/* {isGitSyncEnabled && (
               <div className="commit-changes mt-3">
                 <div>
                   <input
@@ -332,6 +418,7 @@ const CreateVersionModal = ({
                     checked={canCommit}
                     type="checkbox"
                     onChange={handleCommitEnableChange}
+                    disabled={isBranchingEnabled}
                     data-cy="git-commit-input"
                   />
                 </div>
@@ -344,7 +431,8 @@ const CreateVersionModal = ({
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
+
             <div className="mt-3">
               <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
                 <div
@@ -385,7 +473,7 @@ const CreateVersionModal = ({
                 variant="primary"
                 className=""
                 type="submit"
-                disabled={!selectedVersionForCreation || isCreatingVersion}
+                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
                 data-cy="create-version-save-button"
               >
                 {t('editor.appVersionManager.saveVersion', 'Save version')}

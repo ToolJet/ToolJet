@@ -10,11 +10,12 @@ import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
+import DependencyViewer from './Dependencies/DependencyViewer';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt, History } from 'lucide-react';
+import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints } from 'lucide-react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
@@ -154,6 +155,8 @@ export const BaseLeftSidebar = ({
         return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'debugger':
         return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
+      case 'dependencies':
+        return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'settings':
         return (
           <GlobalSettings
@@ -199,6 +202,18 @@ export const BaseLeftSidebar = ({
           ref={setSideBarBtnRefs('debugger')}
         >
           <Bug width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
+
+        <SidebarItem
+          icon="dependencies"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('dependencies')}
+          className={`left-sidebar-item left-sidebar-layout`}
+          tip="Dependencies"
+          ref={setSideBarBtnRefs('dependencies')}
+        >
+          <Waypoints width="16" height="16" className="tw-text-icon-strong" />
         </SidebarItem>
       </>
     );
@@ -278,7 +293,10 @@ export const BaseLeftSidebar = ({
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
-          if (['tooljetai', 'inspect', 'debugger', 'settings', 'libraries'].includes(selectedSidebarItem)) return;
+          if (
+            ['tooljetai', 'inspect', 'debugger', 'settings', 'libraries', 'dependencies'].includes(selectedSidebarItem)
+          )
+            return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;

@@ -62,7 +62,11 @@ describe("GraphQL", () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved", true, 50000);
     });
 
-    it("3. GraphQL - Verify query execution with valid connection", () => {
+    // SKIPPED: executes a live query against the public SWAPI GraphQL demo
+    // (a free Netlify function that cold-starts / times out); flaky in CI and
+    // dependent on an external service. Re-enable when it's stubbed or a stable
+    // endpoint is used.
+    it.skip("3. GraphQL - Verify query execution with valid connection", { retries: { runMode: 2, openMode: 0 } }, () => {
         const graphqlUrl = Cypress.env("GraphQl_Url");
         const validOptions = graphqlApiOptions.map((opt) =>
             opt.key === "url"

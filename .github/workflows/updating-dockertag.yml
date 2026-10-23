@@ -1,0 +1,64 @@
+name: Update LTS Table
+
+on:
+  workflow_dispatch:  # manually triggered
+  schedule:
+    - cron: '0 9 * * 1,3,5'  # 9am UTC — Monday, Wednesday, Friday
+
+jobs:
+  update-lts:
+    name: Regenerate LTS Version Table
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: documentation
+
+      - name: 🛠 Setup Git
+        run: |
+          git config user.name "tooljet-bot"
+          git config user.email "bot@tooljet.com"
+
+      - name: 💻 Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+      - name: 🧠 Run regenerate_lts_table.sh
+        run: bash ./docs/regenerate_lts_table.sh
+
+      - name: 🔍 Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No new patch found — skipping PR."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "✅ New patch detected — creating PR."
+          fi
+
+      - name: 📦 Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs: update LTS version table"
+          branch: auto/update-lts-${{ github.run_id }}
+          title: "docs: update LTS version table"
+          body: "Automated update of the LTS version table from DockerHub."
+          base: documentation
+
+      - name: 🤖 Auto-merge the PR (fallback if needed)
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          echo "ℹ️  Attempting auto-merge of PR #${PR_NUMBER}..."
+          gh pr merge --squash --auto "$PR_NUMBER" --repo ToolJet/ToolJet || {
+            echo "⚠️ Auto-merge failed. Trying direct squash merge instead..."
+            gh pr merge --squash --admin "$PR_NUMBER" --repo ToolJet/ToolJet
+          }
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}

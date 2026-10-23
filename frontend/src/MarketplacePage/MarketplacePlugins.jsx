@@ -1,27 +1,29 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
+import { SearchBox } from '@/_components/SearchBox';
 import { useSearchParams } from 'react-router-dom';
-import { MarketplaceCard } from './MarketplaceCard';
-import { pluginsService, marketplaceService } from '@/_services';
-import { SearchBox } from '@/_components';
 
-export const MarketplacePlugins = () => {
+import { pluginsService } from '@/_services/plugins.service';
+import { marketplaceService } from '@/_services/marketplace.service';
+
+import { MarketplaceCard } from './MarketplaceCard';
+
+const MarketplacePlugins = () => {
   const [installedPlugins, setInstalledPlugins] = React.useState({});
   const [allPlugins, setAllPlugins] = React.useState([]);
-  // The catalogue is a flat grid of every plugin, so finding one meant reading the whole page.
-  // `?search=HubSpot` also lets a link name the plugin it wants — the AI builder sends people here
+  // `?search=HubSpot` lets a link name the plugin it wants — the AI builder sends people here
   // when a build needs a source whose plugin is not installed yet.
   const [searchParams] = useSearchParams();
-  const [query, setQuery] = React.useState(searchParams.get('search') ?? '');
   const urlSearch = searchParams.get('search') ?? '';
-  React.useEffect(() => setQuery(urlSearch), [urlSearch]);
-  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const [queryString, setQueryString] = React.useState(urlSearch);
+  React.useEffect(() => setQueryString(urlSearch), [urlSearch]);
 
-  const visiblePlugins = React.useMemo(() => {
-    const term = query.trim().toLowerCase();
+  const displayedPlugins = React.useMemo(() => {
+    const term = queryString.trim().toLowerCase();
     if (!term) return allPlugins;
     return allPlugins.filter(({ name, description }) => `${name} ${description ?? ''}`.toLowerCase().includes(term));
-  }, [allPlugins, query]);
+  }, [allPlugins, queryString]);
+  const suggestingDataSource = !!queryString.trim() && displayedPlugins.length === 0;
 
   React.useEffect(() => {
     marketplaceService
@@ -57,35 +59,43 @@ export const MarketplacePlugins = () => {
 
   return (
     <div className="col-9 pb-3" style={{ marginLeft: 'auto' }}>
-      <div className="mb-3">
+      <div className="marketplace-search-holder">
         <SearchBox
-          dataCy="marketplace"
-          darkMode={darkMode}
+          dataCy="marketplace-plugins"
+          className="border-0"
           placeholder="Search plugins"
-          initialValue={query}
           width="100%"
-          callBack={(e) => setQuery(e.target.value)}
-          onClearCallback={() => setQuery('')}
+          callBack={(e) => setQueryString(e.target.value)}
+          onClearCallback={() => setQueryString('')}
+          initialValue={queryString}
         />
       </div>
-      {query.trim() && visiblePlugins.length === 0 && (
-        <p className="tj-text" data-cy="marketplace-no-results">{`No plugins match "${query}"`}</p>
+      {suggestingDataSource ? (
+        <center className="marketplace-empty-state">
+          <p className="mt-2 tj-text-lg font-weight-500 tj-text" data-cy="marketplace-no-results">
+            {`No results for "${queryString}"`}
+          </p>
+          <img src="assets/images/icons/no-results.svg" width="200" height="200" />
+        </center>
+      ) : (
+        <div className="row row-cards">
+          {displayedPlugins?.map(({ id, name, repo, version, description }) => {
+            return (
+              <MarketplaceCard
+                key={id}
+                id={id}
+                isInstalled={installedPlugins[id]}
+                name={name}
+                repo={repo}
+                version={version}
+                description={description}
+              />
+            );
+          })}
+        </div>
       )}
-      <div className="row row-cards">
-        {visiblePlugins?.map(({ id, name, repo, version, description }) => {
-          return (
-            <MarketplaceCard
-              key={id}
-              id={id}
-              isInstalled={installedPlugins[id]}
-              name={name}
-              repo={repo}
-              version={version}
-              description={description}
-            />
-          );
-        })}
-      </div>
     </div>
   );
 };
+
+export default MarketplacePlugins;

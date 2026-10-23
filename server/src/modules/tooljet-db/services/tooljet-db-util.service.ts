@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import * as csv from 'fast-csv';
@@ -107,7 +107,9 @@ export class TooljetDbUtilService {
       })
       .on('error', (error) => {
         csvStream.destroy();
-        passThrough.emit('error', new BadRequestException(error));
+        // Preserve a typed HttpException (e.g. the 451 row-limit signal); only wrap
+        // untyped stream/parse errors as a generic 400.
+        passThrough.emit('error', error instanceof HttpException ? error : new BadRequestException(error));
       })
       .on('end', () => {
         passThrough.emit('end');
@@ -247,7 +249,11 @@ export class TooljetDbUtilService {
 
     csvStream
       .on('headers', (headers) => {
-        const resolved = this.resolvePrimaryKeyAndDataColumns(internalTableDatabaseColumn, primaryKeyColumnSchema, headers);
+        const resolved = this.resolvePrimaryKeyAndDataColumns(
+          internalTableDatabaseColumn,
+          primaryKeyColumnSchema,
+          headers
+        );
         primaryKeyColumnsInCsv = resolved.primaryKeyColumns;
         dataColumnsInCsv = resolved.dataColumns;
 
@@ -411,7 +417,11 @@ export class TooljetDbUtilService {
 
     csvStream
       .on('headers', (headers) => {
-        const resolved = this.resolvePrimaryKeyAndDataColumns(internalTableDatabaseColumn, primaryKeyColumnSchema, headers);
+        const resolved = this.resolvePrimaryKeyAndDataColumns(
+          internalTableDatabaseColumn,
+          primaryKeyColumnSchema,
+          headers
+        );
         primaryKeyColumnsInCsv = resolved.primaryKeyColumns;
 
         if (primaryKeyColumnsInCsv.length === 0) {
@@ -557,9 +567,7 @@ export class TooljetDbUtilService {
         if (requiredColumns.includes(columnName) && isEmpty(row[columnName]))
           throw `Primary key value required for column ${columnName}`;
 
-        const columnDetails = internalTableDatabaseColumn.find(
-          (colDetails) => colDetails.column_name === columnName
-        );
+        const columnDetails = internalTableDatabaseColumn.find((colDetails) => colDetails.column_name === columnName);
         filteredRow[columnName] = this.convertToDataType(row[columnName], columnDetails!.data_type);
       }
 
@@ -603,7 +611,13 @@ export class TooljetDbUtilService {
       csvStream.emit('error', `Row count cannot be greater than ${this.MAX_ROW_COUNT}`);
 
     if (rowsProcessed >= remainingRowCapacity)
-      csvStream.emit('error', "You've reached your limit of rows in ToolJet database tables. Upgrade for more.");
+      // 451 (not a generic 400): the workspace hit its licensed row cap. The rest of the
+      // row-limit feature signals this with 451 so the client can prompt an upgrade; the
+      // stream error handler passes HttpExceptions through untouched to preserve it.
+      csvStream.emit(
+        'error',
+        new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451)
+      );
 
     try {
       const columnsInCsv = Object.keys(row);

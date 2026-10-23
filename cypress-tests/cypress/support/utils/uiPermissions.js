@@ -167,6 +167,7 @@ export const uiFolderCRUDWorkflow = (folderName) => {
   uiCreateFolder(folderName);
   uiVerifyFolderCreated(folderName);
 
+  cy.wait(4000)
   deleteFolder(folderName);
   uiVerifyFolderDeleted(folderName);
 };

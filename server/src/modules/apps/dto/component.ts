@@ -44,7 +44,6 @@ export class ComponentLayoutDto {
   @IsBoolean()
   @IsOptional()
   fillWidth?: boolean;
-
 }
 
 export class LayoutData {

@@ -29,6 +29,10 @@ import { CustomDomainsModule } from '@modules/custom-domains/module';
 @Module({})
 export class AuthModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       AuthController,
       AuthService,
@@ -59,7 +63,7 @@ export class AuthModule extends SubModule {
       'website/otp-controller',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: AuthModule,
       imports: [
         await SessionModule.register(configs),
@@ -106,6 +110,6 @@ export class AuthModule extends SubModule {
         TotpUtilService,
       ],
       exports: [AuthUtilService],
-    };
+    });
   }
 }

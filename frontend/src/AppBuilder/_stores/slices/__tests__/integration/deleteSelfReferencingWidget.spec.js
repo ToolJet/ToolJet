@@ -12,8 +12,7 @@
  */
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition, binding } from '@/test/app-builder';
-import { progressbarConfig } from '@/AppBuilder/WidgetManager/widgets/progressbar';
-import { circularProgressbarConfig } from '@/AppBuilder/WidgetManager/widgets/circularProgressbar';
+import { progressbarConfig, circularProgressbarConfig } from '@tooljet/widget-definitions';
 import { computeComponentName } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';

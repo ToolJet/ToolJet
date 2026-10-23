@@ -48,8 +48,22 @@ export const create = (fn) => {
   return store;
 };
 
+// Slice factories hold state in closures (e.g. batch managers) that setState-based
+// resetters can't reach. Slices register an explicit resetter here so resetAllStores
+// clears that closure state too.
+// phase 'post' runs AFTER the state replace — needed when the resetter must repair
+// values inside the restored initial state (e.g. class instances that were mutated
+// in place, which the captured initialState shares by reference).
+const postResetters = [];
+export const registerResetter = (fn, { phase = 'pre' } = {}) => {
+  (phase === 'post' ? postResetters : resetters).push(fn);
+};
+
 export const resetAllStores = () => {
   for (const resetter of resetters) {
+    resetter();
+  }
+  for (const resetter of postResetters) {
     resetter();
   }
 };
@@ -343,6 +357,9 @@ export const extractAndReplaceReferencesFromString = (str = '', componentIdMap =
 };
 
 export const checkSubstringRegex = (mainString, subString) => {
+  // Optional chaining reads the same entity, so listItem?.a must match like listItem.a
+  const normalizedMainString = mainString.replace(/\?\./g, '.');
+
   // Escape special characters in the subString
   const escapedSubString = subString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -356,7 +373,7 @@ export const checkSubstringRegex = (mainString, subString) => {
   const regex = new RegExp(`(^|[^a-zA-Z0-9\\].])(${escapedSubString})($|[.\\[\\s]|\\?\\.)`);
 
   // Test the mainString against the regex
-  return regex.test(mainString);
+  return regex.test(normalizedMainString);
 };
 
 export const normalizePattern = (pattern) => {
@@ -795,3 +812,23 @@ export const formatSecondsToHHMMSS = (totalSeconds) => {
   const ss = String(seconds % 60).padStart(2, '0');
   return `${hh}:${mm}:${ss}`;
 };
+
+// Validate a go-to-app link target by looking up its correlationId in the linkedApps map populated on app load.
+export function isLinkedAppValid(correlationId, linkedAppsMap) {
+  if (!correlationId) return { isValid: true, errorMessage: null };
+
+  const entry = linkedAppsMap?.[correlationId];
+  if (!entry || !entry.slug) {
+    return {
+      isValid: false,
+      errorMessage: `App ${correlationId} undefined. Check if the linked app exists and has a released version.`,
+    };
+  }
+  if (!entry.currentVersionId) {
+    return {
+      isValid: false,
+      errorMessage: 'Check if the linked app has a released version.',
+    };
+  }
+  return { isValid: true, errorMessage: null };
+}

@@ -19,6 +19,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import cx from 'classnames';
 import { findDefault } from '../_utils/component-properties-validation';
 import FixWithAi from './FixWithAi';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 
 const sanitizeLargeDataset = (data, callback) => {
@@ -226,12 +227,12 @@ export const PreviewBox = ({
       const jsErrorType = isSecretError
         ? 'Error'
         : _error?.includes('ReferenceError')
-        ? 'ReferenceError'
-        : _error?.includes('TypeError')
-        ? 'TypeError'
-        : _error?.includes('SyntaxError')
-        ? 'SyntaxError'
-        : 'Invalid';
+          ? 'ReferenceError'
+          : _error?.includes('TypeError')
+            ? 'TypeError'
+            : _error?.includes('SyntaxError')
+              ? 'SyntaxError'
+              : 'Invalid';
 
       const errValue = ifCoersionErrorHasCircularDependency(_resolveValue);
 
@@ -239,13 +240,13 @@ export const PreviewBox = ({
         message: isServerConstant
           ? 'Server variables cannot be used in apps'
           : isSecretError
-          ? 'secrets cannot be used in apps'
-          : _error,
+            ? 'secrets cannot be used in apps'
+            : _error,
         value: isSecretError
           ? 'Undefined'
           : jsErrorType === 'Invalid'
-          ? JSON.stringify(errValue, reservedKeywordReplacer)
-          : resolvedValue,
+            ? JSON.stringify(errValue, reservedKeywordReplacer)
+            : resolvedValue,
         type: isSecretError ? 'Error' : jsErrorType,
         completeErrorMessage: completeErrMessage,
       });
@@ -310,20 +311,20 @@ const RenderResolvedValue = ({
   const previewValueType = isWorkspaceVariable
     ? previewType
     : withValidation || (coersionData && coersionData?.typeBeforeCoercion)
-    ? `${coersionData?.typeBeforeCoercion} ${
-        coersionData?.coercionPreview ? ` → ${coersionData?.typeAfterCoercion}` : ''
-      }`
-    : previewType;
+      ? `${coersionData?.typeBeforeCoercion} ${
+          coersionData?.coercionPreview ? ` → ${coersionData?.typeAfterCoercion}` : ''
+        }`
+      : previewType;
 
   const previewContent = isServerConstant
     ? isServerSideGlobalResolveEnabled
       ? 'Server variables would be resolved at runtime'
       : 'Server variables are only available in paid plans'
     : isSecretConstant
-    ? 'Values of secret constants are hidden'
-    : !withValidation
-    ? resolvedValue
-    : computeCoersionPreview(resolvedValue, coersionData);
+      ? 'Values of secret constants are hidden'
+      : !withValidation
+        ? resolvedValue
+        : computeCoersionPreview(resolvedValue, coersionData);
 
   const cls = error ? 'codehinter-error-banner' : 'codehinter-success-banner';
 
@@ -376,6 +377,7 @@ const PreviewContainer = ({
   } = restProps;
 
   const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled ?? false);
+  const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
   const fetchErrorFixUsingAi = useStore((state) => state.fetchErrorFixUsingAi);
   const clearChatHistory = useStore((state) => state.clearChatHistory);
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow); // TODO: check if moduleId needs to be passed here
@@ -413,8 +415,8 @@ const PreviewContainer = ({
     const defaultValue = validationSchema?.defaultValue
       ? validationSchema?.defaultValue
       : validationSchema
-      ? findDefault(validationSchema?.schema ?? {}, errorMessage?.value)
-      : undefined;
+        ? findDefault(validationSchema?.schema ?? {}, errorMessage?.value)
+        : undefined;
 
     const errorData = {
       key: componentKey,
@@ -510,7 +512,7 @@ const PreviewContainer = ({
                   <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
 
-                {aiFeaturesEnabled && INLINE_AI_FEATURES_ENABLED && (
+                {aiFeaturesEnabled && INLINE_AI_FEATURES_ENABLED && !isAiBlockedByBranch && (
                   <ToolTip
                     placement="left"
                     message={<FixIssueTooltipContent />}

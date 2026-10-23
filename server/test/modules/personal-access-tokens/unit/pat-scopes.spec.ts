@@ -84,8 +84,13 @@ describe('PAT scope definition', () => {
 
   it('allows only the group operations needed for custom group management', () => {
     const allowed = new Set([
-      GROUP_FEATURE.GET_ALL, GROUP_FEATURE.GET_ONE, GROUP_FEATURE.GET_ALL_GROUP_USER,
-      GROUP_FEATURE.CREATE, GROUP_FEATURE.UPDATE, GROUP_FEATURE.DELETE, GROUP_FEATURE.DELETE_GROUP_USER,
+      GROUP_FEATURE.GET_ALL,
+      GROUP_FEATURE.GET_ONE,
+      GROUP_FEATURE.GET_ALL_GROUP_USER,
+      GROUP_FEATURE.CREATE,
+      GROUP_FEATURE.UPDATE,
+      GROUP_FEATURE.DELETE,
+      GROUP_FEATURE.DELETE_GROUP_USER,
       GROUP_FEATURE.DUPLICATE,
       GROUP_FEATURE.GET_ADDABLE_APPS,
       GROUP_FEATURE.GET_ADDABLE_DS,
@@ -252,9 +257,14 @@ describe('PatScopeInterceptor', () => {
   });
 
   it('enforces group feature limits for workspace PAT sessions', () => {
-    for (const feature of [GROUP_FEATURE.CREATE, GROUP_FEATURE.DELETE_GROUP_USER, GROUP_FEATURE.DUPLICATE, GROUP_FEATURE.USER_ROLE_CHANGE]) {
+    for (const feature of [
+      GROUP_FEATURE.CREATE,
+      GROUP_FEATURE.DELETE_GROUP_USER,
+      GROUP_FEATURE.DUPLICATE,
+      GROUP_FEATURE.USER_ROLE_CHANGE,
+    ]) {
       const interceptor = new PatScopeInterceptor({
-        get: (key: string) => key === 'tjModuleId' ? MODULES.GROUP_PERMISSIONS : feature,
+        get: (key: string) => (key === 'tjModuleId' ? MODULES.GROUP_PERMISSIONS : feature),
       } as any);
       const invoke = () => interceptor.intercept(contextFor({ isPATLogin: true }), nextHandler);
       if (feature === GROUP_FEATURE.USER_ROLE_CHANGE) expect(invoke).toThrow(ForbiddenException);
@@ -406,7 +416,10 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
   it('is pinned on routes that carry no app uuid, via the app the guard resolved', () => {
     // Slug lookups and query runs never put the uuid in the path; without tj_app they slipped the pin.
     expect(() =>
-      run(MODULES.APP, APP_FEATURE.GET_BY_SLUG, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: OTHER_APP_ID } })
+      run(MODULES.APP, APP_FEATURE.GET_BY_SLUG, {
+        originalUrl: '/api/apps/slugs/some-slug',
+        tj_app: { id: OTHER_APP_ID },
+      })
     ).toThrow(ForbiddenException);
     expect(() =>
       run(MODULES.DATA_QUERY, undefined, {

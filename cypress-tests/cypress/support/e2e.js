@@ -15,7 +15,6 @@
 
 // Import commands.js using ES2015 syntax:
 import "cypress-real-events/support";
-import "@cypress/code-coverage/support";
 import "cypress-real-events";
 
 import "../commands/commands";
@@ -30,6 +29,9 @@ import '../commands/platform/platformApiCommands';
 
 import '../commands/marketplace/marketplaceAPICommands';
 import '../commands/marketplace/marketplaceCommands';
+
+import '../commands/platform/gitSyncCommands';
+import '../commands/platform/gitSyncAppCommands';
 
 // Browser-side cy.realDragAndDrop / cy.realDrag commands. Real HTML5 drag
 // via CDP — the only reliable way to trigger react-dnd's html5 backend from

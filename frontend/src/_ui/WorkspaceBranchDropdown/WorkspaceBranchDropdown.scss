@@ -1,0 +1,129 @@
+.workspace-branch-dropdown {
+  position: relative;
+
+  .branch-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--slate5);
+    border-radius: 6px;
+    background: var(--base);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text-primary);
+    transition: border-color 0.15s;
+
+    &:hover {
+      border-color: var(--slate7);
+    }
+
+    .branch-name {
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+  }
+
+  .branch-list-popover {
+    min-width: 240px;
+    max-width: 300px;
+    padding: 8px 0;
+
+    .popover-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 12px 8px;
+      border-bottom: 1px solid var(--slate5);
+      margin-bottom: 4px;
+
+      .popover-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+    }
+
+    .branch-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-primary);
+
+      &:hover {
+        background: var(--slate3);
+      }
+
+      &.active {
+        background: var(--indigo3);
+        color: var(--indigo11);
+        font-weight: 500;
+      }
+
+      .branch-item-name {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        min-width: 0;
+
+        span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .branch-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .delete-btn {
+          opacity: 0;
+          padding: 2px;
+          border: none;
+          background: none;
+          color: var(--tomato9);
+          cursor: pointer;
+          border-radius: 4px;
+
+          &:hover {
+            background: var(--tomato3);
+          }
+        }
+      }
+
+      &:hover .delete-btn {
+        opacity: 1;
+      }
+    }
+
+    .create-branch-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      margin-top: 4px;
+      border-top: 1px solid var(--slate5);
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--indigo11);
+      width: 100%;
+      background: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+
+      &:hover {
+        background: var(--slate3);
+      }
+    }
+  }
+}

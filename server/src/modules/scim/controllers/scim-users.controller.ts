@@ -4,4 +4,4 @@ import { Controller } from '@nestjs/common';
 
 @Controller('scim/v2')
 @InitModule(MODULES.SCIM)
-export class ScimUsersController { }
+export class ScimUsersController {}

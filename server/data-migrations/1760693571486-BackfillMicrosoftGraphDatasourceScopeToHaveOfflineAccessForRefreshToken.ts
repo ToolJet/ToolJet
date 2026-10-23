@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class BackfillMicrosoftGraphDatasourceScopeToHaveOfflineAccessForRefreshToken1760693571486
-  implements MigrationInterface
-{
+export class BackfillMicrosoftGraphDatasourceScopeToHaveOfflineAccessForRefreshToken1760693571486 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
         UPDATE data_source_options
