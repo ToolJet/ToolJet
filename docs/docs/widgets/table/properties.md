@@ -104,8 +104,6 @@ Below are the button text properties that you can set.
 
 Expandable rows let end users reveal additional content beneath a row — such as a nested table, a form, or a detailed view — without leaving the current page.
 
-Both properties are in the **Row Selection** section of the Table properties.
-
 | <div style={{ width:"170px"}}> Property </div> | Description                                                                                                                                 |
 | :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
 | Enable expandable rows                         | Toggles expandable rows on or off. When enabled, each row shows a chevron icon that the user can click to expand or collapse the row.       |
