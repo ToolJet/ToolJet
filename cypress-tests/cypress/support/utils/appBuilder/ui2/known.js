@@ -1,6 +1,6 @@
 // Failures the suite knows about. Two kinds:
 //
-// 1. Out of scope (by design): single failure lines matched per widget, check, size and kind. They are recorded and
+// 1. Out of scope (by design, or an accepted design choice such as the centred Badge): single failure lines matched per widget, check, size and kind. They are recorded and
 //    shown (tools/ui2/report.js lists them) but do not fail the test; every other line of the same test still does.
 //    Today that is E19 (notes/ui2-audit-out-of-scope-2026-10-17.md): the editor draws a widget's saved height while
 //    the viewer fits it to its content, as native widgets do. So a fitted widget's editor and preview heights differ,
@@ -14,6 +14,13 @@
 //    Empty: the 36 off-grid default heights it held at a839e007ee were fixed by b61ce368e1.
 
 export const E19 = "E19: editor draws saved height for fitted widgets";
+
+// Accepted design choices: the widget is drawn this way on purpose, in the editor and the viewer.
+export const DESIGN_BADGE = "Design: a Badge is a pill centred in its box, not stretched to fill it";
+/** geometry, both modes: per widget and size, the failure kinds that are a design choice. */
+const DESIGN_GEOMETRY = {
+  ShadBadge: { default: [/^blank band of [\d.]+px at the (top|bottom)/], reason: DESIGN_BADGE },
+};
 
 const D = ["default"];
 const S = ["small"];
@@ -74,6 +81,11 @@ export const outOfScope = (rec, line) => {
     const saved = m && rec.authored?.[m[1]];
     if (m && (E19_PARITY[rec.widget] || []).includes(m[1]) && saved !== undefined && Math.abs(Number(m[2]) - saved) <= 1) return E19;
     return null;
+  }
+  if (rec.check === "geometry") {
+    const m = line.match(/^(default|small) \(\d+px\): (.*)$/);
+    const design = DESIGN_GEOMETRY[rec.widget];
+    if (m && design?.[m[1]]?.some((k) => k.test(m[2]))) return design.reason;
   }
   if (rec.check === "geometry" && rec.mode === "editor") {
     const m = line.match(/^(default|small) \(\d+px\): (.*)$/);
