@@ -84,6 +84,12 @@ export const ShadTagsInput = (props: WidgetProps) => {
     setExposedVariables(tagNames([]));
   });
   const disabled = busy(properties);
+  // A chip reads its suggestion's label (picking "Billing team" stored billing and showed "billing"); the tag stays the
+  // value. A tag no suggestion holds reads as itself.
+  const chipLabel = (tag: string) =>
+    suggestions.find((sg) => sg.tag === tag)?.label ??
+    suggestions.find((sg) => M.sameTag(sg.tag, tag, rules.caseSensitive))?.label ??
+    tag;
   const query = text.trim().toLowerCase();
   const visible = suggestions
     .filter(
@@ -110,15 +116,17 @@ export const ShadTagsInput = (props: WidgetProps) => {
   /** Adds typed or picked tags; true when at least one was added. */
   const add = (candidates: unknown) => {
     let wanted = M.toTags(candidates);
-    if (properties.allowCustomTags === false) {
-      // A candidate is the suggestion whose value it is (exactly, then by the case rule), else the one whose label it
-      // is: a picked suggestion keeps its own value even when another suggestion's label reads the same, and with
-      // caseSensitive on, alpha and Alpha are different suggestions.
-      const cs = rules.caseSensitive;
-      const resolve = (c: string) =>
-        suggestions.find((s) => s.tag === c)?.tag ??
-        suggestions.find((s) => M.sameTag(s.tag, c, cs))?.tag ??
-        suggestions.find((s) => M.sameTag(s.label, c, cs))?.tag;
+    // A candidate is the suggestion whose value it is (exactly, then by the case rule), else the one whose label it
+    // is: a picked suggestion keeps its own value even when another suggestion's label reads the same, and with
+    // caseSensitive on, alpha and Alpha are different suggestions. Typing a suggestion's label ("Sales") adds that
+    // suggestion's value with custom tags allowed too, not a second tag spelled like its label.
+    const cs = rules.caseSensitive;
+    const resolve = (c: string) =>
+      suggestions.find((s) => s.tag === c)?.tag ??
+      suggestions.find((s) => M.sameTag(s.tag, c, cs))?.tag ??
+      suggestions.find((s) => M.sameTag(s.label, c, cs))?.tag;
+    if (properties.allowCustomTags !== false) wanted = wanted.map((c) => resolve(c) ?? c);
+    else {
       const known = wanted.map(resolve).filter((t): t is string => !!t);
       if (known.length < wanted.length) setTagError('Pick a tag from the suggestions');
       wanted = known;
@@ -201,8 +209,8 @@ export const ShadTagsInput = (props: WidgetProps) => {
               <Chip
                 // Tags are unique (addTags), so a chip keeps its identity when one before it is removed.
                 key={tag}
-                label={tag}
-                removeLabel={`Remove ${tag}`}
+                label={chipLabel(tag)}
+                removeLabel={`Remove ${chipLabel(tag)}`}
                 onRemove={disabled ? undefined : () => remove(i)}
               />
             ))}
