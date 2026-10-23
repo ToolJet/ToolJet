@@ -403,7 +403,7 @@ export const shadRatingConfig = {
     isValid: true,
     isMandatory: false,
     value: 0,
-    label: '',
+    label: 'Rating',
   },
   actions: [
     {
@@ -473,7 +473,7 @@ export const shadRatingConfig = {
     },
     properties: {
       label: {
-        value: '',
+        value: 'Rating',
       },
       description: {
         value: '',

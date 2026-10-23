@@ -523,7 +523,7 @@ export const shadButtonGroupConfig = {
     },
     properties: {
       label: {
-        value: '',
+        value: 'Label',
       },
       description: {
         value: '',

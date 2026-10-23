@@ -286,7 +286,7 @@ export const shadRadioGroupConfig = {
     isValid: true,
     isMandatory: false,
     value: '',
-    label: '',
+    label: 'Label',
     selectedOption: {},
     options: [],
   },
@@ -354,7 +354,7 @@ export const shadRadioGroupConfig = {
     },
     properties: {
       label: {
-        value: '',
+        value: 'Label',
       },
       description: {
         value: '',

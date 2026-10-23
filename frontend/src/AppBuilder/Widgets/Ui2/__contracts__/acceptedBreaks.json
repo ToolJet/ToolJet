@@ -76,6 +76,34 @@
       "key": "placeholder",
       "change": "initial",
       "reason": "A new Textarea starts with a label and a placeholder, as the native inputs do: it was dropped with neither and looked unfinished, with a blank band where the label goes. Saved Textareas keep what they saved."
+    },
+    {
+      "type": "ShadButtonGroup",
+      "area": "property",
+      "key": "label",
+      "change": "initial",
+      "reason": "A new Button group starts with a label, as every UI 2.0 input does (inputDefaults.spec, derived from the configs): it was dropped with none, unlike the native one. Saved Button groups keep what they saved."
+    },
+    {
+      "type": "ShadRadioGroup",
+      "area": "property",
+      "key": "label",
+      "change": "initial",
+      "reason": "A new Radio group starts with a label, as every UI 2.0 input does (inputDefaults.spec, derived from the configs): it was dropped with none, unlike the native one. Saved Radio groups keep what they saved."
+    },
+    {
+      "type": "ShadSlider",
+      "area": "property",
+      "key": "label",
+      "change": "initial",
+      "reason": "A new Slider starts with a label, as every UI 2.0 input does (inputDefaults.spec, derived from the configs): it was dropped with none, unlike the native one. Saved Sliders keep what they saved."
+    },
+    {
+      "type": "ShadRating",
+      "area": "property",
+      "key": "label",
+      "change": "initial",
+      "reason": "A new Rating starts with a label, as every UI 2.0 input does (inputDefaults.spec, derived from the configs): it was dropped with none, unlike the native one. Saved Ratings keep what they saved."
     }
   ]
 }

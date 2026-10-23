@@ -52,7 +52,7 @@
         "type": "string"
       },
       "default": "",
-      "initial": ""
+      "initial": "Label"
     },
     "loadingState": {
       "type": "boolean",

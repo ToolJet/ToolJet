@@ -264,7 +264,7 @@ export const shadSliderConfig = {
     isLoading: false,
     isDisabled: false,
     value: 50,
-    label: '',
+    label: 'Label',
   },
   actions: [
     {
@@ -346,7 +346,7 @@ export const shadSliderConfig = {
     },
     properties: {
       label: {
-        value: '',
+        value: 'Label',
       },
       description: {
         value: '',
