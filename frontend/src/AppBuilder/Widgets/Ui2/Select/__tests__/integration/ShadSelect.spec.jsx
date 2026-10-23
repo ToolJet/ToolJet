@@ -164,4 +164,33 @@ describe('UI 2.0 Select', () => {
     const root = container.querySelector('.tj-shadcn');
     expect(root.style.getPropertyValue('--sc-primary')).toBe('#e11d48');
   });
+
+  test('[ShadSelect-PROP-010] Allow clear: an x clears the choice, and so does a click on the chosen option', async () => {
+    // Once chosen, a value could not be taken back.
+    render({ properties: { defaultValue: binding('jp') } });
+    await waitFor(() => expect(trigger()).toHaveTextContent('Japan'));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Clear selection' })));
+    await waitFor(() => expect(exposed().value).toBe(''));
+    expect(exposed().selectedOption).toEqual({});
+    expect(screen.queryByRole('button', { name: 'Clear selection' })).toBeNull();
+
+    await pick('Peru');
+    await waitFor(() => expect(exposed().value).toBe('pe'));
+    await act(async () => {
+      fireEvent.pointerDown(trigger(), { button: 0, pointerType: 'mouse', ctrlKey: false });
+    });
+    const chosen = await screen.findByRole('option', { name: 'Peru' });
+    await act(async () => fireEvent.pointerUp(chosen, { button: 0, pointerType: 'mouse' }));
+    await waitFor(() => expect(exposed().value).toBe(''));
+  });
+
+  test('[ShadSelect-PROP-011] no clearing when Allow clear is off or the field is mandatory', async () => {
+    render({ properties: { defaultValue: binding('jp'), allowClear: binding('{{false}}') } });
+    await waitFor(() => expect(trigger()).toHaveTextContent('Japan'));
+    expect(screen.queryByRole('button', { name: 'Clear selection' })).toBeNull();
+
+    render({ properties: { defaultValue: binding('jp') }, validation: { mandatory: binding('{{true}}') } });
+    await waitFor(() => expect(trigger()).toHaveTextContent('Japan'));
+    expect(screen.queryByRole('button', { name: 'Clear selection' })).toBeNull();
+  });
 });

@@ -52,6 +52,18 @@ export const shadSelectConfig = {
       },
       placeholder: "['Standard', 'Premium'] or [{ label, value }]",
     },
+    allowClear: {
+      type: 'toggle',
+      displayName: 'Allow clear',
+      note: 'An x in the box, and a click on the chosen option, clear it. Off while the field is mandatory.',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: true,
+      },
+    },
     placeholder: {
       type: 'code',
       displayName: 'Placeholder',
@@ -410,6 +422,9 @@ export const shadSelectConfig = {
       },
       options: {
         value: "{{[{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]}}",
+      },
+      allowClear: {
+        value: '{{true}}',
       },
       placeholder: {
         value: 'Select an option',
