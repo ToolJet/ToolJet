@@ -35,4 +35,22 @@ describe('Personal access token creation (CE)', () => {
       expect(await getDefaultDataSource().getRepository(UserPersonalAccessToken).count()).toBe(0);
     });
   });
+
+  describe('the other personal access token routes', () => {
+    it.each([
+      ['GET /personal-access-tokens', 'get', ''],
+      ['GET /personal-access-tokens/validate', 'get', '/validate'],
+      ['DELETE /personal-access-tokens/:id', 'delete', '/6f1c3a9e-2b7d-4e58-9a41-0c5d8e2f7b13'],
+      ['POST /personal-access-tokens/session', 'post', '/session'],
+    ] as const)('should return 501 for %s, even for an admin', async (_label, method, suffix) => {
+      const admin = await createAdmin(app, `pat-ce-${method}${suffix.length}@tooljet.io`);
+
+      await request
+        .agent(app.getHttpServer())
+        [method](`/api/personal-access-tokens${suffix}`)
+        .set('Cookie', admin.cookie)
+        .set('tj-workspace-id', admin.workspace.id)
+        .expect(501);
+    });
+  });
 });
