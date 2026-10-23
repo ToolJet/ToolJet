@@ -125,6 +125,20 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 <div style={{paddingTop:'24px'}}>
 
+## Additional Actions
+
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Layout
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                            |
@@ -144,8 +158,6 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
 | Text color                                  | Change the color of the text in the component by providig the `Hex color code` or choosing a color from the picker.                                                                                 |                                                     |
 | Checkbox color                              | Change the color of the toggle switch in the component by providig the `Hex color code` or choosing a color from the picker.                                                                        |                                                     |
-| Visibility                                  | This is to control the visibility of the component. If `{{false}}` the component will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}`.                 |
-| Disable                                     | This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional.                                                                           | By default, its value is set to `{{false}}`.        |
 
 ### Advanced
 

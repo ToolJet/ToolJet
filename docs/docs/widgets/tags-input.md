@@ -221,6 +221,7 @@ This validates that at least 2 tags are selected and shows an error message if n
 | Dynamic height | When enabled, the component height adjusts based on the number of selected tags. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Loading state | Shows a loading overlay on the entire component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls whether the component is visible. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | When enabled, the component becomes non-interactive. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String |
 
@@ -238,6 +239,7 @@ This validates that at least 2 tags are selected and shows an error message if n
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------|:------------|:--------|
 | Color | Label text color. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment | Label position relative to the field. | `Side` (left of field) or `Top` (above field). |
 | Direction | Label alignment when using Side layout. | `Left` or `Right`. |
 | Width | When Alignment is Side and Auto width is disabled, sets the label width. | Enter the value or use the slider. |

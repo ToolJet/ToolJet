@@ -97,6 +97,7 @@ File types must be valid [MIME types](https://developer.mozilla.org/en-US/docs/W
 | <div style={{ width:"120px"}}> Property </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"230px"}}> Configuration Options </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Color | Sets the label text color. | Select a theme color or pick from the color picker. |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment | Controls whether the label appears above (**Top**) or beside (**Side**) the input field. | Switch — **Top** (default) / **Side**. |
 | Direction | When alignment is **Side**, positions the label to the left or right of the input. | Icon toggle — Left (default) / Right. |
 | Width | When alignment is **Side**, determines whether the label width adjusts automatically or uses a fixed value. | Checkbox — **Auto** (default). Uncheck to set a custom width. |
