@@ -50,6 +50,7 @@ export const shadSelectConfig = {
         },
         defaultValue: [],
       },
+      note: "Labels that differ from values: {{[{ label: 'Standard', value: 'std' }, { label: 'Premium', value: 'pro' }]}}",
       placeholder: "['Standard', 'Premium'] or [{ label, value }]",
     },
     allowClear: {

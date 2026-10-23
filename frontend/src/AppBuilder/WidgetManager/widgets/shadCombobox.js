@@ -51,6 +51,7 @@ export const shadComboboxConfig = {
         },
         defaultValue: [],
       },
+      note: "Labels that differ from values: {{[{ label: 'United States', value: 'US' }, { label: 'India', value: 'IN' }]}}",
       placeholder: "['Draft', 'Live'] or [{ label, value, description?, icon?, group?, disabled? }]",
     },
     placeholder: {
