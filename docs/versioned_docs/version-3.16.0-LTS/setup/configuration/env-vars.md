@@ -318,6 +318,21 @@ The license key can be configured via an environment variable to avoid re-enteri
 
 <img className="screenshot-full img-m" src="/img/env-vars/prefilled-license-key.png" alt="Prefilled License Key" />
 
+#### Custom Component Libraries
+
+[Custom Component Libraries](/docs/app-builder/custom-component-library/overview) are a paid feature. When you publish a library version or run a dev preview, ToolJet stores the bundle files (`index.js`, `index.css`, and `manifest.json`) on the server's filesystem. The database stores only the paths to these files.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `CUSTOM_COMPONENT_STORAGE_PATH` | Directory where ToolJet stores custom component library bundles. ToolJet creates a folder for each workspace and library inside it. | `/data/custom-components` |
+
+:::warning
+- **Use a persistent volume.** Mount a persistent volume at this path. If the files are lost, for example when a container is recreated without a volume, apps that use the library can't load its components, and ToolJet returns `Bundle file missing from storage`.
+- **Make the directory writable.** The directory must be writable by the user the ToolJet container runs as. <!-- TODO verify: whether the stock EE image (runs as appuser, does not create /data) fails with EACCES on publish when no volume is mounted at /data/custom-components. -->
+- **Share it across replicas.** In a deployment with more than one ToolJet server replica, every replica must mount the same shared volume (for example, a ReadWriteMany volume). Otherwise, files published through one replica are missing on the others, and requests that reach those replicas return a `404` error.
+- **Use external Redis for dev preview.** With more than one replica, live dev preview (`tooljet library dev`) requires an external Redis instance. See [Redis Configuration](/docs/setup/env-vars#redis-configuration).
+:::
+
 ### Third-Party Integrations
 
 #### Slack
