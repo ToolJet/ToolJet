@@ -75,7 +75,7 @@ export class ProfileController implements IProfileController {
   @UseGuards(PasswordRevalidateGuard)
   @Patch('password')
   async changePassword(@User() user: UserEntity, @Body() changePasswordDto: ChangePasswordDto) {
-    await this.profileService.updateUserPassword(user.id, changePasswordDto.newPassword);
+    await this.profileService.updateUserPassword(user.id, changePasswordDto.newPassword, user.sessionId);
     return;
   }
 }
