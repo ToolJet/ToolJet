@@ -20,6 +20,7 @@ const ROWS = [
   ['ShadDatePicker', { defaultValue: '2026-10-17' }, '', 'onSelect', true],
   ['ShadDateTimePicker', { defaultValue: '2026-10-17 09:30' }, '', 'onSelect', true],
   ['ShadTimePicker', { defaultValue: '09:30' }, '', 'onSelect', true],
+  ['ShadColorPicker', { defaultValue: '#ff0000' }, '', 'onChange', false],
 ];
 
 const harnesses = Object.fromEntries(

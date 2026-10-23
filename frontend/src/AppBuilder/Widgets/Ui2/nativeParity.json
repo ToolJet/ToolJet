@@ -159,10 +159,7 @@
         "format": {
           "dropped": "the value is hex, with RGB and RGBA exposed beside it"
         },
-        "showAlpha": "allowAlpha",
-        "showClearBtn": {
-          "gap": "no clear button"
-        }
+        "showAlpha": "allowAlpha"
       },
       "exposed": {
         "selectedColorHex": "value"

@@ -135,6 +135,13 @@ const CLEARS = [
   ],
   // Show clear button's x, on every field that offers it (showClearButton.spec covers its required and disabled cases).
   [
+    'ShadColorPicker',
+    'press:Clear',
+    { showClearBtn: '{{true}}', defaultValue: '#ff0000' },
+    { value: '' },
+    { onChange: 1 },
+  ],
+  [
     'ShadTimePicker',
     'press:Clear',
     { showClearBtn: '{{true}}', defaultValue: '09:30' },

@@ -7,7 +7,7 @@
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'color1';
 const widget = createWidgetHarness({
@@ -181,5 +181,16 @@ describe('UI 2.0 Color picker', () => {
     await open();
     const panel = screen.getByLabelText('Hex color').closest('[data-radix-popper-content-wrapper] > *');
     expect(panel.style.getPropertyValue('--lk-menu-bg')).toBe('#fef3c7');
+  });
+
+  test('[ShadColorPicker-PROP-007] Show clear button: an x while it holds a value empties it, firing onChange once', async () => {
+    // The native widget's showClearBtn; every field's x is the shared one (showClearButton.spec: required, disabled).
+    render({ properties: { showClearBtn: binding('{{true}}'), defaultValue: binding('#ff0000') } });
+    widget.setEvents(countInvocationsOn(ID, 'onChange'));
+    const clear = await screen.findByRole('button', { name: 'Clear' });
+    await act(async () => fireEvent.click(clear));
+    await waitFor(() => expect(exposed().value).toEqual(''));
+    expect(widget.variables().calls).toBe(1);
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
   });
 });
