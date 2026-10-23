@@ -1,4 +1,4 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -127,6 +127,10 @@ RUN npm --prefix plugins prune --production
 
 ENV TOOLJET_EDITION=ee
 
+# Copy shared widget-definitions package (required by frontend + server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
+
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
@@ -146,7 +150,7 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-FROM node:22.15.1-bookworm
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
@@ -201,6 +205,8 @@ COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder /app/packages/widget-definitions ./app/packages/widget-definitions
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version

@@ -1,9 +1,9 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@10.9.2
+RUN npm i -g npm@10.9.9
 RUN mkdir -p /app
 RUN npm cache clean --force
 
@@ -47,6 +47,10 @@ RUN npm --prefix plugins prune --production
 
 ENV TOOLJET_EDITION=cloud
 
+# Copy shared widget-definitions package (required by frontend + server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
+
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
@@ -73,12 +77,12 @@ RUN apt-get update -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
 
-RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
-    && tar -xf node-v22.15.1-linux-x64.tar.xz \
-    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz \
+    && tar -xf node-v22.23.4-linux-x64.tar.xz \
+    && mv node-v22.23.4-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v22.15.1-linux-x64.tar.xz
+    && rm node-v22.23.4-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 # Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
@@ -123,6 +127,8 @@ COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder /app/packages/widget-definitions ./app/packages/widget-definitions
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version

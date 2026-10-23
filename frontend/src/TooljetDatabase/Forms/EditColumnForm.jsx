@@ -1,10 +1,10 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import tjdbDropdownStyles, {
   dataTypes,
   formatOptionLabel,
@@ -21,7 +21,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
 import { ToolTip } from '@/_components/ToolTip';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
+import ChangesComponent from '../ChangesComponent';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
@@ -59,7 +60,7 @@ const ColumnForm = ({
     foreignKeys,
     configurations,
     setConfigurations,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
@@ -1119,15 +1120,15 @@ const ColumnForm = ({
         confirmButtonText={'Continue'}
         cancelButtonText={'Cancel'}
         footerStyle={footerStyle}
-        // currentPrimaryKeyIcons={currentPrimaryKeyIcons}
-        // newPrimaryKeyIcons={newPrimaryKeyIcons}
-        isEditToolJetDbTable={true}
-        foreignKeyChanges={newChangesInForeignKey}
-        existingReferencedTableName={existingReferencedTableName}
-        existingReferencedColumnName={existingReferencedColumnName}
-        currentReferencedTableName={currentReferencedTableName}
-        currentReferencedColumnName={currentReferencedColumnName}
-      />
+      >
+        <ChangesComponent
+          foreignKeyChanges={newChangesInForeignKey}
+          existingReferencedTableName={existingReferencedTableName}
+          existingReferencedColumnName={existingReferencedColumnName}
+          currentReferencedTableName={currentReferencedTableName}
+          currentReferencedColumnName={currentReferencedColumnName}
+        />
+      </ConfirmDialog>
     </>
   );
 };
