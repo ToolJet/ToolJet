@@ -21,7 +21,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 | `repository.ts` | `allGlobalDS()` — permission-filtered listing with branch/environment DSV+DSVO joins; static/default helpers |
 | `controller.ts` | REST endpoints incl. `POST :id/test-connection`, `:id/scope`, `:id/authorize_oauth2`, `:id/invoke`, `dependent-queries/:datasource_id` |
 | `services/plugin-selector.service.ts` | Resolves `kind` → plugin `QueryService` from `@tooljet/plugins/dist/server`; EE adds marketplace plugin lookup |
-| `services/sample-ds.service.ts` | Creates/updates the sample Postgres source from `SAMPLE_PG_DB_*` env vars across all Environments |
+| `services/sample-ds.service.ts` | Creates/updates the sample Postgres source from `SAMPLE_PG_DB_*` env vars across all Environments; boot sync (`syncSampleDataSources`) re-points sources whose `sample_fingerprint` is stale |
 | `ability/` | `FeatureAbilityFactory` — CASL rules from granular `GLOBAL_DATA_SOURCE` permissions (`isAllConfigurable`, `usableDataSourcesId`, ...) |
 | `guards/whitelist-plugin.guard.ts` | Restricts `:id/invoke` to an allowlisted set of kinds |
 | `guards/validate-query-source.guard.ts` | `ValidateDataSourceGuard` — loads + org-checks the data source for param `id` |
@@ -40,6 +40,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - **Constant resolution is session-workspace only**: `resolveConstants` trusts its `organizationId`, so HTTP entry points must pass `user.organizationId`, never a body/query id. `fetch-oauth2-base-url` (`DataSourcesService.getAuthUrl`) rejects a foreign `organization_id` (403) and an `environment_id` outside the workspace (404) before resolving; internal callers (data-queries `needs_oauth`) call the util directly with server-derived ids.
 - Branch-aware behavior (this branch line): delete on a branch soft-deletes (`DataSourceVersion.isActive = false`); released apps read the `is_default` DSV. `branchId` only applies to global-scope sources.
 - **`is_synced=false` on create in every mode** (git-off, multi-branch feature, single-branch default) — a brand-new DSV is never-committed, so it stays unsynced until a push (git-sync). There is no single-branch synced-on-create exemption (removed) — mirrors the apps/modules rule. A git-sync pull that finds a synced DSV absent from git **deactivates** it (`isActive=false`), it does not delete the row.
+- Sample sources connect as a restricted `tooljet_sample_*` role (`helpers/sample-db-role.helper.ts`), provisioned on boot by `SAMPLE_PG_DB_USER` or `PG_USER`; never the admin user. If provisioning fails, `sample_sql_disabled` is set and queries are rejected. Role setup and `populate-sample-db` share one advisory lock.
 - Scope change is one-way (local → global); sample sources can't be deleted; delete is blocked while dependent queries exist (`findQueriesLinkedToDatasource`).
 - NEVER abbreviate `data_source` as `ds` in code or docs.
 

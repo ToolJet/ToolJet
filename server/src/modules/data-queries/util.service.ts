@@ -24,6 +24,7 @@ import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
 import { AppVersion } from '@entities/app_version.entity';
 import { ListTablesDto } from './dto';
+import { DataSourceTypes, SAMPLE_SQL_DISABLED_KEY } from '@modules/data-sources/constants';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -559,6 +560,14 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       user,
       dataSourceOptionId
     );
+
+    if (dataSource.type === DataSourceTypes.SAMPLE && sourceOptions[SAMPLE_SQL_DISABLED_KEY]) {
+      throw new QueryError(
+        'Sample data source is disabled',
+        'ToolJet could not create a restricted database user for the sample data source. Ask your admin to give SAMPLE_PG_DB_USER (or PG_USER) permission to create roles, then restart ToolJet.',
+        {}
+      );
+    }
 
     const parsedQueryOptions = await this.parseQueryOptions(
       dataQuery.options,
