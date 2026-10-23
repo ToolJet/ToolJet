@@ -6,6 +6,21 @@ import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 export const CONFIGS = Object.fromEntries(shadcnConfigs.map((c) => [c.name, c]));
 export const TYPES = Object.keys(CONFIGS);
 
+/** Widgets that hold user input, from their configs: an exposed value the user enters (value, values or file) and an
+ *  event fired when it changes. The inputs are those of them with a `label` property. A new widget is in the lists
+ *  when it is added. */
+const EXPOSES_INPUT = ['value', 'values', 'file'];
+const CHANGE_EVENT = /change|select|file/i;
+export const holdsInput = (type) => {
+  const c = CONFIGS[type];
+  return (
+    EXPOSES_INPUT.some((k) => k in (c?.exposedVariables || {})) &&
+    Object.keys(c?.events || {}).some((e) => CHANGE_EVENT.test(e))
+  );
+};
+export const HOLDS_INPUT_TYPES = TYPES.filter(holdsInput);
+export const INPUT_TYPES = HOLDS_INPUT_TYPES.filter((type) => !!CONFIGS[type].properties?.label);
+
 /** A definition value as the app resolves it: '{{...}}' evaluated, plain strings kept. */
 export const resolveDefinitionValue = (value) => {
   if (typeof value !== 'string') return value;
