@@ -23,7 +23,8 @@ const rows = files.flatMap((f) =>
 const byCheck = {};
 rows.forEach((r) => {
   const k = `${r.spec} / ${r.check}`;
-  byCheck[k] = byCheck[k] || { pass: 0, fail: 0, known: 0 };
+  byCheck[k] = byCheck[k] || { pass: 0, fail: 0, known: 0, oos: 0 };
+  if ((r.outOfScope || []).length) byCheck[k].oos += 1;
   if (r.pass) byCheck[k].pass += 1;
   else if (r.known) byCheck[k].known += 1;
   else byCheck[k].fail += 1;
@@ -31,8 +32,9 @@ rows.forEach((r) => {
 
 const where = (r) => [r.widget, r.size, r.mode, r.width && `${r.width}px`, r.theme].filter(Boolean).join(" | ");
 const out = [];
-out.push(md ? "| Spec / check | Pass | Fail | Known fail |\n|---|---|---|---|" : "Spec / check: pass, fail, known fail");
-Object.entries(byCheck).forEach(([k, v]) => out.push(md ? `| ${k} | ${v.pass} | ${v.fail} | ${v.known} |` : `${k}: ${v.pass}, ${v.fail}, ${v.known}`));
+// "Out of scope": tests with lines known.js marks out of scope (E19); those lines alone never fail a test.
+out.push(md ? "| Spec / check | Pass | Fail | Known fail | With out-of-scope lines |\n|---|---|---|---|---|" : "Spec / check: pass, fail, known fail, with out-of-scope lines");
+Object.entries(byCheck).forEach(([k, v]) => out.push(md ? `| ${k} | ${v.pass} | ${v.fail} | ${v.known} | ${v.oos} |` : `${k}: ${v.pass}, ${v.fail}, ${v.known}, ${v.oos}`));
 out.push("");
 const failing = rows.filter((r) => !r.pass);
 const group = {};
@@ -45,6 +47,7 @@ Object.entries(group).forEach(([k, list]) => {
   list.forEach((r) => {
     out.push(`- ${where(r)}${r.known ? ` [known: ${r.known}]` : ""}`);
     r.failures.forEach((f) => out.push(`    - ${f}`));
+    (r.outOfScope || []).forEach((o) => out.push(`    - (out of scope, ${o.reason.split(":")[0]}) ${o.line}`));
   });
   out.push("");
 });

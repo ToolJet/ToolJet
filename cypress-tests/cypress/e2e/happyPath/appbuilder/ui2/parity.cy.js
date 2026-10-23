@@ -79,7 +79,9 @@ describe("UI 2.0 editor and preview lay a widget out the same", { testIsolation:
         itFor(known)(`${widget.displayName} (${widget.type}) has the same top and height in the editor and the preview${known ? ` [known: ${known}]` : ""}`, () => {
           const failures = compare(placements, m[`editor${width}`], m[`viewer${width}`], widget, ["editor", "preview"]);
           const data = Object.fromEntries(SIZES.map((s) => [s, { editor: m[`editor${width}`][galleryName(widget, s)], preview: m[`viewer${width}`][galleryName(widget, s)] }]));
-          assertNoFailures({ check: "parity", widget: widget.type, mode: "editor-vs-preview", width, theme: "light", failures, data, known }, `[data-cy="draggable-widget-${galleryName(widget, "default")}"]`);
+          // The saved heights: known.js reads them to tell E19 (the editor draws the saved height) from a real gap.
+          const authored = Object.fromEntries(placements.filter((p) => p.widget.type === widget.type).map((p) => [p.size, p.layout.height]));
+          assertNoFailures({ check: "parity", widget: widget.type, mode: "editor-vs-preview", width, theme: "light", failures, data, known, authored }, `[data-cy="draggable-widget-${galleryName(widget, "default")}"]`);
         });
       });
     });

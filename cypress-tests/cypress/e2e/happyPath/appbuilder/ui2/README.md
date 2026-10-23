@@ -56,7 +56,7 @@ with its numbers.
 
 ## Known failures
 
-`known.js` lists failures the team already tracks. Those tests still run and still fail, with the reason in the title
+`known.js` marks single failure lines out of scope (by design) per widget, check, size and kind: they are recorded and reported but do not fail the test, while every other line of that test still does. Today that is E19, the editor drawing a fitted widget's saved height (its editor vs preview height gap, and the bands or overflow it leaves on the editor canvas only). It also lists tracked bugs, failures the team already tracks. Those tests still run and still fail, with the reason in the title
 and the message, so a fix shows up as a pass; `CYPRESS_ui2_skip_known=true` skips them for a baseline run. Remove an
 entry when its fix lands. The list is empty: the 36 off-grid default heights it held at `a839e007ee` were fixed by
 `b61ce368e1`.
