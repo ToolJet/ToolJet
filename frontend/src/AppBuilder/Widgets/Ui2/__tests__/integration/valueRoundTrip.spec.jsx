@@ -133,6 +133,28 @@ const CLEARS = [
     { value: '', isValid: true },
     { onChange: 1 },
   ],
+  // Show clear button's x, on the types that are not search, and on the Number input.
+  [
+    'ShadInput',
+    'press:Clear',
+    { inputType: 'url', showClearBtn: '{{true}}', defaultValue: 'https://example.com' },
+    { value: '', isValid: true },
+    { onChange: 1 },
+  ],
+  [
+    'ShadInput',
+    'press:Clear',
+    { inputType: 'number', showClearBtn: '{{true}}', defaultValue: '42' },
+    { value: null, isValid: true },
+    { onChange: 1 },
+  ],
+  [
+    'ShadNumberInput',
+    'press:Clear',
+    { showClearBtn: '{{true}}', defaultValue: '{{5}}' },
+    { value: null, isValid: true },
+    { onChange: 1 },
+  ],
   [
     'ShadSelect',
     'press:Clear selection',

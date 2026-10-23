@@ -73,6 +73,15 @@
       "default": "",
       "initial": "Enter text"
     },
+    "showClearBtn": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "tooltip": {
       "type": "string",
       "schema": {

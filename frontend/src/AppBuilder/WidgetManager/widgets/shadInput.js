@@ -103,6 +103,17 @@ export const shadInputConfig = {
       },
       fullWidth: true,
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -444,6 +455,9 @@ export const shadInputConfig = {
       },
       inputType: {
         value: 'text',
+      },
+      showClearBtn: {
+        value: '{{false}}',
       },
       loadingState: {
         value: '{{false}}',
