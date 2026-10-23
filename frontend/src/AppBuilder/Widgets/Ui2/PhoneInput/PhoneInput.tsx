@@ -10,6 +10,7 @@ import { GroupClear, showsClear } from '@/AppBuilder/Widgets/Ui2/_shared/FieldCl
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
   missingIsGone,
+  runNow,
   useAutoHeight,
   useExposed,
   useLatest,
@@ -283,11 +284,12 @@ export const ShadPhoneInput = (props: WidgetProps) => {
           onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => isEnter(e) && fireEvent('onEnterPressed')}
         />
         {/* Show clear button (the native Phone input's showClearBtn): empties the number, keeping the country, with
-            one onChange, as the clear action does; the box then takes the focus (refocus, once it is started again). */}
+            one onChange, as the clear action does; the box then takes the focus (refocus, once it is started again).
+            Settled first (runNow), as an action is: the onChange handler read isValid from before the clear. */}
         <GroupClear
           show={showsClear(properties, !!state.value)}
           onClear={() => {
-            set({ ...stateRef.current, value: '' });
+            runNow(() => set({ ...stateRef.current, value: '' }));
             refocus.current = true;
           }}
         />

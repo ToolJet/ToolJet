@@ -2,12 +2,14 @@
  * Show clear button (the native inputs' and pickers' showClearBtn), on every UI 2.0 field that offers it: one x
  * (FieldClear), off by default so saved apps do not change. While on, the x shows only while the field holds a value
  * and takes input; it is a tab stop named Clear; pressing it empties the field to its empty value, fires the field's
- * change event once, and leaves isValid right (a required field reads invalid).
+ * change event once, and leaves isValid right (a required field reads invalid), already when the change event's handler
+ * runs, at the root and inside a Tabs.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { binding, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { CONFIGS } from '@/AppBuilder/Widgets/Ui2/__tests__/packWidgets';
+import { binding, countInvocationsOn, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { componentDefinition } from '@/test/app-builder';
+import { defaultsOf, CONFIGS } from '@/AppBuilder/Widgets/Ui2/__tests__/packWidgets';
 
 const ID = 'w1';
 // [componentType, properties with a value, the exposed value once cleared, the change event, validates]
@@ -74,3 +76,51 @@ describe.each(ROWS)('%s Show clear button', (type, properties, empty, event, val
     expect(x()).toBeNull();
   });
 });
+
+// What each change event's handler read: [value, isValid] per event, so the count is the log's length.
+const LOG = '{{(variables.log ?? []).concat([[components.field1.value, components.field1.isValid]])}}';
+const TABS = 'tabs1';
+const tabsHarness = createWidgetHarness({
+  componentType: 'ShadTabs',
+  handle: TABS,
+  id: TABS,
+  widgetHeight: 400,
+  widgetWidth: 600,
+  preload: ['ShadTabs', ...new Set(ROWS.map(([type]) => type))],
+  capabilities: { dnd: true },
+});
+
+describe.each(ROWS.filter(([, , , , validates]) => validates))(
+  '%s Show clear button on a required field',
+  (type, properties, empty, event) => {
+    test.each(['at the root', 'inside a Tabs'])(
+      'the change handler reads the empty value and isValid false, once (%s)',
+      async (where) => {
+        const nested = where === 'inside a Tabs';
+        const widget = nested ? tabsHarness : harnesses[type];
+        await widget.setup();
+        try {
+          const settings = { ...properties, showClearBtn: '{{true}}' };
+          if (nested) {
+            const child = componentDefinition(ID, 'field1', type, bind(settings));
+            child.component.parent = `${TABS}-${defaultsOf('ShadTabs').tabs[0].id}`;
+            child.component.definition.validation = { mandatory: binding('{{true}}') };
+            child.component.definition.others = { showOnDesktop: binding(true), showOnMobile: binding(false) };
+            child.layouts = { desktop: { top: 0, left: 0, width: 30, height: 80 } };
+            widget.render({ currentMode: 'view', extraComponents: { [ID]: child } });
+          } else {
+            widget.render({ currentMode: 'view', properties: bind(settings), validation: { mandatory: '{{true}}' } });
+          }
+          widget.setEvents(setVariableOn(ID, event, { key: 'log', value: LOG }));
+          const button = await screen.findByRole('button', { name: 'Clear' });
+          await act(async () => fireEvent.click(button));
+          await waitFor(() => expect(widget.variables().log).toHaveLength(1));
+          expect(widget.variables().log).toEqual([[empty ?? null, false]]);
+        } finally {
+          widget.teardown();
+        }
+      },
+      15000
+    );
+  }
+);
