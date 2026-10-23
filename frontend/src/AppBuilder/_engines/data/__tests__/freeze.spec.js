@@ -1,6 +1,9 @@
 import { freeze as immerFreeze } from 'immer';
 import { deepFreeze, deepFreezeInSlices } from '../freeze';
 
+// Freezing 300k rows in slices: a CI runner takes several times as long as a laptop.
+jest.setTimeout(60000);
+
 class Point {
   constructor() {
     this.at = { x: 1 };

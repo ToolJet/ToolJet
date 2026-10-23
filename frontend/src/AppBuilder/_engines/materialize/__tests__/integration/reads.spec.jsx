@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { types } from 'util';
-import { act, fireEvent, waitFor } from '@testing-library/react';
+import { act, configure, fireEvent, getConfig, waitFor } from '@testing-library/react';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import useStore from '@/AppBuilder/_stores/store';
 import { dataqueryService } from '@/_services';
@@ -25,6 +25,15 @@ import {
 
 // Integration specs that draw real rows: a CI runner takes several times as long as a laptop.
 jest.setTimeout(60000);
+
+// Waits for a 3,000-row ListView's reads: a CI runner takes several times as long as a laptop. Restored after this
+// file, so other files keep testing-library's default.
+let asyncUtilTimeout;
+beforeAll(() => {
+  ({ asyncUtilTimeout } = getConfig());
+  configure({ asyncUtilTimeout: 30000 });
+});
+afterAll(() => configure({ asyncUtilTimeout }));
 
 const state = () => useStore.getState();
 

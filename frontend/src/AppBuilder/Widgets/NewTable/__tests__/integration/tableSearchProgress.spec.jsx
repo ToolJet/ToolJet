@@ -4,7 +4,7 @@
  * and the search box shows how far it has got. What the app sees (filteredData …) changes only once it finishes.
  */
 import React from 'react';
-import { act, fireEvent, waitFor } from '@testing-library/react';
+import { act, configure, fireEvent, getConfig, waitFor } from '@testing-library/react';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import useStore from '@/AppBuilder/_stores/store';
 import { tableConfig } from '@tooljet/widget-definitions';
@@ -89,6 +89,15 @@ async function search(term, done) {
 }
 
 jest.setTimeout(60000);
+
+// Waits for a 300k-row Table: a CI runner takes several times as long as a laptop. Restored after this file, so other
+// files keep testing-library's default.
+let asyncUtilTimeout;
+beforeAll(() => {
+  ({ asyncUtilTimeout } = getConfig());
+  configure({ asyncUtilTimeout: 30000 });
+});
+afterAll(() => configure({ asyncUtilTimeout }));
 
 describe('Table search over many rows', () => {
   beforeEach(() => {
