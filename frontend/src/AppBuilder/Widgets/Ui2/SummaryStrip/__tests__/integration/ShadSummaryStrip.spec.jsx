@@ -153,4 +153,16 @@ describe('UI 2.0 Summary strip', () => {
     expect(root.style.getPropertyValue('--lk-radius')).toBe('12px');
     expect(root.style.getPropertyValue('--lk-title-font')).toMatch(/monospace$/);
   });
+
+  test('[ShadSummaryStrip-STY-010] in a fixed box too short for its figures, the strip scrolls instead of cutting them', async () => {
+    // At 50px the figures were cut 59px by the strip's overflow: hidden, with no way to reach them (Cypress geometry).
+    render({ currentMode: 'edit' });
+    const strip = await waitFor(() => {
+      const dl = document.querySelector('dl');
+      expect(dl).toBeTruthy();
+      return dl;
+    });
+    expect(strip).toHaveClass('tw-h-full', 'tw-overflow-y-auto');
+    expect(strip).not.toHaveClass('tw-overflow-hidden');
+  });
 });

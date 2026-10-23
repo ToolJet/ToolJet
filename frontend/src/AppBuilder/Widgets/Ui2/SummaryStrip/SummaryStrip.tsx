@@ -82,7 +82,11 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
   } else {
     body = (
       <dl
-        className={cn('tw-m-0 tw-grid tw-overflow-hidden', panel && 'tw-border', fixed && 'tw-h-full')}
+        className={cn(
+          'tw-m-0 tw-grid',
+          fixed ? 'tw-h-full tw-overflow-y-auto' : 'tw-overflow-hidden',
+          panel && 'tw-border'
+        )}
         style={{
           ...frame,
           gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
