@@ -341,6 +341,18 @@ export const shadScatterChartConfig = {
       },
       placeholder: "['#0f766e', '#f59e0b']",
     },
+    highlightClicked: {
+      type: 'toggle',
+      displayName: 'Highlight clicked point',
+      note: 'Draws the clicked point or bar emphasised until the Clear clicked point action runs or another is clicked.',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -656,6 +668,9 @@ export const shadScatterChartConfig = {
       },
       colors: {
         value: '{{[]}}',
+      },
+      highlightClicked: {
+        value: '{{false}}',
       },
       loadingState: {
         value: '{{false}}',

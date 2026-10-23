@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { emphasis, highlightOf } from '@/AppBuilder/Widgets/Ui2/_charts/highlight';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -44,6 +45,8 @@ export const ShadFunnelChart = (props: WidgetProps) => {
   const byStage = p.colorByStage === true;
   const fade = (i: number) => (stages.length > 1 ? 1 - (i / (stages.length - 1)) * 0.45 : 1);
   const onStage = (stage: FunnelStage) => click.pick(stage.row);
+  // Highlight clicked point: the clicked stage keeps its bar and the others fade, until clearClickedPoint.
+  const highlighted = p.highlightClicked === true ? highlightOf(click.exposed.clickedDataPoint) : null;
   const empty = !stages.length || stages.every((s) => s.value === null);
   const emptyView = <EmptyChart text={String(p.emptyText || 'No data')} />;
   return (
@@ -87,7 +90,7 @@ export const ShadFunnelChart = (props: WidgetProps) => {
                           // A late stage of a steep funnel (764 of 16,100) still reads as a bar, not a hairline.
                           width: `${stage.value ? Math.max(6, stage.width * 100) : 0}%`,
                           background: byStage ? seriesColor(p.colors, i) : seriesColor(p.colors, 0),
-                          opacity: byStage ? 1 : fade(i),
+                          opacity: (byStage ? 1 : fade(i)) * emphasis(stage.row, highlighted),
                           // Animate: each bar grows in from its anchor, a stage after the one above it.
                           ...(animated(p)
                             ? {

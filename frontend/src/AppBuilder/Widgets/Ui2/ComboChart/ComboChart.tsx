@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { Bar, CartesianGrid, ComposedChart, Legend, Line, Tooltip, XAxis, YAxis } from 'recharts';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, ReferenceDot, Tooltip, XAxis, YAxis } from 'recharts';
+import { emphasis } from '@/AppBuilder/Widgets/Ui2/_charts/highlight';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
@@ -155,7 +156,7 @@ export const ShadComboChart = (props: WidgetProps) => {
   const curve = curveOf(p.curve);
   return (
     <SafeFrame props={props} empty={empty} notes={notes}>
-      {(onDatum) => (
+      {(onDatum, highlighted) => (
         <ComposedChart
           data={rows}
           margin={{ left: 4, right: hasRight ? 4 : 12, top: 12 }}
@@ -199,7 +200,11 @@ export const ShadComboChart = (props: WidgetProps) => {
                 stackId={stackedBars ? 'bars' : undefined}
                 maxBarSize={56}
                 isAnimationActive={animated(p, rows.length)}
-              />
+              >
+                {highlighted
+                  ? rows.map((row, d) => <Cell key={d} fill={fills[i]} fillOpacity={emphasis(row, highlighted)} />)
+                  : null}
+              </Bar>
             ) : (
               <Line
                 key={s.field}
@@ -215,6 +220,23 @@ export const ShadComboChart = (props: WidgetProps) => {
               />
             )
           )}
+          {/* Highlight clicked point: the other bars fade (above) and each line's point at the clicked category is ringed. */}
+          {highlighted && xField
+            ? series
+                .filter((s) => s.kind !== 'bar' && Number.isFinite(Number((highlighted as Resolved)[s.field])))
+                .map((s) => (
+                  <ReferenceDot
+                    key={`clicked-${s.field}`}
+                    yAxisId={s.axis}
+                    x={(highlighted as Resolved)[xField]}
+                    y={Number((highlighted as Resolved)[s.field])}
+                    r={6}
+                    fill={fills[series.indexOf(s)]}
+                    stroke="var(--sc-background)"
+                    strokeWidth={2}
+                  />
+                ))
+            : null}
         </ComposedChart>
       )}
     </SafeFrame>

@@ -14,6 +14,7 @@ import {
   withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import {
+  clickedMarks,
   seriesSetup,
   tooltipAndLegend,
   useSeriesInputs,
@@ -44,7 +45,7 @@ export const ShadAreaChart = (props: WidgetProps) => {
       empty={!data.length || !series.length}
       notes={[setup.fieldNote, hiddenNote(list(bound).length - data.length, 'row')]}
     >
-      {(onDatum) => (
+      {(onDatum, highlighted) => (
         <Chart
           data={data}
           margin={{ left: 4, right: 12, top: 12 }}
@@ -92,6 +93,7 @@ export const ShadAreaChart = (props: WidgetProps) => {
               />
             )
           )}
+          {clickedMarks(highlighted, xField, series, fills, stacked)}
         </Chart>
       )}
     </ChartFrame>

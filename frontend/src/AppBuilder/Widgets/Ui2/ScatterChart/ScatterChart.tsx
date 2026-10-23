@@ -1,6 +1,18 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { CartesianGrid, Legend, ReferenceLine, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
+import {
+  CartesianGrid,
+  Cell,
+  Legend,
+  ReferenceLine,
+  Scatter,
+  ScatterChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+  ZAxis,
+} from 'recharts';
+import { emphasis } from '@/AppBuilder/Widgets/Ui2/_charts/highlight';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { seriesLabel } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { scatterGroups, type ScatterPoint } from './scatterModel';
@@ -117,7 +129,7 @@ export const ShadScatterChart = (props: WidgetProps) => {
       : undefined;
   return (
     <SafeFrame props={props} empty={!groups.length}>
-      {(onDatum) => (
+      {(onDatum, highlighted) => (
         <ScatterChart margin={{ left: 4, right: 16, top: 12, bottom: 0 }}>
           {p.showGrid !== false && !compact ? <CartesianGrid stroke={GRID} /> : null}
           <XAxis
@@ -172,7 +184,14 @@ export const ShadScatterChart = (props: WidgetProps) => {
                 groups.reduce((n, group) => n + group.points.length, 0)
               )}
               onClick={(pt) => onDatum(pt?.payload?.row ?? pt?.row)}
-            />
+            >
+              {/* Highlight clicked point: the clicked point keeps its colour and the others fade. */}
+              {highlighted
+                ? g.points.map((pt, d) => (
+                    <Cell key={d} fill={fills[i]} fillOpacity={opacity * emphasis(pt.row, highlighted)} />
+                  ))
+                : null}
+            </Scatter>
           ))}
         </ScatterChart>
       )}

@@ -271,4 +271,29 @@ describe('UI 2.0 Bar chart', () => {
 
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
+
+  test('[ShadBarChart-PROP-020] Highlight clicked point draws the clicked bar whole and fades the others until cleared', async () => {
+    // A clicked bar looked like every other bar: the chart showed nothing of what clickedDataPoint held.
+    render({ properties: { highlightClicked: binding('{{true}}') } });
+    await barsDrawn(5);
+    // The data bars, not the hover cursor's band.
+    const dataBars = () => [...bars()].filter((b) => !b.classList.contains('recharts-tooltip-cursor'));
+    const opacities = () => dataBars().map((b) => b.getAttribute('fill-opacity'));
+    expect(opacities().filter((o) => o === '0.35')).toHaveLength(0);
+
+    await pointer(['mousemove', 'click']);
+    await waitFor(() => expect(exposed().clickedDataPoint).toEqual({ month: 'Aug', revenue: 268000 }));
+    await waitFor(() => expect(opacities().filter((o) => o === '0.35')).toHaveLength(4));
+    expect(opacities().filter((o) => o === '1')).toHaveLength(1);
+
+    await widget.act('clearClickedPoint');
+    await waitFor(() => expect(opacities().filter((o) => o === '0.35')).toHaveLength(0));
+
+    // Off (the default), a click highlights nothing.
+    render({ properties: { highlightClicked: binding('{{false}}') } });
+    await waitFor(() => expect(dataBars()).toHaveLength(5));
+    await pointer(['mousemove', 'click']);
+    await waitFor(() => expect(exposed().clickedDataPoint).toEqual({ month: 'Aug', revenue: 268000 }));
+    expect(opacities().filter((o) => o === '0.35')).toHaveLength(0);
+  });
 });

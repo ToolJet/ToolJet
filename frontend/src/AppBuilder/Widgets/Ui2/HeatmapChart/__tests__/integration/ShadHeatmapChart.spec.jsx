@@ -181,4 +181,16 @@ describe('UI 2.0 Heatmap chart', () => {
 
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
+
+  test('[ShadHeatmapChart-PROP-020] Highlight clicked point outlines the clicked cell and fades the others until cleared', async () => {
+    render({ properties: { data: TWO, highlightClicked: binding('{{true}}') } });
+    await drawn(4);
+    await act(async () => fireEvent.click(cells()[2]));
+    await waitFor(() => expect(cells()[2]).toHaveAttribute('data-clicked', 'true'));
+    expect(cells().filter((c) => c.style.opacity === '0.35')).toHaveLength(3);
+
+    await widget.act('clearClickedPoint');
+    await waitFor(() => expect(cells().filter((c) => c.style.opacity === '0.35')).toHaveLength(0));
+    expect(cells()[2]).not.toHaveAttribute('data-clicked');
+  });
 });

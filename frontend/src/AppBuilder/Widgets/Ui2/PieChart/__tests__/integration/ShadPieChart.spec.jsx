@@ -153,4 +153,14 @@ describe('UI 2.0 Pie chart', () => {
 
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
+
+  test('[ShadPieChart-PROP-020] Highlight clicked point fades the other slices until the clicked point is cleared', async () => {
+    render({ properties: { highlightClicked: binding('{{true}}') } });
+    await slicesDrawn(3);
+    const faded = () => [...slices()].filter((s) => s.getAttribute('fill-opacity') === '0.35').length;
+    await act(async () => fireEvent.click(slices()[1]));
+    await waitFor(() => expect(faded()).toBe(2));
+    await widget.act('clearClickedPoint');
+    await waitFor(() => expect(faded()).toBe(0));
+  });
 });

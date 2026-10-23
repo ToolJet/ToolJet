@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
+import { emphasis } from '@/AppBuilder/Widgets/Ui2/_charts/highlight';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { hiddenNote, highlightIndexes, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
@@ -174,8 +175,11 @@ export const ShadBarChart = (props: WidgetProps) => {
   const highlightFill = isSet(props.styles?.highlightColor) ? 'var(--lk-highlight)' : null;
   const mutedFill = isSet(props.styles?.mutedColor) ? 'var(--lk-muted-bar)' : null;
   const colored = rowFills.some(Boolean);
-  const cells = (i: number) =>
-    !picked && colored
+  // Highlight clicked point: the clicked bar keeps its colour and the others fade, over any other highlight.
+  const cells = (i: number, highlighted: unknown) =>
+    highlighted
+      ? data.map((row, d) => <Cell key={d} fill={rowFills[d] || fills[i]} fillOpacity={emphasis(row, highlighted)} />)
+      : !picked && colored
       ? rowFills.map((fill, d) => <Cell key={d} fill={fill || fills[i]} />)
       : picked
       ? data.map((_, d) =>
@@ -192,7 +196,7 @@ export const ShadBarChart = (props: WidgetProps) => {
       empty={!data.length || !series.length}
       notes={[setup.fieldNote, hiddenNote(list(bound).length - data.length, 'bar')]}
     >
-      {(onDatum) => (
+      {(onDatum, highlighted) => (
         <BarChart
           data={data}
           layout={horizontal ? 'vertical' : 'horizontal'}
@@ -260,7 +264,7 @@ export const ShadBarChart = (props: WidgetProps) => {
               stackId={stacked ? 'a' : undefined}
               isAnimationActive={animated(p, data.length)}
             >
-              {cells(i)}
+              {cells(i, highlighted)}
             </Bar>
           ))}
         </BarChart>

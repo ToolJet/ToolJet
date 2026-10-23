@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from 'recharts';
+import { sameDatum } from '@/AppBuilder/Widgets/Ui2/_charts/highlight';
 import { tooltipAndLegend, useSeriesInputs } from '@/AppBuilder/Widgets/Ui2/_charts/cartesianParts';
 import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -53,7 +54,7 @@ export const ShadRadarChart = (props: WidgetProps) => {
   const full = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
   return (
     <SafeFrame props={props} empty={empty} notes={notes}>
-      {(onDatum) => (
+      {(onDatum, highlighted) => (
         <RadarChart
           data={plotted}
           outerRadius="72%"
@@ -80,7 +81,29 @@ export const ShadRadarChart = (props: WidgetProps) => {
               strokeWidth={2}
               fill={fills[i]}
               fillOpacity={opacity}
-              dot={p.showDots === true ? { r: 3, fillOpacity: 1, fill: fills[i] } : false}
+              dot={
+                highlighted
+                  ? // Highlight clicked point: the clicked category's point is ringed on each series.
+                    ({ cx, cy, index, key }: { cx: number; cy: number; index: number; key?: string }) =>
+                      sameDatum(plotted[index], highlighted) ? (
+                        <circle
+                          key={key}
+                          cx={cx}
+                          cy={cy}
+                          r={6}
+                          fill={fills[i]}
+                          stroke="var(--sc-background)"
+                          strokeWidth={2}
+                        />
+                      ) : p.showDots === true ? (
+                        <circle key={key} cx={cx} cy={cy} r={3} fill={fills[i]} />
+                      ) : (
+                        <g key={key} />
+                      )
+                  : p.showDots === true
+                  ? { r: 3, fillOpacity: 1, fill: fills[i] }
+                  : false
+              }
               isAnimationActive={animated(p, plotted.length)}
             />
           ))}

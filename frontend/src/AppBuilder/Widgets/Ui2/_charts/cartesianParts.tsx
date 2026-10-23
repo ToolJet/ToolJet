@@ -2,7 +2,7 @@
 // colours and value formats, and the value axis, tooltip and legend drawn the same way. The parts are functions that
 // return Recharts elements, not components: Recharts finds its axes and tooltip among the chart's children by type.
 import React from 'react';
-import { Legend, Tooltip, YAxis } from 'recharts';
+import { Legend, ReferenceDot, ReferenceLine, Tooltip, YAxis } from 'recharts';
 import type { TooltipProps } from 'recharts';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -95,3 +95,44 @@ export const tooltipAndLegend = (
     {legend ? <Legend content={<LegendContent />} /> : null}
   </>
 );
+
+/** Highlight clicked point on a line or area chart: a line through the clicked category and a ringed dot on each series
+ *  there (at its stacked height when the series stack), drawn until the clicked point is cleared. Elements, not a
+ *  component: Recharts finds reference marks among the chart's children by type. */
+export const clickedMarks = (
+  highlighted: unknown,
+  xField: string | undefined,
+  series: string[],
+  fills: string[],
+  stacked = false
+): React.ReactElement[] => {
+  const row = highlighted as Record<string, unknown> | null;
+  if (!row || !xField || row[xField] === undefined) return [];
+  let base = 0;
+  const dots = series.flatMap((s, i) => {
+    const value = Number(row[s]);
+    if (!Number.isFinite(value)) return [];
+    const y = stacked ? (base += value) : value;
+    return [
+      <ReferenceDot
+        key={`clicked-${s}`}
+        x={row[xField] as string}
+        y={y}
+        r={6}
+        fill={fills[i]}
+        stroke="var(--sc-background)"
+        strokeWidth={2}
+        ifOverflow="extendDomain"
+      />,
+    ];
+  });
+  return [
+    <ReferenceLine
+      key="clicked-x"
+      x={row[xField] as string}
+      stroke="var(--sc-muted-foreground)"
+      strokeDasharray="3 3"
+    />,
+    ...dots,
+  ];
+};

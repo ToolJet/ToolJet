@@ -238,4 +238,21 @@ describe('UI 2.0 Scatter chart', () => {
 
     await waitFor(() => expect(exposed().clickedDataPoint).toEqual({}));
   });
+
+  test('[ShadScatterChart-PROP-020] Highlight clicked point fades the other points until the clicked point is cleared', async () => {
+    render({ properties: { highlightClicked: binding('{{true}}') } });
+    await drawn(8);
+    const whole = () =>
+      [...document.querySelectorAll('.recharts-scatter-symbol path, .recharts-symbols')].map((s) =>
+        Number(s.getAttribute('fill-opacity') ?? s.closest('[fill-opacity]')?.getAttribute('fill-opacity'))
+      );
+    await act(async () => fireEvent.click(points()[0]));
+    await waitFor(() => expect(exposed().clickedDataPoint).toMatchObject({ account: 'Northwind' }));
+    await waitFor(() => {
+      const values = whole();
+      expect(Math.max(...values)).toBeGreaterThan(Math.min(...values));
+    });
+    await widget.act('clearClickedPoint');
+    await waitFor(() => expect(new Set(whole()).size).toBe(1));
+  });
 });

@@ -90,6 +90,15 @@
       "default": "",
       "initial": "segment"
     },
+    "highlightClicked": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "loadingIndicator": {
       "type": "string",
       "schema": {
