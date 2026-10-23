@@ -123,6 +123,8 @@ export const shadOtpInputConfig = {
     placeholder: {
       type: 'code',
       displayName: 'Placeholder (one character per box)',
+      maxLength: 1,
+      note: 'One character, shown in every empty box. A longer bound value shows its first character.',
       validation: {
         schema: {
           type: 'string',

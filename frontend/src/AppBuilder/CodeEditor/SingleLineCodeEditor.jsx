@@ -19,6 +19,7 @@ import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 import { segmentedLayout } from './segmentedRow';
+import { maxLengthFilter } from './maxLength';
 import { isInsideParent, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -264,6 +265,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
               cursorInsidePreview={cursorInsidePreview}
               moduleId={moduleId}
               componentId={componentId}
+              maxLength={fieldMeta.maxLength}
               {...restProps}
             />
           </div>
@@ -302,6 +304,7 @@ const EditorInput = ({
   setCodeEditorView = null, // Function to set the CodeMirror view
   cursorInsidePreview = false,
   moduleId = 'canvas',
+  maxLength,
 }) => {
   const codeHinterContext = useContext(CodeHinterContext);
   // TableColumnContext provides the table component ID for rowData/cellValue hints.
@@ -503,9 +506,15 @@ const EditorInput = ({
             // rows. Enable wrapping so per-row selection rects
             // are generated.
             EditorView.lineWrapping,
+            ...(maxLength > 0 ? [maxLengthFilter(maxLength)] : []),
           ]
-        : [langExtension, tooltipExtension, EditorView.lineWrapping],
-    [showSuggestions, langExtension, autoCompleteConfig, customTabKeymap]
+        : [
+            langExtension,
+            tooltipExtension,
+            EditorView.lineWrapping,
+            ...(maxLength > 0 ? [maxLengthFilter(maxLength)] : []),
+          ],
+    [showSuggestions, langExtension, autoCompleteConfig, customTabKeymap, maxLength]
   );
 
   const basicSetupConfig = useMemo(
