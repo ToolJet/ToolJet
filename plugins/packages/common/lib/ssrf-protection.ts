@@ -2,6 +2,7 @@ import { URL } from 'url';
 import { QueryError } from './query.error';
 import * as dns from 'dns/promises';
 import { lookup as dnsLookup } from 'dns';
+import * as net from 'net';
 
 const CLOUD_METADATA_ENDPOINTS = [
   // AWS EC2, IBM Cloud, and OpenStack metadata endpoint (most common SSRF target)
@@ -32,13 +33,41 @@ const CLOUD_METADATA_ENDPOINTS = [
 // are configured via SSRF_BLOCKED_SCHEMES environment variable for flexibility.
 // Users should configure blocked schemes based on their security requirements.
 
+// Schemes blocked whenever the server publishes a runtime config (env var is ignored then).
+const DEFAULT_BLOCKED_SCHEMES = ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'];
+
 interface SSRFProtectionOptions {
   enabled?: boolean;
   dnsResolutionCheck?: boolean;
   blockedSchemes?: string[];
+  allowedHostnames?: Set<string>;
+  allowedRanges?: net.BlockList;
+}
+
+/**
+ * True if the hostname or IP is on the admin allowlist (exact hostname, or an IP inside an allowed IP/CIDR).
+ */
+export function isAllowlisted(hostOrIp: string, config: SSRFProtectionOptions): boolean {
+  if (!hostOrIp) return false;
+  const host = hostOrIp.toLowerCase().replace(/^\[|\]$/g, '');
+  if (config.allowedHostnames?.has(host)) return true;
+  const family = net.isIP(host);
+  return family !== 0 && !!config.allowedRanges?.check(host, family === 6 ? 'ipv6' : 'ipv4');
 }
 
 export function getSSRFConfig(): SSRFProtectionOptions {
+  // Written by the server on EE only. When present it is the source of truth and the env vars are not read.
+  const runtime = (globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__;
+  if (runtime) {
+    return {
+      enabled: runtime.enabled,
+      dnsResolutionCheck: true,
+      blockedSchemes: DEFAULT_BLOCKED_SCHEMES,
+      allowedHostnames: runtime.allowedHostnames,
+      allowedRanges: runtime.allowedRanges,
+    };
+  }
+
   const enabled = process.env.SSRF_PROTECTION_ENABLED === 'true'; // Disabled by default (opt-in)
   const dnsResolutionCheck = process.env.SSRF_DNS_RESOLUTION_CHECK === 'true'; // Disabled by default
 
@@ -271,7 +300,7 @@ function isPrivateIPv6(ip: string): boolean {
  * Check if a hostname resolves to any private IP address
  * This includes all RFC1918, link-local, loopback, and cloud metadata ranges
  */
-export async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
+export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtectionOptions): Promise<boolean> {
   try {
     // Try to resolve as both IPv4 and IPv6
     const addresses: string[] = [];
@@ -297,7 +326,7 @@ export async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
     }
 
     // Check if any resolved address is a private IP
-    return addresses.some((addr) => isPrivateIP(addr));
+    return addresses.some((addr) => isPrivateIP(addr) && !(config && isAllowlisted(addr, config)));
   } catch (error) {
     // Fail-closed here too: a resolver error is exactly as unverifiable as an
     // empty answer above, and shouldn't be treated as "safe" (was previously
@@ -346,6 +375,11 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
   const hostname = url.hostname.toLowerCase();
   const scheme = url.protocol;
 
+  // Allowlisted hostnames / IPs skip every check below
+  if (isAllowlisted(hostname, config)) {
+    return;
+  }
+
   // Check for @ symbol abuse (credentials in URL pointing to private IPs)
   // e.g., http://169.254.169.254@example.com - should parse as connecting to 169.254.169.254
   if (url.username || url.password) {
@@ -386,7 +420,7 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
   // 3. DNS resolution check (if enabled)
   // This protects against DNS rebinding attacks like 169.254.169.254.nip.io
   if (config.dnsResolutionCheck) {
-    const resolves = await resolvesToPrivateIP(hostname);
+    const resolves = await resolvesToPrivateIP(hostname, config);
     if (resolves) {
       throw new QueryError(
         'Hostname resolves to private IP',
@@ -436,8 +470,8 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
         return callback(err);
       }
 
-      // Validate the resolved IP address
-      if (isPrivateIP(address)) {
+      // Validate the resolved IP address (allowlisted hostnames / resolved IPs are exempt)
+      if (isPrivateIP(address) && !isAllowlisted(hostname, config) && !isAllowlisted(address, config)) {
         const error: any = new Error(
           `Hostname "${hostname}" resolves to private IP address "${address}" which is blocked for security reasons`
         );
