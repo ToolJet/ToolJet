@@ -39,6 +39,48 @@ return {
 
 Packages are available to all JavaScript nodes in the workflow — you don't need to import them separately per node.
 
+## Setup Script
+
+A setup script is JavaScript code that runs before your nodes, for example to configure a package or define helper functions that several nodes share.
+
+To add or edit a setup script:
+
+1. In the left sidebar, click the **Settings** (gear) icon.
+2. Under **Language**, click **Javascript configuration**.
+3. In the **Setup script** dialog, enter your code and click **Save setup script**.
+
+<img className="screenshot-full img-full" src="/img/workflows/external-libraries/setup-script-js.png" alt="Setup script dialog for JavaScript with a script that defines a formatCurrency helper and returns a settings object" />
+
+After you add or remove a package, a banner appears with a **Setup script** button that opens the same dialog, so you can update the script for the changed packages.
+
+### How the JavaScript Setup Script Runs
+
+- It runs once at the start of each workflow run, after the packages load. It also runs when you preview a node.
+- It runs in the same JavaScript context as your JavaScript nodes and the `{{ }}` expressions in data source queries. Variables and functions you declare at the top level of the script are available to them during that run.
+- The value of the script's last expression is available to every node as `setupResult`.
+- The script isn't wrapped in a function, so don't use `return` at the top level.
+- The script doesn't have access to the workflow's parameters or to other nodes' results.
+- If the script fails, the workflow still runs, but `setupResult` isn't set.
+
+<!-- TODO verify: whether setup script log messages and failures appear in the workflow execution logs; the server logs them through a separate log buffer. -->
+
+For example, this setup script defines a helper function and returns a settings object:
+
+```js
+const formatCurrency = (amount) => `$${Number(amount).toFixed(2)}`;
+
+({ region: 'us-east', currency: 'USD' });
+```
+
+A JavaScript node can then use both:
+
+```js
+return {
+  total: formatCurrency(getOrders.data[0].total),
+  region: setupResult.region,
+};
+```
+
 ## Removing Packages
 
 1. Open the package manager panel.

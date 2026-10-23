@@ -60,6 +60,42 @@ result = {
 
 Packages are available to all Python nodes in the workflow — you don't need to install them separately per node.
 
+## Setup Script
+
+A setup script is Python code that runs at the start of every Python node, for example to import packages or define helper functions that several nodes share.
+
+To add or edit a setup script:
+
+1. In the left sidebar, click the **Settings** (gear) icon.
+2. Under **Language**, click **Python configuration**.
+3. In the **Setup script** dialog, enter your code and click **Save setup script**.
+
+<img className="screenshot-full img-full" src="/img/workflows/external-libraries/setup-script-py.png" alt="Setup script dialog for Python with a script that imports pydash and defines a to_cents helper" />
+
+After you add or remove a package, a banner appears with a **Setup script** button that opens the same dialog, so you can update the script for the changed packages.
+
+### How the Python Setup Script Runs
+
+- Every time a Python node runs, the setup script is added before the node's own code, so imports and functions defined in the script are available in every Python node.
+- A setup script that contains only whitespace is ignored.
+- Because the script runs with each Python node, keep it to imports, constants and function definitions.
+
+For example, this setup script imports a package and defines a helper function:
+
+```python
+import pydash
+
+def to_cents(amount):
+    return int(round(float(amount) * 100))
+```
+
+A Python node can then use both without importing them again:
+
+```python
+orders = getOrders["data"]
+result = pydash.map_(orders, lambda order: to_cents(order["total"]))
+```
+
 ## Updating or Removing Packages
 
 1. Open the package manager panel and switch to the **Python** tab.
