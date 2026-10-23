@@ -308,7 +308,11 @@ export const ShadFileUpload = (props: WidgetProps) => {
           <p className="tw-m-0 tw-text-xs tw-text-[color:var(--lk-hint,var(--sc-muted-foreground))]">{hint}</p>
         </div>
         {files.length ? (
-          <ul className="tw-m-0 tw-flex tw-list-none tw-flex-col tw-gap-2 tw-p-0" aria-label="Selected files">
+          // The list scrolls past about five files: drawn whole, a hundred files took over the page below the widget.
+          <ul
+            className="tw-m-0 tw-flex tw-max-h-[296px] tw-list-none tw-flex-col tw-gap-2 tw-overflow-y-auto tw-p-0"
+            aria-label="Selected files"
+          >
             {files.map((f, i) => {
               const Kind = KIND_ICONS[M.fileKind(f.type, f.name)] || FileIcon;
               const ext = (f.name.match(/\.([a-z0-9]+)$/i)?.[1] || '').toUpperCase();
