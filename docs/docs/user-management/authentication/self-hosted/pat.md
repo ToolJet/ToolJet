@@ -6,6 +6,10 @@ title: Personal Access Token
 <PlanBadge type="enterprise" />
 <PlanBadge type="self-hosted" />
 
+:::info
+This page covers the app-scoped personal access tokens that your backend generates through `/api/ext/users/personal-access-token` to [embed private apps](/docs/app-builder/embed-app/private-app). To create a token for the ToolJet CLI or ToolJet MCP, see [Personal Access Tokens](/docs/user-management/profile-management/personal-access-tokens).
+:::
+
 You can seamlessly and securely embed your ToolJet applications inside customer portals, internal dashboards, and third-party systems, without requiring full user authentication flows.
 
 With Personal Access Tokens (PATs), ToolJet enables secure, scoped, and session-isolated access to embedded applications. Each token is tied to a specific user and application, allowing you to control exactly who can access what, and for how long, all without interfering with your main ToolJet session.
