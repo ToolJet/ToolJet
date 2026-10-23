@@ -47,6 +47,7 @@ import {
   AppActionModal,
   OrganizationList,
   ConsultationBanner,
+  SsrfNoticeBanner,
   AppTypeTab,
 } from '@/modules/dashboard/components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -2570,6 +2571,8 @@ class HomePageComponent extends React.Component {
                     classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
                   />
                 )}
+
+              <SsrfNoticeBanner />
 
               <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>

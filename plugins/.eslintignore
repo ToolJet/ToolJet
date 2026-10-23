@@ -1,6 +1,7 @@
 dist
 .eslintrc.js
 packages/*/__tests__/*.js
+packages/*/__tests__/*.ts
 packages/*/dist/*
 client.js
 server.ts

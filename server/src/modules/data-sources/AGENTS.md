@@ -40,6 +40,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - Branch-aware behavior (this branch line): delete on a branch soft-deletes (`DataSourceVersion.isActive = false`); released apps read the `is_default` DSV. `branchId` only applies to global-scope sources.
 - **`is_synced=false` on create in every mode** (git-off, multi-branch feature, single-branch default) — a brand-new DSV is never-committed, so it stays unsynced until a push (git-sync). There is no single-branch synced-on-create exemption (removed) — mirrors the apps/modules rule. A git-sync pull that finds a synced DSV absent from git **deactivates** it (`isActive=false`), it does not delete the row.
 - Scope change is one-way (local → global); sample sources can't be deleted; delete is blocked while dependent queries exist (`findQueriesLinkedToDatasource`).
+- **Test connection SSRF check** (`validateTestConnectionOptionsForSSRF`): URL-style options are checked for every kind; `host`/`port`/`protocol` are checked for every kind, except that on EE (the SSRF runtime config is present) the built-in database drivers in `SSRF_UNCHECKED_DATABASE_KINDS` are skipped. CE and Cloud check the host for every kind. The skip never applies when the request carries a `plugin_id` (it picks a marketplace plugin whatever `kind` says). A new HTTP connector needs nothing; a new database driver (socket `host`) is added to that set.
 - NEVER abbreviate `data_source` as `ds` in code or docs.
 
 ## Related modules
