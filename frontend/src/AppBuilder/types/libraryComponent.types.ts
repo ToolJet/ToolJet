@@ -34,6 +34,8 @@ export interface ManifestAction {
 export interface ManifestComponent {
   displayName?: string;
   props?: ManifestProp[];
+  // ToolJet.useStyleX declarations: Styles-tab fields, stored in definition.styles, never exposed.
+  styles?: ManifestProp[];
   events?: ManifestEvent[];
   actions?: ManifestAction[];
 }

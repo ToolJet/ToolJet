@@ -36,6 +36,7 @@
       let root = null;
       let Component = null;
       let currentProps = {};
+      let currentStyles = {};
       
       const actionHandlers = {};
 
@@ -73,6 +74,18 @@
           return [value, setAndSync];
         };
 
+      // Inspector Styles-tab value, or initialValue while it is unset. Read-only; reported back as an
+      // exposed variable only when the author opts in with `expose: true`.
+      const makeStyleHook = () =>
+        function useTjStyle({ name, initialValue, expose } = {}) {
+          const raw = currentStyles[name];
+          const value = raw === undefined || raw === '' ? initialValue : raw;
+          React.useEffect(() => {
+            if (expose) postToParent({ type: 'stateChange', key: name, value });
+          }, [expose, name, value]);
+          return value;
+        };
+
       window.__tj_ToolJet = {
         useStateString: makeStateHook(),
         useStateNumber: makeStateHook(),
@@ -97,6 +110,12 @@
             return () => delete actionHandlers[name];
           }, [name]);
         },
+        useStyleString: makeStyleHook(),
+        useStyleNumber: makeStyleHook(),
+        useStyleBoolean: makeStyleHook(),
+        useStyleEnumeration: makeStyleHook(),
+        // Slots need the inline runtime: an iframe can't host ToolJet components, so a slot renders nothing here.
+        Slot: () => null,
         // Build-time only (manifest-generator reads defaultWidth/Height); no runtime effect.
         useComponentSettings: () => {},
       };
@@ -109,7 +128,7 @@
 
       // Handles a message sent down from the parent window (load/props/invokeAction).
       const handleMessageFromParent = async (e) => {
-        const { type, bundleUrl, componentName, cssUrl, data } = e.data ?? {};
+        const { type, bundleUrl, componentName, cssUrl, data, styles } = e.data ?? {};
 
         if (type === 'load') {
           try {
@@ -136,6 +155,7 @@
 
         if (type === 'props') {
           currentProps = data ?? {};
+          currentStyles = styles ?? {};
           render();
         }
 

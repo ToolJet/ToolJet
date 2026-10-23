@@ -18,6 +18,7 @@ import {
   HOVER_CLICK_OUTLINE_BORDER,
 } from './appCanvasConstants';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { manifestDefaultToDefinitionValue } from '@/AppBuilder/Widgets/libraryComponentDefaults';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -25,26 +26,6 @@ export function snapToGrid(canvasWidth, x, y) {
   const snappedX = Math.round(x / gridX) * gridX;
   const snappedY = Math.round(y / 10) * 10;
   return [snappedX, snappedY];
-}
-
-// Mirrors LibraryComponent Inspector's fieldMeta() type→field mapping so the stamped
-// value matches what that field type expects (dropdown.js/checkbox.js precedent):
-// toggle → '{{bool}}', select → raw string, code → raw string (string) or '{{json}}' (else).
-function manifestDefaultToDefinitionValue(prop) {
-  // TODO: prop.default is undefined both when
-  // the author never set a useStateX initialValue AND when they set one the CLI's manifest
-  // generator can't statically resolve (template literal, computed expr, imported constant
-  // — evalLiteralNode in manifest-generator.ts). The '' /'{{false}}' fallback below is
-  // correct for the former and silently wrong for the latter (it permanently overrides the
-  // shell's real runtime initialValue for that prop). Decided to keep current behavior for
-  // now rather than risk downstream undefined-handling issues; future fix is to have the
-  // generator distinguish "not set" from "unresolved" (e.g. a `defaultUnresolved` flag) and
-  // surface a warning icon/tooltip on the Inspector field for the latter case, rather than
-  // silently guessing a fallback value.
-  if (prop.default === undefined) return prop.type === 'boolean' ? '{{false}}' : '';
-  if (prop.type === 'boolean') return `{{${prop.default}}}`;
-  if (prop.type === 'enumeration' || prop.type === 'string') return prop.default;
-  return `{{${JSON.stringify(prop.default)}}}`; // number | object | array
 }
 
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
@@ -80,6 +61,9 @@ export const addNewWidgetToTheEditor = (
     // pre-filled (module input_items precedent below).
     for (const prop of libraryComponentInfo.props ?? []) {
       componentData.definition.properties[prop.name] = { value: manifestDefaultToDefinitionValue(prop) };
+    }
+    for (const style of libraryComponentInfo.styles ?? []) {
+      componentData.definition.styles[style.name] = { value: manifestDefaultToDefinitionValue(style) };
     }
     if (libraryComponentInfo.defaultSize?.width)
       componentData.defaultSize.width = libraryComponentInfo.defaultSize.width;
@@ -391,7 +375,8 @@ const collectChildComponents = (allComponents, parentId, visited) => {
       allComponents[parentId]?.component?.component === 'Container' ||
       allComponents[parentId]?.component?.component === 'Accordion' ||
       allComponents[parentId]?.component?.component === 'Form' ||
-      allComponents[parentId]?.component?.component === 'ModalV2';
+      allComponents[parentId]?.component?.component === 'ModalV2' ||
+      allComponents[parentId]?.component?.component === 'LibraryComponent'; // ToolJet.Slot canvases
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);

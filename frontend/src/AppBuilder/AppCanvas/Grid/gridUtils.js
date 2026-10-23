@@ -588,11 +588,15 @@ export const handleActivateTargets = (parentId) => {
     'ModalV2',
     'Accordion',
     'Table',
+    'LibraryComponent',
   ];
 
   const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
   let _parentId = parentId;
   if (newParentType === 'Tabs') {
+    _parentId = getTabId(parentId);
+  } else if (newParentType === 'LibraryComponent') {
+    // A ToolJet.Slot canvas (`<componentId>-<slotName>`): outline that slot, not the whole component.
     _parentId = getTabId(parentId);
   } else if (WIDGETS_WITH_CANVAS_OUTLINE.includes(newParentType)) {
     _parentId = getSubContainerIdWithSlots(parentId);
