@@ -74,6 +74,7 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Enable clear button | Shows a clear button inside the field while it has a value. Clicking it clears the value. The button is hidden while the component is disabled or loading. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
 | Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
@@ -94,7 +95,9 @@ To add regex inside `Custom Validation`, you can use the below format:
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Text | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment | Sets the position of the label and input field.   | Select either `side` or `top` or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`. |
+| Direction | When alignment is set to `side`, places the label to the left or right of the field. | Select **Left** or **Right** using the icon toggles. |
 | Width | Sets the width of the input field. | Enable **Auto width** to use the standard width automatically. Disable it to manually adjust the width using the slider or by entering a numeric value via **fx**. You can also choose whether the width is calculated relative to the **Container** or relative to the **Field**. |
 
 ### Field

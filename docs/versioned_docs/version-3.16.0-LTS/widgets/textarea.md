@@ -95,7 +95,9 @@ To add regex inside `Custom Validation`, you can use the below format:
 | Property    | Description                                                                        |
 | ----------- | ---------------------------------------------------------------------------------- |
 | Label Color | Sets the color of the label text.                                                  |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment   | Determines the label's position, choose between top/side and left/right alignment. |
+| Direction | When alignment is set to `side`, places the label to the left or right of the field. Select **Left** or **Right** using the icon toggles. |
 | Width       | Specifies the percentage of the component’s width that the label should occupy.    |
 
 ### Color
