@@ -268,6 +268,56 @@ describe('UI 2.0 Input', () => {
     await waitFor(() => expect(input()).toHaveAttribute('type', 'text'));
   });
 
+  test('[ShadInput-PROP-006] a bound Type switching text and number keeps what was typed, converted as a browser does', async () => {
+    // Switching to number dropped the draft: "123" became null, and back to text it was "".
+    const { container } = render({ properties: { inputType: binding('text') } });
+    const input = () => container.querySelector('input');
+    await type('123');
+    widget.setComponentProperty(ID, 'inputType', "{{'number'}}", 'properties');
+    await waitFor(() => expect(screen.getByRole('spinbutton')).toHaveValue('123'));
+    await waitFor(() => expect(exposed().value).toBe(123));
+
+    widget.setComponentProperty(ID, 'inputType', "{{'text'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'text'));
+    expect(input()).toHaveValue('123');
+    await waitFor(() => expect(exposed().value).toBe('123'));
+
+    // Text that is not a number empties a number box (as a browser's does), and stays empty back in text.
+    await type('abc');
+    widget.setComponentProperty(ID, 'inputType', "{{'number'}}", 'properties');
+    await waitFor(() => expect(screen.getByRole('spinbutton')).toHaveValue(''));
+    await waitFor(() => expect(exposed().value).toBeNull());
+    widget.setComponentProperty(ID, 'inputType', "{{'text'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'text'));
+    expect(input()).toHaveValue('');
+    await waitFor(() => expect(exposed().value).toBe(''));
+
+    // An empty box stays empty both ways; a number typed in the number box comes back as its text.
+    widget.setComponentProperty(ID, 'inputType', "{{'number'}}", 'properties');
+    const spin = await screen.findByRole('spinbutton');
+    await waitFor(() => expect(exposed().value).toBeNull());
+    await act(async () => fireEvent.change(spin, { target: { value: '4.5' } }));
+    await act(async () => fireEvent.blur(spin));
+    await waitFor(() => expect(exposed().value).toBe(4.5));
+    widget.setComponentProperty(ID, 'inputType', "{{'password'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'password'));
+    expect(input()).toHaveValue('4.5');
+    await waitFor(() => expect(exposed().value).toBe('4.5'));
+  });
+
+  test('[ShadInput-PROP-007] a new Default value still starts the box again after a Type switch', async () => {
+    const { container } = render({ properties: { inputType: binding('text'), defaultValue: binding('7') } });
+    const input = () => container.querySelector('input');
+    await type('123');
+    widget.setComponentProperty(ID, 'inputType', "{{'number'}}", 'properties');
+    await waitFor(() => expect(exposed().value).toBe(123));
+    widget.setComponentProperty(ID, 'defaultValue', '9', 'properties');
+    await waitFor(() => expect(exposed().value).toBe(9));
+    widget.setComponentProperty(ID, 'inputType', "{{'text'}}", 'properties');
+    await waitFor(() => expect(input()).toHaveAttribute('type', 'text'));
+    expect(input()).toHaveValue('9');
+  });
+
   test('[ShadInput-PROP-005] type search clears with its x or Escape, firing onChange', async () => {
     // It had no clear button and Escape did nothing.
     render({ properties: { inputType: binding('search') } });
