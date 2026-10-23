@@ -38,7 +38,7 @@ import useThemeAccess from './useThemeAccess';
 import { appliedThemeDefinition } from '../_utils/themeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
-import { onBrandText } from '@/AppBuilder/_helpers/onBrandText';
+import { setOnBrandColors } from '@/AppBuilder/_helpers/onBrandText';
 
 const useAppData = (
   appId,
@@ -798,21 +798,16 @@ const useAppData = (
         });
       });
     });
-    // Values the loop above does not set as variables: the radius scale (numbers, not light/dark pairs) and a text
-    // colour readable on the brand colour (component packs draw primary buttons and chips with it).
+    // Values the loop above does not set as variables: the radius scale (numbers, not light/dark pairs), a text colour
+    // readable on the brand colour and the brand fill that colour reads on at 4.5:1 (component packs draw primary
+    // buttons and chips with them).
     const radius = themeObj?.border?.radius;
     ['default', 'small', 'large'].forEach((size) => {
       const value = Number(radius?.[size]);
       if (Number.isFinite(value)) root.style.setProperty(`--cc-radius-${size}`, `${value}px`);
       else root.style.removeProperty(`--cc-radius-${size}`);
     });
-    const brand = themeObj?.brand?.colors?.primary?.[mode];
-    const onBrand = onBrandText(brand);
-    if (onBrand) {
-      root.style.setProperty('--cc-on-primary-brand', onBrand);
-    } else {
-      root.style.removeProperty('--cc-on-primary-brand');
-    }
+    setOnBrandColors(root, themeObj?.brand?.colors?.primary?.[mode]);
     detectThemeChange();
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 

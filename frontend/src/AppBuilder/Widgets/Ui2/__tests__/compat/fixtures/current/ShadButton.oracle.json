@@ -1,0 +1,67 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "buttonText": "Button (saved)",
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"buttonText\":\"Button (saved)\"},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"buttonText\":\"Button (saved)\"}}",
+  "steps": [
+    {
+      "call": "click",
+      "changed": {}
+    },
+    {
+      "call": "setText",
+      "changed": {
+        "buttonText": "New text"
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "buttonText": "New text"
+    },
+    "changed": {}
+  }
+}

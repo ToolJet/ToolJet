@@ -455,6 +455,26 @@ export const createEventsSlice = (set, get) => ({
           'onFieldValueChanged',
           'onCancelKeyValuePairChanges',
           'onRefresh',
+          // ToolJet UI 2.0 widgets' own events (Widgets/Ui2/NAMING.md): a name missing here never runs its
+          // handlers, with no error (everyWidgetEventDispatches.spec.js fails for any widget event left out).
+          'onActionButtonClicked',
+          'onActionClicked',
+          'onBookingClicked',
+          'onCardClicked',
+          'onComplete',
+          'onFinish',
+          'onItemClicked',
+          'onLocationPicked',
+          'onMapClicked',
+          'onMonthChanged',
+          'onSecondaryActionClicked',
+          'onSelectionChanged',
+          'onShapeClicked',
+          'onSlideChanged',
+          'onSlideClicked',
+          'onSlotClicked',
+          'onStepChanged',
+          'onTagClicked',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);

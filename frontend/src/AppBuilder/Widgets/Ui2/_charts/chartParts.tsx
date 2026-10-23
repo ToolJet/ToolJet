@@ -1,0 +1,391 @@
+import React, { useState } from 'react';
+import { highlightOf } from './highlight';
+import dayjs from 'dayjs';
+import { ResponsiveContainer } from 'recharts';
+import { useExposed, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { MAX_SERIES } from './chartsModel';
+import { list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { FormatOptions } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+
+// ToolJet UI 2.0 charts: Recharts styled the way shadcn/ui's chart component styles it (no axis lines,
+// horizontal grid only, a card tooltip, series colours from --sc-chart-1..5, which follow the app theme, or from the
+// Chart color style, or from the Series colors list). Grid, axis and legend colours come from the widget's styles
+// as variables (shadcnLook.ts), else the theme's. Own lazy chunk, so Recharts loads only for apps with a chart.
+
+export const seriesOf = (p: Resolved): string[] =>
+  (Array.isArray(p.yFields) ? p.yFields : String(p.yFields ?? '').split(','))
+    .map((s) => String(s).trim())
+    .filter(Boolean)
+    .slice(0, MAX_SERIES);
+
+export const MAX_BARS = 500;
+export const AXIS = {
+  tickLine: false,
+  axisLine: false,
+  tickMargin: 8,
+  tick: { fill: 'var(--lk-axis, var(--sc-muted-foreground))', fontSize: 12 },
+};
+export const GRID = 'var(--lk-grid, var(--sc-border))';
+
+/** What Recharts passes a tooltip for each series under the cursor. */
+export interface TooltipItem {
+  dataKey?: string | number;
+  name?: string | number;
+  value?: unknown;
+  color?: string;
+  payload?: { fill?: string };
+}
+
+export interface TooltipContentProps {
+  active?: boolean;
+  payload?: TooltipItem[];
+  label?: unknown;
+}
+
+/** The chart's tooltip card: the label, then each series' swatch, name and value in `format` (which also gets the
+ *  series key). The swatch falls back to the row's own fill (a pie slice) unless `rowFill` is false. */
+export const ChartTooltip = ({
+  active,
+  payload,
+  label,
+  format,
+  rowFill = true,
+}: TooltipContentProps & { format: (v: unknown, key: unknown) => string; rowFill?: boolean }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="tj-shadcn">
+      <div className="tw-grid tw-min-w-[8rem] tw-gap-1.5 tw-rounded-ui2-lg tw-border tw-bg-ui2-background tw-px-2.5 tw-py-1.5 tw-text-xs tw-shadow-xl">
+        {label !== undefined ? <div className="tw-font-medium">{String(label)}</div> : null}
+        {payload.map((item) => (
+          <div key={item.dataKey ?? item.name} className="tw-flex tw-items-center tw-gap-2">
+            <span
+              className="tw-h-2.5 tw-w-2.5 tw-shrink-0 tw-rounded-[2px]"
+              style={{ background: rowFill ? item.color || item.payload?.fill : item.color }}
+            />
+            <span className="tw-flex-1 tw-text-ui2-muted-foreground">{String(item.name)}</span>
+            <span className="tw-font-mono tw-font-medium tw-tabular-nums">{format(item.value, item.dataKey)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export interface LegendItem {
+  value?: string | number;
+  color?: string;
+}
+
+export const LegendContent = ({ payload }: { payload?: LegendItem[] }) => (
+  <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-4 tw-pt-3 tw-text-xs">
+    {(payload || []).map((item, i) => (
+      // By position: entries can repeat a value or have none (a junk category field).
+      <div key={i} className="tw-flex tw-items-center tw-gap-1.5">
+        <span className="tw-h-2 tw-w-2 tw-shrink-0 tw-rounded-[2px]" style={{ background: item.color }} />
+        <span className="tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">{String(item.value)}</span>
+      </div>
+    ))}
+  </div>
+);
+
+/** The clicked datum and the native Chart's events and actions: a click on a datum exposes it (clickedDataPoint) and
+ *  fires onClick; a double click fires onDoubleClick (the datum is the one its
+ *  first click picked); clearClickedPoint() empties it. Disabled or loading, the chart takes no clicks (RenderWidget
+ *  leaves UI 2.0 widgets to enforce their own state); clearClickedPoint, an action, still works. */
+export const useClickedDatum = (props: WidgetProps) => {
+  const [clicked, setClicked] = useState<unknown>({});
+  const inactive = busy(props.properties);
+  const pick = (datum: unknown) => {
+    if (inactive) return;
+    setClicked(datum);
+    props.setExposedVariables?.({ clickedDataPoint: datum });
+    props.fireEvent?.('onClick');
+  };
+  return {
+    pick,
+    exposed: { clickedDataPoint: clicked, clearClickedPoint: async () => setClicked({}) },
+    onClick: () => (inactive ? undefined : props.fireEvent?.('onClick')),
+    onDoubleClick: () => (inactive ? undefined : props.fireEvent?.('onDoubleClick')),
+  };
+};
+
+/** useClickedDatum with clickedDataPoint and clearClickedPoint exposed. */
+export const useExposedClick = (props: WidgetProps) => {
+  const click = useClickedDatum(props);
+  useExposed(props.setExposedVariables, props.properties, click.exposed);
+  return click;
+};
+
+/** The chart a frame draws, given the handler for a clicked datum and the datum to draw emphasised (Highlight clicked
+ *  point), or null. */
+type ChartRender = (onDatum: (datum: unknown) => void, highlighted: unknown) => React.ReactElement;
+
+/** A chart's name for assistive tech, from its type: ShadScatterChart reads "Scatter chart". */
+export const chartName = (componentType?: string): string => {
+  const words = String(componentType || '')
+    .replace(/^Shad/, '')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .toLowerCase();
+  return words ? words[0].toUpperCase() + words.slice(1) : 'Chart';
+};
+
+/** The drawn chart, read by assistive tech as one image named `label`. Recharts marks each scatter point and pie or
+ *  radial sector role="img" with no name, and a screen reader cannot use the shapes one by one. */
+const ChartArea = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div role="img" aria-label={label} className="tw-h-full tw-w-full">
+    <div aria-hidden="true" className="tw-h-full tw-w-full">
+      {children}
+    </div>
+  </div>
+);
+
+/** A value axis as wide as its longest tick label (a suffix such as " seats" or a currency needs more than a fixed
+ *  48px, or the labels wrap and the top one clips). The top tick is the max rounded up the way the axis rounds it. */
+const niceCeil = (v: number): number => {
+  if (!(v > 0)) return v;
+  const step = 10 ** Math.floor(Math.log10(v));
+  return Math.ceil(v / step) * step;
+};
+export const valueAxisWidth = (
+  data: unknown,
+  series: string[],
+  format: (v: number) => unknown,
+  stacked = false
+): number => {
+  const values = list(data).flatMap((row) => {
+    const nums = series.map((key) => Number(row?.[key])).filter((n) => Number.isFinite(n));
+    return stacked ? [nums.reduce((a, b) => a + b, 0)] : nums;
+  });
+  if (!values.length) return 40;
+  const max = Math.max(...values);
+  const min = Math.min(0, ...values);
+  // The ticks between the ends too (quarters of the nice top): "1.5K km" and "4.5K km" outran a "5K km" top and were
+  // cut to ".5K km".
+  const top = niceCeil(max);
+  const ticks = [max, top, min, top * 0.25, top * 0.5, top * 0.75, top * 0.9, top * 0.3, top * 0.7];
+  const longest = Math.max(...ticks.map((v) => String(format(v) ?? '').length));
+  return Math.min(110, Math.max(32, longest * 7 + 12));
+};
+/** An x axis of ISO dates ("2026-09-10") reads as "10 Sep", the pack's date style; other values are shown as they are. */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ][\d:.]+(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+const YEAR_MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+/** The tick formatter: a date's short form, any other value unchanged. */
+type DateTick = <T>(v: T) => T | string;
+
+export const dateTicks = (data: unknown, key: string | undefined): DateTick | undefined => {
+  const sample = list(data)
+    .map((row) => row?.[String(key)])
+    .find((v) => v !== null && v !== undefined && v !== '');
+  if (typeof sample === 'string' && YEAR_MONTH.test(sample)) {
+    // Year-months ("2026-03", a monthly rollup's key) read "Mar", or "Mar '26" when the axis spans two years.
+    const years = new Set(
+      list(data)
+        .map((row) => row?.[String(key)])
+        .filter((v): v is string => typeof v === 'string' && YEAR_MONTH.test(v))
+        .map((v) => v.slice(0, 4))
+    );
+    const shape = years.size > 1 ? "MMM 'YY" : 'MMM';
+    return (v) => (typeof v === 'string' && YEAR_MONTH.test(v) ? dayjs(`${v}-01`).format(shape) : v);
+  }
+  if (typeof sample !== 'string' || !ISO_DATE.test(sample)) return undefined;
+  return (v) => (typeof v === 'string' && ISO_DATE.test(v) ? dayjs(v).format('D MMM') : v);
+};
+
+/** A chart drawn under 100px tall (a trend in a KPI tile) has no room for axes, grid or legend: it draws the shape
+ *  alone, like a sparkline, instead of squeezing tick labels into it. Taller ones keep their labels (a 135px bar chart
+ *  without its category names meant nothing). */
+export const isCompactChart = (height: unknown): boolean => (Number(height) || 300) < 100;
+
+// ---- Line, Radar, Radial and Sparkline (logic in chartsModel.ts) ----------------------------------------------------
+
+// A chart that fails to draw (data no normaliser foresaw) shows the empty state instead of taking the app down; it
+// retries when the properties change.
+interface ChartBoundaryProps {
+  resetKey: unknown;
+  fallback: React.ReactNode;
+  children: React.ReactNode;
+}
+
+export class ChartBoundary extends React.Component<ChartBoundaryProps, { failed: boolean }> {
+  constructor(props: ChartBoundaryProps) {
+    super(props);
+    this.state = { failed: false };
+  }
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidUpdate(prev: ChartBoundaryProps) {
+    if (this.state.failed && prev.resetKey !== this.props.resetKey) this.setState({ failed: false });
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
+/** The notes under a chart on what it leaves out, one line each (the full text on hover when the line is cut). */
+export const ChartNotes = ({ notes }: { notes: (string | null | undefined)[] }) => {
+  const shown = notes.filter((n): n is string => !!n);
+  return shown.length ? (
+    <div className="tw-shrink-0 tw-pt-1.5 tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">
+      {shown.map((note) => (
+        <div key={note} data-chart-note="" className="tw-truncate" title={note}>
+          {note}
+        </div>
+      ))}
+    </div>
+  ) : null;
+};
+
+/** What a chart that threw while drawing shows: not the empty state, which says there is no data. */
+const ChartError = () => (
+  <div
+    role="alert"
+    data-chart-state="error"
+    className="tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-px-3 tw-text-center tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)]"
+  >
+    This chart could not be drawn from its data
+  </div>
+);
+
+/** The one recovery policy of the charts: an error while a chart draws (its model or its renderer) shows ChartError in
+ *  the chart's box, and the chart draws again by itself when any of its properties changes, as when a query corrects
+ *  its data (a Line chart showed "No data" for an error; a Bar chart the native error box, until a manual retry). */
+export const withChartRecovery = (Chart: React.ComponentType<WidgetProps>) => {
+  const Recovering = (props: WidgetProps) => (
+    <ChartBoundary
+      resetKey={props.properties}
+      fallback={
+        <Shell {...props}>
+          <div style={{ height: props.height }} className="tw-w-full">
+            <ChartError />
+          </div>
+        </Shell>
+      }
+    >
+      <Chart {...props} />
+    </ChartBoundary>
+  );
+  Recovering.displayName = Chart.displayName || Chart.name;
+  return Recovering;
+};
+
+export const EmptyChart = ({ text, small }: { text: string; small?: boolean }) => (
+  <div
+    data-chart-state="empty"
+    className={cn(
+      'tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-text-[color:var(--sc-muted-foreground)]',
+      small ? 'tw-text-xs' : 'tw-text-ui2-sm'
+    )}
+  >
+    {text}
+  </div>
+);
+
+/** ChartFrame with an empty state, an error boundary and the widget's own exposed values. `clickable`: clicking a
+ *  datum sets clickedDataPoint and fires onClick; otherwise a click anywhere fires onClick. */
+interface SafeFrameProps {
+  props: WidgetProps;
+  empty: boolean;
+  /** The chart's name for assistive tech, when its type alone says too little (a gauge's value). */
+  label?: string;
+  small?: boolean;
+  exposed?: Record<string, unknown>;
+  clickable?: boolean;
+  /** What the chart leaves out (rows past its cap, a configured field the data lacks), shown under it. */
+  notes?: (string | null)[];
+  children: ChartRender;
+}
+
+export const SafeFrame = ({
+  props,
+  empty,
+  label,
+  small,
+  exposed = {},
+  clickable = true,
+  notes = [],
+  children,
+}: SafeFrameProps) => {
+  const { properties, setExposedVariables, height } = props;
+  const click = useClickedDatum(props);
+  useExposed(setExposedVariables, properties, clickable ? { ...click.exposed, ...exposed } : exposed);
+  // Highlight clicked point: the clicked datum draws emphasised (the others fade) until clearClickedPoint empties it.
+  const highlighted =
+    clickable && properties.highlightClicked === true ? highlightOf(click.exposed.clickedDataPoint) : null;
+  const onDatum = (datum: unknown) => {
+    if (!datum || typeof datum !== 'object') return;
+    click.pick(datum);
+  };
+  const emptyView = <EmptyChart text={String(properties.emptyText || 'No data')} small={small} />;
+  return (
+    <Shell {...props}>
+      <div
+        style={{ height }}
+        className="tw-w-full tw-text-xs"
+        onClick={clickable ? undefined : click.onClick}
+        onDoubleClick={click.onDoubleClick}
+      >
+        <div className="tw-flex tw-h-full tw-w-full tw-flex-col">
+          <div className="tw-min-h-0 tw-w-full tw-flex-1">
+            {empty ? (
+              emptyView
+            ) : (
+              <ChartArea label={label || chartName(props.componentType)}>
+                <ResponsiveContainer width="100%" height="100%">
+                  {children(onDatum, highlighted)}
+                </ResponsiveContainer>
+              </ChartArea>
+            )}
+          </div>
+          <ChartNotes notes={notes} />
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+/** The frame of a Recharts chart (Bar, Area, Pie): SafeFrame, under the name those charts were written against. */
+export const ChartFrame = SafeFrame;
+
+export const AXIS_FILL = AXIS.tick.fill;
+/** Charts animate their entrance unless turned off, and only up to this many points: every animation frame redraws
+ *  every point (1,000 scatter points spent about 600ms in long tasks while animating). */
+export const MAX_ANIMATED_POINTS = 300;
+export const animated = (p: Resolved, points = 0): boolean => p.animate !== false && points <= MAX_ANIMATED_POINTS;
+/** A formatter that multiplies by scale first (a percent axis over fractions, percentScale). */
+export const scaled = (format: (v: unknown) => string, scale: number): ((v: unknown) => string) =>
+  scale === 1
+    ? format
+    : (v: unknown) => {
+        const n = num(v);
+        return format(n === null ? v : n * scale);
+      };
+export const valueFormat = (p: Resolved): FormatOptions => ({
+  format: p.yAxisFormat,
+  currency: p.currency,
+  prefix: p.valuePrefix,
+  suffix: p.valueSuffix,
+});
+/** valueFormat as one reference while the format properties are unchanged, so axes memoised on it are not worked out
+ *  again on every render. */
+export const useValueFormat = (p: Resolved): FormatOptions => useStable(valueFormat(p));
+/** The value prefix and suffix affixFormatter reads, as one reference while they are unchanged. */
+export const useAffixes = (p: Resolved): Resolved =>
+  useStable({ valuePrefix: p.valuePrefix, valueSuffix: p.valueSuffix });
+
+// ---- Combo ---------------------------------------------------------------------------------------------------------
+
+/** Width of a value axis for the given values under the given tick formatter. */
+export const axisWidthFor = (values: number[], tick: (v: number) => unknown): number => {
+  if (!values.length) return 40;
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  // The in-between ticks carry decimals the ends do not (0.8% between 0% and 1%), so they are measured too.
+  const top = niceCeil(max);
+  const samples = [max, min, top, top * 0.25, top * 0.5, top * 0.75, top * 0.3, top * 0.8];
+  const longest = Math.max(...samples.map((v) => String(tick(v)).length));
+  return Math.min(96, Math.max(32, longest * 7 + 12));
+};

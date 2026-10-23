@@ -18,6 +18,8 @@ import { keymap, tooltips, EditorView } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
+import { segmentedLayout } from './segmentedRow';
+import { maxLengthFilter } from './maxLength';
 import { isInsideParent, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -37,6 +39,8 @@ import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
+import { optionsListBlockReason } from '@/AppBuilder/RightSideBar/Inspector/Components/shared/utils/optionsLiteral';
+import { CHOICE_FIELDS, holdsExpression } from './heldExpression';
 
 // Hoisted to module scope so their identity never changes: anything fed into the
 // CodeMirror `extensions` prop must stay referentially stable, otherwise
@@ -263,6 +267,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
               cursorInsidePreview={cursorInsidePreview}
               moduleId={moduleId}
               componentId={componentId}
+              maxLength={fieldMeta.maxLength}
               {...restProps}
             />
           </div>
@@ -301,6 +306,7 @@ const EditorInput = ({
   setCodeEditorView = null, // Function to set the CodeMirror view
   cursorInsidePreview = false,
   moduleId = 'canvas',
+  maxLength,
 }) => {
   const codeHinterContext = useContext(CodeHinterContext);
   // TableColumnContext provides the table component ID for rowData/cellValue hints.
@@ -502,9 +508,15 @@ const EditorInput = ({
             // rows. Enable wrapping so per-row selection rects
             // are generated.
             EditorView.lineWrapping,
+            ...(maxLength > 0 ? [maxLengthFilter(maxLength)] : []),
           ]
-        : [langExtension, tooltipExtension, EditorView.lineWrapping],
-    [showSuggestions, langExtension, autoCompleteConfig, customTabKeymap]
+        : [
+            langExtension,
+            tooltipExtension,
+            EditorView.lineWrapping,
+            ...(maxLength > 0 ? [maxLengthFilter(maxLength)] : []),
+          ],
+    [showSuggestions, langExtension, autoCompleteConfig, customTabKeymap, maxLength]
   );
 
   const basicSetupConfig = useMemo(
@@ -667,9 +679,23 @@ const DynamicEditorBridge = (props) => {
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
-  const codeShow = paramType === 'code' || forceCodeBox;
+  // A UI 2.0 options field shows its options as a list unless fx is on, or they are not a fixed list (bound to a
+  // query, say): then they stay in code, and pressing fx says why instead of switching.
+  const listBlocked = paramType === 'optionsList' ? optionsListBlockReason(initialValue) : null;
+  const [listNotice, setListNotice] = React.useState(false);
+  // A choice field whose stored value is an expression (not a literal such as {{true}} or {{'text'}}) shows it in code,
+  // even when fx is off or the field is a fixed choice: its control could only show what it resolves to, as if that
+  // were the choice made (a Button Variant bound to a slider said "Default" while the button was red). It stays in code
+  // while it is drawn, so editing it into a literal does not swap the editor away mid-edit; on a field with fx, turning
+  // fx off shows the control.
+  const heldExpression = CHOICE_FIELDS.includes(paramType) && holdsExpression(initialValue);
+  const [heldCode, setHeldCode] = React.useState(heldExpression);
+  const [listChosen, setListChosen] = React.useState(false);
+  if (heldExpression && !heldCode && !listChosen) setHeldCode(true);
+  const codeShow = paramType === 'code' || forceCodeBox || !!listBlocked || heldCode;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
-  const { isFxNotRequired, newLine = false, section = '' } = fieldMeta;
+  const segmented = segmentedLayout({ component, paramType, fieldMeta });
+  const { isFxNotRequired, newLine = segmented === 'stacked' || paramType === 'optionsList', section = '' } = fieldMeta;
   const isDeprecated = section === 'deprecated';
   const { t } = useTranslation();
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
@@ -698,13 +724,21 @@ const DynamicEditorBridge = (props) => {
     setForceCodeBox(fxActive);
   }, [component, fxActive]);
 
+  // The note on why options stay in code goes once they can be a list again.
+  useEffect(() => {
+    if (!listBlocked) setListNotice(false);
+  }, [listBlocked]);
+
   let modifiedValue = initialValue;
   if (paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue?.includes('var(')) {
     modifiedValue = getCssVarValue(document.documentElement, initialValue);
   }
 
+  // A field labelled Type takes no fx (the native Type selectors' renderers read a fixed choice) unless its config
+  // opts in with isFxAllowed (the UI 2.0 Input's Type, read in any case at runtime).
+  const fxWithheld = isFxNotRequired !== undefined || (paramLabel === 'Type' && fieldMeta.isFxAllowed !== true);
   const renderFx = () => {
-    if (paramType === 'query' || !(paramLabel !== 'Type' && isFxNotRequired === undefined)) {
+    if (paramType === 'query' || fxWithheld) {
       return null;
     }
 
@@ -717,14 +751,19 @@ const DynamicEditorBridge = (props) => {
         <FxButton
           active={codeShow}
           onPress={() => {
-            if (codeShow) {
+            if (codeShow && listBlocked) {
+              setListNotice(true);
+            } else if (codeShow) {
               setForceCodeBox(false);
+              setHeldCode(false);
+              setListChosen(true);
               onFxPress(false);
               if (paramType === 'colorSwatches') {
                 onChange(modifiedValue);
               }
             } else {
               setForceCodeBox(true);
+              setListChosen(false);
               onFxPress(true);
             }
           }}
@@ -788,8 +827,16 @@ const DynamicEditorBridge = (props) => {
   };
 
   return (
-    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
-      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+    <div
+      className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor', {
+        'ui2-segmented-stacked': segmented === 'stacked',
+      })}
+    >
+      <div
+        className={cx('d-flex align-items-center justify-content-between code-flex-wrapper', {
+          'ui2-segmented-row': segmented === 'column',
+        })}
+      >
         {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
@@ -805,6 +852,15 @@ const DynamicEditorBridge = (props) => {
             <div className="d-flex">
               <SingleLineCodeEditor {...props} initialValue={modifiedValue} />
             </div>
+            {listBlocked && listNotice ? (
+              <p
+                className="tw-m-0 tw-mt-1 tw-text-xs"
+                style={{ color: 'var(--text-placeholder, var(--slate10))' }}
+                data-cy={`${cyLabel}-list-blocked`}
+              >
+                {listBlocked}
+              </p>
+            ) : null}
           </div>
         </div>
       )}

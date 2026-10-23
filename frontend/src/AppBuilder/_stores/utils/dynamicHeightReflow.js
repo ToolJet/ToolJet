@@ -969,8 +969,15 @@ export const getBlockers = ({
     // an unrelated widget triggers reflow. Accordion's own
     // resolveContainerHeight already floors at canonical when expanded,
     // so trusting the temp here only takes effect for collapsed state.
+    //
+    // A UI 2.0 widget skips it too: it fits its content and may sit well below its drawn height (a Card Grid drawn 620
+    // tall showing one row at 240). Flooring it here put widgets under it back at the drawn height whenever another
+    // widget's reflow ran after its own.
     const candidateComponentType = currentPageComponents?.[candidateId]?.component?.component;
-    const skipCanonicalFloor = candidateId === changedComponentId || candidateComponentType === 'Accordion';
+    const skipCanonicalFloor =
+      candidateId === changedComponentId ||
+      candidateComponentType === 'Accordion' ||
+      keepsFittedHeightWhenMoved(candidateComponentType);
     const measuredHeight = skipCanonicalFloor
       ? Math.max(candidateLayout?.height ?? 0, resolvedHeights?.[candidateId] ?? 0)
       : Math.max(candidateLayout?.height ?? 0, candidateCanonical?.height ?? 0, resolvedHeights?.[candidateId] ?? 0);
@@ -1291,7 +1298,37 @@ export const buildReflowPatch = ({
       // `collapsedCanonical` is the long-standing contract that widgets
       // (including Listview row templates) rely on to stay stable; only
       // the Accordion-shrink-below-canonical case needs to bypass it.
-      let otherMax = allowShrinkPullUp ? 0 : effectiveCollapsedCanonical;
+      // A target wider than the widget above it has no shadower, so its floor stayed its authored top: below a UI 2.0
+      // widget that fitted itself shorter (or an Accordion that collapsed), it stayed put while everything above it
+      // moved up, and every widget under it lost that move too (a Carousel under a Calendar, a Heatmap under a Funnel
+      // chart). When an in-flow blocker over it can sit below its drawn height, the blockers' own constraints place
+      // it, as a shadower's would. A native widget above keeps the authored floor (its blocker height never drops
+      // below its drawn height).
+      const shrinkableAbove =
+        !shadower &&
+        blockers.some((b) => {
+          if (!b.isInFlow) return false;
+          const type = currentPageComponents?.[b.id]?.component?.component;
+          return type === 'Accordion' || keepsFittedHeightWhenMoved(type);
+        });
+      const pullUpFromBlockers = allowShrinkPullUp || shrinkableAbove;
+      // The shadower's floor uses the drawn gap from the shadower to the target, which still holds the drawn heights of
+      // the widgets between them. A UI 2.0 widget between them that fitted itself to another height changes that gap:
+      // without this, the target stayed as far below where it belongs as the fitted widget had shrunk (a Pagination 9px
+      // under a Key value, a Summary strip 93px), and every widget under it with it. Native widgets between them keep
+      // the drawn gap (their blocker height never drops below the drawn one).
+      let fittedBetweenShadower = 0;
+      if (shadower) {
+        const shadowerCanonicalBottom = shadowerCanonicalTop + getEffectiveCanonicalHeight(shadower.id);
+        for (const w of blockers) {
+          if (!w.isInFlow || w.id === shadower.id) continue;
+          const wTop = w.canonicalLayout?.top ?? 0;
+          if (wTop < shadowerCanonicalBottom || wTop >= targetTopCanonical) continue;
+          if (!keepsFittedHeightWhenMoved(currentPageComponents?.[w.id]?.component?.component)) continue;
+          fittedBetweenShadower += w.currentBottom - w.currentTop - getEffectiveCanonicalHeight(w.id);
+        }
+      }
+      let otherMax = pullUpFromBlockers ? 0 : effectiveCollapsedCanonical + fittedBetweenShadower;
       let hasInFlowBlocker = false;
       for (let vi = 0; vi < blockers.length; vi++) {
         const v = blockers[vi];
@@ -1346,7 +1383,8 @@ export const buildReflowPatch = ({
           const w = blockers[wi];
           if (!w.isInFlow) continue;
           const wComponentType = currentPageComponents?.[w.id]?.component?.component;
-          const isShrinkableBlocker = w.id === changedComponentId || wComponentType === 'Accordion';
+          const isShrinkableBlocker =
+            w.id === changedComponentId || wComponentType === 'Accordion' || keepsFittedHeightWhenMoved(wComponentType);
           if (!isShrinkableBlocker) continue;
           const wTop = w.canonicalLayout?.top ?? 0;
           if (wTop < vCanonicalBottom || wTop >= targetTopCanonical) continue;
@@ -1365,7 +1403,7 @@ export const buildReflowPatch = ({
         const constraint = v.currentBottom + canonicalGap + inFlowDelta;
         if (constraint > otherMax) otherMax = constraint;
       }
-      if (allowShrinkPullUp && !hasInFlowBlocker) {
+      if (pullUpFromBlockers && !hasInFlowBlocker) {
         otherMax = effectiveCollapsedCanonical;
       }
 

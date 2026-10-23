@@ -217,27 +217,39 @@ export const ModalWidget = ({ ...restProps }) => {
             onDrop={(e) => e.stopPropagation()}
           />
         )}
-        {!isLoading ? (
-          <>
-            <SubContainer
-              id={`${id}`}
-              canvasHeight={modalBodyHeight}
-              styles={{
-                backgroundColor: customStyles.modalBody.backgroundColor,
-                overflowY: isDisabled || (isDynamicHeightEnabled && !needsBodyScroll) ? 'hidden' : 'auto',
-              }}
-              canvasWidth={modalWidth}
-              darkMode={darkMode}
-              componentType="ModalV2"
-            />
-          </>
-        ) : (
-          <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+        {/* Loading, the body's canvas stays mounted, hidden and inert under the spinner: swapping it for the spinner
+            unmounted the modal's components, and what was typed in them was lost. Disabled, it stays drawn but is
+            inert and aria-disabled: the overlay only stopped the pointer, so Tab reached the body and an open Select
+            in it still took a choice (the pack's popups close and refuse one in an inert or aria-disabled part). */}
+        <div
+          inert={isLoading || isDisabled ? '' : undefined}
+          aria-hidden={isLoading || undefined}
+          aria-disabled={isDisabled && !isLoading ? 'true' : undefined}
+          style={isLoading ? { visibility: 'hidden', height: '100%' } : { display: 'contents' }}
+        >
+          <SubContainer
+            id={`${id}`}
+            canvasHeight={modalBodyHeight}
+            styles={{
+              backgroundColor: customStyles.modalBody.backgroundColor,
+              overflowY: isDisabled || (isDynamicHeightEnabled && !needsBodyScroll) ? 'hidden' : 'auto',
+            }}
+            canvasWidth={modalWidth}
+            darkMode={darkMode}
+            componentType="ModalV2"
+          />
+        </div>
+        {isLoading ? (
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ position: 'absolute', inset: 0, zIndex: 2 }}
+            aria-busy="true"
+          >
             <center>
               <Spinner />
             </center>
           </div>
-        )}
+        ) : null}
       </BootstrapModal.Body>
       {showFooter && (
         <ModalFooter

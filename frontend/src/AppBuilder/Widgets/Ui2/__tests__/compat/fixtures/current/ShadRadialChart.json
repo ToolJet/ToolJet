@@ -1,0 +1,427 @@
+{
+  "schemaVersion": 1,
+  "release": "current",
+  "widget": "ShadRadialChart",
+  "pages": [
+    {
+      "id": "1bcf9840-1402-5c47-a1a2-c953863ba3b0",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "name": "Home",
+      "handle": "home"
+    }
+  ],
+  "components": [
+    {
+      "id": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+      "name": "radialChart1",
+      "type": "ShadRadialChart",
+      "pageId": "1bcf9840-1402-5c47-a1a2-c953863ba3b0",
+      "parent": null,
+      "properties": {
+        "mode": {
+          "value": "progress"
+        },
+        "value": {
+          "value": "{{73}}"
+        },
+        "maxValue": {
+          "value": "{{101}}"
+        },
+        "data": {
+          "value": "{{[{ channel: 'Direct', visitors: 275 }, { channel: 'Search', visitors: 200 }, { channel: 'Social', visitors: 187 }, { channel: 'Email', visitors: 120 }]}}"
+        },
+        "categoryField": {
+          "value": "channel"
+        },
+        "valueField": {
+          "value": "visitors"
+        },
+        "centerValue": {
+          "value": ""
+        },
+        "centerLabel": {
+          "value": "Completed (saved)"
+        },
+        "startAngle": {
+          "value": "{{91}}"
+        },
+        "endAngle": {
+          "value": "{{-269}}"
+        },
+        "thickness": {
+          "value": ""
+        },
+        "rounded": {
+          "value": "{{false}}"
+        },
+        "showTrack": {
+          "value": "{{false}}"
+        },
+        "valuePrefix": {
+          "value": ""
+        },
+        "valueSuffix": {
+          "value": "%"
+        },
+        "emptyText": {
+          "value": "No data (saved)"
+        },
+        "animate": {
+          "value": "{{false}}"
+        },
+        "showLegend": {
+          "value": "{{false}}"
+        },
+        "colors": {
+          "value": "{{[]}}"
+        },
+        "loadingState": {
+          "value": "{{false}}"
+        },
+        "loadingIndicator": {
+          "value": "spinner"
+        },
+        "visibility": {
+          "value": "{{true}}"
+        },
+        "collapseWhenHidden": {
+          "value": "{{false}}"
+        },
+        "disabledState": {
+          "value": "{{false}}"
+        },
+        "tooltipFormat": {
+          "value": "plainText"
+        },
+        "tooltip": {
+          "value": "Saved tooltip"
+        }
+      },
+      "general": {},
+      "styles": {
+        "boxShadow": {
+          "value": "0px 4px 12px 0px #0f172a1f"
+        },
+        "chartColor": {
+          "value": "#7c3aed"
+        },
+        "trackColor": {
+          "value": "#b45309"
+        },
+        "legendTextColor": {
+          "value": "#be123c"
+        },
+        "centerValueColor": {
+          "value": "#1d4ed8"
+        },
+        "centerLabelColor": {
+          "value": "#4d7c0f"
+        }
+      },
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 0,
+          "left": 0,
+          "width": 20,
+          "height": 220
+        }
+      }
+    },
+    {
+      "id": "a321fb0c-364f-5222-a132-086dda5841bd",
+      "name": "savedBindings",
+      "type": "ShadText",
+      "pageId": "1bcf9840-1402-5c47-a1a2-c953863ba3b0",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "{{JSON.stringify({ byId: { \"isVisible\": components.5b2e80cb-d608-5c18-a5fe-d2e79fba3b66.isVisible, \"isLoading\": components.5b2e80cb-d608-5c18-a5fe-d2e79fba3b66.isLoading, \"isDisabled\": components.5b2e80cb-d608-5c18-a5fe-d2e79fba3b66.isDisabled, \"clickedDataPoint\": components.5b2e80cb-d608-5c18-a5fe-d2e79fba3b66.clickedDataPoint }, byName: { \"isVisible\": components.radialChart1.isVisible, \"isLoading\": components.radialChart1.isLoading, \"isDisabled\": components.radialChart1.isDisabled, \"clickedDataPoint\": components.radialChart1.clickedDataPoint } })}}"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 230,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "174ae8c9-6401-5879-abe2-7c1ac8bcdac5",
+      "name": "eventMarker",
+      "type": "ShadButton",
+      "pageId": "1bcf9840-1402-5c47-a1a2-c953863ba3b0",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Marker"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 280,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "3b9d35a3-b810-5a39-aa4b-c2cc6dc0c6bc",
+      "name": "runActions",
+      "type": "ShadButton",
+      "pageId": "1bcf9840-1402-5c47-a1a2-c953863ba3b0",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Run actions"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 330,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "50436744-e930-5d33-a8c7-80a3bab7f5f6",
+      "name": "onClick",
+      "index": 0,
+      "sourceId": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+      "target": "component",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "174ae8c9-6401-5879-abe2-7c1ac8bcdac5",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c8b311e1-8724-598d-adfa-3a8a635f631f",
+      "name": "onDoubleClick",
+      "index": 0,
+      "sourceId": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+      "target": "component",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "event": {
+        "eventId": "onDoubleClick",
+        "actionId": "control-component",
+        "componentId": "174ae8c9-6401-5879-abe2-7c1ac8bcdac5",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "20bf5651-4833-57c6-a0b5-c19746737de7",
+      "name": "onClick",
+      "index": 0,
+      "sourceId": "3b9d35a3-b810-5a39-aa4b-c2cc6dc0c6bc",
+      "target": "component",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+        "componentSpecificActionHandle": "clearClickedPoint",
+        "componentSpecificActionParams": []
+      }
+    },
+    {
+      "id": "8409ceda-fd22-51f5-a3bd-a5df03906568",
+      "name": "onClick",
+      "index": 1,
+      "sourceId": "3b9d35a3-b810-5a39-aa4b-c2cc6dc0c6bc",
+      "target": "component",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "00ff51b4-263f-5d75-a1df-a41a577279c2",
+      "name": "onClick",
+      "index": 2,
+      "sourceId": "3b9d35a3-b810-5a39-aa4b-c2cc6dc0c6bc",
+      "target": "component",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "df0b8244-09c8-54dd-aed4-676c02d438dd",
+      "name": "onClick",
+      "index": 3,
+      "sourceId": "3b9d35a3-b810-5a39-aa4b-c2cc6dc0c6bc",
+      "target": "component",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "91a7b01a-e5cb-5905-a503-ecfb575c8964",
+      "name": "onClick",
+      "index": 4,
+      "sourceId": "3b9d35a3-b810-5a39-aa4b-c2cc6dc0c6bc",
+      "target": "component",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "8e4e1625-7d17-5605-a4c4-ba9f8072bb5b",
+      "name": "onClick",
+      "index": 5,
+      "sourceId": "3b9d35a3-b810-5a39-aa4b-c2cc6dc0c6bc",
+      "target": "component",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "85069427-0ebc-500d-a85b-9fe2ce2c5cf5",
+      "name": "onClick",
+      "index": 6,
+      "sourceId": "3b9d35a3-b810-5a39-aa4b-c2cc6dc0c6bc",
+      "target": "component",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5b2e80cb-d608-5c18-a5fe-d2e79fba3b66",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    }
+  ],
+  "dataQueries": [
+    {
+      "id": "07caf6f8-d90b-5f7d-a4c8-d0a6f44b0884",
+      "name": "callWidget",
+      "kind": "runjs",
+      "appVersionId": "ee16c46c-0fcb-5eee-a55c-19c6eea7f5d4",
+      "options": {
+        "code": "// Calls radialChart1's actions and reads its values by name, as RunJS code in a saved app does.\nawait components.radialChart1.clearClickedPoint();\nawait components.radialChart1.setLoading(true);\nawait components.radialChart1.setLoading(false);\nawait components.radialChart1.setDisable(true);\nawait components.radialChart1.setDisable(false);\nawait components.radialChart1.setVisibility(false);\nawait components.radialChart1.setVisibility(true);\nreturn { \"isVisible\": components.radialChart1.isVisible, \"isLoading\": components.radialChart1.isLoading, \"isDisabled\": components.radialChart1.isDisabled, \"clickedDataPoint\": components.radialChart1.clickedDataPoint };",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    }
+  ]
+}

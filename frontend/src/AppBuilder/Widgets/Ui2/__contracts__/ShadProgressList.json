@@ -1,0 +1,324 @@
+{
+  "type": "ShadProgressList",
+  "properties": {
+    "autoTone": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "none",
+      "initial": "none"
+    },
+    "barSize": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "default",
+      "initial": "default"
+    },
+    "captionField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": "note"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "currency": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "USD",
+      "initial": "USD"
+    },
+    "data": {
+      "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
+      "default": [],
+      "initial": "{{[{ id: 1, label: 'Marketing', spent: 18400, budget: 25000, status: 'On track', note: '12 days left in the quarter' }, { id: 2, label: 'Engineering tools', spent: 9100, budget: 10000, status: 'At risk', note: 'Renewals due in November' }, { id: 3, label: 'Travel', spent: 7600, budget: 6000, status: 'Over budget', note: 'Over by $1,600' }, { id: 4, label: 'Training', spent: 1200, budget: 5000, status: '', note: 'Courses start in November' }]}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "Nothing to track yet",
+      "initial": "Nothing to track yet"
+    },
+    "idField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "id",
+      "initial": "id"
+    },
+    "labelField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "label",
+      "initial": "label"
+    },
+    "listStyle": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "card",
+      "initial": "card"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "percentField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "showPercent": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showValues": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "statusField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": "status"
+    },
+    "targetField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "target",
+      "initial": "budget"
+    },
+    "tooltip": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "valueField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "value",
+      "initial": "spent"
+    },
+    "valueFormat": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "currency",
+      "initial": "currency"
+    },
+    "visibility": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "backgroundColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "borderColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "borderRadius": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "textColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "titleColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "titleFontFamily": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "theme",
+      "initial": "theme"
+    },
+    "trackColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    }
+  },
+  "validation": {},
+  "events": [
+    "onItemClicked"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "selectedItem",
+    "selectedItemId",
+    "selectedItemIndex"
+  ]
+}

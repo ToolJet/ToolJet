@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FxParamTypeMapping } from './utils';
 import { Color } from '../CodeBuilder/Elements/Color';
 import { Json } from '../CodeBuilder/Elements/Json';
@@ -20,7 +20,9 @@ import TableRowHeightInput from '../CodeBuilder/Elements/TableRowHeightInput';
 import DropdownMenu from '../CodeBuilder/Elements/DropdownMenu';
 import { TimePicker } from '../CodeBuilder/Elements/TimePicker';
 import { Query } from '../CodeBuilder/Elements/Query';
+import { OptionsList } from '../CodeBuilder/Elements/OptionsList';
 import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
+import { ThemeDefaultContext, followsTheme, useThemeValue } from './themeDefault';
 
 const AllElements = {
   Color,
@@ -44,11 +46,29 @@ const AllElements = {
   TimePicker,
   DropdownMenu,
   Query,
+  OptionsList,
 };
 
 export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {
   const componentType = FxParamTypeMapping[paramType];
   const DynamicComponent = AllElements[componentType];
+  // A UI 2.0 widget's blank colour or radius style follows the theme; the field shows it (themeDefault.js). The
+  // provider is always there, so setting a value does not remount the field (and close its open picker).
+  const { component, componentId, paramName, value, darkMode } = restProps;
+  const themed = followsTheme({ component, paramName, paramType, value });
+  const theme = useThemeValue(themed, componentId, component, paramName, darkMode);
+  const themeDefault = useMemo(
+    () => (themed ? { value: theme?.value ?? null, token: theme?.token ?? null } : null),
+    [themed, theme]
+  );
+  // A blank colour drawn in one of the theme's colours is shown as that token, as a picked token is: the field names it
+  // (Surface/Surface1) and the colour popover opens on the Theme tab with it selected. Nothing is saved until a colour
+  // is picked; the field still marks it as the theme's.
+  const shown = paramType === 'colorSwatches' && themeDefault?.token ? { value: themeDefault.token } : null;
 
-  return <DynamicComponent {...restProps} />;
+  return (
+    <ThemeDefaultContext.Provider value={themeDefault}>
+      <DynamicComponent {...restProps} {...shown} />
+    </ThemeDefaultContext.Provider>
+  );
 };

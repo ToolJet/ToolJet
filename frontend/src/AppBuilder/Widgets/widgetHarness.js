@@ -92,7 +92,15 @@ export function widgetProps(
   // `currentMode` is overridable because several widgets gate view-only
   // behaviour on it (RadioButtonV2's dynamic height, for one), and the editor
   // path must stay the default.
-  { darkMode = false, widgetHeight = 40, widgetWidth = 200, currentMode = 'edit' } = {}
+  {
+    darkMode = false,
+    widgetHeight = 40,
+    widgetWidth = 200,
+    currentMode = 'edit',
+    boxFit,
+    boxStretch,
+    subContainerIndex,
+  } = {}
 ) {
   return {
     id,
@@ -104,6 +112,9 @@ export function widgetProps(
     widgetWidth,
     inCanvas: true,
     darkMode,
+    ...(boxFit && { boxFit }),
+    ...(boxStretch && { boxStretch }),
+    ...(subContainerIndex !== undefined && { subContainerIndex }),
     onOptionChange: () => {},
     onOptionsChange: () => {},
   };
@@ -216,6 +227,9 @@ export function createWidgetHarness({
     componentId = id,
     darkMode = false,
     currentMode = 'edit',
+    boxFit,
+    boxStretch,
+    subContainerIndex,
     afterSeed,
     also = defaultAlso,
   } = {}) {
@@ -261,7 +275,15 @@ export function createWidgetHarness({
     return session.render(
       <>
         <RenderWidget
-          {...widgetProps(componentId, componentType, { darkMode, widgetHeight, widgetWidth, currentMode })}
+          {...widgetProps(componentId, componentType, {
+            darkMode,
+            widgetHeight,
+            widgetWidth,
+            currentMode,
+            boxFit,
+            boxStretch,
+            subContainerIndex,
+          })}
         />
         {also.map(({ id: siblingId, componentType: siblingType, ...rest }) => (
           <RenderWidget key={siblingId} {...widgetProps(siblingId, siblingType, rest)} />

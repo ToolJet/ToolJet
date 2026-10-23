@@ -1,0 +1,644 @@
+{
+  "type": "ShadMap",
+  "properties": {
+    "areaRadiusField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "radius",
+      "initial": "radius"
+    },
+    "areaShapeField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "outline",
+      "initial": "outline"
+    },
+    "areaStatusField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "status",
+      "initial": "status"
+    },
+    "areaTitleField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "name",
+      "initial": "name"
+    },
+    "areas": {
+      "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "clusterMarkers": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "connectMarkers": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "data": {
+      "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
+      "default": [],
+      "initial": "{{[{ id: 'S-101', customer: 'Ferry Building Market', address: '1 Ferry Building', status: 'Delivered', eta: '9:10 AM', driver: 'Maya Chen', lat: 37.7955, lng: -122.3937 }, { id: 'S-102', customer: 'Dolores Bakery', address: '3498 18th St', status: 'Delivered', eta: '9:40 AM', driver: 'Maya Chen', lat: 37.7614, lng: -122.4269 }, { id: 'S-103', customer: 'Mission Bay Labs', address: '1700 Owens St', status: 'In transit', eta: '10:25 AM', driver: 'Owen Hart', lat: 37.7683, lng: -122.3934 }, { id: 'S-104', customer: 'Sunset Florist', address: '1101 Irving St', status: 'Delayed', eta: '11:05 AM', driver: 'Owen Hart', lat: 37.7641, lng: -122.4703 }, { id: 'S-105', customer: 'Wharf Seafood Co.', address: '2800 Leavenworth St', status: 'Scheduled', eta: '11:30 AM', driver: 'Priya Nair', lat: 37.8063, lng: -122.4182 }, { id: 'S-106', customer: 'Union Square Books', address: '345 Stockton St', status: 'Failed', eta: '10:50 AM', driver: 'Priya Nair', lat: 37.7881, lng: -122.4065 }, { id: 'S-107', customer: 'Hayes Valley Cafe', address: '432 Octavia St', status: 'Delivered', eta: '9:55 AM', driver: 'Leo Martins', lat: 37.7764, lng: -122.4241 }, { id: 'S-108', customer: 'Presidio Outfitters', address: '50 Moraga Ave', status: 'Pending', eta: '12:15 PM', driver: 'Leo Martins', lat: 37.7989, lng: -122.4662 }]}}"
+    },
+    "defaultCenter": {
+      "type": "union<string|array|object>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array"
+          },
+          {
+            "type": "object"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "defaultPickedLocation": {
+      "type": "union<string|array|object>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array"
+          },
+          {
+            "type": "object"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "defaultZoom": {
+      "type": "number",
+      "schema": {
+        "optional": true,
+        "type": "number"
+      },
+      "default": 12,
+      "initial": "{{12}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "display": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "markers",
+      "initial": "markers"
+    },
+    "emptyText": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "No locations to show",
+      "initial": "No locations to show"
+    },
+    "fitToMarkers": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "geocoderUrl": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "headingField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "heatField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "heatRadius": {
+      "type": "number",
+      "schema": {
+        "optional": true,
+        "type": "number"
+      },
+      "default": 28,
+      "initial": "{{28}}"
+    },
+    "iconField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "idField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "id",
+      "initial": "id"
+    },
+    "imageField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "labelField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "latField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "lat",
+      "initial": "lat"
+    },
+    "lngField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "lng",
+      "initial": "lng"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "mapStyle": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "streets",
+      "initial": "streets"
+    },
+    "markerIcon": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "markerSize": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "medium",
+      "initial": "medium"
+    },
+    "pickLocation": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "popupFields": {
+      "type": "union<array|string>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "array"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "",
+      "initial": "eta:ETA {}, driver"
+    },
+    "reverseGeocoderUrl": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "routeColors": {
+      "type": "object",
+      "schema": {
+        "optional": true,
+        "type": "object"
+      },
+      "default": {},
+      "initial": "{{{}}}"
+    },
+    "routeField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "routeOrderField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "routeStart": {
+      "type": "union<string|array|object>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array"
+          },
+          {
+            "type": "object"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "routes": {
+      "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "scrollWheelZoom": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "searchPlaceholder": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "Search for an address",
+      "initial": "Search for an address"
+    },
+    "showFullscreen": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showLegend": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showPopup": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showSearch": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showStyleSwitch": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "statusColors": {
+      "type": "object",
+      "schema": {
+        "optional": true,
+        "type": "object"
+      },
+      "default": {},
+      "initial": "{{{}}}"
+    },
+    "statusField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "status",
+      "initial": "status"
+    },
+    "subtitleField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": "address"
+    },
+    "tileAttribution": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "tileUrl": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "titleField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "name",
+      "initial": "customer"
+    },
+    "tooltip": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "backgroundColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "borderColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "borderRadius": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "clusterColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    }
+  },
+  "validation": {},
+  "events": [
+    "onBoundsChange",
+    "onLocationPicked",
+    "onMapClicked",
+    "onMarkerClick",
+    "onShapeClicked"
+  ],
+  "actions": {
+    "clearPickedLocation": [],
+    "clearSelection": [],
+    "fitBounds": [],
+    "selectMarker": [
+      "id"
+    ],
+    "setCenter": [
+      "lat",
+      "lng",
+      "zoom"
+    ],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setMapStyle": [
+      "style"
+    ],
+    "setPickedLocation": [
+      "lat",
+      "lng"
+    ],
+    "setVisibility": [
+      "value"
+    ],
+    "setZoom": [
+      "zoom"
+    ]
+  },
+  "exposed": [
+    "bounds",
+    "center",
+    "clickedLocation",
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "mapStyle",
+    "pickedLocation",
+    "selectedMarker",
+    "selectedMarkerId",
+    "selectedShape",
+    "selectedShapeType",
+    "zoom"
+  ]
+}

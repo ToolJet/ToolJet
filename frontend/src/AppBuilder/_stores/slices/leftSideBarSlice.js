@@ -1,3 +1,5 @@
+import { isTabsType } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+
 const validSidebarItems = ['page', 'inspect', 'debugger', 'settings'];
 const storedIsSidebarPinned = localStorage.getItem('isLeftSideBarPinned') === 'true' ? true : false;
 const storedSelectedSidebarItem = !storedIsSidebarPinned
@@ -67,7 +69,7 @@ export const createLeftSideBarSlice = (set, get) => ({
 
       // If the component exists inside a tab component
       const componentType = getComponentTypeFromId(parentId?.substring(0, 36));
-      if (componentType === 'Tabs') {
+      if (isTabsType(componentType)) {
         const tabIndex = parentId?.substring(37, parentId?.length); // Tab index inside which the component exists
         const { currentTab, setTab } = getAllExposedValues(moduleId).components?.[parentId?.substring(0, 36)] || {};
         nextPossibleCandidate = parentId;

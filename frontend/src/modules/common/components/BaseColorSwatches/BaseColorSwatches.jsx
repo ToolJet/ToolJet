@@ -7,8 +7,20 @@ import { computeColor } from '@/_helpers/utils';
 import { Tooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
+import { colorText, pickerColor, useThemeDefault } from '@/AppBuilder/CodeEditor/themeDefault';
+import { pickedColor } from './pickedColor';
 
 const coerceColorString = (v) => (typeof v === 'string' ? v : '');
+const capitalised = (name) =>
+  name
+    .split('/')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('/');
+// What a theme-following field shows: the theme token it draws (Surface/Surface1), else its colour's hex.
+const themeName = (themeDefault, colorMap) => {
+  if (themeDefault.token && colorMap?.[themeDefault.token]) return capitalised(colorMap[themeDefault.token]);
+  return themeDefault.value ? colorText(themeDefault.value) : null;
+};
 
 const BaseColorSwatches = ({
   value,
@@ -40,6 +52,12 @@ const BaseColorSwatches = ({
     value = darkMode ? '#47505D' : '#ffffff';
   }
   value = coerceColorString(value);
+  // A blank UI 2.0 style follows the theme (AppBuilder/CodeEditor/themeDefault.js): the swatch shows the theme's colour
+  // and says so, instead of an empty white swatch that read as a style that failed to load.
+  const themeDefault = useThemeDefault();
+  // Blank, or shown as the theme token the widget draws (DynamicFxTypeRenderer): either way it follows the theme.
+  const followsTheme = Boolean(themeDefault) && (!value || value === themeDefault.token);
+  const themeLabel = followsTheme ? themeName(themeDefault, colorMap) : null;
   const [showPicker, setShowPicker] = useState(false);
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
   const coverStyles = {
@@ -63,16 +81,8 @@ const BaseColorSwatches = ({
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
 
-  const decimalToHex = (alpha) => {
-    let aHex = Math.round(255 * alpha).toString(16);
-    return alpha === 0 ? '00' : aHex.length < 2 ? `0${aHex}` : aHex;
-  };
-
   const handleColorChange = (color) => {
-    const { r, g, b, a } = color.rgb;
-    const toHex = (n) => n.toString(16).padStart(2, '0');
-    const hexCode = `#${toHex(r)}${toHex(g)}${toHex(b)}${decimalToHex(a ?? 1.0)}`;
-    onChange(hexCode);
+    onChange(pickedColor(color.rgb, value, typeof component === 'string' && component.startsWith('Shad')));
   };
 
   const eventPopover = () => {
@@ -125,7 +135,7 @@ const BaseColorSwatches = ({
             <div style={pickerStyle}>
               <SketchPicker
                 onFocus={() => setShowPicker(true)}
-                color={value}
+                color={followsTheme ? pickerColor(themeDefault.value) : value}
                 onChangeComplete={handleColorChange}
                 style={{ bottom: 0 }}
               />
@@ -143,7 +153,17 @@ const BaseColorSwatches = ({
         data-cy={`${String(cyLabel)}-picker`}
         style={outerStyles}
       >
-        <div className="color-icon" style={{ backgroundColor: value, marginLeft: '4px' }} />
+        <div
+          className="color-icon"
+          data-cy={followsTheme ? `${String(cyLabel)}-theme-swatch` : undefined}
+          style={
+            followsTheme
+              ? themeDefault.value
+                ? { backgroundColor: themeDefault.value, marginLeft: '4px' }
+                : { background: 'transparent', borderStyle: 'dashed', borderColor: 'var(--slate8)', marginLeft: '4px' }
+              : { backgroundColor: value, marginLeft: '4px' }
+          }
+        />
 
         <div
           className="col tj-text-xsm p-0 color-slate12"
@@ -154,12 +174,21 @@ const BaseColorSwatches = ({
             whiteSpace: 'nowrap',
           }}
         >
-          {colorMap?.[value]
-            ? colorMap[value]
-                .split('/')
-                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                .join('/')
-            : value}
+          {followsTheme ? (
+            <span title="Follows the app theme. Pick a colour to set your own.">
+              {themeLabel}
+              <span style={{ color: 'var(--slate10)', marginLeft: themeLabel ? '6px' : 0, fontSize: '11px' }}>
+                {themeLabel ? 'Theme' : 'Theme default'}
+              </span>
+            </span>
+          ) : colorMap?.[value] ? (
+            colorMap[value]
+              .split('/')
+              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+              .join('/')
+          ) : (
+            value
+          )}
         </div>
         {typeof onReset === 'function' && (
           <div className="col-auto p-0">

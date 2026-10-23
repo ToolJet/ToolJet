@@ -1,0 +1,105 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "isValid": true,
+    "isMandatory": false,
+    "value": "",
+    "formattedValue": "",
+    "label": "Time (saved)",
+    "timeFormat": "24h",
+    "minTime": "00:00",
+    "maxTime": "23:59",
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":\"\",\"formattedValue\":\"\",\"label\":\"Time (saved)\",\"timeFormat\":\"24h\",\"minTime\":\"00:00\",\"maxTime\":\"23:59\"},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":\"\",\"formattedValue\":\"\",\"label\":\"Time (saved)\",\"timeFormat\":\"24h\",\"minTime\":\"00:00\",\"maxTime\":\"23:59\"}}",
+  "steps": [
+    {
+      "call": "setValue",
+      "changed": {
+        "value": "09:15",
+        "formattedValue": "09:15"
+      }
+    },
+    {
+      "call": "clearValue",
+      "changed": {
+        "value": "",
+        "formattedValue": ""
+      }
+    },
+    {
+      "call": "setMinTime",
+      "changed": {
+        "minTime": "08:00"
+      }
+    },
+    {
+      "call": "setMaxTime",
+      "changed": {
+        "maxTime": "18:00"
+      }
+    },
+    {
+      "call": "setFocus",
+      "changed": {}
+    },
+    {
+      "call": "setBlur",
+      "changed": {}
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "isValid": true,
+      "isMandatory": false,
+      "value": "",
+      "formattedValue": "",
+      "label": "Time (saved)",
+      "timeFormat": "24h",
+      "minTime": "08:00",
+      "maxTime": "18:00"
+    },
+    "changed": {}
+  }
+}

@@ -1,0 +1,442 @@
+export const shadPieChartConfig = {
+  name: 'ShadPieChart',
+  displayName: 'Pie chart',
+  description: 'Pie or donut chart with an optional center figure',
+  component: 'ShadPieChart',
+  defaultSize: {
+    width: 12,
+    height: 280,
+  },
+  others: {
+    showOnDesktop: {
+      type: 'toggle',
+      displayName: 'Show on desktop',
+    },
+    showOnMobile: {
+      type: 'toggle',
+      displayName: 'Show on mobile',
+    },
+  },
+  properties: {
+    data: {
+      type: 'code',
+      displayName: 'Data',
+      validation: {
+        schema: {
+          type: 'array',
+          optional: true,
+        },
+        defaultValue: [],
+      },
+      placeholder: "[{ type: 'Charter', value: 62 }]",
+    },
+    categoryField: {
+      type: 'code',
+      displayName: 'Category field',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: 'type',
+      },
+    },
+    valueField: {
+      type: 'code',
+      displayName: 'Value field',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: 'value',
+      },
+    },
+    donut: {
+      type: 'toggle',
+      displayName: 'Donut',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: true,
+      },
+    },
+    centerValue: {
+      type: 'code',
+      displayName: 'Center figure',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    centerLabel: {
+      type: 'code',
+      displayName: 'Center caption',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    showLegend: {
+      type: 'toggle',
+      displayName: 'Legend',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: true,
+      },
+    },
+    emptyText: {
+      type: 'code',
+      displayName: 'Empty message',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: 'No data',
+      },
+    },
+    colors: {
+      type: 'code',
+      displayName: 'Series colors (in order)',
+      validation: {
+        schema: {
+          type: 'array',
+          optional: true,
+        },
+        defaultValue: [],
+      },
+      placeholder: "['#0f766e', '#f59e0b']",
+    },
+    highlightClicked: {
+      type: 'toggle',
+      displayName: 'Highlight clicked point',
+      note: 'Draws the clicked point or bar emphasised until the Clear clicked point action runs or another is clicked.',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    loadingIndicator: {
+      type: 'switch',
+      displayName: 'Loading look',
+      options: [
+        {
+          displayName: 'Spinner',
+          value: 'spinner',
+        },
+        {
+          displayName: 'Skeleton',
+          value: 'skeleton',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: 'spinner',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        {
+          displayName: 'Plain text',
+          value: 'plainText',
+        },
+        {
+          displayName: 'Markdown',
+          value: 'markdown',
+        },
+        {
+          displayName: 'HTML',
+          value: 'html',
+        },
+      ],
+      isFxNotRequired: true,
+      defaultValue: {
+        value: 'plainText',
+      },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
+  },
+  events: {
+    onClick: {
+      displayName: 'On click',
+    },
+    onDoubleClick: {
+      displayName: 'On double click',
+    },
+  },
+  styles: {
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+          optional: true,
+        },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
+    },
+    chartColor: {
+      type: 'colorSwatches',
+      displayName: 'Chart color (series palette from it)',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    legendTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Legend text color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    sliceBorderColor: {
+      type: 'colorSwatches',
+      displayName: 'Slice border color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    centerValueColor: {
+      type: 'colorSwatches',
+      displayName: 'Center figure color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    centerLabelColor: {
+      type: 'colorSwatches',
+      displayName: 'Center caption color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+  },
+  exposedVariables: {
+    isVisible: true,
+    isLoading: false,
+    isDisabled: false,
+    clickedDataPoint: {},
+  },
+  actions: [
+    {
+      handle: 'clearClickedPoint',
+      displayName: 'Clear clicked point',
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+  ],
+  definition: {
+    others: {
+      showOnDesktop: {
+        value: '{{true}}',
+      },
+      showOnMobile: {
+        value: '{{false}}',
+      },
+    },
+    properties: {
+      data: {
+        value: "{{[{ type: 'Charter', value: 62 }, { type: 'Day trip', value: 24 }, { type: 'Event', value: 14 }]}}",
+      },
+      categoryField: {
+        value: 'type',
+      },
+      valueField: {
+        value: 'value',
+      },
+      donut: {
+        value: '{{true}}',
+      },
+      centerValue: {
+        value: '',
+      },
+      centerLabel: {
+        value: '',
+      },
+      showLegend: {
+        value: '{{true}}',
+      },
+      emptyText: {
+        value: 'No data',
+      },
+      colors: {
+        value: '{{[]}}',
+      },
+      highlightClicked: {
+        value: '{{false}}',
+      },
+      loadingState: {
+        value: '{{false}}',
+      },
+      loadingIndicator: {
+        value: 'spinner',
+      },
+      visibility: {
+        value: '{{true}}',
+      },
+      collapseWhenHidden: {
+        value: '{{false}}',
+      },
+      disabledState: {
+        value: '{{false}}',
+      },
+      tooltipFormat: {
+        value: 'plainText',
+      },
+      tooltip: {
+        value: '',
+      },
+    },
+    events: [],
+    styles: {
+      boxShadow: {
+        value: '0px 0px 0px 0px #00000040',
+      },
+    },
+  },
+};

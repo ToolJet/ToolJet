@@ -1,0 +1,256 @@
+{
+  "type": "ShadKeyValue",
+  "properties": {
+    "allowCopy": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "badgeColors": {
+      "type": "object",
+      "schema": {
+        "optional": true,
+        "type": "object"
+      },
+      "default": {},
+      "initial": "{{{ Active: '#16a34a' }}}"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "columns": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "1",
+      "initial": "1"
+    },
+    "currency": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "USD",
+      "initial": "USD"
+    },
+    "data": {
+      "type": "union<array|object>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "array"
+          },
+          {
+            "type": "object"
+          }
+        ],
+        "type": "union"
+      },
+      "default": {},
+      "initial": "{{[{ label: 'Customer', value: 'Ada Lovelace' }, { label: 'Email', value: 'ada@example.com', type: 'link' }, { label: 'Status', value: 'Active', type: 'badge' }, { label: 'Plan', value: 'Pro' }, { label: 'Amount', value: 1250, type: 'currency' }, { label: 'Renews', value: '2026-11-14', type: 'date' }]}}"
+    },
+    "dateFormat": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "DD MMM YYYY",
+      "initial": "DD MMM YYYY"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dividers": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "—",
+      "initial": "—"
+    },
+    "labelWidth": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "40%",
+      "initial": "40%"
+    },
+    "layout": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "inline",
+      "initial": "inline"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "locale": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "en-US",
+      "initial": "en-US"
+    },
+    "tooltip": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "boxShadow": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "dividerColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "labelColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "linkColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "valueColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    }
+  },
+  "validation": {},
+  "events": [
+    "onFieldClick"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "data",
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "lastClickedField"
+  ]
+}

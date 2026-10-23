@@ -3,6 +3,42 @@ import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const listViewComponentSlice = (set, get) => {
+  // The shadcn List view publishes data as its records (pages count them, (components.list.data || []).length), not
+  // as its rows' component values: the store derives and trims children for it, never data.
+  const keepsRecords = (listviewId, moduleId) =>
+    get().getComponentTypeFromId?.(listviewId, moduleId) === 'ShadListView';
+
+  // What derives a list's children after a write to the row at `indices`, and the key that dedupes it. Rows of a
+  // shadcn List view mount, publish and move a hundred at a time, and each row's own derive was a store update that
+  // re-ran every mounted widget's selectors: its rows queue in `queue` and derive together, in one update per list.
+  const deriveAfterWrite = (queue, listviewId, indices, moduleId) => {
+    if (!keepsRecords(listviewId, moduleId)) {
+      return [
+        `${listviewId}|${indices.join(',')}|${moduleId}`,
+        () => get()._deriveListviewChain(listviewId, indices, moduleId),
+      ];
+    }
+    const key = `${listviewId}|${indices.slice(0, -1).join(',')}|${moduleId}|rows`;
+    if (!queue.has(key)) queue.set(key, new Set());
+    queue.get(key).add(indices[indices.length - 1]);
+    return [
+      key,
+      () => {
+        const rows = queue.get(key);
+        queue.delete(key);
+        if (rows?.size) get()._deriveListviewChain(listviewId, indices, moduleId, [...rows]);
+      },
+    ];
+  };
+  // Separate queues: a derive queued in a batch must wait for the batch's writes, so the tick's microtask must not
+  // take its rows.
+  const _batchRows = new Map();
+  const _tickRows = new Map();
+  const deriveAfterFlush = (listviewId, indices, moduleId) => {
+    const [key, derive] = deriveAfterWrite(_batchRows, listviewId, indices, moduleId);
+    get().bufferExposedValuePostFlush(derive, moduleId, key);
+  };
+
   // Microtask dedup for _deriveListviewChain calls outside an explicit batch window.
   // Multiple setExposedVariables calls for the same (listview, row) in the same JS tick
   // (e.g. TableExposedVariables' ~15 useEffect hooks all firing on mount) collapse into
@@ -11,17 +47,15 @@ export const listViewComponentSlice = (set, get) => {
   let _deriveChainScheduled = false;
 
   const scheduleDeriveChain = (nearestListviewId, indices, moduleId) => {
-    const key = `${nearestListviewId}|${indices.join(',')}|${moduleId}`;
-    _pendingDeriveChain.set(key, { nearestListviewId, indices, moduleId });
+    const [key, derive] = deriveAfterWrite(_tickRows, nearestListviewId, indices, moduleId);
+    _pendingDeriveChain.set(key, derive);
     if (!_deriveChainScheduled) {
       _deriveChainScheduled = true;
       queueMicrotask(() => {
         _deriveChainScheduled = false;
         const pending = [..._pendingDeriveChain.values()];
         _pendingDeriveChain.clear();
-        pending.forEach(({ nearestListviewId: lvId, indices: idx, moduleId: mid }) => {
-          get()._deriveListviewChain(lvId, idx, mid);
-        });
+        pending.forEach((derive) => derive());
       });
     }
   };
@@ -133,13 +167,7 @@ export const listViewComponentSlice = (set, get) => {
         // are flushed. Register once per (listview, row) via dedupeKey.
         const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
         const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
-        if (nearestListviewId) {
-          get().bufferExposedValuePostFlush(
-            () => get()._deriveListviewChain(nearestListviewId, indices, moduleId),
-            moduleId,
-            `${nearestListviewId}|${indices.join(',')}|${moduleId}`
-          );
-        }
+        if (nearestListviewId) deriveAfterFlush(nearestListviewId, indices, moduleId);
         return;
       }
 
@@ -184,13 +212,7 @@ export const listViewComponentSlice = (set, get) => {
         );
         const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
         const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
-        if (nearestListviewId) {
-          get().bufferExposedValuePostFlush(
-            () => get()._deriveListviewChain(nearestListviewId, indices, moduleId),
-            moduleId,
-            `${nearestListviewId}|${indices.join(',')}|${moduleId}`
-          );
-        }
+        if (nearestListviewId) deriveAfterFlush(nearestListviewId, indices, moduleId);
         return;
       }
 
@@ -216,20 +238,31 @@ export const listViewComponentSlice = (set, get) => {
 
       if (keys.length === 0) return;
 
-      set(
-        (state) => {
-          let current = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
-          for (let i = 0; i < indices.length - 1; i++) current = current[indices[i]];
-          current[lastIdx] = id !== undefined ? { id } : {};
-        },
-        false,
-        { type: 'resetComponentExposedValuesPerRow', payload: { componentId, indices, moduleId } }
-      );
+      // Guarded: buffered in a batch, it runs when the batch lands, and the row may be gone by then.
+      const reset = (state) => {
+        let current = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+        for (let i = 0; current && i < indices.length - 1; i++) current = current[indices[i]];
+        if (current?.[lastIdx]) current[lastIdx] = id !== undefined ? { id } : {};
+      };
+      const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
+      const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
+
+      // A shadcn List view resets the rows a page turn or a reorder gives other records (takeRowValues) in a batch:
+      // the reset joins it, as setExposedValuesPerRow's writes do, and its rows derive together once it lands.
+      if (nearestListviewId && get().isExposedValueBatching() && keepsRecords(nearestListviewId, moduleId)) {
+        get().bufferExposedValueMutation(
+          reset,
+          moduleId,
+          keys.map((key) => ({ path: `components.${componentId}.${key}`, moduleId }))
+        );
+        deriveAfterFlush(nearestListviewId, indices, moduleId);
+        return;
+      }
+
+      set(reset, false, { type: 'resetComponentExposedValuesPerRow', payload: { componentId, indices, moduleId } });
 
       keys.forEach((key) => get().updateDependencyValues(`components.${componentId}.${key}`, moduleId, []));
 
-      const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
-      const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
       if (nearestListviewId) {
         get()._deriveListviewChain(nearestListviewId, indices, moduleId);
       }
@@ -239,6 +272,7 @@ export const listViewComponentSlice = (set, get) => {
     initExposedValueArrayForChildren: (listviewId, rowCount, moduleId = 'canvas', parentIndices = []) => {
       const { getContainerChildrenMapping } = get();
       const childComponents = getContainerChildrenMapping(listviewId, moduleId);
+      const trimsData = !keepsRecords(listviewId, moduleId);
       set((state) => {
         const components = state.resolvedStore.modules[moduleId].exposedValues.components;
         childComponents.forEach((childId) => {
@@ -283,7 +317,7 @@ export const listViewComponentSlice = (set, get) => {
             Object.keys(lvExposed.children).forEach((key) => {
               if (parseInt(key) >= rowCount) {
                 delete lvExposed.children[key];
-                if (lvExposed.data) delete lvExposed.data[key];
+                if (trimsData && lvExposed.data) delete lvExposed.data[key];
               }
             });
           }
@@ -399,20 +433,20 @@ export const listViewComponentSlice = (set, get) => {
       }
     },
 
-    // Derive a single row's data for a ListView and write to the store.
+    // Derive a ListView's row data and write it to the store: one row, or several rows (an array of row indices) in
+    // one store update.
     // For outerIndices=[] (top-level): writes to exposedValues.components[listviewId].children[rowIndex]
     // For outerIndices=[i] (nested): writes to exposedValues.components[listviewId][i].children[rowIndex]
     deriveListviewExposedData: (listviewId, rowIndex, outerIndices, moduleId = 'canvas') => {
       const { getContainerChildrenMapping, getComponentNameFromId } = get();
+      // Deriving data from a ShadListView's rows replaced its records with an object of row values.
+      const derivesData = !keepsRecords(listviewId, moduleId);
       const childIds = getContainerChildrenMapping(listviewId);
       const exposedComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
 
-      // Build row data for the given rowIndex
-      const rowData = {};
-      childIds.forEach((childId) => {
-        const childName = getComponentNameFromId(childId, moduleId);
+      // Each child's array of rows at this nesting level (navigated through outer indices for nested ListViews)
+      const childRows = childIds.map((childId) => {
         let childExposed = exposedComponents?.[childId];
-        // Navigate through outer indices for nested ListViews
         for (const idx of outerIndices) {
           if (!Array.isArray(childExposed)) {
             childExposed = undefined;
@@ -420,13 +454,19 @@ export const listViewComponentSlice = (set, get) => {
           }
           childExposed = childExposed[idx];
         }
-        // Now childExposed is the array of rows at this nesting level
-        if (Array.isArray(childExposed) && childExposed[rowIndex]) {
-          rowData[childName] = { ...childExposed[rowIndex], id: childId };
-        }
+        return [childId, getComponentNameFromId(childId, moduleId), childExposed];
       });
 
-      const clonedRowData = removeFunctionObjects(deepClone(rowData));
+      // Build row data for each rowIndex
+      const rows = [].concat(rowIndex).map((row) => {
+        const rowData = {};
+        childRows.forEach(([childId, childName, childExposed]) => {
+          if (Array.isArray(childExposed) && childExposed[row]) {
+            rowData[childName] = { ...childExposed[row], id: childId };
+          }
+        });
+        return [row, rowData, derivesData ? removeFunctionObjects(deepClone(rowData)) : undefined];
+      });
 
       let selectionUpdated = false;
       set((state) => {
@@ -462,24 +502,26 @@ export const listViewComponentSlice = (set, get) => {
         // keyed by row index: { 0: {...}, 1: {...} }. Without this check, the array persists
         // because ![] is false (arrays are truthy), and numeric indices get set on the array.
         if (!target.children || Array.isArray(target.children)) target.children = {};
-        if (!target.data || Array.isArray(target.data)) target.data = {};
-        target.children[rowIndex] = rowData;
-        target.data[rowIndex] = clonedRowData;
+        if (derivesData && (!target.data || Array.isArray(target.data))) target.data = {};
+        rows.forEach(([row, rowData, clonedRowData]) => {
+          target.children[row] = rowData;
+          if (derivesData) target.data[row] = clonedRowData;
 
-        // Keep selectedRecord/selectedRow in sync when the selected row's children
-        // update AFTER the click snapshot. onRecordOrRowClicked runs on the capture
-        // phase, so a child's own click handler (e.g. a table row selection) updates
-        // its exposed values after selectedRecord was already snapshotted — without
-        // this, selectedRecord stays one update behind until the next row click.
-        if (target.selectedRecordId === rowIndex || target.selectedRowId === rowIndex) {
-          target.selectedRecord = rowData;
-          target.selectedRow = rowData;
-          selectionUpdated = true;
-        }
+          // Keep selectedRecord/selectedRow in sync when the selected row's children
+          // update AFTER the click snapshot. onRecordOrRowClicked runs on the capture
+          // phase, so a child's own click handler (e.g. a table row selection) updates
+          // its exposed values after selectedRecord was already snapshotted — without
+          // this, selectedRecord stays one update behind until the next row click.
+          if (target.selectedRecordId === row || target.selectedRowId === row) {
+            target.selectedRecord = rowData;
+            target.selectedRow = rowData;
+            selectionUpdated = true;
+          }
+        });
       });
 
       get().updateDependencyValues(`components.${listviewId}.children`, moduleId, []);
-      get().updateDependencyValues(`components.${listviewId}.data`, moduleId, []);
+      if (derivesData) get().updateDependencyValues(`components.${listviewId}.data`, moduleId, []);
       if (selectionUpdated) {
         get().updateDependencyValues(`components.${listviewId}.selectedRecord`, moduleId, []);
         get().updateDependencyValues(`components.${listviewId}.selectedRow`, moduleId, []);
@@ -488,16 +530,19 @@ export const listViewComponentSlice = (set, get) => {
 
     // Walk up the ListView ancestor chain, deriving children/data at each level.
     // indices = the per-row indices from the child write (e.g., [outerRow, innerRow])
-    _deriveListviewChain: (nearestListviewId, indices, moduleId = 'canvas') => {
+    // rowIndices = several rows of the nearest ListView to derive in one update, in place of indices' last
+    _deriveListviewChain: (nearestListviewId, indices, moduleId = 'canvas', rowIndices) => {
       const { findNearestSubcontainerAncestor, getComponentDefinition, deriveListviewExposedData } = get();
 
       let currentLV = nearestListviewId;
       let currentIndices = [...indices];
+      let rows = rowIndices;
 
       while (currentLV && currentIndices.length > 0) {
         const lvDef = getComponentDefinition(currentLV, moduleId);
         const componentType = lvDef?.component?.component;
-        const rowIndex = currentIndices[currentIndices.length - 1];
+        const rowIndex = rows ?? currentIndices[currentIndices.length - 1];
+        rows = undefined;
         const outerIndices = currentIndices.slice(0, -1);
 
         // Table acts as a subcontainer for expandable rows but should not expose

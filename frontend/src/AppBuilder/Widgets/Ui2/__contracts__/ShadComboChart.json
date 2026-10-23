@@ -1,0 +1,362 @@
+{
+  "type": "ShadComboChart",
+  "properties": {
+    "animate": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "barFields": {
+      "type": "union<string|array>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "revenue",
+      "initial": "{{['revenue']}}"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "colors": {
+      "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "currency": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "USD",
+      "initial": "USD"
+    },
+    "curve": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "monotone",
+      "initial": "monotone"
+    },
+    "data": {
+      "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
+      "default": [],
+      "initial": "{{[{ month: 'Jan', revenue: 42000, orders: 310, margin: 31 }, { month: 'Feb', revenue: 47500, orders: 342, margin: 33 }, { month: 'Mar', revenue: 45200, orders: 328, margin: 29 }, { month: 'Apr', revenue: 52800, orders: 371, margin: 34 }, { month: 'May', revenue: 58100, orders: 402, margin: 36 }, { month: 'Jun', revenue: 61400, orders: 425, margin: 35 }]}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "No data",
+      "initial": "No data"
+    },
+    "highlightClicked": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "lineFields": {
+      "type": "union<string|array>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "margin",
+      "initial": "{{['margin']}}"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "rightAxisFields": {
+      "type": "union<string|array>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "",
+      "initial": "{{['margin']}}"
+    },
+    "rightAxisFormat": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "percent",
+      "initial": "percent"
+    },
+    "seriesLabels": {
+      "type": "union<object|array>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "object"
+          },
+          {
+            "type": "array"
+          }
+        ],
+        "type": "union"
+      },
+      "default": {},
+      "initial": "{{{ revenue: 'Revenue', margin: 'Margin' }}}"
+    },
+    "showDots": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showGrid": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showLegend": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "stackBars": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "strokeWidth": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
+      "default": 2,
+      "initial": "{{2}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "valuePrefix": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "valueSuffix": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "visibility": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "xField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "month",
+      "initial": "month"
+    },
+    "yAxisFormat": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "number",
+      "initial": "number"
+    }
+  },
+  "styles": {
+    "axisTextColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "chartColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "gridColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "legendTextColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onDoubleClick"
+  ],
+  "actions": {
+    "clearClickedPoint": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "clickedDataPoint",
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

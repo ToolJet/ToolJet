@@ -1,9 +1,12 @@
 import React from 'react';
+import { limitCheck } from './maxValueCheck';
 import _ from 'lodash';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeEditor from '@/AppBuilder/CodeEditor';
 import { getFlexAxisAwareMeta } from '../Components/FlexContainer/flexChildInspectorUtils';
 import { getDefinitionInitialValue } from './utils';
+import { OptionsListFieldContext } from '@/AppBuilder/CodeBuilder/Elements/OptionsList';
+import { optionsListBlockReason } from '../Components/shared/utils/optionsLiteral';
 
 const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
 
@@ -58,8 +61,33 @@ export const Code = ({
     onChange({ name: 'iconVisibility' }, 'value', value, 'styles');
   }
 
+  // A note under the field (a UI 2.0 config's `note`, or `noteFor` keyed by the field's value): Card content's Custom
+  // says how a card's components read the card's data. The value may be written as a literal binding ({{'custom'}}).
+  const noteKey = String(initialValue ?? '')
+    .trim()
+    .replace(/^\{\{\s*['"`]?|['"`]?\s*\}\}$/g, '');
+  // A UI 2.0 options field drawn as a list (type optionsList) reads its code and the widget's default value, and
+  // sets the default; its note is about the code, so it shows only while the field is in code.
+  const isOptionsList = paramMeta?.type === 'optionsList';
+  const listShown = isOptionsList && !fxActive && !optionsListBlockReason(initialValue);
+  const note = listShown ? null : paramMeta?.noteFor?.[noteKey] ?? paramMeta?.note;
+  const withOptionsList = (field) =>
+    isOptionsList ? (
+      <OptionsListFieldContext.Provider
+        value={{
+          code: initialValue,
+          properties: component?.component?.definition?.properties ?? {},
+          setProperty: (name, value) => onChange({ name }, 'value', value, paramType),
+        }}
+      >
+        {field}
+      </OptionsListFieldContext.Provider>
+    ) : (
+      field
+    );
+
   if (isHidden) return null;
-  return (
+  return withOptionsList(
     <div className={`field tw-mb-2 last:tw-mb-0 ${options.className ?? ''}`}>
       <CodeEditor
         type="fxEditor"
@@ -78,11 +106,21 @@ export const Code = ({
         component={component?.component?.component}
         onVisibilityChange={onVisibilityChange}
         placeholder={placeholder}
-        validationFn={validationFn}
+        // A config may bound its own number field (minValue/maxValue): a value outside is flagged with what the widget takes.
+        validationFn={validationFn ?? limitCheck(paramMeta)}
         cyLabel={paramMeta?.showLabel === false ? param.name?.toLowerCase() : ''}
         setCodeEditorView={setCodeEditorView}
         canRefresh={canRefresh}
       />
+      {note ? (
+        <p
+          className="tw-m-0 tw-mt-1 tw-text-xs"
+          style={{ color: 'var(--text-placeholder, var(--slate10))' }}
+          data-cy={`${param.name}-field-note`}
+        >
+          {note}
+        </p>
+      ) : null}
     </div>
   );
 };

@@ -1,0 +1,321 @@
+{
+  "type": "ShadCarousel",
+  "properties": {
+    "aspectRatio": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "16/9",
+      "initial": "16/9"
+    },
+    "autoplay": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "captionPosition": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "overlay",
+      "initial": "overlay"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "defaultIndex": {
+      "type": "number",
+      "schema": {
+        "optional": true,
+        "type": "number"
+      },
+      "default": 0,
+      "initial": "{{0}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "imageFit": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "cover",
+      "initial": "cover"
+    },
+    "interval": {
+      "type": "number",
+      "schema": {
+        "optional": true,
+        "type": "number"
+      },
+      "default": 5000,
+      "initial": "{{5000}}"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "loop": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "pauseOnHover": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showArrows": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showDots": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "slides": {
+      "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
+      "default": [],
+      "initial": "{{[{ image: 'https://picsum.photos/seed/tj-coast/1200/675', title: 'Coastal routes', description: 'Plan deliveries along the shoreline' }, { image: 'https://picsum.photos/seed/tj-city/1200/675', title: 'City hubs', description: 'Twelve depots, one dashboard' }, { image: 'https://picsum.photos/seed/tj-hills/1200/675', title: 'Mountain passes', description: 'Seasonal schedules at a glance' }]}}"
+    },
+    "slidesPerView": {
+      "type": "number",
+      "schema": {
+        "optional": true,
+        "type": "number"
+      },
+      "default": 1,
+      "initial": "{{1}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "activeDotColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "arrowBackgroundColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "arrowColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "borderRadius": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "captionBackgroundColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "captionTextColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "descriptionColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "dotColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "gap": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
+    },
+    "slideBackgroundColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "titleColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    }
+  },
+  "validation": {},
+  "events": [
+    "onSlideChanged",
+    "onSlideClicked"
+  ],
+  "actions": {
+    "goTo": [
+      "index"
+    ],
+    "next": [],
+    "previous": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "clickedSlide",
+    "currentIndex",
+    "currentSlide",
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

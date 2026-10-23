@@ -384,6 +384,7 @@ export const FxParamTypeMapping = Object.freeze({
   tableRowHeightInput: 'TableRowHeightInput',
   dropdownMenu: 'DropdownMenu',
   query: 'Query',
+  optionsList: 'OptionsList',
 });
 
 export function computeCoercion(oldValue, newValue) {

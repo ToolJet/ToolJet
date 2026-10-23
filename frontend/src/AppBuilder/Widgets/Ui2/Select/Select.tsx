@@ -1,0 +1,188 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
+import {
+  runNow,
+  toOptions,
+  useAutoHeight,
+  useExposed,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
+import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import {
+  CONTROL,
+  controlAria,
+  fieldIdOf,
+  fieldName,
+  FormField,
+  requiredAria,
+} from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import { OptionsCapNote, useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import { isDisabledOption } from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
+import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+
+export const MAX_SELECT_OPTIONS = 500;
+
+export const ShadSelect = (props: WidgetProps) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef<HTMLDivElement>(null);
+  useAutoHeight(props, fit);
+  const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
+  // Radix Select keys its items by string; keep the original values for the exposed value. An option valued '' (an
+  // "All" choice) gets its own key (choiceKey): '' means nothing selected.
+  const options = toOptions(properties.options);
+  const optionKey = choiceKey;
+  const byKey = optionsByKey(options);
+  const initial = defaultKey(properties.defaultValue);
+  const [key, setKey] = useState(initial);
+  // An option that is removed takes its choice with it, so it does not come back selected when it reappears.
+  useDropRemovedChoices(
+    options.map((o) => optionKey(o.value)),
+    key ? [key] : [],
+    () => setKey(''),
+    false
+  );
+  useEffect(() => setKey(initial), [initial]);
+  const selectedOption: Partial<Option> = byKey.get(key) || {};
+  // Radix mounts every item even while closed, so a 10k-option binding froze the page: the list shows the first
+  // MAX_SELECT_OPTIONS (and the selected one, wherever it is); actions still reach every option.
+  const shown = shownOptions(options, byKey.get(key), MAX_SELECT_OPTIONS);
+  const focus = useFocusEvents(fireEvent, () => check.touch());
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popup = usePickerPopup(properties, triggerRef);
+  useExposed(setExposedVariables, properties, {
+    value: selectedOption.value ?? '',
+    selectedOption,
+    options,
+    label: String(properties.label ?? ''),
+    // As the native Select: an option that exists and is enabled is picked, with onSelect; anything else changes
+    // nothing. An { value } object picks by its value.
+    selectOption: async (v: unknown) => {
+      const wanted = v && typeof v === 'object' && 'value' in v ? (v as { value: unknown }).value : v;
+      if (wanted === undefined || wanted === null || typeof wanted === 'object') return;
+      const option = byKey.get(optionKey(wanted));
+      if (!option || isDisabledOption(option)) return;
+      setKey(optionKey(wanted));
+      fireEvent('onSelect');
+    },
+    clear: async () => setKey(''),
+    setFocus: async () => triggerRef.current?.focus(),
+    // Closes an open popup too (focus is in it then), the way the popup's own close does: touched, onBlur once.
+    setBlur: async () => {
+      const wasOpen = popup.open;
+      popup.blurAway(triggerRef.current);
+      if (!wasOpen) return;
+      focus.opened(false);
+      check.touch();
+    },
+  });
+  // Allow clear (on unless turned off, and never while mandatory): an x in the box and a click on the chosen option
+  // clear it, with onSelect. Once chosen, a value could not be taken back.
+  const clearable = properties.allowClear !== false && props.validation?.mandatory !== true && !busy(properties);
+  const clearChoice = () =>
+    runNow(() => {
+      setKey('');
+      setExposedVariable('value', '');
+      setExposedVariable('selectedOption', {});
+      fireEvent('onSelect');
+    });
+  // A picked option counts even when its value is false, 0 or '' (an "All" choice); only no pick is empty.
+  const check = useValidation(
+    props,
+    selectedOption.value ?? '',
+    () => {
+      setKey('');
+      setExposedVariable('value', '');
+      setExposedVariable('selectedOption', {});
+    },
+    byKey.has(key)
+  );
+  return (
+    <FormField props={props} properties={properties} check={check} innerRef={fit}>
+      <div className="tw-relative tw-w-full">
+        <Select
+          value={key}
+          disabled={busy(properties)}
+          open={popup.open}
+          onOpenChange={(open) => {
+            if (open && popup.blocked) return;
+            popup.setOpen(open);
+            focus.opened(open);
+            if (!open) check.touch();
+          }}
+          onValueChange={(next) =>
+            !popup.blocked &&
+            !isDisabledOption(byKey.get(next)) &&
+            runNow(() => {
+              setKey(next);
+              setExposedVariable('value', byKey.get(next)?.value ?? '');
+              setExposedVariable('selectedOption', byKey.get(next) || {});
+              fireEvent('onSelect');
+            })
+          }
+        >
+          <SelectTrigger
+            ref={triggerRef}
+            id={fieldIdOf(props)}
+            // role="combobox" takes no name from its content: without a label, the placeholder names it.
+            aria-label={fieldName(props, 'Select')}
+            {...controlAria(props, check.error)}
+            {...requiredAria(props)}
+            {...focus.handlers}
+            className={cn(
+              CONTROL,
+              'data-[placeholder]:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]',
+              clearable && key && 'tw-pr-9'
+            )}
+          >
+            <SelectValue placeholder={String(properties.placeholder ?? '')} />
+          </SelectTrigger>
+          {/* The list opens in the pack's portal root, outside the widget: it takes the widget's style variables itself. */}
+          <SelectContent style={lookVars(props.componentType, props.styles)} onCloseAutoFocus={popup.onCloseAutoFocus}>
+            {shown.map((o) => (
+              // A disabled option takes no click, and the keyboard skips it (End, arrows, typeahead).
+              <SelectItem
+                key={optionKey(o.value)}
+                value={optionKey(o.value)}
+                disabled={isDisabledOption(o)}
+                // The chosen option, clicked again, clears the choice when clearing is allowed.
+                onPointerUp={
+                  clearable && optionKey(o.value) === key
+                    ? (e) => {
+                        e.preventDefault();
+                        popup.setOpen(false);
+                        clearChoice();
+                      }
+                    : undefined
+                }
+              >
+                {o.label}
+              </SelectItem>
+            ))}
+            <OptionsCapNote max={MAX_SELECT_OPTIONS} total={options.length} className="tw-px-2 tw-py-1.5" />
+          </SelectContent>
+        </Select>
+        {clearable && key ? (
+          <button
+            type="button"
+            aria-label="Clear selection"
+            className="tw-absolute tw-right-8 tw-top-1/2 tw-flex tw-h-5 tw-w-5 -tw-translate-y-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-p-0 tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))] hover:tw-text-[color:var(--lk-fg,var(--sc-foreground))]"
+            onClick={() => {
+              clearChoice();
+              triggerRef.current?.focus();
+            }}
+          >
+            <X className="tw-h-3.5 tw-w-3.5" aria-hidden />
+          </button>
+        ) : null}
+      </div>
+    </FormField>
+  );
+};
+
+export default withControlState(ShadSelect);

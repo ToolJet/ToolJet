@@ -1,0 +1,514 @@
+export const shadColorPickerConfig = {
+  name: 'ShadColorPicker',
+  displayName: 'Color picker',
+  description:
+    'Color picker: a swatch-and-hex field opening a popover with a saturation/hue picker, a hex input and preset swatches (array of hex). Exposes value (#rrggbb, or #rrggbbaa with allowAlpha), selectedColorRGB and selectedColorRGBA. Height: 64px with a label, 36px without',
+  component: 'ShadColorPicker',
+  defaultSize: {
+    width: 8,
+    height: 70,
+  },
+  others: {
+    showOnDesktop: {
+      type: 'toggle',
+      displayName: 'Show on desktop',
+    },
+    showOnMobile: {
+      type: 'toggle',
+      displayName: 'Show on mobile',
+    },
+  },
+  properties: {
+    label: {
+      type: 'code',
+      displayName: 'Label',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    description: {
+      type: 'code',
+      displayName: 'Help text',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    defaultValue: {
+      type: 'code',
+      displayName: 'Default color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '#6366f1',
+      },
+    },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: 'Pick a color',
+      },
+    },
+    swatches: {
+      type: 'code',
+      displayName: 'Preset swatches',
+      validation: {
+        schema: {
+          type: 'array',
+          optional: true,
+        },
+        defaultValue: [],
+      },
+      placeholder: "['#0f172a', '#6366f1', '#22c55e']",
+    },
+    showSwatches: {
+      type: 'toggle',
+      displayName: 'Show swatches',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: true,
+      },
+    },
+    showPicker: {
+      type: 'toggle',
+      displayName: 'Show saturation and hue picker',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: true,
+      },
+    },
+    allowAlpha: {
+      type: 'toggle',
+      displayName: 'Allow transparency (alpha)',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
+    triggerStyle: {
+      type: 'switch',
+      displayName: 'Trigger',
+      options: [
+        {
+          displayName: 'Swatch and hex',
+          value: 'field',
+        },
+        {
+          displayName: 'Swatch only',
+          value: 'swatch',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: 'field',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        {
+          displayName: 'Plain text',
+          value: 'plainText',
+        },
+        {
+          displayName: 'Markdown',
+          value: 'markdown',
+        },
+        {
+          displayName: 'HTML',
+          value: 'html',
+        },
+      ],
+      isFxNotRequired: true,
+      defaultValue: {
+        value: 'plainText',
+      },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
+  },
+  events: {
+    onChange: {
+      displayName: 'On change',
+    },
+    onFocus: {
+      displayName: 'On focus',
+    },
+    onBlur: {
+      displayName: 'On blur',
+    },
+  },
+  styles: {
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+          optional: true,
+        },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
+    },
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    helpTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Help text color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Field background',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Field text color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    placeholderColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Field border color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Accent (focus ring)',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Field radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+          optional: true,
+        },
+      },
+    },
+    menuBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Popover background',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+  },
+  exposedVariables: {
+    isVisible: true,
+    isLoading: false,
+    isDisabled: false,
+    value: '',
+    selectedColorRGB: '',
+    selectedColorRGBA: '',
+    colorFormat: 'hex',
+    allowOpacity: false,
+    isValid: true,
+    label: '',
+  },
+  actions: [
+    {
+      handle: 'setColor',
+      displayName: 'Set color',
+      params: [
+        {
+          handle: 'color',
+          displayName: 'Color',
+          defaultValue: '#6366f1',
+        },
+      ],
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+  ],
+  definition: {
+    others: {
+      showOnDesktop: {
+        value: '{{true}}',
+      },
+      showOnMobile: {
+        value: '{{false}}',
+      },
+    },
+    properties: {
+      label: {
+        value: 'Brand color',
+      },
+      description: {
+        value: '',
+      },
+      defaultValue: {
+        value: '#6366f1',
+      },
+      placeholder: {
+        value: 'Pick a color',
+      },
+      swatches: {
+        value:
+          "{{['#0f172a', '#64748b', '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#ec4899']}}",
+      },
+      showSwatches: {
+        value: '{{true}}',
+      },
+      showPicker: {
+        value: '{{true}}',
+      },
+      allowAlpha: {
+        value: '{{false}}',
+      },
+      triggerStyle: {
+        value: 'field',
+      },
+      dynamicHeight: {
+        value: '{{true}}',
+      },
+      showClearBtn: {
+        value: '{{false}}',
+      },
+      loadingState: {
+        value: '{{false}}',
+      },
+      visibility: {
+        value: '{{true}}',
+      },
+      collapseWhenHidden: {
+        value: '{{false}}',
+      },
+      disabledState: {
+        value: '{{false}}',
+      },
+      tooltipFormat: {
+        value: 'plainText',
+      },
+      tooltip: {
+        value: '',
+      },
+    },
+    events: [],
+    styles: {
+      boxShadow: {
+        value: '0px 0px 0px 0px #00000040',
+      },
+    },
+  },
+};

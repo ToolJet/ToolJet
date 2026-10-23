@@ -720,3 +720,41 @@
     vertical-align: middle;
     color: var(--text-placeholder, #6A727C);
 }
+
+// A UI 2.0 widget's segmented property (segmentedRow.js). Two choices: the control takes the 144px column a dropdown
+// takes, the label wraps in the rest, with a gap between them.
+.code-flex-wrapper.ui2-segmented-row {
+  gap: 8px;
+
+  > .field {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  > :last-child {
+    flex: 0 0 144px;
+    width: 144px;
+  }
+
+  .ToggleGroup {
+    width: 100%;
+  }
+}
+
+// Three or more choices: on their own line under the label, full width.
+.wrapper-div-code-editor.ui2-segmented-stacked > :last-child {
+  margin-top: 6px;
+
+  .ToggleGroup {
+    width: 100%;
+  }
+}
+
+.code-flex-wrapper.ui2-segmented-row,
+.wrapper-div-code-editor.ui2-segmented-stacked {
+  .ToggleGroupItem {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+  }
+}
