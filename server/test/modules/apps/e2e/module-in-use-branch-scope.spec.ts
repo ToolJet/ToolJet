@@ -209,7 +209,8 @@ describe('Workflow delete-in-use guard — names the consuming app', () => {
     }
 
     expect(thrown).toBeInstanceOf(BadRequestException);
-    expect(thrown.message).toContain('Cannot delete this workflow.');
-    expect(thrown.message).toContain('Consumer App');
+    expect(thrown.message).toBe(
+      'Cannot delete workflow "Shared workflow" — it is referenced by: Consumer App. Remove the workflow queries before deleting.'
+    );
   });
 });

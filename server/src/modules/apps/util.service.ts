@@ -1751,7 +1751,9 @@ export class AppsUtilService implements IAppsUtilService {
 
       const appNames = consumingApps.map((r) => r.appName).filter(Boolean);
       if (appNames.length > 0) {
-        throw new BadRequestException(`Cannot delete this workflow.\nUsed by:\n${appNames.join('\n')}`);
+        throw new BadRequestException(
+          `Cannot delete workflow "${workflowApp.name}" — it is referenced by: ${appNames.join(', ')}. Remove the workflow queries before deleting.`
+        );
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
