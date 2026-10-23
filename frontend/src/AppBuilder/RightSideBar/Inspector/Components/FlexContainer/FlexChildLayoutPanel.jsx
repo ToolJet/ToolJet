@@ -3,7 +3,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import { useGridStore } from '@/_stores/gridStore';
-import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const SIZE_OPTIONS = {
   'fill-parent': { label: 'Fill parent', value: 'fill-parent' },
@@ -44,9 +43,10 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
 
   const layoutData = isFlexChild ? (allComponents?.[selectedComponentId]?.layouts?.[currentLayout] ?? {}) : {};
 
-  const containerWidthPx = (parentId && subContainerWidths?.[parentId]) || subContainerWidths?.canvas;
-  const gridCellWidthPx = containerWidthPx / NO_OF_GRIDS;
-  const fallbackWidthPx = gridCellWidthPx;
+  // subContainerWidths holds each canvas's COLUMN width (Container registers its gridWidth), so it is
+  // already one grid cell. Dividing it by NO_OF_GRIDS again made the fixed-width fallback ~0.5px.
+  const gridCellWidthPx = (parentId && subContainerWidths?.[parentId]) || subContainerWidths?.canvas;
+  const fallbackWidthPx = Math.round(gridCellWidthPx);
   const fillWidth = layoutData.fillWidth ?? true;
   const widthPx = layoutData.widthPx ?? fallbackWidthPx;
 

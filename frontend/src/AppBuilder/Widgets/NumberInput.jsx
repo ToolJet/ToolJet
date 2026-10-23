@@ -3,12 +3,10 @@ import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { numberInputExposure, numberOf, isEmptyNumber } from '@/AppBuilder/_engines/materialize/widgets/NumberInput';
 
 export const NumberInput = (props) => {
-  const beforeSetInputValue = (value) => {
-    if (value === '' || value === null || value === undefined) return value;
-    return Number(parseFloat(value).toFixed(props.properties.decimalPlaces));
-  };
+  const beforeSetInputValue = (value) => numberOf(value, props.properties.decimalPlaces);
 
   const inputLogic = useInput({
     ...props,
@@ -17,6 +15,11 @@ export const NumberInput = (props) => {
       value: beforeSetInputValue(props.properties.value),
     },
     beforeSetInputValue,
+    // initial rounds the value itself, so it gets the props as the widget receives them: rounded twice, -0 becomes 0.
+    exposure: {
+      ...numberInputExposure,
+      initial: (input) => numberInputExposure.initial({ ...input, properties: props.properties }),
+    },
   });
 
   const { showClearBtn, disableStepControls } = props.properties;
@@ -140,7 +143,7 @@ export const NumberInput = (props) => {
   }, [disableStepControls]);
 
   useEffect(() => {
-    if (isNaN(inputLogic.value) || inputLogic.value === '') {
+    if (isEmptyNumber(inputLogic.value)) {
       props.setExposedVariable('value', null);
     }
   }, [inputLogic.value]);

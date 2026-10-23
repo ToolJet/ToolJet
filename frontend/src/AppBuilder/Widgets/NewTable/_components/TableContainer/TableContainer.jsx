@@ -81,10 +81,8 @@ export const TableContainer = ({
       id,
       columnProperties,
       columnSizes,
-      data,
       darkMode,
       handleCellValueChange,
-      globalFilter,
       serverSideSearch,
       tableBodyRef,
       t,
@@ -99,10 +97,8 @@ export const TableContainer = ({
     id,
     columnProperties,
     columnSizes,
-    data,
     darkMode,
     handleCellValueChange,
-    globalFilter,
     showBulkSelector,
     serverSideSearch,
     enableExpandableRows,
@@ -110,7 +106,7 @@ export const TableContainer = ({
     moduleId,
   ]);
 
-  const { table, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =
+  const { table, view, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =
     useTable({
       data,
       columns,
@@ -150,9 +146,11 @@ export const TableContainer = ({
     }
   }, [globalFilter, serverSideSearch, setPagination]);
 
+  // The column order goes back to the columns' own order when the columns, the data or the search change, as it did when
+  // the columns were rebuilt for each of them (a column dragged elsewhere returns to its place).
   useEffect(() => {
     setColumnOrder(columns.map((column) => column.id));
-  }, [columns, setColumnOrder]);
+  }, [columns, data, globalFilter, setColumnOrder]);
 
   const handleFilterChange = useCallback(
     (filters) => {
@@ -183,6 +181,7 @@ export const TableContainer = ({
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
         table={table}
+        view={view}
         componentName={componentName}
         pageIndex={pagination.pageIndex + 1}
         lastClickedRowRef={lastClickedRowRef}
@@ -196,6 +195,8 @@ export const TableContainer = ({
         setExposedVariables={setExposedVariables}
         setGlobalFilter={setGlobalFilter}
         globalFilter={globalFilter}
+        isSearching={view.isFiltering}
+        searchProgress={view.searchProgress}
         table={table}
         setFilters={handleFilterChange}
         appliedFiltersLength={table.getState().columnFilters.length}
@@ -207,6 +208,7 @@ export const TableContainer = ({
         tableBodyRef={tableBodyRef}
         darkMode={darkMode}
         table={table}
+        view={view}
         columnOrder={columnOrder}
         setColumnOrder={setColumnOrder}
         setExposedVariables={setExposedVariables}
@@ -226,14 +228,14 @@ export const TableContainer = ({
         height={height}
         allColumns={allColumns}
         table={table}
-        pageIndex={pagination.pageIndex + 1}
+        pageIndex={view.shownPageIndex + 1}
         componentName={componentName}
         handleChangesSaved={clearChangeSet}
         handleChangesDiscarded={handleChangesDiscarded}
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
-        pageCount={table.getPageCount()}
-        dataLength={table.getFilteredRowModel().rows.length}
+        pageCount={view.shownPageCount}
+        dataLength={view.shownCount}
         columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
         paginationBtnClicked={paginationBtnClicked}
       />

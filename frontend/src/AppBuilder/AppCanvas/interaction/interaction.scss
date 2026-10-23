@@ -1,0 +1,299 @@
+// Canvas interaction feedback. One rule for every line drawn here: it lies on grid lines.
+//
+// A canvas's grid spans its content box minus one pixel (Container), so its 44 column lines — the closing one
+// included — fall inside it, on the content box's first and last pixels. A box of `w` columns at column `c` covers
+// [c, c + w) columns; its frame is drawn on the lines c and c + w, i.e. on its first pixel and one pixel past its last.
+// So a component's frame, its drop ghost, its neighbours' frames and the canvas's own boundary all share lines.
+
+// ── A component's frame and resize grips ─────────────────────────────────────────────────────────────────────────
+.tj-frame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(100% + 1px);
+  height: calc(100% + 1px);
+  box-sizing: border-box;
+  border: 1px solid var(--canvas-selection);
+  pointer-events: none;
+  // Above the component's config handle (z-index 100), which can sit over its top-left corner.
+  z-index: 101;
+
+  &.is-dynamic-height {
+    border-color: var(--canvas-dynamic-height);
+
+    .tj-handle-corner {
+      background: var(--canvas-dynamic-height);
+    }
+  }
+}
+
+.tj-handle {
+  position: absolute;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+// Edges: invisible grips centred on the frame's line (positions are from inside its 1px border), so the resize
+// cursor shows only on the border itself, give or take the pointer's natural slack.
+.tj-handle-n,
+.tj-handle-s {
+  left: 8px;
+  right: 8px;
+  height: 6px;
+  cursor: ns-resize;
+}
+.tj-handle-n {
+  top: -4px;
+}
+.tj-handle-s {
+  bottom: -4px;
+}
+.tj-handle-e,
+.tj-handle-w {
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
+  cursor: ew-resize;
+}
+.tj-handle-e {
+  right: -4px;
+}
+.tj-handle-w {
+  left: -4px;
+}
+
+// Corners: a small filled square in each corner, just inside the frame's line.
+.tj-handle-corner {
+  width: 6px;
+  height: 6px;
+  background: var(--canvas-selection);
+}
+.tj-handle-nw {
+  left: 0;
+  top: 0;
+  cursor: nwse-resize;
+}
+.tj-handle-ne {
+  right: 0;
+  top: 0;
+  cursor: nesw-resize;
+}
+.tj-handle-sw {
+  left: 0;
+  bottom: 0;
+  cursor: nesw-resize;
+}
+.tj-handle-se {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}
+
+// A FlexContainer child isn't on a column grid and its box clips horizontally (overflow-x: clip): its frame and
+// grips are drawn inside its box.
+.flex-child-wrapper > .tj-frame {
+  width: 100%;
+  height: 100%;
+
+  .tj-handle-e {
+    right: -1px;
+  }
+  .tj-handle-w {
+    left: -1px;
+  }
+  .tj-handle-n {
+    top: -1px;
+  }
+  .tj-handle-s {
+    bottom: -1px;
+  }
+}
+
+// ── Several selected components ──────────────────────────────────────────────────────────────────────────────────
+.tj-group-frame {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px dashed var(--canvas-selection);
+  pointer-events: none;
+  z-index: 102;
+
+  .tj-group-frame-grip {
+    pointer-events: auto;
+    cursor: move;
+    left: 0;
+    transform: none;
+  }
+}
+
+// ── While a gesture runs ─────────────────────────────────────────────────────────────────────────────────────────
+// The components being moved stay where they were, dimmed; the ghost shows where they will land.
+.tj-drag-source {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.tj-drop-ghost {
+  // Dashed edges drawn as gradients: a `dashed` border's dashes are too short to tell from a solid line.
+  --tj-ghost-edge: var(--canvas-selection);
+  --tj-ghost-fill: var(--canvas-ghost-background);
+  --tj-ghost-dash: var(--tj-ghost-edge) 0 6px, transparent 6px 10px;
+  position: absolute;
+  box-sizing: border-box;
+  background:
+    repeating-linear-gradient(90deg, var(--tj-ghost-dash)) top left / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, var(--tj-ghost-dash)) bottom left / 100% 1px no-repeat,
+    repeating-linear-gradient(180deg, var(--tj-ghost-dash)) top left / 1px 100% no-repeat,
+    repeating-linear-gradient(180deg, var(--tj-ghost-dash)) top right / 1px 100% no-repeat,
+    var(--tj-ghost-fill);
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 9998;
+
+  // A small triangle tag in its top-left corner: the point that decides where it goes.
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    background: var(--tj-ghost-edge);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    pointer-events: none;
+  }
+
+  // A dynamic-height component's ghost is purple, like its frame.
+  &.is-dynamic-height {
+    --tj-ghost-edge: var(--canvas-dynamic-height);
+    --tj-ghost-fill: var(--canvas-dynamic-height-ghost-background);
+  }
+
+  &.is-blocked {
+    --tj-ghost-edge: var(--canvas-refused);
+    --tj-ghost-fill: transparent;
+    opacity: 1;
+  }
+}
+
+// Ghosts gliding over a canvas that refuses the move: above the canvases, placed by the viewport, off the grid.
+.tj-gliding-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+
+  .tj-drop-ghost {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
+
+// A canvas that refuses the component being moved over it: a light red haze over all of it.
+.main-editor-canvas .real-canvas.tj-refusing {
+  box-shadow:
+    inset 0 0 0 1px var(--canvas-refused),
+    inset 0 0 0 100vmax color-mix(in srgb, var(--canvas-refused) 10%, transparent) !important;
+}
+
+// Faint glows on the edges of the scroller a move is in, where it can still scroll.
+.tj-scroll-glow {
+  --tj-glow: color-mix(in srgb, var(--canvas-selection) 12%, transparent);
+  position: fixed;
+  height: 24px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 150ms ease;
+
+  &.is-on {
+    opacity: 1;
+  }
+}
+.tj-scroll-glow-top {
+  background: linear-gradient(to bottom, var(--tj-glow), transparent);
+}
+.tj-scroll-glow-bottom {
+  transform: translateY(-100%);
+  background: linear-gradient(to top, var(--tj-glow), transparent);
+}
+
+// A canvas's frame is drawn on its own edges, which are its grid lines 0 and 43 and its top and bottom: grey while
+// its header/footer slot is hovered or selected, blue while a gesture targets it (red where the drop is refused).
+// The same element and pixels, so the colours replace each other and never stand side by side.
+.resizable-slot.is-editing {
+  box-shadow: none !important;
+
+  &:hover > .real-canvas {
+    box-shadow: inset 0 0 0 1px var(--border-weak);
+  }
+  &.active > .real-canvas {
+    box-shadow: inset 0 0 0 1px var(--border-accent-weak);
+  }
+  &.dragging > .real-canvas {
+    box-shadow: inset 0 0 0 1px var(--border-accent-strong);
+  }
+}
+
+.main-editor-canvas .real-canvas.tj-drop-target {
+  box-shadow: inset 0 0 0 1px var(--border-accent-strong) !important;
+
+  &.is-blocked {
+    box-shadow: inset 0 0 0 1px var(--canvas-refused) !important;
+  }
+}
+
+.tj-grid {
+  position: absolute;
+  pointer-events: none;
+
+  path {
+    stroke: var(--canvas-grid-line);
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+  }
+}
+
+// A Form's header/footer slot shows its grid while its height is dragged (HorizontalSlot). The canvas sizes its
+// background to its own columns and rows (Container).
+.resizable-slot.dragging > .real-canvas {
+  background-image:
+    linear-gradient(to right, var(--canvas-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--canvas-grid-line) 1px, transparent 1px);
+}
+
+// Alignment guides between a moving / resizing / new component and the components it lines up with.
+.tj-guide {
+  position: absolute;
+  background: var(--canvas-guideline);
+  pointer-events: none;
+  z-index: 9999;
+
+  &.is-dynamic-height {
+    background: var(--canvas-dynamic-height-guideline);
+  }
+}
+
+.tj-brush-hit {
+  outline: 1px solid var(--canvas-selection);
+  outline-offset: -1px;
+}
+
+.tj-marquee {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  border: 1px solid var(--canvas-selection);
+  background: color-mix(in srgb, var(--canvas-selection) 12%, transparent);
+}
+
+body.tj-canvas-gesture,
+body.tj-canvas-gesture * {
+  user-select: none !important;
+}
+
+// Moving components: the pointer is hidden; the ghost (snapped to the cells the components land on) is what moves.
+body.tj-canvas-moving,
+body.tj-canvas-moving * {
+  cursor: none !important;
+}

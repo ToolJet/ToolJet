@@ -10,6 +10,23 @@ import { ROW_SCOPED_WIDGET_TYPES, ROW_SCOPED_RESOLVABLE_KEY_MAP } from '@/AppBui
  */
 const ARRAY_HINT_TEMPLATE_THRESHOLD = 10;
 
+const ROW_KEY = /^(0|[1-9]\d*)$/;
+
+/**
+ * The keys of `obj` that get hints: all of them, except that an object keyed by row number (a ListView's `children` and
+ * `data`: `{ 0: {...}, 1: {...} }`, one key per row) gets its first ARRAY_HINT_TEMPLATE_THRESHOLD rows only.
+ */
+function hintKeys(obj) {
+  const keys = [];
+  let rows = 0;
+  for (const key in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+    if (ROW_KEY.test(key) && ++rows > ARRAY_HINT_TEMPLATE_THRESHOLD) continue;
+    keys.push(key);
+  }
+  return keys;
+}
+
 /**
  * Module-level single-entry caches for context hints.
  *
@@ -41,8 +58,7 @@ function traverseObjectToHints(data, prefix, maxDepth = 3, _depth = 0) {
   const hints = [];
   if (_depth >= maxDepth || data == null || typeof data !== 'object') return hints;
 
-  const keys = Object.keys(data);
-  keys.forEach((key) => {
+  hintKeys(data).forEach((key) => {
     const value = data[key];
     const _type = Object.prototype.toString.call(value).slice(8, -1);
     const newPath = prefix ? `${prefix}.${key}` : key;
@@ -191,7 +207,7 @@ function computeShapeHash(obj, maxDepth = 3, _depth = 0) {
   }
 
   if (type === 'Object') {
-    const keys = Object.keys(obj).sort();
+    const keys = hintKeys(obj).sort();
     const entries = keys.map((k) => `${k}:${computeShapeHash(obj[k], maxDepth, _depth + 1)}`);
     return `{${entries.join(',')}}`;
   }

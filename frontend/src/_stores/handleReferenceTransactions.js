@@ -3,7 +3,7 @@ import { useAppDataStore } from './appDataStore';
 import { useEditorStore } from './editorStore';
 import { useDataQueriesStore } from './dataQueriesStore';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { diff } from '@/AppBuilder/_engines/data/diff';
 import { useResolverStoreActions } from './resolverStore';
 
 //*  using binary search to find and replace it with new hint (re-named entities) from the currentSuggestions array

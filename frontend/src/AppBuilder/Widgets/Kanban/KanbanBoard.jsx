@@ -28,8 +28,9 @@ import {
 } from './helpers/utils';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { diff } from '@/AppBuilder/_engines/data/diff';
 import cx from 'classnames';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -55,14 +56,23 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
   const { accentColor } = styles;
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const [lastSelectedCard, setLastSelectedCard] = useState({});
+  // Props are compared by content (they were keyed by their JSON, rebuilt on every render). cardDataAsObj below is
+  // changed in place by the card actions, so the effects reading it keep a JSON key: a reference wouldn't change.
+  const stableColumnData = useContentStable(columnData);
+  const stableCardData = useContentStable(cardData);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const columnDataAsObj = useMemo(() => convertArrayToObj(columnData), [JSON.stringify(columnData)]);
+  const columnDataAsObj = useMemo(() => convertArrayToObj(columnData), [stableColumnData]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const normalizedCardData = useMemo(() => normalizeCardData(cardData), [JSON.stringify(cardData)]);
+  const normalizedCardData = useMemo(() => normalizeCardData(cardData), [stableCardData]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const cardDataAsObj = useMemo(() => convertArrayToObj(normalizedCardData), [JSON.stringify(normalizedCardData)]);
+  const cardDataAsObj = useMemo(() => convertArrayToObj(normalizedCardData), [normalizedCardData]);
+  // cardDataAsObj is changed in place by the card actions and drags below; this count goes up on each change, so the
+  // effects that read it re-run as they did when keyed by the cards' JSON — without serializing every card per render.
+  const cardsVersion = useRef(0);
+  const cardsChanged = () => {
+    cardsVersion.current += 1;
+  };
 
   const [items, setItems] = useState({});
   const [containers, setContainers] = useState([]);
@@ -82,7 +92,9 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
     backgroundColor: accentColor ?? '#4d72fa',
   };
 
-  const flatCardData = Object.values(cardDataAsObj).flat();
+  // The cards in order, as the cards' row indexes (their custom resolvables) are numbered: rebuilt when they change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const flatCardData = useMemo(() => Object.values(cardDataAsObj).flat(), [cardDataAsObj, cardsVersion.current]);
 
   const updateCardDataInCustomResolvable = useCallback((cardDataAsObj) => {
     const flatCardData = Object.values(cardDataAsObj).flat();
@@ -95,8 +107,8 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
     );
   }, []);
 
-  // Check if the previous filtered data is different from the current filtered data
-  if (Object.keys(diff(normalizedCardData, prevCardData.current)).length > 0) {
+  // New card data (normalizedCardData changes only when the cards' content does, so comparing it is enough)
+  if (normalizedCardData !== prevCardData.current) {
     prevCardData.current = normalizedCardData;
     updateCardDataInCustomResolvable(cardDataAsObj);
   }
@@ -105,7 +117,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
     setContainers(() => getColumnData(columnData));
     shouldUpdateData.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(columnData)]);
+  }, [stableColumnData]);
 
   useEffect(() => {
     if (!showModal && mode === 'edit') {
@@ -131,7 +143,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
     setItems(() => getCardData(normalizedCardData, { ...columnDataAsObj }));
     shouldUpdateData.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(normalizedCardData), JSON.stringify(columnDataAsObj)]);
+  }, [normalizedCardData, columnDataAsObj]);
 
   useEffect(() => {
     if (shouldUpdateData.current) {
@@ -139,7 +151,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
       setExposedVariable('updatedCardData', getData(cardDataAsObj));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldUpdateData.current, JSON.stringify(cardDataAsObj)]);
+  }, [shouldUpdateData.current, cardDataAsObj, cardsVersion.current]);
 
   useEffect(() => {
     droppableItemsColumnId.current = containers.find((container) => items[container]?.length > 0);
@@ -152,6 +164,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
         ...cardDataAsObj[cardId],
         ...value,
       };
+      cardsChanged();
       const diffKeys = Object.keys(diff(cardToBeUpdated, value));
       if (lastSelectedCard?.id === cardId) {
         setExposedVariables({
@@ -173,7 +186,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
       updateCardDataInCustomResolvable(cardDataAsObj);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastSelectedCard, JSON.stringify(cardDataAsObj)]);
+  }, [lastSelectedCard, cardDataAsObj, cardsVersion.current]);
 
   useEffect(() => {
     setExposedVariable('moveCard', async function (cardId, columnId) {
@@ -188,6 +201,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
         [columnId]: items[columnId] && [cardId, ...items[columnId]],
       }));
       cardDataAsObj[cardId] = { ...cardDataAsObj[cardId], columnId: columnId };
+      cardsChanged();
       const lastCardMovement = {
         originColumnId: cardToBeMoved.columnId,
         destinationColumnId: columnId,
@@ -200,7 +214,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
       fireEvent('onCardMoved');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, JSON.stringify(cardDataAsObj)]);
+  }, [items, cardDataAsObj, cardsVersion.current]);
 
   useEffect(() => {
     setExposedVariable('addCard', async function (cardDetails) {
@@ -209,6 +223,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
         return toast.error('Column Id not found');
       const columnId = cardDetails.columnId;
       cardDataAsObj[cardDetails.id] = cardDetails;
+      cardsChanged();
       setItems((items) => ({
         ...items,
         [columnId]: [...items[columnId], cardDetails.id],
@@ -218,7 +233,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
       fireEvent('onCardAdded');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, JSON.stringify(cardDataAsObj)]);
+  }, [items, cardDataAsObj, cardsVersion.current]);
 
   useEffect(() => {
     setExposedVariable('deleteCard', async function (cardId) {
@@ -226,6 +241,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
       const columnId = cardDataAsObj[cardId]['columnId'];
       const deletedCard = cardDataAsObj[cardId];
       delete cardDataAsObj[cardId];
+      cardsChanged();
       showModal && setShowModal(false);
       updateCardDataInCustomResolvable(cardDataAsObj);
       setItems((items) => ({
@@ -236,7 +252,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
       fireEvent('onCardRemoved');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal, JSON.stringify(cardDataAsObj)]);
+  }, [showModal, cardDataAsObj, cardsVersion.current]);
 
   const [clonedItems, setClonedItems] = useState(null);
   const sensors = useSensors(
@@ -302,6 +318,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
         }
 
         cardDataAsObj[active.id] = { ...cardDataAsObj[active.id], columnId: overContainer };
+        cardsChanged();
         const lastCardMovement = {
           destinationColumnId: overContainer,
           originCardIndex: activeIndex,
@@ -342,6 +359,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
       shouldUpdateData.current = true;
       const deletedCard = cardDataAsObj[activeId];
       delete cardDataAsObj[activeId];
+      cardsChanged();
       setItems((items) => ({
         ...items,
         [activeContainer]: items[activeContainer].filter((id) => id !== activeId),
@@ -366,6 +384,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
           [overContainer]: arrayMove(items[overContainer], activeIndex, overIndex),
         }));
         cardDataAsObj[active.id] = { ...cardDataAsObj[active.id], columnId: overContainer };
+        cardsChanged();
         const lastCardMovement = {
           originColumnId: cardMovementRef.current.originColumnId,
           destinationColumnId: overContainer,

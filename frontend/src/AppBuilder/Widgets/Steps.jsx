@@ -3,6 +3,7 @@ import { isExpectedDataType } from '@/_helpers/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import './Steps.scss';
 import { getFormattedSteps, getSafeRenderableValue } from './utils';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 export const Steps = function Steps({
   properties,
@@ -37,6 +38,7 @@ export const Steps = function Steps({
 
   const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
 
+  const stableSteps = useContentStable(steps);
   useEffect(() => {
     const formattedSteps = getFormattedSteps(steps);
     const sanitizedSteps = JSON.parse(JSON.stringify(formattedSteps || [])).map((step) => ({
@@ -47,7 +49,7 @@ export const Steps = function Steps({
     const newFilteredSteps = (sanitizedSteps || []).filter((step) => step.visible);
     setFilteredSteps(newFilteredSteps);
     setStepsArr(sanitizedSteps);
-  }, [JSON.stringify(steps)]);
+  }, [stableSteps]);
 
   // Common function to calculate progress bar width and label padding
   const calculateProgressBarWidth = () => {
@@ -99,7 +101,7 @@ export const Steps = function Steps({
     }
 
     return () => resizeObserver.disconnect();
-  }, [theme, JSON.stringify(steps), filteredSteps]);
+  }, [theme, stableSteps, filteredSteps]);
   // Dynamic styles for theming
   const dynamicStyle = {
     '--bgColor': styles.color,

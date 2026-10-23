@@ -10,12 +10,9 @@ export default create(
   zustandDevTools(
     (set, get) => ({
       hoveredComponentForGrid: '',
-      hoveredComponentBoundaryId: '',
 
       setHoveredComponentForGrid: (id) => set({ hoveredComponentForGrid: id }, false, 'setHoveredComponentForGrid'),
       getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
-      setHoveredComponentBoundaryId: (id) =>
-        set({ hoveredComponentBoundaryId: id }, false, 'setHoveredComponentBoundaryId'),
     }),
     { name: 'Transient Store', anonymousActionType: 'unknown' }
   )

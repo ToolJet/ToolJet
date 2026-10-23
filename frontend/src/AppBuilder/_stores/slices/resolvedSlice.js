@@ -1,9 +1,13 @@
 import { resolveDynamicValues, registerResetter } from '../utils';
-import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
+import { createPropagationScheduler } from '@/AppBuilder/_engines/data/propagation';
 import { ROW_SCOPED_WIDGET_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import _ from 'lodash';
+import { deepFreeze } from '@/AppBuilder/_engines/data/freeze';
+import { sameExposedValue } from '@/AppBuilder/_engines/data/equality';
+import { valueWithIds } from '@/AppBuilder/_engines/data/expressions';
+import { readyState } from '@/AppBuilder/_engines/materialize/prepare';
 
 const initialState = {
   resolvedStore: {
@@ -58,33 +62,35 @@ const buildExposedValueMutation = (componentId, property, value, moduleId) => (s
   components[componentId][property] = value;
 };
 
+const QUERY_DEPENDENCY_KEYS = [
+  'isLoading',
+  'data',
+  'rawData',
+  'request',
+  'response',
+  'responseHeaders',
+  'metadata',
+  'error',
+];
+
+// Values are deep-frozen before they're written (see _engines/data/freeze.js): instant for data already frozen.
+const frozenValues = (values) => {
+  Object.values(values).forEach((value) => deepFreeze(value));
+  return values;
+};
+
 export const createResolvedSlice = (set, get) => {
   // Explicit bracket only — ListView/Form row-mount coalescing, page-switch. Untouched by the
   // implicit mechanism below; nothing here changes what this instance has always done.
   const _exposedValueBatch = createBatchManager(set, get);
   registerResetter(() => _exposedValueBatch.reset());
 
-  // Implicit microtask batch: coalesces dep-cascade recomputes from setVariable / setExposedValue
-  // calls that happen outside an explicit batch window (ListView/Form/page-switch bracket).
-  // Tracked entirely independently of _exposedValueBatch — writes are always synchronous here
-  // (reads work immediately in the same runJS context); only the dep resolution is deferred, and
-  // resolving it early can never affect an explicit bracket's own pending state.
-  let _implicitDepPaths = [];
-  let _implicitScheduled = false;
-
-  const flushImplicit = () => {
-    if (_implicitDepPaths.length === 0) return;
-    _implicitScheduled = false;
-    const depPaths = _implicitDepPaths;
-    _implicitDepPaths = [];
-    const seen = new Set();
-    depPaths.forEach(({ path, moduleId }) => {
-      const key = `${path}|${moduleId}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      get().updateDependencyValues(path, moduleId);
-    });
-  };
+  // Re-resolves dependents of changes: at once when small, in slices with one store write each when large (see
+  // _engines/data/propagation.js). The implicit microtask batch — setVariable / setExposedValue calls outside an explicit
+  // window coalescing into one pass — is its `defer` mode. Writes stay synchronous (reads work immediately in the same
+  // runJS context); only the dependents' resolution is deferred.
+  const _propagation = createPropagationScheduler({ set, get });
+  registerResetter(() => _propagation.reset());
 
   const scheduleDependencyUpdate = (depPath, moduleId) => {
     if (_exposedValueBatch.isBatching()) {
@@ -92,11 +98,7 @@ export const createResolvedSlice = (set, get) => {
       _exposedValueBatch.bufferDepPath(depPath, moduleId);
       return;
     }
-    if (!_implicitScheduled) {
-      _implicitScheduled = true;
-      queueMicrotask(() => flushImplicit('implicitMicrotaskBatch'));
-    }
-    _implicitDepPaths.push({ path: depPath, moduleId });
+    _propagation.propagate([depPath], moduleId, [], { defer: true });
   };
 
   return {
@@ -131,8 +133,12 @@ export const createResolvedSlice = (set, get) => {
     // touches _exposedValueBatch (the explicit bracket), so it can't affect an open ListView/Form/
     // page-switch coalescing window. Safe to call unconditionally; no-ops if nothing is pending.
     flushImplicitBatchEntries: () => {
-      flushImplicit('flushImplicitBatchEntries');
+      _propagation.flushSync();
     },
+
+    // Resolves once every pending dependent has been re-resolved (at once when nothing is pending).
+    propagationSettled: () => _propagation.settled(),
+    flushPropagationSync: () => _propagation.flushSync(),
 
     isExposedValueBatching: () => _exposedValueBatch.isBatching(),
 
@@ -158,7 +164,7 @@ export const createResolvedSlice = (set, get) => {
         false,
         'setResolvedGlobals'
       );
-      get().updateDependencyValues(`globals.${objKey}`, moduleId);
+      _propagation.propagate([`globals.${objKey}`], moduleId);
     },
     setResolvedConstants: (constants = {}, moduleId = 'canvas') => {
       set(
@@ -170,9 +176,10 @@ export const createResolvedSlice = (set, get) => {
         false,
         'setResolvedConstants'
       );
-      Object.entries(constants).forEach(([key, value]) => {
-        get().updateDependencyValues(`constants.${key}`, moduleId);
-      });
+      _propagation.propagate(
+        Object.keys(constants).map((key) => `constants.${key}`),
+        moduleId
+      );
     },
 
     setSecrets: (secrets = {}, moduleId = 'canvas') => {
@@ -213,13 +220,16 @@ export const createResolvedSlice = (set, get) => {
         false,
         'setResolvedPageConstants'
       );
-      Object.entries(constants).forEach(([key, value]) => {
-        get().updateDependencyValues(`page.${key}`, moduleId);
-      });
+      _propagation.propagate(
+        Object.keys(constants).map((key) => `page.${key}`),
+        moduleId
+      );
     },
 
     // variables
     setVariable: (key, value, moduleId = 'canvas') => {
+      // Frozen before it's written, as Immer would (and a long array's rows profiled: freeze.js rowsProfileOf).
+      deepFreeze(value);
       // Synchronous write so getVariable reads the new value immediately in the same runJS context.
       set(
         (state) => {
@@ -260,8 +270,8 @@ export const createResolvedSlice = (set, get) => {
         'unsetAllVariables'
       );
       Object.keys(variables).forEach((key) => {
-        get().removeNode(`variables.${key}`);
-        get().updateDependencyValues(`variables.${key}`);
+        get().removeNode(`variables.${key}`, moduleId);
+        get().updateDependencyValues(`variables.${key}`, moduleId);
       });
       get().rebuildVariableHints(moduleId);
     },
@@ -275,7 +285,7 @@ export const createResolvedSlice = (set, get) => {
         false,
         'setPageVariable'
       );
-      get().updateDependencyValues(`page.variables.${key}`, moduleId);
+      _propagation.propagate([`page.variables.${key}`], moduleId);
       get().rebuildVariableHints(moduleId);
     },
 
@@ -305,13 +315,14 @@ export const createResolvedSlice = (set, get) => {
         'unsetAllPageVariables'
       );
       Object.keys(pageVariables).forEach((key) => {
-        get().removeNode(`page.variables.${key}`);
-        get().updateDependencyValues(`page.variables.${key}`);
+        get().removeNode(`page.variables.${key}`, moduleId);
+        get().updateDependencyValues(`page.variables.${key}`, moduleId);
       });
       get().rebuildVariableHints(moduleId);
     },
 
     setResolvedQuery: (queryId, details, moduleId = 'canvas', replaceObject = false) => {
+      frozenValues(details);
       set(
         (state) => {
           state.resolvedStore.modules[moduleId].exposedValues.queries[queryId] = {
@@ -323,14 +334,14 @@ export const createResolvedSlice = (set, get) => {
         'setResolvedQuery'
       );
 
-      Object.entries(details).forEach(([key, value]) => {
-        if (
-          ['isLoading', 'data', 'rawData', 'request', 'response', 'responseHeaders', 'metadata', 'error'].includes(key)
-        ) {
-          if (typeof value !== 'function') get().updateDependencyValues(`queries.${queryId}.${key}`, moduleId);
-        }
-      });
+      // One pass for all the keys written (it was one per key, each re-resolving the shared dependents). Returns null
+      // when it finished at once, otherwise a promise for when it has (see processQueryResults).
+      const paths = Object.entries(details)
+        .filter(([key, value]) => QUERY_DEPENDENCY_KEYS.includes(key) && typeof value !== 'function')
+        .map(([key]) => `queries.${queryId}.${key}`);
+      const propagated = _propagation.propagate(paths, moduleId);
       get().rebuildQueryHints(moduleId, queryId);
+      return propagated;
     },
     initialiseResolvedQuery: (querIds, moduleId = 'canvas') => {
       const defaultObject = {};
@@ -501,7 +512,8 @@ export const createResolvedSlice = (set, get) => {
     },
     setExposedValue: (componentId, property, value, moduleId = 'canvas') => {
       const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId]?.[property];
-      if (existing !== undefined && _.isEqual(existing, value)) return;
+      if (existing !== undefined && sameExposedValue(value, existing)) return;
+      deepFreeze(value);
 
       const mutation = buildExposedValueMutation(componentId, property, value, moduleId);
       const depPaths = typeof value !== 'function' ? [{ path: `components.${componentId}.${property}`, moduleId }] : [];
@@ -519,6 +531,7 @@ export const createResolvedSlice = (set, get) => {
 
     setExposedValues: (id, type, values, moduleId = 'canvas') => {
       if (_exposedValueBatch.isBatching()) {
+        frozenValues(values);
         const depPaths = [];
         Object.entries(values).forEach(([key, value]) => {
           if (typeof value !== 'function') {
@@ -540,10 +553,22 @@ export const createResolvedSlice = (set, get) => {
         return;
       }
 
+      // Unchanged values are found before the write, on the committed state. Comparing inside the draft went through
+      // an Immer proxy for every row and key of an array (a 100k-row table's data: over a second per write).
+      const committed = get().resolvedStore.modules[moduleId].exposedValues[type][id];
       const skipKeys = new Set();
+      if (committed !== undefined && !Array.isArray(committed)) {
+        Object.entries(values).forEach(([key, value]) => {
+          if (sameExposedValue(value, committed[key])) skipKeys.add(key);
+        });
+      }
+      if (skipKeys.size === Object.keys(values).length) return;
+      Object.entries(values).forEach(([key, value]) => skipKeys.has(key) || deepFreeze(value));
+
       set(
         (state) => {
           Object.entries(values).forEach(([key, value]) => {
+            if (skipKeys.has(key)) return;
             const existing = state.resolvedStore.modules[moduleId].exposedValues[type][id];
             if (existing === undefined || Array.isArray(existing)) {
               // Initialize as plain object. The Array.isArray check handles the case where a
@@ -555,11 +580,7 @@ export const createResolvedSlice = (set, get) => {
                 [key]: value,
               };
             } else {
-              // _.isEqual on an Immer proxy is safe here: Immer's proxy traps are synchronous
-              // and lodash's deep comparison works correctly against them.
-              if (_.isEqual(value, existing[key])) {
-                skipKeys.add(key);
-              } else existing[key] = value;
+              existing[key] = value;
             }
           });
         },
@@ -632,6 +653,8 @@ export const createResolvedSlice = (set, get) => {
 
     updateCustomResolvables: (componentId, data, key, moduleId = 'canvas', parentIndices = []) => {
       const { updateDependencyValues, updateChildComponentsLength, invalidateContextHintsCache } = get();
+      // One { listItem } (or { cardData }) per row, around rows that are usually frozen already.
+      deepFreeze(data);
       set((state) => {
         if (parentIndices.length === 0) {
           state.resolvedStore.modules[moduleId].customResolvables[componentId] = data;
@@ -686,18 +709,23 @@ export const createResolvedSlice = (set, get) => {
       const { getContainerChildrenMapping } = get();
       const childComponents = getContainerChildrenMapping(parentId, moduleId);
       if (parentIndices.length === 0) {
-        // Seed rows in the same set() as the array conversion. A helper opening its own set() from
-        // in here reads pre-draft state and leaves a hybrid { 0: {...}, properties: {...} }.
+        // Each child's rows are built from the committed state, then the array conversion and the seeded rows land in
+        // one set() (a helper opening its own set() from in here left a hybrid { 0: {...}, properties: {...} }). Built
+        // outside the draft: reading every row through it made a proxy per row.
+        const components = get().resolvedStore.modules[moduleId].components;
+        const sized = childComponents.map((componentId) => {
+          const existing = components[componentId];
+          const template = Array.isArray(existing) ? existing[0] : existing;
+          const rows = [];
+          for (let i = 0; i < length; i++) {
+            rows[i] =
+              (Array.isArray(existing) && existing[i]) ||
+              (template ? { ...template } : { ...DEFAULT_COMPONENT_STRUCTURE });
+          }
+          return [componentId, rows];
+        });
         set((state) => {
-          childComponents.forEach((componentId) => {
-            const existing = state.resolvedStore.modules[moduleId].components[componentId];
-            const template = Array.isArray(existing) ? existing[0] : existing;
-            const rows = [];
-            for (let i = 0; i < length; i++) {
-              rows[i] =
-                (Array.isArray(existing) && existing[i]) ||
-                (template ? { ...template } : { ...DEFAULT_COMPONENT_STRUCTURE });
-            }
+          sized.forEach(([componentId, rows]) => {
             state.resolvedStore.modules[moduleId].components[componentId] = rows;
           });
         });
@@ -829,22 +857,17 @@ export const createResolvedSlice = (set, get) => {
     getAllExposedValues: (moduleId = 'canvas') => {
       return get().resolvedStore.modules[moduleId].exposedValues;
     },
-    getResolvedValue: (value, customVariables = {}, moduleId = 'canvas') => {
+    // `exposedValues`: what to resolve in, when not the store's (an event's action params, with the rows of a windowed
+    // ListView they read made ready: _engines/materialize/prepare.js). Else the store's, with the rows of a windowed
+    // ListView it reads that can be read at once (prepare.js readyState).
+    getResolvedValue: (value, customVariables = {}, moduleId = 'canvas', exposedValues = undefined) => {
       if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
-        const re = extractAndReplaceReferencesFromString(
-          value,
-          get().modules[moduleId].componentNameIdMapping,
-          get().modules[moduleId].queryNameIdMapping
-        );
-
-        let result = resolveDynamicValues(
-          re.valueWithBrackets,
-          get().resolvedStore.modules[moduleId].exposedValues,
-          customVariables,
-          false,
-          []
-        );
-        return result;
+        const { componentNameIdMapping, queryNameIdMapping } = get().modules[moduleId];
+        const text = valueWithIds(value, componentNameIdMapping, queryNameIdMapping);
+        const [state, variables] = exposedValues
+          ? [exposedValues, customVariables]
+          : readyState(get, text, get().resolvedStore.modules[moduleId].exposedValues, customVariables, moduleId);
+        return resolveDynamicValues(text, state, variables, false, []);
       } else {
         return value;
       }
@@ -1020,7 +1043,7 @@ export const createResolvedSlice = (set, get) => {
         false,
         'setModuleInputs'
       );
-      get().updateDependencyValues(`input.${key}`, moduleId);
+      _propagation.propagate([`input.${key}`], moduleId);
     },
     setModuleOutputs: (key, value, moduleId = 'canvas') => {
       set(
@@ -1033,7 +1056,7 @@ export const createResolvedSlice = (set, get) => {
         false,
         'setModuleOutputs'
       );
-      get().updateDependencyValues(`output.${key}`, moduleId);
+      _propagation.propagate([`output.${key}`], moduleId);
     },
     clearModuleInputs: (moduleId = 'canvas') => {
       set((state) => {

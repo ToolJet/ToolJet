@@ -17,6 +17,10 @@ const {
 import { validateMultilineCode } from '@/_helpers/utility';
 import _, { isNumber } from 'lodash';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
+import { stringifyBounded } from '@/AppBuilder/_engines/data/bounded';
+import { fitsDefinition } from '@/AppBuilder/_engines/data/shape';
+
+export { fitsDefinition };
 
 export const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) => {
   let schema;
@@ -93,6 +97,13 @@ export const generateSchemaFromValidationDefinition = (definition, recursionDept
   return definition.optional ? optional(schema) : schema;
 };
 
+// The value in a validation message: its JSON, cut short (the value may be a whole dataset bound to the wrong property).
+const MESSAGE_VALUE_LIMIT = 500;
+const previewOf = (value) => {
+  const { text, truncated } = stringifyBounded(value, MESSAGE_VALUE_LIMIT, reservedKeywordReplacer);
+  return `${text}${truncated ? '…' : ''}`;
+};
+
 export const validate = (value, schema, _defaultValue, codePreviewValidator = false) => {
   let valid = true;
   const errors = [];
@@ -107,7 +118,7 @@ export const validate = (value, schema, _defaultValue, codePreviewValidator = fa
       let errMsg = `Expected a value of type ${structError.type}, but received`;
       errMsg = codePreviewValidator
         ? errMsg + ` ${typeof structError.value}`
-        : errMsg + ` ${JSON.stringify(structError.value, reservedKeywordReplacer)}`;
+        : errMsg + ` ${previewOf(structError.value)}`;
 
       errors.push(errMsg);
     }
@@ -143,6 +154,10 @@ export const validateProperties = (resolvedProperties, propertyDefinitions, type
           return [propertyName, defaultValue];
         }
       }
+
+      // A value that already fits is kept as it is, as on every other resolution: validating copies every row of a
+      // dataset (on each page switch).
+      if (propertyName && fitsDefinition(validationDefinition, value) === true) return [propertyName, value];
 
       const [_valid, errors, newValue] = propertyName ? validate(value, schema, defaultValue) : [true, []];
 

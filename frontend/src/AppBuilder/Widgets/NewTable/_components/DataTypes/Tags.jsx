@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import OverlayTrigger from '@/AppBuilder/_engines/rendering/LazyOverlayTrigger';
 
 export const TagsColumn = ({ value: initialValue, onChange, readOnly, containerWidth = '' }) => {
   const [showOverlay, setShowOverlay] = useState(false);

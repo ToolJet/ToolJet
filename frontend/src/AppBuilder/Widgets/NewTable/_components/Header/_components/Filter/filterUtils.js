@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { diff as deepDiff } from 'deep-object-diff';
+import { diff as deepDiff } from '@/AppBuilder/_engines/data/diff';
 
 export const filterFunctions = {
   contains: (row, columnId, filterValue) => {

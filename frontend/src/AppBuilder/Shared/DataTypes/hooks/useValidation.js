@@ -1,5 +1,9 @@
 import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
+
+// What validateWidget returns when there is no rule to check: the same answer for every value, so a field or cell with
+// no rules skips it (each check also builds a row-scoped resolver).
+const VALID = Object.freeze({ isValid: true, validationError: null });
+const isUnset = (rule) => rule === undefined || rule === null || rule === '';
 
 /**
  * useStringValidation - Shared validation hook for string fields
@@ -16,9 +20,8 @@ import { shallow } from 'zustand/shallow';
  * @returns {{ isValid: boolean, validationError: string }}
  */
 export const useStringValidation = (config, value) => {
-  const validateWidget = useStore((state) => state.validateWidget, shallow);
-
-  return validateWidget({
+  if ([config?.regex, config?.minLength, config?.maxLength, config?.customRule].every(isUnset)) return VALID;
+  return useStore.getState().validateWidget({
     validationObject: {
       regex: { value: config?.regex },
       minLength: { value: config?.minLength },
@@ -43,9 +46,8 @@ export const useStringValidation = (config, value) => {
  * @returns {{ isValid: boolean, validationError: string }}
  */
 export const useNumberValidation = (config, value) => {
-  const validateWidget = useStore((state) => state.validateWidget, shallow);
-
-  return validateWidget({
+  if ([config?.minValue, config?.maxValue, config?.customRule].every(isUnset)) return VALID;
+  return useStore.getState().validateWidget({
     validationObject: {
       minValue: { value: config?.minValue },
       maxValue: { value: config?.maxValue },

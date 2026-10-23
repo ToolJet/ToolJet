@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
-import { findHighestLevelofSelection } from './Grid/gridUtils';
+import { findHighestLevelofSelection } from './selection';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';

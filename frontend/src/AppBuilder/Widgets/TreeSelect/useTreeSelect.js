@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 /**
  * Hook that manages all exposed variable logic for the TreeSelect widget.
@@ -110,6 +111,7 @@ export function useTreeSelect({
   }, []);
 
   // Build a map of value -> full path from root
+  const stableData = useContentStable(data);
   const pathObj = useMemo(() => {
     const nodePath = {};
     const buildPaths = (nodes, parentPath = []) => {
@@ -125,7 +127,7 @@ export function useTreeSelect({
     buildPaths(data);
     return nodePath;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(data)]);
+  }, [stableData]);
 
   // Collect leaf node values (nodes with no children)
   const leafValues = useMemo(() => {
@@ -143,7 +145,7 @@ export function useTreeSelect({
     collectLeaves(data);
     return leaves;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(data)]);
+  }, [stableData]);
 
   // Compute all exposed variables from a list of checked values
   const computeExposedVars = useCallback(
@@ -187,6 +189,7 @@ export function useTreeSelect({
   });
 
   // Sync checked state when checkedData or data changes
+  const stableCheckedData = useContentStable(checkedData);
   useEffect(() => {
     let checkedArr;
 
@@ -219,14 +222,15 @@ export function useTreeSelect({
       setExposedVariable('isValid', result.isValid);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(checkedData), JSON.stringify(data), allowIndependentSelection]);
+  }, [stableCheckedData, stableData, allowIndependentSelection]);
 
   // Sync expanded state
+  const stableExpandedData = useContentStable(expandedData);
   useEffect(() => {
     setExposedVariable('expanded', expandedData);
     setExpanded(expandedData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(expandedData)]);
+  }, [stableExpandedData]);
 
   // Handler for check events
   const handleCheck = useCallback(

@@ -54,12 +54,16 @@ import {
   getUnixTimestampFromSelectedTimestamp,
   getUnixTimeFromParsedDate,
   is24HourFormat,
-  isDateValid,
 } from './utils';
 
 import { BaseDateComponent } from './BaseDateComponent';
 import { useDateInput, useTimeInput, useDatetimeInput } from './hooks';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import {
+  datetimePickerV2StartOf,
+  datetimePickerV2StatusOf,
+  datetimePickerV2ValuesOf,
+} from '@/AppBuilder/_engines/materialize/widgets/DatetimePickerV2';
 
 export const DatetimePickerV2 = ({
   height,
@@ -112,32 +116,24 @@ export const DatetimePickerV2 = ({
 
   const displayFormat = `${dateFormat} ${timeFormat}`;
 
+  // What it starts with, from its props: the time zones, and the default value's timestamps
+  const [start] = useState(() => datetimePickerV2StartOf(properties));
+
   // Display Timezone
-  const [displayTimezone, setDisplayTimezone] = useState(
-    isTimezoneEnabled ? properties.displayTimezone : moment.tz.guess()
-  );
+  const [displayTimezone, setDisplayTimezone] = useState(start.displayTimezone);
 
   // Parsing Timezone
-  const [storeTimezone, setStoreTimezone] = useState(isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess());
+  const [storeTimezone, setStoreTimezone] = useState(start.storeTimezone);
 
   // Unix Timestamp single source of truth
-  const isISOString = defaultValue.includes('T');
-  const [unixTimestamp, setUnixTimestamp] = useState(
-    defaultValue
-      ? isISOString
-        ? moment(defaultValue).valueOf()
-        : getUnixTimeFromParsedDate(defaultValue, storeTimezone, displayFormat)
-      : null
-  );
+  const [unixTimestamp, setUnixTimestamp] = useState(start.unixTimestamp);
 
   // Selected Date = unixTimestamp + displayTimezone offset
   // But moment(selectedDate) = SelectedTimestamp + local timezone offset
   // SelectedTimestamp + local timezone offset = unixTimestamp + displayTimezone offset
   // SelectedTimestamp = unixTimestamp + displayTimezone offset - local timezone offset
 
-  const [selectedTimestamp, setSelectedTimestamp] = useState(
-    defaultValue ? getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone) : null
-  );
+  const [selectedTimestamp, setSelectedTimestamp] = useState(start.selectedTimestamp);
 
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
@@ -279,20 +275,12 @@ export const DatetimePickerV2 = ({
   }, [isTimezoneEnabled, storeTimezone]);
 
   useEffect(() => {
-    const selectedTime = getFormattedSelectTimestamp(selectedTimestamp, timeFormat);
-    const selectedDate = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
-    const displayValue = getFormattedSelectTimestamp(selectedTimestamp, displayFormat);
-    const value = convertToIsoWithTimezoneOffset(unixTimestamp, storeTimezone);
     const exposedVariables = {
-      value: value,
-      selectedTime: selectedTime,
-      selectedDate: selectedDate,
-      unixTimestamp: unixTimestamp,
-      displayValue: displayValue,
-      dateFormat: dateFormat,
-      timeFormat: timeFormat,
-      storeTimezone: isTimezoneEnabled ? storeTimezone : moment.tz.guess(),
-      displayTimezone: isTimezoneEnabled ? displayTimezone : moment.tz.guess(),
+      ...datetimePickerV2ValuesOf(
+        { unixTimestamp, selectedTimestamp, displayTimezone, storeTimezone },
+        { dateFormat, timeFormat, isTimezoneEnabled }
+      ),
+      // Valid until the validation effect below has run (what the store then holds is the exposure module's isValid).
       isValid: isValid,
     };
     setExposedVariables(exposedVariables);
@@ -381,18 +369,15 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     setValidationStatus(
-      isDateValid(selectedTimestamp, {
-        minDate,
-        maxDate,
-        minTime,
-        maxTime,
-        customRule,
-        isMandatory,
-        excludedDates,
-        timeFormat,
-        dateFormat,
-      })
+      datetimePickerV2StatusOf(
+        selectedTimestamp,
+        validation,
+        { dateFormat, timeFormat },
+        { minDate, maxDate, excludedDates, minTime, maxTime }
+      )
     );
+    // Of validation, the rules read customRule and mandatory (isMandatory).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     minTime,
     maxTime,

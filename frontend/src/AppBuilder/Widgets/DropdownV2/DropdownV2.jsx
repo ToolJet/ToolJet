@@ -6,7 +6,7 @@ import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 import { useEditorStore } from '@/_stores/editorStore';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { has, isObject, pick } from 'lodash';
+import { has, isObject, omit } from 'lodash';
 const tinycolor = require('tinycolor2');
 import './dropdownV2.scss';
 import CustomValueContainer from './CustomValueContainer';
@@ -14,9 +14,9 @@ import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from './utils';
 import { useMenuWidth } from './useMenuWidth';
-import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 import {
   getLabelFontSize,
@@ -24,6 +24,16 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
+import {
+  dropdownV2Exposure,
+  defaultValueOf,
+  exposedOptionsOf,
+  selectOptionsOf,
+  selectedOptionOf,
+} from '@/AppBuilder/_engines/materialize/widgets/DropdownV2';
+
+const { actions } = dropdownV2Exposure;
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -118,7 +128,7 @@ export const DropdownV2 = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
-  const [currentValue, setCurrentValue] = useState(() => findDefaultItem(advanced ? schema : options));
+  const [currentValue, setCurrentValue] = useState(() => defaultValueOf(properties));
   const [validationStatus, setValidationStatus] = useState(validate(currentValue));
   const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
@@ -139,33 +149,10 @@ export const DropdownV2 = ({
 
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
-  function findDefaultItem(schema) {
-    let _schema = schema;
-    if (!Array.isArray(schema)) {
-      _schema = [];
-    }
-    const defaultItem = _schema?.find((item) => item?.visible === true && item?.default === true);
-    return defaultItem?.value;
-  }
-
-  const selectOptions = useMemo(() => {
-    let _options = advanced ? schema : options;
-    if (Array.isArray(_options)) {
-      let _selectOptions = _options
-        .filter((data) => data?.visible ?? true)
-        .map((data) => ({
-          ...data,
-          label: getSafeRenderableValue(data?.label),
-          value: data?.value,
-          caption: data?.caption ?? null,
-          isDisabled: data?.disable ?? false,
-        }));
-
-      return sortArray(_selectOptions, sort);
-    } else {
-      return [];
-    }
-  }, [advanced, schema, options, sort]);
+  const selectOptions = useMemo(
+    () => selectOptionsOf({ advanced, schema, options, sort }),
+    [advanced, schema, options, sort]
+  );
 
   function selectOption(value) {
     const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
@@ -185,13 +172,7 @@ export const DropdownV2 = ({
 
   const setInputValue = (value) => {
     setCurrentValue(value);
-    const _selectedOption = selectOptions.find((option) => option.value === value);
-    setExposedVariables({
-      value,
-      selectedOption: _selectedOption
-        ? { ...pick(_selectedOption, ['label', 'value']), caption: _selectedOption?.caption ?? null }
-        : null,
-    });
+    setExposedVariables({ value, selectedOption: selectedOptionOf(selectOptions, value) });
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
@@ -234,10 +215,12 @@ export const DropdownV2 = ({
     };
   }, [isMenuOpen, componentName]);
 
+  const stableOptions = useContentStable(options);
+  const stableSchema = useContentStable(schema);
   useEffect(() => {
-    setInputValue(findDefaultItem(advanced ? schema : options));
+    setInputValue(defaultValueOf({ advanced, schema, options }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
+  }, [advanced, stableSchema, stableOptions]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -249,10 +232,10 @@ export const DropdownV2 = ({
 
   // Exposed variables
 
+  const stableSelectOptions = useContentStable(selectOptions);
   useEffect(() => {
     if (isInitialRender.current) return;
-    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
-    setExposedVariable('options', _options);
+    setExposedVariable('options', exposedOptionsOf(selectOptions));
 
     setExposedVariable('selectOption', async function (value) {
       let _value = value;
@@ -260,7 +243,7 @@ export const DropdownV2 = ({
       selectOption(_value);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue, JSON.stringify(selectOptions)]);
+  }, [currentValue, stableSelectOptions]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -305,37 +288,40 @@ export const DropdownV2 = ({
   }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
-    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     const exposedVariables = {
       clear: async function () {
         setInputValue(null);
       },
       setVisibility: async function (value) {
-        setVisibility(!!value);
-        setExposedVariable('isVisible', !!value);
+        const { isVisible } = actions.setVisibility(undefined, [value]);
+        setVisibility(isVisible);
+        setExposedVariable('isVisible', isVisible);
       },
       setLoading: async function (value) {
-        setIsDropdownLoading(!!value);
-        setExposedVariable('isLoading', !!value);
+        const { isLoading } = actions.setLoading(undefined, [value]);
+        setIsDropdownLoading(isLoading);
+        setExposedVariable('isLoading', isLoading);
       },
       setDisable: async function (value) {
-        setIsDropdownDisabled(!!value);
-        setExposedVariable('isDisabled', !!value);
+        const { isDisabled } = actions.setDisable(undefined, [value]);
+        setIsDropdownDisabled(isDisabled);
+        setExposedVariable('isDisabled', isDisabled);
       },
       selectOption: async function (value) {
         let _value = value;
         if (isObject(value) && has(value, 'value')) _value = value?.value;
         selectOption(_value);
       },
-      options: _options,
-      value: currentValue,
-      label: label,
-      searchText: searchInputValue,
-      isValid: isValid,
-      isVisible: properties.visibility,
-      isLoading: dropdownLoadingState,
-      isDisabled: disabledState,
-      isMandatory: isMandatory,
+      // The first value's status is the one computed above; validating it again could see a store changed since. The
+      // default-selection effect above has exposed selectedOption already.
+      ...omit(
+        dropdownV2Exposure.initial({
+          properties,
+          validation,
+          validate: (value) => (Object.is(value, currentValue) ? validationStatus : validate(value)),
+        }),
+        'selectedOption'
+      ),
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;

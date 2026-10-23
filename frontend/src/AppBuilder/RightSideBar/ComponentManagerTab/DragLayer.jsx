@@ -9,11 +9,6 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
-import {
-  findNewParentIdFromMousePosition,
-  handleDeactivateTargets,
-  hideGridLines,
-} from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 
 export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
@@ -29,24 +24,16 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
       end: (item, monitor) => {
         // Released over the component panel: the drag is cancelled. The panel stays open during a drag
-        // (closing it unmounts this drag source and the drop never lands) and it overlays the canvas,
-        // so the position lookup below would find the canvas underneath and add the component.
+        // (closing it unmounts this drag source and the drop never lands) and it overlays the canvas, which
+        // the canvas engine still finds under the pointer. The engine clears its ghost once the drag ends.
         const releasedAt = monitor.getClientOffset();
         if (releasedAt && document.elementFromPoint(releasedAt.x, releasedAt.y)?.closest('.editor-sidebar')) {
-          handleDeactivateTargets();
-          hideGridLines();
           setShowModuleBorder(false);
           return;
         }
-        // hover on the target sets currentDragCanvasId, but hover only fires on a
-        // dragover - if the drop happens before one ever fires (e.g. release right
-        // after entering the canvas with no further movement), that state is stale
-        // or null. Recompute from the actual drop position as the source of truth.
-        const clientOffset = monitor.getClientOffset();
-        const canvasId = clientOffset
-          ? findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y)
-          : useGridStore.getState().currentDragCanvasId;
-        handleDrop(item, canvasId ?? useGridStore.getState().currentDragCanvasId);
+        // The canvas engine sets the target on every drag-over, once the canvas there accepts the component
+        // (interaction/engine.js renderInsert), and null when none does.
+        handleDrop(item, useGridStore.getState().currentDragCanvasId);
       },
     }),
     [component.component, component.moduleId]

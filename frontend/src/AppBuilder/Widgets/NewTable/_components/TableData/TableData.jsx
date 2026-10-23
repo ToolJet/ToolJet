@@ -1,11 +1,13 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { LoadingState } from './_components/LoadingState';
 import { EmptyState } from './_components/EmptyState';
+import { SearchingState } from './_components/SearchingState';
 import { TableHeader } from './_components/TableHeader';
 import { TableRow } from './_components/TableRow';
+import { TableCellSettingsProvider } from './TableCellSettings';
 import { ExpandedRowContainer } from './_components/ExpandedRowContainer';
-// eslint-disable-next-line import/no-unresolved
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { useWindow } from '@/AppBuilder/_engines/rendering/useWindow';
+import { useSplitHeader } from '../../_hooks/useSplitHeader';
 import useTableStore from '../../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -13,25 +15,48 @@ import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
 
 const CONDENSED_ROW_HEIGHT = 40;
 const DEFAULT_ROW_HEIGHT = 46;
+// Rows rendered beyond each edge of the view, so a scroll that starts fast still has rows ready.
+const OVERSCAN_ROWS = 10;
+// Rows in view always render at once; the rows beyond them (overscan, lead) mount in the tasks after, about this much
+// time each, ahead of the scrolling first (see useWindow's aheadBudgetMs).
+const AHEAD_BUDGET_MS = 8;
 
-export const TableData = ({
-  id,
-  data,
-  tableBodyRef,
-  darkMode,
-  table,
-  columnOrder,
-  setColumnOrder,
-  setExposedVariables,
-  fireEvent,
-  lastClickedRowRef,
-  componentName,
-  loadingState,
-  enableExpandableRows,
-  expandedRows,
-  expansionHeight = DEFAULT_EXPANSION_HEIGHT,
-  canvasWidth,
-}) => {
+// Placeholder rows, drawn as the body's background so they are wherever the browser scrolls before rows render (it
+// scrolls on its own thread): each row's bottom border (Regular, Bordered), or the stripes (Striped, where rows are
+// striped by their position among the rendered rows: the first rendered row is plain). Under a rendered row they fall on
+// the row's own border and stripe.
+const placeholderBackground = (rowStyle, rowHeight) => {
+  if (rowStyle === 'table-striped') {
+    const stripe = 'var(--cc-table-striped-row-bg-color)';
+    return `repeating-linear-gradient(to bottom, transparent 0, transparent ${rowHeight}px, ${stripe} ${rowHeight}px, ${stripe} ${
+      2 * rowHeight
+    }px)`;
+  }
+  return `repeating-linear-gradient(to bottom, transparent 0, transparent ${rowHeight - 1}px, var(--cc-weak-border) ${
+    rowHeight - 1
+  }px, var(--cc-weak-border) ${rowHeight}px)`;
+};
+
+export const TableData = (props) => {
+  const {
+    id,
+    data,
+    tableBodyRef,
+    darkMode,
+    table,
+    view,
+    columnOrder,
+    setColumnOrder,
+    setExposedVariables,
+    fireEvent,
+    lastClickedRowRef,
+    componentName,
+    loadingState,
+    enableExpandableRows,
+    expandedRows,
+    expansionHeight = DEFAULT_EXPANSION_HEIGHT,
+    canvasWidth,
+  } = props;
   const getResolvedValue = useStore((state) => state.getResolvedValue);
 
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
@@ -45,6 +70,11 @@ export const TableData = ({
   );
 
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
+  // The search box, with its progress, is shown (else the Table says it's still searching over the rows it shows).
+  const hasSearchBox = useTableStore(
+    (state) => !!state.getHeaderVisibility(id) && !!state.getTableProperties(id)?.displaySearchBox,
+    shallow
+  );
   const highlightSelectedRow = useTableStore((state) => state.getTableProperties(id)?.highlightSelectedRow, shallow);
   const disableRowDeselection = useTableStore((state) => state.getTableProperties(id)?.disableRowDeselection, shallow);
 
@@ -79,71 +109,111 @@ export const TableData = ({
     return styles;
   }, [cellHeight, contentWrap, isMaxRowHeightAuto, maxRowHeightValue, containerBackgroundColor]);
 
-  // Build an interleaved list of virtual items: data rows + expansion panels.
-  // Use `row.id in expandedRows` (not truthy check) — rowIndex 0 is falsy.
-  const rows = table.getRowModel().rows;
+  // The rows of this page, as positions in the data (see _utils/tableView.js): while a search or filter runs on a large
+  // table, the matches found so far. A TanStack row is made only for a row on screen (view.getRow). With expandable
+  // rows, expanded panels are interleaved; otherwise list position i is page row i, with nothing built per row.
+  // `in expandedRows` (not a truthy check): row 0's key is falsy.
+  const page = view.shownPage;
   const virtualItemList = useMemo(() => {
-    if (!enableExpandableRows) {
-      return rows.map((row) => ({ type: 'data', row, rowIndex: row.index }));
-    }
+    if (!enableExpandableRows) return null;
     const items = [];
-    rows.forEach((row) => {
-      items.push({ type: 'data', row, rowIndex: row.index });
-      if (row.id in (expandedRows ?? {})) {
-        items.push({ type: 'expansion', row, rowIndex: row.index });
-      }
+    page.forEach((rowIndex) => {
+      items.push({ type: 'data', rowIndex });
+      if (String(rowIndex) in (expandedRows ?? {})) items.push({ type: 'expansion', rowIndex });
     });
     return items;
-  }, [rows, enableExpandableRows, expandedRows]);
-
-  const estimateSize = useCallback(
-    (i) => {
-      const item = virtualItemList[i];
-      if (item?.type === 'expansion') {
-        return expansionHeight;
-      }
-      return cellHeight === 'condensed' ? CONDENSED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT;
-    },
-    [virtualItemList, cellHeight, expansionHeight]
+  }, [page, enableExpandableRows, expandedRows]);
+  const itemCount = virtualItemList ? virtualItemList.length : page.length;
+  const itemAt = useCallback(
+    (i) => (virtualItemList ? virtualItemList[i] : i < page.length ? { type: 'data', rowIndex: page[i] } : undefined),
+    [virtualItemList, page]
   );
 
-  // Each item gets a stable cache key that does not change when rows above are inserted or removed.
-  // Without stable keys, TanStack keys items by virtual index, so expanding row N shifts every subsequent index and reuses the wrong cached sizes.
-  // With stable keys the itemSizeCache survives expand/collapse reorderings, which also removes the need for measure() entirely.
+  const rowHeight = cellHeight === 'condensed' ? CONDENSED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT;
+  const estimateSize = useMemo(
+    () =>
+      virtualItemList ? (i) => (virtualItemList[i].type === 'expansion' ? expansionHeight : rowHeight) : rowHeight,
+    [virtualItemList, expansionHeight, rowHeight]
+  );
+
+  // Each item has a key that doesn't change when rows above are inserted or removed, so a measured height stays with
+  // its row when rows are expanded, collapsed or sorted.
   const getItemKey = useCallback(
     (i) => {
-      const item = virtualItemList[i];
+      const item = itemAt(i);
       if (!item) return i;
-      return item.type === 'expansion' ? `expansion-${item.rowIndex}` : item.row.id;
+      return item.type === 'expansion' ? `expansion-${item.rowIndex}` : item.rowIndex;
     },
-    [virtualItemList]
+    [itemAt]
   );
+  // Where a key is in the list now (built only when there are measured heights to place again).
+  const indexOfKey = useMemo(() => {
+    let positions = null;
+    return (key) => {
+      if (!positions) {
+        positions = new Map();
+        for (let i = 0; i < itemCount; i++) positions.set(getItemKey(i), i);
+      }
+      return positions.get(key) ?? -1;
+    };
+  }, [itemCount, getItemKey]);
 
-  const rowVirtualizer = useVirtualizer({
-    count: virtualItemList.length,
-    getScrollElement: () => tableBodyRef.current,
+  // Only the rows in view (and a margin) are rendered; the list is as tall as all of them, so the scrollbar is too.
+  // Rows are measured only when their height can vary (wrapped content); expanded panels report their own height.
+  const listRef = useRef(null);
+  const rowWindow = useWindow({
+    count: itemCount,
+    scrollRef: tableBodyRef,
+    listRef,
     estimateSize,
     getItemKey,
-    overscan: 5,
-    scrollMargin: 0,
+    indexOfKey,
+    overscan: OVERSCAN_ROWS * rowHeight,
+    measure: !!contentWrap,
+    aheadBudgetMs: AHEAD_BUDGET_MS,
   });
 
+  // Rows are memoized: scrolling renders only the rows coming into view. Anything else that re-renders the table (new
+  // props, a table setting, its state) re-renders every row, as before.
+  const lastRender = useRef({ props: null, tick: -1, version: 0 });
+  if (lastRender.current.props !== props || lastRender.current.tick === rowWindow.tick) lastRender.current.version += 1;
+  lastRender.current.props = props;
+  lastRender.current.tick = rowWindow.tick;
+  const renderVersion = lastRender.current.version;
+  const tableState = table.getState();
+  // What the cells of a column share, built by the first of them for this render of the rows (see TableRow.jsx); also
+  // rebuilt when column widths, pinning or order change, which a scroll render can carry.
+  const columnPlans = useMemo(
+    () => new Map(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [renderVersion, tableState.columnSizing, tableState.columnPinning, tableState.columnOrder]
+  );
+  // The header sits outside the scrolling body, so the body's scrollbar runs beside the rows only: the header follows
+  // the body's horizontal scroll and leaves room for its scrollbar (useSplitHeader). Both tables are as wide as the
+  // columns (or the table, if wider); rows are positioned out of flow, so the body's table gets that width explicitly.
+  const headRef = useRef(null);
+  const gutter = useSplitHeader(headRef, tableBodyRef);
+  const columnsWidth = table.getTotalSize();
+
   // Handles row click for row selection
-  const handleRowClick = (row, isCheckbox) => {
-    lastClickedRowRef.current = { row: row?.original, index: row.index };
-    if (!allowSelection) {
-      setExposedVariables({
-        selectedRow: row?.original ?? {},
-        selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
-      });
-      fireEvent('onRowClicked');
-      return;
-    }
-    if (disableRowDeselection && row.getIsSelected() && !isCheckbox) {
-      return;
-    }
-    row.toggleSelected();
-  };
+  const handleRowClick = useCallback(
+    (row, isCheckbox) => {
+      lastClickedRowRef.current = { row: row?.original, index: row.index };
+      if (!allowSelection) {
+        setExposedVariables({
+          selectedRow: row?.original ?? {},
+          selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
+        });
+        fireEvent('onRowClicked');
+        return;
+      }
+      if (disableRowDeselection && row.getIsSelected() && !isCheckbox) {
+        return;
+      }
+      row.toggleSelected();
+    },
+    [allowSelection, disableRowDeselection, fireEvent, lastClickedRowRef, setExposedVariables]
+  );
 
   const renderTableHeader = () => {
     return (
@@ -155,6 +225,7 @@ export const TableData = ({
         setColumnOrder={setColumnOrder}
         fireEvent={fireEvent}
         setExposedVariables={setExposedVariables}
+        renderVersion={renderVersion}
       />
     );
   };
@@ -175,65 +246,105 @@ export const TableData = ({
     );
   }
 
+  // Placeholder rows for rows of one height, lined up with the rows: the pattern starts at the first rendered row. It
+  // repeats every row (every two when striped), so it is placed by the first row's position within that period: the
+  // same pattern, and a style that stays the same while scrolling (a change restyles the whole body).
+  const placeholderPeriod = rowStyle === 'table-striped' ? 2 * rowHeight : rowHeight;
+  const placeholderStyle =
+    !contentWrap && !enableExpandableRows
+      ? {
+          backgroundImage: placeholderBackground(rowStyle, rowHeight),
+          backgroundPosition: `0 ${rowWindow.itemTop((rowWindow.items[0]?.start ?? 0) % placeholderPeriod)}`,
+        }
+      : null;
+
   return (
     <div
-      className={`table-responsive jet-data-table`}
-      style={{ maxHeight: '100%', position: 'relative' }}
-      ref={tableBodyRef}
+      className="table-responsive jet-data-table tj-table-split"
+      style={{ maxHeight: '100%', position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
     >
-      <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
-        <thead style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: containerBackgroundColor }}>
-          {renderTableHeader()}
-        </thead>
-        <tbody
-          style={{
-            position: 'relative',
-            height: `${rowVirtualizer.getTotalSize()}px`,
-          }}
+      <TableCellSettingsProvider id={id}>
+        <div className="tj-table-head" ref={headRef} style={{ flex: 'none', overflow: 'hidden', paddingRight: gutter }}>
+          <table
+            className={`table ${rowStyle} ${darkMode && 'table-dark'}`}
+            style={{ minWidth: columnsWidth, backgroundColor: containerBackgroundColor }}
+          >
+            <thead style={{ position: 'relative', zIndex: 10, backgroundColor: containerBackgroundColor }}>
+              {renderTableHeader()}
+            </thead>
+          </table>
+        </div>
+        <div
+          className="tj-table-body"
+          ref={tableBodyRef}
+          style={{ flex: '1 1 auto', minHeight: 0, overflow: 'auto', position: 'relative' }}
         >
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const item = virtualItemList[virtualRow.index];
-            if (!item) return null;
+          <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`} style={{ minWidth: columnsWidth }}>
+            <tbody
+              ref={listRef}
+              style={{
+                position: 'relative',
+                height: `${rowWindow.height}px`,
+                ...placeholderStyle,
+              }}
+            >
+              {rowWindow.items.map((item) => {
+                const entry = itemAt(item.index);
+                if (!entry) return null;
 
-            if (item.type === 'expansion') {
-              return (
-                <ExpandedRowContainer
-                  key={`${item.row.id}-expansion`}
-                  tableId={id}
-                  rowIndex={item.rowIndex}
-                  top={virtualRow.start}
-                  darkMode={darkMode}
-                  canvasWidth={canvasWidth}
-                  expansionHeight={expansionHeight}
-                  virtualizer={rowVirtualizer}
-                  virtualItemIndex={virtualRow.index}
-                />
-              );
-            }
+                if (entry.type === 'expansion') {
+                  return (
+                    <ExpandedRowContainer
+                      key={`${entry.rowIndex}-expansion`}
+                      tableId={id}
+                      rowIndex={entry.rowIndex}
+                      top={rowWindow.itemTop(item.start)}
+                      darkMode={darkMode}
+                      canvasWidth={canvasWidth}
+                      expansionHeight={expansionHeight}
+                      resizeItem={rowWindow.resizeItem}
+                      virtualItemIndex={item.index}
+                    />
+                  );
+                }
 
-            return (
-              <TableRow
-                id={id}
-                key={item.row.id}
-                row={item.row}
-                virtualRow={virtualRow}
-                cellHeight={cellHeight}
-                getResolvedValue={getResolvedValue}
-                handleRowClick={handleRowClick}
-                allowSelection={allowSelection}
-                contentWrap={contentWrap}
-                highlightSelectedRow={highlightSelectedRow}
-                setExposedVariables={setExposedVariables}
-                fireEvent={fireEvent}
-                rowStyles={rowStyles}
-                measureElement={rowVirtualizer.measureElement}
-                componentName={componentName}
-                table={table}
-              />
-            );
-          })}
-        </tbody>
-      </table>
+                const row = view.getRow(entry.rowIndex);
+                return (
+                  <TableRow
+                    id={id}
+                    key={row.id}
+                    row={row}
+                    index={item.index}
+                    top={rowWindow.itemTop(item.start)}
+                    isSelected={row.getIsSelected()}
+                    tableState={tableState}
+                    renderVersion={renderVersion}
+                    columnPlans={columnPlans}
+                    cellHeight={cellHeight}
+                    getResolvedValue={getResolvedValue}
+                    handleRowClick={handleRowClick}
+                    allowSelection={allowSelection}
+                    contentWrap={contentWrap}
+                    highlightSelectedRow={highlightSelectedRow}
+                    setExposedVariables={setExposedVariables}
+                    fireEvent={fireEvent}
+                    rowStyles={rowStyles}
+                    measureElement={rowWindow.measureElement}
+                    componentName={componentName}
+                    table={table}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
+          {view.isProgressive && page.length === 0 && (
+            <SearchingState label={view.searchActivity} componentName={componentName} />
+          )}
+        </div>
+        {view.isProgressive && page.length > 0 && !hasSearchBox && (
+          <SearchingState label={view.searchActivity} floating componentName={componentName} />
+        )}
+      </TableCellSettingsProvider>
     </div>
   );
 };

@@ -51,19 +51,15 @@ import { tableText } from "Texts/appBuilder/components/table";
  *   inspector tree → verifyTableExposedVars (LEFT inspector exposed vars).
  *   csa            → wireTableCSA + triggerTableCSA (arm a CSA on Row-hovered, then fire it).
  *   export helpers → dataPdfAssertionHelper, dataCsvAssertionHelper (pure data shaping, no DOM).
- * KEY GOTCHA: `draggable-widget-<name>` matches TWO nodes for the Table (outer moveable box +
+ * KEY GOTCHA: `draggable-widget-<name>` matches TWO nodes for the Table (outer component box +
  * inner <table>) — always scope to :eq(0)/.first(); see tableWidgetOuter.
  * NOT here: generic property/style/event drivers → appBuilder/properties.js · styles.js · events.js.
  */
 
-// Spec-local scoped resize. The shared `cy.resizeWidget` uses `[class="bottom-right"]`
-// which now matches 2 elements (commands.js:375 — forbidden to edit). We scope the
-// mousedown to the LAST visible bottom-right handle (the active widget's moveable
-// control box) to avoid the "cy.trigger() can only be called on a single element" throw.
 // The Table widget puts `draggable-widget-<name>` on BOTH the RenderWidget wrapper
-// (RenderWidget.jsx:308, the outer moveable box) AND its internal <table>
+// (RenderWidget.jsx, the outer component box) AND its internal <table>
 // (Table.jsx:340) — so the data-cy matches 2 els. The OUTER (first in DOM) is the
-// selectable/resizable moveable box. Use this for clicks/resize.
+// selectable/resizable component box. Use this for clicks/resize.
 /**
  * @tjBlock  canvas
  * @tjUsage  cy.get(tableWidgetOuter('table1')).first().click()
@@ -75,34 +71,11 @@ export const tableWidgetOuter = (widgetName) =>
 /**
  * @tjBlock  canvas
  * @tjUsage  resizeTableWidget('table1', 1200, 300)
- * @tjDom    moveable east resize handle → mousemove/mouseup on #real-canvas
+ * @tjDom    east resize grip `[data-tj-handle="e"]` → pointer events on #real-canvas (cy.resizeWidget)
  */
 export const resizeTableWidget = (widgetName, x, y) => {
-  // The Table is a `moveable-dynamic-height` widget (Grid.css:25): height auto-fits
-  // content, only the EAST (`e`) / WEST (`w`) resize handles render — the legacy
-  // `[class="bottom-right"]` (SE) handle no longer exists. Widen the table by
-  // dragging the east handle so all columns/controls are visible.
-  cy.get(tableWidgetOuter(widgetName)).first().click({ force: true });
-  cy.wait(500);
-  cy.get('.moveable-control.moveable-direction.moveable-e[data-direction="e"]')
-    .should("have.length.gte", 1)
-    .then(($handles) => {
-      cy.wrap($handles.last()).trigger("mousedown", { which: 1, force: true });
-    });
-  cy.get("#real-canvas")
-    .trigger("mousemove", {
-      which: 1,
-      force: true,
-      clientX: x,
-      clientY: y,
-      pageX: x,
-      pageY: y,
-      screenX: x,
-      screenY: y,
-    })
-    .trigger("mouseup", { force: true });
-  cy.waitForAutoSave();
-  cy.forceClickOnCanvas();
+  // The Table's height follows its content: widen it by its east grip so all columns/controls are visible.
+  cy.resizeWidget(widgetName, x, y, true, true);
 };
 
 // Set the Table `data` property. The field (displayName ' ' -> data-cy `-input-field`,

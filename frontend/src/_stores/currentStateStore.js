@@ -7,7 +7,7 @@ import { useAppDataStore } from './appDataStore';
 import { authenticationService } from '@/_services';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import update from 'immutability-helper';
-const { diff } = require('deep-object-diff');
+import { diff } from '@/AppBuilder/_engines/data/diff';
 
 const initialState = {
   queries: {},

@@ -1,6 +1,10 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { getActiveBranchId } from '@/_helpers/active-branch';
+import { readJsonResponse } from '@/AppBuilder/_engines/data/transport';
+
+// A query result can be large: parsed off the main thread (handleResponse for errors).
+const handleQueryResult = (response) => readJsonResponse(response, handleResponse);
 
 export const dataqueryService = {
   create,
@@ -113,7 +117,7 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
     body: JSON.stringify(body),
     signal,
   };
-  return fetch(url, requestOptions).then(handleResponse);
+  return fetch(url, requestOptions).then(handleQueryResult);
 }
 
 function preview(query, options, versionId, environmentId, signal) {
@@ -135,7 +139,7 @@ function preview(query, options, versionId, environmentId, signal) {
       environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
     }`,
     requestOptions
-  ).then(handleResponse);
+  ).then(handleQueryResult);
 }
 
 function changeQueryDataSource(id, dataSourceId, versionId, type, kind) {

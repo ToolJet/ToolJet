@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
@@ -9,6 +9,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { textExposure, textOf } from '@/AppBuilder/_engines/materialize/widgets/Text';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -17,6 +18,9 @@ const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
 };
 
 let count = 0;
+
+// An action's patch of exposed values; the widget applies it to its own state too.
+const patchOf = (name, ...args) => textExposure.actions[name](undefined, args);
 
 export const Text = function Text({
   id,
@@ -56,7 +60,9 @@ export const Text = function Text({
   } = styles;
   const isInitialRender = useRef(true);
   const { loadingState, textFormat, disabledState } = properties;
-  const [text, setText] = useState(() => computeText());
+  const [text, setText] = useState(() => textOf(properties));
+  // An object is shown as its JSON, built once per value rather than on every render.
+  const shownText = useMemo(() => (typeof text === 'object' ? JSON.stringify(text) : text), [text]);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -90,7 +96,7 @@ export const Text = function Text({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const text = computeText();
+    const text = textOf(properties);
     setText(text);
     setExposedVariable('text', text);
   }, [properties.text]);
@@ -111,34 +117,40 @@ export const Text = function Text({
   }, [disabledState]);
 
   useEffect(() => {
+    const initial = textExposure.initial({ properties, styles });
+    // `text` first and the rest after `clear`, so the keys keep their order.
     const exposedVariables = {
-      text: computeText(),
-      setText: async function (text) {
+      text: initial.text,
+      setText: async function (value) {
+        const { text } = patchOf('setText', value);
         setText(text);
         setExposedVariable('text', text);
       },
       clear: async function () {
-        setText('');
-        setExposedVariable('text', '');
+        const { text } = patchOf('clear');
+        setText(text);
+        setExposedVariable('text', text);
       },
-      isVisible: properties.visibility,
-      isLoading: loadingState,
-      isDisabled: disabledState,
+      ...initial,
       visibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        setVisibility(!!value);
+        const { isVisible } = patchOf('visibility', value);
+        setExposedVariable('isVisible', isVisible);
+        setVisibility(isVisible);
       },
       setVisibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        setVisibility(!!value);
+        const { isVisible } = patchOf('setVisibility', value);
+        setExposedVariable('isVisible', isVisible);
+        setVisibility(isVisible);
       },
       setLoading: async function (value) {
-        setExposedVariable('isLoading', !!value);
-        setLoading(!!value);
+        const { isLoading } = patchOf('setLoading', value);
+        setExposedVariable('isLoading', isLoading);
+        setLoading(isLoading);
       },
       setDisable: async function (value) {
-        setExposedVariable('isDisabled', !!value);
-        setIsDisabled(!!value);
+        const { isDisabled } = patchOf('setDisable', value);
+        setExposedVariable('isDisabled', isDisabled);
+        setIsDisabled(isDisabled);
       },
     };
     setExposedVariables(exposedVariables);
@@ -146,10 +158,6 @@ export const Text = function Text({
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  function computeText() {
-    return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
-  }
 
   const handleClick = () => {
     fireEvent('onClick');
@@ -211,13 +219,11 @@ export const Text = function Text({
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && (
-            <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>
-          )}
+          {textFormat === 'plainText' && <div style={commonScrollStyle}>{shownText}</div>}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
               <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                {typeof text === 'object' ? JSON.stringify(text) : text}
+                {shownText}
               </Markdown>
             </div>
           )}

@@ -8,9 +8,7 @@ describe('LibraryComponent drop-time identity stamping', () => {
     realCanvas = document.createElement('div');
     realCanvas.id = 'real-canvas';
     document.body.appendChild(realCanvas);
-    const dropTarget = document.createElement('div');
-    document.body.appendChild(dropTarget);
-    useGridStore.getState().actions.setGhostDragPosition({ e: { target: dropTarget } });
+    useGridStore.getState().actions.setGhostDragPosition({ landing: { left: 0, top: 0 } });
   });
 
   afterEach(() => {
