@@ -246,4 +246,19 @@ describe('UI 2.0 Button group', () => {
     const group = await screen.findByRole('group', { name: 'Label' });
     expect(group).toHaveClass('tw-min-w-0', 'tw-max-w-full', 'tw-overflow-x-auto');
   });
+
+  test('[ShadButtonGroup-STY-011] buttons keep their labels whole unless Full width shares the row', async () => {
+    // Squeezed into a narrow box, the buttons shrank and cut ordinary labels into fragments, and the group never
+    // scrolled (Codex round 8, R8O-01). Without Full width each button keeps its label's width; with it they share
+    // the row and a cut label shows whole on hover (cutText.spec).
+    render();
+    const [first] = await screen.findAllByRole('button');
+    expect(first).toHaveClass('tw-shrink-0');
+    expect(first).not.toHaveClass('tw-flex-1');
+    expect(first).not.toHaveAttribute('title');
+    render({ properties: { fullWidth: binding('{{true}}') } });
+    await waitFor(() => expect(screen.getAllByRole('button')[0]).toHaveClass('tw-flex-1'));
+    // Sharing the row may cut a label: each button carries its whole label as its tooltip.
+    expect(screen.getAllByRole('button').map((b) => b.title)).toEqual(['Day', 'Week', 'Month']);
+  });
 });

@@ -171,14 +171,20 @@ export const ShadButtonGroup = (props: WidgetProps) => {
                     data-state={mode === 'actions' ? undefined : isOn ? 'on' : 'off'}
                     aria-pressed={mode === 'actions' ? undefined : isOn}
                     disabled={disabled || button.disabled}
-                    title={button.tooltip || (!button.label ? String(button.value) : undefined)}
+                    // The full label as a fallback tooltip where Full width may cut it; an explicit tooltip wins.
+                    title={
+                      button.tooltip ||
+                      (!button.label ? String(button.value) : fullWidth ? String(button.label) : undefined)
+                    }
                     aria-label={!button.label ? String(button.value) : undefined}
                     onClick={() => click(button)}
                     className={cn(
                       buttonVariants({ variant: own, size }),
                       'tw-shadow-none tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]',
                       !button.label && button.icon && SQUARE[size],
-                      fullWidth && 'tw-flex-1',
+                      // Full width shares the row (labels may be cut, then shown whole on hover); otherwise each
+                      // button keeps its label's width and a group wider than its box scrolls sideways.
+                      fullWidth ? 'tw-flex-1' : 'tw-shrink-0',
                       orientation === 'vertical' && 'tw-justify-start',
                       whenSet(styles, 'backgroundColor', 'tw-bg-[color:var(--lk-bg)]'),
                       whenSet(styles, 'textColor', 'tw-text-[color:var(--lk-fg)]'),
