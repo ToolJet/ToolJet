@@ -12,6 +12,7 @@ Deployment and protocol configuration lives in `ToolJet/tooljet-mcp`, `docs/oaut
 
 - `service.ts` owns browser consent and token issuance; `identity.service.ts` handles per-request credential checks without depending on the browser flow. `parsers.ts` and `policy.ts` hold shared configuration/registration parsing and policy loading. `engine.ts` adapts the OAuth engine to `store.ts`.
 - `claims.ts` is shared by credential signing and runtime validation. Viewer credentials use a distinct audience, are app-pinned, and cannot become browser sessions, PATs or full delegations.
+- The JWT strategy resolves Git branch context for delegated and viewer identities, including principals cached by the global guard. Preserve browser/PAT precedence: `branch_id`, legacy `x-branch-id`, then the authenticated workspace's default branch. Authenticate and validate workspace/app bindings before resolving the branch.
 - `dto.ts` defines the browser API contracts. Map database rows explicitly; preserve existing wire fields when storage changes.
 - Scope checks in `scope.interceptor.ts` share the PAT capability ceiling. They never replace the user's current permissions, workspace binding or edition gates.
 - Only the configured MCP service may exchange an access token. A mismatched exchange secret returns `401 invalid_client` internally; the MCP boundary reports a service failure (503) without a user login challenge. Never log secrets or credential bodies.

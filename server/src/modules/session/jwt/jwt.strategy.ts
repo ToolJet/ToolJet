@@ -82,24 +82,31 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       if (typeof req.cookies?.tj_oauth_viewer !== 'string' || req.headers['x-tooljet-delegation']) return false;
       const workspace = req.headers['tj-workspace-id'];
       if (workspace !== undefined && typeof workspace !== 'string') return false;
-      const principal = req['oauthDelegatedUser'];
-      if (principal)
-        return principal.oauthAppId === payload.oauthAppId && (!workspace || principal.organizationId === workspace)
-          ? principal
-          : false;
-      return this.mcpOAuthIdentityService.validateViewer(
-        payload,
-        typeof workspace === 'string' ? workspace : undefined
-      );
+      const principal: User | undefined = req['oauthDelegatedUser'];
+      if (
+        principal &&
+        (principal.oauthAppId !== payload.oauthAppId || (workspace && principal.organizationId !== workspace))
+      ) {
+        return false;
+      }
+      const user =
+        principal ||
+        (await this.mcpOAuthIdentityService.validateViewer(
+          payload,
+          typeof workspace === 'string' ? workspace : undefined
+        ));
+      user.branchId = await this.resolveBranchId(req, user.organizationId);
+      return user;
     }
     if (payload.oauthGrantId || payload.oauthTokenId || payload.aud === 'tooljet:mcp:delegation') {
       const workspace = req.headers['tj-workspace-id'];
       if (typeof req.headers['x-tooljet-delegation'] !== 'string' || typeof workspace !== 'string') return false;
-      if (req['oauthDelegatedUser'] && req.headers['x-tooljet-delegation']) {
-        return workspace === req['oauthDelegatedUser'].organizationId ? req['oauthDelegatedUser'] : false;
-      }
+      const principal: User | undefined = req['oauthDelegatedUser'];
+      if (principal && workspace !== principal.organizationId) return false;
       // This credential has a fixed expiry and active grant, independently of browser sessions.
-      return this.mcpOAuthIdentityService.validateDelegation(payload, workspace);
+      const user = principal || (await this.mcpOAuthIdentityService.validateDelegation(payload, workspace));
+      user.branchId = await this.resolveBranchId(req, user.organizationId);
+      return user;
     }
     const startTime = Date.now();
     this.transactionLogger.log(`JwtStrategy validate invoked at ${new Date().toISOString()}`);
