@@ -51,6 +51,7 @@ export const shadMultiselectConfig = {
         },
         defaultValue: [],
       },
+      note: "Labels that differ from values: {{[{ label: 'Draft', value: 'draft' }, { label: 'Live', value: 'live', disabled: true }]}}",
       placeholder: "['Draft', 'Live'] or [{ label, value, description?, icon?, group?, disabled? }]",
     },
     placeholder: {

@@ -28,6 +28,7 @@ export const shadToggleGroupConfig = {
         },
         defaultValue: [],
       },
+      note: "Labels that differ from values: {{[{ label: 'All orders', value: 'all' }, { label: 'Open', value: 'open' }]}}",
       placeholder: "['All', 'Open', 'Closed'] or [{ label, value }]",
     },
     defaultValue: {
