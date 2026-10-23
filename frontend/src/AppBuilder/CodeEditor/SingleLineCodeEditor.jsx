@@ -724,8 +724,11 @@ const DynamicEditorBridge = (props) => {
     modifiedValue = getCssVarValue(document.documentElement, initialValue);
   }
 
+  // A field labelled Type takes no fx (the native Type selectors' renderers read a fixed choice) unless its config
+  // opts in with isFxAllowed (the UI 2.0 Input's Type, read in any case at runtime).
+  const fxWithheld = isFxNotRequired !== undefined || (paramLabel === 'Type' && fieldMeta.isFxAllowed !== true);
   const renderFx = () => {
-    if (paramType === 'query' || !(paramLabel !== 'Type' && isFxNotRequired === undefined)) {
+    if (paramType === 'query' || fxWithheld) {
       return null;
     }
 

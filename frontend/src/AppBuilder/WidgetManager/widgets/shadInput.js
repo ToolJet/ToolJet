@@ -66,6 +66,8 @@ export const shadInputConfig = {
     inputType: {
       type: 'select',
       displayName: 'Type',
+      // The Type takes a binding (a show/hide toggle for a password field); fields labelled Type have no fx otherwise.
+      isFxAllowed: true,
       options: [
         {
           name: 'Text',
