@@ -203,6 +203,48 @@ curl https://tooljet.example.com/api/apps \
   --header 'tj_auth_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 ```
 
+### Open a Read-Only Session for One App
+
+To let a headless browser open and render a single app, add the app's ID to the exchange request. The session it returns is read-only and pinned to that app. ToolJet MCP uses this to check that an app it built renders correctly before handing it back to you.
+<!-- TODO verify: that the MCP verify_page_render tool obtains its browser session through this appId exchange. The source PR (#17878) describes the use as "the AI builder's render check". -->
+
+Like all workspace tokens, this is available on ToolJet Enterprise Edition and ToolJet Cloud. This session isn't meant for showing apps to end users. To embed an app for your users, see [Personal Access Token for private app embedding](/docs/user-management/authentication/self-hosted/pat).
+
+```bash
+curl --request POST https://tooljet.example.com/api/personal-access-tokens/session \
+  --header 'Authorization: Bearer tj_pat_XXXX' \
+  --header 'Content-Type: application/json' \
+  --data '{ "appId": "8ba8bf0e-6b8f-4e07-abb9-6fd2d816fabc" }'
+```
+
+| Field | Type | Description |
+|:------|:-----|:------------|
+| `appId` | string (UUID) | Optional. The ID of an app in the token's workspace. Omit it to get a regular workspace session. |
+
+The response has the same fields as a regular session, and you send `authToken` the same way, as a `tj_auth_token` header or cookie. The session expires on the same schedule as a regular session.
+
+An app session has these limits:
+
+- **Read-only**: It can only send `GET` requests. The one exception is running the app's queries.
+- **One app**: Any request for a different app fails.
+- **Only what rendering needs**: It can read the app and the version being opened, its environments, its queries and query folders, the workspace's data sources, custom styles, themes and files, and the workspace constants the app loads. It can't list the workspace's apps.
+- **No secrets**: Secret constants are returned masked, and `GET /api/organization-constants/decrypted` is denied.
+- **Never wider than the token**: Naming an app never gives the session more access than the same token has without an `appId`.
+
+:::caution
+The queries an app session runs execute against the real data sources configured for the app. A query that writes data still writes data, even though the session itself is read-only.
+:::
+
+Only front-end apps can be opened this way. Workflows and modules can't.
+
+| Status | Message | Cause |
+|:-------|:--------|:------|
+| `400 Bad Request` | `appId must be a UUID` | `appId` isn't a valid UUID. |
+| `404 Not Found` | `App not found in this workspace` | The app doesn't exist, belongs to another workspace, or is a workflow or module. |
+| `403 Forbidden` | `This session is read-only. App-scoped render sessions may only issue GET requests.` | The session sent a request other than `GET` that isn't a query run. |
+| `403 Forbidden` | `This session is scoped to a single app and cannot access <app ID>.` | The request targets a different app. |
+| `403 Forbidden` | `This app-scoped session cannot access <feature>. Render sessions are limited to: Auth, APP, appEnvironments, OrganizationConstant, DataQueries, DATA_SOURCE, CustomStyles, VERSION, organizationThemes, file, DataQueryFolders.` | The request is outside what an app session can reach. |
+
 ### Errors
 
 Both endpoints return `401 Unauthorized` with one of these messages when the token can't be used:
@@ -221,4 +263,4 @@ Exchanging a token for a session can also fail with `401 Unauthorized` and one o
 | `Token owner is no longer an active member of this workspace` | The token's owner was archived or removed from the workspace. |
 | `Workspace not found` | The token's workspace no longer exists. |
 
-Requests made with a session return `401 Unauthorized` once the token is revoked or expires, or the session expires. Requests outside the allowlist return `403 Forbidden`, as described in [What a Token Can Access](#what-a-token-can-access).
+Requests made with a session return `401 Unauthorized` once the token is revoked or expires, or the session expires. Requests outside the allowlist return `403 Forbidden`, as described in [What a Token Can Access](#what-a-token-can-access). For the errors specific to app sessions, see [Open a Read-Only Session for One App](#open-a-read-only-session-for-one-app).
