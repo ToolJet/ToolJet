@@ -3,14 +3,12 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 const MIGRATION_NAME = 'BackfillPatPermissionsOnDefaultGroups1791891636602';
 const BATCH_SIZE = 2000;
 
-// Keeps today's behaviour: admins and builders could already mint PATs; only admins get Revoke.
+// Admins and builders could already mint PATs; both get Create and Revoke.
 // End-user and custom groups keep the column default (false).
 const NEEDS_BACKFILL = `
   type = 'default'
-  AND (
-    (name = 'admin' AND NOT (pat_create AND pat_revoke))
-    OR (name = 'builder' AND NOT pat_create)
-  )`;
+  AND name IN ('admin', 'builder')
+  AND NOT (pat_create AND pat_revoke)`;
 
 export class BackfillPatPermissionsOnDefaultGroups1791891636602 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -35,7 +33,7 @@ export class BackfillPatPermissionsOnDefaultGroups1791891636602 implements Migra
       await queryRunner.query(
         `UPDATE permission_groups
          SET pat_create = true,
-             pat_revoke = (name = 'admin')
+             pat_revoke = true
          WHERE id = ANY($1::uuid[])`,
         [rows.map((r) => r.id)]
       );

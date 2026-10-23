@@ -1134,7 +1134,7 @@ describe('GroupPermissionsControllerV2', () => {
   // -------------------------------------------------------------------------
 
   describe('PAT permission flags', () => {
-    it('should seed default groups with admin both, builder create only, end-user neither', async () => {
+    it('should seed default groups with admin and builder both, end-user neither', async () => {
       const orgRepo = getEntityRepository(Organization);
       const org = await orgRepo.save(orgRepo.create({ name: 'pat-defaults-org', slug: 'pat-defaults-org' } as any));
 
@@ -1145,7 +1145,7 @@ describe('GroupPermissionsControllerV2', () => {
       } as any);
       const byName = Object.fromEntries(groups.map((g) => [g.name, g]));
       expect(byName['admin']).toMatchObject({ patCreate: true, patRevoke: true });
-      expect(byName['builder']).toMatchObject({ patCreate: true, patRevoke: false });
+      expect(byName['builder']).toMatchObject({ patCreate: true, patRevoke: true });
       expect(byName['end-user']).toMatchObject({ patCreate: false, patRevoke: false });
     });
 

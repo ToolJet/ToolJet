@@ -77,7 +77,7 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appPromote: true,
     appRelease: true,
     patCreate: true,
-    patRevoke: false,
+    patRevoke: true,
   },
   END_USER: {
     name: USER_ROLE.END_USER,
