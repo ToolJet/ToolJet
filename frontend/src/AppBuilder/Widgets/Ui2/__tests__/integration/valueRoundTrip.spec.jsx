@@ -133,7 +133,14 @@ const CLEARS = [
     { value: '', isValid: true },
     { onChange: 1 },
   ],
-  // Show clear button's x, on the types that are not search, and on the Number input.
+  // Show clear button's x, on every field that offers it (showClearButton.spec covers its required and disabled cases).
+  [
+    'ShadCurrencyInput',
+    'press:Clear',
+    { showClearBtn: '{{true}}', defaultValue: '{{12.5}}' },
+    { value: null, isValid: true },
+    { onChange: 1 },
+  ],
   [
     'ShadInput',
     'press:Clear',

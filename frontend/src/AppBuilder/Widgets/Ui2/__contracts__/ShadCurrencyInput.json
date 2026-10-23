@@ -125,6 +125,15 @@
       "default": "0.00",
       "initial": "0.00"
     },
+    "showClearBtn": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
     "tooltip": {
       "type": "string",
       "schema": {

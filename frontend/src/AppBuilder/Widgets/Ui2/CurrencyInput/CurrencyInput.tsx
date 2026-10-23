@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { GroupClear, showsClear } from '@/AppBuilder/Widgets/Ui2/_shared/FieldClear';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
   runNow,
@@ -177,6 +178,15 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
           onKeyDown={(e) => isEnter(e) && fireEvent('onEnterPressed')}
         />
         {showSign && sign.after ? <span className={cn(AFFIX, 'tw-pr-3')}>{sign.sign}</span> : null}
+        {/* Show clear button (the native Currency input's showClearBtn): empties the amount with one onChange, and
+            leaves the focus in the box. */}
+        <GroupClear
+          show={showsClear(properties, value !== null || !!draft)}
+          onClear={() => {
+            box.clearTyped((n) => ({ formattedValue: formatted(n) }));
+            textBox.ref.current?.focus();
+          }}
+        />
       </Group>
     </FormField>
   );

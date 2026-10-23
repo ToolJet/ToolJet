@@ -152,6 +152,17 @@ export const shadCurrencyInputConfig = {
       isFxNotRequired: true,
       fullWidth: true,
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -588,6 +599,9 @@ export const shadCurrencyInputConfig = {
       },
       currencyDisplay: {
         value: 'symbol',
+      },
+      showClearBtn: {
+        value: '{{false}}',
       },
       loadingState: {
         value: '{{false}}',
