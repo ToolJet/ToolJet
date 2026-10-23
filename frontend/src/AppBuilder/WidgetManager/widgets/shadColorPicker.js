@@ -6,7 +6,7 @@ export const shadColorPickerConfig = {
   component: 'ShadColorPicker',
   defaultSize: {
     width: 8,
-    height: 64,
+    height: 70,
   },
   others: {
     showOnDesktop: {

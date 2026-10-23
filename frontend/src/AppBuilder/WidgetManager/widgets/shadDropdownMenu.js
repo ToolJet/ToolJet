@@ -6,7 +6,7 @@ export const shadDropdownMenuConfig = {
   component: 'ShadDropdownMenu',
   defaultSize: {
     width: 6,
-    height: 36,
+    height: 40,
   },
   others: {
     showOnDesktop: {

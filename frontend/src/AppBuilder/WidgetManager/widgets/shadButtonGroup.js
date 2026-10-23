@@ -6,7 +6,7 @@ export const shadButtonGroupConfig = {
   component: 'ShadButtonGroup',
   defaultSize: {
     width: 10,
-    height: 36,
+    height: 70,
   },
   others: {
     showOnDesktop: {

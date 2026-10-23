@@ -5,7 +5,7 @@ export const shadRadioGroupConfig = {
   component: 'ShadRadioGroup',
   defaultSize: {
     width: 10,
-    height: 112,
+    height: 110,
   },
   others: {
     showOnDesktop: {

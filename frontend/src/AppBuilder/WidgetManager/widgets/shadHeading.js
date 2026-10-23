@@ -6,7 +6,7 @@ export const shadHeadingConfig = {
   component: 'ShadHeading',
   defaultSize: {
     width: 16,
-    height: 36,
+    height: 40,
   },
   others: {
     showOnDesktop: {

@@ -5,7 +5,7 @@ export const shadProgressConfig = {
   component: 'ShadProgress',
   defaultSize: {
     width: 12,
-    height: 36,
+    height: 40,
   },
   others: {
     showOnDesktop: {

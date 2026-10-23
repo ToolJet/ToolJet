@@ -5,7 +5,7 @@ export const shadSeparatorConfig = {
   component: 'ShadSeparator',
   defaultSize: {
     width: 20,
-    height: 24,
+    height: 30,
   },
   others: {
     showOnDesktop: {

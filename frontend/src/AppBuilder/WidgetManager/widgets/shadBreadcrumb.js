@@ -5,7 +5,7 @@ export const shadBreadcrumbConfig = {
   component: 'ShadBreadcrumb',
   defaultSize: {
     width: 14,
-    height: 24,
+    height: 30,
   },
   others: {
     showOnDesktop: {

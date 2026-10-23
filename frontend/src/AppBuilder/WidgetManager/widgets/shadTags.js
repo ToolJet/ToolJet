@@ -6,7 +6,7 @@ export const shadTagsConfig = {
   component: 'ShadTags',
   defaultSize: {
     width: 12,
-    height: 24,
+    height: 30,
   },
   others: {
     showOnDesktop: {

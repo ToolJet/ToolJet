@@ -6,7 +6,7 @@ export const shadKeyValueConfig = {
   component: 'ShadKeyValue',
   defaultSize: {
     width: 14,
-    height: 248,
+    height: 260,
   },
   others: {
     showOnDesktop: {
