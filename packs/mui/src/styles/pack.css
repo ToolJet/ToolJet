@@ -108,3 +108,11 @@
   padding-block: 8px;
   min-width: 0;
 }
+
+/* A button label stays on one line, as in MUI apps; a label wider than the box ends in an ellipsis. */
+.tj-mui-button-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

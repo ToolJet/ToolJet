@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Button, Divider, ListItemIcon, ListItemText, Menu as MuiMenu, MenuItem } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
 import { MuiProvider, usePopupContainer, useThemeStyles } from '../lib/MuiProvider';
 import { ICONS, iconOf } from '../lib/icons';
 import { lookOf } from '../lib/field';
@@ -23,7 +24,7 @@ const toItems = (raw: unknown): Item[] =>
 // disabled, divider }] as MenuItems; anchorOrigin (where the menu opens). clickedItem is exposed. Events onItemClick,
 // onOpen, onClose (MUI's: Escape, a click away, or an item); actions open and close.
 export const Menu = () => {
-  const [children] = ToolJet.useStateString({ name: 'children', label: 'Button text', initialValue: 'Actions' });
+  const [children] = useStateText({ name: 'children', label: 'Button text', initialValue: 'Actions' });
   const [variantProp] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['text', 'outlined', 'contained'], initialValue: 'outlined' });
   const [colorProp] = ToolJet.useStateEnumeration({
     name: 'color',
@@ -80,9 +81,10 @@ export const Menu = () => {
         endIcon={iconOf('KeyboardArrowDown')}
         aria-haspopup="menu"
         aria-expanded={open ? 'true' : undefined}
+        title={children || undefined}
         onClick={() => show(!open)}
       >
-        {children}
+        <span className="tj-mui-button-label">{children}</span>
       </Button>
       <MenuPopup
         open={!!open}

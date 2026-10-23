@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Button as MuiButton, Tooltip } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { ICON_NAMES, iconOf } from '../lib/icons';
 import { lookOf } from '../lib/field';
@@ -8,7 +9,7 @@ import { lookOf } from '../lib/field';
 // MUI's Button: children is its text; variant (text, outlined, contained) and color (inherit or a palette colour) make
 // the look; size, fullWidth, disableElevation, startIcon / endIcon (icon names), href; a Tooltip title. Event onClick.
 export const Button = () => {
-  const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: 'Button' });
+  const [children] = useStateText({ name: 'children', label: 'Text', initialValue: 'Button' });
   const [variantProp] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['text', 'outlined', 'contained'], initialValue: 'contained' });
   const [colorProp] = ToolJet.useStateEnumeration({
     name: 'color',
@@ -19,10 +20,10 @@ export const Button = () => {
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
   const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', initialValue: true });
   const [disableElevation] = ToolJet.useStateBoolean({ name: 'disableElevation', label: 'Disable elevation', initialValue: false });
-  const [startIcon] = ToolJet.useStateString({ name: 'startIcon', label: 'Start icon', description: `An icon name: ${ICON_NAMES.join(', ')}.`, initialValue: '' });
-  const [endIcon] = ToolJet.useStateString({ name: 'endIcon', label: 'End icon', description: 'An icon name, as startIcon.', initialValue: '' });
-  const [href] = ToolJet.useStateString({ name: 'href', label: 'Href', description: 'Makes the button a link.', initialValue: '' });
-  const [tooltip] = ToolJet.useStateString({ name: 'tooltip', label: 'Tooltip', description: 'Tooltip title shown on hover.', initialValue: '' });
+  const [startIcon] = useStateText({ name: 'startIcon', label: 'Start icon', description: `An icon name: ${ICON_NAMES.join(', ')}.`, initialValue: '' });
+  const [endIcon] = useStateText({ name: 'endIcon', label: 'End icon', description: 'An icon name, as startIcon.', initialValue: '' });
+  const [href] = useStateText({ name: 'href', label: 'Href', description: 'Makes the button a link.', initialValue: '' });
+  const [tooltip] = useStateText({ name: 'tooltip', label: 'Tooltip', description: 'Tooltip title shown on hover.', initialValue: '' });
   const { variant, color } = lookOf(variantProp, colorProp);
   const onClickEvent = ToolJet.useEventCallback({ name: 'onClick' });
   // Inside a Form whose submit button this is, a click submits it first, as the native Button does.
@@ -54,9 +55,11 @@ export const Button = () => {
       {...(href ? ({ href, target: '_blank', rel: 'noopener noreferrer' } as object) : {})}
       disabled={disabled}
       loading={loading}
+      // The label stays on one line, cut with an ellipsis; the full text shows on hover (unless there is a tooltip).
+      title={tooltip ? undefined : children || undefined}
       onClick={() => onClick()}
     >
-      {children}
+      <span className="tj-mui-button-label">{children}</span>
     </MuiButton>
   );
   return (

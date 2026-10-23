@@ -3,6 +3,7 @@ import { BarChart as MuiBarChart } from '@mui/x-charts/BarChart';
 import { LineChart as MuiLineChart } from '@mui/x-charts/LineChart';
 import { PieChart as MuiPieChart } from '@mui/x-charts/PieChart';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { BlockSkeleton, Loading } from '../lib/loading';
 import { readField, str, toArray, toRows, type Row } from '../lib/data';
@@ -76,14 +77,14 @@ const useCartesian = () => {
     description: '[{ dataKey, label, color }], or field names; empty: every numeric field.',
     initialValue: [],
   });
-  const [stack] = ToolJet.useStateString({
+  const [stack] = useStateText({
     name: 'stack',
     label: 'Stack',
     description: "A stack id for every series ('total' stacks them); empty for none.",
     initialValue: '',
   });
   const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: FORMATS, initialValue: 'auto' });
-  const [currency] = ToolJet.useStateString({
+  const [currency] = useStateText({
     name: 'currency',
     label: 'Currency',
     initialValue: 'USD',
@@ -128,7 +129,7 @@ export const BarChart = () => {
     enumDefinition: ['vertical', 'horizontal'],
     initialValue: 'vertical',
   });
-  const [, setClickedSeries] = ToolJet.useStateString({ name: 'clickedSeries', initialValue: '', inspector: 'hidden' });
+  const [, setClickedSeries] = useStateText({ name: 'clickedSeries', initialValue: '', inspector: 'hidden' });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
@@ -234,8 +235,8 @@ export const PieChart = () => {
     description: '[{ id, value, label }], or rows read with labelKey / valueKey.',
     initialValue: [],
   });
-  const [labelKey] = ToolJet.useStateString({ name: 'labelKey', label: 'Label key', initialValue: 'label' });
-  const [valueKey] = ToolJet.useStateString({ name: 'valueKey', label: 'Value key', initialValue: 'value' });
+  const [labelKey] = useStateText({ name: 'labelKey', label: 'Label key', initialValue: 'label' });
+  const [valueKey] = useStateText({ name: 'valueKey', label: 'Value key', initialValue: 'value' });
   const [innerRadius] = ToolJet.useStateNumber({
     name: 'innerRadius',
     label: 'Inner radius',
@@ -259,7 +260,7 @@ export const PieChart = () => {
     initialValue: 'none',
   });
   const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: FORMATS, initialValue: 'auto' });
-  const [currency] = ToolJet.useStateString({
+  const [currency] = useStateText({
     name: 'currency',
     label: 'Currency',
     initialValue: 'USD',

@@ -4,6 +4,7 @@ import { Chip } from '@mui/material';
 import { DataGrid as MuiDataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridPaginationModel, GridRowSelectionModel, GridSortModel } from '@mui/x-data-grid';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, toNumber } from '../lib/format';
@@ -96,7 +97,7 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
 export const DataGrid = () => {
   const [rawRows] = ToolJet.useStateArray({ name: 'rows', label: 'Rows', initialValue: [] });
   const [rawColumns] = ToolJet.useStateArray({ name: 'columns', label: 'Columns', description: '[{ field, headerName, type, width, flex }]; empty: every field.', initialValue: [] });
-  const [rowIdField] = ToolJet.useStateString({ name: 'rowIdField', label: 'Row id field', description: "The rows' id field (getRowId).", initialValue: 'id' });
+  const [rowIdField] = useStateText({ name: 'rowIdField', label: 'Row id field', description: "The rows' id field (getRowId).", initialValue: 'id' });
   const [density] = ToolJet.useStateEnumeration({ name: 'density', label: 'Density', enumDefinition: ['compact', 'standard', 'comfortable'], initialValue: 'standard' });
   const [checkboxSelection] = ToolJet.useStateBoolean({ name: 'checkboxSelection', label: 'Checkbox selection', initialValue: false });
   const [autoPageSize] = ToolJet.useStateBoolean({ name: 'autoPageSize', label: 'Auto page size', description: 'As many rows per page as fit.', initialValue: false });
@@ -104,9 +105,9 @@ export const DataGrid = () => {
   const [showToolbar] = ToolJet.useStateBoolean({ name: 'showToolbar', label: 'Show toolbar', initialValue: false });
   const [disableColumnMenu] = ToolJet.useStateBoolean({ name: 'disableColumnMenu', label: 'Disable column menu', initialValue: false });
   const [hideFooter] = ToolJet.useStateBoolean({ name: 'hideFooter', label: 'Hide footer', initialValue: false });
-  const [noRowsLabel] = ToolJet.useStateString({ name: 'noRowsLabel', label: 'No rows label', initialValue: 'No rows' });
+  const [noRowsLabel] = useStateText({ name: 'noRowsLabel', label: 'No rows label', initialValue: 'No rows' });
   const [, setSelectedRow] = ToolJet.useStateObject({ name: 'selectedRow', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedRowId] = ToolJet.useStateString({ name: 'selectedRowId', initialValue: '', inspector: 'hidden' });
+  const [, setSelectedRowId] = useStateText({ name: 'selectedRowId', initialValue: '', inspector: 'hidden' });
   const [selectionIds, setSelectionIds] = ToolJet.useStateArray({ name: 'rowSelectionModel', initialValue: [], inspector: 'hidden' });
   const [, setSelectedRows] = ToolJet.useStateArray({ name: 'selectedRows', initialValue: [], inspector: 'hidden' });
   const [, setPaginationModel] = ToolJet.useStateObject({ name: 'paginationModel', initialValue: { page: 0, pageSize: 10 }, inspector: 'hidden' });

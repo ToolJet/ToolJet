@@ -1,6 +1,7 @@
 import React from 'react';
 import { FormControl, FormHelperText, FormLabel } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from './text';
 
 type Check = { error: string; required: boolean };
 
@@ -11,8 +12,8 @@ export const PALETTE_COLORS: PaletteColor[] = ['primary', 'secondary', 'error', 
 
 /** label and helperText, the two texts of every MUI form control. The host's validation message replaces helperText. */
 export const useFieldProps = (defaults: { label?: string } = {}) => {
-  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: defaults.label ?? '' });
-  const [helperText] = ToolJet.useStateString({
+  const [label] = useStateText({ name: 'label', label: 'Label', initialValue: defaults.label ?? '' });
+  const [helperText] = useStateText({
     name: 'helperText',
     label: 'Helper text',
     description: 'Text under the field. A validation message replaces it.',

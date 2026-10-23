@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { InputAdornment, TextField as MuiTextField } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { checkProps, fieldClass, useFieldProps, useTextFieldLook } from '../lib/field';
 import { iconOrText } from '../lib/icons';
@@ -29,11 +30,11 @@ const useFocusActions = (ref: React.RefObject<HTMLInputElement | null>) => {
 // form API: actions setValue, clear, focus, blur. The Validation section sets error and required.
 export const TextField = () => {
   const field = useFieldProps();
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
+  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['text', 'email', 'password', 'url', 'tel', 'search'], initialValue: 'text' });
-  const [startAdornment] = ToolJet.useStateString({ name: 'startAdornment', label: 'Start adornment', description: 'Text, or an icon name such as Search.', initialValue: '' });
-  const [endAdornment] = ToolJet.useStateString({ name: 'endAdornment', label: 'End adornment', description: 'Text, or an icon name such as Mail.', initialValue: '' });
+  const [startAdornment] = useStateText({ name: 'startAdornment', label: 'Start adornment', description: 'Text, or an icon name such as Search.', initialValue: '' });
+  const [endAdornment] = useStateText({ name: 'endAdornment', label: 'End adornment', description: 'Text, or an icon name such as Mail.', initialValue: '' });
   const [maxLength] = ToolJet.useStateNumber({ name: 'maxLength', label: 'Max length', description: '0 for no limit.', initialValue: 0, min: 0 });
   const look = useTextFieldLook();
   const events = useTextEvents();
@@ -94,8 +95,8 @@ export const TextField = () => {
 // variant, size; onChange, onFocus, onBlur. Enter adds a line; Ctrl/Cmd+Enter fires onEnterKeyDown.
 export const MultilineTextField = () => {
   const field = useFieldProps();
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
+  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
   const [minRows] = ToolJet.useStateNumber({ name: 'minRows', label: 'Min rows', initialValue: 3, min: 1, max: 40 });
   const [maxRows] = ToolJet.useStateNumber({ name: 'maxRows', label: 'Max rows', description: '0 for no limit.', initialValue: 8, min: 0, max: 80 });
   const look = useTextFieldLook();
@@ -155,12 +156,12 @@ export const MultilineTextField = () => {
 export const NumberField = () => {
   const field = useFieldProps();
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', description: 'A number; empty for none.', initialValue: null });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', description: 'Empty for no minimum.', initialValue: null });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', description: 'Empty for no maximum.', initialValue: null });
   const [step] = ToolJet.useStateNumber({ name: 'step', label: 'Step', initialValue: 1, min: 0 });
-  const [startAdornment] = ToolJet.useStateString({ name: 'startAdornment', label: 'Start adornment', description: 'A unit or sign such as $, or an icon name.', initialValue: '' });
-  const [endAdornment] = ToolJet.useStateString({ name: 'endAdornment', label: 'End adornment', description: 'A unit such as kg or %.', initialValue: '' });
+  const [startAdornment] = useStateText({ name: 'startAdornment', label: 'Start adornment', description: 'A unit or sign such as $, or an icon name.', initialValue: '' });
+  const [endAdornment] = useStateText({ name: 'endAdornment', label: 'End adornment', description: 'A unit such as kg or %.', initialValue: '' });
   const look = useTextFieldLook();
   const events = useTextEvents();
   const ref = useRef<HTMLInputElement>(null);

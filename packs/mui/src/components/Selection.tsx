@@ -11,6 +11,7 @@ import {
   ToggleButtonGroup as MuiToggleButtonGroup,
 } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { FormControlField, PALETTE_COLORS, useFieldProps } from '../lib/field';
 import { str, toArray, toOptions } from '../lib/data';
@@ -115,7 +116,7 @@ export const Switch = () => {
 export const RadioGroup = () => {
   const field = useFieldProps();
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
   const [row] = ToolJet.useStateBoolean({ name: 'row', label: 'Row', description: 'Options side by side.', initialValue: false });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium'], initialValue: 'medium' });

@@ -22,6 +22,7 @@ import {
   Tabs as MuiTabs,
 } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
 import { MuiProvider, usePopupContainer, useThemeStyles } from '../lib/MuiProvider';
 import { PALETTE_COLORS } from '../lib/field';
 import { readField, rowKeyOf, str, toKeyedItems, toRows, type Row } from '../lib/data';
@@ -44,7 +45,7 @@ export const Tabs = () => {
       { value: 'tab2', label: 'Tab 2' },
     ],
   });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The open tab; empty opens the first.', initialValue: '' });
+  const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The open tab; empty opens the first.', initialValue: '' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['standard', 'scrollable', 'fullWidth'], initialValue: 'standard' });
   // MUI's colour options are styles (ToolJet keeps colours under styles).
   const textColor = ToolJet.useStyleEnumeration({ name: 'textColor', label: 'Text color', enumDefinition: ['primary', 'secondary', 'inherit'], initialValue: 'primary' });
@@ -98,8 +99,8 @@ export const Tabs = () => {
 // MUI's Card: a CardHeader (title, subheader), variant (elevation, outlined), elevation, raised; its CardContent is
 // a canvas of ToolJet components (slot body). Event onClick.
 export const Card = () => {
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
-  const [subheader] = ToolJet.useStateString({ name: 'subheader', label: 'Subheader', initialValue: '' });
+  const [title] = useStateText({ name: 'title', label: 'Title', initialValue: '' });
+  const [subheader] = useStateText({ name: 'subheader', label: 'Subheader', initialValue: '' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['outlined', 'elevation'], initialValue: 'outlined' });
   const [elevation] = ToolJet.useStateNumber({ name: 'elevation', label: 'Elevation', initialValue: 1, min: 0, max: 24, visibleWhen: { key: 'variant', value: 'elevation' } });
   const [raised] = ToolJet.useStateBoolean({ name: 'raised', label: 'Raised', initialValue: false, visibleWhen: { key: 'variant', value: 'elevation' } });
@@ -133,12 +134,12 @@ export const Card = () => {
 // Button stands on the canvas. Events onClose (MUI's: backdrop, Escape or Cancel), onConfirm, onCancel, onEntered;
 // actions open and close.
 export const Dialog = () => {
-  const [triggerText] = ToolJet.useStateString({ name: 'triggerText', label: 'Trigger text', initialValue: 'Open dialog' });
+  const [triggerText] = useStateText({ name: 'triggerText', label: 'Trigger text', initialValue: 'Open dialog' });
   const [showTrigger] = ToolJet.useStateBoolean({ name: 'showTrigger', label: 'Show trigger', description: 'A button on the canvas that opens the dialog.', initialValue: true });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Dialog' });
-  const [contentText] = ToolJet.useStateString({ name: 'contentText', label: 'Content text', description: 'Text above the body components.', initialValue: '' });
-  const [confirmText] = ToolJet.useStateString({ name: 'confirmText', label: 'Confirm text', description: 'Empty for no confirm button.', initialValue: 'Confirm' });
-  const [cancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel text', description: 'Empty for no cancel button.', initialValue: 'Cancel' });
+  const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Dialog' });
+  const [contentText] = useStateText({ name: 'contentText', label: 'Content text', description: 'Text above the body components.', initialValue: '' });
+  const [confirmText] = useStateText({ name: 'confirmText', label: 'Confirm text', description: 'Empty for no confirm button.', initialValue: 'Confirm' });
+  const [cancelText] = useStateText({ name: 'cancelText', label: 'Cancel text', description: 'Empty for no cancel button.', initialValue: 'Cancel' });
   const [confirmColor] = ToolJet.useStateEnumeration({ name: 'confirmColor', label: 'Confirm color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
   const [maxWidth] = ToolJet.useStateEnumeration({ name: 'maxWidth', label: 'Max width', enumDefinition: ['xs', 'sm', 'md', 'lg', 'xl'], initialValue: 'sm' });
   const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', description: 'As wide as maxWidth.', initialValue: true });
@@ -164,8 +165,8 @@ export const Dialog = () => {
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-center">
       {showTrigger ? (
-        <Button variant="contained" fullWidth disabled={disabled} loading={loading} onClick={() => setOpen(true)}>
-          {triggerText}
+        <Button variant="contained" fullWidth disabled={disabled} loading={loading} title={triggerText || undefined} onClick={() => setOpen(true)}>
+          <span className="tj-mui-button-label">{triggerText}</span>
         </Button>
       ) : null}
       <DialogBody
@@ -269,18 +270,18 @@ export const List = () => {
     initialValue: 'listItemText',
   });
   const textMode = { key: 'renderItem', value: 'listItemText' };
-  const [primaryField] = ToolJet.useStateString({ name: 'primaryField', label: 'Primary field', initialValue: 'title', visibleWhen: textMode });
-  const [secondaryField] = ToolJet.useStateString({ name: 'secondaryField', label: 'Secondary field', initialValue: 'description', visibleWhen: textMode });
-  const [avatarField] = ToolJet.useStateString({ name: 'avatarField', label: 'Avatar field', description: 'An image URL field.', initialValue: '', visibleWhen: textMode });
+  const [primaryField] = useStateText({ name: 'primaryField', label: 'Primary field', initialValue: 'title', visibleWhen: textMode });
+  const [secondaryField] = useStateText({ name: 'secondaryField', label: 'Secondary field', initialValue: 'description', visibleWhen: textMode });
+  const [avatarField] = useStateText({ name: 'avatarField', label: 'Avatar field', description: 'An image URL field.', initialValue: '', visibleWhen: textMode });
   const [rowHeight] = ToolJet.useStateNumber({ name: 'rowHeight', label: 'Row height (px)', initialValue: 64, min: 24, max: 1200, visibleWhen: { key: 'renderItem', value: 'components' } });
-  const [itemKey] = ToolJet.useStateString({ name: 'itemKey', label: 'Item key', description: 'The id field of the items.', initialValue: 'id' });
-  const [subheader] = ToolJet.useStateString({ name: 'subheader', label: 'Subheader', initialValue: '' });
+  const [itemKey] = useStateText({ name: 'itemKey', label: 'Item key', description: 'The id field of the items.', initialValue: 'id' });
+  const [subheader] = useStateText({ name: 'subheader', label: 'Subheader', initialValue: '' });
   const [dense] = ToolJet.useStateBoolean({ name: 'dense', label: 'Dense', initialValue: false });
   const [divider] = ToolJet.useStateBoolean({ name: 'divider', label: 'Divider', description: 'Lines between items.', initialValue: true });
   const [pageSize] = ToolJet.useStateNumber({ name: 'pageSize', label: 'Page size', description: '0 for no paging.', initialValue: 0, min: 0, max: 500 });
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'No items' });
+  const [emptyText] = useStateText({ name: 'emptyText', label: 'Empty text', initialValue: 'No items' });
   const [selectedItem, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedItemKey] = ToolJet.useStateString({ name: 'selectedItemKey', initialValue: '', inspector: 'hidden' });
+  const [, setSelectedItemKey] = useStateText({ name: 'selectedItemKey', initialValue: '', inspector: 'hidden' });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();

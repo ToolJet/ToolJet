@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Autocomplete as MuiAutocomplete, Chip, CircularProgress, MenuItem, TextField } from '@mui/material';
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { checkProps, fieldClass, useFieldProps, useTextFieldLook } from '../lib/field';
 import { str, toArray, toOptions, type Option } from '../lib/data';
@@ -20,9 +21,9 @@ const findOption = (options: Option[], given: unknown): Option | null => {
 export const Select = () => {
   const field = useFieldProps();
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The picked option value.', initialValue: '' });
+  const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The picked option value.', initialValue: '' });
   const [displayEmpty] = ToolJet.useStateBoolean({ name: 'displayEmpty', label: 'Display empty', description: 'Show the placeholder while nothing is picked.', initialValue: true });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select', visibleWhen: { key: 'displayEmpty', value: true } });
+  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select', visibleWhen: { key: 'displayEmpty', value: true } });
   const [, setSelectedOption] = ToolJet.useStateObject({ name: 'selectedOption', initialValue: {}, inspector: 'hidden' });
   const [, setOpen] = ToolJet.useStateBoolean({ name: 'open', initialValue: false, inspector: 'hidden' });
   const look = useTextFieldLook();
@@ -115,10 +116,10 @@ const loadingSlotProps = ({ slotProps }: AutocompleteRenderInputParams, loading:
 const useAutocompleteProps = () => {
   const field = useFieldProps();
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
-  const [noOptionsText] = ToolJet.useStateString({ name: 'noOptionsText', label: 'No options text', initialValue: 'No options' });
+  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [noOptionsText] = useStateText({ name: 'noOptionsText', label: 'No options text', initialValue: 'No options' });
   const [disableClearable] = ToolJet.useStateBoolean({ name: 'disableClearable', label: 'Disable clearable', initialValue: false });
-  const [inputValue, setInputValue] = ToolJet.useStateString({ name: 'inputValue', initialValue: '', inspector: 'hidden' });
+  const [inputValue, setInputValue] = useStateText({ name: 'inputValue', initialValue: '', inspector: 'hidden' });
   const look = useTextFieldLook();
   return { field, options: toOptions(rawOptions), placeholder, noOptionsText, disableClearable, inputValue, setInputValue, look };
 };

@@ -6,6 +6,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker as MuiDatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker as MuiTimePicker } from '@mui/x-date-pickers/TimePicker';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import type { ThemeOverrides } from '../lib/theme';
 import { checkProps, fieldClass, useFieldProps, useTextFieldLook } from '../lib/field';
@@ -81,8 +82,8 @@ const pickerSlots = (p: {
 // helperText; events onChange, onAccept, onOpen, onClose.
 export const DatePicker = () => {
   const field = useFieldProps();
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The date, YYYY-MM-DD.', initialValue: '' });
-  const [format] = ToolJet.useStateString({ name: 'format', label: 'Format', description: 'Display format (dayjs tokens).', initialValue: 'MM/DD/YYYY' });
+  const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The date, YYYY-MM-DD.', initialValue: '' });
+  const [format] = useStateText({ name: 'format', label: 'Format', description: 'Display format (dayjs tokens).', initialValue: 'MM/DD/YYYY' });
   const [views] = ToolJet.useStateEnumeration({
     name: 'views',
     label: 'Views',
@@ -90,8 +91,8 @@ export const DatePicker = () => {
     initialValue: 'year,month,day',
   });
   const [openTo] = ToolJet.useStateEnumeration({ name: 'openTo', label: 'Open to', enumDefinition: ['day', 'month', 'year'], initialValue: 'day' });
-  const [minDate] = ToolJet.useStateString({ name: 'minDate', label: 'Min date', description: 'YYYY-MM-DD; empty for none.', initialValue: '' });
-  const [maxDate] = ToolJet.useStateString({ name: 'maxDate', label: 'Max date', description: 'YYYY-MM-DD; empty for none.', initialValue: '' });
+  const [minDate] = useStateText({ name: 'minDate', label: 'Min date', description: 'YYYY-MM-DD; empty for none.', initialValue: '' });
+  const [maxDate] = useStateText({ name: 'maxDate', label: 'Max date', description: 'YYYY-MM-DD; empty for none.', initialValue: '' });
   const [disablePast] = ToolJet.useStateBoolean({ name: 'disablePast', label: 'Disable past', initialValue: false });
   const [disableFuture] = ToolJet.useStateBoolean({ name: 'disableFuture', label: 'Disable future', initialValue: false });
   const look = useTextFieldLook();
@@ -139,11 +140,11 @@ export const DatePicker = () => {
 // events onChange, onAccept, onOpen, onClose.
 export const TimePicker = () => {
   const field = useFieldProps();
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The time, HH:mm (24-hour).', initialValue: '' });
+  const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The time, HH:mm (24-hour).', initialValue: '' });
   const [ampm] = ToolJet.useStateBoolean({ name: 'ampm', label: 'AM/PM', description: '12-hour display.', initialValue: true });
   const [minutesStep] = ToolJet.useStateNumber({ name: 'minutesStep', label: 'Minutes step', initialValue: 5, min: 1, max: 60 });
-  const [minTime] = ToolJet.useStateString({ name: 'minTime', label: 'Min time', description: 'HH:mm; empty for none.', initialValue: '' });
-  const [maxTime] = ToolJet.useStateString({ name: 'maxTime', label: 'Max time', description: 'HH:mm; empty for none.', initialValue: '' });
+  const [minTime] = useStateText({ name: 'minTime', label: 'Min time', description: 'HH:mm; empty for none.', initialValue: '' });
+  const [maxTime] = useStateText({ name: 'maxTime', label: 'Max time', description: 'HH:mm; empty for none.', initialValue: '' });
   const look = useTextFieldLook();
   const events = usePickerEvents();
   const { disabled, loading } = ToolJet.useControlState();

@@ -20,6 +20,7 @@ import {
   Typography as MuiTypography,
 } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { toText, useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { PALETTE_COLORS } from '../lib/field';
 import { iconOf, ICONS } from '../lib/icons';
@@ -32,7 +33,7 @@ const COLORS = ['default', ...PALETTE_COLORS];
 // MUI's Chip: label, color (default or a palette colour), variant (filled, outlined), size, icon (an icon name),
 // clickable; events onClick and onDelete (shows the delete icon).
 export const Chip = () => {
-  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Chip' });
+  const [label] = useStateText({ name: 'label', label: 'Label', initialValue: 'Chip' });
   const [colorProp] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: COLORS, initialValue: 'default' });
   const [variantProp] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['filled', 'outlined'], initialValue: 'filled' });
   // A role value can set both: { color, variant }.
@@ -40,7 +41,7 @@ export const Chip = () => {
   const color = look?.color ?? colorProp;
   const variant = look?.variant ?? variantProp;
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium'], initialValue: 'medium' });
-  const [icon] = ToolJet.useStateString({ name: 'icon', label: 'Icon', description: 'An icon name, such as Check.', initialValue: '' });
+  const [icon] = useStateText({ name: 'icon', label: 'Icon', description: 'An icon name, such as Check.', initialValue: '' });
   const [deletable] = ToolJet.useStateBoolean({ name: 'deletable', label: 'Deletable', description: 'Show the delete icon (fires onDelete).', initialValue: false });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onDelete = ToolJet.useEventCallback({ name: 'onDelete' });
@@ -70,11 +71,11 @@ export const Chip = () => {
 export const Alert = () => {
   const [severity] = ToolJet.useStateEnumeration({ name: 'severity', label: 'Severity', enumDefinition: ['success', 'info', 'warning', 'error'], initialValue: 'info' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['standard', 'filled', 'outlined'], initialValue: 'standard' });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
-  const [children] = ToolJet.useStateString({ name: 'children', label: 'Message', initialValue: 'This is an alert.' });
+  const [title] = useStateText({ name: 'title', label: 'Title', initialValue: '' });
+  const [children] = useStateText({ name: 'children', label: 'Message', initialValue: 'This is an alert.' });
   const [icon] = ToolJet.useStateBoolean({ name: 'icon', label: 'Icon', description: 'The severity icon.', initialValue: true });
   const [closable] = ToolJet.useStateBoolean({ name: 'closable', label: 'Closable', initialValue: false });
-  const [actionText] = ToolJet.useStateString({ name: 'actionText', label: 'Action text', description: 'A button at the right; empty for none.', initialValue: '' });
+  const [actionText] = useStateText({ name: 'actionText', label: 'Action text', description: 'A button at the right; empty for none.', initialValue: '' });
   const [open, setOpen] = ToolJet.useStateBoolean({ name: 'open', initialValue: true, inspector: 'hidden' });
   const onClose = ToolJet.useEventCallback({ name: 'onClose' });
   const onAction = ToolJet.useEventCallback({ name: 'onAction' });
@@ -119,7 +120,7 @@ const TEXT_COLORS = ['text.primary', 'text.secondary', 'primary.main', 'success.
 
 /** Typography's props that both text components share. */
 const useTypography = (variants: string[], initial: string, text: string) => {
-  const [children, setChildren] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: text });
+  const [children, setChildren] = useStateText({ name: 'children', label: 'Text', initialValue: text });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: variants, initialValue: initial });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: TEXT_COLORS, initialValue: 'text.primary' });
   const [align] = ToolJet.useStateEnumeration({ name: 'align', label: 'Align', enumDefinition: ['left', 'center', 'right', 'justify'], initialValue: 'left' });
@@ -180,13 +181,18 @@ export const Typography = () => {
 // currency, percent, compact) and currency, trend (up, down, neutral) as a coloured Chip with trendLabel, and interval
 // (the period, under the value). variant (outlined, elevation). Event onClick.
 export const StatCard = () => {
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Users' });
-  const [value] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '14k' });
+  const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Users' });
+  const [value] = useStateText({ name: 'value', label: 'Value', initialValue: '14k' });
   const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'auto' });
-  const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'format', value: 'currency' } });
+  const [currency] = useStateText({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'format', value: 'currency' } });
   const [trend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'neutral' });
-  const [trendLabel] = ToolJet.useStateString({ name: 'trendLabel', label: 'Trend label', description: 'Text in the trend chip, such as +25%.', initialValue: '' });
-  const [interval] = ToolJet.useStateString({ name: 'interval', label: 'Interval', description: 'The period, such as Last 30 days.', initialValue: '' });
+  const [rawTrendLabel] = ToolJet.useStateString({
+    name: 'trendLabel',
+    label: 'Trend label',
+    description: 'Text in the trend chip, such as +25%; a number is the change, its sign the direction.',
+    initialValue: '',
+  });
+  const [interval] = useStateText({ name: 'interval', label: 'Interval', description: 'The period, such as Last 30 days.', initialValue: '' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['outlined', 'elevation'], initialValue: 'outlined' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { loading } = ToolJet.useControlState();
@@ -194,8 +200,14 @@ export const StatCard = () => {
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 12 });
   const n = toNumber(value);
   const shown = n === null ? str(value) : formatNumber(n, format as NumberFormat, currency);
-  const chipColor = trend === 'up' ? 'success' : trend === 'down' ? 'error' : 'default';
-  const TrendIcon = trend === 'up' ? ICONS.TrendingUp : trend === 'down' ? ICONS.TrendingDown : ICONS.TrendingFlat;
+  // A number bound to trendLabel (today - yesterday) is the change: shown signed, in the value's format, and with
+  // trend left neutral its sign gives the direction. NaN (a query not loaded yet) shows no chip.
+  const change = typeof rawTrendLabel === 'number' ? (Number.isFinite(rawTrendLabel) ? (rawTrendLabel as number) : null) : undefined;
+  const trendLabel =
+    change === undefined ? toText(rawTrendLabel) : change === null ? '' : `${change > 0 ? '+' : ''}${formatNumber(change, format as NumberFormat, currency)}`;
+  const direction = change && trend === 'neutral' ? (change > 0 ? 'up' : 'down') : trend;
+  const chipColor = direction === 'up' ? 'success' : direction === 'down' ? 'error' : 'default';
+  const TrendIcon = direction === 'up' ? ICONS.TrendingUp : direction === 'down' ? ICONS.TrendingDown : ICONS.TrendingFlat;
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={loading} fill look={<BlockSkeleton />}>
@@ -229,7 +241,7 @@ export const LinearProgress = () => {
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['determinate', 'indeterminate', 'buffer'], initialValue: 'determinate' });
   const [valueBuffer] = ToolJet.useStateNumber({ name: 'valueBuffer', label: 'Value buffer', initialValue: 60, min: 0, max: 100, visibleWhen: { key: 'variant', value: 'buffer' } });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: [...PALETTE_COLORS, 'inherit'], initialValue: 'primary' });
-  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: '' });
+  const [label] = useStateText({ name: 'label', label: 'Label', initialValue: '' });
   const [showValue] = ToolJet.useStateBoolean({ name: 'showValue', label: 'Show value', initialValue: true });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
@@ -268,8 +280,8 @@ const initials = (name: string) =>
 // MUI's Avatar: src (an image URL), alt (the person's name; its initials show without an image), variant (circular,
 // rounded, square), size in px, color (the initials' background). Event onClick.
 export const Avatar = () => {
-  const [src] = ToolJet.useStateString({ name: 'src', label: 'Src', description: 'Image URL.', initialValue: '' });
-  const [alt] = ToolJet.useStateString({ name: 'alt', label: 'Alt', description: 'The name: initials show without an image.', initialValue: 'Ada Lovelace' });
+  const [src] = useStateText({ name: 'src', label: 'Src', description: 'Image URL.', initialValue: '' });
+  const [alt] = useStateText({ name: 'alt', label: 'Alt', description: 'The name: initials show without an image.', initialValue: 'Ada Lovelace' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['circular', 'rounded', 'square'], initialValue: 'circular' });
   const [size] = ToolJet.useStateNumber({ name: 'size', label: 'Size (px)', initialValue: 40, min: 16, max: 240 });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: ['default', ...PALETTE_COLORS], initialValue: 'primary' });
@@ -297,7 +309,7 @@ export const Avatar = () => {
 
 // MUI's Divider: orientation, variant (fullWidth, inset, middle), children (text in the line); style textAlign.
 export const Divider = () => {
-  const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', description: 'Text in the line; empty for none.', initialValue: '' });
+  const [children] = useStateText({ name: 'children', label: 'Text', description: 'Text in the line; empty for none.', initialValue: '' });
   const [orientation] = ToolJet.useStateEnumeration({ name: 'orientation', label: 'Orientation', enumDefinition: ['horizontal', 'vertical'], initialValue: 'horizontal' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['fullWidth', 'inset', 'middle'], initialValue: 'fullWidth' });
   const textAlign = ToolJet.useStyleEnumeration({ name: 'textAlign', label: 'Text align', enumDefinition: ['center', 'left', 'right'], initialValue: 'center' });
