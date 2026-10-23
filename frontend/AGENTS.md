@@ -2,6 +2,54 @@
 
 React + Webpack. Edition composition (webpack aliases, registries, `fetchEdition()`) is covered in the root `AGENTS.md` — this file covers conventions and App Builder architecture.
 
+## Stack and version traps
+
+Write code for the installed major version, not the latest one. `package.json` is the source of truth.
+
+| Library | Version | Implication |
+|---|---|---|
+| React | 18 | No React 19 APIs (`use`, ref-as-prop, `useActionState`). Use `forwardRef` to pass refs |
+| Tailwind CSS | 3 | JS config in `tailwind.config.js`, not v4 `@theme` CSS. Prefix `tw-`, preflight disabled |
+| react-router-dom | 6.8 | `<BrowserRouter>` in `RootRouter.jsx`, not a data router: no loaders or actions. Class components use `@/_hoc/withRouter` |
+| Zustand | 4 | `import { shallow } from 'zustand/shallow'` as the second `useStore` argument. Not the v5 `useShallow` |
+| Immer | 9 | Via `zustand/middleware/immer` |
+| TypeScript | 5 | Compiled by Babel (`@babel/preset-typescript`), type-checked only by `npm run typecheck` |
+
+Other library choices:
+
+- Dates: `moment` / `moment-timezone`. Do not add `dayjs` or `date-fns`
+- i18n: `react-i18next` (`useTranslation`) for user-facing strings
+- Class merging: `cn()` from `@/lib/utils` (prefix-aware `tailwind-merge`)
+
+## TypeScript
+
+Write new files as `.ts` / `.tsx`. Do not convert an existing `.js` / `.jsx` file unless the task is about that file. The codebase is about 65 TS files to 2,600 JS files, so most imports are untyped JS.
+
+- `strict` is on. Avoid `any` (lint warns): use `unknown` and narrow it, or write a minimal interface
+- When importing an untyped JS module, cast it once at the import site rather than spreading `any` (see `AppBuilder/Shared/EntityUsage/EntityUsageList.tsx`)
+- Use `export type` when re-exporting a type (`export type { User } from './types'`). Babel compiles one file at a time and can't tell a re-exported type from a value, so it keeps the export and it is `undefined` at runtime
+- Prefer union literals or `as const` objects to enums. Babel turns a `const enum` into a regular enum object
+- No `namespace` or `@ts-ignore` (lint errors)
+- Put props in an `interface ComponentNameProps` on the function parameter. Keep types next to their code; shared domain types go in `*.types.ts` (e.g. `AppBuilder/types/`)
+- Zustand stores: type the state with an interface (see `_stores/customComponentLibrariesStore.ts`)
+- Global (non-AppBuilder) stores use `create` from `@/_stores/utils`, not from `zustand` directly. It registers the store with `resetAllStores()`
+- Ambient module declarations (e.g. `config`) live in `src/config.d.ts`
+
+### TypeScript tooling gaps (known)
+
+- **Babel does not type-check.** A `.tsx` file with type errors still builds and runs. Run `npm run typecheck` before finishing. CI runs lint but not typecheck, and `main` already has a few type errors, so don't add new ones
+- **Aliases are defined twice.** `paths` in `tsconfig.json` mirrors `resolve.alias` in `webpack.config.js`; change both together. SVG import types live in `src/assets.d.ts`
+
+## Commands
+
+Test commands are under [Testing](#testing).
+
+```
+npm start                 # dev server on :8082 (runs build:vendor first)
+npm run lint              # ESLint over src/ and ee/; CI blocks on errors
+npm run typecheck         # tsc --noEmit; required for TS changes (not run in CI)
+```
+
 ## Testing
 
 > Tests are written first. A spec that still passes against broken production code certifies nothing.
@@ -34,10 +82,14 @@ On top of the above:
 
 ## Component patterns
 
-- Check `frontend/src/_ui/` (55+ components) before creating a new UI component
+- Choose a UI primitive in this order:
+  1. **Rocket**, the design system (`src/components/ui/Rocket/`). Import from the component file (`import { Button } from '@/components/ui/Rocket/Button/Button'`), not the barrel `@/components/ui/Rocket`, so tree shaking keeps working. This overrides the barrel advice in its `README.md`; follow that file's other rules. Never edit `Rocket/shadcn/`, which is managed by the CLI
+  2. `src/_ui/` (55+ older components), if Rocket has no equivalent
+  3. Raw Radix UI primitives, if neither has one
+- Exception, for now: dashboard redesign code (`src/pages/`) uses the older `src/components/ui/Button/Button.jsx`, not the Rocket `Button`. Its `secondary` variant matches Figma (default text, brand icon); Rocket's uses brand text
+- Do not use `react-bootstrap` (`OverlayTrigger`, `Modal`) or `react-tooltip` in new code; use the Rocket `Tooltip` and `Dialog`
 - Functional components with hooks only — no class components
 - File structure: `ComponentName/index.js` + optional `ComponentName.jsx` + `style.scss`
-- Compose with Radix UI primitives for accessible interactive elements
 - New widgets MUST be lazy-loaded
 - `useBatchedUpdateEffectArray` for batched state updates
 - Widget components must be registered in `AppBuilder/WidgetManager/componentTypes.js`
@@ -50,7 +102,18 @@ On top of the above:
 - Never hardcode hex/rgb colors — use CSS variable tokens via Tailwind (`tw-text-default`, `tw-bg-page-default`) or `var(--text-default)`. This includes default values
 - Prefer Tailwind over Bootstrap for new code; do not extend legacy `react-bootstrap` usage
 - Use typography utilities (`tw-font-title-default`, `tw-font-body-default`) instead of ad-hoc font-size/weight
-- Design tokens: `frontend/src/_styles/designtheme.scss` + `frontend/tailwind.config.js`
+- Design tokens:
+  - Add new tokens to `src/_styles/componentdesign.scss` **and** `tailwind.config.js`
+  - Use `--cc-*` variables only in App Builder widgets (app theme, set at runtime in `useAppData.js`)
+  - `src/_styles/designtheme.scss` is legacy; don't add to it
+- These variables are defined in both token files. Whichever file is imported later wins (`componentdesign.scss` in `theme.scss`). Values differ where marked:
+  - `--text-default`, `--text-placeholder`
+  - `--text-disabled` (differs in light and dark)
+  - `--text-on-solid` (differs in dark)
+  - `--interactive-default` (differs in dark), `--interactive-hover` (differs in light and dark)
+  - `--elevation-000-box-shadow` … `--elevation-700-box-shadow`
+- Preflight is off: set `tw-border-solid` whenever you set a border width or color
+- Dark mode is the `dark-theme` class on the body. Tokens switch automatically, so `dark:` variants are rarely needed
 
 ### Imports
 

@@ -240,18 +240,8 @@ export default [
       // prettier config (disables conflicting rules)
       ...configPrettier.rules,
 
-      // Re-enable prettier/prettier as error
-      'prettier/prettier': [
-        'error',
-        {
-          semi: true,
-          trailingComma: 'es5',
-          printWidth: 120,
-          singleQuote: true,
-          arrowParens: 'always',
-          proseWrap: 'preserve',
-        },
-      ],
+      // Re-enable prettier/prettier as error. Options come from the root .prettierrc.
+      'prettier/prettier': 'error',
 
       // Project rules
       'react/prop-types': 'off',

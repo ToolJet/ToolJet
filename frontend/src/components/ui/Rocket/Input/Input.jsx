@@ -9,7 +9,7 @@ const inputVariants = cva(
     // Resets not covered by shadcn base (preflight is off)
     'tw-appearance-none tw-border-solid tw-outline-none',
     // Base tokens
-    'tw-bg-background-surface-layer-01 tw-border-border-default tw-text-text-default tw-shadow-elevation-none',
+    'tw-font-body-default tw-bg-background-surface-layer-01 tw-border-border-default tw-text-text-default tw-shadow-elevation-none',
     'placeholder:tw-text-text-placeholder',
     // Override shadcn focus ring with ToolJet token
     'focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline !focus-visible:tw-outline-none',

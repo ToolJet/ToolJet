@@ -1,11 +1,17 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { Home, Blocks, ToyBrick, Workflow, Table2, Puzzle, KeyRound, Moon, Sun } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import { NotificationCenter } from '@/_components/NotificationCenter';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { appendBranchName } from '@/_helpers/active-branch';
-import { Link } from 'react-router-dom';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import { SettingsMenu } from '@/modules/dashboard/components';
+import ProfileMenu from '@/modules/common/components/ProfileMenu/ProfileMenu';
+
+const routeLinkClassName = (isRouteActive) => cn('tj-leftsidebar-icon-items', { active: isRouteActive });
 
 const BaseLeftNavSideBar = ({
   checkForUnsavedChanges,
@@ -20,6 +26,8 @@ const BaseLeftNavSideBar = ({
   canCreateVariableOrConstant,
   featureAccess,
 }) => {
+  const hasModuleAccess = useLicenseStore((state) => state.hasModuleAccess);
+
   return (
     <div>
       <ul className="sidebar-inner nav nav-vertical">
@@ -29,15 +37,10 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={getPrivateRoute('home')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('home'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('home') && `current-seleted-route`
-                }`}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('home'))}
                 data-cy="icon-home"
               >
-                <SolidIcon
-                  name="home"
-                  fill={router.pathname === getPrivateRoute('home') ? '#3E63DD' : 'var(--slate8)'}
-                />
+                <Home size={16} />
               </Link>
             </ToolTip>
           </li>
@@ -47,50 +50,40 @@ const BaseLeftNavSideBar = ({
             <Link
               to={appendBranchName(getPrivateRoute('dashboard'))}
               onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
-              className={`tj-leftsidebar-icon-items  ${
-                (router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')) &&
-                `current-seleted-route`
-              }`}
+              className={routeLinkClassName(
+                router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
+              )}
               data-cy="icon-dashboard"
             >
-              <SolidIcon
-                name="apps"
-                fill={
-                  router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
-                    ? '#3E63DD'
-                    : 'var(--slate8)'
-                }
-              />
+              <Blocks size={16} />
             </Link>
           </ToolTip>
         </li>
+
+        {hasModuleAccess && (
+          <li className="text-center cursor-pointer">
+            <ToolTip message="Modules" placement="right">
+              <Link
+                to={appendBranchName(getPrivateRoute('modules'))}
+                onClick={(event) => checkForUnsavedChanges(getPrivateRoute('modules'), event)}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('modules'))}
+                data-cy="icon-modules"
+              >
+                <ToyBrick size={16} />
+              </Link>
+            </ToolTip>
+          </li>
+        )}
+
         {workflowsEnabled && (
           <li className="text-center  cursor-pointer" data-cy="icon-workflows">
             <ToolTip message="Workflows" placement="right">
               <Link
                 to={getPrivateRoute('workflows')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                }`}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 'fit-content',
-                  gap: '4px',
-                  padding: '8px',
-                }}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('workflows'))}
               >
-                <SolidIcon
-                  name="workflows"
-                  fill={
-                    router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                      ? '#3E63DD'
-                      : darkMode
-                        ? '#4C5155'
-                        : '#C1C8CD'
-                  }
-                />
+                <Workflow size={16} />
               </Link>
             </ToolTip>
           </li>
@@ -101,19 +94,10 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={getPrivateRoute('database')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('database'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('database') && `current-seleted-route`
-                }`}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('database'))}
                 data-cy="icon-database"
               >
-                <SolidIcon
-                  name="table"
-                  fill={
-                    router.pathname === getPrivateRoute('database') && `current-seleted-route`
-                      ? '#3E63DD'
-                      : 'var(--slate8)'
-                  }
-                />
+                <Table2 size={16} />
               </Link>
             </ToolTip>
           </li>
@@ -126,15 +110,10 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={appendBranchName(getPrivateRoute('data_sources'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('data_sources') && `current-seleted-route`
-                }`}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('data_sources'))}
                 data-cy="icon-global-datasources"
               >
-                <SolidIcon
-                  name="datasource"
-                  fill={router.pathname === getPrivateRoute('data_sources') ? '#3E63DD' : 'var(--slate8)'}
-                />
+                <Puzzle size={16} />
               </Link>
             </ToolTip>
           </li>
@@ -145,38 +124,36 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={getPrivateRoute('workspace_constants')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_constants'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('workspace_constants') && `current-seleted-route`
-                }`}
+                className={routeLinkClassName(router.pathname === getPrivateRoute('workspace_constants'))}
                 data-cy="icon-workspace-constants"
               >
-                <SolidIcon
-                  name="workspaceconstants"
-                  fill={router.pathname === getPrivateRoute('workspace_constants') ? '#3E63DD' : 'var(--slate8)'}
-                  width={25}
-                  viewBox={'0 0 20 20'}
-                />
+                <KeyRound size={16} />
               </Link>
             </ToolTip>
           </li>
         )}
 
         <li className="tj-leftsidebar-icon-items-bottom text-center">
-          <NotificationCenter darkMode={darkMode} />
           <ToolTip delay={{ show: 0, hide: 0 }} message="Mode" placement="right">
-            <Link
+            <button
+              type="button"
               className="cursor-pointer tj-leftsidebar-icon-items"
               onClick={() => switchDarkMode(!darkMode)}
               data-cy="mode-switch-button"
             >
-              <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill="var(--slate8)" />
-            </Link>
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
           </ToolTip>
+
+          <NotificationCenter darkMode={darkMode} />
+
           <SettingsMenu
             featureAccess={featureAccess}
             darkMode={darkMode}
             checkForUnsavedChanges={checkForUnsavedChanges}
           />
+
+          <ProfileMenu checkForUnsavedChanges={checkForUnsavedChanges} />
         </li>
       </ul>
     </div>
