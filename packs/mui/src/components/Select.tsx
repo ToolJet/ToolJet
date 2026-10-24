@@ -6,6 +6,7 @@ import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { checkProps, fieldClass, useFieldProps, useTextFieldLook } from '../lib/field';
 import { str, toArray, toOptions, type Option } from '../lib/data';
+import { SAMPLE } from '../lib/samples';
 import { FieldSkeleton, Loading } from '../lib/loading';
 
 /** An option given as its value, as an option object, or as a label: the matching option, else null. */
@@ -19,8 +20,8 @@ const findOption = (options: Option[], given: unknown): Option | null => {
 // MUI's Select (TextField select): label, options [{ label, value, disabled }], value (the picked value), helperText,
 // displayEmpty with a placeholder, variant, size; events onChange, onOpen, onClose. selectedOption is exposed.
 export const Select = () => {
-  const field = useFieldProps();
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
+  const field = useFieldProps({ label: 'Status' });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: SAMPLE.status });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The picked option value.', initialValue: '' });
   const [displayEmpty] = ToolJet.useStateBoolean({ name: 'displayEmpty', label: 'Display empty', description: 'Show the placeholder while nothing is picked.', initialValue: true });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select', visibleWhen: { key: 'displayEmpty', value: true } });
@@ -113,9 +114,9 @@ const loadingSlotProps = ({ slotProps }: AutocompleteRenderInputParams, loading:
     : slotProps;
 
 /** The Autocomplete props both variants share. */
-const useAutocompleteProps = () => {
-  const field = useFieldProps();
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
+const useAutocompleteProps = (defaults: { label: string; options: unknown[] }) => {
+  const field = useFieldProps({ label: defaults.label });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: defaults.options });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
   const [noOptionsText] = useStateText({ name: 'noOptionsText', label: 'No options text', initialValue: 'No options' });
   const [disableClearable] = ToolJet.useStateBoolean({ name: 'disableClearable', label: 'Disable clearable', initialValue: false });
@@ -128,7 +129,7 @@ const useAutocompleteProps = () => {
 // option { label, value }, or null; a bare value or label also picks), freeSolo, disableClearable, noOptionsText;
 // inputValue (the typed text) is exposed. Events onChange, onInputChange, onOpen, onClose.
 export const Autocomplete = () => {
-  const p = useAutocompleteProps();
+  const p = useAutocompleteProps({ label: 'City', options: SAMPLE.cities });
   const [value, setValue] = ToolJet.useStateObject({ name: 'value', label: 'Value', description: 'The picked option { label, value }, or null.', initialValue: null });
   const [freeSolo] = ToolJet.useStateBoolean({ name: 'freeSolo', label: 'Free solo', description: 'Any typed text is a value.', initialValue: false });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -199,7 +200,7 @@ export const Autocomplete = () => {
 // (bare values or labels also pick); limitTags, disableCloseOnSelect, filterSelectedOptions. Events onChange,
 // onInputChange, onOpen, onClose.
 export const AutocompleteMultiple = () => {
-  const p = useAutocompleteProps();
+  const p = useAutocompleteProps({ label: 'Cities', options: SAMPLE.cities });
   const [value, setValue] = ToolJet.useStateArray({ name: 'value', label: 'Value', description: 'The picked options [{ label, value }].', initialValue: [] });
   const [limitTags] = ToolJet.useStateNumber({ name: 'limitTags', label: 'Limit tags', description: 'Chips shown while not focused; -1 for all.', initialValue: -1, min: -1 });
   const [disableCloseOnSelect] = ToolJet.useStateBoolean({ name: 'disableCloseOnSelect', label: 'Disable close on select', initialValue: true });

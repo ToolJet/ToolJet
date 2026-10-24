@@ -8,6 +8,7 @@ import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, toNumber } from '../lib/format';
+import { SAMPLE } from '../lib/samples';
 
 const ID = '__tjRowId';
 const ROW_HEIGHT = { compact: 36, standard: 52, comfortable: 67 };
@@ -95,8 +96,8 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
 // selectedRows, paginationModel and sortModel. Events onRowClick, onRowSelectionModelChange, onPaginationModelChange,
 // onSortModelChange.
 export const DataGrid = () => {
-  const [rawRows] = ToolJet.useStateArray({ name: 'rows', label: 'Rows', initialValue: [] });
-  const [rawColumns] = ToolJet.useStateArray({ name: 'columns', label: 'Columns', description: '[{ field, headerName, type, width, flex }]; empty: every field.', initialValue: [] });
+  const [rawRows] = ToolJet.useStateArray({ name: 'rows', label: 'Rows', initialValue: SAMPLE.rows });
+  const [rawColumns] = ToolJet.useStateArray({ name: 'columns', label: 'Columns', description: '[{ field, headerName, type, width, flex }]; empty: every field.', initialValue: SAMPLE.columns });
   const [rowIdField] = useStateText({ name: 'rowIdField', label: 'Row id field', description: "The rows' id field (getRowId).", initialValue: 'id' });
   const [density] = ToolJet.useStateEnumeration({ name: 'density', label: 'Density', enumDefinition: ['compact', 'standard', 'comfortable'], initialValue: 'standard' });
   const [checkboxSelection] = ToolJet.useStateBoolean({ name: 'checkboxSelection', label: 'Checkbox selection', initialValue: false });

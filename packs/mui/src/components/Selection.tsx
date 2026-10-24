@@ -17,6 +17,7 @@ import { FormControlField, PALETTE_COLORS, useFieldProps } from '../lib/field';
 import { str, toArray, toOptions } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { Loading, Spinner } from '../lib/loading';
+import { SAMPLE } from '../lib/samples';
 
 const bool = (v: unknown) => v === true || v === 'true';
 
@@ -114,8 +115,8 @@ export const Switch = () => {
 // MUI's RadioGroup with a FormLabel: label, options [{ label, value, disabled }], value, row (side by side), color,
 // size, helperText; event onChange; actions setValue, clear.
 export const RadioGroup = () => {
-  const field = useFieldProps();
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
+  const field = useFieldProps({ label: 'Plan' });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: SAMPLE.plans });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
   const [row] = ToolJet.useStateBoolean({ name: 'row', label: 'Row', description: 'Options side by side.', initialValue: false });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
@@ -165,7 +166,7 @@ export const RadioGroup = () => {
 // MUI's ToggleButtonGroup: options [{ label, value }], exclusive (one value) or not (value is an array, MUI's shape),
 // value, color, size, orientation, fullWidth; event onChange.
 export const ToggleButtonGroup = () => {
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: SAMPLE.periods });
   const [exclusive] = ToolJet.useStateBoolean({ name: 'exclusive', label: 'Exclusive', description: 'One value at a time; off, value is an array.', initialValue: true });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The value; an array when not exclusive.', initialValue: '' });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: ['standard', ...PALETTE_COLORS], initialValue: 'primary' });

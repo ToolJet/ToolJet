@@ -6,6 +6,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { BlockSkeleton, Loading } from '../lib/loading';
+import { SAMPLE } from '../lib/samples';
 import { readField, str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
 
@@ -64,18 +65,18 @@ const FORMATS = ['auto', 'number', 'currency', 'percent', 'compact'];
 
 /** The props every cartesian chart shares, by MUI's names. */
 const useCartesian = () => {
-  const [dataset] = ToolJet.useStateArray({ name: 'dataset', label: 'Dataset', description: 'The rows: [{ month, sales, ... }].', initialValue: [] });
+  const [dataset] = ToolJet.useStateArray({ name: 'dataset', label: 'Dataset', description: 'The rows: [{ month, sales, ... }].', initialValue: SAMPLE.monthly });
   const [xAxis] = ToolJet.useStateArray({
     name: 'xAxis',
     label: 'X axis',
     description: "[{ dataKey, label }], or the category field's name.",
-    initialValue: [],
+    initialValue: SAMPLE.xAxis,
   });
   const [series] = ToolJet.useStateArray({
     name: 'series',
     label: 'Series',
     description: '[{ dataKey, label, color }], or field names; empty: every numeric field.',
-    initialValue: [],
+    initialValue: SAMPLE.series,
   });
   const [stack] = useStateText({
     name: 'stack',
@@ -233,7 +234,7 @@ export const PieChart = () => {
     name: 'data',
     label: 'Data',
     description: '[{ id, value, label }], or rows read with labelKey / valueKey.',
-    initialValue: [],
+    initialValue: SAMPLE.pie,
   });
   const [labelKey] = useStateText({ name: 'labelKey', label: 'Label key', initialValue: 'label' });
   const [valueKey] = useStateText({ name: 'valueKey', label: 'Value key', initialValue: 'value' });

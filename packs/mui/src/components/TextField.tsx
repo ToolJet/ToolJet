@@ -29,7 +29,7 @@ const useFocusActions = (ref: React.RefObject<HTMLInputElement | null>) => {
 // startAdornment / endAdornment (text or an icon name); events onChange, onEnterKeyDown, onFocus, onBlur. MUI has no
 // form API: actions setValue, clear, focus, blur. The Validation section sets error and required.
 export const TextField = () => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Name' });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['text', 'email', 'password', 'url', 'tel', 'search'], initialValue: 'text' });
@@ -94,7 +94,7 @@ export const TextField = () => {
 // MUI's TextField multiline: label, value, placeholder, helperText, minRows / maxRows (it grows between them),
 // variant, size; onChange, onFocus, onBlur. Enter adds a line; Ctrl/Cmd+Enter fires onEnterKeyDown.
 export const MultilineTextField = () => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Notes' });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
   const [minRows] = ToolJet.useStateNumber({ name: 'minRows', label: 'Min rows', initialValue: 3, min: 1, max: 40 });
@@ -154,7 +154,7 @@ export const MultilineTextField = () => {
 // A number in MUI's TextField (type number): label, value (a number, null for none), min, max, step,
 // startAdornment / endAdornment (a unit or currency sign); onChange, onEnterKeyDown, onFocus, onBlur.
 export const NumberField = () => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Quantity' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', description: 'A number; empty for none.', initialValue: null });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', description: 'Empty for no minimum.', initialValue: null });

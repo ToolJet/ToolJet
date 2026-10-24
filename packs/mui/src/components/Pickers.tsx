@@ -81,7 +81,7 @@ const pickerSlots = (p: {
 // display format, dayjs tokens), views and openTo (year, month, day), minDate, maxDate, disablePast, disableFuture,
 // helperText; events onChange, onAccept, onOpen, onClose.
 export const DatePicker = () => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Date' });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The date, YYYY-MM-DD.', initialValue: '' });
   const [format] = useStateText({ name: 'format', label: 'Format', description: 'Display format (dayjs tokens).', initialValue: 'MM/DD/YYYY' });
   const [views] = ToolJet.useStateEnumeration({
@@ -139,7 +139,7 @@ export const DatePicker = () => {
 // MUI X's TimePicker: label, value (HH:mm, 24-hour), ampm (12-hour display), minutesStep, minTime, maxTime, format;
 // events onChange, onAccept, onOpen, onClose.
 export const TimePicker = () => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Time' });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The time, HH:mm (24-hour).', initialValue: '' });
   const [ampm] = ToolJet.useStateBoolean({ name: 'ampm', label: 'AM/PM', description: '12-hour display.', initialValue: true });
   const [minutesStep] = ToolJet.useStateNumber({ name: 'minutesStep', label: 'Minutes step', initialValue: 5, min: 1, max: 60 });

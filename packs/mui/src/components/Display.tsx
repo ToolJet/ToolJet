@@ -185,14 +185,14 @@ export const StatCard = () => {
   const [value] = useStateText({ name: 'value', label: 'Value', initialValue: '14k' });
   const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'auto' });
   const [currency] = useStateText({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'format', value: 'currency' } });
-  const [trend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'neutral' });
+  const [trend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'up' });
   const [rawTrendLabel] = ToolJet.useStateString({
     name: 'trendLabel',
     label: 'Trend label',
     description: 'Text in the trend chip, such as +25%; a number is the change, its sign the direction.',
-    initialValue: '',
+    initialValue: '+25%',
   });
-  const [interval] = useStateText({ name: 'interval', label: 'Interval', description: 'The period, such as Last 30 days.', initialValue: '' });
+  const [interval] = useStateText({ name: 'interval', label: 'Interval', description: 'The period, such as Last 30 days.', initialValue: 'Last 30 days' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['outlined', 'elevation'], initialValue: 'outlined' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { loading } = ToolJet.useControlState();

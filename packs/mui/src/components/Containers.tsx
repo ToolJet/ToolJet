@@ -28,6 +28,7 @@ import { PALETTE_COLORS } from '../lib/field';
 import { readField, rowKeyOf, str, toKeyedItems, toRows, type Row } from '../lib/data';
 import { formatCell } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner } from '../lib/loading';
+import { SAMPLE } from '../lib/samples';
 
 // Slot names become part of a canvas id: letters, digits and underscores only.
 const slotKey = (key: string) => key.replace(/[^A-Za-z0-9_]/g, '_');
@@ -99,7 +100,7 @@ export const Tabs = () => {
 // MUI's Card: a CardHeader (title, subheader), variant (elevation, outlined), elevation, raised; its CardContent is
 // a canvas of ToolJet components (slot body). Event onClick.
 export const Card = () => {
-  const [title] = useStateText({ name: 'title', label: 'Title', initialValue: '' });
+  const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Card title' });
   const [subheader] = useStateText({ name: 'subheader', label: 'Subheader', initialValue: '' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['outlined', 'elevation'], initialValue: 'outlined' });
   const [elevation] = ToolJet.useStateNumber({ name: 'elevation', label: 'Elevation', initialValue: 1, min: 0, max: 24, visibleWhen: { key: 'variant', value: 'elevation' } });
@@ -261,7 +262,7 @@ const DialogBody = (p: {
 // or, with renderItem 'components', a row of ToolJet components reading {{listItem}} (rowHeight). subheader, dense,
 // divider (lines between items), pageSize (0 for no paging). Event onItemClick with selectedItem exposed.
 export const List = () => {
-  const [rawItems] = ToolJet.useStateArray({ name: 'items', label: 'Items', initialValue: [] });
+  const [rawItems] = ToolJet.useStateArray({ name: 'items', label: 'Items', initialValue: SAMPLE.items });
   const [renderItem] = ToolJet.useStateEnumeration({
     name: 'renderItem',
     label: 'Render item',
