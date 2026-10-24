@@ -1,0 +1,654 @@
+/* DataTable, drawn as ToolJet UI 2.0's Table (shadcn data-table look). Every style reads a --t2-* variable the
+   component sets from its Styles, with the app theme (--ui-*) as the fallback. */
+
+.t2-table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  color: var(--t2-fg, var(--ui-fg));
+}
+.t2-table.is-disabled {
+  opacity: 0.6;
+}
+.t2-muted {
+  color: var(--t2-muted, var(--ui-muted-fg));
+}
+.t2-truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.t2-grow {
+  flex: 1;
+}
+.t2-square {
+  width: 32px;
+  padding: 0;
+  flex-shrink: 0;
+}
+.t2-auto {
+  width: auto;
+}
+.t2-row-gap {
+  display: flex;
+  gap: 6px;
+}
+
+/* ---- Toolbar ---- */
+.t2-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.t2-search {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 384px;
+}
+.t2-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: var(--t2-muted, var(--ui-muted-fg));
+  pointer-events: none;
+}
+.t2-search-input {
+  padding: 0 32px;
+}
+.t2-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: inline-flex;
+  padding: 2px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--t2-muted, var(--ui-muted-fg));
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+.t2-search-clear:hover {
+  background: var(--ui-muted);
+}
+.t2-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.t2-tool {
+  width: auto;
+  height: 36px;
+  gap: 6px;
+}
+.t2-tool.t2-square {
+  width: 36px;
+}
+.t2-count {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin-left: 2px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--ui-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Popovers (filters, columns, download): they render in the popup layer, so they read the same variables. */
+.t2-popover {
+  max-height: min(420px, var(--radix-popover-content-available-height, 420px));
+  min-width: 0;
+  padding: 8px;
+}
+.t2-popover--filters {
+  padding: 12px;
+}
+.t2-popover--columns {
+  width: 208px;
+}
+.t2-popover--download {
+  width: 160px;
+  padding: 4px;
+}
+.t2-popover-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.t2-filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 420px;
+  max-width: 90vw;
+}
+.t2-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.t2-select,
+.t2-filter-value {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  font: inherit;
+  font-size: 13px;
+}
+.t2-filter-spacer {
+  flex: 1;
+}
+.t2-filter-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+}
+.t2-menu-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  font-size: 13px;
+  cursor: pointer;
+}
+.t2-menu-check:hover {
+  background: var(--ui-muted);
+}
+.t2-checkbox {
+  margin-top: 0;
+}
+
+/* ---- Table box ---- */
+.t2-box {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  background: var(--t2-bg, transparent);
+  box-shadow: var(--t2-shadow, none);
+}
+/* A table with its own border is a panel: on the card surface (the theme's surface1), not see-through to the page. Set on
+   a card, a borderless table still takes the card's colour; a Table background set by the author wins either way. */
+.t2-box.has-border {
+  background: var(--t2-bg, var(--ui-bg));
+  border: 1px solid var(--t2-border, var(--ui-border));
+  border-radius: var(--t2-radius, calc(var(--ui-radius) + 2px));
+}
+@supports not selector(::-webkit-scrollbar) {
+  .t2-box {
+    scrollbar-width: thin;
+  }
+}
+/* An overlay scrollbar (macOS) hides until a scroll starts: a styled one stays, so columns past the edge read as there. */
+.t2-box::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.t2-box::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ui-muted-fg) 45%, transparent) padding-box;
+}
+.t2-box::-webkit-scrollbar-track,
+.t2-box::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.t2-box.more-right {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+}
+.t2-box.is-empty {
+  min-height: 70px;
+}
+.t2-box.is-empty > .t2-grid {
+  height: 100%;
+}
+.t2-fade-below {
+  position: sticky;
+  bottom: 0;
+  height: 32px;
+  margin-top: -32px;
+  background: linear-gradient(to top, var(--t2-bg, var(--ui-bg)), transparent);
+  pointer-events: none;
+}
+
+.t2-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: inherit;
+}
+.t2-grid thead {
+  background: var(--t2-head-bg, var(--t2-bg, var(--ui-bg)));
+}
+.t2-grid thead.is-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.t2-grid th {
+  height: 40px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--t2-border, var(--ui-border));
+  background: inherit;
+  color: var(--t2-head-fg, var(--t2-muted, var(--ui-muted-fg)));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: left;
+  vertical-align: middle;
+}
+.t2-upper .t2-grid th {
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+.t2-grid td {
+  padding: 0 12px;
+  border-bottom: 1px solid var(--t2-border, var(--ui-border));
+  vertical-align: middle;
+}
+.t2-grid tbody tr:last-child td {
+  border-bottom: 0;
+}
+.t2-grid .is-right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.t2-grid .is-center {
+  text-align: center;
+}
+.t2-grid td.is-nowrap {
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.t2-grid td.is-wrap {
+  white-space: normal;
+}
+/* A cell's content box: capped at 360px, or at its share of the width when the columns are wider than the table. */
+.t2-clip {
+  max-width: var(--t2-cell-max, 360px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* An html cell keeps its blocks (a bold name over a muted line); each line ends in an ellipsis when it is cut. */
+.t2-clip > .t2-html {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t2-clip > .t2-html > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t2-html {
+  line-height: 1.35;
+}
+/* What the html gives a width (an initials avatar, an icon, a dot) keeps it: in a flex row next to a long name it was
+   squeezed into a clipped oval. */
+.t2-html [style*="width:"],
+.t2-html [style*="width :"],
+.t2-html img,
+.t2-html svg {
+  flex-shrink: 0;
+}
+.t2-grid.is-bordered th,
+.t2-grid.is-bordered td {
+  border-right: 1px solid var(--t2-border, var(--ui-border));
+}
+.t2-grid.is-bordered th:last-child,
+.t2-grid.is-bordered td:last-child {
+  border-right: 0;
+}
+.t2-check-cell {
+  width: 40px;
+}
+.t2-check-cell .ui-checkbox {
+  display: flex;
+}
+
+.t2-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.is-right > .t2-sort {
+  flex-direction: row-reverse;
+}
+.t2-sort:hover {
+  color: var(--t2-fg, var(--ui-fg));
+}
+.t2-sort:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ui-ring);
+}
+.t2-sort svg {
+  flex-shrink: 0;
+  opacity: 0.4;
+}
+.t2-sort.is-active svg {
+  color: var(--ui-primary);
+  opacity: 0.9;
+}
+
+/* Rows: hover, striped and selected, each from its style. */
+.t2-grid tbody tr {
+  transition: background-color 0.15s;
+}
+.t2-grid tbody tr.is-selectable {
+  cursor: pointer;
+}
+.t2-grid tbody tr:not(.t2-plain):hover {
+  background: var(--t2-hover, color-mix(in srgb, var(--ui-muted) 50%, transparent));
+}
+.t2-grid tbody tr.is-striped {
+  background: var(--t2-striped, color-mix(in srgb, var(--ui-muted) 35%, transparent));
+}
+.t2-grid tbody tr[data-state='selected'] {
+  background: var(--t2-selected, color-mix(in srgb, var(--ui-primary) 10%, transparent));
+}
+
+/* ---- Cells ---- */
+.t2-badge {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--ui-radius) - 2px);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t2-badge--outline {
+  border-color: var(--t2-border, var(--ui-border));
+  color: var(--t2-fg, var(--ui-fg));
+}
+.t2-badge--secondary {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+.t2-badge--success {
+  background: color-mix(in srgb, var(--ui-success) 10%, transparent);
+  color: var(--ui-success);
+}
+.t2-badge--warning {
+  background: color-mix(in srgb, var(--ui-warning) 10%, transparent);
+  color: var(--ui-warning);
+}
+.t2-badge--destructive {
+  background: color-mix(in srgb, var(--ui-destructive) 10%, transparent);
+  color: var(--ui-destructive);
+}
+.t2-badge--info {
+  background: color-mix(in srgb, var(--ui-info) 10%, transparent);
+  color: var(--ui-info);
+}
+.t2-badge--custom {
+  background: var(--t2-badge-bg);
+  color: var(--t2-badge-fg);
+}
+.t2-badge--tag {
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 400;
+}
+.t2-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.t2-yes {
+  display: block;
+  color: var(--ui-primary);
+}
+.is-right > .t2-yes {
+  margin-left: auto;
+}
+.is-center > .t2-yes {
+  margin: 0 auto;
+}
+.t2-link {
+  color: var(--ui-primary);
+  font-weight: 500;
+  text-decoration: none;
+  text-underline-offset: 4px;
+}
+.t2-link:hover {
+  text-decoration: underline;
+}
+.t2-image {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+.t2-image.is-square {
+  border-radius: var(--ui-radius);
+}
+.t2-person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.t2-avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ui-muted);
+  color: var(--ui-muted-fg);
+  font-size: 11px;
+  font-weight: 500;
+}
+.t2-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.t2-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 96px;
+}
+.t2-progress-track {
+  flex: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ui-primary) 20%, transparent);
+}
+.t2-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ui-primary);
+  transition: width 0.4s ease;
+}
+.t2-progress-value {
+  width: 36px;
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.t2-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.t2-action {
+  width: auto;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+.t2-json {
+  display: block;
+  max-width: 320px;
+  overflow: hidden;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--ui-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Empty and loading ---- */
+.t2-empty-cell {
+  height: 100%;
+  padding: 0 !important;
+  text-align: center;
+}
+.t2-empty {
+  container: t2-empty / size;
+  contain-intrinsic-height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  min-height: 28px;
+  padding: 0 12px;
+  overflow: hidden;
+}
+.t2-empty-icon {
+  flex-shrink: 0;
+  color: var(--t2-muted, var(--ui-muted-fg));
+}
+.t2-empty-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.t2-empty-note {
+  margin: 0;
+  color: var(--t2-muted, var(--ui-muted-fg));
+  font-size: 12px;
+}
+@container t2-empty (max-height: 79px) {
+  .t2-empty-icon {
+    display: none;
+  }
+}
+@container t2-empty (max-height: 45px) {
+  .t2-empty-note {
+    display: none;
+  }
+}
+.t2-loading {
+  text-align: center;
+}
+.t2-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid color-mix(in srgb, var(--ui-primary) 20%, transparent);
+  border-top-color: var(--ui-primary);
+  border-radius: 999px;
+  animation: t2-spin 0.8s linear infinite;
+}
+@keyframes t2-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.t2-skeleton {
+  display: block;
+  width: 100%;
+  max-width: 160px;
+  height: 16px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: var(--ui-muted);
+  animation: t2-pulse 1.6s ease-in-out infinite;
+}
+@keyframes t2-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ---- Footer and pager ---- */
+.t2-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.t2-foot-count {
+  color: var(--t2-muted, var(--ui-muted-fg));
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.t2-pager {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.t2-pager .t2-square {
+  width: 32px;
+}
+.t2-page {
+  width: auto;
+  min-width: 32px;
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+.t2-page.is-current {
+  border-color: color-mix(in srgb, var(--ui-primary) 35%, var(--ui-border));
+  background: color-mix(in srgb, var(--ui-primary) 10%, var(--ui-bg));
+  color: var(--ui-primary);
+}
+.t2-pager-gap {
+  padding: 0 4px;
+  color: var(--ui-muted-fg);
+  font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t2-spinner,
+  .t2-skeleton {
+    animation: none;
+  }
+}

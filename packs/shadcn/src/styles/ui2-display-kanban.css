@@ -1,0 +1,518 @@
+/* Kanban, UI 2.0 look (Ui2/Kanban): soft columns, white cards with a hairline border, a count chip, cards that show
+   the fields the author maps. Every style variable falls back to the theme. */
+
+.ui2-kb {
+  display: flex;
+  gap: var(--kb-col-gap, 16px);
+  align-items: stretch;
+  height: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.ui2-kb.has-more-right {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+}
+
+.ui2-kb-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding: 12px;
+  border: 1px solid var(--kb-col-border, transparent);
+  border-radius: var(--kb-col-radius, calc(var(--ui-radius) + 4px));
+  background: var(--kb-col-bg, color-mix(in srgb, var(--ui-muted) 60%, transparent));
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+.ui2-kb.is-compact .ui2-kb-col {
+  gap: 6px;
+}
+.ui2-kb-col.is-fill {
+  flex: 1 1 0;
+}
+.ui2-kb-col.is-over {
+  box-shadow: 0 0 0 1px var(--ui-border);
+}
+.ui2-kb-col.is-collapsed {
+  flex: 0 0 152px;
+  width: 152px;
+  cursor: pointer;
+}
+.ui2-kb-col.is-collapsed:hover {
+  box-shadow: 0 0 0 1px var(--ui-border);
+}
+.ui2-kb-col.is-collapsed.is-over {
+  box-shadow: 0 0 0 1px var(--ui-primary);
+}
+.ui2-kb-col:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ui-ring);
+}
+
+.ui2-kb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+.ui2-kb-col.is-collapsed .ui2-kb-head {
+  margin-bottom: 0;
+  padding: 0;
+}
+.ui2-kb-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--kb-col-title, var(--ui-fg));
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ui2-kb-title > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui2-kb-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+.ui2-kb-head-end {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+}
+.ui2-kb-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: var(--kb-count-bg, color-mix(in srgb, var(--ui-primary) 12%, transparent));
+  color: var(--kb-count-fg, color-mix(in srgb, var(--ui-primary) 80%, var(--ui-fg)));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.ui2-kb-fold {
+  display: inline-flex;
+  padding: 4px;
+  border: 0;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: transparent;
+  color: var(--ui-muted-fg);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+.ui2-kb-col:hover .ui2-kb-fold,
+.ui2-kb-fold:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .ui2-kb-fold {
+    opacity: 1;
+  }
+}
+.ui2-kb-fold:hover {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+.ui2-kb-fold svg {
+  width: 16px;
+  height: 16px;
+}
+.ui2-kb-show {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--kb-card-text, var(--ui-muted-fg));
+  font-size: 12px;
+}
+.ui2-kb-col.is-collapsed:hover .ui2-kb-show {
+  color: var(--ui-fg);
+}
+.ui2-kb-show svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ui2-kb-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  margin: -4px;
+  padding: 4px;
+  overflow-y: auto;
+}
+.ui2-kb-list > * {
+  flex-shrink: 0;
+}
+.ui2-kb.is-compact .ui2-kb-list {
+  gap: 6px;
+}
+.ui2-kb-list.has-more-below {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+}
+.ui2-kb-empty {
+  padding: 24px 12px;
+  border: 1px dashed var(--ui-border);
+  border-radius: calc(var(--ui-radius) + 2px);
+  color: var(--ui-muted-fg);
+  font-size: 12px;
+  text-align: center;
+}
+.ui2-kb-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: transparent;
+  color: var(--ui-muted-fg);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ui2-kb-btn:hover {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+.ui2-kb-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Card */
+.ui2-kb-card {
+  position: relative;
+  padding: 12px;
+  border: 1px solid var(--kb-card-border, var(--ui-border));
+  border-radius: var(--kb-card-radius, var(--ui-radius));
+  background: var(--kb-card-bg, var(--ui-bg));
+  box-shadow: var(--kb-card-shadow);
+  color: var(--ui-fg);
+  overflow: hidden;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    opacity 0.15s;
+}
+.ui2-kb.is-compact .ui2-kb-card {
+  padding: 10px;
+}
+.ui2-kb-card.is-custom {
+  padding: 0;
+}
+.ui2-kb-card.is-draggable {
+  cursor: grab;
+}
+.ui2-kb-card.is-draggable:active {
+  cursor: grabbing;
+}
+.ui2-kb-card:hover {
+  border-color: color-mix(in srgb, var(--ui-primary) 40%, var(--kb-card-border, var(--ui-border)));
+}
+.ui2-kb-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--ui-ring);
+}
+.ui2-kb-card.is-selected {
+  border-color: var(--ui-primary);
+  box-shadow:
+    0 0 0 1px var(--ui-primary),
+    var(--kb-card-shadow);
+}
+.ui2-kb-card.is-dragging {
+  opacity: 0.4;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ui-primary) 40%, transparent);
+}
+.ui2-kb-card.is-picked {
+  box-shadow:
+    0 0 0 2px var(--ui-primary),
+    0 12px 24px -6px rgb(0 0 0 / 0.16);
+  transform: rotate(1deg);
+}
+/* The drop line: where a dragged card lands, before this card or at the end of the list. */
+.ui2-kb-drop {
+  flex-shrink: 0;
+  height: 2px;
+  margin: -4px 0;
+  border-radius: 2px;
+  background: var(--ui-primary);
+}
+.ui2-kb-card-del {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+  display: inline-flex;
+  padding: 4px;
+  border: 0;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: transparent;
+  color: var(--ui-muted-fg);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.ui2-kb-card:hover .ui2-kb-card-del,
+.ui2-kb-card-del:focus-visible {
+  opacity: 1;
+}
+.ui2-kb-card-del:hover {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+.ui2-kb-card-del svg {
+  width: 14px;
+  height: 14px;
+}
+.ui2-kb-clamp {
+  position: relative;
+}
+.ui2-kb-clamp.is-clamped {
+  overflow: hidden;
+}
+.ui2-kb-clamp.is-clamped::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 32px;
+  background: linear-gradient(to bottom, transparent, var(--kb-card-bg, var(--ui-bg)));
+  pointer-events: none;
+}
+.ui2-kb-more {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  background: var(--kb-card-bg, var(--ui-bg));
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  color: var(--ui-muted-fg);
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 0.15s;
+}
+.ui2-kb-card:hover .ui2-kb-more,
+.ui2-kb-more:focus-visible {
+  opacity: 1;
+}
+.ui2-kb-more svg {
+  width: 12px;
+  height: 12px;
+}
+
+.ui2-kb-card-title {
+  margin: 0;
+  padding-right: 20px;
+  color: var(--kb-card-title, var(--ui-fg));
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.375;
+  overflow-wrap: anywhere;
+}
+.ui2-kb.is-compact .ui2-kb-card-title {
+  font-size: 13px;
+}
+.ui2-kb-card-text {
+  display: -webkit-box;
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: var(--kb-card-text, var(--ui-muted-fg));
+  font-size: 12px;
+  line-height: 16px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.ui2-kb.is-compact .ui2-kb-card-text {
+  margin-top: 2px;
+}
+.ui2-kb-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+.ui2-kb.is-compact .ui2-kb-tags {
+  margin-top: 6px;
+}
+.ui2-kb-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.ui2-kb.is-compact .ui2-kb-progress {
+  margin-top: 6px;
+}
+.ui2-kb-bar {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--kb-progress, var(--ui-primary)) 20%, transparent);
+}
+.ui2-kb-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--kb-progress, var(--ui-primary));
+  transition: width 0.3s;
+}
+.ui2-kb-pct {
+  color: var(--kb-card-text, var(--ui-muted-fg));
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.ui2-kb-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 12px;
+}
+.ui2-kb.is-compact .ui2-kb-foot {
+  margin-top: 8px;
+}
+.ui2-kb-meta {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--kb-card-text, var(--ui-muted-fg));
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ui2-kb-avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: color-mix(in srgb, var(--ui-primary) 80%, var(--ui-fg));
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* Badges and tags (UI 2.0's Badge: radius md, 12px medium, soft status tints). */
+.ui2-kb-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--ui-radius) - 2px);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui2-kb-badge--outline {
+  border-color: var(--ui-border);
+  color: var(--ui-fg);
+}
+.ui2-kb-badge--secondary {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+.ui2-kb-badge--destructive {
+  background: color-mix(in srgb, var(--ui-destructive) 10%, transparent);
+  color: var(--ui-destructive);
+}
+.ui2-kb-badge--warning {
+  background: color-mix(in srgb, var(--ui-warning) 10%, transparent);
+  color: var(--ui-warning);
+}
+.ui2-kb-badge--success {
+  background: color-mix(in srgb, var(--ui-success) 10%, transparent);
+  color: var(--ui-success);
+}
+.ui2-kb-badge--mapped {
+  background: var(--kb-badge-bg);
+  color: var(--kb-badge-fg);
+}
+.ui2-kb-tag {
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* The clicked card's details, under a hairline: short values two to a row, long ones full width. */
+.ui2-kb-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--ui-border);
+}
+.ui2-kb.is-compact .ui2-kb-details {
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.ui2-kb-details > div {
+  min-width: 0;
+}
+.ui2-kb-details > div.is-long {
+  grid-column: span 2;
+}
+.ui2-kb-details dt {
+  color: var(--kb-card-text, var(--ui-muted-fg));
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 16px;
+}
+.ui2-kb-details dd {
+  margin: 0;
+  color: var(--kb-card-title, var(--ui-fg));
+  font-size: 13px;
+  font-weight: 500;
+  overflow-wrap: break-word;
+  font-variant-numeric: tabular-nums;
+}
+.ui2-kb-details > div.is-long dd {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.625;
+  white-space: pre-line;
+}
+.ui2-kb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
