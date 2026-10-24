@@ -36,6 +36,9 @@ const textOf = (v: unknown) => {
 
 const humanize = (k: string) => k.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 
+const isFalse = (v: unknown) => v === false || v === 'false' || v === '{{false}}';
+const isHidden = (r: Row) => r.hidden === true || r.hidden === 'true' || isFalse(r.visible) || isFalse(r.columnVisibility);
+
 // Ant's columns ({ title, dataIndex, format }); also UI 2.0's ({ name or label, key, type }, type 'currency:USD') and
 // plain field names, column by column, so a bound columns value of either shape works. None: every field of the first
 // row.
@@ -47,8 +50,8 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
       const r = c as Row;
       const dataIndex = str(r.dataIndex ?? r.key ?? r.field ?? r.name);
       if (!dataIndex) return null;
-      // A listed column can still be hidden (UI 2.0: hidden, or visible: false).
-      if (r.hidden === true || r.hidden === 'true' || r.visible === false || r.visible === 'false') return { hidden: true } as unknown as Column;
+      // A listed column can still be hidden (hidden, or visible: false; UI 2.0's Table: columnVisibility: false).
+      if (isHidden(r)) return { hidden: true } as unknown as Column;
       // A tag column's colours: { value: colour } (colors, tagColors, badgeColors) or options [{ value, color }].
       const map: Record<string, string> = {};
       for (const m of [r.colors, r.tagColors, r.badgeColors]) if (m && typeof m === 'object' && !Array.isArray(m)) Object.assign(map, m as Record<string, string>);
@@ -60,7 +63,7 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
         title: str(r.title ?? r.label ?? (r.dataIndex !== undefined || r.key !== undefined || r.field !== undefined ? r.name : undefined) ?? humanize(dataIndex)),
         dataIndex,
         align: (r.align as Column['align']) || undefined,
-        width: toNumber(r.width) ?? undefined,
+        width: toNumber(r.width ?? r.columnSize) ?? undefined,
         ellipsis: r.ellipsis === undefined ? undefined : Boolean(r.ellipsis),
         sorter: r.sorter === undefined ? undefined : Boolean(r.sorter),
         ...(() => {

@@ -495,3 +495,19 @@ describe('a popup of a control that renders its own provider', () => {
     expect(themed).toBeTruthy();
   });
 });
+
+describe("UI 2.0's column shape", () => {
+  // As the AI builder writes it: hidden fields listed with columnVisibility: false, widths as columnSize.
+  const columns = [
+    { key: 'company', name: 'Company', columnSize: 180 },
+    { key: 'stage', name: 'Stage', columnType: 'badge', badgeColors: { New: '#2576CE' } },
+    { key: 'lead_id', name: 'lead_id', columnVisibility: false },
+    { key: 'summary', name: 'summary', columnVisibility: '{{false}}' },
+  ];
+  it('Table: draws only the visible listed columns, never the hidden fields as raw columns', async () => {
+    const dataSource = [{ id: 1, company: 'Acme', stage: 'New', lead_id: 'L-1', summary: 'x', created_on: '2026-10-01' }];
+    const v = await mount('Table', { dataSource, columns }, { formField: false });
+    const headers = [...v.root().querySelectorAll('.ant-table-thead th')].map((th) => th.textContent.trim()).filter(Boolean);
+    expect(headers).toEqual(['Company', 'Stage']);
+  });
+});
