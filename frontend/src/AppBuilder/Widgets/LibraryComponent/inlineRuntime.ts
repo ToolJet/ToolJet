@@ -4,6 +4,8 @@ import * as ReactDOMClient from 'react-dom/client';
 import * as ReactJSXRuntime from 'react/jsx-runtime';
 import { init as initLexer, parse as parseImports } from 'es-module-lexer';
 
+import FormSignalContext from '@/AppBuilder/Widgets/Form/FormSignalContext';
+
 /* POC: run a published custom-component bundle in the host page instead of the sandboxed shell iframe.
 
    The CLI bundle (tooljet library build) is ESM with `react`, `react-dom` and `react/jsx-runtime` left
@@ -40,7 +42,52 @@ export interface LibraryInstance {
   actions: Map<string, ActionHandler>;
   // A mounted ToolJet.Slot asks the host for a drop area; the returned function releases it.
   registerSlot: (name: string) => () => void;
+  // What a built-in host gives a pack component beyond the base SDK (pack contract v2). Absent on hosts without it,
+  // where the hooks below fall back to inert values, so a v2 component still renders.
+  host?: PackHost;
 }
+
+export interface PackValidation {
+  isValid: boolean;
+  /** The message under the field: empty until the field is touched (or a Form submits). */
+  error: string;
+  required: boolean;
+  touch: () => void;
+}
+
+export interface PackHost {
+  disabled: boolean;
+  loading: boolean;
+  /** The id for the component's control, so its label names it. */
+  fieldId: string;
+  /** Judges a value with the widget's Validation section and publishes isValid / isMandatory. */
+  useValidation: (value: unknown, present?: boolean) => PackValidation;
+  /** The items a list draws as rows of ToolJet components ({{listItem}}). */
+  setRows: (items: unknown[], rowHeight?: number) => void;
+  /** The slot attribute of row `index`'s projected canvas. */
+  rowSlotAttr: (index: number) => string;
+  /** A drop area drawn inside the popup layer (a dialog's body). */
+  registerPopupSlot: (name: string) => () => void;
+  popupSlotAttr: (name: string) => string;
+  /** A field component (its manifest has a validation section): a Form's clearForm empties its `value`/`values`. */
+  formField?: boolean;
+  /** Marks props whose `{{...}}` strings that read rowData, cellValue or rowIndex the host keeps unresolved. */
+  markRowScoped?: (names: string[]) => void;
+  /** Resolves a row template with the app's state and the row's variables (memoised per template and row). */
+  resolveRow?: RowResolve;
+  /** Announces the widget as a Form's submit button (the Form's buttonToSubmit), as the native Button does. */
+  submitForm?: () => void;
+  /** The widget's component id. */
+  widgetId?: string;
+}
+
+export interface RowContext {
+  rowData?: unknown;
+  cellValue?: unknown;
+  rowIndex?: number;
+}
+
+export type RowResolve = (template: unknown, context?: RowContext) => unknown;
 
 // Slot names become part of the child canvas id (`<componentId>-<name>`), which the editor splits on
 // the last '-', so they stay to letters, digits and underscores.
@@ -58,16 +105,19 @@ const useLibraryInstance = (hookName: string): LibraryInstance => {
 
 // Same semantics as shell.html's useTjState: an Inspector-set prop overrides local state, and every
 // value change is reported as an exposed variable.
-const makeStateHook = (hookName: string) =>
+// What a Form's clearForm sets a field's value to, by the hook's type (the native inputs clear to these).
+const makeStateHook = (hookName: string, cleared?: () => unknown) =>
   function useTjState({ name, initialValue }: { name: string; initialValue?: unknown }) {
     const instance = useLibraryInstance(hookName);
     const external = instance.props[name];
     const [value, setValue] = React.useState(external !== undefined ? external : initialValue);
     const valueRef = React.useRef(value);
     const lastExternal = React.useRef(external);
-    if (lastExternal.current !== external) {
+    // Object.is, so a NaN binding (e.g. arithmetic on a query that has not loaded) is equal to itself and does not
+    // set state on every render.
+    if (!Object.is(lastExternal.current, external)) {
       lastExternal.current = external;
-      if (external !== undefined && external !== value) {
+      if (external !== undefined && !Object.is(external, value)) {
         valueRef.current = external;
         setValue(external);
       }
@@ -88,6 +138,13 @@ const makeStateHook = (hookName: string) =>
       },
       [instance, name]
     );
+
+    // A Form's clearForm empties a field's value, as it does a native input's. Only `value` and `values` of a field
+    // component (a validation section) clear; components that keep other state use ToolJet.useFormClear.
+    const clears = !!instance.host?.formField && (name === 'value' || name === 'values') && !!cleared;
+    useFormClearSignal(() => {
+      if (clears) setAndSync(cleared?.());
+    });
     return [value, setAndSync] as const;
   };
 
@@ -130,14 +187,96 @@ const Slot = ({ name, className, style }: { name: string; className?: string; st
   );
 };
 
+// Runs `onClear` when a Form around the widget clears (clearForm). The count is read at mount, so a field added after a
+// clear does not clear itself. Reads the context directly: outside a Form the count stays 0.
+const useFormClearSignal = (onClear: () => void) => {
+  const { clearCount } = React.useContext(FormSignalContext);
+  const seen = React.useRef(clearCount);
+  const latest = React.useRef(onClear);
+  latest.current = onClear;
+  React.useEffect(() => {
+    if (clearCount > seen.current) latest.current();
+    seen.current = clearCount;
+  }, [clearCount]);
+};
+
+export const ROW_VARIABLES = /\b(rowData|cellValue|rowIndex)\b/;
+// Hosts without per-row resolution: a template stays as written, anything else passes through.
+const keepTemplate: RowResolve = (template) => template;
+
+const NO_VALIDATION: PackValidation = { isValid: true, error: '', required: false, touch: () => {} };
+const useHost = () => React.useContext(LibraryInstanceContext)?.host;
+
+// Pack contract v2: the host's control state, validation, label ids, list rows and popup drop areas.
+const v2Hooks = {
+  /** { disabled, loading }: the widget's Disable and Loading state (properties and setDisable / setLoading). */
+  useControlState: () => {
+    const host = useHost();
+    return { disabled: !!host?.disabled, loading: !!host?.loading };
+  },
+  /** Judges `value` with the widget's Validation section ('text', 'choice' or 'date', read by the pack build). */
+  useValidation: ({ value, present }: { section?: string; value: unknown; present?: boolean }): PackValidation => {
+    const host = useHost();
+    // The host's hook runs on every render or never (no host), so hook order stays fixed.
+    return host ? host.useValidation(value, present) : NO_VALIDATION;
+  },
+  useFieldId: (): string | undefined => useHost()?.fieldId,
+  /** The items drawn as rows of ToolJet components, read as {{listItem}} by the row's components. */
+  useRows: (items: unknown[], rowHeight?: number) => {
+    const host = useHost();
+    React.useLayoutEffect(() => {
+      host?.setRows(Array.isArray(items) ? items : [], rowHeight);
+    }, [host, items, rowHeight]);
+  },
+  /** Where row `index` of useRows sits: its projected ToolJet canvas. */
+  RowSlot: ({ index }: { name?: string; index: number; item?: unknown }) => {
+    const host = useHost();
+    return host ? React.createElement('slot', { name: host.rowSlotAttr(index) }) : null;
+  },
+  /** Per-row bindings. `props` names the props that hold them (a table's `columns`): the host keeps their `{{...}}`
+   *  strings that read rowData, cellValue or rowIndex unresolved, and `resolve(template, { rowData, cellValue,
+   *  rowIndex })` evaluates one for a row with the app's state. Any other value is returned as is. */
+  useRowResolver: (options?: { props?: string[] }): RowResolve => {
+    const host = useHost();
+    const names = Array.isArray(options?.props) ? options.props.filter((n) => typeof n === 'string') : [];
+    const key = names.join('\u0000');
+    React.useLayoutEffect(() => {
+      if (names.length) host?.markRowScoped?.(names);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [host, key]);
+    return host?.resolveRow ?? keepTemplate;
+  },
+  /** Runs `onClear` when a Form around the widget clears (its clearForm action). */
+  useFormClear: (onClear: () => void) => useFormClearSignal(onClear),
+  /** Announces the widget to a Form whose submit button (buttonToSubmit) it is: call it from the click, before
+   *  onClick, as the native Button does. A no-op outside a Form or on hosts without it. */
+  useFormSubmit: (): (() => void) => {
+    const host = useHost();
+    return React.useCallback(() => host?.submitForm?.(), [host]);
+  },
+  /** The widget's component id (what a Form's buttonToSubmit or an event's target names). */
+  useWidgetId: (): string | undefined => useHost()?.widgetId,
+  /** A drop area inside a popup (a dialog's body): a ToolJet canvas projected into the page's popup layer. */
+  PopupSlot: ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
+    const host = useHost();
+    React.useLayoutEffect(() => host?.registerPopupSlot(name), [host, name]);
+    return React.createElement(
+      'div',
+      { className, style: { position: 'relative', minWidth: 0, minHeight: 0, ...style }, 'data-tj-slot': name },
+      host ? React.createElement('slot', { name: host.popupSlotAttr(name) }) : null
+    );
+  },
+};
+
 // The `ToolJet` object a bundle's `import { ToolJet } from '@tooljet/custom-component-sdk'` resolves to.
 export const toolJetSdk = {
-  useStateString: makeStateHook('useStateString'),
-  useStateNumber: makeStateHook('useStateNumber'),
-  useStateBoolean: makeStateHook('useStateBoolean'),
-  useStateObject: makeStateHook('useStateObject'),
-  useStateArray: makeStateHook('useStateArray'),
-  useStateEnumeration: makeStateHook('useStateEnumeration'),
+  ...v2Hooks,
+  useStateString: makeStateHook('useStateString', () => ''),
+  useStateNumber: makeStateHook('useStateNumber', () => null),
+  useStateBoolean: makeStateHook('useStateBoolean', () => false),
+  useStateObject: makeStateHook('useStateObject', () => ({})),
+  useStateArray: makeStateHook('useStateArray', () => []),
+  useStateEnumeration: makeStateHook('useStateEnumeration', () => ''),
   useEventCallback: function useTjEvent({ name }: { name: string }) {
     const instance = useLibraryInstance('useEventCallback');
     return React.useCallback(() => instance.fireEvent(name), [instance, name]);

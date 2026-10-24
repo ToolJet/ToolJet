@@ -9,7 +9,9 @@ import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
-import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
+// UI 2.0's built-in widgets are not on this branch (components come from packs); the policies below that name them
+// stay for the core, with no types listed.
+const SHADCN_COMPONENTS = [];
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
@@ -365,7 +367,9 @@ const RenderWidget = ({
   const isDisabledOrLoading =
     !['Modal', 'ModalV2', 'ShadDialog', 'CircularProgressBar'].includes(component.component) &&
     !SHADCN_COMPONENTS.includes(component.component) &&
-    (isDisabled || isLoading);
+    // A pack component (LibraryComponent) shows loading itself, its own look or the host's spinner: dimmed here too,
+    // its skeleton read at half strength.
+    (isDisabled || (isLoading && component.component !== 'LibraryComponent'));
   // A disabled UI 2.0 widget is dimmed here, once, to the same half opacity as a native widget's .disabled, whatever
   // it draws (a Stat, a Hero, Tabs dimmed nothing; an Input only its box). Its parts that dim themselves when disabled
   // keep full opacity inside it (Ui2/_shared/styles/shadcn.scss). Loading is its own state and is not dimmed; input

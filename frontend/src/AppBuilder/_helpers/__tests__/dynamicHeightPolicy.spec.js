@@ -49,6 +49,14 @@ describe('which children an Equal heights row stretches to the line', () => {
     expect(stretchesInRow(equal, 'ShadStat', { dynamicHeight: false }, 'view')).toBe(false);
   });
 
+  it('stretches a component pack Stat card the same way, by its manifest role', () => {
+    const fits = { dynamicHeight: true };
+    expect(stretchesInRow(equal, 'LibraryComponent', fits, 'view', 'stat')).toBe(true);
+    expect(stretchesInRow(equal, 'LibraryComponent', { ...fits, card: false }, 'view', 'stat')).toBe(false);
+    expect(stretchesInRow(equal, 'LibraryComponent', fits, 'view', 'button')).toBe(false);
+    expect(stretchesInRow(equal, 'LibraryComponent', fits, 'view')).toBe(false);
+  });
+
   it('leaves other widgets at their own height, so the row keeps its Align (a heading beside a button)', () => {
     expect(stretchesInRow(equal, 'ShadHeading', {}, 'view')).toBe(false);
     expect(stretchesInRow(equal, 'Button', { dynamicHeight: true }, 'view')).toBe(false);

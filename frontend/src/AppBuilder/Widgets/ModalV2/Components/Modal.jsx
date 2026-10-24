@@ -102,16 +102,24 @@ export const ModalWidget = ({ ...restProps }) => {
       const modalContent = document.querySelector(`.tj-modal-content-${id}`);
       if (restProps.show && modalContent) {
         if (sheetSide) {
-          // A side sheet spans the visible height of the window; its body scrolls. The modal layer is as tall as the
-          // window but can start below a bar (the viewer's Preview header), so 100% ran past the bottom and hid the
-          // footer buttons: size the dialog to what is visible from the layer's top.
-          const layerTop = Math.max(0, modalContent.closest('.modal')?.getBoundingClientRect().top ?? 0);
-          const visibleHeight = `${Math.max(0, window.innerHeight - layerTop)}px`;
+          // A sheet's dialog spans the visible part of the modal layer; its body scrolls. The layer can start below a
+          // bar (the viewer's Preview header) and run past the window, or end above it (the editor's canvas), so 100%
+          // hid the footer buttons: size the dialog to what is visible of the layer. A right or left sheet fills it; a
+          // top or bottom one is the modal's height (at most what is visible) against that edge.
+          const layer = modalContent.closest('.modal')?.getBoundingClientRect();
+          const visible = Math.max(
+            0,
+            Math.min(window.innerHeight, layer?.bottom ?? window.innerHeight) - Math.max(0, layer?.top ?? 0)
+          );
           const dialog = modalContent.closest('.modal-dialog');
-          dialog?.style.setProperty('height', visibleHeight, 'important');
-          dialog?.style.setProperty('max-height', visibleHeight, 'important');
-          modalContent.style.setProperty('height', '100%', 'important');
-          modalContent.style.setProperty('max-height', '100%', 'important');
+          dialog?.style.setProperty('height', `${visible}px`, 'important');
+          dialog?.style.setProperty('max-height', `${visible}px`, 'important');
+          const vertical = sheetSide === 'top' || sheetSide === 'bottom';
+          const contentHeight = vertical
+            ? `${Math.min(visible, isFalsyOrMultipleZeros(modalHeight) ? 400 : parseInt(modalHeight, 10) || 400)}px`
+            : '100%';
+          modalContent.style.setProperty('height', contentHeight, 'important');
+          modalContent.style.setProperty('max-height', contentHeight, 'important');
           setNeedsBodyScroll(true);
         } else if (!isFalsyOrMultipleZeros(modalHeight)) {
           if (isDynamicHeightEnabled) {
@@ -161,7 +169,11 @@ export const ModalWidget = ({ ...restProps }) => {
         (isDynamicHeightEnabled || sheetSide) && needsBodyScroll && 'tj-modal-allow-body-scroll',
         skin && 'tj-shad-tokens tj-shad-dialog-content'
       )}
-      dialogClassName={classNames(skin && 'tj-shad-dialog', sheetSide && `tj-shad-sheet tj-shad-sheet--${sheetSide}`)}
+      dialogClassName={classNames(
+        skin && 'tj-shad-dialog',
+        sheetSide && `tj-modal-sheet tj-modal-sheet--${sheetSide}`,
+        sheetSide && skin && `tj-shad-sheet tj-shad-sheet--${sheetSide}`
+      )}
       backdropClassName={skin ? 'tj-shad-backdrop' : undefined}
       animation={true}
       onEntered={onModalEntered}

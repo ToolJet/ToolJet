@@ -93,14 +93,15 @@ export const heightHeldInView = (componentType, properties = {}) => {
  * @param {string | undefined} childType
  * @param {Record<string, unknown>} [childProperties]  the child's resolved properties
  * @param {string} [mode]  'view' or 'edit'
+ * @param {string} [packRole]  a component pack widget's manifest role: a pack Stat stretches like ShadStat
  * @returns {boolean}
  */
-export const stretchesInRow = (rowProperties = {}, childType, childProperties = {}, mode) => {
+export const stretchesInRow = (rowProperties = {}, childType, childProperties = {}, mode, packRole) => {
   if (childType === 'FlexContainer') return rowProperties.alignItems === 'stretch' || !!rowProperties.equalHeights;
   return (
     !!rowProperties.equalHeights &&
     mode === 'view' &&
-    childType === 'ShadStat' &&
+    (childType === 'ShadStat' || (childType === 'LibraryComponent' && packRole === 'stat')) &&
     childProperties.card !== false &&
     fitsContentInView(childType, childProperties)
   );
@@ -113,7 +114,10 @@ export const stretchesInRow = (rowProperties = {}, childType, childProperties = 
  * @param {string | undefined} componentType
  * @returns {boolean}
  */
-export const keepsFittedHeightWhenMoved = (componentType) => isPackWidget(componentType);
+// A component pack's widget (LibraryComponent) fits its content too: floored at its saved height, an Ant Title or
+// Statistic drawn shorter than the UI 2.0 size it was saved at left a band under it (Ant apps, room bookings).
+export const keepsFittedHeightWhenMoved = (componentType) =>
+  isPackWidget(componentType) || componentType === 'LibraryComponent';
 
 // UI 2.0 widgets whose rows (or cards) each take their own height in the reflow, the way the native Listview's rows
 // do: a child growing in row r writes the row's height under the widget's id at that row's context. The native
