@@ -11,6 +11,7 @@ export interface ManifestProp {
   enumValues?: string[]; // only present when type === 'enumeration'
   enumLabels?: Record<string, string>; // only present when type === 'enumeration'
   section?: string; // groups this prop into an Inspector accordion section by name
+  exposed?: boolean; // styles only: also set as a read-only exposed variable (useStyleX `expose: true`)
 }
 
 export interface ManifestEvent {
@@ -39,6 +40,7 @@ export interface ManifestComponent {
   defaultWidth: number;
   defaultHeight: number;
   props: ManifestProp[];
+  styles: ManifestProp[]; // Inspector Styles tab; never exposed variables
   events: ManifestEvent[];
   actions: ManifestAction[];
 }
@@ -58,6 +60,23 @@ const HOOK_TYPE_MAP: Record<string, ManifestProp['type']> = {
   useStateArray: 'array',
   useStateEnumeration: 'enumeration',
 };
+
+// Style hook name → value type; styles share ManifestProp's shape but live in their own list.
+const STYLE_HOOK_TYPE_MAP: Record<string, ManifestProp['type']> = {
+  useStyleString: 'string',
+  useStyleNumber: 'number',
+  useStyleBoolean: 'boolean',
+  useStyleEnumeration: 'enumeration',
+};
+
+// Everything that becomes an exposed variable, in the order clash messages name them.
+const EXPOSED_KINDS = ['prop', 'action', 'exposed style'] as const;
+type ExposedKind = (typeof EXPOSED_KINDS)[number];
+
+const withArticle = (kind: string) => (/^[aeiou]/.test(kind) ? `an ${kind}` : `a ${kind}`);
+
+// Styles the builder's LibraryComponent applies itself; a style with one of these names would collide with it.
+const RESERVED_STYLE_NAMES = new Set(['boxShadow']);
 
 // Exposed variables the builder's LibraryComponent always sets; a prop or action with one of these names would clobber it.
 const RESERVED_EXPOSED_NAMES = new Set(['isVisible', 'isLoading', 'setVisibility', 'setLoading']);
@@ -155,15 +174,17 @@ function walkComponentDeclaration(
   // Constraint: only top-level calls in function body (not inside nested functions/callbacks)
 
   const props: ManifestProp[] = [];
+  const styles: ManifestProp[] = [];
+  const styleNames = new Set<string>();
   const events: ManifestEvent[] = [];
   const actions: ManifestAction[] = [];
   const eventNames = new Set<string>();
-  // Props and actions both land on the component's exposed variables, so they share one namespace.
-  const exposedNames = new Map<string, 'prop' | 'action'>();
+  // Props, actions and exposed styles all land on the component's exposed variables, so they share one namespace.
+  const exposedNames = new Map<string, ExposedKind>();
   let defaultWidth = 6;
   let defaultHeight = 5;
 
-  const claimExposedName = (name: string, kind: 'prop' | 'action') => {
+  const claimExposedName = (name: string, kind: ExposedKind) => {
     if (RESERVED_EXPOSED_NAMES.has(name)) {
       throw new Error(`Name "${name}" in component "${componentName}" is reserved by ToolJet.`);
     }
@@ -172,7 +193,12 @@ function walkComponentDeclaration(
       throw new Error(`Duplicate ${kind} name "${name}" in component "${componentName}".`);
     }
     if (owner) {
-      throw new Error(`Name "${name}" in component "${componentName}" is used by both a prop and an action.`);
+      const [first, second] = EXPOSED_KINDS.filter((k) => k === owner || k === kind);
+      throw new Error(
+        `Name "${name}" in component "${componentName}" is used by both ${withArticle(first)} and ${withArticle(
+          second
+        )}.`
+      );
     }
     exposedNames.set(name, kind);
   };
@@ -193,12 +219,36 @@ function walkComponentDeclaration(
     return name;
   };
 
+  // Styles aren't exposed, so they only need to be unique among themselves.
+  const claimStyleName = (name: string) => {
+    if (RESERVED_STYLE_NAMES.has(name)) {
+      throw new Error(`Style name "${name}" in component "${componentName}" is reserved by ToolJet.`);
+    }
+    if (styleNames.has(name)) {
+      throw new Error(`Duplicate style name "${name}" in component "${componentName}".`);
+    }
+    styleNames.add(name);
+  };
+
   // ToolJet.useStateString({ name: 'key', initialValue: '...', inspector: 'code', ... })
-  const collectProp = (node: ts.CallExpression, method: string, hookContext: string) => {
+  // ToolJet.useStyleString({ name: 'key', initialValue: '...', inspector: 'color', ... }) — same options, kind 'style'
+  const collectProp = (node: ts.CallExpression, method: string, hookContext: string, kind: 'prop' | 'style') => {
     const options = readOptions(node.arguments[0], hookContext);
     const name = readName(options, hookContext);
-    const propContext = `${hookContext}, prop "${name}"`;
-    claimExposedName(name, 'prop');
+    const propContext = `${hookContext}, ${kind} "${name}"`;
+    let exposed = false;
+    if (kind === 'style') {
+      claimStyleName(name);
+      const exposeNode = getPropNode(options, 'expose', checker);
+      const expose = exposeNode ? evalLiteralNode(exposeNode, checker) : false;
+      if (typeof expose !== 'boolean') {
+        throw new Error(`${propContext}: "expose" must be true or false.`);
+      }
+      exposed = expose;
+      if (exposed) claimExposedName(name, 'exposed style');
+    } else {
+      claimExposedName(name, 'prop');
+    }
 
     const label = readStringProp(options, 'label', checker, propContext);
     const description = readStringProp(options, 'description', checker, propContext);
@@ -212,7 +262,9 @@ function walkComponentDeclaration(
       // Not an error: the component falls back to its own initialValue at runtime, only the builder default is lost.
       if (value === NOT_STATIC) {
         warnings.push(
-          `Prop "${name}" in component "${componentName}": initialValue isn't a static literal, so the builder shows no default. The component still uses it at runtime.`
+          `${
+            kind === 'style' ? 'Style' : 'Prop'
+          } "${name}" in component "${componentName}": initialValue isn't a static literal, so the builder shows no default. The component still uses it at runtime.`
         );
       } else {
         defaultValue = value;
@@ -228,7 +280,7 @@ function walkComponentDeclaration(
       }
       if (values.some((v) => typeof v !== 'string')) {
         throw new Error(
-          `Invalid enumDefinition in component "${componentName}", prop "${name}": all values must be string literals.`
+          `Invalid enumDefinition in component "${componentName}", ${kind} "${name}": all values must be string literals.`
         );
       }
       enumValues = values;
@@ -244,9 +296,9 @@ function walkComponentDeclaration(
       enumLabels = labels as Record<string, string>;
     }
 
-    props.push({
+    (kind === 'style' ? styles : props).push({
       name,
-      type: HOOK_TYPE_MAP[method],
+      type: kind === 'style' ? STYLE_HOOK_TYPE_MAP[method] : HOOK_TYPE_MAP[method],
       default: defaultValue,
       ...(label ? { label } : {}),
       ...(description ? { description } : {}),
@@ -254,6 +306,7 @@ function walkComponentDeclaration(
       ...(enumValues ? { enumValues } : {}),
       ...(enumLabels ? { enumLabels } : {}),
       ...(section ? { section } : {}),
+      ...(exposed ? { exposed } : {}),
     });
   };
 
@@ -378,7 +431,8 @@ function walkComponentDeclaration(
         if (obj === 'ToolJet' && isToolJetSdkIdentifier(expr.expression, checker)) {
           const hookContext = `ToolJet.${method} in component "${componentName}"`;
 
-          if (HOOK_TYPE_MAP[method]) collectProp(node, method, hookContext);
+          if (HOOK_TYPE_MAP[method]) collectProp(node, method, hookContext, 'prop');
+          else if (STYLE_HOOK_TYPE_MAP[method]) collectProp(node, method, hookContext, 'style');
           else if (method === 'useEventCallback') collectEvent(node, hookContext);
           else if (method === 'useAction') collectAction(node, hookContext);
           else if (method === 'useComponentSettings') applySettings(node, hookContext);
@@ -400,6 +454,7 @@ function walkComponentDeclaration(
     defaultWidth,
     defaultHeight,
     props,
+    styles,
     events,
     actions,
   };
