@@ -177,20 +177,22 @@ export const LibraryComponentProperties = ({
       isOpen: true,
       children: (
         <>
-          {validation.map(({ name, meta }) =>
-            renderElement(
-              component,
-              validationMeta,
-              paramUpdated,
-              dataQueries,
-              name,
-              'validation',
-              currentState,
-              allComponents,
-              darkMode,
-              meta.placeholder
-            )
-          )}
+          {validation.map(({ name, meta }) => (
+            <React.Fragment key={name}>
+              {renderElement(
+                component,
+                validationMeta,
+                paramUpdated,
+                dataQueries,
+                name,
+                'validation',
+                currentState,
+                allComponents,
+                darkMode,
+                meta.placeholder
+              )}
+            </React.Fragment>
+          ))}
         </>
       ),
     });
@@ -203,24 +205,26 @@ export const LibraryComponentProperties = ({
       isOpen: true,
       children: (
         <>
-          {staticProps.map((property) =>
-            renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              property,
-              'properties',
-              currentState,
-              allComponents,
-              darkMode,
-              hostProperties[property]?.placeholder,
-              undefined,
-              null,
-              // disabledState for a controlState component whose host config does not declare it
-              (hostProperties[property] ? null : DISABLED_STATE_META) as any
-            )
-          )}
+          {staticProps.map((property) => (
+            <React.Fragment key={property}>
+              {renderElement(
+                component,
+                componentMeta,
+                paramUpdated,
+                dataQueries,
+                property,
+                'properties',
+                currentState,
+                allComponents,
+                darkMode,
+                hostProperties[property]?.placeholder,
+                undefined,
+                null,
+                // disabledState for a controlState component whose host config does not declare it
+                (hostProperties[property] ? null : DISABLED_STATE_META) as any
+              )}
+            </React.Fragment>
+          ))}
         </>
       ),
     });
@@ -284,23 +288,25 @@ export const LibraryComponentStyles = ({
       isOpen: true,
       children: (
         <>
-          {sectionStyles.map((style) =>
-            renderElement(
-              shownComponent,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              style.name,
-              'styles',
-              currentState,
-              allComponents,
-              darkMode,
-              style.placeholder ?? '',
-              undefined,
-              null,
-              styleFieldMeta(style) as any // see the same cast in LibraryComponentProperties
-            )
-          )}
+          {sectionStyles.map((style) => (
+            <React.Fragment key={style.name}>
+              {renderElement(
+                shownComponent,
+                componentMeta,
+                paramUpdated,
+                dataQueries,
+                style.name,
+                'styles',
+                currentState,
+                allComponents,
+                darkMode,
+                style.placeholder ?? '',
+                undefined,
+                null,
+                styleFieldMeta(style) as any // see the same cast in LibraryComponentProperties
+              )}
+            </React.Fragment>
+          ))}
         </>
       ),
     })
@@ -311,9 +317,20 @@ export const LibraryComponentStyles = ({
     isOpen: true,
     children: (
       <>
-        {hostStyleKeys(componentMeta).map((key) =>
-          renderElement(component, componentMeta, paramUpdated, dataQueries, key, 'styles', currentState, allComponents)
-        )}
+        {hostStyleKeys(componentMeta).map((key) => (
+          <React.Fragment key={key}>
+            {renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              key,
+              'styles',
+              currentState,
+              allComponents
+            )}
+          </React.Fragment>
+        ))}
       </>
     ),
   });
