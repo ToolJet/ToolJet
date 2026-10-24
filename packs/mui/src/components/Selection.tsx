@@ -18,19 +18,25 @@ import { str, toArray, toOptions } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { Loading, Spinner } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
+import { useFormValue } from '../lib/formValue';
 
 const bool = (v: unknown) => v === true || v === 'true';
 
 /** checked, the toggle actions and onChange: what Checkbox and Switch share. */
 const useChecked = () => {
   const [checked, setChecked] = ToolJet.useStateBoolean({ name: 'checked', label: 'Checked', initialValue: false });
+  useFormValue(checked, 'boolean');
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const change = (next: boolean) => {
     setChecked(next);
     onChange();
   };
   ToolJet.useAction({ name: 'setChecked', displayName: 'Set checked', params: [{ handle: 'checked', displayName: 'Checked' }] }, (next) => change(bool(next)));
-  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => change(!bool(checked)));
+  // From the latest value, not this render's: two toggles in one batch cancel out.
+  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => {
+    setChecked((c: unknown) => !bool(c));
+    onChange();
+  });
   // checked is the field's value under another name, which the SDK's clearForm does not reach: a native Form's clear
   // unticks it, as it does a native checkbox. Not the user's change, so no onChange.
   ToolJet.useFormClear(() => setChecked(false));

@@ -106,7 +106,18 @@ const useCartesian = () => {
   const list = toSeries(series, rows, axis.dataKey);
   const data = useMemo(() => numericRows(rows, list), [rows, JSON.stringify(list)]); // eslint-disable-line react-hooks/exhaustive-deps
   const format = (v: number | null) => (v === null || v === undefined ? '' : formatNumber(v, valueFormat as NumberFormat, currency));
-  return { rows, data, axis, list, stack, format, colors: toArray(colors).map(str).filter(Boolean), grid, hideLegend, loading, setClickedItem };
+  // Axis ticks have a narrow, fixed width: from 10,000 up they are compact (2M, $1.2K), where the full figure was cut
+  // to "2,000,..."; tooltips keep the full format.
+  const tick = (v: number | null) => {
+    if (v === null || v === undefined || valueFormat === 'percent' || Math.abs(v) < 10000) return format(v);
+    try {
+      const money = valueFormat === 'currency' && /^[a-z]{3}$/i.test(str(currency));
+      return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1, ...(money ? { style: 'currency', currency: str(currency) } : {}) }).format(v);
+    } catch {
+      return format(v);
+    }
+  };
+  return { rows, data, axis, list, stack, format, tick, colors: toArray(colors).map(str).filter(Boolean), grid, hideLegend, loading, setClickedItem };
 };
 
 const muiSeries = (c: ReturnType<typeof useCartesian>, extra: Record<string, unknown> = {}) =>
@@ -136,7 +147,7 @@ export const BarChart = () => {
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
   const horizontal = layout === 'horizontal';
   const band = [{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: 'band' as const }];
-  const values = [{ valueFormatter: (v: number | null) => c.format(v) }];
+  const values = [{ valueFormatter: (v: number | null) => c.tick(v) }];
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={c.loading} fill look={<BlockSkeleton />}>
@@ -179,7 +190,7 @@ const LineView = ({ c, l, area }: { c: ReturnType<typeof useCartesian>; l: Retur
   <MuiLineChart
     dataset={c.data}
     xAxis={[{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: (c.axis.scaleType as 'point') || 'point' }]}
-    yAxis={[{ valueFormatter: (v: number | null) => c.format(v), width: 56 }]}
+    yAxis={[{ valueFormatter: (v: number | null) => c.tick(v), width: 56 }]}
     series={muiSeries(c, { curve: l.curve, showMark: l.showMark, area, connectNulls: true })}
     colors={c.colors.length ? c.colors : undefined}
     grid={{ horizontal: c.grid }}

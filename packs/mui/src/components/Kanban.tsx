@@ -126,6 +126,7 @@ const KanbanCard = ({ kb, card, columnId, helpId }: { kb: KanbanModel; card: Boa
       role="button"
       tabIndex={0}
       aria-roledescription="Draggable card"
+      data-kb-card={card.__key}
       aria-describedby={helpId}
       aria-pressed={card.__key === kb.selectedKey}
       // In the editor a drag that starts on a card moves the card, not the whole widget.

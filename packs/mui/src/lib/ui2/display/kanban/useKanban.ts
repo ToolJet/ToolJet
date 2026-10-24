@@ -276,6 +276,28 @@ export const useKanban = (o: KanbanOptions) => {
     const m: CardMove = move;
     commit(next, () => setLastCardMovement(m as unknown as Record<string, unknown>), onCardMoved);
   };
+  // A keyboard drop can land past its column's "Show more" window, and a card that changes column remounts: widen the
+  // windows to include it and give it focus back once it is drawn (a pack marks each card with data-kb-card, its key),
+  // so keyboard focus does not fall to the page.
+  const refocusKey = useRef<string | null>(null);
+  const revealCard = (key: string) => {
+    const cols = live.current.board;
+    const colAt = cols.findIndex((c) => c.cards.some((x) => x.__key === key));
+    if (colAt < 0) return;
+    const { id, cards } = cols[colAt];
+    const at = cards.findIndex((x) => x.__key === key);
+    const step = (n: number, size: number) => Math.ceil((n + 1) / size) * size;
+    setShownCards((n) => (at < (n[id] ?? CARDS_PER_STEP) ? n : { ...n, [id]: step(at, CARDS_PER_STEP) }));
+    setShownColumns((n) => (colAt < n ? n : step(colAt, MAX_BOARD_COLUMNS)));
+    refocusKey.current = key;
+  };
+  useLayoutEffect(() => {
+    const key = refocusKey.current;
+    if (!key) return;
+    refocusKey.current = null;
+    const el = Array.from(boardRef.current?.querySelectorAll<HTMLElement>('[data-kb-card]') ?? []).find((c) => c.dataset.kbCard === key);
+    el?.focus();
+  });
 
   const { id: idParam, values: valuesParam } = o.params;
   ToolJet.useAction(
@@ -395,6 +417,7 @@ export const useKanban = (o: KanbanOptions) => {
       else if (e.key === ' ' || e.key === 'Enter' || e.key === 'Tab') {
         if (e.key !== 'Tab') e.preventDefault();
         doMove(key, t.columnId, t.before);
+        revealCard(key);
         setAnnounce(`${titleOf(key)} dropped in ${columnTitle(t.columnId)}.`);
         endDrag();
         return;

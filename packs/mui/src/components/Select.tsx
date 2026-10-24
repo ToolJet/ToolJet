@@ -18,6 +18,26 @@ const findOption = (options: Option[], given: unknown): Option | null => {
   return options.find((o) => o.value === key) ?? options.find((o) => o.label === key) ?? null;
 };
 
+/** The focused element, looked up through open shadow roots (document.activeElement stops at the outer host). */
+const deepActiveElement = (): Element | null => {
+  let active: Element | null = document.activeElement;
+  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+  return active;
+};
+
+/** Whether focus is nowhere the user chose: the body, the trigger itself, the closing menu, or a shadow host the
+ *  trigger or the menu sits in (where MUI's own restore leaves it). */
+const focusWasLost = (active: Element | null, trigger: Element, menu: Element | null): boolean => {
+  if (!active || active === document.body || active === document.documentElement || active === trigger) return true;
+  if (menu?.contains(active)) return true;
+  const hosts = (el: Element | null) => {
+    const found: Element[] = [];
+    for (let root = el?.getRootNode(); root instanceof ShadowRoot; root = root.host.getRootNode()) found.push(root.host);
+    return found;
+  };
+  return hosts(trigger).includes(active) || hosts(menu).includes(active);
+};
+
 // MUI's Select (TextField select): label, options [{ label, value, disabled }], value (the picked value), helperText,
 // displayEmpty with a placeholder, variant, size; events onChange, onOpen, onClose. selectedOption is exposed.
 export const Select = () => {
@@ -51,6 +71,9 @@ export const Select = () => {
   }, [selectedKey]);
   const change = (next: string) => {
     setValue(next);
+    // Set with the value, so an onChange (or onClose) handler reads the new option, not the one the effect would
+    // replace a render later (AM-12). The effect above still follows bindings, a Form clear and changed options.
+    setSelectedOption(options.find((o) => o.value === next) ?? {});
     onChange();
   };
   // MUI's open state, held here so the guard can close the menu: it portals into the popup layer, out of reach of the
@@ -64,6 +87,21 @@ export const Select = () => {
     onClose();
   };
   const available = useOwnerGuard(rootRef, menuOpen, closeMenu, disabled);
+  // Focus goes back to the trigger when the menu closes (a pick, Escape, a dismiss). MUI's FocusTrap restores to the
+  // focus event's relatedTarget, and with the menu in the popup layer's own shadow root that is the outer shadow host,
+  // not the combobox: focus fell to the body and the closed Select kept its focused outline (AM-13). The trap stays on;
+  // only its restore is ours. Focus that moved on purpose (a handler focusing another control) stays where it is, and a
+  // disabled or hidden owner gets none.
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    const closed = wasOpen.current && !menuOpen;
+    wasOpen.current = menuOpen;
+    if (!closed || !available()) return;
+    const trigger = rootRef.current?.querySelector<HTMLElement>('[role="combobox"]');
+    if (trigger && focusWasLost(deepActiveElement(), trigger, menuRef.current)) trigger.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menuOpen]);
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(str(next)));
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(''));
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
@@ -89,6 +127,7 @@ export const Select = () => {
             inputLabel: showEmpty ? { shrink: true } : undefined,
             select: {
               open: menuOpen,
+              MenuProps: { disableRestoreFocus: true, ref: menuRef } as Record<string, unknown>,
               displayEmpty: showEmpty,
               renderValue: (v: unknown) =>
                 v === '' ? <span className="tj-mui-placeholder">{placeholder}</span> : (options.find((o) => o.value === v)?.label ?? str(v)),

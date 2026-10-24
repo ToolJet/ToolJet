@@ -214,7 +214,7 @@ export const NumberField = () => {
           onFocus={() => events.onFocus()}
           onBlur={() => {
             // Out-of-range input is clamped on blur, as a number field does.
-            if (num !== null && ((lo !== null && num < lo) || (hi !== null && num > hi))) change(Math.min(hi ?? num, Math.max(lo ?? num, num)));
+            if (num !== null && ((lo !== null && num < lo) || (hi !== null && num > hi))) change(hi !== null && num > hi ? hi : (lo as number));
             check.touch();
             events.onBlur();
           }}

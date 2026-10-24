@@ -12,6 +12,7 @@ import { Menu } from '../../../../../../../packs/mui/src/components/Menu';
 import { LinearProgress, Pagination, Stepper } from '../../../../../../../packs/mui/src/components/Display';
 import { DataGrid } from '../../../../../../../packs/mui/src/components/DataGrid';
 import { Tabs, Dialog, List } from '../../../../../../../packs/mui/src/components/Containers';
+import { Kanban } from '../../../../../../../packs/mui/src/components/Kanban';
 import { slotNames } from '../../../../../../../packs/mui/src/lib/data';
 
 installBrowserStubs();
@@ -46,6 +47,7 @@ const COMPONENTS = {
   Tabs,
   Dialog,
   List,
+  Kanban,
 };
 let mounts = 0;
 
@@ -68,6 +70,8 @@ const mount = async (name, props, { host = {}, wrapper = {} } = {}) => {
   loadLibraryModule.mockResolvedValue({ [name]: COMPONENTS[name] });
   const exposed = {};
   const events = [];
+  // What the exposed values were as each event fired, for checks that a handler reads the new state.
+  const seen = [];
   const slots = [];
   const actions = new Map();
   const cacheKey = `mui-hardening-${name}-${(mounts += 1)}`;
@@ -88,7 +92,10 @@ const mount = async (name, props, { host = {}, wrapper = {} } = {}) => {
           setExposedVariable={(key, value) => {
             exposed[key] = value;
           }}
-          fireEvent={(event) => events.push(event)}
+          fireEvent={(event) => {
+            events.push(event);
+            seen.push({ event, exposed: JSON.parse(JSON.stringify(exposed)) });
+          }}
           actions={actions}
           host={c.host}
           dataCy="mui-widget"
@@ -106,7 +113,7 @@ const mount = async (name, props, { host = {}, wrapper = {} } = {}) => {
   };
   const clearForm = () => update({ clearCount: current.clearCount + 1 });
   const act$ = (action, ...args) => act(() => actions.get(action)(...args));
-  return { view, root, exposed, events, slots, actions, update, clearForm, act: act$ };
+  return { view, root, exposed, events, seen, slots, actions, update, clearForm, act: act$ };
 };
 
 const OPTIONS = [
@@ -303,6 +310,71 @@ describe('an open popup closes once its owner stops taking input', () => {
   });
 });
 
+describe('Select events read the new selectedOption (AM-12)', () => {
+  const at = (t, event) => t.seen.filter((s) => s.event === event);
+
+  test('a pick: onChange and onClose see the picked option, not the previous one', async () => {
+    const t = await mount('Select', { options: OPTIONS, value: 'one' });
+    await waitFor(() => expect(t.exposed.selectedOption).toMatchObject(OPTIONS[0]));
+    fireEvent.mouseDown(t.root().querySelector('[role="combobox"]'));
+    await waitFor(() => expect(popupText()).toContain('Two'));
+    fireEvent.click(deepAll('[role="option"]').find((o) => o.textContent === 'Two'));
+    for (const event of ['onChange', 'onClose']) {
+      expect(at(t, event)).toHaveLength(1);
+      expect(at(t, event)[0].exposed.value).toBe('two');
+      expect(at(t, event)[0].exposed.selectedOption).toMatchObject(OPTIONS[1]);
+    }
+  });
+
+  test('setValue and clear: onChange sees the matching selectedOption', async () => {
+    const t = await mount('Select', { options: OPTIONS, value: 'one' });
+    await waitFor(() => expect(t.exposed.selectedOption).toMatchObject(OPTIONS[0]));
+    t.act('setValue', 'two');
+    t.act('clear');
+    const changes = at(t, 'onChange').map((s) => [s.exposed.value, s.exposed.selectedOption.value]);
+    expect(changes).toEqual([
+      ['two', 'two'],
+      ['', undefined],
+    ]);
+  });
+});
+
+describe('Select gives focus back to its trigger across shadow roots (AM-13)', () => {
+  // The focused element through open shadow roots: the menu sits in the popup layer's shadow root, the trigger in the
+  // widget's, so document.activeElement alone stops at an outer host.
+  const focused = () => {
+    let a = document.activeElement;
+    while (a?.shadowRoot?.activeElement) a = a.shadowRoot.activeElement;
+    return a;
+  };
+  const openSelect = async () => {
+    const t = await mount('Select', { options: OPTIONS, value: 'one' });
+    const combo = t.root().querySelector('[role="combobox"]');
+    act(() => combo.focus());
+    fireEvent.mouseDown(combo);
+    await waitFor(() => expect(popupText()).toContain('Two'));
+    await waitFor(() => expect(focused()?.getAttribute('role')).toBe('option'));
+    return { t, combo };
+  };
+
+  test.each(['pick', 'Escape'])('after %s, focus is on the combobox and the field shows focused', async (how) => {
+    const { t, combo } = await openSelect();
+    const option = deepAll('[role="option"]').find((o) => o.textContent === (how === 'pick' ? 'Two' : 'One'));
+    if (how === 'pick') fireEvent.click(option);
+    else fireEvent.keyDown(option, { key: 'Escape' });
+    await waitFor(() => expect(t.exposed.open).toBe(false));
+    expect(focused()).toBe(combo);
+    expect(t.root().querySelector('.MuiInputBase-root').classList.contains('Mui-focused')).toBe(true);
+  });
+
+  test('a menu closed because the host disabled the Select does not refocus it', async () => {
+    const { t, combo } = await openSelect();
+    t.update({ host: { disabled: true } });
+    await waitFor(() => expect(t.exposed.open).toBe(false));
+    expect(focused()).not.toBe(combo);
+  });
+});
+
 describe('required validation sees a picked false or 0', () => {
   test.each([
     [false, [{ label: 'No', value: false }, { label: 'Yes', value: true }]],
@@ -448,5 +520,57 @@ describe("DataGrid takes UI 2.0's column shape", () => {
     const headers = [...t.root().querySelectorAll('.MuiDataGrid-columnHeaderTitle')].map((el) => el.textContent.trim());
     expect(headers).toEqual(['Company', 'Stage']);
     await waitFor(() => expect(t.root().querySelector('.MuiChip-label')?.textContent).toBe('New'));
+  });
+});
+
+describe('a keyboard move into a long column', () => {
+  // AM-10: the destination drew only its first 100 cards, so the moved card landed past the window, unmounted and
+  // focus fell to the page.
+  test('Kanban: the moved card stays drawn past the "Show more" window and keeps keyboard focus', async () => {
+    const data = [
+      { id: 1, title: 'Mover', status: 'todo' },
+      ...Array.from({ length: 150 }, (_, i) => ({ id: i + 2, title: `Card ${i + 1}`, status: 'doing' })),
+    ];
+    const columns = [
+      { id: 'todo', title: 'To do' },
+      { id: 'doing', title: 'Doing' },
+    ];
+    const t = await mount('Kanban', { data, columns }, { host: { formField: false } });
+    const card = () => [...t.root().querySelectorAll('[aria-roledescription="Draggable card"]')].find((el) => el.textContent.includes('Mover'));
+    act(() => card().focus());
+    fireEvent.keyDown(card(), { key: ' ' });
+    fireEvent.keyDown(card(), { key: 'ArrowRight' });
+    fireEvent.keyDown(card(), { key: 'Enter' });
+    expect(t.exposed.lastCardMovement).toMatchObject({ cardId: 1, to: 'doing', toIndex: 150 });
+    expect(card()).toBeTruthy();
+    expect(t.root().activeElement).toBe(card());
+  });
+});
+
+describe('DataGrid paging in a live app', () => {
+  const rows = Array.from({ length: 32 }, (_, i) => ({ id: i + 1, title: `Row ${i + 1}` }));
+  const footer = (t) => t.root().querySelector('.MuiTablePagination-displayedRows')?.textContent;
+  test('Next advances, and stays there when bindings such as sortModel {{[]}} resolve to new arrays', async () => {
+    const t = await mount('DataGrid', { rows, columns: [{ field: 'title' }], pageSize: 12, sortModel: [], paginationModel: { page: 0, pageSize: 10 } });
+    await waitFor(() => expect(footer(t)).toBe('1–12 of 32'));
+    // The exposed model matches the page drawn from the start.
+    await waitFor(() => expect(t.exposed.paginationModel).toEqual({ page: 0, pageSize: 12 }));
+    fireEvent.click(t.root().querySelector('button[aria-label="Go to next page"]'));
+    await waitFor(() => expect(footer(t)).toBe('13–24 of 32'));
+    // The host re-resolves every binding on each change: fresh arrays and objects with the same content.
+    t.update({ props: { rows: rows.map((r) => ({ ...r })), columns: [{ field: 'title' }], pageSize: 12, sortModel: [], paginationModel: { page: 0, pageSize: 10 } } });
+    await act(async () => {});
+    expect(footer(t)).toBe('13–24 of 32');
+    expect(t.exposed.paginationModel).toEqual({ page: 1, pageSize: 12 });
+  });
+});
+
+describe('a native Form reads every MUI field', () => {
+  // A Form reads value: Checkbox and Switch expose checked as value too, or the Form left them out, checked or not.
+  test.each(['Checkbox', 'Switch'])('%s exposes checked as value', async (name) => {
+    const t = await mount(name, { checked: true });
+    await waitFor(() => expect(t.exposed.value).toBe(true));
+    fireEvent.click(t.root().querySelector('input'));
+    await waitFor(() => expect(t.exposed.value).toBe(false));
   });
 });

@@ -6,7 +6,8 @@ import { useCallback, useEffect, useRef, type RefObject } from 'react';
 // on it still chose an option (shadcn pack audit SP-02, 2026-10-23). The popup closes once its owner cannot take
 // input, and a choice made in the same instant is refused. Copied from the shadcn pack (packs do not share code).
 
-const BLOCKED = '[inert],[aria-disabled="true"]';
+// A disabled fieldset is how a native Form disables what it holds.
+const BLOCKED = '[inert],[aria-disabled="true"],fieldset:disabled';
 
 /** Whether the element that owns a popup can take input: it is drawn, and neither it nor anything around it (across
  *  the shadow roots it sits in) is inert or aria-disabled. `requireDrawn: false` skips the first check, for a popup

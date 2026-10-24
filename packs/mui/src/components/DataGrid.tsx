@@ -146,6 +146,23 @@ export const DataGrid = () => {
   const size = Math.max(1, Math.min(MAX_PAGE_SIZE, Number(pageSize) || 10));
   const [page, setPage] = useState({ page: 0, pageSize: size });
   useEffect(() => setPage((m) => (m.pageSize === size ? m : { page: 0, pageSize: size })), [size]);
+  // The exposed paginationModel follows the page drawn, from the first render (it said pageSize 10 while 25 were shown)
+  // and after setPage, not only after a click in the footer.
+  useEffect(() => {
+    setPaginationModel({ ...page });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page.page, page.pageSize]);
+  // Only { field, sort } entries: MUI reads .field off each one. Kept the same array while its content is (a binding
+  // such as {{[]}} resolves to a new array on every render, and the grid treated each as a new sort).
+  const sortKey = JSON.stringify(toArray(sortModel));
+  const gridSortModel = useMemo(
+    () =>
+      toArray(sortModel).filter(
+        (m) => !!m && typeof m === 'object' && typeof (m as { field?: unknown }).field === 'string'
+      ) as GridSortModel,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sortKey]
+  );
 
   const field = str(rowIdField) || 'id';
   const source = useMemo(() => toRows(rawRows), [rawRows]);
@@ -229,12 +246,7 @@ export const DataGrid = () => {
         autoPageSize={autoPageSize}
         paginationModel={page}
         pageSizeOptions={autoPageSize ? undefined : Array.from(new Set([size, 10, 25, 50, 100])).sort((a, b) => a - b)}
-        // Only { field, sort } entries: MUI reads .field off each one.
-        sortModel={
-          toArray(sortModel).filter(
-            (m) => !!m && typeof m === 'object' && typeof (m as { field?: unknown }).field === 'string'
-          ) as GridSortModel
-        }
+        sortModel={gridSortModel}
         showToolbar={showToolbar}
         disableColumnMenu={disableColumnMenu}
         hideFooter={hideFooter}
@@ -262,6 +274,7 @@ export const DataGrid = () => {
         }}
         onPaginationModelChange={(model: GridPaginationModel) => {
           setPage(model);
+          // Published now, so the event's handler reads the new page (the effect above repeats it harmlessly).
           setPaginationModel({ ...model });
           onPaginationModelChange();
         }}

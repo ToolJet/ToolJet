@@ -382,7 +382,7 @@
     "TypographyHeading": {
       "role": "heading",
       "fit": true,
-      "usage": "MUI's Typography for headings: children, variant h1 to h6 (MUI's scale: h1 is a 96px display size; h4 to h6 suit page and section titles), color (a theme path: text.primary, text.secondary, primary.main...), align, noWrap, gutterBottom.",
+      "usage": "MUI's Typography for headings: children, variant h1 to h6 (MUI's scale: h1 is a 96px display size; h4 to h6 suit page and section titles) or subtitle1/subtitle2 (a card or list item's title, drawn semibold), color (a theme path: text.primary, text.secondary, primary.main...), align, noWrap, gutterBottom.",
       "roleProps": {
         "text": "children",
         "level": "variant",
@@ -393,7 +393,9 @@
           "h1": "h4",
           "h2": "h5",
           "h3": "h6",
-          "h4": "h6"
+          "h4": "h6",
+          "h5": "subtitle1",
+          "h6": "subtitle2"
         },
         "color": {
           "default": "text.primary",

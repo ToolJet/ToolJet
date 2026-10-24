@@ -27,6 +27,7 @@ import { iconOf, ICONS } from '../lib/icons';
 import { str, toArray, type Row } from '../lib/data';
 import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner, TextSkeleton } from '../lib/loading';
+import { useFitText } from '../lib/fitText';
 
 const COLORS = ['default', ...PALETTE_COLORS];
 
@@ -131,7 +132,7 @@ const useTypography = (variants: string[], initial: string, text: string) => {
   return { children, variant, color, align, noWrap, onClick };
 };
 
-const TypographyView = ({ t, gutterBottom = false }: { t: ReturnType<typeof useTypography>; gutterBottom?: boolean }) => (
+const TypographyView = ({ t, gutterBottom = false, heading = false }: { t: ReturnType<typeof useTypography>; gutterBottom?: boolean; heading?: boolean }) => (
   <MuiTypography
     variant={t.variant as 'body1'}
     color={t.color}
@@ -139,16 +140,16 @@ const TypographyView = ({ t, gutterBottom = false }: { t: ReturnType<typeof useT
     noWrap={t.noWrap}
     gutterBottom={gutterBottom}
     onClick={() => t.onClick()}
-    sx={{ whiteSpace: t.noWrap ? undefined : 'pre-wrap' }}
+    sx={{ whiteSpace: t.noWrap ? undefined : 'pre-wrap', ...(heading && t.variant.startsWith('subtitle') ? { fontWeight: 600 } : null) }}
   >
     {t.children}
   </MuiTypography>
 );
 
 // MUI's Typography for headings: children, variant h1 to h6 (MUI's type scale: h1 is display size, h4 to h6 suit page
-// and section titles), color (a theme path such as text.secondary), align, noWrap, gutterBottom. Event onClick.
+// and section titles) or subtitle1/subtitle2 (a card or list item's title, drawn semibold as a heading), color (a theme path such as text.secondary), align, noWrap, gutterBottom. Event onClick.
 export const TypographyHeading = () => {
-  const t = useTypography(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], 'h5', 'Heading');
+  const t = useTypography(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'subtitle1', 'subtitle2'], 'h5', 'Heading');
   const [gutterBottom] = ToolJet.useStateBoolean({ name: 'gutterBottom', label: 'Gutter bottom', initialValue: false });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
@@ -156,7 +157,7 @@ export const TypographyHeading = () => {
   return (
     <MuiProvider overrides={overrides}>
       <Loading loading={loading} look={<TextSkeleton variant={t.variant as 'h5'} />}>
-        <TypographyView t={t} gutterBottom={gutterBottom} />
+        <TypographyView t={t} gutterBottom={gutterBottom} heading />
       </Loading>
     </MuiProvider>
   );
@@ -180,20 +181,21 @@ export const Typography = () => {
 
 // The stat card of MUI's dashboard template (Card + Typography + Chip): title, value with format (auto, number,
 // currency, percent, compact) and currency, trend (up, down, neutral) as a coloured Chip with trendLabel, and interval
-// (the period, under the value). variant (outlined, elevation). Event onClick.
+// (the period, under the value). No trend label, no chip: a sample trend would read as real data. variant
+// (outlined, elevation). Event onClick.
 export const StatCard = () => {
   const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Users' });
   const [value] = useStateText({ name: 'value', label: 'Value', initialValue: '14k' });
   const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'auto' });
   const [currency] = useStateText({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'format', value: 'currency' } });
-  const [trend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'up' });
+  const [trend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'neutral' });
   const [rawTrendLabel] = ToolJet.useStateString({
     name: 'trendLabel',
     label: 'Trend label',
-    description: 'Text in the trend chip, such as +25%; a number is the change, its sign the direction.',
-    initialValue: '+25%',
+    description: 'Text in the trend chip, such as +25%; a number is the change, its sign the direction. Empty: no chip.',
+    initialValue: '',
   });
-  const [interval] = useStateText({ name: 'interval', label: 'Interval', description: 'The period, such as Last 30 days.', initialValue: 'Last 30 days' });
+  const [interval] = useStateText({ name: 'interval', label: 'Interval', description: 'The period, such as Last 30 days.', initialValue: '' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['outlined', 'elevation'], initialValue: 'outlined' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { loading } = ToolJet.useControlState();
@@ -206,23 +208,28 @@ export const StatCard = () => {
   const change = typeof rawTrendLabel === 'number' ? (Number.isFinite(rawTrendLabel) ? (rawTrendLabel as number) : null) : undefined;
   const trendLabel =
     change === undefined ? toText(rawTrendLabel) : change === null ? '' : `${change > 0 ? '+' : ''}${formatNumber(change, format as NumberFormat, currency)}`;
-  const direction = change && trend === 'neutral' ? (change > 0 ? 'up' : 'down') : trend;
+  // With trend left neutral the change's sign gives the direction: a number's, or a label's leading + or -.
+  const sign = change ? Math.sign(change) : /^\s*\+/.test(trendLabel) ? 1 : /^\s*[-\u2212]/.test(trendLabel) ? -1 : 0;
+  const direction = trend === 'neutral' && sign ? (sign > 0 ? 'up' : 'down') : trend;
   const chipColor = direction === 'up' ? 'success' : direction === 'down' ? 'error' : 'default';
+  const fitRef = useFitText<HTMLParagraphElement>([shown, loading]);
   const TrendIcon = direction === 'up' ? ICONS.TrendingUp : direction === 'down' ? ICONS.TrendingDown : ICONS.TrendingFlat;
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={loading} fill look={<BlockSkeleton />}>
         <Card variant={variant as 'outlined'} sx={{ height: '100%' }} onClick={() => onClick()}>
           <CardContent>
-            <MuiTypography component="h2" variant="subtitle2" gutterBottom>
-              {title}
-            </MuiTypography>
-            <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
-              <MuiTypography variant="h4" component="p">
-                {shown}
+            {/* The trend chip sits on the title's line, so the figure has the card's width (shrunk to fit past that) and
+                a chip never pushes the interval out of the card. */}
+            <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 1, mb: 0.5 }}>
+              <MuiTypography component="h2" variant="subtitle2" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {title}
               </MuiTypography>
-              {trendLabel ? <MuiChip size="small" color={chipColor} label={trendLabel} icon={<TrendIcon fontSize="small" />} /> : null}
+              {trendLabel ? <MuiChip size="small" color={chipColor} label={trendLabel} icon={<TrendIcon fontSize="small" />} sx={{ flexShrink: 0 }} /> : null}
             </Stack>
+            <MuiTypography ref={fitRef} variant="h4" component="p" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {shown}
+            </MuiTypography>
             {interval ? (
               <MuiTypography variant="caption" sx={{ color: 'text.secondary' }}>
                 {interval}
@@ -369,16 +376,18 @@ export const Stepper = () => {
   useEffect(() => {
     if (byLabel < 0 && activeStep !== current) setActiveStep(current);
   }, [byLabel, activeStep, current, setActiveStep]);
-  const go = (index: number) => {
-    setActiveStep(Math.max(0, Math.min(steps.length, index)));
+  // index may be a step from the latest one (a number; a label or id the app gave reads as the step shown), so two
+  // nexts in one batch advance twice.
+  const go = (index: number | ((latest: number) => number)) => {
+    setActiveStep((a: unknown) => Math.max(0, Math.min(steps.length, typeof index === 'function' ? index(typeof a === 'number' ? a : current) : index)));
     onChange();
   };
   ToolJet.useAction({ name: 'setActiveStep', displayName: 'Set active step', params: [{ handle: 'step', displayName: 'Step index or label' }] }, (next) => {
     const i = steps.findIndex((s) => s.id === str(next) || s.label === str(next));
     go(i >= 0 ? i : (toNumber(next) ?? 0));
   });
-  ToolJet.useAction({ name: 'next', displayName: 'Next' }, () => go(current + 1));
-  ToolJet.useAction({ name: 'back', displayName: 'Back' }, () => go(current - 1));
+  ToolJet.useAction({ name: 'next', displayName: 'Next' }, () => go((c) => c + 1));
+  ToolJet.useAction({ name: 'back', displayName: 'Back' }, () => go((c) => c - 1));
   ToolJet.useAction({ name: 'reset', displayName: 'Reset' }, () => go(0));
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-center">
