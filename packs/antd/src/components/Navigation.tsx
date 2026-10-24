@@ -282,7 +282,7 @@ export const Pagination = () => {
 export const Drawer = () => {
   const [triggerText] = ToolJet.useStateString({ name: 'triggerText', label: 'Trigger text', initialValue: 'Open' });
   const [showTrigger] = ToolJet.useStateBoolean({ name: 'showTrigger', label: 'Show trigger', initialValue: true });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
+  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Drawer title' });
   const [extra] = ToolJet.useStateString({ name: 'extra', label: 'Extra', initialValue: '' });
   const [placement] = ToolJet.useStateEnumeration({ name: 'placement', label: 'Placement', enumDefinition: ['right', 'left', 'top', 'bottom'], initialValue: 'right' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['default', 'large'], initialValue: 'default' });

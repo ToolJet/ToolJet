@@ -34,7 +34,7 @@ const on = (v: unknown) => v === true || v === 'true';
 // history exposed; actions sendMessage, appendHistory, setHistory, clearHistory, downloadChat, setResponseLoading,
 // setHistoryLoading, setInputDisable, setUserAvatar, setResponderAvatar.
 export const Chat = () => {
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
+  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Assistant' });
   const [initialChat] = ToolJet.useStateArray({ name: 'initialChat', label: 'History', description: "[{ message, type: 'message' | 'response' }]", initialValue: [{ message: 'Hi! Ask me anything about your orders, invoices or deliveries.', type: 'response' }] });
   const [userName] = ToolJet.useStateString({ name: 'userName', label: 'User name', initialValue: 'You' });
   const [userAvatar, setUserAvatar] = ToolJet.useStateString({ name: 'userAvatar', label: 'User avatar', initialValue: '' });

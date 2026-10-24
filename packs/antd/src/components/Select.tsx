@@ -15,7 +15,7 @@ const Control = (p: React.ComponentProps<typeof AntSelect>) => {
 // tags modes, with selectedOptions), placeholder, allowClear, showSearch,
 // notFoundContent; events onChange (also on clear), onSelect, onClear, onSearch, onOpenChange.
 export const Select = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Department' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [
     { label: 'Design', value: 'design' },
     { label: 'Engineering', value: 'engineering' },

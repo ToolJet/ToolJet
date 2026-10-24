@@ -11,9 +11,9 @@ import { ControlSkeleton } from '../lib/Loading';
 // Ant's Input: value, placeholder, allowClear, maxLength/showCount, prefix/suffix, addonBefore/addonAfter, variant,
 // size; events onChange, onPressEnter, onFocus, onBlur, onClear; Form-style actions setFieldValue and resetFields.
 export const Input = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Label' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The text; also the value resetFields returns to.', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter your input' });
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
     label: 'Type',

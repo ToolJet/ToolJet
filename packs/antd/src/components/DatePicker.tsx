@@ -20,7 +20,7 @@ const parse = (v: unknown): Dayjs | null => {
 // Ant's DatePicker: value (as YYYY-MM-DD text; YYYY-MM-DDTHH:mm:ss with showTime), showTime, format (how it shows), picker (date, week, month, quarter, year),
 // minDate, maxDate, placeholder, allowClear; events onChange, onOpenChange.
 export const DatePicker = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Date' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'YYYY-MM-DD, or YYYY-MM-DDTHH:mm:ss with showTime.', initialValue: '' });
   const [showTime] = ToolJet.useStateBoolean({ name: 'showTime', label: 'Show time', description: 'Pick a time too (a date-time picker).', initialValue: false });
   const [format] = ToolJet.useStateString({ name: 'format', label: 'Format', description: 'Display format (dayjs), e.g. DD MMM YYYY; empty for the default.', initialValue: '' });
@@ -32,7 +32,7 @@ export const DatePicker = (props: Record<string, unknown>) => {
   });
   const [minDate] = ToolJet.useStateString({ name: 'minDate', label: 'Min date', description: 'YYYY-MM-DD', initialValue: '' });
   const [maxDate] = ToolJet.useStateString({ name: 'maxDate', label: 'Max date', description: 'YYYY-MM-DD', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a date' });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });

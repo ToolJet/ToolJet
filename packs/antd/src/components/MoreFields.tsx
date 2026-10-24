@@ -20,7 +20,7 @@ const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => v
 // allowClear, filterOption (off for options a query fetches on onSearch); selectedOption, selectedLabel and
 // searchValue exposed; events onChange, onSelect, onSearch, onFocus, onBlur; actions setFieldValue, resetFields.
 export const Combobox = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'City' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', initialValue: [
     { label: 'Austin', value: 'austin' },
     { label: 'Berlin', value: 'berlin' },
@@ -104,7 +104,7 @@ export const Combobox = (props: Record<string, unknown>) => {
 // Ant's Input.OTP: label, length, mask (hide the characters), characters (numeric, alphanumeric), value; isComplete
 // exposed; events onChange (every character), onComplete (all filled); actions setFieldValue, resetFields, focus.
 export const OTP = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Verification code' });
   const [length] = ToolJet.useStateNumber({ name: 'length', label: 'Length', initialValue: 6, min: 2, max: 12 });
   const [characters] = ToolJet.useStateEnumeration({ name: 'characters', label: 'Characters', enumDefinition: ['numeric', 'alphanumeric'], initialValue: 'numeric' });
   const [mask] = ToolJet.useStateBoolean({ name: 'mask', label: 'Mask', initialValue: false });
@@ -179,7 +179,7 @@ const symbolOf = (currency: string, locale?: string, display = 'symbol') => {
 // max, placeholder, allowClear; formattedValue exposed; events onChange, onPressEnter, onFocus, onBlur; actions
 // setFieldValue, setCurrency, resetFields, focus, blur.
 export const CurrencyInput = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Amount' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: undefined as unknown as number });
   const [currency, setCurrency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD' });
   const [currencyOptions] = ToolJet.useStateArray({ name: 'currencyOptions', label: 'Currency options', description: "['USD', 'EUR', 'INR']; empty: one currency.", initialValue: [] });
@@ -188,7 +188,7 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   const [currencyDisplay] = ToolJet.useStateEnumeration({ name: 'currencyDisplay', label: 'Currency display', enumDefinition: ['symbol', 'narrowSymbol', 'code'], initialValue: 'symbol' });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', initialValue: undefined as unknown as number });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: undefined as unknown as number });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '0.00' });
   const [, setFormattedValue] = ToolJet.useStateString({ name: 'formattedValue', initialValue: '', inspector: 'hidden' });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -279,13 +279,13 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
 // formattedValue and isValidNumber exposed; events onChange, onPressEnter, onFocus, onBlur; actions setFieldValue,
 // setCountryCode, resetFields, focus, blur.
 export const PhoneInput = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Phone' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'E.164: +14155550123', initialValue: '' });
   const [defaultCountry] = ToolJet.useStateString({ name: 'defaultCountry', label: 'Default country', initialValue: 'US' });
   const [onlyCountries] = ToolJet.useStateArray({ name: 'onlyCountries', label: 'Only countries', description: "['US', 'GB', 'IN']; empty: all.", initialValue: [] });
   const [allowCountryChange] = ToolJet.useStateBoolean({ name: 'allowCountryChange', label: 'Allow country change', initialValue: true });
   const [showFlag] = ToolJet.useStateBoolean({ name: 'showFlag', label: 'Show flag', initialValue: true });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter a phone number' });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
   const [, setCountry] = ToolJet.useStateString({ name: 'country', initialValue: '', inspector: 'hidden' });
   const [, setCountryCode] = ToolJet.useStateString({ name: 'countryCode', initialValue: '', inspector: 'hidden' });
@@ -404,9 +404,9 @@ const strengthOf = (v: string): { score: number; label: string } => {
 // minLength, allowClear; strength exposed; events onChange, onPressEnter, onFocus, onBlur; actions setFieldValue,
 // resetFields, focus, blur.
 export const Password = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Password' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter your password' });
   const [visibilityToggle] = ToolJet.useStateBoolean({ name: 'visibilityToggle', label: 'Visibility toggle', initialValue: true });
   const [showStrength] = ToolJet.useStateBoolean({ name: 'showStrength', label: 'Show strength', initialValue: false });
   const [minLength] = ToolJet.useStateNumber({ name: 'minLength', label: 'Min length', initialValue: 0, min: 0 });

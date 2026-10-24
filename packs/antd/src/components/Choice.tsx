@@ -18,7 +18,7 @@ const useValueActions = (change: (v: unknown) => void, initial: unknown) => {
 // Ant's Radio.Group: options, value, optionType (default, button), buttonStyle (outline, solid), direction (Ant's
 // vertical radios are a Space); event onChange.
 export const RadioGroup = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Shipping' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [
     { label: 'Standard', value: 'standard' },
     { label: 'Express', value: 'express' },
@@ -71,7 +71,7 @@ export const RadioGroup = (props: Record<string, unknown>) => {
 
 // Ant's Segmented: options, value, block, size, vertical; event onChange.
 export const Segmented = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'View' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [
     { label: 'Daily', value: 'daily' },
     { label: 'Weekly', value: 'weekly' },
@@ -122,7 +122,7 @@ export const Segmented = (props: Record<string, unknown>) => {
 
 // Ant's Rate: value, count, allowHalf, allowClear, tooltips; event onChange, onHoverChange.
 export const Rate = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Rating' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: 0 });
   const [count] = ToolJet.useStateNumber({ name: 'count', label: 'Count', initialValue: 5, min: 1, max: 20 });
   const [allowHalf] = ToolJet.useStateBoolean({ name: 'allowHalf', label: 'Allow half', initialValue: false });
@@ -162,7 +162,7 @@ export const Rate = (props: Record<string, unknown>) => {
 
 // Ant's Slider: value, min, max, step, marks off, dots, tooltip; events onChange, onChangeComplete.
 export const Slider = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Volume' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: 0 });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', initialValue: 0 });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: 100 });

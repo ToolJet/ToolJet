@@ -273,7 +273,7 @@ const initialsOf = (name: string) =>
 // Ant's Avatar: src, alt, children (text when there is no image: a name becomes its initials), shape, size.
 export const Avatar = () => {
   const [src] = ToolJet.useStateString({ name: 'src', label: 'Src', description: 'Image URL', initialValue: '' });
-  const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', description: 'Shown without an image; a full name shows its initials.', initialValue: '' });
+  const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', description: 'Shown without an image; a full name shows its initials.', initialValue: 'AL' });
   const [alt] = ToolJet.useStateString({ name: 'alt', label: 'Alt', initialValue: '' });
   const [shape] = ToolJet.useStateEnumeration({ name: 'shape', label: 'Shape', enumDefinition: ['circle', 'square'], initialValue: 'circle' });
   const [size] = ToolJet.useStateNumber({ name: 'size', label: 'Size (px)', initialValue: 40, min: 16, max: 240 });
@@ -370,7 +370,7 @@ export const Descriptions = () => {
     { label: 'Total', children: 1250, format: 'currency' },
     { label: 'Placed', children: '2026-09-14', format: 'date' },
   ] });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
+  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Order details' });
   const [extra] = ToolJet.useStateString({ name: 'extra', label: 'Extra', initialValue: '' });
   const [column] = ToolJet.useStateNumber({ name: 'column', label: 'Column', initialValue: 1, min: 1, max: 6 });
   const [bordered] = ToolJet.useStateBoolean({ name: 'bordered', label: 'Bordered', initialValue: false });

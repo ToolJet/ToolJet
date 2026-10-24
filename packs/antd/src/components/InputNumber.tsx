@@ -9,9 +9,9 @@ import { ControlSkeleton } from '../lib/Loading';
 // Ant's InputNumber: value, min, max, step, precision, prefix, addonBefore/addonAfter, controls, keyboard; events
 // onChange, onStep, onPressEnter, onFocus, onBlur. An empty field is null, as in Ant.
 export const InputNumber = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Quantity' });
   const [rawValue, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', description: 'Empty for no number.', initialValue: undefined as unknown as number });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '0' });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', initialValue: undefined as unknown as number });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: undefined as unknown as number });
   const [step] = ToolJet.useStateNumber({ name: 'step', label: 'Step', initialValue: 1 });

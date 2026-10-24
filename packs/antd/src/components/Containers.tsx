@@ -68,7 +68,7 @@ export const Tabs = () => {
 // Ant's Card: title, extra, variant (outlined, borderless), size, hoverable; its body is a canvas of ToolJet
 // components (slot body); event onClick.
 export const Card = () => {
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
+  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Card title' });
   const [extra] = ToolJet.useStateString({ name: 'extra', label: 'Extra', description: 'Text at the right of the title.', initialValue: '' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['outlined', 'borderless'], initialValue: 'outlined' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['default', 'small'], initialValue: 'default' });
@@ -101,7 +101,7 @@ export const Card = () => {
 export const Modal = () => {
   const [triggerText] = ToolJet.useStateString({ name: 'triggerText', label: 'Trigger text', initialValue: 'Open' });
   const [showTrigger] = ToolJet.useStateBoolean({ name: 'showTrigger', label: 'Show trigger', description: 'A button on the canvas that opens the modal.', initialValue: true });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
+  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Modal title' });
   const [content] = ToolJet.useStateString({ name: 'content', label: 'Content', description: 'Text above the body components.', initialValue: '' });
   const [okText] = ToolJet.useStateString({ name: 'okText', label: 'OK text', initialValue: 'OK' });
   const [cancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel text', initialValue: 'Cancel' });

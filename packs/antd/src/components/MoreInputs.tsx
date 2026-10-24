@@ -60,7 +60,7 @@ const readFile = (file: File): Promise<FileInfo & { file: File }> =>
 // { uid, name, size, type, base64, content (text files) } for a query to send. accept, multiple, maxCount, listType,
 // text and hint (the dragger's two lines); events onChange, onRemove; resetFields empties the list.
 export const Upload = () => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Attachment' });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['drag', 'select'], enumLabels: { drag: 'Drag area', select: 'Button' }, initialValue: 'drag' });
   const [text] = ToolJet.useStateString({ name: 'text', label: 'Text', initialValue: 'Click or drag a file to this area' });
   const [hint] = ToolJet.useStateString({ name: 'hint', label: 'Hint', initialValue: '' });
@@ -141,13 +141,13 @@ export const Upload = () => {
 // Ant's TimePicker: value as text in valueFormat (HH:mm by default), format (display), use12Hours, hourStep,
 // minuteStep, placeholder, allowClear; event onChange.
 export const TimePicker = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Time' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'e.g. 09:30', initialValue: '' });
   const [format] = ToolJet.useStateString({ name: 'format', label: 'Format', description: 'HH:mm, HH:mm:ss or h:mm a', initialValue: 'HH:mm' });
   const [use12Hours] = ToolJet.useStateBoolean({ name: 'use12Hours', label: 'Use 12 hours', initialValue: false });
   const [hourStep] = ToolJet.useStateNumber({ name: 'hourStep', label: 'Hour step', initialValue: 1, min: 1, max: 12 });
   const [minuteStep] = ToolJet.useStateNumber({ name: 'minuteStep', label: 'Minute step', initialValue: 1, min: 1, max: 30 });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a time' });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -198,7 +198,7 @@ export const TimePicker = (props: Record<string, unknown>) => {
 // Ant's DatePicker.RangePicker: value [start, end] as YYYY-MM-DD text (startDate and endDate exposed too), format,
 // picker, minDate, maxDate, placeholder [start, end], allowClear; event onChange.
 export const RangePicker = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Date range' });
   const [value, setValue] = ToolJet.useStateArray({ name: 'value', label: 'Value', description: "['2026-01-01', '2026-01-31']", initialValue: [] });
   const [format] = ToolJet.useStateString({ name: 'format', label: 'Format', initialValue: 'YYYY-MM-DD' });
   const [picker] = ToolJet.useStateEnumeration({ name: 'picker', label: 'Picker', enumDefinition: ['date', 'week', 'month', 'quarter', 'year'], initialValue: 'date' });
@@ -258,7 +258,7 @@ export const RangePicker = (props: Record<string, unknown>) => {
 // Ant's AutoComplete: free text with suggestions. options [{ label, value }] (or strings), value, placeholder,
 // filterOption (match typed text), allowClear; events onChange, onSelect, onSearch.
 export const AutoComplete = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Product' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', initialValue: [
     { label: 'Laptop stand', value: 'Laptop stand' },
     { label: 'Mechanical keyboard', value: 'Mechanical keyboard' },
@@ -267,7 +267,7 @@ export const AutoComplete = (props: Record<string, unknown>) => {
     { label: 'Wireless mouse', value: 'Wireless mouse' },
   ] });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Start typing' });
   const [filterOption] = ToolJet.useStateBoolean({ name: 'filterOption', label: 'Filter option', description: 'Show only the options matching the text.', initialValue: true });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
   const look = useControlLook();
@@ -332,7 +332,7 @@ export const toTree = (raw: unknown): TreeNode[] =>
 // Ant's TreeSelect: treeData, value (an array when multiple or treeCheckable), placeholder, showSearch,
 // treeDefaultExpandAll, allowClear; event onChange.
 export const TreeSelect = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Team' });
   const [treeData] = ToolJet.useStateArray({ name: 'treeData', label: 'Tree data', description: '[{ title, value, children: [...] }]', initialValue: [
     {
       title: 'Engineering',
@@ -348,7 +348,7 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'A value, or an array of values when multiple.', initialValue: '' });
   const [multiple] = ToolJet.useStateBoolean({ name: 'multiple', label: 'Multiple', initialValue: false });
   const [treeCheckable] = ToolJet.useStateBoolean({ name: 'treeCheckable', label: 'Tree checkable', initialValue: false });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a team' });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
   const [treeDefaultExpandAll] = ToolJet.useStateBoolean({ name: 'treeDefaultExpandAll', label: 'Expand all', initialValue: false });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
@@ -403,7 +403,7 @@ export const TreeSelect = (props: Record<string, unknown>) => {
 // Ant's Cascader: options [{ label, value, children }], value (the path, an array), placeholder, expandTrigger,
 // changeOnSelect, showSearch; event onChange.
 export const Cascader = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Location' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value, children: [...] }]', initialValue: [
     {
       label: 'Europe',
@@ -423,7 +423,7 @@ export const Cascader = (props: Record<string, unknown>) => {
     },
   ] });
   const [value, setValue] = ToolJet.useStateArray({ name: 'value', label: 'Value', description: "The path: ['asia', 'japan']", initialValue: [] });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a city' });
   const [expandTrigger] = ToolJet.useStateEnumeration({ name: 'expandTrigger', label: 'Expand trigger', enumDefinition: ['click', 'hover'], initialValue: 'click' });
   const [changeOnSelect] = ToolJet.useStateBoolean({ name: 'changeOnSelect', label: 'Change on select', description: 'Any level can be picked, not only leaves.', initialValue: false });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: false });
@@ -476,7 +476,7 @@ export const Cascader = (props: Record<string, unknown>) => {
 // Ant's ColorPicker: value (hex, or rgb text), format (hex, rgb), showText, allowClear, disabledAlpha, presets
 // [{ label, colors }]; events onChange, onChangeComplete.
 export const ColorPicker = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Color' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
   const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['hex', 'rgb'], initialValue: 'hex' });
   const [showText] = ToolJet.useStateBoolean({ name: 'showText', label: 'Show text', initialValue: true });

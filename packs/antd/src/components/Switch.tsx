@@ -7,7 +7,7 @@ import { FormField, useFieldProps } from '../lib/FormField';
 // Ant's Switch: checked, checkedChildren / unCheckedChildren (text inside the track), size (default, small); its label
 // is Form.Item's, beside it (layout horizontal); events onChange, onClick.
 export const Switch = (props: Record<string, unknown>) => {
-  const field = useFieldProps({ layout: 'horizontal' });
+  const field = useFieldProps({ layout: 'horizontal', label: 'Enabled' });
   const [checked, setChecked] = ToolJet.useStateBoolean({ name: 'checked', label: 'Checked', initialValue: false });
   const [checkedChildren] = ToolJet.useStateString({ name: 'checkedChildren', label: 'Checked text', initialValue: '' });
   const [unCheckedChildren] = ToolJet.useStateString({ name: 'unCheckedChildren', label: 'Unchecked text', initialValue: '' });

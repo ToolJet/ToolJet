@@ -9,9 +9,9 @@ import { ControlSkeleton } from '../lib/Loading';
 
 // Ant's Input.TextArea: value, placeholder, autoSize (minRows/maxRows), maxLength/showCount, allowClear.
 export const TextArea = (props: Record<string, unknown>) => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Description' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter a description' });
   const [minRows] = ToolJet.useStateNumber({ name: 'minRows', label: 'Min rows', description: 'autoSize.minRows', initialValue: 3, min: 1, max: 40 });
   const [maxRows] = ToolJet.useStateNumber({ name: 'maxRows', label: 'Max rows', description: 'autoSize.maxRows; 0 grows without limit.', initialValue: 8, min: 0, max: 80 });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
