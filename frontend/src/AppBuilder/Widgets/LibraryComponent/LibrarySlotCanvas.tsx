@@ -1,6 +1,7 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
+import { useMeasuredWidth } from './useMeasuredWidth';
 
 const SubContainerComponent = SubContainer as React.ComponentType<any>;
 
@@ -17,21 +18,7 @@ interface LibrarySlotCanvasProps {
 // projected into), so the width the grid divides into columns is measured, not derived from the widget.
 const LibrarySlotCanvas = ({ id, darkMode }: LibrarySlotCanvasProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState<number>();
-
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    // A hidden slot (closed section, inactive tab) measures 0: keep the last real width so the grid
-    // doesn't lay its components out at zero width, and lays them out again when it is shown.
-    const measure = () => {
-      if (el.clientWidth > 0) setWidth(el.clientWidth);
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const width = useMeasuredWidth(ref);
 
   return (
     // No frame of its own, like a native Container's body: while dragging, the sub-canvas draws its grid

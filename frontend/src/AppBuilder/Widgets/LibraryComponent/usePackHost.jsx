@@ -10,6 +10,7 @@ import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast'
 import { resolveDynamicValues } from '@/AppBuilder/_stores/utils';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { ROW_VARIABLES } from './inlineRuntime';
+import { useMeasuredWidth } from './useMeasuredWidth';
 
 /* Pack contract v2: what the LibraryComponent host gives a pack component beyond the base SDK (inlineRuntime.ts
    PackHost). The validation, rows and popup drop areas live here; the control state is the widget's own. */
@@ -216,6 +217,49 @@ const useRowResolve = (moduleId) =>
 
 export const rowSlotAttr = (id, index) => `tj-row-${id}-${index}`;
 
+// One row's canvas, as wide as the pack lays the row out: a grid cell or a kanban card, not the whole widget (a
+// 4-column list drew each row's components across the full width, clipped by the cell).
+const PackRow = ({
+  slot,
+  id,
+  index,
+  moduleId,
+  rowHeight,
+  darkMode,
+  widgetWidth,
+  fit,
+  items,
+  currentLayout,
+  visibility,
+  height,
+}) => {
+  const ref = useRef(null);
+  const measured = useMeasuredWidth(ref);
+  return (
+    <div ref={ref} slot={slot} className="tw-block tw-w-full">
+      <ListviewSubcontainer
+        id={id}
+        index={index}
+        moduleId={moduleId}
+        mode="list"
+        rowHeight={rowHeight}
+        positiveColumns={1}
+        showBorder={false}
+        onRecordOrRowClicked={() => {}}
+        computeCanvasBackgroundColor={() => 'transparent'}
+        darkMode={darkMode}
+        width={measured ?? widgetWidth}
+        isDynamicHeightEnabled={fit}
+        data={items}
+        currentLayout={currentLayout}
+        visibility={visibility}
+        parentHeight={height}
+        componentType="LibraryComponent"
+      />
+    </div>
+  );
+};
+
 /** The rows a pack list draws as ToolJet canvases ({{listItem}}), with the native List view's row plumbing. */
 const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMode, enabled }) => {
   const { moduleId } = useModuleContext();
@@ -248,27 +292,21 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
 
   const light = enabled
     ? rows.items.map((_item, index) => (
-        <div key={index} slot={rowSlotAttr(id, index)} className="tw-block tw-w-full">
-          <ListviewSubcontainer
-            id={id}
-            index={index}
-            moduleId={moduleId}
-            mode="list"
-            rowHeight={rows.rowHeight}
-            positiveColumns={1}
-            showBorder={false}
-            onRecordOrRowClicked={() => {}}
-            computeCanvasBackgroundColor={() => 'transparent'}
-            darkMode={darkMode}
-            width={width}
-            isDynamicHeightEnabled={fit}
-            data={rows.items}
-            currentLayout={currentLayout}
-            visibility={visibility}
-            parentHeight={height}
-            componentType="LibraryComponent"
-          />
-        </div>
+        <PackRow
+          key={index}
+          slot={rowSlotAttr(id, index)}
+          id={id}
+          index={index}
+          moduleId={moduleId}
+          rowHeight={rows.rowHeight}
+          darkMode={darkMode}
+          widgetWidth={width}
+          fit={fit}
+          items={rows.items}
+          currentLayout={currentLayout}
+          visibility={visibility}
+          height={height}
+        />
       ))
     : null;
   return { setRows, light };
