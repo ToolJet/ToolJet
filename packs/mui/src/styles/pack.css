@@ -116,3 +116,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* What an html cell's markup gives a width (an initials avatar, an icon, a dot) keeps it: in a flex row next to a long
+   name it was squeezed into a clipped oval. */
+.tj-mui-html-cell [style*="width:"],
+.tj-mui-html-cell [style*="width :"],
+.tj-mui-html-cell img,
+.tj-mui-html-cell svg {
+  flex-shrink: 0;
+}
