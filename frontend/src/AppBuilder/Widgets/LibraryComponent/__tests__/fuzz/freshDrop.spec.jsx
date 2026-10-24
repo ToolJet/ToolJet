@@ -45,7 +45,8 @@ const PRESENT = Object.keys(SOURCES).filter((pack) => fs.existsSync(path.join(PA
 // dist/ is built, not committed: node packages/pack-tools/build.mjs packs/<pack> (CI builds them before the tests).
 if (!PRESENT.length) test.skip('no built pack in this checkout: run packages/pack-tools/build.mjs first', () => {});
 
-describe.each(PRESENT)('a fresh drop from the %s pack', (pack) => {
+// jest's .each throws on an empty table, so with nothing to run only the skipped test above is declared.
+(PRESENT.length ? describe.each(PRESENT) : () => () => {})('a fresh drop from the %s pack', (pack) => {
   const manifest = JSON.parse(fs.readFileSync(path.join(PACKS_DIR, pack, 'dist/manifest.json'), 'utf8'));
   const source = SOURCES[pack]();
 

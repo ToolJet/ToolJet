@@ -93,7 +93,8 @@ const LOOP = /Too many re-renders|Maximum update depth|render loop/;
 
 if (!packs.length) test.skip('pack fuzz (set PACK_FUZZ=shadcn,antd,mui to run it)', () => {});
 
-describe.each(packs)('the %s pack under hostile bindings', (pack) => {
+// jest's .each throws on an empty table, so with nothing to run only the skipped test above is declared.
+(packs.length ? describe.each(packs) : () => () => {})('the %s pack under hostile bindings', (pack) => {
   const manifest = JSON.parse(fs.readFileSync(path.join(PACKS_DIR, pack, 'dist/manifest.json'), 'utf8'));
   const source = PACK_SOURCES[pack]();
   const names = Object.keys(manifest.components).filter((name) => !only.size || only.has(name));
