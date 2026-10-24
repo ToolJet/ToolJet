@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { Field } from '../lib/Field';
 import { cn } from '../lib/cn';
 import { MAX_CHOICES, choiceKey, defaultKey, isDisabledOption, isScalar, shownOptions, toChoiceOptions, type ChoiceOption } from '../lib/ui2/choice/options';
+import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
+import { moveRovingFocus, rovingEntry } from '../lib/activeElement';
 import { lookVars, useDropRemovedChoices, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
 import { InlineLoading } from '../lib/ui2/loading/look';
@@ -64,10 +66,15 @@ export const RadioGroup = () => {
     setValue((selected?.value ?? '') as string);
     setSelectedOption(selected ?? {});
   }, [key, JSON.stringify(selected)]); // eslint-disable-line react-hooks/exhaustive-deps
-  const check = ToolJet.useValidation({ section: 'choice', value: selected?.value ?? '', present: !!selected });
+  const check = ToolJet.useValidation({ section: 'choice', value: choiceValidationValue(selected), present: !!selected });
 
+  // The key as last chosen, ahead of the next render: an arrow key selects the radio it moves to, and Radix may click
+  // that same radio as it takes focus (its arrow-key flag), which must not count as a second change.
+  const keyRef = useRef(key);
+  keyRef.current = key;
   // As the native Radio button's: both fire onSelectionChange.
   const change = (next: string) => {
+    keyRef.current = next;
     setKey(next);
     const option = byKey.get(next);
     setValue((option?.value ?? '') as string);
@@ -94,6 +101,30 @@ export const RadioGroup = () => {
     '--ui-destructive': errorColor,
   });
   const itemId = (o: ChoiceOption) => `${fieldId ?? 'radio'}-${choiceKey(o.value)}`;
+  // A user's pick: the radio's own click, or an arrow key moving to it. A pick of the chosen radio changes nothing.
+  const pickKey = (next: string) => {
+    if (next === keyRef.current || isDisabledOption(byKey.get(next))) return;
+    change(next);
+    check.touch();
+  };
+  // Arrow keys, Home and End move to the next enabled radio and select it, read from the group's own root: Radix's
+  // roving focus compares document.activeElement, which inside the inline runtime's shadow root stays the host, so it
+  // walked on past the next radio (SP-22). The move is consumed here, before the item's Radix handler sees it.
+  const radios = (root: HTMLElement) =>
+    Array.from(root.querySelectorAll<HTMLElement>('[role="radio"]')).filter((el) => !(el as HTMLButtonElement).disabled);
+  const onKeyDownCapture = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled) return;
+    const moved = moveRovingFocus(e, radios(e.currentTarget), { orientation: sideBySide ? 'horizontal' : 'vertical', loop: true });
+    const next = moved?.getAttribute('data-choice-key');
+    if (next) pickKey(next);
+  };
+  // Tab onto the group lands on its checked radio (else its first enabled one), as Radix means to; its own walk ends on
+  // the last radio in a shadow root. Focus on a radio itself is Radix's.
+  const onFocus = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return;
+    e.preventDefault();
+    rovingEntry(radios(e.currentTarget), (el) => el.getAttribute('aria-checked') === 'true')?.focus();
+  };
 
   return (
     <div className="ui uc" style={vars}>
@@ -108,17 +139,16 @@ export const RadioGroup = () => {
             aria-label={label || undefined}
             aria-invalid={check.error ? true : undefined}
             aria-describedby={fieldId && (check.error || description) ? `${fieldId}-note` : undefined}
-            onValueChange={(next) => {
-              if (isDisabledOption(byKey.get(next))) return;
-              change(next);
-              check.touch();
-            }}
+            onValueChange={pickKey}
+            onKeyDownCapture={onKeyDownCapture}
+            onFocus={onFocus}
           >
             {shownOptions(options, selected, MAX_CHOICES).map((o) => (
               <div className="ui-radio-item" key={choiceKey(o.value)}>
                 <RadioGroupPrimitive.Item
                   className="ui-radio ui-focus"
                   value={choiceKey(o.value)}
+                  data-choice-key={choiceKey(o.value)}
                   id={itemId(o)}
                   disabled={isDisabledOption(o)}
                   onClick={

@@ -5,6 +5,7 @@ import { CalendarDays } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
+import { popupLayerStyle } from '../lib/popupLayer';
 import { dateProblem, dateRules, formatDate, isOffDay, parseDateTime, startOfDay, toDay, toDayjsFormat, ymd } from '../lib/ui2/choice/dates';
 import { fieldVars, lookVars, useFocusEvents, useResetOn, useStable } from '../lib/ui2/choice/looks';
 import { useBusy, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
@@ -69,9 +70,14 @@ export const DatePicker = () => {
   const stableDisabled = useStable(disabledDates);
   const rules = useMemo(() => dateRules({ minDate, maxDate, disabledDates: stableDisabled, format }), [minDate, maxDate, stableDisabled, format]);
 
-  // A default value or mode resets the selection. Both ends given together are put in order.
+  // A default value or mode resets the selection. Both ends given together are put in order. The legacy `value` stands
+  // in only while the app has never set defaultValue: `value` is also what the field exposes, so once a default was
+  // given, falling back to it on an emptied default fed the last pick back in and the old date stayed (SP-27).
+  const noDefault = blank(defaultValue) || (Array.isArray(defaultValue) && !defaultValue.length);
+  const hadDefault = useRef(false);
+  if (!noDefault) hadDefault.current = true;
   const readDefault = (): Selection => {
-    const raw = blank(defaultValue) || (Array.isArray(defaultValue) && !defaultValue.length) ? legacyValue : defaultValue;
+    const raw = noDefault ? (hadDefault.current ? '' : legacyValue) : defaultValue;
     if (!range) return toDay(raw, format);
     const pair = Array.isArray(raw) ? raw : [raw];
     const from = toDay(pair[0], format);
@@ -221,6 +227,8 @@ export const DatePicker = () => {
   };
   const clearable = showClearBtn === true && !!text && !disabled;
   const vars = lookVars(fieldVars(styles));
+  // Inside a Dialog's body the popup stacks above the dialog (lib/popupLayer).
+  const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
 
   return (
     <div className="ui uc" ref={anchorRef} style={vars}>
@@ -249,7 +257,7 @@ export const DatePicker = () => {
             />
             {container ? (
               <Popover.Portal container={container}>
-                <Popover.Content aria-label={range ? 'Choose dates' : 'Choose a date'} className="ui-popup uc-pop" align="start" sideOffset={4} style={vars}>
+                <Popover.Content aria-label={range ? 'Choose dates' : 'Choose a date'} className="ui-popup uc-pop" align="start" sideOffset={4} style={popVars}>
                   <MonthGrid
                     autoFocus
                     month={month}

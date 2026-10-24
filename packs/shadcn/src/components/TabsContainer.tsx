@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { ToolJet } from "@tooljet/custom-component-sdk";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { MAX_SLOT_ITEMS, toSlotName } from "../lib/slots";
+import { MAX_SLOT_ITEMS, slotNames } from "../lib/slots";
 import { cn } from "../lib/cn";
 import { lookVars, px } from "../lib/ui2/nav/look";
 import { useTabs } from "../lib/ui2/nav/hooks";
@@ -100,6 +100,8 @@ export const TabsContainer = () => {
       onTabSwitch();
     },
   });
+  // Every tab's canvas, kept apart even when two ids fold to the same slot characters.
+  const slots = useMemo(() => slotNames("tab", t.tabs.map((tab) => tab.id)), [t.tabs]);
   const style: TabsVariant = (["pills", "underline", "steps"] as const).includes(variant as TabsVariant) ? (variant as TabsVariant) : "pills";
   const wizard = style === "steps";
   // A wizard's numbered strip runs across the top.
@@ -177,7 +179,7 @@ export const TabsContainer = () => {
                     <Spinner />
                   </div>
                 ) : null}
-                <ToolJet.Slot name={toSlotName("tab", tab.id)} className="ui-slot-fill" style={tab.loading ? { display: "none" } : undefined} />
+                <ToolJet.Slot name={slots.get(tab.id) as string} className="ui-slot-fill" style={tab.loading ? { display: "none" } : undefined} />
               </div>
             )
           )}

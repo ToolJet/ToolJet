@@ -99,6 +99,12 @@ export const CurrencyInput = () => {
   });
   // The formatted value follows a new currency, locale or decimal places too.
   useReseed([currency, locale, decimalPlaces], () => setFormattedValue(formatted(value)), { onMount: false });
+  // A Form's clear empties `value` itself, without publish(): the typed draft and formattedValue are the widget's own,
+  // so a focused box would keep showing the draft and formattedValue would keep the old amount.
+  TJ.useFormClear(() => {
+    setDraft(null);
+    publish(null);
+  });
 
   // setValue(value, currency): UI 2.0 takes the currency with the value, rounding to the new currency's decimals.
   TJ.useAction(

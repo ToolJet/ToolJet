@@ -5,9 +5,11 @@ import { ChevronsUpDown } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
+import { popupLayerStyle } from '../lib/popupLayer';
 import { cn } from '../lib/cn';
 import { initialKey, isDisabledOption, keyOf, keptOptions, toChoiceOptions, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
+import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { useBusy, useColorStyle, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
 import { ClearX, OptionIcon, OptionsMenu, Spinner } from '../lib/ui2/choice/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
@@ -68,8 +70,6 @@ export const Combobox = () => {
   const serverSide = serverSideSearch === true;
   const [key, setKey] = useState<string | null>(() => initialKey(defaultValue) ?? initialKey(legacyValue));
   const [open, setOpen] = useState(false);
-  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
-  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   const [search, setSearch] = useState('');
   useResetOn(defaultValue, () => setKey(initialKey(defaultValue)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
@@ -86,15 +86,18 @@ export const Combobox = () => {
   };
   useEffect(() => expose(selected), [key, JSON.stringify(selected)]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const check = ToolJet.useValidation({ section: 'choice', value: selected?.value ?? '', present: !!selected });
+  const check = ToolJet.useValidation({ section: 'choice', value: choiceValidationValue(selected), present: !!selected });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   const onSearch = (text: string) => {
     setSearch(text);
     setSearchText(text);
     onSearchTextChanged();
   };
+  // Set while a close by useOwnerGuard is under way: focus does not go back to a trigger that cannot take input.
+  const ownerClosed = useRef(false);
   const openChange = (next: boolean) => {
     if (next && disabled) return;
+    if (next) ownerClosed.current = false;
     setOpen(next);
     focus.opened(next);
     if (!next) {
@@ -102,6 +105,18 @@ export const Combobox = () => {
       if (search) onSearch('');
     }
   };
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): the same close
+  // as a dismiss (the search empties), and the field counts as left (onBlur), so the next focus is a new onFocus.
+  useOwnerGuard(
+    anchorRef,
+    open,
+    () => {
+      ownerClosed.current = true;
+      openChange(false);
+      focus.leave();
+    },
+    disabled
+  );
   const pick = (option: ChoiceOption) => {
     setKey(keyOf(option.value));
     expose(option);
@@ -135,6 +150,8 @@ export const Combobox = () => {
 
   const showClear = showClearBtn !== false && !!selected && !disabled;
   const vars = lookVars({ ...fieldVars(styles), '--lk-menu-bg': menuBackgroundColor, '--lk-menu-fg': menuTextColor, '--lk-hl': optionHoverColor });
+  // A popup in a Dialog's body stacks above the dialog (popupLayer.ts), read off the owner as it opens.
+  const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
   const menuId = fieldId ? `${fieldId}-menu` : undefined;
 
   return (
@@ -171,8 +188,11 @@ export const Combobox = () => {
                   align="start"
                   sideOffset={4}
                   className="ui-popup uc-pop uc-pop-menu"
-                  style={vars}
+                  style={popVars}
                   onOpenAutoFocus={(e) => e.preventDefault()}
+                  onCloseAutoFocus={(e) => {
+                    if (ownerClosed.current) e.preventDefault();
+                  }}
                 >
                   <OptionsMenu
                     id={menuId}

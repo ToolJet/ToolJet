@@ -2,6 +2,7 @@
 // with the same conventions: native column keys, filter conditions, sortApplied, rows keyed by idField. Plain TS with no
 // dayjs: dates are parsed and formatted here with the dayjs format tokens the UI 2.0 table accepts.
 import type { CSSProperties } from 'react';
+import { boundedRegex, warnRegexOutcome } from '../../safeRegex';
 import { seriesLabel } from '../charts/chartModel';
 
 export type Row = Record<string, unknown>;
@@ -583,28 +584,19 @@ export const NO_VALUE = new Set<unknown>(['isEmpty', 'isNotEmpty']);
 const cellText = (value: unknown): string =>
   (isEmptyValue(value) ? '' : typeof value === 'object' ? stringify(value) : String(value)).toLowerCase();
 
-// A regex condition is the author's pattern, run on every row: long patterns and long cells are refused (they hold for
-// no row) so one backtracking pattern cannot hang the page. UI 2.0 checks patterns with a bounded matcher instead.
-const MAX_PATTERN = 200;
-const MAX_REGEX_TEXT = 2000;
-const REGEX_CACHE = new Map<string, RegExp | null>();
-const regexOf = (pattern: unknown): RegExp | null => {
-  const source = String(pattern ?? '');
-  if (!source || source.length > MAX_PATTERN) return null;
-  if (!REGEX_CACHE.has(source)) {
-    if (REGEX_CACHE.size > 100) REGEX_CACHE.clear();
-    try {
-      REGEX_CACHE.set(source, new RegExp(source, 'i'));
-    } catch {
-      REGEX_CACHE.set(source, null);
-    }
-  }
-  return REGEX_CACHE.get(source) ?? null;
-};
+// A regex condition is the author's pattern, run on every row with bounded work (safeRegex), with i, on the cell's text
+// in lower case. Length caps alone never stopped a backtracking pattern (^(a+)+$ hangs on 33 characters), so the
+// browser's RegExp never runs it on the text. A pattern that is invalid, or that cannot be checked on a cell (too
+// complex for the work budget, or unsupported), holds for no cell: a filter drops the row, a style applies to no cell
+// and a button rule disables or hides no button. The table warns once per pattern.
 const regexHolds = (pattern: unknown, text: string, negate: boolean): boolean => {
-  const re = regexOf(pattern);
-  if (!re || text.length > MAX_REGEX_TEXT) return false;
-  return re.test(text) !== negate;
+  const source = pattern instanceof RegExp ? pattern.source : String(pattern ?? '');
+  const re = source ? boundedRegex(source, 'i') : null;
+  if (!re) return false;
+  const outcome = re.match(text);
+  if (typeof outcome === 'boolean') return outcome !== negate;
+  warnRegexOutcome('DataTable', re, outcome, 'so its rule holds for no cell');
+  return false;
 };
 
 /** Whether a value meets one of the filter conditions (filters, conditional styles and button rules). */

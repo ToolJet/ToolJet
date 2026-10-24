@@ -1,11 +1,12 @@
 import React from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { displayText } from '../lib/displayText';
 
 // Container: builders drop ToolJet components into the body slot. The look is driven by styles,
 // which the builder sets in the Styles tab and which are not exposed to the app.
 export const Card = () => {
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Card title' });
-  const [description] = ToolJet.useStateString({
+  const [rawTitle] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Card title' });
+  const [rawDescription] = ToolJet.useStateString({
     name: 'description',
     label: 'Description',
     initialValue: 'Drop components into the area below.',
@@ -26,6 +27,8 @@ export const Card = () => {
   const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Border radius', initialValue: '' });
   const padding = ToolJet.useStyleNumber({ name: 'padding', label: 'Padding', initialValue: 16, section: 'Spacing' });
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 40 });
+  const title = displayText(rawTitle);
+  const description = displayText(rawDescription);
 
   return (
     <div

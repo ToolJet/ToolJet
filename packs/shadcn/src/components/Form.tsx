@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
+import { displayText } from '../lib/displayText';
 
 type FieldType = 'text' | 'email' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date';
 
@@ -24,10 +25,10 @@ const toFields = (raw: unknown[]): FormField[] =>
     .filter((f): f is Record<string, unknown> => !!f && typeof f === 'object' && !!(f as Record<string, unknown>).name)
     .map((f) => ({
       name: String(f.name),
-      label: String(f.label ?? f.name),
+      label: displayText(f.label ?? f.name),
       type: FIELD_TYPES.includes(f.type as FieldType) ? (f.type as FieldType) : 'text',
       required: Boolean(f.required),
-      placeholder: String(f.placeholder ?? ''),
+      placeholder: displayText(f.placeholder),
       options: Array.isArray(f.options) ? f.options.map(String) : [],
     }));
 
@@ -51,7 +52,7 @@ const validate = (fields: FormField[], values: Values): Record<string, string> =
 // Schema-driven form: fields come from the `fields` property; the form validates them and exposes
 // `data` (the current values), `isValid` and `errors`. onSubmit fires only when every field is valid.
 export const Form = () => {
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Contact us' });
+  const [rawTitle] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Contact us' });
   const [rawFields] = ToolJet.useStateArray({
     name: 'fields',
     label: 'Fields',
@@ -71,10 +72,12 @@ export const Form = () => {
     description: 'Object of field name → initial value.',
     initialValue: {},
   });
-  const [submitLabel] = ToolJet.useStateString({ name: 'submitLabel', label: 'Submit button', initialValue: 'Submit' });
+  const [rawSubmitLabel] = ToolJet.useStateString({ name: 'submitLabel', label: 'Submit button', initialValue: 'Submit' });
   const [showReset] = ToolJet.useStateBoolean({ name: 'showReset', label: 'Show reset button', initialValue: true });
   const [disabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false });
 
+  const title = displayText(rawTitle);
+  const submitLabel = displayText(rawSubmitLabel);
   const fields = toFields(rawFields);
   // A static initialValue: the builder stamps manifest defaults at drop time, and a computed one can't be
   // read statically. The field defaults are merged in below instead.

@@ -3,6 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ImageIcon, ImageOff, X } from 'lucide-react';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { cn } from '../lib/cn';
 import { initials, isSet, px, styleVars } from '../lib/ui2/display/lists/model';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
@@ -116,6 +117,10 @@ export const Image = () => {
   useEffect(() => {
     if (!zoom) setZoomed(false);
   }, [zoom]);
+  // The lightbox portals into the shared popup layer, outside the widget, so disabling, loading or hiding the image
+  // left it open (pack audit SP-02, 2026-10-23): it closes once the image cannot take input. Escape still closes it.
+  const { disabled } = ToolJet.useControlState();
+  useOwnerGuard(anchorRef, zoomed && zoom, () => setZoomed(false), disabled);
   const ratio = ratioOf(aspectRatio);
   const text = isSet(caption) ? String(caption) : '';
   const fit = ['cover', 'contain', 'fill'].includes(imageFit) ? imageFit : 'cover';

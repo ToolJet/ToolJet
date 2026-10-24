@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
-import { FONT_LABELS, FONT_VALUES, colorFor, fontStack, px, recordItems, styleVars, type RecordItem } from '../lib/ui2/display/lists/model';
+import { FONT_LABELS, FONT_VALUES, colorFor, fontStack, px, recordItems, styleVars } from '../lib/ui2/display/lists/model';
 import { Chip, InlineProgress, RecordAvatar, onKeyActivate } from '../lib/ui2/display/lists/parts';
+import { useRecordSelection } from '../lib/ui2/display/lists/useRecordSelection';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { RowsSkel } from '../lib/ui2/loading/shapes';
 import '../styles/ui2-display-lists.css';
@@ -79,15 +80,13 @@ export const RecordList = () => {
     () => recordItems(data, { titleField, avatarField, metaFields, statusField, progressField, valueField, valueFormat, currency, idField }),
     [data, titleField, avatarField, metaFields, statusField, progressField, valueField, valueFormat, currency, idField]
   );
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const click = (row: RecordItem) => {
-    setSelectedKey(row.key);
-    setSelectedItem(row.row);
-    // The id field's own value, as UI 2.0 exposes it (a number stays a number).
-    setSelectedItemId((row.row[idField || 'id'] ?? null) as string);
-    setSelectedItemIndex(row.index);
-    onItemClicked();
-  };
+  // The id field's own value, as UI 2.0 exposes it (a number stays a number).
+  const { selectedKey, pick: click } = useRecordSelection(
+    rows,
+    (row) => row[idField || 'id'],
+    { setItem: setSelectedItem, setId: (id) => setSelectedItemId(id as string), setIndex: setSelectedItemIndex },
+    onItemClicked
+  );
   const card = listStyle !== 'plain';
   const size = DENSITY[density] ?? DENSITY.default;
   const vars = styleVars([

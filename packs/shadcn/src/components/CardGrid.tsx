@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
-import { FONT_LABELS, FONT_VALUES, cardItems, fontStack, gridColumns, px, styleVars, type CardItem } from '../lib/ui2/display/lists/model';
+import { FONT_LABELS, FONT_VALUES, cardItems, fontStack, gridColumns, px, styleVars } from '../lib/ui2/display/lists/model';
 import { CardImage, Chip, InlineProgress, RecordAvatar, onKeyActivate, useWidth } from '../lib/ui2/display/lists/parts';
+import { useRecordSelection } from '../lib/ui2/display/lists/useRecordSelection';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { CardsSkel } from '../lib/ui2/loading/shapes';
 import '../styles/ui2-display-lists.css';
@@ -65,14 +66,12 @@ export const CardGrid = () => {
       cardItems(data, { titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField }),
     [data, titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField]
   );
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const click = (card: CardItem) => {
-    setSelectedKey(card.key);
-    setSelectedItem(card.row);
-    setSelectedItemId((card.row[idField || 'id'] ?? null) as string);
-    setSelectedItemIndex(card.index);
-    onCardClicked();
-  };
+  const { selectedKey, pick: click } = useRecordSelection(
+    cards,
+    (row) => row[idField || 'id'],
+    { setItem: setSelectedItem, setId: (id) => setSelectedItemId(id as string), setIndex: setSelectedItemIndex },
+    onCardClicked
+  );
   const count = gridColumns(columns, width || 960, minCardWidth);
   const aspect = ['16/9', '4/3', '1/1'].includes(imageAspect) ? imageAspect.replace('/', ' / ') : '4 / 3';
   // The picture area only when an image field is mapped: without one every card got a large initials panel.

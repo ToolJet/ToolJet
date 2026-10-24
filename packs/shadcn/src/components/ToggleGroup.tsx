@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { MAX_CHOICES, choiceKey, defaultKey, isDisabledOption, shownOptions, toChoiceOptions, toValueList, type ChoiceOption } from '../lib/ui2/choice/options';
 import { lookVars, useDropRemovedChoices, useResetOn } from '../lib/ui2/choice/looks';
+import { moveRovingFocus, rovingEntry } from '../lib/activeElement';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
@@ -95,6 +96,22 @@ export const ToggleGroup = () => {
       {o.label}
     </ToggleGroupPrimitive.Item>
   ));
+  // Arrow keys, Home and End move focus to the next enabled option, read from the group's own root: Radix's roving
+  // focus compares document.activeElement, which inside the inline runtime's shadow root stays the host, so focus
+  // stayed put or walked to the far end (SP-22). Tab onto the group lands on the pressed option, else the first enabled
+  // one.
+  const toggles = (root: HTMLElement) =>
+    Array.from(root.querySelectorAll<HTMLButtonElement>('button')).filter((el) => !el.disabled);
+  const keyboard = {
+    onKeyDownCapture: (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!disabled) moveRovingFocus(e, toggles(e.currentTarget), { loop: true });
+    },
+    onFocus: (e: React.FocusEvent<HTMLDivElement>) => {
+      if (e.target !== e.currentTarget) return;
+      e.preventDefault();
+      rovingEntry(toggles(e.currentTarget), (el) => el.getAttribute('data-state') === 'on')?.focus();
+    },
+  };
   const className = cn(
     look === 'segmented' ? 'uc-segmented' : cn('ui-toggle-group uc-toggles', look === 'outline' && 'ui-toggle-group--outline'),
     look === 'segmented' && fullWidth === true && 'is-full'
@@ -108,6 +125,7 @@ export const ToggleGroup = () => {
             <ToggleGroupPrimitive.Root
               type="multiple"
               className={className}
+              {...keyboard}
               value={keys}
               disabled={disabled}
               onValueChange={(next) => {
@@ -121,6 +139,7 @@ export const ToggleGroup = () => {
             <ToggleGroupPrimitive.Root
               type="single"
               className={className}
+              {...keyboard}
               value={key}
               disabled={disabled}
               // Radix deselects on a second click; a segmented control keeps one value.

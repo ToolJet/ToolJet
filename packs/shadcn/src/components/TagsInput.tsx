@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { X } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
@@ -69,7 +69,23 @@ export const TagsInput = () => {
     setValues(next);
     setNewTagsAdded(next.filter((t) => !known.has(rules.caseSensitive ? t : t.toLowerCase())));
   };
-  useReseed(defaultValue, () => publish(M.addTags([], M.toTags(defaultValue).length ? defaultValue : rawValues, rules).tags));
+  // A new default starts the tags again, an empty one included. Only on mount does a default with no tags fall back to
+  // an app's own `values`; a later empty default clears them.
+  const mounted = useRef(false);
+  useReseed(defaultValue, () =>
+    publish(M.addTags([], !mounted.current && !M.toTags(defaultValue).length ? rawValues : defaultValue, rules).tags)
+  );
+  // Declared after useReseed, so its mount run still sees mounted false.
+  useEffect(() => {
+    mounted.current = true;
+  }, []);
+  // A Form's clear empties `values` itself, without publish(): newTagsAdded would keep the old tags, and the unfinished
+  // text would come back as a tag on blur (addOnBlur) into the cleared Form.
+  TJ.useFormClear(() => {
+    publish([]);
+    setText('');
+    setTagError('');
+  });
 
   const commit = (next: string[], event: 'added' | 'deleted', tag: string) => {
     publish(next);

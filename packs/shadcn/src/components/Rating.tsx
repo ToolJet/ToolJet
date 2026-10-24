@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Circle, Heart, Star } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Field } from '../lib/Field';
@@ -64,11 +64,16 @@ export const Rating = () => {
   const half = allowHalf === true;
   const value = Math.min(M.normalizeRating(rawValue, max, half), max);
   // On mount an untouched Default value leaves a rating the app set (`value`, the pack's earlier name) alone.
-  useReseed(defaultValue, () => setValue(M.normalizeRating(defaultValue, max, half)), {
-    onMount: !(defaultValue === 4 && Number.isFinite(Number(rawValue))),
-  });
+  const keptOnMount = defaultValue === 4 && Number.isFinite(Number(rawValue));
+  useReseed(defaultValue, () => setValue(M.normalizeRating(defaultValue, max, half)), { onMount: !keptOnMount });
   // A smaller maximum (or whole icons only) fits the rating, so what is exposed is what is drawn.
   useReseed([max, half], () => setValue(value), { onMount: false });
+  // The same for a rating kept on mount, whose maximum was already known (a literal 3 icons under the untouched default
+  // 4): exposed 4 while 3 icons are checked. An empty or fitting rating is left as the app set it, and fitting it is not
+  // the user's change, so no onChange.
+  useEffect(() => {
+    if (keptOnMount && rawValue !== null && (rawValue as unknown) !== '' && Number(rawValue) !== value) setValue(value);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   TJ.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
     setValue(M.normalizeRating(v, max, half))

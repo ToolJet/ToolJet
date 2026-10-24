@@ -15,8 +15,8 @@ import {
   progressEntries,
   progressItem,
   progressMax,
-  type ProgressItem,
 } from '../lib/ui2/charts/progressModel';
+import { useRecordSelection } from '../lib/ui2/display/lists/useRecordSelection';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { ProgressRowsSkel } from '../lib/ui2/loading/shapes';
 import '../styles/ui2-charts-progress.css';
@@ -98,12 +98,13 @@ export const ProgressList = () => {
   const card = listStyle !== 'plain';
   const remaining = entries.length - shown;
 
-  const select = (row: ProgressItem) => {
-    setSelectedItem(row.row);
-    setSelectedItemId(String(row.row[idField || 'id'] ?? ''));
-    setSelectedItemIndex(row.index);
-    onItemClicked();
-  };
+  // Followed through every entry, not only the rows drawn so far; the id keeps its type (a number stays a number).
+  const { pick: select } = useRecordSelection(
+    entries,
+    (row) => row[idField || 'id'],
+    { setItem: setSelectedItem, setId: (id) => setSelectedItemId(id as string), setIndex: setSelectedItemIndex },
+    onItemClicked
+  );
 
   const vars = {
     ...themeVars({ primary: css(accent) }),

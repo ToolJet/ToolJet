@@ -2,7 +2,7 @@ import React from "react";
 import { ToolJet } from "@tooljet/custom-component-sdk";
 import { Check } from "lucide-react";
 import { cn } from "../lib/cn";
-import { toItems, toSlotName } from "../lib/slots";
+import { slotNames, toItems } from "../lib/slots";
 
 // Wizard container: one drop area per step, with Back / Next / Finish. Every step stays mounted
 // (only the current one is shown), so values entered in earlier steps are kept.
@@ -67,14 +67,21 @@ export const Stepper = () => {
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 50 });
 
   const steps = toItems(rawSteps, "Step");
-  const found = steps.findIndex((s) => s.id === currentStep);
+  const slots = slotNames("step", steps.map((s) => s.id));
+  const current = String(currentStep ?? "");
+  const found = steps.findIndex((s) => s.id === current);
   const index = found === -1 ? 0 : found;
   const isLast = index === steps.length - 1;
+  // The step shown is the exposed one: a current step that is gone (or never named a step) falls back to the first,
+  // and currentStep now says so, with no step-change event. It kept the removed id while the wizard showed another
+  // step (pack audit SP-20, 2026-10-23). Same as useTabs' fallback tab.
+  const shownId = steps[index]?.id;
   React.useEffect(() => {
     setCurrentStepIndex(index);
     setIsFirstStep(index === 0);
     setIsLastStep(isLast);
-  }, [index, isLast, setCurrentStepIndex, setIsFirstStep, setIsLastStep]);
+    if (shownId !== undefined && shownId !== current) setCurrentStep(shownId);
+  }, [index, isLast, shownId, current, setCurrentStep, setCurrentStepIndex, setIsFirstStep, setIsLastStep]);
   const finish = () => {
     onComplete();
     onFinish();
@@ -146,7 +153,7 @@ export const Stepper = () => {
         {steps.map((step, i) => (
           <div key={step.id} className="ui-stepper-panel" hidden={i !== index}>
             <ToolJet.Slot
-              name={toSlotName("step", step.id)}
+              name={slots.get(step.id) as string}
               className="ui-slot-fill"
             />
           </div>

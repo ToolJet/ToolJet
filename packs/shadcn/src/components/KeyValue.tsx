@@ -6,6 +6,7 @@ import { colorFor, isSet, keyValueItems, keyValueText, linkHref, styleVars, type
 import { useWidth } from '../lib/ui2/display/lists/parts';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { PairsSkel } from '../lib/ui2/loading/shapes';
+import { moveRovingFocus } from '../lib/activeElement';
 import '../styles/ui2-display-lists.css';
 
 const cssSize = (value: unknown, fallback: string): string => {
@@ -76,8 +77,8 @@ const Value = ({ row, shown, emptyText, badgeColors }: { row: KeyValueRow; shown
 };
 
 // UI 2.0's Key-value list: label and value pairs (an object, [{ label, value, type }] or [label, value] pairs), with
-// typed rows (text, number, currency, date, datetime, badge, link, boolean) formatted in the list's currency, locale and
-// date format.
+// typed rows (text, number, currency, date, datetime, badge, link, boolean) formatted in the list's currency, locale
+// and date format.
 export const KeyValue = () => {
   const [data] = ToolJet.useStateObject({
     name: 'data',
@@ -119,6 +120,7 @@ export const KeyValue = () => {
   const dividerColor = ToolJet.useStyleString({ name: 'dividerColor', label: 'Divider color', inspector: 'color', initialValue: '' });
   const linkColor = ToolJet.useStyleString({ name: 'linkColor', label: 'Link color', inspector: 'color', initialValue: '' });
   const ld = useLoadingLook();
+  const { disabled } = ToolJet.useControlState();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 26 });
 
   const [rootRef, width] = useWidth<HTMLDivElement>();
@@ -130,6 +132,28 @@ export const KeyValue = () => {
   const lastRowStart = rows.length - (rows.length % count || count);
   const defaults = { currency: currency || 'USD', locale: locale || 'en-US', dateFormat };
   const empty = emptyText === undefined || emptyText === null ? '—' : String(emptyText);
+  // A row is an action (onFieldClick, lastClickedField), so it is reachable and activated by keyboard as well as by
+  // pointer: one tab stop for the list, arrows between rows, Enter or Space to activate (SP-29). Keys from a link or
+  // the copy button inside a row stay theirs. A row holding such a control keeps its list semantics rather than
+  // becoming a button around another control.
+  const [stop, setStop] = useState(0);
+  const tabStop = Math.min(stop, rows.length - 1);
+  const live = !disabled && !ld.loading;
+  const activate = (row: KeyValueRow) => {
+    if (!live) return;
+    setLastClickedField({ label: row.label, value: row.value ?? null });
+    onFieldClick();
+  };
+  const onRowKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, row: KeyValueRow) => {
+    if (!live || e.target !== e.currentTarget) return;
+    if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
+      e.preventDefault();
+      activate(row);
+      return;
+    }
+    const list = e.currentTarget.parentElement;
+    if (list) moveRovingFocus(e, Array.from(list.children).filter((el): el is HTMLElement => el.classList.contains('u2l-kv-row')));
+  };
   const vars = styleVars([
     [labelColor, '--lk-label'],
     [valueColor, '--lk-fg'],
@@ -146,14 +170,18 @@ export const KeyValue = () => {
           <dl className="u2l-kv" style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}>
             {rows.map((row, index) => {
               const shown = keyValueText(row, defaults);
+              const holdsControl = (row.type === 'link' && !!linkHref(row)) || (allowCopy === true && !!shown);
               return (
                 <div
                   key={row.key}
-                  className={cn('u2l-kv-row', inline ? 'is-inline' : 'is-stacked', dividers && index < lastRowStart && 'has-divider')}
-                  onClick={() => {
-                    setLastClickedField({ label: row.label, value: row.value ?? null });
-                    onFieldClick();
+                  className={cn('u2l-kv-row ui-focus', inline ? 'is-inline' : 'is-stacked', dividers && index < lastRowStart && 'has-divider')}
+                  role={holdsControl ? undefined : 'button'}
+                  tabIndex={live && index === tabStop ? 0 : -1}
+                  onFocus={(e) => {
+                    if (e.target === e.currentTarget) setStop(index);
                   }}
+                  onKeyDown={(e) => onRowKeyDown(e, row)}
+                  onClick={() => activate(row)}
                 >
                   <dt className="u2l-kv-label" style={inline ? { width: cssSize(labelWidth, '40%'), flexShrink: 0 } : undefined}>
                     {row.label}

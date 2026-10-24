@@ -5,6 +5,7 @@ import { cn } from '../lib/cn';
 import { aspectRatio, carouselPositions, carouselSlides, clampInt, moveIndex, safeImageUrl, safeUrl } from '../lib/ui2/nav/model';
 import { lookVars, px } from '../lib/ui2/nav/look';
 import { useLatest, useStable } from '../lib/ui2/nav/hooks';
+import { ownerAvailable } from '../lib/useOwnerGuard';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import '../styles/ui2-nav.css';
 
@@ -116,9 +117,15 @@ export const Carousel = () => {
   const playing = autoplay === true && positions > 1 && !disabled && !focused && !(pauseOnHover !== false && hovered);
   const every = clampInt(interval, 1000, 600000, 5000);
   const latestGo = useLatest(go);
+  // Each tick first asks whether the carousel can be seen and used: a parent that disables it, shows its loading look
+  // or hides it (an inactive tab, a closed section) does not re-render it, so the timer kept moving slides and firing
+  // onSlideChanged out of sight (pack audit SP-09, 2026-10-23; UI 2.0 checked ownerTakesNoInput on every tick). The
+  // timer keeps running, so autoplay resumes once the carousel is back.
+  const regionRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!playing) return undefined;
     const timer = setInterval(() => {
+      if (!ownerAvailable(regionRef.current)) return;
       const { positions: count, wrap: w } = live.current;
       latestGo.current(!w && indexRef.current >= count - 1 ? 0 : indexRef.current + 1);
     }, every);
@@ -175,6 +182,7 @@ export const Carousel = () => {
       <div className="ui" style={vars}>
         <div
           role="region"
+          ref={regionRef}
           aria-roledescription="carousel"
           aria-label="Carousel"
           tabIndex={0}

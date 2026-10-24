@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { File as FileIcon, FileArchive, FileAudio, FileImage, FileSpreadsheet, FileText, FileVideo, Loader2, Upload, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Field } from '../lib/Field';
@@ -51,15 +51,30 @@ interface ReadFile {
   parseError: string;
 }
 
-const readAs = (file: Blob, how: 'readAsDataURL' | 'readAsText') =>
+// Every reader in flight is kept in `track`, so a newer single-file choice, a clear or an unmount can abort it.
+const readAs = (file: Blob, how: 'readAsDataURL' | 'readAsText', track: Set<FileReader>) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ''));
-    reader.onerror = () => reject(reader.error || new Error('Failed to read file'));
+    track.add(reader);
+    reader.onload = () => {
+      track.delete(reader);
+      resolve(String(reader.result ?? ''));
+    };
+    reader.onerror = () => {
+      track.delete(reader);
+      reject(reader.error || new Error('Failed to read file'));
+    };
+    reader.onabort = () => {
+      track.delete(reader);
+      reject(new Error('File read cancelled'));
+    };
     reader[how](file);
   });
 
-/** CSV, TSV or JSON content as data. Excel needs a sheet reader the pack does not bundle, so it says so in parseError. */
+/**
+ * CSV, TSV or JSON content as data. Excel needs a sheet reader the pack does not bundle, so Excel is not offered as a
+ * parse type; a file that is still parsed as one (auto-detect, or an older app's saved setting) says so in parseError.
+ */
 const parseContent = (file: File, text: string, parseFileType: string, delimiter: string): { data: unknown; error: string } => {
   const ext = (file.name.match(/\.([a-z0-9]+)$/i)?.[1] || '').toLowerCase();
   const type = (file.type || '').toLowerCase();
@@ -79,8 +94,11 @@ const parseContent = (file: File, text: string, parseFileType: string, delimiter
                 : '';
   try {
     if (kind === 'json') return { data: JSON.parse(text), error: '' };
-    if (kind === 'csv') return { data: M.parseDelimited(text, delimiter || ','), error: '' };
-    if (kind === 'tsv') return { data: M.parseDelimited(text, '\t'), error: '' };
+    if (kind === 'csv' || kind === 'tsv') {
+      const warnings: string[] = [];
+      const data = M.parseDelimited(text, kind === 'tsv' ? '\t' : delimiter || ',', warnings);
+      return { data, error: warnings.length ? `"${file.name}": ${warnings.join('; ')}` : '' };
+    }
     if (kind.includes('excel') || kind.includes('spreadsheet')) return { data: null, error: `"${file.name}": Excel files cannot be parsed here` };
     return { data: null, error: `"${file.name}" is not a CSV, TSV or JSON file` };
   } catch {
@@ -99,17 +117,16 @@ export const FileUpload = () => {
   const [maxSizeProp] = TJ.useStateNumber({ name: 'maxSize', label: 'Max size (bytes, 0 for no limit)', initialValue: 5242880 });
   const [minSizeProp] = TJ.useStateNumber({ name: 'minSize', label: 'Min size (bytes)', initialValue: 0 });
   const [showPreview] = TJ.useStateBoolean({ name: 'showPreview', label: 'Show image thumbnails', initialValue: true });
-  const [parse] = TJ.useStateBoolean({ name: 'parseContent', label: 'Parse content (CSV, TSV, Excel, JSON)', initialValue: false });
+  const [parse] = TJ.useStateBoolean({ name: 'parseContent', label: 'Parse content (CSV, TSV, JSON)', initialValue: false });
   const [parseFileType] = TJ.useStateEnumeration({
     name: 'parseFileType',
     label: 'Parse as',
-    enumDefinition: ['auto-detect', 'csv', 'tsv', 'vnd.ms-excel', 'vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'json'],
+    // No Excel entries: the pack has no sheet reader, so offering them promised parsing it cannot do.
+    enumDefinition: ['auto-detect', 'csv', 'tsv', 'json'],
     enumLabels: {
       'auto-detect': 'Autodetect from type',
       csv: 'CSV',
       tsv: 'TSV',
-      'vnd.ms-excel': 'Excel (xls)',
-      'vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Excel (xlsx)',
       json: 'JSON',
     },
     initialValue: 'auto-detect',
@@ -128,7 +145,12 @@ export const FileUpload = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<ReadFile[]>([]);
   const filesRef = useRef(files);
+  // `generation` changes on a clear, a newer single-file choice and unmount: a read started before it is no longer
+  // owned and publishes nothing. `pending` counts the live generation's files still being read (they hold their place
+  // under maxFiles) and those being parsed (isParsing stays true until the last one settles).
   const generation = useRef(0);
+  const readers = useRef(new Set<FileReader>());
+  const pending = useRef({ files: 0, parsing: 0 });
   const [parsing, setParsing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [rejectError, setRejectError] = useState('');
@@ -136,6 +158,9 @@ export const FileUpload = () => {
   const maxFiles = multiple ? M.clampFiles(maxFilesProp) : 1;
   const maxSize = M.clampBytes(maxSizeProp);
   const minSize = M.clampBytes(minSizeProp);
+  // What a read checks when it finishes, so a limit lowered while it was pending still applies.
+  const limits = useRef({ multiple, maxFiles });
+  limits.current = { multiple, maxFiles };
 
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
   TJ.useFormClear(() => clearFiles(false));
@@ -145,8 +170,18 @@ export const FileUpload = () => {
     setFile(next);
     setFileSize(next.reduce((sum, f) => sum + (f.size || 0), 0));
   };
-  const clearFiles = (withEvent = true) => {
+  // Disowns and aborts every read in flight. It writes no state, so unmount can use it too.
+  const stopReads = () => {
     generation.current += 1;
+    pending.current = { files: 0, parsing: 0 };
+    const inFlight = Array.from(readers.current);
+    readers.current.clear();
+    inFlight.forEach((r) => r.abort());
+  };
+  // A row removed from a ListView (or any unmount) must not publish a file or fire onFileLoaded after it has gone.
+  useEffect(() => stopReads, []);
+  const clearFiles = (withEvent = true) => {
+    stopReads();
     const had = filesRef.current.length > 0;
     setRejectError('');
     setParsing(false);
@@ -212,21 +247,27 @@ export const FileUpload = () => {
       return false;
     });
     const fresh = fits.filter((f) => !current.some((c) => c.name === f.name && c.size === f.size && c.lastModified === f.lastModified));
-    const room = multiple ? Math.max(0, maxFiles - current.length) : 1;
+    // Files still being read hold their place, so a second pick while the first is pending cannot overfill maxFiles.
+    const room = multiple ? Math.max(0, maxFiles - current.length - pending.current.files) : 1;
     const taking = fresh.slice(0, room);
+    const limitMessage = (max: number) => `You can upload up to ${max} file${max === 1 ? '' : 's'}`;
     let message = problems.length ? `${problems[0]}${problems.length > 1 ? ` (${problems.length} files not added)` : ''}` : '';
-    if (!message && fresh.length > taking.length) message = `You can upload up to ${maxFiles} file${maxFiles === 1 ? '' : 's'}`;
+    if (!message && fresh.length > taking.length) message = limitMessage(maxFiles);
     setRejectError(message);
     if (!taking.length) return;
+    // A newer single-file choice replaces the one still being read, whichever read would finish first.
+    if (!multiple) stopReads();
     const started = generation.current;
+    pending.current.files += taking.length;
     if (parse) {
+      pending.current.parsing += taking.length;
       setParsing(true);
       setIsParsing(true);
     }
     const results = await Promise.allSettled(
       taking.map(async (f): Promise<ReadFile> => {
-        const dataURL = await readAs(f, 'readAsDataURL');
-        const content = await readAs(f, 'readAsText');
+        const dataURL = await readAs(f, 'readAsDataURL', readers.current);
+        const content = await readAs(f, 'readAsText', readers.current);
         const parsed = parse ? parseContent(f, content, parseFileType, delimiter) : null;
         return {
           name: f.name,
@@ -241,18 +282,29 @@ export const FileUpload = () => {
         };
       })
     );
-    // A clear while the files were read wins: they are not added.
+    // A clear, a newer single-file choice or unmount while the files were read wins: they are not added.
     if (started !== generation.current) return;
+    pending.current.files -= taking.length;
     if (parse) {
-      setParsing(false);
-      setIsParsing(false);
+      pending.current.parsing -= taking.length;
+      if (pending.current.parsing <= 0) {
+        setParsing(false);
+        setIsParsing(false);
+      }
     }
     const read = results.filter((r): r is PromiseFulfilledResult<ReadFile> => r.status === 'fulfilled').map((r) => r.value);
-    if (read.length < taking.length) setRejectError(`${taking.length - read.length} file(s) could not be read`);
-    if (!read.length) return;
-    const unparsed = read.filter((f) => f.parseError).map((f) => f.parseError);
-    if (unparsed.length) setRejectError(unparsed.join(' '));
-    publish([...(multiple ? filesRef.current : []), ...read].slice(0, maxFiles));
+    const notes: string[] = [];
+    if (read.length < taking.length) notes.push(`${taking.length - read.length} file(s) could not be read`);
+    notes.push(...read.filter((f) => f.parseError).map((f) => f.parseError));
+    const live = limits.current;
+    const base = live.multiple ? filesRef.current : [];
+    const next = [...base, ...read].slice(0, live.maxFiles);
+    const admitted = read.filter((f) => next.includes(f)).length;
+    if (admitted < read.length) notes.push(limitMessage(live.maxFiles));
+    if (notes.length) setRejectError(notes.join(' '));
+    // Events fire only for files that entered the list.
+    if (!admitted) return;
+    publish(next);
     onFileSelected();
     onFileLoaded();
   };

@@ -5,9 +5,11 @@ import { Check, ChevronDown } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
+import { popupLayerStyle } from '../lib/popupLayer';
 import { cn } from '../lib/cn';
 import { choiceKey, defaultKey, isDisabledOption, shownOptions, toChoiceOptions, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
+import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { useBusy, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
 import { ClearX, Spinner } from '../lib/ui2/choice/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
@@ -58,8 +60,6 @@ export const Select = () => {
   const byKey = new Map(options.map((o) => [choiceKey(o.value), o] as [string, ChoiceOption]));
   const [key, setKey] = useState(() => defaultKey(defaultValue) || defaultKey(legacyValue));
   const [open, setOpen] = useState(false);
-  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
-  const ownerOk = useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   // A new default value starts the selection again.
   useResetOn(defaultValue, () => setKey(defaultKey(defaultValue)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
@@ -76,8 +76,28 @@ export const Select = () => {
   useEffect(() => expose(selected), [key, JSON.stringify(selected)]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // A picked option counts even when its value is false, 0 or '' (an "All" choice); only no pick is empty.
-  const check = ToolJet.useValidation({ section: 'choice', value: selected?.value ?? '', present: !!selected });
+  const check = ToolJet.useValidation({ section: 'choice', value: choiceValidationValue(selected), present: !!selected });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
+  // Set while a close by useOwnerGuard is under way: focus does not go back to a trigger that cannot take input.
+  const ownerClosed = useRef(false);
+  const openChange = (next: boolean) => {
+    if (next) ownerClosed.current = false;
+    setOpen(next);
+    focus.opened(next);
+    if (!next) check.touch();
+  };
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): the same close
+  // as a dismiss, and the field counts as left (onBlur), so the next focus is a new onFocus.
+  const ownerOk = useOwnerGuard(
+    anchorRef,
+    open,
+    () => {
+      ownerClosed.current = true;
+      openChange(false);
+      focus.leave();
+    },
+    disabled
+  );
   const choose = (next: string, fire = true) => {
     setKey(next);
     expose(byKey.get(next));
@@ -94,7 +114,7 @@ export const Select = () => {
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => choose('', false));
   ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => triggerRef.current?.focus());
   ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => {
-    setOpen(false);
+    if (open) openChange(false);
     triggerRef.current?.blur();
   });
   // The pack's earlier name for selectOption.
@@ -107,6 +127,8 @@ export const Select = () => {
     check.touch();
   };
   const vars = lookVars(fieldVars(styles));
+  // A popup in a Dialog's body stacks above the dialog (popupLayer.ts), read off the owner as it opens.
+  const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
   // Radix mounts every item even while closed: the list shows the first MAX_SELECT_OPTIONS (and the selected one).
   const shown = shownOptions(options, selected, MAX_SELECT_OPTIONS);
 
@@ -119,11 +141,7 @@ export const Select = () => {
               value={key}
               disabled={disabled}
               open={open}
-              onOpenChange={(next) => {
-                setOpen(next);
-                focus.opened(next);
-                if (!next) check.touch();
-              }}
+              onOpenChange={openChange}
               onValueChange={(next) => ownerOk() && !isDisabledOption(byKey.get(next)) && choose(next)}
             >
               <SelectPrimitive.Trigger
@@ -147,7 +165,15 @@ export const Select = () => {
               </SelectPrimitive.Trigger>
               {container ? (
                 <SelectPrimitive.Portal container={container}>
-                  <SelectPrimitive.Content className="ui-popup ui-menu uc-select-menu" position="popper" sideOffset={4} style={vars}>
+                  <SelectPrimitive.Content
+                  className="ui-popup ui-menu uc-select-menu"
+                  position="popper"
+                  sideOffset={4}
+                  style={popVars}
+                  onCloseAutoFocus={(e) => {
+                    if (ownerClosed.current) e.preventDefault();
+                  }}
+                >
                     <SelectPrimitive.Viewport>
                       {shown.map((o) => {
                         const k = choiceKey(o.value);
@@ -162,7 +188,7 @@ export const Select = () => {
                               clearable && k === key
                                 ? (e) => {
                                     e.preventDefault();
-                                    setOpen(false);
+                                    openChange(false);
                                     clearChoice();
                                   }
                                 : undefined

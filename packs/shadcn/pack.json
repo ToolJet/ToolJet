@@ -191,6 +191,12 @@
     "Kanban": {
       "role": "kanban",
       "fit": false,
+      "slots": [
+        {
+          "name": "card",
+          "kind": "rows"
+        }
+      ],
       "loading": "own"
     },
     "KeyValue": {

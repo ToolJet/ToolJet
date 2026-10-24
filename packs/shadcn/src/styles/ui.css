@@ -5,7 +5,10 @@
 :host,
 :root {
   --ui-primary: var(--tj-brand, var(--cc-primary-brand, #4368e3));
-  --ui-primary-fg: var(--tj-on-brand, #ffffff);
+  /* --tj-on-brand is set only on a themed widget's host; the shared popup layer's host has no tj-themed class, so
+     dialogs and calendars drew white on a light brand (pack audit SP-04, 2026-10-23). ToolJet's own on-brand colour
+     reaches the popup layer, as --cc-primary-brand does for --ui-primary. */
+  --ui-primary-fg: var(--tj-on-brand, var(--cc-on-primary-brand, #ffffff));
   --ui-fg: var(--cc-primary-text, #1b1f24);
   --ui-bg: var(--cc-surface1-surface, #ffffff);
   --ui-muted: var(--tj-surface-muted, var(--cc-surface2-surface, #f1f3f5));
@@ -205,6 +208,22 @@ body {
 .ui-btn--destructive {
   background: var(--ui-btn-color, var(--ui-destructive));
   color: var(--ui-btn-text, #fff);
+}
+
+/* The theme has no on-danger colour, and white on a light danger red (a dark theme's #f87171) measured 2.8:1 (pack
+   audit SP-05, 2026-10-23). The text is black or white from the button colour's lightness: at L* 49.4 both give the
+   same contrast, so the one chosen is always the stronger of the two (4.6:1 or better). */
+@supports (color: lch(from red l c h)) {
+  .ui-btn--destructive {
+    color: var(--ui-btn-text, lch(from var(--ui-btn-color, var(--ui-destructive)) clamp(0, (49.4 - l) * 1000, 100) 0 0));
+  }
+  /* The darker hover background picks its own. */
+  .ui-btn--destructive:hover:not(:disabled) {
+    color: var(
+      --ui-btn-text,
+      lch(from color-mix(in srgb, var(--ui-btn-color, var(--ui-destructive)) 88%, black) clamp(0, (49.4 - l) * 1000, 100) 0 0)
+    );
+  }
 }
 
 .ui-btn--destructive:hover:not(:disabled) {

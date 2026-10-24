@@ -5,6 +5,7 @@ import { Clock } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
+import { popupLayerStyle } from '../lib/popupLayer';
 import { formatTime, inTimeRange, is24h, minuteStep, parseTime, parseTimeArg, timeBounds, timeSlots, toHHmm } from '../lib/ui2/choice/dates';
 import { lookVars, pickerVars, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useFieldStyles, usePopoverStyles } from '../lib/ui2/choice/fieldStyles';
@@ -107,6 +108,8 @@ export const TimePicker = () => {
   const clearable = showClearBtn === true && minutes !== null && !disabled;
   const list = pickerStyle === 'list';
   const vars = lookVars(pickerVars({ ...styles, ...popoverStyles }));
+  // Inside a Dialog's body the popup stacks above the dialog (lib/popupLayer).
+  const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
 
   return (
     <div className="ui uc" ref={anchorRef} style={vars}>
@@ -140,7 +143,7 @@ export const TimePicker = () => {
                   align="start"
                   sideOffset={4}
                   className={list ? 'ui-popup uc-pop uc-pop-menu' : 'ui-popup uc-pop'}
-                  style={{ ...vars, ...(list ? { minWidth: '9rem' } : {}) }}
+                  style={{ ...popVars, ...(list ? { minWidth: '9rem' } : {}) }}
                 >
                   {list ? (
                     <OptionColumn

@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChevronsUpDown } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
+import { popupLayerStyle } from '../lib/popupLayer';
 import { cn } from '../lib/cn';
 import {
   addKeys,
@@ -21,6 +22,7 @@ import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn 
 import { useBusy, useColorStyle, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
 import { Chip, ClearX, OptionsMenu, Spinner, type MenuCommand } from '../lib/ui2/choice/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { activeElementIn } from '../lib/activeElement';
 import '../styles/ui2-choice.css';
 
 // UI 2.0's Multiselect (Ui2/Multiselect/Multiselect.tsx) on the pack's CSS: picked options as removable chips in the
@@ -85,17 +87,14 @@ export const MultiSelect = () => {
   const options = toChoiceOptions(rawOptions);
   const limit = clampLimit(maxSelections) || clampLimit(maxSelected);
   const serverSide = serverSideSearch === true;
-  const startKeys = () => {
-    const given = toValueList(defaultValue).length ? defaultValue : legacyValues;
-    return [...new Set(toValueList(given).map(keyOf))].slice(0, limit || undefined);
-  };
-  const [keys, setKeys] = useState<string[]>(startKeys);
+  const keysOf = (given: unknown) => [...new Set(toValueList(given).map(keyOf))].slice(0, limit || undefined);
+  // An app saved before defaultValue existed starts on its `values` when no default is given.
+  const [keys, setKeys] = useState<string[]>(() => keysOf(toValueList(defaultValue).length ? defaultValue : legacyValues));
   const [open, setOpen] = useState(false);
-  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
-  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   const [search, setSearch] = useState('');
-  // A new default starts the selection again; a lower limit cuts it to fit.
-  useResetOn(defaultValue, () => setKeys(startKeys()));
+  // A new default starts the selection again, an empty one with nothing: falling back to `values` there, as on mount,
+  // read back the exposed selection and kept it (SP-27). A lower limit cuts it to fit.
+  useResetOn(defaultValue, () => setKeys(keysOf(defaultValue)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
   ToolJet.useFormClear(() => { setOpen(false); setKeys([]); publish([]); });
   useEffect(() => {
@@ -130,8 +129,11 @@ export const MultiSelect = () => {
     setSearchText(text);
     onSearchTextChanged();
   };
+  // Set while a close by useOwnerGuard is under way: focus does not go back to a field that cannot take input.
+  const ownerClosed = useRef(false);
   const openChange = (next: boolean) => {
     if (next && disabled) return;
+    if (next) ownerClosed.current = false;
     setOpen(next);
     focus.opened(next);
     if (!next) {
@@ -139,6 +141,18 @@ export const MultiSelect = () => {
       if (search) onSearch('');
     }
   };
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): the same close
+  // as a dismiss (the search empties), and the field counts as left (onBlur), so the next focus is a new onFocus.
+  useOwnerGuard(
+    anchorRef,
+    open,
+    () => {
+      ownerClosed.current = true;
+      openChange(false);
+      focus.leave();
+    },
+    disabled
+  );
   const selectedKeys = new Set(selectedOptions.map((o) => keyOf(o.value)));
   const isOn = (o: ChoiceOption) => selectedKeys.has(keyOf(o.value));
   const full = limit > 0 && selectedOptions.length >= limit;
@@ -147,6 +161,25 @@ export const MultiSelect = () => {
     if (isOn(o)) commit(keys.filter((x) => x !== k));
     else if (!full) commit([...keys.filter((x) => selectedKeys.has(x) || !options.length), k]);
   };
+  // A chip removed from its own focused Remove button (Enter or Space) takes that button out of the page: focus goes on
+  // to the Remove of the chip now in its place, else the one before, else the field, rather than to the page (SP-23).
+  // Focus is read from the field's own root (a shadow root in the inline runtime); a pointer removal leaves focus where
+  // it is.
+  const refocusChip = useRef<number | null>(null);
+  const removeChip = (o: ChoiceOption, index: number) => {
+    const active = activeElementIn(fieldRef.current);
+    const fromButton = !!active && active.classList.contains('uc-chip-remove') && !!fieldRef.current?.contains(active);
+    toggle(o);
+    refocusChip.current = fromButton ? index : null;
+  };
+  useLayoutEffect(() => {
+    const index = refocusChip.current;
+    refocusChip.current = null;
+    const field = fieldRef.current;
+    if (index === null || !field) return;
+    const buttons = field.querySelectorAll<HTMLElement>('.uc-chip-remove');
+    (buttons[Math.min(index, buttons.length - 1)] ?? field).focus();
+  });
   const enabled = options.filter((o) => !isDisabledOption(o));
   const allOn = enabled.length > 0 && enabled.every(isOn);
   const toggleAll = () => {
@@ -187,6 +220,8 @@ export const MultiSelect = () => {
     '--lk-menu-fg': menuTextColor,
     '--lk-hl': optionHoverColor,
   });
+  // A popup in a Dialog's body stacks above the dialog (popupLayer.ts), read off the owner as it opens.
+  const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
   const menuId = fieldId ? `${fieldId}-menu` : undefined;
   const top: MenuCommand[] = selectAll ? [{ key: 'select-all', label: 'Select all', checked: allOn, onSelect: toggleAll }] : [];
   const bottom: MenuCommand[] = selectedOptions.length ? [{ key: 'clear-selection', label: 'Clear selection', center: true, onSelect: () => commit([]) }] : [];
@@ -224,8 +259,8 @@ export const MultiSelect = () => {
                   {selectedOptions.length === 0 ? (
                     <span className="ui-placeholder uc-truncate">{placeholder}</span>
                   ) : (
-                    chips.map((o) => (
-                      <Chip key={keyOf(o.value)} label={o.label} removeLabel={`Remove ${o.label}`} onRemove={disabled ? undefined : () => toggle(o)} />
+                    chips.map((o, i) => (
+                      <Chip key={keyOf(o.value)} label={o.label} removeLabel={`Remove ${o.label}`} onRemove={disabled ? undefined : () => removeChip(o, i)} />
                     ))
                   )}
                   {extra > 0 ? <Chip label={`+${extra} more`} /> : null}
@@ -258,7 +293,7 @@ export const MultiSelect = () => {
                   align="start"
                   sideOffset={4}
                   className="ui-popup uc-pop uc-pop-menu"
-                  style={vars}
+                  style={popVars}
                   onOpenAutoFocus={(e) => e.preventDefault()}
                   // A click on the field while open closes the menu (the field's own click), not reopens it.
                   onInteractOutside={(e) => {
@@ -266,7 +301,7 @@ export const MultiSelect = () => {
                   }}
                   onCloseAutoFocus={(e) => {
                     e.preventDefault();
-                    fieldRef.current?.focus();
+                    if (!ownerClosed.current) fieldRef.current?.focus();
                   }}
                 >
                   <OptionsMenu

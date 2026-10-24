@@ -109,9 +109,11 @@ export const useDropRemovedChoices = (optionKeys: string[], selected: string[], 
   const seen = useRef<Set<string>>(new Set());
   const latest = useRef({ selected, drop, keep });
   latest.current = { selected, drop, keep };
-  const signature = optionKeys.join('\u0000');
+  // A lossless signature: an "All" option's key ('\u0000empty', options.ts) holds the character a joined list would
+  // split on, so it was never recorded as seen, never dropped, and came back selected when it reappeared (SP-21).
+  const signature = JSON.stringify(optionKeys);
   useEffect(() => {
-    const present = new Set(signature ? signature.split('\u0000') : []);
+    const present = new Set(JSON.parse(signature) as string[]);
     if (!present.size) return;
     const { selected: keys, drop: dropKeys, keep: kept } = latest.current;
     if (!kept) {

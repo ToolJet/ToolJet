@@ -24,6 +24,7 @@ import {
 } from '../lib/ui2/display/chat/questionnaireModel';
 import { fontStack, lookVars, px } from '../lib/ui2/display/chat/values';
 import { LoadingBox, LoadingFrame, useLoading } from '../lib/ui2/loading/look';
+import { activeElementIn } from '../lib/activeElement';
 import '../styles/ui2-display-chat.css';
 
 // UI 2.0's Questionnaire (Ui2/Questionnaire): a data-driven multi-step form, one question at a time with progress,
@@ -38,6 +39,12 @@ const currentOf = (item: QuestionItem | undefined) =>
   item ? { name: item.name, prompt: item.prompt, type: item.type, required: item.required } : {};
 
 let instanceCount = 0;
+
+// A fixed-height widget scrolls its question: the root grows with its content (ui2q-root: min-height 100%) inside the
+// host's clipped box, so a long question hid Next and Show more with no way to reach them (SP-30). Capped at the box
+// (max-height 100% of a fixed height) it scrolls instead; with the height fitted to the content the cap resolves to
+// none and the widget still grows.
+const FIXED_BOX_SCROLL: React.CSSProperties = { maxHeight: '100%', overflowY: 'auto' };
 
 export const Questionnaire = () => {
   const [rawItems] = ToolJet.useStateArray({
@@ -275,7 +282,9 @@ export const Questionnaire = () => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       const cards = Array.from(groupRef.current?.querySelectorAll<HTMLElement>('[data-answer]') || []);
       if (!cards.length) return;
-      const from = cards.indexOf(document.activeElement as HTMLElement);
+      // Focus as the question's own root sees it: in the inline runtime's shadow root document.activeElement is the
+      // host, so every arrow started again from the first card (SP-22).
+      const from = cards.indexOf(activeElementIn(groupRef.current) as HTMLElement);
       e.preventDefault();
       const to = e.key === 'ArrowDown' ? (from + 1) % cards.length : (from - 1 + cards.length) % cards.length;
       cards[from === -1 ? 0 : to]?.focus();
@@ -446,7 +455,7 @@ export const Questionnaire = () => {
 
   return (
     <LoadingFrame loading={loadingNow} look={<LoadingBox />}>
-      <div className="ui ui2q-root" style={style as React.CSSProperties}>
+      <div className="ui ui2q-root" style={{ ...(style as React.CSSProperties), ...FIXED_BOX_SCROLL }}>
         <div id={domId} className={cn('ui2q', surface !== 'plain' ? 'ui2q--card' : 'ui2q--plain')} data-step={complete ? 'complete' : at}>
           {body}
         </div>

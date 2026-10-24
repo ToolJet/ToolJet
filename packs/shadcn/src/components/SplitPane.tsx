@@ -55,11 +55,21 @@ export const SplitPane = () => {
   });
   ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 40 });
 
+  const { disabled, loading } = ToolJet.useControlState();
+
   const rootRef = useRef<HTMLDivElement>(null);
   const horizontal = direction !== "vertical";
   const lo = Math.max(0, Math.min(45, Number(minPane) || 0));
   const clamp = (n: number) => Math.round(Math.min(100 - lo, Math.max(lo, n)));
-  const percent = clamp(Number(split) || 50);
+  // A finite number is a split, 0 included (minPane 0 allows it); blank, null, a boolean or text is none. `|| 50` read
+  // a valid 0 as none, so setSplit(0) exposed 0 and drew half and half (SP-37).
+  const toSplit = (v: unknown): number | null => {
+    if (typeof v !== "number" && typeof v !== "string") return null;
+    if (typeof v === "string" && !v.trim()) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? clamp(n) : null;
+  };
+  const percent = toSplit(split) ?? clamp(50);
 
   ToolJet.useAction(
     {
@@ -67,12 +77,39 @@ export const SplitPane = () => {
       displayName: "Set split",
       params: [{ handle: "percent", displayName: "First pane (%)" }],
     },
-    (next) => setSplit(clamp(Number(next))),
+    (next) => {
+      const to = toSplit(next);
+      if (to !== null) setSplit(to);
+    },
   );
+
+  // The separator resizes by keyboard as well as by pointer (SP-38): it is a tab stop, the arrows along its axis move
+  // it a step (Shift for ten), PageUp/PageDown ten, Home and End to the limits; each change fires onResize once. Only
+  // the separator's own keys: arrows typed in the panes stay theirs.
+  const busy = disabled || loading;
+  const onSeparatorKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (busy || e.target !== e.currentTarget || e.metaKey || e.ctrlKey || e.altKey) return;
+    const step = e.shiftKey ? 10 : 1;
+    const less = horizontal ? "ArrowLeft" : "ArrowUp";
+    const more = horizontal ? "ArrowRight" : "ArrowDown";
+    let to: number | null = null;
+    if (e.key === less) to = percent - step;
+    else if (e.key === more) to = percent + step;
+    else if (e.key === "PageUp") to = percent - 10;
+    else if (e.key === "PageDown") to = percent + 10;
+    else if (e.key === "Home") to = lo;
+    else if (e.key === "End") to = 100 - lo;
+    if (to === null) return;
+    e.preventDefault();
+    const next = clamp(to);
+    if (next === percent) return;
+    setSplit(next);
+    onResize();
+  };
 
   const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     const root = rootRef.current;
-    if (!root) return;
+    if (!root || busy) return;
     e.preventDefault();
     const handle = e.currentTarget;
     handle.setPointerCapture(e.pointerId);
@@ -110,10 +147,16 @@ export const SplitPane = () => {
       <div
         // Dragging the divider resizes the panes; it must not start a widget drag in the editor.
         data-tj-no-drag=""
-        className="ui-split-handle"
+        className="ui-split-handle ui-focus"
         role="separator"
+        aria-label="Resize panes"
         aria-orientation={horizontal ? "vertical" : "horizontal"}
         aria-valuenow={percent}
+        aria-valuemin={lo}
+        aria-valuemax={100 - lo}
+        aria-disabled={busy || undefined}
+        tabIndex={busy ? -1 : 0}
+        onKeyDown={onSeparatorKeyDown}
         onPointerDown={startDrag}
         style={{
           flex: `0 0 ${gap}px`,

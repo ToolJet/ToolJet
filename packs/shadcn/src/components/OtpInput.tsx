@@ -73,9 +73,12 @@ export const OtpInput = () => {
     onChange();
     if (next.length === size) onComplete();
   };
-  // A new default starts the code again; a new length or kind of character keeps what was typed, cut to fit.
-  useReseed(defaultValue, () => publish(M.otpSanitize(defaultValue || rawValue, size, kind)));
+  // A new default starts the code again, an empty one included (useReseed already leaves an app's own `value` alone
+  // on mount when the default is empty); a new length or kind of character keeps what was typed, cut to fit.
+  useReseed(defaultValue, () => publish(M.otpSanitize(defaultValue, size, kind)));
   useReseed([size, kind], () => publish(M.otpSanitize(rawValue, size, kind)), { onMount: false });
+  // A Form's clear empties `value` itself, without publish(), and would leave isComplete true over an empty code.
+  TJ.useFormClear(() => publish(''));
 
   TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => fill(''));
   TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());

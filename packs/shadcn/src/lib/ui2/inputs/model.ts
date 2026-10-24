@@ -2,6 +2,8 @@
 // the other inputs below it: tags and rating (Ui2/_pickers/pickersModel.ts), slider (Ui2/Slider/sliderModel.ts),
 // colour (Ui2/_pickers/colorModel.ts) and files (Ui2/_pickers/fileModel.ts). Every function takes junk (null, objects,
 // NaN, huge numbers) without throwing.
+import { TOO_COMPLEX, UNSUPPORTED, boundedRegex } from '../../safeRegex';
+import type { BoundedRegex } from '../../safeRegex';
 
 export const isBlank = (v: unknown): boolean =>
   v === undefined || v === null || (typeof v === 'string' && v.trim() === '');
@@ -324,15 +326,12 @@ export const splitTyped = (text: unknown): { parts: string[]; rest: string } => 
   return { parts: pieces.map((p) => p.trim()).filter(Boolean), rest };
 };
 
-/** The author's pattern, or null when it is empty, invalid or too long to trust. */
-export const safeRegex = (pattern: unknown): RegExp | null => {
+/** The author's pattern matched with bounded work (safeRegex), or null when it is empty, invalid or too long. A native
+ *  RegExp here would let a backtracking pattern like ^(a+)+$ freeze the page on a short tag, whatever the caps. */
+export const tagRegex = (pattern: unknown): BoundedRegex | null => {
   const source = pattern instanceof RegExp ? pattern.source : isScalar(pattern) ? String(pattern) : '';
-  if (source.trim() === '' || source.length > 500) return null;
-  try {
-    return new RegExp(source, pattern instanceof RegExp ? pattern.flags.replace('g', '') : '');
-  } catch {
-    return null;
-  }
+  if (source.trim() === '') return null;
+  return boundedRegex(source, pattern instanceof RegExp ? pattern.flags.replace('g', '') : '');
 };
 
 export const sameTag = (a: unknown, b: unknown, caseSensitive?: unknown): boolean =>
@@ -346,7 +345,8 @@ export interface TagRules {
 }
 
 /** Adds candidates to the tags: { tags, added, error }. Duplicates (ignoring case unless caseSensitive), tags that
- *  fail the pattern and tags past maxTags are refused, with the reason in `error`. */
+ *  fail the pattern (or that the pattern is too complex to check) and tags past maxTags are refused, with the reason
+ *  in `error`. */
 export const addTags = (
   tags: unknown,
   candidates: unknown,
@@ -356,7 +356,7 @@ export const addTags = (
   const added: string[] = [];
   let error = '';
   const max = clampInt(maxTags, 0, MAX_TAGS, 0) || MAX_TAGS;
-  const re = safeRegex(pattern);
+  const re = tagRegex(pattern);
   const norm = (t: string) => (caseSensitive ? String(t) : String(t).toLowerCase());
   const seen = new Set(next.map(norm));
   for (const tag of toTags(candidates)) {
@@ -364,7 +364,13 @@ export const addTags = (
       error = `"${tag}" is already added`;
       continue;
     }
-    if (re && !re.test(tag)) {
+    const outcome = re ? re.match(tag) : true;
+    if (outcome === TOO_COMPLEX || outcome === UNSUPPORTED) {
+      // Not a verdict on the tag: the pattern could not be checked on it, so the author's message would mislead.
+      error = `The pattern is ${outcome === TOO_COMPLEX ? 'too complex' : 'not supported'} to check "${tag}"`;
+      continue;
+    }
+    if (!outcome) {
       error = isScalar(patternError) && String(patternError).trim() ? String(patternError) : `"${tag}" is not valid`;
       continue;
     }
@@ -666,8 +672,11 @@ export const clampBytes = (v: unknown): number => {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
 };
 
-/** Delimited text (CSV, TSV) as rows keyed by the first row, with quoted fields ("a, b" and "" for a quote). */
-export const parseDelimited = (text: string, delimiter: string): Record<string, string>[] => {
+/**
+ * Delimited text (CSV, TSV) as rows keyed by the first row, with quoted fields ("a, b" and "" for a quote). Structural
+ * problems (renamed duplicate headers, rows with too few or too many fields) are pushed onto `warnings` when given.
+ */
+export const parseDelimited = (text: string, delimiter: string, warnings?: string[]): Record<string, unknown>[] => {
   const sep = delimiter || ',';
   const rows: string[][] = [];
   let row: string[] = [];
@@ -698,6 +707,34 @@ export const parseDelimited = (text: string, delimiter: string): Record<string, 
   if (row.some((v) => v.trim() !== '')) rows.push(row);
   const [head, ...body] = rows;
   if (!head) return [];
-  const keys = head.map((h) => h.trim());
-  return body.map((r) => Object.fromEntries(keys.map((k, i) => [k, (r[i] ?? '').trim()])));
+  // A repeated header is renamed (name, name_1) rather than letting the later column overwrite the earlier one, and a
+  // row that does not match the header is reported: the same contract as the UI 2.0 FileUpload parser.
+  const used = new Set<string>();
+  const renamed: string[] = [];
+  const keys = head.map((h) => {
+    const base = h.trim();
+    let key = base;
+    for (let n = 1; used.has(key); n += 1) key = `${base}_${n}`;
+    used.add(key);
+    if (key !== base) renamed.push(`${base} to ${key}`);
+    return key;
+  });
+  if (renamed.length) warnings?.push(`duplicate headers renamed: ${renamed.join(', ')}`);
+  // Only the first few row problems are listed, so a large malformed file does not build an unbounded message.
+  let bad = 0;
+  const out = body.map((r, index) => {
+    const record: Record<string, unknown> = Object.fromEntries(keys.map((k, i) => [k, (r[i] ?? '').trim()]));
+    if (r.length !== keys.length) {
+      bad += 1;
+      if (bad <= 3)
+        warnings?.push(
+          `row ${index + 1}: Too ${r.length < keys.length ? 'few' : 'many'} fields: expected ${keys.length} fields but parsed ${r.length}`
+        );
+      // Extra fields are kept, as the UI 2.0 parser kept them, instead of being dropped.
+      if (r.length > keys.length) record.__parsed_extra = r.slice(keys.length).map((v) => v.trim());
+    }
+    return record;
+  });
+  if (bad > 3) warnings?.push(`(${bad - 3} more rows with the wrong number of fields)`);
+  return out;
 };

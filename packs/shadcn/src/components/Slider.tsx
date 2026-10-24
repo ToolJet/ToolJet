@@ -47,11 +47,16 @@ export const Slider = () => {
   const publish = (v: number[]) => setValue((isRange ? v : v[0]) as number);
   // A new default, or Range turned on or off, starts the value again.
   // On mount an untouched Default value leaves a value the app set (`value`, the pack's earlier name) alone.
-  useReseed([defaultValue, isRange], () => setValue(start() as number), {
-    onMount: !(defaultValue === 50 && (isRange ? Array.isArray(rawValue) : numeric(rawValue))),
-  });
+  const keptOnMount = defaultValue === 50 && (isRange ? Array.isArray(rawValue) : numeric(rawValue));
+  useReseed([defaultValue, isRange], () => setValue(start() as number), { onMount: !keptOnMount });
   // New bounds fit the value the user set, so what is exposed is what is drawn.
   useReseed([bounds.min, bounds.max], () => publish(values), { onMount: false });
+  // The same for a value kept on mount, whose bounds were already known (a literal Maximum of 10 under the untouched
+  // default 50): exposed 50 while the thumb draws 10. A value already within the bounds is published unchanged, and
+  // fitting it is not the user's change, so no onChange.
+  useEffect(() => {
+    if (keptOnMount && JSON.stringify(isRange ? values : values[0]) !== JSON.stringify(rawValue)) publish(values);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   TJ.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'num1', displayName: 'Value' }] }, (n) => {
     if (!numeric(n)) return;

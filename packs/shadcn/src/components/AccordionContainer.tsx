@@ -2,7 +2,7 @@ import React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ToolJet } from "@tooljet/custom-component-sdk";
 import { ChevronDown } from "lucide-react";
-import { toItems, toSlotName } from "../lib/slots";
+import { slotNames, toItems } from "../lib/slots";
 import { lookVars } from "../lib/ui2/nav/look";
 import "../styles/ui2-nav.css";
 
@@ -75,13 +75,19 @@ export const AccordionContainer = () => {
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 60 });
 
   const sections = toItems(rawSections, "Section");
+  const slots = slotNames("section", sections.map((s) => s.id));
   const open = (Array.isArray(openSections) ? openSections : []).map(String);
   const indexes = (ids: string[]) => ids.map((id) => sections.findIndex((s) => s.id === id)).filter((i) => i >= 0);
+  // The exposed state describes the sections drawn now: openIndexes are the open ones' current positions, and
+  // isExpanded whether any of them exists. Read from the ids and their order, since a same-length reorder kept a stale
+  // index and an open id with no section left reported an expanded accordion (pack audit SP-19, 2026-10-23). A single
+  // accordion draws only the first open id. The requested ids stay as they are, so a section that comes back reopens.
+  const shownOpen = indexes(allowMultiple ? open : open.slice(0, 1));
   React.useEffect(() => {
-    setIsExpanded(open.length > 0);
-    setOpenIndexes(indexes(open));
+    setIsExpanded(shownOpen.length > 0);
+    setOpenIndexes(shownOpen);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open.join("|"), sections.length]);
+  }, [shownOpen.join("|")]);
   const update = (next: string[], fire = true) => {
     setOpenSections(next);
     if (!fire) return;
@@ -151,7 +157,7 @@ export const AccordionContainer = () => {
         className="ui-accordion-container-panel"
       >
         <ToolJet.Slot
-          name={toSlotName("section", section.id)}
+          name={slots.get(section.id) as string}
           style={{ height: panelHeight }}
         />
       </AccordionPrimitive.Content>

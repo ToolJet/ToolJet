@@ -82,6 +82,12 @@ export const NumberInput = () => {
     },
     { onMount: !(defaultValue === 1 && value !== null) }
   );
+  // A Form's clear empties `value` itself; the typed draft is the widget's own, and a focused box would keep showing it
+  // over the cleared value until blur.
+  TJ.useFormClear(() => {
+    setDraft(null);
+    publish(null);
+  });
 
   TJ.useAction({ name: 'setText', displayName: 'Set text', params: [{ handle: 'value', displayName: 'Value' }] }, set);
   TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => set(null));

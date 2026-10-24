@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import * as Menu from '@radix-ui/react-dropdown-menu';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChevronDown, Ellipsis } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
+import { popupLayerStyle } from '../lib/popupLayer';
+import { moveRovingFocus } from '../lib/activeElement';
 import { clickedOption, menuRows } from '../lib/ui2/nav/model';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
 import { Icon, MenuRows, MenuSeparator } from '../lib/ui2/nav/parts';
@@ -100,17 +102,38 @@ export const DropdownMenu = () => {
 
   const [anchorRef, container] = usePortalContainer();
   const [open, setOpen] = useState(false);
-  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
-  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
+  // Open as of the last change, ahead of the next render: the owner guard and the disabled effect below can both close
+  // the menu in one commit, which is still one close (one onClose).
+  const openRef = useRef(open);
+  // Set while a close by useOwnerGuard is under way: focus does not go back to a trigger that cannot take input.
+  const ownerClosed = useRef(false);
+  // Whether the trigger opened the menu by keyboard (Enter, Space, ArrowDown): then focus starts on the first action.
+  const openedByKeyboard = useRef(false);
   const changeOpen = (next: boolean) => {
     if (next && disabled) return;
-    if (next === open) return;
+    if (next === openRef.current) return;
+    if (next) ownerClosed.current = false;
+    openRef.current = next;
     setOpen(next);
     setIsOpen(next);
     if (next) onOpen();
     else onClose();
   };
-  ToolJet.useAction({ name: 'open', displayName: 'Open' }, () => changeOpen(true));
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): the same close
+  // as a dismiss, so isOpen reads false and onClose fires; closing only the drawn menu left both stale (SP-24).
+  useOwnerGuard(
+    anchorRef,
+    open,
+    () => {
+      ownerClosed.current = true;
+      changeOpen(false);
+    },
+    disabled
+  );
+  ToolJet.useAction({ name: 'open', displayName: 'Open' }, () => {
+    openedByKeyboard.current = false;
+    changeOpen(true);
+  });
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => changeOpen(false));
   // Disabled (or loading) closes an open menu.
   React.useEffect(() => {
@@ -135,11 +158,44 @@ export const DropdownMenu = () => {
     [menuRadius, '--lk-menu-radius', px],
     [menuWidth, '--lk-menu-width', px],
   ]);
+  // A popup in a Dialog's body stacks above the dialog (popupLayer.ts), read off the owner as it opens.
+  const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
   const rows = menuRows(rawItems);
   const look = VARIANTS.includes(variant) ? variant : 'outline';
   const iconOnly = triggerType === 'icon';
   const icon = String(triggerIcon ?? '').trim();
   const text = String(label ?? '');
+  // Keyboard focus in the menu, read from the menu's own root. Radix's menu and roving focus compare
+  // document.activeElement, which inside the inline runtime's shadow root stays the host while focus moves, so opening
+  // by keyboard landed on the last action, and Home and End went to the opposite ends (SP-22).
+  const actions = (content: HTMLElement) =>
+    Array.from(content.querySelectorAll<HTMLElement>('[role^="menuitem"]')).filter(
+      (el) => !el.hasAttribute('data-disabled') && el.closest('[data-radix-menu-content]') === content
+    );
+  const menuKeys = {
+    // Opened by keyboard, the menu starts on its first enabled action; opened by pointer, on the menu itself (Radix's
+    // entry focus, which this replaces).
+    onFocus: (e: React.FocusEvent<HTMLDivElement>) => {
+      if (e.target !== e.currentTarget) return;
+      e.preventDefault();
+      if (openedByKeyboard.current) actions(e.currentTarget)[0]?.focus();
+    },
+    // Up and Down move between enabled actions without wrapping; Home and End go to the first and last. Consumed here,
+    // ahead of the items' own Radix handlers.
+    onKeyDownCapture: (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const content = e.currentTarget;
+      if (e.target !== content) {
+        moveRovingFocus(e, actions(content), { orientation: 'vertical' });
+        return;
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+      const first = ['ArrowDown', 'PageUp', 'Home'].includes(e.key);
+      if (!first && !['ArrowUp', 'PageDown', 'End'].includes(e.key)) return;
+      e.preventDefault();
+      const items = actions(content);
+      (first ? items[0] : items[items.length - 1])?.focus();
+    },
+  };
   const pick = (row: { value: unknown; label: string; description: string }) => {
     if (disabled) return;
     const option = clickedOption(row as Parameters<typeof clickedOption>[0]);
@@ -154,6 +210,12 @@ export const DropdownMenu = () => {
         <Menu.Trigger asChild disabled={disabled}>
           <button
             type="button"
+            onPointerDown={() => {
+              openedByKeyboard.current = false;
+            }}
+            onKeyDown={(e) => {
+              if (['Enter', ' ', 'ArrowDown'].includes(e.key)) openedByKeyboard.current = true;
+            }}
             aria-label={iconOnly ? text || 'More actions' : undefined}
             title={iconOnly && text ? text : undefined}
             className={cn(
@@ -193,7 +255,11 @@ export const DropdownMenu = () => {
               align={(['start', 'center', 'end'].includes(align) ? align : 'start') as 'start'}
               side={(['bottom', 'top', 'right', 'left'].includes(side) ? side : 'bottom') as 'bottom'}
               sideOffset={4}
-              style={vars}
+              style={popVars}
+              {...menuKeys}
+              onCloseAutoFocus={(e) => {
+                if (ownerClosed.current) e.preventDefault();
+              }}
             >
               {menuLabel ? (
                 <>

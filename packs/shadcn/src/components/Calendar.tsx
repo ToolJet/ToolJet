@@ -152,15 +152,22 @@ export const Calendar = () => {
 
   const m = MODES.includes(mode) ? mode : 'single';
   const months = Math.max(1, Math.min(3, Math.round(Number(numberOfMonths)) || 1));
-  // An app saved before defaultValue existed starts on the pack's own defaults.
+  // An app saved before defaultValue existed starts on the pack's own defaults. Those keys are also what the calendar
+  // exposes, so they stand in only while the app has never set defaultValue: an emptied default clears the selection
+  // instead of reading the last pick back as the default (SP-27).
+  const hasDefault = defaultValue !== '' && defaultValue != null;
+  const hadDefault = useRef(false);
+  if (hasDefault) hadDefault.current = true;
   const rawDefault = useStable(
-    defaultValue !== '' && defaultValue != null
+    hasDefault
       ? defaultValue
-      : m === 'multiple'
-        ? legacyDates
-        : m === 'range'
-          ? [legacyStart, legacyEnd]
-          : legacyDate
+      : hadDefault.current
+        ? ''
+        : m === 'multiple'
+          ? legacyDates
+          : m === 'range'
+            ? [legacyStart, legacyEnd]
+            : legacyDate
   );
   const initial = useMemo(() => selectionOf(rawDefault, m), [rawDefault, m]);
   const [selected, setSelected] = useState<Selection>(initial);

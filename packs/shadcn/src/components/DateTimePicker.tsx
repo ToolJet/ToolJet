@@ -5,6 +5,7 @@ import { CalendarDays, Clock } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
+import { popupLayerStyle } from '../lib/popupLayer';
 import { cn } from '../lib/cn';
 import {
   atTime,
@@ -189,6 +190,9 @@ export const DateTimePicker = () => {
   const shown = date ? safeFormat(date, displayFormat) : '';
   const clearable = showClearBtn === true && !!shown && !disabled;
   const vars = lookVars(pickerVars({ ...styles, ...popoverStyles }));
+  // Inside a Dialog's body the popup, and its hour and minute lists opened after it, stack above the dialog
+  // (lib/popupLayer).
+  const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
 
   return (
     <div className="ui uc" ref={anchorRef} style={vars}>
@@ -217,7 +221,7 @@ export const DateTimePicker = () => {
             />
             {container ? (
               <Popover.Portal container={container}>
-                <Popover.Content aria-label="Choose a date and time" className="ui-popup uc-pop" align="start" sideOffset={4} style={vars}>
+                <Popover.Content aria-label="Choose a date and time" className="ui-popup uc-pop" align="start" sideOffset={4} style={popVars}>
                   <MonthGrid
                     autoFocus
                     month={month}
@@ -234,7 +238,7 @@ export const DateTimePicker = () => {
                     <TimeSelect
                       label="Hour"
                       container={container}
-                      style={vars}
+                      style={popVars}
                       value={hour === null ? '' : String(use24 ? hour : hour % 12)}
                       options={hourOptions}
                       onChange={(h) => {
@@ -248,7 +252,7 @@ export const DateTimePicker = () => {
                     <TimeSelect
                       label="Minute"
                       container={container}
-                      style={vars}
+                      style={popVars}
                       value={minute === null ? '' : String(minute)}
                       options={minuteChoices.map((m) => ({ value: String(m), label: pad2(m) }))}
                       onChange={(m) => setTime((hour ?? Math.floor(nowMinutes / 60)) * 60 + Number(m))}
