@@ -2,9 +2,14 @@ import { GroupPermissions } from '@entities/group_permissions.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
-import { USER_ROLE, GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
+import { USER_ROLE, GROUP_PERMISSIONS_TYPE, USER_ROLE_PRECEDENCE } from '@modules/group-permissions/constants';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, In, Not, Repository } from 'typeorm';
+
+export const highestRole = (roles: GroupPermissions[]): GroupPermissions | null =>
+  [...roles].sort(
+    (a, b) => USER_ROLE_PRECEDENCE.indexOf(a.name as USER_ROLE) - USER_ROLE_PRECEDENCE.indexOf(b.name as USER_ROLE)
+  )[0] ?? null;
 
 @Injectable()
 export class RolesRepository extends Repository<GroupPermissions> {
@@ -56,20 +61,22 @@ export class RolesRepository extends Repository<GroupPermissions> {
     }, manager || this.manager);
   }
 
-  async getUserRole(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions> {
+  async getUserRole(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions | null> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOne(GroupPermissions, {
-        where: {
-          type: GROUP_PERMISSIONS_TYPE.DEFAULT,
-          organizationId: organizationId,
-          groupUsers: {
-            userId: userId,
+      return highestRole(
+        await manager.find(GroupPermissions, {
+          where: {
+            type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+            organizationId: organizationId,
+            groupUsers: {
+              userId: userId,
+            },
           },
-        },
-        relations: {
-          groupUsers: true,
-        },
-      });
+          relations: {
+            groupUsers: true,
+          },
+        })
+      );
     }, manager || this.manager);
   }
 
