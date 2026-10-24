@@ -419,6 +419,7 @@ const LibraryComponent = ({
           fit={fit}
           stretch={stretch}
           themed={themed}
+          darkMode={darkMode}
           hostRef={fitRef}
           light={light}
           popupSlotNames={popupSlotNames}

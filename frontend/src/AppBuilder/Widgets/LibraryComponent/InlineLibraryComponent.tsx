@@ -179,6 +179,8 @@ interface InlineLibraryComponentProps {
   stretch?: boolean;
   /** The app theme reaches the pack as --tj-* tokens (TOKEN_CSS). */
   themed?: boolean;
+  /** The app is in dark mode: native parts (scrollbars, date inputs) draw dark too. */
+  darkMode?: boolean;
   hostRef?: React.Ref<HTMLDivElement>;
   light?: React.ReactNode;
   popupSlotNames?: string[];
@@ -203,6 +205,7 @@ const InlineLibraryComponent = ({
   fit = false,
   stretch = false,
   themed = true,
+  darkMode = false,
   hostRef: outerRef,
   light,
   popupSlotNames = [],
@@ -261,7 +264,12 @@ const InlineLibraryComponent = ({
     // contract, or every popup fell back to the pack's stock colours, font and radius under an applied theme.
     // The layer is shared by a library's widgets, which an app themes alike.
     shadow?.popupHost?.classList.toggle('tj-themed', themed);
-  }, [shadow, fit, stretch, themed]);
+    // The browser draws scrollbars and other native parts from color-scheme: unset, a scrolling card in a dark app kept
+    // a light scrollbar. The popup layer follows too.
+    const scheme = darkMode ? 'dark' : 'light';
+    if (hostRef.current) hostRef.current.style.colorScheme = scheme;
+    if (shadow?.popupHost) shadow.popupHost.style.colorScheme = scheme;
+  }, [shadow, fit, stretch, themed, darkMode]);
 
   useEffect(() => {
     let cancelled = false;
