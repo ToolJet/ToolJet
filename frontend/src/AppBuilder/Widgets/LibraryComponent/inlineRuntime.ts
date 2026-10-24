@@ -110,7 +110,13 @@ const makeStateHook = (hookName: string, cleared?: () => unknown) =>
   function useTjState({ name, initialValue }: { name: string; initialValue?: unknown }) {
     const instance = useLibraryInstance(hookName);
     const external = instance.props[name];
-    const [value, setValue] = React.useState(external !== undefined ? external : initialValue);
+    // A property the app sets whose binding resolves to undefined (a query that has not run or failed) starts empty,
+    // as a native widget's does; only a property the app never set falls back to initialValue, so a component's
+    // sample data never stands in for a missing result.
+    const bound = Object.prototype.hasOwnProperty.call(instance.props, name);
+    const [value, setValue] = React.useState(() =>
+      external !== undefined ? external : bound && cleared ? cleared() : initialValue
+    );
     const valueRef = React.useRef(value);
     const lastExternal = React.useRef(external);
     // Object.is, so a NaN binding (e.g. arithmetic on a query that has not loaded) is equal to itself and does not
