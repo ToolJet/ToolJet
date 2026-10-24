@@ -57,8 +57,8 @@ export const Timeline = () => {
   const [statusColors] = ToolJet.useStateObject({ name: 'statusColors', label: 'Colours by status', description: '{ "shipped": "#16a34a" }: a status word to a colour.', initialValue: {} });
   const [, setLastClickedItem] = ToolJet.useStateObject({ name: 'lastClickedItem', initialValue: {}, inspector: 'hidden' });
   const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
+  // UI 2.0's name only: the pack's earlier onItemClick fired alongside it.
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
-  const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
   const { disabled } = ToolJet.useControlState();
   const markerColor = ToolJet.useStyleString({ name: 'markerColor', label: 'Marker color (items without status)', inspector: 'color', initialValue: '' });
   const lineColor = ToolJet.useStyleString({ name: 'lineColor', label: 'Connecting line color', inspector: 'color', initialValue: '' });
@@ -85,7 +85,6 @@ export const Timeline = () => {
     setLastClickedItem(rest);
     setSelectedItem(rest);
     onItemClicked();
-    onItemClick();
   };
   const vars = lookVars([
     [markerColor, '--lk-marker'],

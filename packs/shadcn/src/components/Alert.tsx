@@ -60,13 +60,12 @@ export const Alert = () => {
   const [showIcon] = ToolJet.useStateBoolean({ name: 'showIcon', label: 'Show icon', initialValue: true, section: 'Appearance' });
   const [dismissed, setDismissed] = ToolJet.useStateBoolean({ name: 'dismissed', initialValue: false, inspector: 'hidden' });
   const onActionClicked = ToolJet.useEventCallback({ name: 'onActionClicked' });
+  // UI 2.0's name only: the pack's earlier onDismiss fired alongside it.
   const onClose = ToolJet.useEventCallback({ name: 'onClose' });
-  const onDismiss = ToolJet.useEventCallback({ name: 'onDismiss' });
 
   const close = () => {
     setDismissed(true);
     onClose();
-    onDismiss();
   };
   // UI 2.0's Alert actions, plus the pack's show and dismiss.
   ToolJet.useAction(

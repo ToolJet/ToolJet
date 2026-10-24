@@ -64,7 +64,7 @@ export const TabsContainer = () => {
   const [backLabel] = ToolJet.useStateString({ name: "backLabel", label: "Wizard: Back label", initialValue: "Back", visibleWhen: { key: "variant", value: "steps" } });
   const [finishLabel] = ToolJet.useStateString({ name: "finishLabel", label: "Wizard: Finish label", initialValue: "Finish", visibleWhen: { key: "variant", value: "steps" } });
   const [linearSteps] = ToolJet.useStateBoolean({ name: "linearSteps", label: "Wizard: steps in order only", initialValue: true, visibleWhen: { key: "variant", value: "steps" } });
-  const onChange = ToolJet.useEventCallback({ name: "onChange" });
+  // One event per switch, the native Tabs' name: the pack's earlier onChange fired alongside it.
   const onTabSwitch = ToolJet.useEventCallback({ name: "onTabSwitch" });
   const onFinish = ToolJet.useEventCallback({ name: "onFinish" });
   const { disabled } = ToolJet.useControlState();
@@ -95,10 +95,7 @@ export const TabsContainer = () => {
     setCurrent,
     defaultTab,
     setTabParam: "id",
-    onSwitched: () => {
-      onChange();
-      onTabSwitch();
-    },
+    onSwitched: onTabSwitch,
   });
   // Every tab's canvas, kept apart even when two ids fold to the same slot characters.
   const slots = useMemo(() => slotNames("tab", t.tabs.map((tab) => tab.id)), [t.tabs]);

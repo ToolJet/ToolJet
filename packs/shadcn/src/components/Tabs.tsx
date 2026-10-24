@@ -55,7 +55,7 @@ export const Tabs = () => {
   });
   const [hideTabs] = ToolJet.useStateBoolean({ name: 'hideTabs', label: 'Hide tabs', initialValue: false });
   const [linearSteps] = ToolJet.useStateBoolean({ name: 'linearSteps', label: 'Steps in order only', initialValue: true });
-  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  // One event per switch, UI 2.0's name: the pack's earlier onChange fired alongside it.
   const onTabSwitch = ToolJet.useEventCallback({ name: 'onTabSwitch' });
   const { disabled } = ToolJet.useControlState();
 
@@ -90,10 +90,7 @@ export const Tabs = () => {
     setCurrent: setValue,
     defaultTab,
     setTabParam: 'value',
-    onSwitched: () => {
-      onChange();
-      onTabSwitch();
-    },
+    onSwitched: onTabSwitch,
   });
   React.useEffect(() => setCurrentTab(t.active), [t.active, setCurrentTab]);
   // 'pill' is the pack's earlier name for pills.

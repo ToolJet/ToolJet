@@ -1506,3 +1506,38 @@ body {
 /* An Equal heights row stretches the box (the host sets tj-cc-stretch): card surfaces fill it, as UI 2.0's do. */
 .tj-cc-stretch .ui-stat.is-card,
 .tj-cc-stretch .ui > .ui-card { height: 100%; }
+
+/* A disabled component is dimmed once, by the host (RenderWidget's .disabled, half opacity): while the host disables
+   it, the marker from lib/hostDisabled.tsx comes first in its root, and the parts below that dim themselves when
+   disabled keep full opacity, as UI 2.0's do under .ui2-disabled. Dimmed twice, a disabled Button or field read at a
+   quarter opacity. Without the marker (a disabled option, a step out of reach, the pack's earlier Disable property)
+   they dim as before. :is() takes its most specific selector, so these outrank every rule that dims a part. Left out:
+   the carousel's hidden end arrows (opacity 0) and Leaflet's zoom limits, which are the component's own states. */
+template[data-tj-host-disabled] ~ :is(
+    .ui-btn, .ui-input, .ui-textarea, .ui-select-trigger, .ui-checkbox, .ui-switch, .ui-radio, .ui-toggle,
+    .ui-stepper-btn, .ui-time-cell, .ui-calendar-day, .ui-page, .ui-nav-item, .ui-chat-send, .ui-menu-item--button,
+    .uc-select-trigger, .uc-cal-arrow, .uc-cal-day, .uc-col-opt, .ui2-step, .ui2-color-trigger, .ui2-file-x,
+    .ui2c-send, .n2-tab, .n2-nav-item, .n2-carousel-arrow, .n2-page
+  ):disabled,
+template[data-tj-host-disabled] ~ * :is(
+    .ui-btn, .ui-input, .ui-textarea, .ui-select-trigger, .ui-checkbox, .ui-switch, .ui-radio, .ui-toggle,
+    .ui-stepper-btn, .ui-time-cell, .ui-calendar-day, .ui-page, .ui-nav-item, .ui-chat-send, .ui-menu-item--button,
+    .uc-select-trigger, .uc-cal-arrow, .uc-cal-day, .uc-col-opt, .ui2-step, .ui2-color-trigger, .ui2-file-x,
+    .ui2c-send, .n2-tab, .n2-nav-item, .n2-carousel-arrow, .n2-page
+  ):disabled,
+template[data-tj-host-disabled] ~ :is(.ui-slider, .ui-menu-item, .uc-item, .n2-menu-item)[data-disabled],
+template[data-tj-host-disabled] ~ * :is(.ui-slider, .ui-menu-item, .uc-item, .n2-menu-item)[data-disabled],
+template[data-tj-host-disabled] ~ :is(
+    .ui-chips, .ui-dropzone, .uc-multi, .uc-calendar-box, .ui2-group, .ui2-otp, .ui2-tags, .n2-tab-panel,
+    .n2-step-tab, .n2-steps-btn, .n2-link, .t2-table
+  ).is-disabled,
+template[data-tj-host-disabled] ~ * :is(
+    .ui-chips, .ui-dropzone, .uc-multi, .uc-calendar-box, .ui2-group, .ui2-otp, .ui2-tags, .n2-tab-panel,
+    .n2-step-tab, .n2-steps-btn, .n2-link, .t2-table
+  ).is-disabled,
+template[data-tj-host-disabled] ~ .ui2-drop.is-off,
+template[data-tj-host-disabled] ~ * .ui2-drop.is-off,
+template[data-tj-host-disabled] ~ .ui-map[data-disabled] .ui-map-canvas,
+template[data-tj-host-disabled] ~ * .ui-map[data-disabled] .ui-map-canvas {
+  opacity: 1;
+}

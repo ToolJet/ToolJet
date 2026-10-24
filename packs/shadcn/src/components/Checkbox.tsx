@@ -20,8 +20,8 @@ export const Checkbox = () => {
   const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onCheck = ToolJet.useEventCallback({ name: 'onCheck' });
+  // UI 2.0's spelling only: the pack's earlier onUncheck fired alongside it, a third event for one uncheck.
   const onUnCheck = ToolJet.useEventCallback({ name: 'onUnCheck' });
-  const onUncheck = ToolJet.useEventCallback({ name: 'onUncheck' });
   const accentColor = useColorStyle('accentColor', 'Checked color');
   const labelColor = useColorStyle('labelColor', 'Label color');
   const helpTextColor = useColorStyle('helpTextColor', 'Help text color');
@@ -51,11 +51,9 @@ export const Checkbox = () => {
     setValue(next);
     setLegacyChecked(next);
     onChange();
+    // onChange plus onCheck or onUnCheck, as UI 2.0's Checkbox: they mean different things.
     if (next) onCheck();
-    else {
-      onUnCheck();
-      onUncheck();
-    }
+    else onUnCheck();
   };
   ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => set(!checked));
   ToolJet.useAction(

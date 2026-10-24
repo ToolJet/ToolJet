@@ -38,8 +38,8 @@ export const RadioGroup = () => {
     inspector: 'hidden',
   });
   const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  // One event per change, UI 2.0's name: the pack's earlier onChange fired alongside it.
   const onSelectionChange = ToolJet.useEventCallback({ name: 'onSelectionChange' });
-  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const accentColor = useColorStyle('accentColor', 'Selected color');
   const labelColor = useColorStyle('labelColor', 'Label color');
   const helpTextColor = useColorStyle('helpTextColor', 'Help text color');
@@ -80,7 +80,6 @@ export const RadioGroup = () => {
     setValue((option?.value ?? '') as string);
     setSelectedOption(option ?? {});
     onSelectionChange();
-    onChange();
   };
   ToolJet.useAction({ name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
     change(v === undefined || v === null || typeof v === 'object' ? '' : choiceKey(v))

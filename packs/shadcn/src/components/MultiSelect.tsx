@@ -70,7 +70,7 @@ export const MultiSelect = () => {
   const onSearchTextChanged = ToolJet.useEventCallback({ name: 'onSearchTextChanged' });
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
-  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  // onSelect is UI 2.0's one change event: the pack's earlier onChange fired alongside it.
   const styles = useFieldStyles('Accent (focus ring, checks)');
   const chipBackgroundColor = useColorStyle('chipBackgroundColor', 'Chip background');
   const chipTextColor = useColorStyle('chipTextColor', 'Chip text color');
@@ -122,7 +122,6 @@ export const MultiSelect = () => {
     setKeys(next);
     publish(next);
     onSelect();
-    onChange();
   };
   const onSearch = (text: string) => {
     setSearch(text);

@@ -100,12 +100,16 @@ export const OtpInput = () => {
 
   const disabled = legacyDisabled || control.disabled;
   const joined = slotStyle !== 'separate';
-  const hint = String(placeholder ?? '').slice(0, 1);
+  // One character per box: box i shows the placeholder's i-th character ('123456' reads 1 2 3 4 5 6). A single
+  // character fills every box, so '-' still draws a dash in each.
+  const hints = Array.from(String(placeholder ?? ''));
+  const hintAt = (i: number) => (hints.length === 1 ? hints[0] : hints[i] ?? '');
   const active = focused ? Math.min(code.length, size - 1) : -1;
   const half = Math.ceil(size / 2);
   const groups = separator === true ? [[0, half], [half, size]] : [[0, size]];
   const slot = (i: number) => {
     const char = code[i];
+    const hint = hintAt(i);
     return (
       <div key={i} data-slot="otp" className={cn('ui2-otp-slot', i === active && 'is-active')}>
         {char ? (masked === true ? '•' : char) : hint ? <span className="ui2-otp-placeholder">{hint}</span> : null}

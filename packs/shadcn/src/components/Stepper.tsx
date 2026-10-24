@@ -36,7 +36,7 @@ export const Stepper = () => {
   const [, setIsFirstStep] = ToolJet.useStateBoolean({ name: "isFirstStep", initialValue: true, inspector: "hidden" });
   const [, setIsLastStep] = ToolJet.useStateBoolean({ name: "isLastStep", initialValue: false, inspector: "hidden" });
   const onStepChange = ToolJet.useEventCallback({ name: "onStepChange" });
-  const onComplete = ToolJet.useEventCallback({ name: "onComplete" });
+  // UI 2.0's name only: the pack's earlier onComplete fired alongside it.
   const onFinish = ToolJet.useEventCallback({ name: "onFinish" });
   const { disabled } = ToolJet.useControlState();
   const accent = ToolJet.useStyleString({
@@ -82,10 +82,7 @@ export const Stepper = () => {
     setIsLastStep(isLast);
     if (shownId !== undefined && shownId !== current) setCurrentStep(shownId);
   }, [index, isLast, shownId, current, setCurrentStep, setCurrentStepIndex, setIsFirstStep, setIsLastStep]);
-  const finish = () => {
-    onComplete();
-    onFinish();
-  };
+  const finish = () => onFinish();
 
   const goTo = (next: number) => {
     const step = steps[Math.max(0, Math.min(steps.length - 1, next))];

@@ -31,8 +31,7 @@ export const AccordionContainer = () => {
     label: "Allow several open",
     initialValue: true,
   });
-  const onToggle = ToolJet.useEventCallback({ name: "onToggle" });
-  // UI 2.0 Accordion's events and exposed values.
+  // UI 2.0 Accordion's events and exposed values. onChange only: the pack's earlier onToggle fired alongside it.
   const onChange = ToolJet.useEventCallback({ name: "onChange" });
   const onExpand = ToolJet.useEventCallback({ name: "onExpand" });
   const onCollapse = ToolJet.useEventCallback({ name: "onCollapse" });
@@ -93,7 +92,6 @@ export const AccordionContainer = () => {
     if (!fire) return;
     if (next.some((id) => !open.includes(id))) onExpand();
     if (open.some((id) => !next.includes(id))) onCollapse();
-    onToggle();
     onChange();
   };
   // A section by id, or by index (UI 2.0 Accordion's expand / collapse take an index).
