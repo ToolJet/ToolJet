@@ -257,6 +257,10 @@ const InlineLibraryComponent = ({
     shadow?.mount.classList.toggle('tj-cc-fit', fit);
     shadow?.mount.classList.toggle('tj-cc-stretch', stretch);
     hostRef.current?.classList.toggle('tj-themed', themed);
+    // Popups (menus, pickers, dialogs) draw in the shared popup host, outside the widget: it takes the same theme
+    // contract, or every popup fell back to the pack's stock colours, font and radius under an applied theme.
+    // The layer is shared by a library's widgets, which an app themes alike.
+    shadow?.popupHost?.classList.toggle('tj-themed', themed);
   }, [shadow, fit, stretch, themed]);
 
   useEffect(() => {
