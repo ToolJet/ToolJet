@@ -261,12 +261,13 @@ const PackRow = ({
 };
 
 /** The rows a pack list draws as ToolJet canvases ({{listItem}}), with the native List view's row plumbing. */
-const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMode, enabled }) => {
+const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMode, enabled, rowVariable }) => {
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
   const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
   const updateCustomResolvables = useStore((s) => s.updateCustomResolvables);
   const initExposedValueArrayForChildren = useStore((s) => s.initExposedValueArrayForChildren);
+  const updateDependencyValues = useStore((s) => s.updateDependencyValues);
   const [rows, setRowsState] = useState({ items: [], rowHeight: 72 });
   const setRows = useCallback(
     (items, rowHeight) =>
@@ -279,16 +280,31 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
   );
   useLayoutEffect(() => {
     if (!enabled) return;
-    if (rows.items.length)
+    // Each row is {{listItem}}, and also the name the pack's slot gives it ({{cardData}} on a kanban card): a card
+    // template written for UI 2.0's Kanban read cardData and drew blank cards.
+    const alias = rowVariable && rowVariable !== 'listItem' ? rowVariable : undefined;
+    if (rows.items.length) {
       updateCustomResolvables(
         id,
-        rows.items.map((listItem) => ({ listItem })),
+        rows.items.map((listItem) => (alias ? { listItem, [alias]: listItem } : { listItem })),
         'listItem',
         moduleId,
         parentIndices
       );
+      if (alias) updateDependencyValues(`components.${id}.${alias}`, moduleId, parentIndices);
+    }
     initExposedValueArrayForChildren(id, rows.items.length, moduleId, parentIndices);
-  }, [enabled, rows.items, id, moduleId, parentIndices, updateCustomResolvables, initExposedValueArrayForChildren]);
+  }, [
+    enabled,
+    rows.items,
+    rowVariable,
+    id,
+    moduleId,
+    parentIndices,
+    updateCustomResolvables,
+    updateDependencyValues,
+    initExposedValueArrayForChildren,
+  ]);
 
   const light = enabled
     ? rows.items.map((_item, index) => (
@@ -314,7 +330,7 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
 
 export const usePackHost = (
   props,
-  { disabled, loading, rowsEnabled, fit, visibility, formField = false, markRowScoped }
+  { disabled, loading, rowsEnabled, rowVariable, fit, visibility, formField = false, markRowScoped }
 ) => {
   const { id, validate, validation, setExposedVariable, width, height, currentLayout, darkMode } = props;
   const { moduleId } = useModuleContext();
@@ -331,6 +347,7 @@ export const usePackHost = (
     fit,
     darkMode,
     enabled: rowsEnabled,
+    rowVariable,
   });
 
   const [popupSlotNames, setPopupSlotNames] = useState([]);

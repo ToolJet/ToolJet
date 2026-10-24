@@ -318,6 +318,8 @@ const LibraryComponent = ({
       disabled: isDisabled || (isLoading && !ownLoading),
       loading: isLoading,
       rowsEnabled: isInline && !!manifestComponent?.slots?.some?.((slot) => slot.kind === 'rows'),
+      // What the row's components call their row besides {{listItem}}: a kanban card's {{cardData}}, as UI 2.0's.
+      rowVariable: manifestComponent?.slots?.find?.((slot) => slot.kind === 'rows')?.variable,
       fit,
       visibility: exposedVariablesTemporaryState.isVisible,
       // A field (a validation section) takes part in a Form's clearForm.
