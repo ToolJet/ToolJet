@@ -128,20 +128,24 @@ export const LibraryComponentProperties = ({
                 />
               );
             }
-            return renderElement(
-              shownComponent,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              prop.name,
-              'properties',
-              currentState,
-              allComponents,
-              darkMode,
-              prop.placeholder ?? '',
-              undefined,
-              null,
-              fieldMeta(prop) as any // renderElement (untyped JS) infers customMeta as `null` from its default param
+            return (
+              <React.Fragment key={prop.name}>
+                {renderElement(
+                  shownComponent,
+                  componentMeta,
+                  paramUpdated,
+                  dataQueries,
+                  prop.name,
+                  'properties',
+                  currentState,
+                  allComponents,
+                  darkMode,
+                  prop.placeholder ?? '',
+                  undefined,
+                  null,
+                  fieldMeta(prop) as any // renderElement (untyped JS) infers customMeta as `null` from its default param
+                )}
+              </React.Fragment>
             );
           })}
         </>
