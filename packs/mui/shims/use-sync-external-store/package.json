@@ -1,0 +1,21 @@
+{
+  "name": "use-sync-external-store",
+  "version": "1.7.0",
+  "description": "ESM stand-in for use-sync-external-store: React 18's own useSyncExternalStore. The published package is CommonJS and requires react, which the pack bundle leaves external (ESM), so it fails at runtime with 'Dynamic require of react is not supported'.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./index.js",
+    "./with-selector": "./with-selector.js",
+    "./with-selector.js": "./with-selector.js",
+    "./shim": "./index.js",
+    "./shim/index.js": "./index.js",
+    "./shim/with-selector": "./with-selector.js",
+    "./shim/with-selector.js": "./with-selector.js",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  }
+}
