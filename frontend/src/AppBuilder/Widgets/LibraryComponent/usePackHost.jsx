@@ -21,7 +21,14 @@ const filled = (value) =>
 // The widget's Validation section judged on the component's value, as native inputs do: isValid and isMandatory are
 // published, and the error shows once the field was touched. 0 and false are values.
 const useHostValidation = (latest, value, present) => {
-  const { validate, validation, setExposedVariable } = latest.current;
+  const { validate, validation, setExposedVariable, exposed, judged } = latest.current;
+  // Which exposed variable this is the value of, so an event fired right after the value changes can judge the new
+  // value first (see fireHostEvent).
+  if (exposed && judged) {
+    let key = exposed.has('value') && Object.is(exposed.get('value'), value) ? 'value' : null;
+    if (!key) for (const [k, v] of exposed) if (k !== 'isValid' && k !== 'isMandatory' && Object.is(v, value)) key = k;
+    judged.current = { key: key ?? judged.current.key, value };
+  }
   const status =
     (typeof validate === 'function' ? validate((present ?? filled(value)) ? value : undefined) : null) || {};
   const isValid = status.isValid !== false;
@@ -332,11 +339,36 @@ export const usePackHost = (
   props,
   { disabled, loading, rowsEnabled, rowVariable, fit, visibility, formField = false, markRowScoped }
 ) => {
-  const { id, validate, validation, setExposedVariable, width, height, currentLayout, darkMode } = props;
+  const { id, validate, validation, setExposedVariable, fireEvent, width, height, currentLayout, darkMode } = props;
   const { moduleId } = useModuleContext();
   const resolveRow = useRowResolve(moduleId);
+  // The latest value of each variable the component exposed, and the value its validation last judged.
+  const exposed = useRef(new Map());
+  const judged = useRef({ key: null, value: undefined });
   const latest = useRef({ validate, validation, setExposedVariable });
-  latest.current = { validate, validation, setExposedVariable };
+  latest.current = { validate, validation, setExposedVariable, exposed: exposed.current, judged };
+  const exposeVariable = useCallback((key, value) => {
+    exposed.current.set(key, value);
+    latest.current.setExposedVariable(key, value);
+  }, []);
+  // A component sets its value and fires its event in one go, before it renders again, while isValid follows the
+  // render: an onChange that cleared a required field read isValid true. The new value is judged before the event.
+  // Booleans are left to the render, as their "present" rule is the component's own.
+  const fireHostEvent = useCallback(
+    (name, options) => {
+      const { key, value } = judged.current;
+      const judge = latest.current.validate;
+      if (typeof judge === 'function' && key && exposed.current.has(key)) {
+        const now = exposed.current.get(key);
+        if (!Object.is(now, value) && typeof now !== 'boolean') {
+          const status = judge(filled(now) ? now : undefined) || {};
+          latest.current.setExposedVariable('isValid', status.isValid !== false);
+        }
+      }
+      return fireEvent?.(name, options);
+    },
+    [fireEvent]
+  );
 
   const { setRows, light } = usePackRows({
     id,
@@ -379,5 +411,5 @@ export const usePackHost = (
     }),
     [disabled, loading, id, setRows, registerPopupSlot, formField, markRowScoped, resolveRow, moduleId]
   );
-  return { host, light, popupSlotNames };
+  return { host, light, popupSlotNames, exposeVariable, fireHostEvent };
 };

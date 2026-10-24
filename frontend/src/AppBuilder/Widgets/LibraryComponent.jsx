@@ -312,8 +312,8 @@ const LibraryComponent = ({
   const isDisabled = !!exposedVariablesTemporaryState.isDisabled;
   const fit =
     isInline && manifestComponent?.fit === true && properties.dynamicHeight === true && currentMode === 'view';
-  const { host, light, popupSlotNames } = usePackHost(
-    { id, darkMode, setExposedVariable, height, ...hostProps },
+  const { host, light, popupSlotNames, exposeVariable, fireHostEvent } = usePackHost(
+    { id, darkMode, setExposedVariable, fireEvent, height, ...hostProps },
     {
       disabled: isDisabled || (isLoading && !ownLoading),
       loading: isLoading,
@@ -410,8 +410,8 @@ const LibraryComponent = ({
           componentProps={componentProps}
           componentStyles={componentStyles}
           renderSlot={renderSlot}
-          setExposedVariable={setExposedVariable}
-          fireEvent={fireEvent}
+          setExposedVariable={exposeVariable}
+          fireEvent={fireHostEvent}
           actions={inlineActions}
           boxShadow={styles.boxShadow}
           dataCy={dataCy}
