@@ -8,6 +8,7 @@
 
 export const ROCKET_1 = 'ui1';
 export const ROCKET_1_LABEL = 'Rocket 1.0';
+const DEFAULT_PACK = 'pack:shadcn';
 
 // What the first-party packs are called in the picker.
 const PACK_LABELS = { shadcn: 'Rocket 2.0', antd: 'Ant Design', mui: 'Material UI' };
@@ -40,7 +41,7 @@ export const libraryChoices = (libraries = []) => {
 
 /**
  * The app's library: its saved choice when the picker still offers it; for an app saved before the setting, the pack
- * most of its pack components come from; else Rocket 1.0.
+ * most of its pack components come from; a blank app the default pack; else Rocket 1.0.
  * @param {string | undefined} saved globalSettings.componentLibrary
  * @param {{ packs: object[], custom: object[] }} choices libraryChoices(...)
  * @param {Record<string, any>} components the current page's components
@@ -58,7 +59,11 @@ export const resolveLibraryChoice = (saved, choices, components = {}) => {
     if (choice) counts.set(choice.value, (counts.get(choice.value) ?? 0) + 1);
   }
   const [top] = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  return top ? top[0] : ROCKET_1;
+  if (top) return top[0];
+  // A blank app is built in the default pack (the AI's too: MCP_AGENT_PACK), Rocket 2.0 where it is installed.
+  if (Object.keys(components).length === 0)
+    return choices.packs.find((choice) => choice.value === DEFAULT_PACK)?.value ?? ROCKET_1;
+  return ROCKET_1;
 };
 
 export const choiceLabel = (value, choices) =>
