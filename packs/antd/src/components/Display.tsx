@@ -3,6 +3,7 @@ import {
   Alert as AntAlert,
   Avatar as AntAvatar,
   Badge as AntBadge,
+  Button,
   Descriptions as AntDescriptions,
   Divider as AntDivider,
   Empty as AntEmpty,
@@ -85,8 +86,9 @@ export const Badge = () => {
   );
 };
 
-// Ant's Alert: message (the title), description, type (success, info, warning, error), showIcon, closable, banner;
-// event onClose (afterClose once it has gone).
+// Ant's Alert: message (the title), description, type (success, info, warning, error), showIcon, closable, banner,
+// actionText (a small button at the right, Ant's action slot). UI 2.0's Alert behaviour: the close button dismisses it
+// (dismissed, exposed), the show and dismiss actions; events onClose and onActionClicked, UI 2.0's names.
 export const Alert = () => {
   const [message] = ToolJet.useStateString({ name: 'message', label: 'Message', initialValue: 'A new version is available.' });
   const [description] = ToolJet.useStateString({ name: 'description', label: 'Description', initialValue: '' });
@@ -94,11 +96,21 @@ export const Alert = () => {
   const [showIcon] = ToolJet.useStateBoolean({ name: 'showIcon', label: 'Show icon', initialValue: true });
   const [closable] = ToolJet.useStateBoolean({ name: 'closable', label: 'Closable', initialValue: false });
   const [banner] = ToolJet.useStateBoolean({ name: 'banner', label: 'Banner', initialValue: false });
+  const [actionText] = ToolJet.useStateString({ name: 'actionText', label: 'Action text', description: 'A button on the alert; empty for none.', initialValue: '' });
+  const [dismissed, setDismissed] = ToolJet.useStateBoolean({ name: 'dismissed', initialValue: false, inspector: 'hidden' });
   const onClose = ToolJet.useEventCallback({ name: 'onClose' });
-  const { loading } = ToolJet.useControlState();
+  const onActionClicked = ToolJet.useEventCallback({ name: 'onActionClicked' });
+  const { disabled, loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 5 });
-  if (!message && !description) return <AntProvider tokens={tokens}>{null}</AntProvider>;
+  // dismissed changes before onClose fires, so its handler reads the alert as gone.
+  const close = () => {
+    setDismissed(true);
+    onClose();
+  };
+  ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setDismissed(false));
+  ToolJet.useAction({ name: 'dismiss', displayName: 'Dismiss' }, close);
+  if (dismissed || (!message && !description)) return <AntProvider tokens={tokens}>{null}</AntProvider>;
   // Fills its box (no band under a short message) and scrolls a long one inside it: it was drawn at its natural height
   // and the host cut what did not fit.
   return (
@@ -111,7 +123,14 @@ export const Alert = () => {
           showIcon={showIcon}
           closable={closable}
           banner={banner}
-          onClose={() => onClose()}
+          action={
+            actionText ? (
+              <Button size="small" disabled={disabled} onClick={() => onActionClicked()}>
+                {actionText}
+              </Button>
+            ) : undefined
+          }
+          onClose={close}
         />
       </SpinOver>
     </AntProvider>

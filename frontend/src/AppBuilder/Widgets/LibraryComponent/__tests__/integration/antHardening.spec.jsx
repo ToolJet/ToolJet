@@ -29,7 +29,9 @@ const mount = async (name, props = {}, { formField = true, disabled = false, use
   const actions = new Map();
   const host = { ...makeHost(name, { validation: formField ? 'text' : undefined }), disabled, ...(useValidation ? { useValidation } : {}) };
   let state = { props, clearCount: 0, host };
-  const view = { exposed, events, actions };
+  // The exposed values as each event fired, for checks that a handler reads the new state.
+  const seen = [];
+  const view = { exposed, events, actions, seen };
   const element = () => (
     <FormSignalContext.Provider value={{ clearCount: state.clearCount, submitAttemptCount: 0 }}>
       <InlineLibraryComponent
@@ -43,7 +45,10 @@ const mount = async (name, props = {}, { formField = true, disabled = false, use
         setExposedVariable={(key, value) => {
           exposed[key] = value;
         }}
-        fireEvent={(event) => events.push(event)}
+        fireEvent={(event) => {
+          events.push(event);
+          seen.push({ event, exposed: { ...exposed } });
+        }}
         actions={actions}
         host={state.host}
         dataCy={`ant-${mounts}`}
@@ -748,5 +753,42 @@ describe('team UI 2.0 report: lists, box-sized layouts and the Statistic trend',
     await settle();
     expect(v.exposed.trend).toBe('up');
     expect(v.exposed.trendValue).toBe('-12%');
+  });
+});
+
+describe("T38: Ant Alert takes UI 2.0's action and close", () => {
+  const button = (v, text) => [...v.root().querySelectorAll('button')].find((b) => b.textContent === text);
+
+  test('actionText draws a button that fires onActionClicked; empty draws none', async () => {
+    const v = await mount('Alert', { message: 'Update ready', actionText: 'Reload' }, { formField: false });
+    fireEvent.click(button(v, 'Reload'));
+    expect(v.events).toEqual(['onActionClicked']);
+    v.setProps({ actionText: '' });
+    await waitFor(() => expect(button(v, 'Reload')).toBeUndefined());
+  });
+
+  test('the action button follows the host Disable', async () => {
+    const v = await mount('Alert', { message: 'Update ready', actionText: 'Reload' }, { formField: false, disabled: true });
+    expect(button(v, 'Reload').disabled).toBe(true);
+  });
+
+  test('the close button dismisses it: onClose reads dismissed true, show brings it back', async () => {
+    const v = await mount('Alert', { message: 'Saved', closable: true }, { formField: false });
+    expect(v.exposed.dismissed).toBe(false);
+    fireEvent.click(v.root().querySelector('.ant-alert-close-icon'));
+    await waitFor(() => expect(v.root().querySelector('.ant-alert')).toBeNull());
+    expect(v.events).toEqual(['onClose']);
+    expect(v.seen[0].exposed.dismissed).toBe(true);
+    v.run('show');
+    await waitFor(() => expect(v.root().querySelector('.ant-alert')).toBeTruthy());
+    expect(v.exposed.dismissed).toBe(false);
+  });
+
+  test('the dismiss action hides it and fires onClose once', async () => {
+    const v = await mount('Alert', { message: 'Saved' }, { formField: false });
+    v.run('dismiss');
+    await waitFor(() => expect(v.root().querySelector('.ant-alert')).toBeNull());
+    expect(v.events).toEqual(['onClose']);
+    expect(v.exposed.dismissed).toBe(true);
   });
 });
