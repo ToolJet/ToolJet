@@ -194,7 +194,8 @@
       "slots": [
         {
           "name": "card",
-          "kind": "rows"
+          "kind": "rows",
+          "variable": "cardData"
         }
       ],
       "loading": "own"
