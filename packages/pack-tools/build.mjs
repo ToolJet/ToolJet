@@ -127,6 +127,8 @@ function toManifest(name, calls, extra) {
     ...(extra.usage ? { usage: extra.usage } : {}),
     // "own": the component draws its own loading look (useControlState().loading), so the host shows no overlay.
     ...(extra.loading ? { loading: extra.loading } : {}),
+    // "upper": the component writes its label in capitals (MUI's Button), so the AI compiler widens it to fit.
+    ...(extra.labelCase ? { labelCase: extra.labelCase } : {}),
     // How the pack names the role's options, events, actions and values (the AI plans in roles: libSwap.ts in TJ-AI).
     ...Object.fromEntries(['roleProps', 'roleValues', 'roleEvents', 'roleActions'].filter((k) => extra[k]).map((k) => [k, extra[k]])),
     fit: extra.fit !== undefined ? extra.fit : !slots.some((s) => s.kind === 'slot'),
