@@ -117,7 +117,9 @@ const NoResultsMessage = ({ searchQuery }) => (
   </div>
 );
 
-const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }) => {
+// `picked`: the library is the one picked for the app (the Components tab's library): no collapsing header, only its
+// version picker, since the tab already names it.
+export const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop, picked = false }) => {
   const [open, setOpen] = useState(true);
   const { current, latest } = useLibraryCurrentRevision(library);
   const manifest = useResolvedManifest(library, current, latest);
@@ -135,6 +137,58 @@ const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }
   // A dev-only library with nothing picked yet still renders its header + VersionPicker
   // so it's discoverable — the card list itself stays empty until a dev entry is chosen.
   if (!isVisible) return null;
+
+  const packSections = (list) => (
+    // A component pack (its components declare roles): ToolJet's palette sections, as widget tiles.
+    <div className="custom-library-section-content custom-library-pack-sections">
+      {list.map((section) => (
+        <div key={section.key} className="custom-library-pack-section" data-cy={`pack-section-${section.key}`}>
+          <div className="custom-library-pack-section-title">{section.title}</div>
+          <div className="component-card-group-wrapper">
+            {section.items.map(([exportName, comp]) => (
+              <CustomComponentCard
+                key={exportName}
+                libraryId={library.id}
+                correlationId={library.correlationId}
+                libraryName={library.name}
+                revisionId={current}
+                name={exportName}
+                componentConfig={comp}
+                tile
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+  const flatList = () => (
+    <div className="custom-library-section-content">
+      {components.map(([exportName, comp]) => (
+        <CustomComponentCard
+          key={exportName}
+          libraryId={library.id}
+          correlationId={library.correlationId}
+          libraryName={library.name}
+          revisionId={current}
+          name={exportName} // the bundle's export — what the shell resolves
+          componentConfig={comp}
+        />
+      ))}
+    </div>
+  );
+
+  if (picked) {
+    return (
+      <div className="custom-library-section custom-library-section--picked">
+        <div className="custom-library-section-header custom-library-version-row">
+          <span className="custom-library-version-label">Version</span>
+          <VersionPicker library={library} />
+        </div>
+        {sections ? packSections(sections) : flatList()}
+      </div>
+    );
+  }
 
   return (
     <div className="custom-library-section">
@@ -157,45 +211,7 @@ const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }
         </div>
       </div>
 
-      {open && sections && (
-        // A component pack (its components declare roles): ToolJet's palette sections, as widget tiles.
-        <div className="custom-library-section-content custom-library-pack-sections">
-          {sections.map((section) => (
-            <div key={section.key} className="custom-library-pack-section" data-cy={`pack-section-${section.key}`}>
-              <div className="custom-library-pack-section-title">{section.title}</div>
-              <div className="component-card-group-wrapper">
-                {section.items.map(([exportName, comp]) => (
-                  <CustomComponentCard
-                    key={exportName}
-                    libraryId={library.id}
-                    correlationId={library.correlationId}
-                    libraryName={library.name}
-                    revisionId={current}
-                    name={exportName}
-                    componentConfig={comp}
-                    tile
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {open && !sections && (
-        <div className="custom-library-section-content">
-          {components.map(([exportName, comp]) => (
-            <CustomComponentCard
-              key={exportName}
-              libraryId={library.id}
-              correlationId={library.correlationId}
-              libraryName={library.name}
-              revisionId={current}
-              name={exportName} // the bundle's export — what the shell resolves
-              componentConfig={comp}
-            />
-          ))}
-        </div>
-      )}
+      {open && (sections ? packSections(sections) : flatList())}
     </div>
   );
 };
