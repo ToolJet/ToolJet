@@ -112,6 +112,26 @@
     gap: 12px;
   }
 
+  // A component pack's sections: ToolJet's palette layout (component-card-group-wrapper tiles) under small titles.
+  .custom-library-pack-sections {
+    // A tile's two-line name (Dropdown Menu) runs past its 86px box: room before the next section's title.
+    gap: 20px;
+  }
+
+  .custom-library-pack-section-title {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--text-placeholder);
+    margin-bottom: 4px;
+  }
+
+  .custom-component-tile-initials {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-placeholder);
+  }
+
   .custom-component-card {
     display: flex;
     align-items: center;
