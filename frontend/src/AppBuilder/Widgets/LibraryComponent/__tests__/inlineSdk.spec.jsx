@@ -144,3 +144,24 @@ describe('inline SDK: state bindings', () => {
     expect(card().dataset.count).toBe('1');
   });
 });
+
+describe('inline SDK: style bindings', () => {
+  it('[LibraryComponent-INLINE-STYLES-003] a style bound to null, or to an option it does not list, falls back to initialValue', async () => {
+    // Break this catches: a style bound to data that has not loaded ({{null}}) reaching a vendor component, which can
+    // throw (MUI Tabs' textColor took the whole viewer down).
+    loadLibraryModule.mockResolvedValue({
+      Card: () => {
+        const tone = ToolJet.useStyleEnumeration({ name: 'tone', enumDefinition: ['primary', 'secondary'], initialValue: 'primary' });
+        const accent = ToolJet.useStyleString({ name: 'accent', initialValue: 'red' });
+        return <div data-testid="card" data-tone={tone} data-accent={accent} />;
+      },
+    });
+    const { card, rerenderWith } = renderCard({ componentStyles: { tone: null, accent: null } });
+    await waitFor(() => expect(card()).not.toBeNull());
+    expect(card().dataset).toMatchObject({ tone: 'primary', accent: 'red' });
+    rerenderWith({ componentStyles: { tone: 'tertiary', accent: 'blue' } });
+    expect(card().dataset).toMatchObject({ tone: 'primary', accent: 'blue' });
+    rerenderWith({ componentStyles: { tone: 'secondary' } });
+    expect(card().dataset.tone).toBe('secondary');
+  });
+});

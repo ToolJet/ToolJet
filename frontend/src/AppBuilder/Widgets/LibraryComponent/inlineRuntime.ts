@@ -106,6 +106,15 @@ const useLibraryInstance = (hookName: string): LibraryInstance => {
 // Same semantics as shell.html's useTjState: an Inspector-set prop overrides local state, and every
 // value change is reported as an exposed variable.
 // What a Form's clearForm sets a field's value to, by the hook's type (the native inputs clear to these).
+const sameContent = (a: unknown, b: unknown): boolean => {
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+};
+
 const makeStateHook = (hookName: string, cleared?: () => unknown) =>
   function useTjState({ name, initialValue }: { name: string; initialValue?: unknown }) {
     const instance = useLibraryInstance(hookName);
@@ -120,8 +129,10 @@ const makeStateHook = (hookName: string, cleared?: () => unknown) =>
     const valueRef = React.useRef(value);
     const lastExternal = React.useRef(external);
     // Object.is, so a NaN binding (e.g. arithmetic on a query that has not loaded) is equal to itself and does not
-    // set state on every render.
-    if (!Object.is(lastExternal.current, external)) {
+    // set state on every render; and by content for objects and arrays, which the host re-resolves to new ones on
+    // every change. Otherwise an app's saved hidden value ({{{"page":0}}}) was adopted again on each change and
+    // overwrote what the component had published.
+    if (!Object.is(lastExternal.current, external) && !sameContent(lastExternal.current, external)) {
       lastExternal.current = external;
       if (external !== undefined && !Object.is(external, value)) {
         valueRef.current = external;
@@ -157,10 +168,24 @@ const makeStateHook = (hookName: string, cleared?: () => unknown) =>
 // Styles are builder-controlled: the hook returns the Inspector value, or initialValue while it is unset.
 // `expose: true` also reports that value as a read-only exposed variable; by default styles stay private.
 const makeStyleHook = (hookName: string) =>
-  function useTjStyle({ name, initialValue, expose }: { name: string; initialValue?: unknown; expose?: boolean }) {
+  function useTjStyle({
+    name,
+    initialValue,
+    expose,
+    enumDefinition,
+  }: {
+    name: string;
+    initialValue?: unknown;
+    expose?: boolean;
+    enumDefinition?: unknown[];
+  }) {
     const instance = useLibraryInstance(hookName);
     const raw = instance.styles[name];
-    const value = raw === undefined || raw === '' ? initialValue : raw;
+    // A style bound to data that has not loaded resolves to null; an enumeration style may resolve to a value it does
+    // not list. Both fall back to initialValue: a vendor component given null or an unknown colour name can throw
+    // (MUI Tabs' textColor took the whole viewer down).
+    const unknownOption = Array.isArray(enumDefinition) && raw != null && raw !== '' && !enumDefinition.includes(raw);
+    const value = raw === undefined || raw === null || raw === '' || unknownOption ? initialValue : raw;
     // The instance object changes with every prop change; report only when the value itself changes.
     const instanceRef = React.useRef(instance);
     instanceRef.current = instance;
