@@ -217,7 +217,7 @@ export const ToggleButtonGroup = () => {
 // MUI's Rating: label, value (a number, null for none), max, precision (1, or 0.5 for halves), size, readOnly,
 // highlightSelectedOnly; event onChange (and onChangeActive while hovering). Actions setValue, clear.
 export const Rating = () => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Rating' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: null });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: 5, min: 1, max: 10 });
   const [precision] = ToolJet.useStateEnumeration({ name: 'precision', label: 'Precision', enumDefinition: ['1', '0.5'], initialValue: '1' });
@@ -270,7 +270,7 @@ export const Rating = () => {
 // MUI's Slider: label, value, min, max, step, marks, valueLabelDisplay (auto, on, off), color, size; events onChange
 // (while dragging) and onChangeCommitted (on release).
 export const Slider = () => {
-  const field = useFieldProps();
+  const field = useFieldProps({ label: 'Volume' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: 50 });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', initialValue: 0 });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: 100 });

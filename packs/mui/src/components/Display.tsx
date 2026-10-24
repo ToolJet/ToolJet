@@ -71,7 +71,7 @@ export const Chip = () => {
 export const Alert = () => {
   const [severity] = ToolJet.useStateEnumeration({ name: 'severity', label: 'Severity', enumDefinition: ['success', 'info', 'warning', 'error'], initialValue: 'info' });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['standard', 'filled', 'outlined'], initialValue: 'standard' });
-  const [title] = useStateText({ name: 'title', label: 'Title', initialValue: '' });
+  const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Heads up' });
   const [children] = useStateText({ name: 'children', label: 'Message', initialValue: 'This is an alert.' });
   const [icon] = ToolJet.useStateBoolean({ name: 'icon', label: 'Icon', description: 'The severity icon.', initialValue: true });
   const [closable] = ToolJet.useStateBoolean({ name: 'closable', label: 'Closable', initialValue: false });
@@ -81,7 +81,8 @@ export const Alert = () => {
   const onAction = ToolJet.useEventCallback({ name: 'onAction' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 5.2 });
+  // A title and a one-line message: MUI's natural 76px.
+  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 8 });
   ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setOpen(true));
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => setOpen(false));
   if (open === false) return <MuiProvider overrides={overrides}>{null}</MuiProvider>;

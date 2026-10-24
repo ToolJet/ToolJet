@@ -31,7 +31,7 @@ const useFocusActions = (ref: React.RefObject<HTMLInputElement | null>) => {
 export const TextField = () => {
   const field = useFieldProps({ label: 'Name' });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter your name' });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['text', 'email', 'password', 'url', 'tel', 'search'], initialValue: 'text' });
   const [startAdornment] = useStateText({ name: 'startAdornment', label: 'Start adornment', description: 'Text, or an icon name such as Search.', initialValue: '' });
   const [endAdornment] = useStateText({ name: 'endAdornment', label: 'End adornment', description: 'Text, or an icon name such as Mail.', initialValue: '' });
@@ -96,7 +96,7 @@ export const TextField = () => {
 export const MultilineTextField = () => {
   const field = useFieldProps({ label: 'Notes' });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Add a note...' });
   const [minRows] = ToolJet.useStateNumber({ name: 'minRows', label: 'Min rows', initialValue: 3, min: 1, max: 40 });
   const [maxRows] = ToolJet.useStateNumber({ name: 'maxRows', label: 'Max rows', description: '0 for no limit.', initialValue: 8, min: 0, max: 80 });
   const look = useTextFieldLook();
@@ -156,7 +156,7 @@ export const MultilineTextField = () => {
 export const NumberField = () => {
   const field = useFieldProps({ label: 'Quantity' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', description: 'A number; empty for none.', initialValue: null });
-  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
+  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '0' });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', description: 'Empty for no minimum.', initialValue: null });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', description: 'Empty for no maximum.', initialValue: null });
   const [step] = ToolJet.useStateNumber({ name: 'step', label: 'Step', initialValue: 1, min: 0 });
