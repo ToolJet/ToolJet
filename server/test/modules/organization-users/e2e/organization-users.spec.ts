@@ -665,6 +665,30 @@ describe('OrganizationUsersController', () => {
     });
   });
 
+  describe('GET /api/organization-users | List organization users', () => {
+    it('should not list users belonging to another organization', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another-org-admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { tokenCookie } = await buildTestSession(
+        anotherOrgAdminUserData.user,
+        anotherOrgAdminUserData.organization.id
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/api/organization-users?page=1')
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      const emails = response.body.users.map((u: { email: string }) => u.email);
+      expect(emails).toContain(anotherOrgAdminUserData.user.email);
+      expect(emails).not.toContain(adminUserData.user.email);
+    });
+  });
+
   describe('PUT /api/organization-users/:id | Update user', () => {
     it('should allow an admin to update a user and emit an audit log entry', async () => {
       const adminUserData = await createUser(app, {
