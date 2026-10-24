@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Avatar, Button, Card as AntCard, List as AntList, Modal as AntModal, Space, Tabs as AntTabs, Tag } from 'antd';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 
@@ -6,11 +6,10 @@ const TONE_TAG: Record<string, string | undefined> = { success: 'success', warni
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver } from '../lib/Loading';
-import { readField, rowKeyOf, str, toKeyedItems, toRows, type Row } from '../lib/data';
+import { readField, rowIdOf, rowKeyOf, str, toKeyedItems, toRows, type Row } from '../lib/data';
 import { formatCell } from '../lib/format';
-
-// Slot names become part of a canvas id: letters, digits and underscores only.
-const slotKey = (key: string) => key.replace(/[^A-Za-z0-9_]/g, '_');
+import { slotNames } from '../lib/slots';
+import { useDialogOwner } from '../lib/useOwnerGuard';
 
 // Ant's Tabs: items [{ key, label }], activeKey, type (line, card), size, centered, tabPosition; each tab is a canvas
 // of ToolJet components (slot tab_<key>); events onChange, onTabClick.
@@ -35,7 +34,16 @@ export const Tabs = () => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 40 });
   const items = toKeyedItems(rawItems);
-  const current = items.some((t) => t.key === activeKey) ? activeKey : items[0]?.key;
+  const slots = slotNames('tab', items.map((t) => t.key));
+  // A bound number (2) names the tab keyed '2' too.
+  const asked = str(activeKey);
+  const current = items.some((t) => t.key === asked) ? asked : items[0]?.key;
+  // activeKey exposes the tab shown: empty (the first tab) or a tab that was removed drew the first tab while the old
+  // key stayed exposed (SP-20). Not an onChange, nobody picked it. An empty list is data still loading.
+  useEffect(() => {
+    if (current !== undefined && current !== asked) setActiveKey(current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current, asked]);
   const change = (key: string) => {
     setActiveKey(key);
     onChange();
@@ -57,7 +65,7 @@ export const Tabs = () => {
             key: t.key,
             label: t.label,
             disabled: t.disabled,
-            children: <ToolJet.Slot name={`tab_${slotKey(t.key)}`} style={{ height: '100%' }} />,
+            children: <ToolJet.Slot name={slots.get(t.key)!} style={{ height: '100%' }} />,
           }))}
         />
       </SpinOver>
@@ -123,9 +131,14 @@ export const Modal = () => {
 
   ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setOpen(true));
   ToolJet.useAction({ name: 'hide', displayName: 'Hide' }, () => setOpen(false));
+  // The modal portals out of the widget, so the host's Disable (and a disabled parent, which makes the widget inert)
+  // never reached its OK button: onOk still ran (SP-02). While its owner takes no input the modal stays open, keeping
+  // what was typed in its body, and refuses OK; Cancel, the close button and the mask still close it.
+  const owner = useRef<HTMLElement | null>(null);
+  const guard = useDialogOwner(owner, !!open, disabled);
 
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center">
+    <AntProvider tokens={tokens} fill className="tj-ant-center" ownerRef={owner}>
       {showTrigger ? (
         <Button type="primary" block disabled={disabled} onClick={() => setOpen(true)}>
           {triggerText}
@@ -145,7 +158,9 @@ export const Modal = () => {
         closable={closable}
         maskClosable={maskClosable}
         confirmLoading={loading}
+        okDisabled={guard.blocked}
         onOk={() => {
+          if (!guard.takesInput()) return;
           setOpen(false);
           onOk();
         }}
@@ -164,8 +179,15 @@ const ModalBody = ({
   bodyHeight,
   footer,
   okType,
+  okDisabled,
   ...props
-}: Omit<React.ComponentProps<typeof AntModal>, 'footer' | 'content'> & { content: string; bodyHeight: number; footer: boolean; okType: 'primary' | 'danger' }) => {
+}: Omit<React.ComponentProps<typeof AntModal>, 'footer' | 'content'> & {
+  content: string;
+  bodyHeight: number;
+  footer: boolean;
+  okType: 'primary' | 'danger';
+  okDisabled: boolean;
+}) => {
   const popup = usePopupTheme();
   // Portal only once the popup layer is known: antd would otherwise mount the modal on document.body, unstyled.
   if (!popup.container) return null;
@@ -175,7 +197,7 @@ const ModalBody = ({
       getContainer={popup.container}
       rootClassName={popup.className}
       styles={{ wrapper: popup.style }}
-      okButtonProps={{ danger: okType === 'danger' }}
+      okButtonProps={{ danger: okType === 'danger', disabled: okDisabled }}
       footer={footer ? undefined : null}
       forceRender
     >
@@ -238,9 +260,28 @@ export const List = () => {
 
   const select = (row: Row | null, index: number) => {
     setSelectedItem(row ?? {});
-    setSelectedItemKey(row ? rowKeyOf(row, field, index) : '');
+    setSelectedItemKey((row ? rowIdOf(row, field, index) : '') as string);
     if (row) onItemClick();
   };
+  // The selection follows its record by key across a refresh or a reorder (an edited record is exposed as it is now),
+  // and clears once the record is gone: the old row stayed exposed and highlighted nothing (SP-31).
+  const rowsKey = JSON.stringify(rows);
+  useEffect(() => {
+    if (!selectedKey) return;
+    // A row with no id is found by its content.
+    const same = JSON.stringify(selectedItem);
+    let index = rows.findIndex((r, i) => rowKeyOf(r, field, i) === selectedKey);
+    if (index < 0) index = rows.findIndex((r) => JSON.stringify(r) === same);
+    const row = rows[index];
+    if (!row) {
+      setSelectedItem({});
+      setSelectedItemKey('');
+    } else if (JSON.stringify(row) !== same) {
+      setSelectedItem(row);
+      setSelectedItemKey(rowIdOf(row, field, index) as string);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowsKey, field]);
   ToolJet.useAction({ name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Row key' }] }, (key) => {
     const index = rows.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
     select(rows[index] ?? null, index);

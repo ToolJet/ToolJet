@@ -26,7 +26,8 @@ export { Tabs, Card, Modal, List } from './components/Containers';
 export { Collapse, Dropdown, Menu, Breadcrumb, Pagination, Drawer, Skeleton, Spin, Image, Calendar, Tree, Carousel, QRCode } from './components/Navigation';
 
 // ToolJet's composed widgets (UI 2.0), in Ant parts
-export { Kanban, Hero, SummaryStrip, RecordList, CardGrid, ProgressList, Tags, Link, Icon, ButtonGroup, CircularProgress } from './components/Composite';
+export { Kanban } from './components/Kanban';
+export { Hero, SummaryStrip, RecordList, CardGrid, ProgressList, Tags, Link, Icon, ButtonGroup, CircularProgress } from './components/Composite';
 export { Chat, Questionnaire } from './components/Conversation';
 export { Combobox, OTP, CurrencyInput, PhoneInput, Password } from './components/MoreFields';
 export { Sparkline, RadialChart } from './components/MiniCharts';

@@ -1,15 +1,17 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Select as AntSelect, Spin } from 'antd';
 import type { RefSelectProps } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str, toOptions } from '../lib/data';
+import { useOwnedPopup } from '../lib/useOwnerGuard';
 
-const Control = (p: React.ComponentProps<typeof AntSelect>) => {
+// Forwards the ref, so the focus and blur actions reach Ant's Select (a plain function component dropped it).
+const Control = React.forwardRef<RefSelectProps, React.ComponentProps<typeof AntSelect>>((p, ref) => {
   const popup = usePopupTheme();
-  return <AntSelect {...p} classNames={{ popup: { root: popup.className } }} styles={{ popup: { root: popup.style } }} />;
-};
+  return <AntSelect {...p} ref={ref} classNames={{ popup: { root: popup.className } }} styles={{ popup: { root: popup.style } }} />;
+});
 
 // Ant's Select: mode ('' single, multiple, tags), options [{ label, value, disabled }], value (an array in multiple and
 // tags modes, with selectedOptions), placeholder, allowClear, showSearch,
@@ -42,7 +44,7 @@ export const Select = (props: Record<string, unknown>) => {
   const [notFoundContent] = ToolJet.useStateString({ name: 'notFoundContent', label: 'Not found content', initialValue: 'No options' });
   const [, setSelectedOption] = ToolJet.useStateObject({ name: 'selectedOption', initialValue: {}, inspector: 'hidden' });
   const [, setSelectedOptions] = ToolJet.useStateArray({ name: 'selectedOptions', initialValue: [], inspector: 'hidden' });
-  const [, setOpen] = ToolJet.useStateBoolean({ name: 'open', initialValue: false, inspector: 'hidden' });
+  const [, setExposedOpen] = ToolJet.useStateBoolean({ name: 'open', initialValue: false, inspector: 'hidden' });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
@@ -62,19 +64,45 @@ export const Select = (props: Record<string, unknown>) => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
 
+  const optionsFor = (raw: unknown) => {
+    const list = many ? toValues(raw) : [];
+    return {
+      option: many ? {} : options.find((o) => o.value === str(raw)) ?? {},
+      options: many ? list.map((v) => options.find((o) => o.value === v) ?? { label: v, value: v }) : [],
+    };
+  };
   const change = (next: unknown) => {
-    if (many) {
-      const list = toValues(next);
-      setValue(list as unknown as string);
-      setSelectedOptions(list.map((v) => options.find((o) => o.value === v) ?? { label: v, value: v }));
-      setSelectedOption({});
-    } else {
-      const one = next === undefined || next === null ? '' : str(Array.isArray(next) ? next[0] : next);
-      setValue(one);
-      setSelectedOption(options.find((o) => o.value === one) ?? {});
-    }
+    const stored = many ? toValues(next) : next === undefined || next === null ? '' : str(Array.isArray(next) ? next[0] : next);
+    setValue(stored as string);
+    // Set with the value, so an onChange handler reads them already.
+    const picked = optionsFor(stored);
+    setSelectedOption(picked.option);
+    setSelectedOptions(picked.options);
     onChange();
   };
+  // The selected option(s) follow the value however it changes (a pick, a binding, a Form's clearForm emptying it) and
+  // the options' labels: set only on a pick, a cleared Form kept exposing the old choice.
+  const optionsKey = JSON.stringify(options);
+  useEffect(() => {
+    const picked = optionsFor(value);
+    setSelectedOption(picked.option);
+    setSelectedOptions(picked.options);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(value), optionsKey, many]);
+  // A cleared Form also forgets the last search, and in multiple and tags modes empties to no values ([]), not to the
+  // single mode's '' the host clears every text value to.
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
+    setSearchValue('');
+    if (many) setValue([] as unknown as string);
+  });
+  const popup = useOwnedPopup(disabled, (next) => {
+    setExposedOpen(next);
+    if (!next) {
+      setSearchValue('');
+      check.touch();
+    }
+    onOpenChange();
+  });
   ToolJet.useAction(
     { name: 'setFieldValue', displayName: 'Set field value', params: [{ handle: 'value', displayName: 'Value' }] },
     (next) => change(next)
@@ -84,7 +112,7 @@ export const Select = (props: Record<string, unknown>) => {
   ToolJet.useAction({ name: 'blur', displayName: 'Blur' }, () => ref.current?.blur());
 
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} ownerRef={popup.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
         <Control
           ref={ref}
@@ -106,17 +134,15 @@ export const Select = (props: Record<string, unknown>) => {
           variant={look.variant}
           size={look.size}
           status={check.error ? 'error' : undefined}
-          onChange={(v) => change(v)}
-          onSelect={() => onSelect()}
+          open={popup.open}
+          onOpenChange={popup.onOpenChange}
+          // A pick in the instant the owner stopped taking input (before the guard closed the list) is refused.
+          onChange={(v) => popup.available() && change(v)}
+          onSelect={() => popup.available() && onSelect()}
           onClear={() => onClear()}
           onSearch={(text) => {
             setSearchValue(text);
             onSearch();
-          }}
-          onOpenChange={(next) => {
-            setOpen(next);
-            if (!next) check.touch();
-            onOpenChange();
           }}
         />
       </FormField>

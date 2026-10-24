@@ -312,78 +312,303 @@
   height: 100%;
 }
 
-/* Kanban */
-.tj-ant-kanban-board {
+/* Kanban: the shadcn pack's board (UI 2.0's) in Ant tokens. Each Kanban style (a --kb-* variable) replaces its
+   token. */
+.tj-ant-kb {
+  position: relative;
   display: flex;
-  gap: 12px;
+  gap: var(--kb-col-gap, 16px);
+  align-items: stretch;
   height: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
   padding-bottom: 4px;
 }
-.tj-ant-kanban-col {
+.tj-ant-kb.has-more-right {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+}
+.tj-ant-kb-none {
+  margin: auto;
+}
+.tj-ant-kb-col {
+  position: relative;
   display: flex;
   flex-direction: column;
+  gap: 8px;
   min-height: 0;
-  background: var(--ant-color-fill-quaternary);
-  border: 1px solid var(--ant-color-border-secondary);
-  border-radius: var(--ant-border-radius-lg);
-  transition: background var(--ant-motion-duration-mid);
+  padding: 12px;
+  border: 1px solid var(--kb-col-border, var(--ant-color-border-secondary));
+  border-radius: var(--kb-col-radius, var(--ant-border-radius-lg));
+  background: var(--kb-col-bg, var(--ant-color-fill-quaternary));
+  overflow: hidden;
+  transition:
+    background var(--ant-motion-duration-mid),
+    border-color var(--ant-motion-duration-mid);
 }
-.tj-ant-kanban-col.is-over {
+.tj-ant-kb.is-compact .tj-ant-kb-col,
+.tj-ant-kb.is-compact .tj-ant-kb-list {
+  gap: 6px;
+}
+.tj-ant-kb-col.is-fill {
+  flex: 1 1 0;
+}
+.tj-ant-kb-col.is-over {
   background: var(--ant-color-primary-bg);
   border-color: var(--ant-color-primary-border);
 }
-.tj-ant-kanban-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px 6px;
+.tj-ant-kb-col.is-collapsed {
+  flex: 0 0 152px;
+  width: 152px;
+  cursor: pointer;
 }
-.tj-ant-kanban-add {
-  margin-inline-start: auto;
+.tj-ant-kb-col.is-collapsed:hover {
+  border-color: var(--ant-color-primary-border-hover);
 }
-.tj-ant-kanban-cards {
-  flex: 1;
-  min-height: 40px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 4px 8px 10px;
+.tj-ant-kb-col:focus-visible {
+  outline: 2px solid var(--ant-color-primary-border);
+  outline-offset: 1px;
 }
-.tj-ant-kanban-card {
-  cursor: grab;
-}
-.tj-ant-kanban-card-top,
-.tj-ant-kanban-foot {
+.tj-ant-kb-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 24px;
+  padding: 0 4px;
 }
-.tj-ant-kanban-foot {
-  margin-top: 8px;
+.tj-ant-kb-col.is-collapsed .tj-ant-kb-head {
+  padding: 0;
 }
-.tj-ant-kanban-title {
+.tj-ant-kb-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
 }
-.tj-ant-kanban-tags {
+.tj-ant-kb-title .ant-typography {
+  color: var(--kb-col-title, var(--ant-color-text));
+}
+.tj-ant-kb-head-end {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+}
+.tj-ant-kb .tj-ant-kb-count .ant-badge-count {
+  /* Ant's neutral fill and text read in light and dark (its primary text on primary bg is under 3:1 in dark). */
+  background: var(--kb-count-bg, var(--ant-color-fill-secondary));
+  color: var(--kb-count-fg, var(--ant-color-text));
+  box-shadow: none;
+  font-variant-numeric: tabular-nums;
+}
+.tj-ant-kb-fold {
+  color: var(--ant-color-text-tertiary);
+  opacity: 0;
+  transition: opacity var(--ant-motion-duration-mid);
+}
+.tj-ant-kb-col:hover .tj-ant-kb-fold,
+.tj-ant-kb-fold:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .tj-ant-kb-fold {
+    opacity: 1;
+  }
+}
+.tj-ant-kb-show {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ant-font-size-sm);
+}
+.tj-ant-kb-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  margin: -4px;
+  padding: 4px;
+  overflow-y: auto;
+}
+.tj-ant-kb-list > * {
+  flex-shrink: 0;
+}
+.tj-ant-kb-list.has-more-below {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+}
+.tj-ant-kb-empty {
+  padding: 24px 12px;
+  border: 1px dashed var(--ant-color-border);
+  border-radius: var(--ant-border-radius);
+  color: var(--ant-color-text-quaternary);
+  font-size: var(--ant-font-size-sm);
+  text-align: center;
+}
+.tj-ant-kb .ant-btn.tj-ant-kb-btn {
+  justify-content: flex-start;
+  color: var(--ant-color-text-secondary);
+}
+/* Card */
+.tj-ant-kb .ant-card.tj-ant-kb-card {
+  position: relative;
+  border-color: var(--kb-card-border, var(--ant-color-border-secondary));
+  border-radius: var(--kb-card-radius, var(--ant-border-radius-lg));
+  background: var(--kb-card-bg, var(--ant-color-bg-container));
+  box-shadow: var(--kb-card-shadow);
+  overflow: hidden;
+  outline: none;
+}
+.tj-ant-kb .ant-card.tj-ant-kb-card:hover {
+  border-color: var(--ant-color-primary-border-hover);
+}
+.tj-ant-kb.is-compact .tj-ant-kb-card .ant-card-body {
+  padding: 8px 10px;
+}
+.tj-ant-kb .tj-ant-kb-card.is-custom .ant-card-body {
+  padding: 0;
+}
+.tj-ant-kb-card.is-draggable {
+  cursor: grab;
+}
+.tj-ant-kb-card.is-draggable:active {
+  cursor: grabbing;
+}
+.tj-ant-kb .ant-card.tj-ant-kb-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--ant-color-primary-border);
+}
+.tj-ant-kb .ant-card.tj-ant-kb-card.is-selected {
+  border-color: var(--ant-color-primary);
+  box-shadow:
+    0 0 0 1px var(--ant-color-primary),
+    var(--kb-card-shadow);
+}
+.tj-ant-kb-card.is-dragging {
+  opacity: 0.4;
+}
+.tj-ant-kb .ant-card.tj-ant-kb-card.is-picked {
+  box-shadow:
+    0 0 0 2px var(--ant-color-primary),
+    var(--ant-box-shadow-secondary);
+  transform: rotate(1deg);
+}
+.tj-ant-kb-drop {
+  flex-shrink: 0;
+  height: 2px;
+  margin: -4px 0;
+  border-radius: 2px;
+  background: var(--ant-color-primary);
+}
+.tj-ant-kb .ant-btn.tj-ant-kb-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  color: var(--ant-color-text-tertiary);
+  opacity: 0;
+  transition: opacity var(--ant-motion-duration-mid);
+}
+.tj-ant-kb-card:hover .tj-ant-kb-del,
+.tj-ant-kb .ant-btn.tj-ant-kb-del:focus-visible {
+  opacity: 1;
+}
+.tj-ant-kb-clamp {
+  position: relative;
+}
+.tj-ant-kb-clamp.is-clamped {
+  overflow: hidden;
+}
+.tj-ant-kb-clamp.is-clamped::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 32px;
+  background: linear-gradient(to bottom, transparent, var(--kb-card-bg, var(--ant-color-bg-container)));
+  pointer-events: none;
+}
+.tj-ant-kb .ant-btn.tj-ant-kb-more {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  font-size: var(--ant-font-size-sm);
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity var(--ant-motion-duration-mid);
+}
+.tj-ant-kb-card:hover .tj-ant-kb-more,
+.tj-ant-kb .ant-btn.tj-ant-kb-more:focus-visible {
+  opacity: 1;
+}
+.tj-ant-kb .tj-ant-kb-card-title {
+  display: block;
+  padding-right: 20px;
+  color: var(--kb-card-title, var(--ant-color-text));
+  overflow-wrap: anywhere;
+}
+.tj-ant-kb .ant-typography.tj-ant-kb-card-text {
+  display: -webkit-box;
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--kb-card-text, var(--ant-color-text-secondary));
+  font-size: var(--ant-font-size-sm);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.tj-ant-kb-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 8px;
 }
-.tj-ant-kanban-tags .ant-tag {
+.tj-ant-kb-tags .ant-tag,
+.tj-ant-kb-foot .ant-tag {
   margin-inline-end: 0;
 }
-.tj-ant-kanban-empty {
-  padding: 16px 8px;
-  text-align: center;
-  color: var(--ant-color-text-quaternary);
+.tj-ant-kb .ant-progress.tj-ant-kb-progress {
+  margin: 8px 0 0;
 }
-.tj-ant-kanban-none {
-  margin: auto;
+.tj-ant-kb-progress .ant-progress-text {
+  color: var(--kb-card-text, var(--ant-color-text-secondary));
+}
+.tj-ant-kb-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 10px;
+}
+.tj-ant-kb.is-compact .tj-ant-kb-tags,
+.tj-ant-kb.is-compact .tj-ant-kb-foot {
+  margin-top: 6px;
+}
+.tj-ant-kb .tj-ant-kb-meta {
+  min-width: 0;
+  max-width: 60%;
+  color: var(--kb-card-text, var(--ant-color-text-secondary));
+  font-size: var(--ant-font-size-sm);
+}
+.tj-ant-kb-avatar {
+  display: inline-flex;
+  margin-left: auto;
+}
+.tj-ant-kb .tj-ant-kb-details {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ant-color-border-secondary);
+}
+.tj-ant-kb .tj-ant-kb-details .ant-descriptions-item {
+  padding-bottom: 6px;
+}
+.tj-ant-kb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* Hero */

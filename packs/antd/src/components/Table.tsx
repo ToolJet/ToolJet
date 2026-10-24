@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { Table as AntTable, Tag } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
-import { readField, rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
+import { readField, rowIdOf, rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, parseFormat, tagColor, toNumber } from '../lib/format';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 
@@ -140,7 +140,7 @@ export const Table = () => {
   const rows = useMemo(() => toRows(rawData), [rawData]);
   const columns = useMemo(() => toColumns(rawColumns, rows), [rawColumns, rows]);
   const field = str(rowKey) || 'id';
-  const keyed = useMemo(() => rows.map((r, i) => ({ row: r, key: rowKeyOf(r, field, i) })), [rows, field]);
+  const keyed = useMemo(() => rows.map((r, i) => ({ row: r, key: rowKeyOf(r, field, i), id: rowIdOf(r, field, i) })), [rows, field]);
   const keyOf = new Map(keyed.map((k) => [k.row, k.key]));
   const selectedKey = selectedRow && typeof selectedRow === 'object' && Object.keys(selectedRow).length ? keyed.find((k) => k.row === selectedRow || JSON.stringify(k.row) === JSON.stringify(selectedRow))?.key : undefined;
   const [, force] = useState(0);
@@ -191,12 +191,35 @@ export const Table = () => {
     };
   });
 
+  // selectedRowKeys keep the ids' own type (1, not '1'), as the data has them.
   const select = (keys: React.Key[]) => {
     const set = new Set(keys.map(String));
-    setSelectedRowKeys(keys.map(String));
-    setSelectedRows(keyed.filter((k) => set.has(k.key)).map((k) => k.row));
+    const hits = keyed.filter((k) => set.has(k.key));
+    setSelectedRowKeys(hits.map((k) => k.id));
+    setSelectedRows(hits.map((k) => k.row));
     onSelectionChange();
   };
+  // The selection follows its records by key across a refresh or a reorder (an edited row is exposed as it is now), and
+  // drops the ones that are gone: the old rows stayed exposed while nothing was drawn selected (SP-31).
+  const rowsKey = JSON.stringify(rows);
+  useEffect(() => {
+    if (selectedRow && typeof selectedRow === 'object' && Object.keys(selectedRow).length) {
+      const was = rowKeyOf(selectedRow as Row, field, -1);
+      // A row with no id is found by its content.
+      const same = JSON.stringify(selectedRow);
+      const hit = keyed.find((k) => k.key === was) ?? keyed.find((k) => JSON.stringify(k.row) === same);
+      if (!hit) setSelectedRow({});
+      else if (JSON.stringify(hit.row) !== JSON.stringify(selectedRow)) setSelectedRow(hit.row);
+    }
+    const keys = toArray(selectedRowKeys).map(str);
+    if (keys.length) {
+      const set = new Set(keys);
+      const hits = keyed.filter((k) => set.has(k.key));
+      setSelectedRowKeys(hits.map((k) => k.id));
+      setSelectedRows(hits.map((k) => k.row));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowsKey, field]);
   ToolJet.useAction({ name: 'selectRow', displayName: 'Select row', params: [{ handle: 'key', displayName: 'Row key' }] }, (key) => {
     const hit = keyed.find((k) => k.key === str(key));
     setSelectedRow(hit?.row ?? {});
@@ -212,6 +235,12 @@ export const Table = () => {
   });
 
   const size_ = Math.max(1, Math.min(500, Number(pageSize) || 10));
+  // Fewer rows than the page needs: Ant draws the last page, and current says so too.
+  const pages = Math.max(1, Math.ceil(rows.length / size_));
+  useEffect(() => {
+    if (pagination && rows.length > size_ && Number(current) > pages) setCurrent(pages);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pages, current, pagination]);
   return (
     <AntProvider tokens={tokens} className="tj-ant-table">
       <AntTable<Row>

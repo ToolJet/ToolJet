@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Breadcrumb as AntBreadcrumb,
   Button,
@@ -18,13 +18,13 @@ import {
 import { DownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { SkeletonSwap, SpinOver } from '../lib/Loading';
 import { str, toArray, toKeyedItems, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { toTree } from './MoreInputs';
-
-const slotKey = (key: string) => key.replace(/[^A-Za-z0-9_]/g, '_');
+import { slotNames } from '../lib/slots';
+import { ownerAvailable, useOwnedPopup, useOwnerShown } from '../lib/useOwnerGuard';
 
 type MenuItem = { key: string; label: string; danger?: boolean; disabled?: boolean; children?: MenuItem[]; type?: 'divider' };
 // Ant's menu items: [{ key, label, danger, disabled, children }] and { type: 'divider' }; strings become both.
@@ -65,8 +65,17 @@ export const Collapse = () => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 30 });
   const items = toKeyedItems(rawItems);
+  const slots = slotNames('panel', items.map((t) => t.key));
   const raw: unknown = activeKey;
-  const open = (Array.isArray(raw) ? raw : raw ? [raw] : []).map(str);
+  // The open panels as drawn: keys of panels that exist (a removed panel's key stayed in activeKey), one in accordion
+  // mode. What is exposed follows (SP-19), once there are panels to read: an empty list is data still loading.
+  const listed = (Array.isArray(raw) ? raw : raw ? [raw] : []).map(str).filter((k) => !items.length || items.some((t) => t.key === k));
+  const open = accordion ? listed.slice(0, 1) : listed;
+  const openKey = JSON.stringify(open);
+  useEffect(() => {
+    if (items.length && openKey !== JSON.stringify(toArray(raw).map(str))) setActiveKey(open);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openKey, items.length]);
   const change = (keys: string | string[]) => {
     setActiveKey(toArray(Array.isArray(keys) ? keys : keys ? [keys] : []).map(str));
     onChange();
@@ -89,7 +98,7 @@ export const Collapse = () => {
             key: t.key,
             label: t.label,
             forceRender: true,
-            children: <ToolJet.Slot name={`panel_${slotKey(t.key)}`} style={{ height }} />,
+            children: <ToolJet.Slot name={slots.get(t.key)!} style={{ height }} />,
           }))}
         />
       </SpinOver>
@@ -119,37 +128,52 @@ export const Dropdown = () => {
   const onButtonClick = ToolJet.useEventCallback({ name: 'onButtonClick' });
   const { disabled, loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
+  const list = useOwnedPopup(disabled);
   const menu = {
     items: toMenuItems(items) as never,
     onClick: ({ key }: { key: string }) => {
+      // A pick in the instant the owner stopped taking input (before the guard closed the menu) is refused.
+      if (!list.available()) return;
       setSelectedKey(key);
       onClick();
+      list.onOpenChange(false);
     },
   };
   const common = {
     menu,
+    open: list.open,
+    onOpenChange: (next: boolean) => list.onOpenChange(next),
     trigger: [trigger as 'click'],
     placement: placement as 'bottomLeft',
     arrow,
     disabled,
-    overlayClassName: popup.className,
-    overlayStyle: popup.style,
   };
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start">
-      {split ? (
-        <AntDropdown.Button {...common} type={type as 'default'} loading={loading} onClick={() => onButtonClick()} style={block ? { width: '100%' } : undefined}>
-          {children}
-        </AntDropdown.Button>
-      ) : (
-        <AntDropdown {...common}>
-          <Button type={type as 'default'} loading={loading} disabled={disabled} block={block}>
-            {children} <DownOutlined />
-          </Button>
-        </AntDropdown>
-      )}
+    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start" ownerRef={list.anchor}>
+      <WithPopupTheme>
+        {(popup) =>
+          split ? (
+            <AntDropdown.Button
+              {...common}
+              overlayClassName={popup.className}
+              overlayStyle={popup.style}
+              type={type as 'default'}
+              loading={loading}
+              onClick={() => onButtonClick()}
+              style={block ? { width: '100%' } : undefined}
+            >
+              {children}
+            </AntDropdown.Button>
+          ) : (
+            <AntDropdown {...common} overlayClassName={popup.className} overlayStyle={popup.style}>
+              <Button type={type as 'default'} loading={loading} disabled={disabled} block={block}>
+                {children} <DownOutlined />
+              </Button>
+            </AntDropdown>
+          )
+        }
+      </WithPopupTheme>
     </AntProvider>
   );
 };
@@ -385,20 +409,26 @@ export const Image = () => {
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 20 });
+  // The preview is controlled, so it closes once the image stops taking input (hidden in a closed tab, inert under a
+  // disabled parent, loading): it stayed open over a widget that was gone (SP-02).
+  const viewer = useOwnedPopup(loading);
+  useEffect(() => {
+    if (!preview || !src) viewer.onOpenChange(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preview, src]);
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-image">
+    <AntProvider tokens={tokens} fill className="tj-ant-image" ownerRef={viewer.anchor}>
       <SkeletonSwap loading={loading} look={<AntSkeleton.Image active style={{ width: '100%', height: '100%' }} />}>
         {src ? (
-          <AntImage
+          <ImageView
             src={src}
             alt={alt}
-            width="100%"
-            height="100%"
             fallback={fallback || undefined}
             style={{ objectFit: objectFit as 'cover' }}
-            preview={preview ? { getContainer: () => popup.container ?? document.body, rootClassName: popup.className } : false}
+            withPreview={!!preview}
+            open={viewer.open}
+            onOpenChange={viewer.onOpenChange}
             onClick={() => onClick()}
           />
         ) : (
@@ -406,6 +436,29 @@ export const Image = () => {
         )}
       </SkeletonSwap>
     </AntProvider>
+  );
+};
+
+// Inside AntProvider, so the preview reads the popup layer: read beside the provider it had none and opened on
+// document.body, outside the pack's styles.
+const ImageView = ({
+  withPreview,
+  open,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof AntImage> & { withPreview: boolean; open: boolean; onOpenChange: (open: boolean) => void }) => {
+  const popup = usePopupTheme();
+  return (
+    <AntImage
+      {...props}
+      width="100%"
+      height="100%"
+      preview={
+        withPreview && popup.container
+          ? { getContainer: () => popup.container!, rootClassName: popup.className, visible: open, onVisibleChange: (next: boolean) => onOpenChange(next) }
+          : false
+      }
+    />
   );
 };
 
@@ -434,12 +487,22 @@ export const Calendar = () => {
     if (d) byDate.set(d, [...(byDate.get(d) ?? []), r]);
   });
   const parsed = value ? dayjs(value) : null;
+  const shownValue = parsed && parsed.isValid() ? parsed : undefined;
+  // Ant's Calendar keeps its own selection once its value is undefined, so an emptied value (a cleared binding) still
+  // showed the last date picked (SP-27): it starts again instead, on today with nothing picked.
+  const [epoch, setEpoch] = useState(0);
+  const hadValue = useRef(!!shownValue);
+  useEffect(() => {
+    if (hadValue.current && !shownValue) setEpoch((n) => n + 1);
+    hadValue.current = !!shownValue;
+  }, [shownValue ? shownValue.valueOf() : null]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-calendar">
       <SpinOver loading={loading} as="fill">
         <AntCalendar
+          key={epoch}
           fullscreen={fullscreen}
-          value={parsed && parsed.isValid() ? parsed : undefined}
+          value={shownValue}
           cellRender={(d, info) => {
             if (info.type !== 'date') return info.originNode;
             const list = byDate.get(d.format('YYYY-MM-DD'));
@@ -493,6 +556,21 @@ export const Tree = () => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 30 });
   const data = toTree(treeData);
+  // The selection follows the tree: a node that is gone after a refresh is no longer selected (it stayed exposed while
+  // nothing was drawn selected). An empty tree is data still loading and keeps it.
+  const allKeys = new Set<string>();
+  const walk = (nodes: { key: string; children?: unknown[] }[]) =>
+    nodes.forEach((n) => {
+      allKeys.add(n.key);
+      if (n.children) walk(n.children as { key: string; children?: unknown[] }[]);
+    });
+  walk(data);
+  const picked = toArray(selectedKeys).map(str);
+  const kept = data.length ? picked.filter((k) => allKeys.has(k)) : picked;
+  useEffect(() => {
+    if (kept.length !== picked.length) setSelectedKeys(kept);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kept.length, picked.length]);
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-tree">
       <SpinOver loading={loading} as="fill">
@@ -504,7 +582,7 @@ export const Tree = () => {
             defaultExpandAll={defaultExpandAll}
             showLine={showLine}
             blockNode
-            selectedKeys={toArray(selectedKeys).map(str)}
+            selectedKeys={kept}
             checkedKeys={toArray(checkedKeys).map(str)}
             onSelect={(keys) => {
               setSelectedKeys(keys.map(str));
@@ -540,19 +618,23 @@ export const Carousel = () => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 30 });
   const slides = toArray(items).map((o) => (typeof o === 'string' ? { src: o } : ((o ?? {}) as Row)));
+  // Autoplay runs only while the carousel is on screen: hidden (an inactive tab, a closed panel, visibility off, a
+  // background browser tab) it kept turning slides and firing afterChange for nobody (SP-09).
+  const owner = useRef<HTMLElement | null>(null);
+  const shown = useOwnerShown(owner, !!autoplay);
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-carousel">
+    <AntProvider tokens={tokens} fill className="tj-ant-carousel" ownerRef={owner}>
       <SpinOver loading={loading} as="fill">
         {slides.length ? (
           <AntCarousel
-            autoplay={autoplay}
+            autoplay={!!autoplay && shown}
             autoplaySpeed={Math.max(500, Number(autoplaySpeed) || 3000)}
             dots={dots}
             arrows={arrows}
             effect={effect as 'scrollx'}
             afterChange={(i) => {
               setCurrent(i);
-              afterChange();
+              if (ownerAvailable(owner.current)) afterChange();
             }}
           >
             {slides.map((s, i) => (

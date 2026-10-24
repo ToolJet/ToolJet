@@ -141,8 +141,11 @@ export const AntProvider = ({
   fill = false,
   className,
   style,
+  ownerRef,
 }: {
   children: React.ReactNode;
+  /** Set to the root element: what owns the component's popups (lib/useOwnerGuard reads whether it takes input). */
+  ownerRef?: React.MutableRefObject<HTMLElement | null>;
   tokens?: CSSProperties;
   /** Fill the widget box (charts, tables, containers), instead of sizing to the content. */
   fill?: boolean;
@@ -154,7 +157,10 @@ export const AntProvider = ({
   const popup = useMemo(() => ({ className: dark ? 'tj-ant tj-ant-dark' : 'tj-ant', style: tokens ?? {}, container }), [tokens, container, dark]);
   return (
     <div
-      ref={anchorRef}
+      ref={(el) => {
+        (anchorRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+        if (ownerRef) ownerRef.current = el;
+      }}
       className={['tj-ant tj-ant-root', dark ? 'tj-ant-dark' : '', fill ? 'tj-ant--fill' : '', className ?? ''].join(' ').trim()}
       style={{ ...tokens, ...style }}
     >
@@ -172,3 +178,9 @@ export const AntProvider = ({
     </div>
   );
 };
+
+/** The popup theme for an Ant control whose component renders AntProvider itself: read inside the provider, as a
+ *  popup's class and style must be (read beside it, a popup got the default theme: no token overrides, never dark). */
+export const WithPopupTheme = ({ children }: { children: (popup: ReturnType<typeof usePopupTheme>) => React.ReactNode }) => (
+  <>{children(usePopupTheme())}</>
+);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Radio, Rate as AntRate, Segmented as AntSegmented, Slider as AntSlider } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
@@ -13,6 +13,28 @@ const useValueActions = (change: (v: unknown) => void, initial: unknown) => {
     (next) => change(next)
   );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(initial));
+};
+
+// The value exposed is the value drawn (SP-34): `fit` gives what Ant draws for a number. Fitting is not the user's
+// change, so no onChange. It fits the value last set by the app or the user, not an earlier fit: bounds that load after
+// the value (a Max bound to a query) fit it again from what was asked, not from what a narrower range left of it. An
+// empty value (a cleared Form) stays empty.
+const useFittedValue = (value: unknown, fit: (n: number) => number, setValue: (v: number) => void) => {
+  const fitted = React.useRef<unknown>(undefined);
+  const wanted = React.useRef<unknown>(value);
+  if (!Object.is(value, fitted.current)) {
+    wanted.current = value;
+    fitted.current = undefined;
+  }
+  const n = toNumber(wanted.current);
+  const drawn = n === null ? null : fit(n);
+  useEffect(() => {
+    if (drawn === null || Object.is(drawn, value)) return;
+    fitted.current = drawn;
+    setValue(drawn);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawn, value]);
+  return drawn;
 };
 
 // Ant's Radio.Group: options, value, optionType (default, button), buttonStyle (outline, solid), direction (Ant's
@@ -140,14 +162,17 @@ export const Rate = (props: Record<string, unknown>) => {
   };
   useValueActions(change, props.value);
   const tips = Array.isArray(tooltips) ? tooltips.map(str) : [];
+  const stars = Math.max(1, Math.min(20, Number(count) || 5));
+  // Ant draws a literal 9 of 5 stars as 5, and 2.3 as 2 (2.5 with halves).
+  const drawn = useFittedValue(value, (n) => Math.max(0, Math.min(stars, allowHalf ? Math.round(n * 2) / 2 : Math.round(n))), setValue);
 
   return (
     <AntProvider tokens={tokens}>
       <FormField {...field} check={check}>
         <SpinOver loading={loading} as="inline">
           <AntRate
-            value={toNumber(value) ?? 0}
-            count={Math.max(1, Math.min(20, Number(count) || 5))}
+            value={drawn ?? 0}
+            count={stars}
             allowHalf={allowHalf}
             allowClear={allowClear}
             tooltips={tips.length ? tips : undefined}
@@ -181,6 +206,8 @@ export const Slider = (props: Record<string, unknown>) => {
     onChange();
   };
   useValueActions(change, props.value);
+  // A literal 150 under a Max of 100 drew the thumb at 100 but exposed 150.
+  const drawn = useFittedValue(value, (n) => Math.min(hi, Math.max(lo, n)), setValue);
 
   return (
     <AntProvider tokens={tokens}>
@@ -188,7 +215,7 @@ export const Slider = (props: Record<string, unknown>) => {
         <SpinOver loading={loading} as="block">
           <div data-tj-no-drag="">
             <AntSlider
-              value={toNumber(value) ?? lo}
+              value={drawn ?? lo}
               min={lo}
               max={hi}
               step={toNumber(step) || 1}

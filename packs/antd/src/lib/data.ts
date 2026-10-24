@@ -49,12 +49,21 @@ export const toKeyedItems = (raw: unknown): { key: string; label: string; disabl
       const key = str(r.key ?? r.id ?? r.value ?? r.label);
       return { key, label: str(r.label ?? r.title ?? key), disabled: Boolean(r.disabled) };
     })
-    .filter((o): o is { key: string; label: string; disabled?: boolean } => !!o && o.key !== '');
+    .filter((o): o is { key: string; label: string; disabled?: boolean } => !!o && o.key !== '')
+    // A repeated key is the same item (one tab, one canvas): two tabs with one key switched together.
+    .filter((o, i, all) => all.findIndex((x) => x.key === o.key) === i);
 
 /** A row's identity for Ant's rowKey: the named field, else id / key, else the index. */
 export const rowKeyOf = (row: Row, field: string, index: number): string => {
   const v = row[field] ?? row.id ?? row.key;
   return v === undefined || v === null || v === '' ? String(index) : String(v);
+};
+
+/** A row's identity as the data has it, for exposing: the named field, else id / key (a number stays a number), else
+ *  the index. rowKeyOf is the same as text, for matching. */
+export const rowIdOf = (row: Row, field: string, index: number): unknown => {
+  const v = row[field] ?? row.id ?? row.key;
+  return v === undefined || v === null || v === '' ? index : v;
 };
 
 /** A field read by dataIndex, which may be a dotted path ('customer.name'). */

@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Input, InputNumber, Progress, Select, Space, Spin } from 'antd';
 import type { InputRef } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str, toOptions } from '../lib/data';
 import { toNumber } from '../lib/format';
+import { useOwnedPopup } from '../lib/useOwnerGuard';
 import { countryOf, flagOf, nationalOf, phoneCountries, phoneCountry, phoneInfo, type Country } from '../lib/ui2/inputs/phone';
 
 const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => void }>) => {
@@ -47,53 +48,69 @@ export const Combobox = (props: Record<string, unknown>) => {
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ section: 'choice', value, present: value !== '' });
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
   const options = toOptions(rawOptions);
-  const change = (v: unknown) => {
-    const next = v === undefined || v === null ? '' : str(v);
+  const expose = (next: string) => {
     const opt = options.find((o) => o.value === next);
-    setValue(next);
     setSelectedOption(opt ?? {});
     setSelectedLabel(opt?.label ?? '');
+  };
+  const change = (v: unknown) => {
+    const next = v === undefined || v === null ? '' : str(v);
+    setValue(next);
+    expose(next);
     onChange();
   };
+  // The selected option follows the value however it changes (a binding, a Form's clearForm emptying it) and the
+  // options' labels: set only on a pick, a cleared Form kept exposing the old choice.
+  useEffect(() => {
+    expose(str(value));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [str(value), JSON.stringify(options)]);
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => setSearchValue(''));
   ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set field value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => change(v));
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(props.value));
   useFocusActions(ref);
+  const list = useOwnedPopup(disabled, (open) => !open && setSearchValue(''));
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} ownerRef={list.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
-        <Select
-          ref={ref as never}
-          id={fieldId}
-          style={{ width: '100%' }}
-          showSearch
-          options={options}
-          value={value !== '' ? value : undefined}
-          placeholder={placeholder || undefined}
-          notFoundContent={loading ? <Spin size="small" /> : notFoundContent || undefined}
-          allowClear={allowClear}
-          filterOption={filterOption ? (input, o) => str(o?.label).toLowerCase().includes(input.toLowerCase()) : false}
-          loading={loading}
-          disabled={disabled}
-          variant={look.variant}
-          size={look.size}
-          status={check.error ? 'error' : undefined}
-          classNames={{ popup: { root: popup.className } }}
-          styles={{ popup: { root: popup.style } }}
-          onChange={(v) => change(v)}
-          onSelect={() => onSelect()}
-          onSearch={(text) => {
-            setSearchValue(text);
-            onSearch();
-          }}
-          onFocus={() => onFocus()}
-          onBlur={() => {
-            check.touch();
-            onBlur();
-          }}
-        />
+        <WithPopupTheme>
+          {(popup) => (
+            <Select
+              ref={ref as never}
+              id={fieldId}
+              style={{ width: '100%' }}
+              showSearch
+              options={options}
+              value={value !== '' ? value : undefined}
+              placeholder={placeholder || undefined}
+              notFoundContent={loading ? <Spin size="small" /> : notFoundContent || undefined}
+              allowClear={allowClear}
+              filterOption={filterOption ? (input, o) => str(o?.label).toLowerCase().includes(input.toLowerCase()) : false}
+              loading={loading}
+              disabled={disabled}
+              variant={look.variant}
+              size={look.size}
+              status={check.error ? 'error' : undefined}
+              classNames={{ popup: { root: popup.className } }}
+              styles={{ popup: { root: popup.style } }}
+              open={list.open}
+              onOpenChange={list.onOpenChange}
+              onChange={(v) => list.available() && change(v)}
+              onSelect={() => list.available() && onSelect()}
+              onSearch={(text) => {
+                setSearchValue(text);
+                onSearch();
+              }}
+              onFocus={() => onFocus()}
+              onBlur={() => {
+                check.touch();
+                onBlur();
+              }}
+            />
+          )}
+        </WithPopupTheme>
       </FormField>
     </AntProvider>
   );
@@ -128,6 +145,12 @@ export const OTP = (props: Record<string, unknown>) => {
     onChange();
     if (next.length === n) onComplete();
   };
+  // isComplete follows the code however it changes: set only on typing, a Form's clearForm (or an emptied binding)
+  // left isComplete true over empty boxes (SP-33).
+  useEffect(() => {
+    setIsComplete(value.length === n);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, n]);
   ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => change(str(v)));
   ToolJet.useAction({ name: 'resetFields', displayName: 'Clear' }, () => change(str(props.value)));
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
@@ -203,7 +226,6 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   const n = toNumber(value);
   const check = ToolJet.useValidation({ section: 'text', value: n === null ? '' : String(n), present: n !== null });
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
   const cur = str(currency).trim().toUpperCase() || 'USD';
   const digits = Math.max(0, Math.min(6, toNumber(precision) ?? 2));
@@ -244,14 +266,19 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
             prefix={choices.length ? undefined : symbolOf(cur, locale, currencyDisplay)}
             addonBefore={
               choices.length ? (
-                <Select
-                  value={cur}
-                  options={choices.map((c) => ({ label: c, value: c }))}
-                  onChange={(c) => setCurrency(c)}
-                  style={{ width: 90 }}
-                  classNames={{ popup: { root: popup.className } }}
-                  disabled={disabled}
-                />
+                <WithPopupTheme>
+                  {(popup) => (
+                    <Select
+                      value={cur}
+                      options={choices.map((c) => ({ label: c, value: c }))}
+                      onChange={(c) => setCurrency(c)}
+                      style={{ width: 90 }}
+                      classNames={{ popup: { root: popup.className } }}
+                      styles={{ popup: { root: popup.style } }}
+                      disabled={disabled}
+                    />
+                  )}
+                </WithPopupTheme>
               ) : undefined
             }
             formatter={(v, info) => (info.userTyping ? info.input : v === undefined || v === null || v === ('' as never) ? '' : group(String(v)))}
@@ -302,7 +329,6 @@ export const PhoneInput = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
   const countries = useMemo(() => phoneCountries(onlyCountries), [onlyCountries]);
   const fallback: Country = countryOf(defaultCountry) ?? countries[0]!;
@@ -345,23 +371,28 @@ export const PhoneInput = (props: Record<string, unknown>) => {
       <FormField {...field} check={check} htmlFor={fieldId}>
         <ControlSkeleton loading={loading} size={look.size}>
           <Space.Compact style={{ width: '100%' }}>
-            <Select
-              value={picked.code}
-              disabled={disabled || !allowCountryChange}
-              showSearch
-              popupMatchSelectWidth={false}
-              optionFilterProp="search"
-              style={{ width: showFlag ? 104 : 84, flex: 'none' }}
-              size={look.size}
-              variant={look.variant}
-              classNames={{ popup: { root: popup.className } }}
-              options={countries.map((c) => ({ value: c.code, search: `${c.code} +${c.dial}`, label: `${showFlag ? `${flagOf(c)} ` : ''}+${c.dial}` }))}
-              onChange={(code) => {
-                const c = countryOf(code) ?? picked;
-                setPicked(c);
-                commit(national, c);
-              }}
-            />
+            <WithPopupTheme>
+              {(popup) => (
+                <Select
+                  value={picked.code}
+                  disabled={disabled || !allowCountryChange}
+                  showSearch
+                  popupMatchSelectWidth={false}
+                  optionFilterProp="search"
+                  style={{ width: showFlag ? 104 : 84, flex: 'none' }}
+                  size={look.size}
+                  variant={look.variant}
+                  classNames={{ popup: { root: popup.className } }}
+                  styles={{ popup: { root: popup.style } }}
+                  options={countries.map((c) => ({ value: c.code, search: `${c.code} +${c.dial}`, label: `${showFlag ? `${flagOf(c)} ` : ''}+${c.dial}` }))}
+                  onChange={(code) => {
+                    const c = countryOf(code) ?? picked;
+                    setPicked(c);
+                    commit(national, c);
+                  }}
+                />
+              )}
+            </WithPopupTheme>
             <Input
               ref={ref}
               id={fieldId}

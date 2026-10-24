@@ -4,25 +4,15 @@ import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, PlusOutlined } from 
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver } from '../lib/Loading';
-import { MAX_SLOT_ITEMS, str, toArray, type Row } from '../lib/data';
+import { MAX_SLOT_ITEMS, rowIdOf, str, toArray, type Row } from '../lib/data';
 import { antIcon } from '../lib/icons';
-import {
-  addCard as addBoardCard,
-  boardCards,
-  boardColumns,
-  cardIdOf,
-  deleteCard as deleteBoardCard,
-  moveCard as moveBoardCard,
-  updateCard as updateBoardCard,
-  type BoardColumn,
-} from '../lib/ui2/display/kanban/board';
 import { cardItems, chipLabel, chipTone, colorFor, initials, recordItems } from '../lib/ui2/display/lists/model';
 import { summaryFigures } from '../lib/ui2/display/summary';
 import { progressEntries, progressItem, progressMax } from '../lib/ui2/charts/progressModel';
 
 // The tone a status word reads as (lists/model chipTone) -> Ant's Tag status colour.
 const TONE_TAG: Record<string, string> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: 'default' };
-const toneTag = (value: unknown, colors?: unknown) => colorFor(value, colors) ?? TONE_TAG[chipTone(value)] ?? 'default';
+export const toneTag = (value: unknown, colors?: unknown) => colorFor(value, colors) ?? TONE_TAG[chipTone(value)] ?? 'default';
 const TONE_STATUS: Record<string, 'success' | 'exception' | 'normal' | 'active'> = { success: 'success', danger: 'exception' };
 const plainRow = (row: Row) => {
   const { __key: _k, ...rest } = row as Row & { __key?: string };
@@ -30,255 +20,8 @@ const plainRow = (row: Row) => {
 };
 
 /** Ant Avatar for a row: the image, else the initials on a tinted circle. */
-const RowAvatar = ({ image, name, size = 32, shape = 'circle' }: { image?: string; name?: string; size?: number; shape?: 'circle' | 'square' }) =>
+export const RowAvatar = ({ image, name, size = 32, shape = 'circle' }: { image?: string; name?: string; size?: number; shape?: 'circle' | 'square' }) =>
   image ? <Avatar src={image} size={size} shape={shape} /> : <Avatar size={size} shape={shape}>{initials(name)}</Avatar>;
-
-// ---- Kanban ----------------------------------------------------------------------------------------------------------
-
-// A board of Ant Cards in columns: dataSource (the cards, one row each) grouped by statusField into columns [{ id,
-// title }]; card fields titleField, descriptionField, badgeField (a status Tag), tagsField, avatarField, progressField,
-// metaField. Cards drag between columns (allowDrag): onCardMoved with lastCardMovement and updatedCardData (every card,
-// with its new status). Also onCardSelected (lastSelectedCard), allowAdd (onAddCardClick with addCardColumn), allowDelete
-// (onCardRemoved), and actions addCard, moveCard, deleteCard, updateCardData.
-export const Kanban = () => {
-  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', description: 'The cards: [{ id, title, status }]', initialValue: [
-    { id: 1, title: 'Draft the brief', description: 'Goals, audience and timeline', status: 'todo' },
-    { id: 2, title: 'Collect references', description: 'Three competitor sites', status: 'todo' },
-    { id: 3, title: 'Review designs', description: 'Home and pricing pages', status: 'doing' },
-    { id: 4, title: 'Ship v1', description: 'Release notes and announcement', status: 'done' },
-  ] });
-  const [columns] = ToolJet.useStateArray({ name: 'columns', label: 'Columns', description: "[{ id: 'todo', title: 'To do' }]; empty takes the statuses in the data.", initialValue: [
-    { id: 'todo', title: 'To do' },
-    { id: 'doing', title: 'In progress' },
-    { id: 'done', title: 'Done' },
-  ] });
-  const [statusField] = ToolJet.useStateString({ name: 'statusField', label: 'Status field', initialValue: 'status' });
-  const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
-  const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'title' });
-  const [descriptionField] = ToolJet.useStateString({ name: 'descriptionField', label: 'Description field', initialValue: 'description' });
-  const [badgeField] = ToolJet.useStateString({ name: 'badgeField', label: 'Badge field', initialValue: '' });
-  const [tagsField] = ToolJet.useStateString({ name: 'tagsField', label: 'Tags field', initialValue: '' });
-  const [avatarField] = ToolJet.useStateString({ name: 'avatarField', label: 'Avatar field', initialValue: '' });
-  const [progressField] = ToolJet.useStateString({ name: 'progressField', label: 'Progress field', initialValue: '' });
-  const [metaField] = ToolJet.useStateString({ name: 'metaField', label: 'Meta field', initialValue: '' });
-  const [badgeColors] = ToolJet.useStateObject({ name: 'badgeColors', label: 'Badge colors', description: "{ 'High': 'red' }", initialValue: {} });
-  const [columnWidth] = ToolJet.useStateNumber({ name: 'columnWidth', label: 'Column width (px)', initialValue: 280, min: 160, max: 600 });
-  const [showCount] = ToolJet.useStateBoolean({ name: 'showCount', label: 'Show count', initialValue: true });
-  const [allowDrag] = ToolJet.useStateBoolean({ name: 'allowDrag', label: 'Allow drag', initialValue: true });
-  const [allowAdd] = ToolJet.useStateBoolean({ name: 'allowAdd', label: 'Allow add', initialValue: false });
-  const [allowDelete] = ToolJet.useStateBoolean({ name: 'allowDelete', label: 'Allow delete', initialValue: false });
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'No cards' });
-  const [, setUpdatedCardData] = ToolJet.useStateArray({ name: 'updatedCardData', initialValue: [], inspector: 'hidden' });
-  const [, setLastCardMovement] = ToolJet.useStateObject({ name: 'lastCardMovement', initialValue: {}, inspector: 'hidden' });
-  const [, setLastSelectedCard] = ToolJet.useStateObject({ name: 'lastSelectedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setLastAddedCard] = ToolJet.useStateObject({ name: 'lastAddedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setLastRemovedCard] = ToolJet.useStateObject({ name: 'lastRemovedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setLastUpdatedCard] = ToolJet.useStateObject({ name: 'lastUpdatedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setAddCardColumn] = ToolJet.useStateString({ name: 'addCardColumn', initialValue: '', inspector: 'hidden' });
-  const onCardMoved = ToolJet.useEventCallback({ name: 'onCardMoved' });
-  const onCardSelected = ToolJet.useEventCallback({ name: 'onCardSelected' });
-  const onAddCardClick = ToolJet.useEventCallback({ name: 'onAddCardClick' });
-  const onCardAdded = ToolJet.useEventCallback({ name: 'onCardAdded' });
-  const onCardRemoved = ToolJet.useEventCallback({ name: 'onCardRemoved' });
-  const onCardUpdated = ToolJet.useEventCallback({ name: 'onCardUpdated' });
-  const onUpdate = ToolJet.useEventCallback({ name: 'onUpdate' });
-  const { disabled, loading } = ToolJet.useControlState();
-  const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 40, defaultHeight: 50 });
-
-  const sf = str(statusField) || 'status';
-  const idf = str(idField) || 'id';
-  // Each column is a lane the page lays out: a columns binding to a large list keeps the first MAX_SLOT_ITEMS.
-  const source = useMemo(
-    () => boardColumns(toArray(dataSource), toArray(columns).slice(0, MAX_SLOT_ITEMS), sf, idf),
-    [dataSource, columns, sf, idf]
-  );
-  const [board, setBoard] = useState<BoardColumn[]>(source);
-  useEffect(() => setBoard(source), [source]);
-  useEffect(() => {
-    setUpdatedCardData(boardCards(board) as unknown[]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [board]);
-
-  const keyOf = (id: unknown) => {
-    const s = str(id);
-    for (const c of board) for (const card of c.cards) if (card.__key === s || str(cardIdOf(card, idf)) === s) return card.__key;
-    return s;
-  };
-  const move = (key: string, to: string, before: string | null) => {
-    const { columns: next, move: m } = moveBoardCard(board, key, to, before, sf, idf);
-    if (!m) return;
-    setBoard(next);
-    setLastCardMovement(m as unknown as Record<string, unknown>);
-    onCardMoved();
-    onUpdate();
-  };
-  ToolJet.useAction(
-    { name: 'moveCard', displayName: 'Move card', params: [{ handle: 'cardId', displayName: 'Card id' }, { handle: 'columnId', displayName: 'Column id' }] },
-    (cardId, columnId) => move(keyOf(cardId), str(columnId), null)
-  );
-  ToolJet.useAction(
-    { name: 'addCard', displayName: 'Add card', params: [{ handle: 'card', displayName: 'Card' }, { handle: 'columnId', displayName: 'Column id' }] },
-    (card, columnId) => {
-      const r = addBoardCard(board, card, columnId || undefined, sf, idf);
-      setBoard(r.columns);
-      setLastAddedCard(r.card);
-      onCardAdded();
-      onUpdate();
-    }
-  );
-  ToolJet.useAction({ name: 'deleteCard', displayName: 'Delete card', params: [{ handle: 'cardId', displayName: 'Card id' }] }, (cardId) => remove(keyOf(cardId)));
-  ToolJet.useAction(
-    { name: 'updateCardData', displayName: 'Update card', params: [{ handle: 'cardId', displayName: 'Card id' }, { handle: 'values', displayName: 'Values' }] },
-    (cardId, values) => {
-      const r = updateBoardCard(board, keyOf(cardId), values, sf, idf);
-      if (!r.card) return;
-      setBoard(r.columns);
-      setLastUpdatedCard(r.card);
-      onCardUpdated();
-      onUpdate();
-    }
-  );
-  const remove = (key: string) => {
-    const r = deleteBoardCard(board, key);
-    if (!r.card) return;
-    setBoard(r.columns);
-    setLastRemovedCard(r.card);
-    onCardRemoved();
-    onUpdate();
-  };
-
-  const drag = useRef<{ key: string; over: string | null } | null>(null);
-  const [dropColumn, setDropColumn] = useState<string | null>(null);
-  const canDrag = allowDrag && !disabled;
-  const width = Math.max(160, Math.min(600, Number(columnWidth) || 280));
-
-  return (
-    <AntProvider tokens={tokens} fill className="tj-ant-kanban">
-      <div className="tj-ant-kanban-board" data-tj-no-drag="">
-        {board.map((col) => (
-          <div
-            key={col.id}
-            className={dropColumn === col.id ? 'tj-ant-kanban-col is-over' : 'tj-ant-kanban-col'}
-            style={{ width, minWidth: width }}
-            onDragOver={(e) => {
-              if (!drag.current) return;
-              e.preventDefault();
-              setDropColumn(col.id);
-            }}
-            onDragLeave={() => setDropColumn((c) => (c === col.id ? null : c))}
-            onDrop={(e) => {
-              e.preventDefault();
-              const d = drag.current;
-              drag.current = null;
-              setDropColumn(null);
-              if (d) move(d.key, col.id, d.over);
-            }}
-          >
-            <div className="tj-ant-kanban-head">
-              {col.color ? <Badge color={col.color} /> : null}
-              <Typography.Text strong>{col.title}</Typography.Text>
-              {showCount ? <Badge count={col.cards.length} showZero color="var(--ant-color-fill-secondary)" style={{ color: 'var(--ant-color-text-secondary)' }} /> : null}
-              {allowAdd ? (
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<PlusOutlined />}
-                  className="tj-ant-kanban-add"
-                  onClick={() => {
-                    setAddCardColumn(col.id);
-                    onAddCardClick();
-                  }}
-                />
-              ) : null}
-            </div>
-            <div className="tj-ant-kanban-cards">
-              {loading ? <Card size="small" loading /> : null}
-              {!loading && col.cards.length === 0 ? <div className="tj-ant-kanban-empty">{emptyText}</div> : null}
-              {col.cards.map((card) => {
-                const title = str(card[titleField] ?? card[idf]);
-                const description = descriptionField ? str(card[descriptionField]) : '';
-                const badge = badgeField ? str(card[badgeField]) : '';
-                const tags = tagsField ? toArray(card[tagsField]).map(str).filter(Boolean) : [];
-                const avatar = avatarField ? str(card[avatarField]) : '';
-                const pct = progressField ? Number(card[progressField]) : NaN;
-                const meta = metaField ? str(card[metaField]) : '';
-                return (
-                  <Card
-                    key={card.__key}
-                    size="small"
-                    hoverable
-                    className="tj-ant-kanban-card"
-                    draggable={canDrag}
-                    onDragStart={(e) => {
-                      drag.current = { key: card.__key, over: null };
-                      e.dataTransfer.effectAllowed = 'move';
-                      e.dataTransfer.setData('text/plain', card.__key);
-                    }}
-                    onDragOver={(e) => {
-                      if (drag.current && drag.current.key !== card.__key) {
-                        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                        const below = e.clientY > r.top + r.height / 2;
-                        const i = col.cards.indexOf(card);
-                        drag.current.over = below ? col.cards[i + 1]?.__key ?? null : card.__key;
-                      }
-                    }}
-                    onDragEnd={() => {
-                      drag.current = null;
-                      setDropColumn(null);
-                    }}
-                    onClick={() => {
-                      setLastSelectedCard(plainRow(card));
-                      onCardSelected();
-                    }}
-                  >
-                    <div className="tj-ant-kanban-card-top">
-                      <Typography.Text strong className="tj-ant-kanban-title">
-                        {title}
-                      </Typography.Text>
-                      {allowDelete ? (
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<CloseOutlined />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            remove(card.__key);
-                          }}
-                        />
-                      ) : null}
-                    </div>
-                    {description ? (
-                      <Typography.Paragraph type="secondary" ellipsis={{ rows: 2 }} style={{ margin: '4px 0 0' }}>
-                        {description}
-                      </Typography.Paragraph>
-                    ) : null}
-                    {badge || tags.length ? (
-                      <div className="tj-ant-kanban-tags">
-                        {badge ? <Tag color={toneTag(badge, badgeColors)}>{chipLabel(badge)}</Tag> : null}
-                        {tags.map((t) => (
-                          <Tag key={t}>{t}</Tag>
-                        ))}
-                      </div>
-                    ) : null}
-                    {Number.isFinite(pct) ? <Progress percent={Math.max(0, Math.min(100, pct))} size="small" /> : null}
-                    {avatar || meta ? (
-                      <div className="tj-ant-kanban-foot">
-                        <Typography.Text type="secondary">{meta}</Typography.Text>
-                        {avatar ? <RowAvatar image={/^(https?:|data:)/.test(avatar) ? avatar : ''} name={avatar} size={24} /> : null}
-                      </div>
-                    ) : null}
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-        {board.length === 0 && !loading ? <Empty className="tj-ant-kanban-none" description={emptyText} /> : null}
-      </div>
-    </AntProvider>
-  );
-};
 
 // ---- Hero ------------------------------------------------------------------------------------------------------------
 
@@ -408,16 +151,36 @@ export const SummaryStrip = () => {
 
 // ---- RecordList, CardGrid, ProgressList -----------------------------------------------------------------------------
 
-const useSelection = () => {
-  const [selectedItemId, setSelectedItemId] = ToolJet.useStateString({ name: 'selectedItemId', initialValue: '', inspector: 'hidden' });
-  const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedItemIndex] = ToolJet.useStateNumber({ name: 'selectedItemIndex', initialValue: -1, inspector: 'hidden' });
-  const select = (key: string, row: Row, index: number) => {
-    setSelectedItemId(key);
-    setSelectedItem(row);
-    setSelectedItemIndex(index);
+type Selectable = { key: string; row: Row; index: number };
+
+// The selection of a RecordList, CardGrid or ProgressList. It follows its record by key across a refresh or a reorder
+// (the record and its index exposed as they are now) and clears once the record is gone: set only on a click, the old
+// record and index stayed exposed while the rows moved on (SP-31). selectedItemId keeps the id's own type (1, not '1').
+const useSelection = (items: Selectable[], idField: unknown) => {
+  const [, setSelectedItemId] = ToolJet.useStateString({ name: 'selectedItemId', initialValue: '', inspector: 'hidden' });
+  const [selectedItem, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
+  const [selectedItemIndex, setSelectedItemIndex] = ToolJet.useStateNumber({ name: 'selectedItemIndex', initialValue: -1, inspector: 'hidden' });
+  const [selectedKey, setSelectedKey] = useState('');
+  const idOf = (it: Selectable) => {
+    const row = it.row && typeof it.row === 'object' ? it.row : {};
+    const id = rowIdOf(row as Row, str(idField) || 'id', -1);
+    return id === -1 ? it.key : id;
   };
-  return { selectedItemId, select };
+  const select = (it: Selectable | null) => {
+    setSelectedKey(it ? it.key : '');
+    setSelectedItemId((it ? idOf(it) : '') as string);
+    setSelectedItem(it ? it.row : {});
+    setSelectedItemIndex(it ? it.index : -1);
+  };
+  const rowsKey = JSON.stringify(items.map((it) => [it.key, it.index, it.row]));
+  useEffect(() => {
+    if (!selectedKey) return;
+    const hit = items.find((it) => it.key === selectedKey);
+    if (!hit) select(null);
+    else if (hit.index !== selectedItemIndex || JSON.stringify(hit.row) !== JSON.stringify(selectedItem)) select(hit);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowsKey]);
+  return { selectedItemId: selectedKey, select };
 };
 
 // Ant's List of records: dataSource, titleField, avatarField, metaFields (fields joined under the title), statusField
@@ -447,11 +210,11 @@ export const RecordList = () => {
   const [bordered] = ToolJet.useStateBoolean({ name: 'bordered', label: 'Bordered', initialValue: true });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'No records' });
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
-  const { selectedItemId, select } = useSelection();
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
   const items = recordItems(toArray(dataSource), { titleField, avatarField, metaFields, statusField, progressField, valueField, valueFormat, currency, idField });
+  const { selectedItemId, select } = useSelection(items, idField);
   return (
     <AntProvider tokens={tokens} className="tj-ant-list">
       <List
@@ -466,7 +229,7 @@ export const RecordList = () => {
           <List.Item
             className={it.key === selectedItemId ? 'tj-ant-item is-selected' : 'tj-ant-item'}
             onClick={() => {
-              select(it.key, it.row, it.index);
+              select(it as unknown as Selectable);
               onItemClicked();
             }}
             extra={
@@ -526,11 +289,11 @@ export const CardGrid = () => {
   const [hoverable] = ToolJet.useStateBoolean({ name: 'hoverable', label: 'Hoverable', initialValue: true });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'No items' });
   const onCardClicked = ToolJet.useEventCallback({ name: 'onCardClicked' });
-  const { selectedItemId, select } = useSelection();
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 40 });
   const items = cardItems(toArray(dataSource), { titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField });
+  const { selectedItemId, select } = useSelection(items, idField);
   const cols = Number(columns) > 0 ? `repeat(${Number(columns)}, minmax(0, 1fr))` : `repeat(auto-fill, minmax(${Math.max(120, Number(minCardWidth) || 240)}px, 1fr))`;
   if (!items.length && !loading)
     return (
@@ -551,7 +314,7 @@ export const CardGrid = () => {
                 className={`tj-ant-gridcard is-${layout}${it.key === selectedItemId ? ' is-selected' : ''}`}
                 cover={showImage && it.image ? <img alt={it.title} src={it.image} style={{ aspectRatio: imageAspect, objectFit: 'cover' }} /> : undefined}
                 onClick={() => {
-                  select(it.key, it.row, it.index);
+                  select(it as unknown as Selectable);
                   onCardClicked();
                 }}
               >
@@ -610,7 +373,6 @@ export const ProgressList = () => {
   const [bordered] = ToolJet.useStateBoolean({ name: 'bordered', label: 'Bordered', initialValue: false });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'No data' });
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
-  const { selectedItemId, select } = useSelection();
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 24 });
@@ -618,6 +380,7 @@ export const ProgressList = () => {
   const entries = progressEntries(toArray(dataSource), idField);
   const max = progressMax(entries, fields);
   const items = entries.map((e) => progressItem(e, { ...fields, max }));
+  const { selectedItemId, select } = useSelection(items as unknown as Selectable[], idField);
   const stroke = size === 'small' ? 4 : size === 'large' ? 12 : 8;
   return (
     <AntProvider tokens={tokens} className="tj-ant-list">
@@ -632,7 +395,7 @@ export const ProgressList = () => {
             <List.Item
               className={it.key === selectedItemId ? 'tj-ant-item tj-ant-progress-row is-selected' : 'tj-ant-item tj-ant-progress-row'}
               onClick={() => {
-                select(it.key, it.row, it.index);
+                select(it as unknown as Selectable);
                 onItemClicked();
               }}
             >
@@ -791,7 +554,8 @@ export const Icon = () => {
   );
 };
 
-type GroupButton = { value: string; label: string; icon?: string; disabled?: boolean; danger?: boolean };
+// value is the text the buttons match by; raw is the value as given (a number stays a number when exposed).
+type GroupButton = { value: string; raw: unknown; label: string; icon?: string; disabled?: boolean; danger?: boolean };
 
 // Ant Buttons joined (Space.Compact): buttons [{ value, label, icon, disabled, danger }], mode (actions: each fires
 // onClick; single and multiple: a selection, value exposed, onChange; none: display), value, allowDeselect, type
@@ -819,16 +583,20 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 4 });
   const list: GroupButton[] = toArray(buttons)
     .map((b): GroupButton | null => {
-      if (typeof b === 'string') return { value: b, label: b };
+      if (typeof b === 'string' || typeof b === 'number') return { value: String(b), raw: b, label: String(b) };
       const r = (b ?? {}) as Row;
-      const v = str(r.value ?? r.id ?? r.label);
-      return v ? { value: v, label: str(r.label ?? v), icon: str(r.icon) || undefined, disabled: Boolean(r.disabled), danger: Boolean(r.danger) } : null;
+      const given = r.value ?? r.id ?? r.label;
+      const v = str(given);
+      return v ? { value: v, raw: given, label: str(r.label ?? v), icon: str(r.icon) || undefined, disabled: Boolean(r.disabled), danger: Boolean(r.danger) } : null;
     })
     .filter((b): b is GroupButton => !!b);
   const current: unknown = value;
   const selected = Array.isArray(current) ? current.map(str) : current === '' || current === undefined || current === null ? [] : [str(current)];
+  // Exposed as the buttons give their values: 1 stays 1, not '1'. A value no button has stays as it was given.
+  const rawOf = (v: string) => list.find((b) => b.value === v)?.raw ?? v;
   const set = (next: string[]) => {
-    setValue((mode === 'multiple' ? next : next[0] ?? '') as string);
+    const values = next.map(rawOf);
+    setValue((mode === 'multiple' ? values : values[0] ?? '') as string);
     onChange();
   };
   ToolJet.useAction({ name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
@@ -837,7 +605,7 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => set([]));
   void props;
   const click = (b: GroupButton) => {
-    setLastClicked(b.value);
+    setLastClicked(b.raw as string);
     if (mode === 'single') {
       if (selected[0] === b.value) {
         if (allowDeselect) set([]);

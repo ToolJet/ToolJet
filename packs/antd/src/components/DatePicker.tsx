@@ -3,10 +3,11 @@ import { DatePicker as AntDatePicker } from 'antd';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
+import { useOwnedPopup } from '../lib/useOwnerGuard';
 
 const VALUE_FORMAT = 'YYYY-MM-DD';
 const VALUE_FORMAT_TIME = 'YYYY-MM-DDTHH:mm:ss';
@@ -41,7 +42,6 @@ export const DatePicker = (props: Record<string, unknown>) => {
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ section: 'date', value });
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
 
   const change = (next: Dayjs | null) => {
@@ -53,33 +53,39 @@ export const DatePicker = (props: Record<string, unknown>) => {
     (next) => change(parse(next))
   );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(parse(props.value)));
+  const panel = useOwnedPopup(disabled, (open) => {
+    if (!open) check.touch();
+    onOpenChange();
+  });
 
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} ownerRef={panel.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
         <ControlSkeleton loading={loading} size={look.size}>
-          <Picker
-            id={fieldId}
-            value={parse(value)}
-            format={str(format).trim() || (showTime ? 'YYYY-MM-DD HH:mm' : VALUE_FORMAT)}
-            showTime={showTime ? { format: 'HH:mm' } : false}
-            picker={showTime ? 'date' : (picker as 'date')}
-            minDate={parse(minDate) ?? undefined}
-            maxDate={parse(maxDate) ?? undefined}
-            placeholder={placeholder || undefined}
-            allowClear={allowClear}
-            disabled={disabled}
-            variant={look.variant}
-            size={look.size}
-            status={check.error ? 'error' : undefined}
-            popupClassName={popup.className}
-            popupStyle={popup.style}
-            onChange={(d) => change(d as Dayjs | null)}
-            onOpenChange={(open) => {
-              if (!open) check.touch();
-              onOpenChange();
-            }}
-          />
+          <WithPopupTheme>
+            {(popup) => (
+              <Picker
+                id={fieldId}
+                value={parse(value)}
+                format={str(format).trim() || (showTime ? 'YYYY-MM-DD HH:mm' : VALUE_FORMAT)}
+                showTime={showTime ? { format: 'HH:mm' } : false}
+                picker={showTime ? 'date' : (picker as 'date')}
+                minDate={parse(minDate) ?? undefined}
+                maxDate={parse(maxDate) ?? undefined}
+                placeholder={placeholder || undefined}
+                allowClear={allowClear}
+                disabled={disabled}
+                variant={look.variant}
+                size={look.size}
+                status={check.error ? 'error' : undefined}
+                popupClassName={popup.className}
+                popupStyle={popup.style}
+                open={panel.open}
+                onOpenChange={panel.onOpenChange}
+                onChange={(d) => panel.available() && change(d as Dayjs | null)}
+              />
+            )}
+          </WithPopupTheme>
         </ControlSkeleton>
       </FormField>
     </AntProvider>

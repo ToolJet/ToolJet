@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   AutoComplete as AntAutoComplete,
   Button,
@@ -16,10 +16,11 @@ import { InboxOutlined, UploadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str, toArray, toOptions, type Row } from '../lib/data';
+import { useOwnedPopup } from '../lib/useOwnerGuard';
 
 const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
   ToolJet.useAction(
@@ -37,22 +38,30 @@ const parseDate = (v: unknown, format?: string): Dayjs | null => {
 };
 
 type FileInfo = { uid: string; name: string; size: number; type: string; base64: string; content: string };
+// A file's text, for the text-like types: UTF-8, as a query sends it on (atob alone gave every non-ASCII character as
+// its raw bytes, café as cafÃ©).
+const textOf = (base64: string) => {
+  try {
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    return typeof TextDecoder === 'undefined' ? atob(base64) : new TextDecoder('utf-8').decode(bytes);
+  } catch {
+    return '';
+  }
+};
+let fileSeq = 0;
 const readFile = (file: File): Promise<FileInfo & { file: File }> =>
   new Promise((resolve) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const url = String(reader.result ?? '');
+    const done = (url: string) => {
       const base64 = url.slice(url.indexOf(',') + 1);
-      let content = '';
-      if (/^text\/|json|csv|xml/.test(file.type) && file.size < 2_000_000) {
-        try {
-          content = atob(base64);
-        } catch {
-          content = '';
-        }
-      }
-      resolve({ uid: `${file.name}-${file.size}-${file.lastModified}`, name: file.name, size: file.size, type: file.type, base64, content, file });
+      const content = /^text\/|json|csv|xml/.test(file.type) && file.size < 2_000_000 ? textOf(base64) : '';
+      // The same file picked twice is two entries: a uid of its name, size and date alone removed both at once.
+      fileSeq += 1;
+      resolve({ uid: `${file.name}-${file.size}-${file.lastModified}-${fileSeq}`, name: file.name, size: file.size, type: file.type, base64, content, file });
     };
+    reader.onload = () => done(String(reader.result ?? ''));
+    // An unreadable file still settles, empty, so the rest of its batch is not held up.
+    reader.onerror = () => done('');
     reader.readAsDataURL(file);
   });
 
@@ -77,21 +86,46 @@ export const Upload = () => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 16 });
   const [uiFiles, setUiFiles] = useState<UploadFile[]>([]);
+  // The files as of the latest change, for reads that finish later: a pick merged into the files as they were when it
+  // started, so a slow read dropped the files a quicker pick had added meanwhile, and a pick that finished after a clear
+  // (a Form's clearForm, resetFields) put the cleared files back (SP-11). Each clear starts a new generation; a read only
+  // lands in its own, and never after the widget is gone.
+  const latest = useRef<(FileInfo & { file?: File })[]>([]);
+  const generation = useRef(0);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    // The files as the app set them (a binding, an action): reads append to these.
+    if (toArray(fileList).length !== latest.current.length) latest.current = toArray(fileList) as FileInfo[];
+  }, [fileList]);
 
   const set = (next: (FileInfo & { file?: File })[]) => {
+    latest.current = next;
     setFileList(next.map(({ file: _f, ...rest }) => rest));
     setUiFiles(next.map((f) => ({ uid: f.uid, name: f.name, status: 'done', size: f.size, type: f.type, originFileObj: f.file as never, thumbUrl: f.type.startsWith('image/') ? `data:${f.type};base64,${f.base64}` : undefined })));
     check.touch();
     onChange();
   };
-  ToolJet.useAction({ name: 'resetFields', displayName: 'Clear files' }, () => set([]));
-  // A Form's clearForm empties the files (the host clears only `value`).
+  ToolJet.useAction({ name: 'resetFields', displayName: 'Clear files' }, () => {
+    generation.current += 1;
+    set([]);
+  });
+  // A Form's clearForm empties the files (the host clears only `value`), and drops the reads still under way.
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
+    generation.current += 1;
+    latest.current = [];
     setFileList([]);
     setUiFiles([]);
   });
 
   const limit = Number(maxCount) > 0 ? Number(maxCount) : undefined;
+  const live = useRef({ maxCount });
+  live.current = { maxCount };
   const props = {
     accept: accept || undefined,
     multiple,
@@ -103,13 +137,17 @@ export const Upload = () => {
     beforeUpload: async (_file: File, batch: File[]) => {
       // Ant calls this once per file with the whole batch; read the batch once, on its first file.
       if (batch[0] !== _file) return false;
+      const mine = generation.current;
       const read = await Promise.all(batch.map(readFile));
-      const merged = [...(files as FileInfo[]), ...read];
-      set(limit ? merged.slice(-limit) : merged);
+      if (!mounted.current || mine !== generation.current) return false;
+      // Merged into the files as they are now, under the limit as it is now (not as when the pick started).
+      const now = Number(live.current.maxCount) > 0 ? Number(live.current.maxCount) : undefined;
+      const merged = [...latest.current, ...read];
+      set(now ? merged.slice(-now) : merged);
       return false;
     },
     onRemove: (f: UploadFile) => {
-      set((files as FileInfo[]).filter((x) => x.uid !== f.uid));
+      set(latest.current.filter((x) => x.uid !== f.uid));
       onRemove();
       return true;
     },
@@ -156,7 +194,6 @@ export const TimePicker = (props: Record<string, unknown>) => {
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ section: 'date', value });
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
   const fmt = str(format).trim() || (use12Hours ? 'h:mm a' : 'HH:mm');
   // The value keeps 24-hour text whatever the display, so queries read one shape.
@@ -167,29 +204,35 @@ export const TimePicker = (props: Record<string, unknown>) => {
   };
   useFieldActions((v) => change(parseDate(v, 'HH:mm:ss') ?? parseDate(v, 'HH:mm')), props.value);
   const current = parseDate(value, valueFormat) ?? parseDate(value, 'HH:mm');
+  const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} ownerRef={panel.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
         <ControlSkeleton loading={loading} size={look.size}>
-          <AntTimePicker
-            id={fieldId}
-            style={{ width: '100%' }}
-            value={current}
-            format={fmt}
-            use12Hours={use12Hours}
-            hourStep={Math.max(1, Number(hourStep) || 1) as 1}
-            minuteStep={Math.max(1, Number(minuteStep) || 1) as 1}
-            placeholder={placeholder || undefined}
-            allowClear={allowClear}
-            disabled={disabled}
-            variant={look.variant}
-            size={look.size}
-            status={check.error ? 'error' : undefined}
-            popupClassName={popup.className}
-            popupStyle={popup.style}
-            onChange={(d) => change(d as Dayjs | null)}
-            onOpenChange={(open) => !open && check.touch()}
-          />
+          <WithPopupTheme>
+            {(popup) => (
+              <AntTimePicker
+                id={fieldId}
+                style={{ width: '100%' }}
+                value={current}
+                format={fmt}
+                use12Hours={use12Hours}
+                hourStep={Math.max(1, Number(hourStep) || 1) as 1}
+                minuteStep={Math.max(1, Number(minuteStep) || 1) as 1}
+                placeholder={placeholder || undefined}
+                allowClear={allowClear}
+                disabled={disabled}
+                variant={look.variant}
+                size={look.size}
+                status={check.error ? 'error' : undefined}
+                popupClassName={popup.className}
+                popupStyle={popup.style}
+                open={panel.open}
+                onOpenChange={panel.onOpenChange}
+                onChange={(d) => panel.available() && change(d as Dayjs | null)}
+              />
+            )}
+          </WithPopupTheme>
         </ControlSkeleton>
       </FormField>
     </AntProvider>
@@ -215,7 +258,6 @@ export const RangePicker = (props: Record<string, unknown>) => {
   const pair = toArray(value).map((v) => parseDate(v));
   const check = ToolJet.useValidation({ section: 'date', value: pair[0] ? str(toArray(value)[0]) : '' });
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 6 });
   React.useEffect(() => {
     setStartDate(pair[0] ? pair[0].format('YYYY-MM-DD') : '');
@@ -228,28 +270,34 @@ export const RangePicker = (props: Record<string, unknown>) => {
     onChange();
   };
   useFieldActions(change, props.value);
+  const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} ownerRef={panel.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
         <ControlSkeleton loading={loading} size={look.size}>
-          <DatePicker.RangePicker
-            id={fieldId as never}
-            style={{ width: '100%' }}
-            value={pair[0] && pair[1] ? [pair[0], pair[1]] : null}
-            format={str(format).trim() || 'YYYY-MM-DD'}
-            picker={picker as 'date'}
-            minDate={parseDate(minDate) ?? undefined}
-            maxDate={parseDate(maxDate) ?? undefined}
-            allowClear={allowClear}
-            disabled={disabled}
-            variant={look.variant}
-            size={look.size}
-            status={check.error ? 'error' : undefined}
-            popupClassName={popup.className}
-            popupStyle={popup.style}
-            onChange={(dates) => change(dates ?? [])}
-            onOpenChange={(open) => !open && check.touch()}
-          />
+          <WithPopupTheme>
+            {(popup) => (
+              <DatePicker.RangePicker
+                id={fieldId as never}
+                style={{ width: '100%' }}
+                value={pair[0] && pair[1] ? [pair[0], pair[1]] : null}
+                format={str(format).trim() || 'YYYY-MM-DD'}
+                picker={picker as 'date'}
+                minDate={parseDate(minDate) ?? undefined}
+                maxDate={parseDate(maxDate) ?? undefined}
+                allowClear={allowClear}
+                disabled={disabled}
+                variant={look.variant}
+                size={look.size}
+                status={check.error ? 'error' : undefined}
+                popupClassName={popup.className}
+                popupStyle={popup.style}
+                open={panel.open}
+                onOpenChange={panel.onOpenChange}
+                onChange={(dates) => panel.available() && change(dates ?? [])}
+              />
+            )}
+          </WithPopupTheme>
         </ControlSkeleton>
       </FormField>
     </AntProvider>
@@ -279,37 +327,43 @@ export const AutoComplete = (props: Record<string, unknown>) => {
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ section: 'text', value });
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
   const change = (v: unknown) => {
     setValue(str(v));
     onChange();
   };
   useFieldActions(change, props.value);
+  const list = useOwnedPopup(disabled);
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} ownerRef={list.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
         <ControlSkeleton loading={loading} size={look.size}>
-          <AntAutoComplete
-            id={fieldId}
-            style={{ width: '100%' }}
-            options={toOptions(rawOptions)}
-            value={value}
-            placeholder={placeholder || undefined}
-            filterOption={filterOption ? (input, option) => str(option?.label ?? option?.value).toLowerCase().includes(input.toLowerCase()) : false}
-            allowClear={allowClear}
-            disabled={disabled}
-            notFoundContent={loading ? <Spin size="small" /> : undefined}
-            variant={look.variant}
-            size={look.size}
-            status={check.error ? 'error' : undefined}
-            classNames={{ popup: { root: popup.className } }}
-            styles={{ popup: { root: popup.style } }}
-            onChange={(v) => change(v)}
-            onSelect={() => onSelect()}
-            onSearch={() => onSearch()}
-            onBlur={() => check.touch()}
-          />
+          <WithPopupTheme>
+            {(popup) => (
+              <AntAutoComplete
+                id={fieldId}
+                style={{ width: '100%' }}
+                options={toOptions(rawOptions)}
+                value={value}
+                placeholder={placeholder || undefined}
+                filterOption={filterOption ? (input, option) => str(option?.label ?? option?.value).toLowerCase().includes(input.toLowerCase()) : false}
+                allowClear={allowClear}
+                disabled={disabled}
+                notFoundContent={loading ? <Spin size="small" /> : undefined}
+                variant={look.variant}
+                size={look.size}
+                status={check.error ? 'error' : undefined}
+                classNames={{ popup: { root: popup.className } }}
+                styles={{ popup: { root: popup.style } }}
+                open={list.open}
+                onOpenChange={list.onOpenChange}
+                onChange={(v) => list.available() && change(v)}
+                onSelect={() => list.available() && onSelect()}
+                onSearch={() => onSearch()}
+                onBlur={() => check.touch()}
+              />
+            )}
+          </WithPopupTheme>
         </ControlSkeleton>
       </FormField>
     </AntProvider>
@@ -362,40 +416,47 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   const values = Array.isArray(current) ? current.map(str) : current === '' || current === undefined || current === null ? [] : [str(current)];
   const check = ToolJet.useValidation({ section: 'choice', value: values.join(','), present: values.length > 0 });
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
   const change = (v: unknown) => {
     const arr = Array.isArray(v) ? v.map(str) : v === undefined || v === null || v === '' ? [] : [str(v)];
     setValue((many ? arr : arr[0] ?? '') as string);
     onChange();
   };
+  // A cleared Form empties a multiple TreeSelect to no values ([]), not to the '' the host clears text values to.
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => many && setValue([] as unknown as string));
   useFieldActions(change, props.value);
+  const list = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} ownerRef={list.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
-        <AntTreeSelect
-          id={fieldId}
-          style={{ width: '100%' }}
-          treeData={toTree(treeData)}
-          value={many ? values : values[0]}
-          multiple={multiple}
-          treeCheckable={treeCheckable}
-          placeholder={placeholder || undefined}
-          showSearch={showSearch}
-          treeNodeFilterProp="title"
-          treeDefaultExpandAll={treeDefaultExpandAll}
-          allowClear={allowClear}
-          disabled={disabled}
-          loading={loading}
-          notFoundContent={loading ? <Spin size="small" /> : undefined}
-          variant={look.variant}
-          size={look.size}
-          status={check.error ? 'error' : undefined}
-          classNames={{ popup: { root: popup.className } }}
-          styles={{ popup: { root: popup.style } }}
-          onChange={(v) => change(v)}
-          onOpenChange={(open) => !open && check.touch()}
-        />
+        <WithPopupTheme>
+          {(popup) => (
+            <AntTreeSelect
+              id={fieldId}
+              style={{ width: '100%' }}
+              treeData={toTree(treeData)}
+              value={many ? values : values[0]}
+              multiple={multiple}
+              treeCheckable={treeCheckable}
+              placeholder={placeholder || undefined}
+              showSearch={showSearch}
+              treeNodeFilterProp="title"
+              treeDefaultExpandAll={treeDefaultExpandAll}
+              allowClear={allowClear}
+              disabled={disabled}
+              loading={loading}
+              notFoundContent={loading ? <Spin size="small" /> : undefined}
+              variant={look.variant}
+              size={look.size}
+              status={check.error ? 'error' : undefined}
+              classNames={{ popup: { root: popup.className } }}
+              styles={{ popup: { root: popup.style } }}
+              open={list.open}
+              onOpenChange={list.onOpenChange}
+              onChange={(v) => list.available() && change(v)}
+            />
+          )}
+        </WithPopupTheme>
       </FormField>
     </AntProvider>
   );
@@ -435,7 +496,6 @@ export const Cascader = (props: Record<string, unknown>) => {
   const path = toArray(value).map(str);
   const check = ToolJet.useValidation({ section: 'choice', value: path.join('/'), present: path.length > 0 });
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
   const toCascade = (raw: unknown): { label: string; value: string; children?: unknown[] }[] =>
     toTree(raw).map(function map(n): { label: string; value: string; children?: unknown[] } {
@@ -446,29 +506,35 @@ export const Cascader = (props: Record<string, unknown>) => {
     onChange();
   };
   useFieldActions(change, props.value);
+  const list = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} ownerRef={list.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
-        <AntCascader
-          id={fieldId}
-          style={{ width: '100%' }}
-          options={toCascade(rawOptions) as never}
-          value={path.length ? (path as never) : undefined}
-          placeholder={placeholder || undefined}
-          expandTrigger={expandTrigger as 'click'}
-          changeOnSelect={changeOnSelect}
-          showSearch={showSearch}
-          disabled={disabled}
-          loading={loading}
-          notFoundContent={loading ? <Spin size="small" /> : undefined}
-          variant={look.variant}
-          size={look.size}
-          status={check.error ? 'error' : undefined}
-          classNames={{ popup: { root: popup.className } }}
-          styles={{ popup: { root: popup.style } }}
-          onChange={(v) => change(v)}
-          onOpenChange={(open) => !open && check.touch()}
-        />
+        <WithPopupTheme>
+          {(popup) => (
+            <AntCascader
+              id={fieldId}
+              style={{ width: '100%' }}
+              options={toCascade(rawOptions) as never}
+              value={path.length ? (path as never) : undefined}
+              placeholder={placeholder || undefined}
+              expandTrigger={expandTrigger as 'click'}
+              changeOnSelect={changeOnSelect}
+              showSearch={showSearch}
+              disabled={disabled}
+              loading={loading}
+              notFoundContent={loading ? <Spin size="small" /> : undefined}
+              variant={look.variant}
+              size={look.size}
+              status={check.error ? 'error' : undefined}
+              classNames={{ popup: { root: popup.className } }}
+              styles={{ popup: { root: popup.style } }}
+              open={list.open}
+              onOpenChange={list.onOpenChange}
+              onChange={(v) => list.available() && change(v)}
+            />
+          )}
+        </WithPopupTheme>
       </FormField>
     </AntProvider>
   );
@@ -490,7 +556,6 @@ export const ColorPicker = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const check = ToolJet.useValidation({ section: 'text', value });
   const tokens = useTokenStyles();
-  const popup = usePopupTheme();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
   useFieldActions((v) => {
     setValue(str(v));
@@ -499,33 +564,42 @@ export const ColorPicker = (props: Record<string, unknown>) => {
   const presetList = toArray(presets)
     .map((p) => (p && typeof p === 'object' ? { label: str((p as Row).label), colors: toArray((p as Row).colors).map(str) } : null))
     .filter((p): p is { label: string; colors: string[] } => !!p && p.colors.length > 0);
+  const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} ownerRef={panel.anchor}>
       <FormField {...field} check={check}>
         <SpinOver loading={loading} as="inline">
-          <AntColorPicker
-            value={value || undefined}
-            format={format as 'hex'}
-            showText={showText}
-            allowClear={allowClear}
-            disabledAlpha={disabledAlpha}
-            presets={presetList.length ? presetList : undefined}
-            size={size as 'middle'}
-            disabled={disabled}
-            rootClassName={popup.className}
-            styles={{ popup: popup.style } as never}
-            onChange={(c, css) => {
-              setValue(c.cleared ? '' : format === 'rgb' ? css : c.toHexString());
-              onChange();
-            }}
-            onChangeComplete={() => onChangeComplete()}
-            onOpenChange={(open) => !open && check.touch()}
-            onClear={() => {
-              setValue('');
-              check.touch();
-              onChange();
-            }}
-          />
+          <WithPopupTheme>
+            {(popup) => (
+              <AntColorPicker
+                value={value || undefined}
+                format={format as 'hex'}
+                showText={showText}
+                allowClear={allowClear}
+                disabledAlpha={disabledAlpha}
+                presets={presetList.length ? presetList : undefined}
+                size={size as 'middle'}
+                disabled={disabled}
+                rootClassName={popup.className}
+                // Ant gives styles.popup to the popover's own style prop, which its root does not draw; the panel's body
+                // carries the tokens to everything inside it.
+                styles={{ popup: popup.style, popupOverlayInner: popup.style } as never}
+                open={panel.open}
+                onOpenChange={panel.onOpenChange}
+                onChange={(c, css) => {
+                  if (!panel.available()) return;
+                  setValue(c.cleared ? '' : format === 'rgb' ? css : c.toHexString());
+                  onChange();
+                }}
+                onChangeComplete={() => panel.available() && onChangeComplete()}
+                onClear={() => {
+                  setValue('');
+                  check.touch();
+                  onChange();
+                }}
+              />
+            )}
+          </WithPopupTheme>
         </SpinOver>
       </FormField>
     </AntProvider>
@@ -567,11 +641,18 @@ export const Transfer = (props: Record<string, unknown>) => {
     onChange();
   };
   useFieldActions(change, props.targetKeys);
-  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => setTargetKeys([]));
+  // A Form's clearForm moves every item back, and starts Ant's Transfer again: its ticked items and search text are its
+  // own state, and the ticks stayed on the items that moved back.
+  const [epoch, setEpoch] = useState(0);
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
+    setTargetKeys([]);
+    setEpoch((n) => n + 1);
+  });
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-transfer">
       <SpinOver loading={loading} as="fill">
         <AntTransfer
+          key={epoch}
           dataSource={items}
           targetKeys={keys}
           status={check.error ? 'error' : undefined}

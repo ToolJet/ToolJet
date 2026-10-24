@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Alert as AntAlert,
   Avatar as AntAvatar,
@@ -446,6 +446,13 @@ export const Steps = () => {
     setCurrent(Math.max(0, Math.min(Math.max(0, items.length - 1), n)));
     onChange();
   };
+  // current exposes the step drawn: past the steps (a literal 9 of 4, or steps removed) Ant draws every step done,
+  // which is current = the number of steps; below 0, the first. An empty list is data still loading.
+  const drawn = items.length && toNumber(current) !== null ? Math.max(0, Math.min(items.length, Math.trunc(Number(current)))) : null;
+  useEffect(() => {
+    if (drawn !== null && drawn !== current) setCurrent(drawn);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawn, current]);
   ToolJet.useAction({ name: 'next', displayName: 'Next' }, () => go(Number(current) + 1));
   ToolJet.useAction({ name: 'prev', displayName: 'Previous' }, () => go(Number(current) - 1));
   ToolJet.useAction({ name: 'setCurrent', displayName: 'Set current', params: [{ handle: 'current', displayName: 'Step index' }] }, (n) => go(Number(n) || 0));
@@ -454,7 +461,7 @@ export const Steps = () => {
       <SpinOver loading={loading} as="block">
         <AntSteps
           items={items}
-          current={Number(current) || 0}
+          current={drawn ?? (Number(current) || 0)}
           direction={direction as 'horizontal'}
           size={size as 'default'}
           type={type as 'default'}
