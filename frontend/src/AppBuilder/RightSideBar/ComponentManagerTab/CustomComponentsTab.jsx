@@ -422,7 +422,13 @@ const CustomComponentCard = ({
           <div className="component-image-holder d-flex flex-column justify-content-center" style={{ height: '100%' }}>
             <center>
               <div className="widget-svg-container" style={{ width: '24px', height: '24px' }}>
-                {icon ? (
+                {icon?.startsWith('Icon') ? (
+                  <TablerIcon
+                    iconName={icon}
+                    style={{ width: 24, height: 24, color: 'var(--icon-brand)' }}
+                    stroke={1.5}
+                  />
+                ) : icon ? (
                   <WidgetIcon name={icon} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
                 ) : (
                   <span className="custom-component-tile-initials">{initials(title)}</span>
