@@ -892,3 +892,12 @@
 .tj-ant-ring--fill > .tj-ant-spin-fill > .ant-spin-container {
   justify-content: center;
 }
+
+/* What an html cell's markup gives a width (an initials avatar, an icon, a dot) keeps it: in a flex row next to a long
+   name it was squeezed into a clipped oval. */
+.tj-ant-html-cell [style*="width:"],
+.tj-ant-html-cell [style*="width :"],
+.tj-ant-html-cell img,
+.tj-ant-html-cell svg {
+  flex-shrink: 0;
+}
