@@ -25,6 +25,12 @@ export const dataSourceFolderSelectors = {
   // ChangeRoleModal — the role-conflict dialog. Its root carries no data-cy, and it is not
   // commonSelectors.modalComponent.
   roleConflictModal: '.role-change-modal-content',
+  // ErrorModal — the generic refusal dialog. A grant the server refuses WITHOUT an error type
+  // (Module folder grants on a group holding an end user) lands here instead of ChangeRoleModal.
+  errorModal: '.edit-role-modal',
+  errorModalMessage: '.edit-role-modal [data-cy="modal-message"]',
+  errorModalHeader: '.edit-role-modal [data-cy="modal-header"]',
+  errorModalClose: '.edit-role-modal [data-cy="close-button"]',
   // ChangeRoleModal renders no footer, so it has no cancel button; the icon closes it.
   roleConflictModalClose: '.role-change-modal-content [data-cy="modal-close-button"]',
   // NOT commonSelectors.modalCloseButton — that one is [data-cy="modal-close"], which no modal

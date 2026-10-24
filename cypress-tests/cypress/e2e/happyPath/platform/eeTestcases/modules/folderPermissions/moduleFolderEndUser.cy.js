@@ -60,9 +60,12 @@ describe('Modules — Folder Permissions: End User Role', { retries: 0 }, () => 
     cy.get(groupsSelector.permissionNameInput).type(`module folder ${testId}`);
     cy.get(grant.viewItemsRadio).click({ force: true });
     cy.get(groupsSelector.confimButton).click();
-    cy.get(dsFolder.roleConflictModal).should('contain.text', 'Cannot add this permission to the group');
-    cy.get(dsFolder.roleConflictModal).should('contain.text', email);
-    cy.get(dsFolder.roleConflictModalClose).click();
+    // The server refuses a Module folder grant without an error type, so the frontend shows the
+    // generic ErrorModal here rather than the role-change dialog used for the add-user refusal.
+    cy.get(dsFolder.errorModalHeader).should('have.text', 'Cannot add this permission to the group');
+    cy.get(dsFolder.errorModalMessage).should('contain.text', 'End-users cannot have Module folder permissions');
+    cy.get(dsFolder.errorModal).should('contain.text', email);
+    cy.get(dsFolder.errorModalClose).click();
 
     cy.visit(`/${wsSlug}/workspace-settings/groups`);
     cy.get(groupsSelector.groupLink(tieredGroupName)).click();
