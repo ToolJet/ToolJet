@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { ToolJet } from "@tooljet/custom-component-sdk";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { toSlotName } from "../lib/slots";
+import { MAX_SLOT_ITEMS, toSlotName } from "../lib/slots";
 import { cn } from "../lib/cn";
 import { lookVars, px } from "../lib/ui2/nav/look";
 import { useTabs } from "../lib/ui2/nav/hooks";
@@ -88,7 +88,8 @@ export const TabsContainer = () => {
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 40 });
 
   const t = useTabs({
-    raw: rawTabs,
+    // Each tab is a canvas: a binding to a large list draws at most MAX_SLOT_ITEMS of them.
+    raw: Array.isArray(rawTabs) ? rawTabs.slice(0, MAX_SLOT_ITEMS) : rawTabs,
     fallbackLabel: "Tab",
     current,
     setCurrent,
