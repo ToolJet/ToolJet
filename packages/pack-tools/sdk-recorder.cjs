@@ -37,6 +37,10 @@ const ToolJet = {
     return { disabled: false, loading: false };
   },
   useFieldId: () => 'field',
+  useFormClear: () => {},
+  useFormSubmit: () => () => {},
+  useWidgetId: () => undefined,
+  useRowResolver: () => (template) => template,
   useRows: () => {},
   Slot: (props) => {
     if (box.calls) box.calls.push({ kind: 'slot', name: props?.name });
