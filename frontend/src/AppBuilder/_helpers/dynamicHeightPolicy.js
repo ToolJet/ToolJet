@@ -93,14 +93,15 @@ export const heightHeldInView = (componentType, properties = {}) => {
  * @param {string | undefined} childType
  * @param {Record<string, unknown>} [childProperties]  the child's resolved properties
  * @param {string} [mode]  'view' or 'edit'
+ * @param {string} [packRole]  a component pack widget's manifest role: a pack Stat stretches like ShadStat
  * @returns {boolean}
  */
-export const stretchesInRow = (rowProperties = {}, childType, childProperties = {}, mode) => {
+export const stretchesInRow = (rowProperties = {}, childType, childProperties = {}, mode, packRole) => {
   if (childType === 'FlexContainer') return rowProperties.alignItems === 'stretch' || !!rowProperties.equalHeights;
   return (
     !!rowProperties.equalHeights &&
     mode === 'view' &&
-    childType === 'ShadStat' &&
+    (childType === 'ShadStat' || (childType === 'LibraryComponent' && packRole === 'stat')) &&
     childProperties.card !== false &&
     fitsContentInView(childType, childProperties)
   );
