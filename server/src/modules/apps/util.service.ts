@@ -30,6 +30,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
+import { dropNewContainerDefaults } from '@tooljet/widget-definitions';
 import { cloneDeep, isArray, isPlainObject, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
@@ -1265,36 +1266,40 @@ export class AppsUtilService implements IAppsUtilService {
 
       const mergedDefinition = {
         // ...componentMeta.definition,
-        properties: mergeWith(
-          componentMeta.definition.properties,
-          currentComponentData?.component?.definition?.properties,
-          (objValue, srcValue) => {
-            if (['Table', 'KeyValuePair'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
-              // Stored array wins: merging it with the widget defaults leaks default entries back in
-              if (isArray(srcValue)) return srcValue;
-              // Older apps can persist the array as an object keyed by index
-              if (isPlainObject(srcValue)) return Object.values(srcValue);
-              // Anything else (an fx expression, for instance) is left to lodash, which replaces it wholesale
-            } else if (
-              [
-                'DropdownV2',
-                'MultiselectV2',
-                'PopoverMenu',
-                'Steps',
-                'Tabs',
-                'RadioButtonV2',
-                'Tags',
-                'TagsInput',
-                'TreeSelect',
-                'Cascader',
-                'Navigation',
-                'ButtonGroupV2',
-              ].includes(currentComponentData?.component?.component) &&
-              isArray(objValue)
-            ) {
-              return isArray(srcValue) ? srcValue : Object.values(srcValue);
+        properties: dropNewContainerDefaults(
+          currentComponentData?.component?.component,
+          mergeWith(
+            componentMeta.definition.properties,
+            currentComponentData?.component?.definition?.properties,
+            (objValue, srcValue) => {
+              if (['Table', 'KeyValuePair'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
+                // Stored array wins: merging it with the widget defaults leaks default entries back in
+                if (isArray(srcValue)) return srcValue;
+                // Older apps can persist the array as an object keyed by index
+                if (isPlainObject(srcValue)) return Object.values(srcValue);
+                // Anything else (an fx expression, for instance) is left to lodash, which replaces it wholesale
+              } else if (
+                [
+                  'DropdownV2',
+                  'MultiselectV2',
+                  'PopoverMenu',
+                  'Steps',
+                  'Tabs',
+                  'RadioButtonV2',
+                  'Tags',
+                  'TagsInput',
+                  'TreeSelect',
+                  'Cascader',
+                  'Navigation',
+                  'ButtonGroupV2',
+                ].includes(currentComponentData?.component?.component) &&
+                isArray(objValue)
+              ) {
+                return isArray(srcValue) ? srcValue : Object.values(srcValue);
+              }
             }
-          }
+          ),
+          currentComponentData?.component?.definition?.properties
         ),
         styles: merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
         generalStyles: merge(

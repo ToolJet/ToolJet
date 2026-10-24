@@ -51,7 +51,7 @@
  */
 import { getMouseDistanceFromParentDiv } from '../gridUtils';
 
-import { DROPPABLE_PARENTS, NESTING_LEVEL_LIMITS } from '../../appCanvasConstants';
+import { DROPPABLE_PARENTS, NESTING_LEVEL_LIMITS, isModalType } from '../../appCanvasConstants';
 import { isDroppingRestrictedWidget } from '../gridUtils';
 
 const CANVAS_ID = 'canvas';
@@ -91,12 +91,12 @@ export class DropAreaEntity {
 
   // Checks if the widget is a modal
   get isModal() {
-    return ['Modal', 'ModalV2'].includes(this.widget?.component?.component);
+    return ['Modal', 'ModalV2', 'ShadDialog'].includes(this.widget?.component?.component);
   }
 
   // Checks if the widget is the new version of modal
   get isNewModal() {
-    return this.widget?.component?.component === 'ModalV2';
+    return isModalType(this.widget?.component?.component);
   }
 
   // Checks if the widget is the legacy modal
@@ -280,7 +280,7 @@ export const getDroppableSlotIdOnScreen = (event, widgets, excludeWidgetIds = []
         : sourceParentId
       : null;
     const sourceParentWidget = sourceParentBaseId ? getWidgetById(widgets, sourceParentBaseId) : null;
-    if (sourceParentWidget?.component?.component === 'ModalV2') {
+    if (isModalType(sourceParentWidget?.component?.component)) {
       const dialogRect = document.querySelector(`.tj-modal-content-${sourceParentBaseId}`)?.getBoundingClientRect();
       const isCursorWithinDialog =
         dialogRect &&

@@ -95,6 +95,7 @@ export const ButtonColumn = ({
   const buttonElement = (
     <Button
       variant={variant}
+      className={isOutline ? 'tj-row-action-outline' : undefined}
       size="default"
       isLoading={!!loadingState}
       disabled={!!disableButton}
