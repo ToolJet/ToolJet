@@ -28,6 +28,21 @@ const LIGHT: Theme = { brand: '#1677ff', text: 'rgba(0, 0, 0, 0.88)', muted: 'rg
 
 // The chart draws on a canvas, which cannot read CSS variables: read antd's tokens off the element (stock Ant, or the
 // component's style overrides; dark under .tj-ant-dark), and again when the root's class or style changes.
+/** Whether the element is narrower than `below` px, followed as it resizes. */
+const useNarrow = (ref: React.RefObject<HTMLElement>, below: number) => {
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const read = () => setNarrow(el.clientWidth > 0 && el.clientWidth < below);
+    read();
+    const observer = new ResizeObserver(read);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref, below]);
+  return narrow;
+};
+
 const useChartTheme = (ref: React.RefObject<HTMLElement>) => {
   const [theme, setTheme] = useState<Theme>(LIGHT);
   useEffect(() => {
@@ -141,8 +156,8 @@ const useCommon = (
   p: ReturnType<typeof useChartProps>,
   theme: Theme,
   series: { color?: string; y: string }
-) =>
-  useMemo(() => {
+) => {
+  const common = useMemo(() => {
     const fmt = (v: unknown) => {
       const n = toNumber(v);
       return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency);
@@ -165,6 +180,11 @@ const useCommon = (
       },
     };
   }, [p.yFormatter, p.currency, p.legend, p.label, theme, series.color, series.y]);
+  // A fresh scale on every render: Ant's charts write into the scale they are given (a Line of all zeros sets
+  // y.domainMax 1), and a memoised one kept that limit once the real data came, drawing the lines off the plot.
+  // Ant compares configs by content, so a new object with the same content does not redraw the chart.
+  return { ...common, scale: { color: { range: [theme.brand, ...PALETTE] } } };
+};
 
 // Ant's Column (vertical bars): data, xField, yField, colorField, stack, group (side by side when several series),
 // radius, legend, label; event onElementClick with selectedDatum exposed.
@@ -280,6 +300,7 @@ export const Pie = () => {
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const narrow = useNarrow(ref, 420);
   const rows = toRows(rawData)
     .map((r) => ({ ...r, [angleField]: toNumber(r[angleField]) ?? 0 }))
     .filter((r) => (r[angleField] as number) > 0);
@@ -299,7 +320,9 @@ export const Pie = () => {
           colorField={colorField}
           innerRadius={Math.max(0, Math.min(0.9, Number(innerRadius) || 0))}
           scale={{ color: { range: [theme.brand, ...PALETTE] } }}
-          legend={legend === 'none' ? false : { color: { position: legend, itemLabelFill: theme.text, rowPadding: 6 } }}
+          // A legend at the right of a narrow pie (a card a quarter of the page wide) left the ring a third of the
+          // card; under it, the ring keeps the width.
+          legend={legend === 'none' ? false : { color: { position: legend === 'right' && narrow ? 'bottom' : legend, itemLabelFill: theme.text, rowPadding: 6 } }}
           label={label ? { text: (d: Row) => `${Math.round(((d[angleField] as number) / total) * 100)}%`, fill: '#fff', position: 'inside' } : false}
           tooltip={{ title: (d: Row) => str(d[colorField]), items: [{ field: angleField, valueFormatter: fmt }] }}
           style={{ stroke: theme.surface, lineWidth: 2 }}

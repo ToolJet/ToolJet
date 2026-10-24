@@ -511,3 +511,45 @@ describe("UI 2.0's column shape", () => {
     expect(headers).toEqual(['Company', 'Stage']);
   });
 });
+
+describe('a keyboard move into a long column', () => {
+  // AM-10: the destination drew only its first 100 cards, so the moved card landed past the window, unmounted and
+  // focus fell to the page.
+  it('Kanban: the moved card stays drawn past the "Show more" window and keeps keyboard focus', async () => {
+    const dataSource = [
+      { id: 1, title: 'Mover', status: 'todo' },
+      ...Array.from({ length: 150 }, (_, i) => ({ id: i + 2, title: `Card ${i + 1}`, status: 'doing' })),
+    ];
+    const columns = [
+      { id: 'todo', title: 'To do' },
+      { id: 'doing', title: 'Doing' },
+    ];
+    const v = await mount('Kanban', { dataSource, columns }, { formField: false });
+    const card = () => [...v.root().querySelectorAll('[aria-roledescription="Draggable card"]')].find((el) => el.textContent.includes('Mover'));
+    act(() => card().focus());
+    fireEvent.keyDown(card(), { key: ' ' });
+    fireEvent.keyDown(card(), { key: 'ArrowRight' });
+    fireEvent.keyDown(card(), { key: 'Enter' });
+    expect(v.exposed.lastCardMovement).toMatchObject({ cardId: 1, to: 'doing', toIndex: 150 });
+    expect(card()).toBeTruthy();
+    expect(v.root().activeElement).toBe(card());
+  });
+});
+
+describe('a native Form reads every field', () => {
+  // A Form reads value (or values, file, selectedDateRange): fields whose own state has Ant's name expose it as value
+  // too, or the Form left them out of its data and submission, checked or not.
+  it.each([
+    ['Checkbox', { checked: true }, true, 'toggle', false],
+    ['Switch', { checked: true }, true, 'toggle', false],
+  ])('%s exposes its state as value', async (name, props, first, action, second) => {
+    const v = await mount(name, props);
+    await waitFor(() => expect(v.exposed.value).toBe(first));
+    v.run(action);
+    await waitFor(() => expect(v.exposed.value).toBe(second));
+  });
+  it('Transfer exposes its target keys as value', async () => {
+    const v = await mount('Transfer', { targetKeys: ['orders'] });
+    await waitFor(() => expect(v.exposed.value).toEqual(['orders']));
+  });
+});

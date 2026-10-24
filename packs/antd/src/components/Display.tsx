@@ -22,6 +22,7 @@ import { SkeletonSwap, SpinOver } from '../lib/Loading';
 import { str, toArray, type Row } from '../lib/data';
 import { formatCell, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
+import { useFitText } from '../lib/fitText';
 
 const TONE_TAG_STATUS: Record<string, string | undefined> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: undefined };
 
@@ -210,9 +211,11 @@ export const Statistic = () => {
   const p = toNumber(precision);
   const shown = n === null ? str(value) || '-' : formatNumber(n, formatter as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, p)));
   const trendClass = trend === 'up' ? 'is-up' : trend === 'down' ? 'is-down' : '';
+  const fitRef = useFitText<HTMLDivElement>([shown, prefix, suffix, loading], { selector: '.ant-statistic-content' });
   return (
-    <AntProvider tokens={tokens}>
-      <div className={bordered ? 'tj-ant-stat tj-ant-stat--card' : 'tj-ant-stat'}>
+    // Fills its box, so stat cards side by side in a row are one height.
+    <AntProvider tokens={tokens} fill>
+      <div ref={fitRef} className={bordered ? 'tj-ant-stat tj-ant-stat--card' : 'tj-ant-stat'}>
         <AntStatistic title={title || undefined} value={shown} prefix={prefix || undefined} suffix={suffix || undefined} loading={loading} />
         {trendValue || extra ? (
           <div className="tj-ant-stat-trend">
@@ -442,8 +445,9 @@ export const Steps = () => {
       ? { title: o }
       : { title: str((o as Row)?.title ?? (o as Row)?.label), description: str((o as Row)?.description) || undefined, subTitle: str((o as Row)?.subTitle) || undefined, status: ((o as Row)?.status as 'wait') || undefined }
   );
-  const go = (n: number) => {
-    setCurrent(Math.max(0, Math.min(Math.max(0, items.length - 1), n)));
+  // n may be a step from the latest one, so two nexts in one batch advance twice.
+  const go = (n: number | ((latest: number) => number)) => {
+    setCurrent((c: unknown) => Math.max(0, Math.min(Math.max(0, items.length - 1), typeof n === 'function' ? n(Number(c) || 0) : n)));
     onChange();
   };
   // current exposes the step drawn: past the steps (a literal 9 of 4, or steps removed) Ant draws every step done,
@@ -453,8 +457,8 @@ export const Steps = () => {
     if (drawn !== null && drawn !== current) setCurrent(drawn);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawn, current]);
-  ToolJet.useAction({ name: 'next', displayName: 'Next' }, () => go(Number(current) + 1));
-  ToolJet.useAction({ name: 'prev', displayName: 'Previous' }, () => go(Number(current) - 1));
+  ToolJet.useAction({ name: 'next', displayName: 'Next' }, () => go((c) => c + 1));
+  ToolJet.useAction({ name: 'prev', displayName: 'Previous' }, () => go((c) => c - 1));
   ToolJet.useAction({ name: 'setCurrent', displayName: 'Set current', params: [{ handle: 'current', displayName: 'Step index' }] }, (n) => go(Number(n) || 0));
   return (
     <AntProvider tokens={tokens}>

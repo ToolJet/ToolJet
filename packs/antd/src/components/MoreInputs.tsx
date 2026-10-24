@@ -21,6 +21,7 @@ import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str, toArray, toOptions, type Row } from '../lib/data';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
+import { useFormValue } from '../lib/formValue';
 
 const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
   ToolJet.useAction(
@@ -78,6 +79,7 @@ export const Upload = () => {
   const [maxCount] = ToolJet.useStateNumber({ name: 'maxCount', label: 'Max count', description: '0 for no limit.', initialValue: 0, min: 0 });
   const [listType] = ToolJet.useStateEnumeration({ name: 'listType', label: 'List type', enumDefinition: ['text', 'picture'], initialValue: 'text' });
   const [fileList, setFileList] = ToolJet.useStateArray({ name: 'fileList', initialValue: [], inspector: 'hidden' });
+  useFormValue(fileList, 'array');
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onRemove = ToolJet.useEventCallback({ name: 'onRemove' });
   const { disabled, loading } = ToolJet.useControlState();
@@ -618,6 +620,7 @@ export const Transfer = (props: Record<string, unknown>) => {
     { key: 'returns', title: 'Returns' },
   ] });
   const [targetKeys, setTargetKeys] = ToolJet.useStateArray({ name: 'targetKeys', label: 'Target keys', initialValue: [] });
+  useFormValue(targetKeys, 'array');
   const [titles] = ToolJet.useStateArray({ name: 'titles', label: 'Titles', initialValue: ['Available', 'Selected'] });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
   const [oneWay] = ToolJet.useStateBoolean({ name: 'oneWay', label: 'One way', initialValue: false });

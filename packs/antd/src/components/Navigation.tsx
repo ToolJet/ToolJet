@@ -272,15 +272,23 @@ export const Pagination = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 4 });
+  // current is a page that exists: an action past the last page goes to the last, and when the total shrinks under the
+  // page shown, current follows the page Ant draws (no onChange: the user did not change it).
+  const pages = Math.max(1, Math.ceil(Math.max(0, Number(total) || 0) / Math.max(1, Number(pageSize) || 10)));
+  const clampPage = (p: unknown) => Math.min(pages, Math.max(1, Math.trunc(Number(p)) || 1));
+  useEffect(() => {
+    if (toNumber(current) !== null && clampPage(current) !== Number(current)) setCurrent(clampPage(current));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pages, current]);
   ToolJet.useAction({ name: 'setCurrent', displayName: 'Go to page', params: [{ handle: 'page', displayName: 'Page' }] }, (p) => {
-    setCurrent(Math.max(1, Number(p) || 1));
+    setCurrent(clampPage(p));
     onChange();
   });
   return (
     <AntProvider tokens={tokens}>
       <SpinOver loading={loading}>
         <AntPagination
-          current={Math.max(1, Number(current) || 1)}
+          current={clampPage(current)}
           pageSize={Math.max(1, Number(pageSize) || 10)}
           total={Math.max(0, Number(total) || 0)}
           showSizeChanger={showSizeChanger}

@@ -3,12 +3,14 @@ import { Switch as AntSwitch } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { FormField, useFieldProps } from '../lib/FormField';
+import { useFormValue } from '../lib/formValue';
 
 // Ant's Switch: checked, checkedChildren / unCheckedChildren (text inside the track), size (default, small); its label
 // is Form.Item's, beside it (layout horizontal); events onChange, onClick.
 export const Switch = (props: Record<string, unknown>) => {
   const field = useFieldProps({ layout: 'horizontal', label: 'Enabled' });
   const [checked, setChecked] = ToolJet.useStateBoolean({ name: 'checked', label: 'Checked', initialValue: false });
+  useFormValue(checked, 'boolean');
   const [checkedChildren] = ToolJet.useStateString({ name: 'checkedChildren', label: 'Checked text', initialValue: '' });
   const [unCheckedChildren] = ToolJet.useStateString({ name: 'unCheckedChildren', label: 'Unchecked text', initialValue: '' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['default', 'small'], initialValue: 'default' });
@@ -30,7 +32,12 @@ export const Switch = (props: Record<string, unknown>) => {
     (next) => change(String(next) === 'true')
   );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(props.checked === true));
-  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => change(!checked));
+  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => {
+    // From the latest value, not this render's: two toggles in one batch cancel out.
+    setChecked((c: boolean) => !c);
+    check.touch();
+    onChange();
+  });
   // A Form's clearForm unchecks it (the host clears only `value`).
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => setChecked(false));
 

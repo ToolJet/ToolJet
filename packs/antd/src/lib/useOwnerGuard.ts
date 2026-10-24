@@ -7,7 +7,8 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 // not a picker, a Dropdown or a preview, and never for the host's inert. The popup closes once its owner cannot take
 // input, and a choice made in the same instant is refused.
 
-const BLOCKED = '[inert],[aria-disabled="true"]';
+// A disabled fieldset is how a native Form disables what it holds.
+const BLOCKED = '[inert],[aria-disabled="true"],fieldset:disabled';
 
 // A frame where the browser draws, a short timer where it has no frames to give.
 const nextFrame = (f: () => void): (() => void) => {
