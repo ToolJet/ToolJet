@@ -259,7 +259,13 @@ export const RangePicker = (props: Record<string, unknown>) => {
 // filterOption (match typed text), allowClear; events onChange, onSelect, onSearch.
 export const AutoComplete = (props: Record<string, unknown>) => {
   const field = useFieldProps();
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', initialValue: [] });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', initialValue: [
+    { label: 'Laptop stand', value: 'Laptop stand' },
+    { label: 'Mechanical keyboard', value: 'Mechanical keyboard' },
+    { label: 'Monitor arm', value: 'Monitor arm' },
+    { label: 'USB-C hub', value: 'USB-C hub' },
+    { label: 'Wireless mouse', value: 'Wireless mouse' },
+  ] });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
   const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
   const [filterOption] = ToolJet.useStateBoolean({ name: 'filterOption', label: 'Filter option', description: 'Show only the options matching the text.', initialValue: true });
@@ -327,7 +333,18 @@ export const toTree = (raw: unknown): TreeNode[] =>
 // treeDefaultExpandAll, allowClear; event onChange.
 export const TreeSelect = (props: Record<string, unknown>) => {
   const field = useFieldProps();
-  const [treeData] = ToolJet.useStateArray({ name: 'treeData', label: 'Tree data', description: '[{ title, value, children: [...] }]', initialValue: [] });
+  const [treeData] = ToolJet.useStateArray({ name: 'treeData', label: 'Tree data', description: '[{ title, value, children: [...] }]', initialValue: [
+    {
+      title: 'Engineering',
+      value: 'engineering',
+      children: [
+        { title: 'Frontend', value: 'frontend' },
+        { title: 'Backend', value: 'backend' },
+        { title: 'Platform', value: 'platform' },
+      ],
+    },
+    { title: 'Operations', value: 'operations', children: [{ title: 'Finance', value: 'finance' }, { title: 'People', value: 'people' }] },
+  ] });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'A value, or an array of values when multiple.', initialValue: '' });
   const [multiple] = ToolJet.useStateBoolean({ name: 'multiple', label: 'Multiple', initialValue: false });
   const [treeCheckable] = ToolJet.useStateBoolean({ name: 'treeCheckable', label: 'Tree checkable', initialValue: false });
@@ -387,7 +404,24 @@ export const TreeSelect = (props: Record<string, unknown>) => {
 // changeOnSelect, showSearch; event onChange.
 export const Cascader = (props: Record<string, unknown>) => {
   const field = useFieldProps();
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value, children: [...] }]', initialValue: [] });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value, children: [...] }]', initialValue: [
+    {
+      label: 'Europe',
+      value: 'europe',
+      children: [
+        { label: 'Germany', value: 'germany', children: [{ label: 'Berlin', value: 'berlin' }, { label: 'Munich', value: 'munich' }] },
+        { label: 'Portugal', value: 'portugal', children: [{ label: 'Lisbon', value: 'lisbon' }, { label: 'Porto', value: 'porto' }] },
+      ],
+    },
+    {
+      label: 'Asia',
+      value: 'asia',
+      children: [
+        { label: 'Japan', value: 'japan', children: [{ label: 'Osaka', value: 'osaka' }, { label: 'Tokyo', value: 'tokyo' }] },
+        { label: 'Singapore', value: 'singapore' },
+      ],
+    },
+  ] });
   const [value, setValue] = ToolJet.useStateArray({ name: 'value', label: 'Value', description: "The path: ['asia', 'japan']", initialValue: [] });
   const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '' });
   const [expandTrigger] = ToolJet.useStateEnumeration({ name: 'expandTrigger', label: 'Expand trigger', enumDefinition: ['click', 'hover'], initialValue: 'click' });
@@ -500,7 +534,14 @@ export const ColorPicker = (props: Record<string, unknown>) => {
 // Ant's Transfer: dataSource [{ key, title }], targetKeys (the chosen keys), titles [left, right], showSearch,
 // oneWay; event onChange.
 export const Transfer = (props: Record<string, unknown>) => {
-  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', description: '[{ key, title }]', initialValue: [] });
+  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', description: '[{ key, title }]', initialValue: [
+    { key: 'orders', title: 'Orders' },
+    { key: 'invoices', title: 'Invoices' },
+    { key: 'customers', title: 'Customers' },
+    { key: 'products', title: 'Products' },
+    { key: 'shipments', title: 'Shipments' },
+    { key: 'returns', title: 'Returns' },
+  ] });
   const [targetKeys, setTargetKeys] = ToolJet.useStateArray({ name: 'targetKeys', label: 'Target keys', initialValue: [] });
   const [titles] = ToolJet.useStateArray({ name: 'titles', label: 'Titles', initialValue: ['Available', 'Selected'] });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });

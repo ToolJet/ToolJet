@@ -183,13 +183,25 @@ export const Schedule = () => {
     name: 'resources',
     label: 'Resources',
     description: "['Atlas', 'Cove'] or [{ id, name, caption, avatar }]; empty: the distinct values of the bookings' resource field.",
-    initialValue: [],
+    initialValue: [
+      { id: 'atlas', name: 'Atlas', caption: '8 seats' },
+      { id: 'borealis', name: 'Borealis', caption: '4 seats' },
+      { id: 'cove', name: 'Cove', caption: '12 seats, screen' },
+      { id: 'dune', name: 'Dune', caption: '2 seats' },
+    ],
   });
   const [bookings] = ToolJet.useStateArray({
     name: 'bookings',
     label: 'Bookings',
     description: "Rows read through the fields below. Times: ISO, 'YYYY-MM-DD HH:mm', 'HH:mm' on the shown day, or 'YYYY-MM-DD' for a whole day.",
-    initialValue: [],
+    initialValue: [
+      { id: 1, room: 'atlas', title: 'Design review', start: '09:00', end: '10:30', status: 'Confirmed' },
+      { id: 2, room: 'atlas', title: '1:1', start: '11:00', end: '11:30', status: 'Tentative' },
+      { id: 3, room: 'borealis', title: 'Sprint planning', start: '10:00', end: '12:00', status: 'Confirmed' },
+      { id: 4, room: 'cove', title: 'All hands', start: '13:00', end: '14:00', status: 'Confirmed' },
+      { id: 5, room: 'cove', title: 'Partner call', start: '15:30', end: '16:30', status: 'Pending' },
+      { id: 6, room: 'dune', title: 'Interview', start: '14:00', end: '15:00', status: 'Cancelled' },
+    ],
   });
   const [resourceField] = ToolJet.useStateString({ name: 'resourceField', label: "Resource field (a resource's id or name)", initialValue: 'room' });
   const [startField] = ToolJet.useStateString({ name: 'startField', label: 'Start field', initialValue: 'start' });

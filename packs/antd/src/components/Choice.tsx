@@ -19,7 +19,11 @@ const useValueActions = (change: (v: unknown) => void, initial: unknown) => {
 // vertical radios are a Space); event onChange.
 export const RadioGroup = (props: Record<string, unknown>) => {
   const field = useFieldProps();
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [
+    { label: 'Standard', value: 'standard' },
+    { label: 'Express', value: 'express' },
+    { label: 'Overnight', value: 'overnight' },
+  ] });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
   const [optionType] = ToolJet.useStateEnumeration({ name: 'optionType', label: 'Option type', enumDefinition: ['default', 'button'], initialValue: 'default' });
   const [buttonStyle] = ToolJet.useStateEnumeration({
@@ -68,7 +72,11 @@ export const RadioGroup = (props: Record<string, unknown>) => {
 // Ant's Segmented: options, value, block, size, vertical; event onChange.
 export const Segmented = (props: Record<string, unknown>) => {
   const field = useFieldProps();
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [
+    { label: 'Daily', value: 'daily' },
+    { label: 'Weekly', value: 'weekly' },
+    { label: 'Monthly', value: 'monthly' },
+  ] });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'Empty selects the first option.', initialValue: '' });
   const [block] = ToolJet.useStateBoolean({ name: 'block', label: 'Block', description: 'Fit the width.', initialValue: false });
   const [vertical] = ToolJet.useStateBoolean({ name: 'vertical', label: 'Vertical', initialValue: false });

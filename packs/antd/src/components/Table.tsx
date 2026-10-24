@@ -93,12 +93,22 @@ const compare = (a: unknown, b: unknown) => {
 // and, for tags, colors { value: color }. Numbers are grouped and right-aligned. Events: onRowClick (Ant's
 // onRow onClick), onChange (page or sort), onSelectionChange (rowSelection onChange).
 export const Table = () => {
-  const [rawData] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [] });
+  const [rawData] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [
+    { id: 1, name: 'Maya Chen', status: 'Paid', amount: 1250, date: '2026-09-14' },
+    { id: 2, name: 'Owen Hart', status: 'Pending', amount: 980.5, date: '2026-09-21' },
+    { id: 3, name: 'Priya Nair', status: 'Overdue', amount: 3120, date: '2026-08-30' },
+    { id: 4, name: 'Leo Martins', status: 'Paid', amount: 640, date: '2026-09-28' },
+  ] });
   const [rawColumns] = ToolJet.useStateArray({
     name: 'columns',
     label: 'Columns',
     description: '[{ title, dataIndex, format?, align?, sorter? }]; empty shows every field.',
-    initialValue: [],
+    initialValue: [
+      { title: 'Name', dataIndex: 'name' },
+      { title: 'Status', dataIndex: 'status', format: 'tag' },
+      { title: 'Date', dataIndex: 'date', format: 'date' },
+      { title: 'Amount', dataIndex: 'amount', format: 'currency', align: 'right' },
+    ],
   });
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', description: 'A header above the rows; {count} is the number of rows.', initialValue: '' });
   const [rowKey] = ToolJet.useStateString({ name: 'rowKey', label: 'Row key', initialValue: 'id' });

@@ -74,7 +74,68 @@ const pointArgs = (lat: unknown, lng: unknown): LatLng | null =>
   (lat && typeof lat === 'object') || (typeof lat === 'string' && lat.includes(',')) ? parseCenter(lat) : toLatLng(lat, lng);
 
 export const Map = () => {
-  const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data (rows with coordinates)', initialValue: [] });
+  const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data (rows with coordinates)', initialValue: [
+    {
+      id: 'S-101',
+      name: 'Harbor Market',
+      address: '1 Ferry Building',
+      status: 'Delivered',
+      eta: '9:10 AM',
+      driver: 'Maya Chen',
+      lat: 37.7955,
+      lng: -122.3937,
+    },
+    {
+      id: 'S-102',
+      name: 'Corner Bakery',
+      address: '3498 18th St',
+      status: 'Delivered',
+      eta: '9:40 AM',
+      driver: 'Maya Chen',
+      lat: 37.7614,
+      lng: -122.4269,
+    },
+    {
+      id: 'S-103',
+      name: 'Bayside Labs',
+      address: '1700 Owens St',
+      status: 'In transit',
+      eta: '10:25 AM',
+      driver: 'Owen Hart',
+      lat: 37.7683,
+      lng: -122.3934,
+    },
+    {
+      id: 'S-104',
+      name: 'Sunset Florist',
+      address: '1101 Irving St',
+      status: 'Delayed',
+      eta: '11:05 AM',
+      driver: 'Owen Hart',
+      lat: 37.7641,
+      lng: -122.4703,
+    },
+    {
+      id: 'S-105',
+      name: 'Wharf Seafood',
+      address: '2800 Leavenworth St',
+      status: 'Scheduled',
+      eta: '11:30 AM',
+      driver: 'Priya Nair',
+      lat: 37.8063,
+      lng: -122.4182,
+    },
+    {
+      id: 'S-106',
+      name: 'Union Books',
+      address: '345 Stockton St',
+      status: 'Pending',
+      eta: '12:15 PM',
+      driver: 'Leo Martins',
+      lat: 37.7881,
+      lng: -122.4065,
+    },
+  ] });
   const [latField] = ToolJet.useStateString({ name: 'latField', label: 'Latitude field', initialValue: 'lat' });
   const [lngField] = ToolJet.useStateString({ name: 'lngField', label: 'Longitude field', initialValue: 'lng' });
   const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'name' });

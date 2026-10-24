@@ -35,7 +35,7 @@ const on = (v: unknown) => v === true || v === 'true';
 // setHistoryLoading, setInputDisable, setUserAvatar, setResponderAvatar.
 export const Chat = () => {
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
-  const [initialChat] = ToolJet.useStateArray({ name: 'initialChat', label: 'History', description: "[{ message, type: 'message' | 'response' }]", initialValue: [] });
+  const [initialChat] = ToolJet.useStateArray({ name: 'initialChat', label: 'History', description: "[{ message, type: 'message' | 'response' }]", initialValue: [{ message: 'Hi! Ask me anything about your orders, invoices or deliveries.', type: 'response' }] });
   const [userName] = ToolJet.useStateString({ name: 'userName', label: 'User name', initialValue: 'You' });
   const [userAvatar, setUserAvatar] = ToolJet.useStateString({ name: 'userAvatar', label: 'User avatar', initialValue: '' });
   const [respondentName] = ToolJet.useStateString({ name: 'respondentName', label: 'Respondent name', initialValue: 'Assistant' });
@@ -228,7 +228,23 @@ export const Chat = () => {
 // completeTitle, completeText, bordered. answers, currentIndex, currentItem and isComplete exposed; onStepChanged,
 // onSubmit; actions reset, goTo.
 export const Questionnaire = () => {
-  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: "[{ name, prompt, type: 'single', choices: ['Yes', 'No'] }]", initialValue: [] });
+  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: "[{ name, prompt, type: 'single', choices: ['Yes', 'No'] }]", initialValue: [
+    {
+      name: 'role',
+      prompt: 'What best describes your role?',
+      type: 'single',
+      choices: ['Operations', 'Finance', 'Engineering'],
+      other: true,
+      required: true,
+    },
+    {
+      name: 'goals',
+      prompt: 'What do you want to get done first?',
+      type: 'multiple',
+      choices: ['Track orders', 'Approve requests', 'Report on spend'],
+    },
+    { name: 'notes', prompt: 'Anything else we should know?', type: 'text' },
+  ] });
   const [defaultAnswers] = ToolJet.useStateObject({ name: 'defaultAnswers', label: 'Default answers', initialValue: {} });
   const [shortcuts] = ToolJet.useStateEnumeration({ name: 'shortcuts', label: 'Shortcuts', enumDefinition: ['letters', 'numbers', 'none'], initialValue: 'letters' });
   const [showProgress] = ToolJet.useStateBoolean({ name: 'showProgress', label: 'Show progress', initialValue: true });

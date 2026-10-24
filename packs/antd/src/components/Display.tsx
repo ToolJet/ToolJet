@@ -60,7 +60,7 @@ export const Badge = () => {
     enumDefinition: ['default', 'processing', 'success', 'warning', 'error'],
     initialValue: 'default',
   });
-  const [text] = ToolJet.useStateString({ name: 'text', label: 'Text', initialValue: '' });
+  const [text] = ToolJet.useStateString({ name: 'text', label: 'Text', initialValue: 'Pending' });
   const [count] = ToolJet.useStateNumber({ name: 'count', label: 'Count', description: 'Shown instead of the status dot when set.', initialValue: undefined as unknown as number });
   const [overflowCount] = ToolJet.useStateNumber({ name: 'overflowCount', label: 'Overflow count', initialValue: 99 });
   const [color] = ToolJet.useStateString({ name: 'color', label: 'Color', description: 'A palette name or CSS colour; overrides status.', initialValue: '' });
@@ -87,7 +87,7 @@ export const Badge = () => {
 // Ant's Alert: message (the title), description, type (success, info, warning, error), showIcon, closable, banner;
 // event onClose (afterClose once it has gone).
 export const Alert = () => {
-  const [message] = ToolJet.useStateString({ name: 'message', label: 'Message', initialValue: '' });
+  const [message] = ToolJet.useStateString({ name: 'message', label: 'Message', initialValue: 'A new version is available.' });
   const [description] = ToolJet.useStateString({ name: 'description', label: 'Description', initialValue: '' });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['info', 'success', 'warning', 'error'], initialValue: 'info' });
   const [showIcon] = ToolJet.useStateBoolean({ name: 'showIcon', label: 'Show icon', initialValue: true });
@@ -120,7 +120,7 @@ const typeOf = (t: string) => (t && t !== 'default' ? (t as 'secondary') : undef
 
 // Ant's Typography.Title: children, level (1 to 5), type, copyable, ellipsis (one line), mark, underline.
 export const Title = () => {
-  const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: '' });
+  const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: 'Quarterly overview' });
   const [level] = ToolJet.useStateNumber({ name: 'level', label: 'Level', description: '1 (largest) to 5', initialValue: 3, min: 1, max: 5 });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: TYPES, initialValue: 'default' });
   const [copyable] = ToolJet.useStateBoolean({ name: 'copyable', label: 'Copyable', initialValue: false });
@@ -152,7 +152,7 @@ export const Title = () => {
 
 // Ant's Typography.Paragraph as body text: children, type, strong, italic, code, copyable, ellipsis (rows; 0 for none).
 export const Text = () => {
-  const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: '' });
+  const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: 'Add a short description here.' });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: TYPES, initialValue: 'default' });
   const [strong] = ToolJet.useStateBoolean({ name: 'strong', label: 'Strong', initialValue: false });
   const [italic] = ToolJet.useStateBoolean({ name: 'italic', label: 'Italic', initialValue: false });
@@ -187,8 +187,8 @@ export const Text = () => {
 // currency, percent, compact), currency, and a trend line under it (trend, trendValue, extra), as Ant's own
 // "Statistic in a Card" examples draw with arrow icons.
 export const Statistic = () => {
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
-  const [value] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'A number (formatted) or any text.', initialValue: '' });
+  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Monthly revenue' });
+  const [value] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'A number (formatted) or any text.', initialValue: '48250' });
   const [formatter] = ToolJet.useStateEnumeration({
     name: 'formatter',
     label: 'Formatter',
@@ -233,7 +233,7 @@ export const Statistic = () => {
 // Ant's Progress: percent, type (line, circle, dashboard), status (normal, active, success, exception), showInfo,
 // steps, strokeLinecap, size.
 export const Progress = () => {
-  const [percent] = ToolJet.useStateNumber({ name: 'percent', label: 'Percent', initialValue: 0, min: 0, max: 100 });
+  const [percent] = ToolJet.useStateNumber({ name: 'percent', label: 'Percent', initialValue: 60, min: 0, max: 100 });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['line', 'circle', 'dashboard'], initialValue: 'line' });
   const [status] = ToolJet.useStateEnumeration({ name: 'status', label: 'Status', enumDefinition: ['normal', 'active', 'success', 'exception'], initialValue: 'normal' });
   const [showInfo] = ToolJet.useStateBoolean({ name: 'showInfo', label: 'Show info', initialValue: true });
@@ -344,8 +344,8 @@ export const Result = () => {
     enumDefinition: ['success', 'info', 'warning', 'error', '404', '403', '500'],
     initialValue: 'info',
   });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
-  const [subTitle] = ToolJet.useStateString({ name: 'subTitle', label: 'Sub title', initialValue: '' });
+  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Your request was received' });
+  const [subTitle] = ToolJet.useStateString({ name: 'subTitle', label: 'Sub title', initialValue: 'We will email you when it is ready.' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 18, defaultHeight: 30 });
@@ -363,7 +363,13 @@ export const Result = () => {
 // (currency:EUR), percent, date, datetime, boolean, tag (a status Tag), link. title, extra, column, bordered, layout,
 // size, currency, emptyText.
 export const Descriptions = () => {
-  const [rawItems] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: "[{ label, children }] or { 'Label': value }", initialValue: [] });
+  const [rawItems] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: "[{ label, children }] or { 'Label': value }", initialValue: [
+    { label: 'Order', children: '#1042' },
+    { label: 'Customer', children: 'Maya Chen' },
+    { label: 'Status', children: 'Shipped', format: 'tag' },
+    { label: 'Total', children: 1250, format: 'currency' },
+    { label: 'Placed', children: '2026-09-14', format: 'date' },
+  ] });
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
   const [extra] = ToolJet.useStateString({ name: 'extra', label: 'Extra', initialValue: '' });
   const [column] = ToolJet.useStateNumber({ name: 'column', label: 'Column', initialValue: 1, min: 1, max: 6 });
@@ -414,7 +420,12 @@ export const Descriptions = () => {
 // Ant's Steps: items [{ title, description, subTitle, status }], current, direction, size, type (default, navigation,
 // inline), status, percent, progressDot; event onChange (clicking a step) with the current exposed.
 export const Steps = () => {
-  const [rawItems] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: '[{ title, description }]', initialValue: [] });
+  const [rawItems] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: '[{ title, description }]', initialValue: [
+    { title: 'Ordered', description: 'Sep 14' },
+    { title: 'Packed', description: 'Sep 15' },
+    { title: 'Shipped', description: 'In transit' },
+    { title: 'Delivered' },
+  ] });
   const [current, setCurrent] = ToolJet.useStateNumber({ name: 'current', label: 'Current', description: 'Index of the current step, from 0.', initialValue: 0, min: 0 });
   const [direction] = ToolJet.useStateEnumeration({ name: 'direction', label: 'Direction', enumDefinition: ['horizontal', 'vertical'], initialValue: 'horizontal' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['default', 'small'], initialValue: 'default' });
@@ -458,7 +469,12 @@ export const Steps = () => {
 
 // Ant's Timeline: items [{ children, label, color }], mode (left, alternate, right), pending, reverse.
 export const Timeline = () => {
-  const [rawItems] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: '[{ children, label, color }]', initialValue: [] });
+  const [rawItems] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: '[{ children, label, color }]', initialValue: [
+    { children: 'Order placed', label: '09:12', color: 'blue' },
+    { children: 'Payment confirmed', label: '09:14', color: 'green' },
+    { children: 'Packed at the warehouse', label: '13:40', color: 'blue' },
+    { children: 'Out for delivery', label: '08:05', color: 'gray' },
+  ] });
   const [mode] = ToolJet.useStateEnumeration({ name: 'mode', label: 'Mode', enumDefinition: ['left', 'alternate', 'right'], initialValue: 'left' });
   const [pending] = ToolJet.useStateString({ name: 'pending', label: 'Pending', description: 'A last, in-progress item.', initialValue: '' });
   const [reverse] = ToolJet.useStateBoolean({ name: 'reverse', label: 'Reverse', initialValue: false });

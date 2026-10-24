@@ -190,7 +190,11 @@ const ModalBody = ({
 // header, footer, bordered, split, size, pageSize (0 for no pagination), locale emptyText. Event onItemClick with
 // selectedItem exposed.
 export const List = () => {
-  const [rawData] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [] });
+  const [rawData] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [
+    { id: 1, title: 'Quarterly report is ready', description: 'Finance shared the Q3 numbers' },
+    { id: 2, title: 'New comment on Order 1042', description: 'Maya Chen: can we ship on Friday?' },
+    { id: 3, title: 'Invoice 2209 paid', description: 'Received 1,250.00 USD' },
+  ] });
   const [renderItem] = ToolJet.useStateEnumeration({
     name: 'renderItem',
     label: 'Render item',

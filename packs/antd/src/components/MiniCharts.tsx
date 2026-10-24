@@ -19,7 +19,7 @@ const numbersOf = (data: unknown, field: string): number[] =>
 // area, column), smooth, colorByTrend (green up, red down; lowerIsBetter flips it), color, valuePrefix / valueSuffix
 // for the tooltip; trend (up, down, flat) and lastValue exposed; events onClick, onDoubleClick.
 export const Sparkline = () => {
-  const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: '[12, 18, 15, 22] or [{ value }]', initialValue: [] });
+  const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: '[12, 18, 15, 22] or [{ value }]', initialValue: [12, 18, 15, 22, 19, 26, 24, 31] });
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: 'value' });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['line', 'area', 'column'], initialValue: 'line' });
   const [smooth] = ToolJet.useStateBoolean({ name: 'smooth', label: 'Smooth', initialValue: true });
@@ -77,9 +77,9 @@ export const Sparkline = () => {
 // dashboard's opening), showLegend, colors; onClick with clickedDataPoint exposed; action clearClickedPoint.
 export const RadialChart = () => {
   const [mode] = ToolJet.useStateEnumeration({ name: 'mode', label: 'Mode', enumDefinition: ['progress', 'categories'], initialValue: 'progress' });
-  const [value] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: 0, visibleWhen: { key: 'mode', value: 'progress' } });
+  const [value] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: 68, visibleWhen: { key: 'mode', value: 'progress' } });
   const [maxValue] = ToolJet.useStateNumber({ name: 'maxValue', label: 'Max value', initialValue: 100, visibleWhen: { key: 'mode', value: 'progress' } });
-  const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data', initialValue: [], visibleWhen: { key: 'mode', value: 'categories' } });
+  const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data', initialValue: [{ name: 'Charter', value: 62 }, { name: 'Day trip', value: 24 }, { name: 'Event', value: 14 }], visibleWhen: { key: 'mode', value: 'categories' } });
   const [categoryField] = ToolJet.useStateString({ name: 'categoryField', label: 'Category field', initialValue: 'name', visibleWhen: { key: 'mode', value: 'categories' } });
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: 'value', visibleWhen: { key: 'mode', value: 'categories' } });
   const [centerValue] = ToolJet.useStateString({ name: 'centerValue', label: 'Center value', description: 'Empty shows the percent.', initialValue: '' });

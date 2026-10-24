@@ -21,7 +21,13 @@ const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => v
 // searchValue exposed; events onChange, onSelect, onSearch, onFocus, onBlur; actions setFieldValue, resetFields.
 export const Combobox = (props: Record<string, unknown>) => {
   const field = useFieldProps();
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', initialValue: [] });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', initialValue: [
+    { label: 'Austin', value: 'austin' },
+    { label: 'Berlin', value: 'berlin' },
+    { label: 'Lisbon', value: 'lisbon' },
+    { label: 'Singapore', value: 'singapore' },
+    { label: 'Toronto', value: 'toronto' },
+  ] });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
   const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Search' });
   const [notFoundContent] = ToolJet.useStateString({ name: 'notFoundContent', label: 'Not found content', initialValue: 'No matches' });

@@ -102,7 +102,12 @@ export const Collapse = () => {
 // as selectedKey (Ant passes { key }); onButtonClick for the button half when split.
 export const Dropdown = () => {
   const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: 'Actions' });
-  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Menu items', description: '[{ key, label, danger? }]', initialValue: [] });
+  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Menu items', description: '[{ key, label, danger? }]', initialValue: [
+    { key: 'edit', label: 'Edit' },
+    { key: 'duplicate', label: 'Duplicate' },
+    { key: 'archive', label: 'Archive' },
+    { key: 'delete', label: 'Delete', danger: true },
+  ] });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['default', 'primary'], initialValue: 'default' });
   const [split] = ToolJet.useStateBoolean({ name: 'split', label: 'Split button', description: "Dropdown.Button: the button and the arrow act apart.", initialValue: false });
   const [trigger] = ToolJet.useStateEnumeration({ name: 'trigger', label: 'Trigger', enumDefinition: ['click', 'hover'], initialValue: 'click' });
@@ -152,7 +157,12 @@ export const Dropdown = () => {
 // Ant's Menu: items [{ key, label, children }], mode (horizontal, vertical, inline), theme (light, dark),
 // selectedKey (exposed, settable); events onClick and onSelect carry the key.
 export const Menu = () => {
-  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: '[{ key, label, children? }]', initialValue: [] });
+  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: '[{ key, label, children? }]', initialValue: [
+    { key: 'dashboard', label: 'Dashboard' },
+    { key: 'orders', label: 'Orders', children: [{ key: 'open', label: 'Open' }, { key: 'shipped', label: 'Shipped' }] },
+    { key: 'customers', label: 'Customers' },
+    { key: 'settings', label: 'Settings' },
+  ] });
   const [mode] = ToolJet.useStateEnumeration({ name: 'mode', label: 'Mode', enumDefinition: ['horizontal', 'vertical', 'inline'], initialValue: 'inline' });
   const [theme] = ToolJet.useStateEnumeration({ name: 'theme', label: 'Theme', enumDefinition: ['light', 'dark'], initialValue: 'light' });
   const [selectedKey, setSelectedKey] = ToolJet.useStateString({ name: 'selectedKey', label: 'Selected key', initialValue: '' });
@@ -184,7 +194,7 @@ export const Menu = () => {
 // Ant's Breadcrumb: items [{ title, key }] (strings become titles), separator; event onClick for an item, its key
 // (or title) exposed as clickedKey.
 export const Breadcrumb = () => {
-  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: "[{ title, key }] or ['Home', 'Orders']", initialValue: [] });
+  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: "[{ title, key }] or ['Home', 'Orders']", initialValue: ['Home', 'Orders', 'Order 1042'] });
   const [separator] = ToolJet.useStateString({ name: 'separator', label: 'Separator', initialValue: '/' });
   const [, setClickedKey] = ToolJet.useStateString({ name: 'clickedKey', initialValue: '', inspector: 'hidden' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
@@ -228,7 +238,7 @@ export const Breadcrumb = () => {
 export const Pagination = () => {
   const [current, setCurrent] = ToolJet.useStateNumber({ name: 'current', label: 'Current', initialValue: 1, min: 1 });
   const [pageSize, setPageSize] = ToolJet.useStateNumber({ name: 'pageSize', label: 'Page size', initialValue: 10, min: 1 });
-  const [total] = ToolJet.useStateNumber({ name: 'total', label: 'Total', initialValue: 0, min: 0 });
+  const [total] = ToolJet.useStateNumber({ name: 'total', label: 'Total', initialValue: 50, min: 0 });
   const [showSizeChanger] = ToolJet.useStateBoolean({ name: 'showSizeChanger', label: 'Show size changer', initialValue: false });
   const [simple] = ToolJet.useStateBoolean({ name: 'simple', label: 'Simple', initialValue: false });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['default', 'small'], initialValue: 'default' });
@@ -367,7 +377,7 @@ export const Spin = () => {
 // Ant's Image: src, alt, preview (click to enlarge, in the popup layer), fallback, plus objectFit and borderRadius for
 // filling the box; event onClick.
 export const Image = () => {
-  const [src] = ToolJet.useStateString({ name: 'src', label: 'Src', initialValue: '' });
+  const [src] = ToolJet.useStateString({ name: 'src', label: 'Src', initialValue: 'https://picsum.photos/seed/tj-image/800/450' });
   const [alt] = ToolJet.useStateString({ name: 'alt', label: 'Alt', initialValue: '' });
   const [preview] = ToolJet.useStateBoolean({ name: 'preview', label: 'Preview', description: 'Click to enlarge.', initialValue: true });
   const [fallback] = ToolJet.useStateString({ name: 'fallback', label: 'Fallback', description: 'Shown when src fails to load.', initialValue: '' });
@@ -404,7 +414,13 @@ export const Image = () => {
 export const Calendar = () => {
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'YYYY-MM-DD', initialValue: '' });
   const [fullscreen] = ToolJet.useStateBoolean({ name: 'fullscreen', label: 'Fullscreen', initialValue: true });
-  const [events] = ToolJet.useStateArray({ name: 'events', label: 'Events', description: "[{ date: '2026-10-23', title, type: success|warning|error|processing }]", initialValue: [] });
+  const [events] = ToolJet.useStateArray({ name: 'events', label: 'Events', description: "[{ date: '2026-10-23', title, type: success|warning|error|processing }]", initialValue: [
+    { date: '2026-10-26', title: 'Sprint review', type: 'processing' },
+    { date: '2026-10-28', title: 'Invoices due', type: 'warning' },
+    { date: '2026-10-30', title: 'Release', type: 'success' },
+    { date: '2026-11-03', title: 'Launch', type: 'success' },
+    { date: '2026-11-05', title: 'Server maintenance', type: 'error' },
+  ] });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
   const onPanelChange = ToolJet.useEventCallback({ name: 'onPanelChange' });
   const [, setPanelDate] = ToolJet.useStateString({ name: 'panelDate', initialValue: '', inspector: 'hidden' });
@@ -455,7 +471,17 @@ export const Calendar = () => {
 // Ant's Tree: treeData [{ title, key, children }], checkable, selectedKeys/checkedKeys (exposed), defaultExpandAll,
 // showLine, blockNode; events onSelect, onCheck.
 export const Tree = () => {
-  const [treeData] = ToolJet.useStateArray({ name: 'treeData', label: 'Tree data', description: '[{ title, key, children: [...] }]', initialValue: [] });
+  const [treeData] = ToolJet.useStateArray({ name: 'treeData', label: 'Tree data', description: '[{ title, key, children: [...] }]', initialValue: [
+    {
+      title: 'Projects',
+      key: 'projects',
+      children: [
+        { title: 'Website redesign', key: 'website', children: [{ title: 'Wireframes', key: 'wireframes' }, { title: 'Copy', key: 'copy' }] },
+        { title: 'Mobile app', key: 'mobile' },
+      ],
+    },
+    { title: 'Archive', key: 'archive', children: [{ title: '2025 planning', key: 'planning-2025' }] },
+  ] });
   const [checkable] = ToolJet.useStateBoolean({ name: 'checkable', label: 'Checkable', initialValue: false });
   const [defaultExpandAll] = ToolJet.useStateBoolean({ name: 'defaultExpandAll', label: 'Expand all', initialValue: true });
   const [showLine] = ToolJet.useStateBoolean({ name: 'showLine', label: 'Show line', initialValue: false });
@@ -498,7 +524,11 @@ export const Tree = () => {
 // Ant's Carousel: items [{ src, title, description }] (images with an optional caption), autoplay, autoplaySpeed,
 // dots, effect (scrollx, fade); event afterChange with current exposed.
 export const Carousel = () => {
-  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: '[{ src, title, description }]', initialValue: [] });
+  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: '[{ src, title, description }]', initialValue: [
+    { src: 'https://picsum.photos/seed/tj-coast/1200/675', title: 'Coastal routes', description: 'Plan deliveries along the shoreline' },
+    { src: 'https://picsum.photos/seed/tj-mountain/1200/675', title: 'Mountain depots', description: 'New warehouses opening in Q1' },
+    { src: 'https://picsum.photos/seed/tj-lake/1200/675', title: 'Lakeside hubs', description: 'Cold-chain capacity doubled' },
+  ] });
   const [autoplay] = ToolJet.useStateBoolean({ name: 'autoplay', label: 'Autoplay', initialValue: false });
   const [autoplaySpeed] = ToolJet.useStateNumber({ name: 'autoplaySpeed', label: 'Autoplay speed (ms)', initialValue: 3000, min: 500 });
   const [dots] = ToolJet.useStateBoolean({ name: 'dots', label: 'Dots', initialValue: true });
@@ -547,7 +577,7 @@ export const Carousel = () => {
 
 // Ant's QRCode: value (the text or URL), size, color, bgColor, errorLevel (L, M, Q, H), icon (image URL), bordered.
 export const QRCode = () => {
-  const [value] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  const [value] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: 'https://tooljet.com' });
   const [size] = ToolJet.useStateNumber({ name: 'size', label: 'Size (px)', initialValue: 160, min: 48, max: 600 });
   const [color] = ToolJet.useStateString({ name: 'color', label: 'Color', initialValue: '' });
   const [bgColor] = ToolJet.useStateString({ name: 'bgColor', label: 'Background', initialValue: '' });

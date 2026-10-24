@@ -41,8 +41,17 @@ const RowAvatar = ({ image, name, size = 32, shape = 'circle' }: { image?: strin
 // with its new status). Also onCardSelected (lastSelectedCard), allowAdd (onAddCardClick with addCardColumn), allowDelete
 // (onCardRemoved), and actions addCard, moveCard, deleteCard, updateCardData.
 export const Kanban = () => {
-  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', description: 'The cards: [{ id, title, status }]', initialValue: [] });
-  const [columns] = ToolJet.useStateArray({ name: 'columns', label: 'Columns', description: "[{ id: 'todo', title: 'To do' }]; empty takes the statuses in the data.", initialValue: [] });
+  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', description: 'The cards: [{ id, title, status }]', initialValue: [
+    { id: 1, title: 'Draft the brief', description: 'Goals, audience and timeline', status: 'todo' },
+    { id: 2, title: 'Collect references', description: 'Three competitor sites', status: 'todo' },
+    { id: 3, title: 'Review designs', description: 'Home and pricing pages', status: 'doing' },
+    { id: 4, title: 'Ship v1', description: 'Release notes and announcement', status: 'done' },
+  ] });
+  const [columns] = ToolJet.useStateArray({ name: 'columns', label: 'Columns', description: "[{ id: 'todo', title: 'To do' }]; empty takes the statuses in the data.", initialValue: [
+    { id: 'todo', title: 'To do' },
+    { id: 'doing', title: 'In progress' },
+    { id: 'done', title: 'Done' },
+  ] });
   const [statusField] = ToolJet.useStateString({ name: 'statusField', label: 'Status field', initialValue: 'status' });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
   const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'title' });
@@ -274,8 +283,8 @@ export const Kanban = () => {
 // asideValue / asideLabel, icon, background (plain, tint, gradient, image, dark, solid), imageUrl, align, size.
 export const Hero = () => {
   const [eyebrow] = ToolJet.useStateString({ name: 'eyebrow', label: 'Eyebrow', initialValue: '' });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
-  const [subTitle] = ToolJet.useStateString({ name: 'subTitle', label: 'Sub title', initialValue: '' });
+  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Good morning' });
+  const [subTitle] = ToolJet.useStateString({ name: 'subTitle', label: 'Sub title', initialValue: 'Here is what changed since yesterday.' });
   const [meta] = ToolJet.useStateString({ name: 'meta', label: 'Meta', initialValue: '' });
   const [actionLabel] = ToolJet.useStateString({ name: 'actionLabel', label: 'Action label', initialValue: '' });
   const [secondaryActionLabel] = ToolJet.useStateString({ name: 'secondaryActionLabel', label: 'Secondary action label', initialValue: '' });
@@ -344,7 +353,20 @@ export const Hero = () => {
 // A row of Ant Statistics: items [{ label, value, format, delta, deltaFormat, tone, lowerIsBetter, caption }],
 // valueFormat, currency, deltaFormat, appearance (panel, plain, cards), size, align.
 export const SummaryStrip = () => {
-  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: "[{ label, value, delta: 0.12, caption: 'vs last month' }]", initialValue: [] });
+  const [items] = ToolJet.useStateArray({ name: 'items', label: 'Items', description: "[{ label, value, delta: 0.12, caption: 'vs last month' }]", initialValue: [
+    { label: 'Revenue', value: 48250, format: 'currency', delta: 0.12, caption: 'vs last month' },
+    { label: 'Orders', value: 1284, delta: 0.08, caption: 'vs last month' },
+    {
+      label: 'Refund rate',
+      value: 0.021,
+      format: 'percent',
+      delta: -0.004,
+      deltaFormat: 'number',
+      lowerIsBetter: true,
+      caption: 'vs last month',
+    },
+    { label: 'Avg. delivery', value: '2.4 days', caption: 'last 30 days' },
+  ] });
   const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact', 'date'], initialValue: 'auto' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD' });
   const [deltaFormat] = ToolJet.useStateEnumeration({ name: 'deltaFormat', label: 'Delta format', enumDefinition: ['percent', 'number', 'currency'], initialValue: 'percent' });
@@ -398,11 +420,16 @@ const useSelection = () => {
 // (a status Tag, statusColors), valueField (formatted by valueFormat, currency), progressField; showAvatar, avatarShape,
 // size, split (dividers), bordered; onItemClicked with selectedItem, selectedItemId, selectedItemIndex exposed.
 export const RecordList = () => {
-  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [] });
+  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [
+    { id: 1, name: 'Maya Chen', email: 'maya@example.com', role: 'Admin', status: 'Active' },
+    { id: 2, name: 'Owen Hart', email: 'owen@example.com', role: 'Editor', status: 'Active' },
+    { id: 3, name: 'Priya Nair', email: 'priya@example.com', role: 'Viewer', status: 'Invited' },
+    { id: 4, name: 'Leo Martins', email: 'leo@example.com', role: 'Editor', status: 'Suspended' },
+  ] });
   const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'name' });
   const [avatarField] = ToolJet.useStateString({ name: 'avatarField', label: 'Avatar field', initialValue: '' });
-  const [metaFields] = ToolJet.useStateArray({ name: 'metaFields', label: 'Meta fields', description: "['email', 'company']", initialValue: [] });
-  const [statusField] = ToolJet.useStateString({ name: 'statusField', label: 'Status field', initialValue: '' });
+  const [metaFields] = ToolJet.useStateArray({ name: 'metaFields', label: 'Meta fields', description: "['email', 'company']", initialValue: ['email', 'role'] });
+  const [statusField] = ToolJet.useStateString({ name: 'statusField', label: 'Status field', initialValue: 'status' });
   const [progressField] = ToolJet.useStateString({ name: 'progressField', label: 'Progress field', initialValue: '' });
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: '' });
   const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact', 'date', 'datetime'], initialValue: 'auto' });
@@ -470,15 +497,19 @@ export const RecordList = () => {
 // eyebrowField, avatarField, descriptionField, progressField, metaFields; layout (stacked, row), columns (0: as many as
 // fit minCardWidth), imageAspect, showImage, variant (outlined, borderless), hoverable; onCardClicked with the selection.
 export const CardGrid = () => {
-  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [] });
+  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [
+    { id: 1, title: 'Lemon herb roast chicken', category: 'Dinner', description: 'Crisp skin, bright pan sauce' },
+    { id: 2, title: 'Miso glazed salmon', category: 'Dinner', description: 'Sweet, salty, ten minutes under the grill' },
+    { id: 3, title: 'Blueberry oat pancakes', category: 'Breakfast', description: 'Fluffy, no buttermilk needed' },
+  ] });
   const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'title' });
   const [subtitleField] = ToolJet.useStateString({ name: 'subtitleField', label: 'Subtitle field', initialValue: '' });
   const [imageField] = ToolJet.useStateString({ name: 'imageField', label: 'Image field', initialValue: '' });
-  const [badgeField] = ToolJet.useStateString({ name: 'badgeField', label: 'Badge field', initialValue: '' });
+  const [badgeField] = ToolJet.useStateString({ name: 'badgeField', label: 'Badge field', initialValue: 'category' });
   const [badgeFields] = ToolJet.useStateArray({ name: 'badgeFields', label: 'Badge fields', initialValue: [] });
   const [eyebrowField] = ToolJet.useStateString({ name: 'eyebrowField', label: 'Eyebrow field', initialValue: '' });
   const [avatarField] = ToolJet.useStateString({ name: 'avatarField', label: 'Avatar field', initialValue: '' });
-  const [descriptionField] = ToolJet.useStateString({ name: 'descriptionField', label: 'Description field', initialValue: '' });
+  const [descriptionField] = ToolJet.useStateString({ name: 'descriptionField', label: 'Description field', initialValue: 'description' });
   const [progressField] = ToolJet.useStateString({ name: 'progressField', label: 'Progress field', initialValue: '' });
   const [metaFields] = ToolJet.useStateArray({ name: 'metaFields', label: 'Meta fields', initialValue: [] });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
@@ -553,7 +584,12 @@ export const CardGrid = () => {
 // statusField (the bar's status colour), valueFormat, currency, autoTone (goal: green when reached; limit: red when
 // over), showValues, showPercent, size (small, default, large), bordered; onItemClicked with the selection.
 export const ProgressList = () => {
-  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [] });
+  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [
+    { id: 1, label: 'Design', value: 72 },
+    { id: 2, label: 'Engineering', value: 58 },
+    { id: 3, label: 'Marketing', value: 41 },
+    { id: 4, label: 'Support', value: 86 },
+  ] });
   const [labelField] = ToolJet.useStateString({ name: 'labelField', label: 'Label field', initialValue: 'label' });
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: 'value' });
   const [targetField] = ToolJet.useStateString({ name: 'targetField', label: 'Target field', initialValue: '' });
@@ -619,7 +655,7 @@ export const ProgressList = () => {
 // A row of Ant Tags: tags (strings, or { label, color }), tagColors ({ 'Paid': 'green' }; else the word's status
 // colour), variant (filled, outlined, solid), overflow (wrap, single, scroll), round; onTagClicked with lastClickedTag.
 export const Tags = () => {
-  const [tags] = ToolJet.useStateArray({ name: 'tags', label: 'Tags', initialValue: [] });
+  const [tags] = ToolJet.useStateArray({ name: 'tags', label: 'Tags', initialValue: ['Design', 'Frontend', 'Urgent'] });
   const [tagColors] = ToolJet.useStateObject({ name: 'tagColors', label: 'Tag colors', initialValue: {} });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['filled', 'outlined', 'solid'], initialValue: 'filled' });
   const [overflow] = ToolJet.useStateEnumeration({ name: 'overflow', label: 'Overflow', enumDefinition: ['wrap', 'single', 'scroll'], initialValue: 'wrap' });
@@ -759,7 +795,11 @@ type GroupButton = { value: string; label: string; icon?: string; disabled?: boo
 // setSelected, clear.
 export const ButtonGroup = (props: Record<string, unknown>) => {
   const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: '' });
-  const [buttons] = ToolJet.useStateArray({ name: 'buttons', label: 'Buttons', description: "[{ value: 'week', label: 'Week' }]", initialValue: [] });
+  const [buttons] = ToolJet.useStateArray({ name: 'buttons', label: 'Buttons', description: "[{ value: 'week', label: 'Week' }]", initialValue: [
+    { value: 'day', label: 'Day' },
+    { value: 'week', label: 'Week' },
+    { value: 'month', label: 'Month' },
+  ] });
   const [mode] = ToolJet.useStateEnumeration({ name: 'mode', label: 'Mode', enumDefinition: ['actions', 'single', 'multiple', 'none'], initialValue: 'actions' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The selected value; an array in multiple mode.', initialValue: '' });
   const [allowDeselect] = ToolJet.useStateBoolean({ name: 'allowDeselect', label: 'Allow deselect', initialValue: false });
@@ -832,7 +872,7 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
 // Ant's Progress type circle (or dashboard): percent, size (px), strokeWidth, strokeLinecap (round, butt), format
 // (percent, custom text, none), text, label under the ring, status; action setPercent.
 export const CircularProgress = () => {
-  const [percent, setPercent] = ToolJet.useStateNumber({ name: 'percent', label: 'Percent', initialValue: 0, min: 0, max: 100 });
+  const [percent, setPercent] = ToolJet.useStateNumber({ name: 'percent', label: 'Percent', initialValue: 75, min: 0, max: 100 });
   const [size] = ToolJet.useStateNumber({ name: 'size', label: 'Size (px)', initialValue: 120, min: 32, max: 400 });
   const [strokeWidth] = ToolJet.useStateNumber({ name: 'strokeWidth', label: 'Stroke width', description: 'Percent of the size.', initialValue: 6, min: 1, max: 30 });
   const [strokeLinecap] = ToolJet.useStateEnumeration({ name: 'strokeLinecap', label: 'Line cap', enumDefinition: ['round', 'butt'], initialValue: 'round' });

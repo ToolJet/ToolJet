@@ -65,14 +65,24 @@ const useChartTheme = (ref: React.RefObject<HTMLElement>) => {
   return theme;
 };
 
-const useChartProps = (defaults: { x?: string; y?: string } = {}) => {
-  const [rawData] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: 'Rows, one per x value: [{ month, sales }]', initialValue: [] });
+// Samples a fresh drop shows (x and y are the charts' default fields).
+const MONTHLY = [{ x: 'Jan', y: 42 }, { x: 'Feb', y: 48 }, { x: 'Mar', y: 45 }, { x: 'Apr', y: 57 }, { x: 'May', y: 61 }, { x: 'Jun', y: 68 }];
+const TREND = [{ x: 'Jan', y: 1200 }, { x: 'Feb', y: 1350 }, { x: 'Mar', y: 1280 }, { x: 'Apr', y: 1520 }, { x: 'May', y: 1610 }, { x: 'Jun', y: 1790 }];
+const REGIONS = [{ x: 'North', y: 820 }, { x: 'West', y: 640 }, { x: 'South', y: 510 }, { x: 'East', y: 380 }];
+const REVENUE_ORDERS = [{ x: 'Jan', y: 42, y2: 310 }, { x: 'Feb', y: 48, y2: 340 }, { x: 'Mar', y: 45, y2: 322 }, { x: 'Apr', y: 57, y2: 395 }, { x: 'May', y: 61, y2: 410 }, { x: 'Jun', y: 68, y2: 452 }];
+const STAGES = [{ stage: 'Visited', value: 1200 }, { stage: 'Signed up', value: 540 }, { stage: 'Activated', value: 310 }, { stage: 'Paid', value: 120 }];
+const SKILLS = [{ x: 'Speed', y: 80 }, { x: 'Quality', y: 65 }, { x: 'Cost', y: 90 }, { x: 'Support', y: 70 }, { x: 'Reach', y: 75 }];
+const POINTS = [{ x: 12, y: 34 }, { x: 18, y: 41 }, { x: 25, y: 38 }, { x: 31, y: 52 }, { x: 38, y: 49 }, { x: 44, y: 63 }, { x: 52, y: 58 }, { x: 60, y: 71 }];
+
+// data is the sample a fresh drop shows, keyed by the default fields.
+const useChartProps = (defaults: { x?: string; y?: string; ys?: string[]; data?: Row[] } = {}) => {
+  const [rawData] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: 'Rows, one per x value: [{ month, sales }]', initialValue: defaults.data ?? [] });
   const [xField] = ToolJet.useStateString({ name: 'xField', label: 'X field', initialValue: defaults.x ?? 'x' });
   const [yField] = ToolJet.useStateArray({
     name: 'yField',
     label: 'Y field',
     description: "One field ('sales') or several (['sales', 'cost']), each a series.",
-    initialValue: [defaults.y ?? 'y'],
+    initialValue: defaults.ys ?? [defaults.y ?? 'y'],
   });
   const [colorField] = ToolJet.useStateString({ name: 'colorField', label: 'Color field', description: 'A field naming the series, for long data (one row per x and series).', initialValue: '' });
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
@@ -159,7 +169,7 @@ const useCommon = (
 // Ant's Column (vertical bars): data, xField, yField, colorField, stack, group (side by side when several series),
 // radius, legend, label; event onElementClick with selectedDatum exposed.
 export const Column = () => {
-  const p = useChartProps({ x: 'x', y: 'y' });
+  const p = useChartProps({ x: 'x', y: 'y', data: MONTHLY });
   const [stack] = ToolJet.useStateBoolean({ name: 'stack', label: 'Stack', description: 'Stack the series instead of grouping them.', initialValue: false });
   const [horizontal] = ToolJet.useStateBoolean({ name: 'horizontal', label: 'Horizontal', description: "Draw as Ant's Bar (horizontal bars).", initialValue: false });
   const [radius] = ToolJet.useStateNumber({ name: 'radius', label: 'Corner radius', initialValue: 4, min: 0, max: 20 });
@@ -192,7 +202,7 @@ export const Column = () => {
 
 // Ant's Line: data, xField, yField, colorField, smooth (shapeField 'smooth'), point; event onElementClick.
 export const Line = () => {
-  const p = useChartProps({ x: 'x', y: 'y' });
+  const p = useChartProps({ x: 'x', y: 'y', data: TREND });
   const [smooth] = ToolJet.useStateBoolean({ name: 'smooth', label: 'Smooth', initialValue: true });
   const [point] = ToolJet.useStateBoolean({ name: 'point', label: 'Point', description: 'A dot on every value.', initialValue: false });
   const tokens = useTokenStyles();
@@ -222,7 +232,7 @@ export const Line = () => {
 
 // Ant's Area: data, xField, yField, colorField, stack, smooth; event onElementClick.
 export const Area = () => {
-  const p = useChartProps({ x: 'x', y: 'y' });
+  const p = useChartProps({ x: 'x', y: 'y', data: TREND });
   const [stack] = ToolJet.useStateBoolean({ name: 'stack', label: 'Stack', initialValue: true });
   const [smooth] = ToolJet.useStateBoolean({ name: 'smooth', label: 'Smooth', initialValue: true });
   const tokens = useTokenStyles();
@@ -255,7 +265,7 @@ export const Area = () => {
 // donut), label (percent on the slices), legend; event onElementClick.
 export const Pie = () => {
   const { loading } = ToolJet.useControlState();
-  const [rawData] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: '[{ type, value }]', initialValue: [] });
+  const [rawData] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: '[{ type, value }]', initialValue: [{ type: 'Charter', value: 62 }, { type: 'Day trip', value: 24 }, { type: 'Event', value: 14 }] });
   const [angleField] = ToolJet.useStateString({ name: 'angleField', label: 'Angle field', description: 'The value of each slice.', initialValue: 'value' });
   const [colorField] = ToolJet.useStateString({ name: 'colorField', label: 'Color field', description: 'The category of each slice.', initialValue: 'type' });
   const [innerRadius] = ToolJet.useStateNumber({ name: 'innerRadius', label: 'Inner radius', description: '0 to 0.9', initialValue: 0.6, min: 0, max: 0.9 });
@@ -308,7 +318,7 @@ export const Pie = () => {
 // Ant's Bar (horizontal bars): data, xField (the category, down the side), yField (one or several), colorField, stack,
 // radius; event onElementClick.
 export const Bar = () => {
-  const p = useChartProps({ x: 'x', y: 'y' });
+  const p = useChartProps({ x: 'x', y: 'y', data: REGIONS });
   const [stack] = ToolJet.useStateBoolean({ name: 'stack', label: 'Stack', initialValue: false });
   const [radius] = ToolJet.useStateNumber({ name: 'radius', label: 'Corner radius', initialValue: 4, min: 0, max: 20 });
   const tokens = useTokenStyles();
@@ -340,7 +350,7 @@ export const Bar = () => {
 // Ant's DualAxes: two measures on their own y axes over one x. data, xField, yField [left, right], geometry
 // [left, right] each column or line (Ant 1.x geometryOptions), yFormatter; event onElementClick.
 export const DualAxes = () => {
-  const p = useChartProps({ x: 'x', y: 'y' });
+  const p = useChartProps({ x: 'x', y: 'y', ys: ['y', 'y2'], data: REVENUE_ORDERS });
   const [geometry] = ToolJet.useStateArray({ name: 'geometry', label: 'Geometry', description: "[left, right]: 'column' or 'line'", initialValue: ['column', 'line'] });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 32 });
@@ -381,7 +391,7 @@ export const DualAxes = () => {
 // Ant's Funnel: data [{ stage, value }], xField (the stage), yField (the value), label (value and share of the
 // first stage); event onElementClick.
 export const Funnel = () => {
-  const p = useChartProps({ x: 'stage', y: 'value' });
+  const p = useChartProps({ x: 'stage', y: 'value', data: STAGES });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
@@ -422,7 +432,7 @@ export const Funnel = () => {
 // [40, 70, 100] reads red, amber, green), formatter.
 export const Gauge = () => {
   const { loading } = ToolJet.useControlState();
-  const [target] = ToolJet.useStateNumber({ name: 'target', label: 'Target', description: 'The value the needle shows.', initialValue: 0 });
+  const [target] = ToolJet.useStateNumber({ name: 'target', label: 'Target', description: 'The value the needle shows.', initialValue: 72 });
   const [total] = ToolJet.useStateNumber({ name: 'total', label: 'Total', initialValue: 100, min: 1 });
   const [name] = ToolJet.useStateString({ name: 'name', label: 'Name', initialValue: '' });
   const [thresholds] = ToolJet.useStateArray({ name: 'thresholds', label: 'Thresholds', description: 'Ends of the colour bands, e.g. [40, 70, 100]; empty for one brand band.', initialValue: [] });
@@ -455,7 +465,7 @@ export const Gauge = () => {
 // Ant's Radar: data (wide rows, one per axis: [{ skill, alice, bob }], or long with colorField), xField (the axis
 // name), yField (one or several series), area (filled); event onElementClick.
 export const Radar = () => {
-  const p = useChartProps({ x: 'x', y: 'y' });
+  const p = useChartProps({ x: 'x', y: 'y', data: SKILLS });
   const [area] = ToolJet.useStateBoolean({ name: 'area', label: 'Area', description: 'Fill each series.', initialValue: true });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 32 });
@@ -487,7 +497,7 @@ export const Radar = () => {
 // Ant's Scatter: data, xField, yField (numbers), colorField (a group), sizeField (bubble size), shapeField;
 // event onElementClick.
 export const Scatter = () => {
-  const p = useChartProps({ x: 'x', y: 'y' });
+  const p = useChartProps({ x: 'x', y: 'y', data: POINTS });
   const [sizeField] = ToolJet.useStateString({ name: 'sizeField', label: 'Size field', description: 'A number field for bubble size.', initialValue: '' });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 32 });
@@ -519,7 +529,23 @@ export const Scatter = () => {
 // event onElementClick.
 export const Heatmap = () => {
   const { loading } = ToolJet.useControlState();
-  const [rawData] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: '[{ day, hour, value }]', initialValue: [] });
+  const [rawData] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: '[{ day, hour, value }]', initialValue: [
+    { x: 'Mon', y: 'Morning', value: 12 },
+    { x: 'Mon', y: 'Afternoon', value: 18 },
+    { x: 'Mon', y: 'Evening', value: 9 },
+    { x: 'Tue', y: 'Morning', value: 15 },
+    { x: 'Tue', y: 'Afternoon', value: 22 },
+    { x: 'Tue', y: 'Evening', value: 11 },
+    { x: 'Wed', y: 'Morning', value: 20 },
+    { x: 'Wed', y: 'Afternoon', value: 27 },
+    { x: 'Wed', y: 'Evening', value: 14 },
+    { x: 'Thu', y: 'Morning', value: 17 },
+    { x: 'Thu', y: 'Afternoon', value: 24 },
+    { x: 'Thu', y: 'Evening', value: 10 },
+    { x: 'Fri', y: 'Morning', value: 25 },
+    { x: 'Fri', y: 'Afternoon', value: 31 },
+    { x: 'Fri', y: 'Evening', value: 19 },
+  ] });
   const [xField] = ToolJet.useStateString({ name: 'xField', label: 'X field', initialValue: 'x' });
   const [yField] = ToolJet.useStateString({ name: 'yField', label: 'Y field', initialValue: 'y' });
   const [colorField] = ToolJet.useStateString({ name: 'colorField', label: 'Color field', description: 'The value that sets the shade.', initialValue: 'value' });

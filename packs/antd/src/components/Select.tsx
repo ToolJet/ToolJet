@@ -16,7 +16,13 @@ const Control = (p: React.ComponentProps<typeof AntSelect>) => {
 // notFoundContent; events onChange (also on clear), onSelect, onClear, onSearch, onOpenChange.
 export const Select = (props: Record<string, unknown>) => {
   const field = useFieldProps();
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [] });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [
+    { label: 'Design', value: 'design' },
+    { label: 'Engineering', value: 'engineering' },
+    { label: 'Marketing', value: 'marketing' },
+    { label: 'Sales', value: 'sales' },
+    { label: 'Support', value: 'support' },
+  ] });
   const [mode] = ToolJet.useStateEnumeration({
     name: 'mode',
     label: 'Mode',
