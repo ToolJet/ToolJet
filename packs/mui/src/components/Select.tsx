@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Autocomplete as MuiAutocomplete, Chip, CircularProgress, MenuItem, TextField } from '@mui/material';
+import { Autocomplete as MuiAutocomplete, Chip, CircularProgress, IconButton, InputAdornment, MenuItem, TextField } from '@mui/material';
+import Close from '@mui/icons-material/Close';
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
@@ -39,13 +40,16 @@ const focusWasLost = (active: Element | null, trigger: Element, menu: Element | 
 };
 
 // MUI's Select (TextField select): label, options [{ label, value, disabled }], value (the picked value), helperText,
-// displayEmpty with a placeholder, variant, size; events onChange, onOpen, onClose. selectedOption is exposed.
+// displayEmpty with a placeholder, variant, size; events onChange, onOpen, onClose. selectedOption is exposed. A clear
+// button shows while a value is picked, as Ant's Select (allowClear) and this pack's Autocomplete have; Disable
+// clearable hides it, by the Autocomplete's name.
 export const Select = () => {
   const field = useFieldProps({ label: 'Status' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: SAMPLE.status });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The picked option value.', initialValue: '' });
   const [displayEmpty] = ToolJet.useStateBoolean({ name: 'displayEmpty', label: 'Display empty', description: 'Show the placeholder while nothing is picked.', initialValue: true });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select', visibleWhen: { key: 'displayEmpty', value: true } });
+  const [disableClearable] = ToolJet.useStateBoolean({ name: 'disableClearable', label: 'Disable clearable', description: 'Hide the clear button.', initialValue: false });
   const [, setSelectedOption] = ToolJet.useStateObject({ name: 'selectedOption', initialValue: {}, inspector: 'hidden' });
   const [, setOpen] = ToolJet.useStateBoolean({ name: 'open', initialValue: false, inspector: 'hidden' });
   const look = useTextFieldLook();
@@ -107,6 +111,32 @@ export const Select = () => {
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
 
   const showEmpty = displayEmpty && !!placeholder;
+  // MUI's Select has no clear of its own: a small x before the arrow (the Autocomplete's clear indicator look), only
+  // while a known value is picked. It takes no focus on press and does not open the menu; focus goes to the trigger.
+  const clearable = !disableClearable && known && !disabled;
+  const clearButton = clearable ? (
+    <InputAdornment position="end" sx={{ mr: 2.5 }}>
+      <IconButton
+        aria-label="Clear"
+        title="Clear"
+        size="small"
+        className="tj-mui-select-clear"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!available()) return;
+          change('');
+          check.touch();
+          rootRef.current?.querySelector<HTMLElement>('[role="combobox"]')?.focus();
+        }}
+      >
+        <Close fontSize="small" />
+      </IconButton>
+    </InputAdornment>
+  ) : undefined;
   return (
     <MuiProvider overrides={overrides} className={fieldClass(look.variant, field.label)} rootRef={rootRef}>
       <Loading loading={loading} look={<FieldSkeleton variant={look.variant} size={look.size} />}>
@@ -125,6 +155,7 @@ export const Select = () => {
           {...checkProps(check, field.helperText)}
           slotProps={{
             inputLabel: showEmpty ? { shrink: true } : undefined,
+            input: clearButton ? { endAdornment: clearButton } : undefined,
             select: {
               open: menuOpen,
               MenuProps: { disableRestoreFocus: true, ref: menuRef } as Record<string, unknown>,

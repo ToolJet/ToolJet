@@ -574,3 +574,160 @@ describe('a native Form reads every MUI field', () => {
     await waitFor(() => expect(t.exposed.value).toBe(false));
   });
 });
+
+describe('team UI 2.0 report: List twins, the Alert box and the StatCard trend', () => {
+  const { Alert, StatCard } = require('../../../../../../../packs/mui/src/components/Display');
+  Object.assign(COMPONENTS, { Alert, StatCard });
+  const twins = [
+    { id: 1, title: 'Alpha', v: 1 },
+    { id: 1, title: 'Alpha twin', v: 2 },
+    { id: 2, title: 'Beta', v: 3 },
+  ];
+  const drawnSelected = (t) => [...t.root().querySelectorAll('.Mui-selected')].map((el) => el.textContent);
+
+  test('List: of two records sharing an id, only the picked one draws selected, and a refresh keeps it', async () => {
+    const t = await mount('List', { items: twins });
+    fireEvent.click(within(t.root()).getByText('Alpha twin'));
+    expect(t.exposed.selectedItem).toEqual(twins[1]);
+    await waitFor(() => expect(drawnSelected(t)).toEqual(['Alpha twin']));
+    t.update({ props: { items: twins.map((r) => ({ ...r, v: r.v + 10 })) } });
+    await waitFor(() => expect(t.exposed.selectedItem).toEqual({ ...twins[1], v: 12 }));
+    expect(t.exposed.selectedItemKey).toBe(1);
+    expect(drawnSelected(t)).toEqual(['Alpha twin']);
+  });
+
+  test('Alert fills its widget box, so a long message scrolls inside it', async () => {
+    const t = await mount('Alert', { title: 'Heads up', children: 'A long message' });
+    expect(t.root().querySelector('.tj-mui-root').classList.contains('tj-mui--fill')).toBe(true);
+    expect(t.root().querySelector('.tj-mui-loading').classList.contains('tj-mui-loading--fill')).toBe(true);
+  });
+
+  test('StatCard: setTrend sets the direction and, when given, the chip label', async () => {
+    const t = await mount('StatCard', { value: '1200', trend: 'neutral', trendLabel: '' });
+    expect(t.root().querySelector('.MuiChip-root')).toBeNull();
+    t.act('setTrend', 'down', '-8%');
+    await waitFor(() => expect(t.exposed.trend).toBe('down'));
+    expect(t.exposed.trendLabel).toBe('-8%');
+    const chip = t.root().querySelector('.MuiChip-root');
+    expect(chip.textContent).toContain('-8%');
+    expect(chip.className).toContain('colorError');
+    t.act('setTrend', 'up');
+    t.act('setTrend', 'sideways');
+    await waitFor(() => expect(t.exposed.trend).toBe('up'));
+    expect(t.exposed.trendLabel).toBe('-8%');
+  });
+});
+
+describe('DataGrid columns typed for values that arrive formatted', () => {
+  test('a number or date column whose values are already text draws that text, not empty cells', async () => {
+    const rows = [{ id: 1, amount: '$1,234.56', on: '24 Oct 2026', n: 7 }];
+    const columns = [
+      { key: 'amount', name: 'Amount', type: 'number', format: 'currency:USD' },
+      { key: 'on', name: 'Spent on', type: 'date', format: 'D MMM YYYY' },
+      { key: 'n', name: 'Count', type: 'number', format: 'currency:EUR' },
+    ];
+    const t = await mount('DataGrid', { rows, columns });
+    const cell = (field) => t.root().querySelector(`.MuiDataGrid-cell[data-field="${field}"]`)?.textContent;
+    await waitFor(() => expect(cell('amount')).toBe('$1,234.56'));
+    expect(cell('on')).toBe('24 Oct 2026');
+    expect(cell('n')).toMatch(/€\s?7\.00|7\.00\s?€/);
+  });
+});
+
+describe('controls UI 2.0 has (team review, 2026-10-24)', () => {
+  const Charts = require('../../../../../../../packs/mui/src/components/Charts');
+  const { highlightProps } = require('../../../../../../../packs/mui/src/lib/chartHighlight');
+  Object.assign(COMPONENTS, { BarChart: Charts.BarChart, LineChart: Charts.LineChart, AreaChart: Charts.AreaChart, PieChart: Charts.PieChart });
+  const helper = (t) => t.root().querySelector('.MuiFormHelperText-root')?.textContent ?? '';
+
+  test.each([
+    ['email', 'nope', 'a@b.co', 'Enter a valid email address'],
+    ['url', 'not a url', 'https://tooljet.com', 'Enter a valid URL'],
+  ])('TextField type %s reports a bad value once left, and isValid follows', async (type, bad, good, text) => {
+    const t = await mount('TextField', { type, value: bad });
+    await waitFor(() => expect(t.exposed.isValid).toBe(false));
+    expect(helper(t)).toBe('');
+    fireEvent.blur(t.root().querySelector('input'));
+    await waitFor(() => expect(helper(t)).toBe(text));
+    t.update({ props: { type, value: good } });
+    await waitFor(() => expect(t.exposed.isValid).toBe(true));
+    expect(helper(t)).toBe('');
+  });
+
+  test('TextField type password shows and hides the text with its eye button', async () => {
+    const t = await mount('TextField', { type: 'password', value: 's3cret' });
+    const box = () => t.root().querySelector('input');
+    expect(box().type).toBe('password');
+    fireEvent.click(t.root().querySelector('button[aria-label="Show password"]'));
+    await waitFor(() => expect(box().type).toBe('text'));
+    fireEvent.click(t.root().querySelector('button[aria-label="Hide password"]'));
+    await waitFor(() => expect(box().type).toBe('password'));
+    expect(t.exposed.value).toBe('s3cret');
+    expect(t.root().querySelector('button[aria-label="Show password"]')).toBeTruthy();
+    t.view.unmount();
+    // Other types get no eye.
+    const text = await mount('TextField', { type: 'text', value: 'x' });
+    expect(text.root().querySelector('button[aria-label="Show password"]')).toBeNull();
+  });
+
+  test('Select shows a clear button while a value is picked; it empties the value and selectedOption', async () => {
+    const clear = (t) => t.root().querySelector('button[aria-label="Clear"]');
+    const t = await mount('Select', { options: OPTIONS, value: 'two' });
+    await waitFor(() => expect(t.exposed.selectedOption).toMatchObject(OPTIONS[1]));
+    fireEvent.click(clear(t));
+    await waitFor(() => expect(t.exposed.value).toBe(''));
+    expect(t.exposed.selectedOption).toEqual({});
+    expect(t.events).toEqual(['onChange']);
+    expect(clear(t)).toBeNull();
+    expect(popupText()).not.toContain('One');
+    t.view.unmount();
+
+    const off = await mount('Select', { options: OPTIONS, value: 'two', disableClearable: true });
+    expect(clear(off)).toBeNull();
+  });
+
+  test('Slider range draws two thumbs for [from, to], fits a single number to the whole range and clears with a Form', async () => {
+    const thumbs = (t) => t.root().querySelectorAll('input[type="range"]').length;
+    const t = await mount('Slider', { range: true, value: [20, 80] });
+    expect(thumbs(t)).toBe(2);
+    await act(async () => {});
+    expect(t.exposed.value).toEqual([20, 80]);
+    t.act('setValue', [90, 10]);
+    await waitFor(() => expect(t.exposed.value).toEqual([10, 90]));
+    fireEvent.change(t.root().querySelectorAll('input[type="range"]')[0], { target: { value: 30 } });
+    await waitFor(() => expect(t.exposed.value).toEqual([30, 90]));
+    expect(t.events).toContain('onChange');
+    t.clearForm();
+    await waitFor(() => expect(t.exposed.value).toEqual([0, 100]));
+    t.view.unmount();
+
+    const single = await mount('Slider', { range: true, value: 30 });
+    await waitFor(() => expect(single.exposed.value).toEqual([0, 100]));
+    expect(single.events).not.toContain('onChange');
+    single.update({ props: { range: false, value: [40, 60] } });
+    await waitFor(() => expect(single.exposed.value).toBe(40));
+    expect(thumbs(single)).toBe(1);
+  });
+
+  test.each([
+    ['BarChart', { clickedItem: {}, clickedSeries: '' }],
+    ['LineChart', { clickedItem: {}, clickedIndex: -1 }],
+    ['AreaChart', { clickedItem: {}, clickedIndex: -1 }],
+    ['PieChart', { clickedItem: {} }],
+  ])('%s takes Highlight clicked point and clearClickedPoint empties what was clicked', async (name, cleared) => {
+    const t = await mount(name, { highlightClicked: true }, { host: { formField: false } });
+    expect(t.actions.has('clearClickedPoint')).toBe(true);
+    t.act('clearClickedPoint');
+    await act(async () => {});
+    for (const [key, value] of Object.entries(cleared)) expect([key, t.exposed[key]]).toEqual([key, value]);
+  });
+
+  test('a pinned item stays highlighted over hover; off, the chart keeps its own highlight', () => {
+    const pin = { seriesId: 's1', dataIndex: 2 };
+    const hover = { seriesId: 's1', dataIndex: 0 };
+    expect(highlightProps(false, pin, hover, () => {})).toEqual({});
+    expect(highlightProps(true, pin, hover, () => {}).highlightedItem).toBe(pin);
+    expect(highlightProps(true, null, hover, () => {}).highlightedItem).toBe(hover);
+    expect(highlightProps(true, null, null, () => {}).highlightedItem).toBeNull();
+  });
+});

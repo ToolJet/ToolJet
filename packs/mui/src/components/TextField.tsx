@@ -1,5 +1,7 @@
-import React, { useRef } from 'react';
-import { InputAdornment, TextField as MuiTextField } from '@mui/material';
+import React, { useRef, useState } from 'react';
+import { IconButton, InputAdornment, TextField as MuiTextField } from '@mui/material';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
@@ -8,6 +10,7 @@ import { iconOrText } from '../lib/icons';
 import { str } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { FieldSkeleton, Loading } from '../lib/loading';
+import { typeRule, useRuleCheck } from '../lib/typeRule';
 
 const adornment = (position: 'start' | 'end', content: React.ReactNode) =>
   content ? <InputAdornment position={position}>{content}</InputAdornment> : undefined;
@@ -20,6 +23,22 @@ const useTextEvents = () => ({
   onBlur: ToolJet.useEventCallback({ name: 'onBlur' }),
 });
 
+/** MUI's show-password button (its "Input Adornments" demo): an eye at the end that shows or hides the text. */
+const RevealButton = ({ shown, onToggle, disabled }: { shown: boolean; onToggle: () => void; disabled: boolean }) => (
+  <IconButton
+    aria-label={shown ? 'Hide password' : 'Show password'}
+    aria-pressed={shown}
+    edge="end"
+    size="small"
+    disabled={disabled}
+    onClick={onToggle}
+    // Keeps the caret in the field: the press does not take focus from the input.
+    onMouseDown={(e) => e.preventDefault()}
+  >
+    {shown ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+  </IconButton>
+);
+
 const useFocusActions = (ref: React.RefObject<HTMLInputElement | null>) => {
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
   ToolJet.useAction({ name: 'blur', displayName: 'Blur' }, () => ref.current?.blur());
@@ -27,7 +46,8 @@ const useFocusActions = (ref: React.RefObject<HTMLInputElement | null>) => {
 
 // MUI's TextField: label, value, placeholder, helperText, type, variant (outlined, filled, standard), size, color,
 // startAdornment / endAdornment (text or an icon name); events onChange, onEnterKeyDown, onFocus, onBlur. MUI has no
-// form API: actions setValue, clear, focus, blur. The Validation section sets error and required.
+// form API: actions setValue, clear, focus, blur. The Validation section sets error and required. Type email or url
+// also checks the format, as UI 2.0's Input does; type password gets MUI's show/hide button.
 export const TextField = () => {
   const field = useFieldProps({ label: 'Name' });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
@@ -41,9 +61,11 @@ export const TextField = () => {
   const ref = useRef<HTMLInputElement>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'text', value });
+  const check = useRuleCheck(ToolJet.useValidation({ section: 'text', value }), typeRule(type, value));
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6.9 });
+  const [revealed, setRevealed] = useState(false);
+  const isPassword = type === 'password';
 
   const change = (next: string) => {
     setValue(next);
@@ -52,6 +74,7 @@ export const TextField = () => {
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(str(next)));
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(''));
   useFocusActions(ref);
+  const end = iconOrText(endAdornment);
 
   return (
     <MuiProvider overrides={overrides} className={fieldClass(look.variant, field.label)}>
@@ -63,7 +86,7 @@ export const TextField = () => {
           label={field.label || undefined}
           value={value ?? ''}
           placeholder={placeholder || undefined}
-          type={type}
+          type={isPassword && revealed ? 'text' : type}
           variant={look.variant}
           size={look.size}
           color={look.color}
@@ -72,7 +95,15 @@ export const TextField = () => {
           slotProps={{
             input: {
               startAdornment: adornment('start', iconOrText(startAdornment)),
-              endAdornment: adornment('end', iconOrText(endAdornment)),
+              endAdornment: isPassword
+                ? adornment(
+                    'end',
+                    <>
+                      {end}
+                      <RevealButton shown={revealed} disabled={disabled} onToggle={() => setRevealed((r) => !r)} />
+                    </>
+                  )
+                : adornment('end', end),
             },
             htmlInput: Number(maxLength) > 0 ? { maxLength: Number(maxLength) } : undefined,
           }}

@@ -272,6 +272,19 @@ const DialogBody = (p: {
   );
 };
 
+// Each item's own key: its id, a repeated id suffixed by its occurrence (1, then 1~1), so two items that share an id
+// are told apart: both drew selected, and a refresh moved the selection to the first of them.
+const occurrenceKeys = (rows: Row[], field: string) => {
+  const seen = new Set<string>();
+  return rows.map((r, i) => {
+    const base = rowKeyOf(r, field, i);
+    let key = base;
+    for (let n = 1; seen.has(key); n += 1) key = `${base}~${n}`;
+    seen.add(key);
+    return key;
+  });
+};
+
 // MUI's List: items; each is either MUI's ListItemText (primaryField, secondaryField, an avatar from avatarField)
 // or, with renderItem 'components', a row of ToolJet components reading {{listItem}} (rowHeight). subheader, dense,
 // divider (lines between items), pageSize (0 for no paging). Event onItemClick with selectedItem exposed.
@@ -313,9 +326,16 @@ export const List = () => {
   const height = Math.max(24, Math.min(1200, Number(rowHeight) || 64));
   ToolJet.useRows(asRows ? visible : [], height);
   const field = str(itemKey) || 'id';
-  const selectedKey = selectedItem && Object.keys(selectedItem).length ? rowKeyOf(selectedItem as Row, field, -1) : '';
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const keys = useMemo(() => occurrenceKeys(items, field), [rawItems, field]);
+  // The picked item's own key (its occurrence of a repeated id). Without one (nothing picked here yet), the exposed
+  // record's id names it.
+  const [picked, setPicked] = useState('');
+  const exposedKey = selectedItem && Object.keys(selectedItem).length ? rowKeyOf(selectedItem as Row, field, -1) : '';
+  const selectedKey = picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(items[i], field, i) === exposedKey) ?? '') : '');
 
   const select = (row: Row | null, index: number) => {
+    setPicked(row && index >= 0 ? keys[index] ?? '' : '');
     setSelectedItem(row ?? {});
     // The item's own key value, as the app wrote it (a number stays a number).
     setSelectedItemKey((row ? rowIdOf(row, field, index) : '') as string);
@@ -327,17 +347,21 @@ export const List = () => {
   latestSelected.current = selectedItem;
   useEffect(() => {
     if (!selectedKey) return;
-    const index = items.findIndex((r, i) => rowKeyOf(r, field, i) === selectedKey);
+    const index = keys.indexOf(selectedKey);
     const fresh = items[index];
     if (!fresh) {
+      setPicked('');
       setSelectedItem({});
       setSelectedItemKey('');
-    } else if (!sameRecord(fresh, latestSelected.current)) {
-      setSelectedItem(fresh);
-      setSelectedItemKey(rowIdOf(fresh, field, index) as string);
+    } else {
+      if (keys[index] !== picked) setPicked(keys[index]);
+      if (!sameRecord(fresh, latestSelected.current)) {
+        setSelectedItem(fresh);
+        setSelectedItemKey(rowIdOf(fresh, field, index) as string);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rawItems, field]);
+  }, [keys]);
   ToolJet.useAction({ name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Item key' }] }, (key) => {
     const index = items.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
     select(items[index] ?? null, index);
@@ -360,7 +384,7 @@ export const List = () => {
               </ListItem>
             ) : null}
             {visible.map((row, i) => {
-              const key = rowKeyOf(row, field, i + offset);
+              const key = keys[i + offset];
               const selected = key === selectedKey;
               const isLast = i === visible.length - 1;
               if (asRows)

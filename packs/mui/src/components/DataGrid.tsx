@@ -57,15 +57,23 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
       if (['string', 'number', 'date', 'dateTime', 'boolean'].includes(type)) col.type = type as 'string';
       const width = toNumber(r.width ?? r.columnSize);
       const flex = toNumber(r.flex);
-      if (width) col.width = width;
+      // A given width is the column's least, shared out in proportion so the columns fill the grid (fixed widths left
+      // a blank band at its right).
+      if (width && !flex) {
+        col.minWidth = width;
+        col.flex = width;
+      }
       if (flex) col.flex = flex;
       if (!width && !flex) col.flex = 1;
       if (r.align) col.align = col.headerAlign = r.align as 'left';
       if (r.sortable !== undefined) col.sortable = Boolean(r.sortable);
       // UI 2.0's columnType names the format too: currency, percent, badge or status (a chip), html.
       const kind = type.toLowerCase();
-      col.format = kind === 'html' ? 'html' : str(r.format) || UI2_FORMATS[kind] || undefined;
-      col.currency = str(r.currency) || undefined;
+      // A format may carry its currency (Ant's 'currency:USD'); a date pattern ('D MMM YYYY') is not a number format.
+      const [head, code] = str(r.format).split(':');
+      const fmt = ['number', 'currency', 'percent', 'compact', 'chip', 'html'].includes(head.trim().toLowerCase()) ? head.trim().toLowerCase() : '';
+      col.format = kind === 'html' ? 'html' : fmt || UI2_FORMATS[kind] || undefined;
+      col.currency = str(r.currency) || (code && /^[a-z]{3}$/i.test(code.trim()) ? code.trim().toUpperCase() : '') || undefined;
       const colors = [r.colors, r.badgeColors, r.tagColors].find((m) => m && typeof m === 'object' && !Array.isArray(m));
       if (colors) col.colors = colors as Record<string, string>;
       return col;
@@ -84,6 +92,15 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
   const sample = rows.find((r) => r[c.field] !== undefined && r[c.field] !== null && r[c.field] !== '')?.[c.field];
   if (!col.type && !format && !isIdField(c.field) && typeof sample === 'number') col.type = 'number';
   if (['number', 'currency', 'percent', 'compact'].includes(format ?? '')) col.type = 'number';
+  // A typed column whose values do not read as that type (a query that formatted them already: '$1,234.56',
+  // '24 Oct 2026') is drawn as the text it holds; typed, MUI drew those cells empty.
+  const filled = rows.map((r) => r[c.field]).filter((v) => v !== undefined && v !== null && v !== '');
+  if (col.type === 'number' && filled.some((v) => toNumber(v) === null)) {
+    delete col.type;
+    if (['number', 'currency', 'percent', 'compact'].includes(format ?? '')) return { ...col, valueFormatter: (v: unknown) => str(v) };
+  }
+  const isoOrTime = (v: unknown) => typeof v === 'number' || v instanceof Date || /^\d{4}-\d{2}-\d{2}/.test(String(v));
+  if ((col.type === 'date' || col.type === 'dateTime') && filled.some((v) => !isoOrTime(v) || Number.isNaN(new Date(String(v)).getTime()))) delete col.type;
   if (col.type === 'date' || col.type === 'dateTime') col.valueGetter = (v: unknown) => (v ? new Date(String(v)) : null);
   if (col.type === 'number') {
     col.valueGetter = (v: unknown) => toNumber(v);

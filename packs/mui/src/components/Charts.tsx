@@ -9,6 +9,7 @@ import { BlockSkeleton, Loading } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
 import { readField, str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
+import { useHighlightPin } from '../lib/chartHighlight';
 
 type Series = { dataKey: string; label?: string; color?: string; stack?: string };
 type Axis = { dataKey: string; label?: string; scaleType?: string };
@@ -132,7 +133,8 @@ const muiSeries = (c: ReturnType<typeof useCartesian>, extra: Record<string, unk
 
 // MUI X's BarChart: dataset, xAxis (the category axis: [{ dataKey }]), series [{ dataKey, label, color, stack }],
 // layout (vertical bars, or horizontal), stack, valueFormat, colors, grid, hideLegend, borderRadius. Event onItemClick
-// (a bar), with clickedItem (its row), clickedSeries exposed.
+// (a bar), with clickedItem (its row), clickedSeries exposed. Highlight clicked point keeps the clicked bar highlighted
+// (the rest faded) until the clearClickedPoint action or another click.
 export const BarChart = () => {
   const c = useCartesian();
   const [layout] = ToolJet.useStateEnumeration({
@@ -143,6 +145,10 @@ export const BarChart = () => {
   });
   const [, setClickedSeries] = useStateText({ name: 'clickedSeries', initialValue: '', inspector: 'hidden' });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
+  const highlight = useHighlightPin(() => {
+    c.setClickedItem({});
+    setClickedSeries('');
+  });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
   const horizontal = layout === 'horizontal';
@@ -152,11 +158,15 @@ export const BarChart = () => {
     <MuiProvider overrides={overrides} fill>
       <Loading loading={c.loading} fill look={<BlockSkeleton />}>
         <MuiBarChart
+          // Highlight clicked point makes the highlight controlled: a remount when it is turned on or off, as x-charts
+          // keeps whether it is controlled from the first render.
+          key={highlight.on ? 'pinned' : 'free'}
+          {...highlight.props}
           dataset={c.data}
           layout={layout as 'vertical'}
           xAxis={horizontal ? values : band}
           yAxis={horizontal ? [{ ...band[0], width: 90 }] : [{ ...values[0], width: 56 }]}
-          series={muiSeries(c)}
+          series={muiSeries(c, highlight.on ? { highlightScope: { highlight: 'item', fade: 'global' } } : {})}
           colors={c.colors.length ? c.colors : undefined}
           // The Border radius style rounds the bars (x-charts' borderRadius); none: MUI's square bars.
         borderRadius={overrides.borderRadius ?? 0}
@@ -165,6 +175,7 @@ export const BarChart = () => {
           onItemClick={(_, item) => {
             c.setClickedItem(c.rows[item.dataIndex] ?? {});
             setClickedSeries(String(item.seriesId));
+            highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
             onItemClick();
           }}
         />
@@ -173,7 +184,7 @@ export const BarChart = () => {
   );
 };
 
-const useLineProps = () => {
+const useLineProps = (c: ReturnType<typeof useCartesian>) => {
   const [curve] = ToolJet.useStateEnumeration({
     name: 'curve',
     label: 'Curve',
@@ -181,9 +192,19 @@ const useLineProps = () => {
     initialValue: 'monotoneX',
   });
   const [showMark] = ToolJet.useStateBoolean({ name: 'showMark', label: 'Show mark', description: 'A dot at every point.', initialValue: false });
-  const [, setClickedIndex] = ToolJet.useStateNumber({ name: 'clickedIndex', initialValue: -1, inspector: 'hidden' });
+  const [clickedIndex, setClickedIndex] = ToolJet.useStateNumber({ name: 'clickedIndex', initialValue: -1, inspector: 'hidden' });
   const onAxisClick = ToolJet.useEventCallback({ name: 'onAxisClick' });
-  return { curve, showMark, setClickedIndex, onAxisClick };
+  const highlight = useHighlightPin(() => {
+    c.setClickedItem({});
+    setClickedIndex(-1);
+  });
+  return { curve, showMark, clickedIndex, setClickedIndex, onAxisClick, highlight };
+};
+
+/** Show mark, and with Highlight clicked point the clicked x's marks on every line until cleared. */
+const markAt = (showMark: boolean, on: boolean, index: unknown) => {
+  const at = typeof index === 'number' && index >= 0 ? index : -1;
+  return on && at >= 0 && !showMark ? ({ index: i }: { index: number }) => i === at : showMark;
 };
 
 const LineView = ({ c, l, area }: { c: ReturnType<typeof useCartesian>; l: ReturnType<typeof useLineProps>; area: boolean }) => (
@@ -191,7 +212,7 @@ const LineView = ({ c, l, area }: { c: ReturnType<typeof useCartesian>; l: Retur
     dataset={c.data}
     xAxis={[{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: (c.axis.scaleType as 'point') || 'point' }]}
     yAxis={[{ valueFormatter: (v: number | null) => c.tick(v), width: 56 }]}
-    series={muiSeries(c, { curve: l.curve, showMark: l.showMark, area, connectNulls: true })}
+    series={muiSeries(c, { curve: l.curve, showMark: markAt(l.showMark, l.highlight.on, l.clickedIndex), area, connectNulls: true })}
     colors={c.colors.length ? c.colors : undefined}
     grid={{ horizontal: c.grid }}
     hideLegend={c.hideLegend || c.list.length < 2}
@@ -206,10 +227,11 @@ const LineView = ({ c, l, area }: { c: ReturnType<typeof useCartesian>; l: Retur
 
 // MUI X's LineChart: dataset, xAxis [{ dataKey, scaleType }], series [{ dataKey, label, color }], curve, showMark,
 // stack, valueFormat, colors, grid, hideLegend. Event onAxisClick (anywhere on the plot: the nearest x), with
-// clickedItem (that row) and clickedIndex exposed.
+// clickedItem (that row) and clickedIndex exposed. Highlight clicked point marks the clicked x on every line until the
+// clearClicked action or another click.
 export const LineChart = () => {
   const c = useCartesian();
-  const l = useLineProps();
+  const l = useLineProps(c);
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
   return (
@@ -225,7 +247,7 @@ export const LineChart = () => {
 // areas. Event onAxisClick.
 export const AreaChart = () => {
   const c = useCartesian();
-  const l = useLineProps();
+  const l = useLineProps(c);
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
   return (
@@ -239,7 +261,8 @@ export const AreaChart = () => {
 
 // MUI X's PieChart: data (MUI's [{ id, value, label }], or any rows with labelKey / valueKey), innerRadius (0 for a
 // pie, e.g. 60 for a donut), outerRadius, paddingAngle, cornerRadius, arcLabel (none, value, label, percent),
-// valueFormat, colors, hideLegend. Event onItemClick (a slice) with clickedItem exposed.
+// valueFormat, colors, hideLegend. Event onItemClick (a slice) with clickedItem exposed. Highlight clicked point keeps
+// the clicked slice highlighted until the clearClickedPoint action or another click.
 export const PieChart = () => {
   const [rawData] = ToolJet.useStateArray({
     name: 'data',
@@ -282,6 +305,7 @@ export const PieChart = () => {
   const [hideLegend] = ToolJet.useStateBoolean({ name: 'hideLegend', label: 'Hide legend', initialValue: false });
   const [, setClickedItem] = ToolJet.useStateObject({ name: 'clickedItem', initialValue: {}, inspector: 'hidden' });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
+  const highlight = useHighlightPin(() => setClickedItem({}));
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 30 });
@@ -311,6 +335,8 @@ export const PieChart = () => {
     <MuiProvider overrides={overrides} fill>
       <Loading loading={loading} fill look={<BlockSkeleton />}>
         <MuiPieChart
+          key={highlight.on ? 'pinned' : 'free'}
+          {...highlight.props}
           colors={toArray(colors).map(str).filter(Boolean).length ? toArray(colors).map(str).filter(Boolean) : undefined}
           hideLegend={hideLegend}
           series={[
@@ -328,6 +354,7 @@ export const PieChart = () => {
           ]}
           onItemClick={(_, item) => {
             setClickedItem(slices[item.dataIndex]?.row ?? {});
+            highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
             onItemClick();
           }}
         />

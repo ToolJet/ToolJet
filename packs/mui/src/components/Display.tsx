@@ -87,12 +87,15 @@ export const Alert = () => {
   ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setOpen(true));
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => setOpen(false));
   if (open === false) return <MuiProvider overrides={overrides}>{null}</MuiProvider>;
+  // Fills its box, and a long message scrolls inside it (MUI's message part scrolls): drawn at its natural height, the
+  // host cut what did not fit.
   return (
-    <MuiProvider overrides={overrides}>
-      <Loading loading={loading} look={<BlockSkeleton variant="rounded" />}>
+    <MuiProvider overrides={overrides} fill>
+      <Loading loading={loading} fill look={<BlockSkeleton variant="rounded" />}>
         <MuiAlert
           severity={severity as 'info'}
           variant={variant as 'standard'}
+          sx={{ height: '100%', boxSizing: 'border-box', '& .MuiAlert-message': { overflow: 'auto', minHeight: 0 } }}
           icon={icon ? undefined : false}
           onClose={
             closable
@@ -188,8 +191,8 @@ export const StatCard = () => {
   const [value] = useStateText({ name: 'value', label: 'Value', initialValue: '14k' });
   const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'auto' });
   const [currency] = useStateText({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'format', value: 'currency' } });
-  const [trend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'neutral' });
-  const [rawTrendLabel] = ToolJet.useStateString({
+  const [trend, setTrend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'neutral' });
+  const [rawTrendLabel, setTrendLabel] = ToolJet.useStateString({
     name: 'trendLabel',
     label: 'Trend label',
     description: 'Text in the trend chip, such as +25%; a number is the change, its sign the direction. Empty: no chip.',
@@ -201,6 +204,23 @@ export const StatCard = () => {
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 12 });
+  // The trend chip from a query: the direction (up, down or neutral; anything else keeps it) and, when given, the
+  // label (a number is the change, shown signed in the value's format).
+  ToolJet.useAction(
+    {
+      name: 'setTrend',
+      displayName: 'Set trend',
+      params: [
+        { handle: 'trend', displayName: 'Trend (up, down or neutral)', defaultValue: 'up' },
+        { handle: 'trendLabel', displayName: 'Trend label (optional, e.g. +25%)', defaultValue: '' },
+      ],
+    },
+    (next: unknown, nextLabel: unknown) => {
+      const t = str(next).trim().toLowerCase();
+      if (t === 'up' || t === 'down' || t === 'neutral') setTrend(t);
+      if (typeof nextLabel === 'number' || (typeof nextLabel === 'string' && nextLabel !== '')) setTrendLabel(nextLabel as string);
+    }
+  );
   const n = toNumber(value);
   const shown = n === null ? str(value) : formatNumber(n, format as NumberFormat, currency);
   // A number bound to trendLabel (today - yesterday) is the change: shown signed, in the value's format, and with

@@ -284,11 +284,22 @@ export const Rating = () => {
   );
 };
 
+/** A range's [from, to] within min and max, in order; anything that is not two numbers is the whole range. */
+const toRange = (v: unknown, lo: number, hi: number): [number, number] => {
+  const fit = (n: number) => Math.min(hi, Math.max(lo, n));
+  const pair = Array.isArray(v) ? v.slice(0, 2).map((x) => toNumber(x)) : [];
+  if (pair.length < 2 || pair[0] === null || pair[1] === null) return [lo, hi];
+  const [a, b] = [fit(pair[0] as number), fit(pair[1] as number)];
+  return a <= b ? [a, b] : [b, a];
+};
+
 // MUI's Slider: label, value, min, max, step, marks, valueLabelDisplay (auto, on, off), color, size; events onChange
-// (while dragging) and onChangeCommitted (on release).
+// (while dragging) and onChangeCommitted (on release). Range gives two thumbs (MUI's range slider): value is then
+// [from, to].
 export const Slider = () => {
   const field = useFieldProps({ label: 'Volume' });
-  const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: 50 });
+  const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', description: 'A number, or [from, to] with Range on.', initialValue: 50 });
+  const [range] = ToolJet.useStateBoolean({ name: 'range', label: 'Range', description: 'Two thumbs; the value is [from, to].', initialValue: false });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', initialValue: 0 });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: 100 });
   const [step] = ToolJet.useStateNumber({ name: 'step', label: 'Step', initialValue: 1, min: 0 });
@@ -300,19 +311,26 @@ export const Slider = () => {
   const onChangeCommitted = ToolJet.useEventCallback({ name: 'onChangeCommitted' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'choice', value, present: true });
+  const isRange = range === true;
+  const check = ToolJet.useValidation({ section: 'choice', value: Array.isArray(value) ? (value as unknown as unknown[]).join(',') : value, present: true });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 5.6 });
   const lo = toNumber(min) ?? 0;
   const hi = Math.max(lo, toNumber(max) ?? 100);
   // The thumb draws the value within min and max: a literal 150 under max 100 drew 100 and exposed 150, and an empty
-  // value (a Form's clearForm) drew min. The exposed value follows the thumb, with no onChange.
-  const drawn = Math.min(hi, Math.max(lo, toNumber(value) ?? lo));
+  // value (a Form's clearForm) drew min. The exposed value follows the thumb, with no onChange. With Range, anything but
+  // two numbers (a single number, a cleared Form) is the whole range, and a single value takes a range's first number.
+  const single = Math.min(hi, Math.max(lo, toNumber(Array.isArray(value) ? (value as unknown as unknown[])[0] : value) ?? lo));
+  const pair = toRange(value, lo, hi);
+  const drawn: number | number[] = isRange ? pair : single;
+  const drawnKey = isRange ? `${pair[0]},${pair[1]}` : String(single);
+  const valueKey = Array.isArray(value) ? (value as unknown as unknown[]).join(',') : String(value);
   useEffect(() => {
-    if (value !== drawn) setValue(drawn);
-  }, [value, drawn, setValue]);
+    if (valueKey !== drawnKey || Array.isArray(value) !== isRange) setValue(drawn as number);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valueKey, drawnKey, isRange]);
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => {
-    setValue(Math.min(hi, Math.max(lo, toNumber(next) ?? lo)));
+    setValue((isRange ? toRange(next, lo, hi) : Math.min(hi, Math.max(lo, toNumber(next) ?? lo))) as number);
     onChange();
   });
   return (
@@ -330,8 +348,10 @@ export const Slider = () => {
             color={color as 'primary'}
             size={size as 'medium'}
             disabled={disabled}
+            disableSwap={isRange}
+            getAriaLabel={isRange ? (i) => (i === 0 ? 'From' : 'To') : undefined}
             onChange={(_, next) => {
-              setValue(next as number);
+              setValue((Array.isArray(next) ? [...next] : next) as number);
               onChange();
             }}
             onChangeCommitted={() => onChangeCommitted()}
