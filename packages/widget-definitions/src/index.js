@@ -83,4 +83,10 @@ export { fileButtonConfig } from './widgets/fileButton.js';
 export { buttonGroupV2Config } from './widgets/buttonGroupV2.js';
 export { flexContainerConfig } from './widgets/flexContainer.js';
 
-export { NEW_REVAMPED_COMPONENTS, universalProps, legacyUniversalProps, combineProperties } from './utils.js';
+export {
+  NEW_REVAMPED_COMPONENTS,
+  universalProps,
+  legacyUniversalProps,
+  combineProperties,
+  dropNewContainerDefaults,
+} from './utils.js';
