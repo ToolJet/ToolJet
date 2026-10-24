@@ -553,3 +553,200 @@ describe('a native Form reads every field', () => {
     await waitFor(() => expect(v.exposed.value).toEqual(['orders']));
   });
 });
+
+describe('controls UI 2.0 has (team review, 2026-10-24)', () => {
+  const { isClicked, hasClicked } = require('../../../../../../../packs/antd/src/lib/chartHighlight');
+  const message = (v) => v.root().querySelector('.ant-form-item-explain')?.textContent ?? '';
+
+  it.each([
+    ['email', 'nope', 'a@b.co', 'Enter a valid email address'],
+    ['url', 'not a url', 'https://tooljet.com', 'Enter a valid URL'],
+  ])('Input type %s reports a bad value once left, and isValid follows', async (type, bad, good, text) => {
+    const v = await mount('Input', { type, value: bad });
+    await waitFor(() => expect(v.exposed.isValid).toBe(false));
+    expect(message(v)).toBe('');
+    fireEvent.blur(input(v));
+    await waitFor(() => expect(message(v)).toBe(text));
+    v.setProps({ value: good });
+    await waitFor(() => expect(v.exposed.isValid).toBe(true));
+    expect(message(v)).toBe('');
+  });
+
+  it('RadioGroup with Allow deselect clears on a click on the picked option; without it the pick stays', async () => {
+    const radios = (v) => v.root().querySelectorAll('input[type="radio"]');
+    const off = await mount('RadioGroup', { options: OPTIONS, value: 'one' });
+    fireEvent.click(radios(off)[0]);
+    await settle();
+    expect(off.exposed.value).toBe('one');
+    expect(off.events).not.toContain('onChange');
+    off.unmount();
+
+    const v = await mount('RadioGroup', { options: OPTIONS, value: 'one', allowDeselect: true });
+    expect(checked(v)).toBe(1);
+    fireEvent.click(radios(v)[0]);
+    await waitFor(() => expect(v.exposed.value).toBe(''));
+    expect(v.events.filter((e) => e === 'onChange')).toHaveLength(1);
+    expect(checked(v)).toBe(0);
+    // A click on another option still picks it.
+    fireEvent.click(radios(v)[1]);
+    await waitFor(() => expect(v.exposed.value).toBe('two'));
+  });
+
+  it('Slider range draws two handles for [from, to], fits a single number to the whole range and clears with a Form', async () => {
+    const handles = (v) => v.root().querySelectorAll('.ant-slider-handle').length;
+    const v = await mount('Slider', { range: true, value: [20, 80] });
+    expect(handles(v)).toBe(2);
+    await settle();
+    expect(v.exposed.value).toEqual([20, 80]);
+    v.run('setFieldValue', [90, 10]);
+    await waitFor(() => expect(v.exposed.value).toEqual([10, 90]));
+    v.clearForm();
+    await settle();
+    expect(Array.isArray(v.exposed.value)).toBe(false);
+    expect(handles(v)).toBe(2);
+    v.unmount();
+
+    const single = await mount('Slider', { range: true, value: 30 });
+    await waitFor(() => expect(single.exposed.value).toEqual([0, 100]));
+    expect(single.events).not.toContain('onChange');
+    single.setProps({ range: false, value: [40, 60] });
+    await waitFor(() => expect(single.exposed.value).toBe(40));
+    expect(handles(single)).toBe(1);
+  });
+
+  it('Upload past maxCount keeps the files it has and says why; Clear all and clearFiles empty the list', async () => {
+    const v = await mount('Upload', { multiple: true, maxCount: 2 });
+    const files = ['a', 'b', 'c'].map((n) => new File([n], `${n}.txt`, { type: 'text/plain' }));
+    fireEvent.change(v.root().querySelector('input[type=file]'), { target: { files } });
+    await waitFor(() => expect(v.exposed.fileList?.length).toBe(2));
+    expect(v.exposed.fileList.map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+    await waitFor(() => expect(message(v)).toBe('You can upload up to 2 files'));
+    // Full: a further pick is turned away whole, and the files stay.
+    fireEvent.change(v.root().querySelector('input[type=file]'), { target: { files: [new File(['d'], 'd.txt', { type: 'text/plain' })] } });
+    await settle();
+    expect(v.exposed.fileList.map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+    const clearAll = [...v.root().querySelectorAll('button')].find((b) => b.textContent === 'Clear all');
+    fireEvent.click(clearAll);
+    await waitFor(() => expect(v.exposed.fileList).toEqual([]));
+    expect(message(v)).toBe('');
+    expect([...v.root().querySelectorAll('button')].some((b) => b.textContent === 'Clear all')).toBe(false);
+    fireEvent.change(v.root().querySelector('input[type=file]'), { target: { files: [files[0]] } });
+    await waitFor(() => expect(v.exposed.fileList?.length).toBe(1));
+    v.run('clearFiles');
+    await waitFor(() => expect(v.exposed.fileList).toEqual([]));
+  });
+
+  it('Upload with maxCount 1 keeps Ant’s rule: a new pick replaces the file', async () => {
+    const v = await mount('Upload', { maxCount: 1 });
+    const pick = (n) => fireEvent.change(v.root().querySelector('input[type=file]'), { target: { files: [new File([n], `${n}.txt`, { type: 'text/plain' })] } });
+    pick('a');
+    await waitFor(() => expect(v.exposed.fileList?.length).toBe(1));
+    pick('b');
+    await waitFor(() => expect(v.exposed.fileList.map((f) => f.name)).toEqual(['b.txt']));
+    expect(message(v)).toBe('');
+  });
+
+  it.each(['Column', 'Bar', 'Line', 'Area', 'Pie', 'DualAxes', 'Funnel', 'Radar', 'Scatter', 'Heatmap'])(
+    '%s takes Highlight clicked point and clears the clicked datum with clearClickedPoint',
+    async (name) => {
+      // A datum clicked before (hidden state seeded from a saved value) draws highlighted from the first render.
+      const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const v = await mount(name, { highlightClicked: true, selectedDatum: { x: 'Jan', y: 42, stage: 'Visited' } }, { formField: false });
+      await settle();
+      expect(errors).not.toHaveBeenCalled();
+      errors.mockRestore();
+      expect(v.actions.has('clearClickedPoint')).toBe(true);
+      v.run('clearClickedPoint');
+      await waitFor(() => expect(v.exposed.selectedDatum).toEqual({}));
+    }
+  );
+
+  it('a clicked mark matches by its x and series; a clicked line by its series alone', () => {
+    const by = { keys: ['month', 'series'], series: 'series' };
+    const jan = { month: 'Jan', series: 'sales', value: 4 };
+    expect(isClicked({ month: 'Jan', series: 'sales', value: 9 }, jan, by)).toBe(true);
+    expect(isClicked({ month: 'Feb', series: 'sales' }, jan, by)).toBe(false);
+    expect(isClicked({ month: 'Jan', series: 'cost' }, jan, by)).toBe(false);
+    // A line hands its rows to a style callback and to the click.
+    const salesLine = [jan, { month: 'Feb', series: 'sales' }];
+    expect(isClicked(salesLine, salesLine, by)).toBe(true);
+    expect(isClicked([{ month: 'Jan', series: 'cost' }], salesLine, by)).toBe(false);
+    expect(isClicked(jan, salesLine, { ...by, rowOnly: true })).toBe(false);
+    expect(hasClicked({})).toBe(false);
+    expect(hasClicked([])).toBe(false);
+    expect(hasClicked(jan)).toBe(true);
+  });
+});
+
+describe('team UI 2.0 report: lists, box-sized layouts and the Statistic trend', () => {
+  const TWINS = [
+    { id: 1, title: 'Alpha', v: 1 },
+    { id: 1, title: 'Alpha twin', v: 2 },
+    { id: 2, title: 'Beta', v: 3 },
+  ];
+  const drawnSelected = (v) => [...v.root().querySelectorAll('.ant-list-item.is-selected')].map((el) => el.textContent);
+
+  it('List: of two records sharing an id, only the picked one draws selected, and a refresh keeps it', async () => {
+    const v = await mount('List', { dataSource: TWINS }, { formField: false });
+    fireEvent.click(v.root().querySelectorAll('.ant-list-item')[1]);
+    await settle();
+    expect(v.exposed.selectedItem).toEqual(TWINS[1]);
+    expect(drawnSelected(v)).toEqual(['Alpha twin']);
+    v.setProps({ dataSource: TWINS.map((r) => ({ ...r, v: r.v + 10 })) });
+    await settle();
+    expect(v.exposed.selectedItem).toEqual({ ...TWINS[1], v: 12 });
+    expect(v.exposed.selectedItemKey).toBe(1);
+    expect(drawnSelected(v)).toEqual(['Alpha twin']);
+  });
+
+  it('List: a row without an id is followed by its content when a row is added before it', async () => {
+    const rows = [{ title: 'One' }, { title: 'Two' }];
+    const v = await mount('List', { dataSource: rows }, { formField: false });
+    fireEvent.click(v.root().querySelectorAll('.ant-list-item')[1]);
+    await settle();
+    v.setProps({ dataSource: [{ title: 'Zero' }, ...rows] });
+    await settle();
+    expect(v.exposed.selectedItem).toEqual({ title: 'Two' });
+    expect(drawnSelected(v)).toEqual(['Two']);
+  });
+
+  it.each([
+    ['Alert', { message: 'Saved', description: 'A long description' }],
+    ['Descriptions', {}],
+    ['RecordList', {}],
+    ['ProgressList', {}],
+    ['List', {}],
+    ['Table', { columns: [] }],
+    ['Hero', {}],
+  ])('%s fills its widget box and scrolls taller content inside it', async (name, props) => {
+    const v = await mount(name, props, { formField: false });
+    const root = v.root().querySelector('.tj-ant-root');
+    expect(root.classList.contains('tj-ant--fill')).toBe(true);
+    if (name !== 'Alert') expect(root.classList.contains('tj-ant-scroll')).toBe(true);
+    else expect(root.classList.contains('tj-ant-alert')).toBe(true);
+  });
+
+  it('Collapse: drops with its first panel open', async () => {
+    const v = await mount('Collapse', {}, { formField: false });
+    await settle();
+    expect(v.exposed.activeKey).toEqual(['panel1']);
+    expect(v.root().querySelectorAll('.ant-collapse-item-active')).toHaveLength(1);
+  });
+
+  it('Statistic: setTrend sets the direction and, when given, the value', async () => {
+    const v = await mount('Statistic', { trend: 'neutral', trendValue: '4%' }, { formField: false });
+    v.run('setTrend', 'down', '-12%');
+    await settle();
+    expect(v.exposed.trend).toBe('down');
+    expect(v.exposed.trendValue).toBe('-12%');
+    const change = v.root().querySelector('.tj-ant-stat-change');
+    expect(change.classList.contains('is-down')).toBe(true);
+    expect(change.textContent).toContain('-12%');
+    // A direction alone keeps the value; a word that is no direction changes nothing.
+    v.run('setTrend', 'up');
+    v.run('setTrend', 'sideways');
+    await settle();
+    expect(v.exposed.trend).toBe('up');
+    expect(v.exposed.trendValue).toBe('-12%');
+  });
+});

@@ -7,9 +7,11 @@ import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
+import { typeRule, useRuleCheck } from '../lib/typeRule';
 
 // Ant's Input: value, placeholder, allowClear, maxLength/showCount, prefix/suffix, addonBefore/addonAfter, variant,
 // size; events onChange, onPressEnter, onFocus, onBlur, onClear; Form-style actions setFieldValue and resetFields.
+// Type email or url also checks the format, as UI 2.0's Input does: a bad address is reported once the field is left.
 export const Input = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Label' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The text; also the value resetFields returns to.', initialValue: '' });
@@ -36,7 +38,7 @@ export const Input = (props: Record<string, unknown>) => {
   const ref = useRef<InputRef>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'text', value });
+  const check = useRuleCheck(ToolJet.useValidation({ section: 'text', value }), typeRule(type, value));
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
 

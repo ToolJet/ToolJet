@@ -22,6 +22,7 @@ import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str, toArray, toOptions, type Row } from '../lib/data';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
 import { useFormValue } from '../lib/formValue';
+import '../styles/controls.css';
 
 const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
   ToolJet.useAction(
@@ -68,7 +69,9 @@ const readFile = (file: File): Promise<FileInfo & { file: File }> =>
 
 // Ant's Upload (Upload.Dragger by default): the files stay in the browser (no action URL); fileList exposes each as
 // { uid, name, size, type, base64, content (text files) } for a query to send. accept, multiple, maxCount, listType,
-// text and hint (the dragger's two lines); events onChange, onRemove; resetFields empties the list.
+// text and hint (the dragger's two lines); events onChange, onRemove; resetFields and clearFiles empty the list (Clear
+// all under two or more files). Past maxCount the extra files are turned away with a message, as UI 2.0's File upload
+// does, not swapped for the oldest; a maxCount of 1 keeps Ant's rule that a new pick replaces the file.
 export const Upload = () => {
   const field = useFieldProps({ label: 'Attachment' });
   const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['drag', 'select'], enumLabels: { drag: 'Drag area', select: 'Button' }, initialValue: 'drag' });
@@ -88,6 +91,8 @@ export const Upload = () => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 16 });
   const [uiFiles, setUiFiles] = useState<UploadFile[]>([]);
+  // Why the last pick was not taken whole (past maxCount), shown as the field's message until the files change again.
+  const [rejected, setRejected] = useState('');
   // The files as of the latest change, for reads that finish later: a pick merged into the files as they were when it
   // started, so a slow read dropped the files a quicker pick had added meanwhile, and a pick that finished after a clear
   // (a Form's clearForm, resetFields) put the cleared files back (SP-11). Each clear starts a new generation; a read only
@@ -113,16 +118,20 @@ export const Upload = () => {
     check.touch();
     onChange();
   };
-  ToolJet.useAction({ name: 'resetFields', displayName: 'Clear files' }, () => {
+  const clearFiles = () => {
     generation.current += 1;
+    setRejected('');
     set([]);
-  });
+  };
+  ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, clearFiles);
+  ToolJet.useAction({ name: 'clearFiles', displayName: 'Clear files' }, clearFiles);
   // A Form's clearForm empties the files (the host clears only `value`), and drops the reads still under way.
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
     generation.current += 1;
     latest.current = [];
     setFileList([]);
     setUiFiles([]);
+    setRejected('');
   });
 
   const limit = Number(maxCount) > 0 ? Number(maxCount) : undefined;
@@ -144,35 +153,51 @@ export const Upload = () => {
       if (!mounted.current || mine !== generation.current) return false;
       // Merged into the files as they are now, under the limit as it is now (not as when the pick started).
       const now = Number(live.current.maxCount) > 0 ? Number(live.current.maxCount) : undefined;
-      const merged = [...latest.current, ...read];
-      set(now ? merged.slice(-now) : merged);
+      if (now === 1) {
+        setRejected('');
+        set(read.slice(-1));
+        return false;
+      }
+      const room = now ? Math.max(0, now - latest.current.length) : read.length;
+      const taking = read.slice(0, room);
+      setRejected(taking.length < read.length ? `You can upload up to ${now} file${now === 1 ? '' : 's'}` : '');
+      if (taking.length) set([...latest.current, ...taking]);
       return false;
     },
     onRemove: (f: UploadFile) => {
+      setRejected('');
       set(latest.current.filter((x) => x.uid !== f.uid));
       onRemove();
       return true;
     },
   };
+  const shownCheck = rejected ? { ...check, error: rejected } : check;
   return (
     <AntProvider tokens={tokens} fill={type === 'drag'} className="tj-ant-upload">
-      <FormField {...field} check={check}>
+      <FormField {...field} check={shownCheck}>
         <SpinOver loading={loading} as="fill">
-          {type === 'drag' ? (
-            <AntUpload.Dragger {...props}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              {text ? <p className="ant-upload-text">{text}</p> : null}
-              {hint ? <p className="ant-upload-hint">{hint}</p> : null}
-            </AntUpload.Dragger>
-          ) : (
-            <AntUpload {...props}>
-              <Button icon={<UploadOutlined />} disabled={disabled}>
-                {text || 'Select file'}
+          <div className="tj-ant-upload-body">
+            {type === 'drag' ? (
+              <AntUpload.Dragger {...props}>
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                {text ? <p className="ant-upload-text">{text}</p> : null}
+                {hint ? <p className="ant-upload-hint">{hint}</p> : null}
+              </AntUpload.Dragger>
+            ) : (
+              <AntUpload {...props}>
+                <Button icon={<UploadOutlined />} disabled={disabled}>
+                  {text || 'Select file'}
+                </Button>
+              </AntUpload>
+            )}
+            {files.length >= 2 ? (
+              <Button type="link" size="small" className="tj-ant-upload-clear" disabled={disabled} onClick={clearFiles}>
+                Clear all
               </Button>
-            </AntUpload>
-          )}
+            ) : null}
+          </div>
         </SpinOver>
       </FormField>
     </AntProvider>

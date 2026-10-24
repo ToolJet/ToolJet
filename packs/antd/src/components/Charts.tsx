@@ -18,13 +18,14 @@ import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { ChartLoader } from '../lib/Loading';
 import { str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
+import { useClickHighlight } from '../lib/chartHighlight';
 
 // G2's (Ant's charting engine) own categorical palette after its first colour, which is antd's primary (or the
 // component's colorPrimary style).
 const PALETTE = ['#00C9C9', '#F0884D', '#D580FF', '#7863FF', '#60C42D', '#BD8F24', '#FF80CA', '#2491B3', '#17C76F'];
 
-type Theme = { brand: string; text: string; muted: string; border: string; surface: string; dark: boolean };
-const LIGHT: Theme = { brand: '#1677ff', text: 'rgba(0, 0, 0, 0.88)', muted: 'rgba(0, 0, 0, 0.45)', border: '#f0f0f0', surface: '#ffffff', dark: false };
+type Theme = { brand: string; text: string; muted: string; axis: string; border: string; surface: string; dark: boolean };
+const LIGHT: Theme = { brand: '#1677ff', text: 'rgba(0, 0, 0, 0.88)', muted: 'rgba(0, 0, 0, 0.45)', axis: 'rgba(0, 0, 0, 0.65)', border: '#f0f0f0', surface: '#ffffff', dark: false };
 
 // The chart draws on a canvas, which cannot read CSS variables: read antd's tokens off the element (stock Ant, or the
 // component's style overrides; dark under .tj-ant-dark), and again when the root's class or style changes.
@@ -66,6 +67,8 @@ const useChartTheme = (ref: React.RefObject<HTMLElement>) => {
         brand: probe('--ant-color-primary', LIGHT.brand),
         text: probe('--ant-color-text', LIGHT.text),
         muted: probe('--ant-color-text-tertiary', LIGHT.muted),
+        // Axis labels and titles in antd's secondary text: the tertiary (45% black) read as very faint on a canvas.
+        axis: probe('--ant-color-text-secondary', LIGHT.axis),
         border: probe('--ant-color-split', LIGHT.border),
         surface: probe('--ant-color-bg-container', LIGHT.surface),
         dark: root.classList.contains('tj-ant-dark'),
@@ -89,6 +92,19 @@ const STAGES = [{ stage: 'Visited', value: 1200 }, { stage: 'Signed up', value: 
 const SKILLS = [{ x: 'Speed', y: 80 }, { x: 'Quality', y: 65 }, { x: 'Cost', y: 90 }, { x: 'Support', y: 70 }, { x: 'Reach', y: 75 }];
 const POINTS = [{ x: 12, y: 34 }, { x: 18, y: 41 }, { x: 25, y: 38 }, { x: 31, y: 52 }, { x: 38, y: 49 }, { x: 44, y: 63 }, { x: 52, y: 58 }, { x: 60, y: 71 }];
 
+const HIGHLIGHT_HELP = 'Keeps the clicked mark at full strength and fades the rest, until Clear clicked point runs or another is clicked.';
+
+/** Highlight clicked point and the clicked datum (selectedDatum), with the clearClickedPoint action, for every chart that
+ *  takes clicks (UI 2.0's Highlight clicked point and Clear clicked point). */
+const useClicked = () => {
+  const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: HIGHLIGHT_HELP, initialValue: false });
+  const [selectedDatum, setSelectedDatum] = ToolJet.useStateObject({ name: 'selectedDatum', initialValue: {}, inspector: 'hidden' });
+  const onElementClick = ToolJet.useEventCallback({ name: 'onElementClick' });
+  ToolJet.useAction({ name: 'clearClickedPoint', displayName: 'Clear clicked point' }, () => setSelectedDatum({}));
+  const highlight = useClickHighlight(highlightClicked, selectedDatum);
+  return { highlight, highlightOn: highlightClicked === true, setSelectedDatum, onElementClick };
+};
+
 // data is the sample a fresh drop shows, keyed by the default fields.
 const useChartProps = (defaults: { x?: string; y?: string; ys?: string[]; data?: Row[] } = {}) => {
   const [rawData] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: 'Rows, one per x value: [{ month, sales }]', initialValue: defaults.data ?? [] });
@@ -105,10 +121,9 @@ const useChartProps = (defaults: { x?: string; y?: string; ys?: string[]; data?:
   const [label] = ToolJet.useStateBoolean({ name: 'label', label: 'Label', description: 'Values on the marks.', initialValue: false });
   const [yFormatter] = ToolJet.useStateEnumeration({ name: 'yFormatter', label: 'Y formatter', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'compact' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'yFormatter', value: 'currency' } });
-  const [, setSelectedDatum] = ToolJet.useStateObject({ name: 'selectedDatum', initialValue: {}, inspector: 'hidden' });
-  const onElementClick = ToolJet.useEventCallback({ name: 'onElementClick' });
+  const { highlight, highlightOn, setSelectedDatum, onElementClick } = useClicked();
   const { loading } = ToolJet.useControlState();
-  return { loading, rawData, xField, yField, colorField, title, legend, label, yFormatter, currency, setSelectedDatum, onElementClick };
+  return { loading, rawData, xField, yField, colorField, title, legend, label, yFormatter, currency, setSelectedDatum, onElementClick, highlight, highlightOn };
 };
 
 // yField is one field name ('sales') or several (['sales', 'cost']).
@@ -162,7 +177,7 @@ const useCommon = (
       const n = toNumber(v);
       return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency);
     };
-    const axisStyle = { labelFill: theme.muted, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border, gridStroke: theme.border, gridStrokeOpacity: 1, titleFill: theme.muted };
+    const axisStyle = { labelFill: theme.axis, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border, gridStroke: theme.border, gridStrokeOpacity: 1, titleFill: theme.axis };
     return {
       autoFit: true,
       theme: theme.dark ? 'classicDark' : 'classic',
@@ -202,6 +217,7 @@ export const Column = () => {
   const common = useCommon(p, theme, s);
   const r = Math.max(0, Number(radius) || 0);
   const Chart = horizontal ? AntBar : AntColumn;
+  const marked = p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [s.x, s.color] }) } : {};
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
@@ -213,7 +229,7 @@ export const Column = () => {
           colorField={s.color}
           stack={stack && !!s.color}
           group={!stack && !!s.color}
-          style={horizontal ? { radiusTopRight: r, radiusBottomRight: r, fill: s.color ? undefined : theme.brand } : { radiusTopLeft: r, radiusTopRight: r, fill: s.color ? undefined : theme.brand }}
+          style={horizontal ? { radiusTopRight: r, radiusBottomRight: r, fill: s.color ? undefined : theme.brand, ...marked } : { radiusTopLeft: r, radiusTopRight: r, fill: s.color ? undefined : theme.brand, ...marked }}
         />
       </Frame>
     </AntProvider>
@@ -232,6 +248,15 @@ export const Line = () => {
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
   const common = useCommon(p, theme, s);
+  // Highlighted: the clicked line stays and the others fade; a clicked point is marked. With Point off the points are
+  // there to be clicked but drawn only once clicked.
+  const h = p.highlight;
+  const dot = { keys: [s.x, s.y, s.color], rowOnly: true };
+  const points = point
+    ? { shapeField: 'circle', sizeField: 3, ...(h ? { style: { opacity: h.opacity(dot) } } : {}) }
+    : p.highlightOn
+      ? { shapeField: 'circle', sizeField: 4, style: { opacity: h ? h.opacity(dot, 1, 0) : 0 } }
+      : undefined;
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
@@ -242,8 +267,8 @@ export const Line = () => {
           yField={s.y}
           colorField={s.color}
           shapeField={smooth ? 'smooth' : undefined}
-          point={point ? { shapeField: 'circle', sizeField: 3 } : undefined}
-          style={{ lineWidth: 2, stroke: s.color ? undefined : theme.brand }}
+          point={points}
+          style={{ lineWidth: 2, stroke: s.color ? undefined : theme.brand, ...(h ? { strokeOpacity: h.opacity({ keys: [s.color], series: s.color }) } : {}) }}
         />
       </Frame>
     </AntProvider>
@@ -262,6 +287,10 @@ export const Area = () => {
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
   const common = useCommon(p, theme, s);
+  // Highlighted: the clicked area (its series) stays and the others fade.
+  const h = p.highlight;
+  const bySeries = { keys: [s.color], series: s.color };
+  const fillOpacity = s.color && !stack ? 0.25 : 0.4;
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
@@ -273,8 +302,8 @@ export const Area = () => {
           colorField={s.color}
           stack={stack && !!s.color}
           shapeField={smooth ? 'smooth' : undefined}
-          style={{ fillOpacity: s.color && !stack ? 0.25 : 0.4, fill: s.color ? undefined : theme.brand }}
-          line={{ style: { lineWidth: 2, stroke: s.color ? undefined : theme.brand } }}
+          style={{ fillOpacity: h ? h.opacity(bySeries, fillOpacity) : fillOpacity, fill: s.color ? undefined : theme.brand }}
+          line={{ style: { lineWidth: 2, stroke: s.color ? undefined : theme.brand, ...(h ? { strokeOpacity: h.opacity(bySeries) } : {}) } }}
         />
       </Frame>
     </AntProvider>
@@ -294,8 +323,7 @@ export const Pie = () => {
   const [label] = ToolJet.useStateBoolean({ name: 'label', label: 'Label', description: 'Percent on the slices.', initialValue: false });
   const [formatter] = ToolJet.useStateEnumeration({ name: 'formatter', label: 'Formatter', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'auto' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'formatter', value: 'currency' } });
-  const [, setSelectedDatum] = ToolJet.useStateObject({ name: 'selectedDatum', initialValue: {}, inspector: 'hidden' });
-  const onElementClick = ToolJet.useEventCallback({ name: 'onElementClick' });
+  const { highlight, setSelectedDatum, onElementClick } = useClicked();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
@@ -325,7 +353,7 @@ export const Pie = () => {
           legend={legend === 'none' ? false : { color: { position: legend === 'right' && narrow ? 'bottom' : legend, itemLabelFill: theme.text, rowPadding: 6 } }}
           label={label ? { text: (d: Row) => `${Math.round(((d[angleField] as number) / total) * 100)}%`, fill: '#fff', position: 'inside' } : false}
           tooltip={{ title: (d: Row) => str(d[colorField]), items: [{ field: angleField, valueFormatter: fmt }] }}
-          style={{ stroke: theme.surface, lineWidth: 2 }}
+          style={{ stroke: theme.surface, lineWidth: 2, ...(highlight ? { fillOpacity: highlight.opacity({ keys: [colorField] }) } : {}) }}
           onEvent={(_chart: unknown, event: { type?: string; data?: { data?: Row } }) => {
             if (event?.type === 'element:click') {
               setSelectedDatum(event.data?.data ?? {});
@@ -363,7 +391,7 @@ export const Bar = () => {
           colorField={s.color}
           stack={stack && !!s.color}
           group={!stack && !!s.color}
-          style={{ radiusTopRight: r, radiusBottomRight: r, fill: s.color ? undefined : theme.brand }}
+          style={{ radiusTopRight: r, radiusBottomRight: r, fill: s.color ? undefined : theme.brand, ...(p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [s.x, s.color] }) } : {}) }}
         />
       </Frame>
     </AntProvider>
@@ -387,11 +415,11 @@ export const DualAxes = () => {
     const n = toNumber(v);
     return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency);
   };
-  const axisStyle = { labelFill: theme.muted, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border, gridStroke: theme.border, gridStrokeOpacity: 1, labelFormatter: fmt };
+  const axisStyle = { labelFill: theme.axis, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border, gridStroke: theme.border, gridStrokeOpacity: 1, labelFormatter: fmt };
   const layer = (field: string, kind: string, color: string, side: 'left' | 'right') =>
     kind === 'line'
       ? { type: 'line', yField: field, shapeField: 'smooth', style: { stroke: color, lineWidth: 2 }, scale: { y: { independent: side === 'right' } }, axis: { y: { position: side, ...axisStyle, grid: side === 'left' } } }
-      : { type: 'interval', yField: field, style: { fill: color, radiusTopLeft: 4, radiusTopRight: 4, maxWidth: 40 }, scale: { y: { independent: side === 'right' } }, axis: { y: { position: side, ...axisStyle, grid: side === 'left' } } };
+      : { type: 'interval', yField: field, style: { fill: color, radiusTopLeft: 4, radiusTopRight: 4, maxWidth: 40, ...(p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [p.xField] }) } : {}) }, scale: { y: { independent: side === 'right' } }, axis: { y: { position: side, ...axisStyle, grid: side === 'left' } } };
   const data = rows.map((r) => ({ ...r, [left]: toNumber(r[left]), ...(right ? { [right]: toNumber(r[right]) } : {}) }));
   return (
     <AntProvider tokens={tokens} fill>
@@ -401,7 +429,7 @@ export const DualAxes = () => {
           theme={(common as { theme: string }).theme}
           data={data}
           xField={p.xField}
-          axis={{ x: { labelFill: theme.muted, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border } }}
+          axis={{ x: { labelFill: theme.axis, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border } }}
           legend={p.legend === 'none' ? false : { color: { position: p.legend, itemLabelFill: theme.text } }}
           onEvent={(common as { onEvent: unknown }).onEvent as never}
           children={[layer(left, kinds[0] || 'column', theme.brand, 'left'), ...(right ? [layer(right, kinds[1] || 'line', PALETTE[0], 'right')] : [])] as never}
@@ -439,6 +467,7 @@ export const Funnel = () => {
           legend={false}
           label={{ text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])} (${Math.round(((d[y] as number) / first) * 100)}%)`, fill: '#fff', position: 'inside' }}
           tooltip={{ items: [{ field: y, valueFormatter: fmt }] }}
+          style={p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [p.xField] }) } : undefined}
           onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
             if (e?.type === 'element:click') {
               p.setSelectedDatum(e.data?.data ?? {});
@@ -497,6 +526,8 @@ export const Radar = () => {
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
   const common = useCommon(p, theme, s);
+  // Highlighted: the clicked series stays and the others fade; a clicked point stays and the other points fade.
+  const h = p.highlight;
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
@@ -506,11 +537,11 @@ export const Radar = () => {
           xField={s.x}
           yField={s.y}
           colorField={s.color}
-          area={area ? { style: { fillOpacity: 0.2 } } : undefined}
-          point={{ size: 3 }}
+          area={area ? { style: { fillOpacity: h ? h.opacity({ keys: [s.color], series: s.color }, 0.2) : 0.2 } } : undefined}
+          point={h ? { size: 3, style: { opacity: h.opacity({ keys: [s.x, s.y, s.color], rowOnly: true }) } } : { size: 3 }}
           scale={{ x: { padding: 0.5, align: 0 }, y: { nice: true }, color: { range: [theme.brand, ...PALETTE] } }}
-          axis={{ x: { grid: true, gridStroke: theme.border, labelFill: theme.muted, labelFillOpacity: 1 }, y: { gridStroke: theme.border, labelFill: theme.muted, gridLineWidth: 1 } }}
-          style={{ lineWidth: 2, stroke: s.color ? undefined : theme.brand, fill: s.color ? undefined : theme.brand }}
+          axis={{ x: { grid: true, gridStroke: theme.border, labelFill: theme.axis, labelFillOpacity: 1 }, y: { gridStroke: theme.border, labelFill: theme.axis, labelFillOpacity: 1, gridLineWidth: 1 } }}
+          style={{ lineWidth: 2, stroke: s.color ? undefined : theme.brand, fill: s.color ? undefined : theme.brand, ...(h ? { strokeOpacity: h.opacity({ keys: [s.color], series: s.color }) } : {}) }}
         />
       </Frame>
     </AntProvider>
@@ -541,7 +572,7 @@ export const Scatter = () => {
           sizeField={sizeField || undefined}
           shapeField="point"
           axis={{ ...(common as { axis: Record<string, object> }).axis, x: { ...(common as { axis: Record<string, object> }).axis.x, grid: true } }}
-          style={{ fillOpacity: 0.7, lineWidth: 0, fill: p.colorField ? undefined : theme.brand }}
+          style={{ fillOpacity: p.highlight ? p.highlight.opacity({ keys: [p.xField, y, p.colorField] }, 0.7) : 0.7, lineWidth: 0, fill: p.colorField ? undefined : theme.brand }}
         />
       </Frame>
     </AntProvider>
@@ -574,8 +605,7 @@ export const Heatmap = () => {
   const [colorField] = ToolJet.useStateString({ name: 'colorField', label: 'Color field', description: 'The value that sets the shade.', initialValue: 'value' });
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
   const [label] = ToolJet.useStateBoolean({ name: 'label', label: 'Label', initialValue: false });
-  const [, setSelectedDatum] = ToolJet.useStateObject({ name: 'selectedDatum', initialValue: {}, inspector: 'hidden' });
-  const onElementClick = ToolJet.useEventCallback({ name: 'onElementClick' });
+  const { highlight, setSelectedDatum, onElementClick } = useClicked();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
@@ -593,8 +623,8 @@ export const Heatmap = () => {
           colorField={colorField}
           mark="cell"
           scale={{ color: { range: [theme.dark ? '#1f2937' : '#eef2ff', theme.brand] } }}
-          style={{ inset: 1 }}
-          axis={{ x: { labelFill: theme.muted, labelFillOpacity: 1, tick: false, line: false }, y: { labelFill: theme.muted, labelFillOpacity: 1, tick: false, line: false } }}
+          style={highlight ? { inset: 1, fillOpacity: highlight.opacity({ keys: [xField, yField] }) } : { inset: 1 }}
+          axis={{ x: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false }, y: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false } }}
           legend={{ color: { itemLabelFill: theme.text } }}
           label={label ? { text: colorField, fill: theme.text, position: 'inside' } : undefined}
           onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {

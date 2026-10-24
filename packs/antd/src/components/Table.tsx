@@ -245,7 +245,7 @@ export const Table = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages, current, pagination]);
   return (
-    <AntProvider tokens={tokens} className="tj-ant-table">
+    <AntProvider tokens={tokens} fill className="tj-ant-table tj-ant-scroll">
       <AntTable<Row>
         dataSource={rows}
         columns={antColumns}

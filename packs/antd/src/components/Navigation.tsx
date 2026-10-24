@@ -54,7 +54,8 @@ export const Collapse = () => {
       { key: 'panel2', label: 'Panel 2' },
     ],
   });
-  const [activeKey, setActiveKey] = ToolJet.useStateArray({ name: 'activeKey', label: 'Active key', description: 'Keys of the open panels.', initialValue: [] });
+  // The first panel open, as Ant's own examples drop it: two closed headers left most of the box blank.
+  const [activeKey, setActiveKey] = ToolJet.useStateArray({ name: 'activeKey', label: 'Active key', description: 'Keys of the open panels.', initialValue: ['panel1'] });
   const [accordion] = ToolJet.useStateBoolean({ name: 'accordion', label: 'Accordion', initialValue: false });
   const [bordered] = ToolJet.useStateBoolean({ name: 'bordered', label: 'Bordered', initialValue: true });
   const [ghost] = ToolJet.useStateBoolean({ name: 'ghost', label: 'Ghost', initialValue: false });
@@ -378,7 +379,7 @@ export const Skeleton = () => {
   const [loading] = ToolJet.useStateBoolean({ name: 'loading', label: 'Loading', initialValue: true });
   const host = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 12 });
+  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 16 });
   return (
     <AntProvider tokens={tokens} fill>
       {loading || host.loading ? <AntSkeleton active={active} avatar={avatar} title={title} paragraph={{ rows: Math.max(0, Number(rows) || 0) }} /> : null}

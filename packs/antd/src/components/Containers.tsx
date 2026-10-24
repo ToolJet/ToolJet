@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Button, Card as AntCard, List as AntList, Modal as AntModal, Space, Tabs as AntTabs, Tag } from 'antd';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 
@@ -207,6 +207,19 @@ const ModalBody = ({
   );
 };
 
+// Each row's own key: its id, a repeated id suffixed by its occurrence (1, then 1~1), so two records that share an id
+// are told apart: both drew selected, and a refresh moved the selection to the first of them.
+const occurrenceKeys = (rows: Row[], field: string) => {
+  const seen = new Set<string>();
+  return rows.map((r, i) => {
+    const base = rowKeyOf(r, field, i);
+    let key = base;
+    for (let n = 1; seen.has(key); n += 1) key = `${base}~${n}`;
+    seen.add(key);
+    return key;
+  });
+};
+
 // Ant's List: dataSource; each item is either a row of ToolJet components (renderItem 'components', reading
 // {{listItem}}, rowHeight) or Ant's List.Item.Meta from fields (titleField, descriptionField, avatarField, extraField);
 // header, footer, bordered, split, size, pageSize (0 for no pagination), locale emptyText. Event onItemClick with
@@ -256,32 +269,42 @@ export const List = () => {
   ToolJet.useRows(asRows ? visible : [], height);
   const field = str(rowKey) || 'id';
   const offset = size_ ? (p - 1) * size_ : 0;
-  const selectedKey = selectedItem && Object.keys(selectedItem).length ? rowKeyOf(selectedItem as Row, field, -1) : '';
+  const rowsKey = JSON.stringify(rows);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const keys = useMemo(() => occurrenceKeys(rows, field), [rowsKey, field]);
+  // The picked row's own key (its occurrence of a repeated id). Without one (nothing picked here yet), the exposed
+  // record's id names it.
+  const [picked, setPicked] = useState('');
+  const exposedKey = selectedItem && Object.keys(selectedItem).length ? rowKeyOf(selectedItem as Row, field, -1) : '';
+  const selectedKey = picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(rows[i], field, i) === exposedKey) ?? '') : '');
 
   const select = (row: Row | null, index: number) => {
+    setPicked(row && index >= 0 ? keys[index] ?? '' : '');
     setSelectedItem(row ?? {});
     setSelectedItemKey((row ? rowIdOf(row, field, index) : '') as string);
     if (row) onItemClick();
   };
   // The selection follows its record by key across a refresh or a reorder (an edited record is exposed as it is now),
   // and clears once the record is gone: the old row stayed exposed and highlighted nothing (SP-31).
-  const rowsKey = JSON.stringify(rows);
   useEffect(() => {
-    if (!selectedKey) return;
-    // A row with no id is found by its content.
+    if (!selectedKey && !exposedKey) return;
+    // A row with no id (keyed by its position, exposedKey -1) is found by its content.
     const same = JSON.stringify(selectedItem);
-    let index = rows.findIndex((r, i) => rowKeyOf(r, field, i) === selectedKey);
-    if (index < 0) index = rows.findIndex((r) => JSON.stringify(r) === same);
+    const index = exposedKey === '-1' ? rows.findIndex((r) => JSON.stringify(r) === same) : selectedKey ? keys.indexOf(selectedKey) : -1;
     const row = rows[index];
     if (!row) {
+      setPicked('');
       setSelectedItem({});
       setSelectedItemKey('');
-    } else if (JSON.stringify(row) !== same) {
+      return;
+    }
+    if (keys[index] !== picked) setPicked(keys[index]);
+    if (JSON.stringify(row) !== same) {
       setSelectedItem(row);
       setSelectedItemKey(rowIdOf(row, field, index) as string);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rowsKey, field]);
+  }, [keys]);
   ToolJet.useAction({ name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Row key' }] }, (key) => {
     const index = rows.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
     select(rows[index] ?? null, index);
@@ -289,7 +312,7 @@ export const List = () => {
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null, -1));
 
   return (
-    <AntProvider tokens={tokens} className="tj-ant-list">
+    <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll">
       <AntList<Row>
         dataSource={visible}
         header={header || undefined}
@@ -300,9 +323,9 @@ export const List = () => {
         loading={loading}
         locale={{ emptyText: emptyText || 'No data' }}
         pagination={size_ && rows.length > size_ ? { current: p, pageSize: size_, total: rows.length, size: 'small', align: 'end', onChange: setPage } : false}
-        rowKey={(r) => rowKeyOf(r, field, visible.indexOf(r) + offset)}
+        rowKey={(r) => keys[visible.indexOf(r) + offset] ?? ''}
         renderItem={(row, i) => {
-          const key = rowKeyOf(row, field, i + offset);
+          const key = keys[i + offset];
           const selected = key === selectedKey;
           if (asRows)
             return (

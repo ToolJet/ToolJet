@@ -51,7 +51,7 @@ export const Hero = () => {
   const onDark = background === 'dark' || background === 'solid' || (background === 'image' && !!imageUrl);
   const level = size === 'large' ? 1 : size === 'compact' ? 3 : 2;
   return (
-    <AntProvider tokens={tokens} className="tj-ant-hero-root">
+    <AntProvider tokens={tokens} fill className="tj-ant-hero-root tj-ant-scroll">
       <div
         className={`tj-ant-hero is-${background} is-${size} is-${align}${onDark ? ' on-dark' : ''}`}
         style={background === 'image' && imageUrl ? { backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url("${imageUrl}")` } : undefined}
@@ -122,7 +122,7 @@ export const SummaryStrip = () => {
   const [align] = ToolJet.useStateEnumeration({ name: 'align', label: 'Align', enumDefinition: ['left', 'center'], initialValue: 'left' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 11 });
+  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 13 });
   const figures = summaryFigures(toArray(items), { valueFormat, currency, deltaFormat });
   const fontSize = size === 'sm' ? 20 : size === 'lg' ? 30 : 24;
   return (
@@ -216,7 +216,7 @@ export const RecordList = () => {
   const items = recordItems(toArray(dataSource), { titleField, avatarField, metaFields, statusField, progressField, valueField, valueFormat, currency, idField });
   const { selectedItemId, select } = useSelection(items, idField);
   return (
-    <AntProvider tokens={tokens} className="tj-ant-list">
+    <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll">
       <List
         dataSource={items}
         size={size as 'default'}
@@ -375,7 +375,8 @@ export const ProgressList = () => {
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 24 });
+  // Tall enough for the sample's four rows; more rows scroll inside the box.
+  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 28 });
   const fields = { labelField, valueField, targetField, percentField, captionField, statusField, idField, valueFormat, autoTone, currency };
   const entries = progressEntries(toArray(dataSource), idField);
   const max = progressMax(entries, fields);
@@ -383,7 +384,7 @@ export const ProgressList = () => {
   const { selectedItemId, select } = useSelection(items as unknown as Selectable[], idField);
   const stroke = size === 'small' ? 4 : size === 'large' ? 12 : 8;
   return (
-    <AntProvider tokens={tokens} className="tj-ant-list">
+    <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll">
       <SpinOver loading={loading} as="block">
         <List
           dataSource={items}

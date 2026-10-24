@@ -11,6 +11,50 @@
 .tj-ant--fill {
   height: 100%;
 }
+/* A box-sized component: content taller than the widget box scrolls inside it (the host cuts what overflows). */
+.tj-ant-scroll {
+  overflow: auto;
+  box-sizing: border-box;
+}
+/* Lists and tables fill the box: a bordered list's border, and a table's surface with its pagination at the foot,
+   reach its bottom instead of ending in a blank band. */
+.tj-ant-list.tj-ant--fill > .ant-list {
+  min-height: 100%;
+  box-sizing: border-box;
+}
+.tj-ant-list.tj-ant--fill > .tj-ant-spin-block {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.tj-ant-list.tj-ant--fill > .tj-ant-spin-block > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+.tj-ant-list.tj-ant--fill > .tj-ant-spin-block > .ant-spin-container > .ant-list {
+  flex: 1 0 auto;
+}
+.tj-ant-table.tj-ant--fill > .ant-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.tj-ant-table.tj-ant--fill > .ant-table-wrapper > .ant-spin-nested-loading,
+.tj-ant-table.tj-ant--fill > .ant-table-wrapper > .ant-spin-nested-loading > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+.tj-ant-table.tj-ant--fill > .ant-table-wrapper > .ant-spin-nested-loading > .ant-spin-container > .ant-table {
+  flex: 1 0 auto;
+}
+/* Alert: its surface fills the box, and a long description scrolls inside it. */
+.tj-ant-alert .ant-alert {
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+}
 .tj-ant-center {
   display: flex;
   align-items: center;
@@ -641,6 +685,9 @@
 
 /* Hero */
 .tj-ant-hero {
+  /* Fills the box (no band under it); taller content grows it and the root scrolls. */
+  min-height: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 24px;

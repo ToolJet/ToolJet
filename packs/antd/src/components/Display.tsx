@@ -99,9 +99,11 @@ export const Alert = () => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 5 });
   if (!message && !description) return <AntProvider tokens={tokens}>{null}</AntProvider>;
+  // Fills its box (no band under a short message) and scrolls a long one inside it: it was drawn at its natural height
+  // and the host cut what did not fit.
   return (
-    <AntProvider tokens={tokens}>
-      <SpinOver loading={loading} as="block">
+    <AntProvider tokens={tokens} fill className="tj-ant-alert">
+      <SpinOver loading={loading} as="fill">
         <AntAlert
           message={message || description}
           description={message && description ? description : undefined}
@@ -200,13 +202,30 @@ export const Statistic = () => {
   const [precision] = ToolJet.useStateNumber({ name: 'precision', label: 'Precision', description: 'Decimal places; empty for the formatter default.', initialValue: undefined as unknown as number, min: 0, max: 10 });
   const [prefix] = ToolJet.useStateString({ name: 'prefix', label: 'Prefix', initialValue: '' });
   const [suffix] = ToolJet.useStateString({ name: 'suffix', label: 'Suffix', initialValue: '' });
-  const [trend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['neutral', 'up', 'down'], initialValue: 'neutral' });
-  const [trendValue] = ToolJet.useStateString({ name: 'trendValue', label: 'Trend value', description: 'e.g. 12% or +340', initialValue: '' });
+  const [trend, setTrend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['neutral', 'up', 'down'], initialValue: 'neutral' });
+  const [trendValue, setTrendValue] = ToolJet.useStateString({ name: 'trendValue', label: 'Trend value', description: 'e.g. 12% or +340', initialValue: '' });
   const [extra] = ToolJet.useStateString({ name: 'extra', label: 'Extra', description: 'Text after the trend, e.g. vs last month.', initialValue: '' });
   const [bordered] = ToolJet.useStateBoolean({ name: 'bordered', label: 'Card', description: 'Draw it in a bordered card.', initialValue: true });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 10 });
+  // The trend line from a query: the direction (up, down or neutral; anything else keeps it) and, when given, the
+  // value beside it.
+  ToolJet.useAction(
+    {
+      name: 'setTrend',
+      displayName: 'Set trend',
+      params: [
+        { handle: 'trend', displayName: 'Trend (up, down or neutral)', defaultValue: 'up' },
+        { handle: 'trendValue', displayName: 'Trend value (optional, e.g. 12%)', defaultValue: '' },
+      ],
+    },
+    (next: unknown, nextValue: unknown) => {
+      const t = str(next).trim().toLowerCase();
+      if (t === 'up' || t === 'down' || t === 'neutral') setTrend(t);
+      if (nextValue !== undefined && nextValue !== null && nextValue !== '') setTrendValue(str(nextValue));
+    }
+  );
   const n = toNumber(value);
   const p = toNumber(precision);
   const shown = n === null ? str(value) || '-' : formatNumber(n, formatter as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, p)));
@@ -383,7 +402,8 @@ export const Descriptions = () => {
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', description: 'Shown for an empty value.', initialValue: '-' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 12 });
+  // Tall enough for the sample's title and five rows; longer items scroll inside the box.
+  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 23 });
   const raw: unknown = rawItems;
   const entries: Row[] = Array.isArray(raw)
     ? raw
@@ -404,7 +424,7 @@ export const Descriptions = () => {
     return { key: str(r.key ?? i), label: str(r.label ?? r.key ?? r.name), children, span: toNumber(r.span) ?? undefined };
   });
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} fill className="tj-ant-scroll">
       <SkeletonSwap loading={loading} look={<Skeleton active title={!!title} paragraph={{ rows: Math.max(2, Math.min(6, items.length || 3)) }} />}>
         <AntDescriptions
           items={items}
