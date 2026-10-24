@@ -431,3 +431,22 @@ describe('DataGrid selection follows the record by id', () => {
     expect(t.exposed.selectedRow).toEqual({});
   });
 });
+
+describe("DataGrid takes UI 2.0's column shape", () => {
+  // As the AI builder writes it: hidden fields listed with columnVisibility: false, widths as columnSize, a badge
+  // column with CSS colours.
+  const columns = [
+    { key: 'company', name: 'Company', columnSize: 180 },
+    { key: 'stage', name: 'Stage', columnType: 'badge', badgeColors: { New: '#2576CE' } },
+    { key: 'lead_id', name: 'lead_id', columnVisibility: false },
+    { key: 'summary', name: 'summary', columnVisibility: '{{false}}' },
+  ];
+  test('only the visible listed columns are drawn, and a badge is a chip', async () => {
+    const rows = [{ id: 1, company: 'Acme', stage: 'New', lead_id: 'L-1', summary: 'x', created_on: '2026-10-01' }];
+    const t = await mount('DataGrid', { rows, columns });
+    await waitFor(() => expect(t.root().querySelectorAll('.MuiDataGrid-columnHeaderTitle').length).toBeGreaterThan(0));
+    const headers = [...t.root().querySelectorAll('.MuiDataGrid-columnHeaderTitle')].map((el) => el.textContent.trim());
+    expect(headers).toEqual(['Company', 'Stage']);
+    await waitFor(() => expect(t.root().querySelector('.MuiChip-label')?.textContent).toBe('New'));
+  });
+});

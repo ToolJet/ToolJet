@@ -34,6 +34,11 @@ type Column = GridColDef & { format?: string; currency?: string; colors?: Record
 // title } and plain field names. A column may add format (currency, percent, compact, chip, html) with currency and,
 // for chips, colors { value: palette colour }; type or columnType 'html' (UI 2.0's Table) is the html format. None:
 // every field of the first row.
+const isFalse = (v: unknown) => v === false || v === 'false' || v === '{{false}}';
+const isHidden = (r: Row) => r.hidden === true || r.hidden === 'true' || isFalse(r.visible) || isFalse(r.columnVisibility);
+const CHIP_COLORS = new Set(['default', 'primary', 'secondary', 'error', 'info', 'success', 'warning']);
+const UI2_FORMATS: Record<string, string> = { currency: 'currency', percent: 'percent', badge: 'chip', status: 'chip', tag: 'chip', tags: 'chip' };
+
 const toColumns = (raw: unknown, rows: Row[]): Column[] => {
   const given = toArray(raw)
     .slice(0, MAX_COLUMNS)
@@ -43,25 +48,31 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
       const r = c as Row;
       const field = str(r.field ?? r.key ?? r.dataIndex ?? r.name);
       if (!field) return null;
+      // A listed column can still be hidden (hidden, or visible: false; UI 2.0's Table: columnVisibility: false).
+      if (isHidden(r)) return { field: '', hidden: true } as unknown as Column;
       const type = str(r.type ?? r.columnType);
       // UI 2.0's Table names a column { key, name }: name is then the header.
       const named = r.field !== undefined || r.key !== undefined || r.dataIndex !== undefined ? r.name : undefined;
       const col: Column = { field, headerName: str(r.headerName ?? r.label ?? r.title ?? named) || humanize(field) };
       if (['string', 'number', 'date', 'dateTime', 'boolean'].includes(type)) col.type = type as 'string';
-      const width = toNumber(r.width);
+      const width = toNumber(r.width ?? r.columnSize);
       const flex = toNumber(r.flex);
       if (width) col.width = width;
       if (flex) col.flex = flex;
       if (!width && !flex) col.flex = 1;
       if (r.align) col.align = col.headerAlign = r.align as 'left';
       if (r.sortable !== undefined) col.sortable = Boolean(r.sortable);
-      col.format = type === 'html' ? 'html' : str(r.format) || undefined;
+      // UI 2.0's columnType names the format too: currency, percent, badge or status (a chip), html.
+      const kind = type.toLowerCase();
+      col.format = kind === 'html' ? 'html' : str(r.format) || UI2_FORMATS[kind] || undefined;
       col.currency = str(r.currency) || undefined;
-      if (r.colors && typeof r.colors === 'object') col.colors = r.colors as Record<string, string>;
+      const colors = [r.colors, r.badgeColors, r.tagColors].find((m) => m && typeof m === 'object' && !Array.isArray(m));
+      if (colors) col.colors = colors as Record<string, string>;
       return col;
     })
     .filter((c): c is Column => !!c);
-  if (given.length) return given;
+  // Columns given: exactly those (hidden ones dropped); none given: every field of the first row.
+  if (given.length) return given.filter((c) => !(c as unknown as { hidden?: boolean }).hidden);
   const first = rows[0];
   return first ? Object.keys(first).slice(0, MAX_COLUMNS).map((k) => ({ field: k, headerName: humanize(k), flex: 1 })) : [];
 };
@@ -86,8 +97,14 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
     col.valueFormatter = (v: unknown) => textOf(v);
     col.sortComparator = (a: unknown, b: unknown) => textOf(a).localeCompare(textOf(b));
   } else if (format === 'chip') {
-    col.renderCell = (p) =>
-      p.value === undefined || p.value === null || p.value === '' ? null : <Chip size="small" label={str(p.value)} color={(colors?.[str(p.value)] ?? 'default') as 'default'} />;
+    col.renderCell = (p) => {
+      if (p.value === undefined || p.value === null || p.value === '') return null;
+      // A palette name goes to color; a CSS colour (UI 2.0's badgeColors) tints the chip instead.
+      const c = str(colors?.[str(p.value)]).trim();
+      if (CHIP_COLORS.has(c)) return <Chip size="small" label={str(p.value)} color={c as 'default'} />;
+      const css = /^(#|rgb|hsl)/i.test(c) ? c : '';
+      return <Chip size="small" label={str(p.value)} sx={css ? { color: css, bgcolor: `color-mix(in srgb, ${css} 14%, transparent)` } : undefined} />;
+    };
   } else if (!col.type) {
     col.valueFormatter = (v: unknown) => (isIdField(c.field) ? str(v) : formatCell(v, format));
   }
