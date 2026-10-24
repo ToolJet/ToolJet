@@ -45,6 +45,8 @@ const mount = async (name, props = {}, hostExtra = {}) => {
   loadLibraryModule.mockResolvedValue({ [name]: pack[name] });
   const exposed = {};
   const events = [];
+  // The exposed values as each event fired, for checks that a handler reads the new state.
+  const seen = [];
   const actions = new Map();
   const cacheKey = `shad-events-${name}-${(mounts += 1)}`;
   const make = (p, h) => (
@@ -59,7 +61,10 @@ const mount = async (name, props = {}, hostExtra = {}) => {
       setExposedVariable={(key, value) => {
         exposed[key] = value;
       }}
-      fireEvent={(event) => events.push(event)}
+      fireEvent={(event) => {
+        events.push(event);
+        seen.push({ event, exposed: { ...exposed } });
+      }}
       actions={actions}
       host={h}
       dataCy="pack-events"
@@ -75,7 +80,7 @@ const mount = async (name, props = {}, hostExtra = {}) => {
       await actions.get(action)(...args);
     });
   };
-  return { exposed, events, root, run, rerender: (p, h = host) => view.rerender(make(p, { ...host, ...h })) };
+  return { exposed, events, seen, root, run, rerender: (p, h = host) => view.rerender(make(p, { ...host, ...h })) };
 };
 
 // What a change fires, without the focus and blur a click may bring.
@@ -265,5 +270,102 @@ describe('T6: a host-disabled component is dimmed once, by the host', () => {
       .map(([name]) => name)
       .sort();
     expect(unwrapped).toEqual(['Card', 'Form', 'Separator', 'Skeleton', 'Spinner']);
+  });
+});
+
+// The shared popup layer every popup of the pack portals into.
+const popupLayer = () => document.querySelector('.tj-cc-popup-host')?.shadowRoot;
+
+describe('Q6: a Dialog handler reads the dialog as closed', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  const openDialog = async () => {
+    const t = await mount('Dialog', { title: 'Synthetic dialog', cancelText: 'Cancel', confirmText: 'Continue' });
+    await t.run('open');
+    await waitFor(() => expect(popupLayer()?.querySelector('[role="dialog"]')).toBeTruthy());
+    expect(t.exposed).toMatchObject({ isOpen: true, show: true });
+    return t;
+  };
+  const button = (label) => [...popupLayer().querySelectorAll('button')].find((b) => b.textContent === label);
+  const closedAt = (seen, event) => seen.find((s) => s.event === event)?.exposed;
+
+  it('Cancel: onCancel and onClose see show and isOpen false', async () => {
+    const t = await openDialog();
+    fireEvent.click(button('Cancel'));
+    await waitFor(() => expect(t.events).toContain('onClose'));
+    for (const event of ['onCancel', 'onClose']) expect(closedAt(t.seen, event)).toMatchObject({ isOpen: false, show: false });
+  });
+
+  it('Confirm: onConfirm and onClose see show and isOpen false', async () => {
+    const t = await openDialog();
+    fireEvent.click(button('Continue'));
+    await waitFor(() => expect(t.events).toContain('onClose'));
+    for (const event of ['onConfirm', 'onClose']) expect(closedAt(t.seen, event)).toMatchObject({ isOpen: false, show: false });
+  });
+
+  it('the close action: onClose sees show false, and open sets show true before onOpen', async () => {
+    const t = await openDialog();
+    expect(closedAt(t.seen, 'onOpen')).toMatchObject({ isOpen: true, show: true });
+    await t.run('close');
+    expect(closedAt(t.seen, 'onClose')).toMatchObject({ isOpen: false, show: false });
+  });
+});
+
+describe('UI2-12: each tab names its panel and each panel its tab', () => {
+  // The active tab's id, aria-controls to a role=tabpanel in the same shadow root, aria-labelledby back to the tab.
+  const linked = (root) => {
+    const tab = root().querySelector('[role="tab"][aria-selected="true"]');
+    const panel = tab?.getAttribute('aria-controls') ? root().getElementById(tab.getAttribute('aria-controls')) : null;
+    return { id: tab?.id, panelRole: panel?.getAttribute('role'), labelledBy: panel?.getAttribute('aria-labelledby'), hidden: panel?.hidden };
+  };
+
+  it.each([
+    ['Tabs', { tabs: [{ value: 'a b', label: 'A' }, { value: 'b', label: 'B' }], defaultTab: 'a b' }],
+    ['TabsContainer', { tabs: [{ id: 'a b', title: 'A' }, { id: 'b', title: 'B' }], defaultTab: 'a b' }],
+  ])('%s: the active tab and its panel point at each other, ids scoped to the widget', async (name, props) => {
+    const { root, run } = await mount(name, props);
+    for (const next of ['a b', 'b']) {
+      await run('setTab', next);
+      const link = linked(root);
+      expect(link.id).toMatch(new RegExp(`^ev-${name}-tab-`));
+      // An id cannot hold a space in an IDREF list.
+      expect(link.id).not.toMatch(/\s/);
+      expect(link).toMatchObject({ panelRole: 'tabpanel', labelledBy: link.id, hidden: false });
+    }
+  });
+
+  it('two Tabs on one page draw different tab ids', async () => {
+    const a = await mount('Tabs', {}, { fieldId: 'tj-pack-one' });
+    const b = await mount('Tabs', {}, { fieldId: 'tj-pack-two' });
+    expect(a.root().querySelector('[role="tab"]').id).not.toBe(b.root().querySelector('[role="tab"]').id);
+  });
+});
+
+describe('T9, T1: smaller shadcn items', () => {
+  it('Tabs shows "Steps in order only" with the Steps style only', async () => {
+    const spy = jest.spyOn(toolJetSdk, 'useStateBoolean');
+    try {
+      await mount('Tabs');
+      const options = spy.mock.calls.map(([o]) => o).find((o) => o.name === 'linearSteps');
+      expect(options.visibleWhen).toEqual({ key: 'variant', value: 'steps' });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  // The sample content at the default drop, in whole rows: List view left a 64px band and Accordion 17px (Chrome).
+  it.each([
+    ['ListView', 24],
+    ['Accordion', 17],
+  ])('%s drops at %i rows', async (name, rows) => {
+    const spy = jest.spyOn(toolJetSdk, 'useComponentSettings');
+    try {
+      await mount(name);
+      expect(spy.mock.calls[0][0].defaultHeight).toBe(rows);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

@@ -79,13 +79,19 @@ export const Dialog = () => {
     return () => cancelAnimationFrame(frame);
   }, [open, takesInput]);
 
+  // Both exposed names change before an event fires: show followed isOpen only in the effect above, after the
+  // handlers had run, so an onCancel, onConfirm or onClose handler still read show: true.
+  const setBoth = (next: boolean) => {
+    setOpen(next);
+    setShow(next);
+  };
   const show = () => {
-    setOpen(true);
+    setBoth(true);
     onOpen();
   };
   const close = (confirmed: boolean) => {
     if (confirmed && !takesInput()) return;
-    setOpen(false);
+    setBoth(false);
     if (confirmed) onConfirm();
     else onCancel();
     onClose();
@@ -106,7 +112,7 @@ export const Dialog = () => {
 
   ToolJet.useAction({ name: 'open', displayName: 'Open' }, show);
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => {
-    setOpen(false);
+    setBoth(false);
     onClose();
   });
   // Empty = the trigger variant's own colors (see Button).

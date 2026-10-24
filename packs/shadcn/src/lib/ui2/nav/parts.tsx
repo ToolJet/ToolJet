@@ -97,7 +97,22 @@ interface TabStripProps {
   linear: boolean;
   disabled: boolean;
   onPick: (tab: Tab) => void;
+  /** Prefix of the tab and panel ids (tabPartIds), unique to the widget. */
+  idBase?: string;
 }
+
+/** The ids that tie a tab to its panel (aria-controls, aria-labelledby). The base is the widget's own id, so two Tabs
+ *  never share one; a tab id is encoded, as ids in an IDREF list cannot hold spaces. */
+export const tabPartIds = (base: string, tabId: string) => {
+  const key = encodeURIComponent(tabId);
+  return { tab: `${base}-tab-${key}`, panel: `${base}-panel-${key}` };
+};
+
+/** The widget's id base for tabPartIds: the host's field id, or a React id under a host without one. */
+export const useTabIdBase = (fieldId: string | undefined) => {
+  const own = React.useId();
+  return fieldId || `tabs${own.replace(/:/g, '')}`;
+};
 
 const TabFace = ({ tab }: { tab: Tab }) => (
   <>
@@ -109,7 +124,7 @@ const TabFace = ({ tab }: { tab: Tab }) => (
 
 /** The tab strip in UI 2.0's three styles, with the WAI-ARIA keyboard pattern: arrows move to the previous or next
  *  enabled tab and select it, Home and End to the first and last; only one tab is a Tab stop. */
-export const TabStrip = ({ tabs, current, variant, align, vertical, stepIndex, linear, disabled, onPick }: TabStripProps) => {
+export const TabStrip = ({ tabs, current, variant, align, vertical, stepIndex, linear, disabled, onPick, idBase }: TabStripProps) => {
   const canPick = (tab: Tab) => !disabled && !tab.disable && (variant !== 'steps' || !linear || tabs.indexOf(tab) <= stepIndex);
   const stop = tabs.find((t) => t.id === current && canPick(t)) ?? tabs.find(canPick);
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -132,11 +147,14 @@ export const TabStrip = ({ tabs, current, variant, align, vertical, stepIndex, l
   };
   const button = (tab: Tab, className: string, children: React.ReactNode, isDisabled = !!tab.disable) => {
     const active = tab.id === current;
+    const ids = idBase ? tabPartIds(idBase, tab.id) : undefined;
     return (
       <button
         key={tab.id}
         type="button"
         role="tab"
+        id={ids?.tab}
+        aria-controls={ids?.panel}
         aria-selected={active}
         data-tab-id={tab.id}
         data-state={active ? 'active' : 'inactive'}

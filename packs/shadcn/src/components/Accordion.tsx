@@ -58,7 +58,8 @@ export const Accordion = () => {
   const iconColor = ToolJet.useStyleString({ name: 'iconColor', label: 'Chevron color', inspector: 'color', initialValue: '' });
   const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Divider (legacy)', inspector: 'color', initialValue: '' });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 18 });
+  // The three sample sections (159px) in whole rows: 18 left a 17px band under them at the drop, 16 cuts the last.
+  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 17 });
 
   const source = useStable(rawItems);
   const items = useMemo(() => toItems(source), [source]);

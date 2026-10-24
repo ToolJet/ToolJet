@@ -4,7 +4,7 @@ import { cn } from '../lib/cn';
 import { list, isRecord, text } from '../lib/ui2/nav/model';
 import { lookVars, px } from '../lib/ui2/nav/look';
 import { useTabs } from '../lib/ui2/nav/hooks';
-import { Spinner, TabStrip } from '../lib/ui2/nav/parts';
+import { Spinner, TabStrip, tabPartIds, useTabIdBase } from '../lib/ui2/nav/parts';
 import type { TabsVariant } from '../lib/ui2/nav/parts';
 import { LoadingBox, useLoadingLook } from '../lib/ui2/loading/look';
 import { TabStripSkel } from '../lib/ui2/loading/shapes';
@@ -54,7 +54,12 @@ export const Tabs = () => {
     section: 'Appearance',
   });
   const [hideTabs] = ToolJet.useStateBoolean({ name: 'hideTabs', label: 'Hide tabs', initialValue: false });
-  const [linearSteps] = ToolJet.useStateBoolean({ name: 'linearSteps', label: 'Steps in order only', initialValue: true });
+  const [linearSteps] = ToolJet.useStateBoolean({
+    name: 'linearSteps',
+    label: 'Steps in order only',
+    initialValue: true,
+    visibleWhen: { key: 'variant', value: 'steps' },
+  });
   // One event per switch, UI 2.0's name: the pack's earlier onChange fired alongside it.
   const onTabSwitch = ToolJet.useEventCallback({ name: 'onTabSwitch' });
   const { disabled } = ToolJet.useControlState();
@@ -75,6 +80,7 @@ export const Tabs = () => {
   const listColor = ToolJet.useStyleString({ name: 'listBackground', label: 'Tab list (legacy)', inspector: 'color', initialValue: '' });
   const activeColor = ToolJet.useStyleString({ name: 'activeBackground', label: 'Active tab (legacy)', inspector: 'color', initialValue: '' });
   const ld = useLoadingLook();
+  const idBase = useTabIdBase(ToolJet.useFieldId());
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 14 });
 
   // Tabs keyed by value (or id); content by the same key.
@@ -128,6 +134,7 @@ export const Tabs = () => {
           linear={linearSteps !== false}
           disabled={disabled}
           onPick={(tab) => !ld.loading && t.switchTo(tab.id)}
+          idBase={idBase}
         />
       )}
       <div className="n2-tabs-body">
@@ -135,7 +142,12 @@ export const Tabs = () => {
           {ld.loading ? (
             <LoadingBox />
           ) : t.tab ? (
-            <div role="tabpanel" className={cn('n2-tab-panel is-text', t.tab.disable && 'is-disabled')}>
+            <div
+              role="tabpanel"
+              id={tabPartIds(idBase, t.tab.id).panel}
+              aria-labelledby={hideTabs ? undefined : tabPartIds(idBase, t.tab.id).tab}
+              className={cn('n2-tab-panel is-text', t.tab.disable && 'is-disabled')}
+            >
               {t.tab.loading ? (
                 <div className="n2-tab-loading" aria-busy="true">
                   <Spinner />

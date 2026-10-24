@@ -5,7 +5,7 @@ import { MAX_SLOT_ITEMS, slotNames } from "../lib/slots";
 import { cn } from "../lib/cn";
 import { lookVars, px } from "../lib/ui2/nav/look";
 import { useTabs } from "../lib/ui2/nav/hooks";
-import { Spinner, TabStrip } from "../lib/ui2/nav/parts";
+import { Spinner, TabStrip, tabPartIds, useTabIdBase } from "../lib/ui2/nav/parts";
 import type { TabsVariant } from "../lib/ui2/nav/parts";
 import { LoadingBox, useLoadingLook } from "../lib/ui2/loading/look";
 import { TabStripSkel } from "../lib/ui2/loading/shapes";
@@ -85,6 +85,7 @@ export const TabsContainer = () => {
   const showBorder = ToolJet.useStyleBoolean({ name: "showBorder", label: "Border around tabs", initialValue: true });
   const padding = ToolJet.useStyleNumber({ name: "padding", label: "Padding", initialValue: 12, section: "Spacing" });
   const ld = useLoadingLook();
+  const idBase = useTabIdBase(ToolJet.useFieldId());
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 40 });
 
   const t = useTabs({
@@ -153,6 +154,7 @@ export const TabsContainer = () => {
           linear={linearSteps !== false}
           disabled={disabled}
           onPick={(tab) => !ld.loading && t.switchTo(tab.id)}
+          idBase={idBase}
         />
       )}
       <div className="n2-tabs-body">
@@ -165,6 +167,8 @@ export const TabsContainer = () => {
               <div
                 key={tab.id}
                 role={tab.visible ? "tabpanel" : undefined}
+                id={tabPartIds(idBase, tab.id).panel}
+                aria-labelledby={tab.visible && !hideTabs ? tabPartIds(idBase, tab.id).tab : undefined}
                 data-tab-panel={tab.id}
                 hidden={ld.loading || tab.id !== t.active}
                 aria-disabled={tab.disable || undefined}

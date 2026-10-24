@@ -705,6 +705,9 @@ export const DataTable = () => {
   const cellCap = tight && boxWidth ? Math.max(96, Math.floor((boxWidth - (bulk ? 40 : 0)) / Math.max(1, shownColumns.length)) - 24) : null;
   const skeletonRows = Math.min(5, Math.max(1, Number(rowsPerPage) || 5));
   const empty = !loading && !paged.items.length;
+  // Rows a short page is missing from a full page, on a table with more than one page (see the filler row).
+  const multiPage = enablePagination !== false && (paged.pageCount === null || paged.pageCount > 1 || paged.page > 1);
+  const fillerRows = multiPage && paged.items.length ? Math.max(0, Math.min(Number(rowsPerPage) || 0, 200) - paged.items.length) : 0;
   const defaults = { currency, locale, dateFormat, badgeColors };
 
   const accent = isSet(accentColor) ? String(accentColor) : undefined;
@@ -879,7 +882,17 @@ export const DataTable = () => {
                     })}
                   </tr>
                 );
-              })
+              }).concat(
+                // A short last page keeps the table a full page tall: the blank sits inside the table, under its rows,
+                // instead of the table (and a card fitted to it) shrinking and leaving a gap below on the page.
+                fillerRows > 0
+                  ? [
+                      <tr key="t2-page-filler" aria-hidden="true" className="t2-plain t2-page-filler">
+                        <td colSpan={colCount} style={{ height: rowHeight * fillerRows, padding: 0, border: 0 }} />
+                      </tr>,
+                    ]
+                  : []
+              )
             ) : (
               <tr className="t2-plain">
                 {/* The empty state fills the body: in a short table the icon goes, then the description. */}

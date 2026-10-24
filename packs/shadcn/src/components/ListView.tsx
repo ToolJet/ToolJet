@@ -97,7 +97,8 @@ export const ListView = () => {
   const padding = ToolJet.useStyleNumber({ name: 'padding', label: 'Padding around the list (px)', initialValue: '' });
   const emptyTextColor = ToolJet.useStyleString({ name: 'emptyTextColor', label: 'Empty message color', inspector: 'color', initialValue: '' });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 30 });
+  // The sample rows' height, in whole rows: 30 left a 64px band under them at the drop.
+  ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 24 });
 
   const idKey = isSet(idField) && String(idField).trim() ? String(idField) : 'id';
   const paged = useMemo(
