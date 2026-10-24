@@ -107,6 +107,13 @@ module.exports = {
     '^@white-label/(.*)$': '<rootDir>/src/_helpers/white-label/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@tooljet/widget-definitions$': '<rootDir>/../packages/widget-definitions/src/index.js',
+    // A component pack's source (packs/*) rendered in a test: the runtime's SDK, and the app's React, as inline in
+    // ToolJet (a pack's own node_modules copy of React would be a second React and break its hooks).
+    '^@tooljet/custom-component-sdk$': '<rootDir>/src/test/mocks/customComponentSdk.js',
+    '^react$': '<rootDir>/node_modules/react',
+    '^react/(.*)$': '<rootDir>/node_modules/react/$1',
+    '^react-dom$': '<rootDir>/node_modules/react-dom',
+    '^react-dom/(.*)$': '<rootDir>/node_modules/react-dom/$1',
   },
   // jsdom patched to keep Node's native fetch/TextEncoder/BroadcastChannel —
   // required by MSW v2. Suites can still opt into `@jest-environment node`.
