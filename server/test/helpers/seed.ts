@@ -32,6 +32,8 @@ import { Credential } from '@entities/credential.entity';
 import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
+import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
+import { GroupFolders } from '@entities/group_folders.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { getDefaultDataSource, recoverAbortedSuiteTx } from './setup';
 import { login } from './api';
@@ -112,6 +114,8 @@ export interface CreateAppWithDependenciesOptions {
   dsKind?: string;
   dsOptions?: Array<Partial<DataSourceOptionInput>>;
   name?: string;
+  /** Options of the seeded data query. Defaults to a GET against the GitHub stargazers API. */
+  queryOptions?: CreateDataQueryOptions['options'];
 }
 
 export interface CreateGroupPermissionParams {
@@ -524,6 +528,46 @@ export async function grantModulePermission(
   }
 }
 
+/**
+ * Grants folder-level permissions to a group: GranularPermissions (type=resourceType) -> FoldersGroupPermissions,
+ * scoped to `options.folderId`, or to every folder of that type when it is omitted.
+ */
+export async function grantFolderPermission(
+  nestApp: INestApplication,
+  groupId: string,
+  resourceType: ResourceType,
+  options: { folderId?: string; canEditFolder?: boolean; canEditApps?: boolean; canViewApps?: boolean }
+): Promise<void> {
+  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
+  const granularRepo = ds.getRepository(GranularPermissions);
+  const folderPermRepo = ds.getRepository(FoldersGroupPermissions);
+  const groupFolderRepo = ds.getRepository(GroupFolders);
+
+  // name must be unique per group
+  const existing = await granularRepo.count({ where: { groupId } });
+  const granular = await granularRepo.save(
+    granularRepo.create({
+      groupId,
+      name: `${resourceType} ${existing + 1}`,
+      type: resourceType,
+      isAll: !options.folderId,
+    })
+  );
+  const folderPerm = await folderPermRepo.save(
+    folderPermRepo.create({
+      granularPermissionId: granular.id,
+      canEditFolder: options.canEditFolder ?? false,
+      canEditApps: options.canEditApps ?? false,
+      canViewApps: options.canViewApps ?? false,
+    })
+  );
+  if (options.folderId) {
+    await groupFolderRepo.save(
+      groupFolderRepo.create({ folderId: options.folderId, foldersGroupPermissionsId: folderPerm.id })
+    );
+  }
+}
+
 /** Grants data source-level permissions to a group using the granular permissions system. */
 export async function createDatasourceGroupPermission(
   nestApp: INestApplication,
@@ -933,6 +977,13 @@ export const createAppWithDependencies = async (
     dsKind = 'restapi',
     dsOptions = [{}],
     name = 'name',
+    queryOptions = {
+      method: 'get',
+      url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
+      url_params: [],
+      headers: [],
+      body: [],
+    },
   }: CreateAppWithDependenciesOptions
 ) => {
   const application = await createApplication(
@@ -967,13 +1018,7 @@ export const createAppWithDependencies = async (
       dataQuery = await createDataQuery(app, {
         dataSource,
         appVersion,
-        options: {
-          method: 'get',
-          url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
-          url_params: [],
-          headers: [],
-          body: [],
-        },
+        options: queryOptions,
       });
     }
   }
