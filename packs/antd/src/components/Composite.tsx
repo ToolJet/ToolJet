@@ -4,7 +4,7 @@ import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, PlusOutlined } from 
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver } from '../lib/Loading';
-import { str, toArray, type Row } from '../lib/data';
+import { MAX_SLOT_ITEMS, str, toArray, type Row } from '../lib/data';
 import { antIcon } from '../lib/icons';
 import {
   addCard as addBoardCard,
@@ -88,7 +88,11 @@ export const Kanban = () => {
 
   const sf = str(statusField) || 'status';
   const idf = str(idField) || 'id';
-  const source = useMemo(() => boardColumns(toArray(dataSource), toArray(columns), sf, idf), [dataSource, columns, sf, idf]);
+  // Each column is a lane the page lays out: a columns binding to a large list keeps the first MAX_SLOT_ITEMS.
+  const source = useMemo(
+    () => boardColumns(toArray(dataSource), toArray(columns).slice(0, MAX_SLOT_ITEMS), sf, idf),
+    [dataSource, columns, sf, idf]
+  );
   const [board, setBoard] = useState<BoardColumn[]>(source);
   useEffect(() => setBoard(source), [source]);
   useEffect(() => {

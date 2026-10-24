@@ -96,7 +96,8 @@ export const Upload = () => {
     accept: accept || undefined,
     multiple,
     maxCount: limit,
-    listType: listType as 'text',
+    // Ant reads listType as text (startsWith('picture')); a binding that gives anything else lists as text.
+    listType: (listType === 'picture' ? 'picture' : 'text') as 'picture' | 'text',
     disabled,
     fileList: uiFiles,
     beforeUpload: async (_file: File, batch: File[]) => {

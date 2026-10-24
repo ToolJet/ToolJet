@@ -34,9 +34,14 @@ export const toOptions = (raw: unknown): Option[] =>
     })
     .filter((o): o is Option => !!o && o.value !== '');
 
+// Each item is a tab or section with its own canvas: a binding to a large list (a table's rows by mistake) drew
+// 1500 canvases and froze the page (pack fuzz, 2026-10-23). Layouts never need more than this.
+export const MAX_SLOT_ITEMS = 50;
+
 /** Items with a key and a label (Tabs items, Steps items): Ant's { key, label }, also { id, label } or strings. */
 export const toKeyedItems = (raw: unknown): { key: string; label: string; disabled?: boolean }[] =>
   toArray(raw)
+    .slice(0, MAX_SLOT_ITEMS)
     .map((o) => {
       if (typeof o === 'string') return { key: o, label: o };
       if (!o || typeof o !== 'object') return null;

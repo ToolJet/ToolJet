@@ -108,7 +108,9 @@ export const OTP = (props: Record<string, unknown>) => {
   const [length] = ToolJet.useStateNumber({ name: 'length', label: 'Length', initialValue: 6, min: 2, max: 12 });
   const [characters] = ToolJet.useStateEnumeration({ name: 'characters', label: 'Characters', enumDefinition: ['numeric', 'alphanumeric'], initialValue: 'numeric' });
   const [mask] = ToolJet.useStateBoolean({ name: 'mask', label: 'Mask', initialValue: false });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  const [rawValue, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  // A binding can give a number (a code from a query) or null; Ant's OTP splits the value as text.
+  const value = str(rawValue);
   const [, setIsComplete] = ToolJet.useStateBoolean({ name: 'isComplete', initialValue: false, inspector: 'hidden' });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
