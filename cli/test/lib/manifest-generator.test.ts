@@ -849,6 +849,152 @@ export const Widget = () => {
   }
 });
 
+describe('generateManifest - styles', () => {
+  const cwd = withTempCwd();
+
+  it('collects useStyleX into "styles", separately from props, with label, inspector and section', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useStateString({ name: 'title', initialValue: 'Hi' });
+  ToolJet.useStyleString({ name: 'accent', label: 'Accent', inspector: 'color', initialValue: '#3e63dd' });
+  ToolJet.useStyleNumber({ name: 'padding', initialValue: 12, section: 'Spacing' });
+  ToolJet.useStyleBoolean({ name: 'rounded', initialValue: true });
+  ToolJet.useStyleEnumeration({ name: 'density', enumDefinition: ['compact', 'cozy'], initialValue: 'cozy' });
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props).to.deep.equal([{ name: 'title', type: 'string', default: 'Hi' }]);
+    expect(manifest.components.Widget.styles).to.deep.equal([
+      { name: 'accent', type: 'string', default: '#3e63dd', label: 'Accent', inspector: 'color' },
+      { name: 'padding', type: 'number', default: 12, section: 'Spacing' },
+      { name: 'rounded', type: 'boolean', default: true },
+      { name: 'density', type: 'enumeration', default: 'cozy', enumValues: ['compact', 'cozy'] },
+    ]);
+  }).timeout(30000);
+
+  it('lets a style share a name with a prop or action, since styles are never exposed', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useStateString({ name: 'color' });
+  ToolJet.useStyleString({ name: 'color' });
+  ToolJet.useAction({ name: 'reset' }, () => undefined);
+  ToolJet.useStyleString({ name: 'reset' });
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.styles.map((style) => style.name)).to.deep.equal(['color', 'reset']);
+  }).timeout(30000);
+
+  it('marks a style declared with expose: true as exposed', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useStyleString({ name: 'accent', initialValue: 'red', expose: true });
+  ToolJet.useStyleNumber({ name: 'radius', initialValue: 4, expose: false });
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.styles).to.deep.equal([
+      { name: 'accent', type: 'string', default: 'red', exposed: true },
+      { name: 'radius', type: 'number', default: 4 },
+    ]);
+  }).timeout(30000);
+
+  it('throws when an exposed style shares a name with a prop', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useStateString({ name: 'accent' });
+  ToolJet.useStyleString({ name: 'accent', expose: true });
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(
+      /Name "accent" in component "Widget" is used by both a prop and an exposed style/
+    );
+  }).timeout(30000);
+
+  it('throws when "expose" is not a boolean literal', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useStyleString({ name: 'accent', expose: 'yes' as any });
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/style "accent": "expose" must be true or false/);
+  }).timeout(30000);
+
+  it('throws on a duplicate style name within the same component', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useStyleString({ name: 'accent' });
+  ToolJet.useStyleNumber({ name: 'accent' });
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/Duplicate style name "accent"/);
+  }).timeout(30000);
+
+  it('throws when a style uses a name the builder reserves for its own styles', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useStyleString({ name: 'boxShadow' });
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(
+      /Style name "boxShadow" in component "Widget" is reserved by ToolJet/
+    );
+  }).timeout(30000);
+
+  it('gives a component with no style hooks an empty "styles" list', async () => {
+    writeProject(cwd.get(), `${SDK_IMPORT}\nexport const Widget = () => <div>Widget</div>;\n`);
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.styles).to.deep.equal([]);
+  }).timeout(30000);
+});
+
 describe('generateManifest - component discovery', () => {
   const cwd = withTempCwd();
 
