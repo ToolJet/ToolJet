@@ -8,7 +8,8 @@ import { useCallback, useEffect, useRef, type RefObject } from 'react';
 
 // Not aria-hidden: an open Radix list hides everything outside itself that way (hideOthers), the owner included; a
 // host part that is aria-hidden (a loading modal body) is inert too.
-const BLOCKED = '[inert],[aria-disabled="true"]';
+// A disabled fieldset is how a native Form disables what it holds.
+const BLOCKED = '[inert],[aria-disabled="true"],fieldset:disabled';
 
 /** Whether the element that owns a popup can take input: it is drawn, and neither it nor anything around it (across
  *  the shadow roots it sits in) is inert or aria-disabled. `requireDrawn: false` skips the first check, for a popup

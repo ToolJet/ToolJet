@@ -13,6 +13,7 @@ import { Card } from '../../../../../../../packs/shadcn/src/components/Card';
 import { Form } from '../../../../../../../packs/shadcn/src/components/Form';
 import { Separator } from '../../../../../../../packs/shadcn/src/components/Separator';
 import { Image } from '../../../../../../../packs/shadcn/src/components/Image';
+import { Kanban } from '../../../../../../../packs/shadcn/src/components/Kanban';
 import { slotNames, toSlotName } from '../../../../../../../packs/shadcn/src/lib/slots';
 
 // The shadcn pack's record lists, section containers, Carousel, Image and text displays after the pack audit
@@ -25,7 +26,7 @@ jest.mock('@/AppBuilder/Widgets/LibraryComponent/inlineRuntime', () => ({
 }));
 
 const HOST = { disabled: false, loading: false };
-const COMPONENTS = { CardGrid, RecordList, ProgressList, AccordionContainer, Stepper, TabsContainer, Carousel, Card, Form, Separator, Image };
+const COMPONENTS = { CardGrid, RecordList, ProgressList, AccordionContainer, Stepper, TabsContainer, Carousel, Card, Form, Separator, Image, Kanban };
 let mounts = 0;
 
 // One pack widget on the inline host. `update` re-renders it with new properties (a binding resolving again), a new
@@ -294,5 +295,30 @@ describe('text properties bound to objects or records', () => {
   ])('%s still draws numbers and text', async (name, props, shown) => {
     const t = await mount(name, props);
     expect(t.root().textContent).toContain(shown);
+  });
+});
+
+describe('a keyboard move into a long Kanban column', () => {
+  // The destination draws only its first 100 cards: the moved card landed past the window, unmounted and focus fell
+  // to the page (the Ant and MUI packs' AM-10).
+  test('the moved card stays drawn past the "Show more" window and keeps keyboard focus', async () => {
+    const data = [
+      { id: 1, title: 'Mover', status: 'todo' },
+      ...Array.from({ length: 150 }, (_, i) => ({ id: i + 2, title: `Card ${i + 1}`, status: 'doing' })),
+    ];
+    const columns = [
+      { id: 'todo', title: 'To do' },
+      { id: 'doing', title: 'Doing' },
+    ];
+    // Kanban registers its card rows (custom content) with the host.
+    const t = await mount('Kanban', { data, columns }, { host: { ...HOST, setRows: () => {} } });
+    const card = () => [...t.root().querySelectorAll('[aria-roledescription="Draggable card"]')].find((el) => el.textContent.includes('Mover'));
+    act(() => card().focus());
+    fireEvent.keyDown(card(), { key: ' ' });
+    fireEvent.keyDown(card(), { key: 'ArrowRight' });
+    fireEvent.keyDown(card(), { key: 'Enter' });
+    expect(t.exposed.lastCardMovement).toMatchObject({ cardId: 1, to: 'doing', toIndex: 150 });
+    expect(card()).toBeTruthy();
+    expect(t.root().activeElement).toBe(card());
   });
 });
