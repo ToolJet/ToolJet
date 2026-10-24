@@ -40,7 +40,7 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 - Python: nsjail sandbox mandatory when detected (`SecurityModeDetectorService`; no silent fallback — bypass only via explicit env opt-in or nsjail absent).
 - Schedules are BullMQ job schedulers keyed by schedule id; DB (`workflow_schedules`) is source of truth, reconciled on worker boot by `ScheduleBootstrapService`. Cron validated with `cron-validator`.
 - Job payload carries a serialized `WorkflowExecution` + dto; default params come from `appVersion.definition.defaultParams` merged with call params at process time.
-- Webhook endpoint is versioned (`version: '2'`) and throttled via `WEBHOOK_THROTTLE_TTL`/`WEBHOOK_THROTTLE_LIMIT`.
+- Webhook endpoint is versioned (`version: '2'`) and throttled via `WEBHOOK_THROTTLE_TTL`/`WEBHOOK_THROTTLE_LIMIT`. The limit comes from route metadata (`webhookThrottleLimit`/`webhookThrottleTtl` in `constants/queue-config.ts`), not from the module's `ThrottlerModule`: several modules register a global `ThrottlerModule`, and a guard can resolve another module's options.
 
 ## Related modules
 - `apps` — workflow is an App (`APP_TYPES.WORKFLOW`); versions/environments come from apps/versions modules.
