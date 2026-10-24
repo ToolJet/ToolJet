@@ -63,7 +63,7 @@ export const Select = () => {
   const known = value !== '' && options.some((o) => o.value === value);
   const check = ToolJet.useValidation({ section: 'choice', value, present: known });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6.9 });
+  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
 
   // selectedOption follows the value however it changes (a pick, a binding, a Form's clearForm, options that load
   // later or drop it): set only on a pick, it kept the old option after a clear or an emptied binding.
@@ -269,7 +269,7 @@ export const Autocomplete = () => {
   const picked = useMemo(() => found, [pickedKey]);
   const check = ToolJet.useValidation({ section: 'choice', value: picked?.value ?? '', present: !!picked });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6.9 });
+  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
 
   const change = (next: Option | null) => {
     setValue(next as unknown as Record<string, unknown>);
@@ -355,7 +355,7 @@ export const AutocompleteMultiple = () => {
   const picked = useMemo(() => found, [pickedKey]);
   const check = ToolJet.useValidation({ section: 'choice', value: picked.map((o) => o.value), present: picked.length > 0 });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6.9 });
+  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 7 });
 
   const change = (next: Option[]) => {
     setValue(next);

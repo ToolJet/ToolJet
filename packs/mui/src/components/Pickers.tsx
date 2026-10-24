@@ -142,7 +142,7 @@ export const DatePicker = () => {
   const date = parse(value, DATE);
   const check = ToolJet.useValidation({ section: 'date', value: date ? date.format(DATE) : '', present: !!date });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6.9 });
+  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
 
   const change = (next: Dayjs | null) => {
     setValue(next && next.isValid() ? next.format(DATE) : '');
@@ -202,7 +202,7 @@ export const TimePicker = () => {
   const time = atToday(value);
   const check = ToolJet.useValidation({ section: 'text', value: time ? time.format(TIME) : '', present: !!time });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 6.9 });
+  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 7 });
 
   const change = (next: Dayjs | null) => {
     setValue(next && next.isValid() ? next.format(TIME) : '');

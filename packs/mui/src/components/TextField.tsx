@@ -63,7 +63,7 @@ export const TextField = () => {
   const fieldId = ToolJet.useFieldId();
   const check = useRuleCheck(ToolJet.useValidation({ section: 'text', value }), typeRule(type, value));
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6.9 });
+  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
   const [revealed, setRevealed] = useState(false);
   const isPassword = type === 'password';
 
@@ -137,7 +137,7 @@ export const MultilineTextField = () => {
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ section: 'text', value });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 11.5 });
+  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 12 });
 
   const change = (next: string) => {
     setValue(next);
@@ -201,7 +201,7 @@ export const NumberField = () => {
   const num = toNumber(value);
   const check = ToolJet.useValidation({ section: 'text', value: num === null ? '' : String(num), present: num !== null });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 6.9 });
+  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 7 });
   const lo = toNumber(min);
   const hi = toNumber(max);
 

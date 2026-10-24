@@ -61,7 +61,7 @@ export const Checkbox = () => {
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 4.6 });
+  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 5 });
   return (
     <MuiProvider overrides={overrides}>
       <Loading loading={loading} look={<Spinner />}>
@@ -103,7 +103,7 @@ export const Switch = () => {
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 4.2 });
+  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 5 });
   return (
     <MuiProvider overrides={overrides}>
       <Loading loading={loading} look={<Spinner />}>
@@ -185,7 +185,7 @@ export const ToggleButtonGroup = () => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 5.2 });
+  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
   const options = toOptions(rawOptions);
   const current: string | string[] | null = exclusive ? (Array.isArray(value) ? str(value[0]) : str(value)) || null : toArray(value).map(str);
   const change = (next: string | string[] | null) => {
@@ -314,7 +314,7 @@ export const Slider = () => {
   const isRange = range === true;
   const check = ToolJet.useValidation({ section: 'choice', value: Array.isArray(value) ? (value as unknown as unknown[]).join(',') : value, present: true });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 5.6 });
+  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
   const lo = toNumber(min) ?? 0;
   const hi = Math.max(lo, toNumber(max) ?? 100);
   // The thumb draws the value within min and max: a literal 150 under max 100 drew 100 and exposed 150, and an empty

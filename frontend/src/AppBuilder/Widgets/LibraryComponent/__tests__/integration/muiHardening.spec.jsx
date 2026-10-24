@@ -66,7 +66,7 @@ const baseHost = (name, extra = {}) => ({
 
 // One pack widget on the inline host, inside a Form signal. `update` re-renders it with new properties, a new host
 // state, a new wrapper (a parent turning inert) or a Form clear.
-const mount = async (name, props, { host = {}, wrapper = {} } = {}) => {
+const mount = async (name, props, { host = {}, wrapper = {}, popup } = {}) => {
   loadLibraryModule.mockResolvedValue({ [name]: COMPONENTS[name] });
   const exposed = {};
   const events = [];
@@ -99,6 +99,8 @@ const mount = async (name, props, { host = {}, wrapper = {} } = {}) => {
           actions={actions}
           host={c.host}
           dataCy="mui-widget"
+          popupSlotNames={popup ? Object.keys(popup) : undefined}
+          renderPopupSlot={popup ? (slot) => popup[slot] : undefined}
         />
       </div>
     </FormSignalContext.Provider>
@@ -729,5 +731,121 @@ describe('controls UI 2.0 has (team review, 2026-10-24)', () => {
     expect(highlightProps(true, pin, hover, () => {}).highlightedItem).toBe(pin);
     expect(highlightProps(true, null, hover, () => {}).highlightedItem).toBe(hover);
     expect(highlightProps(true, null, null, () => {}).highlightedItem).toBeNull();
+  });
+});
+
+describe('AM-04: Escape from a ToolJet component in the Dialog body', () => {
+  // The body's components are the host's, projected through the body's <slot>: a light-DOM child of the popup layer.
+  const BODY = {
+    body: (
+      <div>
+        <input data-testid="draft" />
+        <input data-testid="combo" aria-expanded="true" />
+        <input data-testid="collapsed" aria-expanded="false" />
+      </div>
+    ),
+  };
+  const field = (id) => document.querySelector(`.tj-cc-popup-host [data-testid="${id}"]`);
+  const escape = async (el, init = {}) => {
+    await act(async () => {
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true, cancelable: true, ...init }));
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+  };
+  const openWith = async (props = {}) => {
+    const t = await mount('Dialog', props, { popup: BODY });
+    t.act('open');
+    await waitFor(() => expect(t.exposed.open).toBe(true));
+    await waitFor(() => expect(field('draft')).toBeTruthy());
+    return t;
+  };
+
+  test('the slot projects the field into the dialog content', async () => {
+    await openWith();
+    const content = deepAll('.MuiDialogContent-root')[0];
+    expect(content.querySelector('slot')).toBeTruthy();
+    expect(field('draft').closest('[slot]').assignedSlot).toBeTruthy();
+  });
+
+  test('closes the dialog once, with onClose, from a text field the host isolates', async () => {
+    const t = await openWith();
+    await escape(field('draft'));
+    await waitFor(() => expect(t.exposed.open).toBe(false));
+    expect(t.events.filter((e) => e === 'onClose')).toHaveLength(1);
+  });
+
+  test('stays open while Escape is disabled', async () => {
+    const t = await openWith({ disableEscapeKeyDown: true });
+    await escape(field('draft'));
+    expect(t.exposed.open).toBe(true);
+    expect(t.events).not.toContain('onClose');
+  });
+
+  test('stays open when an inner popup is expanded, or a field used the key', async () => {
+    const t = await openWith();
+    await escape(field('combo'));
+    expect(t.exposed.open).toBe(true);
+    const used = (e) => e.key === 'Escape' && e.preventDefault();
+    field('draft').addEventListener('keydown', used);
+    await escape(field('draft'));
+    field('draft').removeEventListener('keydown', used);
+    expect(t.exposed.open).toBe(true);
+    expect(t.events).not.toContain('onClose');
+  });
+
+  test("closes from a collapsed combobox that prevents every Escape (ToolJet's Select)", async () => {
+    const t = await openWith();
+    const swallow = (e) => e.preventDefault();
+    field('collapsed').addEventListener('keydown', swallow);
+    await escape(field('collapsed'));
+    await waitFor(() => expect(t.exposed.open).toBe(false));
+  });
+
+  test("Escape on the dialog's own Cancel still closes it once", async () => {
+    const t = await openWith();
+    const cancel = deepAll('button').find((b) => b.textContent === 'Cancel');
+    await escape(cancel);
+    await waitFor(() => expect(t.exposed.open).toBe(false));
+    expect(t.events.filter((e) => e === 'onClose')).toHaveLength(1);
+  });
+
+  test('stops listening once closed', async () => {
+    const t = await openWith();
+    t.act('close');
+    await waitFor(() => expect(t.exposed.open).toBe(false));
+    await escape(field('draft'));
+    expect(t.events).not.toContain('onClose');
+  });
+});
+
+describe('UI2-12: MUI Tabs link each tab to its panel', () => {
+  test('the active tab and its panel point at each other, ids scoped to the widget', async () => {
+    const t = await mount('Tabs', { tabs: [{ value: 'a b', label: 'A' }, { value: 'b', label: 'B' }] });
+    for (const next of ['a b', 'b']) {
+      t.act('setValue', next);
+      await waitFor(() => expect(t.exposed.value).toBe(next));
+      const tab = t.root().querySelector('[role="tab"][aria-selected="true"]');
+      const panel = t.root().getElementById(tab.getAttribute('aria-controls'));
+      expect(tab.id).toMatch(/^mui-Tabs-tab-/);
+      expect(tab.id).not.toMatch(/\s/);
+      expect(panel.getAttribute('role')).toBe('tabpanel');
+      expect(panel.getAttribute('aria-labelledby')).toBe(tab.id);
+      expect(panel.hidden).toBe(false);
+    }
+  });
+});
+
+describe('T33: MUI default heights are whole grid rows', () => {
+  // Read from the sources: a fractional row count (4.1, 6.9) left the box between grid rows.
+  test('every useComponentSettings defaultHeight is an integer', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const dir = path.resolve(__dirname, '../../../../../../../packs/mui/src/components');
+    const heights = fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith('.tsx'))
+      .flatMap((f) => [...fs.readFileSync(path.join(dir, f), 'utf8').matchAll(/defaultHeight:\s*([\d.]+)/g)].map((m) => [f, Number(m[1])]));
+    expect(heights.length).toBeGreaterThan(30);
+    expect(heights.filter(([, h]) => !Number.isInteger(h))).toEqual([]);
   });
 });

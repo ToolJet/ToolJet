@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -70,6 +70,10 @@ export const Tabs = () => {
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Tab value' }] }, (v) => change(str(v)));
   const vertical = orientation === 'vertical';
+  // Each tab names its panel and each panel its tab (aria-controls, aria-labelledby), with ids unique to this widget.
+  const ownId = useId();
+  const idBase = ToolJet.useFieldId() || `tabs${ownId.replace(/:/g, '')}`;
+  const partIds = (key: string) => ({ tab: `${idBase}-tab-${encodeURIComponent(key)}`, panel: `${idBase}-panel-${encodeURIComponent(key)}` });
 
   return (
     <MuiProvider overrides={overrides} fill>
@@ -87,12 +91,19 @@ export const Tabs = () => {
             sx={vertical ? { borderRight: 1, borderColor: 'divider' } : { borderBottom: 1, borderColor: 'divider' }}
           >
             {tabs.map((t) => (
-              <Tab key={t.key} value={t.key} label={t.label} disabled={t.disabled} />
+              <Tab key={t.key} value={t.key} label={t.label} disabled={t.disabled} id={partIds(t.key).tab} aria-controls={partIds(t.key).panel} />
             ))}
           </MuiTabs>
           {/* MUI's tab panel pattern: every panel mounted, the inactive ones hidden, so each keeps its canvas. */}
           {tabs.map((t) => (
-            <div key={t.key} role="tabpanel" hidden={t.key !== current} className="tj-mui-tabpanel">
+            <div
+              key={t.key}
+              role="tabpanel"
+              id={partIds(t.key).panel}
+              aria-labelledby={partIds(t.key).tab}
+              hidden={t.key !== current}
+              className="tj-mui-tabpanel"
+            >
               <ToolJet.Slot name={slots.get(t.key) as string} style={{ height: '100%' }} />
             </div>
           ))}
@@ -160,7 +171,7 @@ export const Dialog = () => {
   const onEntered = ToolJet.useEventCallback({ name: 'onEntered' });
   const { disabled, loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4.1 });
+  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
   ToolJet.useAction({ name: 'open', displayName: 'Open' }, () => setOpen(true));
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => setOpen(false));
   const close = () => {
@@ -212,6 +223,48 @@ export const Dialog = () => {
   );
 };
 
+// Escape from a ToolJet component in the body closes the dialog, as it does from the dialog's own buttons. Those
+// components are the host's (projected through the body's <slot>), outside MUI's React tree, so the Modal's onKeyDown
+// never saw their keys, and the host stops a text field's keys at the popup layer. Watched from the window's capture
+// phase, decided once the key is handled: a press an inner popup takes (its combobox was expanded, or a field used
+// the key, as a search box clearing itself) leaves the dialog open. A collapsed combobox is not using it: ToolJet's
+// Select prevents the default of every Escape, its menu open or not.
+const useProjectedEscape = (
+  contentRef: React.RefObject<HTMLElement | null>,
+  active: boolean,
+  close: () => void,
+  /** The key MUI's own onClose last handled: that one is not closed twice. */
+  handledRef: React.MutableRefObject<Event | null>
+) => {
+  const closeRef = useRef(close);
+  closeRef.current = close;
+  useEffect(() => {
+    if (!active) return undefined;
+    let timer = 0;
+    let live = true;
+    const onKey = (e: KeyboardEvent) => {
+      const content = contentRef.current;
+      if (e.key !== 'Escape' || e.isComposing || !content) return;
+      const path = e.composedPath();
+      const origin = path[0];
+      // Only keys from the projected light DOM: MUI's Modal already closes on its own elements' keys.
+      if (!path.includes(content) || !(origin instanceof Node) || origin.getRootNode() === content.getRootNode()) return;
+      if (origin instanceof Element && origin.closest('[aria-expanded="true"]')) return;
+      const collapsed = origin instanceof Element && origin.getAttribute('aria-expanded') === 'false';
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        if (live && (collapsed || !e.defaultPrevented) && handledRef.current !== e) closeRef.current();
+      });
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      live = false;
+      window.clearTimeout(timer);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, [active, contentRef, handledRef]);
+};
+
 const DialogBody = (p: {
   open: boolean;
   title: string;
@@ -233,6 +286,9 @@ const DialogBody = (p: {
   onEntered: () => void;
 }) => {
   const container = usePopupContainer();
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const handledRef = useRef<Event | null>(null);
+  useProjectedEscape(contentRef, p.open && !p.disableEscapeKeyDown, p.onClose, handledRef);
   // Portal only once the popup layer is known: MUI would otherwise mount the dialog on document.body, unstyled.
   if (!container) return null;
   return (
@@ -247,14 +303,15 @@ const DialogBody = (p: {
       // back out of them.
       disableEnforceFocus
       keepMounted
-      onClose={(_, reason) => {
+      onClose={(event: { nativeEvent?: Event } | Event, reason) => {
+        handledRef.current = ('nativeEvent' in event && event.nativeEvent) || (event as Event);
         if (reason === 'escapeKeyDown' && p.disableEscapeKeyDown) return;
         p.onClose();
       }}
       slotProps={{ transition: { onEntered: p.onEntered } }}
     >
       {p.title ? <DialogTitle>{p.title}</DialogTitle> : null}
-      <DialogContent dividers={p.scroll === 'paper' && p.bodyHeight > 0}>
+      <DialogContent ref={contentRef} dividers={p.scroll === 'paper' && p.bodyHeight > 0}>
         {p.contentText ? <DialogContentText sx={{ mb: p.bodyHeight > 0 ? 2 : 0 }}>{p.contentText}</DialogContentText> : null}
         {p.bodyHeight > 0 ? <ToolJet.PopupSlot name="body" style={{ height: p.bodyHeight }} /> : null}
       </DialogContent>

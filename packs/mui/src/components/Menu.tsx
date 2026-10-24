@@ -59,7 +59,7 @@ export const Menu = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const anchor = useRef<HTMLButtonElement>(null);
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4.1 });
+  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
   const items = toItems(rawItems);
   const show = (next: boolean) => {
     if (next === !!open) return;

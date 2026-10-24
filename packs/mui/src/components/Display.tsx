@@ -48,7 +48,7 @@ export const Chip = () => {
   const onDelete = ToolJet.useEventCallback({ name: 'onDelete' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 4, defaultHeight: 3.6 });
+  ToolJet.useComponentSettings({ defaultWidth: 4, defaultHeight: 4 });
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-center tj-mui-start">
       <Loading loading={loading} look={<Skeleton variant="rounded" width="100%" height="100%" sx={{ borderRadius: 16 }} />}>
@@ -156,7 +156,7 @@ export const TypographyHeading = () => {
   const [gutterBottom] = ToolJet.useStateBoolean({ name: 'gutterBottom', label: 'Gutter bottom', initialValue: false });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 3.6 });
+  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 4 });
   return (
     <MuiProvider overrides={overrides}>
       <Loading loading={loading} look={<TextSkeleton variant={t.variant as 'h5'} />}>
@@ -172,7 +172,7 @@ export const Typography = () => {
   const t = useTypography(['body1', 'body2', 'subtitle1', 'subtitle2', 'caption', 'overline'], 'body1', 'Text');
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 2.8 });
+  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 3 });
   return (
     <MuiProvider overrides={overrides}>
       <Loading loading={loading} look={<TextSkeleton variant={t.variant as 'body1'} lines={3} />}>
@@ -273,7 +273,7 @@ export const LinearProgress = () => {
   const [showValue] = ToolJet.useStateBoolean({ name: 'showValue', label: 'Show value', initialValue: true });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 4.8 });
+  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 5 });
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => setValue(toNumber(next) ?? 0));
   const pct = Math.max(0, Math.min(100, toNumber(value) ?? 0));
   // The exposed value is the drawn one (a literal 150 drew a full bar and exposed 150).
@@ -320,7 +320,7 @@ export const Avatar = () => {
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 3, defaultHeight: 4.4 });
+  ToolJet.useComponentSettings({ defaultWidth: 3, defaultHeight: 5 });
   const px = Math.max(16, Math.min(240, Number(size) || 40));
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-center">
@@ -387,7 +387,7 @@ export const Stepper = () => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 2.8 });
+  ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 3 });
   const steps = toSteps(rawSteps);
   const byLabel = steps.findIndex((s) => s.id === str(activeStep) || s.label === str(activeStep));
   const current = byLabel >= 0 ? byLabel : Math.max(0, Math.min(steps.length, toNumber(activeStep) ?? 0));
@@ -457,7 +457,7 @@ export const Pagination = () => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 3.6 });
+  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 4 });
   const pages = Math.max(1, Math.round(Number(count) || 1));
   const shown = Math.max(1, Math.min(pages, Math.round(toNumber(page) ?? 1)));
   // The exposed page is the one drawn: a page past count (count shrank, or a literal 50 of 10) exposed 50.

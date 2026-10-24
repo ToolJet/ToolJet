@@ -35,7 +35,7 @@ export const Button = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const ref = useRef<HTMLButtonElement>(null);
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4.1 });
+  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
 
   ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => {
     if (!disabled && !loading) onClick();
