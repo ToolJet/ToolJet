@@ -1,6 +1,8 @@
 import { Controller, Get, Post, Delete, Body, Param, Req, Res, NotImplementedException } from '@nestjs/common';
 import { Response } from 'express';
 import { User } from '@modules/app/decorators/user.decorator';
+import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
+import { UserPermissions } from '@modules/ability/types';
 import { IPersonalAccessTokensController } from './interface/IController';
 
 // CE stub — workspace PATs are EE (the consuming features — custom-component CLI, MCP — are EE);
@@ -13,7 +15,7 @@ export class PersonalAccessTokensController implements IPersonalAccessTokensCont
   }
 
   @Get()
-  async list(@User() user): Promise<any> {
+  async list(@User() user, @UserPermissionsDecorator() userPermissions: UserPermissions): Promise<any> {
     throw new NotImplementedException();
   }
 
@@ -23,7 +25,11 @@ export class PersonalAccessTokensController implements IPersonalAccessTokensCont
   }
 
   @Delete(':id')
-  async delete(@User() user, @Param('id') id: string): Promise<void> {
+  async delete(
+    @User() user,
+    @Param('id') id: string,
+    @UserPermissionsDecorator() userPermissions: UserPermissions
+  ): Promise<void> {
     throw new NotImplementedException();
   }
 

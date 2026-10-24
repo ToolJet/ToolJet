@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen } from '@/test/test-utils';
 import { authenticationService } from '@/_services/authentication.service';
-import { BreadCrumbContext } from '@/App/App';
-import { SettingsPage } from '../SettingsPage';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
+import SettingsPage from '..';
 
 // The shared lucide stub can't render Button's leadingIcon (icons[...] is a component, not an iconNode).
 jest.mock('lucide-react/dynamic.mjs', () => ({ DynamicIcon: () => null }));

@@ -44,7 +44,7 @@ const builderGroup = {
   appCreate: true,
   appDelete: true,
   patCreate: true,
-  patRevoke: false,
+  patRevoke: true,
 };
 
 function useGroupHandlers(group, onUpdate = jest.fn()) {
@@ -79,7 +79,7 @@ function renderPermissions(featureAccessOverrides = {}) {
 }
 
 describe('BaseManageGroupPermissionResources | Personal access token row', () => {
-  it('should show Create checked and Revoke unchecked for the Builder group, with descriptions', async () => {
+  it('should show Create and Revoke both checked for the Builder group by default, with descriptions', async () => {
     useGroupHandlers(builderGroup);
 
     renderPermissions();
@@ -88,8 +88,19 @@ describe('BaseManageGroupPermissionResources | Personal access token row', () =>
     const revoke = screen.getByRole('checkbox', { name: /Revoke a token in this workspace/ });
     expect(screen.getByText('Personal access token')).toBeInTheDocument();
     expect(create).toBeChecked();
-    expect(revoke).not.toBeChecked();
+    expect(revoke).toBeChecked();
     expect(create).toBeEnabled();
+  });
+
+  it('should show Revoke unchecked and editable once a licensed workspace turns it off for Builder', async () => {
+    useGroupHandlers({ ...builderGroup, patRevoke: false });
+
+    renderPermissions();
+
+    const revoke = await screen.findByRole('checkbox', { name: /Revoke a token in this workspace/ });
+    expect(revoke).not.toBeChecked();
+    expect(revoke).toBeEnabled();
+    expect(screen.getByRole('checkbox', { name: /Create a token in this workspace/ })).toBeChecked();
   });
 
   it('should disable both PAT checkboxes for the Builder group when custom groups are not licensed', async () => {
@@ -103,7 +114,7 @@ describe('BaseManageGroupPermissionResources | Personal access token row', () =>
 
   it.each([
     ['Create a token in this workspace', { patCreate: false }],
-    ['Revoke a token in this workspace', { patRevoke: true }],
+    ['Revoke a token in this workspace', { patRevoke: false }],
   ])('should call the update API when toggling "%s"', async (label, expectedBody) => {
     const onUpdate = useGroupHandlers(builderGroup);
     renderPermissions();
