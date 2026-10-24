@@ -16,6 +16,9 @@ Owns personal access tokens (PATs) and their exchange for workspace sessions.
 - Scope access never overrides owner permissions or edition/license gates.
 - Unassigned modules and routes without module metadata fail closed.
 - Credential modules are never grantable; a PAT must not mint another PAT.
+- Minting (`POST /personal-access-tokens`) is gated by the `CREATE_PAT` feature ability: `isAdmin || superAdmin || patCreate`. The token binds to the request workspace (`user.organizationId`); a body `organizationId` is ignored.
+- The AI app builder's service token (`getOrCreateServicePat`) never passes through that gate and is hidden from the list.
+- `PAT_CREATE` audit is set in `createPat` via `AUDIT_LOGS_REQUEST_CONTEXT_KEY`. `PAT_REVOKE` is registered on `DELETE_PAT` but not emitted yet.
 - Browser sessions and embed sessions (`patScope='app'`) are exempt from this workspace ceiling.
 
 ## Session kinds

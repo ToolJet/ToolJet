@@ -37,7 +37,7 @@ export interface ServicePatOptions {
 
 export interface IPersonalAccessTokensService {
   createPat(user: User, organizationId: string, name: string, expiresAt: Date): Promise<PatView & { token: string }>;
-  listPats(userId: string): Promise<PatView[]>;
+  listPats(userId: string, organizationId: string): Promise<PatView[]>;
   deletePat(userId: string, id: string): Promise<void>;
   createSessionFromPat(pat: UserPersonalAccessToken, response: Response, appId?: string): Promise<PatSession>;
   /* Find-or-create the single service token for (user, workspace, name). Returns the ENTITY, with
