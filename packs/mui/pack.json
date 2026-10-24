@@ -16,6 +16,7 @@
   "components": {
     "Button": {
       "role": "button",
+      "labelCase": "upper",
       "fit": false,
       "usage": "MUI's Button: children is its text; variant (text, outlined, contained) with color (inherit, primary, secondary, success, error, info, warning); size, fullWidth, disableElevation, startIcon/endIcon (MUI icon names such as Add, Save, Delete), href, tooltip; onClick.",
       "roleProps": {
