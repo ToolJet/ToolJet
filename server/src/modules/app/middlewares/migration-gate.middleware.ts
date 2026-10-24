@@ -1,49 +1,60 @@
 import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { NextFunction, Request, Response } from 'express';
-import { RedisService } from '@modules/redis/service';
-import { withTimeout } from '@helpers/with-timeout';
+import * as parseurl from 'parseurl';
+import { MigrationRunsService, MigrationState } from '../migration-runs/service';
 import {
-  isMigrationInProgressValue,
+  isServerManagedMigrationMode,
   isMigrationTrafficGateDisabled,
-  MIGRATION_IN_PROGRESS_KEY,
 } from '../../../migration-helpers/migration-status';
 
 /**
  * Answers API traffic with 503 while a deploy is running database migrations.
  *
  * During a rolling upgrade the pods still serving traffic are talking to a database that is
- * mid-migration. The migration process raises `MIGRATION_IN_PROGRESS` in Redis for the
- * duration (see `migration-helpers/migration-status.ts`) and this middleware turns that into
- * a clean, retryable 503 instead of letting requests hit a half-migrated schema.
+ * mid-migration. The migrating process holds an advisory lock for the duration, and
+ * `MigrationRunsService.status()` reads it (plus, in async mode, the latest run);
+ * this middleware turns that into a clean, retryable 503 instead of letting requests hit a
+ * half-migrated schema.
  *
  * Three properties matter more than the gating itself:
  *  - Health checks are never gated. Gating them would make the orchestrator kill the very
  *    pods that are waiting out the upgrade.
  *  - Only API routes are gated, so the SPA shell still loads and can show the upgrade state.
- *  - It fails open. A Redis outage must not take the API down on its own, so any read error
- *    is treated as "no migration running".
+ *  - It fails open: a status read error is treated as "no migration running".
  */
 
 /** Relative to the API prefix — `/api/health` and `/api/metrics` in a default install. */
 const UNGATED_API_PATHS = new Set(['/health', '/metrics']);
 
-/** Caps Redis reads at one per second per pod, whatever the request rate. */
-const STATUS_CACHE_TTL_MS = 1000;
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
-/**
- * A Redis that accepts connections but never answers would otherwise park every request in
- * ioredis' offline queue. Losing the gate is survivable; stalling the API is not.
- */
-const READ_TIMEOUT_MS = 500;
+/** Async mode keeps serving: reads and these end-user writes pass, every other write gets 503. */
+const ASYNC_MODE_WRITE_ALLOWLIST = [
+  /^\/authenticate(\/|$)/,
+  /^\/session(\/|$)/,
+  /^\/oauth\//,
+  /^\/sso\//,
+  /^\/data-queries\/[^/]+\/run$/,
+  /^\/data-queries\/[^/]+\/versions\/[^/]+\/run\/[^/]+$/,
+];
 
-/** How often to repeat the "requests are being rejected" / "Redis unreachable" lines. */
+/** How often to repeat the "requests are being rejected" line. */
 const LOG_THROTTLE_MS = 30_000;
 
 const RETRY_AFTER_SECONDS = 30;
 
 export const MIGRATION_IN_PROGRESS_MESSAGE =
   'ToolJet is being upgraded — database migrations are in progress. Please retry in a few moments.';
+
+export const MIGRATION_FAILED_MESSAGE =
+  'The latest ToolJet upgrade failed. Changes cannot be saved until it is fixed and ToolJet restarts.';
+
+/** What each refusing state answers; other states pass. */
+const REFUSALS: Partial<Record<MigrationState, { code: string; message: string }>> = {
+  running: { code: 'MIGRATION_IN_PROGRESS', message: MIGRATION_IN_PROGRESS_MESSAGE },
+  failed: { code: 'MIGRATION_FAILED', message: MIGRATION_FAILED_MESSAGE },
+};
 
 /**
  * Rebuilds the prefix `main.ts` passes to `setGlobalPrefix(urlPrefix + 'api')`, so a subpath
@@ -56,17 +67,13 @@ export function buildApiPrefix(subPath: string | undefined): string {
 @Injectable()
 export class MigrationGateMiddleware implements NestMiddleware {
   private readonly enabled = !isMigrationTrafficGateDisabled();
-  private readonly apiPrefix = buildApiPrefix(process.env.SUB_PATH);
-
-  private cachedInProgress = false;
-  private cachedAt = 0;
-  private inFlightRead: Promise<boolean> | null = null;
-  private lastReadErrorLoggedAt = 0;
+  private readonly apiPrefix = buildApiPrefix(process.env.SUB_PATH).toLowerCase();
+  private readonly asyncMode = isServerManagedMigrationMode(process.env);
   private lastRejectionLoggedAt = 0;
 
   constructor(
-    private readonly redisService: RedisService,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly migrationRuns: MigrationRunsService
   ) {
     // Announced once at boot: an operator looking at a pod that served traffic straight
     // through an upgrade needs to find the reason in that pod's own log, not guess at env.
@@ -80,68 +87,39 @@ export class MigrationGateMiddleware implements NestMiddleware {
   }
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
-    if (!this.enabled || !this.shouldGate(req.path)) return next();
-    if (!(await this.isMigrationInProgress())) return next();
+    // The raw pathname Express routes on (req.path is '/' under forRoutes('*')). Not a WHATWG URL: that
+    // resolves `..`, `\` and `%2e`, so the gate would check a different route than the one that runs.
+    // Lowercased: Express matches routes case-insensitively.
+    const path = (parseurl.original(req)?.pathname ?? '/').toLowerCase();
+    if (!this.enabled || !this.shouldGate(path, req.method)) return next();
+    const { state } = await this.migrationRuns.status();
+    const refusal = REFUSALS[state];
+    if (!refusal) return next();
 
-    this.logRejection(req);
+    this.logRejection(req, state);
     res.setHeader('Retry-After', String(RETRY_AFTER_SECONDS));
     res.status(HttpStatus.SERVICE_UNAVAILABLE).json({
       statusCode: HttpStatus.SERVICE_UNAVAILABLE,
       timestamp: new Date().toISOString(),
       path: req.originalUrl,
-      message: MIGRATION_IN_PROGRESS_MESSAGE,
-      code: 'MIGRATION_IN_PROGRESS',
+      ...refusal,
     });
   }
 
-  private shouldGate(path: string): boolean {
+  private shouldGate(path: string, method: string): boolean {
     if (!path.startsWith(this.apiPrefix)) return false;
-    return !UNGATED_API_PATHS.has(path.slice(this.apiPrefix.length));
+    const apiPath = path.slice(this.apiPrefix.length);
+    if (UNGATED_API_PATHS.has(apiPath)) return false;
+    if (!this.asyncMode) return true;
+    return !SAFE_METHODS.has(method) && !ASYNC_MODE_WRITE_ALLOWLIST.some((pattern) => pattern.test(apiPath));
   }
 
-  private async isMigrationInProgress(): Promise<boolean> {
-    if (Date.now() - this.cachedAt < STATUS_CACHE_TTL_MS) return this.cachedInProgress;
-    // Single-flight: a burst of concurrent requests on a cold cache shares one Redis round trip.
-    this.inFlightRead ??= this.readFlag().finally(() => {
-      this.inFlightRead = null;
-    });
-    return this.inFlightRead;
-  }
-
-  private async readFlag(): Promise<boolean> {
-    try {
-      const value = await withTimeout(
-        this.redisService.getClient().get(MIGRATION_IN_PROGRESS_KEY),
-        READ_TIMEOUT_MS,
-        'reading the upgrade gate'
-      );
-      this.cachedInProgress = isMigrationInProgressValue(value);
-    } catch (error) {
-      this.cachedInProgress = false;
-      this.logThrottled('lastReadErrorLoggedAt', () =>
-        this.logger.warn(
-          `[migration-gate] Could not read ${MIGRATION_IN_PROGRESS_KEY} from Redis ` +
-            `(${error instanceof Error ? error.message : String(error)}); serving traffic normally.`
-        )
-      );
-    }
-    this.cachedAt = Date.now();
-    return this.cachedInProgress;
-  }
-
-  private logRejection(req: Request): void {
-    this.logThrottled('lastRejectionLoggedAt', () =>
-      this.logger.warn(
-        `[migration-gate] ${MIGRATION_IN_PROGRESS_KEY} is set — answering API requests with 503 ` +
-          `(most recent: ${req.method} ${req.originalUrl}).`
-      )
-    );
-  }
-
-  private logThrottled(field: 'lastReadErrorLoggedAt' | 'lastRejectionLoggedAt', emit: () => void): void {
+  private logRejection(req: Request, state: MigrationState): void {
     const now = Date.now();
-    if (now - this[field] < LOG_THROTTLE_MS) return;
-    this[field] = now;
-    emit();
+    if (now - this.lastRejectionLoggedAt < LOG_THROTTLE_MS) return;
+    this.lastRejectionLoggedAt = now;
+    this.logger.warn(
+      `[migration-gate] Migration ${state}: answering API writes with 503 (most recent: ${req.method} ${req.originalUrl}).`
+    );
   }
 }

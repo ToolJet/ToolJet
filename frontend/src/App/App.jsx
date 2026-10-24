@@ -4,7 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
+import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute, SuperAdminRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
 import { TooljetDatabase } from '@/TooljetDatabase';
 import { Authorize } from '@/Oauth2';
@@ -40,12 +40,14 @@ import {
   getDataSourcesRoutes,
   getAuditLogsRoutes,
 } from '@/modules';
-import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import { isWorkflowsFeatureEnabled, fetchEdition } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
 import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
+import { MigrationBanner } from '@/_components/MigrationBanner';
+import { MigrationsPage } from '@/MigrationsPage';
 // EmbedApp import removed - now handled by ViewerApp.jsx
 // import EmbedApp from '@/AppBuilder/EmbedApp';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
@@ -96,7 +98,8 @@ class AppComponent extends React.Component {
   updateMargin() {
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
-    const showBannerCondition = (isAdmin || isBuilder) && this.state.showBanner;
+    const migrationBannerOnTop = this.state.showMigrationBanner && !this.isEditorOrViewerFromPath();
+    const showBannerCondition = ((isAdmin || isBuilder) && this.state.showBanner) || migrationBannerOnTop;
     const marginValue = showBannerCondition ? '25' : '0';
     const marginValueLayout = showBannerCondition ? '35' : '0';
     document.documentElement.style.setProperty('--dynamic-margin', `${marginValue}px`);
@@ -196,11 +199,14 @@ class AppComponent extends React.Component {
     }
     return '';
   };
+  setMigrationBannerVisible = (visible) => {
+    if (this.state.showMigrationBanner !== visible) this.setState({ showMigrationBanner: visible });
+  };
   closeBasicPlanMigrationBanner = () => {
     this.setState({ showBanner: false });
   };
   render() {
-    const { updateAvailable, isEditorOrViewer, showBanner } = this.state;
+    const { updateAvailable, isEditorOrViewer, showBanner, showMigrationBanner } = this.state;
     const { darkMode } = this.props;
     const mergedProps = {
       ...this.props,
@@ -233,7 +239,18 @@ class AppComponent extends React.Component {
     const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
     return (
       <>
-        <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
+        <div
+          className={
+            !isApplicationsPath && (isAdmin || isBuilder || (showMigrationBanner && !this.isEditorOrViewerFromPath()))
+              ? 'banner-layout-wrapper'
+              : ''
+          }
+        >
+          <MigrationBanner
+            darkMode={darkMode}
+            onVisibilityChange={this.setMigrationBannerVisible}
+            floating={!!this.isEditorOrViewerFromPath()}
+          />
           {!isApplicationsPath && !this.isEditorOrViewerFromPath() && (isAdmin || isBuilder) && showBanner && (
             <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
           )}
@@ -340,6 +357,21 @@ class AppComponent extends React.Component {
                     </DesktopOnlyRoute>
                   }
                 />
+                {/* EE renders migrations inside its instance settings shell (settings/*). */}
+                {fetchEdition() === 'ce' && (
+                  <Route
+                    path="settings/migrations"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <SuperAdminRoute navigate={this.props.navigate}>
+                            <MigrationsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                          </SuperAdminRoute>
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                )}
                 <Route
                   path="/:workspaceId/settings/*"
                   element={

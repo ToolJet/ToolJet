@@ -7,7 +7,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * It witnesses its own execution: the row count in `migration_witness` is how the spec proves
  * the body ran exactly once across every pod, rather than trusting TypeORM's bookkeeping.
  */
-export class SlowWitnessedMigration1700000000001 implements MigrationInterface {
+export class SlowWitnessedMigration1790700000001 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS migration_witness (

@@ -1,4 +1,4 @@
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 import { OnModuleInit, DynamicModule, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
@@ -15,6 +15,9 @@ import { MetaModule } from '@modules/meta/module';
 import { SessionModule } from '@modules/session/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { AppController } from './controller';
+import { MigrationRunsController } from './migration-runs/controller';
+import { MigrationRunsService } from './migration-runs/service';
+import { FeatureAbilityFactory } from './ability';
 import { AppService } from './service';
 import { AppUtilService } from './util.service';
 import { ProfileModule } from '@modules/profile/module';
@@ -239,8 +242,8 @@ export class AppModule implements OnModuleInit, NestModule {
 
     return {
       module: AppModule,
-      imports: [...modules, ...imports],
-      controllers: [AppController],
+      imports: [DiscoveryModule, ...modules, ...imports],
+      controllers: [AppController, MigrationRunsController],
       providers: [
         /* Bound here rather than in main.ts so enforcement is part of the module graph: any
            consumer that builds this module gets it, including the e2e harness, which never runs
@@ -250,6 +253,8 @@ export class AppModule implements OnModuleInit, NestModule {
         GetConnection,
         AppService,
         AppUtilService,
+        MigrationRunsService,
+        FeatureAbilityFactory,
         ...schedulerProviders,
       ],
     };

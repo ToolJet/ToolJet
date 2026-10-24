@@ -1,16 +1,21 @@
 /** @group platform */
 import { NextFunction, Request, Response } from 'express';
 import { Logger } from 'nestjs-pino';
-import { RedisService } from '@modules/redis/service';
 import {
   buildApiPrefix,
   MigrationGateMiddleware,
   MIGRATION_IN_PROGRESS_MESSAGE,
 } from '@modules/app/middlewares/migration-gate.middleware';
-import { MIGRATION_IN_PROGRESS_KEY } from 'src/migration-helpers/migration-status';
+import { MigrationRunsService, MigrationState } from '@modules/app/migration-runs/service';
 
+/** Nest 11 mounts forRoutes('*') middleware on the full path, so req.path is always '/'. */
 function buildRequest(path: string, method = 'GET'): Request {
-  return { path, originalUrl: `${path}?x=1`, method } as Request;
+  return { path: '/', originalUrl: `${path}?x=1`, method } as Request;
+}
+
+/** Absolute-form request target (`POST http://host/api/apps HTTP/1.1`): Express routes on its pathname. */
+function buildAbsoluteFormRequest(url: string, method: string): Request {
+  return { path: '/', originalUrl: url, method } as Request;
 }
 
 function buildResponse() {
@@ -22,19 +27,12 @@ function buildResponse() {
   return res as unknown as Response & typeof res;
 }
 
-function buildMiddleware(get: jest.Mock) {
+/** Caching, single flight and failing open live in MigrationRunsService.status (e2e). */
+function buildMiddleware(state: MigrationState) {
   const logger = { warn: jest.fn(), log: jest.fn(), error: jest.fn() } as unknown as Logger;
-  const redisService = { getClient: () => ({ get }) } as unknown as RedisService;
-  return { middleware: new MigrationGateMiddleware(redisService, logger), logger };
-}
-
-/** The cache is per-instance and time-based; a fresh instance per test keeps them independent. */
-function flagSet() {
-  return jest.fn().mockResolvedValue('pod-3:17:deadbeef');
-}
-
-function flagClear() {
-  return jest.fn().mockResolvedValue(null);
+  const status = jest.fn().mockResolvedValue({ state });
+  const runs = { status } as unknown as MigrationRunsService;
+  return { middleware: new MigrationGateMiddleware(logger, runs), logger, status };
 }
 
 describe('MigrationGateMiddleware', () => {
@@ -56,9 +54,9 @@ describe('MigrationGateMiddleware', () => {
     });
   });
 
-  describe('while MIGRATION_IN_PROGRESS is set | API traffic is cut', () => {
+  describe('while a migration runs | API traffic is cut', () => {
     it('should answer an API request with a retryable 503 instead of hitting a half-migrated schema', async () => {
-      const { middleware } = buildMiddleware(flagSet());
+      const { middleware } = buildMiddleware('running');
       const res = buildResponse();
       const next = jest.fn() as NextFunction;
 
@@ -81,7 +79,7 @@ describe('MigrationGateMiddleware', () => {
       ['/api/health', 'the orchestrator probe — gating it would get the waiting pods killed'],
       ['/api/metrics', 'the scrape endpoint'],
     ])('should never gate %s (%s)', async (path) => {
-      const { middleware } = buildMiddleware(flagSet());
+      const { middleware } = buildMiddleware('running');
       const res = buildResponse();
       const next = jest.fn() as NextFunction;
 
@@ -94,7 +92,7 @@ describe('MigrationGateMiddleware', () => {
     it.each([['/'], ['/applications/my-app'], ['/assets/main.js']])(
       'should leave %s alone so the SPA shell still loads and can show the upgrade state',
       async (path) => {
-        const { middleware } = buildMiddleware(flagSet());
+        const { middleware } = buildMiddleware('running');
         const res = buildResponse();
         const next = jest.fn() as NextFunction;
 
@@ -106,7 +104,7 @@ describe('MigrationGateMiddleware', () => {
 
     it('should gate the subpath API prefix when SUB_PATH is configured', async () => {
       process.env.SUB_PATH = '/tooljet/';
-      const { middleware } = buildMiddleware(flagSet());
+      const { middleware } = buildMiddleware('running');
       const res = buildResponse();
 
       await middleware.use(buildRequest('/tooljet/api/apps'), res, jest.fn() as NextFunction);
@@ -119,34 +117,36 @@ describe('MigrationGateMiddleware', () => {
     });
 
     it('should log that it is rejecting traffic, but not once per request', async () => {
-      const { middleware, logger } = buildMiddleware(flagSet());
+      const { middleware, logger } = buildMiddleware('running');
 
       for (let i = 0; i < 5; i++) {
         await middleware.use(buildRequest('/api/apps'), buildResponse(), jest.fn() as NextFunction);
       }
 
       expect(logger.warn).toHaveBeenCalledTimes(1);
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining(MIGRATION_IN_PROGRESS_KEY));
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Migration running'));
     });
   });
 
   describe('normal service | the gate is invisible', () => {
-    it('should pass the request through when no upgrade is running', async () => {
-      const get = flagClear();
-      const { middleware } = buildMiddleware(get);
-      const res = buildResponse();
-      const next = jest.fn() as NextFunction;
+    it.each([['idle'], ['succeeded']] as [MigrationState][])(
+      'should pass the request through when %s',
+      async (state) => {
+        const { middleware, status } = buildMiddleware(state);
+        const res = buildResponse();
+        const next = jest.fn() as NextFunction;
 
-      await middleware.use(buildRequest('/api/apps'), res, next);
+        await middleware.use(buildRequest('/api/apps'), res, next);
 
-      expect(get).toHaveBeenCalledWith(MIGRATION_IN_PROGRESS_KEY);
-      expect(next).toHaveBeenCalled();
-      expect(res.status).not.toHaveBeenCalled();
-    });
+        expect(status).toHaveBeenCalled();
+        expect(next).toHaveBeenCalled();
+        expect(res.status).not.toHaveBeenCalled();
+      }
+    );
 
     it('should say so at boot when the gate is switched off, naming the env variable', () => {
       process.env.DISABLE_MIGRATION_TRAFFIC_GATE = 'true';
-      const { logger } = buildMiddleware(flagClear());
+      const { logger } = buildMiddleware('idle');
 
       expect(logger.warn).toHaveBeenCalledWith(
         expect.stringContaining('Skipping the upgrade gate — disabled by env variable')
@@ -155,85 +155,117 @@ describe('MigrationGateMiddleware', () => {
     });
 
     it('should stay quiet at boot when the gate is on, so the log is not noise', () => {
-      const { logger } = buildMiddleware(flagClear());
+      const { logger } = buildMiddleware('idle');
 
       expect(logger.warn).not.toHaveBeenCalled();
     });
 
-    it('should not read Redis at all when DISABLE_MIGRATION_TRAFFIC_GATE is set', async () => {
+    it('should not read the status at all when DISABLE_MIGRATION_TRAFFIC_GATE is set', async () => {
       process.env.DISABLE_MIGRATION_TRAFFIC_GATE = 'true';
-      const get = flagSet();
-      const { middleware } = buildMiddleware(get);
+      const { middleware, status } = buildMiddleware('running');
       const next = jest.fn() as NextFunction;
 
       await middleware.use(buildRequest('/api/apps'), buildResponse(), next);
 
-      expect(get).not.toHaveBeenCalled();
+      expect(status).not.toHaveBeenCalled();
       expect(next).toHaveBeenCalled();
     });
 
-    it('should not read Redis for a path it would never gate', async () => {
-      const get = flagClear();
-      const { middleware } = buildMiddleware(get);
+    it('should not read the status for a path it would never gate', async () => {
+      const { middleware, status } = buildMiddleware('running');
 
       await middleware.use(buildRequest('/api/health'), buildResponse(), jest.fn() as NextFunction);
 
-      expect(get).not.toHaveBeenCalled();
-    });
-
-    it('should collapse a burst of requests into a single Redis read', async () => {
-      const get = flagClear();
-      const { middleware } = buildMiddleware(get);
-
-      await Promise.all(
-        Array.from({ length: 50 }, () =>
-          middleware.use(buildRequest('/api/apps'), buildResponse(), jest.fn() as NextFunction)
-        )
-      );
-
-      expect(get).toHaveBeenCalledTimes(1);
+      expect(status).not.toHaveBeenCalled();
     });
   });
 
-  describe('Redis outage | the gate fails open', () => {
-    it('should serve traffic normally when the flag cannot be read', async () => {
-      const get = jest.fn().mockRejectedValue(new Error('ECONNREFUSED'));
-      const { middleware, logger } = buildMiddleware(get);
+  describe('in async migration mode | the app keeps serving, writes fail', () => {
+    beforeEach(() => {
+      process.env.MIGRATION_MODE = 'async';
+    });
+
+    it.each([
+      ['GET', '/api/apps'],
+      ['POST', '/api/authenticate'],
+      ['POST', '/api/authenticate/w1'],
+      ['GET', '/api/session'],
+      ['POST', '/api/session/invited-user-session'],
+      ['POST', '/api/oauth/sign-in/c1'],
+      ['POST', '/api/data-queries/q1/run'],
+      ['POST', '/api/data-queries/q1/versions/v1/run/e1'],
+      ['POST', '/api/sso/saml/c1'],
+    ])('should let %s %s through', async (method, path) => {
+      const { middleware } = buildMiddleware('running');
+      const next = jest.fn() as NextFunction;
+
+      await middleware.use(buildRequest(path, method), buildResponse(), next);
+
+      expect(next).toHaveBeenCalled();
+    });
+
+    it.each([
+      ['POST', '/api/apps'],
+      ['PUT', '/api/apps/a1'],
+      ['DELETE', '/api/data-queries/q1'],
+      ['POST', '/API/apps'],
+      ['POST', '/api/sessions'],
+      ['POST', '/api/data-queries/q1/run/extra'],
+    ])('should answer %s %s with 503', async (method, path) => {
+      const { middleware } = buildMiddleware('running');
       const res = buildResponse();
       const next = jest.fn() as NextFunction;
 
-      await middleware.use(buildRequest('/api/apps'), res, next);
+      await middleware.use(buildRequest(path, method), res, next);
 
-      expect(next).toHaveBeenCalled();
-      expect(res.status).not.toHaveBeenCalled();
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('serving traffic normally'));
+      expect(next).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(503);
     });
 
-    it('should give up on a Redis that never answers instead of parking the request', async () => {
-      // A connected-but-unresponsive Redis: ioredis would queue this command indefinitely.
-      const get = jest.fn().mockReturnValue(new Promise(() => undefined));
-      const { middleware, logger } = buildMiddleware(get);
+    it('should answer an absolute-form write with 503, as Express routes it to the same handler', async () => {
+      const { middleware } = buildMiddleware('running');
+      const res = buildResponse();
       const next = jest.fn() as NextFunction;
 
-      const startedAt = Date.now();
-      await middleware.use(buildRequest('/api/apps'), buildResponse(), next);
+      await middleware.use(buildAbsoluteFormRequest('http://tooljet.local/API/apps?x=1', 'POST'), res, next);
 
-      expect(next).toHaveBeenCalled();
-      expect(Date.now() - startedAt).toBeLessThan(2000);
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('timed out'));
+      expect(next).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(503);
     });
 
-    it('should keep serving traffic rather than wedging when Redis has not been initialised', async () => {
-      const logger = { warn: jest.fn(), log: jest.fn(), error: jest.fn() } as unknown as Logger;
-      const redisService = {
-        getClient: () => {
-          throw new Error('Redis client not initialized. Ensure RedisModule is imported.');
-        },
-      } as unknown as RedisService;
-      const middleware = new MigrationGateMiddleware(redisService, logger);
+    it.each([['/api/apps/..\\..\\..\\x'], ['/api/tooljet-db/proxy/%2e%2e/%2e%2e/%2e%2e/x']])(
+      'should gate %s on the path Express routes, not a dot-segment-resolved one',
+      async (url) => {
+        const { middleware } = buildMiddleware('running');
+        const res = buildResponse();
+        const next = jest.fn() as NextFunction;
+
+        await middleware.use(buildAbsoluteFormRequest(url, 'PUT'), res, next);
+
+        expect(next).not.toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(503);
+      }
+    );
+
+    it('should answer writes with 503 MIGRATION_FAILED after a failed run, until a fixed server restarts', async () => {
+      const { middleware } = buildMiddleware('failed');
+      const res = buildResponse();
+
+      await middleware.use(buildRequest('/api/apps', 'POST'), res, jest.fn() as NextFunction);
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: 'MIGRATION_FAILED',
+          message: 'The latest ToolJet upgrade failed. Changes cannot be saved until it is fixed and ToolJet restarts.',
+        })
+      );
+    });
+
+    it('should let writes through once the migrations succeeded', async () => {
+      const { middleware } = buildMiddleware('succeeded');
       const next = jest.fn() as NextFunction;
 
-      await middleware.use(buildRequest('/api/apps'), buildResponse(), next);
+      await middleware.use(buildRequest('/api/apps', 'POST'), buildResponse(), next);
 
       expect(next).toHaveBeenCalled();
     });
