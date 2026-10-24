@@ -11,6 +11,7 @@ import {
   MIGRATION_ACTIVE_LOCK_KEY,
   SchemaPhaseOptions,
   SKIPPED_EXIT_CODE,
+  withDeadClientKeepalive,
   withMigrationAdvisoryLock,
 } from './migrations-table-gate';
 import { MIGRATION_AUTHORING_RULES_CUTOFF, MigrationPhase, parseMigrationPhase } from './migration-status';
@@ -297,6 +298,8 @@ export async function run(
 ): Promise<boolean> {
   // process.env, not getEnvVars(): set by the parent per spawn.
   let phase = parseMigrationPhase(process.env.MIGRATION_PHASE);
+  // A lost node leaves the migration transaction's row locks for the OS default (~2h) without this.
+  for (const dataSource of [schemaDS, dataDS]) if (!dataSource.isInitialized) withDeadClientKeepalive(dataSource);
   if (!schemaDS.isInitialized) await schemaDS.initialize();
   // dataDS is initialized to load its migration classes; queries run through whichever
   // query runner each pass uses.

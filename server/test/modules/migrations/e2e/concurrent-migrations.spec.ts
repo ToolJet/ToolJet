@@ -4,6 +4,7 @@ import {
   HELD_MIGRATION_LOCKS_SQL,
   MIGRATION_ADVISORY_LOCK_KEY,
   SKIPPED_EXIT_CODE,
+  withDeadClientKeepalive,
 } from 'src/migration-helpers/migrations-table-gate';
 import {
   createScratchDatabase,
@@ -494,6 +495,26 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
         await dropScratchDatabase(database);
       }
     }, 120_000);
+
+    it('should open every runner connection with the dead-client keepalive, keeping PGOPTIONS', async () => {
+      const previous = process.env.PGOPTIONS;
+      process.env.PGOPTIONS = '-c statement_timeout=12345';
+      const dataSource = new DataSource({ type: 'postgres', ...postgres, database: phaseDatabase });
+      try {
+        withDeadClientKeepalive(dataSource);
+        await dataSource.initialize();
+        const [settings] = await dataSource.query(
+          `SELECT current_setting('tcp_keepalives_idle') AS idle, current_setting('tcp_keepalives_count') AS count,
+                  current_setting('statement_timeout') AS timeout`
+        );
+
+        expect(settings).toEqual({ idle: '30', count: '3', timeout: '12345ms' });
+      } finally {
+        if (previous === undefined) delete process.env.PGOPTIONS;
+        else process.env.PGOPTIONS = previous;
+        if (dataSource.isInitialized) await dataSource.destroy();
+      }
+    }, 60_000);
 
     it('should run the whole upgrade in one transaction when a pending migration predates the authoring rules', async () => {
       const database = `tooljet_migration_legacy_${process.pid}`;

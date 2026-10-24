@@ -198,7 +198,7 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     await closeTestApp(app);
   }, 60_000);
 
-  it('should report a running row whose heartbeat stopped as failed, so it can be retried', async () => {
+  it('should show a running row whose heartbeat stopped as failed, while the gate keeps it running until a rerun', async () => {
     await dataSource.query(
       `INSERT INTO migration_runs (to_version, status, triggered_by, heartbeat_at, migrations)
        VALUES ('3.21.75', 'running', 'boot', now() - interval '5 minutes', '[{"name":"A","status":"done"},{"name":"B","status":"running"}]')`
@@ -218,7 +218,17 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       ],
       finishedAt: expect.any(String),
     });
-    await expect(service.status()).resolves.toMatchObject({ state: 'failed', toVersion: '3.21.75' });
+    await expect(service.status()).resolves.toMatchObject({ state: 'running', toVersion: '3.21.75' });
+  });
+
+  it('should keep the gate on running, not failed, for a run its server recorded as stopped at shutdown', async () => {
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at, error)
+       VALUES ('3.21.75', 'failed', 'boot', now(), $1)`,
+      ['The migrating server stopped without reporting a result.']
+    );
+
+    await expect(service.status()).resolves.toMatchObject({ state: 'running', toVersion: '3.21.75' });
   });
 
   it('should keep a running row running while its migration lock is held, however old its heartbeat', async () => {
