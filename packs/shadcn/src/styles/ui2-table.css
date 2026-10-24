@@ -301,6 +301,14 @@
 .t2-html {
   line-height: 1.35;
 }
+/* What the html gives a width (an initials avatar, an icon, a dot) keeps it: in a flex row next to a long name it was
+   squeezed into a clipped oval. */
+.t2-html [style*="width:"],
+.t2-html [style*="width :"],
+.t2-html img,
+.t2-html svg {
+  flex-shrink: 0;
+}
 .t2-grid.is-bordered th,
 .t2-grid.is-bordered td {
   border-right: 1px solid var(--t2-border, var(--ui-border));
