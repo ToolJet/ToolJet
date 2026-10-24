@@ -1,6 +1,7 @@
 // What a pack component needs from the browser and the host to render in jsdom, so a pack spec tests the component and
 // not the test environment: Ant reads window.matchMedia on mount, the Map and Slider observe their size, Ant's charts
-// draw on a canvas, and lists, kanbans and dialogs call the host's row and popup slots (usePackHost.jsx).
+// draw on a canvas, the Map draws routes in SVG, and lists, kanbans and dialogs call the host's row and popup slots
+// (usePackHost.jsx).
 
 export const installBrowserStubs = () => {
   if (!window.matchMedia) {
@@ -33,6 +34,10 @@ export const installBrowserStubs = () => {
     }
   );
   HTMLCanvasElement.prototype.getContext = () => context;
+  // Leaflet draws routes and areas in SVG only where the browser has createSVGRect (every real one; jsdom lacks it),
+  // and without a renderer it throws on the first line. Read when the pack loads, so this runs before that.
+  if (window.SVGSVGElement && !window.SVGSVGElement.prototype.createSVGRect)
+    window.SVGSVGElement.prototype.createSVGRect = () => ({ x: 0, y: 0, width: 0, height: 0 });
 };
 
 /** A host as usePackHost builds it, with no store behind it. */

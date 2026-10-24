@@ -141,10 +141,18 @@ describe.each(packs)('the %s pack under hostile bindings', (pack) => {
           />
         </Boundary>
       );
+      // A step this slow is a defect (a binding to a large list must not freeze the page), and it is reported rather
+      // than left to the test timeout: jest would move on while it still renders and break the components after it.
+      // jsdom has no layout, so grids cannot virtualize and a 1500-row list takes 8-40 s here; the freezes this
+      // catches (a canvas per item: Accordion, Tabs, Collapse) took 10 to 90 minutes.
+      const SLOW_STEP_MS = 45000;
+      let tooSlow = false;
       const step = async (label, fn) => {
+        if (tooSlow) return;
         elements = 0;
         budgetHit = false;
         errors.length = 0;
+        const started = Date.now();
         try {
           await act(async () => {
             fn();
@@ -154,6 +162,10 @@ describe.each(packs)('the %s pack under hostile bindings', (pack) => {
           errors.push(String(error?.message ?? error).slice(0, 200));
         }
         if (budgetHit) errors.push('render loop: element budget exceeded');
+        if (Date.now() - started > SLOW_STEP_MS) {
+          tooSlow = true;
+          errors.push(`took ${Date.now() - started} ms (the rest of this component is skipped)`);
+        }
         if (errors.length) problems.push(`${label}: ${[...new Set(errors)].join(' | ')}`);
       };
 
@@ -192,6 +204,7 @@ describe.each(packs)('the %s pack under hostile bindings', (pack) => {
       if (problems.length) failures.push({ component: name, problems });
       expect(problems).toEqual([]);
     },
-    120000
+    // A component steps through every property and action with every hostile value, a few slow list steps each.
+    900000
   );
 });
