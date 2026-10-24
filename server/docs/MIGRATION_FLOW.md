@@ -75,7 +75,7 @@ run()
 | Event | Result |
 |---|---|
 | Pod killed (SIGTERM/SIGKILL) | The socket closes and the lock goes at once. The current statement finishes, then rolls back. A new runner waits behind its table locks. |
-| Pod lost without a FIN (node failure, partition) | TCP keepalive (`DEAD_CLIENT_KEEPALIVE_SQL`) drops the session after about 60s. The OS default is about 2 hours. |
+| Pod lost without a FIN (node failure, partition) | TCP keepalive drops the session after about 60s. The OS default is about 2 hours. The lock session sets it with `DEAD_CLIENT_KEEPALIVE_SQL`. Every other runner connection sets it as startup options (`withDeadClientKeepalive`), so the migration transaction rolls back and frees its row locks too. |
 | PgBouncer in transaction mode | The lock does not work: the unlock can go to a different backend. Use a direct connection or session pooling. |
 
 The table lock alone is not sufficient. `LockMigrationsTable1/2` take ACCESS EXCLUSIVE on `migrations` *inside* the migration transaction. At that time, each pod already has its own pending list. The losing pod then runs an applied migration again and fails with a catalog error, for example `duplicate key value violates unique constraint "pg_type_typname_nsp_index"`.
@@ -169,6 +169,7 @@ MigrationRunsService.start() → child with MIGRATION_PHASE=data:
 - **Boot run.** Every async boot starts a data phase with `MIGRATION_SKIP_IF_LOCKED=true`. This includes a boot after a failed run of the same version. The boot run inserts its row only when it finds pending work. If another server holds the migration lock, the child exits `75` and records nothing.
 - **No manual retry.** There is no Retry button and no `POST /migration-runs/run`. To run a failed migration again, ship a fixed image, or fix the cause (bad data, a missing table) and restart. The migrations page is view-only.
 - **Dead runs.** A `running` row is dead when the migration lock is free and its heartbeat is older than 30s. It reads as `failed` with "The migrating server stopped without reporting a result." While a session holds the migration lock, the row is alive at any heartbeat age.
+- **A stopped run is not a failed migration.** For the write gate and the banner, a dead run, or a run recorded with that stopped error, reads as `running` (`MIGRATION_IN_PROGRESS`), not `failed`. Another server reruns it. The migrations page still shows the stopped run as failed, with its error.
 - **Dead-run restart.** Every server checks every 10s. It marks dead rows failed, then inserts a new `running` row. The unique index lets one server win. The claimed child waits for the migration lock (no skip). Without this check, writes stay refused until the next boot.
 - **Reap on insert.** A runner that holds the migration lock can find a `running` row in its way (a pod killed less than 30s before). It marks that row failed with the dead-run error, then inserts its own row.
 - **Finished rows are final.** Tracking updates skip rows that have `finished_at` set.

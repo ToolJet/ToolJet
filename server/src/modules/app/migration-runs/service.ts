@@ -107,7 +107,10 @@ function owningMigration(run: RunProgress): string | null {
   return step.status === 'running' || line.includes(`DONE ${step.name} `) ? step.name : null;
 }
 
-type StatusRow = Pick<MigrationRunRow, 'status' | 'to_version' | 'started_at' | 'heartbeat_age_ms' | 'lock_held'>;
+type StatusRow = Pick<
+  MigrationRunRow,
+  'status' | 'to_version' | 'started_at' | 'error' | 'heartbeat_age_ms' | 'lock_held'
+>;
 
 const latestRunsSql = (columns: string) =>
   `SELECT ${columns}, EXTRACT(EPOCH FROM now() - r.heartbeat_at) * 1000 AS heartbeat_age_ms, held.running AS lock_held
@@ -249,13 +252,19 @@ export class MigrationRunsService implements OnApplicationShutdown {
       const [{ migrating }] = await this.query<{ migrating: boolean }>(HELD_MIGRATION_LOCKS_SQL);
       // Read every second on every server: only the columns the state needs, not the log tail.
       const [latest] = this.enabled
-        ? await this.query<StatusRow>(latestRunsSql('r.status, r.to_version, r.started_at'), [1])
+        ? await this.query<StatusRow>(latestRunsSql('r.status, r.to_version, r.started_at, r.error'), [1])
         : [];
       if (latest) {
         const state = effectiveStatus(latest);
+        // A stopped server is not a failed migration: another server reruns it, so the upgrade is still running.
+        const stopped = state === 'failed' && (latest.status === 'running' || latest.error === DEAD_RUN_ERROR);
         // A newer release's failed run is not this server's to wait on: its code runs on the schema it knows.
         if (state !== 'failed' || !isNewerRelease(latest.to_version)) {
-          value = { state, startedAt: new Date(latest.started_at).toISOString(), toVersion: latest.to_version };
+          value = {
+            state: stopped ? 'running' : state,
+            startedAt: new Date(latest.started_at).toISOString(),
+            toVersion: latest.to_version,
+          };
         }
       }
       if (migrating) value = { ...value, state: 'running' };
