@@ -99,7 +99,9 @@ export const DataGrid = () => {
   const [rawRows] = ToolJet.useStateArray({ name: 'rows', label: 'Rows', initialValue: SAMPLE.rows });
   const [rawColumns] = ToolJet.useStateArray({ name: 'columns', label: 'Columns', description: '[{ field, headerName, type, width, flex }]; empty: every field.', initialValue: SAMPLE.columns });
   const [rowIdField] = useStateText({ name: 'rowIdField', label: 'Row id field', description: "The rows' id field (getRowId).", initialValue: 'id' });
-  const [density] = ToolJet.useStateEnumeration({ name: 'density', label: 'Density', enumDefinition: ['compact', 'standard', 'comfortable'], initialValue: 'standard' });
+  const [rawDensity] = ToolJet.useStateEnumeration({ name: 'density', label: 'Density', enumDefinition: ['compact', 'standard', 'comfortable'], initialValue: 'standard' });
+  // MUI capitalizes the density as text; a binding that gives anything else (a number, null) is standard.
+  const density = (['compact', 'standard', 'comfortable'].includes(rawDensity as string) ? rawDensity : 'standard') as 'compact' | 'standard' | 'comfortable';
   const [checkboxSelection] = ToolJet.useStateBoolean({ name: 'checkboxSelection', label: 'Checkbox selection', initialValue: false });
   const [autoPageSize] = ToolJet.useStateBoolean({ name: 'autoPageSize', label: 'Auto page size', description: 'As many rows per page as fit.', initialValue: false });
   const [pageSize] = ToolJet.useStateNumber({ name: 'pageSize', label: 'Page size', initialValue: 10, min: 1, max: MAX_PAGE_SIZE, visibleWhen: { key: 'autoPageSize', value: false } });
@@ -139,7 +141,11 @@ export const DataGrid = () => {
   const columns = useMemo(() => defs.map((c) => toGridColumn(c, source)), [defs, source]);
   // Html cells can hold several blocks (a name over a detail line): rows grow to fit them, as MUI's auto row height.
   const htmlCells = defs.some((c) => c.format === 'html');
-  const selection: GridRowSelectionModel = useMemo(() => ({ type: 'include', ids: new Set(toArray(selectionIds).map(str)) }), [selectionIds]);
+  // The free grid selects one row unless checkboxSelection is on, and throws on more: a bound list keeps its first id.
+  const selection: GridRowSelectionModel = useMemo(() => {
+    const ids = toArray(selectionIds).map(str).filter(Boolean);
+    return { type: 'include', ids: new Set(checkboxSelection ? ids : ids.slice(0, 1)) };
+  }, [selectionIds, checkboxSelection]);
 
   const select = (ids: string[]) => {
     setSelectionIds(ids);
@@ -167,13 +173,18 @@ export const DataGrid = () => {
         columns={columns}
         getRowId={(r) => String(r[ID])}
         getRowHeight={htmlCells ? () => 'auto' : undefined}
-        density={density as 'standard'}
+        density={density}
         checkboxSelection={checkboxSelection}
         rowSelectionModel={selection}
         autoPageSize={autoPageSize}
         paginationModel={page}
         pageSizeOptions={autoPageSize ? undefined : Array.from(new Set([size, 10, 25, 50, 100])).sort((a, b) => a - b)}
-        sortModel={toArray(sortModel) as GridSortModel}
+        // Only { field, sort } entries: MUI reads .field off each one.
+        sortModel={
+          toArray(sortModel).filter(
+            (m) => !!m && typeof m === 'object' && typeof (m as { field?: unknown }).field === 'string'
+          ) as GridSortModel
+        }
         showToolbar={showToolbar}
         disableColumnMenu={disableColumnMenu}
         hideFooter={hideFooter}
@@ -184,7 +195,7 @@ export const DataGrid = () => {
           border: 1,
           borderColor: 'divider',
           // With auto row heights a one-line row keeps the density's height (MUI's 36, 52, 67px).
-          '& .tj-mui-html-cell': { minHeight: ROW_HEIGHT[density as keyof typeof ROW_HEIGHT] ?? 52 },
+          '& .tj-mui-html-cell': { minHeight: ROW_HEIGHT[density] ?? 52 },
           // ... and every cell of a grown row centres its content, as in a fixed-height row.
           ...(htmlCells ? { '& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' } } : {}),
         }}
