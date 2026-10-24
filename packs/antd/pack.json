@@ -851,8 +851,15 @@
     "Kanban": {
       "role": "kanban",
       "fit": false,
+      "slots": [
+        {
+          "name": "card",
+          "kind": "rows",
+          "variable": "cardData"
+        }
+      ],
       "loading": "own",
-      "usage": "A board of Ant Cards: dataSource (the cards) grouped by statusField into columns [{id, title, color}] (a status no column lists gets its own column). cardLayout 'fields' shows titleField, descriptionField, badgeField (a Tag; badgeColors maps value to colour), tagsField, progressField (0 to 100), metaField, avatarField (name or image URL) and detailsField (Descriptions on the clicked card); 'custom' makes each card a row of ToolJet components reading {{listItem}} (cardHeight). density, collapsedHeight, columnWidth (empty fills the board), showCount, collapsibleColumns, collapsedColumns, emptyText. Cards move by drag or keyboard (allowDrag): onCardMoved with lastCardMovement {cardId, from, to, card, destinationColumnId} and updatedCardData (every card). onCardSelected (lastSelectedCard), allowAdd (onAddCardClick, addCardColumn), allowDelete (onCardRemoved, lastRemovedCard), onUpdate after every change; actions addCard(card, columnId), moveCard(cardId, columnId), deleteCard(cardId), updateCardData(cardId, values). Styles: column and card colours, radii, gap, progressColor, cardShadow.",
+      "usage": "A board of Ant Cards: dataSource (the cards) grouped by statusField into columns [{id, title, color}] (a status no column lists gets its own column). cardLayout 'fields' shows titleField, descriptionField, badgeField (a Tag; badgeColors maps value to colour), tagsField, progressField (0 to 100), metaField, avatarField (name or image URL) and detailsField (Descriptions on the clicked card); 'custom' makes each card a row of ToolJet components reading {{cardData}} or {{listItem}} (cardHeight). density, collapsedHeight, columnWidth (empty fills the board), showCount, collapsibleColumns, collapsedColumns, emptyText. Cards move by drag or keyboard (allowDrag): onCardMoved with lastCardMovement {cardId, from, to, card, destinationColumnId} and updatedCardData (every card). onCardSelected (lastSelectedCard), allowAdd (onAddCardClick, addCardColumn), allowDelete (onCardRemoved, lastRemovedCard), onUpdate after every change; actions addCard(card, columnId), moveCard(cardId, columnId), deleteCard(cardId), updateCardData(cardId, values). Styles: column and card colours, radii, gap, progressColor, cardShadow.",
       "roleProps": {
         "data": "dataSource"
       }
