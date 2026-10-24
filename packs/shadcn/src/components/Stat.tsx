@@ -156,7 +156,8 @@ export const Stat = () => {
       if (TRENDS.includes(trend)) setTrend(trend as 'up');
     }
   );
-  const boxShadow = ToolJet.useStyleString({ name: 'boxShadow', label: 'Box shadow', initialValue: '0px 0px 0px 0px #00000040' });
+  // The card's own (rounded) shadow: the host's boxShadow, in the Container section, would draw a second, square one.
+  const boxShadow = ToolJet.useStyleString({ name: 'cardShadow', label: 'Card shadow', inspector: 'boxShadow', initialValue: '0px 0px 0px 0px #00000040' });
   const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Card background', inspector: 'color', initialValue: '' });
   const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Card border color', inspector: 'color', initialValue: '' });
   const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Card radius', initialValue: '' });

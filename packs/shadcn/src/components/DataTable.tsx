@@ -282,7 +282,8 @@ export const DataTable = () => {
   const onTableDataDownload = ToolJet.useEventCallback({ name: 'onTableDataDownload', displayName: 'Table data downloaded' });
 
   // ---- styles (UI 2.0 names; unset reads the app theme) -----------------------------------------------------------
-  const boxShadow = ToolJet.useStyleString({ name: 'boxShadow', label: 'Box shadow', inspector: 'boxShadow', initialValue: '0px 0px 0px 0px #00000040' });
+  // The table's own (rounded) box: the host's boxShadow, in the Container section, would draw a second, square one.
+  const boxShadow = ToolJet.useStyleString({ name: 'cardShadow', label: 'Table shadow', inspector: 'boxShadow', initialValue: '0px 0px 0px 0px #00000040' });
   const accentColor = ToolJet.useStyleString({ name: 'accentColor', label: 'Accent (checkboxes, focus, active page)', inspector: 'color', initialValue: '' });
   const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Table background', inspector: 'color', initialValue: '' });
   const headerBackgroundColor = ToolJet.useStyleString({ name: 'headerBackgroundColor', label: 'Header row background', inspector: 'color', initialValue: '' });
