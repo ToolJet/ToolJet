@@ -48,4 +48,16 @@ export const SAMPLE = {
     { id: 2, title: 'Design review', description: 'Tuesday, 10:00' },
     { id: 3, title: 'Team offsite', description: 'Next month' },
   ],
+  // Kanban: cards by status, with the fields a fresh board maps (description, priority badge, owner avatar).
+  kanban: [
+    { id: 1, title: 'Draft the brief', description: 'Goals, audience and timeline', status: 'todo', priority: 'High', owner: 'Ada Lovelace' },
+    { id: 2, title: 'Collect references', description: 'Three competitor sites', status: 'todo', priority: 'Low', owner: 'Alan Turing' },
+    { id: 3, title: 'Review designs', description: 'Home and pricing pages', status: 'doing', priority: 'Medium', owner: 'Grace Hopper' },
+    { id: 4, title: 'Ship v1', description: 'Release notes and announcement', status: 'done', priority: 'Normal', owner: 'Katherine Johnson' },
+  ],
+  kanbanColumns: [
+    { id: 'todo', title: 'To do' },
+    { id: 'doing', title: 'In progress' },
+    { id: 'done', title: 'Done' },
+  ],
 };

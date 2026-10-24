@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -25,13 +25,11 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, usePopupContainer, useThemeStyles } from '../lib/MuiProvider';
 import { PALETTE_COLORS } from '../lib/field';
-import { readField, rowKeyOf, str, toKeyedItems, toRows, type Row } from '../lib/data';
+import { readField, rowIdOf, rowKeyOf, sameRecord, slotNames, str, toKeyedItems, toRows, type Row } from '../lib/data';
 import { formatCell } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
-
-// Slot names become part of a canvas id: letters, digits and underscores only.
-const slotKey = (key: string) => key.replace(/[^A-Za-z0-9_]/g, '_');
+import { ownerAvailable } from '../lib/useOwnerGuard';
 
 // MUI's Tabs: tabs [{ value, label, disabled }], value (the open tab; empty opens the first), variant (standard,
 // scrollable, fullWidth), textColor / indicatorColor, centered, orientation; each tab panel is a canvas of ToolJet
@@ -59,6 +57,13 @@ export const Tabs = () => {
   ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 40 });
   const tabs = toKeyedItems(rawTabs);
   const current = tabs.some((t) => t.key === value) ? value : (tabs[0]?.key ?? false);
+  // The open tab is the exposed one: an empty value or a tab that is gone opens the first, and value now says so, with
+  // no onChange (it kept the removed tab while the first one showed).
+  useEffect(() => {
+    if (typeof current === 'string' && current !== value) setValue(current);
+  }, [current, value, setValue]);
+  // Every tab's canvas, kept apart even when two values fold to the same slot characters ('a-b' and 'a_b').
+  const slots = useMemo(() => slotNames('tab', tabs.map((t) => t.key)), [tabs.map((t) => t.key).join('\u0000')]); // eslint-disable-line react-hooks/exhaustive-deps
   const change = (next: string) => {
     setValue(next);
     onChange();
@@ -88,7 +93,7 @@ export const Tabs = () => {
           {/* MUI's tab panel pattern: every panel mounted, the inactive ones hidden, so each keeps its canvas. */}
           {tabs.map((t) => (
             <div key={t.key} role="tabpanel" hidden={t.key !== current} className="tj-mui-tabpanel">
-              <ToolJet.Slot name={`tab_${slotKey(t.key)}`} style={{ height: '100%' }} />
+              <ToolJet.Slot name={slots.get(t.key) as string} style={{ height: '100%' }} />
             </div>
           ))}
         </div>
@@ -162,9 +167,15 @@ export const Dialog = () => {
     setOpen(false);
     onClose();
   };
+  // The dialog portals out of the widget, so the host's Disable (and a disabled parent, which makes the widget inert)
+  // never reached its buttons: Confirm still ran (shadcn pack audit SP-02). While its owner takes no input the dialog
+  // stays open, keeping what was typed in the body, and refuses to confirm; Cancel, Escape and the backdrop still close
+  // it. The owner need not be drawn: an action opens a dialog whose trigger is hidden.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const takesInput = () => !disabled && ownerAvailable(rootRef.current, { requireDrawn: false });
 
   return (
-    <MuiProvider overrides={overrides} fill className="tj-mui-center">
+    <MuiProvider overrides={overrides} fill className="tj-mui-center" rootRef={rootRef}>
       {showTrigger ? (
         <Button variant="contained" fullWidth disabled={disabled} loading={loading} title={triggerText || undefined} onClick={() => setOpen(true)}>
           <span className="tj-mui-button-label">{triggerText}</span>
@@ -190,9 +201,11 @@ export const Dialog = () => {
           onCancel();
         }}
         onConfirm={() => {
+          if (!takesInput()) return;
           setOpen(false);
           onConfirm();
         }}
+        confirmDisabled={disabled}
         onEntered={() => onEntered()}
       />
     </MuiProvider>
@@ -216,6 +229,7 @@ const DialogBody = (p: {
   onClose: () => void;
   onCancel: () => void;
   onConfirm: () => void;
+  confirmDisabled: boolean;
   onEntered: () => void;
 }) => {
   const container = usePopupContainer();
@@ -248,7 +262,7 @@ const DialogBody = (p: {
         <DialogActions>
           {p.cancelText ? <Button onClick={p.onCancel}>{p.cancelText}</Button> : null}
           {p.confirmText ? (
-            <Button variant="contained" color={p.confirmColor} loading={p.loading} onClick={p.onConfirm}>
+            <Button variant="contained" color={p.confirmColor} loading={p.loading} disabled={p.confirmDisabled} onClick={p.onConfirm}>
               {p.confirmText}
             </Button>
           ) : null}
@@ -282,7 +296,7 @@ export const List = () => {
   const [pageSize] = ToolJet.useStateNumber({ name: 'pageSize', label: 'Page size', description: '0 for no paging.', initialValue: 0, min: 0, max: 500 });
   const [emptyText] = useStateText({ name: 'emptyText', label: 'Empty text', initialValue: 'No items' });
   const [selectedItem, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedItemKey] = useStateText({ name: 'selectedItemKey', initialValue: '', inspector: 'hidden' });
+  const [, setSelectedItemKey] = ToolJet.useStateString({ name: 'selectedItemKey', initialValue: '', inspector: 'hidden' });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
@@ -303,9 +317,27 @@ export const List = () => {
 
   const select = (row: Row | null, index: number) => {
     setSelectedItem(row ?? {});
-    setSelectedItemKey(row ? rowKeyOf(row, field, index) : '');
+    // The item's own key value, as the app wrote it (a number stays a number).
+    setSelectedItemKey((row ? rowIdOf(row, field, index) : '') as string);
     if (row) onItemClick();
   };
+  // The selection follows its item by key when the items change: a refresh republishes the fresh record, a reorder keeps
+  // it, and a removal clears it (it kept exposing the old record). No onItemClick: the user picked nothing.
+  const latestSelected = useRef(selectedItem);
+  latestSelected.current = selectedItem;
+  useEffect(() => {
+    if (!selectedKey) return;
+    const index = items.findIndex((r, i) => rowKeyOf(r, field, i) === selectedKey);
+    const fresh = items[index];
+    if (!fresh) {
+      setSelectedItem({});
+      setSelectedItemKey('');
+    } else if (!sameRecord(fresh, latestSelected.current)) {
+      setSelectedItem(fresh);
+      setSelectedItemKey(rowIdOf(fresh, field, index) as string);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawItems, field]);
   ToolJet.useAction({ name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Item key' }] }, (key) => {
     const index = items.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
     select(items[index] ?? null, index);

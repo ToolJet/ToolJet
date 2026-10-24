@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Alert as MuiAlert,
   AlertTitle,
@@ -249,6 +249,10 @@ export const LinearProgress = () => {
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 4.8 });
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => setValue(toNumber(next) ?? 0));
   const pct = Math.max(0, Math.min(100, toNumber(value) ?? 0));
+  // The exposed value is the drawn one (a literal 150 drew a full bar and exposed 150).
+  useEffect(() => {
+    if (value !== pct) setValue(pct);
+  }, [value, pct, setValue]);
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-progress">
       {label ? (
@@ -360,6 +364,11 @@ export const Stepper = () => {
   const steps = toSteps(rawSteps);
   const byLabel = steps.findIndex((s) => s.id === str(activeStep) || s.label === str(activeStep));
   const current = byLabel >= 0 ? byLabel : Math.max(0, Math.min(steps.length, toNumber(activeStep) ?? 0));
+  // The step shown is the exposed one: an index past the steps (they shrank) or a step id that is gone falls back, and
+  // activeStep now says so, with no onChange. An id or label that names a shown step is left as the app gave it.
+  useEffect(() => {
+    if (byLabel < 0 && activeStep !== current) setActiveStep(current);
+  }, [byLabel, activeStep, current, setActiveStep]);
   const go = (index: number) => {
     setActiveStep(Math.max(0, Math.min(steps.length, index)));
     onChange();
@@ -421,6 +430,11 @@ export const Pagination = () => {
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 3.6 });
   const pages = Math.max(1, Math.round(Number(count) || 1));
+  const shown = Math.max(1, Math.min(pages, Math.round(toNumber(page) ?? 1)));
+  // The exposed page is the one drawn: a page past count (count shrank, or a literal 50 of 10) exposed 50.
+  useEffect(() => {
+    if (page !== shown) setPage(shown);
+  }, [page, shown, setPage]);
   const go = (p: number) => {
     setPage(Math.max(1, Math.min(pages, p)));
     onChange();
@@ -431,7 +445,7 @@ export const Pagination = () => {
       <Loading loading={loading} look={<Spinner />}>
         <MuiPagination
           count={pages}
-          page={Math.max(1, Math.min(pages, toNumber(page) ?? 1))}
+          page={shown}
           siblingCount={Number(siblingCount)}
           boundaryCount={Number(boundaryCount)}
           variant={variant as 'text'}

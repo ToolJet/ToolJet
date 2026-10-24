@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -12,6 +12,7 @@ import type { ThemeOverrides } from '../lib/theme';
 import { checkProps, fieldClass, useFieldProps, useTextFieldLook } from '../lib/field';
 import { str } from '../lib/data';
 import { FieldSkeleton, Loading } from '../lib/loading';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 
 // Always the desktop picker (a popper under the field): the mobile one is a full-screen dialog, wrong in a widget box.
 const DESKTOP = '@media (min-width: 0px)';
@@ -35,21 +36,59 @@ const usePickerEvents = () => ({
   onClose: ToolJet.useEventCallback({ name: 'onClose' }),
 });
 
+/** The picker's open state, its owner guard, and a fresh field after a Form's clearForm. */
+const usePickerPopup = (events: ReturnType<typeof usePickerEvents>, disabled: boolean) => {
+  // Held here so the guard can close the popper, which portals into the popup layer out of reach of the host's Disable
+  // and of a parent that hides or blocks the widget.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [open, setOpen] = useState(false);
+  const close = () => {
+    setOpen(false);
+    events.onClose();
+  };
+  const available = useOwnerGuard(rootRef, open, close, disabled);
+  // MUI's field keeps the sections typed so far (10/DD/YYYY) while the value is still empty: clearForm, which empties
+  // an already empty value, left that draft showing. A new field starts blank.
+  const [fieldKey, setFieldKey] = useState(0);
+  ToolJet.useFormClear(() => {
+    setOpen(false);
+    setFieldKey((k) => k + 1);
+  });
+  return {
+    rootRef,
+    available,
+    fieldKey,
+    props: {
+      open,
+      onOpen: () => {
+        if (!available()) return;
+        setOpen(true);
+        events.onOpen();
+      },
+      onClose: () => {
+        if (open) close();
+      },
+    },
+  };
+};
+
 /** A picker in the provider, with dayjs as MUI's date adapter; a field Skeleton while loading. */
 const PickerFrame = ({
   overrides,
   className,
   loading,
   look,
+  rootRef,
   children,
 }: {
+  rootRef: React.MutableRefObject<HTMLDivElement | null>;
   overrides: ThemeOverrides;
   className?: string;
   loading: boolean;
   look: ReturnType<typeof useTextFieldLook>;
   children: React.ReactNode;
 }) => (
-  <MuiProvider overrides={overrides} className={className}>
+  <MuiProvider overrides={overrides} className={className} rootRef={rootRef}>
     <Loading loading={loading} look={<FieldSkeleton variant={look.variant} size={look.size} />}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>{children}</LocalizationProvider>
     </Loading>
@@ -99,6 +138,7 @@ export const DatePicker = () => {
   const events = usePickerEvents();
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
+  const popup = usePickerPopup(events, disabled);
   const date = parse(value, DATE);
   const check = ToolJet.useValidation({ section: 'date', value: date ? date.format(DATE) : '', present: !!date });
   const overrides = useThemeStyles();
@@ -114,8 +154,10 @@ export const DatePicker = () => {
   const viewList = String(views).split(',') as ('year' | 'month' | 'day')[];
   const slots = pickerSlots({ fieldId, label: field.label, helperText: field.helperText, check, look });
   return (
-    <PickerFrame overrides={overrides} className={fieldClass(look.variant, field.label)} loading={loading} look={look}>
+    <PickerFrame overrides={overrides} className={fieldClass(look.variant, field.label)} loading={loading} look={look} rootRef={popup.rootRef}>
       <MuiDatePicker
+        key={popup.fieldKey}
+        {...popup.props}
         value={date}
         format={format || 'MM/DD/YYYY'}
         views={viewList}
@@ -127,10 +169,12 @@ export const DatePicker = () => {
         disabled={disabled}
         desktopModeMediaQuery={DESKTOP}
         slotProps={slots}
-        onChange={change}
-        onAccept={() => events.onAccept()}
-        onOpen={() => events.onOpen()}
-        onClose={() => events.onClose()}
+        onChange={(next) => {
+          if (popup.available()) change(next);
+        }}
+        onAccept={() => {
+          if (popup.available()) events.onAccept();
+        }}
       />
     </PickerFrame>
   );
@@ -149,6 +193,7 @@ export const TimePicker = () => {
   const events = usePickerEvents();
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
+  const popup = usePickerPopup(events, disabled);
   // A time alone, on today's date, for the adapter.
   const atToday = (v: unknown) => {
     const m = /^(\d{1,2}):(\d{2})/.exec(str(v).trim());
@@ -168,8 +213,10 @@ export const TimePicker = () => {
 
   const slots = pickerSlots({ fieldId, label: field.label, helperText: field.helperText, check, look });
   return (
-    <PickerFrame overrides={overrides} className={fieldClass(look.variant, field.label)} loading={loading} look={look}>
+    <PickerFrame overrides={overrides} className={fieldClass(look.variant, field.label)} loading={loading} look={look} rootRef={popup.rootRef}>
       <MuiTimePicker
+        key={popup.fieldKey}
+        {...popup.props}
         value={time}
         ampm={ampm}
         minutesStep={Math.max(1, Number(minutesStep) || 1)}
@@ -178,10 +225,12 @@ export const TimePicker = () => {
         disabled={disabled}
         desktopModeMediaQuery={DESKTOP}
         slotProps={slots}
-        onChange={change}
-        onAccept={() => events.onAccept()}
-        onOpen={() => events.onOpen()}
-        onClose={() => events.onClose()}
+        onChange={(next) => {
+          if (popup.available()) change(next);
+        }}
+        onAccept={() => {
+          if (popup.available()) events.onAccept();
+        }}
       />
     </PickerFrame>
   );

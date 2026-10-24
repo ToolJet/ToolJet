@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { CSSProperties } from 'react';
 import { CacheProvider } from '@emotion/react';
 import { ThemeProvider } from '@mui/material/styles';
@@ -81,6 +81,7 @@ export const MuiProvider = ({
   fill = false,
   className,
   style,
+  rootRef,
 }: {
   children: React.ReactNode;
   overrides?: ThemeOverrides;
@@ -88,8 +89,17 @@ export const MuiProvider = ({
   fill?: boolean;
   className?: string;
   style?: CSSProperties;
+  /** Also given the root element: what a component's popup guard (useOwnerGuard) checks for disabled or hidden. */
+  rootRef?: React.MutableRefObject<HTMLDivElement | null>;
 }) => {
   const [anchorRef, container] = usePortalContainer();
+  const setRoot = useCallback(
+    (el: HTMLDivElement | null) => {
+      (anchorRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+      if (rootRef) rootRef.current = el;
+    },
+    [anchorRef, rootRef]
+  );
   const cache = useMemo(createPackCache, []);
   const themeVersion = useThemeVersion();
   const [app, setApp] = useState<AppTheme>({ mode: 'light' });
@@ -134,7 +144,7 @@ export const MuiProvider = ({
   const theme = useMemo(() => buildTheme(app, overrides ?? {}, container), [app, overridesKey, container]);
   return (
     <div
-      ref={anchorRef}
+      ref={setRoot}
       className={['tj-mui tj-mui-root', fill ? 'tj-mui--fill' : '', className ?? ''].join(' ').trim()}
       style={{ fontFamily: app.font, ...style }}
     >

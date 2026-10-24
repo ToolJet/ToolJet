@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { Chip } from '@mui/material';
 import { DataGrid as MuiDataGrid } from '@mui/x-data-grid';
@@ -6,7 +6,7 @@ import type { GridColDef, GridPaginationModel, GridRowSelectionModel, GridSortMo
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
-import { rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
+import { rowIdOf, rowKeyOf, sameRecord, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, toNumber } from '../lib/format';
 import { SAMPLE } from '../lib/samples';
 
@@ -14,6 +14,9 @@ const ID = '__tjRowId';
 const ROW_HEIGHT = { compact: 36, standard: 52, comfortable: 67 };
 // The free DataGrid pages at most 100 rows (more is a Pro feature).
 const MAX_PAGE_SIZE = 100;
+// A binding to a list of records by mistake (a query's rows as columns) made one column per record: 1500 columns took
+// the grid over a minute to draw (pack fuzz, 2026-10-24). No real grid has more columns than this.
+const MAX_COLUMNS = 100;
 // An html cell (columnType 'html', as UI 2.0's Table): sanitised as the Table does (DOMPurify's defaults drop
 // <script>, event-handler attributes and javascript: URLs); its text sorts, filters and exports.
 const sanitize = (v: unknown) => DOMPurify.sanitize((v === undefined || v === null ? '' : String(v)).trim());
@@ -33,6 +36,7 @@ type Column = GridColDef & { format?: string; currency?: string; colors?: Record
 // every field of the first row.
 const toColumns = (raw: unknown, rows: Row[]): Column[] => {
   const given = toArray(raw)
+    .slice(0, MAX_COLUMNS)
     .map((c): Column | null => {
       if (typeof c === 'string') return { field: c, headerName: humanize(c) };
       if (!c || typeof c !== 'object') return null;
@@ -59,7 +63,7 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
     .filter((c): c is Column => !!c);
   if (given.length) return given;
   const first = rows[0];
-  return first ? Object.keys(first).map((k) => ({ field: k, headerName: humanize(k), flex: 1 })) : [];
+  return first ? Object.keys(first).slice(0, MAX_COLUMNS).map((k) => ({ field: k, headerName: humanize(k), flex: 1 })) : [];
 };
 
 // What the grid gets for a column: numbers typed as numbers (right-aligned, numeric sort), dates read from ISO strings,
@@ -109,10 +113,10 @@ export const DataGrid = () => {
   const [disableColumnMenu] = ToolJet.useStateBoolean({ name: 'disableColumnMenu', label: 'Disable column menu', initialValue: false });
   const [hideFooter] = ToolJet.useStateBoolean({ name: 'hideFooter', label: 'Hide footer', initialValue: false });
   const [noRowsLabel] = useStateText({ name: 'noRowsLabel', label: 'No rows label', initialValue: 'No rows' });
-  const [, setSelectedRow] = ToolJet.useStateObject({ name: 'selectedRow', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedRowId] = useStateText({ name: 'selectedRowId', initialValue: '', inspector: 'hidden' });
+  const [selectedRow, setSelectedRow] = ToolJet.useStateObject({ name: 'selectedRow', initialValue: {}, inspector: 'hidden' });
+  const [selectedRowId, setSelectedRowId] = ToolJet.useStateString({ name: 'selectedRowId', initialValue: '', inspector: 'hidden' });
   const [selectionIds, setSelectionIds] = ToolJet.useStateArray({ name: 'rowSelectionModel', initialValue: [], inspector: 'hidden' });
-  const [, setSelectedRows] = ToolJet.useStateArray({ name: 'selectedRows', initialValue: [], inspector: 'hidden' });
+  const [selectedRows, setSelectedRows] = ToolJet.useStateArray({ name: 'selectedRows', initialValue: [], inspector: 'hidden' });
   const [, setPaginationModel] = ToolJet.useStateObject({ name: 'paginationModel', initialValue: { page: 0, pageSize: 10 }, inspector: 'hidden' });
   const [sortModel, setSortModel] = ToolJet.useStateArray({ name: 'sortModel', initialValue: [], inspector: 'hidden' });
   const onRowClick = ToolJet.useEventCallback({ name: 'onRowClick' });
@@ -128,15 +132,19 @@ export const DataGrid = () => {
 
   const field = str(rowIdField) || 'id';
   const source = useMemo(() => toRows(rawRows), [rawRows]);
-  const { rows, byId } = useMemo(() => {
+  const { rows, byId, rawId } = useMemo(() => {
     const byId = new Map<string, Row>();
+    // Each grid id's value as the rows give it: exposed ids keep their type (a number stays a number).
+    const rawId = new Map<string, unknown>();
     const rows = source.map((r, i) => {
       const id = rowKeyOf(r, field, i);
       byId.set(id, r);
+      rawId.set(id, rowIdOf(r, field, i));
       return { ...r, [ID]: id };
     });
-    return { rows, byId };
+    return { rows, byId, rawId };
   }, [source, field]);
+  const idsOf = (keys: string[]) => keys.map((k) => rawId.get(k) ?? k);
   const defs = useMemo(() => toColumns(rawColumns, source), [rawColumns, source]);
   const columns = useMemo(() => defs.map((c) => toGridColumn(c, source)), [defs, source]);
   // Html cells can hold several blocks (a name over a detail line): rows grow to fit them, as MUI's auto row height.
@@ -148,15 +156,40 @@ export const DataGrid = () => {
   }, [selectionIds, checkboxSelection]);
 
   const select = (ids: string[]) => {
-    setSelectionIds(ids);
+    setSelectionIds(idsOf(ids));
     setSelectedRows(ids.map((id) => byId.get(id)).filter(Boolean));
   };
   ToolJet.useAction({ name: 'selectRow', displayName: 'Select row', params: [{ handle: 'id', displayName: 'Row id' }] }, (id) => {
     const row = byId.get(str(id));
     setSelectedRow(row ?? {});
-    setSelectedRowId(row ? str(id) : '');
+    setSelectedRowId((row ? rawId.get(str(id)) : '') as string);
     select(row ? [str(id)] : []);
   });
+
+  // The selection follows its rows by id when the rows change: a refresh republishes the fresh records, a reorder keeps
+  // them, and a row that is gone leaves the selection (selectedRow kept exposing a removed or stale record). No event:
+  // the user selected nothing.
+  const latest = useRef({ selectedRow, selectedRowId, selectionIds, selectedRows });
+  latest.current = { selectedRow, selectedRowId, selectionIds, selectedRows };
+  useEffect(() => {
+    const { selectedRow: shown, selectedRowId: shownId, selectionIds: ids, selectedRows: shownRows } = latest.current;
+    const key = str(shownId);
+    if (key) {
+      const fresh = byId.get(key);
+      if (!fresh) {
+        setSelectedRow({});
+        setSelectedRowId('');
+      } else if (!sameRecord(fresh, shown)) setSelectedRow(fresh);
+    }
+    const keys = toArray(ids).map(str).filter(Boolean);
+    if (!keys.length) return;
+    const kept = keys.filter((k) => byId.has(k));
+    const nextIds = idsOf(kept);
+    if (!sameRecord(nextIds, ids)) setSelectionIds(nextIds);
+    const nextRows = kept.map((k) => byId.get(k));
+    if (!sameRecord(nextRows, shownRows)) setSelectedRows(nextRows);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [byId]);
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => {
     setSelectedRow({});
     setSelectedRowId('');
@@ -202,7 +235,7 @@ export const DataGrid = () => {
         onRowClick={(params) => {
           const id = String(params.id);
           setSelectedRow(byId.get(id) ?? {});
-          setSelectedRowId(id);
+          setSelectedRowId((rawId.get(id) ?? id) as string);
           onRowClick();
         }}
         onRowSelectionModelChange={(model) => {

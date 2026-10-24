@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Checkbox as MuiCheckbox,
   FormControlLabel,
@@ -31,6 +31,9 @@ const useChecked = () => {
   };
   ToolJet.useAction({ name: 'setChecked', displayName: 'Set checked', params: [{ handle: 'checked', displayName: 'Checked' }] }, (next) => change(bool(next)));
   ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => change(!bool(checked)));
+  // checked is the field's value under another name, which the SDK's clearForm does not reach: a native Form's clear
+  // unticks it, as it does a native checkbox. Not the user's change, so no onChange.
+  ToolJet.useFormClear(() => setChecked(false));
   return { checked: bool(checked), change };
 };
 
@@ -229,7 +232,15 @@ export const Rating = () => {
   const [, setHover] = ToolJet.useStateNumber({ name: 'hover', initialValue: -1, inspector: 'hidden' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const num = toNumber(value);
+  const top = Math.max(1, Number(max) || 5);
+  const step = Number(precision) || 1;
+  // What MUI draws: within 0 to max, at the precision. A literal 7 under max 5 drew five stars and exposed 7; the
+  // exposed value follows the drawn one, with no onChange (fitting a value is not the user's change).
+  const raw = toNumber(value);
+  const num = raw === null ? null : Math.min(top, Math.max(0, Math.round(raw / step) * step));
+  useEffect(() => {
+    if (raw !== null && num !== raw) setValue(num as number);
+  }, [raw, num, setValue]);
   const check = ToolJet.useValidation({ section: 'choice', value: num ?? '', present: num !== null && num > 0 });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 5 });
@@ -246,8 +257,8 @@ export const Rating = () => {
           <MuiRating
             name={fieldId ?? 'rating'}
             value={num}
-            max={Math.max(1, Number(max) || 5)}
-            precision={Number(precision) || 1}
+            max={top}
+            precision={step}
             size={size as 'medium'}
             readOnly={readOnly}
             highlightSelectedOnly={highlightSelectedOnly}
@@ -288,6 +299,12 @@ export const Slider = () => {
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 5.6 });
   const lo = toNumber(min) ?? 0;
   const hi = Math.max(lo, toNumber(max) ?? 100);
+  // The thumb draws the value within min and max: a literal 150 under max 100 drew 100 and exposed 150, and an empty
+  // value (a Form's clearForm) drew min. The exposed value follows the thumb, with no onChange.
+  const drawn = Math.min(hi, Math.max(lo, toNumber(value) ?? lo));
+  useEffect(() => {
+    if (value !== drawn) setValue(drawn);
+  }, [value, drawn, setValue]);
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => {
     setValue(Math.min(hi, Math.max(lo, toNumber(next) ?? lo)));
     onChange();
@@ -298,7 +315,7 @@ export const Slider = () => {
         <FormControlField label={field.label} helperText={field.helperText} check={check} htmlFor={fieldId}>
           <MuiSlider
             id={fieldId}
-            value={Math.min(hi, Math.max(lo, toNumber(value) ?? lo))}
+            value={drawn}
             min={lo}
             max={hi}
             step={Number(step) > 0 ? Number(step) : null}

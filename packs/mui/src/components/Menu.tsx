@@ -6,6 +6,7 @@ import { MuiProvider, usePopupContainer, useThemeStyles } from '../lib/MuiProvid
 import { ICONS, iconOf } from '../lib/icons';
 import { lookOf } from '../lib/field';
 import { str, toArray, type Row } from '../lib/data';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 
 type Item = { label: string; value: string; icon?: string; disabled?: boolean; divider?: boolean };
 const toItems = (raw: unknown): Item[] =>
@@ -65,11 +66,15 @@ export const Menu = () => {
     setOpen(next);
     (next ? onOpen : onClose)();
   };
+  // The menu portals into the popup layer, out of reach of the host's Disable and of a parent that hides or blocks the
+  // widget: it closes (with onClose) once its button cannot take input, and refuses a pick made in that instant.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const available = useOwnerGuard(rootRef, !!open, () => show(false), disabled || loading);
   ToolJet.useAction({ name: 'open', displayName: 'Open' }, () => show(true));
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => show(false));
 
   return (
-    <MuiProvider overrides={overrides} fill className="tj-mui-center">
+    <MuiProvider overrides={overrides} fill className="tj-mui-center" rootRef={rootRef}>
       <Button
         ref={anchor}
         variant={variant as 'outlined'}
@@ -93,6 +98,7 @@ export const Menu = () => {
         items={items}
         onClose={() => show(false)}
         onPick={(item) => {
+          if (!available()) return;
           setClickedItem({ label: item.label, value: item.value });
           show(false);
           onItemClick();

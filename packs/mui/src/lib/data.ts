@@ -60,3 +60,54 @@ export const rowKeyOf = (row: Row, field: string, index: number): string => {
 /** A field read by dataIndex, which may be a dotted path ('customer.name'). */
 export const readField = (row: Row, dataIndex: string): unknown =>
   dataIndex.split('.').reduce<unknown>((acc, k) => (acc && typeof acc === 'object' ? (acc as Row)[k] : undefined), row);
+
+// A short, stable tag of an id's exact text (FNV-1a), in slot-name characters.
+const idTag = (id: string) => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < id.length; i += 1) h = Math.imul(h ^ id.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(36);
+};
+
+const toSlotName = (prefix: string, id: string) => `${prefix}_${id.replace(/[^A-Za-z0-9_]/g, '_')}`;
+
+/** Each distinct item id's slot name (letters, digits and underscores, as a canvas id needs). Folding every other
+ *  character to '_' gave 'a-b' and 'a_b' one canvas: the second tab drew blank and its components went to the first
+ *  (shadcn pack audit SP-18, 2026-10-23). Names stay exactly the folded ones unless ids collide, so saved apps keep their
+ *  dropped components; on a collision an id already in slot characters keeps the plain name, as does the first of the
+ *  others in text order (never list order: reordering items must not swap their canvases), and the rest get a tag of
+ *  their own id. */
+export const slotNames = (prefix: string, ids: string[]): Map<string, string> => {
+  const names = new Map<string, string>();
+  const taken = new Set<string>();
+  const distinct = [...new Set(ids)];
+  const plain = distinct.filter((id) => /^[A-Za-z0-9_]*$/.test(id));
+  const folded = distinct.filter((id) => !/^[A-Za-z0-9_]*$/.test(id)).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  for (const id of plain) {
+    names.set(id, toSlotName(prefix, id));
+    taken.add(toSlotName(prefix, id));
+  }
+  for (const id of folded) {
+    const base = toSlotName(prefix, id);
+    let name = base;
+    for (let n = 1; taken.has(name); n += 1) name = `${base}_${idTag(id)}${n > 1 ? `_${n}` : ''}`;
+    names.set(id, name);
+    taken.add(name);
+  }
+  return names;
+};
+
+/** A row's own id value (a number stays a number), as the app wrote it; the index when the row has none. */
+export const rowIdOf = (row: Row, field: string, index: number): unknown => {
+  const v = row[field] ?? row.id ?? row.key;
+  return v === undefined || v === null || v === '' ? index : v;
+};
+
+/** Whether two exposed records are the same data, so a refresh that changed nothing publishes nothing. */
+export const sameRecord = (a: unknown, b: unknown): boolean => {
+  if (a === b) return true;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+};

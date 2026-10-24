@@ -181,6 +181,11 @@ export const NumberField = () => {
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(toNumber(next)));
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(null));
   useFocusActions(ref);
+  // A number input's unfinished draft ('-', '1e') reads as an empty value, so clearForm, which empties an already empty
+  // value, left it showing (and React does not rewrite a focused number input whose value it thinks unchanged).
+  ToolJet.useFormClear(() => {
+    if (ref.current) ref.current.value = '';
+  });
 
   return (
     <MuiProvider overrides={overrides} className={fieldClass(look.variant, field.label)}>
