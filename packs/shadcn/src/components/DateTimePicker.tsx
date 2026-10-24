@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { CalendarDays, Clock } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { cn } from '../lib/cn';
 import {
   atTime,
@@ -89,7 +90,11 @@ export const DateTimePicker = () => {
     setSkipped(null);
     setTs(parseDateTime(defaultValue, displayFormat)?.getTime() ?? null);
   });
+  // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
+  ToolJet.useFormClear(() => { setSkipped(null); setTs(null); });
   const [open, setOpen] = useState(false);
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
+  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   const date = ts === null ? null : new Date(ts);
 
   const expose = (d: Date | null) => {

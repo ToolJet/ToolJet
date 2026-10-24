@@ -4,6 +4,7 @@ import { Check, Pipette } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { cn } from '../lib/cn';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
@@ -107,6 +108,8 @@ export const ColorPicker = () => {
 
   const control = TJ.useControlState();
   const disabled = legacyDisabled || control.disabled;
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
+  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   const hexOf = (c: Hsva) => M.rgbaToHex({ ...M.hsvToRgb(c), a: c.a }, alpha);
   const live = open ? hexOf(hsva) : value;
   const setHsva = (next: Hsva) => {

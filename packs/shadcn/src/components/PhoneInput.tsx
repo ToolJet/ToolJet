@@ -4,6 +4,7 @@ import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { cn } from '../lib/cn';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { POPOVER, field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
@@ -135,6 +136,8 @@ export const PhoneInput = () => {
   const canChange = isCountryChangeEnabled !== false && countries.length > 1;
   const flag = showFlag !== false;
   const [open, setOpen] = useState(false);
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
+  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const q = query.trim().toLowerCase().replace(/^\+/, '');

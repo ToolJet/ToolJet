@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChevronDown, Ellipsis } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { clickedOption, menuRows } from '../lib/ui2/nav/model';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
 import { Icon, MenuRows, MenuSeparator } from '../lib/ui2/nav/parts';
@@ -99,6 +100,8 @@ export const DropdownMenu = () => {
 
   const [anchorRef, container] = usePortalContainer();
   const [open, setOpen] = useState(false);
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
+  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   const changeOpen = (next: boolean) => {
     if (next && disabled) return;
     if (next === open) return;

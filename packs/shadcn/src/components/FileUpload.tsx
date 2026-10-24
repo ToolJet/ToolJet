@@ -137,6 +137,8 @@ export const FileUpload = () => {
   const maxSize = M.clampBytes(maxSizeProp);
   const minSize = M.clampBytes(minSizeProp);
 
+  // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
+  TJ.useFormClear(() => clearFiles(false));
   const publish = (next: ReadFile[]) => {
     filesRef.current = next;
     setFiles(next);

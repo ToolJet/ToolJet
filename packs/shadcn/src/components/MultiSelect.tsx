@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChevronsUpDown } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { cn } from '../lib/cn';
 import {
   addKeys,
@@ -90,9 +91,13 @@ export const MultiSelect = () => {
   };
   const [keys, setKeys] = useState<string[]>(startKeys);
   const [open, setOpen] = useState(false);
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
+  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   const [search, setSearch] = useState('');
   // A new default starts the selection again; a lower limit cuts it to fit.
   useResetOn(defaultValue, () => setKeys(startKeys()));
+  // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
+  ToolJet.useFormClear(() => { setOpen(false); setKeys([]); publish([]); });
   useEffect(() => {
     if (limit > 0) setKeys((k) => (k.length > limit ? k.slice(0, limit) : k));
   }, [limit]);

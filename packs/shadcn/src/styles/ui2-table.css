@@ -183,7 +183,10 @@
   background: var(--t2-bg, transparent);
   box-shadow: var(--t2-shadow, none);
 }
+/* A table with its own border is a panel: on the card surface (the theme's surface1), not see-through to the page. Set on
+   a card, a borderless table still takes the card's colour; a Table background set by the author wins either way. */
 .t2-box.has-border {
+  background: var(--t2-bg, var(--ui-bg));
   border: 1px solid var(--t2-border, var(--ui-border));
   border-radius: var(--t2-radius, calc(var(--ui-radius) + 2px));
 }

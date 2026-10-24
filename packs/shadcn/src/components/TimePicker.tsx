@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { Clock } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { formatTime, inTimeRange, is24h, minuteStep, parseTime, parseTimeArg, timeBounds, timeSlots, toHHmm } from '../lib/ui2/choice/dates';
 import { lookVars, pickerVars, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useFieldStyles, usePopoverStyles } from '../lib/ui2/choice/fieldStyles';
@@ -60,7 +61,11 @@ export const TimePicker = () => {
   const bounds = timeBounds(minTime, maxTime);
   const [minutes, setMinutes] = useState<number | null>(() => parseTime(defaultValue) ?? parseTime(legacyValue));
   const [open, setOpen] = useState(false);
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
+  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   useResetOn(defaultValue, () => setMinutes(parseTime(defaultValue)));
+  // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
+  ToolJet.useFormClear(() => { setOpen(false); setMinutes(null); });
   const expose = (m: number | null) => {
     setValue(toHHmm(m));
     setFormattedValue(formatTime(m, use24));

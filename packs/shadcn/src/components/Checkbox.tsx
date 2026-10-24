@@ -36,6 +36,8 @@ export const Checkbox = () => {
 
   const [checked, setChecked] = useState(() => defaultChecked === true || legacyChecked === true);
   useResetOn(defaultChecked, () => setChecked(defaultChecked === true));
+  // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
+  ToolJet.useFormClear(() => setChecked(false));
   useEffect(() => {
     setValue(checked);
     setLegacyChecked(checked);

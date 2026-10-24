@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { Check, ChevronDown } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { cn } from '../lib/cn';
 import { choiceKey, defaultKey, isDisabledOption, shownOptions, toChoiceOptions, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
@@ -57,8 +58,12 @@ export const Select = () => {
   const byKey = new Map(options.map((o) => [choiceKey(o.value), o] as [string, ChoiceOption]));
   const [key, setKey] = useState(() => defaultKey(defaultValue) || defaultKey(legacyValue));
   const [open, setOpen] = useState(false);
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
+  const ownerOk = useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   // A new default value starts the selection again.
   useResetOn(defaultValue, () => setKey(defaultKey(defaultValue)));
+  // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
+  ToolJet.useFormClear(() => { setOpen(false); setKey(''); });
   const selected = byKey.get(key);
   // An option that is removed takes its choice with it, so it does not come back selected when it reappears.
   useDropRemovedChoices(options.map((o) => choiceKey(o.value)), key ? [key] : [], () => setKey(''), false);
@@ -119,7 +124,7 @@ export const Select = () => {
                 focus.opened(next);
                 if (!next) check.touch();
               }}
-              onValueChange={(next) => !isDisabledOption(byKey.get(next)) && choose(next)}
+              onValueChange={(next) => ownerOk() && !isDisabledOption(byKey.get(next)) && choose(next)}
             >
               <SelectPrimitive.Trigger
                 ref={triggerRef}

@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChevronsUpDown } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { cn } from '../lib/cn';
 import { initialKey, isDisabledOption, keyOf, keptOptions, toChoiceOptions, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
@@ -67,8 +68,12 @@ export const Combobox = () => {
   const serverSide = serverSideSearch === true;
   const [key, setKey] = useState<string | null>(() => initialKey(defaultValue) ?? initialKey(legacyValue));
   const [open, setOpen] = useState(false);
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
+  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   const [search, setSearch] = useState('');
   useResetOn(defaultValue, () => setKey(initialKey(defaultValue)));
+  // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
+  ToolJet.useFormClear(() => { setOpen(false); setSearch(''); setKey(null); });
   useDropRemovedChoices(options.map((o) => keyOf(o.value)), key === null ? [] : [key], () => setKey(null), serverSide);
   const kept = useRef(new Map<string, ChoiceOption>());
   const [selected] = keptOptions(options, key === null ? [] : [key], serverSide ? kept.current : null);

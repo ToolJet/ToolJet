@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { CalendarDays } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { dateProblem, dateRules, formatDate, isOffDay, parseDateTime, startOfDay, toDay, toDayjsFormat, ymd } from '../lib/ui2/choice/dates';
 import { fieldVars, lookVars, useFocusEvents, useResetOn, useStable } from '../lib/ui2/choice/looks';
 import { useBusy, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
@@ -81,7 +82,11 @@ export const DatePicker = () => {
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
   useResetOn([defaultValue, mode], () => commit(readDefault()));
+  // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
+  ToolJet.useFormClear(() => { setOpen(false); commit(undefined); });
   const [open, setOpen] = useState(false);
+  // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
+  useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   const shown = (d: Date | undefined) => (d ? formatDate(d, format) : '');
 
   // What the widget exposes: value, plus the native date pickers' unixTimestamp and displayValue, or a range's
