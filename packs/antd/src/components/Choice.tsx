@@ -127,13 +127,16 @@ export const Segmented = (props: Record<string, unknown>) => {
   ] });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'Empty selects the first option.', initialValue: '' });
   const [block] = ToolJet.useStateBoolean({ name: 'block', label: 'Block', description: 'Fit the width.', initialValue: false });
+  // Where the group sits when its box is wider than the buttons: a filter toggle that ends a row reads at the row's end.
+  const [alignment] = ToolJet.useStateEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], enumLabels: { left: 'Left', center: 'Center', right: 'Right' }, initialValue: 'left', visibleWhen: { key: 'block', value: false } });
   const [vertical] = ToolJet.useStateBoolean({ name: 'vertical', label: 'Vertical', initialValue: false });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'middle', 'large'], initialValue: 'middle' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const check = ToolJet.useValidation({ section: 'choice', value, present: value !== '' });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 4 });
+  // Its label over a 32px control, as Ant's Input (the 4-row box cut the control by 20px).
+  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 6 });
   const options = toOptions(rawOptions);
   // An empty value selects nothing (null; undefined would make Ant select the first option), so a required
   // Segmented does not look filled.
@@ -150,21 +153,23 @@ export const Segmented = (props: Record<string, unknown>) => {
   return (
     <AntProvider tokens={tokens}>
       <FormField {...field} check={check}>
-        <SpinOver loading={loading} as="inline">
-          {options.length ? (
-            <AntSegmented
-              options={options}
-              value={current}
-              block={block}
-              vertical={vertical}
-              size={size as 'middle'}
-              disabled={disabled}
-              onChange={(v) => change(v)}
-            />
-          ) : (
-            <span />
-          )}
-        </SpinOver>
+        <div style={{ width: '100%', textAlign: block ? undefined : (alignment as 'left') }}>
+          <SpinOver loading={loading} as="inline">
+            {options.length ? (
+              <AntSegmented
+                options={options}
+                value={current}
+                block={block}
+                vertical={vertical}
+                size={size as 'middle'}
+                disabled={disabled}
+                onChange={(v) => change(v)}
+              />
+            ) : (
+              <span />
+            )}
+          </SpinOver>
+        </div>
       </FormField>
     </AntProvider>
   );
