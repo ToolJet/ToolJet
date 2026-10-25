@@ -12,176 +12,110 @@ permissions:
 
 jobs:
   create-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'path-review-app' }}
+    # Not for fork PRs: the review app runs the PR's code with the DB, SMTP and license secrets below.
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'path-review-app' && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Create deployment
         id: create-deployment
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          PR_REPO_URL: ${{ github.event.pull_request.head.repo.git_url }}
+          RENDER_PG_HOST: ${{ secrets.RENDER_PG_HOST }}
+          RENDER_PG_USER: ${{ secrets.RENDER_PG_USER }}
+          RENDER_PG_PASS: ${{ secrets.RENDER_PG_PASS }}
+          RENDER_SMTP_USERNAME: ${{ secrets.RENDER_SMTP_USERNAME }}
+          RENDER_SMTP_PASSWORD: ${{ secrets.RENDER_SMTP_PASSWORD }}
+          RENDER_REDIS_HOST: ${{ secrets.RENDER_REDIS_HOST }}
+          RENDER_REDIS_PORT: ${{ secrets.RENDER_REDIS_PORT }}
+          RENDER_LICENSE_KEY: ${{ secrets.RENDER_LICENSE_KEY }}
         run: |
-          export RESPONSE=$(curl --request POST \
-          --url https://api.render.com/v1/services \
-          --header 'accept: application/json' \
-          --header 'content-type: application/json' \
-          --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
-          --data '
-          {
-            "autoDeploy": "yes",
-            "branch": "${{ env.BRANCH_NAME }}",
-            "name": "ToolJet PR #${{ env.PR_NUMBER }}",
-            "notifyOnFail": "default",
-            "ownerId": "tea-caeo4bj19n072h3dddc0",
-           "repo": "${{ github.event.pull_request.head.repo.git_url }}",
-            "slug": "tooljet-pr-${{ env.PR_NUMBER }}",
-            "suspended": "not_suspended",
-            "suspenders": [],
-            "type": "web_service",
-            "envVars": [
-              {
-                "key": "PG_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
-              },
-              {
-                "key": "PG_PORT",
-                "value": "5432"
-              },
-              {
-                "key": "PG_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
-              },
-              {
-                "key": "PG_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
-              },
-              {
-                "key": "PG_DB",
-                "value": "${{ env.PR_NUMBER }}"
-              },
-              {
-                "key": "TOOLJET_DB",
-                "value": "${{ env.PR_NUMBER }}-tjdb"
-              },
-              {
-                "key": "TOOLJET_DB_HOST",
-                "value": "${{ secrets.RENDER_PG_HOST }}"
-              },
-              {
-                "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_USER }}"
-              },
-              {
-                "key": "TOOLJET_DB_PASS",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
-              },
-              {
-                "key": "TOOLJET_DB_PORT",
-                "value": "5432"
-              },
-              {
-                "key": "TOOLJET_DB_STATEMENT_TIMEOUT",
-                "value": "60000"
-              },
-              {
-                "key": "PGRST_DB_PRE_CONFIG",
-                "value": "postgrest.pre_config"
-              },
-              {
-                "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-tjdb"
-              },
-              {
-                "key": "PGRST_HOST",
-                "value": "127.0.0.1:3000"
-              },
-              {
-                "key": "PGRST_JWT_SECRET",
-                "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"
-              },
-              {
-                "key": "PGRST_LOG_LEVEL",
-                "value": "info"
-              },
-              {
-                "key": "PORT",
-                "value": "80"
-              },
-              {
-                "key": "TOOLJET_HOST",
-                "value": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
-              },
-              {
-                "key": "DISABLE_TOOLJET_TELEMETRY",
-                "value": "true"
-              },
-              {
-                "key": "SMTP_ADDRESS",
-                "value": "smtp.mailtrap.io"
-              },
-              {
-                "key": "SMTP_DOMAIN",
-                "value": "smtp.mailtrap.io"
-              },
-              {
-                "key": "SMTP_PORT",
-                "value": "2525"
-              },
-              {
-                "key": "SMTP_USERNAME",
-                "value": "${{ secrets.RENDER_SMTP_USERNAME }}"
-              },
-              {
-                "key": "SMTP_PASSWORD",
-                "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
-              },
-              {
-                "key": "REDIS_HOST",
-                "value": "${{ secrets.RENDER_REDIS_HOST }}"
-              },
-              {
-                "key": "REDIS_PORT",
-                "value": "${{ secrets.RENDER_REDIS_PORT }}"
-              },
-              {
-                "key": "LICENSE_KEY",
-                "value": "${{ secrets.RENDER_LICENSE_KEY }}"
-              },
-              {
-                "key": "SUB_PATH",
-                "value": "/apps/tooljet/"
-              },
-              {
-                "key": "NODE_ENV",
-                "value": "production"
-              },
-              {
-                "key": "SERVE_CLIENT",
-                "value": "true"
-              }
-            ],
-            "serviceDetails": {
-              "disk": null,
-              "env": "docker",
-              "envSpecificDetails": {
-                "dockerCommand": "",
-                "dockerContext": "./",
-                "dockerfilePath": "./docker/preview.Dockerfile"
+          # Build the JSON with jq so the branch name and other values are passed as data,
+          # never as shell code (protects against injection via the PR branch name).
+          PAYLOAD=$(jq -n \
+            --arg branch "$BRANCH_NAME" \
+            --arg pr "$PR_NUMBER" \
+            --arg repo "$PR_REPO_URL" \
+            --arg pgHost "$RENDER_PG_HOST" \
+            --arg pgUser "$RENDER_PG_USER" \
+            --arg pgPass "$RENDER_PG_PASS" \
+            --arg smtpUser "$RENDER_SMTP_USERNAME" \
+            --arg smtpPass "$RENDER_SMTP_PASSWORD" \
+            --arg redisHost "$RENDER_REDIS_HOST" \
+            --arg redisPort "$RENDER_REDIS_PORT" \
+            --arg licenseKey "$RENDER_LICENSE_KEY" \
+            '{
+              autoDeploy: "yes",
+              branch: $branch,
+              name: "ToolJet PR #\($pr)",
+              notifyOnFail: "default",
+              ownerId: "tea-caeo4bj19n072h3dddc0",
+              repo: $repo,
+              slug: "tooljet-pr-\($pr)",
+              suspended: "not_suspended",
+              suspenders: [],
+              type: "web_service",
+              envVars: [
+                {key: "PG_HOST", value: $pgHost},
+                {key: "PG_PORT", value: "5432"},
+                {key: "PG_USER", value: $pgUser},
+                {key: "PG_PASS", value: $pgPass},
+                {key: "PG_DB", value: $pr},
+                {key: "TOOLJET_DB", value: "\($pr)-tjdb"},
+                {key: "TOOLJET_DB_HOST", value: $pgHost},
+                {key: "TOOLJET_DB_USER", value: $pgUser},
+                {key: "TOOLJET_DB_PASS", value: $pgPass},
+                {key: "TOOLJET_DB_PORT", value: "5432"},
+                {key: "TOOLJET_DB_STATEMENT_TIMEOUT", value: "60000"},
+                {key: "PGRST_DB_PRE_CONFIG", value: "postgrest.pre_config"},
+                {key: "PGRST_DB_URI", value: "postgres://\($pgUser):\($pgPass)@\($pgHost)/\($pr)-tjdb"},
+                {key: "PGRST_HOST", value: "127.0.0.1:3000"},
+                {key: "PGRST_JWT_SECRET", value: "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"},
+                {key: "PGRST_LOG_LEVEL", value: "info"},
+                {key: "PORT", value: "80"},
+                {key: "TOOLJET_HOST", value: "https://tooljet-pr-\($pr).onrender.com"},
+                {key: "DISABLE_TOOLJET_TELEMETRY", value: "true"},
+                {key: "SMTP_ADDRESS", value: "smtp.mailtrap.io"},
+                {key: "SMTP_DOMAIN", value: "smtp.mailtrap.io"},
+                {key: "SMTP_PORT", value: "2525"},
+                {key: "SMTP_USERNAME", value: $smtpUser},
+                {key: "SMTP_PASSWORD", value: $smtpPass},
+                {key: "REDIS_HOST", value: $redisHost},
+                {key: "REDIS_PORT", value: $redisPort},
+                {key: "LICENSE_KEY", value: $licenseKey},
+                {key: "SUB_PATH", value: "/apps/tooljet/"},
+                {key: "NODE_ENV", value: "production"},
+                {key: "SERVE_CLIENT", value: "true"}
+              ],
+              serviceDetails: {
+                disk: null,
+                env: "docker",
+                envSpecificDetails: {
+                  dockerCommand: "",
+                  dockerContext: "./",
+                  dockerfilePath: "./docker/preview.Dockerfile"
                 },
-                "healthCheckPath": "/api/health",
-                "numInstances": 1,
-                "openPorts": [{
-                "port": 80,
-                "protocol": "TCP"
-                }],
-                "plan": "starter",
-                "pullRequestPreviewsEnabled": "no",
-                "region": "oregon",
-                "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com/apps/tooljet/"
-            }
-          }')
+                healthCheckPath: "/api/health",
+                numInstances: 1,
+                openPorts: [{port: 80, protocol: "TCP"}],
+                plan: "starter",
+                pullRequestPreviewsEnabled: "no",
+                region: "oregon",
+                url: "https://tooljet-pr-\($pr).onrender.com/apps/tooljet/"
+              }
+            }')
+
+          RESPONSE=$(curl --request POST \
+            --url https://api.render.com/v1/services \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header "Authorization: Bearer $RENDER_API_KEY" \
+            --data "$PAYLOAD")
 
           echo "response: $RESPONSE"
-          export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
-          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          SERVICE_ID=$(echo "$RESPONSE" | jq -r '.service.id')
+          echo "SERVICE_ID=$SERVICE_ID" >> "$GITHUB_ENV"
 
       - name: Comment deployment URL
         uses: actions/github-script@v5
@@ -222,17 +156,19 @@ jobs:
 
     steps:
       - name: Delete service
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url "https://api.render.com/v1/services?name=ToolJet%20PR%20%23${PR_NUMBER}&limit=1" \
           --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+          --header "authorization: Bearer $RENDER_API_KEY" | \
            jq -r '.[0].service.id')
 
           curl --request DELETE \
-          --url https://api.render.com/v1/services/$SERVICE_ID \
+          --url "https://api.render.com/v1/services/$SERVICE_ID" \
           --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          --header "authorization: Bearer $RENDER_API_KEY"
 
       - uses: actions/github-script@v6
         with:
@@ -284,10 +220,11 @@ jobs:
           PGPORT: 5432
           PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
           PGDATABASE: ${{ env.PR_NUMBER }}
+          PGPASSWORD: ${{ secrets.RENDER_DS_PG_PASS }}
         run: |
-          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
+          if psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -lqt | cut -d \| -f 1 | grep -qw "$PGDATABASE"; then
             echo "Database $PGDATABASE exists, deleting..."
-            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
+            psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d postgres -c "drop database \"$PGDATABASE\" ;"
           else
             echo "Database $PGDATABASE does not exist."
           fi
@@ -298,17 +235,19 @@ jobs:
 
     steps:
       - name: Suspend service
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url "https://api.render.com/v1/services?name=ToolJet%20PR%20%23${PR_NUMBER}&limit=1" \
           --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+          --header "authorization: Bearer $RENDER_API_KEY" | \
            jq -r '.[0].service.id')
 
           curl --request POST \
-          --url https://api.render.com/v1/services/$SERVICE_ID/suspend \
+          --url "https://api.render.com/v1/services/$SERVICE_ID/suspend" \
           --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          --header "authorization: Bearer $RENDER_API_KEY"
 
       - uses: actions/github-script@v6
         with:
@@ -330,17 +269,19 @@ jobs:
 
     steps:
       - name: Resume service
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url "https://api.render.com/v1/services?name=ToolJet%20PR%20%23${PR_NUMBER}&limit=1" \
           --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+          --header "authorization: Bearer $RENDER_API_KEY" | \
            jq -r '.[0].service.id')
 
           curl --request POST \
-          --url https://api.render.com/v1/services/$SERVICE_ID/resume \
+          --url "https://api.render.com/v1/services/$SERVICE_ID/resume" \
           --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          --header "authorization: Bearer $RENDER_API_KEY"
 
       - uses: actions/github-script@v6
         with:
