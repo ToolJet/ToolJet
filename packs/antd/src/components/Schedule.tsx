@@ -3,6 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { lookVars, useStable } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
+import { RADIUS_HINT, THEME_COLOR as T, useThemeNumber } from '../lib/themeStyles';
 import {
   MAX_ROW_BOOKINGS,
   avatarHue,
@@ -248,12 +249,12 @@ export const Schedule = () => {
   const [, setSelectedSlot] = ToolJet.useStateObject({ name: 'selectedSlot', initialValue: {}, inspector: 'hidden' });
   const onBookingClicked = ToolJet.useEventCallback({ name: 'onBookingClicked' });
   const onSlotClicked = ToolJet.useEventCallback({ name: 'onSlotClicked' });
-  const backgroundColor = useColorStyle('backgroundColor', 'Background');
-  const borderColor = useColorStyle('borderColor', 'Grid line color');
-  const textColor = useColorStyle('textColor', 'Label color');
-  const accentColor = useColorStyle('accentColor', 'Booking accent (bookings without a status, the selection)');
-  const nowColor = useColorStyle('nowColor', 'Current time line color');
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Radius', initialValue: '' });
+  const backgroundColor = useColorStyle('backgroundColor', 'Background', T.surface);
+  const borderColor = useColorStyle('borderColor', 'Grid line color', T.borderWeak);
+  const textColor = useColorStyle('textColor', 'Label color', T.text);
+  const accentColor = useColorStyle('accentColor', 'Booking accent (bookings without a status, the selection)', T.brand);
+  const nowColor = useColorStyle('nowColor', 'Current time line color', T.danger);
+  const borderRadius = useThemeNumber('borderRadius', 'Radius', RADIUS_HINT);
   ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 30 });
   const { disabled, loading } = useBusy(false);
 

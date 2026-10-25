@@ -5,7 +5,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
-import { str, toOptions } from '../lib/data';
+import { str, toOptions, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
 import { countryOf, flagOf, nationalOf, phoneCountries, phoneCountry, phoneInfo, type Country } from '../lib/ui2/inputs/phone';
@@ -22,7 +22,7 @@ const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => v
 // searchValue exposed; events onChange, onSelect, onSearch, onFocus, onBlur; actions setFieldValue, resetFields.
 export const Combobox = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'City' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', initialValue: [
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
     { label: 'Austin', value: 'austin' },
     { label: 'Berlin', value: 'berlin' },
     { label: 'Lisbon', value: 'lisbon' },
@@ -207,7 +207,7 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Amount' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: undefined as unknown as number });
   const [currency, setCurrency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD' });
-  const [currencyOptions] = ToolJet.useStateArray({ name: 'currencyOptions', label: 'Currency options', description: "['USD', 'EUR', 'INR']; empty: one currency.", initialValue: [] });
+  const [currencyOptions] = ToolJet.useStateArray({ name: 'currencyOptions', label: 'Currency options', inspector: 'options', description: "['USD', 'EUR', 'INR']; empty: one currency.", initialValue: [] });
   const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', initialValue: '' });
   const [precision] = ToolJet.useStateNumber({ name: 'precision', label: 'Precision', initialValue: 2, min: 0, max: 6 });
   const [currencyDisplay] = ToolJet.useStateEnumeration({ name: 'currencyDisplay', label: 'Currency display', enumDefinition: ['symbol', 'narrowSymbol', 'code'], initialValue: 'symbol' });
@@ -248,7 +248,10 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   ToolJet.useAction({ name: 'setCurrency', displayName: 'Set currency', params: [{ handle: 'currency', displayName: 'Currency code' }] }, (c) => setCurrency(str(c).toUpperCase()));
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(toNumber(props.value)));
   useFocusActions(ref);
-  const choices = (Array.isArray(currencyOptions) ? currencyOptions : []).map((c) => str(c).toUpperCase()).filter(Boolean);
+  // The options editor writes { label, value } once an entry is not a plain value.
+  const choices = (Array.isArray(currencyOptions) ? currencyOptions : [])
+    .map((c) => str(c && typeof c === 'object' ? ((c as Row).value ?? (c as Row).label) : c).toUpperCase())
+    .filter(Boolean);
   const group = (s: string) => s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return (
     <AntProvider tokens={tokens}>

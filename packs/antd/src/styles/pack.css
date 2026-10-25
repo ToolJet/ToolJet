@@ -55,6 +55,18 @@
   box-sizing: border-box;
   overflow: auto;
 }
+/* The Custom type: the alert's own colours (--tj-alert-*, its Custom alert styles), else the container's surface,
+   text and border. */
+.tj-ant-alert--custom .ant-alert {
+  background: var(--tj-alert-bg, var(--ant-color-bg-container));
+  border: var(--ant-line-width) var(--ant-line-type) var(--tj-alert-border, var(--ant-color-border));
+}
+.tj-ant-alert--custom .ant-alert .ant-alert-message,
+.tj-ant-alert--custom .ant-alert .ant-alert-description,
+.tj-ant-alert--custom .ant-alert .ant-alert-icon,
+.tj-ant-alert--custom .ant-alert .ant-alert-close-icon .anticon {
+  color: var(--tj-alert-fg, var(--ant-color-text));
+}
 .tj-ant-center {
   display: flex;
   align-items: center;
@@ -277,6 +289,29 @@
 .tj-ant-calendar {
   overflow: auto;
 }
+/* The card calendar fills its box: the month's rows share the height (Ant fixes them at 256px, so a shorter box cut
+   the last week), down to their natural size, below which the calendar scrolls inside the box. */
+.tj-ant-calendar .ant-picker-calendar-mini {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-panel,
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-panel > div,
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-content {
+  flex: 1 1 auto;
+  height: 0;
+}
+/* Ant pads the month 8px above and below; 4px lets a 300px box hold all six weeks without a scroll. */
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-panel .ant-picker-body {
+  padding-block: 4px;
+}
 .tj-ant-menu .ant-menu-inline,
 .tj-ant-menu .ant-menu-vertical {
   min-height: 100%;
@@ -332,6 +367,74 @@
 }
 .tj-ant-cal-events li.is-error::before {
   background: var(--ant-color-error);
+}
+/* The compact marks: dots (the card calendar) and a dot with the count (narrow month-grid cells); hidden by default. */
+.tj-ant-cal-dots,
+.tj-ant-cal-count {
+  display: none;
+}
+.tj-ant-cal-dots i,
+.tj-ant-cal-count::before {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ant-color-primary);
+}
+.tj-ant-cal-count::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+}
+.tj-ant-cal-dots i.is-success,
+.tj-ant-cal-count.is-success::before {
+  background: var(--ant-color-success);
+}
+.tj-ant-cal-dots i.is-warning,
+.tj-ant-cal-count.is-warning::before {
+  background: var(--ant-color-warning);
+}
+.tj-ant-cal-dots i.is-error,
+.tj-ant-cal-count.is-error::before {
+  background: var(--ant-color-error);
+}
+/* Card calendar: the marks sit under the number, out of the cell's flow, so every day keeps its number in the same
+   place (a label pushed a marked day's number up and ran into the next day). */
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-calendar-date {
+  position: relative;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-calendar-date-content {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 1px;
+  height: 4px;
+  pointer-events: none;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .tj-ant-cal-events {
+  display: none;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .tj-ant-cal-dots {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-cell-selected .tj-ant-cal-dots i {
+  background: currentColor;
+}
+/* Month grid: labels cut with an ellipsis; a cell too narrow for a label shows a dot and the count. */
+.tj-ant-calendar .ant-picker-calendar-full .ant-picker-calendar-date-content {
+  container-type: inline-size;
+}
+@container (max-width: 72px) {
+  .tj-ant-calendar .tj-ant-cal-events {
+    display: none;
+  }
+  .tj-ant-calendar .tj-ant-cal-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--ant-color-text-secondary);
+  }
 }
 .tj-ant-carousel .ant-carousel,
 .tj-ant-carousel .slick-slider,
@@ -436,9 +539,10 @@
 .tj-ant-kb-col.is-collapsed:hover {
   border-color: var(--ant-color-primary-border-hover);
 }
+/* Drawn inside the column: the board's scroll area clipped an outside ring at its left and top edges. */
 .tj-ant-kb-col:focus-visible {
   outline: 2px solid var(--ant-color-primary-border);
-  outline-offset: 1px;
+  outline-offset: -2px;
 }
 .tj-ant-kb-head {
   display: flex;
@@ -1161,8 +1265,21 @@
 .tj-ant-spin-block > .ant-spin-container {
   display: flow-root;
 }
+/* Skeleton bars round like the theme's small radius (antd fixes them at 4px, its own small radius, so stock Ant is
+   unchanged). */
+.tj-ant .ant-skeleton {
+  --ant-skeleton-block-radius: var(--ant-border-radius-sm);
+}
 .tj-ant-root .ant-skeleton.ant-skeleton-element.ant-skeleton-block {
   width: 100%;
+}
+/* A chart's tooltip layer in the popup layer (lib/chartTheme useTooltipLayer): the window, so a tall tooltip is not
+   cut by the widget box. */
+.tj-ant-chart-tips {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1100;
 }
 .tj-ant-chart-body > .charts-loading-container {
   z-index: 2;

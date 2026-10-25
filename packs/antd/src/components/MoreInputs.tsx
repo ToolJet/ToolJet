@@ -335,7 +335,7 @@ export const RangePicker = (props: Record<string, unknown>) => {
 // filterOption (match typed text), allowClear; events onChange, onSelect, onSearch.
 export const AutoComplete = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Product' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', initialValue: [
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
     { label: 'Laptop stand', value: 'Laptop stand' },
     { label: 'Mechanical keyboard', value: 'Mechanical keyboard' },
     { label: 'Monitor arm', value: 'Monitor arm' },

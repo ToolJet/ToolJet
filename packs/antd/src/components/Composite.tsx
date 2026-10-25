@@ -25,18 +25,32 @@ export const RowAvatar = ({ image, name, size = 32, shape = 'circle' }: { image?
 
 // ---- Hero ------------------------------------------------------------------------------------------------------------
 
+// Text a Hero prop is bound to, whatever its shape: UI 2.0's Hero takes meta as facts ([{ label, value }]), and a list
+// of objects drawn as React children crashed the page ("Objects are not valid as a React child").
+const heroText = (v: unknown): string => {
+  if (Array.isArray(v)) return v.map(heroText).filter(Boolean).join(' · ');
+  if (v && typeof v === 'object') {
+    const r = v as Row;
+    const value = heroText(r.value ?? r.text ?? '');
+    const label = str(r.label ?? '');
+    return label && value ? `${label}: ${value}` : label || value;
+  }
+  return v === null || v === undefined ? '' : str(v);
+};
+
 // A page header in Ant's terms (Typography Title over a subTitle, primary and default Buttons, an aside Statistic):
 // eyebrow, title, subTitle, meta, actionLabel / secondaryActionLabel (onActionClicked, onSecondaryActionClicked),
 // asideValue / asideLabel, icon, background (plain, tint, gradient, image, dark, solid), imageUrl, align, size.
 export const Hero = () => {
-  const [eyebrow] = ToolJet.useStateString({ name: 'eyebrow', label: 'Eyebrow', initialValue: '' });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Good morning' });
-  const [subTitle] = ToolJet.useStateString({ name: 'subTitle', label: 'Sub title', initialValue: 'Here is what changed since yesterday.' });
-  const [meta] = ToolJet.useStateString({ name: 'meta', label: 'Meta', initialValue: '' });
-  const [actionLabel] = ToolJet.useStateString({ name: 'actionLabel', label: 'Action label', initialValue: '' });
-  const [secondaryActionLabel] = ToolJet.useStateString({ name: 'secondaryActionLabel', label: 'Secondary action label', initialValue: '' });
-  const [asideValue] = ToolJet.useStateString({ name: 'asideValue', label: 'Aside value', initialValue: '' });
-  const [asideLabel] = ToolJet.useStateString({ name: 'asideLabel', label: 'Aside label', initialValue: '' });
+  const [eyebrowRaw] = ToolJet.useStateString({ name: 'eyebrow', label: 'Eyebrow', initialValue: '' });
+  const [titleRaw] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Good morning' });
+  const [subTitleRaw] = ToolJet.useStateString({ name: 'subTitle', label: 'Sub title', initialValue: 'Here is what changed since yesterday.' });
+  const [metaRaw] = ToolJet.useStateString({ name: 'meta', label: 'Meta', initialValue: '' });
+  const [actionLabelRaw] = ToolJet.useStateString({ name: 'actionLabel', label: 'Action label', initialValue: '' });
+  const [secondaryActionLabelRaw] = ToolJet.useStateString({ name: 'secondaryActionLabel', label: 'Secondary action label', initialValue: '' });
+  const [asideValueRaw] = ToolJet.useStateString({ name: 'asideValue', label: 'Aside value', initialValue: '' });
+  const [asideLabelRaw] = ToolJet.useStateString({ name: 'asideLabel', label: 'Aside label', initialValue: '' });
+  const [eyebrow, title, subTitle, meta, actionLabel, secondaryActionLabel, asideValue, asideLabel] = [eyebrowRaw, titleRaw, subTitleRaw, metaRaw, actionLabelRaw, secondaryActionLabelRaw, asideValueRaw, asideLabelRaw].map(heroText);
   const [icon] = ToolJet.useStateString({ name: 'icon', label: 'Icon', description: 'An Ant icon name (RocketOutlined) or a word (rocket).', initialValue: '' });
   const [background] = ToolJet.useStateEnumeration({ name: 'background', label: 'Background', enumDefinition: ['plain', 'tint', 'gradient', 'image', 'dark', 'solid'], initialValue: 'tint' });
   const [imageUrl] = ToolJet.useStateString({ name: 'imageUrl', label: 'Image URL', initialValue: '', visibleWhen: { key: 'background', value: 'image' } });

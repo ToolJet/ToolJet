@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { RadialBar, Tiny } from '@ant-design/plots';
 import { Empty, Progress, Typography } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useIsDark, useTokenStyles } from '../lib/AntProvider';
 import { ChartVeil, SpinOver } from '../lib/Loading';
+import { tooltipInteraction, useChartTheme, useTooltipLayer } from '../lib/chartTheme';
 import { str, toArray, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
 
@@ -36,6 +37,9 @@ export const Sparkline = () => {
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  const ref = useRef<HTMLDivElement>(null);
+  const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const values = useMemo(() => numbersOf(data, valueField), [data, valueField]);
   const first = values[0];
   const last = values[values.length - 1];
@@ -46,13 +50,14 @@ export const Sparkline = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trend, last]);
   const good = lowerIsBetter ? trend === 'down' : trend === 'up';
-  const stroke = color || (colorByTrend && trend && trend !== 'flat' ? (good ? '#52c41a' : '#ff4d4f') : '#1677ff');
+  // The theme's brand, success and error (stock Ant's without a theme), read like the other charts' colours.
+  const stroke = color || (colorByTrend && trend && trend !== 'flat' ? (good ? theme.success : theme.error) : theme.brand);
   const Chart = type === 'area' ? Tiny.Area : type === 'column' ? Tiny.Column : Tiny.Line;
   const fmt = (v: unknown) => `${valuePrefix}${formatNumber(toNumber(v) ?? 0)}${valueSuffix}`;
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-spark">
       <ChartVeil loading={loading}>
-        <div className="tj-ant-spark-body" onClick={() => onClick()} onDoubleClick={() => onDoubleClick()}>
+        <div ref={ref} className="tj-ant-spark-body" onClick={() => onClick()} onDoubleClick={() => onDoubleClick()}>
           {values.length ? (
             <Chart
               autoFit
@@ -62,6 +67,7 @@ export const Sparkline = () => {
               shapeField={smooth && type !== 'column' ? 'smooth' : undefined}
               style={type === 'column' ? { fill: stroke, radiusTopLeft: 2, radiusTopRight: 2 } : type === 'area' ? { fill: stroke, fillOpacity: 0.2, stroke, lineWidth: 2 } : { stroke, lineWidth: 2 }}
               tooltip={{ title: false, items: [{ channel: 'y', valueFormatter: fmt }] } as never}
+              interaction={tooltipInteraction(tips) as never}
             />
           ) : (
             <Typography.Text type="secondary">{emptyText}</Typography.Text>

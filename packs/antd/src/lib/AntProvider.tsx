@@ -2,8 +2,8 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import type { CSSProperties } from 'react';
 import { ConfigProvider } from 'antd';
 import { createCache, StyleProvider } from '@ant-design/cssinjs';
-import { ToolJet } from '@tooljet/custom-component-sdk';
 import { usePortalContainer } from './usePortalContainer';
+import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from './themeStyles';
 
 // Must match THEME in scripts/extract-styles.mjs: the static antd.css is written for these class names (`.tj`
 // marks every antd root, no hash), so the runtime renders the same markup the extracted CSS styles.
@@ -25,16 +25,17 @@ const mix = (c: string, p: number, base: string) => `color-mix(in srgb, ${c} ${p
 const alpha = (c: string, p: number) => `color-mix(in srgb, ${c} ${p}%, transparent)`;
 
 /**
- * Ant's own design-token names as the component's Styles. Empty keeps the look (stock Ant, or the applied ToolJet
- * theme); a value overrides that token and the ones antd derives from it (hover, active, tints), as --tj-ant-*
+ * Ant's own design-token names as the component's Styles. Each colour defaults to the theme colour it draws (a swatch
+ * in the inspector, lib/themeStyles); left at that default it keeps the look (stock Ant, or the applied ToolJet
+ * theme). A value overrides that token and the ones antd derives from it (hover, active, tints), as --tj-ant-*
  * variables the static antd.css reads first.
  */
 export const useTokenStyles = () => {
-  const colorPrimary = ToolJet.useStyleString({ name: 'colorPrimary', label: 'Primary color', inspector: 'color', initialValue: '' });
-  const colorText = ToolJet.useStyleString({ name: 'colorText', label: 'Text color', inspector: 'color', initialValue: '' });
-  const colorBgContainer = ToolJet.useStyleString({ name: 'colorBgContainer', label: 'Container background', inspector: 'color', initialValue: '' });
-  const colorBorder = ToolJet.useStyleString({ name: 'colorBorder', label: 'Border color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Border radius', initialValue: '' });
+  const colorPrimary = useThemeColor('colorPrimary', 'Primary color', THEME_COLOR.brand);
+  const colorText = useThemeColor('colorText', 'Text color', THEME_COLOR.text);
+  const colorBgContainer = useThemeColor('colorBgContainer', 'Container background', THEME_COLOR.surface);
+  const colorBorder = useThemeColor('colorBorder', 'Border color', THEME_COLOR.border);
+  const borderRadius = useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT);
   return useMemo(() => {
     const vars: Record<string, string> = {};
     if (isSet(colorPrimary)) {

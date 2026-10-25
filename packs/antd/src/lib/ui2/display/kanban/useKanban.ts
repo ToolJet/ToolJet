@@ -31,6 +31,8 @@ export type KanbanOptions = {
   params: { id: string; values: string };
   /** The card shadow on a fresh drop (the library's own card look). */
   shadow: 'none' | 'sm' | 'md' | 'lg';
+  /** What a blank column or card radius draws, as the field's placeholder (each library rounds its own way). */
+  radiusHints?: { column: string; card: string };
   disabled?: boolean;
 };
 
@@ -67,11 +69,24 @@ export const useMoreAhead = (ref: React.RefObject<HTMLElement>, axis: 'x' | 'y',
     };
     check();
     el.addEventListener('scroll', check, { passive: true });
+    // The content as well as the box: columns sized from the measured width (onSize) settle a render later without
+    // resizing the box, and the fade stayed on a board that no longer overflowed.
     const observer = new ResizeObserver(check);
-    observer.observe(el);
+    const observeAll = () => {
+      observer.disconnect();
+      observer.observe(el);
+      Array.from(el.children).forEach((child) => observer.observe(child));
+    };
+    observeAll();
+    const children = typeof MutationObserver === 'undefined' ? null : new MutationObserver(() => {
+      observeAll();
+      check();
+    });
+    children?.observe(el, { childList: true });
     return () => {
       el.removeEventListener('scroll', check);
       observer.disconnect();
+      children?.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
@@ -93,6 +108,23 @@ export const useContentHeight = (ref: React.RefObject<HTMLElement>, collapsedHei
   return height;
 };
 
+// The theme colour each board colour style draws, as the inspector's theme swatches name them, so a fresh drop shows
+// a swatch instead of a blank field. Left at it (or cleared), a style reads as unset and the board keeps its own look.
+const THEME = {
+  brand: 'var(--cc-primary-brand)',
+  text: 'var(--cc-primary-text)',
+  muted: 'var(--cc-placeholder-text)',
+  surface: 'var(--cc-surface1-surface)',
+  surfaceMuted: 'var(--cc-surface2-surface)',
+  surfaceStrong: 'var(--cc-surface3-surface)',
+  borderWeak: 'var(--cc-weak-border)',
+};
+const useThemeColor = (name: string, label: string, initialValue: string): string => {
+  const value = ToolJet.useStyleString({ name, label, inspector: 'color', initialValue }) as unknown;
+  const text = value === undefined || value === null ? '' : String(value).trim();
+  return text === initialValue ? '' : text;
+};
+
 export const useKanban = (o: KanbanOptions) => {
   const [data] = ToolJet.useStateArray({ name: o.dataName, label: 'Cards', description: 'Array of card objects, e.g. {{queries.getTasks.data}}.', initialValue: o.sample });
   const [columns] = ToolJet.useStateArray({
@@ -110,7 +142,7 @@ export const useKanban = (o: KanbanOptions) => {
     enumLabels: { fields: 'Fields', custom: 'Custom' },
     initialValue: 'fields',
     inspector: 'switch',
-    description: 'Custom: each card is a row of ToolJet components reading {{listItem}}.',
+    description: 'Custom: each card is a row of ToolJet components reading the card as {{cardData}} (also {{listItem}}), e.g. {{cardData.title}}.',
   });
   const [cardHeight] = ToolJet.useStateNumber({
     name: 'cardHeight',
@@ -169,19 +201,19 @@ export const useKanban = (o: KanbanOptions) => {
   const onUpdate = ToolJet.useEventCallback({ name: 'onUpdate' });
   // The board's own styles; the accent is the library's primary colour (the pack's theme styles).
   const styles: Record<string, unknown> = {
-    columnBackgroundColor: ToolJet.useStyleString({ name: 'columnBackgroundColor', label: 'Column background', inspector: 'color', initialValue: '' }),
-    columnBorderColor: ToolJet.useStyleString({ name: 'columnBorderColor', label: 'Column border color', inspector: 'color', initialValue: '' }),
-    columnTitleColor: ToolJet.useStyleString({ name: 'columnTitleColor', label: 'Column title color', inspector: 'color', initialValue: '' }),
-    columnCountBackgroundColor: ToolJet.useStyleString({ name: 'columnCountBackgroundColor', label: 'Column count background', inspector: 'color', initialValue: '' }),
-    columnCountTextColor: ToolJet.useStyleString({ name: 'columnCountTextColor', label: 'Column count text color', inspector: 'color', initialValue: '' }),
-    columnGap: ToolJet.useStyleNumber({ name: 'columnGap', label: 'Gap between columns', initialValue: '' }),
-    columnBorderRadius: ToolJet.useStyleNumber({ name: 'columnBorderRadius', label: 'Column radius', initialValue: '' }),
-    cardBackgroundColor: ToolJet.useStyleString({ name: 'cardBackgroundColor', label: 'Card background', inspector: 'color', initialValue: '' }),
-    cardBorderColor: ToolJet.useStyleString({ name: 'cardBorderColor', label: 'Card border color', inspector: 'color', initialValue: '' }),
-    cardTitleColor: ToolJet.useStyleString({ name: 'cardTitleColor', label: 'Card title color', inspector: 'color', initialValue: '' }),
-    cardTextColor: ToolJet.useStyleString({ name: 'cardTextColor', label: 'Card secondary text color', inspector: 'color', initialValue: '' }),
-    progressColor: ToolJet.useStyleString({ name: 'progressColor', label: 'Progress color (else the primary)', inspector: 'color', initialValue: '' }),
-    cardBorderRadius: ToolJet.useStyleNumber({ name: 'cardBorderRadius', label: 'Card radius', initialValue: '' }),
+    columnBackgroundColor: useThemeColor('columnBackgroundColor', 'Column background', THEME.surfaceMuted),
+    columnBorderColor: useThemeColor('columnBorderColor', 'Column border color', THEME.borderWeak),
+    columnTitleColor: useThemeColor('columnTitleColor', 'Column title color', THEME.text),
+    columnCountBackgroundColor: useThemeColor('columnCountBackgroundColor', 'Column count background', THEME.surfaceStrong),
+    columnCountTextColor: useThemeColor('columnCountTextColor', 'Column count text color', THEME.text),
+    columnGap: ToolJet.useStyleNumber({ name: 'columnGap', label: 'Gap between columns', placeholder: '16' }),
+    columnBorderRadius: ToolJet.useStyleNumber({ name: 'columnBorderRadius', label: 'Column radius', placeholder: o.radiusHints?.column ?? 'Theme radius x 2' }),
+    cardBackgroundColor: useThemeColor('cardBackgroundColor', 'Card background', THEME.surface),
+    cardBorderColor: useThemeColor('cardBorderColor', 'Card border color', THEME.borderWeak),
+    cardTitleColor: useThemeColor('cardTitleColor', 'Card title color', THEME.text),
+    cardTextColor: useThemeColor('cardTextColor', 'Card secondary text color', THEME.muted),
+    progressColor: useThemeColor('progressColor', 'Progress color (else the primary)', THEME.brand),
+    cardBorderRadius: ToolJet.useStyleNumber({ name: 'cardBorderRadius', label: 'Card radius', placeholder: o.radiusHints?.card ?? 'Theme radius' }),
     cardShadow: ToolJet.useStyleEnumeration({
       name: 'cardShadow',
       label: 'Card shadow',

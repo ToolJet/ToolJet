@@ -792,3 +792,193 @@ describe("T38: Ant Alert takes UI 2.0's action and close", () => {
     expect(v.exposed.dismissed).toBe(true);
   });
 });
+
+describe('T7/T41: colour styles default to the theme colour they draw, and draw nothing new there', () => {
+  const TOKENS = ['colorPrimary', 'colorText', 'colorBgContainer', 'colorBorder', 'borderRadius'];
+  const blank = Object.fromEntries(TOKENS.map((t) => [t, '']));
+  const themed = {
+    colorPrimary: 'var(--cc-primary-brand)',
+    colorText: 'var(--cc-primary-text)',
+    colorBgContainer: 'var(--cc-surface1-surface)',
+    colorBorder: 'var(--cc-default-border)',
+  };
+  // The --tj-ant-* overrides (and the Kanban, Map, Schedule and Alert look variables) a root declares inline.
+  const overrides = (v) => {
+    const style = v.root().querySelector('.tj-ant-root').style;
+    return [...Array(style.length).keys()].map((i) => style[i]).filter((p) => /^--(tj-ant|kb|lk|tj-alert)-/.test(p));
+  };
+
+  test.each(['Button', 'Alert', 'Select', 'Table', 'Column', 'Tabs'])(
+    '%s: a fresh drop (styles at their defaults), a saved blank and the default values set no token',
+    async (name) => {
+      for (const styles of [{}, blank, themed]) {
+        const v = await mount(name, {}, { formField: false, styles });
+        expect(overrides(v)).toEqual([]);
+        v.unmount();
+      }
+    }
+  );
+
+  test('a colour or radius set away from its default still overrides the token', async () => {
+    const v = await mount('Button', {}, { formField: false, styles: { colorPrimary: '#ff0000', borderRadius: 10 } });
+    const style = v.root().querySelector('.tj-ant-root').style;
+    expect(style.getPropertyValue('--tj-ant-color-primary')).toBe('#ff0000');
+    expect(style.getPropertyValue('--tj-ant-border-radius')).toBe('10px');
+  });
+
+  test('another theme swatch than the default is kept as a theme value', async () => {
+    const v = await mount('Button', {}, { formField: false, styles: { colorPrimary: 'var(--cc-success-systemStatus)' } });
+    expect(v.root().querySelector('.tj-ant-root').style.getPropertyValue('--tj-ant-color-primary')).toBe('var(--cc-success-systemStatus)');
+  });
+
+  test.each([
+    ['Kanban', { columnBackgroundColor: 'var(--cc-surface2-surface)', cardBackgroundColor: 'var(--cc-surface1-surface)', progressColor: 'var(--cc-primary-brand)' }],
+    ['Map', { backgroundColor: 'var(--cc-surface2-surface)', accentColor: 'var(--cc-primary-brand)', clusterColor: 'var(--cc-primary-text)' }],
+    ['Schedule', { backgroundColor: 'var(--cc-surface1-surface)', accentColor: 'var(--cc-primary-brand)', nowColor: 'var(--cc-error-systemStatus)' }],
+  ])('%s: its own colour styles at their defaults set no look variable (the card shadow is an option, set as before)', async (name, defaults) => {
+    for (const styles of [{}, defaults]) {
+      const v = await mount(name, {}, { formField: false, styles });
+      await settle();
+      const set = [...v.root().querySelectorAll('[style]')].flatMap((el) =>
+        [...Array(el.style.length).keys()].map((i) => el.style[i]).filter((p) => /^--(kb|lk|tj-ant)-/.test(p) && p !== '--kb-card-shadow')
+      );
+      expect(set).toEqual([]);
+      v.unmount();
+    }
+  });
+});
+
+describe("T40: Ant Alert's Custom type", () => {
+  test('Custom draws the alert in its own colours; left at the defaults, in the container colours', async () => {
+    const v = await mount('Alert', { message: 'Heads up', type: 'custom' }, { formField: false });
+    const root = v.root().querySelector('.tj-ant-root');
+    expect(root.classList.contains('tj-ant-alert--custom')).toBe(true);
+    expect(v.root().querySelector('.ant-alert-info')).toBeTruthy();
+    expect(root.style.getPropertyValue('--tj-alert-bg')).toBe('');
+    v.unmount();
+    const w = await mount(
+      'Alert',
+      { message: 'Heads up', type: 'custom' },
+      { formField: false, styles: { customBackgroundColor: '#fef3c7', customTextColor: '#78350f', customBorderColor: '#f59e0b' } }
+    );
+    const style = w.root().querySelector('.tj-ant-root').style;
+    expect(style.getPropertyValue('--tj-alert-bg')).toBe('#fef3c7');
+    expect(style.getPropertyValue('--tj-alert-fg')).toBe('#78350f');
+    expect(style.getPropertyValue('--tj-alert-border')).toBe('#f59e0b');
+  });
+
+  test('the Custom colours do nothing for the other types', async () => {
+    const v = await mount('Alert', { message: 'Saved', type: 'success' }, { formField: false, styles: { customBackgroundColor: '#fef3c7' } });
+    const root = v.root().querySelector('.tj-ant-root');
+    expect(root.classList.contains('tj-ant-alert--custom')).toBe(false);
+    expect(root.style.getPropertyValue('--tj-alert-bg')).toBe('');
+    expect(v.root().querySelector('.ant-alert-success')).toBeTruthy();
+  });
+});
+
+describe('V-02: the Kanban right-edge fade follows the content, not only the box', () => {
+  const observers = [];
+  let Original;
+  beforeEach(() => {
+    Original = window.ResizeObserver;
+    observers.length = 0;
+    window.ResizeObserver = class {
+      constructor(callback) {
+        this.callback = callback;
+        this.targets = new Set();
+        observers.push(this);
+      }
+      observe(el) {
+        this.targets.add(el);
+      }
+      unobserve(el) {
+        this.targets.delete(el);
+      }
+      disconnect() {
+        this.targets.clear();
+      }
+    };
+  });
+  afterEach(() => {
+    window.ResizeObserver = Original;
+  });
+  const size = (el, scrollWidth, clientWidth) => {
+    Object.defineProperty(el, 'scrollWidth', { configurable: true, get: () => scrollWidth });
+    Object.defineProperty(el, 'clientWidth', { configurable: true, get: () => clientWidth });
+  };
+  // Fires the observers watching `el`, as the browser does when it resizes.
+  const resized = (el) =>
+    act(() => {
+      observers.filter((o) => o.targets.has(el)).forEach((o) => o.callback([{ target: el }]));
+    });
+
+  test('a column that settles narrower clears the fade; a board that really overflows keeps it', async () => {
+    const v = await mount('Kanban', {}, { formField: false });
+    await settle();
+    const board = v.root().querySelector('.tj-ant-kb');
+    const column = board.querySelector('.tj-ant-kb-col');
+    expect(column).toBeTruthy();
+    // Real overflow: the fade shows.
+    size(board, 900, 555);
+    resized(board);
+    expect(board.classList.contains('has-more-right')).toBe(true);
+    // The columns settle to the measured width: the box does not resize, only its content does.
+    size(board, 555, 555);
+    expect(observers.some((o) => o.targets.has(column))).toBe(true);
+    resized(column);
+    expect(board.classList.contains('has-more-right')).toBe(false);
+    // And back to a real overflow from the content alone.
+    size(board, 1200, 555);
+    resized(column);
+    expect(board.classList.contains('has-more-right')).toBe(true);
+  });
+});
+
+describe('Calendar: each day keeps its number in place and its events inside its cell', () => {
+  const EVENTS = [
+    { date: '2026-10-14', title: '1 task due', type: 'warning' },
+    { date: '2026-10-15', title: '2 tasks due', type: 'error' },
+    { date: '2026-10-15', title: 'Review', type: 'success' },
+  ];
+  const cell = (v, date) => v.root().querySelector(`td[title="${date}"]`);
+
+  test('the card calendar draws dots under the number, the labels as the tooltip', async () => {
+    const v = await mount('Calendar', { value: '2026-10-14', fullscreen: false, events: EVENTS }, { formField: false });
+    expect(v.root().querySelector('.ant-picker-calendar-mini')).toBeTruthy();
+    const marks = cell(v, '2026-10-15').querySelector('.ant-picker-calendar-date-content .tj-ant-cal-marks');
+    expect(marks.getAttribute('title')).toBe('2 tasks due, Review');
+    expect([...marks.querySelectorAll('.tj-ant-cal-dots i')].map((i) => i.className)).toEqual(['is-error', 'is-success']);
+    expect(marks.querySelector('.tj-ant-cal-count').textContent).toBe('2');
+    // The number is drawn the same way in a marked and an unmarked day: before the marks, in its own element.
+    for (const date of ['2026-10-15', '2026-10-16']) {
+      expect(cell(v, date).querySelector('.ant-picker-calendar-date > .ant-picker-calendar-date-value')).toBeTruthy();
+    }
+    expect(cell(v, '2026-10-16').querySelector('.tj-ant-cal-marks')).toBeNull();
+  });
+
+  test('the month grid keeps the labels, at most three a day', async () => {
+    const many = Array.from({ length: 5 }, (_, i) => ({ date: '2026-10-20', title: `Task ${i + 1}` }));
+    const v = await mount('Calendar', { value: '2026-10-14', fullscreen: true, events: many }, { formField: false });
+    const items = [...cell(v, '2026-10-20').querySelectorAll('.tj-ant-cal-events li')].map((li) => li.textContent);
+    expect(items).toEqual(['Task 1', 'Task 2', 'Task 3']);
+    expect(cell(v, '2026-10-20').querySelector('.tj-ant-cal-count').textContent).toBe('5');
+  });
+});
+
+describe('Charts draw their hover tooltip in the popup layer, not inside the widget box', () => {
+  test.each(['Line', 'Column', 'Pie', 'DualAxes', 'Sparkline'])('%s: a themed tooltip layer while mounted, gone after', async (name) => {
+    const v = await mount(name, {}, { formField: false });
+    await settle();
+    const tips = () => layer()?.querySelectorAll('.tj-ant-chart-tips') ?? [];
+    expect(tips()).toHaveLength(1);
+    expect(tips()[0].classList.contains('tj-ant')).toBe(true);
+    v.unmount();
+    expect(tips()).toHaveLength(0);
+  });
+
+  test('the layer carries the component token overrides', async () => {
+    await mount('Line', {}, { formField: false, styles: { colorText: '#123456' } });
+    await settle();
+    expect(layer().querySelector('.tj-ant-chart-tips').style.getPropertyValue('--tj-ant-color-text')).toBe('#123456');
+  });
+});

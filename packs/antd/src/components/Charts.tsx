@@ -19,16 +19,12 @@ import { ChartLoader } from '../lib/Loading';
 import { str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
 import { useClickHighlight } from '../lib/chartHighlight';
+import { tooltipInteraction, useChartTheme, useTooltipLayer, type Theme } from '../lib/chartTheme';
 
 // G2's (Ant's charting engine) own categorical palette after its first colour, which is antd's primary (or the
 // component's colorPrimary style).
 const PALETTE = ['#00C9C9', '#F0884D', '#D580FF', '#7863FF', '#60C42D', '#BD8F24', '#FF80CA', '#2491B3', '#17C76F'];
 
-type Theme = { brand: string; text: string; muted: string; axis: string; border: string; surface: string; dark: boolean };
-const LIGHT: Theme = { brand: '#1677ff', text: 'rgba(0, 0, 0, 0.88)', muted: 'rgba(0, 0, 0, 0.45)', axis: 'rgba(0, 0, 0, 0.65)', border: '#f0f0f0', surface: '#ffffff', dark: false };
-
-// The chart draws on a canvas, which cannot read CSS variables: read antd's tokens off the element (stock Ant, or the
-// component's style overrides; dark under .tj-ant-dark), and again when the root's class or style changes.
 /** Whether the element is narrower than `below` px, followed as it resizes. */
 const useNarrow = (ref: React.RefObject<HTMLElement>, below: number) => {
   const [narrow, setNarrow] = useState(false);
@@ -42,45 +38,6 @@ const useNarrow = (ref: React.RefObject<HTMLElement>, below: number) => {
     return () => observer.disconnect();
   }, [ref, below]);
   return narrow;
-};
-
-const useChartTheme = (ref: React.RefObject<HTMLElement>) => {
-  const [theme, setTheme] = useState<Theme>(LIGHT);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const root = (el.closest('.tj-ant-root') as HTMLElement | null) ?? el;
-    const read = () => {
-      const cs = getComputedStyle(el);
-      // Resolve to rgb() through the element itself, so color-mix() comes back as a plain colour.
-      const probe = (name: string, fallback: string) => {
-        const value = cs.getPropertyValue(name).trim();
-        if (!value) return fallback;
-        el.style.setProperty('--tj-ant-probe', value);
-        el.style.color = 'var(--tj-ant-probe)';
-        const out = getComputedStyle(el).color;
-        el.style.removeProperty('color');
-        el.style.removeProperty('--tj-ant-probe');
-        return out || fallback;
-      };
-      const next: Theme = {
-        brand: probe('--ant-color-primary', LIGHT.brand),
-        text: probe('--ant-color-text', LIGHT.text),
-        muted: probe('--ant-color-text-tertiary', LIGHT.muted),
-        // Axis labels and titles in antd's secondary text: the tertiary (45% black) read as very faint on a canvas.
-        axis: probe('--ant-color-text-secondary', LIGHT.axis),
-        border: probe('--ant-color-split', LIGHT.border),
-        surface: probe('--ant-color-bg-container', LIGHT.surface),
-        dark: root.classList.contains('tj-ant-dark'),
-      };
-      setTheme((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
-    };
-    read();
-    const observer = new MutationObserver(read);
-    observer.observe(root, { attributes: true, attributeFilter: ['class', 'style'] });
-    return () => observer.disconnect();
-  }, [ref]);
-  return theme;
 };
 
 // Samples a fresh drop shows (x and y are the charts' default fields).
@@ -170,7 +127,8 @@ const Frame = ({
 const useCommon = (
   p: ReturnType<typeof useChartProps>,
   theme: Theme,
-  series: { color?: string; y: string }
+  series: { color?: string; y: string },
+  tips?: HTMLElement
 ) => {
   const common = useMemo(() => {
     const fmt = (v: unknown) => {
@@ -184,7 +142,10 @@ const useCommon = (
       scale: { color: { range: [theme.brand, ...PALETTE] } },
       axis: { x: { ...axisStyle, grid: false }, y: { ...axisStyle, labelFormatter: fmt } },
       legend: p.legend === 'none' || !series.color ? false : { color: { position: p.legend, itemLabelFill: theme.text } },
-      tooltip: { valueFormatter: fmt },
+      // One y item per series under the x title: a bare { valueFormatter } left G2's default item, which drew the
+      // category twice and no value on a Column.
+      tooltip: { items: [{ channel: 'y', valueFormatter: fmt }] },
+      interaction: tooltipInteraction(tips),
       label: p.label ? { text: (d: Row) => fmt(d[series.y]), fill: theme.text, position: 'inside' } : undefined,
       viewStyle: { viewFill: 'transparent' },
       onEvent: (_chart: unknown, event: { type?: string; data?: { data?: Row } }) => {
@@ -194,7 +155,7 @@ const useCommon = (
         }
       },
     };
-  }, [p.yFormatter, p.currency, p.legend, p.label, theme, series.color, series.y]);
+  }, [p.yFormatter, p.currency, p.legend, p.label, theme, series.color, series.y, tips]);
   // A fresh scale on every render: Ant's charts write into the scale they are given (a Line of all zeros sets
   // y.domainMax 1), and a memoised one kept that limit once the real data came, drawing the lines off the plot.
   // Ant compares configs by content, so a new object with the same content does not redraw the chart.
@@ -212,9 +173,10 @@ export const Column = () => {
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
-  const common = useCommon(p, theme, s);
+  const common = useCommon(p, theme, s, tips);
   const r = Math.max(0, Number(radius) || 0);
   const Chart = horizontal ? AntBar : AntColumn;
   const marked = p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [s.x, s.color] }) } : {};
@@ -245,9 +207,10 @@ export const Line = () => {
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
-  const common = useCommon(p, theme, s);
+  const common = useCommon(p, theme, s, tips);
   // Highlighted: the clicked line stays and the others fade; a clicked point is marked. With Point off the points are
   // there to be clicked but drawn only once clicked.
   const h = p.highlight;
@@ -284,9 +247,10 @@ export const Area = () => {
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
-  const common = useCommon(p, theme, s);
+  const common = useCommon(p, theme, s, tips);
   // Highlighted: the clicked area (its series) stays and the others fade.
   const h = p.highlight;
   const bySeries = { keys: [s.color], series: s.color };
@@ -328,6 +292,7 @@ export const Pie = () => {
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const narrow = useNarrow(ref, 420);
   const rows = toRows(rawData)
     .map((r) => ({ ...r, [angleField]: toNumber(r[angleField]) ?? 0 }))
@@ -353,6 +318,7 @@ export const Pie = () => {
           legend={legend === 'none' ? false : { color: { position: legend === 'right' && narrow ? 'bottom' : legend, itemLabelFill: theme.text, rowPadding: 6 } }}
           label={label ? { text: (d: Row) => `${Math.round(((d[angleField] as number) / total) * 100)}%`, fill: '#fff', position: 'inside' } : false}
           tooltip={{ title: (d: Row) => str(d[colorField]), items: [{ field: angleField, valueFormatter: fmt }] }}
+          interaction={tooltipInteraction(tips)}
           style={{ stroke: theme.surface, lineWidth: 2, ...(highlight ? { fillOpacity: highlight.opacity({ keys: [colorField] }) } : {}) }}
           onEvent={(_chart: unknown, event: { type?: string; data?: { data?: Row } }) => {
             if (event?.type === 'element:click') {
@@ -376,9 +342,10 @@ export const Bar = () => {
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
-  const common = useCommon(p, theme, s);
+  const common = useCommon(p, theme, s, tips);
   const r = Math.max(0, Number(radius) || 0);
   return (
     <AntProvider tokens={tokens} fill>
@@ -407,10 +374,11 @@ export const DualAxes = () => {
   ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const [left = 'y', right = ''] = yFields(p.yField);
   const kinds = toArray(geometry).map(str);
-  const common = useCommon(p, theme, { y: left });
+  const common = useCommon(p, theme, { y: left }, tips);
   const fmt = (v: unknown) => {
     const n = toNumber(v);
     return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency);
@@ -431,6 +399,10 @@ export const DualAxes = () => {
           xField={p.xField}
           axis={{ x: { labelFill: theme.axis, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border } }}
           legend={p.legend === 'none' ? false : { color: { position: p.legend, itemLabelFill: theme.text } }}
+          // The legend's markers come from the colour scale (one entry per y field, in layer order); the layers set
+          // their colours only through style, so the left series' marker was G2's default blue next to brand bars.
+          scale={{ color: { range: [theme.brand, PALETTE[0]] } }}
+          interaction={tooltipInteraction(tips)}
           onEvent={(common as { onEvent: unknown }).onEvent as never}
           children={[layer(left, kinds[0] || 'column', theme.brand, 'left'), ...(right ? [layer(right, kinds[1] || 'line', PALETTE[0], 'right')] : [])] as never}
         />
@@ -447,6 +419,7 @@ export const Funnel = () => {
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const y = yFields(p.yField)[0] ?? 'value';
   const rows = toRows(p.rawData).map((r) => ({ ...r, [y]: toNumber(r[y]) ?? 0 }));
   const first = (rows[0]?.[y] as number) || 1;
@@ -467,6 +440,7 @@ export const Funnel = () => {
           legend={false}
           label={{ text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])} (${Math.round(((d[y] as number) / first) * 100)}%)`, fill: '#fff', position: 'inside' }}
           tooltip={{ items: [{ field: y, valueFormatter: fmt }] }}
+          interaction={tooltipInteraction(tips)}
           style={p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [p.xField] }) } : undefined}
           onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
             if (e?.type === 'element:click') {
@@ -523,9 +497,10 @@ export const Radar = () => {
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
-  const common = useCommon(p, theme, s);
+  const common = useCommon(p, theme, s, tips);
   // Highlighted: the clicked series stays and the others fade; a clicked point stays and the other points fade.
   const h = p.highlight;
   return (
@@ -538,7 +513,8 @@ export const Radar = () => {
           yField={s.y}
           colorField={s.color}
           area={area ? { style: { fillOpacity: h ? h.opacity({ keys: [s.color], series: s.color }, 0.2) : 0.2 } } : undefined}
-          point={h ? { size: 3, style: { opacity: h.opacity({ keys: [s.x, s.y, s.color], rowOnly: true }) } } : { size: 3 }}
+          // One series: points in the brand like its line (they had no colour and drew G2's default blue).
+          point={{ size: 3, style: { ...(s.color ? {} : { fill: theme.brand, stroke: theme.brand }), ...(h ? { opacity: h.opacity({ keys: [s.x, s.y, s.color], rowOnly: true }) } : {}) } }}
           scale={{ x: { padding: 0.5, align: 0 }, y: { nice: true }, color: { range: [theme.brand, ...PALETTE] } }}
           axis={{ x: { grid: true, gridStroke: theme.border, labelFill: theme.axis, labelFillOpacity: 1 }, y: { gridStroke: theme.border, labelFill: theme.axis, labelFillOpacity: 1, gridLineWidth: 1 } }}
           style={{ lineWidth: 2, stroke: s.color ? undefined : theme.brand, fill: s.color ? undefined : theme.brand, ...(h ? { strokeOpacity: h.opacity({ keys: [s.color], series: s.color }) } : {}) }}
@@ -557,9 +533,10 @@ export const Scatter = () => {
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const y = yFields(p.yField)[0] ?? 'y';
   const rows = toRows(p.rawData).map((r) => ({ ...r, [p.xField]: toNumber(r[p.xField]) ?? r[p.xField], [y]: toNumber(r[y]) ?? r[y] }));
-  const common = useCommon(p, theme, { color: p.colorField || undefined, y });
+  const common = useCommon(p, theme, { color: p.colorField || undefined, y }, tips);
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
@@ -610,6 +587,7 @@ export const Heatmap = () => {
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(rawData).map((r) => ({ ...r, [colorField]: toNumber(r[colorField]) ?? 0 }));
   return (
     <AntProvider tokens={tokens} fill>
@@ -626,6 +604,7 @@ export const Heatmap = () => {
           style={highlight ? { inset: 1, fillOpacity: highlight.opacity({ keys: [xField, yField] }) } : { inset: 1 }}
           axis={{ x: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false }, y: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false } }}
           legend={{ color: { itemLabelFill: theme.text } }}
+          interaction={tooltipInteraction(tips)}
           label={label ? { text: colorField, fill: theme.text, position: 'inside' } : undefined}
           onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
             if (e?.type === 'element:click') {

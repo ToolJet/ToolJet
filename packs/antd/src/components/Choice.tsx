@@ -42,7 +42,7 @@ const useFittedValue = (value: unknown, fit: (n: number) => number, setValue: (v
 // option clears the value, with onChange.
 export const RadioGroup = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Shipping' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
     { label: 'Standard', value: 'standard' },
     { label: 'Express', value: 'express' },
     { label: 'Overnight', value: 'overnight' },
@@ -117,7 +117,7 @@ export const RadioGroup = (props: Record<string, unknown>) => {
 // Ant's Segmented: options, value, block, size, vertical; event onChange.
 export const Segmented = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'View' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
     { label: 'Daily', value: 'daily' },
     { label: 'Weekly', value: 'weekly' },
     { label: 'Monthly', value: 'monthly' },

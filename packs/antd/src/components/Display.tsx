@@ -19,6 +19,7 @@ import {
 import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { THEME_COLOR, useThemeColor } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver } from '../lib/Loading';
 import { str, toArray, type Row } from '../lib/data';
 import { formatCell, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
@@ -92,7 +93,13 @@ export const Badge = () => {
 export const Alert = () => {
   const [message] = ToolJet.useStateString({ name: 'message', label: 'Message', initialValue: 'A new version is available.' });
   const [description] = ToolJet.useStateString({ name: 'description', label: 'Description', initialValue: '' });
-  const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['info', 'success', 'warning', 'error'], initialValue: 'info' });
+  const [type] = ToolJet.useStateEnumeration({
+    name: 'type',
+    label: 'Type',
+    enumDefinition: ['info', 'success', 'warning', 'error', 'custom'],
+    enumLabels: { info: 'Info', success: 'Success', warning: 'Warning', error: 'Error', custom: 'Custom' },
+    initialValue: 'info',
+  });
   const [showIcon] = ToolJet.useStateBoolean({ name: 'showIcon', label: 'Show icon', initialValue: true });
   const [closable] = ToolJet.useStateBoolean({ name: 'closable', label: 'Closable', initialValue: false });
   const [banner] = ToolJet.useStateBoolean({ name: 'banner', label: 'Banner', initialValue: false });
@@ -102,6 +109,13 @@ export const Alert = () => {
   const onActionClicked = ToolJet.useEventCallback({ name: 'onActionClicked' });
   const { disabled, loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
+  // UI 2.0's Custom variant: the alert's own colours, shown while Type is Custom. Left at their defaults they draw
+  // the container's surface, text and border.
+  const custom = type === 'custom';
+  const customWhen = { section: 'Custom alert', visibleWhen: { key: 'type', value: 'custom' } };
+  const customBg = useThemeColor('customBackgroundColor', 'Background', THEME_COLOR.surface, customWhen);
+  const customText = useThemeColor('customTextColor', 'Text and icon color', THEME_COLOR.text, customWhen);
+  const customBorder = useThemeColor('customBorderColor', 'Border color', THEME_COLOR.border, customWhen);
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 5 });
   // dismissed changes before onClose fires, so its handler reads the alert as gone.
   const close = () => {
@@ -114,12 +128,25 @@ export const Alert = () => {
   // Fills its box (no band under a short message) and scrolls a long one inside it: it was drawn at its natural height
   // and the host cut what did not fit.
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-alert">
+    <AntProvider
+      tokens={tokens}
+      fill
+      className={custom ? 'tj-ant-alert tj-ant-alert--custom' : 'tj-ant-alert'}
+      style={
+        custom
+          ? ({
+              ...(customBg ? { '--tj-alert-bg': customBg } : {}),
+              ...(customText ? { '--tj-alert-fg': customText } : {}),
+              ...(customBorder ? { '--tj-alert-border': customBorder } : {}),
+            } as React.CSSProperties)
+          : undefined
+      }
+    >
       <SpinOver loading={loading} as="fill">
         <AntAlert
           message={message || description}
           description={message && description ? description : undefined}
-          type={type as 'info'}
+          type={(custom ? 'info' : type) as 'info'}
           showIcon={showIcon}
           closable={closable}
           banner={banner}

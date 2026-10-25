@@ -18,7 +18,7 @@ const Control = React.forwardRef<RefSelectProps, React.ComponentProps<typeof Ant
 // notFoundContent; events onChange (also on clear), onSelect, onClear, onSearch, onOpenChange.
 export const Select = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Department' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: [
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
     { label: 'Design', value: 'design' },
     { label: 'Engineering', value: 'engineering' },
     { label: 'Marketing', value: 'marketing' },

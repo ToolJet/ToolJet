@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { Button } from 'antd';
 import { AntProvider } from '../lib/AntProvider';
+import { THEME_COLOR as T, useThemeColor, useThemeNumber } from '../lib/themeStyles';
 import { SpinOver } from '../lib/Loading';
 import {
   areaShapes,
@@ -204,11 +205,11 @@ export const Map = () => {
   const onShapeClicked = ToolJet.useEventCallback({ name: 'onShapeClicked' });
   const onLocationPicked = ToolJet.useEventCallback({ name: 'onLocationPicked' });
   const onBoundsChange = ToolJet.useEventCallback({ name: 'onBoundsChange' });
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Background (behind the tiles)', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Border color', inspector: 'color', initialValue: '' });
-  const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Accent (pins without a status, the selection)', inspector: 'color', initialValue: '' });
-  const clusterColor = ToolJet.useStyleString({ name: 'clusterColor', label: 'Group count color', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Radius', initialValue: '' });
+  const backgroundColor = useThemeColor('backgroundColor', 'Background (behind the tiles)', T.surfaceMuted);
+  const borderColor = useThemeColor('borderColor', 'Border color', T.borderWeak);
+  const accent = useThemeColor('accentColor', 'Accent (pins without a status, the selection)', T.brand);
+  const clusterColor = useThemeColor('clusterColor', 'Group count color', T.text);
+  const radius = useThemeNumber('borderRadius', 'Radius', 'Theme radius + 4 (10 in stock Ant)');
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 42 });
 
   const frameRef = useRef<HTMLDivElement>(null);

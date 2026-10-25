@@ -516,14 +516,27 @@ export const Calendar = () => {
             if (info.type !== 'date') return info.originNode;
             const list = byDate.get(d.format('YYYY-MM-DD'));
             if (!list) return null;
+            const titles = list.map((e) => str(e.title)).filter(Boolean).join(', ');
+            const tone = (e: Row) => `is-${str(e.type) || 'processing'}`;
+            // Each cell keeps its number in place and its events inside it (labels ran into the next day and pushed
+            // the number up): the card calendar draws dots under the number, the month grid its labels cut with an
+            // ellipsis, or a dot and the count when its cells are narrow (pack.css). The labels are the tooltip.
             return (
-              <ul className="tj-ant-cal-events">
-                {list.slice(0, 3).map((e, i) => (
-                  <li key={i} className={`is-${str(e.type) || 'processing'}`}>
-                    {str(e.title)}
-                  </li>
-                ))}
-              </ul>
+              <div className="tj-ant-cal-marks" title={titles}>
+                <ul className="tj-ant-cal-events">
+                  {list.slice(0, 3).map((e, i) => (
+                    <li key={i} className={tone(e)}>
+                      {str(e.title)}
+                    </li>
+                  ))}
+                </ul>
+                <span className="tj-ant-cal-dots" aria-hidden>
+                  {list.slice(0, 3).map((e, i) => (
+                    <i key={i} className={tone(e)} />
+                  ))}
+                </span>
+                <span className={`tj-ant-cal-count ${tone(list[0])}`}>{list.length}</span>
+              </div>
             );
           }}
           onSelect={(d, info) => {

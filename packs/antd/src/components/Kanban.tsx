@@ -4,6 +4,7 @@ import { CloseOutlined, DownOutlined, LeftOutlined, PlusOutlined, RightOutlined,
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver } from '../lib/Loading';
+import { RADIUS_LG_HINT } from '../lib/themeStyles';
 import { cardClamp, cardDateLabel, cardDetails, type BoardCard } from '../lib/ui2/display/kanban/board';
 import { BADGE_BY_WORD, isSet } from '../lib/ui2/display/kanban/look';
 import {
@@ -317,6 +318,7 @@ export const Kanban = () => {
   const tokens = useTokenStyles();
   const kb = useKanban({
     dataName: 'dataSource',
+    radiusHints: { column: RADIUS_LG_HINT, card: RADIUS_LG_HINT },
     sample: [
       { id: 1, title: 'Draft the brief', description: 'Goals, audience and timeline', status: 'todo', priority: 'High', owner: 'Ada Lovelace' },
       { id: 2, title: 'Collect references', description: 'Three competitor sites', status: 'todo', priority: 'Low', owner: 'Alan Turing' },
