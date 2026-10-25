@@ -1,0 +1,1405 @@
+/* Layout around antd's own CSS (antd.css): component roots, filling the widget box, and the few pieces ToolJet adds
+   (the stat trend, selected rows, chart frames). Colours only through antd's token variables. */
+/* The component root; popups carry .tj-ant for the token variables only. */
+.tj-ant-root {
+  width: 100%;
+  min-width: 0;
+  font-family: var(--ant-font-family);
+  font-size: var(--ant-font-size);
+  color: var(--ant-color-text);
+}
+.tj-ant--fill {
+  height: 100%;
+}
+/* A box-sized component: content taller than the widget box scrolls inside it (the host cuts what overflows). */
+.tj-ant-scroll {
+  overflow: auto;
+  box-sizing: border-box;
+}
+/* Lists and tables fill the box: a bordered list's border, and a table's surface with its pagination at the foot,
+   reach its bottom instead of ending in a blank band. */
+.tj-ant-list.tj-ant--fill > .ant-list {
+  min-height: 100%;
+  box-sizing: border-box;
+}
+.tj-ant-list.tj-ant--fill > .tj-ant-spin-block {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.tj-ant-list.tj-ant--fill > .tj-ant-spin-block > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+.tj-ant-list.tj-ant--fill > .tj-ant-spin-block > .ant-spin-container > .ant-list {
+  flex: 1 0 auto;
+}
+.tj-ant-table.tj-ant--fill > .ant-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.tj-ant-table.tj-ant--fill > .ant-table-wrapper > .ant-spin-nested-loading,
+.tj-ant-table.tj-ant--fill > .ant-table-wrapper > .ant-spin-nested-loading > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+.tj-ant-table.tj-ant--fill > .ant-table-wrapper > .ant-spin-nested-loading > .ant-spin-container > .ant-table {
+  flex: 1 0 auto;
+}
+/* Alert: its surface fills the box, and a long description scrolls inside it. */
+.tj-ant-alert .ant-alert {
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+}
+/* The Custom type: the alert's own colours (--tj-alert-*, its Custom alert styles), else the container's surface,
+   text and border. */
+.tj-ant-alert--custom .ant-alert {
+  background: var(--tj-alert-bg, var(--ant-color-bg-container));
+  border: var(--ant-line-width) var(--ant-line-type) var(--tj-alert-border, var(--ant-color-border));
+}
+.tj-ant-alert--custom .ant-alert .ant-alert-message,
+.tj-ant-alert--custom .ant-alert .ant-alert-description,
+.tj-ant-alert--custom .ant-alert .ant-alert-icon,
+.tj-ant-alert--custom .ant-alert .ant-alert-close-icon .anticon {
+  color: var(--tj-alert-fg, var(--ant-color-text));
+}
+.tj-ant-center {
+  display: flex;
+  align-items: center;
+}
+.tj-ant-center.tj-ant-start {
+  justify-content: flex-start;
+}
+.tj-ant-center:not(.tj-ant-start) > :only-child {
+  margin-inline: auto;
+}
+.tj-ant-center > .ant-btn-block {
+  width: 100%;
+}
+.tj-ant-required {
+  color: var(--ant-color-error);
+}
+
+/* Statistic */
+.tj-ant-stat {
+  height: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+/* One line, shrunk to fit by useFitText, cut only past that. */
+.tj-ant-stat .ant-statistic-content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tj-ant-stat--card {
+  padding: 15px 20px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-container);
+}
+.tj-ant-stat-trend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 13px;
+}
+.tj-ant-stat-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 500;
+  color: var(--ant-color-text-secondary);
+}
+.tj-ant-stat-change.is-up {
+  color: var(--ant-color-success);
+}
+.tj-ant-stat-change.is-down {
+  color: var(--ant-color-error);
+}
+.tj-ant-stat-extra {
+  color: var(--ant-color-text-description);
+}
+/* A box too short for the title over the figure (Display.tsx Statistic, fitText.ts useFitLayout): less padding and no
+   gaps, then the title beside the figure on one line, the trend after it. */
+.tj-ant-stat--card.is-short {
+  padding-block: 8px;
+}
+.tj-ant-stat.is-short .ant-statistic-title {
+  margin-bottom: 0;
+}
+.tj-ant-stat.is-short .tj-ant-stat-trend {
+  margin-top: 0;
+}
+.tj-ant-stat.is-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tj-ant-stat.is-inline > .ant-statistic {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.tj-ant-stat.is-inline .ant-statistic-title {
+  flex: 1 1 0;
+  min-width: 32px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tj-ant-stat.is-inline .ant-statistic-content {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.tj-ant-stat.is-inline .tj-ant-stat-trend {
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Skeleton bars in a line of text (Loading.tsx TextBone): the line keeps the text's height, the bar a share of its
+   width (a title, a figure, a trend line). Ant's Skeleton.Input puts the class on its wrapper and its bar. */
+.tj-ant-bone.ant-skeleton-element {
+  width: 50%;
+  max-width: 100%;
+  vertical-align: middle;
+  /* The line's own size (Ant's Skeleton sets its base font size). */
+  font-size: inherit;
+}
+.tj-ant-bone.ant-skeleton-element.is-figure {
+  width: 60%;
+}
+.tj-ant-bone.ant-skeleton-element.is-trend {
+  width: 40%;
+}
+.tj-ant-bone.ant-skeleton-element > .ant-skeleton-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 0.8em;
+  line-height: normal;
+}
+.tj-ant-stat-trend > .tj-ant-bone-line {
+  flex: 1 1 auto;
+}
+.tj-ant-stat.is-inline .tj-ant-stat-trend > .tj-ant-bone-line {
+  flex: 0 0 48px;
+}
+.tj-ant-stat.is-inline .ant-statistic-content .tj-ant-bone.is-figure {
+  width: 64px;
+}
+
+.tj-ant-badge-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Progress */
+.tj-ant-progress-line {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.tj-ant-progress-line .ant-progress {
+  margin: 0;
+}
+.tj-ant-progress-title {
+  color: var(--ant-color-text-secondary);
+  margin-bottom: 2px;
+}
+
+/* Table and List: the selected row */
+.tj-ant-table .ant-table-tbody > tr {
+  cursor: pointer;
+}
+.tj-ant-table .ant-table-tbody > tr.tj-ant-row-selected > td {
+  background: var(--ant-control-item-bg-active);
+}
+.tj-ant-item {
+  cursor: pointer;
+  transition: background var(--ant-motion-duration-mid);
+}
+.tj-ant-item:hover {
+  background: var(--ant-control-item-bg-hover);
+}
+.tj-ant-item.is-selected {
+  background: var(--ant-control-item-bg-active);
+}
+.tj-ant-list .ant-list-bordered .ant-list-item.tj-ant-item--rows,
+.tj-ant-list .ant-list-item.tj-ant-item--rows {
+  padding: 0;
+}
+
+/* Containers fill the widget box; their drop areas fill the rest */
+.tj-ant-tabs .ant-tabs {
+  height: 100%;
+}
+.tj-ant-tabs .ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+}
+.tj-ant-tabs .ant-tabs-content,
+.tj-ant-tabs .ant-tabs-tabpane {
+  height: 100%;
+}
+.tj-ant-card .ant-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+/* A narrow card's head wraps its extra text (a section's description) under the title instead of cutting the title
+   to "Where it ..." beside it. */
+.tj-ant-card .ant-card-head-wrapper {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+.tj-ant-card .ant-card-head-title {
+  flex: 1 0 auto;
+  max-width: 100%;
+}
+.tj-ant-card .ant-card-extra {
+  margin-inline-start: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tj-ant-card .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
+}
+.tj-ant-modal-content {
+  margin: 0 0 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+/* Charts */
+.tj-ant-chart {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tj-ant-chart-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.tj-ant-chart-body > div:not(.ant-empty) {
+  /* @ant-design/plots sizes its container `height: inherit`, which is auto here: pin it to the body for autoFit. */
+  position: absolute !important;
+  inset: 0;
+  height: auto !important;
+}
+.tj-ant-chart-body > .ant-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+/* Upload, Collapse, Menu, Spin, Image, Calendar, Tree, Carousel, Transfer */
+.tj-ant-upload.tj-ant--fill .ant-form-item,
+.tj-ant-upload.tj-ant--fill .ant-form-item-row,
+.tj-ant-upload.tj-ant--fill .ant-form-item-control,
+.tj-ant-upload.tj-ant--fill .ant-form-item-control-input-content {
+  height: 100%;
+}
+/* The dropzone takes the space left above the help or validation message, which stays in the box. */
+.tj-ant-upload.tj-ant--fill .ant-form-item-control {
+  display: flex;
+  flex-direction: column;
+}
+.tj-ant-upload.tj-ant--fill .ant-form-item-control-input {
+  flex: 1;
+  min-height: 0;
+}
+.tj-ant-otp {
+  display: inline-block;
+}
+.tj-ant-upload.tj-ant--fill .ant-form-item-row {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+.tj-ant-upload.tj-ant--fill .ant-form-item-control {
+  flex: 1;
+  min-height: 0;
+}
+.tj-ant-upload .ant-upload-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+/* The dropzone takes what the box leaves (its border always drawn); its centred content clips inside it. */
+.tj-ant-upload .ant-upload-drag {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.tj-ant-upload .ant-upload-list {
+  overflow: auto;
+  max-height: 40%;
+}
+.tj-ant-collapse,
+.tj-ant-menu,
+.tj-ant-tree,
+.tj-ant-calendar {
+  overflow: auto;
+}
+/* The card calendar fills its box: the month's rows share the height (Ant fixes them at 256px, so a shorter box cut
+   the last week), down to their natural size, below which the calendar scrolls inside the box. */
+.tj-ant-calendar .ant-picker-calendar-mini {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-panel,
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-panel > div,
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-content {
+  flex: 1 1 auto;
+  height: 0;
+}
+/* Ant pads the month 8px above and below; 4px lets a 300px box hold all six weeks without a scroll. */
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-panel .ant-picker-body {
+  padding-block: 4px;
+}
+.tj-ant-menu .ant-menu-inline,
+.tj-ant-menu .ant-menu-vertical {
+  min-height: 100%;
+  border-inline-end: 0 !important;
+}
+.tj-ant-spin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-inline: auto;
+}
+.tj-ant-spin-tip {
+  color: var(--ant-color-text-secondary);
+}
+.tj-ant-image .ant-image {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--ant-border-radius);
+}
+.tj-ant-image .ant-image-img {
+  height: 100%;
+}
+.tj-ant-cal-events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.tj-ant-cal-events li {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-inline-start: 10px;
+  position: relative;
+}
+.tj-ant-cal-events li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ant-color-primary);
+}
+.tj-ant-cal-events li.is-success::before {
+  background: var(--ant-color-success);
+}
+.tj-ant-cal-events li.is-warning::before {
+  background: var(--ant-color-warning);
+}
+.tj-ant-cal-events li.is-error::before {
+  background: var(--ant-color-error);
+}
+/* The compact marks: dots (the card calendar) and a dot with the count (narrow month-grid cells); hidden by default. */
+.tj-ant-cal-dots,
+.tj-ant-cal-count {
+  display: none;
+}
+.tj-ant-cal-dots i,
+.tj-ant-cal-count::before {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ant-color-primary);
+}
+.tj-ant-cal-count::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+}
+.tj-ant-cal-dots i.is-success,
+.tj-ant-cal-count.is-success::before {
+  background: var(--ant-color-success);
+}
+.tj-ant-cal-dots i.is-warning,
+.tj-ant-cal-count.is-warning::before {
+  background: var(--ant-color-warning);
+}
+.tj-ant-cal-dots i.is-error,
+.tj-ant-cal-count.is-error::before {
+  background: var(--ant-color-error);
+}
+/* Card calendar: the marks sit under the number, out of the cell's flow, so every day keeps its number in the same
+   place (a label pushed a marked day's number up and ran into the next day). */
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-calendar-date {
+  position: relative;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-calendar-date-content {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 1px;
+  height: 4px;
+  pointer-events: none;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .tj-ant-cal-events {
+  display: none;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .tj-ant-cal-dots {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+.tj-ant-calendar .ant-picker-calendar-mini .ant-picker-cell-selected .tj-ant-cal-dots i {
+  background: currentColor;
+}
+/* Month grid: labels cut with an ellipsis; a cell too narrow for a label shows a dot and the count. */
+.tj-ant-calendar .ant-picker-calendar-full .ant-picker-calendar-date-content {
+  container-type: inline-size;
+}
+@container (max-width: 72px) {
+  .tj-ant-calendar .tj-ant-cal-events {
+    display: none;
+  }
+  .tj-ant-calendar .tj-ant-cal-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--ant-color-text-secondary);
+  }
+}
+.tj-ant-carousel .ant-carousel,
+.tj-ant-carousel .slick-slider,
+.tj-ant-carousel .slick-list,
+.tj-ant-carousel .slick-track,
+.tj-ant-carousel .slick-slide,
+.tj-ant-carousel .slick-slide > div,
+.tj-ant-slide {
+  height: 100%;
+}
+.tj-ant-slide {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-fill-tertiary);
+}
+.tj-ant-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tj-ant-slide-caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 24px 16px 28px;
+  color: #fff;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+}
+.tj-ant-transfer .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+}
+.tj-ant-transfer .ant-transfer {
+  flex: 1;
+  min-height: 0;
+}
+/* The validation message under the lists, as Form.Item draws its help. */
+.tj-ant-transfer-error {
+  color: var(--ant-color-error);
+  font-size: var(--ant-font-size);
+  line-height: var(--ant-line-height);
+  margin-top: 2px;
+}
+.tj-ant-transfer .ant-transfer-list {
+  flex: 1;
+  height: 100%;
+}
+
+/* Kanban: the shadcn pack's board (UI 2.0's) in Ant tokens. Each Kanban style (a --kb-* variable) replaces its
+   token. */
+.tj-ant-kb {
+  position: relative;
+  display: flex;
+  gap: var(--kb-col-gap, 16px);
+  align-items: stretch;
+  height: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.tj-ant-kb.has-more-right {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+}
+.tj-ant-kb-none {
+  margin: auto;
+}
+.tj-ant-kb-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding: 12px;
+  border: 1px solid var(--kb-col-border, var(--ant-color-border-secondary));
+  border-radius: var(--kb-col-radius, var(--ant-border-radius-lg));
+  background: var(--kb-col-bg, var(--ant-color-fill-quaternary));
+  overflow: hidden;
+  transition:
+    background var(--ant-motion-duration-mid),
+    border-color var(--ant-motion-duration-mid);
+}
+.tj-ant-kb.is-compact .tj-ant-kb-col,
+.tj-ant-kb.is-compact .tj-ant-kb-list {
+  gap: 6px;
+}
+.tj-ant-kb-col.is-fill {
+  flex: 1 1 0;
+}
+.tj-ant-kb-col.is-over {
+  background: var(--ant-color-primary-bg);
+  border-color: var(--ant-color-primary-border);
+}
+.tj-ant-kb-col.is-collapsed {
+  flex: 0 0 152px;
+  width: 152px;
+  cursor: pointer;
+}
+.tj-ant-kb-col.is-collapsed:hover {
+  border-color: var(--ant-color-primary-border-hover);
+}
+/* Drawn inside the column: the board's scroll area clipped an outside ring at its left and top edges. */
+.tj-ant-kb-col:focus-visible {
+  outline: 2px solid var(--ant-color-primary-border);
+  outline-offset: -2px;
+}
+.tj-ant-kb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+  padding: 0 4px;
+}
+.tj-ant-kb-col.is-collapsed .tj-ant-kb-head {
+  padding: 0;
+}
+.tj-ant-kb-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.tj-ant-kb-title .ant-typography {
+  color: var(--kb-col-title, var(--ant-color-text));
+}
+.tj-ant-kb-head-end {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+}
+.tj-ant-kb .tj-ant-kb-count .ant-badge-count {
+  /* Ant's neutral fill and text read in light and dark (its primary text on primary bg is under 3:1 in dark). */
+  background: var(--kb-count-bg, var(--ant-color-fill-secondary));
+  color: var(--kb-count-fg, var(--ant-color-text));
+  box-shadow: none;
+  font-variant-numeric: tabular-nums;
+}
+.tj-ant-kb-fold {
+  color: var(--ant-color-text-tertiary);
+  opacity: 0;
+  transition: opacity var(--ant-motion-duration-mid);
+}
+.tj-ant-kb-col:hover .tj-ant-kb-fold,
+.tj-ant-kb-fold:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .tj-ant-kb-fold {
+    opacity: 1;
+  }
+}
+.tj-ant-kb-show {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ant-font-size-sm);
+}
+.tj-ant-kb-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  margin: -4px;
+  padding: 4px;
+  overflow-y: auto;
+}
+.tj-ant-kb-list > * {
+  flex-shrink: 0;
+}
+.tj-ant-kb-list.has-more-below {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+}
+.tj-ant-kb-empty {
+  padding: 24px 12px;
+  border: 1px dashed var(--ant-color-border);
+  border-radius: var(--ant-border-radius);
+  color: var(--ant-color-text-quaternary);
+  font-size: var(--ant-font-size-sm);
+  text-align: center;
+}
+.tj-ant-kb .ant-btn.tj-ant-kb-btn {
+  justify-content: flex-start;
+  color: var(--ant-color-text-secondary);
+}
+/* Card */
+.tj-ant-kb .ant-card.tj-ant-kb-card {
+  position: relative;
+  border-color: var(--kb-card-border, var(--ant-color-border-secondary));
+  border-radius: var(--kb-card-radius, var(--ant-border-radius-lg));
+  background: var(--kb-card-bg, var(--ant-color-bg-container));
+  box-shadow: var(--kb-card-shadow);
+  overflow: hidden;
+  outline: none;
+}
+.tj-ant-kb .ant-card.tj-ant-kb-card:hover {
+  border-color: var(--ant-color-primary-border-hover);
+}
+.tj-ant-kb.is-compact .tj-ant-kb-card .ant-card-body {
+  padding: 8px 10px;
+}
+.tj-ant-kb .tj-ant-kb-card.is-custom .ant-card-body {
+  padding: 0;
+}
+.tj-ant-kb-card.is-draggable {
+  cursor: grab;
+}
+.tj-ant-kb-card.is-draggable:active {
+  cursor: grabbing;
+}
+.tj-ant-kb .ant-card.tj-ant-kb-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--ant-color-primary-border);
+}
+.tj-ant-kb .ant-card.tj-ant-kb-card.is-selected {
+  border-color: var(--ant-color-primary);
+  box-shadow:
+    0 0 0 1px var(--ant-color-primary),
+    var(--kb-card-shadow);
+}
+.tj-ant-kb-card.is-dragging {
+  opacity: 0.4;
+}
+.tj-ant-kb .ant-card.tj-ant-kb-card.is-picked {
+  box-shadow:
+    0 0 0 2px var(--ant-color-primary),
+    var(--ant-box-shadow-secondary);
+  transform: rotate(1deg);
+}
+.tj-ant-kb-drop {
+  flex-shrink: 0;
+  height: 2px;
+  margin: -4px 0;
+  border-radius: 2px;
+  background: var(--ant-color-primary);
+}
+.tj-ant-kb .ant-btn.tj-ant-kb-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  color: var(--ant-color-text-tertiary);
+  opacity: 0;
+  transition: opacity var(--ant-motion-duration-mid);
+}
+.tj-ant-kb-card:hover .tj-ant-kb-del,
+.tj-ant-kb .ant-btn.tj-ant-kb-del:focus-visible {
+  opacity: 1;
+}
+.tj-ant-kb-clamp {
+  position: relative;
+}
+.tj-ant-kb-clamp.is-clamped {
+  overflow: hidden;
+}
+.tj-ant-kb-clamp.is-clamped::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 32px;
+  background: linear-gradient(to bottom, transparent, var(--kb-card-bg, var(--ant-color-bg-container)));
+  pointer-events: none;
+}
+.tj-ant-kb .ant-btn.tj-ant-kb-more {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  font-size: var(--ant-font-size-sm);
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity var(--ant-motion-duration-mid);
+}
+.tj-ant-kb-card:hover .tj-ant-kb-more,
+.tj-ant-kb .ant-btn.tj-ant-kb-more:focus-visible {
+  opacity: 1;
+}
+.tj-ant-kb .tj-ant-kb-card-title {
+  display: block;
+  padding-right: 20px;
+  color: var(--kb-card-title, var(--ant-color-text));
+  overflow-wrap: anywhere;
+}
+.tj-ant-kb .ant-typography.tj-ant-kb-card-text {
+  display: -webkit-box;
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--kb-card-text, var(--ant-color-text-secondary));
+  font-size: var(--ant-font-size-sm);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.tj-ant-kb-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+.tj-ant-kb-tags .ant-tag,
+.tj-ant-kb-foot .ant-tag {
+  margin-inline-end: 0;
+}
+.tj-ant-kb .ant-progress.tj-ant-kb-progress {
+  margin: 8px 0 0;
+}
+.tj-ant-kb-progress .ant-progress-text {
+  color: var(--kb-card-text, var(--ant-color-text-secondary));
+}
+.tj-ant-kb-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 10px;
+}
+.tj-ant-kb.is-compact .tj-ant-kb-tags,
+.tj-ant-kb.is-compact .tj-ant-kb-foot {
+  margin-top: 6px;
+}
+.tj-ant-kb .tj-ant-kb-meta {
+  min-width: 0;
+  max-width: 60%;
+  color: var(--kb-card-text, var(--ant-color-text-secondary));
+  font-size: var(--ant-font-size-sm);
+}
+.tj-ant-kb-avatar {
+  display: inline-flex;
+  margin-left: auto;
+}
+.tj-ant-kb .tj-ant-kb-details {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ant-color-border-secondary);
+}
+.tj-ant-kb .tj-ant-kb-details .ant-descriptions-item {
+  padding-bottom: 6px;
+}
+.tj-ant-kb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Hero */
+.tj-ant-hero {
+  /* Fills the box (no band under it); taller content grows it and the root scrolls. */
+  min-height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 28px;
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-container);
+  background-size: cover;
+  background-position: center;
+}
+.tj-ant-hero.is-tint {
+  background: var(--ant-color-primary-bg);
+}
+.tj-ant-hero.is-gradient {
+  background: linear-gradient(135deg, var(--ant-color-primary-bg) 0%, var(--ant-color-bg-container) 70%);
+}
+.tj-ant-hero.is-dark {
+  background: #001529;
+}
+.tj-ant-hero.is-solid {
+  background: var(--ant-color-primary);
+}
+.tj-ant-hero.is-compact {
+  padding: 16px 20px;
+}
+.tj-ant-hero.is-large {
+  padding: 40px 40px;
+}
+.tj-ant-hero.is-center {
+  flex-direction: column;
+  text-align: center;
+}
+.tj-ant-hero.is-center .tj-ant-hero-actions {
+  justify-content: center;
+}
+.tj-ant-hero-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tj-ant-hero.is-center .tj-ant-hero-main {
+  align-items: center;
+}
+.tj-ant-hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  border-radius: var(--ant-border-radius-lg);
+  color: var(--ant-color-primary);
+  background: var(--ant-color-primary-bg);
+}
+.tj-ant-hero-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ant-color-primary);
+}
+.tj-ant-hero-sub {
+  margin: 0 !important;
+  font-size: 16px;
+  color: var(--ant-color-text-secondary);
+}
+.tj-ant-hero-meta {
+  color: var(--ant-color-text-tertiary);
+}
+.tj-ant-hero-actions {
+  margin-top: 8px;
+}
+.tj-ant-hero.on-dark,
+.tj-ant-hero.on-dark h1.ant-typography,
+.tj-ant-hero.on-dark h2.ant-typography,
+.tj-ant-hero.on-dark h3.ant-typography,
+.tj-ant-hero.on-dark .tj-ant-hero-sub,
+.tj-ant-hero.on-dark .tj-ant-hero-meta,
+.tj-ant-hero.on-dark .tj-ant-hero-eyebrow,
+.tj-ant-hero.on-dark .ant-statistic-title,
+.tj-ant-hero.on-dark .ant-statistic-content {
+  color: #fff;
+}
+.tj-ant-hero.is-solid .ant-btn-primary {
+  background: #fff;
+  color: var(--ant-color-primary);
+}
+.tj-ant-hero-aside {
+  flex: none;
+  padding-inline-start: 24px;
+  border-inline-start: 1px solid var(--ant-color-split);
+}
+
+/* SummaryStrip */
+.tj-ant-strip {
+  display: grid;
+  gap: 0;
+}
+.tj-ant-strip.is-panel {
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-container);
+}
+.tj-ant-strip-item {
+  padding: 16px 20px;
+  min-width: 0;
+}
+.tj-ant-strip.is-panel .tj-ant-strip-item + .tj-ant-strip-item {
+  border-inline-start: 1px solid var(--ant-color-split);
+}
+.tj-ant-strip.is-cards {
+  gap: 12px;
+}
+.tj-ant-strip.is-cards .tj-ant-strip-item {
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-container);
+}
+.tj-ant-strip.is-center .tj-ant-strip-item {
+  text-align: center;
+}
+.tj-ant-strip.is-center .tj-ant-stat-trend {
+  justify-content: center;
+}
+
+/* CardGrid, ProgressList */
+.tj-ant-cardgrid {
+  display: grid;
+  gap: 16px;
+}
+.tj-ant-gridcard.is-selected {
+  border-color: var(--ant-color-primary);
+  box-shadow: 0 0 0 1px var(--ant-color-primary);
+}
+.tj-ant-gridcard .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tj-ant-gridcard.is-row {
+  flex-direction: row;
+}
+.tj-ant-progress-row.ant-list-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.tj-ant-progress-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.tj-ant-progress-row .ant-progress {
+  margin: 0;
+}
+.tj-ant-progress-caption {
+  font-size: 12px;
+}
+
+/* Tags, Link, Icon, ButtonGroup, rings */
+.tj-ant-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tj-ant-tags.is-single {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.tj-ant-tags.is-scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+.tj-ant-link.is-always {
+  text-decoration: underline;
+}
+.tj-ant-link.is-none:hover {
+  text-decoration: none;
+}
+.tj-ant-link.is-hover:hover {
+  text-decoration: underline;
+}
+.tj-ant-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.tj-ant-field-label {
+  margin-bottom: 4px;
+  line-height: 20px;
+  color: var(--ant-color-text);
+}
+.tj-ant-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.tj-ant-ring--fill {
+  justify-content: center;
+}
+.tj-ant-ring-box {
+  cursor: pointer;
+}
+.tj-ant-ring-center {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+}
+.tj-ant-ring-center small {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+}
+.tj-ant-spark-body {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tj-ant-spark-body > div {
+  position: absolute !important;
+  inset: 0;
+  height: auto !important;
+}
+.tj-ant-chart-frame > div {
+  height: 100%;
+}
+.tj-ant-strength {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+/* Chat */
+.tj-ant-chat.ant-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.tj-ant-chat .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+.tj-ant-chat-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tj-ant-chat-empty {
+  margin: auto;
+}
+.tj-ant-chat-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 88%;
+}
+.tj-ant-chat-row.is-first {
+  margin-top: 8px;
+}
+.tj-ant-chat-row.is-mine {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.tj-ant-chat-face {
+  width: 32px;
+  flex: none;
+}
+.tj-ant-chat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tj-ant-chat-row.is-mine .tj-ant-chat-body {
+  align-items: flex-end;
+}
+.tj-ant-chat-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+.tj-ant-chat-meta .ant-typography {
+  font-size: 12px;
+}
+.tj-ant-chat-bubble {
+  padding: 8px 12px;
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-fill-tertiary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.tj-ant-chat-row.is-mine .tj-ant-chat-bubble {
+  background: var(--ant-color-primary);
+  color: var(--ant-color-text-light-solid);
+}
+.tj-ant-chat-row.is-error .tj-ant-chat-bubble {
+  background: var(--ant-color-error-bg);
+  color: var(--ant-color-error);
+}
+.tj-ant-chat-bubble .ui2c-markdown > :first-child {
+  margin-top: 0;
+}
+.tj-ant-chat-bubble .ui2c-markdown > :last-child {
+  margin-bottom: 0;
+}
+.tj-ant-chat-typing {
+  display: inline-flex;
+  gap: 4px;
+  padding: 12px 14px;
+}
+.tj-ant-chat-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ant-color-text-tertiary);
+  animation: tj-ant-typing 1.2s infinite ease-in-out;
+}
+.tj-ant-chat-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.tj-ant-chat-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes tj-ant-typing {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+.tj-ant-chat-input {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 10px 12px;
+  border-top: 1px solid var(--ant-color-split);
+}
+
+/* Questionnaire */
+.tj-ant-quiz-card.ant-card {
+  height: 100%;
+  overflow: auto;
+}
+.tj-ant-quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  outline: none;
+}
+.tj-ant-quiz-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tj-ant-quiz-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius-lg);
+  cursor: pointer;
+  transition: all var(--ant-motion-duration-mid);
+}
+.tj-ant-quiz-choice:hover {
+  border-color: var(--ant-color-primary-hover);
+}
+.tj-ant-quiz-choice.is-picked {
+  border-color: var(--ant-color-primary);
+  background: var(--ant-color-primary-bg);
+}
+.tj-ant-quiz-label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tj-ant-quiz-key {
+  font-size: 12px;
+  padding: 0 6px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius-sm);
+  color: var(--ant-color-text-tertiary);
+}
+.tj-ant-quiz-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+/* Field heights on ToolJet's grid: a box of n rows draws n x 10 - 4 px. A labelled field is 6 rows (a 20px label
+   line and a 4px gap above Ant's 32px control: 56px); a checkbox or switch row 3 rows (26px). */
+.tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label {
+  padding-bottom: 4px;
+  line-height: 20px;
+}
+.tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label > label {
+  height: 20px;
+  line-height: 20px;
+}
+.tj-ant-root.tj-ant-compact .ant-form-item-control-input,
+.tj-ant-root.tj-ant-compact .ant-form-item-label > label {
+  min-height: 26px;
+  height: 26px;
+}
+.tj-ant-root .ant-form-item-control-input-content > .ant-color-picker-trigger {
+  vertical-align: top;
+}
+.tj-ant-root .ant-form-item-control-input-content .ant-slider-horizontal {
+  margin-block: 9px;
+}
+
+.tj-ant-html-cell {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tj-ant-html-cell > :first-child {
+  margin-top: 0;
+}
+.tj-ant-html-cell > :last-child {
+  margin-bottom: 0;
+}
+.tj-ant-cell-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tj-ant-cell-tags .ant-tag {
+  margin-inline-end: 0;
+}
+
+/* Loading ("loading": "own"): Ant's Spin nested over the content, Skeleton shapes in its place. */
+.tj-ant-loadable {
+  display: contents;
+}
+.tj-ant-spin-fill,
+.tj-ant-spin-fill > .ant-spin-container {
+  height: 100%;
+  min-height: 0;
+}
+.tj-ant-spin-fill {
+  flex: 1 1 auto;
+  width: 100%;
+}
+.tj-ant-spin-inline {
+  display: inline-block;
+  max-width: 100%;
+}
+.tj-ant-spin-block {
+  width: 100%;
+}
+/* Keep the content's margins (a slider's) inside the wrapper, so the spinner centres on the whole control. */
+.tj-ant-spin-block > .ant-spin-container {
+  display: flow-root;
+}
+/* Skeleton bars round like the theme's small radius (antd fixes them at 4px, its own small radius, so stock Ant is
+   unchanged). */
+.tj-ant .ant-skeleton {
+  --ant-skeleton-block-radius: var(--ant-border-radius-sm);
+}
+.tj-ant-root .ant-skeleton.ant-skeleton-element.ant-skeleton-block {
+  width: 100%;
+}
+/* The Skeleton widget draws the rows that fit its box (Navigation.tsx useFittedRows), measured on this wrapper. */
+.tj-ant-skeleton-fit {
+  height: 100%;
+  overflow: hidden;
+}
+/* A chart's tooltip layer in the popup layer (lib/chartTheme useTooltipLayer): the window, so a tall tooltip is not
+   cut by the widget box. */
+.tj-ant-chart-tips {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1100;
+}
+.tj-ant-chart-body > .charts-loading-container {
+  z-index: 2;
+}
+.tj-ant-chart-veil {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+/* The Spin wrapper sits between a laid-out root and its content: carry the root's layout into the Spin container. */
+.tj-ant-center > .tj-ant-spin-fill > .ant-spin-container {
+  display: flex;
+  align-items: center;
+}
+.tj-ant-center:not(.tj-ant-start) > .tj-ant-spin-fill > .ant-spin-container > :only-child {
+  margin-inline: auto;
+}
+.tj-ant-ring > .ant-spin-nested-loading {
+  width: 100%;
+}
+.tj-ant-ring > .ant-spin-nested-loading > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.tj-ant-ring--fill > .tj-ant-spin-fill > .ant-spin-container {
+  justify-content: center;
+}
+
+/* What an html cell's markup gives a width (an initials avatar, an icon, a dot) keeps it: in a flex row next to a long
+   name it was squeezed into a clipped oval. */
+.tj-ant-html-cell [style*="width:"],
+.tj-ant-html-cell [style*="width :"],
+.tj-ant-html-cell img,
+.tj-ant-html-cell svg {
+  flex-shrink: 0;
+}
+
+/* The host dims a disabled component once, to half opacity, as it dims a native widget; Ant's own disabled switch dims
+   again (opacity-loading), so it read at a third. The switch is disabled only by the host, so it keeps full opacity
+   then (a loading switch still dims). */
+.tj-ant-host-disabled .ant-switch.ant-switch-disabled:not(.ant-switch-loading) {
+  opacity: 1;
+}
