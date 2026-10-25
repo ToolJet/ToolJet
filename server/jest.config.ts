@@ -44,6 +44,8 @@ const shared: Config.InitialProjectOptions = {
     '@otel/(.*)': '<rootDir>/src/otel/$1',
     // Mock mariadb — v3.5.0+ is ESM-only, Jest can't require() it (jestjs/jest#15275)
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
+    // Mock ibm_db — native binding can't resolve its DB2 client DLLs under Jest on Windows
+    '^ibm_db$': '<rootDir>/test/__mocks__/ibm_db.ts',
   },
   runner: 'groups',
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
