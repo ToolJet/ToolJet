@@ -24,6 +24,15 @@ export const SkeletonSwap = ({ loading, look, children }: { loading: boolean; lo
   </>
 );
 
+/** A skeleton bar in a line of text, the line kept at the text's own height: a Statistic's title, figure or trend line
+ * while loading, so the loading look has the loaded one's parts and size (Ant's own Statistic loading draws one
+ * paragraph, taller than the figure). `part` sets its width. */
+export const TextBone = ({ part }: { part: 'title' | 'figure' | 'trend' }) => (
+  <span className="tj-ant-bone-line">
+    <Skeleton.Input active size="small" className={`tj-ant-bone is-${part}`} />
+  </span>
+);
+
 const skeletonSize = (size?: string) => (size === 'small' ? 'small' : size === 'large' ? 'large' : 'default');
 
 /** Skeleton.Input, block, at the control's size: the look of a text-box control (Input, pickers, Select...). rows gives

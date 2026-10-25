@@ -42,7 +42,7 @@ export const Switch = (props: Record<string, unknown>) => {
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => setChecked(false));
 
   return (
-    <AntProvider tokens={tokens} className="tj-ant-switch tj-ant-compact">
+    <AntProvider tokens={tokens} className={disabled ? 'tj-ant-switch tj-ant-compact tj-ant-host-disabled' : 'tj-ant-switch tj-ant-compact'}>
       <FormField {...field} check={check} htmlFor={fieldId}>
         <AntSwitch
           id={fieldId}

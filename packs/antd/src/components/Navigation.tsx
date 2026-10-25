@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Breadcrumb as AntBreadcrumb,
   Button,
@@ -380,11 +380,56 @@ export const Skeleton = () => {
   const host = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 16 });
+  const asked = Math.max(0, Math.floor(Number(rows)) || 0);
+  const shown = loading || host.loading;
+  const fit = useFittedRows(asked, [shown, title, avatar]);
   return (
     <AntProvider tokens={tokens} fill>
-      {loading || host.loading ? <AntSkeleton active={active} avatar={avatar} title={title} paragraph={{ rows: Math.max(0, Number(rows) || 0) }} /> : null}
+      <div ref={fit.ref} className="tj-ant-skeleton-fit">
+        {shown ? <AntSkeleton active={active} avatar={avatar} title={title} paragraph={{ rows: fit.rows }} /> : null}
+      </div>
     </AntProvider>
   );
+};
+
+/**
+ * As many of the asked paragraph rows as fit the box, as shadcn's Skeleton draws them: 60 rows ran far past a short
+ * box and the last one showing was cut mid-row. The rows' offset, pitch and height are read from the rows drawn (Ant
+ * sizes them from its tokens), the box's height from a ResizeObserver; without a layout (no ResizeObserver, nothing
+ * measured yet) every asked row is drawn.
+ */
+const useFittedRows = (asked: number, deps: unknown[]) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const metrics = useRef<{ top: number; height: number; pitch: number } | null>(null);
+  const [rowsShown, setRowsShown] = useState(asked);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') {
+      setRowsShown(asked);
+      return undefined;
+    }
+    const fit = () => {
+      const box = el.getBoundingClientRect();
+      const lis = el.querySelectorAll<HTMLElement>('.ant-skeleton-paragraph > li');
+      if (lis.length) {
+        const first = lis[0]!.getBoundingClientRect();
+        const pitch = lis.length > 1 ? lis[1]!.getBoundingClientRect().top - first.top : (metrics.current?.pitch ?? 0);
+        if (first.height > 0) metrics.current = { top: first.top - box.top, height: first.height, pitch };
+      }
+      const m = metrics.current;
+      if (!m || !box.height) return setRowsShown(asked);
+      const room = box.height - m.top - m.height;
+      // No pitch measured (one row drawn so far): one row when it fits, else all of them, measured again.
+      const fits = room < 0 ? 0 : m.pitch > 0 ? Math.floor(room / m.pitch) + 1 : asked === 1 ? 1 : asked;
+      setRowsShown(Math.min(asked, fits));
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(el);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asked, ...deps]);
+  return { ref, rows: Math.min(asked, rowsShown) };
 };
 
 // Ant's Spin: spinning, tip, size (small, default, large); fullscreen is left to the page.

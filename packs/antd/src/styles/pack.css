@@ -126,6 +126,79 @@
 .tj-ant-stat-extra {
   color: var(--ant-color-text-description);
 }
+/* A box too short for the title over the figure (Display.tsx Statistic, fitText.ts useFitLayout): less padding and no
+   gaps, then the title beside the figure on one line, the trend after it. */
+.tj-ant-stat--card.is-short {
+  padding-block: 8px;
+}
+.tj-ant-stat.is-short .ant-statistic-title {
+  margin-bottom: 0;
+}
+.tj-ant-stat.is-short .tj-ant-stat-trend {
+  margin-top: 0;
+}
+.tj-ant-stat.is-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tj-ant-stat.is-inline > .ant-statistic {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.tj-ant-stat.is-inline .ant-statistic-title {
+  flex: 1 1 0;
+  min-width: 32px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tj-ant-stat.is-inline .ant-statistic-content {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.tj-ant-stat.is-inline .tj-ant-stat-trend {
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Skeleton bars in a line of text (Loading.tsx TextBone): the line keeps the text's height, the bar a share of its
+   width (a title, a figure, a trend line). Ant's Skeleton.Input puts the class on its wrapper and its bar. */
+.tj-ant-bone.ant-skeleton-element {
+  width: 50%;
+  max-width: 100%;
+  vertical-align: middle;
+  /* The line's own size (Ant's Skeleton sets its base font size). */
+  font-size: inherit;
+}
+.tj-ant-bone.ant-skeleton-element.is-figure {
+  width: 60%;
+}
+.tj-ant-bone.ant-skeleton-element.is-trend {
+  width: 40%;
+}
+.tj-ant-bone.ant-skeleton-element > .ant-skeleton-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 0.8em;
+  line-height: normal;
+}
+.tj-ant-stat-trend > .tj-ant-bone-line {
+  flex: 1 1 auto;
+}
+.tj-ant-stat.is-inline .tj-ant-stat-trend > .tj-ant-bone-line {
+  flex: 0 0 48px;
+}
+.tj-ant-stat.is-inline .ant-statistic-content .tj-ant-bone.is-figure {
+  width: 64px;
+}
 
 .tj-ant-badge-count {
   display: inline-flex;
@@ -1273,6 +1346,11 @@
 .tj-ant-root .ant-skeleton.ant-skeleton-element.ant-skeleton-block {
   width: 100%;
 }
+/* The Skeleton widget draws the rows that fit its box (Navigation.tsx useFittedRows), measured on this wrapper. */
+.tj-ant-skeleton-fit {
+  height: 100%;
+  overflow: hidden;
+}
 /* A chart's tooltip layer in the popup layer (lib/chartTheme useTooltipLayer): the window, so a tall tooltip is not
    cut by the widget box. */
 .tj-ant-chart-tips {
@@ -1317,4 +1395,11 @@
 .tj-ant-html-cell img,
 .tj-ant-html-cell svg {
   flex-shrink: 0;
+}
+
+/* The host dims a disabled component once, to half opacity, as it dims a native widget; Ant's own disabled switch dims
+   again (opacity-loading), so it read at a third. The switch is disabled only by the host, so it keeps full opacity
+   then (a loading switch still dims). */
+.tj-ant-host-disabled .ant-switch.ant-switch-disabled:not(.ant-switch-loading) {
+  opacity: 1;
 }

@@ -3,7 +3,7 @@ import { Avatar, Badge, Button, Card, Empty, List, Progress, Space, Statistic, T
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
-import { SpinOver } from '../lib/Loading';
+import { SpinOver, TextBone } from '../lib/Loading';
 import { MAX_SLOT_ITEMS, rowIdOf, str, toArray, type Row } from '../lib/data';
 import { antIcon } from '../lib/icons';
 import { cardItems, chipLabel, chipTone, colorFor, initials, recordItems } from '../lib/ui2/display/lists/model';
@@ -142,18 +142,31 @@ export const SummaryStrip = () => {
   return (
     <AntProvider tokens={tokens}>
       <div className={`tj-ant-strip is-${appearance} is-${align}`} style={{ gridTemplateColumns: `repeat(${Math.max(1, figures.length)}, minmax(0, 1fr))` }}>
+        {/* Loading draws each item's parts at their own sizes (a label line, the figure's line, the delta line), so
+            the strip keeps its height: Ant's own Statistic loading drew a paragraph taller than the figure. */}
         {figures.map((f) => (
-          <div key={f.key} className="tj-ant-strip-item">
-            <Statistic title={f.label || undefined} value={f.value} loading={loading} valueStyle={{ fontSize }} />
+          <div key={f.key} className="tj-ant-strip-item" aria-busy={loading || undefined}>
+            <Statistic
+              title={f.label ? (loading ? <TextBone part="title" /> : f.label) : undefined}
+              value={f.value}
+              valueRender={loading ? () => <TextBone part="figure" /> : undefined}
+              valueStyle={{ fontSize }}
+            />
             {f.delta || f.caption ? (
               <div className="tj-ant-stat-trend">
-                {f.delta ? (
-                  <span className={`tj-ant-stat-change ${f.delta.tone === 'positive' ? 'is-up' : f.delta.tone === 'negative' ? 'is-down' : ''}`}>
-                    {f.delta.direction > 0 ? <ArrowUpOutlined /> : f.delta.direction < 0 ? <ArrowDownOutlined /> : null}
-                    {f.delta.text}
-                  </span>
-                ) : null}
-                {f.caption ? <span className="tj-ant-stat-extra">{f.caption}</span> : null}
+                {loading ? (
+                  <TextBone part="trend" />
+                ) : (
+                  <>
+                    {f.delta ? (
+                      <span className={`tj-ant-stat-change ${f.delta.tone === 'positive' ? 'is-up' : f.delta.tone === 'negative' ? 'is-down' : ''}`}>
+                        {f.delta.direction > 0 ? <ArrowUpOutlined /> : f.delta.direction < 0 ? <ArrowDownOutlined /> : null}
+                        {f.delta.text}
+                      </span>
+                    ) : null}
+                    {f.caption ? <span className="tj-ant-stat-extra">{f.caption}</span> : null}
+                  </>
+                )}
               </div>
             ) : null}
           </div>
@@ -305,7 +318,8 @@ export const CardGrid = () => {
   const onCardClicked = ToolJet.useEventCallback({ name: 'onCardClicked' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 40 });
+  // One row of the three sample cards (about 154px), not a 396px box left mostly blank.
+  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 16 });
   const items = cardItems(toArray(dataSource), { titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField });
   const { selectedItemId, select } = useSelection(items, idField);
   const cols = Number(columns) > 0 ? `repeat(${Number(columns)}, minmax(0, 1fr))` : `repeat(auto-fill, minmax(${Math.max(120, Number(minCardWidth) || 240)}px, 1fr))`;

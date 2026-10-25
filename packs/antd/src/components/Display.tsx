@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert as AntAlert,
   Avatar as AntAvatar,
@@ -20,11 +20,11 @@ import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { THEME_COLOR, useThemeColor } from '../lib/themeStyles';
-import { SkeletonSwap, SpinOver } from '../lib/Loading';
+import { SkeletonSwap, SpinOver, TextBone } from '../lib/Loading';
 import { str, toArray, type Row } from '../lib/data';
 import { formatCell, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
-import { useFitText } from '../lib/fitText';
+import { useFitLayout, useFitText } from '../lib/fitText';
 
 const TONE_TAG_STATUS: Record<string, string | undefined> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: undefined };
 
@@ -276,27 +276,49 @@ export const Statistic = () => {
   const p = toNumber(precision);
   const shown = n === null ? str(value) || '-' : formatNumber(n, formatter as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, p)));
   const trendClass = trend === 'up' ? 'is-up' : trend === 'down' ? 'is-down' : '';
-  const fitRef = useFitText<HTMLDivElement>([shown, prefix, suffix, loading], { selector: '.ant-statistic-content' });
+  // A box too short for the card's title over its figure: less padding, then the title beside the figure, then the
+  // figure shrunk (shadcn's Stat in the same box). The figure also shrinks to the card's width.
+  const [box, setBox] = useState<HTMLDivElement | null>(null);
+  const layout = useFitLayout(box, STAT_LAYOUTS, [shown, title, prefix, suffix, trendValue, extra, bordered, loading], { selector: STAT_FIGURE });
+  useFitText<HTMLDivElement>([shown, prefix, suffix, loading, layout], { root: box, selector: STAT_FIGURE, height: true });
   return (
     // Fills its box, so stat cards side by side in a row are one height.
     <AntProvider tokens={tokens} fill>
-      <div ref={fitRef} className={bordered ? 'tj-ant-stat tj-ant-stat--card' : 'tj-ant-stat'}>
-        <AntStatistic title={title || undefined} value={shown} prefix={prefix || undefined} suffix={suffix || undefined} loading={loading} />
+      <div ref={setBox} className={[bordered ? 'tj-ant-stat tj-ant-stat--card' : 'tj-ant-stat', layout].join(' ').trim()} aria-busy={loading || undefined}>
+        {/* Loading draws the parts at their own sizes (a title line, the figure's line, the trend line), so the card
+            keeps its size and frame. */}
+        <AntStatistic
+          title={title ? (loading ? <TextBone part="title" /> : title) : undefined}
+          value={shown}
+          prefix={prefix && !loading ? prefix : undefined}
+          suffix={suffix && !loading ? suffix : undefined}
+          valueRender={loading ? () => <TextBone part="figure" /> : undefined}
+        />
         {trendValue || extra ? (
           <div className="tj-ant-stat-trend">
-            {trendValue ? (
-              <span className={`tj-ant-stat-change ${trendClass}`}>
-                {trend === 'up' ? <ArrowUpOutlined /> : trend === 'down' ? <ArrowDownOutlined /> : null}
-                {trendValue}
-              </span>
-            ) : null}
-            {extra ? <span className="tj-ant-stat-extra">{extra}</span> : null}
+            {loading ? (
+              <TextBone part="trend" />
+            ) : (
+              <>
+                {trendValue ? (
+                  <span className={`tj-ant-stat-change ${trendClass}`}>
+                    {trend === 'up' ? <ArrowUpOutlined /> : trend === 'down' ? <ArrowDownOutlined /> : null}
+                    {trendValue}
+                  </span>
+                ) : null}
+                {extra ? <span className="tj-ant-stat-extra">{extra}</span> : null}
+              </>
+            )}
           </div>
         ) : null}
       </div>
     </AntProvider>
   );
 };
+
+// The Statistic's layouts, roomiest first (fitText.ts useFitLayout), and the figure it shrinks.
+const STAT_LAYOUTS = ['', 'is-short', 'is-short is-inline'];
+const STAT_FIGURE = '.ant-statistic-content';
 
 // Ant's Progress: percent, type (line, circle, dashboard), status (normal, active, success, exception), showInfo,
 // steps, strokeLinecap, size.
