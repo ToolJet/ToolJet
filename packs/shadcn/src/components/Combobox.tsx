@@ -146,8 +146,6 @@ export const Combobox = () => {
     if (open) openChange(false);
     triggerRef.current?.blur();
   });
-  // The pack's earlier name for selectOption.
-  ToolJet.useAction({ name: 'setValue', displayName: 'Select option (value)', params: [{ handle: 'value', displayName: 'Value' }] }, selectByValue);
 
   const showClear = showClearBtn !== false && !!selected && !disabled;
   const vars = lookVars({ ...fieldVars(styles), '--lk-menu-bg': menuBackgroundColor, '--lk-menu-fg': menuTextColor, '--lk-hl': optionHoverColor });

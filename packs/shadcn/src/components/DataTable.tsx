@@ -639,8 +639,6 @@ export const DataTable = () => {
     select(toKeySet(live.current.processed), live.current.focusKey)
   );
   ToolJet.useAction({ name: 'deselectAllRows', displayName: 'Deselect all rows' }, () => select(new Set(), null));
-  // The pack's earlier name for deselectRow, kept for apps built with it.
-  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(new Set(), null));
   ToolJet.useAction(
     {
       name: 'setFilters',

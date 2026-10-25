@@ -88,25 +88,11 @@ export const Stepper = () => {
     onStepChange();
   };
 
-  ToolJet.useAction({ name: "next", displayName: "Next step" }, () =>
-    goTo(index + 1),
-  );
-  // UI 2.0 Tabs' action names.
-  ToolJet.useAction({ name: "nextTab", displayName: "Next step (nextTab)" }, () => goTo(index + 1));
-  ToolJet.useAction({ name: "previousTab", displayName: "Previous step (previousTab)" }, () => goTo(index - 1));
+  // UI 2.0 Tabs' action names, as the pack's Tabs use.
+  ToolJet.useAction({ name: "nextTab", displayName: "Next step" }, () => goTo(index + 1));
+  ToolJet.useAction({ name: "previousTab", displayName: "Previous step" }, () => goTo(index - 1));
   ToolJet.useAction(
-    { name: "setTab", displayName: "Go to step (setTab)", params: [{ handle: "id", displayName: "Step id" }] },
-    (id) => goTo(steps.findIndex((s) => s.id === String(id))),
-  );
-  ToolJet.useAction({ name: "back", displayName: "Previous step" }, () =>
-    goTo(index - 1),
-  );
-  ToolJet.useAction(
-    {
-      name: "goToStep",
-      displayName: "Go to step",
-      params: [{ handle: "id", displayName: "Step id" }],
-    },
+    { name: "setTab", displayName: "Go to step", params: [{ handle: "id", displayName: "Step id" }] },
     (id) => goTo(steps.findIndex((s) => s.id === String(id))),
   );
 

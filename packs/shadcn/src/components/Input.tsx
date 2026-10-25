@@ -71,9 +71,6 @@ export const Input = () => {
   TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => setText(''));
   TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
   TJ.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
-  // The pack's earlier action names, kept for apps that use them.
-  TJ.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, setText);
-  TJ.useAction({ name: 'focus', displayName: 'Focus' }, () => inputRef.current?.focus());
 
   const fieldId = TJ.useFieldId();
   const control = TJ.useControlState();

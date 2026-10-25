@@ -86,9 +86,6 @@ export const RadioGroup = () => {
     change(v === undefined || v === null || typeof v === 'object' ? '' : choiceKey(v))
   );
   ToolJet.useAction({ name: 'deselectOption', displayName: 'Deselect option' }, () => change(''));
-  ToolJet.useAction({ name: 'setValue', displayName: 'Select option (value)', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
-    change(v === undefined || v === null || typeof v === 'object' ? '' : choiceKey(v))
-  );
 
   // Allow deselect (off by default, and never while mandatory): a click on the chosen option clears the choice.
   const deselectable = allowDeselect === true && !check.required && !disabled;

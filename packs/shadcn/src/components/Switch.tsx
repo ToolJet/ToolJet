@@ -48,10 +48,6 @@ export const Switch = () => {
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value', type: 'toggle', defaultValue: true }] },
     (next) => set(String(next) === 'true')
   );
-  ToolJet.useAction(
-    { name: 'setChecked', displayName: 'Set on/off', params: [{ handle: 'checked', displayName: 'On', type: 'toggle', defaultValue: true }] },
-    (next) => set(String(next) === 'true')
-  );
 
   const vars = lookVars({ '--ui-primary': accentColor, '--lk-label': labelColor || textColor, '--lk-help': helpTextColor, '--lk-off': offColor });
   return (

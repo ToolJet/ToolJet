@@ -84,6 +84,12 @@ body {
   color: var(--lk-label, inherit);
 }
 
+.ui-field > .ui-label {
+  /* A field's label on its 20px line, as UI 2.0 draws it: label, 8px and the 36px control make 64px, which the 7-row
+     default box (66px) holds without a blank band. */
+  line-height: 20px;
+}
+
 .ui-label .ui-required {
   margin-left: 2px;
   color: var(--lk-error, var(--ui-destructive));

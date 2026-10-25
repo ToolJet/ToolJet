@@ -37,7 +37,8 @@ export const Dialog = () => {
     initialValue: true,
     section: 'Appearance',
   });
-  const [open, setOpen] = ToolJet.useStateBoolean({ name: 'isOpen', initialValue: false, inspector: 'hidden' });
+  // Exposed as show, UI 2.0's Modal name.
+  const [open, setOpen] = ToolJet.useStateBoolean({ name: 'show', initialValue: false, inspector: 'hidden' });
   // Built in: the body is a canvas of ToolJet components (a form, details), under the description.
   const [showBody] = ToolJet.useStateBoolean({ name: 'showBody', label: 'Components in the body', initialValue: true });
   const [showFooter] = ToolJet.useStateBoolean({ name: 'showFooter', label: 'Confirm and cancel buttons', initialValue: true });
@@ -49,9 +50,7 @@ export const Dialog = () => {
     max: 2000,
     visibleWhen: { key: 'showBody', value: true },
   });
-  const [, setShow] = ToolJet.useStateBoolean({ name: 'show', initialValue: false, inspector: 'hidden' });
   const onClose = ToolJet.useEventCallback({ name: 'onClose' });
-  React.useEffect(() => setShow(open), [open, setShow]);
   const onOpen = ToolJet.useEventCallback({ name: 'onOpen' });
   const onConfirm = ToolJet.useEventCallback({ name: 'onConfirm' });
   const onCancel = ToolJet.useEventCallback({ name: 'onCancel' });
@@ -80,19 +79,13 @@ export const Dialog = () => {
     return () => cancelAnimationFrame(frame);
   }, [open, takesInput]);
 
-  // Both exposed names change before an event fires: show followed isOpen only in the effect above, after the
-  // handlers had run, so an onCancel, onConfirm or onClose handler still read show: true.
-  const setBoth = (next: boolean) => {
-    setOpen(next);
-    setShow(next);
-  };
   const show = () => {
-    setBoth(true);
+    setOpen(true);
     onOpen();
   };
   const close = (confirmed: boolean) => {
     if (confirmed && !takesInput()) return;
-    setBoth(false);
+    setOpen(false);
     if (confirmed) onConfirm();
     else onCancel();
     onClose();
@@ -113,7 +106,7 @@ export const Dialog = () => {
 
   ToolJet.useAction({ name: 'open', displayName: 'Open' }, show);
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => {
-    setBoth(false);
+    setOpen(false);
     onClose();
   });
   // Empty = the trigger variant's own colors (see Button).

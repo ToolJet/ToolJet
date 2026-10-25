@@ -183,9 +183,8 @@ export const DatePicker = () => {
     setOpen(false);
     triggerRef.current?.blur();
   });
-  // The pack's earlier names.
+  // UI 2.0's Date picker has setDate beside setValue, so the pack keeps both names.
   ToolJet.useAction({ name: 'setDate', displayName: 'Set date', params: [{ handle: 'date', displayName: 'Date (YYYY-MM-DD)' }] }, (v) => singleSet(v, ''));
-  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => commit(range ? {} : undefined));
 
   const from = endOf(selected, 'from');
   const to = endOf(selected, 'to');

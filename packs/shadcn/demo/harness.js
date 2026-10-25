@@ -143,15 +143,15 @@ const makeInstance = (name) => ({
 
 // Example arguments for actions that take parameters.
 const ACTION_ARGS = {
-  'input1.setValue': ['hello@tooljet.com'],
-  'select1.setValue': ['grapes'],
+  'input1.setText': ['hello@tooljet.com'],
+  'select1.selectOption': ['grapes'],
   'toggleGroup1.setValue': ['year'],
   'slider1.setValue': ['80'],
-  'switch1.setChecked': ['true'],
-  'textarea1.setValue': ['Set from an action'],
-  'checkbox1.setChecked': ['true'],
-  'radioGroup1.setValue': ['mentions'],
-  'otpInput1.setValue': ['424242'],
+  'switch1.setValue': ['true'],
+  'textarea1.setText': ['Set from an action'],
+  'checkbox1.setValue': ['true'],
+  'radioGroup1.selectOption': ['mentions'],
+  'otpInput1.setText': ['424242'],
   'tabs1.setTab': ['analytics'],
   'accordion1.open': ['item-2'],
   'progress1.setValue': ['90'],

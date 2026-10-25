@@ -115,8 +115,6 @@ export const PhoneInput = () => {
   });
   TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
   TJ.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
-  // The pack's earlier action name, kept for apps that use it.
-  TJ.useAction({ name: 'focus', displayName: 'Focus' }, () => inputRef.current?.focus());
 
   const value = P.toE164(national, country);
   const fieldId = TJ.useFieldId();

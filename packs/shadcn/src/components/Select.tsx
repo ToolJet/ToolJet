@@ -117,8 +117,6 @@ export const Select = () => {
     if (open) openChange(false);
     triggerRef.current?.blur();
   });
-  // The pack's earlier name for selectOption.
-  ToolJet.useAction({ name: 'setValue', displayName: 'Select option (value)', params: [{ handle: 'value', displayName: 'Value' }] }, selectByValue);
 
   // Allow clear (on unless turned off, and never while mandatory): an x in the box and a click on the chosen option.
   const clearable = allowClear !== false && !check.required && !disabled;

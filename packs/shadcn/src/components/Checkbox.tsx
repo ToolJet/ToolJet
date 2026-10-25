@@ -61,10 +61,6 @@ export const Checkbox = () => {
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value', type: 'toggle', defaultValue: true }] },
     (next) => set(String(next) === 'true')
   );
-  ToolJet.useAction(
-    { name: 'setChecked', displayName: 'Set checked', params: [{ handle: 'checked', displayName: 'Checked', type: 'toggle', defaultValue: true }] },
-    (next) => set(String(next) === 'true')
-  );
 
   const note = check.error || description;
   const vars = lookVars({ '--ui-primary': accentColor, '--lk-label': labelColor || textColor, '--lk-help': helpTextColor, '--lk-border': borderColor, '--ui-destructive': errorColor });

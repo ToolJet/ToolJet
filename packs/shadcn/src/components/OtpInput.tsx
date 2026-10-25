@@ -87,10 +87,6 @@ export const OtpInput = () => {
   TJ.useAction({ name: 'setText', displayName: 'Set text', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
     fill(M.otpSanitize(v, size, kind))
   );
-  // The pack's earlier action name, kept for apps that use it.
-  TJ.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
-    fill(M.otpSanitize(v, size, kind))
-  );
 
   const fieldId = TJ.useFieldId();
   const control = TJ.useControlState();

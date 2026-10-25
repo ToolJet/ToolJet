@@ -34,8 +34,6 @@ export const Textarea = () => {
   TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => setText(''));
   TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => areaRef.current?.focus());
   TJ.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => areaRef.current?.blur());
-  // The pack's earlier action name, kept for apps that use it.
-  TJ.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, setText);
 
   const fieldId = TJ.useFieldId();
   const control = TJ.useControlState();
