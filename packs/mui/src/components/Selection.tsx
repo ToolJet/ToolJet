@@ -122,7 +122,7 @@ export const Switch = () => {
 };
 
 // MUI's RadioGroup with a FormLabel: label, options [{ label, value, disabled }], value, row (side by side), color,
-// size, helperText; event onChange; actions setValue, clear.
+// size, helperText, allowDeselect (a second click clears the pick); event onChange; actions setValue, clear.
 export const RadioGroup = () => {
   const field = useFieldProps({ label: 'Plan' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: SAMPLE.plans });
@@ -130,13 +130,15 @@ export const RadioGroup = () => {
   const [row] = ToolJet.useStateBoolean({ name: 'row', label: 'Row', description: 'Options side by side.', initialValue: false });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium'], initialValue: 'medium' });
+  const [allowDeselect] = ToolJet.useStateBoolean({ name: 'allowDeselect', label: 'Allow deselect', description: 'A click on the picked option clears it.', initialValue: false });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const options = toOptions(rawOptions);
   const check = ToolJet.useValidation({ section: 'choice', value, present: options.some((o) => o.value === value) });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 10 });
+  // The label over the three sample options (148px): a 96px box cut the last two.
+  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 16 });
   const change = (next: string) => {
     setValue(next);
     onChange();
@@ -162,7 +164,20 @@ export const RadioGroup = () => {
                 value={o.value}
                 label={o.label}
                 disabled={o.disabled}
-                control={<Radio color={color as 'primary'} size={size as 'medium'} />}
+                // A click on the checked radio fires no change, so deselecting is its own click (a click on the label
+                // reaches the input once).
+                control={
+                  <Radio
+                    color={color as 'primary'}
+                    size={size as 'medium'}
+                    onClick={() => {
+                      if (allowDeselect === true && !disabled && !o.disabled && o.value === value) {
+                        change('');
+                        check.touch();
+                      }
+                    }}
+                  />
+                }
               />
             ))}
           </MuiRadioGroup>
@@ -181,7 +196,7 @@ export const ToggleButtonGroup = () => {
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: ['standard', ...PALETTE_COLORS], initialValue: 'primary' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
   const [orientation] = ToolJet.useStateEnumeration({ name: 'orientation', label: 'Orientation', enumDefinition: ['horizontal', 'vertical'], initialValue: 'horizontal' });
-  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', initialValue: false });
+  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', description: 'Share the width of the box between the buttons; off, each is as wide as its label.', initialValue: false });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();

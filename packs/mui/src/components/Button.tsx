@@ -18,7 +18,7 @@ export const Button = () => {
     initialValue: 'primary',
   });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
-  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', initialValue: true });
+  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', description: 'Stretch the button to the width of its box; off, it is as wide as its label.', initialValue: true });
   const [disableElevation] = ToolJet.useStateBoolean({ name: 'disableElevation', label: 'Disable elevation', initialValue: false });
   const [startIcon] = useStateText({ name: 'startIcon', label: 'Start icon', description: `An icon name: ${ICON_NAMES.join(', ')}.`, initialValue: '' });
   const [endIcon] = useStateText({ name: 'endIcon', label: 'End icon', description: 'An icon name, as startIcon.', initialValue: '' });

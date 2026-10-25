@@ -125,3 +125,36 @@
 .tj-mui-html-cell svg {
   flex-shrink: 0;
 }
+
+/* StatCard in a box too short for the title over the figure (Display.tsx, fitText.ts useFitLayout): less padding and
+   no gap, then the title beside the figure on one line, the interval after it. */
+.tj-mui-stat.is-short > .MuiCardContent-root,
+.tj-mui-stat.is-short > .MuiCardContent-root:last-child {
+  padding-block: 8px;
+}
+.tj-mui-stat.is-short .tj-mui-stat-head {
+  margin-bottom: 0;
+}
+.tj-mui-stat.is-inline > .MuiCardContent-root {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tj-mui-stat.is-inline .tj-mui-stat-head {
+  flex: 1 1 0;
+  min-width: 32px;
+}
+.tj-mui-stat.is-inline .tj-mui-stat-figure {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.tj-mui-stat.is-inline .tj-mui-stat-interval {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tj-mui-stat.is-inline .tj-mui-stat-figure > .MuiSkeleton-root {
+  width: 64px;
+}

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert as MuiAlert,
   AlertTitle,
@@ -29,7 +29,7 @@ import { iconOf, ICONS } from '../lib/icons';
 import { str, toArray, type Row } from '../lib/data';
 import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner, TextSkeleton } from '../lib/loading';
-import { useFitText } from '../lib/fitText';
+import { useFitLayout, useFitText } from '../lib/fitText';
 
 const COLORS = ['default', ...PALETTE_COLORS];
 
@@ -218,15 +218,16 @@ export const Typography = () => {
 };
 
 // The stat card of MUI's dashboard template (Card + Typography + Chip): title, value with format (auto, number,
-// currency, percent, compact) and currency, trend (up, down, neutral) as a coloured Chip with trendLabel, and interval
-// (the period, under the value). No trend label, no chip: a sample trend would read as real data. variant
-// (outlined, elevation). Event onClick.
+// currency, percent, compact), currency and precision (decimal places), trend (up, down, neutral) as a coloured Chip
+// with trendLabel, and interval (the period, under the value). No trend label, no chip: a sample trend would read as
+// real data. variant (outlined, elevation). Event onClick.
 export const StatCard = () => {
   const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Users' });
   // A number as the sample, shown compact (14K), so the inspector reads a value to bind, not display text.
   const [value] = useStateText({ name: 'value', label: 'Value', description: 'A number (shown in Format) or any text.', initialValue: '14000' });
   const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'compact' });
   const [currency] = useStateText({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'format', value: 'currency' } });
+  const [precision] = ToolJet.useStateNumber({ name: 'precision', label: 'Precision', description: 'Decimal places of the value; empty for the format default.', initialValue: undefined as unknown as number, min: 0, max: 10 });
   const [trend, setTrend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'neutral' });
   const [rawTrendLabel, setTrendLabel] = ToolJet.useStateString({
     name: 'trendLabel',
@@ -258,7 +259,8 @@ export const StatCard = () => {
     }
   );
   const n = toNumber(value);
-  const shown = n === null ? str(value) : formatNumber(n, format as NumberFormat, currency);
+  const p = toNumber(precision);
+  const shown = n === null ? str(value) : formatNumber(n, format as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, Math.round(p))));
   // A number bound to trendLabel (today - yesterday) is the change: shown signed, in the value's format, and with
   // trend left neutral its sign gives the direction. NaN (a query not loaded yet) shows no chip.
   const change = typeof rawTrendLabel === 'number' ? (Number.isFinite(rawTrendLabel) ? (rawTrendLabel as number) : null) : undefined;
@@ -268,35 +270,58 @@ export const StatCard = () => {
   const sign = change ? Math.sign(change) : /^\s*\+/.test(trendLabel) ? 1 : /^\s*[-\u2212]/.test(trendLabel) ? -1 : 0;
   const direction = trend === 'neutral' && sign ? (sign > 0 ? 'up' : 'down') : trend;
   const chipColor = direction === 'up' ? 'success' : direction === 'down' ? 'error' : 'default';
-  const fitRef = useFitText<HTMLParagraphElement>([shown, loading]);
   const TrendIcon = direction === 'up' ? ICONS.TrendingUp : direction === 'down' ? ICONS.TrendingDown : ICONS.TrendingFlat;
+  // A box too short for the title over the figure: less padding, then the title beside the figure, then the figure
+  // shrunk (shadcn's Stat in the same box). The figure also shrinks to the card's width.
+  const [box, setBox] = useState<HTMLDivElement | null>(null);
+  const layout = useFitLayout(box, STAT_LAYOUTS, [shown, title, trendLabel, interval, variant, loading], { selector: STAT_FIGURE });
+  useFitText<HTMLDivElement>([shown, loading, layout], { root: box, selector: STAT_FIGURE, height: true });
   return (
     <MuiProvider overrides={overrides} fill>
-      <Loading loading={loading} fill look={<BlockSkeleton />}>
-        <Card variant={variant as 'outlined'} sx={{ height: '100%' }} onClick={() => onClick()}>
-          <CardContent>
-            {/* The trend chip sits on the title's line, so the figure has the card's width (shrunk to fit past that) and
-                a chip never pushes the interval out of the card. */}
-            <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 1, mb: 0.5 }}>
-              <MuiTypography component="h2" variant="subtitle2" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {title}
-              </MuiTypography>
-              {trendLabel ? <MuiChip size="small" color={chipColor} label={trendLabel} icon={<TrendIcon fontSize="small" />} sx={{ flexShrink: 0 }} /> : null}
-            </Stack>
-            <MuiTypography ref={fitRef} variant="h4" component="p" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {shown}
+      {/* Loading draws the parts at their own sizes (MUI's text Skeleton in the title, figure and interval lines, a
+          rounded one for the chip), so the card keeps its frame and size. */}
+      <Card
+        ref={setBox}
+        variant={variant as 'outlined'}
+        className={['tj-mui-stat', layout].join(' ').trim()}
+        sx={{ height: '100%' }}
+        aria-busy={loading || undefined}
+        onClick={() => {
+          if (!loading) onClick();
+        }}
+      >
+        <CardContent>
+          {/* The trend chip sits on the title's line, so the figure has the card's width (shrunk to fit past that) and
+              a chip never pushes the interval out of the card. */}
+          <Stack className="tj-mui-stat-head" direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <MuiTypography component="h2" variant="subtitle2" sx={{ flex: loading ? 1 : undefined, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {loading ? <Skeleton width="50%" /> : title}
             </MuiTypography>
-            {interval ? (
-              <MuiTypography variant="caption" sx={{ color: 'text.secondary' }}>
-                {interval}
-              </MuiTypography>
+            {trendLabel ? (
+              loading ? (
+                <Skeleton variant="rounded" width={56} height={24} sx={{ flexShrink: 0 }} />
+              ) : (
+                <MuiChip size="small" color={chipColor} label={trendLabel} icon={<TrendIcon fontSize="small" />} sx={{ flexShrink: 0 }} />
+              )
             ) : null}
-          </CardContent>
-        </Card>
-      </Loading>
+          </Stack>
+          <MuiTypography className="tj-mui-stat-figure" variant="h4" component="p" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {loading ? <Skeleton width="60%" /> : shown}
+          </MuiTypography>
+          {interval ? (
+            <MuiTypography className="tj-mui-stat-interval" variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+              {loading ? <Skeleton width="40%" /> : interval}
+            </MuiTypography>
+          ) : null}
+        </CardContent>
+      </Card>
     </MuiProvider>
   );
 };
+
+// The StatCard's layouts, roomiest first (fitText.ts useFitLayout), and the figure it shrinks.
+const STAT_LAYOUTS = ['', 'is-short', 'is-short is-inline'];
+const STAT_FIGURE = '.tj-mui-stat-figure';
 
 // MUI's LinearProgress: value (0 to 100), variant (determinate, indeterminate, buffer with valueBuffer), color; a
 // label above and the percentage at the right (MUI's LinearProgressWithLabel). Action setValue.

@@ -35,7 +35,7 @@ export const Menu = () => {
   });
   const { variant, color } = lookOf(variantProp, colorProp);
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
-  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', initialValue: true });
+  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', description: 'Stretch the menu button to the width of its box; off, it is as wide as its label.', initialValue: true });
   const [rawItems] = ToolJet.useStateArray({
     name: 'items',
     label: 'Items',

@@ -41,8 +41,8 @@ const isSet = (v: unknown) => v !== undefined && v !== null && v !== '';
 
 /**
  * The component's Styles, by MUI theme path, applied over the app theme or MUI's default theme. Each colour defaults
- * to the theme token it draws (themeStyle.ts); the radius shows the drawn value as its placeholder, since a stored
- * number would replace the app theme's radius.
+ * to the theme token it draws (themeStyle.ts); the radius has no default and shows the drawn value as its placeholder,
+ * since a stored number would replace the app theme's radius.
  */
 export const useThemeStyles = (): ThemeOverrides => {
   const primary = useColorStyle({ name: 'primary', label: 'Primary (palette.primary.main)', token: THEME_TOKEN.brand });
@@ -53,7 +53,7 @@ export const useThemeStyles = (): ThemeOverrides => {
     name: 'borderRadius',
     label: 'Border radius (shape.borderRadius)',
     placeholder: 'Theme radius (MUI: 4)',
-    initialValue: '',
+    // No stored default: a '' default was saved on drop as {{""}}, shown as code in an invalid field.
   });
   return useMemo(
     () => ({
