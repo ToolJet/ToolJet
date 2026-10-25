@@ -22,6 +22,16 @@ export const ToggleGroup = () => {
   });
   const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value', initialValue: 'All' });
   const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', initialValue: false });
+  // Where the group sits when its box is wider than the buttons: a filter toggle that ends a row reads at the row's end.
+  const [alignment] = ToolJet.useStateEnumeration({
+    name: 'alignment',
+    label: 'Alignment',
+    enumDefinition: ['left', 'center', 'right'],
+    enumLabels: { left: 'Left', center: 'Center', right: 'Right' },
+    initialValue: 'left',
+    inspector: 'switch',
+    visibleWhen: { key: 'fullWidth', value: false },
+  });
   const [variant] = ToolJet.useStateEnumeration({
     name: 'variant',
     label: 'Look',
@@ -126,7 +136,7 @@ export const ToggleGroup = () => {
   return (
     <div className="ui uc" style={vars}>
       <InlineLoading loading={loading}>
-        <div className="uc-toggle-scroll">
+        <div className="uc-toggle-scroll" data-align={fullWidth === true ? undefined : alignment}>
           {multiple ? (
             <ToggleGroupPrimitive.Root
               type="multiple"
