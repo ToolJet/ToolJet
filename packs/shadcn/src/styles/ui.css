@@ -1,0 +1,1551 @@
+/* shadcn/ui look, plain CSS (the ToolJet CLI bundles CSS but runs no Tailwind/PostCSS step).
+   Colors follow the ToolJet app theme: inline the component sits in a shadow root and the --cc-*
+   theme variables inherit through it; in the sandboxed iframe they are absent and the fallbacks apply. */
+
+:host,
+:root {
+  --ui-primary: var(--tj-brand, var(--cc-primary-brand, #4368e3));
+  /* --tj-on-brand is set only on a themed widget's host; the shared popup layer's host has no tj-themed class, so
+     dialogs and calendars drew white on a light brand (pack audit SP-04, 2026-10-23). ToolJet's own on-brand colour
+     reaches the popup layer, as --cc-primary-brand does for --ui-primary. */
+  --ui-primary-fg: var(--tj-on-brand, var(--cc-on-primary-brand, #ffffff));
+  --ui-fg: var(--cc-primary-text, #1b1f24);
+  --ui-bg: var(--cc-surface1-surface, #ffffff);
+  --ui-muted: var(--tj-surface-muted, var(--cc-surface2-surface, #f1f3f5));
+  --ui-muted-fg: var(--cc-placeholder-text, #6a727c);
+  --ui-border: var(--cc-default-border, #d7dbdf);
+  --ui-destructive: var(--cc-error-systemStatus, #d72d39);
+  --ui-success: var(--cc-success-systemStatus, #1e823b);
+  --ui-warning: var(--tj-warning, #b54708);
+  --ui-info: #0369a1;
+  --ui-ring: color-mix(in srgb, var(--ui-primary) 35%, transparent);
+  --ui-radius: var(--tj-radius, 6px);
+  --ui-shadow: 0 1px 2px rgb(16 24 40 / 0.06);
+  --ui-shadow-lg: 0 10px 24px -6px rgb(16 24 40 / 0.18), 0 2px 6px rgb(16 24 40 / 0.08);
+}
+
+body {
+  margin: 0;
+}
+
+.ui,
+.ui-popup {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ui-fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.ui *,
+.ui-popup * {
+  box-sizing: border-box;
+}
+
+.ui {
+  width: 100%;
+  height: 100%;
+}
+
+/* Zero-specificity reset (:where), so component classes such as .ui-btn--default can set the color. */
+:where(.ui) button,
+:where(.ui) input,
+:where(.ui) textarea,
+:where(.ui-popup) button {
+  font: inherit;
+  color: inherit;
+}
+
+.ui-focus:focus-visible,
+.ui-input:focus-visible,
+.ui-textarea:focus-visible,
+.ui-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ui-ring);
+  border-color: var(--ui-primary);
+}
+
+/* ---- Field ----
+   UI 2.0's field anatomy (Ui2/_shared/field.tsx), the same for every form component: a column with an 8px gap holding
+   the label (shadcn's Label: 14px, weight 500, line height 1), the control, then the note (0.8rem). The colours are
+   the Label color, Help text color and Error color styles (--lk-*), else the theme's. */
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.ui-label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--lk-label, inherit);
+}
+
+.ui-field > .ui-label {
+  /* A field's label on its 20px line, as UI 2.0 draws it: label, 8px and the 36px control make 64px, which the 7-row
+     default box (66px) holds without a blank band. */
+  line-height: 20px;
+}
+
+.ui-label .ui-required {
+  margin-left: 2px;
+  color: var(--lk-error, var(--ui-destructive));
+}
+
+.ui-description {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-muted-fg);
+}
+
+/* A field's note: the help text, else the validation message. 0.8rem in the line height a UI 2.0 field inherits from
+   ToolJet's canvas (1.4285714); a check row's note is 14px on a 20px line, as UI 2.0's CheckedRow draws it. */
+.ui-note {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4285714;
+}
+.ui-note--sm {
+  font-size: 14px;
+  line-height: 20px;
+}
+.ui-note.ui-description {
+  color: var(--lk-help, var(--ui-muted-fg));
+}
+.ui-note.ui-error {
+  font-weight: 500;
+  color: var(--lk-error, var(--ui-destructive));
+}
+
+/* Validation (built in: the host's Validation section). */
+.ui-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-destructive);
+}
+
+.ui-field--invalid .ui-input,
+.ui-field--invalid .ui-textarea,
+.ui-field--invalid .ui-select-trigger,
+.ui-field--invalid .ui-date-trigger {
+  border-color: var(--ui-destructive);
+}
+
+/* ---- Button ---- */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: var(--ui-radius);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    opacity 0.15s;
+  user-select: none;
+}
+
+.ui-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-btn--sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.ui-btn--lg {
+  height: 40px;
+  padding: 0 24px;
+}
+
+/* Button styles: --ui-btn-color / --ui-btn-text are unset unless the builder sets a button color or text
+   color (themeVars), so each variant keeps its own look by default. Once set, the color is the button's
+   background in every variant (and the outline's border); link buttons use it for their text. */
+.ui-btn--default {
+  background: var(--ui-btn-color, var(--ui-primary));
+  color: var(--ui-btn-text, var(--ui-primary-fg));
+}
+
+.ui-btn--default:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ui-btn-color, var(--ui-primary)) 90%, black);
+}
+
+.ui-btn--secondary {
+  background: var(--ui-btn-color, var(--ui-muted));
+  color: var(--ui-btn-text, var(--ui-fg));
+}
+
+.ui-btn--secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ui-btn-color, var(--ui-muted)) 85%, var(--ui-fg));
+}
+
+.ui-btn--outline {
+  background: var(--ui-btn-color, var(--ui-bg));
+  border-color: var(--ui-btn-color, var(--ui-border));
+  color: var(--ui-btn-text, var(--ui-fg));
+  box-shadow: var(--ui-shadow);
+}
+
+.ui-btn--outline:hover:not(:disabled),
+.ui-btn--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ui-btn-color, var(--ui-muted)) 92%, var(--ui-fg));
+}
+
+.ui-btn--ghost {
+  background: var(--ui-btn-color, transparent);
+  color: var(--ui-btn-text, var(--ui-fg));
+}
+
+.ui-btn--destructive {
+  background: var(--ui-btn-color, var(--ui-destructive));
+  color: var(--ui-btn-text, #fff);
+}
+
+/* The theme has no on-danger colour, and white on a light danger red (a dark theme's #f87171) measured 2.8:1 (pack
+   audit SP-05, 2026-10-23). The text is black or white from the button colour's lightness: at L* 49.4 both give the
+   same contrast, so the one chosen is always the stronger of the two (4.6:1 or better). */
+@supports (color: lch(from red l c h)) {
+  .ui-btn--destructive {
+    color: var(--ui-btn-text, lch(from var(--ui-btn-color, var(--ui-destructive)) clamp(0, (49.4 - l) * 1000, 100) 0 0));
+  }
+  /* The darker hover background picks its own. */
+  .ui-btn--destructive:hover:not(:disabled) {
+    color: var(
+      --ui-btn-text,
+      lch(from color-mix(in srgb, var(--ui-btn-color, var(--ui-destructive)) 88%, black) clamp(0, (49.4 - l) * 1000, 100) 0 0)
+    );
+  }
+}
+
+.ui-btn--destructive:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ui-btn-color, var(--ui-destructive)) 88%, black);
+}
+
+.ui-btn--link {
+  background: transparent;
+  color: var(--ui-btn-text, var(--ui-btn-color, var(--ui-primary)));
+  text-underline-offset: 4px;
+}
+
+.ui-btn--link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.ui-spin {
+  width: 14px;
+  height: 14px;
+  animation: ui-spin 0.8s linear infinite;
+}
+
+@keyframes ui-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- Input / Textarea ---- */
+.ui-input,
+.ui-textarea,
+.ui-select-trigger {
+  width: 100%;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  box-shadow: var(--ui-shadow);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.ui-input {
+  height: 36px;
+  padding: 0 12px;
+}
+
+.ui-textarea {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 12px;
+  resize: none;
+}
+
+.ui-input::placeholder,
+.ui-textarea::placeholder {
+  color: var(--ui-muted-fg);
+}
+
+.ui-input:disabled,
+.ui-textarea:disabled,
+.ui-select-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-input[aria-invalid='true'] {
+  border-color: var(--ui-destructive);
+}
+
+/* ---- Select ---- */
+.ui-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ui-select-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ui-ring);
+  border-color: var(--ui-primary);
+}
+
+.ui-select-trigger[data-placeholder] {
+  color: var(--ui-muted-fg);
+}
+
+.ui-select-trigger > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-icon-muted {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
+/* ---- Popups (select list, dropdown menu) ---- */
+.ui-popup {
+  z-index: 50;
+}
+
+.ui-menu {
+  min-width: var(--radix-select-trigger-width, 8rem);
+  max-height: min(var(--radix-select-content-available-height, 320px), 320px);
+  overflow-y: auto;
+  padding: 4px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-shadow-lg);
+  animation: ui-pop-in 0.12s ease-out;
+}
+
+@keyframes ui-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.ui-menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 28px;
+  /* 4px at the 6px default; follows an app theme's radius, as the menu around it does. */
+  border-radius: calc(var(--ui-radius) - 2px);
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ui-menu-item--plain {
+  padding-left: 8px;
+}
+
+.ui-menu-item[data-highlighted] {
+  background: var(--ui-muted);
+}
+
+.ui-menu-item[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.ui-menu-item--destructive {
+  color: var(--ui-destructive);
+}
+
+.ui-menu-indicator {
+  position: absolute;
+  left: 8px;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+.ui-menu-separator {
+  height: 1px;
+  margin: 4px -4px;
+  background: var(--ui-border);
+}
+
+.ui-menu-label {
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ui-muted-fg);
+}
+
+/* ---- Checkbox / Switch / Radio ---- */
+.ui-check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  height: 100%;
+}
+
+.ui-check-row .ui-label {
+  cursor: pointer;
+}
+
+.ui-check-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* UI 2.0's check row (CheckedRow): the control, 12px, then the label over the note 6px apart, top aligned. */
+.uc-check-row {
+  gap: 12px;
+}
+.uc-check-row > .ui-check-text {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  line-height: 1;
+}
+.uc-check-row > .ui-checkbox {
+  margin-top: 0;
+}
+
+.ui-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  background: var(--ui-bg);
+  box-shadow: var(--ui-shadow);
+  cursor: pointer;
+}
+
+.ui-checkbox[data-state='checked'] {
+  background: var(--ui-primary);
+  border-color: var(--ui-primary);
+  color: var(--ui-primary-fg);
+}
+
+.ui-checkbox:disabled,
+.ui-switch:disabled,
+.ui-radio:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-checkbox svg {
+  width: 12px;
+  height: 12px;
+}
+
+.ui-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--ui-border);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.ui-switch[data-state='checked'] {
+  background: var(--ui-primary);
+}
+
+.ui-switch-thumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  transition: transform 0.15s;
+}
+
+.ui-switch-thumb[data-state='checked'] {
+  transform: translateX(16px);
+}
+
+.ui-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ui-radio-group[data-orientation='horizontal'] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ui-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-radio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  background: var(--ui-bg);
+  box-shadow: var(--ui-shadow);
+  cursor: pointer;
+}
+
+.ui-radio[data-state='checked'] {
+  border-color: var(--ui-primary);
+}
+
+.ui-radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ui-primary);
+}
+
+.ui-radio-item label {
+  cursor: pointer;
+}
+
+/* ---- Slider ---- */
+.ui-slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.ui-slider-value {
+  font-size: 13px;
+  color: var(--ui-muted-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 20px;
+  touch-action: none;
+  user-select: none;
+}
+
+.ui-slider[data-disabled] {
+  opacity: 0.5;
+}
+
+.ui-slider-track {
+  position: relative;
+  flex-grow: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ui-muted);
+}
+
+.ui-slider-range {
+  position: absolute;
+  height: 100%;
+  background: var(--ui-primary);
+}
+
+.ui-slider-thumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--ui-primary);
+  border-radius: 999px;
+  background: var(--ui-bg);
+  box-shadow: var(--ui-shadow);
+  cursor: grab;
+}
+
+.ui-slider-thumb:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ui-ring);
+}
+
+/* ---- Toggle group ---- */
+.ui-toggle-group {
+  display: inline-flex;
+  width: 100%;
+  height: 36px;
+  gap: 4px;
+}
+
+.ui-toggle-group--outline {
+  gap: 0;
+}
+
+.ui-toggle {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--ui-radius);
+  background: transparent;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ui-toggle:hover:not(:disabled) {
+  background: var(--ui-muted);
+}
+
+.ui-toggle[data-state='on'] {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+
+.ui-toggle-group--outline .ui-toggle {
+  border-color: var(--ui-border);
+  border-radius: 0;
+  margin-left: -1px;
+  box-shadow: var(--ui-shadow);
+}
+
+.ui-toggle-group--outline .ui-toggle:first-child {
+  border-radius: var(--ui-radius) 0 0 var(--ui-radius);
+  margin-left: 0;
+}
+
+.ui-toggle-group--outline .ui-toggle:last-child {
+  border-radius: 0 var(--ui-radius) var(--ui-radius) 0;
+}
+
+.ui-toggle-group--outline .ui-toggle[data-state='on'] {
+  background: color-mix(in srgb, var(--ui-primary) 10%, var(--ui-bg));
+  color: var(--ui-primary);
+}
+
+.ui-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---- OTP ---- */
+.ui-otp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-otp-slot {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  box-shadow: var(--ui-shadow);
+  caret-color: var(--ui-primary);
+}
+
+.ui-otp-slot:focus {
+  outline: none;
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 3px var(--ui-ring);
+}
+
+.ui-otp-sep {
+  color: var(--ui-muted-fg);
+}
+
+/* ---- Badge ---- */
+.ui-badge-wrap {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 2px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-badge--clickable {
+  cursor: pointer;
+}
+
+.ui-badge--default {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+}
+
+.ui-badge--secondary {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+
+.ui-badge--outline {
+  border-color: var(--ui-border);
+}
+
+.ui-badge--destructive {
+  background: var(--ui-destructive);
+  color: #fff;
+}
+
+.ui-badge--success {
+  background: color-mix(in srgb, var(--ui-success) 14%, transparent);
+  color: var(--ui-success);
+}
+
+.ui-badge--warning {
+  background: color-mix(in srgb, var(--ui-warning) 14%, transparent);
+  color: var(--ui-warning);
+}
+
+/* ---- Alert ---- */
+.ui-alert {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  height: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-bg);
+}
+
+.ui-alert > svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.ui-alert-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.ui-alert-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ui-alert-desc {
+  margin-top: 2px;
+  color: var(--ui-muted-fg);
+}
+
+.ui-alert--info {
+  border-color: color-mix(in srgb, var(--ui-info) 35%, transparent);
+  background: color-mix(in srgb, var(--ui-info) 6%, var(--ui-bg));
+}
+
+.ui-alert--info > svg,
+.ui-alert--info .ui-alert-title {
+  color: var(--ui-info);
+}
+
+.ui-alert--success {
+  border-color: color-mix(in srgb, var(--ui-success) 35%, transparent);
+  background: color-mix(in srgb, var(--ui-success) 6%, var(--ui-bg));
+}
+
+.ui-alert--success > svg,
+.ui-alert--success .ui-alert-title {
+  color: var(--ui-success);
+}
+
+.ui-alert--warning {
+  border-color: color-mix(in srgb, var(--ui-warning) 35%, transparent);
+  background: color-mix(in srgb, var(--ui-warning) 6%, var(--ui-bg));
+}
+
+.ui-alert--warning > svg,
+.ui-alert--warning .ui-alert-title {
+  color: var(--ui-warning);
+}
+
+.ui-alert--destructive {
+  border-color: color-mix(in srgb, var(--ui-destructive) 40%, transparent);
+  background: color-mix(in srgb, var(--ui-destructive) 6%, var(--ui-bg));
+}
+
+.ui-alert--destructive > svg,
+.ui-alert--destructive .ui-alert-title {
+  color: var(--ui-destructive);
+}
+
+.ui-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ui-muted-fg);
+  cursor: pointer;
+}
+
+.ui-icon-btn:hover {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+
+.ui-icon-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---- Avatar ---- */
+.ui-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+}
+
+.ui-avatar {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ui-muted);
+}
+
+.ui-avatar--square {
+  border-radius: 8px;
+}
+
+.ui-avatar--sm {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.ui-avatar--md {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
+.ui-avatar--lg {
+  width: 56px;
+  height: 56px;
+  font-size: 18px;
+}
+
+.ui-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ui-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 600;
+  color: var(--ui-muted-fg);
+}
+
+.ui-avatar-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-avatar-sub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-muted-fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-min0 {
+  min-width: 0;
+}
+
+/* ---- Progress ---- */
+.ui-progress {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ui-muted);
+}
+
+.ui-progress-bar {
+  width: 100%;
+  height: 100%;
+  background: var(--ui-primary);
+  transition: transform 0.3s ease;
+}
+
+.ui-progress--success .ui-progress-bar {
+  background: var(--ui-success);
+}
+
+.ui-progress--warning .ui-progress-bar {
+  background: var(--ui-warning);
+}
+
+.ui-progress--destructive .ui-progress-bar {
+  background: var(--ui-destructive);
+}
+
+/* ---- Skeleton ---- */
+.ui-skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.ui-skeleton {
+  border-radius: var(--ui-radius);
+  background: color-mix(in srgb, var(--ui-fg) 10%, var(--ui-bg));
+  animation: ui-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes ui-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.ui-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ---- Card / Stat ---- */
+.ui-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px 20px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-bg);
+  box-shadow: var(--ui-shadow);
+}
+
+/* Stat, as UI 2.0 draws it. Each style is a --ui-stat-* variable on the root, with the theme as the fallback. */
+.ui-stat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ui-stat.is-card {
+  padding: 20px 24px;
+  border: 1px solid var(--ui-stat-border, var(--ui-border));
+  border-radius: var(--ui-stat-radius, calc(var(--ui-radius) + 4px));
+  background: var(--ui-stat-bg, var(--ui-bg));
+  box-shadow: var(--ui-shadow);
+}
+
+/* A narrow card (a phone's quarter-width KPI) keeps less padding, a short box too, so the figure fits. */
+.ui-stat.is-card.is-narrow {
+  padding-inline: 12px;
+}
+
+.ui-stat.is-card.is-short {
+  padding-block: 12px;
+}
+
+.ui-stat-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ui-stat-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ui-stat-content.is-short {
+  gap: 4px;
+}
+
+/* Too short for the label over the figure: the label beside it. */
+.ui-stat-content.is-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.ui-stat-top {
+  margin-bottom: 4px;
+}
+
+/* The chip wraps under the label when the card is too narrow for both. */
+.ui-stat-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.ui-stat-content.is-inline .ui-stat-head {
+  flex: 1;
+}
+
+.ui-stat-label {
+  flex: 1 1 64px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ui-stat-label, var(--ui-muted-fg));
+  text-transform: var(--ui-stat-label-case, none);
+  letter-spacing: var(--ui-stat-label-tracking, normal);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+/* Two lines' height whether the label wraps or not, so Stats side by side start their figures level. */
+.ui-stat-label.is-reserved {
+  -webkit-line-clamp: 2;
+  min-height: 40px;
+  overflow-wrap: anywhere;
+}
+
+.ui-stat-label.is-single {
+  -webkit-line-clamp: 1;
+}
+
+.ui-stat-figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.ui-stat-content.is-inline .ui-stat-figure {
+  flex-shrink: 0;
+}
+
+.ui-stat-value {
+  font-family: var(--ui-stat-value-font, inherit);
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-stat-value, var(--ui-fg));
+}
+
+.ui-stat-value--sm {
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.ui-stat-value--lg {
+  font-size: 36px;
+  line-height: 40px;
+}
+
+.ui-stat-content.is-short .ui-stat-value {
+  line-height: 1.25;
+}
+
+/* The change chip: an outline badge, or the trend's colour on a light tint. A figure keeps its width, words take at
+   most 60% of the row and wrap. */
+.ui-stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 60%;
+  padding: 2px 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--ui-fg);
+}
+
+.ui-stat-chip svg {
+  flex-shrink: 0;
+}
+
+.ui-stat-chip.is-figure {
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.ui-stat-chip.is-figure .ui-stat-chip-text {
+  white-space: nowrap;
+}
+
+.ui-stat-chip.is-words .ui-stat-chip-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-stat-chip.is-toned {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--ui-stat-tone) 14%, transparent);
+  color: color-mix(in srgb, var(--ui-stat-tone) 85%, var(--ui-fg));
+}
+
+.ui-stat-context {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-stat-help, var(--ui-muted-fg));
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.ui-stat-footnote {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ui-stat-help, var(--ui-muted-fg));
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* The icon: a tinted tile (square or circle) or the bare glyph. */
+.ui-stat-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--ui-stat-icon, var(--ui-primary));
+  border-radius: calc(var(--ui-radius) - 2px);
+}
+
+.ui-stat-icon.is-square,
+.ui-stat-icon.is-circle {
+  background: var(--ui-stat-icon-chip, color-mix(in srgb, var(--ui-stat-icon, var(--ui-primary)) 12%, transparent));
+}
+
+.ui-stat-icon.is-circle {
+  border-radius: 999px;
+}
+
+.ui-stat-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.ui-stat-progress-track {
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ui-muted);
+}
+
+.ui-stat-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ui-stat-progress, var(--ui-primary));
+  transition: width 0.3s ease;
+}
+
+.ui-stat-spark {
+  display: block;
+  flex-shrink: 0;
+  width: 100%;
+  height: 36px;
+  margin-top: 4px;
+  color: var(--ui-stat-spark, var(--ui-primary));
+}
+
+/* ---- Tabs ---- */
+.ui-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.ui-tabs-list {
+  display: inline-flex;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: 8px;
+  background: var(--ui-muted);
+  overflow: hidden;
+}
+
+.ui-tabs--underline .ui-tabs-list {
+  align-self: stretch;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.ui-tab {
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ui-muted-fg);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ui-tab[data-state='active'] {
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  box-shadow: var(--ui-shadow);
+}
+
+.ui-tabs--underline .ui-tab {
+  padding: 8px 12px;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.ui-tabs--underline .ui-tab[data-state='active'] {
+  background: transparent;
+  box-shadow: none;
+  border-bottom-color: var(--ui-primary);
+}
+
+.ui-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ui-ring);
+}
+
+.ui-tab-panel {
+  flex: 1;
+  min-height: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-bg);
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.ui-tab-panel:focus-visible {
+  outline: none;
+}
+
+/* ---- Accordion ---- */
+.ui-accordion-item {
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.ui-accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ui-accordion-trigger:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.ui-accordion-trigger svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--ui-muted-fg);
+  transition: transform 0.2s;
+}
+
+.ui-accordion-trigger[data-state='open'] svg {
+  transform: rotate(180deg);
+}
+
+.ui-accordion-content {
+  overflow: hidden;
+  color: var(--ui-muted-fg);
+  white-space: pre-wrap;
+}
+
+.ui-accordion-content[data-state='open'] {
+  animation: ui-accordion-down 0.2s ease-out;
+}
+
+.ui-accordion-content[data-state='closed'] {
+  animation: ui-accordion-up 0.2s ease-out;
+}
+
+.ui-accordion-content-inner {
+  padding-bottom: 12px;
+}
+
+@keyframes ui-accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes ui-accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+/* ---- Dialog ---- */
+.ui-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgb(0 0 0 / 0.45);
+  animation: ui-fade-in 0.15s ease-out;
+}
+
+.ui-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(440px, calc(100vw - 32px));
+  padding: 24px;
+  border: 1px solid var(--ui-border);
+  /* 10px at the 6px default; follows an app theme's radius (12px theme fields sat beside a 10px dialog). */
+  border-radius: calc(var(--ui-radius) + 4px);
+  background: var(--ui-bg);
+  box-shadow: var(--ui-shadow-lg);
+  transform: translate(-50%, -50%);
+  animation: ui-dialog-in 0.15s ease-out;
+}
+
+.ui-dialog:focus-visible {
+  outline: none;
+}
+
+@keyframes ui-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ui-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+}
+
+.ui-dialog-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.ui-dialog-desc {
+  margin: 6px 0 0;
+  color: var(--ui-muted-fg);
+  white-space: pre-wrap;
+}
+
+.ui-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ui-dialog-footer .ui-btn {
+  width: auto;
+}
+
+.ui-dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+/* Containers (ToolJet.Slot) */
+.ui-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow);
+  overflow: hidden;
+}
+.ui-card-title {
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+}
+.ui-card-description {
+  color: var(--ui-muted-fg);
+}
+.ui-card-body {
+  flex: 1;
+  margin-top: 8px;
+}
+.ui-tabs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.ui-tabs-container .ui-tab[data-state='active'] {
+  color: var(--ui-tab-accent);
+  border-bottom-color: var(--ui-tab-accent);
+}
+.ui-tabs-container-panel {
+  flex: 1;
+  min-height: 0;
+  padding-top: 8px;
+}
+/* forceMount keeps inactive panels mounted (so their slots and components stay); hide them here */
+.ui-tabs-container-panel[data-state='inactive'] {
+  display: none;
+}
+.ui-slot-fill {
+  width: 100%;
+  height: 100%;
+}
+
+/* An Equal heights row stretches the box (the host sets tj-cc-stretch): card surfaces fill it, as UI 2.0's do. */
+.tj-cc-stretch .ui-stat.is-card,
+.tj-cc-stretch .ui > .ui-card { height: 100%; }
+
+/* A disabled component is dimmed once, by the host (RenderWidget's .disabled, half opacity): while the host disables
+   it, the marker from lib/hostDisabled.tsx comes first in its root, and the parts below that dim themselves when
+   disabled keep full opacity, as UI 2.0's do under .ui2-disabled. Dimmed twice, a disabled Button or field read at a
+   quarter opacity. Without the marker (a disabled option, a step out of reach, the pack's earlier Disable property)
+   they dim as before. :is() takes its most specific selector, so these outrank every rule that dims a part. Left out:
+   the carousel's hidden end arrows (opacity 0) and Leaflet's zoom limits, which are the component's own states. */
+template[data-tj-host-disabled] ~ :is(
+    .ui-btn, .ui-input, .ui-textarea, .ui-select-trigger, .ui-checkbox, .ui-switch, .ui-radio, .ui-toggle,
+    .ui-stepper-btn, .ui-time-cell, .ui-calendar-day, .ui-page, .ui-nav-item, .ui-chat-send, .ui-menu-item--button,
+    .uc-select-trigger, .uc-cal-arrow, .uc-cal-day, .uc-col-opt, .ui2-step, .ui2-color-trigger, .ui2-file-x,
+    .ui2c-send, .n2-tab, .n2-nav-item, .n2-carousel-arrow, .n2-page
+  ):disabled,
+template[data-tj-host-disabled] ~ * :is(
+    .ui-btn, .ui-input, .ui-textarea, .ui-select-trigger, .ui-checkbox, .ui-switch, .ui-radio, .ui-toggle,
+    .ui-stepper-btn, .ui-time-cell, .ui-calendar-day, .ui-page, .ui-nav-item, .ui-chat-send, .ui-menu-item--button,
+    .uc-select-trigger, .uc-cal-arrow, .uc-cal-day, .uc-col-opt, .ui2-step, .ui2-color-trigger, .ui2-file-x,
+    .ui2c-send, .n2-tab, .n2-nav-item, .n2-carousel-arrow, .n2-page
+  ):disabled,
+template[data-tj-host-disabled] ~ :is(.ui-slider, .ui-menu-item, .uc-item, .n2-menu-item)[data-disabled],
+template[data-tj-host-disabled] ~ * :is(.ui-slider, .ui-menu-item, .uc-item, .n2-menu-item)[data-disabled],
+template[data-tj-host-disabled] ~ :is(
+    .ui-chips, .ui-dropzone, .uc-multi, .uc-calendar-box, .ui2-group, .ui2-otp, .ui2-tags, .n2-tab-panel,
+    .n2-step-tab, .n2-steps-btn, .n2-link, .t2-table
+  ).is-disabled,
+template[data-tj-host-disabled] ~ * :is(
+    .ui-chips, .ui-dropzone, .uc-multi, .uc-calendar-box, .ui2-group, .ui2-otp, .ui2-tags, .n2-tab-panel,
+    .n2-step-tab, .n2-steps-btn, .n2-link, .t2-table
+  ).is-disabled,
+template[data-tj-host-disabled] ~ .ui2-drop.is-off,
+template[data-tj-host-disabled] ~ * .ui2-drop.is-off,
+template[data-tj-host-disabled] ~ .ui-map[data-disabled] .ui-map-canvas,
+template[data-tj-host-disabled] ~ * .ui-map[data-disabled] .ui-map-canvas {
+  opacity: 1;
+}
