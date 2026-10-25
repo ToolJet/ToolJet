@@ -50,7 +50,14 @@ const TOKEN_CSS = `
 
 // One set of constructable stylesheets per library revision, adopted by every instance and popup layer, instead of
 // a <style> copy of the library CSS in each shadow root (jsdom and old browsers fall back to <style> elements).
-type Sheets = { adopt: (root: ShadowRoot) => void; setLibraryCss: (css: string) => void };
+// release() drops a root from the sheets on unmount. Chrome's constructed sheet holds every tree scope that adopted
+// it strongly, so a detached shadow root kept in adoptedStyleSheets stayed alive with its tj-cc-root and the ~140
+// listeners React puts on every portal container: ~135 listeners and the widget's DOM leaked per mount (C-04).
+type Sheets = {
+  adopt: (root: ShadowRoot) => void;
+  release: (root: ShadowRoot) => void;
+  setLibraryCss: (css: string) => void;
+};
 const sheetsByLibrary = new Map<string, Sheets>();
 const canAdopt = () =>
   typeof CSSStyleSheet !== 'undefined' &&
@@ -68,19 +75,27 @@ const sheetsFor = (key: string): Sheets => {
     };
     const library = make('');
     const list = [make(BASE_CSS), library, make(TOKEN_CSS)];
-    sheets = { adopt: (root) => (root.adoptedStyleSheets = list), setLibraryCss: (css) => library.replaceSync(css) };
+    sheets = {
+      adopt: (root) => (root.adoptedStyleSheets = list),
+      release: (root) => (root.adoptedStyleSheets = []),
+      setLibraryCss: (css) => library.replaceSync(css),
+    };
   } else {
-    const roots: ShadowRoot[] = [];
+    const roots = new Set<ShadowRoot>();
     let libraryCss = '';
     sheets = {
       adopt: (root) => {
-        roots.push(root);
+        roots.add(root);
         [BASE_CSS, libraryCss, TOKEN_CSS].forEach((text, i) => {
           const el = document.createElement('style');
           el.textContent = text;
           el.dataset.tjSheet = String(i);
           root.prepend(el);
         });
+      },
+      release: (root) => {
+        roots.delete(root);
+        root.querySelectorAll('style[data-tj-sheet]').forEach((el) => el.remove());
       },
       setLibraryCss: (css) => {
         libraryCss = css;
@@ -113,7 +128,19 @@ const acquireLayer = (key: string, sheets: Sheets) => {
   root.appendChild(overlay);
   document.body.appendChild(host);
   const release = isolateInteractiveEvents(host);
-  const layer = { overlay, host, count: 1, release: () => (release(), host.remove()) };
+  const layer = {
+    overlay,
+    host,
+    count: 1,
+    release: () => {
+      release();
+      sheets.release(root);
+      // A pack may keep the layer's root after it is gone (Ant's rc-util style cache is keyed by container): empty it,
+      // so the popups and the listeners React put on the overlay go with the layer.
+      root.replaceChildren();
+      host.remove();
+    },
+  };
   layers.set(key, layer);
   return layer;
 };
@@ -253,6 +280,18 @@ const InlineLibraryComponent = ({
     return () => {
       releaseHost();
       releaseLayer(sheetKey);
+      sheets.release(root);
+      // A pack may keep the root after the unmount (Ant's icons register every shadow root in rc-util's style
+      // container cache): empty it, so it no longer reaches the mount, its listeners or the popup layer.
+      delete (root as ShadowRoot & { tjOverlay?: HTMLElement }).tjOverlay;
+      root.replaceChildren();
+      // And through root.host the kept root reached the whole unmounted page. Once React has removed the tree, cut the
+      // host out of it; a host still connected (a hidden Suspense tree, a sheet change) is left alone.
+      setTimeout(() => {
+        if (el.isConnected) return;
+        el.remove();
+        el.replaceChildren();
+      }, 0);
     };
   }, [sheetKey]);
 
