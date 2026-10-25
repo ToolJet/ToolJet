@@ -202,6 +202,41 @@ describe('B-02: the MUI Select menu draws at most 500 options', () => {
   });
 });
 
+describe('B-03: MUI DataGrid headers keep room for their title next to the hover icons', () => {
+  // 30 flex columns in a 600px grid shrank to MUI's 50px least: on hover the sort and menu buttons took the whole
+  // header, the title went to 0px and a click on it opened the column menu instead of sorting.
+  const gridSize = () => {
+    const real = Element.prototype.getBoundingClientRect;
+    stubs.push(() => (Element.prototype.getBoundingClientRect = real));
+    Element.prototype.getBoundingClientRect = function () {
+      if (!this.classList?.contains('MuiDataGrid-main')) return real.call(this);
+      return { x: 0, y: 0, left: 0, top: 0, right: 600, bottom: 400, width: 600, height: 400, toJSON() {} };
+    };
+  };
+  const headerWidth = (c, field) =>
+    parseFloat(c.root().querySelector(`[role="columnheader"][data-field="${field}"]`).style.width);
+  const cols = [
+    { field: 'id', headerName: 'ID' },
+    ...Array.from({ length: 29 }, (_, i) => ({ field: `c${i + 1}`, width: 40 })),
+  ];
+
+  it('a column is at least as wide as its padding, both icons and some title', async () => {
+    gridSize();
+    const c = await mount('mui', 'DataGrid', { rows: [{ id: 1, c1: 2 }], columns: cols });
+    await waitFor(() => expect(headerWidth(c, 'id')).toBeGreaterThan(0));
+    expect(headerWidth(c, 'id')).toBe(108);
+    // A narrower given width is raised to the same floor.
+    expect(headerWidth(c, 'c1')).toBe(108);
+  });
+
+  it('the floor drops the menu icon when the column menu is off', async () => {
+    gridSize();
+    const c = await mount('mui', 'DataGrid', { rows: [{ id: 1 }], columns: cols, disableColumnMenu: true });
+    await waitFor(() => expect(headerWidth(c, 'id')).toBeGreaterThan(0));
+    expect(headerWidth(c, 'id')).toBe(80);
+  });
+});
+
 describe('B-04: the shadcn ScatterChart says when it samples its points', () => {
   it('samples evenly across the data, the first and last kept', () => {
     const rows = Array.from({ length: 5000 }, (_, i) => i);
