@@ -68,15 +68,19 @@ export const useThemeStyles = (): ThemeOverrides => {
   );
 };
 
-/** The brand the charts' default series palette leads with: undefined in an unthemed app without a Primary style. */
-const ChartBrand = createContext<string | undefined>(undefined);
+/** The brand the charts' default series palette leads with (undefined in an unthemed app without a Primary style),
+ *  and the applied app theme (its tokens are undefined without one). */
+const ChartLook = createContext<{ brand?: string; app: AppTheme }>({ app: { mode: 'light' } });
+
+/** Whether the app applies a ToolJet theme (not the basic one): the pack then follows its tokens, else stock MUI. */
+export const useIsThemed = () => !!useContext(ChartLook).app.brand;
 
 /** A chart's series colours: its own colors list, else the brand-led palette, else undefined (MUI X's own). */
 export const useSeriesColors = (given: string[]): string[] | undefined => {
-  const brand = useContext(ChartBrand);
+  const { brand, app } = useContext(ChartLook);
   return useMemo(
-    () => (given.length ? given : brand ? seriesPalette(brand) : undefined),
-    [given.join('\u0000'), brand] // eslint-disable-line react-hooks/exhaustive-deps
+    () => (given.length ? given : brand ? seriesPalette(brand, app.brand ? app : undefined) : undefined),
+    [given.join('\u0000'), brand, app] // eslint-disable-line react-hooks/exhaustive-deps
   );
 };
 
@@ -173,6 +177,7 @@ export const MuiProvider = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const theme = useMemo(() => buildTheme(app, resolved, container), [app, resolvedKey, container]);
   const chartBrand = resolved.primary ?? app.brand;
+  const chartLook = useMemo(() => ({ brand: chartBrand, app }), [chartBrand, app]);
   return (
     <div
       ref={setRoot}
@@ -182,7 +187,7 @@ export const MuiProvider = ({
       <CacheProvider value={cache}>
         <ThemeProvider theme={theme}>
           <PopupContainer.Provider value={container}>
-            <ChartBrand.Provider value={chartBrand}>{attached ? children : null}</ChartBrand.Provider>
+            <ChartLook.Provider value={chartLook}>{attached ? children : null}</ChartLook.Provider>
           </PopupContainer.Provider>
         </ThemeProvider>
       </CacheProvider>

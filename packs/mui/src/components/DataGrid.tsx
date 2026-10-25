@@ -5,7 +5,9 @@ import { DataGrid as MuiDataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridPaginationModel, GridRowSelectionModel, GridSortModel } from '@mui/x-data-grid';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
-import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
+import { MuiProvider, useIsThemed, useThemeStyles } from '../lib/MuiProvider';
+import { chipFamily } from '../lib/theme';
+import type { Theme } from '@mui/material/styles';
 import { rowIdOf, rowKeyOf, sameRecord, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, toNumber } from '../lib/format';
 import { SAMPLE } from '../lib/samples';
@@ -43,6 +45,22 @@ const isFalse = (v: unknown) => v === false || v === 'false' || v === '{{false}}
 const isHidden = (r: Row) => r.hidden === true || r.hidden === 'true' || isFalse(r.visible) || isFalse(r.columnVisibility);
 const CHIP_COLORS = new Set(['default', 'primary', 'secondary', 'error', 'info', 'success', 'warning']);
 const UI2_FORMATS: Record<string, string> = { currency: 'currency', percent: 'percent', badge: 'chip', status: 'chip', tag: 'chip', tags: 'chip' };
+
+/**
+ * A chip column's cell. A palette name goes to color; a CSS colour (UI 2.0's badgeColors) tints the chip instead, its
+ * text the colour's readable ink on that tint (lib/ink.ts). Under an applied app theme a CSS colour or colour word is
+ * drawn in the theme palette colour of its hue (lib/theme chipFamily), so an author's stock blue reads as the brand.
+ */
+const StatusChip = ({ label, color }: { label: string; color: string }) => {
+  const themed = useIsThemed();
+  const family = themed && color && !CHIP_COLORS.has(color) ? chipFamily(color) : undefined;
+  if (family === null) return <Chip size="small" label={label} />;
+  if (CHIP_COLORS.has(color)) return <Chip size="small" label={label} color={color as 'default'} />;
+  const css = /^(#|rgb|hsl)/i.test(color) ? color : '';
+  if (!family && !css) return <Chip size="small" label={label} />;
+  const tint = (t: Theme) => (family ? t.palette[family].main : css);
+  return <Chip size="small" label={label} sx={(t) => ({ color: themeInk(tint(t), t), bgcolor: `color-mix(in srgb, ${tint(t)} 14%, transparent)` })} />;
+};
 
 const toColumns = (raw: unknown, rows: Row[]): Column[] => {
   const given = toArray(raw)
@@ -121,18 +139,7 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
   } else if (format === 'chip') {
     col.renderCell = (p) => {
       if (p.value === undefined || p.value === null || p.value === '') return null;
-      // A palette name goes to color; a CSS colour (UI 2.0's badgeColors) tints the chip instead.
-      const c = str(colors?.[str(p.value)]).trim();
-      if (CHIP_COLORS.has(c)) return <Chip size="small" label={str(p.value)} color={c as 'default'} />;
-      const css = /^(#|rgb|hsl)/i.test(c) ? c : '';
-      // The colour tints the chip; its text is the colour's readable ink on that tint (lib/ink.ts).
-      return (
-        <Chip
-          size="small"
-          label={str(p.value)}
-          sx={css ? (t) => ({ color: themeInk(css, t), bgcolor: `color-mix(in srgb, ${css} 14%, transparent)` }) : undefined}
-        />
-      );
+      return <StatusChip label={str(p.value)} color={str(colors?.[str(p.value)]).trim()} />;
     };
   } else if (!col.type) {
     col.valueFormatter = (v: unknown) => (isIdField(c.field) ? str(v) : formatCell(v, format));

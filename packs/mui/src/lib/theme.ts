@@ -1,4 +1,4 @@
-import { createTheme, darken, getLuminance, lighten } from '@mui/material/styles';
+import { createTheme, darken, decomposeColor, getLuminance, lighten } from '@mui/material/styles';
 import type { Theme, ThemeOptions } from '@mui/material/styles';
 
 // The pack is drawn in Material UI's own look (pack.json themeMode "own"): the host defines ToolJet's --tj-* theme
@@ -99,10 +99,75 @@ export const resolveOverrides = (o: ThemeOverrides, el: Element | null): ThemeOv
 });
 
 // The charts' series colours when a chart sets no colors list: led by the brand (the Primary style, else the app
-// theme's), then tints and a deeper shade of it, then a palette that sits well beside it (as the shadcn pack's
-// seriesColors). Computed colours, not color-mix(): MUI X fades and highlights series by parsing them.
+// theme's), then tints and a deeper shade of it. In a themed app the rest comes from the theme too: its system colours,
+// then the brand mixed with them and a deeper shade (as the Ant pack's charts); with only a Primary style (no app
+// theme), a palette that sits well beside it (as the shadcn pack's seriesColors). Computed colours, not color-mix():
+// MUI X fades and highlights series by parsing them.
 const SERIES_TAIL = ['#2a9d90', '#e76e50', '#274754', '#e8c468', '#f4a462', '#8b5cf6', '#06b6d4', '#ec4899'];
-export const seriesPalette = (brand: string): string[] => [brand, lighten(brand, 0.38), lighten(brand, 0.66), darken(brand, 0.3), ...SERIES_TAIL];
+type SystemColours = Pick<AppTheme, 'success' | 'warning' | 'danger'>;
+export const seriesPalette = (brand: string, system?: SystemColours): string[] => {
+  const lead = [brand, lighten(brand, 0.38), lighten(brand, 0.66), darken(brand, 0.3)];
+  if (!system?.success || !system.warning || !system.danger) return [...lead, ...SERIES_TAIL];
+  return [
+    ...lead,
+    system.success,
+    system.warning,
+    system.danger,
+    emphasize(brand, system.success),
+    emphasize(brand, system.danger),
+    darken(brand, 0.55),
+  ];
+};
+// Half of each of two colours, as rgb().
+const emphasize = (a: string, b: string) => {
+  const x = decomposeColor(a).values;
+  const y = decomposeColor(b).values;
+  return `rgb(${[0, 1, 2].map((i) => Math.round((x[i] + y[i]) / 2)).join(', ')})`;
+};
+
+// A status chip's colour under an applied theme: a CSS colour or colour word an author gave (a DataGrid's badgeColors
+// '#2576CE', 'green') reads as the theme palette colour of its hue, as the Ant pack's tags do: green success, amber and
+// orange warning, red error, blue and cyan primary, purple and magenta secondary (a deeper shade of the brand). A grey
+// gives no family (the neutral chip).
+export type ChipFamily = 'primary' | 'secondary' | 'success' | 'warning' | 'error';
+const WORD_FAMILY: Record<string, ChipFamily | null> = {
+  red: 'error', rose: 'error', crimson: 'error', danger: 'error', destructive: 'error', negative: 'error', volcano: 'error',
+  orange: 'warning', amber: 'warning', yellow: 'warning', gold: 'warning',
+  green: 'success', emerald: 'success', lime: 'success', positive: 'success',
+  blue: 'primary', sky: 'primary', cyan: 'primary', teal: 'primary', indigo: 'primary', navy: 'primary', geekblue: 'primary',
+  purple: 'secondary', violet: 'secondary', magenta: 'secondary', pink: 'secondary', fuchsia: 'secondary',
+  gray: null, grey: null, slate: null, neutral: null, default: null,
+};
+export const chipFamily = (color: string): ChipFamily | null | undefined => {
+  const t = color.trim().toLowerCase();
+  const word = t.replace(/[-_\s]?\d{2,3}$/, '');
+  if (word in WORD_FAMILY) return WORD_FAMILY[word];
+  if (!/^(#|rgb|hsl)/.test(t)) return undefined;
+  let hsl: number[];
+  try {
+    const d = decomposeColor(t.startsWith('hsl') ? t : rgbToHsl(t));
+    hsl = d.values as number[];
+  } catch {
+    return undefined;
+  }
+  const [h, s, l] = hsl;
+  if (s < 25 || l < 8 || l > 96) return null;
+  if (h < 15 || h >= 345) return 'error';
+  if (h < 62) return 'warning';
+  if (h < 165) return 'success';
+  if (h < 250) return 'primary';
+  return 'secondary';
+};
+const rgbToHsl = (color: string) => {
+  const [r, g, b] = decomposeColor(color).values.slice(0, 3).map((v: number) => v / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  const d = max - min;
+  const s = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
+  const h = !d ? 0 : max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return `hsl(${Math.round((h * 60 + 360) % 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+};
 
 export const sameAppTheme = (a: AppTheme, b: AppTheme) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -129,8 +194,10 @@ export const buildTheme = (app: AppTheme, o: ThemeOverrides, container: HTMLElem
       ...(app.danger ? { error: { main: app.danger } } : {}),
       ...(app.success ? { success: { main: app.success } } : {}),
       ...(app.warning ? { warning: { main: app.warning } } : {}),
-      // Info is the brand in a themed app, as the Ant pack maps it (MUI's stock info is a light blue of its own).
+      // Info is the brand in a themed app, as the Ant pack maps it (MUI's stock info is a light blue of its own), and
+      // secondary a deeper shade of it (MUI's stock secondary is its own purple).
       ...(app.brand ? { info: defined({ main: app.brand, contrastText: app.onBrand }) as { main: string } } : {}),
+      ...(app.brand ? { secondary: { main: darken(app.brand, 0.3) } } : {}),
       ...(surface ? { background: { paper: surface, default: surface } } : {}),
       ...(o.textPrimary ?? app.text ? { text: defined({ primary: o.textPrimary ?? app.text, secondary: app.textMuted }) } : {}),
       ...(o.divider ?? app.borderWeak ? { divider: (o.divider ?? app.borderWeak)! } : {}),
