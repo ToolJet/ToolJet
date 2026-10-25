@@ -17,6 +17,10 @@ import { useMeasuredWidth } from './useMeasuredWidth';
 /* Pack contract v2: what the LibraryComponent host gives a pack component beyond the base SDK (inlineRuntime.ts
    PackHost). The validation, rows and popup drop areas live here; the control state is the widget's own. */
 
+// Events one widget may fire before the page runs again (usePackHost's fireHostEvent): above any real burst (the action
+// fuzz fires 50 in one frame, the packs' own self-toggle cap is 100).
+const EVENT_BURST = 200;
+
 const filled = (value) =>
   !(value === undefined || value === null || value === '' || (Array.isArray(value) && !value.length));
 
@@ -414,8 +418,29 @@ export const usePackHost = (
   // A component sets its value and fires its event in one go, before it renders again, while isValid follows the
   // render: an onChange that cleared a required field read isValid true. The new value is judged before the event.
   // Booleans are left to the render, as their "present" rule is the component's own.
+  // A handler that changes its own widget (onChange running clear or setValue on the field it came from) loops:
+  // the host runs a handler's actions as microtasks, so the page never got a turn (Codex PERF-01: Input clear,
+  // Ant resetFields, MUI TextField clear). No user action fires this many events from one widget before the page
+  // runs again, so past EVENT_BURST the rest of the burst is dropped, once, with a warning naming the loop.
+  const burst = useRef({ count: 0, warned: false });
   const fireHostEvent = useCallback(
     (name, options) => {
+      const b = burst.current;
+      if (b.count === 0)
+        setTimeout(() => {
+          burst.current = { count: 0, warned: false };
+        }, 0);
+      b.count += 1;
+      if (b.count > EVENT_BURST) {
+        if (!b.warned) {
+          b.warned = true;
+          console.warn(
+            `[LibraryComponent] ${id}: more than ${EVENT_BURST} "${name}" events without the page running; a handler ` +
+              'probably changes the widget that fired it. The rest of this burst is skipped.'
+          );
+        }
+        return Promise.resolve();
+      }
       const { key, value } = judged.current;
       const judge = latest.current.validate;
       if (typeof judge === 'function' && key && exposed.current.has(key)) {
@@ -427,7 +452,7 @@ export const usePackHost = (
       }
       return fireEvent?.(name, options);
     },
-    [fireEvent]
+    [fireEvent, id]
   );
 
   const { setRows, light } = usePackRows({

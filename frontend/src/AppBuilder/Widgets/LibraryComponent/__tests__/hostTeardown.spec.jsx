@@ -95,6 +95,32 @@ describe('pack host teardown', () => {
       expect(root.adoptedStyleSheets).toEqual([]);
       expect(layerRoot.adoptedStyleSheets).toEqual([]);
     });
+
+    // PERF-02 (Codex): each mount handed the same library CSS to the shared sheet, which re-parsed it every time (Ant's
+    // is close to 1 MB: about 35 million characters per page switch on a 37-widget page).
+    it('parses a revision\'s library CSS once across mounts, and again only when it changes', async () => {
+      const { loadLibraryCss } = jest.requireMock('@/AppBuilder/Widgets/LibraryComponent/inlineRuntime');
+      const real = CSSStyleSheet.prototype.replaceSync;
+      const parsed = [];
+      CSSStyleSheet.prototype.replaceSync = function replaceSync(text) {
+        if (text === '.x{color:red}' || text === '.x{color:blue}') parsed.push(text);
+        return real.call(this, text);
+      };
+      try {
+        for (let i = 0; i < 3; i += 1) {
+          const { unmount } = await mountWidget('teardown|parse-once');
+          await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+          unmount();
+        }
+        expect(parsed).toEqual(['.x{color:red}']);
+        loadLibraryCss.mockImplementationOnce(() => Promise.resolve('.x{color:blue}'));
+        const { unmount } = await mountWidget('teardown|parse-once');
+        await waitFor(() => expect(parsed).toEqual(['.x{color:red}', '.x{color:blue}']));
+        unmount();
+      } finally {
+        CSSStyleSheet.prototype.replaceSync = real;
+      }
+    });
   });
 
   it('leaves a kept widget root empty, without the overlay, and cuts its host out of the old page', async () => {

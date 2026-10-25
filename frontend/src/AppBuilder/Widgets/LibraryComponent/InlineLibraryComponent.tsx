@@ -75,10 +75,17 @@ const sheetsFor = (key: string): Sheets => {
     };
     const library = make('');
     const list = [make(BASE_CSS), library, make(TOKEN_CSS)];
+    // Every instance hands its library's CSS over on mount; parsed once per content (Ant's is close to 1 MB, and a
+    // page of 37 widgets parsed it 37 times on every page switch). Changed CSS (a dev rebuild) is still applied.
+    let applied = '';
     sheets = {
       adopt: (root) => (root.adoptedStyleSheets = list),
       release: (root) => (root.adoptedStyleSheets = []),
-      setLibraryCss: (css) => library.replaceSync(css),
+      setLibraryCss: (css) => {
+        if (css === applied) return;
+        applied = css;
+        library.replaceSync(css);
+      },
     };
   } else {
     const roots = new Set<ShadowRoot>();
@@ -98,6 +105,7 @@ const sheetsFor = (key: string): Sheets => {
         root.querySelectorAll('style[data-tj-sheet]').forEach((el) => el.remove());
       },
       setLibraryCss: (css) => {
+        if (css === libraryCss) return;
         libraryCss = css;
         roots.forEach((root) =>
           root.querySelectorAll('style[data-tj-sheet="1"]').forEach((el) => (el.textContent = css))
