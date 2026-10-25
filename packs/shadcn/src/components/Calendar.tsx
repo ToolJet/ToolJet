@@ -4,7 +4,7 @@ import { cn } from '../lib/cn';
 import { formatDate, isValidDate, toDay, ymd } from '../lib/ui2/choice/dates';
 import { lookVars, useResetOn, useStable } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
-import { TOKEN, useThemeRadius } from '../lib/styleDefaults';
+import { TOKEN, useBlankNumber, useThemeRadius } from '../lib/styleDefaults';
 import { MonthGrid, type DayMarker } from '../lib/ui2/choice/MonthGrid';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
@@ -146,7 +146,7 @@ export const Calendar = () => {
   const hoverBackgroundColor = useColorStyle('hoverBackgroundColor', 'Day hover background', TOKEN.muted);
   const markerColor = useColorStyle('markerColor', 'Marker dot color', TOKEN.brand);
   const borderRadius = useThemeRadius('borderRadius', 'Calendar radius');
-  const cellSize = ToolJet.useStyleNumber({ name: 'cellSize', label: 'Day size (px)', initialValue: '', placeholder: '32 (36 at full width)' });
+  const cellSize = useBlankNumber('cellSize', 'Day size (px)', '32 (36 at full width)');
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 32 });
   const { disabled } = useBusy(false);

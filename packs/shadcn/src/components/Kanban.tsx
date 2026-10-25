@@ -502,10 +502,12 @@ export const Kanban = () => {
     (id, value) => doUpdate(id, value)
   );
 
-  // Custom cards: rows of ToolJet components, one per card in board order, each placed in its column by RowSlot.
+  // Custom cards: rows of ToolJet components, one per card in board order, each placed in its column by RowSlot. A
+  // card grows to fit its components (text that wraps in a narrow column pushes the ones below it down), never below
+  // its card height, and the card wraps its row, so it is drawn at the row's height.
   const order = useMemo(() => new Map(allCards.map((c, i) => [c.__key, i])), [allCards]);
   const rowItems = useMemo(() => (custom ? allCards.map(strip) : []), [custom, allCards]);
-  ToolJet.useRows(rowItems, Math.min(1200, Math.max(24, Number(cardHeight) || 96)));
+  ToolJet.useRows(rowItems, Math.min(1200, Math.max(24, Number(cardHeight) || 96)), { fit: true });
 
   // Board size: columns share its width (columnMinimum) and it fades at the right while more columns are off screen.
   const boardRef = useRef<HTMLDivElement>(null);

@@ -46,13 +46,14 @@ export const useLooks = (looks: Look[]): CSSProperties => {
   let accent: string | undefined;
   for (const [name, label, cssVar, drawn] of looks) {
     // The list is fixed per component, so the hook order is too. Each declares what it draws unset as its default
-    // (a theme radius has no number: the field says so) and reads back '' at that default, so the look is unchanged.
+    // and reads back '' at that default, so the look is unchanged. A theme radius has no number: no default (a ''
+    // default was saved on drop as {{""}}, code in an invalid field), and the field's placeholder says so.
     const px = isPx(drawn);
     const initialValue = drawn === undefined || drawn === 'px' ? '' : drawn;
     const raw = px
-      ? TJ.useStyleNumber({ name, label, initialValue, ...(drawn === 'px' && { placeholder: 'Theme radius' }) })
+      ? TJ.useStyleNumber({ name, label, ...(drawn === 'px' ? { placeholder: 'Theme radius' } : { initialValue: initialValue as number }) })
       : TJ.useStyleString({ name, label, inspector: 'color', initialValue: initialValue as string });
-    const value = unlessDefault(raw, initialValue);
+    const value = unlessDefault(raw ?? '', initialValue);
     if (!isSet(value)) continue;
     if (cssVar === 'accent') accent = String(value);
     else if (px) {

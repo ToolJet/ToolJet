@@ -59,7 +59,8 @@ export const CardGrid = () => {
     initialValue: 'theme',
   });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 62 });
+  // One row of the three sample cards (about 121px, 141px with a wrapped note), not a 616px box left mostly blank.
+  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 15 });
 
   const [rootRef, width] = useWidth<HTMLDivElement>();
   const cards = useMemo(

@@ -4,7 +4,7 @@ import { cn } from '../lib/cn';
 import { FONT_LABELS, FONT_VALUES, fontStack, px, styleVars } from '../lib/ui2/display/lists/model';
 import { useWidth } from '../lib/ui2/display/lists/parts';
 import { STRIP_VALUE_FORMATS, stripColumns, summaryFigures } from '../lib/ui2/display/summary';
-import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
+import { LoadingBox, LoadingFrame, useLoadingLook, Veil } from '../lib/ui2/loading/look';
 import { FiguresSkel } from '../lib/ui2/loading/shapes';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
@@ -93,8 +93,16 @@ export const SummaryStrip = () => {
     [valueFontFamily, '--lk-title-font', fontStack],
   ]);
 
+  // The skeleton look is the strip itself, each label, figure, change and caption veiled at its own size: a separate
+  // skeleton dropped the panel's frame and drew about 14px shorter than the loaded strip. The spinner look, and a
+  // strip with no figures yet (items still loading), cover it.
+  const veiled = ld.loading && ld.skeleton && figures.length > 0;
   return (
-    <LoadingFrame loading={ld.loading} minHeight={80} look={ld.skeleton ? <FiguresSkel count={figures.length || 4} columns={columns} captions={figures.some((f) => !!f.caption)} /> : <LoadingBox />}>
+    <LoadingFrame
+      loading={ld.loading && !veiled}
+      minHeight={80}
+      look={ld.skeleton ? <FiguresSkel count={4} columns={stripColumns(4, width || 960, MIN_WIDTH[sizeKey])} captions={false} /> : <LoadingBox />}
+    >
       <div ref={ref} className="ui ui2-strip-box" style={vars}>
         {!figures.length ? (
           <div className={cn('ui2-strip', `is-${look}`, 'is-empty')}>
@@ -103,21 +111,30 @@ export const SummaryStrip = () => {
         ) : (
           <dl
             className={cn('ui2-strip', `is-${look}`, `is-${sizeKey}`, align === 'center' && 'is-centered')}
+            aria-busy={veiled || undefined}
             style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
           >
             {figures.map((f, i) => (
               <div key={f.key} className={cn('ui2-strip-cell', i % columns !== 0 && 'has-left', i >= columns && 'has-top')}>
-                {f.label ? <dt className="ui2-strip-label">{f.label}</dt> : null}
+                {f.label ? (
+                  <dt className="ui2-strip-label">
+                    <Veil on={veiled}>{f.label}</Veil>
+                  </dt>
+                ) : null}
                 <dd className="ui2-strip-line">
-                  <span className="ui2-strip-value">{f.value || '–'}</span>
+                  <span className="ui2-strip-value">
+                    <Veil on={veiled}>{f.value || '–'}</Veil>
+                  </span>
                   {f.delta ? (
                     <span className="ui2-strip-delta" data-tone={f.delta.tone}>
-                      {f.delta.text}
+                      <Veil on={veiled}>{f.delta.text}</Veil>
                     </span>
                   ) : null}
                 </dd>
                 {f.caption ? (
-                  <dd className="ui2-strip-caption">{f.caption}</dd>
+                  <dd className="ui2-strip-caption">
+                    <Veil on={veiled}>{f.caption}</Veil>
+                  </dd>
                 ) : captions ? (
                   <dd aria-hidden="true" className="ui2-strip-caption is-spacer">
                     &nbsp;

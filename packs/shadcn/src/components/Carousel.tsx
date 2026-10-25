@@ -7,7 +7,7 @@ import { lookVars, px } from '../lib/ui2/nav/look';
 import { useLatest, useStable } from '../lib/ui2/nav/hooks';
 import { ownerAvailable } from '../lib/useOwnerGuard';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
-import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { TOKEN, useBlankNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 // UI 2.0 Carousel: one or several slides per view, swipes, arrow keys, autoplay that pauses on hover and keyboard
@@ -70,7 +70,7 @@ export const Carousel = () => {
   const titleColor = useThemeColor('titleColor', 'Caption title color (below)', TOKEN.text);
   const descriptionColor = useThemeColor('descriptionColor', 'Caption description color (below)', TOKEN.mutedText);
   const radius = useThemeRadius('borderRadius', 'Slide radius');
-  const gapStyle = ToolJet.useStyleNumber({ name: 'gap', label: 'Gap between slides (px)', initialValue: '', placeholder: '16 with several slides, else 0' });
+  const gapStyle = useBlankNumber('gap', 'Gap between slides (px)', '16 with several slides, else 0');
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 41 });
 

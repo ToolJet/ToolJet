@@ -659,3 +659,12 @@
     animation: none;
   }
 }
+
+/* An empty table in a short box (DataTable.tsx compactEmpty): no footer, closer parts, and the message line takes what
+   is left under the header (scrolling there when even that is short), not a 70px floor the box cut. */
+.t2-table.is-compact-empty {
+  gap: 8px;
+}
+.t2-table.is-compact-empty .t2-box.is-empty {
+  min-height: 0;
+}

@@ -31,6 +31,8 @@ import '../styles/ui2-table.css';
 // action publishes its state first and then fires its event, so a handler reads the new value.
 
 const ROW_HEIGHT: Record<string, number> = { condensed: 36, regular: 44, spacious: 56 };
+// An empty table shorter than this drops its footer (toolbar, header, a 28px message line, footer and gaps: about 150px).
+const COMPACT_EMPTY_BELOW = 160;
 const SEARCH_DEBOUNCE_MS = 300;
 
 // The page numbers around the current one (1 … 4 5 6 … 20) when the page count is known, else previous / next only.
@@ -710,6 +712,19 @@ export const DataTable = () => {
       observer?.disconnect();
     };
   }, []);
+  // The whole table's height, for the compact empty state: in a short box (116px) the toolbar, the header and the
+  // footer left no room under the header and "No results." was cut.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [rootHeight, setRootHeight] = useState(0);
+  useLayoutEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => setRootHeight(el.clientHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const rowHeight = ROW_HEIGHT[cellSize] ?? ROW_HEIGHT.regular;
   const striped = tableType === 'striped';
@@ -726,6 +741,9 @@ export const DataTable = () => {
   const empty = !loading && !paged.items.length;
   // Rows a short page is missing from a full page, on a table with more than one page (see the filler row).
   const multiPage = enablePagination !== false && (paged.pageCount === null || paged.pageCount > 1 || paged.page > 1);
+  // An empty table in a short box drops its footer (it reads "0 rows"; a later page past the end keeps its pager) and closes up, so the message has the room
+  // under the header. Decided by the whole table's height, which the footer does not change.
+  const compactEmpty = empty && rootHeight > 0 && rootHeight < COMPACT_EMPTY_BELOW && !multiPage;
   const fillerRows = multiPage && paged.items.length ? Math.max(0, Math.min(Number(rowsPerPage) || 0, 200) - paged.items.length) : 0;
   const defaults = { currency, locale, dateFormat, badgeColors };
 
@@ -752,7 +770,8 @@ export const DataTable = () => {
 
   return (
     <div
-      className={cn('ui t2-table', headerCasing === 'uppercase' && 't2-upper', disabled && 'is-disabled')}
+      ref={rootRef}
+      className={cn('ui t2-table', headerCasing === 'uppercase' && 't2-upper', disabled && 'is-disabled', compactEmpty && 'is-compact-empty')}
       style={rootStyle}
       aria-disabled={disabled || undefined}
     >
@@ -918,7 +937,9 @@ export const DataTable = () => {
               <tr className="t2-plain">
                 {/* The empty state fills the body: in a short table the icon goes, then the description. */}
                 <td colSpan={colCount} className="t2-empty-cell" style={{ height: Math.max(28, box.height - 1) }}>
-                  <div className="t2-empty">
+                  {/* Sized as the cell once the body is measured: its 130px intrinsic height (the unmeasured fallback)
+                      made a short body's cell that tall, the message scrolled out under the header. */}
+                  <div className="t2-empty" style={box.height > 0 ? { containIntrinsicHeight: `${Math.max(28, box.height - 1)}px` } : undefined}>
                     <Inbox size={24} className="t2-empty-icon" />
                     <p className="t2-empty-title">{searchText || filters.length ? String(noMatchText || 'No matching rows.') : String(emptyText || 'No results.')}</p>
                     {emptyDescription && !searchText && !filters.length ? <p className="t2-empty-note">{String(emptyDescription)}</p> : null}
@@ -931,7 +952,7 @@ export const DataTable = () => {
         {edges.below ? <div aria-hidden="true" className="t2-fade-below" /> : null}
       </div>
 
-      {(showRowCount !== false || enablePagination !== false) && !loading ? (
+      {(showRowCount !== false || enablePagination !== false) && !loading && !compactEmpty ? (
         <div className="t2-foot">
           <span className="t2-foot-count">
             {showRowCount === false

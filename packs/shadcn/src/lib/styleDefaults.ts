@@ -43,6 +43,13 @@ export const useThemeColor = (name: string, label: string, token: Token, options
 export const useDrawnNumber = (name: string, label: string, drawn: number, options: StyleOptions = {}) =>
   unlessDefault(ToolJet.useStyleNumber({ name, label, initialValue: drawn, ...options }), drawn) as number | '';
 
+/**
+ * A number style with no stored default, only a placeholder naming what it draws while unset. A '' default was saved
+ * on drop as {{""}}, which the inspector showed as code in an invalid field, with the placeholder hidden. Reads ''
+ * while unset, as before.
+ */
+export const useBlankNumber = (name: string, label: string, placeholder: string, options: StyleOptions = {}): number | '' =>
+  (ToolJet.useStyleNumber({ name, label, placeholder, ...options }) as unknown as number | '' | undefined) ?? '';
+
 /** A radius that follows the theme radius while unset: no fixed number to show, so the field says so. */
-export const useThemeRadius = (name: string, label: string, options: StyleOptions = {}) =>
-  ToolJet.useStyleNumber({ name, label, initialValue: '', placeholder: 'Theme radius', ...options });
+export const useThemeRadius = (name: string, label: string, options: StyleOptions = {}) => useBlankNumber(name, label, 'Theme radius', options);

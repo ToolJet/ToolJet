@@ -10,7 +10,7 @@ import { moveRovingFocus } from '../lib/activeElement';
 import { clickedOption, menuRows } from '../lib/ui2/nav/model';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
 import { Icon, MenuRows, MenuSeparator } from '../lib/ui2/nav/parts';
-import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { TOKEN, useBlankNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
@@ -98,7 +98,7 @@ export const DropdownMenu = () => {
   const iconColor = useThemeColor('iconColor', 'Item icon color', TOKEN.mutedText, { section: 'Menu' });
   const destructiveColor = useThemeColor('destructiveColor', 'Destructive item color', TOKEN.error, { section: 'Menu' });
   const menuRadius = useThemeRadius('menuRadius', 'Menu radius', { section: 'Menu' });
-  const menuWidth = ToolJet.useStyleNumber({ name: 'menuWidth', label: 'Menu width (px)', initialValue: '', placeholder: 'Fits the items', section: 'Menu' });
+  const menuWidth = useBlankNumber('menuWidth', 'Menu width (px)', 'Fits the items', { section: 'Menu' });
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
 
   const [anchorRef, container] = usePortalContainer();

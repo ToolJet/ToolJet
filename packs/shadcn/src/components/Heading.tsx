@@ -4,7 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { CASE_LABELS, CASE_VALUES, FONT_LABELS, FONT_VALUES, WEIGHT_LABELS, WEIGHT_VALUES, typeStyle } from '../lib/ui2/display/type';
 import { HeadingSkel, LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
-import { TOKEN, useThemeColor } from '../lib/styleDefaults';
+import { TOKEN, useBlankNumber, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 const LEVELS = ['h1', 'h2', 'h3', 'h4'];
@@ -27,7 +27,7 @@ export const Heading = () => {
   const fontWeight = ToolJet.useStyleEnumeration({ name: 'fontWeight', label: 'Weight', enumDefinition: WEIGHT_VALUES, enumLabels: WEIGHT_LABELS, initialValue: '' });
   const letterSpacing = ToolJet.useStyleString({ name: 'letterSpacing', label: 'Letter spacing (px, or em like 0.12em)', initialValue: '' });
   const textTransform = ToolJet.useStyleEnumeration({ name: 'textTransform', label: 'Casing', enumDefinition: CASE_VALUES, enumLabels: CASE_LABELS, initialValue: 'none' });
-  const fontSize = ToolJet.useStyleNumber({ name: 'fontSize', label: 'Font size (px; default from the level)', initialValue: '', placeholder: 'From the level' });
+  const fontSize = useBlankNumber('fontSize', 'Font size (px; default from the level)', 'From the level');
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 4 });
 
