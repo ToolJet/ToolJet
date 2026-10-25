@@ -11,6 +11,7 @@ import { str } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { FieldSkeleton, Loading } from '../lib/loading';
 import { typeRule, useRuleCheck } from '../lib/typeRule';
+import { useValueSetter } from '../lib/sameValue';
 
 const adornment = (position: 'start' | 'end', content: React.ReactNode) =>
   content ? <InputAdornment position={position}>{content}</InputAdornment> : undefined;
@@ -67,8 +68,10 @@ export const TextField = () => {
   const [revealed, setRevealed] = useState(false);
   const isPassword = type === 'password';
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: string) => {
-    setValue(next);
+    if (!valueSetter.set(next)) return;
     events.onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(str(next)));
@@ -139,8 +142,10 @@ export const MultilineTextField = () => {
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 12 });
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: string) => {
-    setValue(next);
+    if (!valueSetter.set(next)) return;
     events.onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(str(next)));
@@ -205,8 +210,10 @@ export const NumberField = () => {
   const lo = toNumber(min);
   const hi = toNumber(max);
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: number | null) => {
-    setValue(next as number);
+    if (!valueSetter.set(next as number)) return;
     events.onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(toNumber(next)));

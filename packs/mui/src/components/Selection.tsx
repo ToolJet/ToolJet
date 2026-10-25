@@ -19,6 +19,7 @@ import { toNumber } from '../lib/format';
 import { Loading, Spinner } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
 import { useFormValue } from '../lib/formValue';
+import { useValueSetter } from '../lib/sameValue';
 import { useOwnEventGuard } from '../lib/ownEvent';
 
 const bool = (v: unknown) => v === true || v === 'true';
@@ -26,22 +27,24 @@ const bool = (v: unknown) => v === true || v === 'true';
 /** checked, the toggle actions and onChange: what Checkbox and Switch share. */
 const useChecked = () => {
   const [checked, setChecked] = ToolJet.useStateBoolean({ name: 'checked', label: 'Checked', initialValue: false });
-  useFormValue(checked, 'boolean');
+  const publishValue = useFormValue(checked, 'boolean');
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const guard = useOwnEventGuard();
-  const change = (next: boolean) => {
+  // checked and the Form's value published together before onChange; a value it already has changes nothing and
+  // fires nothing (lib/sameValue).
+  const checkedSetter = useValueSetter(bool(checked), (next) => {
     setChecked(next);
-    guard(onChange);
+    publishValue(next);
+  });
+  const change = (next: boolean) => {
+    if (checkedSetter.set(next)) guard(onChange);
   };
   ToolJet.useAction({ name: 'setChecked', displayName: 'Set checked', params: [{ handle: 'checked', displayName: 'Checked' }] }, (next) => change(bool(next)));
   // From the latest value, not this render's: two toggles in one batch cancel out.
-  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => {
-    setChecked((c: unknown) => !bool(c));
-    guard(onChange);
-  });
+  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => change(!checkedSetter.latest.current));
   // checked is the field's value under another name, which the SDK's clearForm does not reach: a native Form's clear
   // unticks it, as it does a native checkbox. Not the user's change, so no onChange.
-  ToolJet.useFormClear(() => setChecked(false));
+  ToolJet.useFormClear(() => checkedSetter.set(false));
   return { checked: bool(checked), change };
 };
 
@@ -141,8 +144,10 @@ export const RadioGroup = () => {
   const overrides = useThemeStyles();
   // The label over the three sample options (148px): a 96px box cut the last two.
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 16 });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: string) => {
-    setValue(next);
+    if (!valueSetter.set(next)) return;
     onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(str(next)));
@@ -205,8 +210,10 @@ export const ToggleButtonGroup = () => {
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
   const options = toOptions(rawOptions);
   const current: string | string[] | null = exclusive ? (Array.isArray(value) ? str(value[0]) : str(value)) || null : toArray(value).map(str);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: string | string[] | null) => {
-    setValue(next as string);
+    if (!valueSetter.set(next as string)) return;
     onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) =>
@@ -268,8 +275,10 @@ export const Rating = () => {
   const check = ToolJet.useValidation({ section: 'choice', value: num ?? '', present: num !== null && num > 0 });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 5 });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: number | null) => {
-    setValue(next as number);
+    if (!valueSetter.set(next as number)) return;
     onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(toNumber(next)));
@@ -347,9 +356,10 @@ export const Slider = () => {
     if (valueKey !== drawnKey || Array.isArray(value) !== isRange) setValue(drawn as number);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valueKey, drawnKey, isRange]);
+  // The value the thumbs already show changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(drawn, (v) => setValue(v as number));
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => {
-    setValue((isRange ? toRange(next, lo, hi) : Math.min(hi, Math.max(lo, toNumber(next) ?? lo))) as number);
-    onChange();
+    if (valueSetter.set(isRange ? toRange(next, lo, hi) : Math.min(hi, Math.max(lo, toNumber(next) ?? lo)))) onChange();
   });
   return (
     <MuiProvider overrides={overrides}>

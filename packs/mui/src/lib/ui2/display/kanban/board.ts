@@ -1,6 +1,8 @@
 // Ported from UI 2.0's Kanban (Ui2/Kanban/kanbanBoard.ts): the board's data logic, kept apart from the drag-and-drop
 // UI. Cards are rows of data; a column is a value of the status field.
 
+import { sameValue } from '../../../sameValue';
+
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
 
 /** A row of the board's data. */
@@ -247,7 +249,9 @@ export const updateCard = (
   const key = keyOf(cardId);
   const card = columns.flatMap((c) => c.cards).find((x) => x.__key === key);
   if (!card) return { columns, card: null, key: null, renamed: null };
-  const updated: BoardCard = { ...card, ...(isRecord(values) ? values : {}), __key: key };
+  // Values the card already has change nothing: no card back, so updateCardData fires nothing (lib/sameValue).
+  if (!isRecord(values) || Object.keys(values).every((k) => sameValue(card[k], values[k]))) return { columns, card: null, key: null, renamed: null };
+  const updated: BoardCard = { ...card, ...values, __key: key };
   if (keyOf(updated[statusField]) === keyOf(card[statusField])) {
     let board = columns;
     let renamed: Renamed = null;

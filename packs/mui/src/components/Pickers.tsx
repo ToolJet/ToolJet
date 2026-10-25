@@ -13,6 +13,7 @@ import { checkProps, fieldClass, useFieldProps, useTextFieldLook } from '../lib/
 import { str } from '../lib/data';
 import { FieldSkeleton, Loading } from '../lib/loading';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
+import { useValueSetter } from '../lib/sameValue';
 
 // Always the desktop picker (a popper under the field): the mobile one is a full-screen dialog, wrong in a widget box.
 const DESKTOP = '@media (min-width: 0px)';
@@ -144,8 +145,10 @@ export const DatePicker = () => {
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: Dayjs | null) => {
-    setValue(next && next.isValid() ? next.format(DATE) : '');
+    if (!valueSetter.set(next && next.isValid() ? next.format(DATE) : '')) return;
     events.onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Date' }] }, (next) => change(parse(next, DATE)));
@@ -204,8 +207,10 @@ export const TimePicker = () => {
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 7 });
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: Dayjs | null) => {
-    setValue(next && next.isValid() ? next.format(TIME) : '');
+    if (!valueSetter.set(next && next.isValid() ? next.format(TIME) : '')) return;
     events.onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Time (HH:mm)' }] }, (next) => change(atToday(next)));
