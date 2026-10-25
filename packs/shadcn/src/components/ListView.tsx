@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
-import { SHADOWS, isSet, itemKey, pageOf, px, styleVars, toText, type Row } from '../lib/ui2/display/lists/model';
+import { SHADOWS, isSet, itemKey, pageOf, positive, px, styleVars, toText, type Row } from '../lib/ui2/display/lists/model';
 import { Chip, Pager, RecordAvatar, onKeyActivate } from '../lib/ui2/display/lists/parts';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
+import { useRecordSelection, type SelectableRecord } from '../lib/ui2/display/lists/useRecordSelection';
 import { ListSkel } from '../lib/ui2/loading/shapes';
 import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display-lists.css';
@@ -64,11 +65,11 @@ export const ListView = () => {
   const [serverSidePagination] = ToolJet.useStateBoolean({ name: 'serverSidePagination', label: 'Server-side pagination (data is one page)', initialValue: false });
   const [totalRecords] = ToolJet.useStateNumber({ name: 'totalRecords', label: 'Total items (server-side)', initialValue: 0 });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No items' });
-  const [selectedItemId, setSelectedItemId] = ToolJet.useStateString({ name: 'selectedItemId', initialValue: '', inspector: 'hidden' });
+  const [, setSelectedItemId] = ToolJet.useStateString({ name: 'selectedItemId', initialValue: '', inspector: 'hidden' });
   const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
   // UI 2.0's native names: selectedRecordId is the item's index on the page, selectedRecord the item.
   const [, setSelectedRecord] = ToolJet.useStateObject({ name: 'selectedRecord', initialValue: {}, inspector: 'hidden' });
-  const [selectedRecordId, setSelectedRecordId] = ToolJet.useStateNumber({ name: 'selectedRecordId', initialValue: -1, inspector: 'hidden' });
+  const [, setSelectedRecordId] = ToolJet.useStateNumber({ name: 'selectedRecordId', initialValue: -1, inspector: 'hidden' });
   const [pageIndex, setPageIndex] = ToolJet.useStateNumber({ name: 'pageIndex', initialValue: 1, inspector: 'hidden' });
   const onRecordClicked = ToolJet.useEventCallback({ name: 'onRecordClicked' });
   const onPageChanged = ToolJet.useEventCallback({ name: 'onPageChanged' });
@@ -111,37 +112,52 @@ export const ListView = () => {
     if (paged.page !== (Number(pageIndex) || 1)) setPageIndex(paged.page);
   }, [paged.page, pageIndex, setPageIndex]);
   const items = paged.items as unknown[];
-  const keys = useMemo(() => items.map((item, i) => itemKey(item, idKey, i)), [items, idKey]);
+  const pageSize = enablePagination && !serverSidePagination ? positive(rowsPerPage, 10) : Infinity;
+  const pageStart = Number.isFinite(pageSize) ? (paged.page - 1) * pageSize : 0;
+  // Keyed by the item's position in the whole data, as the selection's records are.
+  const keys = useMemo(() => items.map((item, i) => itemKey(item, idKey, pageStart + i)), [items, idKey, pageStart]);
   const asRows = itemContent === 'components';
   ToolJet.useRows(asRows ? items : [], Math.min(1200, Math.max(24, Number(rowHeight) || 72)));
 
+  // The selection follows its record by key as the data changes (useRecordSelection, as RecordList and CardGrid): a
+  // refresh republishes the current row, a removal clears it (Codex review CODE-02, 2026-10-25). Client-side, every
+  // row of the data is a candidate, so paging away keeps the selection; server-side the data is the current page, so a
+  // record the new page does not hold is cleared. selectedRecordId is the record's index on its page, as UI 2.0's.
+  const records = useMemo<SelectableRecord[]>(() => {
+    const all = (Array.isArray(data) ? data : []).filter((r) => r !== undefined && r !== null);
+    return all.map((item, i) => ({
+      key: itemKey(item, idKey, i),
+      row: (item && typeof item === 'object' ? item : {}) as Row,
+      index: Number.isFinite(pageSize) ? i % pageSize : i,
+    }));
+  }, [data, idKey, pageSize]);
+  const selection = useRecordSelection(
+    records,
+    (row) => (isSet(row[idKey]) ? String(row[idKey]) : ''),
+    {
+      setItem: (row) => {
+        setSelectedItem(row);
+        setSelectedRecord(row);
+      },
+      setId: (id) => setSelectedItemId(id == null ? '' : String(id)),
+      setIndex: setSelectedRecordId,
+    },
+    onRecordClicked
+  );
   const pick = (index: number, fire = true) => {
-    const item = items[index];
-    const row = (item && typeof item === 'object' ? item : {}) as Row;
-    setSelectedItem(row);
-    setSelectedRecord(row);
-    setSelectedItemId(keys[index].startsWith('#') ? '' : keys[index]);
-    setSelectedRecordId(index);
-    if (fire) onRecordClicked();
+    const record = records[pageStart + index];
+    if (record) selection.pick(record, fire);
   };
-  const clearSelection = () => {
-    setSelectedItem({});
-    setSelectedRecord({});
-    setSelectedItemId('');
-    setSelectedRecordId(-1);
-  };
+  const clearSelection = () => selection.clear();
   const goTo = (target: unknown, fire = true) => {
     setPageIndex(Math.max(1, Math.floor(Number(target)) || 1));
     if (fire) onPageChanged();
   };
-  const selectedIndex = (() => {
-    if (isSet(selectedItemId)) return keys.indexOf(String(selectedItemId));
-    return Number(selectedRecordId) >= 0 && Number(selectedRecordId) < items.length ? Number(selectedRecordId) : -1;
-  })();
+  const selectedIndex = selection.selectedKey === null ? -1 : keys.indexOf(selection.selectedKey);
 
   ToolJet.useAction({ name: 'selectItem', displayName: 'Select item', params: [{ handle: 'id', displayName: 'Item id' }] }, (id) => {
-    const index = items.findIndex((item) => item && typeof item === 'object' && String((item as Row)[idKey]) === String(id));
-    if (index >= 0) pick(index, false);
+    const record = records.find((r) => isSet(r.row[idKey]) && String(r.row[idKey]) === String(id));
+    if (record) selection.pick(record, false);
   });
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clearSelection());
   // As on the native Table, setPage does not fire onPageChanged.

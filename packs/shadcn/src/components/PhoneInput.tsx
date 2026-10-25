@@ -13,6 +13,7 @@ import { ClearX, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/part
 import * as P from '../lib/ui2/inputs/phone';
 import type { Country } from '../lib/ui2/inputs/phone';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
@@ -59,13 +60,19 @@ export const PhoneInput = () => {
   const country = offered(P.countryOf(countryState)) ?? (countries.includes(fallback) ? fallback : countries[0]);
   const national = P.nationalOf(rawValue, country);
 
+  // The number and its country as last published, so a setValue or clear that leaves both as they are fires nothing
+  // (lib/sameValue), a second call in one batch included.
+  const lastSet = useValueSetter(`${P.toE164(national, country)}|${country.code}`, () => {});
+  /** Publishes the number in a country; whether the number or the country changed. */
   const publish = (digits: string, c: Country) => {
     const info = P.phoneInfo(digits, c);
+    const changed = lastSet.set(`${info.value}|${info.country}`);
     setValue(info.value);
     setCountryState(info.country);
     setCountryCode(info.countryCode);
     setFormattedValue(info.formattedValue);
     setIsValidNumber(info.isValidNumber);
+    return changed;
   };
   const change = (digits: string, c: Country = country) => {
     if (digits === national && c === country) return;
@@ -76,7 +83,7 @@ export const PhoneInput = () => {
   const start = (v: unknown, c: Country) => {
     const detected = offered(P.phoneCountry(v, countries, c));
     const to = detected ?? c;
-    publish(P.nationalOf(v, to), to);
+    return publish(P.nationalOf(v, to), to);
   };
   const mounted = useRef(false);
   useReseed([defaultValue, defaultCountry], () => {
@@ -98,9 +105,8 @@ export const PhoneInput = () => {
       ],
     },
     (v, c) => {
-      start(v, offered(P.countryOf(c)) ?? country);
-      onChange();
       rule.touch();
+      if (start(v, offered(P.countryOf(c)) ?? country)) onChange();
     }
   );
   TJ.useAction({ name: 'setCountryCode', displayName: 'Set country code', params: [{ handle: 'countryCode', displayName: 'Country code' }] }, (c) => {
@@ -109,9 +115,8 @@ export const PhoneInput = () => {
     if (next) publish(national, next);
   });
   TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => {
-    publish('', country);
-    onChange();
     rule.touch();
+    if (publish('', country)) onChange();
   });
   TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
   TJ.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());

@@ -9,6 +9,7 @@ import { TOKEN } from '../lib/styleDefaults';
 import { useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
@@ -61,16 +62,16 @@ export const OtpInput = () => {
     setValue(next);
     setIsComplete(next.length === size);
   };
-  /** Fills the boxes from an action, as a text input's setText and clear do: onChange every time. */
+  // From the latest code, so a second call in one batch compares with the first's (lib/sameValue).
+  const codeSetter = useValueSetter(code, publish);
+  /** Fills the boxes from an action (setText, clear): onChange only when the code changes. */
   const fill = (next: string) => {
-    publish(next);
-    onChange();
     rule.touch();
+    if (codeSetter.set(next)) onChange();
   };
   const change = (raw: string) => {
     const next = M.otpSanitize(raw, size, kind);
-    if (next === code) return;
-    publish(next);
+    if (!codeSetter.set(next)) return;
     onChange();
     if (next.length === size) onComplete();
   };

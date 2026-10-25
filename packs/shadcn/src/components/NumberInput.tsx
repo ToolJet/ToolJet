@@ -9,6 +9,7 @@ import { TOKEN } from '../lib/styleDefaults';
 import { ClearX, boundsRule, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
@@ -61,18 +62,17 @@ export const NumberInput = () => {
   const hi = M.parseNumber(maxValue) ?? M.parseNumber(legacyMax);
 
   const publish = (next: number | null) => setValue(next as number);
+  // From the latest value, so a second call in one batch compares with the first's (lib/sameValue).
+  const valueSetter = useValueSetter<number | null>(value, publish);
   /** Sets the value as the user does: onChange when it changed. */
   const commit = (next: number | null) => {
-    if (next === value) return;
-    publish(next);
-    onChange();
+    if (valueSetter.set(next)) onChange();
   };
-  /** Sets the value from an action, as UI 2.0's setText and clear do: onChange every time. */
+  /** Sets the value from an action (setText, clear): onChange only when the number changes. */
   const set = (v: unknown) => {
     setDraft(null);
-    publish(round(M.parseNumber(v)));
-    onChange();
     rule.touch();
+    if (valueSetter.set(round(M.parseNumber(v)))) onChange();
   };
   // On mount an untouched Default value leaves a number the app set (`value`, the pack's earlier name) alone.
   useReseed(

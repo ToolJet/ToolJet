@@ -401,7 +401,7 @@ export interface ListPage<T> {
   hasPrevious: boolean;
 }
 
-const positive = (value: unknown, fallback: number): number => {
+export const positive = (value: unknown, fallback: number): number => {
   const n = Math.floor(Number(value));
   return Number.isFinite(n) && n > 0 ? n : fallback;
 };

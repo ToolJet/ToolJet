@@ -8,6 +8,7 @@ import { TOKEN } from '../lib/styleDefaults';
 import { useReseed } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { InlineLoading } from '../lib/ui2/loading/look';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
@@ -45,7 +46,10 @@ export const Slider = () => {
   };
   const stored = M.sliderValues(rawValue, bounds);
   const values = isRange ? (stored.length >= 2 ? stored.slice(0, 2) : [stored[0], bounds.max]) : [stored[0]];
-  const publish = (v: number[]) => setValue((isRange ? v : v[0]) as number);
+  // From the latest value, so a setValue to the value it has fires nothing, a second call in one batch included.
+  const valueSetter = useValueSetter<unknown>(rawValue, (v) => setValue(v as number));
+  /** Publishes the thumbs' values; whether the value changed. */
+  const publish = (v: number[]) => valueSetter.set(isRange ? v : v[0]);
   // A new default, or Range turned on or off, starts the value again.
   // On mount an untouched Default value leaves a value the app set (`value`, the pack's earlier name) alone.
   const keptOnMount = defaultValue === 50 && (isRange ? Array.isArray(rawValue) : numeric(rawValue));
@@ -62,8 +66,8 @@ export const Slider = () => {
   TJ.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'num1', displayName: 'Value' }] }, (n) => {
     if (!numeric(n)) return;
     const [v] = M.sliderValues(Number(n), bounds);
-    publish(isRange ? M.sliderValues([v, Math.max(v, values[1] ?? v)], bounds) : [v]);
-    onChange();
+    const now = isRange && Array.isArray(valueSetter.latest.current) ? (valueSetter.latest.current as number[]) : null;
+    if (publish(isRange ? M.sliderValues([v, Math.max(v, now?.[1] ?? values[1] ?? v)], bounds) : [v])) onChange();
   });
   TJ.useAction(
     {
@@ -77,8 +81,7 @@ export const Slider = () => {
     (a, z) => {
       if (!numeric(a) || !numeric(z)) return;
       const pair = M.sliderValues([Number(a), Number(z)], bounds);
-      publish(isRange ? pair : [pair[0]]);
-      onChange();
+      if (publish(isRange ? pair : [pair[0]])) onChange();
     }
   );
   // As UI 2.0's (and the native Range slider's) reset: back to the default, without onChange.

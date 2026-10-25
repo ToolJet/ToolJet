@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
@@ -66,10 +66,15 @@ export const ToggleGroup = () => {
   useEffect(() => setValue((selected?.value ?? '') as string), [key, JSON.stringify(selected)]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => setValues(pickedValues), [JSON.stringify(pickedValues)]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // The key as last chosen, ahead of the next render: setValue to the option already chosen fires nothing.
+  const keyRef = useRef(key);
+  keyRef.current = key;
   const change = (next: string, fire = true) => {
+    const same = byKey.get(keyRef.current) === byKey.get(next);
+    keyRef.current = next;
     setKey(next);
     setValue((byKey.get(next)?.value ?? '') as string);
-    if (fire) onChange();
+    if (fire && !same) onChange();
   };
   // The native Button group's actions: setSelected picks an option (a value no option has changes nothing).
   ToolJet.useAction({ name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'selected', displayName: 'Value' }] }, (v) => {

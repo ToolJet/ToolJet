@@ -94,7 +94,8 @@ export const AccordionContainer = () => {
     const collapsed = prev.some((id) => !next.includes(id));
     openRef.current = next;
     setOpenSections(next);
-    if (!fire) return;
+    // The sections already open: nothing changes and nothing fires.
+    if (!fire || (!expanded && !collapsed)) return;
     if (expanded) onExpand();
     if (collapsed) onCollapse();
     onChange();
@@ -117,8 +118,9 @@ export const AccordionContainer = () => {
       const all = sections.map((s) => s.id);
       const prev = openRef.current;
       const next = allowMultiple ? (one ? [...new Set([...prev, one])] : all) : [one ?? all[0]].filter(Boolean);
+      // Only when a section opens, as the pack's Accordion: one already open fires nothing.
+      if (!next.some((id) => !prev.includes(id))) return;
       update(next, false);
-      // Every time, as the native Accordion's expand and the pack's Accordion do.
       onExpand();
     },
   );
@@ -129,6 +131,7 @@ export const AccordionContainer = () => {
       if (!blank(key) && !one) return;
       const prev = openRef.current;
       const next = one ? prev.filter((id) => id !== one) : [];
+      if (next.length === prev.length) return;
       update(next, false);
       onCollapse();
     },
