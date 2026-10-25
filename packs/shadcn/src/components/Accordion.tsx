@@ -6,6 +6,7 @@ import { isRecord, list, text } from '../lib/ui2/nav/model';
 import { lookVars } from '../lib/ui2/nav/look';
 import { useStable } from '../lib/ui2/nav/hooks';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const MAX_SECTIONS = 200;
@@ -52,10 +53,10 @@ export const Accordion = () => {
   const onExpand = ToolJet.useEventCallback({ name: 'onExpand' });
   const onCollapse = ToolJet.useEventCallback({ name: 'onCollapse' });
   const { disabled } = ToolJet.useControlState();
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Item title color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Item content color', inspector: 'color', initialValue: '' });
-  const dividerColor = ToolJet.useStyleString({ name: 'dividerColor', label: 'Divider color', inspector: 'color', initialValue: '' });
-  const iconColor = ToolJet.useStyleString({ name: 'iconColor', label: 'Chevron color', inspector: 'color', initialValue: '' });
+  const titleColor = useThemeColor('titleColor', 'Item title color', TOKEN.text);
+  const textColor = useThemeColor('textColor', 'Item content color', TOKEN.mutedText);
+  const dividerColor = useThemeColor('dividerColor', 'Divider color', TOKEN.border);
+  const iconColor = useThemeColor('iconColor', 'Chevron color', TOKEN.mutedText);
   const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Divider (legacy)', inspector: 'color', initialValue: '' });
   const ld = useLoadingLook();
   // The three sample sections (159px) in whole rows: 18 left a 17px band under them at the drop, 16 cuts the last.

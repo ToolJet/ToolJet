@@ -3,6 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { CASE_LABELS, CASE_VALUES, FONT_LABELS, FONT_VALUES, WEIGHT_LABELS, WEIGHT_VALUES, typeStyle } from '../lib/ui2/display/type';
 import { LoadingBox, LoadingFrame, TextSkel, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 export const Text = () => {
@@ -16,13 +17,13 @@ export const Text = () => {
   });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onHover = ToolJet.useEventCallback({ name: 'onHover' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Text color', inspector: 'color', initialValue: '' });
+  const textColor = useThemeColor('textColor', 'Text color', TOKEN.text);
   const textAlign = ToolJet.useStyleEnumeration({ name: 'textAlign', label: 'Text alignment (left, center, right)', enumDefinition: ['left', 'center', 'right'], initialValue: 'left', inspector: 'switch' });
   const fontFamily = ToolJet.useStyleEnumeration({ name: 'fontFamily', label: 'Typeface', enumDefinition: FONT_VALUES, enumLabels: FONT_LABELS, initialValue: 'theme' });
   const fontWeight = ToolJet.useStyleEnumeration({ name: 'fontWeight', label: 'Weight', enumDefinition: WEIGHT_VALUES, enumLabels: WEIGHT_LABELS, initialValue: '' });
   const letterSpacing = ToolJet.useStyleString({ name: 'letterSpacing', label: 'Letter spacing (px, or em like 0.12em)', initialValue: '' });
   const textTransform = ToolJet.useStyleEnumeration({ name: 'textTransform', label: 'Casing', enumDefinition: CASE_VALUES, enumLabels: CASE_LABELS, initialValue: 'none' });
-  const fontSize = ToolJet.useStyleNumber({ name: 'fontSize', label: 'Font size (px)', initialValue: '' });
+  const fontSize = ToolJet.useStyleNumber({ name: 'fontSize', label: 'Font size (px)', initialValue: '', placeholder: 'From the tone' });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 3 });
 

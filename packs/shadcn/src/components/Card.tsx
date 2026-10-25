@@ -1,6 +1,7 @@
 import React from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { displayText } from '../lib/displayText';
+import { useThemeRadius } from '../lib/styleDefaults';
 
 // Container: builders drop ToolJet components into the body slot. The look is driven by styles,
 // which the builder sets in the Styles tab and which are not exposed to the app.
@@ -24,7 +25,7 @@ export const Card = () => {
     inspector: 'color',
     initialValue: 'var(--cc-primary-brand)',
   });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Border radius', initialValue: '' });
+  const radius = useThemeRadius('borderRadius', 'Border radius');
   const padding = ToolJet.useStyleNumber({ name: 'padding', label: 'Padding', initialValue: 16, section: 'Spacing' });
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 40 });
   const title = displayText(rawTitle);

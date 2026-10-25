@@ -115,7 +115,8 @@
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  border-radius: 4px;
+  /* 4px at the 6px default; follows the menu radius (the Menu radius style, else the theme). */
+  border-radius: calc(var(--lk-menu-radius, var(--ui-radius)) - 2px);
   font-size: 14px;
   line-height: 20px;
   outline: none;

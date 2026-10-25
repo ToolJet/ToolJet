@@ -5,6 +5,7 @@ import { SHADOWS, isSet, itemKey, pageOf, px, styleVars, toText, type Row } from
 import { Chip, Pager, RecordAvatar, onKeyActivate } from '../lib/ui2/display/lists/parts';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { ListSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display-lists.css';
 
 // UI 2.0's List view: items in a list or a grid, with selection, client or server-side paging and UI 2.0's item look.
@@ -72,14 +73,14 @@ export const ListView = () => {
   const onRecordClicked = ToolJet.useEventCallback({ name: 'onRecordClicked' });
   const onPageChanged = ToolJet.useEventCallback({ name: 'onPageChanged' });
   const onActionClicked = ToolJet.useEventCallback({ name: 'onActionClicked' });
-  const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Accent (selected outline, pagination)', inspector: 'color', initialValue: '' });
-  const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'List background', inspector: 'color', initialValue: '' });
-  const itemBackground = ToolJet.useStyleString({ name: 'itemBackgroundColor', label: 'Item background', inspector: 'color', initialValue: '' });
-  const hoverBackground = ToolJet.useStyleString({ name: 'itemHoverBackgroundColor', label: 'Item hover background', inspector: 'color', initialValue: '' });
-  const selectedBackground = ToolJet.useStyleString({ name: 'selectedItemBackgroundColor', label: 'Selected item background', inspector: 'color', initialValue: '' });
-  const itemBorderColor = ToolJet.useStyleString({ name: 'itemBorderColor', label: 'Item border color', inspector: 'color', initialValue: '' });
-  const dividerColor = ToolJet.useStyleString({ name: 'dividerColor', label: 'Divider color', inspector: 'color', initialValue: '' });
-  const itemRadius = ToolJet.useStyleNumber({ name: 'itemBorderRadius', label: 'Item radius', initialValue: '' });
+  const accent = useThemeColor('accentColor', 'Accent (selected outline, pagination)', TOKEN.brand);
+  const background = useThemeColor('backgroundColor', 'List background', 'transparent');
+  const itemBackground = useThemeColor('itemBackgroundColor', 'Item background', TOKEN.surface);
+  const hoverBackground = useThemeColor('itemHoverBackgroundColor', 'Item hover background', TOKEN.muted);
+  const selectedBackground = useThemeColor('selectedItemBackgroundColor', 'Selected item background', TOKEN.brand);
+  const itemBorderColor = useThemeColor('itemBorderColor', 'Item border color', TOKEN.border);
+  const dividerColor = useThemeColor('dividerColor', 'Divider color', TOKEN.border);
+  const itemRadius = useThemeRadius('itemBorderRadius', 'Item radius');
   const itemVariant = ToolJet.useStyleEnumeration({
     name: 'itemVariant',
     label: 'Item look',
@@ -94,8 +95,8 @@ export const ListView = () => {
     enumLabels: { none: 'None', sm: 'Small', md: 'Medium', lg: 'Large' },
     initialValue: 'none',
   });
-  const padding = ToolJet.useStyleNumber({ name: 'padding', label: 'Padding around the list (px)', initialValue: '' });
-  const emptyTextColor = ToolJet.useStyleString({ name: 'emptyTextColor', label: 'Empty message color', inspector: 'color', initialValue: '' });
+  const padding = useDrawnNumber('padding', 'Padding around the list (px)', 0);
+  const emptyTextColor = useThemeColor('emptyTextColor', 'Empty message color', TOKEN.mutedText);
   const ld = useLoadingLook();
   // The sample rows' height, in whole rows: 30 left a 64px band under them at the drop.
   ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 24 });

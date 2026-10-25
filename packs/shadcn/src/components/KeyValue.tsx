@@ -7,6 +7,7 @@ import { useWidth } from '../lib/ui2/display/lists/parts';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { PairsSkel } from '../lib/ui2/loading/shapes';
 import { moveRovingFocus } from '../lib/activeElement';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-display-lists.css';
 
 const cssSize = (value: unknown, fallback: string): string => {
@@ -115,10 +116,10 @@ export const KeyValue = () => {
   const [allowCopy] = ToolJet.useStateBoolean({ name: 'allowCopy', label: 'Copy button on hover', initialValue: false });
   const [, setLastClickedField] = ToolJet.useStateObject({ name: 'lastClickedField', initialValue: {}, inspector: 'hidden' });
   const onFieldClick = ToolJet.useEventCallback({ name: 'onFieldClick' });
-  const labelColor = ToolJet.useStyleString({ name: 'labelColor', label: 'Label color', inspector: 'color', initialValue: '' });
-  const valueColor = ToolJet.useStyleString({ name: 'valueColor', label: 'Value color', inspector: 'color', initialValue: '' });
-  const dividerColor = ToolJet.useStyleString({ name: 'dividerColor', label: 'Divider color', inspector: 'color', initialValue: '' });
-  const linkColor = ToolJet.useStyleString({ name: 'linkColor', label: 'Link color', inspector: 'color', initialValue: '' });
+  const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.mutedText);
+  const valueColor = useThemeColor('valueColor', 'Value color', TOKEN.text);
+  const dividerColor = useThemeColor('dividerColor', 'Divider color', TOKEN.border);
+  const linkColor = useThemeColor('linkColor', 'Link color', TOKEN.brand);
   const ld = useLoadingLook();
   const { disabled } = ToolJet.useControlState();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 26 });

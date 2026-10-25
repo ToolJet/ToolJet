@@ -6,20 +6,21 @@ import { cn } from '../lib/cn';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
-  ['filledColor', 'Filled icon color', '--lk-on'],
-  ['emptyColor', 'Empty icon color', '--lk-off'],
-  ['valueTextColor', 'Value text color', '--lk-value'],
-  ['labelColor', 'Label color', '--lk-label'],
-  ['helpTextColor', 'Help text color', '--lk-help'],
+  ['filledColor', 'Filled icon color', '--lk-on', '#f59e0b'],
+  ['emptyColor', 'Empty icon color', '--lk-off', TOKEN.mutedText],
+  ['valueTextColor', 'Value text color', '--lk-value', TOKEN.mutedText],
+  ['labelColor', 'Label color', '--lk-label', TOKEN.text],
+  ['helpTextColor', 'Help text color', '--lk-help', TOKEN.mutedText],
   // Only the focus ring: a filled circle keeps the theme's primary.
-  ['accentColor', 'Focus ring color', '--ui2-ring'],
-  ['errorColor', 'Error color', '--lk-error'],
+  ['accentColor', 'Focus ring color', '--ui2-ring', TOKEN.brand],
+  ['errorColor', 'Error color', '--lk-error', TOKEN.error],
 ];
 
 const SIZES: Record<string, number> = { sm: 16, default: 20, lg: 28 };

@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { ToolJet } from "@tooljet/custom-component-sdk";
+import { useThemeRadius } from "../lib/styleDefaults";
 
 // Container with two drop areas and a draggable divider. The divider position is exposed as `split`
 // (percent of the first pane), so the layout can be read or set from the app.
@@ -42,11 +43,7 @@ export const SplitPane = () => {
     inspector: "color",
     initialValue: "var(--cc-surface1-surface)",
   });
-  const radius = ToolJet.useStyleNumber({
-    name: "borderRadius",
-    label: "Border radius",
-    initialValue: "",
-  });
+  const radius = useThemeRadius("borderRadius", "Border radius");
   const padding = ToolJet.useStyleNumber({
     name: "padding",
     label: "Padding",

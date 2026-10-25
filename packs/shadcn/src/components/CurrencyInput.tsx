@@ -7,6 +7,7 @@ import { usePortalContainer } from '../lib/usePortalContainer';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { POPOVER, field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { ClearX, boundsRule, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
@@ -14,9 +15,9 @@ import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
   ...field(),
-  ['affixColor', 'Currency sign color', '--lk-affix'],
-  ['currencyBackgroundColor', 'Currency picker background', '--lk-addon-bg'],
-  ['currencyTextColor', 'Currency picker text color', '--lk-addon-fg'],
+  ['affixColor', 'Currency sign color', '--lk-affix', TOKEN.mutedText],
+  ['currencyBackgroundColor', 'Currency picker background', '--lk-addon-bg', 'transparent'],
+  ['currencyTextColor', 'Currency picker text color', '--lk-addon-fg', TOKEN.text],
   ...POPOVER,
 ];
 

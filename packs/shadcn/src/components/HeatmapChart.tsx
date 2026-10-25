@@ -3,6 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChartBoundary, ChartNotes, EmptyChart, lookVars, useBoxSize, useChartClick } from '../lib/ui2/charts/chartParts';
 import { DIMMED, axisLabel, clamp, formatter, hiddenNote, isRecord, isScalar, isSet, list, num } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
 // A heatmap past this many cells is unreadable and slow to draw.
 const MAX_HEAT_COLUMNS = 60;
@@ -74,9 +75,9 @@ export const HeatmapChart = () => {
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Legend', initialValue: true });
   const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Outlines the clicked cell until Clear clicked point runs or another is clicked.', initialValue: false });
   const click = useChartClick(highlightClicked);
-  const chartColor = ToolJet.useStyleString({ name: 'chartColor', label: 'Chart color (the strongest cell)', inspector: 'color', initialValue: '' });
-  const axisTextColor = ToolJet.useStyleString({ name: 'axisTextColor', label: 'Label color', inspector: 'color', initialValue: '' });
-  const legendTextColor = ToolJet.useStyleString({ name: 'legendTextColor', label: 'Legend text color', inspector: 'color', initialValue: '' });
+  const chartColor = useThemeColor('chartColor', 'Chart color (the strongest cell)', TOKEN.brand);
+  const axisTextColor = useThemeColor('axisTextColor', 'Label color', TOKEN.mutedText);
+  const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 28 });
   const box = useBoxSize();

@@ -22,6 +22,7 @@ import {
   seriesSlots,
 } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
 // A radar past this many axes is unreadable: every axis is a spoke, a grid vertex and a label.
 const MAX_AXES = 100;
@@ -55,10 +56,10 @@ export const RadarChart = () => {
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
   const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked point emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
   const click = useChartClick(highlightClicked);
-  const chartColor = ToolJet.useStyleString({ name: 'chartColor', label: 'Chart color (series palette from it)', inspector: 'color', initialValue: '' });
-  const gridColor = ToolJet.useStyleString({ name: 'gridColor', label: 'Grid line color', inspector: 'color', initialValue: '' });
-  const axisTextColor = ToolJet.useStyleString({ name: 'axisTextColor', label: 'Axis label color', inspector: 'color', initialValue: '' });
-  const legendTextColor = ToolJet.useStyleString({ name: 'legendTextColor', label: 'Legend text color', inspector: 'color', initialValue: '' });
+  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
+  const axisTextColor = useThemeColor('axisTextColor', 'Axis label color', TOKEN.mutedText);
+  const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 30 });
 

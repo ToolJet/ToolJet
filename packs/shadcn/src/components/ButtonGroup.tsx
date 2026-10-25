@@ -7,6 +7,7 @@ import type { GroupButton } from '../lib/ui2/nav/model';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
 import { useStable } from '../lib/ui2/nav/hooks';
 import { Icon } from '../lib/ui2/nav/parts';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const VARIANTS = ['outline', 'secondary', 'default', 'ghost'];
@@ -68,15 +69,15 @@ export const ButtonGroup = () => {
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const control = ToolJet.useControlState();
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Button background', inspector: 'color', initialValue: '' });
-  const hoverBackgroundColor = ToolJet.useStyleString({ name: 'hoverBackgroundColor', label: 'Button hover background', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Button text color', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Border and divider color', inspector: 'color', initialValue: '' });
-  const selectedBg = ToolJet.useStyleString({ name: 'selectedBackgroundColor', label: 'Selected background', inspector: 'color', initialValue: '' });
-  const selectedText = ToolJet.useStyleString({ name: 'selectedTextColor', label: 'Selected text color', inspector: 'color', initialValue: '' });
-  const iconColor = ToolJet.useStyleString({ name: 'iconColor', label: 'Icon color', inspector: 'color', initialValue: '' });
-  const labelColor = ToolJet.useStyleString({ name: 'labelColor', label: 'Label color', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Group radius', initialValue: '' });
+  const backgroundColor = useThemeColor('backgroundColor', 'Button background', TOKEN.surface);
+  const hoverBackgroundColor = useThemeColor('hoverBackgroundColor', 'Button hover background', TOKEN.muted);
+  const textColor = useThemeColor('textColor', 'Button text color', TOKEN.text);
+  const borderColor = useThemeColor('borderColor', 'Border and divider color', TOKEN.border);
+  const selectedBg = useThemeColor('selectedBackgroundColor', 'Selected background', TOKEN.brand);
+  const selectedText = useThemeColor('selectedTextColor', 'Selected text color', TOKEN.surface);
+  const iconColor = useThemeColor('iconColor', 'Icon color', TOKEN.text);
+  const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.text);
+  const radius = useThemeRadius('borderRadius', 'Group radius');
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 4 });
 
   const kind = mode === 'none' ? 'actions' : mode;

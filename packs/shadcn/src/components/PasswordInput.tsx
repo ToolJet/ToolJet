@@ -5,6 +5,7 @@ import { cn } from '../lib/cn';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
@@ -12,11 +13,11 @@ import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
   ...field(),
-  ['iconColor', 'Eye icon color', '--lk-icon'],
-  ['weakColor', 'Strength color: weak', '--lk-weak'],
-  ['fairColor', 'Strength color: fair', '--lk-fair'],
-  ['strongColor', 'Strength color: strong', '--lk-strong'],
-  ['meterTrackColor', 'Strength meter track color', '--lk-track'],
+  ['iconColor', 'Eye icon color', '--lk-icon', TOKEN.mutedText],
+  ['weakColor', 'Strength color: weak', '--lk-weak', TOKEN.error],
+  ['fairColor', 'Strength color: fair', '--lk-fair', TOKEN.warning],
+  ['strongColor', 'Strength color: strong', '--lk-strong', TOKEN.success],
+  ['meterTrackColor', 'Strength meter track color', '--lk-track', TOKEN.muted],
 ];
 
 export const PasswordInput = () => {

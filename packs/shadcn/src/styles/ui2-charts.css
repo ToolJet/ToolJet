@@ -197,7 +197,8 @@
 .ui2-funnel-bar {
   height: 100%;
   min-height: 10px;
-  border-radius: 6px;
+  /* The theme radius (6px unthemed), not a fixed 6px. */
+  border-radius: var(--ui-radius);
   transition: opacity 0.15s;
 }
 .ui2-funnel-stage:hover .ui2-funnel-bar {
@@ -262,7 +263,8 @@
   min-height: 0;
   padding: 0;
   border: 0;
-  border-radius: 4px;
+  /* 4px unthemed; follows the theme radius. */
+  border-radius: calc(var(--ui-radius) - 2px);
   background: var(--heat);
   color: var(--heat-fg);
   font: inherit;

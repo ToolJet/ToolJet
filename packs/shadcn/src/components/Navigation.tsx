@@ -11,6 +11,7 @@ import { onArg, useStable } from '../lib/ui2/nav/hooks';
 import { Icon, MenuLabel, MenuRows } from '../lib/ui2/nav/parts';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { NavSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 /** One item's face: icon (initials in the icon rail), label, badge, and a chevron when it has children. */
@@ -84,18 +85,18 @@ export const Navigation = () => {
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { disabled } = ToolJet.useControlState();
 
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Background', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Item text color', inspector: 'color', initialValue: '' });
-  const iconColor = ToolJet.useStyleString({ name: 'iconColor', label: 'Item icon color', inspector: 'color', initialValue: '' });
-  const hoverBackgroundColor = ToolJet.useStyleString({ name: 'hoverBackgroundColor', label: 'Item hover background', inspector: 'color', initialValue: '' });
-  const activeBackgroundColor = ToolJet.useStyleString({ name: 'activeBackgroundColor', label: 'Active item background', inspector: 'color', initialValue: '' });
-  const activeTextColor = ToolJet.useStyleString({ name: 'activeTextColor', label: 'Active item text color', inspector: 'color', initialValue: '' });
-  const indicatorColor = ToolJet.useStyleString({ name: 'indicatorColor', label: 'Active indicator color (underline)', inspector: 'color', initialValue: '' });
-  const badgeBackgroundColor = ToolJet.useStyleString({ name: 'badgeBackgroundColor', label: 'Badge background', inspector: 'color', initialValue: '' });
-  const badgeTextColor = ToolJet.useStyleString({ name: 'badgeTextColor', label: 'Badge text color', inspector: 'color', initialValue: '' });
-  const groupLabelColor = ToolJet.useStyleString({ name: 'groupLabelColor', label: 'Group heading color', inspector: 'color', initialValue: '' });
-  const separatorColor = ToolJet.useStyleString({ name: 'separatorColor', label: 'Separator color', inspector: 'color', initialValue: '' });
-  const itemRadius = ToolJet.useStyleNumber({ name: 'itemRadius', label: 'Item radius', initialValue: '' });
+  const backgroundColor = useThemeColor('backgroundColor', 'Background', 'transparent');
+  const textColor = useThemeColor('textColor', 'Item text color', TOKEN.text);
+  const iconColor = useThemeColor('iconColor', 'Item icon color', TOKEN.text);
+  const hoverBackgroundColor = useThemeColor('hoverBackgroundColor', 'Item hover background', TOKEN.muted);
+  const activeBackgroundColor = useThemeColor('activeBackgroundColor', 'Active item background', TOKEN.muted);
+  const activeTextColor = useThemeColor('activeTextColor', 'Active item text color', TOKEN.text);
+  const indicatorColor = useThemeColor('indicatorColor', 'Active indicator color (underline)', TOKEN.brand);
+  const badgeBackgroundColor = useThemeColor('badgeBackgroundColor', 'Badge background', TOKEN.muted);
+  const badgeTextColor = useThemeColor('badgeTextColor', 'Badge text color', TOKEN.mutedText);
+  const groupLabelColor = useThemeColor('groupLabelColor', 'Group heading color', TOKEN.mutedText);
+  const separatorColor = useThemeColor('separatorColor', 'Separator color', TOKEN.border);
+  const itemRadius = useThemeRadius('itemRadius', 'Item radius');
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 9, defaultHeight: 32 });
 

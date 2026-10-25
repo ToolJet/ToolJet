@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { initials, isSet, styleVars } from '../lib/ui2/display/lists/model';
 import { AvatarSkel, LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 type Person = { name: string; src: string };
@@ -49,9 +50,9 @@ export const Avatar = () => {
     section: 'Appearance',
   });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Initials background', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Initials color', inspector: 'color', initialValue: '' });
-  const ringColor = ToolJet.useStyleString({ name: 'ringColor', label: 'Ring color (between stacked avatars)', inspector: 'color', initialValue: '' });
+  const backgroundColor = useThemeColor('backgroundColor', 'Initials background', TOKEN.muted);
+  const textColor = useThemeColor('textColor', 'Initials color', TOKEN.text);
+  const ringColor = useThemeColor('ringColor', 'Ring color (between stacked avatars)', TOKEN.surface);
   const fallbackColor = ToolJet.useStyleString({ name: 'fallbackColor', label: 'Initials background (old name)', inspector: 'color', initialValue: '' });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });

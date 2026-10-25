@@ -5,6 +5,7 @@ import { cn } from '../lib/cn';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
@@ -12,8 +13,8 @@ import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
   ...field(),
-  ['separatorColor', 'Separator color', '--lk-sep'],
-  ['slotSize', 'Box size', '--lk-slot', 'px'],
+  ['separatorColor', 'Separator color', '--lk-sep', TOKEN.mutedText],
+  ['slotSize', 'Box size', '--lk-slot', 36],
 ];
 
 // One hidden input over the boxes takes the typing, pasting and the phone's one-time-code autofill (UI 2.0's input-otp

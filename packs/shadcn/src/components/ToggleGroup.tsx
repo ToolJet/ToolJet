@@ -6,6 +6,7 @@ import { MAX_CHOICES, choiceKey, defaultKey, isDisabledOption, shownOptions, toC
 import { lookVars, useDropRemovedChoices, useResetOn } from '../lib/ui2/choice/looks';
 import { moveRovingFocus, rovingEntry } from '../lib/activeElement';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
+import { TOKEN, useThemeRadius } from '../lib/styleDefaults';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
 
@@ -40,12 +41,12 @@ export const ToggleGroup = () => {
   const [legacyValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
   const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
-  const backgroundColor = useColorStyle('backgroundColor', 'Group background');
-  const textColor = useColorStyle('textColor', 'Option text color');
-  const selectedBackgroundColor = useColorStyle('selectedBackgroundColor', 'Selected option background');
-  const selectedTextColor = useColorStyle('selectedTextColor', 'Selected option text color');
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Group radius', initialValue: '' });
-  const borderColor = useColorStyle('borderColor', 'Border color (outline look)');
+  const backgroundColor = useColorStyle('backgroundColor', 'Group background', TOKEN.muted);
+  const textColor = useColorStyle('textColor', 'Option text color', TOKEN.mutedText);
+  const selectedBackgroundColor = useColorStyle('selectedBackgroundColor', 'Selected option background', TOKEN.surface);
+  const selectedTextColor = useColorStyle('selectedTextColor', 'Selected option text color', TOKEN.text);
+  const borderRadius = useThemeRadius('borderRadius', 'Group radius');
+  const borderColor = useColorStyle('borderColor', 'Border color (outline look)', TOKEN.border);
   const selectedColor = ToolJet.useStyleString({ name: 'selectedColor', label: 'Selected (earlier name)', inspector: 'hidden', initialValue: '' });
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 4 });
   const { disabled, loading } = useBusy(disabledProp);

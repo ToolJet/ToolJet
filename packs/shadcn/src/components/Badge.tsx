@@ -3,6 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { styleVars, px } from '../lib/ui2/display/lists/model';
 import { LoadingBox, LoadingFrame, PillSkel, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 const VARIANTS = ['default', 'secondary', 'outline', 'success', 'warning', 'destructive'];
@@ -33,10 +34,10 @@ export const Badge = () => {
   });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   // UI 2.0's Badge styles: unset, each variant keeps its own colours.
-  const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Badge background', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Badge text color', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Badge border color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Badge radius', initialValue: '' });
+  const background = useThemeColor('backgroundColor', 'Badge background', TOKEN.brand);
+  const textColor = useThemeColor('textColor', 'Badge text color', TOKEN.surface);
+  const borderColor = useThemeColor('borderColor', 'Badge border color', 'transparent');
+  const borderRadius = useThemeRadius('borderRadius', 'Badge radius');
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 4, defaultHeight: 3 });
 

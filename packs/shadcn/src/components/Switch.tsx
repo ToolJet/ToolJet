@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { CheckedRow } from '../lib/Field';
 import { lookVars, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
+import { TOKEN } from '../lib/styleDefaults';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
 
@@ -17,10 +18,10 @@ export const Switch = () => {
   const [legacyChecked, setLegacyChecked] = ToolJet.useStateBoolean({ name: 'checked', initialValue: false, inspector: 'hidden' });
   const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
-  const accentColor = useColorStyle('accentColor', 'Switch on color');
-  const labelColor = useColorStyle('labelColor', 'Label color');
-  const helpTextColor = useColorStyle('helpTextColor', 'Help text color');
-  const offColor = useColorStyle('offColor', 'Switch off color');
+  const accentColor = useColorStyle('accentColor', 'Switch on color', TOKEN.brand);
+  const labelColor = useColorStyle('labelColor', 'Label color', TOKEN.text);
+  const helpTextColor = useColorStyle('helpTextColor', 'Help text color', TOKEN.mutedText);
+  const offColor = useColorStyle('offColor', 'Switch off color', TOKEN.border);
   const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Label color (earlier name)', inspector: 'hidden', initialValue: '' });
   ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 3 });
   const { disabled, loading } = useBusy(disabledProp);

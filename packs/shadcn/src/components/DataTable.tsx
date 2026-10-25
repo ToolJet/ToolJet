@@ -23,6 +23,7 @@ import { CellBoundary, renderCell } from '../lib/ui2/table/cells';
 import type { OnAction } from '../lib/ui2/table/cells';
 import { TableCheckbox, Toolbar } from '../lib/ui2/table/Toolbar';
 import { useRowResolver } from '../lib/ui2/table/rowResolver';
+import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-table.css';
 
 // ToolJet UI 2.0's Table (ShadTable) in the pack: its property, style, event, action and exposed-value names and
@@ -284,18 +285,18 @@ export const DataTable = () => {
   // ---- styles (UI 2.0 names; unset reads the app theme) -----------------------------------------------------------
   // The table's own (rounded) box: the host's boxShadow, in the Container section, would draw a second, square one.
   const boxShadow = ToolJet.useStyleString({ name: 'cardShadow', label: 'Table shadow', inspector: 'boxShadow', initialValue: '0px 0px 0px 0px #00000040' });
-  const accentColor = ToolJet.useStyleString({ name: 'accentColor', label: 'Accent (checkboxes, focus, active page)', inspector: 'color', initialValue: '' });
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Table background', inspector: 'color', initialValue: '' });
-  const headerBackgroundColor = ToolJet.useStyleString({ name: 'headerBackgroundColor', label: 'Header row background', inspector: 'color', initialValue: '' });
-  const headerTextColor = ToolJet.useStyleString({ name: 'headerTextColor', label: 'Header text color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Cell text color', inspector: 'color', initialValue: '' });
-  const mutedTextColor = ToolJet.useStyleString({ name: 'mutedTextColor', label: 'Secondary text color (footer, empty state)', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Border and row divider color', inspector: 'color', initialValue: '' });
-  const rowHoverColor = ToolJet.useStyleString({ name: 'rowHoverColor', label: 'Row hover background', inspector: 'color', initialValue: '' });
-  const selectedRowColor = ToolJet.useStyleString({ name: 'selectedRowColor', label: 'Selected row background', inspector: 'color', initialValue: '' });
-  const stripedRowColor = ToolJet.useStyleString({ name: 'stripedRowColor', label: 'Striped row background', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Table radius', initialValue: '' as unknown as number });
-  const fontSize = ToolJet.useStyleNumber({ name: 'fontSize', label: 'Font size (px)', initialValue: '' as unknown as number });
+  const accentColor = useThemeColor('accentColor', 'Accent (checkboxes, focus, active page)', TOKEN.brand);
+  const backgroundColor = useThemeColor('backgroundColor', 'Table background', TOKEN.surface);
+  const headerBackgroundColor = useThemeColor('headerBackgroundColor', 'Header row background', TOKEN.surface);
+  const headerTextColor = useThemeColor('headerTextColor', 'Header text color', TOKEN.mutedText);
+  const textColor = useThemeColor('textColor', 'Cell text color', TOKEN.text);
+  const mutedTextColor = useThemeColor('mutedTextColor', 'Secondary text color (footer, empty state)', TOKEN.mutedText);
+  const borderColor = useThemeColor('borderColor', 'Border and row divider color', TOKEN.border);
+  const rowHoverColor = useThemeColor('rowHoverColor', 'Row hover background', TOKEN.muted);
+  const selectedRowColor = useThemeColor('selectedRowColor', 'Selected row background', TOKEN.brand);
+  const stripedRowColor = useThemeColor('stripedRowColor', 'Striped row background', TOKEN.muted);
+  const borderRadius = useThemeRadius('borderRadius', 'Table radius');
+  const fontSize = useDrawnNumber('fontSize', 'Font size (px)', 14);
   const headerCasing = ToolJet.useStyleEnumeration({
     name: 'headerCasing',
     label: 'Header casing',

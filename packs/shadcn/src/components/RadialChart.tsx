@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChartFrame, InlineTip, LegendContent, seriesColor, useChartClick } from '../lib/ui2/charts/chartParts';
 import { animated, axisLabel, emphasis, formatter, isRecord, isScalar, isSet, list, num, type Row } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
 const MAX_RINGS = 12;
 
@@ -169,11 +170,11 @@ export const RadialChart = () => {
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
   const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked ring emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
   const click = useChartClick(highlightClicked);
-  const chartColor = ToolJet.useStyleString({ name: 'chartColor', label: 'Chart color (series palette from it)', inspector: 'color', initialValue: '' });
-  const trackColor = ToolJet.useStyleString({ name: 'trackColor', label: 'Track color', inspector: 'color', initialValue: '' });
-  const legendTextColor = ToolJet.useStyleString({ name: 'legendTextColor', label: 'Legend text color', inspector: 'color', initialValue: '' });
-  const centerValueColor = ToolJet.useStyleString({ name: 'centerValueColor', label: 'Center figure color', inspector: 'color', initialValue: '' });
-  const centerLabelColor = ToolJet.useStyleString({ name: 'centerLabelColor', label: 'Center caption color', inspector: 'color', initialValue: '' });
+  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const trackColor = useThemeColor('trackColor', 'Track color', TOKEN.muted);
+  const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
+  const centerValueColor = useThemeColor('centerValueColor', 'Center figure color', TOKEN.text);
+  const centerLabelColor = useThemeColor('centerLabelColor', 'Center caption color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 22 });
 

@@ -6,24 +6,25 @@ import { cn } from '../lib/cn';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import type { FileKind } from '../lib/ui2/inputs/model';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
-  ['labelColor', 'Label color', '--lk-label'],
-  ['helpTextColor', 'Help text color', '--lk-help'],
-  ['dropzoneBackgroundColor', 'Dropzone background', '--lk-drop-bg'],
-  ['dropzoneBorderColor', 'Dropzone border color', '--lk-drop-border'],
-  ['iconColor', 'Upload icon color', '--lk-icon'],
-  ['iconBackgroundColor', 'Upload icon background', '--lk-icon-bg'],
-  ['titleColor', 'Title color', '--lk-title'],
-  ['hintColor', 'Hint color', '--lk-hint'],
-  ['accentColor', 'Accent (drag over, browse link)', 'accent'],
-  ['fileItemBackgroundColor', 'File row background', '--lk-item-bg'],
-  ['fileItemBorderColor', 'File row border color', '--lk-item-border'],
-  ['errorColor', 'Error color', '--lk-error'],
+  ['labelColor', 'Label color', '--lk-label', TOKEN.text],
+  ['helpTextColor', 'Help text color', '--lk-help', TOKEN.mutedText],
+  ['dropzoneBackgroundColor', 'Dropzone background', '--lk-drop-bg', 'transparent'],
+  ['dropzoneBorderColor', 'Dropzone border color', '--lk-drop-border', TOKEN.border],
+  ['iconColor', 'Upload icon color', '--lk-icon', TOKEN.mutedText],
+  ['iconBackgroundColor', 'Upload icon background', '--lk-icon-bg', TOKEN.muted],
+  ['titleColor', 'Title color', '--lk-title', TOKEN.text],
+  ['hintColor', 'Hint color', '--lk-hint', TOKEN.mutedText],
+  ['accentColor', 'Accent (drag over, browse link)', 'accent', TOKEN.brand],
+  ['fileItemBackgroundColor', 'File row background', '--lk-item-bg', TOKEN.surface],
+  ['fileItemBorderColor', 'File row border color', '--lk-item-border', TOKEN.border],
+  ['errorColor', 'Error color', '--lk-error', TOKEN.error],
   ['borderRadius', 'Radius', '--lk-radius', 'px'],
 ];
 

@@ -19,6 +19,7 @@ import {
 import { useRecordSelection } from '../lib/ui2/display/lists/useRecordSelection';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { ProgressRowsSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-charts-progress.css';
 
 // Goals, budgets, quotas: each row a label, its value against a target, a bar, an optional status chip and caption.
@@ -57,7 +58,8 @@ export const ProgressList = () => {
   const [percentField] = ToolJet.useStateString({ name: 'percentField', label: 'Percent field (0 to 100; overrides value / target)', initialValue: '' });
   const [captionField] = ToolJet.useStateString({ name: 'captionField', label: 'Caption field (a line under the bar)', initialValue: 'note' });
   const [statusField] = ToolJet.useStateString({ name: 'statusField', label: 'Status field (a chip, or a tone name)', initialValue: 'status' });
-  const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], enumLabels: { auto: 'Auto', number: 'Number', currency: 'Currency', percent: 'Percent', compact: 'Compact' }, initialValue: 'currency' });
+  // Number by default: a currency default printed bound order counts as $10 (the sample budgets read as figures).
+  const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], enumLabels: { auto: 'Auto', number: 'Number', currency: 'Currency', percent: 'Percent', compact: 'Compact' }, initialValue: 'number' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (ISO code, e.g. USD)', initialValue: 'USD' });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
   const [autoTone] = ToolJet.useStateEnumeration({ name: 'autoTone', label: 'Tone from progress', enumDefinition: ['none', 'goal', 'limit'], enumLabels: { none: 'None', goal: 'Goal', limit: 'Limit' }, initialValue: 'none', inspector: 'switch' });
@@ -70,13 +72,13 @@ export const ProgressList = () => {
   const [, setSelectedItemId] = ToolJet.useStateString({ name: 'selectedItemId', initialValue: '', inspector: 'hidden' });
   const [, setSelectedItemIndex] = ToolJet.useStateNumber({ name: 'selectedItemIndex', initialValue: -1, inspector: 'hidden' });
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'List background', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Border and divider color', inspector: 'color', initialValue: '' });
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Label and value color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Caption color', inspector: 'color', initialValue: '' });
-  const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Bar color (rows without a tone)', inspector: 'color', initialValue: '' });
-  const trackColor = ToolJet.useStyleString({ name: 'trackColor', label: 'Bar track color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'List radius', initialValue: '' });
+  const backgroundColor = useThemeColor('backgroundColor', 'List background', TOKEN.surface);
+  const borderColor = useThemeColor('borderColor', 'Border and divider color', TOKEN.border);
+  const titleColor = useThemeColor('titleColor', 'Label and value color', TOKEN.text);
+  const textColor = useThemeColor('textColor', 'Caption color', TOKEN.mutedText);
+  const accent = useThemeColor('accentColor', 'Bar color (rows without a tone)', TOKEN.brand);
+  const trackColor = useThemeColor('trackColor', 'Bar track color', TOKEN.text);
+  const borderRadius = useThemeRadius('borderRadius', 'List radius');
   const titleFontFamily = ToolJet.useStyleEnumeration({
     name: 'titleFontFamily',
     label: 'Label typeface',

@@ -9,6 +9,20 @@ interface FormatOptions {
   decimals?: number;
 }
 
+/** The author's prefix and suffix around a formatted figure, each left out when the format already wrote it: a "$"
+ *  prefix on a currency figure read "$$1.2K", a "%" suffix on a percent "42%%". On a currency figure the mark counts
+ *  anywhere ("1.200 $" in German); otherwise only at that end of the figure. */
+export const withAffixes = (out: string, prefix: unknown, suffix: unknown, currency = false): string => {
+  const unsigned = out.replace(/^[-\u2212+]/, '');
+  const keep = (affix: unknown, written: (mark: string) => boolean): string => {
+    if (typeof affix !== 'string' && typeof affix !== 'number') return '';
+    const text = String(affix);
+    const mark = text.trim();
+    return mark && (written(mark) || (currency && out.includes(mark))) ? '' : text;
+  };
+  return `${keep(prefix, (m) => unsigned.startsWith(m))}${out}${keep(suffix, (m) => out.endsWith(m))}`;
+};
+
 // Shared number formatting for charts, stats and lists: Intl-based, with author prefix/suffix.
 export const formatValue = (value: unknown, options: FormatOptions = {}): string => {
   const { format = 'number', currency = 'USD', locale = 'en-US', prefix = '', suffix = '', decimals } = options;
@@ -36,5 +50,5 @@ export const formatValue = (value: unknown, options: FormatOptions = {}): string
   } catch {
     out = String(n);
   }
-  return `${prefix}${out}${suffix}`;
+  return withAffixes(out, prefix, suffix, format === 'currency');
 };

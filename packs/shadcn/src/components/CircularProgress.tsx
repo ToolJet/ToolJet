@@ -3,6 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { clamp, num } from '../lib/data';
 import { css, ringGeometry } from '../lib/ui2/charts/progressModel';
 import { InPlace, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-charts-progress.css';
 
 const ALIGN = ['left', 'center', 'right'];
@@ -15,10 +16,10 @@ export const CircularProgress = () => {
   const [centerText] = ToolJet.useStateEnumeration({ name: 'centerText', label: 'Centre text', enumDefinition: ['value', 'custom', 'none'], enumLabels: { value: 'Value', custom: 'Custom', none: 'None' }, initialValue: 'value', inspector: 'switch' });
   const [customText] = ToolJet.useStateString({ name: 'text', label: 'Custom centre text', initialValue: '' });
   const [label] = ToolJet.useStateString({ name: 'label', label: 'Sub-label', initialValue: 'Complete' });
-  const barColor = ToolJet.useStyleString({ name: 'barColor', label: 'Bar color', inspector: 'color', initialValue: '' });
-  const trackColor = ToolJet.useStyleString({ name: 'trackColor', label: 'Track color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Centre text color', inspector: 'color', initialValue: '' });
-  const labelColor = ToolJet.useStyleString({ name: 'labelColor', label: 'Sub-label color', inspector: 'color', initialValue: '' });
+  const barColor = useThemeColor('barColor', 'Bar color', TOKEN.brand);
+  const trackColor = useThemeColor('trackColor', 'Track color', TOKEN.brand);
+  const textColor = useThemeColor('textColor', 'Centre text color', TOKEN.text);
+  const labelColor = useThemeColor('labelColor', 'Sub-label color', TOKEN.mutedText);
   const alignment = ToolJet.useStyleEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], enumLabels: { left: 'Left', center: 'Center', right: 'Right' }, initialValue: 'center' });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 10 });

@@ -17,6 +17,7 @@ import {
   textDirection,
 } from '../lib/statModel';
 import { Spinner, Veil, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 
 // UI 2.0's Stat (Ui2/Stat/Stat.tsx) on the pack's own CSS: the same properties, styles and actions, so a Stat planned
 // for UI 2.0 draws the same here. Visibility and the fitted height are the host's; the loading look is UI 2.0's.
@@ -158,18 +159,18 @@ export const Stat = () => {
   );
   // The card's own (rounded) shadow: the host's boxShadow, in the Container section, would draw a second, square one.
   const boxShadow = ToolJet.useStyleString({ name: 'cardShadow', label: 'Card shadow', inspector: 'boxShadow', initialValue: '0px 0px 0px 0px #00000040' });
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Card background', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Card border color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Card radius', initialValue: '' });
-  const labelColor = ToolJet.useStyleString({ name: 'labelColor', label: 'Label color', inspector: 'color', initialValue: '' });
-  const valueColor = ToolJet.useStyleString({ name: 'valueColor', label: 'Value color', inspector: 'color', initialValue: '' });
-  const footnoteColor = ToolJet.useStyleString({ name: 'footnoteColor', label: 'Footnote color', inspector: 'color', initialValue: '' });
-  const positiveColor = ToolJet.useStyleString({ name: 'positiveColor', label: 'Change color when trend is up', inspector: 'color', initialValue: '' });
-  const negativeColor = ToolJet.useStyleString({ name: 'negativeColor', label: 'Change color when trend is down', inspector: 'color', initialValue: '' });
-  const iconColor = ToolJet.useStyleString({ name: 'iconColor', label: 'Icon color', inspector: 'color', initialValue: '' });
-  const chipColor = ToolJet.useStyleString({ name: 'chipColor', label: 'Icon tile color', inspector: 'color', initialValue: '' });
-  const sparklineColor = ToolJet.useStyleString({ name: 'sparklineColor', label: 'Trend line color', inspector: 'color', initialValue: '' });
-  const progressColor = ToolJet.useStyleString({ name: 'progressColor', label: 'Progress color', inspector: 'color', initialValue: '' });
+  const backgroundColor = useThemeColor('backgroundColor', 'Card background', TOKEN.surface);
+  const borderColor = useThemeColor('borderColor', 'Card border color', TOKEN.border);
+  const borderRadius = useThemeRadius('borderRadius', 'Card radius');
+  const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.mutedText);
+  const valueColor = useThemeColor('valueColor', 'Value color', TOKEN.text);
+  const footnoteColor = useThemeColor('footnoteColor', 'Footnote color', TOKEN.mutedText);
+  const positiveColor = useThemeColor('positiveColor', 'Change color when trend is up', TOKEN.text);
+  const negativeColor = useThemeColor('negativeColor', 'Change color when trend is down', TOKEN.text);
+  const iconColor = useThemeColor('iconColor', 'Icon color', TOKEN.brand);
+  const chipColor = useThemeColor('chipColor', 'Icon tile color', TOKEN.brand);
+  const sparklineColor = useThemeColor('sparklineColor', 'Trend line color', TOKEN.brand);
+  const progressColor = useThemeColor('progressColor', 'Progress color', TOKEN.brand);
   const valueFontFamily = ToolJet.useStyleEnumeration({
     name: 'valueFontFamily',
     label: 'Value typeface',

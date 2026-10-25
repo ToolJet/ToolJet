@@ -5,6 +5,7 @@ import { Check } from 'lucide-react';
 import { CheckedRow } from '../lib/Field';
 import { lookVars, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
+import { TOKEN } from '../lib/styleDefaults';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
 
@@ -22,11 +23,11 @@ export const Checkbox = () => {
   const onCheck = ToolJet.useEventCallback({ name: 'onCheck' });
   // UI 2.0's spelling only: the pack's earlier onUncheck fired alongside it, a third event for one uncheck.
   const onUnCheck = ToolJet.useEventCallback({ name: 'onUnCheck' });
-  const accentColor = useColorStyle('accentColor', 'Checked color');
-  const labelColor = useColorStyle('labelColor', 'Label color');
-  const helpTextColor = useColorStyle('helpTextColor', 'Help text color');
-  const borderColor = useColorStyle('borderColor', 'Unchecked box border color');
-  const errorColor = useColorStyle('errorColor', 'Error color');
+  const accentColor = useColorStyle('accentColor', 'Checked color', TOKEN.brand);
+  const labelColor = useColorStyle('labelColor', 'Label color', TOKEN.text);
+  const helpTextColor = useColorStyle('helpTextColor', 'Help text color', TOKEN.mutedText);
+  const borderColor = useColorStyle('borderColor', 'Unchecked box border color', TOKEN.brand);
+  const errorColor = useColorStyle('errorColor', 'Error color', TOKEN.error);
   const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Label color (earlier name)', inspector: 'hidden', initialValue: '' });
   ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 3 });
   const { disabled, loading } = useBusy(disabledProp);

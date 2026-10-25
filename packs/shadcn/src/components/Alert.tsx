@@ -6,6 +6,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { px, styleVars } from '../lib/ui2/display/lists/model';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 // UI 2.0's status looks: Info, Success, Warning and Destructive each from a theme colour, Custom from the Custom
@@ -82,12 +83,12 @@ export const Alert = () => {
   );
   ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setDismissed(false));
   ToolJet.useAction({ name: 'dismiss', displayName: 'Dismiss' }, close);
-  const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Alert background', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Alert border color', inspector: 'color', initialValue: '' });
-  const accentColor = ToolJet.useStyleString({ name: 'accentColor', label: 'Custom accent', inspector: 'color', initialValue: '' });
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Alert title color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Alert description color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Alert radius', initialValue: '' });
+  const background = useThemeColor('backgroundColor', 'Alert background', TOKEN.surface);
+  const borderColor = useThemeColor('borderColor', 'Alert border color', TOKEN.border);
+  const accentColor = useThemeColor('accentColor', 'Custom accent', TOKEN.brand);
+  const titleColor = useThemeColor('titleColor', 'Alert title color', TOKEN.text);
+  const textColor = useThemeColor('textColor', 'Alert description color', TOKEN.text);
+  const borderRadius = useThemeRadius('borderRadius', 'Alert radius');
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 6 });
 

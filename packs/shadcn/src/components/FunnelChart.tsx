@@ -3,6 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChartBoundary, ChartNotes, EmptyChart, lookVars, seriesColor, useChartClick } from '../lib/ui2/charts/chartParts';
 import { animated, axisLabel, emphasis, fieldList, fieldNote, formatter, hiddenNote, isRecord, isSet, list, num, resolveChartFields, type Row } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
 /** A funnel draws at most this many stages. */
 const MAX_STAGES = 24;
@@ -77,8 +78,8 @@ export const FunnelChart = () => {
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
   const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked stage emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
   const click = useChartClick(highlightClicked);
-  const chartColor = ToolJet.useStyleString({ name: 'chartColor', label: 'Chart color (series palette from it)', inspector: 'color', initialValue: '' });
-  const axisTextColor = ToolJet.useStyleString({ name: 'axisTextColor', label: 'Stage label color', inspector: 'color', initialValue: '' });
+  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const axisTextColor = useThemeColor('axisTextColor', 'Stage label color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 24 });
 

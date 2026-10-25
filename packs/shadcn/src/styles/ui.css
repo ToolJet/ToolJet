@@ -360,7 +360,8 @@ body {
   align-items: center;
   gap: 8px;
   padding: 6px 8px 6px 28px;
-  border-radius: 4px;
+  /* 4px at the 6px default; follows an app theme's radius, as the menu around it does. */
+  border-radius: calc(var(--ui-radius) - 2px);
   outline: none;
   cursor: pointer;
   user-select: none;
@@ -1406,7 +1407,8 @@ body {
   width: min(440px, calc(100vw - 32px));
   padding: 24px;
   border: 1px solid var(--ui-border);
-  border-radius: 10px;
+  /* 10px at the 6px default; follows an app theme's radius (12px theme fields sat beside a 10px dialog). */
+  border-radius: calc(var(--ui-radius) + 4px);
   background: var(--ui-bg);
   box-shadow: var(--ui-shadow-lg);
   transform: translate(-50%, -50%);

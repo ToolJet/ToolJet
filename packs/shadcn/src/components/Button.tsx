@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
@@ -63,11 +64,11 @@ export const Button = () => {
   ToolJet.useAction({ name: 'setText', displayName: 'Set text', params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }] }, (t) =>
     setOverride(t === undefined || t === null ? '' : String(t))
   );
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Button background', inspector: 'color', initialValue: '' });
-  const hoverBackgroundColor = ToolJet.useStyleString({ name: 'hoverBackgroundColor', label: 'Button hover background', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Button text color', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Button border color', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Button radius', initialValue: '' });
+  const backgroundColor = useThemeColor('backgroundColor', 'Button background', TOKEN.brand);
+  const hoverBackgroundColor = useThemeColor('hoverBackgroundColor', 'Button hover background', TOKEN.brand);
+  const textColor = useThemeColor('textColor', 'Button text color', TOKEN.surface);
+  const borderColor = useThemeColor('borderColor', 'Button border color', 'transparent');
+  const radius = useThemeRadius('borderRadius', 'Button radius');
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
 
   const look = oneOf(VARIANTS, variant);

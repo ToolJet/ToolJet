@@ -3,6 +3,7 @@ import { ToolJet } from "@tooljet/custom-component-sdk";
 import { Check } from "lucide-react";
 import { cn } from "../lib/cn";
 import { slotNames, toItems } from "../lib/slots";
+import { useThemeRadius } from "../lib/styleDefaults";
 
 // Wizard container: one drop area per step, with Back / Next / Finish. Every step stays mounted
 // (only the current one is shown), so values entered in earlier steps are kept.
@@ -53,11 +54,7 @@ export const Stepper = () => {
     inspector: "color",
     initialValue: "var(--cc-surface1-surface)",
   });
-  const radius = ToolJet.useStyleNumber({
-    name: "borderRadius",
-    label: "Border radius",
-    initialValue: "",
-  });
+  const radius = useThemeRadius("borderRadius", "Border radius");
   const padding = ToolJet.useStyleNumber({
     name: "padding",
     label: "Padding",
@@ -142,7 +139,9 @@ export const Stepper = () => {
             >
               {i < index ? <Check size={14} /> : i + 1}
             </button>
-            <span className="ui-stepper-label">{step.label}</span>
+            <span className="ui-stepper-label" title={step.label}>
+              {step.label}
+            </span>
           </li>
         ))}
       </ol>

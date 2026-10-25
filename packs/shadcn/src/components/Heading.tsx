@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { CASE_LABELS, CASE_VALUES, FONT_LABELS, FONT_VALUES, WEIGHT_LABELS, WEIGHT_VALUES, typeStyle } from '../lib/ui2/display/type';
 import { HeadingSkel, LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 const LEVELS = ['h1', 'h2', 'h3', 'h4'];
@@ -20,13 +21,13 @@ export const Heading = () => {
   });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onHover = ToolJet.useEventCallback({ name: 'onHover' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Heading color', inspector: 'color', initialValue: '' });
+  const textColor = useThemeColor('textColor', 'Heading color', TOKEN.text);
   const textAlign = ToolJet.useStyleEnumeration({ name: 'textAlign', label: 'Text alignment (left, center, right)', enumDefinition: ['left', 'center', 'right'], initialValue: 'left', inspector: 'switch' });
   const fontFamily = ToolJet.useStyleEnumeration({ name: 'fontFamily', label: 'Typeface', enumDefinition: FONT_VALUES, enumLabels: FONT_LABELS, initialValue: 'theme' });
   const fontWeight = ToolJet.useStyleEnumeration({ name: 'fontWeight', label: 'Weight', enumDefinition: WEIGHT_VALUES, enumLabels: WEIGHT_LABELS, initialValue: '' });
   const letterSpacing = ToolJet.useStyleString({ name: 'letterSpacing', label: 'Letter spacing (px, or em like 0.12em)', initialValue: '' });
   const textTransform = ToolJet.useStyleEnumeration({ name: 'textTransform', label: 'Casing', enumDefinition: CASE_VALUES, enumLabels: CASE_LABELS, initialValue: 'none' });
-  const fontSize = ToolJet.useStyleNumber({ name: 'fontSize', label: 'Font size (px; default from the level)', initialValue: '' });
+  const fontSize = ToolJet.useStyleNumber({ name: 'fontSize', label: 'Font size (px; default from the level)', initialValue: '', placeholder: 'From the level' });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 4 });
 

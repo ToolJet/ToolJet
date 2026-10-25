@@ -25,6 +25,7 @@ import {
 import { fontStack, lookVars, px } from '../lib/ui2/display/chat/values';
 import { LoadingBox, LoadingFrame, useLoading } from '../lib/ui2/loading/look';
 import { activeElementIn } from '../lib/activeElement';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display-chat.css';
 
 // UI 2.0's Questionnaire (Ui2/Questionnaire): a data-driven multi-step form, one question at a time with progress,
@@ -99,12 +100,12 @@ export const Questionnaire = () => {
   const onStepChanged = ToolJet.useEventCallback({ name: 'onStepChanged', displayName: 'On step changed' } as Event);
   const onSubmit = ToolJet.useEventCallback({ name: 'onSubmit', displayName: 'On submit' } as Event);
 
-  const accentColor = ToolJet.useStyleString({ name: 'accentColor', label: 'Accent (progress, selected answer, buttons)', inspector: 'color', initialValue: '' });
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Background', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Border and answer card border', inspector: 'color', initialValue: '' });
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Question color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Description and answer description color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Radius', initialValue: '' });
+  const accentColor = useThemeColor('accentColor', 'Accent (progress, selected answer, buttons)', TOKEN.brand);
+  const backgroundColor = useThemeColor('backgroundColor', 'Background', TOKEN.surface);
+  const borderColor = useThemeColor('borderColor', 'Border and answer card border', TOKEN.border);
+  const titleColor = useThemeColor('titleColor', 'Question color', TOKEN.text);
+  const textColor = useThemeColor('textColor', 'Description and answer description color', TOKEN.mutedText);
+  const borderRadius = useThemeRadius('borderRadius', 'Radius');
   const titleFontFamily = ToolJet.useStyleEnumeration({
     name: 'titleFontFamily',
     label: 'Question typeface',

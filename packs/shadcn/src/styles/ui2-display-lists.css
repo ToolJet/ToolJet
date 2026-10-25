@@ -532,6 +532,13 @@
   display: block;
   padding: 0;
 }
+/* A framed row of ToolJet components (the Outlined card look, or an item border colour) keeps its content off the
+   frame, as a UI 2.0 card does: the components sat 4px from the left border and ran into the right one. Sideways only:
+   the row's height is the canvas the builder laid the components out on, so top and bottom padding would cut them.
+   A plain row is the card itself and keeps no padding. */
+.u2l-list-item.is-canvas.is-framed {
+  padding: 0 12px;
+}
 .u2l-list-item.is-fields {
   display: flex;
   align-items: center;
@@ -578,7 +585,32 @@
   width: 100%;
   flex-wrap: wrap;
 }
+/* A narrow row (about 280px and less) wraps its trailing badge, meta and action onto a line of their own instead of
+   squeezing the title to nothing and pushing the action past the edge: the title keeps 80px beside the avatar, and the
+   trailing group wraps within the row's width. Wide rows still lay out on one line. */
+.u2l-list-item.is-fields:not(.is-grid) {
+  flex-wrap: wrap;
+}
+.u2l-list-item.is-fields:not(.is-grid) .u2l-list-text {
+  flex: 1 1 80px;
+}
+.u2l-list-item.is-fields:not(.is-grid) .u2l-list-trail {
+  /* Never shrunk on the title's line (a rounding shrink wrapped the chip over the action in a wide row); capped at
+     the row's width on a line of its own, where it wraps. */
+  flex: 0 0 auto;
+  max-width: 100%;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  row-gap: 8px;
+}
 .u2l-list-item.is-grid .u2l-list-action { margin-left: auto; }
+/* The row's action is as wide as its label: the button's own width: 100% made it take whatever the trailing group
+   had left (81 to 89px per row) and, once that group can wrap, a line of its own. */
+.u2l-list-action {
+  width: auto;
+  flex-shrink: 0;
+}
 .u2l-list-meta {
   font-size: 14px;
   font-weight: 500;

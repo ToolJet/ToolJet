@@ -31,14 +31,21 @@
 }
 .ui-stepper-head {
   display: flex;
+  flex-shrink: 0;
   gap: 8px;
-  margin: 0;
-  padding: 0;
+  /* Room for the dots' focus ring inside the scroll area, with the head where it was. */
+  margin: -3px;
+  padding: 3px;
   list-style: none;
+  /* A narrow Stepper shortens its labels first; past that (many steps) the head scrolls sideways, so every step stays
+     reachable instead of being cut off by the widget's box. */
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 .ui-stepper-step {
   display: flex;
   flex: 1;
+  min-width: 28px;
   align-items: center;
   gap: 8px;
   color: var(--ui-muted-fg);
@@ -80,6 +87,9 @@
   color: var(--ui-primary-fg);
 }
 .ui-stepper-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .ui-stepper-body {

@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChartFrame, ChartTooltip, LegendContent, seriesColor, useChartClick } from '../lib/ui2/charts/chartParts';
 import { affixFormatter, animated, centreValueFit, emphasis, hiddenNote, isRecord, isSet, list, statusColors } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
 // A pie past this many slices is unreadable, and drawing thousands freezes the page.
 const MAX_SLICES = 100;
@@ -30,11 +31,11 @@ export const PieChart = () => {
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked slice emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
   const click = useChartClick(highlightClicked);
-  const chartColor = ToolJet.useStyleString({ name: 'chartColor', label: 'Chart color (series palette from it)', inspector: 'color', initialValue: '' });
-  const legendTextColor = ToolJet.useStyleString({ name: 'legendTextColor', label: 'Legend text color', inspector: 'color', initialValue: '' });
-  const sliceBorderColor = ToolJet.useStyleString({ name: 'sliceBorderColor', label: 'Slice border color', inspector: 'color', initialValue: '' });
-  const centerValueColor = ToolJet.useStyleString({ name: 'centerValueColor', label: 'Center figure color', inspector: 'color', initialValue: '' });
-  const centerLabelColor = ToolJet.useStyleString({ name: 'centerLabelColor', label: 'Center caption color', inspector: 'color', initialValue: '' });
+  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
+  const sliceBorderColor = useThemeColor('sliceBorderColor', 'Slice border color', TOKEN.surface);
+  const centerValueColor = useThemeColor('centerValueColor', 'Center figure color', TOKEN.text);
+  const centerLabelColor = useThemeColor('centerLabelColor', 'Center caption color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 28 });
 

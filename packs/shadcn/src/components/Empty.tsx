@@ -3,6 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { iconFor } from '../lib/icons';
 import { px, styleVars } from '../lib/ui2/display/lists/model';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 export const Empty = () => {
@@ -11,13 +12,13 @@ export const Empty = () => {
   const [icon] = ToolJet.useStateString({ name: 'icon', label: 'Icon', description: 'Any lucide or Tabler name.', initialValue: 'inbox', inspector: 'icon' });
   const [actionLabel] = ToolJet.useStateString({ name: 'actionLabel', label: 'Action label', description: 'Empty hides the button.', initialValue: '' });
   const onActionClicked = ToolJet.useEventCallback({ name: 'onActionClicked' });
-  const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Background', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Dashed border color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Radius', initialValue: '' });
-  const iconBackgroundColor = ToolJet.useStyleString({ name: 'iconBackgroundColor', label: 'Icon background', inspector: 'color', initialValue: '' });
-  const iconColor = ToolJet.useStyleString({ name: 'iconColor', label: 'Icon color', inspector: 'color', initialValue: '' });
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Title color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Description color', inspector: 'color', initialValue: '' });
+  const background = useThemeColor('backgroundColor', 'Background', 'transparent');
+  const borderColor = useThemeColor('borderColor', 'Dashed border color', TOKEN.border);
+  const borderRadius = useThemeRadius('borderRadius', 'Radius');
+  const iconBackgroundColor = useThemeColor('iconBackgroundColor', 'Icon background', TOKEN.muted);
+  const iconColor = useThemeColor('iconColor', 'Icon color', TOKEN.mutedText);
+  const titleColor = useThemeColor('titleColor', 'Title color', TOKEN.text);
+  const textColor = useThemeColor('textColor', 'Description color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 20 });
 

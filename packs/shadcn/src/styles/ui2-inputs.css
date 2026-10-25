@@ -374,7 +374,7 @@ button.ui2-addon:disabled {
   width: 100%;
   padding: 6px 8px;
   border: 0;
-  border-radius: 4px;
+  border-radius: calc(var(--ui-radius) - 2px); /* 4px at the 6px default; follows the theme radius */
   background: transparent;
   color: inherit;
   font: inherit;

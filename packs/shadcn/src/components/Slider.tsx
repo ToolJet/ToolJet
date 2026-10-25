@@ -4,16 +4,17 @@ import { Field } from '../lib/Field';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { useReseed } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
-  ['accentColor', 'Range and handle color', 'accent'],
-  ['labelColor', 'Label color', '--lk-label'],
-  ['helpTextColor', 'Help text color', '--lk-help'],
-  ['trackColor', 'Track color', '--lk-track'],
+  ['accentColor', 'Range and handle color', 'accent', TOKEN.brand],
+  ['labelColor', 'Label color', '--lk-label', TOKEN.text],
+  ['helpTextColor', 'Help text color', '--lk-help', TOKEN.mutedText],
+  ['trackColor', 'Track color', '--lk-track', TOKEN.brand],
 ];
 
 const numeric = (n: unknown) => (typeof n === 'number' || (typeof n === 'string' && n.trim() !== '')) && Number.isFinite(Number(n));

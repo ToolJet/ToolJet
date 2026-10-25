@@ -6,6 +6,7 @@ import { CardImage, Chip, InlineProgress, RecordAvatar, onKeyActivate, useWidth 
 import { useRecordSelection } from '../lib/ui2/display/lists/useRecordSelection';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { CardsSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display-lists.css';
 
 // UI 2.0's Card grid: cards built from data fields (a picture, an eyebrow, an avatar, a title with its badges, a
@@ -44,12 +45,12 @@ export const CardGrid = () => {
   const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
   const [, setSelectedItemIndex] = ToolJet.useStateNumber({ name: 'selectedItemIndex', initialValue: -1, inspector: 'hidden' });
   const onCardClicked = ToolJet.useEventCallback({ name: 'onCardClicked' });
-  const cardBackground = ToolJet.useStyleString({ name: 'cardBackground', label: 'Card background', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Card border color', inspector: 'color', initialValue: '' });
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Title color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Subtitle and meta color', inspector: 'color', initialValue: '' });
-  const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Selected card accent', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Card radius', initialValue: '' });
+  const cardBackground = useThemeColor('cardBackground', 'Card background', TOKEN.surface);
+  const borderColor = useThemeColor('borderColor', 'Card border color', TOKEN.border);
+  const titleColor = useThemeColor('titleColor', 'Title color', TOKEN.text);
+  const textColor = useThemeColor('textColor', 'Subtitle and meta color', TOKEN.mutedText);
+  const accent = useThemeColor('accentColor', 'Selected card accent', TOKEN.brand);
+  const radius = useThemeRadius('borderRadius', 'Card radius');
   const titleFont = ToolJet.useStyleEnumeration({
     name: 'titleFontFamily',
     label: 'Title typeface',

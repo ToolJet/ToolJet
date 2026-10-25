@@ -240,7 +240,8 @@ const numericFigureKind = (key: string, name: unknown, present: unknown[]): { ty
   const has = (set: Set<string>) => words.some((w) => set.has(w));
   const text = `${key} ${typeof name === 'string' ? name : ''}`;
   // "total_orders" and "paid_invoices" are counts; "order_amount" is money.
-  if (has(COUNT_WORDS) && !words.some((w) => MONEY_WORDS.has(w) && !WEAK_MONEY.has(w))) return null;
+  const strongMoney = words.some((w) => MONEY_WORDS.has(w) && !WEAK_MONEY.has(w));
+  if (has(COUNT_WORDS) && !strongMoney) return null;
   const perUnit = has(PER_UNIT);
   if (/%/.test(text) || (has(PERCENT_WORDS) && !(perUnit && words.includes('rate')))) {
     const numbers = present.map((v) => Number(String(v).replace(/,/g, '')));
@@ -249,6 +250,9 @@ const numericFigureKind = (key: string, name: unknown, present: unknown[]): { ty
     return { type: 'percent', format: { fraction } };
   }
   const code = currencyIn(text);
+  // Only weak money words beside a plural noun count things: "total_claims", "outstanding_tickets" ("total_sales" and
+  // a bare "total" stay money).
+  if (!code && !strongMoney && has(WEAK_MONEY) && words.some((w) => !MONEY_WORDS.has(w) && /[a-z]{3,}s$/.test(w))) return null;
   const money = has(MONEY_WORDS) || (words.includes('value') && has(MONEY_PAIRS)) || (perUnit && words.includes('rate'));
   if (code || money) return { type: 'currency', format: code ? { currency: code } : {} };
   return null;
@@ -288,18 +292,13 @@ export const normalizeColumns = (columns: unknown, data: unknown, idField = 'id'
     const given = c.columnType ?? c.kind ?? c.type;
     const values = () => sample.map((row) => readCell(row, key));
     const ownName = c.name ?? c.title ?? c.header ?? c.label;
-    // A column with no type is typed from its values and words, as a derived one is. A number column named for money
-    // or a share ("budget", "Utilisation %") shows as one, unless the author gave it a prefix or a suffix.
+    // A column with no type is typed from its values and words, as a derived one is. A type the author gave is kept:
+    // columnType 'number' is a plain number, whatever its name ("Total claims" drew $20.00 beside plain number
+    // columns). Only a currency the author set on it makes it money.
     let inferred: { type: ColumnType; format?: ColumnFormat } | null = null;
     if (!isSet(given)) inferred = inferKind(key, ownName, values());
-    else if (TYPE_ALIASES[given] === 'number' && !isSet(c.prefix) && !isSet(c.suffix)) {
-      const present = values().filter((v) => !isEmptyValue(v));
-      inferred = isSet(c.currency)
-        ? { type: 'currency' }
-        : present.length && present.every(isNumeric)
-          ? numericFigureKind(key, ownName, present)
-          : null;
-    }
+    else if (TYPE_ALIASES[given] === 'number' && isSet(c.currency) && !isSet(c.prefix) && !isSet(c.suffix))
+      inferred = { type: 'currency' };
     const type = inferred?.type ?? TYPE_ALIASES[given] ?? 'string';
     const named = isSet(ownName) && !(String(ownName) === key && IDENTIFIER.test(key));
     const name = named ? String(ownName) : headerLabel(key);

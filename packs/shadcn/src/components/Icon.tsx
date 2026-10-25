@@ -4,6 +4,7 @@ import { iconFor } from '../lib/icons';
 import { cn } from '../lib/cn';
 import { px as pxValue, styleVars } from '../lib/ui2/display/lists/model';
 import { InPlace, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 // UI 2.0's tone colours (the Icon color style wins). 'danger' stays as the pack's old name for destructive.
@@ -43,9 +44,9 @@ export const Icon = () => {
   const [chipSize] = ToolJet.useStateString({ name: 'chipSize', label: 'Chip size (px, empty: icon x 2)', initialValue: '' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onHover = ToolJet.useEventCallback({ name: 'onHover' });
-  const iconColor = ToolJet.useStyleString({ name: 'iconColor', label: 'Icon color', inspector: 'color', initialValue: '' });
-  const chipColor = ToolJet.useStyleString({ name: 'chipColor', label: 'Chip background (default: icon color tint)', inspector: 'color', initialValue: '' });
-  const chipRadius = ToolJet.useStyleNumber({ name: 'chipRadius', label: 'Chip radius (square chip)', initialValue: '' });
+  const iconColor = useThemeColor('iconColor', 'Icon color', TOKEN.brand);
+  const chipColor = useThemeColor('chipColor', 'Chip background (default: icon color tint)', TOKEN.brand);
+  const chipRadius = useThemeRadius('chipRadius', 'Chip radius (square chip)');
   const alignment = ToolJet.useStyleEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], initialValue: 'left', inspector: 'switch' });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 3, defaultHeight: 4 });

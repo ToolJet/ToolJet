@@ -33,8 +33,10 @@
 .ui2-kb-col.is-fill {
   flex: 1 1 0;
 }
+/* The column marks are drawn inset: the columns sit flush with the board's scroll area, which cut an outer ring at
+   the board's edges (first and last columns, the top). */
 .ui2-kb-col.is-over {
-  box-shadow: 0 0 0 1px var(--ui-border);
+  box-shadow: inset 0 0 0 1px var(--ui-border);
 }
 .ui2-kb-col.is-collapsed {
   flex: 0 0 152px;
@@ -42,14 +44,14 @@
   cursor: pointer;
 }
 .ui2-kb-col.is-collapsed:hover {
-  box-shadow: 0 0 0 1px var(--ui-border);
+  box-shadow: inset 0 0 0 1px var(--ui-border);
 }
 .ui2-kb-col.is-collapsed.is-over {
-  box-shadow: 0 0 0 1px var(--ui-primary);
+  box-shadow: inset 0 0 0 1px var(--ui-primary);
 }
 .ui2-kb-col:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--ui-ring);
+  box-shadow: inset 0 0 0 2px var(--ui-ring);
 }
 
 .ui2-kb-head {

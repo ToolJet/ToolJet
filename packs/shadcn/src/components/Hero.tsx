@@ -6,6 +6,7 @@ import { cn } from '../lib/cn';
 import { FONT_LABELS, FONT_VALUES, fontStack, formatValue, isRecord, px, styleVars, toText } from '../lib/ui2/display/lists/model';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { HeroSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 type Fact = { label?: string; value: string };
@@ -121,11 +122,11 @@ export const Hero = () => {
   });
   const onActionClicked = ToolJet.useEventCallback({ name: 'onActionClicked' });
   const onSecondaryActionClicked = ToolJet.useEventCallback({ name: 'onSecondaryActionClicked' });
-  const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Accent color', inspector: 'color', initialValue: '' });
+  const accent = useThemeColor('accentColor', 'Accent color', TOKEN.brand);
   const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Panel background color (replaces the Background choice)', inspector: 'color', initialValue: '' });
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Title color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Subtitle and meta color', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Panel radius', initialValue: '' });
+  const titleColor = useThemeColor('titleColor', 'Title color', TOKEN.text);
+  const textColor = useThemeColor('textColor', 'Subtitle and meta color', TOKEN.mutedText);
+  const radius = useThemeRadius('borderRadius', 'Panel radius');
   const titleFontFamily = ToolJet.useStyleEnumeration({ name: 'titleFontFamily', label: 'Title typeface', enumDefinition: FONT_VALUES, enumLabels: FONT_LABELS, initialValue: 'theme' });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 20 });

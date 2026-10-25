@@ -4,6 +4,7 @@ import { ToolJet } from "@tooljet/custom-component-sdk";
 import { ChevronDown } from "lucide-react";
 import { slotNames, toItems } from "../lib/slots";
 import { lookVars } from "../lib/ui2/nav/look";
+import { TOKEN, useThemeColor, useThemeRadius } from "../lib/styleDefaults";
 import "../styles/ui2-nav.css";
 
 // Container: one drop area per section. Sections come from a property, so the slots are dynamic.
@@ -49,9 +50,9 @@ export const AccordionContainer = () => {
     inspector: "color",
     initialValue: "",
   });
-  const titleColor = ToolJet.useStyleString({ name: "titleColor", label: "Item title color", inspector: "color", initialValue: "" });
-  const dividerColor = ToolJet.useStyleString({ name: "dividerColor", label: "Divider color", inspector: "color", initialValue: "" });
-  const iconColor = ToolJet.useStyleString({ name: "iconColor", label: "Chevron color", inspector: "color", initialValue: "" });
+  const titleColor = useThemeColor("titleColor", "Item title color", TOKEN.text);
+  const dividerColor = useThemeColor("dividerColor", "Divider color", TOKEN.border);
+  const iconColor = useThemeColor("iconColor", "Chevron color", TOKEN.mutedText);
   // The container's own surface, like a native container: without it the canvas grid shows through
   // around the drop areas while a component is dragged in.
   const background = ToolJet.useStyleString({
@@ -60,11 +61,7 @@ export const AccordionContainer = () => {
     inspector: "color",
     initialValue: "var(--cc-surface1-surface)",
   });
-  const radius = ToolJet.useStyleNumber({
-    name: "borderRadius",
-    label: "Border radius",
-    initialValue: "",
-  });
+  const radius = useThemeRadius("borderRadius", "Border radius");
   const padding = ToolJet.useStyleNumber({
     name: "padding",
     label: "Padding",

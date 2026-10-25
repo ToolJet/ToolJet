@@ -7,6 +7,7 @@ import { usePortalContainer } from '../lib/usePortalContainer';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { ClearX, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
@@ -14,11 +15,11 @@ import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
   ...field({ accentColor: 'Accent (focus ring, checks)' }),
-  ['chipBackgroundColor', 'Chip background', '--lk-chip-bg'],
-  ['chipTextColor', 'Chip text color', '--lk-chip-fg'],
-  ['menuBackgroundColor', 'Menu background', '--lk-menu-bg'],
-  ['menuTextColor', 'Menu text color', '--lk-menu-fg'],
-  ['optionHoverColor', 'Highlighted option background', '--lk-hl'],
+  ['chipBackgroundColor', 'Chip background', '--lk-chip-bg', TOKEN.muted],
+  ['chipTextColor', 'Chip text color', '--lk-chip-fg', TOKEN.text],
+  ['menuBackgroundColor', 'Menu background', '--lk-menu-bg', TOKEN.surface],
+  ['menuTextColor', 'Menu text color', '--lk-menu-fg', TOKEN.text],
+  ['optionHoverColor', 'Highlighted option background', '--lk-hl', TOKEN.muted],
 ];
 
 export const TagsInput = () => {

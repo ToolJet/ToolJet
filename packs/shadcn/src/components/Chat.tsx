@@ -17,6 +17,7 @@ import {
 import { Markdown } from '../lib/ui2/display/chat/markdown';
 import { avatarHue, initials, lookVars, px, safeImageUrl, truthy } from '../lib/ui2/display/chat/values';
 import { LoadingBox, LoadingFrame, useLoading } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display-chat.css';
 
 // UI 2.0's Chat (Ui2/Chat): the native Chat's properties, styles, events, exposed values and actions in the pack's
@@ -142,23 +143,18 @@ export const Chat = () => {
   const onMessageSent = ToolJet.useEventCallback({ name: 'onMessageSent', displayName: 'On message sent' } as Event);
   const onClearHistory = ToolJet.useEventCallback({ name: 'onClearHistory', displayName: 'On history cleared' } as Event);
 
-  const containerBackgroundColor = ToolJet.useStyleString({ name: 'containerBackgroundColor', label: 'Background', inspector: 'color', initialValue: '' });
-  const borderColorContainer = ToolJet.useStyleString({ name: 'borderColorContainer', label: 'Border', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Border radius', initialValue: '' });
-  const accentColorField = ToolJet.useStyleString({
-    name: 'accentColorField',
-    label: 'Accent (your messages, send button, focus)',
-    inspector: 'color',
-    initialValue: '',
-  });
-  const responseBubbleColor = ToolJet.useStyleString({ name: 'responseBubbleColor', label: 'Reply bubble background', inspector: 'color', initialValue: '' });
-  const nameColor = ToolJet.useStyleString({ name: 'name', label: 'Name color', inspector: 'color', initialValue: '' });
-  const messageColor = ToolJet.useStyleString({ name: 'message', label: 'Message text color', inspector: 'color', initialValue: '' });
-  const timestampColor = ToolJet.useStyleString({ name: 'timestamp', label: 'Timestamp color', inspector: 'color', initialValue: '' });
-  const backgroundColorField = ToolJet.useStyleString({ name: 'backgroundColorField', label: 'Input background', inspector: 'color', initialValue: '' });
-  const borderColorField = ToolJet.useStyleString({ name: 'borderColorField', label: 'Input border', inspector: 'color', initialValue: '' });
-  const textColorField = ToolJet.useStyleString({ name: 'textColorField', label: 'Input text color', inspector: 'color', initialValue: '' });
-  const sendIconColorField = ToolJet.useStyleString({ name: 'sendIconColorField', label: 'Send icon color', inspector: 'color', initialValue: '' });
+  const containerBackgroundColor = useThemeColor('containerBackgroundColor', 'Background', TOKEN.surface);
+  const borderColorContainer = useThemeColor('borderColorContainer', 'Border', TOKEN.border);
+  const borderRadius = useThemeRadius('borderRadius', 'Border radius');
+  const accentColorField = useThemeColor('accentColorField', 'Accent (your messages, send button, focus)', TOKEN.brand);
+  const responseBubbleColor = useThemeColor('responseBubbleColor', 'Reply bubble background', TOKEN.muted);
+  const nameColor = useThemeColor('name', 'Name color', TOKEN.text);
+  const messageColor = useThemeColor('message', 'Message text color', TOKEN.text);
+  const timestampColor = useThemeColor('timestamp', 'Timestamp color', TOKEN.mutedText);
+  const backgroundColorField = useThemeColor('backgroundColorField', 'Input background', TOKEN.surface);
+  const borderColorField = useThemeColor('borderColorField', 'Input border', TOKEN.border);
+  const textColorField = useThemeColor('textColorField', 'Input text color', TOKEN.text);
+  const sendIconColorField = useThemeColor('sendIconColorField', 'Send icon color', TOKEN.surface);
   const loadingNow = useLoading();
   ToolJet.useComponentSettings({ defaultWidth: 15, defaultHeight: 48 });
 

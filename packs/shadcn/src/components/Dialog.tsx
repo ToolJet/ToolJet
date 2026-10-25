@@ -8,6 +8,7 @@ import { usePortalContainer } from '../lib/usePortalContainer';
 import { ownerAvailable } from '../lib/useOwnerGuard';
 import { POPUP_LAYER, popupLayerOf } from '../lib/popupLayer';
 import { LoadingBox, LoadingFrame, useLoading } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 
 // The overlay's and the dialog's own levels in ui.css (.ui-dialog-overlay, .ui-dialog); popups opened from the body
 // go one above (lib/popupLayer).
@@ -116,10 +117,10 @@ export const Dialog = () => {
     onClose();
   });
   // Empty = the trigger variant's own colors (see Button).
-  const buttonColor = ToolJet.useStyleString({ name: 'buttonColor', label: 'Button background', inspector: 'color', initialValue: '' });
-  const buttonText = ToolJet.useStyleString({ name: 'buttonTextColor', label: 'Button text', inspector: 'color', initialValue: '' });
+  const buttonColor = useThemeColor('buttonColor', 'Button background', TOKEN.surface);
+  const buttonText = useThemeColor('buttonTextColor', 'Button text', TOKEN.text);
   const background = ToolJet.useStyleString({ name: 'dialogBackground', label: 'Dialog background', inspector: 'color', initialValue: 'var(--cc-surface1-surface)', section: 'Dialog' });
-  const radius = ToolJet.useStyleNumber({ name: 'dialogRadius', label: 'Dialog radius', initialValue: '', section: 'Dialog' });
+  const radius = useThemeRadius('dialogRadius', 'Dialog radius', { section: 'Dialog' });
   const loadingNow = useLoading();
   ToolJet.useComponentSettings({ defaultWidth: 7, defaultHeight: 4 });
 

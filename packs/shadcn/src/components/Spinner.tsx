@@ -2,6 +2,7 @@ import React from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { styleVars } from '../lib/ui2/display/lists/model';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 const SIZES: Record<string, number> = { sm: 16, default: 24, lg: 32 };
@@ -32,9 +33,9 @@ export const Spinner = () => {
     initialValue: 'right',
     inspector: 'switch',
   });
-  const spinnerColor = ToolJet.useStyleString({ name: 'spinnerColor', label: 'Spinner color', inspector: 'color', initialValue: '' });
-  const trackColor = ToolJet.useStyleString({ name: 'trackColor', label: 'Ring track color', inspector: 'color', initialValue: '' });
-  const labelColor = ToolJet.useStyleString({ name: 'labelColor', label: 'Label color', inspector: 'color', initialValue: '' });
+  const spinnerColor = useThemeColor('spinnerColor', 'Spinner color', TOKEN.brand);
+  const trackColor = useThemeColor('trackColor', 'Ring track color', TOKEN.brand);
+  const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.mutedText);
   const alignment = ToolJet.useStyleEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], initialValue: 'left', inspector: 'switch' });
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
 

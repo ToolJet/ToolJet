@@ -10,6 +10,7 @@ import { moveRovingFocus } from '../lib/activeElement';
 import { clickedOption, menuRows } from '../lib/ui2/nav/model';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
 import { Icon, MenuRows, MenuSeparator } from '../lib/ui2/nav/parts';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
@@ -83,21 +84,21 @@ export const DropdownMenu = () => {
   const onClose = ToolJet.useEventCallback({ name: 'onClose' });
   const { disabled, loading } = ToolJet.useControlState();
 
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Trigger background', inspector: 'color', initialValue: '' });
-  const hoverBackgroundColor = ToolJet.useStyleString({ name: 'hoverBackgroundColor', label: 'Trigger hover background', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Trigger text color', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Trigger border color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Trigger radius', initialValue: '' });
-  const menuBackgroundColor = ToolJet.useStyleString({ name: 'menuBackgroundColor', label: 'Menu background', inspector: 'color', initialValue: '', section: 'Menu' });
-  const menuBorderColor = ToolJet.useStyleString({ name: 'menuBorderColor', label: 'Menu border color', inspector: 'color', initialValue: '', section: 'Menu' });
-  const itemTextColor = ToolJet.useStyleString({ name: 'itemTextColor', label: 'Item text color', inspector: 'color', initialValue: '', section: 'Menu' });
-  const itemHoverBackgroundColor = ToolJet.useStyleString({ name: 'itemHoverBackgroundColor', label: 'Item hover background', inspector: 'color', initialValue: '', section: 'Menu' });
-  const itemHoverTextColor = ToolJet.useStyleString({ name: 'itemHoverTextColor', label: 'Item hover text color', inspector: 'color', initialValue: '', section: 'Menu' });
-  const descriptionColor = ToolJet.useStyleString({ name: 'descriptionColor', label: 'Item description and shortcut color', inspector: 'color', initialValue: '', section: 'Menu' });
-  const iconColor = ToolJet.useStyleString({ name: 'iconColor', label: 'Item icon color', inspector: 'color', initialValue: '', section: 'Menu' });
-  const destructiveColor = ToolJet.useStyleString({ name: 'destructiveColor', label: 'Destructive item color', inspector: 'color', initialValue: '', section: 'Menu' });
-  const menuRadius = ToolJet.useStyleNumber({ name: 'menuRadius', label: 'Menu radius', initialValue: '', section: 'Menu' });
-  const menuWidth = ToolJet.useStyleNumber({ name: 'menuWidth', label: 'Menu width (px)', initialValue: '', section: 'Menu' });
+  const backgroundColor = useThemeColor('backgroundColor', 'Trigger background', TOKEN.surface);
+  const hoverBackgroundColor = useThemeColor('hoverBackgroundColor', 'Trigger hover background', TOKEN.muted);
+  const textColor = useThemeColor('textColor', 'Trigger text color', TOKEN.text);
+  const borderColor = useThemeColor('borderColor', 'Trigger border color', TOKEN.border);
+  const borderRadius = useThemeRadius('borderRadius', 'Trigger radius');
+  const menuBackgroundColor = useThemeColor('menuBackgroundColor', 'Menu background', TOKEN.surface, { section: 'Menu' });
+  const menuBorderColor = useThemeColor('menuBorderColor', 'Menu border color', TOKEN.border, { section: 'Menu' });
+  const itemTextColor = useThemeColor('itemTextColor', 'Item text color', TOKEN.text, { section: 'Menu' });
+  const itemHoverBackgroundColor = useThemeColor('itemHoverBackgroundColor', 'Item hover background', TOKEN.muted, { section: 'Menu' });
+  const itemHoverTextColor = useThemeColor('itemHoverTextColor', 'Item hover text color', TOKEN.text, { section: 'Menu' });
+  const descriptionColor = useThemeColor('descriptionColor', 'Item description and shortcut color', TOKEN.mutedText, { section: 'Menu' });
+  const iconColor = useThemeColor('iconColor', 'Item icon color', TOKEN.mutedText, { section: 'Menu' });
+  const destructiveColor = useThemeColor('destructiveColor', 'Destructive item color', TOKEN.error, { section: 'Menu' });
+  const menuRadius = useThemeRadius('menuRadius', 'Menu radius', { section: 'Menu' });
+  const menuWidth = ToolJet.useStyleNumber({ name: 'menuWidth', label: 'Menu width (px)', initialValue: '', placeholder: 'Fits the items', section: 'Menu' });
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
 
   const [anchorRef, container] = usePortalContainer();

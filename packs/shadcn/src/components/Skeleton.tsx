@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { themeVars } from '../lib/themeVars';
 import { isSet } from '../lib/ui2/display/lists/model';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 const Bar = ({ width, height = 16, round }: { width: string | number; height?: number; round?: boolean }) => (
@@ -23,10 +24,10 @@ export const Skeleton = () => {
   const [lines] = ToolJet.useStateNumber({ name: 'lines', label: 'Lines', initialValue: 3 });
   // UI 2.0: a round avatar placeholder beside the lines.
   const [avatar] = ToolJet.useStateBoolean({ name: 'avatar', label: 'Avatar', initialValue: false });
-  const placeholderColor = ToolJet.useStyleString({ name: 'placeholderColor', label: 'Placeholder color', inspector: 'color', initialValue: '' });
-  const baseColor = ToolJet.useStyleString({ name: 'baseColor', label: 'Shade', inspector: 'color', initialValue: '' });
-  const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Background', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Border radius', initialValue: '' });
+  const placeholderColor = useThemeColor('placeholderColor', 'Placeholder color', TOKEN.brand);
+  const baseColor = useThemeColor('baseColor', 'Shade', TOKEN.brand);
+  const background = useThemeColor('backgroundColor', 'Background', 'transparent');
+  const radius = useThemeRadius('borderRadius', 'Border radius');
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
 
   // As many lines as fit the box (a 16px line and an 8px gap each), as UI 2.0 draws them.

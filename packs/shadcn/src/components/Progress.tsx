@@ -5,6 +5,7 @@ import { themeVars } from '../lib/themeVars';
 import { cn } from '../lib/cn';
 import { css, cssPx } from '../lib/ui2/charts/progressModel';
 import { BarSkel, LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useDrawnNumber, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-charts-progress.css';
 
 export const Progress = () => {
@@ -27,11 +28,11 @@ export const Progress = () => {
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
     (next) => setValue(Number(next) || 0)
   );
-  const barColor = ToolJet.useStyleString({ name: 'barColor', label: 'Bar color', inspector: 'color', initialValue: '' });
-  const trackColor = ToolJet.useStyleString({ name: 'trackColor', label: 'Track color', inspector: 'color', initialValue: '' });
-  const labelColor = ToolJet.useStyleString({ name: 'labelColor', label: 'Label color', inspector: 'color', initialValue: '' });
-  const valueColor = ToolJet.useStyleString({ name: 'valueColor', label: 'Percent text color', inspector: 'color', initialValue: '' });
-  const barHeight = ToolJet.useStyleNumber({ name: 'barHeight', label: 'Bar height', initialValue: '' });
+  const barColor = useThemeColor('barColor', 'Bar color', TOKEN.brand);
+  const trackColor = useThemeColor('trackColor', 'Track color', TOKEN.brand);
+  const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.text);
+  const valueColor = useThemeColor('valueColor', 'Percent text color', TOKEN.mutedText);
+  const barHeight = useDrawnNumber('barHeight', 'Bar height', 8);
   // The pack's earlier name for the bar color; Bar color wins when both are set.
   const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Fill', inspector: 'color', initialValue: '' });
   const ld = useLoadingLook();

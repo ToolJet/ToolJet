@@ -8,6 +8,7 @@ import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { POPOVER, field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { ClearX, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as P from '../lib/ui2/inputs/phone';
 import type { Country } from '../lib/ui2/inputs/phone';
@@ -16,8 +17,8 @@ import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
   ...field(),
-  ['countryBackgroundColor', 'Country button background', '--lk-addon-bg'],
-  ['countryTextColor', 'Country button text color', '--lk-addon-fg'],
+  ['countryBackgroundColor', 'Country button background', '--lk-addon-bg', 'transparent'],
+  ['countryTextColor', 'Country button text color', '--lk-addon-fg', TOKEN.text],
   ...POPOVER,
 ];
 

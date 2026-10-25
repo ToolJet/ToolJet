@@ -6,6 +6,7 @@ import { useWidth } from '../lib/ui2/display/lists/parts';
 import { STRIP_VALUE_FORMATS, stripColumns, summaryFigures } from '../lib/ui2/display/summary';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { FiguresSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 const MIN_WIDTH: Record<string, number> = { sm: 120, default: 140, lg: 170 };
@@ -64,13 +65,13 @@ export const SummaryStrip = () => {
     initialValue: 'left',
     inspector: 'switch',
   });
-  const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Panel background', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Border and separator color', inspector: 'color', initialValue: '' });
-  const labelColor = ToolJet.useStyleString({ name: 'labelColor', label: 'Label and caption color', inspector: 'color', initialValue: '' });
-  const valueColor = ToolJet.useStyleString({ name: 'valueColor', label: 'Figure color', inspector: 'color', initialValue: '' });
-  const positive = ToolJet.useStyleString({ name: 'positiveColor', label: 'Positive change color', inspector: 'color', initialValue: '' });
-  const negative = ToolJet.useStyleString({ name: 'negativeColor', label: 'Negative change color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Panel radius', initialValue: '' });
+  const background = useThemeColor('backgroundColor', 'Panel background', TOKEN.surface);
+  const borderColor = useThemeColor('borderColor', 'Border and separator color', TOKEN.border);
+  const labelColor = useThemeColor('labelColor', 'Label and caption color', TOKEN.mutedText);
+  const valueColor = useThemeColor('valueColor', 'Figure color', TOKEN.text);
+  const positive = useThemeColor('positiveColor', 'Positive change color', TOKEN.success);
+  const negative = useThemeColor('negativeColor', 'Negative change color', TOKEN.error);
+  const borderRadius = useThemeRadius('borderRadius', 'Panel radius');
   const valueFontFamily = ToolJet.useStyleEnumeration({ name: 'valueFontFamily', label: 'Figure typeface', enumDefinition: FONT_VALUES, enumLabels: FONT_LABELS, initialValue: 'theme' });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 11 });

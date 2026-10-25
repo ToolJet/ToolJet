@@ -6,6 +6,7 @@ import { Chip, InlineProgress, RecordAvatar, onKeyActivate } from '../lib/ui2/di
 import { useRecordSelection } from '../lib/ui2/display/lists/useRecordSelection';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { RowsSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display-lists.css';
 
 const DENSITY: Record<string, number> = { compact: 28, default: 36, comfortable: 40 };
@@ -60,12 +61,12 @@ export const RecordList = () => {
   const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
   const [, setSelectedItemIndex] = ToolJet.useStateNumber({ name: 'selectedItemIndex', initialValue: -1, inspector: 'hidden' });
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
-  const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'List background', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Border and divider color', inspector: 'color', initialValue: '' });
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Title and value color', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Meta line color', inspector: 'color', initialValue: '' });
-  const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Selected row accent', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'List radius', initialValue: '' });
+  const background = useThemeColor('backgroundColor', 'List background', TOKEN.surface);
+  const borderColor = useThemeColor('borderColor', 'Border and divider color', TOKEN.border);
+  const titleColor = useThemeColor('titleColor', 'Title and value color', TOKEN.text);
+  const textColor = useThemeColor('textColor', 'Meta line color', TOKEN.mutedText);
+  const accent = useThemeColor('accentColor', 'Selected row accent', TOKEN.brand);
+  const radius = useThemeRadius('borderRadius', 'List radius');
   const titleFont = ToolJet.useStyleEnumeration({
     name: 'titleFontFamily',
     label: 'Title typeface',

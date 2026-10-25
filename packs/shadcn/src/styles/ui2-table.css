@@ -148,6 +148,13 @@
   font: inherit;
   font-size: 13px;
 }
+/* The native column and condition selects take the brand ring the filter value input (.ui-input) has, not the
+   browser's default blue outline. Any focus: a select is a form field, focused by click or key alike. */
+.t2-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ui-ring);
+  border-color: var(--ui-primary);
+}
 .t2-filter-spacer {
   flex: 1;
 }

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal 
 import { cn } from '../lib/cn';
 import { own, pageItems } from '../lib/ui2/nav/model';
 import { lookVars, px } from '../lib/ui2/nav/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const JUSTIFY: Record<string, string> = { left: 'n2-justify-left', center: 'n2-justify-center', right: 'n2-justify-right' };
@@ -34,12 +35,12 @@ export const Pagination = () => {
   const [, setTotalPages] = ToolJet.useStateNumber({ name: 'totalPages', initialValue: 10, inspector: 'hidden' });
   const onPageChange = ToolJet.useEventCallback({ name: 'onPageChange' });
   const { disabled, loading } = ToolJet.useControlState();
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Page text color', inspector: 'color', initialValue: '' });
-  const hoverBackgroundColor = ToolJet.useStyleString({ name: 'hoverBackgroundColor', label: 'Hover background', inspector: 'color', initialValue: '' });
-  const activeBackgroundColor = ToolJet.useStyleString({ name: 'activeBackgroundColor', label: 'Current page background', inspector: 'color', initialValue: '' });
-  const activeTextColor = ToolJet.useStyleString({ name: 'activeTextColor', label: 'Current page text color', inspector: 'color', initialValue: '' });
-  const activeBorderColor = ToolJet.useStyleString({ name: 'activeBorderColor', label: 'Current page border color', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Button radius', initialValue: '' });
+  const textColor = useThemeColor('textColor', 'Page text color', TOKEN.text);
+  const hoverBackgroundColor = useThemeColor('hoverBackgroundColor', 'Hover background', TOKEN.muted);
+  const activeBackgroundColor = useThemeColor('activeBackgroundColor', 'Current page background', TOKEN.brand);
+  const activeTextColor = useThemeColor('activeTextColor', 'Current page text color', TOKEN.brand);
+  const activeBorderColor = useThemeColor('activeBorderColor', 'Current page border color', TOKEN.brand);
+  const radius = useThemeRadius('borderRadius', 'Button radius');
   const alignment = ToolJet.useStyleEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], initialValue: 'left', inspector: 'switch' });
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 4 });
 

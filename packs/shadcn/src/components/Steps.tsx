@@ -8,6 +8,7 @@ import { lookVars } from '../lib/ui2/nav/look';
 import { onArg, useStable } from '../lib/ui2/nav/hooks';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { StepsSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 type StepState = 'done' | 'current' | 'upcoming';
@@ -54,12 +55,12 @@ export const Steps = () => {
   const [, setCurrentStepId] = ToolJet.useStateString({ name: 'currentStepId', initialValue: '', inspector: 'hidden' });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
   const { disabled } = ToolJet.useControlState();
-  const completedAccent = ToolJet.useStyleString({ name: 'completedAccent', label: 'Completed and current accent', inspector: 'color', initialValue: '' });
-  const incompletedAccent = ToolJet.useStyleString({ name: 'incompletedAccent', label: 'Upcoming step accent (circle border, line)', inspector: 'color', initialValue: '' });
-  const completedLabel = ToolJet.useStyleString({ name: 'completedLabel', label: 'Completed step label', inspector: 'color', initialValue: '' });
-  const currentStepLabel = ToolJet.useStyleString({ name: 'currentStepLabel', label: 'Current step label', inspector: 'color', initialValue: '' });
-  const incompletedLabel = ToolJet.useStyleString({ name: 'incompletedLabel', label: 'Upcoming step label', inspector: 'color', initialValue: '' });
-  const descriptionColor = ToolJet.useStyleString({ name: 'descriptionColor', label: 'Description color', inspector: 'color', initialValue: '' });
+  const completedAccent = useThemeColor('completedAccent', 'Completed and current accent', TOKEN.brand);
+  const incompletedAccent = useThemeColor('incompletedAccent', 'Upcoming step accent (circle border, line)', TOKEN.border);
+  const completedLabel = useThemeColor('completedLabel', 'Completed step label', TOKEN.text);
+  const currentStepLabel = useThemeColor('currentStepLabel', 'Current step label', TOKEN.text);
+  const incompletedLabel = useThemeColor('incompletedLabel', 'Upcoming step label', TOKEN.mutedText);
+  const descriptionColor = useThemeColor('descriptionColor', 'Description color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 8 });
 

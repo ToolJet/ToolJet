@@ -8,6 +8,7 @@ import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { moveRovingFocus, rovingEntry } from '../lib/activeElement';
 import { lookVars, useDropRemovedChoices, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
+import { TOKEN } from '../lib/styleDefaults';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
 
@@ -40,11 +41,11 @@ export const RadioGroup = () => {
   const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
   // One event per change, UI 2.0's name: the pack's earlier onChange fired alongside it.
   const onSelectionChange = ToolJet.useEventCallback({ name: 'onSelectionChange' });
-  const accentColor = useColorStyle('accentColor', 'Selected color');
-  const labelColor = useColorStyle('labelColor', 'Label color');
-  const helpTextColor = useColorStyle('helpTextColor', 'Help text color');
-  const optionTextColor = useColorStyle('optionTextColor', 'Option text color');
-  const errorColor = useColorStyle('errorColor', 'Error color');
+  const accentColor = useColorStyle('accentColor', 'Selected color', TOKEN.brand);
+  const labelColor = useColorStyle('labelColor', 'Label color', TOKEN.text);
+  const helpTextColor = useColorStyle('helpTextColor', 'Help text color', TOKEN.mutedText);
+  const optionTextColor = useColorStyle('optionTextColor', 'Option text color', TOKEN.text);
+  const errorColor = useColorStyle('errorColor', 'Error color', TOKEN.error);
   const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Option text color (earlier name)', inspector: 'hidden', initialValue: '' });
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 11 });
   const { disabled, loading } = useBusy(disabledProp);

@@ -1,6 +1,7 @@
 // UI 2.0 charts, ported for the pack: the logic the charts share (Widgets/Ui2/_charts/chartsModel.ts, highlight.ts and
 // _shared/format.ts in the UI 2.0 checkout). Every function takes whatever the author bound and never throws.
 import { chipTone } from './progressModel';
+import { withAffixes } from '../../format';
 
 export type Row = Record<string, unknown>;
 
@@ -94,13 +95,13 @@ export const formatter = ({ format, currency, prefix, suffix }: FormatOptions = 
     f = intl({ maximumFractionDigits: kind === 'percent' ? 1 : 2 });
   }
   const before = isScalar(prefix) ? String(prefix) : '';
-  const after = (kind === 'percent' ? '%' : '') + (isScalar(suffix) ? String(suffix) : '');
+  const after = isScalar(suffix) ? String(suffix) : '';
   // Money with cents shows both digits ("$3,043.50").
   const cents = kind === 'currency' && !compact ? intl({ style: 'currency', currency: code, minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
   return (v) => {
     const n = num(v);
     if (n === null) return v === null || v === undefined ? '' : String(axisLabel(v));
-    return `${before}${(cents && !Number.isInteger(n) ? cents : f).format(n)}${after}`;
+    return withAffixes(`${(cents && !Number.isInteger(n) ? cents : f).format(n)}${kind === 'percent' ? '%' : ''}`, before, after, kind === 'currency');
   };
 };
 
@@ -112,7 +113,7 @@ export const affixFormatter =
   (v: unknown): string => {
     const n = Number(v);
     if (!Number.isFinite(n)) return String(v ?? '');
-    return `${isScalar(p.valuePrefix) ? p.valuePrefix : ''}${short ? COMPACT.format(n) : PLAIN_NUMBER.format(n)}${isScalar(p.valueSuffix) ? p.valueSuffix : ''}`;
+    return withAffixes(short ? COMPACT.format(n) : PLAIN_NUMBER.format(n), isScalar(p.valuePrefix) ? p.valuePrefix : '', isScalar(p.valueSuffix) ? p.valueSuffix : '');
   };
 
 /** How much a percent axis multiplies its values: 100 when every value is a fraction (0.39 for 39%), else 1. */

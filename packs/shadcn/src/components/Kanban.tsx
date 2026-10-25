@@ -18,11 +18,12 @@ import {
 } from '../lib/ui2/display/kanban/board';
 import { BADGE_BY_WORD, badgeLook, columnMinimum, cssLength, fieldName, initials, isSet, kanbanVars } from '../lib/ui2/display/kanban/look';
 import { ColumnsSkel, LoadingBox, LoadingFrame, Scrim, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display-kanban.css';
 
 // UI 2.0's Kanban (ShadKanban): a data-driven board. Columns are values of a status field and cards are rows of data
 // shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar, details), or rows of
-// ToolJet components (cardLayout 'custom', read as {{listItem}}). Dragging, the delete buttons and the actions change
+// ToolJet components (cardLayout 'custom', read as {{cardData}}, as UI 2.0's, or {{listItem}}). Dragging, the delete buttons and the actions change
 // the board at once and publish the change (updatedCardData, the last added, moved, updated or removed card, and an
 // event) for a query to save; the board follows the data again when the data changes.
 
@@ -279,7 +280,7 @@ export const Kanban = () => {
     enumLabels: { fields: 'Fields', custom: 'Custom' },
     initialValue: 'fields',
     inspector: 'switch',
-    description: 'Custom: each card is a row of ToolJet components reading {{listItem}}.',
+    description: 'Custom: each card is a row of ToolJet components reading the card as {{cardData}}, e.g. {{cardData.title}} ({{listItem}} works too).',
   });
   const [cardHeight] = ToolJet.useStateNumber({
     name: 'cardHeight',
@@ -336,20 +337,20 @@ export const Kanban = () => {
   const onCardSelected = ToolJet.useEventCallback({ name: 'onCardSelected' });
   const onUpdate = ToolJet.useEventCallback({ name: 'onUpdate' });
   const styles: Record<string, unknown> = {
-    accentColor: ToolJet.useStyleString({ name: 'accentColor', label: 'Accent (selection, progress, drop line)', inspector: 'color', initialValue: '' }),
-    columnBackgroundColor: ToolJet.useStyleString({ name: 'columnBackgroundColor', label: 'Column background', inspector: 'color', initialValue: '' }),
-    columnBorderColor: ToolJet.useStyleString({ name: 'columnBorderColor', label: 'Column border color', inspector: 'color', initialValue: '' }),
-    columnTitleColor: ToolJet.useStyleString({ name: 'columnTitleColor', label: 'Column title color', inspector: 'color', initialValue: '' }),
-    columnCountBackgroundColor: ToolJet.useStyleString({ name: 'columnCountBackgroundColor', label: 'Column count background', inspector: 'color', initialValue: '' }),
-    columnCountTextColor: ToolJet.useStyleString({ name: 'columnCountTextColor', label: 'Column count text color', inspector: 'color', initialValue: '' }),
-    columnGap: ToolJet.useStyleNumber({ name: 'columnGap', label: 'Gap between columns', initialValue: '' }),
-    columnBorderRadius: ToolJet.useStyleNumber({ name: 'columnBorderRadius', label: 'Column radius', initialValue: '' }),
-    cardBackgroundColor: ToolJet.useStyleString({ name: 'cardBackgroundColor', label: 'Card background', inspector: 'color', initialValue: '' }),
-    cardBorderColor: ToolJet.useStyleString({ name: 'cardBorderColor', label: 'Card border color', inspector: 'color', initialValue: '' }),
-    cardTitleColor: ToolJet.useStyleString({ name: 'cardTitleColor', label: 'Card title color', inspector: 'color', initialValue: '' }),
-    cardTextColor: ToolJet.useStyleString({ name: 'cardTextColor', label: 'Card secondary text color', inspector: 'color', initialValue: '' }),
-    progressColor: ToolJet.useStyleString({ name: 'progressColor', label: 'Progress color (else the accent)', inspector: 'color', initialValue: '' }),
-    cardBorderRadius: ToolJet.useStyleNumber({ name: 'cardBorderRadius', label: 'Card radius', initialValue: '' }),
+    accentColor: useThemeColor('accentColor', 'Accent (selection, progress, drop line)', TOKEN.brand),
+    columnBackgroundColor: useThemeColor('columnBackgroundColor', 'Column background', TOKEN.muted),
+    columnBorderColor: useThemeColor('columnBorderColor', 'Column border color', 'transparent'),
+    columnTitleColor: useThemeColor('columnTitleColor', 'Column title color', TOKEN.text),
+    columnCountBackgroundColor: useThemeColor('columnCountBackgroundColor', 'Column count background', TOKEN.brand),
+    columnCountTextColor: useThemeColor('columnCountTextColor', 'Column count text color', TOKEN.brand),
+    columnGap: useDrawnNumber('columnGap', 'Gap between columns', 16),
+    columnBorderRadius: useThemeRadius('columnBorderRadius', 'Column radius'),
+    cardBackgroundColor: useThemeColor('cardBackgroundColor', 'Card background', TOKEN.surface),
+    cardBorderColor: useThemeColor('cardBorderColor', 'Card border color', TOKEN.border),
+    cardTitleColor: useThemeColor('cardTitleColor', 'Card title color', TOKEN.text),
+    cardTextColor: useThemeColor('cardTextColor', 'Card secondary text color', TOKEN.mutedText),
+    progressColor: useThemeColor('progressColor', 'Progress color (else the accent)', TOKEN.brand),
+    cardBorderRadius: useThemeRadius('cardBorderRadius', 'Card radius'),
     cardShadow: ToolJet.useStyleEnumeration({
       name: 'cardShadow',
       label: 'Card shadow',
@@ -521,11 +522,19 @@ export const Kanban = () => {
     el.addEventListener('scroll', check, { passive: true });
     const observer = new ResizeObserver(check);
     observer.observe(el);
+    // The columns too: their widths follow boardWidth after the first check, which can end the overflow without
+    // resizing the board, and the fade stayed over columns that all fit.
+    Array.from(el.children).forEach((child) => observer.observe(child));
     return () => {
       el.removeEventListener('scroll', check);
       observer.disconnect();
     };
   }, [board.length, collapsed]);
+  // And once the width-dependent columns have been laid out at the new board width.
+  useLayoutEffect(() => {
+    const el = boardRef.current;
+    if (el) setMoreRight(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+  }, [boardWidth]);
 
   // Dragging: the dragged card's key and where it would land (a column, before a card or at the end).
   const draggable = allowDrag !== false;

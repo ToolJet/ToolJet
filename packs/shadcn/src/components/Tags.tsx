@@ -4,6 +4,7 @@ import { cn } from '../lib/cn';
 import { colorFor, isRecord, isScalar, px, styleVars } from '../lib/ui2/display/lists/model';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { ChipsSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 type TagItem = { label: string; color?: string };
@@ -100,10 +101,10 @@ export const Tags = () => {
   const [pill] = ToolJet.useStateBoolean({ name: 'pill', label: 'Pill shape', initialValue: false });
   const [, setLastClickedTag] = ToolJet.useStateString({ name: 'lastClickedTag', initialValue: '', inspector: 'hidden' });
   const onTagClicked = ToolJet.useEventCallback({ name: 'onTagClicked' });
-  const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Tag background (unmapped tags)', inspector: 'color', initialValue: '' });
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Tag text color (unmapped tags)', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Tag border color', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Tag radius', initialValue: '' });
+  const background = useThemeColor('backgroundColor', 'Tag background (unmapped tags)', TOKEN.muted);
+  const textColor = useThemeColor('textColor', 'Tag text color (unmapped tags)', TOKEN.text);
+  const borderColor = useThemeColor('borderColor', 'Tag border color', 'transparent');
+  const borderRadius = useThemeRadius('borderRadius', 'Tag radius');
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 3 });
 

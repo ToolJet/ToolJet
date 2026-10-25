@@ -44,6 +44,7 @@ import {
   startIcon,
 } from '../lib/ui2/charts/mapLayers';
 import { Spinner, inert, useLoading } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-charts-map.css';
 
 // Markers from rows on open raster tiles (no API key), toned by status, grouped into counts when they crowd, with route
@@ -151,11 +152,11 @@ export const Map = () => {
   const onShapeClicked = ToolJet.useEventCallback({ name: 'onShapeClicked' });
   const onLocationPicked = ToolJet.useEventCallback({ name: 'onLocationPicked' });
   const onBoundsChange = ToolJet.useEventCallback({ name: 'onBoundsChange' });
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Background (behind the tiles)', inspector: 'color', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Border color', inspector: 'color', initialValue: '' });
-  const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Accent (pins without a status, the selection)', inspector: 'color', initialValue: '' });
-  const clusterColor = ToolJet.useStyleString({ name: 'clusterColor', label: 'Group count color', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Radius', initialValue: '' });
+  const backgroundColor = useThemeColor('backgroundColor', 'Background (behind the tiles)', TOKEN.muted);
+  const borderColor = useThemeColor('borderColor', 'Border color', TOKEN.border);
+  const accent = useThemeColor('accentColor', 'Accent (pins without a status, the selection)', TOKEN.brand);
+  const clusterColor = useThemeColor('clusterColor', 'Group count color', TOKEN.text);
+  const radius = useThemeRadius('borderRadius', 'Radius');
   const loadingNow = useLoading();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 42 });
 

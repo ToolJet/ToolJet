@@ -9,6 +9,7 @@ import { Spinner, TabStrip, tabPartIds, useTabIdBase } from "../lib/ui2/nav/part
 import type { TabsVariant } from "../lib/ui2/nav/parts";
 import { LoadingBox, useLoadingLook } from "../lib/ui2/loading/look";
 import { TabStripSkel } from "../lib/ui2/loading/shapes";
+import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from "../lib/styleDefaults";
 import "../styles/ui2-nav.css";
 
 // UI 2.0 Tabs as a container: one drop area per tab (slot tab_<id>). Tabs come from a property, so the slots are
@@ -69,19 +70,19 @@ export const TabsContainer = () => {
   const onFinish = ToolJet.useEventCallback({ name: "onFinish" });
   const { disabled } = ToolJet.useControlState();
 
-  const accent = ToolJet.useStyleString({ name: "accentColor", label: "Accent (active step, focus ring)", inspector: "color", initialValue: "" });
-  const tabListBackground = ToolJet.useStyleString({ name: "tabListBackground", label: "Tab bar background", inspector: "color", initialValue: "" });
-  const tabTextColor = ToolJet.useStyleString({ name: "tabTextColor", label: "Tab text color", inspector: "color", initialValue: "" });
-  const activeTabTextColor = ToolJet.useStyleString({ name: "activeTabTextColor", label: "Active tab text color", inspector: "color", initialValue: "" });
-  const activeTabBackground = ToolJet.useStyleString({ name: "activeTabBackground", label: "Active tab background (pills)", inspector: "color", initialValue: "" });
-  const indicatorColor = ToolJet.useStyleString({ name: "indicatorColor", label: "Active tab indicator (underline)", inspector: "color", initialValue: "" });
-  const panelBackground = ToolJet.useStyleString({ name: "panelBackground", label: "Panel background", inspector: "color", initialValue: "" });
-  const borderColor = ToolJet.useStyleString({ name: "borderColor", label: "Border color", inspector: "color", initialValue: "" });
+  const accent = useThemeColor("accentColor", "Accent (active step, focus ring)", TOKEN.brand);
+  const tabListBackground = useThemeColor("tabListBackground", "Tab bar background", TOKEN.muted);
+  const tabTextColor = useThemeColor("tabTextColor", "Tab text color", TOKEN.mutedText);
+  const activeTabTextColor = useThemeColor("activeTabTextColor", "Active tab text color", TOKEN.text);
+  const activeTabBackground = useThemeColor("activeTabBackground", "Active tab background (pills)", TOKEN.surface);
+  const indicatorColor = useThemeColor("indicatorColor", "Active tab indicator (underline)", TOKEN.brand);
+  const panelBackground = useThemeColor("panelBackground", "Panel background", TOKEN.surface);
+  const borderColor = useThemeColor("borderColor", "Border color", TOKEN.border);
   // The container's own surface, like a native container: without it the canvas grid shows through around the drop
   // areas while a component is dragged in.
-  const background = ToolJet.useStyleString({ name: "backgroundColor", label: "Background", inspector: "color", initialValue: "" });
-  const radius = ToolJet.useStyleNumber({ name: "borderRadius", label: "Radius", initialValue: "" });
-  const tabFontSize = ToolJet.useStyleNumber({ name: "tabFontSize", label: "Tab font size", initialValue: "" });
+  const background = useThemeColor("backgroundColor", "Background", TOKEN.surface);
+  const radius = useThemeRadius("borderRadius", "Radius");
+  const tabFontSize = useDrawnNumber("tabFontSize", "Tab font size", 14);
   const showBorder = ToolJet.useStyleBoolean({ name: "showBorder", label: "Border around tabs", initialValue: true });
   const padding = ToolJet.useStyleNumber({ name: "padding", label: "Padding", initialValue: 12, section: "Spacing" });
   const ld = useLoadingLook();

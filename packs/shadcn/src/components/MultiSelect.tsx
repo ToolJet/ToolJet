@@ -20,6 +20,7 @@ import {
 } from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
+import { TOKEN } from '../lib/styleDefaults';
 import { Chip, ClearX, OptionsMenu, Spinner, type MenuCommand } from '../lib/ui2/choice/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
 import { activeElementIn } from '../lib/activeElement';
@@ -72,11 +73,11 @@ export const MultiSelect = () => {
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
   // onSelect is UI 2.0's one change event: the pack's earlier onChange fired alongside it.
   const styles = useFieldStyles('Accent (focus ring, checks)');
-  const chipBackgroundColor = useColorStyle('chipBackgroundColor', 'Chip background');
-  const chipTextColor = useColorStyle('chipTextColor', 'Chip text color');
-  const menuBackgroundColor = useColorStyle('menuBackgroundColor', 'Menu background');
-  const menuTextColor = useColorStyle('menuTextColor', 'Menu text color');
-  const optionHoverColor = useColorStyle('optionHoverColor', 'Highlighted option background');
+  const chipBackgroundColor = useColorStyle('chipBackgroundColor', 'Chip background', TOKEN.muted);
+  const chipTextColor = useColorStyle('chipTextColor', 'Chip text color', TOKEN.text);
+  const menuBackgroundColor = useColorStyle('menuBackgroundColor', 'Menu background', TOKEN.surface);
+  const menuTextColor = useColorStyle('menuTextColor', 'Menu text color', TOKEN.text);
+  const optionHoverColor = useColorStyle('optionHoverColor', 'Highlighted option background', TOKEN.muted);
   const chipColor = ToolJet.useStyleString({ name: 'chipColor', label: 'Chip background (earlier name)', inspector: 'hidden', initialValue: '' });
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
   const { disabled, loading } = useBusy(disabledProp);

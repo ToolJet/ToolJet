@@ -8,6 +8,7 @@ import { isSet, lookVars } from '../lib/ui2/nav/look';
 import { useStable } from '../lib/ui2/nav/hooks';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { TimelineSkel } from '../lib/ui2/loading/shapes';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const MAX_ITEMS = 500;
@@ -60,12 +61,12 @@ export const Timeline = () => {
   // UI 2.0's name only: the pack's earlier onItemClick fired alongside it.
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
   const { disabled } = ToolJet.useControlState();
-  const markerColor = ToolJet.useStyleString({ name: 'markerColor', label: 'Marker color (items without status)', inspector: 'color', initialValue: '' });
-  const lineColor = ToolJet.useStyleString({ name: 'lineColor', label: 'Connecting line color', inspector: 'color', initialValue: '' });
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Title color', inspector: 'color', initialValue: '' });
-  const descriptionColor = ToolJet.useStyleString({ name: 'descriptionColor', label: 'Description color', inspector: 'color', initialValue: '' });
-  const timeColor = ToolJet.useStyleString({ name: 'timeColor', label: 'Time color', inspector: 'color', initialValue: '' });
-  const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Accent (current items)', inspector: 'color', initialValue: '' });
+  const markerColor = useThemeColor('markerColor', 'Marker color (items without status)', TOKEN.brand);
+  const lineColor = useThemeColor('lineColor', 'Connecting line color', TOKEN.border);
+  const titleColor = useThemeColor('titleColor', 'Title color', TOKEN.text);
+  const descriptionColor = useThemeColor('descriptionColor', 'Description color', TOKEN.mutedText);
+  const timeColor = useThemeColor('timeColor', 'Time color', TOKEN.mutedText);
+  const accent = useThemeColor('accentColor', 'Accent (current items)', TOKEN.brand);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 36 });
 

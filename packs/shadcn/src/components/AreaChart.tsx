@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AXIS, CURSOR_LINE, ChartFrame, GRID, clickedMarks, seriesSetup, tooltipAndLegend, useBoxSize, useChartClick, useSvgId, valueAxis } from '../lib/ui2/charts/chartParts';
 import { MAX_ROWS, animated, curveOf, dateTicks, hiddenNote, isCompactChart, list } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
 const SAMPLE = [
   { month: 'Jun', revenue: 182000 },
@@ -28,10 +29,10 @@ export const AreaChart = () => {
   const [curve] = ToolJet.useStateEnumeration({ name: 'curve', label: 'Curve', enumDefinition: ['monotone', 'natural', 'linear', 'step'], initialValue: 'monotone', inspector: 'switch' });
   const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked point emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
   const click = useChartClick(highlightClicked);
-  const chartColor = ToolJet.useStyleString({ name: 'chartColor', label: 'Chart color (series palette from it)', inspector: 'color', initialValue: '' });
-  const gridColor = ToolJet.useStyleString({ name: 'gridColor', label: 'Grid line color', inspector: 'color', initialValue: '' });
-  const axisTextColor = ToolJet.useStyleString({ name: 'axisTextColor', label: 'Axis label color', inspector: 'color', initialValue: '' });
-  const legendTextColor = ToolJet.useStyleString({ name: 'legendTextColor', label: 'Legend text color', inspector: 'color', initialValue: '' });
+  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
+  const axisTextColor = useThemeColor('axisTextColor', 'Axis label color', TOKEN.mutedText);
+  const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 28 });
   const box = useBoxSize();

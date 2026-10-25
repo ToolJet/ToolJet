@@ -5,6 +5,7 @@ import { cn } from '../lib/cn';
 import { clampInt, own, safeUrl } from '../lib/ui2/nav/model';
 import { lookVars } from '../lib/ui2/nav/look';
 import { LineSkel, LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 // The underline values UI 2.0 and the pack's earlier names map to.
@@ -53,8 +54,8 @@ export const Link = () => {
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onHover = ToolJet.useEventCallback({ name: 'onHover' });
   const { disabled } = ToolJet.useControlState();
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Link color', inspector: 'color', initialValue: '' });
-  const hoverColor = ToolJet.useStyleString({ name: 'hoverColor', label: 'Link hover color', inspector: 'color', initialValue: '' });
+  const textColor = useThemeColor('textColor', 'Link color', TOKEN.brand);
+  const hoverColor = useThemeColor('hoverColor', 'Link hover color', TOKEN.brand);
   const alignment = ToolJet.useStyleEnumeration({
     name: 'alignment',
     label: 'Alignment',

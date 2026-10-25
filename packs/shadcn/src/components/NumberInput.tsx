@@ -5,6 +5,7 @@ import { cn } from '../lib/cn';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { ClearX, boundsRule, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
@@ -12,10 +13,10 @@ import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
   ...field(),
-  ['stepperBackgroundColor', 'Step button background', '--lk-step-bg'],
-  ['stepperIconColor', 'Step button icon color', '--lk-step-fg'],
-  ['stepperHoverColor', 'Step button hover background', '--lk-step-hover'],
-  ['affixColor', 'Prefix and suffix color', '--lk-affix'],
+  ['stepperBackgroundColor', 'Step button background', '--lk-step-bg', 'transparent'],
+  ['stepperIconColor', 'Step button icon color', '--lk-step-fg', TOKEN.mutedText],
+  ['stepperHoverColor', 'Step button hover background', '--lk-step-hover', TOKEN.muted],
+  ['affixColor', 'Prefix and suffix color', '--lk-affix', TOKEN.mutedText],
 ];
 
 export const NumberInput = () => {

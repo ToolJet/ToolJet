@@ -8,6 +8,7 @@ import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { TJ } from '../lib/ui2/inputs/sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
+import { TOKEN } from '../lib/styleDefaults';
 import { ClearX, isEnter, useReseed } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import type { Hsva } from '../lib/ui2/inputs/model';
@@ -16,7 +17,7 @@ import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
   ...field({ accentColor: 'Accent (focus ring)' }, ['errorColor']),
-  ['menuBackgroundColor', 'Popover background', '--lk-menu-bg'],
+  ['menuBackgroundColor', 'Popover background', '--lk-menu-bg', TOKEN.surface],
 ];
 
 const SWATCHES = [

@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChartFrame, InlineTip, useSvgId } from '../lib/ui2/charts/chartParts';
 import { MAX_ROWS, animated, axisLabel, clamp, curveOf, formatter, isRecord, isSet, num } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
 interface SparkPoint {
   i: number;
@@ -67,10 +68,10 @@ export const Sparkline = () => {
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onDoubleClick = ToolJet.useEventCallback({ name: 'onDoubleClick' });
   const control = (ToolJet as unknown as ControlSdk).useControlState?.() ?? { disabled: false, loading: false };
-  const chartColor = ToolJet.useStyleString({ name: 'chartColor', label: 'Line color', inspector: 'color', initialValue: '' });
-  const positiveColor = ToolJet.useStyleString({ name: 'positiveColor', label: 'Color when trend is up', inspector: 'color', initialValue: '' });
-  const negativeColor = ToolJet.useStyleString({ name: 'negativeColor', label: 'Color when trend is down', inspector: 'color', initialValue: '' });
-  const bandColor = ToolJet.useStyleString({ name: 'bandColor', label: 'Band color', inspector: 'color', initialValue: '' });
+  const chartColor = useThemeColor('chartColor', 'Line color', TOKEN.brand);
+  const positiveColor = useThemeColor('positiveColor', 'Color when trend is up', TOKEN.success);
+  const negativeColor = useThemeColor('negativeColor', 'Color when trend is down', TOKEN.error);
+  const bandColor = useThemeColor('bandColor', 'Band color', TOKEN.muted);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 4 });
   const fillId = useSvgId('ui2-spark');

@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AXIS, ChartFrame, CURSOR_FILL, GRID, seriesSetup, tooltipAndLegend, useBoxSize, useChartClick, valueAxis } from '../lib/ui2/charts/chartParts';
 import { MAX_BARS, animated, dateTicks, emphasis, hiddenNote, highlightIndexes, isCompactChart, isRecord, isSet, list, type Row } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useDrawnNumber, useThemeColor } from '../lib/styleDefaults';
 
 const SAMPLE = [
   { month: 'Jun', revenue: 182000 },
@@ -83,13 +84,13 @@ export const BarChart = () => {
   const [categoryColors] = ToolJet.useStateObject({ name: 'categoryColors', label: 'Category colors ({ category: color })', initialValue: {} });
   const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked bar emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
   const click = useChartClick(highlightClicked);
-  const chartColor = ToolJet.useStyleString({ name: 'chartColor', label: 'Chart color (series palette from it)', inspector: 'color', initialValue: '' });
-  const gridColor = ToolJet.useStyleString({ name: 'gridColor', label: 'Grid line color', inspector: 'color', initialValue: '' });
-  const axisTextColor = ToolJet.useStyleString({ name: 'axisTextColor', label: 'Axis label color', inspector: 'color', initialValue: '' });
-  const legendTextColor = ToolJet.useStyleString({ name: 'legendTextColor', label: 'Legend text color', inspector: 'color', initialValue: '' });
-  const highlightColor = ToolJet.useStyleString({ name: 'highlightColor', label: 'Highlighted bar color (default: the series color)', inspector: 'color', initialValue: '' });
-  const mutedColor = ToolJet.useStyleString({ name: 'mutedColor', label: 'Other bars color when highlighting (default: the series color, faded)', inspector: 'color', initialValue: '' });
-  const barRadius = ToolJet.useStyleNumber({ name: 'barRadius', label: 'Bar radius', initialValue: '' });
+  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
+  const axisTextColor = useThemeColor('axisTextColor', 'Axis label color', TOKEN.mutedText);
+  const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
+  const highlightColor = useThemeColor('highlightColor', 'Highlighted bar color (default: the series color)', TOKEN.brand);
+  const mutedColor = useThemeColor('mutedColor', 'Other bars color when highlighting (default: the series color, faded)', TOKEN.brand);
+  const barRadius = useDrawnNumber('barRadius', 'Bar radius', 4);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 28 });
   const box = useBoxSize();

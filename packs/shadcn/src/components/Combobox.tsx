@@ -11,6 +11,7 @@ import { initialKey, isDisabledOption, keyOf, keptOptions, toChoiceOptions, want
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { useBusy, useColorStyle, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
+import { TOKEN } from '../lib/styleDefaults';
 import { ClearX, OptionIcon, OptionsMenu, Spinner } from '../lib/ui2/choice/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
@@ -57,9 +58,9 @@ export const Combobox = () => {
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
   const styles = useFieldStyles('Accent (focus ring, checks)');
-  const menuBackgroundColor = useColorStyle('menuBackgroundColor', 'Menu background');
-  const menuTextColor = useColorStyle('menuTextColor', 'Menu text color');
-  const optionHoverColor = useColorStyle('optionHoverColor', 'Highlighted option background');
+  const menuBackgroundColor = useColorStyle('menuBackgroundColor', 'Menu background', TOKEN.surface);
+  const menuTextColor = useColorStyle('menuTextColor', 'Menu text color', TOKEN.text);
+  const optionHoverColor = useColorStyle('optionHoverColor', 'Highlighted option background', TOKEN.muted);
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
   const { disabled, loading } = useBusy(disabledProp);
   const fieldId = ToolJet.useFieldId();

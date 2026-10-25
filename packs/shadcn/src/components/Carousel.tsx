@@ -7,6 +7,7 @@ import { lookVars, px } from '../lib/ui2/nav/look';
 import { useLatest, useStable } from '../lib/ui2/nav/hooks';
 import { ownerAvailable } from '../lib/useOwnerGuard';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 // UI 2.0 Carousel: one or several slides per view, swipes, arrow keys, autoplay that pauses on hover and keyboard
@@ -59,17 +60,17 @@ export const Carousel = () => {
   const onSlideChanged = ToolJet.useEventCallback({ name: 'onSlideChanged' });
   const onSlideClicked = ToolJet.useEventCallback({ name: 'onSlideClicked' });
   const { disabled } = ToolJet.useControlState();
-  const slideBackgroundColor = ToolJet.useStyleString({ name: 'slideBackgroundColor', label: 'Slide background', inspector: 'color', initialValue: '' });
-  const arrowBackgroundColor = ToolJet.useStyleString({ name: 'arrowBackgroundColor', label: 'Arrow background', inspector: 'color', initialValue: '' });
-  const arrowColor = ToolJet.useStyleString({ name: 'arrowColor', label: 'Arrow icon color', inspector: 'color', initialValue: '' });
-  const dotColor = ToolJet.useStyleString({ name: 'dotColor', label: 'Dot color', inspector: 'color', initialValue: '' });
-  const activeDotColor = ToolJet.useStyleString({ name: 'activeDotColor', label: 'Active dot color', inspector: 'color', initialValue: '' });
+  const slideBackgroundColor = useThemeColor('slideBackgroundColor', 'Slide background', TOKEN.muted);
+  const arrowBackgroundColor = useThemeColor('arrowBackgroundColor', 'Arrow background', TOKEN.surface);
+  const arrowColor = useThemeColor('arrowColor', 'Arrow icon color', TOKEN.text);
+  const dotColor = useThemeColor('dotColor', 'Dot color', TOKEN.text);
+  const activeDotColor = useThemeColor('activeDotColor', 'Active dot color', TOKEN.brand);
   const captionBackgroundColor = ToolJet.useStyleString({ name: 'captionBackgroundColor', label: 'Caption overlay background', inspector: 'color', initialValue: '' });
-  const captionTextColor = ToolJet.useStyleString({ name: 'captionTextColor', label: 'Caption overlay text color', inspector: 'color', initialValue: '' });
-  const titleColor = ToolJet.useStyleString({ name: 'titleColor', label: 'Caption title color (below)', inspector: 'color', initialValue: '' });
-  const descriptionColor = ToolJet.useStyleString({ name: 'descriptionColor', label: 'Caption description color (below)', inspector: 'color', initialValue: '' });
-  const radius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Slide radius', initialValue: '' });
-  const gapStyle = ToolJet.useStyleNumber({ name: 'gap', label: 'Gap between slides (px)', initialValue: '' });
+  const captionTextColor = useThemeColor('captionTextColor', 'Caption overlay text color', '#fff');
+  const titleColor = useThemeColor('titleColor', 'Caption title color (below)', TOKEN.text);
+  const descriptionColor = useThemeColor('descriptionColor', 'Caption description color (below)', TOKEN.mutedText);
+  const radius = useThemeRadius('borderRadius', 'Slide radius');
+  const gapStyle = ToolJet.useStyleNumber({ name: 'gap', label: 'Gap between slides (px)', initialValue: '', placeholder: '16 with several slides, else 0' });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 41 });
 

@@ -5,6 +5,7 @@ import { cn } from '../lib/cn';
 import { isRecord, list, text } from '../lib/ui2/nav/model';
 import { lookVars } from '../lib/ui2/nav/look';
 import { LineSkel, LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const MAX_CRUMBS = 8;
@@ -22,9 +23,9 @@ export const Breadcrumb = () => {
   const [, setLastClickedItem] = ToolJet.useStateObject({ name: 'lastClickedItem', initialValue: {}, inspector: 'hidden' });
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
   const { disabled } = ToolJet.useControlState();
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Breadcrumb link color', inspector: 'color', initialValue: '' });
-  const currentColor = ToolJet.useStyleString({ name: 'currentColor', label: 'Current page color', inspector: 'color', initialValue: '' });
-  const separatorColor = ToolJet.useStyleString({ name: 'separatorColor', label: 'Separator color', inspector: 'color', initialValue: '' });
+  const textColor = useThemeColor('textColor', 'Breadcrumb link color', TOKEN.mutedText);
+  const currentColor = useThemeColor('currentColor', 'Current page color', TOKEN.text);
+  const separatorColor = useThemeColor('separatorColor', 'Separator color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 3 });
 

@@ -7,6 +7,7 @@ import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { cn } from '../lib/cn';
 import { initials, isSet, px, styleVars } from '../lib/ui2/display/lists/model';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display.css';
 
 const safeImageUrl = (url: unknown) => {
@@ -81,11 +82,11 @@ export const Image = () => {
   const [, setHasError] = ToolJet.useStateBoolean({ name: 'hasError', initialValue: false, inspector: 'hidden' });
   const [, setImageURL] = ToolJet.useStateString({ name: 'imageURL', initialValue: '', inspector: 'hidden' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Image radius', initialValue: '' });
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Border color', inspector: 'color', initialValue: '' });
+  const borderRadius = useThemeRadius('borderRadius', 'Image radius');
+  const borderColor = useThemeColor('borderColor', 'Border color', TOKEN.border);
   const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Background (letterbox and fallback)', inspector: 'color', initialValue: '' });
-  const fallbackTextColor = ToolJet.useStyleString({ name: 'fallbackTextColor', label: 'Fallback text and icon color', inspector: 'color', initialValue: '' });
-  const captionColor = ToolJet.useStyleString({ name: 'captionColor', label: 'Caption color', inspector: 'color', initialValue: '' });
+  const fallbackTextColor = useThemeColor('fallbackTextColor', 'Fallback text and icon color', TOKEN.mutedText);
+  const captionColor = useThemeColor('captionColor', 'Caption color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 20 });
 
