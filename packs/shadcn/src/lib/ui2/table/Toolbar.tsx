@@ -135,6 +135,9 @@ const FilterPanel = ({
 export interface ToolbarProps {
   displaySearchBox: boolean;
   searchPlaceholder: string;
+  /** The Filter and Columns buttons' text, in the app's language. */
+  filterLabel?: string;
+  columnsLabel?: string;
   showFilterButton: boolean;
   showColumnSelector: boolean;
   showDownloadButton: boolean;
@@ -187,7 +190,7 @@ export const Toolbar = (p: ToolbarProps) => {
             trigger={
               <button type="button" className="ui-btn ui-btn--outline ui-btn--sm t2-tool" disabled={p.disabled}>
                 <Filter size={14} />
-                Filter
+                {p.filterLabel || 'Filter'}
                 {p.filters.length ? <span className="t2-count">{p.filters.length}</span> : null}
               </button>
             }
@@ -206,14 +209,14 @@ export const Toolbar = (p: ToolbarProps) => {
         ) : null}
         {p.showColumnSelector ? (
           <ToolbarPopover
-            label="Columns"
+            label={p.columnsLabel || 'Columns'}
             container={container}
             vars={p.vars}
             className="t2-popover--columns"
             trigger={
               <button type="button" className="ui-btn ui-btn--outline ui-btn--sm t2-tool" disabled={p.disabled}>
                 <Columns3 size={14} />
-                Columns
+                {p.columnsLabel || 'Columns'}
               </button>
             }
           >

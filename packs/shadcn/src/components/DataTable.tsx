@@ -91,6 +91,13 @@ const vars = (pairs: [string, unknown][]): CSSProperties =>
   Object.fromEntries(pairs.filter(([, v]) => isSet(v)).map(([k, v]) => [k, String(v)])) as CSSProperties;
 const px = (v: unknown) => (isSet(v) && Number.isFinite(Number(v)) ? `${Number(v)}px` : undefined);
 
+// The footer's row count from its template: the English default says "1 row" for one; any other text is the app's own.
+const rowCountText = (template: unknown, count: number): string => {
+  const t = typeof template === 'string' && template.trim() ? template : '{count} rows';
+  if (t === '{count} rows' && count === 1) return '1 row';
+  return t.includes('{count}') ? t.split('{count}').join(String(count)) : `${count} ${t}`;
+};
+
 export const DataTable = () => {
   // ---- properties (UI 2.0 names and defaults) ---------------------------------------------------------------------
   const [rawData] = ToolJet.useStateArray({
@@ -167,6 +174,17 @@ export const DataTable = () => {
     section: 'Search, sort and filters',
     visibleWhen: { key: 'displaySearchBox', value: true },
   });
+  // The toolbar and footer text, so an app in another language reads its own words ("Filtrer", "23 lignes").
+  const [filterLabel] = ToolJet.useStateString({ name: 'filterLabel', label: 'Filter button text', initialValue: 'Filter', section: 'Toolbar and footer' });
+  const [columnsLabel] = ToolJet.useStateString({ name: 'columnsLabel', label: 'Columns button text', initialValue: 'Columns', section: 'Toolbar and footer' });
+  const [rowCountLabel] = ToolJet.useStateString({
+    name: 'rowCountLabel',
+    label: 'Row count text',
+    description: '{count} is the number of rows, e.g. "{count} lignes".',
+    initialValue: '{count} rows',
+    section: 'Toolbar and footer',
+  });
+  const [noMatchText] = ToolJet.useStateString({ name: 'noMatchText', label: 'No matching rows message', initialValue: 'No matching rows.', section: 'Empty and loading' });
   const [serverSideSearch] = ToolJet.useStateBoolean({ name: 'serverSideSearch', label: 'Server-side search', initialValue: false, section: 'Search, sort and filters' });
   const [enabledSort] = ToolJet.useStateBoolean({ name: 'enabledSort', label: 'Column sorting', initialValue: true, section: 'Search, sort and filters' });
   const [serverSideSort] = ToolJet.useStateBoolean({ name: 'serverSideSort', label: 'Server-side sort', initialValue: false, section: 'Search, sort and filters' });
@@ -742,6 +760,8 @@ export const DataTable = () => {
         <Toolbar
           displaySearchBox={displaySearchBox !== false}
           searchPlaceholder={String(searchPlaceholder ?? 'Search…')}
+          filterLabel={String(filterLabel ?? '')}
+          columnsLabel={String(columnsLabel ?? '')}
           showFilterButton={showFilterButton !== false}
           showColumnSelector={showColumnSelector}
           showDownloadButton={showDownloadButton === true}
@@ -900,7 +920,7 @@ export const DataTable = () => {
                 <td colSpan={colCount} className="t2-empty-cell" style={{ height: Math.max(28, box.height - 1) }}>
                   <div className="t2-empty">
                     <Inbox size={24} className="t2-empty-icon" />
-                    <p className="t2-empty-title">{searchText || filters.length ? 'No matching rows.' : String(emptyText || 'No results.')}</p>
+                    <p className="t2-empty-title">{searchText || filters.length ? String(noMatchText || 'No matching rows.') : String(emptyText || 'No results.')}</p>
                     {emptyDescription && !searchText && !filters.length ? <p className="t2-empty-note">{String(emptyDescription)}</p> : null}
                   </div>
                 </td>
@@ -918,7 +938,7 @@ export const DataTable = () => {
               ? ''
               : bulk && selected.size
                 ? `${selected.size} of ${count} selected`
-                : `${count} ${count === 1 ? 'row' : 'rows'}`}
+                : rowCountText(rowCountLabel, count)}
           </span>
           {showPager ? <Pager paged={paged} disabled={disabled} onPage={(p) => goTo(p)} /> : null}
         </div>

@@ -55,3 +55,20 @@ describe('a paginated DataTable on a short last page', () => {
     expect(full().querySelector('tr.t2-page-filler')).toBeNull();
   });
 });
+
+describe('a DataTable in another language', () => {
+  test('draws its own toolbar and footer text', async () => {
+    const root = await mount({ data: rows(23), columns, enablePagination: true, rowsPerPage: 10, filterLabel: 'Filtrer', columnsLabel: 'Colonnes', rowCountLabel: '{count} lignes' });
+    const text = root().textContent;
+    expect(text).toContain('Filtrer');
+    expect(text).toContain('Colonnes');
+    expect(text).toContain('23 lignes');
+    expect(text).not.toMatch(/\bColumns\b/);
+  });
+
+  test('keeps the English defaults, with "1 row" for one', async () => {
+    const one = await mount({ data: rows(1), columns });
+    expect(one().textContent).toContain('1 row');
+    expect(one().textContent).toContain('Filter');
+  });
+});
