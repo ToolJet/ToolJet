@@ -9,9 +9,7 @@ import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
-// UI 2.0's built-in widgets are not on this branch (components come from packs); the policies below that name them
-// stay for the core, with no types listed.
-const SHADCN_COMPONENTS = [];
+import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [

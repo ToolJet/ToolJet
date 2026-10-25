@@ -31,6 +31,7 @@ const building = (isLoading) => ({
     reattachStartedAt: null,
   },
   appStore: { modules: { canvas: { app: { appName: 'Clinic' } } } },
+  globalSettings: { appMode: 'light' },
   getCurrentPageComponents: () => ({}),
   dataQuery: { queries: { modules: { canvas: [] } } },
 });

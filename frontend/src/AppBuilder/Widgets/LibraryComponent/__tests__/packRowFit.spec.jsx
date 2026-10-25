@@ -89,8 +89,9 @@ describe('fittedRowHeight', () => {
     expect(fittedRowHeight({ ...base, rowContext: [1], temporaryLayouts })).toBe(436);
   });
 
-  test("a module's rows read the module's layouts", () => {
-    const temporaryLayouts = { 'button-0': { top: 400 }, 'mod::button-0': { top: 300 } };
+  // This branch's reflow keys a module's layouts as the canvas's (main scopes them as `<module>::<key>`).
+  test("a module's rows read the same layout keys as the canvas", () => {
+    const temporaryLayouts = { 'button-0': { top: 300 } };
     expect(fittedRowHeight({ ...base, moduleId: 'mod', temporaryLayouts })).toBe(336);
   });
 
