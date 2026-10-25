@@ -1,8 +1,79 @@
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 
-export type Theme = { brand: string; success: string; error: string; text: string; muted: string; axis: string; border: string; surface: string; dark: boolean };
-const LIGHT: Theme = { brand: '#1677ff', success: '#52c41a', error: '#ff4d4f', text: 'rgba(0, 0, 0, 0.88)', muted: 'rgba(0, 0, 0, 0.45)', axis: 'rgba(0, 0, 0, 0.65)', border: '#f0f0f0', surface: '#ffffff', dark: false };
+export type Theme = {
+  brand: string;
+  success: string;
+  warning: string;
+  error: string;
+  text: string;
+  muted: string;
+  axis: string;
+  border: string;
+  surface: string;
+  dark: boolean;
+  /** Whether the app applies a ToolJet theme (not the basic one). */
+  themed: boolean;
+  /** The categorical palette series and slices take, in order (seriesPalette). */
+  palette: string[];
+};
+
+// G2's (Ant's charting engine) own categorical palette after its first colour, which is antd's primary (or the
+// component's colorPrimary style).
+export const G2_PALETTE = ['#00C9C9', '#F0884D', '#D580FF', '#7863FF', '#60C42D', '#BD8F24', '#FF80CA', '#2491B3', '#17C76F'];
+
+const rgbOf = (color: string): [number, number, number] | undefined => {
+  const t = color.trim().toLowerCase();
+  const hex = /^#([0-9a-f]{6})/.exec(t)?.[1] ?? /^#([0-9a-f]{3})$/.exec(t)?.[1]?.replace(/./g, (c) => c + c);
+  if (hex) return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
+  const rgb = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/.exec(t);
+  if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+  // color-mix() in srgb computes to color(srgb r g b), channels 0-1.
+  const srgb = /^color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/.exec(t);
+  if (srgb) return [Number(srgb[1]) * 255, Number(srgb[2]) * 255, Number(srgb[3]) * 255];
+  return undefined;
+};
+/** `share` of colour a over b, as rgb() (a canvas cannot draw color-mix()); a when either is unparsable. */
+export const mixRgb = (a: string, b: string, share: number) => {
+  const x = rgbOf(a);
+  const y = rgbOf(b);
+  if (!x || !y) return a;
+  return `rgb(${x.map((v, i) => Math.round(v * share + y[i] * (1 - share))).join(', ')})`;
+};
+
+/**
+ * The charts' categorical palette. Stock Ant (no app theme): antd's primary (or the colorPrimary style), then G2's own
+ * palette. Under an applied theme every colour comes from the theme, as the MUI pack's charts and the shadcn pack's
+ * seriesColors: the brand, tints and a deeper shade of it, then the theme's system colours, then mixes of the brand with
+ * them; no stock teal or lilac on a theme that has none.
+ */
+export const seriesPalette = (t: Pick<Theme, 'brand' | 'success' | 'warning' | 'error' | 'themed'>): string[] =>
+  t.themed
+    ? [
+        t.brand,
+        mixRgb(t.brand, '#ffffff', 0.62),
+        mixRgb(t.brand, '#ffffff', 0.34),
+        mixRgb(t.brand, '#000000', 0.7),
+        t.success,
+        t.warning,
+        t.error,
+        mixRgb(t.brand, t.success, 0.5),
+        mixRgb(t.brand, t.error, 0.5),
+        mixRgb(t.brand, '#000000', 0.45),
+      ]
+    : [t.brand, ...G2_PALETTE];
+
+const LIGHT_BASE = { brand: '#1677ff', success: '#52c41a', warning: '#faad14', error: '#ff4d4f', themed: false };
+const LIGHT: Theme = {
+  ...LIGHT_BASE,
+  text: 'rgba(0, 0, 0, 0.88)',
+  muted: 'rgba(0, 0, 0, 0.45)',
+  axis: 'rgba(0, 0, 0, 0.65)',
+  border: '#f0f0f0',
+  surface: '#ffffff',
+  dark: false,
+  palette: seriesPalette(LIGHT_BASE),
+};
 
 // The chart draws on a canvas, which cannot read CSS variables: read antd's tokens off the element (stock Ant, or the
 // component's style overrides; dark under .tj-ant-dark), and again when the root's class or style changes.
@@ -25,10 +96,17 @@ export const useChartTheme = (ref: React.RefObject<HTMLElement>) => {
         el.style.removeProperty('--tj-ant-probe');
         return out || fallback;
       };
-      const next: Theme = {
+      const base = {
         brand: probe('--ant-color-primary', LIGHT.brand),
         success: probe('--ant-color-success', LIGHT.success),
+        warning: probe('--ant-color-warning', LIGHT.warning),
         error: probe('--ant-color-error', LIGHT.error),
+        // The host defines the --tj-* tokens only when the app applies a theme (themeMode "own").
+        themed: cs.getPropertyValue('--tj-brand').trim() !== '',
+      };
+      const next: Theme = {
+        ...base,
+        palette: seriesPalette(base),
         text: probe('--ant-color-text', LIGHT.text),
         muted: probe('--ant-color-text-tertiary', LIGHT.muted),
         // Axis labels and titles in antd's secondary text: the tertiary (45% black) read as very faint on a canvas.
@@ -42,6 +120,9 @@ export const useChartTheme = (ref: React.RefObject<HTMLElement>) => {
     read();
     const observer = new MutationObserver(read);
     observer.observe(root, { attributes: true, attributeFilter: ['class', 'style'] });
+    // Applying or removing an app theme marks the shadow host (tj-themed).
+    const host = (el.getRootNode() as ShadowRoot).host;
+    if (host) observer.observe(host, { attributes: true, attributeFilter: ['class'] });
     return () => observer.disconnect();
   }, [ref]);
   return theme;

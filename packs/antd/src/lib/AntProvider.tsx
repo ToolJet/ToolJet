@@ -112,21 +112,38 @@ const isDarkAt = (el: HTMLElement) => {
   el.style.removeProperty('--tj-ant-probe');
   return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255 < 0.4;
 };
-const useAppDark = (anchor: React.RefObject<HTMLElement>) => {
-  const [dark, setDark] = useState(false);
+/** Whether the app applies a ToolJet theme at `el`: the host defines the --tj-* tokens only then (themeMode "own"). */
+export const isThemedAt = (el: Element) => getComputedStyle(el).getPropertyValue('--tj-brand').trim() !== '';
+const useAppLook = (anchor: React.RefObject<HTMLElement>) => {
+  const [look, setLook] = useState({ dark: false, themed: false });
   useEffect(() => {
     const el = anchor.current;
     if (!el) return;
-    const read = () => setDark(isDarkAt(el));
+    const read = () => {
+      const next = { dark: isDarkAt(el), themed: isThemedAt(el) };
+      setLook((prev) => (prev.dark === next.dark && prev.themed === next.themed ? prev : next));
+    };
     read();
-    return watchTheme(read);
+    // The host marks itself tj-themed when the app applies a theme; <html> and <body> carry light or dark.
+    const host = (el.getRootNode() as ShadowRoot).host;
+    const hostWatch = host && typeof MutationObserver !== 'undefined' ? new MutationObserver(read) : null;
+    hostWatch?.observe(host, { attributes: true, attributeFilter: ['class'] });
+    const stop = watchTheme(read);
+    return () => {
+      hostWatch?.disconnect();
+      stop();
+    };
   }, [anchor]);
-  return dark;
+  return look;
 };
 
 /** Whether the component sits in a dark app (antd's dark algorithm applies); charts pick G2's dark theme from it. */
 const DarkContext = createContext(false);
 export const useIsDark = () => useContext(DarkContext);
+
+/** Whether the app applies a ToolJet theme (not the basic one): the pack then follows its tokens, else stock Ant. */
+const ThemedContext = createContext(false);
+export const useIsThemed = () => useContext(ThemedContext);
 
 /** The component's token overrides, for popups that render outside its root (the popup layer). */
 const PopupTheme = createContext<{ className: string; style: CSSProperties; container: HTMLElement | null }>({
@@ -156,7 +173,7 @@ export const AntProvider = ({
   style?: CSSProperties;
 }) => {
   const [anchorRef, container] = usePortalContainer();
-  const dark = useAppDark(anchorRef);
+  const { dark, themed } = useAppLook(anchorRef);
   // Ant's icons put their styles in each widget's shadow root through rc-util, whose module-level cache maps every root
   // it served to its real parent and never lets go, so a page switch kept every old Ant root (and its listeners)
   // alive. Emptied when a widget unmounts; the cache is only a lookup, refilled on the next insert.
@@ -178,7 +195,9 @@ export const AntProvider = ({
           getTargetContainer={() => container ?? window}
         >
           <DarkContext.Provider value={dark}>
-            <PopupTheme.Provider value={popup}>{children}</PopupTheme.Provider>
+            <ThemedContext.Provider value={themed}>
+              <PopupTheme.Provider value={popup}>{children}</PopupTheme.Provider>
+            </ThemedContext.Provider>
           </DarkContext.Provider>
         </ConfigProvider>
       </StyleProvider>

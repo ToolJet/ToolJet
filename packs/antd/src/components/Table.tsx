@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import DOMPurify from 'dompurify';
-import { Table as AntTable, Tag } from 'antd';
+import { Table as AntTable } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { PackTag } from '../lib/PackTag';
 import { readField, rowIdOf, rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, parseFormat, tagColor, toNumber } from '../lib/format';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
@@ -193,9 +194,9 @@ export const Table = () => {
                 // Keyed by place, not by text: a status that changes (Open to Paid) updates its Tag in place instead of
                 // remounting it on every data update.
                 return (
-                  <Tag key={i} color={named !== undefined ? tagColor(named) : TONE_TAG[chipTone(t)]}>
+                  <PackTag key={i} color={named !== undefined ? tagColor(named) : TONE_TAG[chipTone(t)]}>
                     {chipLabel(t)}
-                  </Tag>
+                  </PackTag>
                 );
               })}
             </span>

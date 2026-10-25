@@ -120,3 +120,48 @@ export const tagColor = (c: unknown): string | undefined => {
   if (TAG_COLOR_WORDS[k]) return TAG_COLOR_WORDS[k] === 'default' ? undefined : TAG_COLOR_WORDS[k];
   return /^(#|rgb|hsl)/i.test(t) ? t : undefined;
 };
+
+/** A CSS colour (#hex, rgb(), hsl()) as [hue 0-360, saturation 0-1, lightness 0-1]; undefined when it is not one. */
+export const hslOf = (color: string): [number, number, number] | undefined => {
+  const t = color.trim().toLowerCase();
+  const hsl = /^hsla?\(\s*(-?[\d.]+)(?:deg)?[\s,]+([\d.]+)%[\s,]+([\d.]+)%/.exec(t);
+  if (hsl) return [((Number(hsl[1]) % 360) + 360) % 360, Number(hsl[2]) / 100, Number(hsl[3]) / 100];
+  let rgb: number[] | undefined;
+  const hex = /^#([0-9a-f]{3,8})$/.exec(t)?.[1];
+  if (hex && (hex.length === 3 || hex.length === 4)) rgb = [0, 1, 2].map((i) => parseInt(hex[i] + hex[i], 16));
+  else if (hex && (hex.length === 6 || hex.length === 8)) rgb = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const fn = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/.exec(t);
+  if (fn) rgb = [Number(fn[1]), Number(fn[2]), Number(fn[3])];
+  if (!rgb || rgb.some((v) => Number.isNaN(v))) return undefined;
+  const [r, g, b] = rgb.map((v) => Math.min(255, v) / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  const d = max - min;
+  if (!d) return [0, 0, l];
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [(h * 60 + 360) % 360, s, l];
+};
+
+// Where each of Ant's preset palettes sits on the hue wheel (the upper bound of its arc).
+const PRESET_HUES: [number, string][] = [
+  [15, 'red'], [28, 'volcano'], [40, 'orange'], [52, 'gold'], [62, 'yellow'], [85, 'lime'], [165, 'green'], [195, 'cyan'],
+  [228, 'blue'], [250, 'geekblue'], [290, 'purple'], [340, 'magenta'], [360, 'red'],
+];
+
+/**
+ * A tag colour under an applied app theme: a CSS colour (an author's or the AI builder's '#2576CE') becomes the Ant
+ * preset of its hue, which the theme redraws in its own colours (scripts/extract-styles.mjs PRESET_THEMED: blue the
+ * brand, green success, orange and gold warning, red danger...). A grey stays the neutral tag. Presets and status names
+ * pass through. Unthemed (stock Ant) the colour is kept as given.
+ */
+export const themedTagColor = (color: string | undefined, themed: boolean): string | undefined => {
+  if (!themed || !color) return color;
+  const word = tagColor(color);
+  if (word && !/^(#|rgb|hsl)/i.test(word)) return word;
+  const hsl = word ? hslOf(word) : undefined;
+  if (!hsl) return color;
+  if (hsl[1] < 0.25 || hsl[2] < 0.08 || hsl[2] > 0.96) return undefined;
+  return PRESET_HUES.find(([upTo]) => hsl[0] < upTo)?.[1] ?? 'red';
+};

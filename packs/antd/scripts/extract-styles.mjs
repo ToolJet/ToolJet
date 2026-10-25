@@ -125,6 +125,44 @@ const THEMED = {
   colorSplit: 'var(--tj-border-weak)',
 };
 
+// antd's preset palettes (blue, green, purple...: a Tag's or a Button's color, Badge and Timeline colours) under an
+// applied theme: each name is a colour of the theme (the brand, its system colours, or a mix of them in oklab), and its
+// ten steps the tints and inks the status families take (step 1 the tag background, 3 its border, 6 the colour, 7 the
+// readable ink a Tag's text uses). Without a theme each step keeps antd's own value.
+const okmix = (a, p, b) => `color-mix(in oklab, ${a} ${p}%, ${b})`;
+const SUCCESS = 'var(--tj-success)';
+const WARNING = 'var(--tj-warning)';
+const DANGER = 'var(--tj-danger)';
+const PRESET_THEMED = {
+  blue: B,
+  geekblue: okmix(B, 70, T),
+  purple: okmix(B, 50, T),
+  cyan: okmix(B, 50, SUCCESS),
+  magenta: okmix(DANGER, 55, B),
+  pink: okmix(DANGER, 55, B),
+  green: SUCCESS,
+  lime: okmix(SUCCESS, 60, WARNING),
+  red: DANGER,
+  volcano: okmix(DANGER, 65, WARNING),
+  orange: okmix(WARNING, 70, DANGER),
+  gold: WARNING,
+  yellow: WARNING,
+};
+const presetSteps = (c) => [
+  ['', c],
+  ['-1', mix(c, 10)],
+  ['-2', mix(c, 18)],
+  ['-3', mix(c, 40)],
+  ['-4', mix(c, 60)],
+  ['-5', mix(c, 82, '#fff')],
+  ['-6', c],
+  ['-7', ink(c)],
+  ['-8', mix(c, 75, '#000')],
+  ['-9', mix(c, 60, '#000')],
+  ['-10', mix(c, 45, '#000')],
+];
+const PRESET_VARS = Object.fromEntries(Object.entries(PRESET_THEMED).flatMap(([name, c]) => presetSteps(c).map(([step, v]) => [`${name}${step}`, v])));
+
 // Non-colour tokens a style prop may override (borderRadius).
 const EXTRA_THEMED = {
   'border-radius': 'var(--tj-radius)',
@@ -190,7 +228,15 @@ let css = extractStyle(cache, { plain: true, types: ['style', 'token', 'cssVar']
 // The global token block (selector `.tj`) declares the colour tokens; drop those declarations, they live on :host.
 const names = new Set([...keys.map((k) => `--ant-${kebab(k)}`), ...Object.keys(EXTRA).map((k) => `--ant-${k}`)]);
 css = css.replace(/(^|\})\.tj\{([^}]*)\}/g, (_m, lead, body) => {
-  const kept = body.split(';').filter((decl) => !names.has(decl.split(':')[0].trim()));
+  const kept = body
+    .split(';')
+    .filter((decl) => !names.has(decl.split(':')[0].trim()))
+    // A preset palette step: the applied theme's colour (PRESET_THEMED), else antd's.
+    .map((decl) => {
+      const [name, ...value] = decl.split(':');
+      const preset = /^--ant-([a-z]+(?:-\d+)?)$/.exec(name.trim())?.[1];
+      return preset && PRESET_VARS[preset] ? `${name}:var(--tjt-${preset}, ${value.join(':')})` : decl;
+    });
   return `${lead}.tj{${kept.join(';')}}`;
 });
 
@@ -230,6 +276,7 @@ const themed = [
   ':host, .tj-ant {',
   ...Object.entries(THEMED).map(([k, v]) => `  --tjt-${kebab(k)}: ${v};`),
   ...Object.entries(EXTRA_THEMED).filter(([, v]) => v).map(([k, v]) => `  --tjt-${k}: ${v};`),
+  ...Object.entries(PRESET_VARS).map(([k, v]) => `  --tjt-${k}: ${v};`),
   '}',
   // The app font only with an applied theme (the host marks itself .tj-themed); a bare var(--cc-font-family) is
   // always inherited from the page.

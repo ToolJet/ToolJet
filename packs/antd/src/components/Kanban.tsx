@@ -3,6 +3,7 @@ import { Badge, Button, Card, Descriptions, Empty, Progress, Skeleton, Tag, Typo
 import { CloseOutlined, DownOutlined, LeftOutlined, PlusOutlined, RightOutlined, UpOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { PackTag } from '../lib/PackTag';
 import { SpinOver } from '../lib/Loading';
 import { RADIUS_LG_HINT } from '../lib/themeStyles';
 import { cardClamp, cardDateLabel, cardDetails, type BoardCard } from '../lib/ui2/display/kanban/board';
@@ -69,7 +70,7 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
       ) : null}
       {isSet(badge) || isSet(avatar) || isSet(meta) ? (
         <div className="tj-ant-kb-foot">
-          {isSet(badge) ? <Tag color={badgeTag(badge, badgeColors)}>{chipLabel(badge)}</Tag> : null}
+          {isSet(badge) ? <PackTag color={badgeTag(badge, badgeColors)}>{chipLabel(badge)}</PackTag> : null}
           {isSet(meta) ? (
             <Typography.Text type="secondary" ellipsis className="tj-ant-kb-meta" title={String(meta)}>
               {shown(meta)}

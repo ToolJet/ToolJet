@@ -19,12 +19,15 @@ import { ChartLoader } from '../lib/Loading';
 import { str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
 import { useClickHighlight } from '../lib/chartHighlight';
-import { tooltipInteraction, useChartTheme, useTooltipLayer, type Theme } from '../lib/chartTheme';
+import { mixRgb, tooltipInteraction, useChartTheme, useTooltipLayer, type Theme } from '../lib/chartTheme';
 import { useNarrow } from '../lib/fitText';
 
-// G2's (Ant's charting engine) own categorical palette after its first colour, which is antd's primary (or the
-// component's colorPrimary style).
-const PALETTE = ['#00C9C9', '#F0884D', '#D580FF', '#7863FF', '#60C42D', '#BD8F24', '#FF80CA', '#2491B3', '#17C76F'];
+// DualAxes' right-hand series: the next stock colour, or under a theme the brand's deeper shade (a tint beside the
+// brand's columns read faint).
+const dualSecond = (theme: Theme) => theme.palette[theme.themed ? 3 : 1];
+
+// Series and slices take theme.palette (lib/chartTheme seriesPalette): stock Ant leads with antd's primary (or the
+// component's colorPrimary style), then G2's own palette; an applied app theme draws them all from the theme.
 
 /** Whether the element is narrower than `below` px, followed as it resizes. */
 // Samples a fresh drop shows (x and y are the charts' default fields).
@@ -126,7 +129,7 @@ const useCommon = (
     return {
       autoFit: true,
       theme: theme.dark ? 'classicDark' : 'classic',
-      scale: { color: { range: [theme.brand, ...PALETTE] } },
+      scale: { color: { range: theme.palette } },
       axis: { x: { ...axisStyle, grid: false }, y: { ...axisStyle, labelFormatter: fmt } },
       legend: p.legend === 'none' || !series.color ? false : { color: { position: p.legend, itemLabelFill: theme.text } },
       // One y item per series under the x title: a bare { valueFormatter } left G2's default item, which drew the
@@ -146,7 +149,7 @@ const useCommon = (
   // A fresh scale on every render: Ant's charts write into the scale they are given (a Line of all zeros sets
   // y.domainMax 1), and a memoised one kept that limit once the real data came, drawing the lines off the plot.
   // Ant compares configs by content, so a new object with the same content does not redraw the chart.
-  return { ...common, scale: { color: { range: [theme.brand, ...PALETTE] } } };
+  return { ...common, scale: { color: { range: theme.palette } } };
 };
 
 // Ant's Column (vertical bars): data, xField, yField, colorField, stack, group (side by side when several series),
@@ -299,7 +302,7 @@ export const Pie = () => {
           angleField={angleField}
           colorField={colorField}
           innerRadius={Math.max(0, Math.min(0.9, Number(innerRadius) || 0))}
-          scale={{ color: { range: [theme.brand, ...PALETTE] } }}
+          scale={{ color: { range: theme.palette } }}
           // A legend at the right of a narrow pie (a card a quarter of the page wide) left the ring a third of the
           // card; under it, the ring keeps the width.
           legend={legend === 'none' ? false : { color: { position: legend === 'right' && narrow ? 'bottom' : legend, itemLabelFill: theme.text, rowPadding: 6 } }}
@@ -388,10 +391,10 @@ export const DualAxes = () => {
           legend={p.legend === 'none' ? false : { color: { position: p.legend, itemLabelFill: theme.text } }}
           // The legend's markers come from the colour scale (one entry per y field, in layer order); the layers set
           // their colours only through style, so the left series' marker was G2's default blue next to brand bars.
-          scale={{ color: { range: [theme.brand, PALETTE[0]] } }}
+          scale={{ color: { range: [theme.brand, dualSecond(theme)] } }}
           interaction={tooltipInteraction(tips)}
           onEvent={(common as { onEvent: unknown }).onEvent as never}
-          children={[layer(left, kinds[0] || 'column', theme.brand, 'left'), ...(right ? [layer(right, kinds[1] || 'line', PALETTE[0], 'right')] : [])] as never}
+          children={[layer(left, kinds[0] || 'column', theme.brand, 'left'), ...(right ? [layer(right, kinds[1] || 'line', dualSecond(theme), 'right')] : [])] as never}
         />
       </Frame>
     </AntProvider>
@@ -423,7 +426,7 @@ export const Funnel = () => {
           data={rows}
           xField={p.xField}
           yField={y}
-          scale={{ color: { range: [theme.brand, ...PALETTE] } }}
+          scale={{ color: { range: theme.palette } }}
           legend={false}
           label={{ text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])} (${Math.round(((d[y] as number) / first) * 100)}%)`, fill: '#fff', position: 'inside' }}
           tooltip={{ items: [{ field: y, valueFormatter: fmt }] }}
@@ -466,7 +469,7 @@ export const Gauge = () => {
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
           data={{ target: t, total: max, name: name || 'value', ...(bands.length ? { thresholds: bands } : {}) }}
-          scale={{ color: { range: bands.length > 1 ? ['#F4664A', '#FAAD14', '#30BF78', theme.brand].slice(0, bands.length) : [theme.brand] } }}
+          scale={{ color: { range: bands.length > 1 ? (theme.themed ? [theme.error, theme.warning, theme.success, theme.brand] : ['#F4664A', '#FAAD14', '#30BF78', theme.brand]).slice(0, bands.length) : [theme.brand] } }}
           style={{ textContent: () => shown, textFill: theme.text, textFontSize: 28 }}
           legend={false}
         />
@@ -502,7 +505,7 @@ export const Radar = () => {
           area={area ? { style: { fillOpacity: h ? h.opacity({ keys: [s.color], series: s.color }, 0.2) : 0.2 } } : undefined}
           // One series: points in the brand like its line (they had no colour and drew G2's default blue).
           point={{ size: 3, style: { ...(s.color ? {} : { fill: theme.brand, stroke: theme.brand }), ...(h ? { opacity: h.opacity({ keys: [s.x, s.y, s.color], rowOnly: true }) } : {}) } }}
-          scale={{ x: { padding: 0.5, align: 0 }, y: { nice: true }, color: { range: [theme.brand, ...PALETTE] } }}
+          scale={{ x: { padding: 0.5, align: 0 }, y: { nice: true }, color: { range: theme.palette } }}
           axis={{ x: { grid: true, gridStroke: theme.border, labelFill: theme.axis, labelFillOpacity: 1 }, y: { gridStroke: theme.border, labelFill: theme.axis, labelFillOpacity: 1, gridLineWidth: 1 } }}
           style={{ lineWidth: 2, stroke: s.color ? undefined : theme.brand, fill: s.color ? undefined : theme.brand, ...(h ? { strokeOpacity: h.opacity({ keys: [s.color], series: s.color }) } : {}) }}
         />
@@ -587,7 +590,7 @@ export const Heatmap = () => {
           yField={yField}
           colorField={colorField}
           mark="cell"
-          scale={{ color: { range: [theme.dark ? '#1f2937' : '#eef2ff', theme.brand] } }}
+          scale={{ color: { range: [theme.themed ? mixRgb(theme.brand, theme.surface, 0.1) : theme.dark ? '#1f2937' : '#eef2ff', theme.brand] } }}
           style={highlight ? { inset: 1, fillOpacity: highlight.opacity({ keys: [xField, yField] }) } : { inset: 1 }}
           axis={{ x: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false }, y: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false } }}
           legend={{ color: { itemLabelFill: theme.text } }}

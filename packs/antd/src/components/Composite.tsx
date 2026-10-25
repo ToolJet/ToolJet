@@ -3,6 +3,7 @@ import { Avatar, Badge, Button, Card, Empty, List, Progress, Space, Statistic, T
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { PackTag } from '../lib/PackTag';
 import { SpinOver, TextBone } from '../lib/Loading';
 import { MAX_SLOT_ITEMS, rowIdOf, str, toArray, type Row } from '../lib/data';
 import { antIcon } from '../lib/icons';
@@ -264,7 +265,7 @@ export const RecordList = () => {
             extra={
               it.status || it.value ? (
                 <Space size={8}>
-                  {it.status ? <Tag color={toneTag(it.status, statusColors)}>{chipLabel(it.status)}</Tag> : null}
+                  {it.status ? <PackTag color={toneTag(it.status, statusColors)}>{chipLabel(it.status)}</PackTag> : null}
                   {it.value ? <Typography.Text strong>{it.value}</Typography.Text> : null}
                 </Space>
               ) : undefined
@@ -482,12 +483,12 @@ export const Tags = () => {
       <SpinOver loading={loading}>
         <div className={`tj-ant-tags is-${overflow}`}>
           {list.map((t) => {
-            let color = t.color || colorFor(t.label, tagColors) || TONE_TAG[chipTone(t.label)];
-            if (variant === 'solid' && color && !/^(#|rgb|hsl|default)/.test(color)) color = `${color === 'processing' ? 'blue' : color === 'error' ? 'red' : color === 'success' ? 'green' : color === 'warning' ? 'orange' : color}-inverse`;
+            const color = t.color || colorFor(t.label, tagColors) || TONE_TAG[chipTone(t.label)];
             return (
-              <Tag
+              <PackTag
                 key={t.label}
-                color={color === 'default' ? undefined : color}
+                color={color}
+                solid={variant === 'solid'}
                 bordered={variant === 'outlined'}
                 style={{ marginInlineEnd: 0, cursor: 'pointer', borderRadius: round ? 999 : undefined }}
                 onClick={() => {
@@ -496,7 +497,7 @@ export const Tags = () => {
                 }}
               >
                 {t.label}
-              </Tag>
+              </PackTag>
             );
           })}
         </div>
