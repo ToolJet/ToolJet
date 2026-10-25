@@ -24,6 +24,8 @@ import type { OnAction } from '../lib/ui2/table/cells';
 import { TableCheckbox, Toolbar } from '../lib/ui2/table/Toolbar';
 import { useRowResolver } from '../lib/ui2/table/rowResolver';
 import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { useLiveState } from '../lib/useLiveState';
+import { sameValue } from '../lib/sameValue';
 import '../styles/ui2-table.css';
 
 // ToolJet UI 2.0's Table (ShadTable) in the pack: its property, style, event, action and exposed-value names and
@@ -350,8 +352,9 @@ export const DataTable = () => {
   // ---- search, sort, filters, page --------------------------------------------------------------------------------
   const [searchInput, setSearchInput] = useState('');
   const [searchText, setSearchText] = useState('');
-  const [sort, setSort] = useState<Sort | null>(null);
-  const [filters, setFilters] = useState<TableFilter[]>([]);
+  // Live: an action reads the sort and filters as the last one left them, ahead of the next render.
+  const [sort, setSort, sortRef] = useLiveState<Sort | null>(null);
+  const [filters, setFilters, filtersRef] = useLiveState<TableFilter[]>([]);
   const [page, setPage] = useState(1);
   const serverPaging = serverSidePagination === true && enablePagination !== false;
 
@@ -514,6 +517,10 @@ export const DataTable = () => {
     publishRows(rows, pageFor(rows, 1));
     if (fire) onFilterChanged();
   };
+  // From an action: the filters it already has change nothing and fire nothing (lib/sameValue).
+  const setFilterList = (list: unknown) => {
+    if (!sameValue(filtersRef.current, cleanFilters(list, columns))) applyFilterList(list);
+  };
   const applySearch = (text: string) => {
     setSearchText(text);
     setPage(1);
@@ -645,9 +652,9 @@ export const DataTable = () => {
       displayName: 'Set filters',
       params: [{ handle: 'parameters', displayName: 'Filters', defaultValue: "{{[{ column: 'status', condition: 'equals', value: 'Paid' }]}}" }],
     },
-    (list: unknown) => applyFilterList(list)
+    (list: unknown) => setFilterList(list)
   );
-  ToolJet.useAction({ name: 'clearFilters', displayName: 'Clear filters' }, () => applyFilterList([]));
+  ToolJet.useAction({ name: 'clearFilters', displayName: 'Clear filters' }, () => setFilterList([]));
   ToolJet.useAction(
     {
       name: 'setSort',
@@ -657,8 +664,11 @@ export const DataTable = () => {
         { handle: 'direction', displayName: 'Direction (asc, desc)', defaultValue: 'asc' },
       ],
     },
-    (columnKey: unknown, direction: unknown) =>
-      applySort(isSet(columnKey) && (direction === 'asc' || direction === 'desc') ? { key: String(columnKey), direction } : null)
+    (columnKey: unknown, direction: unknown) => {
+      const next: Sort | null = isSet(columnKey) && (direction === 'asc' || direction === 'desc') ? { key: String(columnKey), direction } : null;
+      // The sort it already has: nothing changes and nothing fires (lib/sameValue).
+      if (!sameValue(sortRef.current, next)) applySort(next);
+    }
   );
   ToolJet.useAction(
     { name: 'setSearchText', displayName: 'Set search text', params: [{ handle: 'text', displayName: 'Text', defaultValue: '' }] },

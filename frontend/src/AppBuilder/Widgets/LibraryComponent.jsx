@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import useStore from '@/AppBuilder/_stores/store';
 import Loader from '@/ToolJetUI/Loader/Loader';
@@ -8,12 +8,15 @@ import { useEffectiveLibraryRevision } from './hooks/useEffectiveLibraryRevision
 import { useLibraryManifest } from './hooks/useLibraryManifest';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
-import InlineLibraryComponent from './LibraryComponent/InlineLibraryComponent';
+import InlineLibraryComponent, { holdStoreWrites } from './LibraryComponent/InlineLibraryComponent';
 import { getLibraryComponentRuntime } from './LibraryComponent/inlineRuntime';
 import LibrarySlotCanvas from './LibraryComponent/LibrarySlotCanvas';
 import { usePackHost, useRowTemplates } from './LibraryComponent/usePackHost';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import useThemeAccess from '@/AppBuilder/_hooks/useThemeAccess';
+import { baseTheme } from '@/AppBuilder/_stores/utils';
+import { canUseTheme } from '@/AppBuilder/_utils/themeAccess';
 
 const DevBadge = ({ label }) => (
   <div className="tw-absolute tw-left-0 -tw-bottom-6 tw-h-5 tw-inline-flex tw-items-center tw-px-1 tw-py-0.5 tw-rounded-md tw-text-white tw-text-sm tw-font-medium tw-whitespace-nowrap tw-pointer-events-none tw-z-10 tw-bg-background-success-strong">
@@ -279,14 +282,36 @@ const LibraryComponent = ({
 
   const manifestActions = manifestComponent?.actions;
 
+  // Every widget of a page gets its manifest in the same commit: their action writes are held and go out together
+  // (holdStoreWrites), released by the effect below once the actions are written.
+  const actionsHold = useRef(null);
+  useLayoutEffect(() => {
+    if (!configured || !manifestActions?.length) return undefined;
+    const release = holdStoreWrites();
+    const fallback = setTimeout(release, 0);
+    actionsHold.current = release;
+    return () => {
+      clearTimeout(fallback);
+      release();
+    };
+  }, [configured, manifestActions]);
+
   useEffect(() => {
     if (!configured || !manifestActions?.length) return;
-    manifestActions.forEach((a) =>
-      setExposedVariable(a.name, (...args) =>
-        isInline ? invokeInline(a.name, args) : invokeInShell({ type: 'invokeAction', name: a.name, args })
+    // One store update for all of the component's actions: one per action re-ran every widget's store selectors, and
+    // the manifest arrives after the page's first commit, outside any batch (a page of 100 Ant fields made ~370).
+    setExposedVariables(
+      Object.fromEntries(
+        manifestActions.map((a) => [
+          a.name,
+          (...args) =>
+            isInline ? invokeInline(a.name, args) : invokeInShell({ type: 'invokeAction', name: a.name, args }),
+        ])
       )
     );
-  }, [configured, manifestActions, setExposedVariable]);
+    actionsHold.current?.();
+    actionsHold.current = null;
+  }, [configured, manifestActions, setExposedVariables]);
 
   useEffect(
     () => () => {
@@ -329,11 +354,16 @@ const LibraryComponent = ({
   );
   // In an Equal heights row the box is stretched to the tallest sibling; a fitted component fills it.
   const stretch = fit && !!hostProps.boxStretch;
-  // A pack in its own design system (themeMode "own": Ant, MUI) takes the app theme only once one is applied; with
-  // the basic theme it keeps its stock look. Others (shadcn) always follow the app theme.
+  // A pack in its own design system (themeMode "own": Ant, MUI) takes the app theme only once one is chosen; with no
+  // theme (the store fills in baseTheme: no id, no basic flag), the basic theme, or a theme the plan cannot use (the
+  // app then draws the basic colours), it keeps its stock look. Others (shadcn) always follow the app theme.
+  const themeAccess = useThemeAccess();
   const themeApplied = useStore((state) => {
     const theme = state.globalSettings?.theme;
-    return !!theme && !(theme.isBasic ?? theme.is_basic);
+    if (!theme || theme === baseTheme || !theme.id || theme.isBasic || theme.is_basic) return false;
+    // Until the license has loaded (access undefined) the chosen theme is trusted: a licensed app flipped from stock to
+    // themed after mount, and its charts swapped palette mid-animation.
+    return canUseTheme(theme, themeAccess === undefined ? true : themeAccess);
   });
   const themed = manifest?.themeMode !== 'own' || themeApplied;
   const fitRef = useRef(null);
@@ -418,6 +448,7 @@ const LibraryComponent = ({
           host={host}
           fit={fit}
           stretch={stretch}
+          reserveHeight={height}
           themed={themed}
           darkMode={darkMode}
           hostRef={fitRef}

@@ -8,6 +8,7 @@ import { str } from '../lib/data';
 import { buildMessage, formatTimestamp, isNearBottom, toMessageInput, toRows, withRuns, type ChatMessage } from '../lib/ui2/display/chat/chatModel';
 import { Markdown } from '../lib/ui2/display/chat/markdown';
 import { initials } from '../lib/ui2/display/chat/values';
+import { useValueSetter } from '../lib/sameValue';
 import {
   answersOf,
   firstProblem,
@@ -282,9 +283,12 @@ export const Questionnaire = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item]);
 
-  const go = (to: number) => {
+  // goTo and reset to the question already shown change nothing and fire nothing (lib/sameValue); a step from the
+  // buttons fires as before.
+  const indexSetter = useValueSetter<number>(index, (i) => setCurrentIndex(i));
+  const go = (to: number, fromAction = false) => {
     setError('');
-    setCurrentIndex(Math.max(0, Math.min(questions.length - 1, to)));
+    if (!indexSetter.set(Math.max(0, Math.min(questions.length - 1, to))) && fromAction) return;
     onStepChanged();
   };
   // A step taken from the buttons puts focus in the new question once it is drawn, as shadcn's does; goTo and reset,
@@ -324,11 +328,11 @@ export const Questionnaire = () => {
   ToolJet.useAction({ name: 'reset', displayName: 'Reset' }, () => {
     setAnswers(initialAnswers(questions, defaultAnswers));
     setIsComplete(false);
-    go(0);
+    go(0, true);
   });
   ToolJet.useAction({ name: 'goTo', displayName: 'Go to', params: [{ handle: 'item', displayName: 'Position or name' }] }, (arg) => {
     const i = resolveIndex(arg, questions);
-    if (i !== null) go(i);
+    if (i !== null) go(i, true);
   });
 
   const answer = item ? answers[item.name] : undefined;

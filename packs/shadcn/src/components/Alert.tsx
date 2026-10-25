@@ -7,6 +7,7 @@ import { cn } from '../lib/cn';
 import { px, styleVars } from '../lib/ui2/display/lists/model';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/ui2-display.css';
 
 // UI 2.0's status looks: Info, Success, Warning and Destructive each from a theme colour, Custom from the Custom
@@ -64,9 +65,10 @@ export const Alert = () => {
   // UI 2.0's name only: the pack's earlier onDismiss fired alongside it.
   const onClose = ToolJet.useEventCallback({ name: 'onClose' });
 
+  // Dismissing an alert already dismissed fires nothing (lib/sameValue).
+  const shown = useValueSetter(dismissed === true, setDismissed);
   const close = () => {
-    setDismissed(true);
-    onClose();
+    if (shown.set(true)) onClose();
   };
   // UI 2.0's Alert actions, plus the pack's show and dismiss.
   ToolJet.useAction(
@@ -81,7 +83,9 @@ export const Alert = () => {
     { name: 'setVariant', displayName: 'Set variant', params: [{ handle: 'variant', displayName: 'Variant', defaultValue: 'info' }] },
     (next) => setVariant(alertVariant(next) as typeof variant)
   );
-  ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setDismissed(false));
+  ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => {
+    shown.set(false);
+  });
   ToolJet.useAction({ name: 'dismiss', displayName: 'Dismiss' }, close);
   const background = useThemeColor('backgroundColor', 'Alert background', TOKEN.surface);
   const borderColor = useThemeColor('borderColor', 'Alert border color', TOKEN.border);

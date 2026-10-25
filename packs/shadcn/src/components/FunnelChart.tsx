@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { LOCALE_HINT } from '../lib/locale';
 import { ChartBoundary, ChartNotes, EmptyChart, lookVars, seriesColor, useChartClick } from '../lib/ui2/charts/chartParts';
 import { animated, axisLabel, emphasis, fieldList, fieldNote, formatter, hiddenNote, isRecord, isSet, list, num, resolveChartFields, type Row } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
@@ -71,6 +72,7 @@ export const FunnelChart = () => {
   const [colorByStage] = ToolJet.useStateBoolean({ name: 'colorByStage', label: 'Colour per stage', initialValue: false });
   const [yAxisFormat] = ToolJet.useStateEnumeration({ name: 'yAxisFormat', label: 'Value format', enumDefinition: FORMAT_ENUM, initialValue: 'number', inspector: 'switch' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency code', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
@@ -86,8 +88,8 @@ export const FunnelChart = () => {
   const drawn = useMemo(() => funnel(data, stageField, valueField), [data, stageField, valueField]);
   const { stages } = drawn;
   const format = useMemo(
-    () => formatter({ format: yAxisFormat, currency, prefix: valuePrefix, suffix: valueSuffix }, yAxisFormat === 'compact'),
-    [yAxisFormat, currency, valuePrefix, valueSuffix]
+    () => formatter({ format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix }, yAxisFormat === 'compact'),
+    [yAxisFormat, currency, locale, valuePrefix, valueSuffix]
   );
   const conversion = showConversion !== false;
   const labelWidth = Math.min(180, Math.max(56, Math.max(0, ...stages.map((s) => String(s.label).length)) * 7 + 12));

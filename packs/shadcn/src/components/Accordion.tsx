@@ -101,7 +101,8 @@ export const Accordion = () => {
     openRef.current = next;
     setStored(next);
     publish(next);
-    if (!fire) return;
+    // The sections already open: nothing changes and nothing fires.
+    if (!fire || same(next, prev)) return;
     if (next.some((k) => !prev.includes(k))) onExpand();
     if (prev.some((k) => !next.includes(k))) onCollapse();
     onChange();
@@ -109,20 +110,23 @@ export const Accordion = () => {
   const change = (v: string | string[]) => apply((Array.isArray(v) ? v : v ? [v] : []).map(String));
   const noIndex = (i: unknown) => i === undefined || i === null || i === '';
   // expand(index) / collapse(index) open or close one section (all of them without an index) and fire onExpand or
-  // onCollapse every time, as the native Accordion's do; a single-open accordion keeps one section open.
+  // onCollapse when that changes what is open (a section already open or closed fires nothing); a single-open accordion
+  // keeps one section open.
   ToolJet.useAction({ name: 'expand', displayName: 'Expand', params: [{ handle: 'index', displayName: 'Index (empty: all)' }] }, (index) => {
     const one = sectionKey(index, live.current.count);
     if (!noIndex(index) && one === null) return;
     const every = Array.from({ length: live.current.count }, (_, k) => String(k));
     const next = live.current.multiple ? (one === null ? every : [...new Set([...openRef.current, one])]) : [one ?? every[0]].filter(Boolean);
-    if (!same(next, openRef.current)) apply(next, false);
+    if (same(next, openRef.current)) return;
+    apply(next, false);
     onExpand();
   });
   ToolJet.useAction({ name: 'collapse', displayName: 'Collapse', params: [{ handle: 'index', displayName: 'Index (empty: all)' }] }, (index) => {
     const one = sectionKey(index, live.current.count);
     if (!noIndex(index) && one === null) return;
     const next = one === null ? [] : openRef.current.filter((k) => k !== one);
-    if (!same(next, openRef.current)) apply(next, false);
+    if (same(next, openRef.current)) return;
+    apply(next, false);
     onCollapse();
   });
   // The pack's earlier actions.

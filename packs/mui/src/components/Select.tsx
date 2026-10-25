@@ -10,6 +10,7 @@ import { str, toArray, toOptions, type Option } from '../lib/data';
 import { SAMPLE } from '../lib/samples';
 import { FieldSkeleton, Loading } from '../lib/loading';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
+import { useValueSetter } from '../lib/sameValue';
 
 /** An option given as its value, as an option object, or as a label: the matching option, else null. */
 const findOption = (options: Option[], given: unknown): Option | null => {
@@ -88,8 +89,10 @@ export const Select = () => {
     setSelectedOption(selected ?? {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedKey]);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: string) => {
-    setValue(next);
+    if (!valueSetter.set(next)) return;
     // Set with the value, so an onChange (or onClose) handler reads the new option, not the one the effect would
     // replace a render later (AM-12). The effect above still follows bindings, a Form clear and changed options.
     setSelectedOption(options.find((o) => o.value === next) ?? {});
@@ -293,8 +296,10 @@ export const Autocomplete = () => {
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: Option | null) => {
-    setValue(next as unknown as Record<string, unknown>);
+    if (!valueSetter.set(next as unknown as Record<string, unknown>)) return;
     onChange();
   };
   const popup = usePopupState(p, disabled, check.touch, onOpen, onClose);
@@ -379,8 +384,10 @@ export const AutocompleteMultiple = () => {
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 7 });
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: Option[]) => {
-    setValue(next);
+    if (!valueSetter.set(next)) return;
     onChange();
   };
   const popup = usePopupState(p, disabled, check.touch, onOpen, onClose);

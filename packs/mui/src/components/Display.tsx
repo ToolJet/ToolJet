@@ -30,6 +30,7 @@ import { str, toArray, type Row } from '../lib/data';
 import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner, TextSkeleton } from '../lib/loading';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
+import { useValueSetter } from '../lib/sameValue';
 
 const COLORS = ['default', ...PALETTE_COLORS];
 
@@ -461,9 +462,11 @@ export const Stepper = () => {
   }, [byLabel, activeStep, current, setActiveStep]);
   // index may be a step from the latest one (a number; a label or id the app gave reads as the step shown), so two
   // nexts in one batch advance twice.
+  // The step already active (a reset on the first, a next past the end) changes nothing and fires nothing.
+  const stepSetter = useValueSetter<number>(current, (i) => setActiveStep(i));
   const go = (index: number | ((latest: number) => number)) => {
-    setActiveStep((a: unknown) => Math.max(0, Math.min(steps.length, typeof index === 'function' ? index(typeof a === 'number' ? a : current) : index)));
-    onChange();
+    const at = stepSetter.latest.current;
+    if (stepSetter.set(Math.max(0, Math.min(steps.length, typeof index === 'function' ? index(at) : index)))) onChange();
   };
   ToolJet.useAction({ name: 'setActiveStep', displayName: 'Set active step', params: [{ handle: 'step', displayName: 'Step index or label' }] }, (next) => {
     const i = steps.findIndex((s) => s.id === str(next) || s.label === str(next));
@@ -527,9 +530,10 @@ export const Pagination = () => {
   useEffect(() => {
     if (page !== shown) setPage(shown);
   }, [page, shown, setPage]);
+  // The page already shown changes nothing and fires nothing (lib/sameValue).
+  const pageSetter = useValueSetter<number>(shown, (p) => setPage(p));
   const go = (p: number) => {
-    setPage(Math.max(1, Math.min(pages, p)));
-    onChange();
+    if (pageSetter.set(Math.max(1, Math.min(pages, p)))) onChange();
   };
   ToolJet.useAction({ name: 'setPage', displayName: 'Set page', params: [{ handle: 'page', displayName: 'Page' }] }, (p) => go(toNumber(p) ?? 1));
   return (

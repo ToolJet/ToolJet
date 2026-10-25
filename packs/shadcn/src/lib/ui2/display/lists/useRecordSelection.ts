@@ -51,11 +51,16 @@ export const useRecordSelection = (
     publish.setIndex(next ? next.index : -1);
   };
 
-  // Published before the event, so its handler reads the record just picked.
-  const pick = (record: SelectableRecord) => {
+  // Published before the event, so its handler reads the record just picked. An action's pick (fire false) publishes
+  // the same way without the click event.
+  const pick = (record: SelectableRecord, fire = true) => {
     setSelectedKey(record.key);
     write({ row: record.row, id: idOf(record.row) ?? null, index: record.index });
-    onPicked();
+    if (fire) onPicked();
+  };
+  const clear = () => {
+    setSelectedKey(null);
+    if (published.current) write(null);
   };
 
   useEffect(() => {
@@ -75,5 +80,5 @@ export const useRecordSelection = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [records]);
 
-  return { selectedKey, pick };
+  return { selectedKey, pick, clear };
 };

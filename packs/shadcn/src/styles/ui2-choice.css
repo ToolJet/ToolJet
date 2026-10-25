@@ -423,6 +423,20 @@
   overflow-x: auto;
   overflow-y: hidden;
 }
+/* Alignment when the group is narrower than its box (full width off). */
+.uc-toggle-scroll[data-align='center'] {
+  text-align: center;
+}
+.uc-toggle-scroll[data-align='right'] {
+  text-align: right;
+}
+/* The outline and plain looks span the box (ui.css .ui-toggle-group): their buttons move instead. */
+.uc-toggle-scroll[data-align='center'] > .ui-toggle-group {
+  justify-content: center;
+}
+.uc-toggle-scroll[data-align='right'] > .ui-toggle-group {
+  justify-content: flex-end;
+}
 .uc-segmented {
   display: inline-flex;
   width: auto;

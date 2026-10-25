@@ -13,6 +13,7 @@ import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { useBusy, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
 import { ClearX, Spinner } from '../lib/ui2/choice/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useLiveState } from '../lib/useLiveState';
 import '../styles/ui2-choice.css';
 
 // UI 2.0's Select (Ui2/Select/Select.tsx) on the pack's CSS: the same properties, styles, events and actions. Options
@@ -58,7 +59,8 @@ export const Select = () => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const options = toChoiceOptions(rawOptions);
   const byKey = new Map(options.map((o) => [choiceKey(o.value), o] as [string, ChoiceOption]));
-  const [key, setKey] = useState(() => defaultKey(defaultValue) || defaultKey(legacyValue));
+  // Live: an action reads the key as last chosen, ahead of the next render.
+  const [key, setKey, keyRef] = useLiveState(() => defaultKey(defaultValue) || defaultKey(legacyValue));
   const [open, setOpen] = useState(false);
   // A new default value starts the selection again.
   useResetOn(defaultValue, () => setKey(defaultKey(defaultValue)));
@@ -108,7 +110,8 @@ export const Select = () => {
     const wanted = wantedValue(v);
     if (wanted === undefined || wanted === null || typeof wanted === 'object') return;
     const option = byKey.get(choiceKey(wanted));
-    if (option && !isDisabledOption(option)) choose(choiceKey(wanted));
+    // The option already chosen: nothing changes and nothing fires.
+    if (option && !isDisabledOption(option) && choiceKey(wanted) !== keyRef.current) choose(choiceKey(wanted));
   };
   ToolJet.useAction({ name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] }, selectByValue);
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => choose('', false));

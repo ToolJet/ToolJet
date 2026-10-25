@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { CartesianGrid, Cell, Legend, ReferenceLine, Scatter, ScatterChart as RScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { LOCALE_HINT } from '../lib/locale';
 import { AXIS, AXIS_FILL, ChartFrame, GRID, LegendContent, REF, seriesColor, useBoxSize, useChartClick } from '../lib/ui2/charts/chartParts';
 import { MAX_SERIES, PLAIN_NUMBER, animated, axisLabel, axisWidthFor, clamp, emphasis, evenSample, formatter, hiddenNote, isCompactChart, isRecord, isSet, list, num, sampledNote, seriesLabel, type Row } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
@@ -90,6 +91,7 @@ export const ScatterChart = () => {
   const [xAxisFormat] = ToolJet.useStateEnumeration({ name: 'xAxisFormat', label: 'X format', enumDefinition: FORMAT_ENUM, initialValue: 'number', inspector: 'switch' });
   const [yAxisFormat] = ToolJet.useStateEnumeration({ name: 'yAxisFormat', label: 'Y format', enumDefinition: FORMAT_ENUM, initialValue: 'number', inspector: 'switch' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency code', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [referenceX] = ToolJet.useStateString({ name: 'referenceX', label: 'Vertical line at x', initialValue: '' });
   const [referenceY] = ToolJet.useStateString({ name: 'referenceY', label: 'Horizontal line at y', initialValue: '' });
   const [pointSize] = ToolJet.useStateNumber({ name: 'pointSize', label: 'Point size (px)', initialValue: 6 });
@@ -114,8 +116,8 @@ export const ScatterChart = () => {
 
   const m = useMemo(() => {
     const { groups, total: rowCount, sampled, hiddenGroups } = scatterGroups(data, { xField, yField, sizeField, groupField, nameField });
-    const xFormat = { format: xAxisFormat, currency };
-    const yFormat = { format: yAxisFormat, currency, prefix: valuePrefix, suffix: valueSuffix };
+    const xFormat = { format: xAxisFormat, currency, locale };
+    const yFormat = { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix };
     const yTick = formatter(yFormat, true);
     return {
       groups,
@@ -127,7 +129,7 @@ export const ScatterChart = () => {
       fy: formatter(yFormat, false),
       yWidth: axisWidthFor(groups.flatMap((g) => g.points.map((pt) => pt.y)), yTick),
     };
-  }, [data, colors, chartColor, xField, yField, sizeField, groupField, nameField, xAxisFormat, yAxisFormat, currency, valuePrefix, valueSuffix]);
+  }, [data, colors, chartColor, xField, yField, sizeField, groupField, nameField, xAxisFormat, yAxisFormat, currency, locale, valuePrefix, valueSuffix]);
   const compact = box.height > 0 && isCompactChart(box.height);
   const bubbles = isSet(sizeField);
   const size = clamp(pointSize, 2, 40, 6);

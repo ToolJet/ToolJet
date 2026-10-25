@@ -22,6 +22,8 @@ import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str, toArray, toOptions, type Row } from '../lib/data';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
 import { useFormValue } from '../lib/formValue';
+import { boundedTree } from '../lib/tree';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/controls.css';
 
 const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
@@ -51,21 +53,46 @@ const textOf = (base64: string) => {
   }
 };
 let fileSeq = 0;
-const readFile = (file: File): Promise<FileInfo & { file: File }> =>
+// Every reader in flight is kept in `track`, so a newer single-file choice, a clear or an unmount aborts it (as the
+// shadcn pack's FileUpload does). An aborted read settles as null.
+const readFile = (file: File, track: Set<FileReader>): Promise<(FileInfo & { file: File }) | null> =>
   new Promise((resolve) => {
     const reader = new FileReader();
+    let settled = false;
+    const settle = (value: (FileInfo & { file: File }) | null) => {
+      if (settled) return;
+      settled = true;
+      track.delete(reader);
+      resolve(value);
+    };
     const done = (url: string) => {
       const base64 = url.slice(url.indexOf(',') + 1);
       const content = /^text\/|json|csv|xml/.test(file.type) && file.size < 2_000_000 ? textOf(base64) : '';
       // The same file picked twice is two entries: a uid of its name, size and date alone removed both at once.
       fileSeq += 1;
-      resolve({ uid: `${file.name}-${file.size}-${file.lastModified}-${fileSeq}`, name: file.name, size: file.size, type: file.type, base64, content, file });
+      settle({ uid: `${file.name}-${file.size}-${file.lastModified}-${fileSeq}`, name: file.name, size: file.size, type: file.type, base64, content, file });
     };
     reader.onload = () => done(String(reader.result ?? ''));
     // An unreadable file still settles, empty, so the rest of its batch is not held up.
     reader.onerror = () => done('');
+    reader.onabort = () => settle(null);
+    track.add(reader);
     reader.readAsDataURL(file);
   });
+// At most this many files are read at once; the rest of an admitted batch waits its turn.
+const READ_CONCURRENCY = 4;
+const readAll = async (files: File[], track: Set<FileReader>, owned: () => boolean) => {
+  const out: ((FileInfo & { file: File }) | null)[] = new Array(files.length).fill(null);
+  let next = 0;
+  const worker = async () => {
+    while (next < files.length && owned()) {
+      const at = next++;
+      out[at] = await readFile(files[at], track);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(READ_CONCURRENCY, files.length) }, worker));
+  return out.filter((f): f is FileInfo & { file: File } => !!f);
+};
 
 // Ant's Upload (Upload.Dragger by default): the files stay in the browser (no action URL); fileList exposes each as
 // { uid, name, size, type, base64, content (text files) } for a query to send. accept, multiple, maxCount, listType,
@@ -82,7 +109,6 @@ export const Upload = () => {
   const [maxCount] = ToolJet.useStateNumber({ name: 'maxCount', label: 'Max count', description: '0 for no limit.', initialValue: 0, min: 0 });
   const [listType] = ToolJet.useStateEnumeration({ name: 'listType', label: 'List type', enumDefinition: ['text', 'picture'], initialValue: 'text' });
   const [fileList, setFileList] = ToolJet.useStateArray({ name: 'fileList', initialValue: [], inspector: 'hidden' });
-  useFormValue(fileList, 'array');
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onRemove = ToolJet.useEventCallback({ name: 'onRemove' });
   const { disabled, loading } = ToolJet.useControlState();
@@ -95,31 +121,42 @@ export const Upload = () => {
   const [rejected, setRejected] = useState('');
   // The files as of the latest change, for reads that finish later: a pick merged into the files as they were when it
   // started, so a slow read dropped the files a quicker pick had added meanwhile, and a pick that finished after a clear
-  // (a Form's clearForm, resetFields) put the cleared files back (SP-11). Each clear starts a new generation; a read only
-  // lands in its own, and never after the widget is gone.
+  // (a Form's clearForm, resetFields) put the cleared files back (SP-11). `generation` changes on a clear, a newer
+  // single-file choice and unmount, and aborts every read in flight: a read only lands in its own generation, so an
+  // older choice whose read finishes last cannot replace the newer one (Codex review CODE-03, 2026-10-25). `pending`
+  // counts the files of the live generation still being read: they hold their place under maxCount, so files past it
+  // are turned away before any is read (CODE-04).
   const latest = useRef<(FileInfo & { file?: File })[]>([]);
   const generation = useRef(0);
-  const mounted = useRef(true);
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
+  const readers = useRef(new Set<FileReader>());
+  const pending = useRef(0);
+  const stopReads = () => {
+    generation.current += 1;
+    pending.current = 0;
+    const inFlight = Array.from(readers.current);
+    readers.current.clear();
+    inFlight.forEach((r) => r.abort());
+  };
+  useEffect(() => stopReads, []);
   useEffect(() => {
     // The files as the app set them (a binding, an action): reads append to these.
     if (toArray(fileList).length !== latest.current.length) latest.current = toArray(fileList) as FileInfo[];
   }, [fileList]);
 
+  const publishValue = useFormValue(fileList, 'array');
   const set = (next: (FileInfo & { file?: File })[]) => {
+    // Clearing an empty list changes nothing and fires nothing.
+    if (!next.length && !latest.current.length) return;
     latest.current = next;
-    setFileList(next.map(({ file: _f, ...rest }) => rest));
+    const exposed = next.map(({ file: _f, ...rest }) => rest);
+    setFileList(exposed);
+    publishValue(exposed);
     setUiFiles(next.map((f) => ({ uid: f.uid, name: f.name, status: 'done', size: f.size, type: f.type, originFileObj: f.file as never, thumbUrl: f.type.startsWith('image/') ? `data:${f.type};base64,${f.base64}` : undefined })));
     check.touch();
     onChange();
   };
   const clearFiles = () => {
-    generation.current += 1;
+    stopReads();
     setRejected('');
     set([]);
   };
@@ -127,7 +164,7 @@ export const Upload = () => {
   ToolJet.useAction({ name: 'clearFiles', displayName: 'Clear files' }, clearFiles);
   // A Form's clearForm empties the files (the host clears only `value`), and drops the reads still under way.
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
-    generation.current += 1;
+    stopReads();
     latest.current = [];
     setFileList([]);
     setUiFiles([]);
@@ -146,22 +183,31 @@ export const Upload = () => {
     disabled,
     fileList: uiFiles,
     beforeUpload: async (_file: File, batch: File[]) => {
-      // Ant calls this once per file with the whole batch; read the batch once, on its first file.
+      // Ant calls this once per file with the whole batch; take the batch once, on its first file.
       if (batch[0] !== _file) return false;
-      const mine = generation.current;
-      const read = await Promise.all(batch.map(readFile));
-      if (!mounted.current || mine !== generation.current) return false;
-      // Merged into the files as they are now, under the limit as it is now (not as when the pick started).
+      // Admitted before anything is read, under the limit as it is now: a single-file field takes the last file and
+      // replaces the one still being read; otherwise the room left after the files kept and those still being read.
       const now = Number(live.current.maxCount) > 0 ? Number(live.current.maxCount) : undefined;
-      if (now === 1) {
-        setRejected('');
-        set(read.slice(-1));
-        return false;
+      const single = now === 1;
+      const room = single ? 1 : now ? Math.max(0, now - latest.current.length - pending.current) : batch.length;
+      const taking = single ? batch.slice(-1) : batch.slice(0, room);
+      setRejected(!single && taking.length < batch.length ? `You can upload up to ${now} file${now === 1 ? '' : 's'}` : '');
+      if (!taking.length) return false;
+      if (single) stopReads();
+      const mine = generation.current;
+      pending.current += taking.length;
+      const read = await readAll(taking, readers.current, () => mine === generation.current);
+      if (mine !== generation.current) return false;
+      pending.current -= taking.length;
+      if (!read.length) return false;
+      if (single) set(read.slice(-1));
+      else {
+        // Merged into the files as they are now, under the limit as it is now (it may have been lowered meanwhile).
+        const cap = Number(live.current.maxCount) > 0 ? Number(live.current.maxCount) : Infinity;
+        const merged = [...latest.current, ...read].slice(0, Math.max(latest.current.length, cap));
+        if (merged.length < latest.current.length + read.length) setRejected(`You can upload up to ${cap} file${cap === 1 ? '' : 's'}`);
+        if (merged.length > latest.current.length) set(merged);
       }
-      const room = now ? Math.max(0, now - latest.current.length) : read.length;
-      const taking = read.slice(0, room);
-      setRejected(taking.length < read.length ? `You can upload up to ${now} file${now === 1 ? '' : 's'}` : '');
-      if (taking.length) set([...latest.current, ...taking]);
       return false;
     },
     onRemove: (f: UploadFile) => {
@@ -225,8 +271,10 @@ export const TimePicker = (props: Record<string, unknown>) => {
   const fmt = str(format).trim() || (use12Hours ? 'h:mm a' : 'HH:mm');
   // The value keeps 24-hour text whatever the display, so queries read one shape.
   const valueFormat = /s/.test(fmt) ? 'HH:mm:ss' : 'HH:mm';
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (d: Dayjs | null) => {
-    setValue(d ? d.format(valueFormat) : '');
+    if (!valueSetter.set(d ? d.format(valueFormat) : '')) return;
     onChange();
   };
   useFieldActions((v) => change(parseDate(v, 'HH:mm:ss') ?? parseDate(v, 'HH:mm')), props.value);
@@ -291,10 +339,11 @@ export const RangePicker = (props: Record<string, unknown>) => {
     setEndDate(pair[1] ? pair[1].format('YYYY-MM-DD') : '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(value)]);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: unknown) => {
     const arr = toArray(next).map((v) => (dayjs.isDayjs(v) ? v : parseDate(v)));
-    setValue(arr.length === 2 && arr[0] && arr[1] ? arr.map((d) => (d as Dayjs).format('YYYY-MM-DD')) : []);
-    onChange();
+    if (valueSetter.set(arr.length === 2 && arr[0] && arr[1] ? arr.map((d) => (d as Dayjs).format('YYYY-MM-DD')) : [])) onChange();
   };
   useFieldActions(change, props.value);
   const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
@@ -355,8 +404,10 @@ export const AutoComplete = (props: Record<string, unknown>) => {
   const check = ToolJet.useValidation({ section: 'text', value });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
-    setValue(str(v));
+    if (!valueSetter.set(str(v))) return;
     onChange();
   };
   useFieldActions(change, props.value);
@@ -399,17 +450,17 @@ export const AutoComplete = (props: Record<string, unknown>) => {
 
 type TreeNode = { title: string; value: string; key: string; children?: TreeNode[] };
 // Ant's treeData: [{ title, value, children }]; also { label } for title and { key } for value.
+// Bounded by lib/tree (depth, size, cycles), as everything built from it is: TreeSelect, Cascader, Navigation's Tree.
 export const toTree = (raw: unknown): TreeNode[] =>
-  toArray(raw)
-    .map((o): TreeNode | null => {
-      if (typeof o === 'string') return { title: o, value: o, key: o };
-      if (!o || typeof o !== 'object') return null;
-      const r = o as Row;
-      const value = str(r.value ?? r.key ?? r.title ?? r.label);
-      const children = toTree(r.children);
-      return { title: str(r.title ?? r.label ?? value), value, key: value, ...(children.length ? { children } : {}) };
-    })
-    .filter((n): n is TreeNode => !!n && n.value !== '');
+  boundedTree<TreeNode>(raw, (o, _i, kids) => {
+    if (typeof o === 'string') return o ? { title: o, value: o, key: o } : null;
+    if (!o || typeof o !== 'object') return null;
+    const r = o as Row;
+    const value = str(r.value ?? r.key ?? r.title ?? r.label);
+    if (value === '') return null;
+    const children = kids();
+    return { title: str(r.title ?? r.label ?? value), value, key: value, ...(children.length ? { children } : {}) };
+  });
 
 // Ant's TreeSelect: treeData, value (an array when multiple or treeCheckable), placeholder, showSearch,
 // treeDefaultExpandAll, allowClear; event onChange.
@@ -444,10 +495,11 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   const check = ToolJet.useValidation({ section: 'choice', value: values.join(','), present: values.length > 0 });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
     const arr = Array.isArray(v) ? v.map(str) : v === undefined || v === null || v === '' ? [] : [str(v)];
-    setValue((many ? arr : arr[0] ?? '') as string);
-    onChange();
+    if (valueSetter.set(many ? arr : arr[0] ?? '')) onChange();
   };
   // A cleared Form empties a multiple TreeSelect to no values ([]), not to the '' the host clears text values to.
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => many && setValue([] as unknown as string));
@@ -528,8 +580,10 @@ export const Cascader = (props: Record<string, unknown>) => {
     toTree(raw).map(function map(n): { label: string; value: string; children?: unknown[] } {
       return { label: n.title, value: n.value, ...(n.children ? { children: n.children.map(map) } : {}) };
     });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
-    setValue(toArray(v).map(str));
+    if (!valueSetter.set(toArray(v).map(str))) return;
     onChange();
   };
   useFieldActions(change, props.value);
@@ -584,9 +638,10 @@ export const ColorPicker = (props: Record<string, unknown>) => {
   const check = ToolJet.useValidation({ section: 'text', value });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   useFieldActions((v) => {
-    setValue(str(v));
-    onChange();
+    if (valueSetter.set(str(v))) onChange();
   }, props.value);
   const presetList = toArray(presets)
     .map((p) => (p && typeof p === 'object' ? { label: str((p as Row).label), colors: toArray((p as Row).colors).map(str) } : null))
@@ -645,7 +700,7 @@ export const Transfer = (props: Record<string, unknown>) => {
     { key: 'returns', title: 'Returns' },
   ] });
   const [targetKeys, setTargetKeys] = ToolJet.useStateArray({ name: 'targetKeys', label: 'Target keys', initialValue: [] });
-  useFormValue(targetKeys, 'array');
+  const publishValue = useFormValue(targetKeys, 'array');
   const [titles] = ToolJet.useStateArray({ name: 'titles', label: 'Titles', initialValue: ['Available', 'Selected'] });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
   const [oneWay] = ToolJet.useStateBoolean({ name: 'oneWay', label: 'One way', initialValue: false });
@@ -663,8 +718,13 @@ export const Transfer = (props: Record<string, unknown>) => {
       return key ? { key, title: str(r.title ?? r.label ?? key), description: str(r.description) || undefined } : null;
     })
     .filter((x): x is { key: string; title: string; description?: string } => !!x);
-  const change = (keys: unknown) => {
-    setTargetKeys(toArray(keys).map(str));
+  // targetKeys and the Form's value published together before onChange; the keys it already has fire nothing.
+  const keysSetter = useValueSetter(keys, (next) => {
+    setTargetKeys(next);
+    publishValue(next);
+  });
+  const change = (next: unknown) => {
+    if (!keysSetter.set(toArray(next).map(str))) return;
     check.touch();
     onChange();
   };
@@ -673,7 +733,7 @@ export const Transfer = (props: Record<string, unknown>) => {
   // own state, and the ticks stayed on the items that moved back.
   const [epoch, setEpoch] = useState(0);
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
-    setTargetKeys([]);
+    keysSetter.set([]);
     setEpoch((n) => n + 1);
   });
   return (

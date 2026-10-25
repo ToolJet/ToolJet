@@ -4,6 +4,7 @@ import { TJ } from '../lib/ui2/inputs/sdk';
 import { FIELD, useLooks } from '../lib/ui2/inputs/looks';
 import { isEnter, useReseed } from '../lib/ui2/inputs/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/ui2-inputs.css';
 
 export const Textarea = () => {
@@ -20,14 +21,16 @@ export const Textarea = () => {
   const onEnterPressed = TJ.useEventCallback({ name: 'onEnterPressed' });
   const areaRef = useRef<HTMLTextAreaElement>(null);
   const value = rawValue === null || rawValue === undefined ? '' : String(rawValue);
-  const change = (next: string) => {
-    setValue(next);
+  // A setText or clear that leaves the value as it is fires nothing (lib/sameValue); typing always fires.
+  const valueSetter = useValueSetter<unknown>(rawValue, (v) => setValue(v as string));
+  const change = (next: string, fromAction = false) => {
+    if (!valueSetter.set(next) && fromAction) return;
     onChange();
   };
   useReseed(defaultValue, () => setValue(String(defaultValue ?? '')));
 
   const setText = (next: unknown) => {
-    change(next === null || next === undefined ? '' : String(next));
+    change(next === null || next === undefined ? '' : String(next), true);
     check.touch();
   };
   TJ.useAction({ name: 'setText', displayName: 'Set text', params: [{ handle: 'text', displayName: 'Text' }] }, setText);

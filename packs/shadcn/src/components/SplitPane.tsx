@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { ToolJet } from "@tooljet/custom-component-sdk";
 import { useThemeRadius } from "../lib/styleDefaults";
+import { usePointerDrag } from "../lib/pointerDrag";
 
 // Container with two drop areas and a draggable divider. The divider position is exposed as `split`
 // (percent of the first pane), so the layout can be read or set from the app.
@@ -104,26 +105,34 @@ export const SplitPane = () => {
     onResize();
   };
 
+  // One drag at a time with one teardown (lib/pointerDrag): pointerup fires onResize once if the split moved; a
+  // cancelled drag (pointercancel, lost capture, a disable mid-drag) puts the split back and fires nothing.
+  const drag = usePointerDrag();
+  useEffect(() => {
+    if (busy) drag.cancel();
+  }, [busy]); // eslint-disable-line react-hooks/exhaustive-deps
   const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     const root = rootRef.current;
     if (!root || busy) return;
     e.preventDefault();
-    const handle = e.currentTarget;
-    handle.setPointerCapture(e.pointerId);
-    const move = (ev: PointerEvent) => {
-      const rect = root.getBoundingClientRect();
-      const ratio = horizontal
-        ? (ev.clientX - rect.left) / rect.width
-        : (ev.clientY - rect.top) / rect.height;
-      setSplit(clamp(ratio * 100));
-    };
-    const end = () => {
-      handle.removeEventListener("pointermove", move);
-      handle.removeEventListener("pointerup", end);
-      onResize();
-    };
-    handle.addEventListener("pointermove", move);
-    handle.addEventListener("pointerup", end);
+    const from = percent;
+    let to = from;
+    drag.begin(e.currentTarget, e.pointerId, {
+      move: (ev) => {
+        const rect = root.getBoundingClientRect();
+        const ratio = horizontal ? (ev.clientX - rect.left) / rect.width : (ev.clientY - rect.top) / rect.height;
+        const next = clamp(ratio * 100);
+        if (!Number.isFinite(next) || next === to) return;
+        to = next;
+        setSplit(next);
+      },
+      commit: () => {
+        if (to !== from) onResize();
+      },
+      cancel: () => {
+        if (to !== from) setSplit(from);
+      },
+    });
   };
 
   return (

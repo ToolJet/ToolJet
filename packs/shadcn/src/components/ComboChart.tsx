@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, ReferenceDot, Tooltip, XAxis, YAxis } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { LOCALE_HINT } from '../lib/locale';
 import { AXIS, ChartFrame, ChartTooltip, GRID, LegendContent, seriesColor, useBoxSize, useChartClick } from '../lib/ui2/charts/chartParts';
 import {
   MAX_BARS,
@@ -75,6 +76,7 @@ export const ComboChart = () => {
   const [yAxisFormat] = ToolJet.useStateEnumeration({ name: 'yAxisFormat', label: 'Value format', enumDefinition: FORMAT_ENUM, initialValue: 'number', inspector: 'switch' });
   const [rightAxisFormat] = ToolJet.useStateEnumeration({ name: 'rightAxisFormat', label: 'Right axis format', enumDefinition: FORMAT_ENUM, initialValue: 'percent', inspector: 'switch' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency code', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
@@ -108,8 +110,8 @@ export const ComboChart = () => {
     // A rate sent as a fraction (0.39 for 39%) reads as a percent.
     const leftScale = percentScale(yAxisFormat, valuesOn('left'));
     const rightScale = percentScale(rightAxisFormat, valuesOn('right'));
-    const leftFormat = { format: yAxisFormat, currency, prefix: valuePrefix, suffix: valueSuffix };
-    const rightFormat = { format: rightAxisFormat, currency };
+    const leftFormat = { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix };
+    const rightFormat = { format: rightAxisFormat, currency, locale };
     const left = scaled(formatter(leftFormat, true), leftScale);
     const right = scaled(formatter(rightFormat, true), rightScale);
     const leftFull = scaled(formatter(leftFormat, false), leftScale);
@@ -137,7 +139,7 @@ export const ComboChart = () => {
       xTicks: dateTicks(rows, x),
       tipFormat: (v: unknown, key: unknown) => (typeof key === 'string' && rightKeys.has(key) ? rightFull(v) : leftFull(v)),
     };
-  }, [data, xField, barFields, lineFields, rightAxisFields, seriesLabels, colors, chartColor, yAxisFormat, rightAxisFormat, currency, valuePrefix, valueSuffix, stacked]);
+  }, [data, xField, barFields, lineFields, rightAxisFields, seriesLabels, colors, chartColor, yAxisFormat, rightAxisFormat, currency, locale, valuePrefix, valueSuffix, stacked]);
   const compact = box.height > 0 && isCompactChart(box.height);
   const highlighted = click.highlighted as Row | null;
   const width = clamp(strokeWidth, 0.5, 12, 2);

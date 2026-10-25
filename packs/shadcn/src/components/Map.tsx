@@ -46,6 +46,7 @@ import {
 } from '../lib/ui2/charts/mapLayers';
 import { Spinner, inert, useLoading } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { LOCALE_HINT } from '../lib/locale';
 import '../styles/ui2-charts-map.css';
 
 // Markers from rows on open raster tiles (no API key), toned by status, grouped into counts when they crowd, with route
@@ -99,6 +100,8 @@ export const Map = () => {
   const [imageField] = ToolJet.useStateString({ name: 'imageField', label: 'Marker image field (an image URL in place of the pin)', initialValue: '' });
   const [markerSizeValue] = ToolJet.useStateEnumeration({ name: 'markerSize', label: 'Marker size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium', inspector: 'switch' });
   const [popupFields] = ToolJet.useStateString({ name: 'popupFields', label: "Popup fields (comma list; 'eta:ETA {}', 'total|currency')", initialValue: 'eta:ETA {}, driver' });
+  const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (ISO code, e.g. USD)', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [showPopup] = ToolJet.useStateBoolean({ name: 'showPopup', label: 'Show a popup on marker click', initialValue: true });
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Show a legend of the colours', initialValue: true });
   const [clusterMarkers] = ToolJet.useStateBoolean({ name: 'clusterMarkers', label: 'Group nearby markers', initialValue: true });
@@ -224,7 +227,7 @@ export const Map = () => {
   const source = tileSource({ tileUrl, tileAttribution, darkMode: dark, mapStyle });
 
   // Everything Leaflet's handlers read, always current.
-  const now = { points, lines, zones, extent, selected, shape, picked, pickLocation, showPopup, showMarkers, clusterMarkers, popupFields, markerSize, scrollWheelZoom, fitToMarkers, defaultCenter, defaultZoom, connectMarkers, routeStart, geocoder, colorOfPoint };
+  const now = { points, lines, zones, extent, selected, shape, picked, pickLocation, showPopup, showMarkers, clusterMarkers, popupFields, currency, locale, markerSize, scrollWheelZoom, fitToMarkers, defaultCenter, defaultZoom, connectMarkers, routeStart, geocoder, colorOfPoint };
   const live = useRef(now);
   live.current = now;
   const handlers = { onMarkerClick, onMapClicked, onShapeClicked, onLocationPicked, onBoundsChange, setSelectedMarker, setSelectedMarkerId, setSelectedShape, setSelectedShapeType, setClickedLocation, setPickedLocation, setCenter, setZoom, setBounds };
@@ -289,7 +292,7 @@ export const Map = () => {
     if (!popup.current) popup.current = L.popup({ className: 'ui-map-pop', minWidth: 180, maxWidth: 280, closeButton: true, autoPanPadding: [24, 24] });
     const p = popup.current;
     p.options.offset = markerPopupOffset(point, live.current.markerSize);
-    p.setLatLng([point.lat, point.lng]).setContent(popupNode(point, popupLines(point.row, live.current.popupFields), live.current.colorOfPoint(point)));
+    p.setLatLng([point.lat, point.lng]).setContent(popupNode(point, popupLines(point.row, live.current.popupFields, { currency: live.current.currency, locale: live.current.locale }), live.current.colorOfPoint(point)));
     if (!m.hasLayer(p)) p.openOn(m);
   };
   const drawMarkers = () => {
@@ -567,7 +570,7 @@ export const Map = () => {
     const cur = live.current.selected;
     if (!showPopup) fns.current.closePopup();
     else if (cur && popup.current && map.current?.hasLayer(popup.current)) fns.current.openPopup(cur);
-  }, [showPopup, popupFields]);
+  }, [showPopup, popupFields, currency, locale]);
 
   // ---- Heat ----
   useEffect(() => {

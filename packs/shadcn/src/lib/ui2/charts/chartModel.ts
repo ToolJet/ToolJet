@@ -2,6 +2,7 @@
 // _shared/format.ts in the UI 2.0 checkout). Every function takes whatever the author bound and never throws.
 import { chipTone } from './progressModel';
 import { withAffixes } from '../../format';
+import { localeFor, moneyDigits, numberFormat } from '../../locale';
 
 export type Row = Record<string, unknown>;
 
@@ -58,46 +59,33 @@ export interface FormatOptions {
   currency?: unknown;
   prefix?: unknown;
   suffix?: unknown;
+  /** The author's locale; blank follows the currency (BRL writes pt-BR), else en-US. */
+  locale?: unknown;
 }
-
-const FORMATTERS = new Map<string, Intl.NumberFormat>();
-const intl = (options: Intl.NumberFormatOptions): Intl.NumberFormat => {
-  const key = JSON.stringify(options);
-  let cached = FORMATTERS.get(key);
-  if (!cached) {
-    if (FORMATTERS.size > 200) FORMATTERS.clear();
-    try {
-      cached = new Intl.NumberFormat(undefined, options);
-    } catch {
-      cached = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
-    }
-    FORMATTERS.set(key, cached);
-  }
-  return cached;
-};
 
 /** A formatter for the format ('number' | 'currency' | 'percent' | 'compact') with the value prefix and suffix. Short
  *  (axis ticks) abbreviates large numbers. Percent takes values already in percent (42 shows 42%). */
-export const formatter = ({ format, currency, prefix, suffix }: FormatOptions = {}, short = false): ((v: unknown) => string) => {
+export const formatter = ({ format, currency, prefix, suffix, locale }: FormatOptions = {}, short = false): ((v: unknown) => string) => {
   const kind = isFormat(format) ? format : 'number';
   const code = typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
+  const where = localeFor(currency, locale);
   const compact = short || kind === 'compact';
   let f: Intl.NumberFormat;
   if (kind === 'currency') {
-    f = intl({
+    f = numberFormat(where, {
       style: 'currency',
       currency: code,
-      ...(compact ? { notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 1 } : { minimumFractionDigits: 0, maximumFractionDigits: 2 }),
+      ...(compact ? { notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 1 } : moneyDigits(1, where)),
     });
   } else if (compact && kind !== 'percent') {
-    f = intl({ notation: 'compact', maximumFractionDigits: 1 });
+    f = numberFormat(where, { notation: 'compact', maximumFractionDigits: 1 });
   } else {
-    f = intl({ maximumFractionDigits: kind === 'percent' ? 1 : 2 });
+    f = numberFormat(where, { maximumFractionDigits: kind === 'percent' ? 1 : 2 });
   }
   const before = isScalar(prefix) ? String(prefix) : '';
   const after = isScalar(suffix) ? String(suffix) : '';
   // Money with cents shows both digits ("$3,043.50").
-  const cents = kind === 'currency' && !compact ? intl({ style: 'currency', currency: code, minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
+  const cents = kind === 'currency' && !compact ? numberFormat(where, { style: 'currency', currency: code, ...moneyDigits(0.5, where) }) : null;
   return (v) => {
     const n = num(v);
     if (n === null) return v === null || v === undefined ? '' : String(axisLabel(v));
@@ -105,8 +93,8 @@ export const formatter = ({ format, currency, prefix, suffix }: FormatOptions = 
   };
 };
 
-const COMPACT = intl({ notation: 'compact', maximumFractionDigits: 1 });
-export const PLAIN_NUMBER = intl({ maximumFractionDigits: 2 });
+const COMPACT = numberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+export const PLAIN_NUMBER = numberFormat('en-US', { maximumFractionDigits: 2 });
 /** The Area, Bar and Pie charts' values: compact when short, with the value prefix and suffix. */
 export const affixFormatter =
   (p: { valuePrefix?: unknown; valueSuffix?: unknown }, short: boolean) =>

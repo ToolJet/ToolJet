@@ -30,6 +30,7 @@ import { formatCell } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
 import { ownerAvailable } from '../lib/useOwnerGuard';
+import { useValueSetter } from '../lib/sameValue';
 
 // MUI's Tabs: tabs [{ value, label, disabled }], value (the open tab; empty opens the first), variant (standard,
 // scrollable, fullWidth), textColor / indicatorColor, centered, orientation; each tab panel is a canvas of ToolJet
@@ -64,8 +65,12 @@ export const Tabs = () => {
   }, [current, value, setValue]);
   // Every tab's canvas, kept apart even when two values fold to the same slot characters ('a-b' and 'a_b').
   const slots = useMemo(() => slotNames('tab', tabs.map((t) => t.key)), [tabs.map((t) => t.key).join('\u0000')]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The tab a value opens (one that names no tab opens the first, as above); the tab already open changes nothing and
+  // fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(current, (v) => setValue(v as never));
   const change = (next: string) => {
-    setValue(next);
+    const opens = tabs.some((t) => t.key === next) ? next : (tabs[0]?.key ?? next);
+    if (!valueSetter.set(opens)) return;
     onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Tab value' }] }, (v) => change(str(v)));

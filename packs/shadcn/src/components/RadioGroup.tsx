@@ -74,18 +74,21 @@ export const RadioGroup = () => {
   const keyRef = useRef(key);
   keyRef.current = key;
   // As the native Radio button's: both fire onSelectionChange.
-  const change = (next: string) => {
+  // An action that leaves the same option chosen (or none, as none was) fires nothing.
+  const change = (next: string, fromAction = false) => {
+    const before = byKey.get(keyRef.current);
     keyRef.current = next;
     setKey(next);
     const option = byKey.get(next);
     setValue((option?.value ?? '') as string);
     setSelectedOption(option ?? {});
+    if (fromAction && before === option) return;
     onSelectionChange();
   };
   ToolJet.useAction({ name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
-    change(v === undefined || v === null || typeof v === 'object' ? '' : choiceKey(v))
+    change(v === undefined || v === null || typeof v === 'object' ? '' : choiceKey(v), true)
   );
-  ToolJet.useAction({ name: 'deselectOption', displayName: 'Deselect option' }, () => change(''));
+  ToolJet.useAction({ name: 'deselectOption', displayName: 'Deselect option' }, () => change('', true));
 
   // Allow deselect (off by default, and never while mandatory): a click on the chosen option clears the choice.
   const deselectable = allowDeselect === true && !check.required && !disabled;

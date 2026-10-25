@@ -14,6 +14,7 @@ import { useBusy, useColorStyle, useFieldStyles } from '../lib/ui2/choice/fieldS
 import { TOKEN } from '../lib/styleDefaults';
 import { ClearX, OptionIcon, OptionsMenu, Spinner } from '../lib/ui2/choice/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useLiveState } from '../lib/useLiveState';
 import '../styles/ui2-choice.css';
 
 // UI 2.0's Combobox (Ui2/Combobox/Combobox.tsx) on the pack's CSS: a searchable single select whose options can carry a
@@ -69,7 +70,8 @@ export const Combobox = () => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const options = toChoiceOptions(rawOptions);
   const serverSide = serverSideSearch === true;
-  const [key, setKey] = useState<string | null>(() => initialKey(defaultValue) ?? initialKey(legacyValue));
+  // Live: an action reads the key as last chosen, ahead of the next render.
+  const [key, setKey, keyRef] = useLiveState<string | null>(() => initialKey(defaultValue) ?? initialKey(legacyValue));
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   useResetOn(defaultValue, () => setKey(initialKey(defaultValue)));
@@ -134,7 +136,8 @@ export const Combobox = () => {
     const wanted = wantedValue(v);
     if (wanted === undefined || wanted === null || typeof wanted === 'object') return;
     const option = options.find((o) => keyOf(o.value) === keyOf(wanted));
-    if (!option || isDisabledOption(option)) return;
+    // The option already chosen: nothing changes and nothing fires.
+    if (!option || isDisabledOption(option) || keyOf(wanted) === keyRef.current) return;
     setKey(keyOf(wanted));
     expose(option);
     onSelect();

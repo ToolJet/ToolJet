@@ -25,6 +25,7 @@ import { str, toArray, type Row } from '../lib/data';
 import { formatCell, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
+import { useValueSetter } from '../lib/sameValue';
 
 const TONE_TAG_STATUS: Record<string, string | undefined> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: undefined };
 
@@ -118,11 +119,14 @@ export const Alert = () => {
   const customBorder = useThemeColor('customBorderColor', 'Border color', THEME_COLOR.border, customWhen);
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 5 });
   // dismissed changes before onClose fires, so its handler reads the alert as gone.
+  // Dismissing an alert already dismissed fires nothing (lib/sameValue).
+  const shown = useValueSetter(dismissed === true, setDismissed);
   const close = () => {
-    setDismissed(true);
-    onClose();
+    if (shown.set(true)) onClose();
   };
-  ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setDismissed(false));
+  ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => {
+    shown.set(false);
+  });
   ToolJet.useAction({ name: 'dismiss', displayName: 'Dismiss' }, close);
   if (dismissed || (!message && !description)) return <AntProvider tokens={tokens}>{null}</AntProvider>;
   // Fills its box (no band under a short message) and scrolls a long one inside it: it was drawn at its natural height
@@ -537,9 +541,12 @@ export const Steps = () => {
       : { title: str((o as Row)?.title ?? (o as Row)?.label), description: str((o as Row)?.description) || undefined, subTitle: str((o as Row)?.subTitle) || undefined, status: ((o as Row)?.status as 'wait') || undefined }
   );
   // n may be a step from the latest one, so two nexts in one batch advance twice.
+  // From the latest step; the step already current (a next on the last, a prev on the first) fires nothing.
+  const stepSetter = useValueSetter<number>(Number(current) || 0, (c) => setCurrent(c));
   const go = (n: number | ((latest: number) => number)) => {
-    setCurrent((c: unknown) => Math.max(0, Math.min(Math.max(0, items.length - 1), typeof n === 'function' ? n(Number(c) || 0) : n)));
-    onChange();
+    const at = Number(stepSetter.latest.current) || 0;
+    // Whole steps, as the step drawn is (1.5 drew step 1).
+    if (stepSetter.set(Math.trunc(Math.max(0, Math.min(Math.max(0, items.length - 1), typeof n === 'function' ? n(at) : n))))) onChange();
   };
   // current exposes the step drawn: past the steps (a literal 9 of 4, or steps removed) Ant draws every step done,
   // which is current = the number of steps; below 0, the first. An empty list is data still loading.

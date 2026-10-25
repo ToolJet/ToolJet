@@ -11,6 +11,7 @@ import { TOKEN } from '../lib/styleDefaults';
 import { ClearX, boundsRule, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
@@ -82,17 +83,25 @@ export const CurrencyInput = () => {
     setValue(n as number);
     setFormattedValue(formatted(n, code));
   };
+  // From the latest amount, so a second call in one batch compares with the first's (lib/sameValue).
+  const amount = useValueSetter<number | null>(value, (n) => setValue(n as number));
   const commit = (n: number | null) => {
-    if (n === value) return;
-    publish(n);
+    if (!amount.set(n)) return;
+    setFormattedValue(formatted(n));
     onChange();
   };
-  /** Sets the amount from an action, as UI 2.0's setValue and clear do: onChange every time. */
-  const set = (n: number | null, code = currency) => {
+  /** Sets the amount from an action (setValue, clear): onChange only when the amount or the currency changes. */
+  // The currency as last set, ahead of the next render, for the same reason.
+  const currencySetter = useValueSetter<string>(currency, (c) => setCurrencyState(c));
+  const set = (n: number | null, code = currencySetter.latest.current) => {
     setDraft(null);
-    publish(M.roundTo(n, M.currencyDecimals(code, decimalPlaces)), code);
-    onChange();
     rule.touch();
+    const next = M.roundTo(n, M.currencyDecimals(code, decimalPlaces));
+    const moved = amount.set(next);
+    const recoded = currencySetter.set(code);
+    if (!moved && !recoded) return;
+    setFormattedValue(formatted(next, code));
+    onChange();
   };
   useReseed(defaultValue, () => {
     setDraft(null);
@@ -118,15 +127,15 @@ export const CurrencyInput = () => {
       ],
     },
     (v, code) => {
-      const next = code !== undefined && code !== null && code !== '' ? M.toCurrency(code, currency) : currency;
-      if (next !== currency) setCurrencyState(next);
+      const now = currencySetter.latest.current;
+      const next = code !== undefined && code !== null && code !== '' ? M.toCurrency(code, now) : now;
       set(M.parseNumber(v, locale), next);
     }
   );
   TJ.useAction({ name: 'setCurrency', displayName: 'Set currency', params: [{ handle: 'currency', displayName: 'Currency' }] }, (code) => {
-    const next = M.toCurrency(code, currency);
-    setCurrencyState(next);
-    setFormattedValue(formatted(value, next));
+    const next = M.toCurrency(code, currencySetter.latest.current);
+    currencySetter.set(next);
+    setFormattedValue(formatted(amount.latest.current, next));
   });
   TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => set(null));
   TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());

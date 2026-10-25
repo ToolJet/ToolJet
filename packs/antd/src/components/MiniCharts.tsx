@@ -59,7 +59,7 @@ export const Sparkline = () => {
     <AntProvider tokens={tokens} fill className="tj-ant-spark">
       <ChartVeil loading={loading}>
         <div ref={ref} className="tj-ant-spark-body" onClick={() => onClick()} onDoubleClick={() => onDoubleClick()}>
-          {values.length ? (
+          {!theme.ready ? null : values.length ? (
             <Chart
               autoFit
               data={values.map((value, i) => ({ i, value }))}

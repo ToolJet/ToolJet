@@ -8,6 +8,7 @@ import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
 import { typeRule, useRuleCheck } from '../lib/typeRule';
+import { useValueSetter } from '../lib/sameValue';
 
 // Ant's Input: value, placeholder, allowClear, maxLength/showCount, prefix/suffix, addonBefore/addonAfter, variant,
 // size; events onChange, onPressEnter, onFocus, onBlur, onClear; Form-style actions setFieldValue and resetFields.
@@ -42,8 +43,10 @@ export const Input = (props: Record<string, unknown>) => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: string) => {
-    setValue(next);
+    if (!valueSetter.set(next)) return;
     onChange();
   };
   ToolJet.useAction(

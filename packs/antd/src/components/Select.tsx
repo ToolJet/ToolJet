@@ -6,6 +6,7 @@ import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str, toOptions } from '../lib/data';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
+import { useValueSetter } from '../lib/sameValue';
 
 // Forwards the ref, so the focus and blur actions reach Ant's Select (a plain function component dropped it).
 const Control = React.forwardRef<RefSelectProps, React.ComponentProps<typeof AntSelect>>((p, ref) => {
@@ -71,9 +72,11 @@ export const Select = (props: Record<string, unknown>) => {
       options: many ? list.map((v) => options.find((o) => o.value === v) ?? { label: v, value: v }) : [],
     };
   };
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(many ? values : value, (v) => setValue(v as string));
   const change = (next: unknown) => {
     const stored = many ? toValues(next) : next === undefined || next === null ? '' : str(Array.isArray(next) ? next[0] : next);
-    setValue(stored as string);
+    if (!valueSetter.set(stored)) return;
     // Set with the value, so an onChange handler reads them already.
     const picked = optionsFor(stored);
     setSelectedOption(picked.option);

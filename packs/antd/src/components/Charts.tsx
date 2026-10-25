@@ -93,12 +93,15 @@ const Frame = ({
   empty,
   loading,
   chartRef,
+  ready = true,
   children,
 }: {
   title: string;
   empty: boolean;
   loading: boolean;
   chartRef: React.RefObject<HTMLDivElement>;
+  /** The chart theme is read (useChartTheme): the plot draws, and animates in, in its final colours. */
+  ready?: boolean;
   children: React.ReactNode;
 }) => (
   <div className="tj-ant-chart" ref={chartRef}>
@@ -108,7 +111,7 @@ const Frame = ({
       </Typography.Title>
     ) : null}
     <div className="tj-ant-chart-body">
-      {empty && !loading ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" /> : children}
+      {empty && !loading ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" /> : ready ? children : null}
       {loading ? <ChartLoader /> : null}
     </div>
   </div>
@@ -172,7 +175,7 @@ export const Column = () => {
   const marked = p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [s.x, s.color] }) } : {};
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <Chart
           {...(common as object)}
           data={s.data}
@@ -212,7 +215,7 @@ export const Line = () => {
       : undefined;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntLine
           {...(common as object)}
           data={s.data}
@@ -247,7 +250,7 @@ export const Area = () => {
   const fillOpacity = s.color && !stack ? 0.25 : 0.4;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntArea
           {...(common as object)}
           data={s.data}
@@ -294,7 +297,7 @@ export const Pie = () => {
   };
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref}>
+      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref} ready={theme.ready}>
         <AntPie
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
@@ -339,7 +342,7 @@ export const Bar = () => {
   const r = Math.max(0, Number(radius) || 0);
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntBar
           {...(common as object)}
           data={s.data}
@@ -360,6 +363,9 @@ export const Bar = () => {
 export const DualAxes = () => {
   const p = useChartProps({ x: 'x', y: 'y', ys: ['y', 'y2'], data: REVENUE_ORDERS });
   const [geometry] = ToolJet.useStateArray({ name: 'geometry', label: 'Geometry', description: "[left, right]: 'column' or 'line'", initialValue: ['column', 'line'] });
+  // UI 2.0's combo chart gives a series its own right axis only when asked; on one scale "This year" bars and a "Last
+  // year" line compare directly, where two scales made equal values look different.
+  const [sharedAxis] = ToolJet.useStateBoolean({ name: 'sharedAxis', label: 'Shared axis', description: 'Both series on one value axis and scale, instead of the second series on its own right axis.', initialValue: false });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 32 });
   const ref = useRef<HTMLDivElement>(null);
@@ -374,14 +380,20 @@ export const DualAxes = () => {
     return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency);
   };
   const axisStyle = { labelFill: theme.axis, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border, gridStroke: theme.border, gridStrokeOpacity: 1, labelFormatter: fmt };
+  const data = rows.map((r) => ({ ...r, [left]: toNumber(r[left]), ...(right ? { [right]: toNumber(r[right]) } : {}) }));
+  // Shared: both series on one domain spanning their values (G2 keeps a scale per field, so each layer gets it
+  // explicitly), and the right series draws no axis of its own.
+  const values = sharedAxis ? data.flatMap((r) => [r[left], right ? r[right] : null]).filter((n): n is number => typeof n === 'number') : [];
+  const shared = values.length ? { domain: [Math.min(0, ...values), Math.max(0, ...values)], nice: true } : {};
+  const yScale = (side: 'left' | 'right') => (sharedAxis ? { independent: false, ...shared } : { independent: side === 'right' });
+  const yAxis = (side: 'left' | 'right') => (side === 'right' && sharedAxis ? false : { position: side, ...axisStyle, grid: side === 'left' });
   const layer = (field: string, kind: string, color: string, side: 'left' | 'right') =>
     kind === 'line'
-      ? { type: 'line', yField: field, shapeField: 'smooth', style: { stroke: color, lineWidth: 2 }, scale: { y: { independent: side === 'right' } }, axis: { y: { position: side, ...axisStyle, grid: side === 'left' } } }
-      : { type: 'interval', yField: field, style: { fill: color, radiusTopLeft: 4, radiusTopRight: 4, maxWidth: 40, ...(p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [p.xField] }) } : {}) }, scale: { y: { independent: side === 'right' } }, axis: { y: { position: side, ...axisStyle, grid: side === 'left' } } };
-  const data = rows.map((r) => ({ ...r, [left]: toNumber(r[left]), ...(right ? { [right]: toNumber(r[right]) } : {}) }));
+      ? { type: 'line', yField: field, shapeField: 'smooth', style: { stroke: color, lineWidth: 2 }, scale: { y: yScale(side) }, axis: { y: yAxis(side) } }
+      : { type: 'interval', yField: field, style: { fill: color, radiusTopLeft: 4, radiusTopRight: 4, maxWidth: 40, ...(p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [p.xField] }) } : {}) }, scale: { y: yScale(side) }, axis: { y: yAxis(side) } };
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntDualAxes
           autoFit
           theme={(common as { theme: string }).theme}
@@ -419,7 +431,7 @@ export const Funnel = () => {
   };
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntFunnel
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
@@ -464,7 +476,7 @@ export const Gauge = () => {
   const shown = formatter === 'percent' ? formatNumber(t / max, 'percent') : formatNumber(t, formatter as 'auto');
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={title} empty={false} loading={loading} chartRef={ref}>
+      <Frame title={title} empty={false} loading={loading} chartRef={ref} ready={theme.ready}>
         <AntGauge
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
@@ -495,7 +507,7 @@ export const Radar = () => {
   const h = p.highlight;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntRadar
           {...(common as object)}
           data={s.data}
@@ -529,7 +541,7 @@ export const Scatter = () => {
   const common = useCommon(p, theme, { color: p.colorField || undefined, y }, tips);
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntScatter
           {...(common as object)}
           data={rows}
@@ -581,7 +593,7 @@ export const Heatmap = () => {
   const rows = toRows(rawData).map((r) => ({ ...r, [colorField]: toNumber(r[colorField]) ?? 0 }));
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref}>
+      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref} ready={theme.ready}>
         <AntHeatmap
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}

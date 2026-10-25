@@ -9,6 +9,7 @@ import { TOKEN } from '../lib/styleDefaults';
 import { isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
@@ -41,18 +42,23 @@ export const PasswordInput = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const value = rawValue === null || rawValue === undefined ? '' : String(rawValue);
   const strength = M.passwordStrength(value);
-  const publish = (next: string) => {
-    setValue(next);
-    setStrength(M.passwordStrength(next).level);
-  };
-  const change = (next: string) => {
-    publish(next);
+  // A setText or clear that leaves the value as it is fires nothing (lib/sameValue); typing always fires.
+  const valueSetter = useValueSetter<unknown>(rawValue, (v) => {
+    setValue(v as string);
+    setStrength(M.passwordStrength(String(v ?? '')).level);
+  });
+  const publish = (next: string) => valueSetter.set(next);
+  const change = (next: string, fromAction = false) => {
+    if (!publish(next) && fromAction) return;
     onChange();
   };
-  useReseed(defaultValue, () => publish(String(defaultValue ?? '')));
+  useReseed(defaultValue, () => {
+    setValue(String(defaultValue ?? ''));
+    setStrength(M.passwordStrength(String(defaultValue ?? '')).level);
+  });
 
   const setText = (next: unknown) => {
-    change(next === null || next === undefined ? '' : String(next));
+    change(next === null || next === undefined ? '' : String(next), true);
     rule.touch();
   };
   TJ.useAction({ name: 'setText', displayName: 'Set text', params: [{ handle: 'value', displayName: 'Value' }] }, setText);

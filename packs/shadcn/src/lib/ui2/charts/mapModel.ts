@@ -2,6 +2,8 @@
 // rows and their tones, popup lines, route lines, areas, the legend, heat points, the tile source and the geocoder
 // URLs. Every function takes whatever the author bound and never throws.
 
+import { localeFor, moneyDigits, numberFormat } from '../../locale';
+
 export type Row = Record<string, unknown>;
 export interface LatLng {
   lat: number;
@@ -282,7 +284,7 @@ export const mapPoints = (data: unknown, f: PointFields = {}): { points: MapPoin
 
 const FORMATS = ['auto', 'number', 'currency', 'percent', 'compact', 'date', 'datetime'];
 
-const formatFigure = (value: unknown, format: string, currency?: unknown): string => {
+const formatFigure = (value: unknown, format: string, currency?: unknown, locale?: unknown): string => {
   if (value === null || value === undefined || typeof value === 'object') return '';
   if (typeof value === 'number' && !Number.isFinite(value)) return '';
   if (format === 'date' || format === 'datetime') {
@@ -302,12 +304,12 @@ const formatFigure = (value: unknown, format: string, currency?: unknown): strin
   if (!numeric) return String(value);
   const n = Number(value);
   const code = isText(currency) && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
+  const where = localeFor(currency, locale);
   try {
-    if (format === 'currency')
-      return new Intl.NumberFormat(undefined, { style: 'currency', currency: code, minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
-    if (format === 'percent') return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(n)}%`;
-    if (format === 'compact') return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-    if (format === 'number' || typeof value === 'number') return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n);
+    if (format === 'currency') return numberFormat(where, { style: 'currency', currency: code, ...moneyDigits(n, where) }).format(n);
+    if (format === 'percent') return `${numberFormat(where, { maximumFractionDigits: 1 }).format(n)}%`;
+    if (format === 'compact') return numberFormat(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+    if (format === 'number' || typeof value === 'number') return numberFormat(where, { maximumFractionDigits: 2 }).format(n);
   } catch {
     return String(value);
   }
@@ -317,19 +319,20 @@ const formatFigure = (value: unknown, format: string, currency?: unknown): strin
 const sameName = (a: string, b: string) => a.toLowerCase().replace(/[\s_-]+/g, '') === b.toLowerCase().replace(/[\s_-]+/g, '');
 
 /** One popup line from a spec: 'driver', 'eta:ETA {}', 'total|currency', 'seats:Seats'. */
-const metaPart = (row: Row, spec: string, currency?: unknown): string => {
+const metaPart = (row: Row, spec: string, currency?: unknown, locale?: unknown): string => {
   const [head, label] = spec.split(/:(.*)/s).map((s) => (s ?? '').trim());
   const [name, format] = head.split('|').map((s) => s.trim());
   if (!name || !(name in row)) return '';
-  const value = formatFigure(row[name], FORMATS.includes(format) ? format : 'auto', currency);
+  const value = formatFigure(row[name], FORMATS.includes(format) ? format : 'auto', currency, locale);
   if (!value) return '';
   return !label || sameName(label, name) ? value : label.includes('{}') ? label.replace('{}', value) : `${label} ${value}`;
 };
 
-export const popupLines = (row: Row, popupFields: unknown): string[] => {
+/** The popup's lines; 'total|currency' figures in the currency and locale (blank locale follows the currency). */
+export const popupLines = (row: Row, popupFields: unknown, { currency, locale }: { currency?: unknown; locale?: unknown } = {}): string[] => {
   const specs: string[] = Array.isArray(popupFields) ? popupFields.filter(isText) : isText(popupFields) ? popupFields.split(',') : [];
   if (!row || typeof row !== 'object' || !specs.length) return [];
-  return specs.map((s) => String(s).trim()).filter(Boolean).map((spec) => metaPart(row, spec)).filter(Boolean);
+  return specs.map((s) => String(s).trim()).filter(Boolean).map((spec) => metaPart(row, spec, currency, locale)).filter(Boolean);
 };
 
 // ---- Routes and areas ------------------------------------------------------------------------------------------------

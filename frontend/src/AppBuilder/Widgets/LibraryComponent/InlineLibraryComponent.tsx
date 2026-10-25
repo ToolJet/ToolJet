@@ -9,6 +9,7 @@ import {
   loadLibraryModule,
   slotAttributeName,
 } from './inlineRuntime';
+import useStore from '@/AppBuilder/_stores/store';
 
 // Shadow-root baseline. ToolJet's global CSS stays out, while inherited properties and theme custom
 // properties (--cc-*, --text-*) still flow in. The body is non-scrollable and sized by the widget box.
@@ -57,6 +58,8 @@ type Sheets = {
   adopt: (root: ShadowRoot) => void;
   release: (root: ShadowRoot) => void;
   setLibraryCss: (css: string) => void;
+  /** The library's CSS has been applied once: a component drawn before that showed unstyled for a moment. */
+  hasCss: () => boolean;
 };
 const sheetsByLibrary = new Map<string, Sheets>();
 const canAdopt = () =>
@@ -78,18 +81,22 @@ const sheetsFor = (key: string): Sheets => {
     // Every instance hands its library's CSS over on mount; parsed once per content (Ant's is close to 1 MB, and a
     // page of 37 widgets parsed it 37 times on every page switch). Changed CSS (a dev rebuild) is still applied.
     let applied = '';
+    let loaded = false;
     sheets = {
       adopt: (root) => (root.adoptedStyleSheets = list),
       release: (root) => (root.adoptedStyleSheets = []),
       setLibraryCss: (css) => {
+        loaded = true;
         if (css === applied) return;
         applied = css;
         library.replaceSync(css);
       },
+      hasCss: () => loaded,
     };
   } else {
     const roots = new Set<ShadowRoot>();
     let libraryCss = '';
+    let loaded = false;
     sheets = {
       adopt: (root) => {
         roots.add(root);
@@ -105,12 +112,14 @@ const sheetsFor = (key: string): Sheets => {
         root.querySelectorAll('style[data-tj-sheet]').forEach((el) => el.remove());
       },
       setLibraryCss: (css) => {
+        loaded = true;
         if (css === libraryCss) return;
         libraryCss = css;
         roots.forEach((root) =>
           root.querySelectorAll('style[data-tj-sheet="1"]').forEach((el) => (el.textContent = css))
         );
       },
+      hasCss: () => loaded,
     };
   }
   sheetsByLibrary.set(key, sheets);
@@ -120,6 +129,24 @@ const sheetsFor = (key: string): Sheets => {
 // One popup layer per library revision on the page (select lists, menus, dialogs), shared by its instances. It sits
 // on document.body: WidgetWrapper positions every widget with a transform, which would make it the containing block
 // of position:fixed popups.
+// The store writes a pack component makes as it mounts (each ToolJet.useStateX publishes its value, useValidation its
+// isValid and isMandatory) are held in the store's exposed-value batch and applied together, in one store update, once
+// the mount's effects have run. Each write on its own re-ran every widget's store selectors, so a page of N pack
+// widgets cost N x writes x N selector runs: 100 Ant fields took ~3 s to switch to, a native page of 100 ~0.4 s. The
+// batch is ref-counted (a page switch holds one too): every widget mounting in one commit opens it in its layout
+// effect, before any passive effect of that commit runs, and the last one to close applies all the writes.
+export const holdStoreWrites = (): (() => void) => {
+  const state = useStore.getState() as { startExposedValueBatch?: () => void; flushExposedValueBatch?: () => void };
+  if (typeof state.startExposedValueBatch !== 'function') return () => {};
+  state.startExposedValueBatch();
+  let open = true;
+  return () => {
+    if (!open) return;
+    open = false;
+    (useStore.getState() as { flushExposedValueBatch: () => void }).flushExposedValueBatch();
+  };
+};
+
 const layers = new Map<string, { overlay: HTMLElement; host: HTMLElement; count: number; release: () => void }>();
 const acquireLayer = (key: string, sheets: Sheets) => {
   const known = layers.get(key);
@@ -212,6 +239,9 @@ interface InlineLibraryComponentProps {
   fit?: boolean;
   /** The box is stretched to its row's height (an Equal heights row): the root gets tj-cc-stretch and fills it. */
   stretch?: boolean;
+  /** The widget's saved height: a fitted box keeps it until the component draws, so the dynamic height measure does
+   *  not read the empty box (the page's widgets collapsed onto each other, then jumped to their heights). */
+  reserveHeight?: number;
   /** The app theme reaches the pack as --tj-* tokens (TOKEN_CSS). */
   themed?: boolean;
   /** The app is in dark mode: native parts (scrollbars, date inputs) draw dark too. */
@@ -239,6 +269,7 @@ const InlineLibraryComponent = ({
   host,
   fit = false,
   stretch = false,
+  reserveHeight,
   themed = true,
   darkMode = false,
   hostRef: outerRef,
@@ -249,6 +280,8 @@ const InlineLibraryComponent = ({
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [shadow, setShadow] = useState<{ mount: HTMLElement; popupHost: HTMLElement } | null>(null);
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null);
+  // Drawn once the library's CSS is applied (at once when another instance already loaded it), not unstyled first.
+  const [cssReady, setCssReady] = useState(() => sheetsFor(cacheKey).hasCss());
   const [loadError, setLoadError] = useState<string | null>(null);
   // Slots the bundle currently renders, in mount order. Counted, so two ToolJet.Slot elements with the
   // same name (e.g. during a keyed remount) share one drop area until the last one unmounts.
@@ -340,15 +373,42 @@ const InlineLibraryComponent = ({
 
   useEffect(() => {
     let cancelled = false;
-    loadLibraryCss(cssUrl, cacheKey, { isDevBuild }).then((css) => {
-      if (!cancelled) sheetsFor(sheetKey).setLibraryCss(css ?? '');
-    });
+    setCssReady(sheetsFor(sheetKey).hasCss());
+    loadLibraryCss(cssUrl, cacheKey, { isDevBuild })
+      .then((css) => {
+        if (!cancelled) sheetsFor(sheetKey).setLibraryCss(css ?? '');
+      })
+      // A stylesheet that fails to load must not keep the component from drawing.
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setCssReady(true);
+      });
     return () => {
       cancelled = true;
     };
   }, [cssUrl, cacheKey, isDevBuild, sheetKey]);
 
   // Latest callbacks behind a stable facade, so the context value changes only when props do.
+  // The component's first commit: its mount effects' store writes go out as one update (holdStoreWrites). Opened in a
+  // layout effect, closed in this component's passive effect, which runs after its children's (the pack component's)
+  // passive effects; a timer closes it should the passive effects be dropped.
+  const mountHold = useRef<(() => void) | null>(null);
+  useLayoutEffect(() => {
+    if (!Component) return undefined;
+    const release = holdStoreWrites();
+    mountHold.current = release;
+    const fallback = setTimeout(release, 0);
+    return () => {
+      clearTimeout(fallback);
+      release();
+    };
+  }, [Component]);
+  useEffect(() => {
+    if (!Component) return;
+    mountHold.current?.();
+    mountHold.current = null;
+  }, [Component]);
+
   const latest = useRef({ setExposedVariable, fireEvent });
   latest.current = { setExposedVariable, fireEvent };
 
@@ -366,8 +426,9 @@ const InlineLibraryComponent = ({
   );
 
   let content: React.ReactNode = null;
+  const drawn = !!loadError || (!!Component && cssReady);
   if (loadError) content = <div className="tj-cc-error">{loadError}</div>;
-  else if (Component)
+  else if (Component && cssReady)
     content = (
       <LibraryInstanceContext.Provider value={instance}>
         <Component {...componentProps} />
@@ -385,7 +446,7 @@ const InlineLibraryComponent = ({
       ref={setRef}
       data-cy={dataCy}
       className={fit && !stretch ? 'tw-w-full tw-block' : 'tw-w-full tw-h-full tw-block'}
-      style={{ boxShadow }}
+      style={{ boxShadow, ...(fit && !stretch && !drawn && reserveHeight ? { minHeight: reserveHeight } : {}) }}
     >
       {shadow && createPortal(content, shadow.mount)}
       {/* Light-DOM children, projected into the bundle's <slot> elements. */}

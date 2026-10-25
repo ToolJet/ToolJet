@@ -5,6 +5,7 @@ import { TJ } from '../lib/ui2/inputs/sdk';
 import { FIELD, useLooks } from '../lib/ui2/inputs/looks';
 import { ClearX, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useValueSetter } from '../lib/sameValue';
 import '../styles/ui2-inputs.css';
 
 // UI 2.0's format check for type email and url (Ui2/Input/Input.tsx), before the Validation section's rules.
@@ -53,18 +54,20 @@ export const Input = () => {
   const type = TYPES.includes(String(inputType).toLowerCase()) ? String(inputType).toLowerCase() : 'text';
   const isNumber = type === 'number';
   // Type number publishes a number (null when empty), as UI 2.0's number box does.
+  // A setText or clear that leaves the value as it is fires nothing (lib/sameValue); typing always fires.
+  const valueSetter = useValueSetter<unknown>(rawValue, (v) => setValue(v as string));
   const publish = (text: string) => {
     const n = text.trim() === '' ? null : Number(text);
-    setValue((isNumber ? (n !== null && Number.isFinite(n) ? n : null) : text) as string);
+    return valueSetter.set(isNumber ? (n !== null && Number.isFinite(n) ? n : null) : text);
   };
-  const change = (text: string) => {
-    publish(text);
+  const change = (text: string, fromAction = false) => {
+    if (!publish(text) && fromAction) return;
     onChange();
   };
   useReseed(defaultValue, () => publish(String(defaultValue ?? '')));
 
   const setText = (next: unknown) => {
-    change(next === null || next === undefined ? '' : String(next));
+    change(next === null || next === undefined ? '' : String(next), true);
     rule.touch();
   };
   TJ.useAction({ name: 'setText', displayName: 'Set text', params: [{ handle: 'text', displayName: 'Text' }] }, setText);

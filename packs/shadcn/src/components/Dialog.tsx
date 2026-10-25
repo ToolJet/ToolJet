@@ -9,6 +9,8 @@ import { ownerAvailable } from '../lib/useOwnerGuard';
 import { POPUP_LAYER, popupLayerOf } from '../lib/popupLayer';
 import { LoadingBox, LoadingFrame, useLoading } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { useValueSetter } from '../lib/sameValue';
+import { useKeptPopupSlot } from '../lib/keptPopupSlot';
 
 // The overlay's and the dialog's own levels in ui.css (.ui-dialog-overlay, .ui-dialog); popups opened from the body
 // go one above (lib/popupLayer).
@@ -79,13 +81,14 @@ export const Dialog = () => {
     return () => cancelAnimationFrame(frame);
   }, [open, takesInput]);
 
+  // Live: an open or close action on a dialog already open or closed fires nothing (lib/sameValue).
+  const openSetter = useValueSetter(open === true, setOpen);
   const show = () => {
-    setOpen(true);
-    onOpen();
+    if (openSetter.set(true)) onOpen();
   };
   const close = (confirmed: boolean) => {
     if (confirmed && !takesInput()) return;
-    setOpen(false);
+    openSetter.set(false);
     if (confirmed) onConfirm();
     else onCancel();
     onClose();
@@ -106,8 +109,7 @@ export const Dialog = () => {
 
   ToolJet.useAction({ name: 'open', displayName: 'Open' }, show);
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => {
-    setOpen(false);
-    onClose();
+    if (openSetter.set(false)) onClose();
   });
   // Empty = the trigger variant's own colors (see Button).
   const buttonColor = useThemeColor('buttonColor', 'Button background', TOKEN.surface);
@@ -115,6 +117,12 @@ export const Dialog = () => {
   const background = ToolJet.useStyleString({ name: 'dialogBackground', label: 'Dialog background', inspector: 'color', initialValue: 'var(--cc-surface1-surface)', section: 'Dialog' });
   const radius = useThemeRadius('dialogRadius', 'Dialog radius', { section: 'Dialog' });
   const loadingNow = useLoading();
+  // The body's components stay mounted while the dialog is closed, so a draft typed in them survives Cancel, the X
+  // and a close action, as in the Ant and MUI packs (BN-01). Clearing them stays explicit (clearForm, an action).
+  const [bodyKeeper, bodyPlace] = useKeptPopupSlot('body', {
+    enabled: !!showBody,
+    style: { height: Math.min(2000, Math.max(40, Number(bodyHeight) || 240)) },
+  });
   ToolJet.useComponentSettings({ defaultWidth: 7, defaultHeight: 4 });
 
   return (
@@ -153,12 +161,7 @@ export const Dialog = () => {
                   <DialogPrimitive.Title className="ui-dialog-title">{title}</DialogPrimitive.Title>
                   <DialogPrimitive.Description className="ui-dialog-desc">{description}</DialogPrimitive.Description>
                 </div>
-                {showBody ? (
-                  <ToolJet.PopupSlot
-                    name="body"
-                    style={{ height: Math.min(2000, Math.max(40, Number(bodyHeight) || 240)) }}
-                  />
-                ) : null}
+                {bodyPlace}
                 {showFooter ? <div className="ui-dialog-footer">
                   <button type="button" className="ui-btn ui-btn--outline" onClick={() => close(false)}>
                     {cancelText}
@@ -181,6 +184,7 @@ export const Dialog = () => {
             </DialogPrimitive.Portal>
           ) : null}
         </DialogPrimitive.Root>
+        {bodyKeeper}
       </div>
     </LoadingFrame>
   );
