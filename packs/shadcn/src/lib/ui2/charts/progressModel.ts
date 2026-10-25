@@ -1,6 +1,8 @@
 // UI 2.0's progress widgets (Progress, Progress list, Circular progress), ported for the pack: row figures, tones,
 // ring geometry and typefaces. Every function takes whatever the author bound and never throws.
 
+import { localeFor, moneyDigits, numberFormat } from '../../locale';
+
 export type Row = Record<string, unknown>;
 
 const isSet = (v: unknown): boolean => v !== undefined && v !== null && v !== '';
@@ -104,22 +106,6 @@ export const autoProgressTone = (pct: number | null, mode: unknown): string => {
 
 export const PROGRESS_FORMATS: readonly string[] = ['auto', 'number', 'currency', 'percent', 'compact'];
 
-const FORMATTERS = new Map<string, Intl.NumberFormat>();
-const intl = (options: Intl.NumberFormatOptions): Intl.NumberFormat => {
-  const key = JSON.stringify(options);
-  let f = FORMATTERS.get(key);
-  if (!f) {
-    if (FORMATTERS.size > 100) FORMATTERS.clear();
-    try {
-      f = new Intl.NumberFormat(undefined, options);
-    } catch {
-      f = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
-    }
-    FORMATTERS.set(key, f);
-  }
-  return f;
-};
-
 const currencyCode = (currency: unknown): string =>
   typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
 
@@ -133,19 +119,13 @@ export const percentOf = (v: unknown): number | null => {
 
 /** A figure in a format: 'auto' and 'number' group the digits, 'currency' in currency (cents only when it has them),
  *  'percent' takes values in percent (42.5 shows 42.5%), 'compact' abbreviates (18.4K). */
-export const formatFigure = (n: number, format: unknown, currency?: unknown): string => {
+export const formatFigure = (n: number, format: unknown, currency?: unknown, locale?: unknown): string => {
   const kind = typeof format === 'string' && PROGRESS_FORMATS.includes(format) ? format : 'auto';
-  if (kind === 'currency') {
-    const code = currencyCode(currency);
-    return intl(
-      Number.isInteger(n)
-        ? { style: 'currency', currency: code, minimumFractionDigits: 0, maximumFractionDigits: 2 }
-        : { style: 'currency', currency: code, minimumFractionDigits: 2 }
-    ).format(n);
-  }
-  if (kind === 'compact') return intl({ notation: 'compact', maximumFractionDigits: 1 }).format(n);
-  if (kind === 'percent') return `${intl({ maximumFractionDigits: 1 }).format(n)}%`;
-  return intl({ maximumFractionDigits: 2 }).format(n);
+  const where = localeFor(currency, locale);
+  if (kind === 'currency') return numberFormat(where, { style: 'currency', currency: currencyCode(currency), ...moneyDigits(n, where) }).format(n);
+  if (kind === 'compact') return numberFormat(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  if (kind === 'percent') return `${numberFormat(where, { maximumFractionDigits: 1 }).format(n)}%`;
+  return numberFormat(where, { maximumFractionDigits: 2 }).format(n);
 };
 
 /** A percentage as a label: whole numbers as written, others to one decimal (12.5%, 33.3%). */
@@ -171,6 +151,7 @@ export interface ProgressFields {
   valueFormat?: unknown;
   autoTone?: unknown;
   currency?: unknown;
+  locale?: unknown;
   max?: number | null;
 }
 
@@ -244,8 +225,8 @@ export const progressItem = (entry: ProgressEntry, f: ProgressFields): ProgressI
   return {
     ...entry,
     label: labelKey ? toText(row[labelKey]) : '',
-    value: value !== null ? formatFigure(value, format, f.currency) : '',
-    target: target !== null ? formatFigure(target, format, f.currency) : '',
+    value: value !== null ? formatFigure(value, format, f.currency, f.locale) : '',
+    target: target !== null ? formatFigure(target, format, f.currency, f.locale) : '',
     pct,
     relative,
     caption: isText(f.captionField) ? toText(row[f.captionField]).trim() : '',

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { LOCALE_HINT } from '../lib/locale';
 import { themeVars } from '../lib/themeVars';
 import { cn } from '../lib/cn';
 import {
@@ -62,6 +63,7 @@ export const ProgressList = () => {
   // Number by default: a currency default printed bound order counts as $10 (the sample budgets read as figures).
   const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], enumLabels: { auto: 'Auto', number: 'Number', currency: 'Currency', percent: 'Percent', compact: 'Compact' }, initialValue: 'number' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (ISO code, e.g. USD)', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
   const [autoTone] = ToolJet.useStateEnumeration({ name: 'autoTone', label: 'Tone from progress', enumDefinition: ['none', 'goal', 'limit'], enumLabels: { none: 'None', goal: 'Goal', limit: 'Limit' }, initialValue: 'none', inspector: 'switch' });
   const [showValues] = ToolJet.useStateBoolean({ name: 'showValues', label: 'Show value of target', initialValue: true });
@@ -90,7 +92,7 @@ export const ProgressList = () => {
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 36 });
 
-  const fields = { labelField, valueField, targetField, percentField, captionField, statusField, valueFormat, currency, idField, autoTone };
+  const fields = { labelField, valueField, targetField, percentField, captionField, statusField, valueFormat, currency, locale, idField, autoTone };
   const entries = useMemo(() => progressEntries(data, idField), [data, idField]);
   const max = useMemo(() => progressMax(entries, fields), [entries, valueField, targetField]); // eslint-disable-line react-hooks/exhaustive-deps
   // The first rows and a Show more button for the next ones: a 10,000-row binding would freeze the page.

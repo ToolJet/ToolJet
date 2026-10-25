@@ -1,6 +1,8 @@
 // The Stat's pure logic, ported from UI 2.0 (Ui2/Stat/statModel.ts and the format helpers it calls): its figure, its
 // change chip, its trend line and its progress bar. Every function takes whatever the author bound and never throws.
 
+import { localeFor, moneyDigits, numberFormat } from './locale';
+
 const isScalar = (v: unknown): v is string | number | boolean =>
   typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -24,36 +26,15 @@ type NumberFormat = 'number' | 'currency' | 'percent' | 'compact';
 const FORMATS: readonly string[] = ['number', 'currency', 'percent', 'compact'];
 const isFormat = (format: unknown): format is NumberFormat => typeof format === 'string' && FORMATS.includes(format);
 
-// Intl.NumberFormat is costly to build, so formatters are reused, one per options.
-const FORMATTERS = new Map<string, Intl.NumberFormat>();
-const intl = (options: Intl.NumberFormatOptions): Intl.NumberFormat => {
-  const key = JSON.stringify(options);
-  let cached = FORMATTERS.get(key);
-  if (!cached) {
-    if (FORMATTERS.size > 200) FORMATTERS.clear();
-    try {
-      cached = new Intl.NumberFormat(undefined, options);
-    } catch {
-      cached = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
-    }
-    FORMATTERS.set(key, cached);
-  }
-  return cached;
-};
-
 const currencyCode = (currency: unknown): string =>
   typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
 
 /** A number in the format; percent takes values already in percent (42 shows 42%). Money with cents shows both digits. */
-const formatNumber = (n: number, format: NumberFormat, currency: unknown): string => {
-  const code = currencyCode(currency);
-  if (format === 'currency') {
-    if (!Number.isInteger(n)) return intl({ style: 'currency', currency: code, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-    return intl({ style: 'currency', currency: code, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
-  }
-  if (format === 'compact') return intl({ notation: 'compact', maximumFractionDigits: 1 }).format(n);
-  if (format === 'percent') return `${intl({ maximumFractionDigits: 1 }).format(n)}%`;
-  return intl({ maximumFractionDigits: 2 }).format(n);
+const formatNumber = (n: number, format: NumberFormat, currency: unknown, locale: string): string => {
+  if (format === 'currency') return numberFormat(locale, { style: 'currency', currency: currencyCode(currency), ...moneyDigits(n, locale) }).format(n);
+  if (format === 'compact') return numberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  if (format === 'percent') return `${numberFormat(locale, { maximumFractionDigits: 1 }).format(n)}%`;
+  return numberFormat(locale, { maximumFractionDigits: 2 }).format(n);
 };
 
 /** A figure written as text, as a number: plain ("1250", "-12.5") or grouped the way the viewer's locale writes numbers
@@ -82,12 +63,13 @@ const CHANGE_FORMATS: readonly string[] = ['percent', 'number', 'currency'];
 
 /** A change as shown: signed (+12.4%, −3.2, no sign at zero) and rounded, never a raw float: a percent to one decimal,
  *  a number to at most one, money in the currency's own decimals. direction is the sign of the figure as shown. */
-const formatChange = (n: number, format: unknown, currency?: unknown): { text: string; direction: number } => {
+const formatChange = (n: number, format: unknown, currency?: unknown, locale?: unknown): { text: string; direction: number } => {
   const kind = typeof format === 'string' && CHANGE_FORMATS.includes(format) ? format : 'number';
+  const where = localeFor(currency, locale);
   const f =
     kind === 'currency'
-      ? intl({ style: 'currency', currency: currencyCode(currency) })
-      : intl({ minimumFractionDigits: kind === 'percent' ? 1 : 0, maximumFractionDigits: 1 });
+      ? numberFormat(where, { style: 'currency', currency: currencyCode(currency) })
+      : numberFormat(where, { minimumFractionDigits: kind === 'percent' ? 1 : 0, maximumFractionDigits: 1 });
   const digits = f.resolvedOptions().maximumFractionDigits ?? 1;
   const shown = Math.round(Math.abs(n) * 10 ** digits) / 10 ** digits;
   const direction = shown === 0 ? 0 : Math.sign(n);
@@ -117,15 +99,16 @@ export const compactFigure = (text: unknown): string => {
  *  ("$1,250.00", "12 open") shows as written. */
 export const statValue = (
   value: unknown,
-  { valueFormat = 'auto', currency }: { valueFormat?: unknown; currency?: unknown } = {}
+  { valueFormat = 'auto', currency, locale }: { valueFormat?: unknown; currency?: unknown; locale?: unknown } = {}
 ): string => {
   if (value === null || value === undefined || (typeof value === 'number' && !Number.isFinite(value))) return '';
   if (typeof value === 'object') return '';
-  if (!isFormat(valueFormat)) return typeof value === 'number' ? formatNumber(value, 'number', currency) : String(value);
+  const where = localeFor(currency, locale);
+  if (!isFormat(valueFormat)) return typeof value === 'number' ? formatNumber(value, 'number', currency, where) : String(value);
   const n = figureOf(value);
   if (n === null) return String(value);
   const shown = valueFormat === 'percent' && n !== 0 && Math.abs(n) < 1 ? n * 100 : n;
-  return formatNumber(shown, valueFormat, currency);
+  return formatNumber(shown, valueFormat, currency, where);
 };
 
 /** A change written with its context ("+8 vs last week") as { chip: '+8', context: 'vs last week' }: the chip holds the
@@ -140,12 +123,12 @@ export const splitChange = (change: unknown): { chip: string; context: string } 
 /** The change chip's figure: a bare number or numeric text ("12.4", "-9.79", "−3%") in the change format (a written %
  *  makes it a percent), with its direction from its sign. null for anything else ("+$1,200", "Flat"). */
 const BARE_CHANGE = /^([+\-−])?\s*(\d+(?:\.\d+)?|\.\d+)\s*(%)?$/;
-export const statChange = (chip: unknown, format: unknown, currency?: unknown): { text: string; direction: number } | null => {
-  if (typeof chip === 'number') return Number.isFinite(chip) ? formatChange(chip, format, currency) : null;
+export const statChange = (chip: unknown, format: unknown, currency?: unknown, locale?: unknown): { text: string; direction: number } | null => {
+  if (typeof chip === 'number') return Number.isFinite(chip) ? formatChange(chip, format, currency, locale) : null;
   const match = typeof chip === 'string' ? chip.trim().match(BARE_CHANGE) : null;
   if (!match) return null;
   const n = Number(match[2]) * (match[1] && match[1] !== '+' ? -1 : 1);
-  return formatChange(n, match[3] ? 'percent' : format, currency);
+  return formatChange(n, match[3] ? 'percent' : format, currency, locale);
 };
 
 /** The direction a written change reads: a leading +, - or arrow; 0 when it has none. */

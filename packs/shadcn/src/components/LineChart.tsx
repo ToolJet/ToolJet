@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { CartesianGrid, Line, LineChart as RLineChart, ReferenceLine, XAxis } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { LOCALE_HINT } from '../lib/locale';
 import { AXIS, CURSOR_LINE, ChartFrame, GRID, REF, clickedMarks, seriesColor, tooltipAndLegend, useBoxSize, useChartClick, valueAxis } from '../lib/ui2/charts/chartParts';
 import {
   animated,
@@ -51,6 +52,7 @@ export const LineChart = () => {
   const [referenceLabel] = ToolJet.useStateString({ name: 'referenceLabel', label: 'Target line label', initialValue: '' });
   const [yAxisFormat] = ToolJet.useStateEnumeration({ name: 'yAxisFormat', label: 'Value format', enumDefinition: ['number', 'currency', 'percent', 'compact'], initialValue: 'number', inspector: 'switch' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency code', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
@@ -76,7 +78,7 @@ export const LineChart = () => {
     const fields = resolveChartFields(list(data), isSet(xField) ? String(xField) : undefined, configured);
     const plotted = seriesRows(data, fields.x, fields.series);
     const values = plotted.flatMap((r) => fields.series.map((s) => r[s]));
-    const format = { format: yAxisFormat, currency, prefix: valuePrefix, suffix: valueSuffix };
+    const format = { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix };
     const lineScale = percentScale(yAxisFormat, values);
     const short = scaled(formatter(format, true), lineScale);
     const extremes = values.filter((v): v is number => typeof v === 'number');
@@ -100,7 +102,7 @@ export const LineChart = () => {
       ticks: wholeTicks(target !== null && fields.series.length ? [...plotted, { [fields.series[0]]: target }] : plotted, fields.series),
       xTicks: dateTicks(plotted, fields.x),
     };
-  }, [data, xField, yFields, dashedFields, seriesLabels, colors, chartColor, yAxisFormat, currency, valuePrefix, valueSuffix, target]);
+  }, [data, xField, yFields, dashedFields, seriesLabels, colors, chartColor, yAxisFormat, currency, locale, valuePrefix, valueSuffix, target]);
   const compact = box.height > 0 && isCompactChart(box.height);
   const targetLabel = isSet(referenceLabel) ? String(referenceLabel) : '';
   const width = clamp(strokeWidth, 0.5, 12, 2);

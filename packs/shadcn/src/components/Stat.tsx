@@ -3,6 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { iconFor } from '../lib/icons';
 import { cn } from '../lib/cn';
+import { LOCALE_HINT } from '../lib/locale';
 import {
   compactFigure,
   fontStack,
@@ -72,6 +73,7 @@ export const Stat = () => {
     initialValue: 'auto',
   });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (ISO code, e.g. USD)', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [change, setChange] = ToolJet.useStateString({ name: 'change', label: 'Change (e.g. +12.5%)', initialValue: '' });
   const [changeFormat] = ToolJet.useStateEnumeration({
     name: 'changeFormat',
@@ -216,7 +218,7 @@ export const Stat = () => {
   // "+8 vs last week" as change: the figure stays in the chip, the words join the context line. A figure is formatted
   // in the change format (+12.4%, −3.2) and its sign sets the direction; words keep their own sign, else the Trend's.
   const split = splitChange(change);
-  const figure = statChange(split.chip, changeFormat, currency);
+  const figure = statChange(split.chip, changeFormat, currency, locale);
   const trendDirection = ({ up: 1, down: -1 } as Record<string, number>)[trendProp] ?? 0;
   const direction = figure ? figure.direction : textDirection(split.chip) || trendDirection;
   const trend = direction > 0 ? 'up' : direction < 0 ? 'down' : 'neutral';
@@ -268,7 +270,7 @@ export const Stat = () => {
   ) : null;
   // The chip sits in the label row unless the icon takes that corner; then it follows the figure.
   const badgeInHeader = !(Glyph && iconPosition === 'right');
-  const shown = statValue(value, { valueFormat, currency });
+  const shown = statValue(value, { valueFormat, currency, locale });
 
   const content = (
     <div className={cn('ui-stat-content', reserveLabel ? 'is-roomy' : 'is-short', inline && 'is-inline')}>

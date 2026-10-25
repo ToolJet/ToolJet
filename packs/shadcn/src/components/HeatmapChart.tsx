@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { LOCALE_HINT } from '../lib/locale';
 import { ChartBoundary, ChartNotes, EmptyChart, lookVars, useBoxSize, useChartClick } from '../lib/ui2/charts/chartParts';
 import { DIMMED, axisLabel, clamp, formatter, hiddenNote, isRecord, isScalar, isSet, list, num } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
@@ -69,6 +70,7 @@ export const HeatmapChart = () => {
   const [cellGap] = ToolJet.useStateNumber({ name: 'cellGap', label: 'Cell gap (px)', initialValue: 3 });
   const [yAxisFormat] = ToolJet.useStateEnumeration({ name: 'yAxisFormat', label: 'Value format', enumDefinition: FORMAT_ENUM, initialValue: 'number', inspector: 'switch' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency code', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
@@ -84,8 +86,8 @@ export const HeatmapChart = () => {
 
   const grid = useMemo(() => heatmapGrid(data, xField, yField, valueField, xOrder, yOrder), [data, xField, yField, valueField, xOrder, yOrder]);
   const format = useMemo(
-    () => formatter({ format: yAxisFormat, currency, prefix: valuePrefix, suffix: valueSuffix }, yAxisFormat === 'compact'),
-    [yAxisFormat, currency, valuePrefix, valueSuffix]
+    () => formatter({ format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix }, yAxisFormat === 'compact'),
+    [yAxisFormat, currency, locale, valuePrefix, valueSuffix]
   );
   const gap = clamp(cellGap, 0, 12, 3);
   const empty = !grid.xs.length || !grid.ys.length;

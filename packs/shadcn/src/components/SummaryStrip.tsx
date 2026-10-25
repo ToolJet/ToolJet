@@ -1,5 +1,6 @@
 import React from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { LOCALE_HINT } from '../lib/locale';
 import { cn } from '../lib/cn';
 import { FONT_LABELS, FONT_VALUES, fontStack, px, styleVars } from '../lib/ui2/display/lists/model';
 import { useWidth } from '../lib/ui2/display/lists/parts';
@@ -32,6 +33,7 @@ export const SummaryStrip = () => {
     initialValue: 'auto',
   });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (ISO code, e.g. USD)', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [deltaFormat] = ToolJet.useStateEnumeration({
     name: 'deltaFormat',
     label: 'Change format (numbers)',
@@ -77,7 +79,7 @@ export const SummaryStrip = () => {
   ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 11 });
 
   const [ref, width] = useWidth<HTMLDivElement>();
-  const figures = summaryFigures(items, { valueFormat, currency, deltaFormat });
+  const figures = summaryFigures(items, { valueFormat, currency, deltaFormat, locale });
   const sizeKey = MIN_WIDTH[size] ? size : 'default';
   const look = ['panel', 'plain', 'cards'].includes(appearance) ? appearance : 'panel';
   const columns = stripColumns(figures.length, width || 960, MIN_WIDTH[sizeKey]);
