@@ -143,6 +143,12 @@ export const buildTheme = (app: AppTheme, o: ThemeOverrides, container: HTMLElem
       MuiPopper: { defaultProps: portal },
       MuiModal: { defaultProps: portal },
       MuiPopover: { defaultProps: portal },
+      // A Switch, Checkbox or Radio is an invisible <input> over the control. The ToolJet host stops a press that starts
+      // on an <input> at the widget (a text field's press must not drag it), so in the editor a click on the control
+      // toggled it and never selected the widget. Inside a FormControlLabel (a <label>) the press starts on the
+      // control's span instead: the label still toggles the input on the click, as before, and the editor sees the
+      // press. A bare control (the DataGrid's row checkbox) keeps its input clickable.
+      MuiFormControlLabel: { styleOverrides: { root: { '& .PrivateSwitchBase-input': { pointerEvents: 'none' } } } },
       // A themed app's border colour on fields, and its surface on dark Paper (MUI otherwise tints it by elevation).
       // MUI X v8+ pickers draw their own outlined field (PickersOutlinedInput), which MuiOutlinedInput does not reach.
       ...(border

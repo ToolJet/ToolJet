@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type React from 'react';
 import type { BoardColumn } from './board';
+import { holdPressesAfterFirst } from '../../../pressHold';
 
 // A touch move for a Kanban card. Phone browsers start no HTML drag from a touch, so a board that only listens for
 // dragstart/dragover/drop cannot be rearranged on a phone. A long press (LONG_PRESS_MS, cancelled by moving more than
@@ -265,7 +266,14 @@ export const useTouchDragRef = <T extends HTMLElement = HTMLDivElement>(options:
         off?.();
         off = null;
         el = next;
-        if (el) off = bind(el, options);
+        if (el) {
+          const unbind = bind(el, options);
+          const unhold = holdPressesAfterFirst(el);
+          off = () => {
+            unbind();
+            unhold();
+          };
+        }
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

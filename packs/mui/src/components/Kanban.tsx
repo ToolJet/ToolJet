@@ -420,7 +420,6 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
     <Box
       ref={kb.boardRef}
       className={cls('tj-mui-kb', kb.compact && 'is-compact', kb.moreRight && 'has-more-right')}
-      data-tj-no-drag=""
       sx={boardSx}
       style={kb.vars}
       aria-busy={loading || undefined}
