@@ -17,7 +17,7 @@ Single-branch mode connects your workspace to one branch in a Git repository, us
 
 ## How It Differs From Multiple Branches
 
-Everything happens on one branch, so there is no isolation between builders and no review step before a change reaches Git. If two builders need to work at the same time without waiting for each other, or if changes must be approved before they land, that is what [multi-branch mode](/docs/beta/branching/multi-branch/overview) is for. The [branching overview](/docs/beta/branching/overview) compares the two modes side by side.
+Everything happens on one branch, so there is no isolation between builders and no review step before a change reaches Git. If two builders need to work at the same time without waiting for each other, or if changes must be approved before they land, that is what [multi-branch mode](../multi-branch/overview.md) is for. The [branching overview](../overview.md) compares the two modes side by side.
 
 ## Resources Synced to Git
 

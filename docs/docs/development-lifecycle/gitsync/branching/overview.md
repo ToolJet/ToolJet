@@ -28,17 +28,17 @@ There are two modes. Every workspace starts in single-branch mode, and multiple 
 
 If you are unsure, start with single-branch mode. Turning branching on later does not discard anything you have already committed.
 
-- [Single-Branch Mode](/docs/beta/branching/single-branch/overview)
-- [Multi-Branch Mode](/docs/beta/branching/multi-branch/overview)
+- [Single-Branch Mode](./single-branch/overview.md)
+- [Multi-Branch Mode](./multi-branch/overview.md)
 
 ## Behavior Shared by Both Modes
 
 Some behavior does not change with the mode:
 
-- [Versions and Tags](/docs/beta/branching/versioning) covers drafts, saved versions, and how versions are tagged in Git.
-- [Resolving Conflicts](/docs/beta/branching/troubleshooting/resolving-conflicts) covers duplicate names and slugs, which are checked before anything is written in either mode.
-- [Auto-Sync](/docs/beta/branching/auto-sync) keeps connected instances up to date from the repository.
-- [Troubleshooting](/docs/beta/branching/troubleshooting/overview) covers what to check when a commit, pull, or sync does not behave as expected.
+- [Versions and Tags](./versioning.md) covers drafts, saved versions, and how versions are tagged in Git.
+- [Resolving Conflicts](./troubleshooting/resolving-conflicts.md) covers duplicate names and slugs, which are checked before anything is written in either mode.
+- [Auto-Sync](./auto-sync.md) keeps connected instances up to date from the repository.
+- [Troubleshooting](./troubleshooting/overview.md) covers what to check when a commit, pull, or sync does not behave as expected.
 
 ## Resources Synced to Git
 

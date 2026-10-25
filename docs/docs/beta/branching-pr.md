@@ -39,10 +39,6 @@ Sub-branches don't have versions. They are working copies of a specific version.
 
 To enable branching, you need to configure Git Sync first. Follow the [Git Sync Guide](/docs/development-lifecycle/gitsync/overview) to set it up. Once Git Sync is configured, branching is enabled by default (only during beta). Specify your default branch name (typically "master" or "main") This becomes your master branch where live applications reside.
 
-:::warning
-ToolJet supports branching **only over Git HTTPS**. SSH is not supported yet.
-:::
-
 ## Using Git Sync Across Multiple Instances
 
 If you run separate ToolJet instances for different environments (e.g., one for development, another for staging or production), you can connect them to the same Git repository. Git acts as the bridge between instances. Changes saved and tagged on one instance can be pulled into another.

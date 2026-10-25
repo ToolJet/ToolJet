@@ -37,7 +37,7 @@ Workflows never appear as unsynced, because they are not branch-scoped.
 2. Confirm which resource to push. On the **Applications** and **Modules** pages the dialog also lists your other unsynced resources, so you can switch to a different one without closing it.
 3. Choose a target branch. Select an existing feature branch, or type a new name to create one. New branches always come from the default branch, whichever branch you are viewing.
 4. Push. ToolJet commits the resource to that branch, pulls it back, and switches you to the branch.
-5. Open a pull request for the branch and merge it into the default branch. Refer to [Pull Requests](/docs/beta/branching/multi-branch/pull-requests).
+5. Open a pull request for the branch and merge it into the default branch. Refer to [Pull Requests](./pull-requests.md).
 
 The resource is only on a feature branch until step 5 completes. It reaches the default branch when the pull request is merged.
 
@@ -56,7 +56,7 @@ Datasources have no versions, so this check does not apply to them.
 
 ## Naming Conflicts
 
-If the resource shares a name with something already in Git, the push stops and a conflict dialog opens. Nothing is written to Git until you resolve it. Refer to [Resolving Conflicts](/docs/beta/branching/troubleshooting/resolving-conflicts).
+If the resource shares a name with something already in Git, the push stops and a conflict dialog opens. Nothing is written to Git until you resolve it. Refer to [Resolving Conflicts](../troubleshooting/resolving-conflicts.md).
 
 <br/>
 ---

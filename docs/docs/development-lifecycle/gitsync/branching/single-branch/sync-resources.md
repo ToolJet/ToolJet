@@ -52,7 +52,7 @@ Datasources have no versions, so this check does not apply to them.
 
 ## Naming Conflicts
 
-If the resource shares a name with something already in Git, the push stops and a conflict dialog opens. Nothing is written to Git until you resolve it. Refer to [Resolving Conflicts](/docs/beta/branching/troubleshooting/resolving-conflicts).
+If the resource shares a name with something already in Git, the push stops and a conflict dialog opens. Nothing is written to Git until you resolve it. Refer to [Resolving Conflicts](../troubleshooting/resolving-conflicts.md).
 
 <br/>
 ---

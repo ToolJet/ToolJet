@@ -34,12 +34,12 @@ flowchart TD
 
 ## Create a Pull Request
 
-1. **Commit your changes** on the feature branch so the branch in Git matches your workspace. See [Push and Pull Commit](/docs/beta/branching/multi-branch/push-and-pull).
+1. **Commit your changes** on the feature branch so the branch in Git matches your workspace. See [Push and Pull Commit](./push-and-pull.md).
 2. Open the branch dropdown and click **Create pull request**. ToolJet opens your Git provider in a new tab with the source and target branches pre-filled.
 3. **Add reviewers and a description**, then submit the pull request.
 4. **Resolve any review feedback or merge conflicts** in Git.
 5. **Merge the pull request** into the default branch.
-6. **Pull the merged changes** into ToolJet: switch to the default branch and click **Pull**. If [auto-sync](/docs/beta/branching/auto-sync) is enabled with the pull request event, this happens automatically.
+6. **Pull the merged changes** into ToolJet: switch to the default branch and click **Pull**. If [auto-sync](../auto-sync.md) is enabled with the pull request event, this happens automatically.
 
 :::info
 Merge conflicts must be resolved in your Git provider or your local Git client. ToolJet cannot resolve them.

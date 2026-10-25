@@ -36,7 +36,7 @@ It is shown in the Development environment while a draft version is selected. Sa
 
 Before committing, ToolJet checks that your branch still exists in Git. If it was deleted remotely, the commit is blocked and you need to create a new branch to continue.
 
-**Commit** only re-pushes resources that Git already knows about. A resource that has never been committed is handled by a separate first-time push flow, see [Push Unsynced Resources to Git](/docs/beta/branching/multi-branch/sync-resources).
+**Commit** only re-pushes resources that Git already knows about. A resource that has never been committed is handled by a separate first-time push flow, see [Push Unsynced Resources to Git](./sync-resources.md).
 
 ### Scope of a Push
 
@@ -106,7 +106,7 @@ On the default branch, pulling removes applications and modules that are no long
 
 ### Pull a Saved Version
 
-Every saved version is tagged in the Git repository at the point it is saved. Pulling a version restores it from that tag and recreates it in the workspace as a published version. Refer to [Version Control with Git](/docs/beta/branching/versioning) for how drafts, saved versions, and Git tags relate to each other.
+Every saved version is tagged in the Git repository at the point it is saved. Pulling a version restores it from that tag and recreates it in the workspace as a published version. Refer to [Version Control with Git](../versioning.md) for how drafts, saved versions, and Git tags relate to each other.
 
 Saved versions can be pulled for the following use cases:
 
@@ -149,7 +149,7 @@ Pulling a saved version does not affect the current draft, which continues to tr
 
 If ToolJet detects duplicate names or slugs between your workspace and the incoming changes, the operation stops before making any changes and opens a conflict dialog. Nothing is written until the conflicts are resolved.
 
-See [Resolving Conflicts](/docs/beta/branching/troubleshooting/resolving-conflicts) for the categories and how to fix each one.
+See [Resolving Conflicts](../troubleshooting/resolving-conflicts.md) for the categories and how to fix each one.
 
 <br/>
 ---

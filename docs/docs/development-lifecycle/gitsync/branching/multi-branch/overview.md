@@ -12,7 +12,7 @@ Branching lets several builders work on the same applications at the same time w
 
 - **Building features in parallel.** Two builders can change the same application at the same time, each on their own branch, without overwriting each other's work.
 - **Reviewing changes before they reach production.** The default branch is read-only, so nothing becomes releasable until a reviewer has approved the pull request that brings it in.
-- **Fixing an earlier version without disturbing what is live.** Create a branch that starts from that saved version, correct it, and save the fix without moving the head of the default branch. Refer to [Version Control with Git](/docs/beta/branching/versioning).
+- **Fixing an earlier version without disturbing what is live.** Create a branch that starts from that saved version, correct it, and save the fix without moving the head of the default branch. Refer to [Version Control with Git](../versioning.md).
 - **Showing who approved a change.** Every change arrives through a merged pull request, so the repository records the author, the reviewer, and the approval alongside the diff.
 
 ## What a Branch Contains
@@ -28,7 +28,7 @@ There are two kinds of branches:
 
 ## Single-Branch and Multi-Branch Mode
 
-Git Sync starts in single-branch mode. Multiple branches are opted into per workspace. See [Enable Branching](/docs/beta/branching/multi-branch/enable-and-manage-branches) for how to turn them on.
+Git Sync starts in single-branch mode. Multiple branches are opted into per workspace. See [Enable Branching](./enable-and-manage-branches.md) for how to turn them on.
 
 | Behavior | Single-branch mode | Multi-branch mode |
 |:---------|:-------------------|:------------------|
@@ -70,7 +70,7 @@ flowchart LR
 
 </div>
 
-Refer to [Pull Requests](/docs/beta/branching/multi-branch/pull-requests) for the full flow, including how to open and track pull requests from ToolJet.
+Refer to [Pull Requests](./pull-requests.md) for the full flow, including how to open and track pull requests from ToolJet.
 
 ## Resources Covered by a Branch
 
@@ -93,7 +93,7 @@ Folders are also workspace-level rather than branch-scoped, so a folder created 
 
 ## Where Branch Controls Appear
 
-The branch dropdown and the **Pull** button appear in the header on the **Applications**, **Data sources**, and **Modules** pages. The header **Commit** button appears only on the **Data sources** page. Applications and modules are committed from inside their builder, see [Push and Pull Commit](/docs/beta/branching/multi-branch/push-and-pull).
+The branch dropdown and the **Pull** button appear in the header on the **Applications**, **Data sources**, and **Modules** pages. The header **Commit** button appears only on the **Data sources** page. Applications and modules are committed from inside their builder, see [Push and Pull Commit](./push-and-pull.md).
 
 ## Using Git Sync Across Multiple Instances
 

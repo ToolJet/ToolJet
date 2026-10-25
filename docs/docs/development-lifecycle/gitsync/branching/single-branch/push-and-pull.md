@@ -30,7 +30,7 @@ To commit datasource changes:
 
 <img className="screenshot-full img-m" src="/img/development-lifecycle/branching/shared/workspace-commit-modal.png" alt="Push commit modal with a commit message field limited to 50 characters" />
 
-**Commit** only re-pushes resources that Git already tracks. A resource that has never been committed uses a separate first-time flow, refer to [Sync Unsynced Resources](/docs/beta/branching/single-branch/sync-resources).
+**Commit** only re-pushes resources that Git already tracks. A resource that has never been committed uses a separate first-time flow, refer to [Sync Unsynced Resources](./sync-resources.md).
 
 ### Scope of a Push
 
@@ -101,7 +101,7 @@ Pulling removes applications and modules that are no longer present in Git, and 
 
 Saving a version locks it and creates a tag in the Git repository. A saved version cannot be edited or renamed, and it becomes available to promote through environments and release.
 
-Each application has one draft, which is what you edit. Saving a version creates a new draft so there is always something to work on. Refer to [Version Control with Git](/docs/beta/branching/versioning) for how drafts, saved versions, and Git tags relate to each other.
+Each application has one draft, which is what you edit. Saving a version creates a new draft so there is always something to work on. Refer to [Version Control with Git](../versioning.md) for how drafts, saved versions, and Git tags relate to each other.
 
 ### Pull a Saved Version
 
@@ -136,7 +136,7 @@ Pulling a saved version does not affect your current draft, which continues to t
 
 ## Conflicts
 
-If ToolJet finds a duplicate name or slug between your workspace and the incoming changes, the operation stops before anything is written and a dialog explains what clashed. Refer to [Resolving Conflicts](/docs/beta/branching/troubleshooting/resolving-conflicts).
+If ToolJet finds a duplicate name or slug between your workspace and the incoming changes, the operation stops before anything is written and a dialog explains what clashed. Refer to [Resolving Conflicts](../troubleshooting/resolving-conflicts.md).
 
 <br/>
 ---
