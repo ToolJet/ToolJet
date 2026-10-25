@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { TrackedSuspense } from './SuspenseTracker';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -287,8 +287,26 @@ const RenderWidget = ({
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
   setDefaultExposedValues(id, parentId, componentType, moduleId);
+  // A widget's mount writes (its exposed values, its id) are held in the store's exposed-value batch and applied with
+  // every other widget mounting in the same commit, in one store update. Each write on its own re-ran every mounted
+  // widget's store selectors, so a page of N widgets cost N x N selector runs as it mounted, and the page switch's own
+  // batch is already flushed by the time the widgets' effects run. Opened in a layout effect (all of a commit's layout
+  // effects run before its passive ones), closed in the passive effect below, which runs after the widget's own (a
+  // child's passive effects run first); the batch is ref-counted, so the last widget to close applies the writes.
+  const mountHold = useRef(null);
+  useLayoutEffect(() => {
+    const release = useStore.getState().holdExposedValueWrites();
+    mountHold.current = release;
+    const fallback = setTimeout(release, 0);
+    return () => {
+      clearTimeout(fallback);
+      release();
+    };
+  }, []);
   useEffect(() => {
     setExposedVariable('id', id);
+    mountHold.current?.();
+    mountHold.current = null;
   }, []);
 
   const collapseWhenHidden = resolvedProperties?.collapseWhenHidden ?? false;
