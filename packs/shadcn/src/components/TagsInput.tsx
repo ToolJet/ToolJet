@@ -66,7 +66,12 @@ export const TagsInput = () => {
   const options = M.toSuggestions(suggestions);
   const known = new Set(options.map((s) => (rules.caseSensitive ? s.tag : s.tag.toLowerCase())));
 
+  // The tags as the last change left them: an event handler's actions run one after another before a render, so
+  // selectTags twice added only the second call's tags.
+  const tagsRef = useRef(tags);
+  tagsRef.current = tags;
   const publish = (next: string[]) => {
+    tagsRef.current = next;
     setValues(next);
     setNewTagsAdded(next.filter((t) => !known.has(rules.caseSensitive ? t : t.toLowerCase())));
   };
@@ -140,11 +145,11 @@ export const TagsInput = () => {
     publish(M.addTags([], M.toTags(t), rules).tags)
   );
   TJ.useAction({ name: 'selectTags', displayName: 'Select tags', params: [{ handle: 'tags', displayName: 'Tags' }] }, (t) =>
-    publish(M.addTags(tags, M.toTags(t), rules).tags)
+    publish(M.addTags(tagsRef.current, M.toTags(t), rules).tags)
   );
   TJ.useAction({ name: 'deselectTags', displayName: 'Deselect tags', params: [{ handle: 'tags', displayName: 'Tags' }] }, (t) => {
     const gone = M.toTags(t);
-    publish(tags.filter((tag) => !gone.some((g) => M.sameTag(g, tag, rules.caseSensitive))));
+    publish(tagsRef.current.filter((tag) => !gone.some((g) => M.sameTag(g, tag, rules.caseSensitive))));
   });
   // Clearing drops the unfinished text too, or leaving the box would add it as a tag.
   TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => {

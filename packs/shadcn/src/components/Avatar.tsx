@@ -57,13 +57,18 @@ export const Avatar = () => {
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
 
-  // Drawn inside the box: an avatar never grows past the widget's height.
+  // Drawn inside the box: an avatar never grows past the widget's height, nor a lone avatar past its width (a narrow
+  // Kanban card cut it).
   const ref = useRef<HTMLDivElement>(null);
   const [room, setRoom] = useState(0);
+  const [roomWide, setRoomWide] = useState(0);
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const measure = () => setRoom(el.clientHeight);
+    const measure = () => {
+      setRoom(el.clientHeight);
+      setRoomWide(el.clientWidth);
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
@@ -72,12 +77,13 @@ export const Avatar = () => {
 
   const key = String(size ?? '').trim();
   const asked = Math.max(16, Math.min(256, NAMED[key] ?? (Number(key) || 32)));
-  const px = room > 0 ? Math.max(12, Math.min(asked, room)) : asked;
   const people = isSet(names) && !(Array.isArray(names) && !names.length) ? avatarPeople(names, src || imageUrl) : name ? [{ name: String(name), src: String(imageUrl || src || '') }] : [];
   const max = Math.max(1, Math.min(50, Math.floor(Number(maxVisible)) || 5));
   const shown = people.slice(0, max);
   const extra = people.length - shown.length;
   const single = people.length === 1 ? people[0] : null;
+  const fit = Math.min(room > 0 ? room : asked, single && !showDetails && roomWide > 0 ? roomWide : asked);
+  const px = Math.max(12, Math.min(asked, fit));
   const vars = {
     ['--av-size' as string]: `${px}px`,
     ['--av-font' as string]: `${Math.max(9, Math.round(px * 0.4))}px`,

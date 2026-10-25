@@ -81,19 +81,33 @@ export const Stepper = () => {
   }, [index, isLast, shownId, current, setCurrentStep, setCurrentStepIndex, setIsFirstStep, setIsLastStep]);
   const finish = () => onFinish();
 
+  // The step index as the last move left it: an event handler's moves run one after another before a render, and
+  // each starts from the previous one's step (two nextTab calls moved one step and fired twice).
+  const indexRef = React.useRef(index);
+  indexRef.current = index;
   const goTo = (next: number) => {
-    const step = steps[Math.max(0, Math.min(steps.length - 1, next))];
-    if (!step || step.id === steps[index]?.id) return;
+    const to = Math.max(0, Math.min(steps.length - 1, next));
+    const step = steps[to];
+    if (!step || to === indexRef.current) return;
+    indexRef.current = to;
     setCurrentStep(step.id);
+    // The derived values too, before onStepChange: its handlers read the step they moved to.
+    setCurrentStepIndex(to);
+    setIsFirstStep(to === 0);
+    setIsLastStep(to === steps.length - 1);
     onStepChange();
   };
 
   // UI 2.0 Tabs' action names, as the pack's Tabs use.
-  ToolJet.useAction({ name: "nextTab", displayName: "Next step" }, () => goTo(index + 1));
-  ToolJet.useAction({ name: "previousTab", displayName: "Previous step" }, () => goTo(index - 1));
+  ToolJet.useAction({ name: "nextTab", displayName: "Next step" }, () => goTo(indexRef.current + 1));
+  ToolJet.useAction({ name: "previousTab", displayName: "Previous step" }, () => goTo(indexRef.current - 1));
   ToolJet.useAction(
     { name: "setTab", displayName: "Go to step", params: [{ handle: "id", displayName: "Step id" }] },
-    (id) => goTo(steps.findIndex((s) => s.id === String(id))),
+    (id) => {
+      // An id that names no step changes nothing (findIndex's -1 moved to the first step).
+      const to = steps.findIndex((s) => s.id === String(id));
+      if (to >= 0) goTo(to);
+    },
   );
 
   return (

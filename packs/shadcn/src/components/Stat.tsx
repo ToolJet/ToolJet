@@ -140,10 +140,11 @@ export const Stat = () => {
   const [, setSecondaryLabel] = ToolJet.useStateString({ name: 'secondaryLabel', initialValue: '', inspector: 'hidden' });
   const [, setSecondaryValue] = ToolJet.useStateString({ name: 'secondaryValue', initialValue: '', inspector: 'hidden' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
-  // A number stays a number, so the figure keeps grouping its digits.
+  // A number stays a number, so the figure keeps grouping its digits; NaN or Infinity (arithmetic on data not loaded)
+  // is no figure and shows empty, not exposed as NaN.
   ToolJet.useAction(
     { name: 'setPrimaryValue', displayName: 'Set primary value', params: [{ handle: 'text', displayName: 'Value', defaultValue: '' }] },
-    (next: unknown) => setValue((typeof next === 'number' ? next : text(next)) as string)
+    (next: unknown) => setValue((typeof next === 'number' ? (Number.isFinite(next) ? next : '') : text(next)) as string)
   );
   ToolJet.useAction(
     { name: 'setSecondaryValue', displayName: 'Set secondary value', params: [{ handle: 'text', displayName: 'Change', defaultValue: '' }] },
@@ -191,7 +192,7 @@ export const Stat = () => {
 
   useEffect(() => {
     setPrimaryLabel(text(label));
-    setPrimaryValue(typeof value === 'number' ? value : text(value));
+    setPrimaryValue(typeof value === 'number' ? (Number.isFinite(value) ? value : '') : text(value));
     setSecondaryLabel(text(changeLabel));
     setSecondaryValue(text(change));
     // eslint-disable-next-line react-hooks/exhaustive-deps

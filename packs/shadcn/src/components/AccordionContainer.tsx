@@ -84,11 +84,19 @@ export const AccordionContainer = () => {
     setOpenIndexes(shownOpen);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shownOpen.join("|")]);
+  // The open ids as the last action left them: actions an event handler runs one after another (before a render)
+  // each start from the previous one's result, so two expands open two sections and fire twice, not once.
+  const openRef = React.useRef(open);
+  openRef.current = open;
   const update = (next: string[], fire = true) => {
+    const prev = openRef.current;
+    const expanded = next.some((id) => !prev.includes(id));
+    const collapsed = prev.some((id) => !next.includes(id));
+    openRef.current = next;
     setOpenSections(next);
     if (!fire) return;
-    if (next.some((id) => !open.includes(id))) onExpand();
-    if (open.some((id) => !next.includes(id))) onCollapse();
+    if (expanded) onExpand();
+    if (collapsed) onCollapse();
     onChange();
   };
   // A section by id, or by index (UI 2.0 Accordion's expand / collapse take an index).
@@ -99,12 +107,18 @@ export const AccordionContainer = () => {
     const n = Number(key);
     return Number.isInteger(n) && sections[n] ? sections[n].id : null;
   };
+  // An index or id that names no section changes nothing (as the pack's Accordion); only an empty one means all.
+  const blank = (key: unknown) => key === undefined || key === null || key === "";
   ToolJet.useAction(
     { name: "expand", displayName: "Expand", params: [{ handle: "index", displayName: "Section id or index (empty: all)" }] },
     (key) => {
       const one = idOf(key);
+      if (!blank(key) && !one) return;
       const all = sections.map((s) => s.id);
-      update(allowMultiple ? (one ? [...new Set([...open, one])] : all) : [one ?? all[0]].filter(Boolean), false);
+      const prev = openRef.current;
+      const next = allowMultiple ? (one ? [...new Set([...prev, one])] : all) : [one ?? all[0]].filter(Boolean);
+      update(next, false);
+      // Every time, as the native Accordion's expand and the pack's Accordion do.
       onExpand();
     },
   );
@@ -112,7 +126,10 @@ export const AccordionContainer = () => {
     { name: "collapse", displayName: "Collapse", params: [{ handle: "index", displayName: "Section id or index (empty: all)" }] },
     (key) => {
       const one = idOf(key);
-      update(one ? open.filter((id) => id !== one) : [], false);
+      if (!blank(key) && !one) return;
+      const prev = openRef.current;
+      const next = one ? prev.filter((id) => id !== one) : [];
+      update(next, false);
       onCollapse();
     },
   );
@@ -123,10 +140,12 @@ export const AccordionContainer = () => {
       displayName: "Open section",
       params: [{ handle: "id", displayName: "Section id" }],
     },
-    (id) =>
-      update(
-        allowMultiple ? [...new Set([...open, String(id)])] : [String(id)],
-      ),
+    (id) => {
+      // A section that exists (by id, or by index as expand takes): an unknown id opened nothing but was exposed.
+      const one = idOf(id);
+      if (!one) return;
+      update(allowMultiple ? [...new Set([...openRef.current, one])] : [one]);
+    },
   );
   ToolJet.useAction({ name: "collapseAll", displayName: "Collapse all" }, () =>
     update([]),

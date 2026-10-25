@@ -1,6 +1,7 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId } from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useLiveState } from '../lib/useLiveState';
 import { Check } from 'lucide-react';
 import { CheckedRow } from '../lib/Field';
 import { lookVars, useResetOn } from '../lib/ui2/choice/looks';
@@ -35,7 +36,7 @@ export const Checkbox = () => {
   const ownId = useId();
   const id = hostId ?? ownId;
 
-  const [checked, setChecked] = useState(() => defaultChecked === true || legacyChecked === true);
+  const [checked, setChecked, checkedRef] = useLiveState(() => defaultChecked === true || legacyChecked === true);
   useResetOn(defaultChecked, () => setChecked(defaultChecked === true));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
   ToolJet.useFormClear(() => setChecked(false));
@@ -47,7 +48,7 @@ export const Checkbox = () => {
   const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked });
 
   const set = (next: boolean) => {
-    if (next === checked) return;
+    if (next === checkedRef.current) return;
     setChecked(next);
     setValue(next);
     setLegacyChecked(next);
@@ -56,7 +57,7 @@ export const Checkbox = () => {
     if (next) onCheck();
     else onUnCheck();
   };
-  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => set(!checked));
+  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => set(!checkedRef.current));
   ToolJet.useAction(
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value', type: 'toggle', defaultValue: true }] },
     (next) => set(String(next) === 'true')

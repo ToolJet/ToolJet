@@ -114,7 +114,12 @@ export const Form = () => {
   };
   const visibleErrors = errors as Record<string, string>;
 
+  // The values as the last change left them: an event handler's setValues calls run one after another before a
+  // render, and each merges onto the previous one's result.
+  const valuesRef = React.useRef(values);
+  valuesRef.current = values;
   const apply = (next: Values) => {
+    valuesRef.current = next;
     const nextErrors = validate(fields, next);
     setData(next);
     setErrors(nextErrors);
@@ -153,7 +158,11 @@ export const Form = () => {
   ToolJet.useAction({ name: 'reset', displayName: 'Reset' }, reset);
   ToolJet.useAction(
     { name: 'setValues', displayName: 'Set values', params: [{ handle: 'values', displayName: 'Values (object)' }] },
-    (next) => apply({ ...values, ...(typeof next === 'object' && next ? (next as Values) : {}) })
+    // An object of field values; a list (or anything else) is not one: its indexes became fields named 0, 1...
+    (next) => {
+      if (!next || typeof next !== 'object' || Array.isArray(next)) return;
+      apply({ ...valuesRef.current, ...(next as Values) });
+    }
   );
 
   const renderControl = (field: FormField) => {

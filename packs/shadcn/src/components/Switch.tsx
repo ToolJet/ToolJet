@@ -1,6 +1,7 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId } from 'react';
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useLiveState } from '../lib/useLiveState';
 import { CheckedRow } from '../lib/Field';
 import { lookVars, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
@@ -29,7 +30,7 @@ export const Switch = () => {
   const ownId = useId();
   const id = hostId ?? ownId;
 
-  const [checked, setChecked] = useState(() => defaultChecked === true || legacyChecked === true);
+  const [checked, setChecked, checkedRef] = useLiveState(() => defaultChecked === true || legacyChecked === true);
   useResetOn(defaultChecked, () => setChecked(defaultChecked === true));
   useEffect(() => {
     setValue(checked);
@@ -37,13 +38,13 @@ export const Switch = () => {
   }, [checked]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (next: boolean) => {
-    if (next === checked) return;
+    if (next === checkedRef.current) return;
     setChecked(next);
     setValue(next);
     setLegacyChecked(next);
     onChange();
   };
-  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => set(!checked));
+  ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => set(!checkedRef.current));
   ToolJet.useAction(
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value', type: 'toggle', defaultValue: true }] },
     (next) => set(String(next) === 'true')
