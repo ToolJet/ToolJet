@@ -93,12 +93,15 @@ const Frame = ({
   empty,
   loading,
   chartRef,
+  ready = true,
   children,
 }: {
   title: string;
   empty: boolean;
   loading: boolean;
   chartRef: React.RefObject<HTMLDivElement>;
+  /** The chart theme is read (useChartTheme): the plot draws, and animates in, in its final colours. */
+  ready?: boolean;
   children: React.ReactNode;
 }) => (
   <div className="tj-ant-chart" ref={chartRef}>
@@ -108,7 +111,7 @@ const Frame = ({
       </Typography.Title>
     ) : null}
     <div className="tj-ant-chart-body">
-      {empty && !loading ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" /> : children}
+      {empty && !loading ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" /> : ready ? children : null}
       {loading ? <ChartLoader /> : null}
     </div>
   </div>
@@ -172,7 +175,7 @@ export const Column = () => {
   const marked = p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [s.x, s.color] }) } : {};
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <Chart
           {...(common as object)}
           data={s.data}
@@ -212,7 +215,7 @@ export const Line = () => {
       : undefined;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntLine
           {...(common as object)}
           data={s.data}
@@ -247,7 +250,7 @@ export const Area = () => {
   const fillOpacity = s.color && !stack ? 0.25 : 0.4;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntArea
           {...(common as object)}
           data={s.data}
@@ -294,7 +297,7 @@ export const Pie = () => {
   };
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref}>
+      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref} ready={theme.ready}>
         <AntPie
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
@@ -339,7 +342,7 @@ export const Bar = () => {
   const r = Math.max(0, Number(radius) || 0);
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntBar
           {...(common as object)}
           data={s.data}
@@ -381,7 +384,7 @@ export const DualAxes = () => {
   const data = rows.map((r) => ({ ...r, [left]: toNumber(r[left]), ...(right ? { [right]: toNumber(r[right]) } : {}) }));
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntDualAxes
           autoFit
           theme={(common as { theme: string }).theme}
@@ -419,7 +422,7 @@ export const Funnel = () => {
   };
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntFunnel
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
@@ -464,7 +467,7 @@ export const Gauge = () => {
   const shown = formatter === 'percent' ? formatNumber(t / max, 'percent') : formatNumber(t, formatter as 'auto');
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={title} empty={false} loading={loading} chartRef={ref}>
+      <Frame title={title} empty={false} loading={loading} chartRef={ref} ready={theme.ready}>
         <AntGauge
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
@@ -495,7 +498,7 @@ export const Radar = () => {
   const h = p.highlight;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntRadar
           {...(common as object)}
           data={s.data}
@@ -529,7 +532,7 @@ export const Scatter = () => {
   const common = useCommon(p, theme, { color: p.colorField || undefined, y }, tips);
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref}>
+      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntScatter
           {...(common as object)}
           data={rows}
@@ -581,7 +584,7 @@ export const Heatmap = () => {
   const rows = toRows(rawData).map((r) => ({ ...r, [colorField]: toNumber(r[colorField]) ?? 0 }));
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref}>
+      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref} ready={theme.ready}>
         <AntHeatmap
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}

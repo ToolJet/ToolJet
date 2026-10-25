@@ -8,6 +8,7 @@ import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
+import { useValueSetter } from '../lib/sameValue';
 
 const VALUE_FORMAT = 'YYYY-MM-DD';
 const VALUE_FORMAT_TIME = 'YYYY-MM-DDTHH:mm:ss';
@@ -44,8 +45,10 @@ export const DatePicker = (props: Record<string, unknown>) => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: Dayjs | null) => {
-    setValue(next ? next.format(showTime ? VALUE_FORMAT_TIME : VALUE_FORMAT) : '');
+    if (!valueSetter.set(next ? next.format(showTime ? VALUE_FORMAT_TIME : VALUE_FORMAT) : '')) return;
     onChange();
   };
   ToolJet.useAction(

@@ -10,6 +10,7 @@ import { readField, rowIdOf, rowKeyOf, str, toKeyedItems, toRows, type Row } fro
 import { formatCell } from '../lib/format';
 import { slotNames } from '../lib/slots';
 import { useDialogOwner } from '../lib/useOwnerGuard';
+import { useValueSetter } from '../lib/sameValue';
 
 // Ant's Tabs: items [{ key, label }], activeKey, type (line, card), size, centered, tabPosition; each tab is a canvas
 // of ToolJet components (slot tab_<key>); events onChange, onTabClick.
@@ -44,9 +45,11 @@ export const Tabs = () => {
     if (current !== undefined && current !== asked) setActiveKey(current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, asked]);
+  // The tab a key opens (one that names no tab opens the first, as above); the tab already shown changes nothing and
+  // fires nothing (lib/sameValue).
+  const keySetter = useValueSetter<string | undefined>(current, (k) => setActiveKey(k ?? ''));
   const change = (key: string) => {
-    setActiveKey(key);
-    onChange();
+    if (keySetter.set(items.some((t) => t.key === key) ? key : items[0]?.key ?? key)) onChange();
   };
   ToolJet.useAction({ name: 'setActiveKey', displayName: 'Set active tab', params: [{ handle: 'key', displayName: 'Tab key' }] }, (k) => change(str(k)));
 
@@ -129,8 +132,14 @@ export const Modal = () => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
 
-  ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setOpen(true));
-  ToolJet.useAction({ name: 'hide', displayName: 'Hide' }, () => setOpen(false));
+  // Showing a modal already open (or hiding one already closed) changes nothing: its afterOpen fired again.
+  const openSetter = useValueSetter(!!open, setOpen);
+  ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => {
+    openSetter.set(true);
+  });
+  ToolJet.useAction({ name: 'hide', displayName: 'Hide' }, () => {
+    openSetter.set(false);
+  });
   // The modal portals out of the widget, so the host's Disable (and a disabled parent, which makes the widget inert)
   // never reached its OK button: onOk still ran (SP-02). While its owner takes no input the modal stays open, keeping
   // what was typed in its body, and refuses OK; Cancel, the close button and the mask still close it.

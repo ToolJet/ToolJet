@@ -12,6 +12,7 @@ import { useFitSquare } from '../lib/fitText';
 import { cardItems, chipLabel, chipTone, colorFor, initials, recordItems } from '../lib/ui2/display/lists/model';
 import { summaryFigures } from '../lib/ui2/display/summary';
 import { progressEntries, progressItem, progressMax } from '../lib/ui2/charts/progressModel';
+import { useValueSetter } from '../lib/sameValue';
 
 // The tone a status word reads as (lists/model chipTone) -> Ant's Tag status colour.
 const TONE_TAG: Record<string, string> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: 'default' };
@@ -637,10 +638,11 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
   const selected = Array.isArray(current) ? current.map(str) : current === '' || current === undefined || current === null ? [] : [str(current)];
   // Exposed as the buttons give their values: 1 stays 1, not '1'. A value no button has stays as it was given.
   const rawOf = (v: string) => list.find((b) => b.value === v)?.raw ?? v;
+  // A selection it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as string));
   const set = (next: string[]) => {
     const values = next.map(rawOf);
-    setValue((mode === 'multiple' ? values : values[0] ?? '') as string);
-    onChange();
+    if (valueSetter.set(mode === 'multiple' ? values : values[0] ?? '')) onChange();
   };
   ToolJet.useAction({ name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
     set(Array.isArray(v) ? (v as unknown[]).map(str) : v === '' || v === undefined ? [] : [str(v)])

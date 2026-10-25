@@ -6,6 +6,7 @@ import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
+import { useValueSetter } from '../lib/sameValue';
 
 // Ant's Input.TextArea: value, placeholder, autoSize (minRows/maxRows), maxLength/showCount, allowClear.
 export const TextArea = (props: Record<string, unknown>) => {
@@ -29,8 +30,10 @@ export const TextArea = (props: Record<string, unknown>) => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 11 });
 
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: string) => {
-    setValue(next);
+    if (!valueSetter.set(next)) return;
     onChange();
   };
   ToolJet.useAction(

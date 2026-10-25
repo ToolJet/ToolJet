@@ -6,6 +6,7 @@ import { SpinOver } from '../lib/Loading';
 import { FormField, useFieldProps } from '../lib/FormField';
 import { str, toOptions } from '../lib/data';
 import { toNumber } from '../lib/format';
+import { useValueSetter } from '../lib/sameValue';
 
 const useValueActions = (change: (v: unknown) => void, initial: unknown) => {
   ToolJet.useAction(
@@ -66,8 +67,10 @@ export const RadioGroup = (props: Record<string, unknown>) => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 6 });
   const options = toOptions(rawOptions);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
-    setValue(str(v));
+    if (!valueSetter.set(str(v))) return;
     check.touch();
     onChange();
   };
@@ -135,8 +138,10 @@ export const Segmented = (props: Record<string, unknown>) => {
   // An empty value selects nothing (null; undefined would make Ant select the first option), so a required
   // Segmented does not look filled.
   const current = options.some((o) => o.value === value) ? value : (null as unknown as string);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
-    setValue(str(v));
+    if (!valueSetter.set(str(v))) return;
     check.touch();
     onChange();
   };
@@ -178,8 +183,10 @@ export const Rate = (props: Record<string, unknown>) => {
   const check = ToolJet.useValidation({ section: 'choice', value, present: Number(value) > 0 });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 4 });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
-    setValue(toNumber(v) ?? 0);
+    if (!valueSetter.set(toNumber(v) ?? 0)) return;
     check.touch();
     onChange();
   };
@@ -250,10 +257,11 @@ export const Slider = (props: Record<string, unknown>) => {
     const snapped = Math.abs(hi - within) < Math.abs(grid - within) ? hi : grid;
     return Number(snapped.toFixed(10));
   };
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
-    if (isRange) setValue(toRange(v, lo, hi).map(clamp) as unknown as number);
-    else setValue(clamp(toNumber(Array.isArray(v) ? v[0] : v) ?? lo));
-    onChange();
+    const next = isRange ? toRange(v, lo, hi).map(clamp) : clamp(toNumber(Array.isArray(v) ? v[0] : v) ?? lo);
+    if (valueSetter.set(next)) onChange();
   };
   useValueActions(change, props.value);
   // A literal 150 under a Max of 100 drew the thumb at 100 but exposed 150. A range value fits only while Range is on:

@@ -1,7 +1,10 @@
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 export type Theme = {
+  /** Whether the tokens have been read off the element: a chart drawn before that animated in the stock palette and
+   *  switched to the theme's colours partway through. */
+  ready: boolean;
   brand: string;
   success: string;
   warning: string;
@@ -73,13 +76,15 @@ const LIGHT: Theme = {
   surface: '#ffffff',
   dark: false,
   palette: seriesPalette(LIGHT_BASE),
+  ready: false,
 };
 
 // The chart draws on a canvas, which cannot read CSS variables: read antd's tokens off the element (stock Ant, or the
 // component's style overrides; dark under .tj-ant-dark), and again when the root's class or style changes.
 export const useChartTheme = (ref: React.RefObject<HTMLElement>) => {
   const [theme, setTheme] = useState<Theme>(LIGHT);
-  useEffect(() => {
+  // Read before the browser paints, and the charts draw only once it is read (Frame's ready).
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     const root = (el.closest('.tj-ant-root') as HTMLElement | null) ?? el;
@@ -114,6 +119,7 @@ export const useChartTheme = (ref: React.RefObject<HTMLElement>) => {
         border: probe('--ant-color-split', LIGHT.border),
         surface: probe('--ant-color-bg-container', LIGHT.surface),
         dark: root.classList.contains('tj-ant-dark'),
+        ready: true,
       };
       setTheme((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
     };

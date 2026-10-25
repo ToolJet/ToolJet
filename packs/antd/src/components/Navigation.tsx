@@ -23,24 +23,25 @@ import { SkeletonSwap, SpinOver } from '../lib/Loading';
 import { str, toArray, toKeyedItems, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { toTree } from './MoreInputs';
+import { boundedTree } from '../lib/tree';
 import { slotNames } from '../lib/slots';
 import { ownerAvailable, useOwnedPopup, useOwnerShown } from '../lib/useOwnerGuard';
+import { useValueSetter } from '../lib/sameValue';
 
 type MenuItem = { key: string; label: string; danger?: boolean; disabled?: boolean; children?: MenuItem[]; type?: 'divider' };
 // Ant's menu items: [{ key, label, danger, disabled, children }] and { type: 'divider' }; strings become both.
+// Bounded by lib/tree (depth, size, cycles), as toTree is.
 const toMenuItems = (raw: unknown): MenuItem[] =>
-  toArray(raw)
-    .map((o, i): MenuItem | null => {
-      if (typeof o === 'string') return { key: o, label: o };
-      if (!o || typeof o !== 'object') return null;
-      const r = o as Row;
-      if (r.type === 'divider') return { key: `divider-${i}`, label: '', type: 'divider' };
-      const key = str(r.key ?? r.value ?? r.id ?? r.label);
-      if (!key) return null;
-      const children = toMenuItems(r.children);
-      return { key, label: str(r.label ?? r.title ?? key), danger: Boolean(r.danger) || undefined, disabled: Boolean(r.disabled) || undefined, ...(children.length ? { children } : {}) };
-    })
-    .filter((x): x is MenuItem => !!x);
+  boundedTree<MenuItem>(raw, (o, i, kids) => {
+    if (typeof o === 'string') return { key: o, label: o };
+    if (!o || typeof o !== 'object') return null;
+    const r = o as Row;
+    if (r.type === 'divider') return { key: `divider-${i}`, label: '', type: 'divider' };
+    const key = str(r.key ?? r.value ?? r.id ?? r.label);
+    if (!key) return null;
+    const children = kids();
+    return { key, label: str(r.label ?? r.title ?? key), danger: Boolean(r.danger) || undefined, disabled: Boolean(r.disabled) || undefined, ...(children.length ? { children } : {}) };
+  });
 
 // Ant's Collapse: items [{ key, label }], each panel a canvas of ToolJet components (slot panel_<key>); activeKey
 // (the open panels' keys), accordion (one open at a time), bordered, ghost, size; event onChange.
@@ -77,9 +78,10 @@ export const Collapse = () => {
     if (items.length && openKey !== JSON.stringify(toArray(raw).map(str))) setActiveKey(open);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openKey, items.length]);
+  // The panels already open: nothing changes and nothing fires (lib/sameValue).
+  const keysSetter = useValueSetter<string[]>(open, (k) => setActiveKey(k));
   const change = (keys: string | string[]) => {
-    setActiveKey(toArray(Array.isArray(keys) ? keys : keys ? [keys] : []).map(str));
-    onChange();
+    if (keysSetter.set(toArray(Array.isArray(keys) ? keys : keys ? [keys] : []).map(str))) onChange();
   };
   ToolJet.useAction({ name: 'setActiveKey', displayName: 'Set open panels', params: [{ handle: 'keys', displayName: 'Key or keys' }] }, (k) => change(Array.isArray(k) ? (k as string[]) : str(k)));
   const height = Math.max(40, Math.min(2000, Number(panelHeight) || 160));
@@ -281,9 +283,10 @@ export const Pagination = () => {
     if (toNumber(current) !== null && clampPage(current) !== Number(current)) setCurrent(clampPage(current));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages, current]);
+  // The page already shown: nothing changes and nothing fires (lib/sameValue).
+  const pageSetter = useValueSetter<number>(clampPage(current), (p) => setCurrent(p));
   ToolJet.useAction({ name: 'setCurrent', displayName: 'Go to page', params: [{ handle: 'page', displayName: 'Page' }] }, (p) => {
-    setCurrent(clampPage(p));
-    onChange();
+    if (pageSetter.set(clampPage(p))) onChange();
   });
   return (
     <AntProvider tokens={tokens}>

@@ -9,6 +9,7 @@ import { str, toOptions, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
 import { countryOf, flagOf, nationalOf, phoneCountries, phoneCountry, phoneInfo, type Country } from '../lib/ui2/inputs/phone';
+import { useValueSetter } from '../lib/sameValue';
 
 const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => void }>) => {
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
@@ -55,9 +56,11 @@ export const Combobox = (props: Record<string, unknown>) => {
     setSelectedOption(opt ?? {});
     setSelectedLabel(opt?.label ?? '');
   };
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
     const next = v === undefined || v === null ? '' : str(v);
-    setValue(next);
+    if (!valueSetter.set(next)) return;
     expose(next);
     onChange();
   };
@@ -138,9 +141,11 @@ export const OTP = (props: Record<string, unknown>) => {
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
   const n = Math.max(2, Math.min(12, Number(length) || 6));
   const ref = useRef<InputRef>(null);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: string) => {
     const next = v.slice(0, n);
-    setValue(next);
+    if (!valueSetter.set(next)) return;
     setIsComplete(next.length === n);
     onChange();
     if (next.length === n) onComplete();
@@ -240,8 +245,10 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
     setFormattedValue(n === null ? '' : fmt ? fmt.format(n) : String(n));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [n, fmt]);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: number | null) => {
-    setValue(v as number);
+    if (!valueSetter.set(v as number)) return;
     onChange();
   };
   ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => change(toNumber(v)));
@@ -351,8 +358,13 @@ export const PhoneInput = (props: Record<string, unknown>) => {
     setIsValidNumber(info.isValidNumber);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info.value, info.country]);
+  // The number and its country as last set: a setFieldValue or setCountryCode that leaves both as they are fires
+  // nothing (lib/sameValue), a second call in one batch included.
+  const shown = useValueSetter(`${str(value)}|${picked.code}`, () => {});
   const commit = (digits: string, c: Country) => {
-    setValue(phoneInfo(digits, c).value);
+    const next = phoneInfo(digits, c).value;
+    if (!shown.set(`${next}|${c.code}`)) return;
+    setValue(next);
     onChange();
   };
   ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Number' }] }, (v) => {
@@ -465,8 +477,10 @@ export const Password = (props: Record<string, unknown>) => {
     setStrength(st.label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [st.label]);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: string) => {
-    setValue(v);
+    if (!valueSetter.set(v)) return;
     onChange();
   };
   ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => change(str(v)));
