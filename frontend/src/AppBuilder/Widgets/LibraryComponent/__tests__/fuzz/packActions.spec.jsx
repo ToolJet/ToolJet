@@ -381,8 +381,9 @@ if (!packs.length) test.skip('pack actions (set PACK_ACTIONS=shadcn,antd,mui to 
           }
         }
         // Events: an action call or a click fires each event at most once, and a change event never before the value it
-        // reports is exposed (a handler reading it would see the old one). Firing on a call that changes nothing (a
-        // setValue to the current value) is the native widgets' behaviour, so it is only noted.
+        // reports is exposed (a handler reading it would see the old one). An action that changes nothing (a setValue to
+        // the current value, a clear of an empty field, a step past the last) fires no change event, in every pack
+        // (product decision 2026-10-25); a click that changes nothing is the user's own and only noted.
         const stepFired = fired.slice(firedFrom);
         if (!quiet) {
           const counts = {};
@@ -395,8 +396,13 @@ if (!packs.length) test.skip('pack actions (set PACK_ACTIONS=shadcn,antd,mui to 
             const settledLater = changeLog.length > event.keys.length;
             if (event.at === startChanges && settledLater)
               problems.add(`${label}: ${event.name} fired before the exposed value it reports changed`);
-            else if (event.at === startChanges && single && !settledLater)
-              notes.add(`${label.replace(/\(.*\)/, '(...)')}: ${event.name} fires with nothing changed`);
+            else if (event.at === startChanges && single && !settledLater) {
+              // A transition's event (Ant Modal's afterOpen) lands in whichever step its animation ends in.
+              const fromTransition = (RENDER_EVENTS[`${pack}.${name}`] ?? []).includes(event.name);
+              if (label.startsWith('click ') || fromTransition)
+                notes.add(`${label.replace(/\(.*\)/, '(...)')}: ${event.name} fires with nothing changed`);
+              else problems.add(`${label}: ${event.name} fired with nothing changed`);
+            }
           }
         }
         // A user-level change (a UI click) of the component's own state fires its change event.
