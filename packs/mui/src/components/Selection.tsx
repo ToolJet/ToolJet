@@ -208,7 +208,8 @@ export const ToggleButtonGroup = () => {
     onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) =>
-    change(exclusive ? str(next) || null : toArray(next).map(str))
+    // Nothing picked is '', the declared text value, as a clear leaves it; null (MUI's own none) flipped its type.
+    change(exclusive ? str(next) : toArray(next).map(str))
   );
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-center tj-mui-start">

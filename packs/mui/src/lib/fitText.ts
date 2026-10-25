@@ -90,3 +90,28 @@ export const useFitLayout = (box: HTMLElement | null, layouts: string[], deps: u
   }, [...deps, box]);
   return layout;
 };
+
+/**
+ * The largest square up to `size` that fits the ref'd box: an avatar keeps its circle when its box is narrower or
+ * shorter than the size set (a Kanban card's avatar was squeezed to an oval). Remeasured when the box changes size.
+ */
+export const useFitSquare = <T extends HTMLElement>(size: number) => {
+  // A callback ref kept in state: a provider that mounts its children after the first render (MUI's) still gets its
+  // box measured.
+  const [el, setEl] = useState<T | null>(null);
+  const [room, setRoom] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    if (!el) return undefined;
+    const measure = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      // An unlaid box (0 by 0, jsdom, a hidden tab) keeps the size set.
+      setRoom(w > 0 && h > 0 ? Math.min(w, h) : null);
+    };
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(el);
+    return () => observer?.disconnect();
+  }, [el]);
+  return [setEl, room === null ? size : Math.max(16, Math.min(size, Math.floor(room)))] as const;
+};

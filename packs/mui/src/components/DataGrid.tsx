@@ -246,9 +246,23 @@ export const DataGrid = () => {
     setSelectedRowId('');
     select([]);
   });
-  ToolJet.useAction({ name: 'setPage', displayName: 'Set page', params: [{ handle: 'page', displayName: 'Page (from 0)' }] }, (p) =>
-    setPage((m) => ({ ...m, page: Math.max(0, toNumber(p) ?? 0) }))
-  );
+  // setPage moves to a page that exists (the last one past the end), with no event, as the shadcn DataTable's: a page past
+  // the end was set, then MUI moved back and fired onPaginationModelChange while paginationModel still said the old
+  // page. Published at once, and from the last call's page, so calls in one event handler build on each other.
+  const pageRef = useRef(page);
+  pageRef.current = page;
+  ToolJet.useAction({ name: 'setPage', displayName: 'Set page', params: [{ handle: 'page', displayName: 'Page (from 0)' }] }, (p) => {
+    const want = Math.max(0, Math.floor(toNumber(p) ?? 0));
+    if (!Number.isFinite(want)) return;
+    const cur = pageRef.current;
+    const last = autoPageSize === true ? want : Math.max(0, Math.ceil(rows.length / cur.pageSize) - 1);
+    const to = Math.min(want, last);
+    if (to === cur.page) return;
+    const next = { ...cur, page: to };
+    pageRef.current = next;
+    setPage(next);
+    setPaginationModel({ ...next });
+  });
 
   return (
     <MuiProvider overrides={overrides} fill>
@@ -290,6 +304,7 @@ export const DataGrid = () => {
           onRowSelectionModelChange();
         }}
         onPaginationModelChange={(model: GridPaginationModel) => {
+          pageRef.current = model;
           setPage(model);
           // Published now, so the event's handler reads the new page (the effect above repeats it harmlessly).
           setPaginationModel({ ...model });

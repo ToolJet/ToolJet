@@ -29,7 +29,7 @@ import { iconOf, ICONS } from '../lib/icons';
 import { str, toArray, type Row } from '../lib/data';
 import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner, TextSkeleton } from '../lib/loading';
-import { useFitLayout, useFitText } from '../lib/fitText';
+import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 
 const COLORS = ['default', ...PALETTE_COLORS];
 
@@ -255,7 +255,7 @@ export const StatCard = () => {
     (next: unknown, nextLabel: unknown) => {
       const t = str(next).trim().toLowerCase();
       if (t === 'up' || t === 'down' || t === 'neutral') setTrend(t);
-      if (typeof nextLabel === 'number' || (typeof nextLabel === 'string' && nextLabel !== '')) setTrendLabel(nextLabel as string);
+      if ((typeof nextLabel === 'number' && Number.isFinite(nextLabel)) || (typeof nextLabel === 'string' && nextLabel !== '')) setTrendLabel(nextLabel as string);
     }
   );
   const n = toNumber(value);
@@ -382,9 +382,10 @@ export const Avatar = () => {
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 3, defaultHeight: 5 });
-  const px = Math.max(16, Math.min(240, Number(size) || 40));
+  const [box, px] = useFitSquare<HTMLDivElement>(Math.max(16, Math.min(240, Number(size) || 40)));
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-center">
+      <div ref={box} className="tj-mui-avatar-box">
       <Loading loading={loading} look={<Skeleton variant={variant === 'square' ? 'rectangular' : (variant as 'circular')} width={px} height={px} />}>
         <MuiAvatar
           src={src || undefined}
@@ -396,6 +397,7 @@ export const Avatar = () => {
           {initials(alt) || undefined}
         </MuiAvatar>
       </Loading>
+      </div>
     </MuiProvider>
   );
 };

@@ -63,8 +63,12 @@ export const Menu = () => {
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
   const items = toItems(rawItems);
+  // Open as the last call left it: open() twice in one event handler (before a render) fired onOpen twice.
+  const openRef = useRef(!!open);
+  openRef.current = !!open;
   const show = (next: boolean) => {
-    if (next === !!open) return;
+    if (next === openRef.current) return;
+    openRef.current = next;
     setOpen(next);
     (next ? onOpen : onClose)();
   };
