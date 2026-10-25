@@ -10,6 +10,7 @@ import { SAMPLE } from '../lib/samples';
 import { readField, str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
 import { useHighlightPin } from '../lib/chartHighlight';
+import { pieLegendPlace, useBoxSize } from '../lib/chartLegend';
 
 type Series = { dataKey: string; label?: string; color?: string; stack?: string };
 type Axis = { dataKey: string; label?: string; scaleType?: string };
@@ -334,6 +335,10 @@ export const PieChart = () => {
     .filter((s) => s.value > 0);
   const total = slices.reduce((sum, s) => sum + s.value, 0);
   const format = (v: number) => formatNumber(v, valueFormat as NumberFormat, currency);
+  // In a narrow box the legend goes under the pie, or away, so the pie keeps a usable size (MUI's side legend kept its
+  // width in a 108px box and left a 16px pie).
+  const [box, room] = useBoxSize<HTMLDivElement>();
+  const place = pieLegendPlace(room.w, room.h, slices.map((s) => s.label));
   const arc =
     arcLabel === 'none'
       ? undefined
@@ -346,34 +351,37 @@ export const PieChart = () => {
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={loading} fill look={<BlockSkeleton />}>
-        <SeriesColors given={pieColors}>
-          {(colors) => (
-            <MuiPieChart
-              key={highlight.on ? 'pinned' : 'free'}
-              {...highlight.props}
-              colors={colors}
-              hideLegend={hideLegend}
-              series={[
-                {
-                  data: slices.map(({ id, label, value }) => ({ id, label, value })),
-                  innerRadius: Number(innerRadius) || 0,
-                  outerRadius: Number(outerRadius) > 0 ? Number(outerRadius) : undefined,
-                  paddingAngle: Number(paddingAngle) || 0,
-                  cornerRadius: Number(cornerRadius) || 0,
-                  arcLabel: arc,
-                  arcLabelMinAngle: 18,
-                  highlightScope: { fade: 'global', highlight: 'item' },
-                  valueFormatter: (v) => format(v.value),
-                },
-              ]}
-              onItemClick={(_, item) => {
-                setClickedItem(slices[item.dataIndex]?.row ?? {});
-                highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
-                onItemClick();
-              }}
-            />
-          )}
-        </SeriesColors>
+        <div ref={box} className="tj-mui-chart-box">
+          <SeriesColors given={pieColors}>
+            {(colors) => (
+              <MuiPieChart
+                key={highlight.on ? 'pinned' : 'free'}
+                {...highlight.props}
+                colors={colors}
+                hideLegend={hideLegend || place === 'none'}
+                slotProps={place === 'bottom' ? { legend: { direction: 'horizontal', position: { vertical: 'bottom', horizontal: 'center' } } } : undefined}
+                series={[
+                  {
+                    data: slices.map(({ id, label, value }) => ({ id, label, value })),
+                    innerRadius: Number(innerRadius) || 0,
+                    outerRadius: Number(outerRadius) > 0 ? Number(outerRadius) : undefined,
+                    paddingAngle: Number(paddingAngle) || 0,
+                    cornerRadius: Number(cornerRadius) || 0,
+                    arcLabel: arc,
+                    arcLabelMinAngle: 18,
+                    highlightScope: { fade: 'global', highlight: 'item' },
+                    valueFormatter: (v) => format(v.value),
+                  },
+                ]}
+                onItemClick={(_, item) => {
+                  setClickedItem(slices[item.dataIndex]?.row ?? {});
+                  highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
+                  onItemClick();
+                }}
+              />
+            )}
+          </SeriesColors>
+        </div>
       </Loading>
     </MuiProvider>
   );

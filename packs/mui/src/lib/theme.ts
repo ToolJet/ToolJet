@@ -122,6 +122,9 @@ export const buildTheme = (app: AppTheme, o: ThemeOverrides, container: HTMLElem
   const options: ThemeOptions = {
     palette: {
       mode: app.mode,
+      // A filled palette colour (a Chip, a contained Button) takes white text only where white reads at 4.5:1, else
+      // MUI's dark text: at MUI's default 3, white on the dark theme's error red measured 3.7:1 (a DataGrid status chip).
+      contrastThreshold: 4.5,
       ...(primary ? { primary: defined({ main: primary, contrastText: o.primary ? undefined : app.onBrand }) as { main: string } } : {}),
       ...(app.danger ? { error: { main: app.danger } } : {}),
       ...(app.success ? { success: { main: app.success } } : {}),

@@ -9,6 +9,7 @@ import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { rowIdOf, rowKeyOf, sameRecord, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, toNumber } from '../lib/format';
 import { SAMPLE } from '../lib/samples';
+import { themeInk } from '../lib/ink';
 
 const ID = '__tjRowId';
 const ROW_HEIGHT = { compact: 36, standard: 52, comfortable: 67 };
@@ -120,7 +121,14 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
       const c = str(colors?.[str(p.value)]).trim();
       if (CHIP_COLORS.has(c)) return <Chip size="small" label={str(p.value)} color={c as 'default'} />;
       const css = /^(#|rgb|hsl)/i.test(c) ? c : '';
-      return <Chip size="small" label={str(p.value)} sx={css ? { color: css, bgcolor: `color-mix(in srgb, ${css} 14%, transparent)` } : undefined} />;
+      // The colour tints the chip; its text is the colour's readable ink on that tint (lib/ink.ts).
+      return (
+        <Chip
+          size="small"
+          label={str(p.value)}
+          sx={css ? (t) => ({ color: themeInk(css, t), bgcolor: `color-mix(in srgb, ${css} 14%, transparent)` }) : undefined}
+        />
+      );
     };
   } else if (!col.type) {
     col.valueFormatter = (v: unknown) => (isIdField(c.field) ? str(v) : formatCell(v, format));

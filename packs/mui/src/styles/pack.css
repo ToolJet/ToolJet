@@ -172,3 +172,11 @@
 .tj-mui-avatar-box .MuiAvatar-root {
   flex-shrink: 0;
 }
+
+/* PieChart's measured box (lib/chartLegend.ts): the chart fills it as it filled the widget. */
+.tj-mui-chart-box {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}

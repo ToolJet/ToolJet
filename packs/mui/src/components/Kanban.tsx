@@ -14,6 +14,7 @@ import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { SAMPLE } from '../lib/samples';
 import { cardClamp, cardDateLabel, cardDetails, type BoardCard } from '../lib/ui2/display/kanban/board';
 import { BADGE_BY_WORD, badgeLook, initials, isSet } from '../lib/ui2/display/kanban/look';
+import { themeInk } from '../lib/ink';
 import {
   asTags,
   isImage,
@@ -45,6 +46,7 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
   const details = expanded && fields.details ? cardDetails(card[fields.details]) : [];
   const mapped = isSet(badge) ? badgeLook(badge, badgeColors) : null;
   const word = isSet(badge) ? BADGE_BY_WORD[String(badge).toLowerCase()] : undefined;
+  const tone = !mapped && word !== 'secondary' ? (BADGE_COLOR[word ?? ''] as 'error' | 'warning' | 'success' | undefined) : undefined;
   return (
     <>
       <Typography variant="body2" className="tj-mui-kb-card-title">
@@ -80,6 +82,8 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
               style={mapped ?? undefined}
               color={mapped ? 'default' : BADGE_COLOR[word ?? ''] ?? 'default'}
               variant={mapped || word === 'secondary' ? 'filled' : 'outlined'}
+              // An outlined status chip writes its palette colour on the paper: as readable ink (lib/ink.ts).
+              sx={tone ? (t) => ({ color: themeInk(t.palette[tone].main, t, 0) }) : undefined}
             />
           ) : null}
           {isSet(meta) ? (
@@ -435,6 +439,7 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
         return (
           <section
             key={column.id}
+            data-kb-col={column.id}
             className={cls('tj-mui-kb-col', isCollapsed && 'is-collapsed', fill && 'is-fill', over && 'is-over')}
             style={style}
             {...(isCollapsed
@@ -532,6 +537,7 @@ export const Kanban = () => {
     params: { id: 'id', values: 'value' },
     shadow: 'none',
     disabled,
+    loading,
   });
   return (
     <MuiProvider overrides={overrides} fill>

@@ -19,6 +19,21 @@ const findOption = (options: Option[], given: unknown): Option | null => {
   return options.find((o) => o.value === key) ?? options.find((o) => o.label === key) ?? null;
 };
 
+/** Options a Select's menu draws: MUI mounts a MenuItem for each when it opens, and 5,000 took ~570 ms to open and
+ *  ~470 ms a typed key (type-ahead reads every item). The picked option is always among them. An Autocomplete searches
+ *  any number, as shadcn's Select points to its Combobox. */
+const MAX_SELECT_OPTIONS = 500;
+
+/** The first `max` options, and the picked one when it is past them. */
+const shownOptions = (options: Option[], picked: Option | undefined, max = MAX_SELECT_OPTIONS): Option[] => {
+  if (options.length <= max) return options;
+  const shown = options.slice(0, max);
+  if (picked && !shown.includes(picked)) shown.push(picked);
+  return shown;
+};
+
+const CAP_NOTE = '__tj-select-more__';
+
 /** The focused element, looked up through open shadow roots (document.activeElement stops at the outer host). */
 const deepActiveElement = (): Element | null => {
   let active: Element | null = document.activeElement;
@@ -177,11 +192,18 @@ export const Select = () => {
             if (available()) change(String(e.target.value ?? ''));
           }}
         >
-          {options.map((o) => (
+          {shownOptions(options, selected).map((o) => (
             <MenuItem key={o.value} value={o.value} disabled={o.disabled}>
               {o.label}
             </MenuItem>
           ))}
+          {options.length > MAX_SELECT_OPTIONS ? (
+            // A disabled item: MUI's Select makes every child an option, and a disabled one is skipped by the arrow
+            // keys and takes no click.
+            <MenuItem key={CAP_NOTE} value={CAP_NOTE} disabled className="tj-mui-cap-note" sx={{ whiteSpace: 'normal', fontSize: 12, color: 'text.secondary', '&.Mui-disabled': { opacity: 1 } }}>
+              {`Showing ${MAX_SELECT_OPTIONS} of ${options.length} options. An Autocomplete searches them all.`}
+            </MenuItem>
+          ) : null}
         </TextField>
       </Loading>
     </MuiProvider>

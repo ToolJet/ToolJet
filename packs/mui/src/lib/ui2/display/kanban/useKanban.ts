@@ -13,6 +13,7 @@ import {
   type CardMove,
 } from './board';
 import { columnMinimum, cssLength, fieldName, isSet, kanbanVars } from './look';
+import { dropPointAt, NO_TOUCH, useTouchDragRef, type TouchDragOptions } from './touchDrag';
 
 // The shadcn pack's Kanban (UI 2.0's ShadKanban) without its markup: the properties, styles, exposed values, events and
 // actions, the board state, dragging and the keyboard move. A pack draws the board from what this returns in its own
@@ -34,6 +35,8 @@ export type KanbanOptions = {
   /** What a blank column or card radius draws, as the field's placeholder (each library rounds its own way). */
   radiusHints?: { column: string; card: string };
   disabled?: boolean;
+  /** Loading: no touch move starts (a reload under the spinner would drop the card on stale data). */
+  loading?: boolean;
 };
 
 export type DropTarget = { columnId: string; before: string | null };
@@ -375,7 +378,9 @@ export const useKanban = (o: KanbanOptions) => {
   ToolJet.useRows(rowItems, Math.min(1200, Math.max(24, Number(cardHeight) || 96)), { fit: true });
 
   // Board size: columns share its width (columnMinimum) and it fades at the right while more columns are off screen.
-  const boardRef = useRef<HTMLDivElement>(null);
+  // The board element, with long-press touch moves bound to it (options set below).
+  const touch = useRef<TouchDragOptions>(NO_TOUCH);
+  const boardRef = useTouchDragRef(touch);
   const [boardWidth, setBoardWidth] = useState(0);
   const moreRight = useMoreAhead(boardRef, 'x', [board.length, collapsed], (el) => setBoardWidth(el.clientWidth));
 
@@ -419,6 +424,34 @@ export const useKanban = (o: KanbanOptions) => {
     // Dropped just before itself, the card stays where it is.
     if (dragKey && target && draggable && target.before !== dragKey) doMove(dragKey, target.columnId, target.before);
     endDrag();
+  };
+  // A touch move (phones fire no HTML drag): a long press picks the card up, the finger shows where it would land (the
+  // same target and drop line) and lifting it drops the card through the same move as a mouse drop. A pack marks each
+  // column with data-kb-col, its id.
+  const touchTarget = useRef<DropTarget | null>(null);
+  touch.current = {
+    enabled: draggable && !o.loading,
+    onPick: (key) => {
+      touchTarget.current = null;
+      setDragKey(key);
+      setPicked(null);
+    },
+    onOver: (x, y) => {
+      const t = dropPointAt(boardRef.current, live.current.board, x, y);
+      if (!t) return;
+      touchTarget.current = t;
+      setTarget((current) => (current?.columnId === t.columnId && current.before === t.before ? current : t));
+    },
+    onDrop: (key) => {
+      const t = touchTarget.current;
+      touchTarget.current = null;
+      if (t && t.before !== key) doMove(key, t.columnId, t.before);
+      endDrag();
+    },
+    onCancel: () => {
+      touchTarget.current = null;
+      endDrag();
+    },
   };
   const onCardDragStart = (e: React.DragEvent, key: string) => {
     e.stopPropagation();
