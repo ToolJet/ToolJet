@@ -6,6 +6,8 @@ import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver, TextBone } from '../lib/Loading';
 import { MAX_SLOT_ITEMS, rowIdOf, str, toArray, type Row } from '../lib/data';
 import { antIcon } from '../lib/icons';
+import { useGrowingCount } from '../lib/growingList';
+import { useFitSquare } from '../lib/fitText';
 import { cardItems, chipLabel, chipTone, colorFor, initials, recordItems } from '../lib/ui2/display/lists/model';
 import { summaryFigures } from '../lib/ui2/display/summary';
 import { progressEntries, progressItem, progressMax } from '../lib/ui2/charts/progressModel';
@@ -323,6 +325,9 @@ export const CardGrid = () => {
   const items = cardItems(toArray(dataSource), { titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField });
   const { selectedItemId, select } = useSelection(items, idField);
   const cols = Number(columns) > 0 ? `repeat(${Number(columns)}, minmax(0, 1fr))` : `repeat(auto-fill, minmax(${Math.max(120, Number(minCardWidth) || 240)}px, 1fr))`;
+  // The cards are drawn a screenful at a time as the grid scrolls (2,000 at once blocked the page for about 4 s); the
+  // selection and the exposed values cover every item.
+  const grow = useGrowingCount(items.length);
   if (!items.length && !loading)
     return (
       <AntProvider tokens={tokens}>
@@ -341,7 +346,7 @@ export const CardGrid = () => {
                 <TextBone part="trend" />
               </Card>
             ))
-          : items.map((it) => (
+          : items.slice(0, grow.shown).map((it) => (
               <Card
                 key={it.key}
                 hoverable={hoverable}
@@ -377,6 +382,7 @@ export const CardGrid = () => {
                 {it.meta ? <Typography.Text type="secondary">{it.meta}</Typography.Text> : null}
               </Card>
             ))}
+        {!loading && grow.more ? <div ref={grow.sentinelRef} className="tj-ant-grow-sentinel" aria-hidden /> : null}
       </div>
     </AntProvider>
   );
@@ -694,18 +700,23 @@ export const CircularProgress = () => {
   ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 16 });
   ToolJet.useAction({ name: 'setPercent', displayName: 'Set percent', params: [{ handle: 'percent', displayName: 'Percent' }] }, (v) => setPercent(Math.max(0, Math.min(100, Number(v) || 0))));
   const pct = Math.max(0, Math.min(100, Number(percent) || 0));
+  // The ring is the size set, or the largest square the box has room for under the label: a fixed 120px ring was cut
+  // on both sides in a 3-column box.
+  const [ringBox, px] = useFitSquare<HTMLDivElement>(Math.max(32, Math.min(400, Number(size) || 120)));
   return (
-    <AntProvider tokens={tokens} className="tj-ant-ring">
-      <SpinOver loading={loading} as="block">
-        <Progress
-          type={type as 'circle'}
-          percent={Math.round(pct * 10) / 10}
-          size={Math.max(32, Math.min(400, Number(size) || 120))}
-          strokeWidth={Math.max(1, Math.min(30, Number(strokeWidth) || 6))}
-          strokeLinecap={strokeLinecap as 'round'}
-          status={status === 'normal' ? undefined : (status as 'success')}
-          format={format === 'none' ? () => '' : format === 'custom' ? () => text : undefined}
-        />
+    <AntProvider tokens={tokens} fill className="tj-ant-ring">
+      <SpinOver loading={loading} as="fill">
+        <div ref={ringBox} className="tj-ant-ring-fit">
+          <Progress
+            type={type as 'circle'}
+            percent={Math.round(pct * 10) / 10}
+            size={px}
+            strokeWidth={Math.max(1, Math.min(30, Number(strokeWidth) || 6))}
+            strokeLinecap={strokeLinecap as 'round'}
+            status={status === 'normal' ? undefined : (status as 'success')}
+            format={format === 'none' ? () => '' : format === 'custom' ? () => text : undefined}
+          />
+        </div>
         {label ? <Typography.Text type="secondary">{label}</Typography.Text> : null}
       </SpinOver>
     </AntProvider>

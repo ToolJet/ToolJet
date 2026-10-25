@@ -1416,3 +1416,36 @@
 .tj-ant-avatar-box .ant-avatar {
   flex-shrink: 0;
 }
+
+/* CardGrid draws its cards a screenful at a time (lib/growingList.ts): the marker after the last drawn card spans the
+   grid's row and takes no room. */
+.tj-ant-grow-sentinel {
+  grid-column: 1 / -1;
+  height: 1px;
+  margin-top: -1px;
+}
+
+/* CircularProgress and RadialChart's ring: the box it fits as a square (fitText.ts useFitSquare), under the label. */
+.tj-ant-ring-fit {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.tj-ant-ring--fill .tj-ant-ring-fit {
+  align-items: center;
+}
+.tj-ant-ring-fit > .ant-progress {
+  flex-shrink: 0;
+}
+
+/* RadialChart's categories: the box measured for its legend's place, filled by the chart. */
+.tj-ant-chart-fill {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}

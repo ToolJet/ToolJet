@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   Area as AntArea,
   Bar as AntBar,
@@ -20,26 +20,13 @@ import { str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
 import { useClickHighlight } from '../lib/chartHighlight';
 import { tooltipInteraction, useChartTheme, useTooltipLayer, type Theme } from '../lib/chartTheme';
+import { useNarrow } from '../lib/fitText';
 
 // G2's (Ant's charting engine) own categorical palette after its first colour, which is antd's primary (or the
 // component's colorPrimary style).
 const PALETTE = ['#00C9C9', '#F0884D', '#D580FF', '#7863FF', '#60C42D', '#BD8F24', '#FF80CA', '#2491B3', '#17C76F'];
 
 /** Whether the element is narrower than `below` px, followed as it resizes. */
-const useNarrow = (ref: React.RefObject<HTMLElement>, below: number) => {
-  const [narrow, setNarrow] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const read = () => setNarrow(el.clientWidth > 0 && el.clientWidth < below);
-    read();
-    const observer = new ResizeObserver(read);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [ref, below]);
-  return narrow;
-};
-
 // Samples a fresh drop shows (x and y are the charts' default fields).
 const MONTHLY = [{ x: 'Jan', y: 42 }, { x: 'Feb', y: 48 }, { x: 'Mar', y: 45 }, { x: 'Apr', y: 57 }, { x: 'May', y: 61 }, { x: 'Jun', y: 68 }];
 const TREND = [{ x: 'Jan', y: 1200 }, { x: 'Feb', y: 1350 }, { x: 'Mar', y: 1280 }, { x: 'Apr', y: 1520 }, { x: 'May', y: 1610 }, { x: 'Jun', y: 1790 }];

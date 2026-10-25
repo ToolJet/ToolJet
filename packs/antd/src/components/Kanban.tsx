@@ -226,6 +226,7 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
         return (
           <section
             key={column.id}
+            data-kb-col={column.id}
             className={cls('tj-ant-kb-col', isCollapsed && 'is-collapsed', fill && 'is-fill', over && 'is-over')}
             style={style}
             {...(isCollapsed
@@ -335,6 +336,7 @@ export const Kanban = () => {
     params: { id: 'cardId', values: 'values' },
     shadow: 'none',
     disabled,
+    loading,
   });
   // Reloading keeps the board on screen under Ant's Spin.
   const reloading = loading && kb.allCards.length > 0;

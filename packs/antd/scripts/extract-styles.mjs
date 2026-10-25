@@ -40,10 +40,24 @@ const S = 'var(--tj-surface)';
 const mix = (c, p, base = S) => `color-mix(in srgb, ${c} ${p}%, ${base})`;
 const alpha = (c, p) => `color-mix(in srgb, ${c} ${p}%, transparent)`;
 
-// One family of status tokens (Primary, Success, Warning, Error, Info) from one --tj-* colour.
+const kebab = (key) => key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/([A-Za-z])(\d)/g, '$1-$2').toLowerCase();
+
+// Ink: a status colour as small text on its own tint (a Tag, a filled input's status text), readable at 4.5:1. The
+// colour keeps its hue and chroma at an oklch lightness of at most 0.46 under dark text (a light app) and at least 0.76
+// under light text (a dark one), so a colour that already reads keeps its lightness. The pole (white under light text,
+// black under dark) carries the side into the mix: half the colour and half the pole is lighter than 0.5 only when dark.
+// The same formula as the shadcn pack's --ui-ink-* (styles/ui.css there).
+const INK_POLE = 'lch(from var(--ant-color-text) clamp(0, (l - 50) * 1000, 100) 0 0 / 1)';
+const INK_L = 'calc(clamp(0, (l - 0.5) * 1000, 1) * max(l * 2 - 1, 0.76) + (1 - clamp(0, (l - 0.5) * 1000, 1)) * min(l * 2, 0.46))';
+const ink = (c) => `oklch(from color-mix(in oklab, ${c} 50%, ${INK_POLE}) ${INK_L} calc(c * 2) h / 1)`;
+// The status families' text tokens (colorSuccessText ...): the ink of the family's colour, light, dark and themed.
+const INKED = Object.fromEntries(['Success', 'Warning', 'Error', 'Info'].map((n) => [`color${n}Text`, ink(`var(--ant-${kebab(`color${n}`)})`)]));
+
+// One family of status tokens (Primary, Success, Warning, Error, Info) from one --tj-* colour. A status family's text
+// token is left to INKED (the ink of its colour, themed or not).
 const family = (name, c) => ({
   [`color${name}`]: c,
-  [`color${name}Text`]: c,
+  ...(name === 'Primary' ? { [`color${name}Text`]: c } : {}),
   [`color${name}Hover`]: mix(c, 82, '#fff'),
   [`color${name}TextHover`]: mix(c, 82, '#fff'),
   [`color${name}Active`]: mix(c, 82, '#000'),
@@ -128,7 +142,6 @@ const EXTRA = {
   'font-size': `${light.fontSize}px`,
 };
 
-const kebab = (key) => key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/([A-Za-z])(\d)/g, '$1-$2').toLowerCase();
 const sentinel = (i) => `#0102${(i + 1).toString(16).padStart(2, '0')}`;
 const token = Object.fromEntries(keys.map((k, i) => [k, sentinel(i)]));
 export const THEME = { cssVar: { key: 'tj', prefix: 'ant' }, hashed: false };
@@ -189,6 +202,12 @@ css = css.replace(/rgba?\(\s*1\s*,\s*2\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/g, (
   if (!v) return m;
   return a === undefined ? v : `color-mix(in srgb, ${v} ${Math.round(Number(a) * 1000) / 10}%, transparent)`;
 });
+// A status Tag (success, processing, error, warning) draws its text in the family's text token, the ink, as antd's own
+// filled status fields do; antd's Tag uses the family's base colour, which measured 2.3:1 on its tint in a dark app.
+css = css.replace(
+  /(\.ant-tag\.ant-tag-(?:success|processing|error|warning)\{color:var\(--ant-color-(?:success|info|error|warning))\)/g,
+  '$1-text)'
+);
 const leftovers = css.match(/#0102[0-9a-f]{2}|rgba?\(\s*1\s*,\s*2\s*,/gi) ?? [];
 // A sentinel antd mixed with another colour (darken, lighten) cannot be traced back; report it.
 const mixed = css.match(/#010[0-9a-f]{3}\b/gi) ?? [];
@@ -201,7 +220,7 @@ const themedVar = (k) => (THEMED[k] ? `var(--tjt-${kebab(k)}, ` : '');
 const block = (selector, token) =>
   [
     `${selector} {`,
-    ...keys.map((k) => `  --ant-${kebab(k)}: var(--tj-ant-${kebab(k)}, ${themedVar(k)}${token[k]}${THEMED[k] ? ')' : ''});`),
+    ...keys.map((k) => `  --ant-${kebab(k)}: var(--tj-ant-${kebab(k)}, ${themedVar(k)}${INKED[k] ?? token[k]}${THEMED[k] ? ')' : ''});`),
     ...(token === light
       ? Object.entries(EXTRA).map(([k, v]) => `  --ant-${k}: var(--tj-ant-${k}, ${k in EXTRA_THEMED ? `var(--tjt-${k}, ${v})` : v});`)
       : []),

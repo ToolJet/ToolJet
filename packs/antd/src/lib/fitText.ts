@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 
 /**
  * Shrinks a one-line value until it fits its box, down to `min` of its own size, and only then cuts it with an
@@ -114,4 +114,19 @@ export const useFitSquare = <T extends HTMLElement>(size: number) => {
     return () => observer?.disconnect();
   }, [el]);
   return [setEl, room === null ? size : Math.max(16, Math.min(size, Math.floor(room)))] as const;
+};
+
+/** Whether the ref'd box is laid out narrower than `below` px (a chart moves its side legend under it then). */
+export const useNarrow = (ref: RefObject<HTMLElement>, below: number) => {
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const read = () => setNarrow(el.clientWidth > 0 && el.clientWidth < below);
+    read();
+    const observer = new ResizeObserver(read);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref, below]);
+  return narrow;
 };

@@ -7,6 +7,7 @@ import { ChartVeil, SpinOver } from '../lib/Loading';
 import { tooltipInteraction, useChartTheme, useTooltipLayer } from '../lib/chartTheme';
 import { str, toArray, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
+import { useFitSquare, useNarrow } from '../lib/fitText';
 
 // G2's default categorical palette (antd's charts).
 const G2 = ['#1783FF', '#00C9C9', '#F0884D', '#D580FF', '#7863FF', '#60C42D', '#BD8F24', '#FF80CA', '#2491B3', '#17C76F'];
@@ -101,6 +102,8 @@ export const RadialChart = () => {
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 24 });
   ToolJet.useAction({ name: 'clearClickedPoint', displayName: 'Clear clicked point' }, () => setClickedDataPoint({}));
   const palette = toArray(colors).map(str).filter(Boolean);
+  // The progress ring is Ant's default 120px, or the largest square the box has room for (it was cut in a narrow box).
+  const [ringBox, ringPx] = useFitSquare<HTMLDivElement>(120);
   if (mode === 'categories') {
     const rows = toArray(data)
       .map((d) => (d && typeof d === 'object' ? { name: str((d as Row)[categoryField]), value: toNumber((d as Row)[valueField]) ?? 0 } : null))
@@ -119,7 +122,8 @@ export const RadialChart = () => {
     <AntProvider tokens={tokens} fill className="tj-ant-ring tj-ant-ring--fill">
       <SpinOver loading={loading} as="fill">
         <div
-          className="tj-ant-ring-box"
+          ref={ringBox}
+          className="tj-ant-ring-box tj-ant-ring-fit"
           onClick={() => {
             setClickedDataPoint({ value: toNumber(value) ?? 0, maxValue: max, percent: pct });
             onClick();
@@ -128,7 +132,7 @@ export const RadialChart = () => {
           <Progress
             type={type as 'dashboard'}
             percent={Math.round(pct * 10) / 10}
-            size="default"
+            size={ringPx}
             strokeWidth={Math.max(2, Math.min(30, Number(strokeWidth) || 8))}
             strokeColor={palette[0] || undefined}
             format={() => (
@@ -146,24 +150,33 @@ export const RadialChart = () => {
 
 const RadialCategories = ({ rows, palette, showLegend, onPick }: { rows: { name: string; value: number }[]; palette: string[]; showLegend: boolean; onPick: (d: Row) => void }) => {
   const dark = useIsDark();
-  if (!rows.length) return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />;
+  // A legend at the right of a narrow box left the rings a sliver; under them, the rings keep the width (as the Pie's).
+  const ref = useRef<HTMLDivElement>(null);
+  const narrow = useNarrow(ref, 320);
+  // The box is drawn while empty too: it is measured once, on mount.
   return (
-    <RadialBar
-      autoFit
-      theme={dark ? 'classicDark' : 'classic'}
-      data={rows}
-      xField="name"
-      yField="value"
-      colorField="name"
-      maxAngle={270}
-      radius={1}
-      innerRadius={0.25}
-      scale={{ color: { range: palette } }}
-      legend={showLegend ? { color: { position: 'right' } } : false}
-      style={{ radius: 26 }}
-      onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
-        if (e?.type === 'element:click') onPick(e.data?.data ?? {});
-      }}
-    />
+    <div ref={ref} className="tj-ant-chart-fill">
+      {!rows.length ? (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
+      ) : (
+        <RadialBar
+          autoFit
+          theme={dark ? 'classicDark' : 'classic'}
+          data={rows}
+          xField="name"
+          yField="value"
+          colorField="name"
+          maxAngle={270}
+          radius={1}
+          innerRadius={0.25}
+          scale={{ color: { range: palette } }}
+          legend={showLegend ? { color: { position: narrow ? 'bottom' : 'right' } } : false}
+          style={{ radius: 26 }}
+          onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
+            if (e?.type === 'element:click') onPick(e.data?.data ?? {});
+          }}
+        />
+      )}
+    </div>
   );
 };

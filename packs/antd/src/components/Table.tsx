@@ -145,7 +145,17 @@ export const Table = () => {
   const field = str(rowKey) || 'id';
   const keyed = useMemo(() => rows.map((r, i) => ({ row: r, key: rowKeyOf(r, field, i), id: rowIdOf(r, field, i) })), [rows, field]);
   const keyOf = new Map(keyed.map((k) => [k.row, k.key]));
-  const selectedKey = selectedRow && typeof selectedRow === 'object' && Object.keys(selectedRow).length ? keyed.find((k) => k.row === selectedRow || JSON.stringify(k.row) === JSON.stringify(selectedRow))?.key : undefined;
+  // The highlighted row is found by its key first: on a data update the rows are new objects (an edited one also new
+  // content) until the effect below re-exposes selectedRow, and the content match alone left that render with no row
+  // highlighted (a flicker under 200 ms updates). A row with no key of its own is found by its content.
+  const selectedKey = (() => {
+    if (!selectedRow || typeof selectedRow !== 'object' || !Object.keys(selectedRow).length) return undefined;
+    const own = (selectedRow as Row)[field] ?? (selectedRow as Row).id ?? (selectedRow as Row).key;
+    const byKey = own === undefined || own === null || own === '' ? undefined : keyed.find((k) => k.key === String(own));
+    if (byKey) return byKey.key;
+    const same = JSON.stringify(selectedRow);
+    return keyed.find((k) => k.row === selectedRow || JSON.stringify(k.row) === same)?.key;
+  })();
   const [, force] = useState(0);
 
   const antColumns: TableColumnsType<Row> = columns.map((c) => {
@@ -178,10 +188,12 @@ export const Table = () => {
           const values = (Array.isArray(v) ? v : [v]).map(str).filter(Boolean);
           return (
             <span className="tj-ant-cell-tags">
-              {values.map((t) => {
+              {values.map((t, i) => {
                 const named = colors[t] ?? lower[t.toLowerCase()];
+                // Keyed by place, not by text: a status that changes (Open to Paid) updates its Tag in place instead of
+                // remounting it on every data update.
                 return (
-                  <Tag key={t} color={named !== undefined ? tagColor(named) : TONE_TAG[chipTone(t)]}>
+                  <Tag key={i} color={named !== undefined ? tagColor(named) : TONE_TAG[chipTone(t)]}>
                     {chipLabel(t)}
                   </Tag>
                 );
