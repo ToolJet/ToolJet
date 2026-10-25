@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { clamp, num } from '../lib/data';
 import { css, ringGeometry } from '../lib/ui2/charts/progressModel';
@@ -26,7 +26,22 @@ export const CircularProgress = () => {
 
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => setValue(clamp(num(v), 0, 100)));
 
-  const g = ringGeometry(value, size, thickness);
+  // The ring is the size set, or the largest square its box has room for: a 96px ring was cut in a box narrower or
+  // shorter than that (a 3-column box on a phone-width page).
+  const wrap = useRef<HTMLDivElement>(null);
+  const [room, setRoom] = useState(0);
+  useLayoutEffect(() => {
+    const el = wrap.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    // An unlaid box (0 by 0, jsdom, a hidden tab) keeps the size set.
+    const measure = () => setRoom(el.clientWidth > 0 && el.clientHeight > 0 ? Math.min(el.clientWidth, el.clientHeight) : 0);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  const asked = ringGeometry(value, size, thickness).size;
+  const g = ringGeometry(value, room > 0 ? Math.max(16, Math.min(asked, Math.floor(room))) : asked, thickness);
   const mode = ['value', 'custom', 'none'].includes(centerText) ? centerText : 'value';
   const centre = mode === 'value' ? `${Math.round(g.percent)}%` : mode === 'custom' ? String(customText ?? '') : '';
   const centreSize = Math.max(10, Math.round(g.size * 0.22));
@@ -43,7 +58,7 @@ export const CircularProgress = () => {
   } as React.CSSProperties;
 
   return (
-    <div className={`ui ui2-ring-wrap is-${align}`} style={vars}>
+    <div ref={wrap} className={`ui ui2-ring-wrap is-${align}`} style={vars}>
       <InPlace loading={ld.loading} skeleton={ld.skeleton} round large={g.size >= 48}>
         <div
           className="ui2-ring"

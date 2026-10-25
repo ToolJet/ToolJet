@@ -237,6 +237,18 @@ export const fieldNote = ({ missing, substitutes }: Pick<ChartFields, 'missing' 
 export const hiddenNote = (count: number, one: string, many = `${one}s`): string | null =>
   count > 0 ? `${count} more ${count === 1 ? one : many} not shown` : null;
 
+/** `max` of `rows` taken evenly across them (the first and the last kept), in order: a sample that spans the whole
+ *  data, where the first `max` showed only its start. Fewer rows come back as they are. */
+export const evenSample = <T>(rows: T[], max: number): T[] => {
+  if (rows.length <= max) return rows;
+  if (max <= 1) return rows.slice(0, Math.max(0, max));
+  return Array.from({ length: max }, (_, i) => rows[Math.round((i * (rows.length - 1)) / (max - 1))]);
+};
+
+/** The note under a chart that draws an even sample of its points. */
+export const sampledNote = (shown: number, total: number, many: string): string | null =>
+  total > shown ? `Showing ${shown} of ${total} ${many}, sampled evenly` : null;
+
 /** seriesLabels as an object ({ hours: 'Flight hours' }) or a list naming the series in order. */
 export const seriesLabelMap = (labels: unknown, series: string[] | undefined): Record<string, unknown> => {
   const names = series || [];

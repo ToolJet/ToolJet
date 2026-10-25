@@ -100,7 +100,7 @@
   padding: 2px 8px;
   border-radius: calc(var(--ui-radius) - 2px);
   background: var(--kb-count-bg, color-mix(in srgb, var(--ui-primary) 12%, transparent));
-  color: var(--kb-count-fg, color-mix(in srgb, var(--ui-primary) 80%, var(--ui-fg)));
+  color: var(--kb-count-fg, var(--ui-primary-ink));
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
@@ -420,7 +420,7 @@
   margin-left: auto;
   border-radius: 999px;
   background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
-  color: color-mix(in srgb, var(--ui-primary) 80%, var(--ui-fg));
+  color: var(--ui-primary-ink);
   font-size: 10px;
   font-weight: 500;
 }
@@ -451,15 +451,15 @@
 }
 .ui2-kb-badge--destructive {
   background: color-mix(in srgb, var(--ui-destructive) 10%, transparent);
-  color: var(--ui-destructive);
+  color: var(--ui-destructive-ink);
 }
 .ui2-kb-badge--warning {
   background: color-mix(in srgb, var(--ui-warning) 10%, transparent);
-  color: var(--ui-warning);
+  color: var(--ui-warning-ink);
 }
 .ui2-kb-badge--success {
   background: color-mix(in srgb, var(--ui-success) 10%, transparent);
-  color: var(--ui-success);
+  color: var(--ui-success-ink);
 }
 .ui2-kb-badge--mapped {
   background: var(--kb-badge-bg);

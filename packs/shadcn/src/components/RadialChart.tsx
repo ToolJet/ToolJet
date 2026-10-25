@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Cell, PolarAngleAxis, RadialBar, RadialBarChart, Tooltip } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChartFrame, InlineTip, LegendContent, seriesColor, useChartClick } from '../lib/ui2/charts/chartParts';
-import { animated, axisLabel, emphasis, formatter, isRecord, isScalar, isSet, list, num, type Row } from '../lib/ui2/charts/chartModel';
+import { animated, axisLabel, emphasis, formatter, hiddenNote, isRecord, isScalar, isSet, list, num, type Row } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
@@ -213,6 +213,7 @@ export const RadialChart = () => {
         emptyText={emptyText}
         // The centre figure is part of the drawing: a gauge reads as its label and value.
         label={['Radial chart', centre.label, centre.value].filter(Boolean).join(', ')}
+        notes={progress ? [] : [hiddenNote(list(data).filter(isRecord).length - rings.length, 'ring')]}
         resetKey={[data, value, mode]}
         looks={{ '--lk-track': trackColor, '--lk-legend': legendTextColor, '--lk-center-value': centerValueColor, '--lk-center-label': centerLabelColor }}
         onDoubleClick={click.doubleClick}

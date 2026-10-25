@@ -20,12 +20,13 @@ import { useRecordSelection } from '../lib/ui2/display/lists/useRecordSelection'
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { ProgressRowsSkel } from '../lib/ui2/loading/shapes';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { inkOf } from '../lib/ink';
 import '../styles/ui2-charts-progress.css';
 
 // Goals, budgets, quotas: each row a label, its value against a target, a bar, an optional status chip and caption.
 const ROWS_PER_STEP = 100;
-// A tone as text: deep enough to read on the background.
-const toneInk = (tone: string) => `color-mix(in srgb, ${TONE_VAR[tone] || TONE_VAR.neutral} 80%, var(--ui-fg))`;
+// A tone as text: readable on its tint and on the background (lib/ink.ts).
+const toneInk = (tone: string) => inkOf(TONE_VAR[tone] || TONE_VAR.neutral);
 
 const Chip = ({ value, tone }: { value: string; tone: string }) => {
   const color = TONE_VAR[tone] || TONE_VAR.neutral;

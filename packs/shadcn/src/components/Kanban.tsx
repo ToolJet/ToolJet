@@ -16,6 +16,7 @@ import {
   type BoardColumn,
   type CardMove,
 } from '../lib/ui2/display/kanban/board';
+import { dropPointAt, NO_TOUCH, useTouchDragRef, type TouchDragOptions } from '../lib/ui2/display/kanban/touchDrag';
 import { BADGE_BY_WORD, badgeLook, columnMinimum, cssLength, fieldName, initials, isSet, kanbanVars } from '../lib/ui2/display/kanban/look';
 import { ColumnsSkel, LoadingBox, LoadingFrame, Scrim, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
@@ -510,7 +511,9 @@ export const Kanban = () => {
   ToolJet.useRows(rowItems, Math.min(1200, Math.max(24, Number(cardHeight) || 96)), { fit: true });
 
   // Board size: columns share its width (columnMinimum) and it fades at the right while more columns are off screen.
-  const boardRef = useRef<HTMLDivElement>(null);
+  // The board element, with long-press touch moves bound to it (options set below).
+  const touch = useRef<TouchDragOptions>(NO_TOUCH);
+  const boardRef = useTouchDragRef(touch);
   const [boardWidth, setBoardWidth] = useState(0);
   const [moreRight, setMoreRight] = useState(false);
   useEffect(() => {
@@ -539,7 +542,8 @@ export const Kanban = () => {
   }, [boardWidth]);
 
   // Dragging: the dragged card's key and where it would land (a column, before a card or at the end).
-  const draggable = allowDrag !== false;
+  const { disabled } = ToolJet.useControlState();
+  const draggable = allowDrag !== false && !disabled;
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [target, setTarget] = useState<{ columnId: string; before: string | null } | null>(null);
   // A keyboard move: Space picks a card up, arrows move its landing place, Space or Enter drops, Escape cancels.
@@ -578,6 +582,33 @@ export const Kanban = () => {
     // Dropped just before itself, the card stays where it is.
     if (dragKey && target && draggable && target.before !== dragKey) doMove(dragKey, target.columnId, target.before);
     endDrag();
+  };
+  // A touch move (phones fire no HTML drag): a long press picks the card up, the finger shows where it would land (the
+  // same target and drop line) and lifting it drops the card through the same move as a mouse drop.
+  const touchTarget = useRef<{ columnId: string; before: string | null } | null>(null);
+  touch.current = {
+    enabled: draggable && !ld.loading,
+    onPick: (key) => {
+      touchTarget.current = null;
+      setDragKey(key);
+      setPicked(null);
+    },
+    onOver: (x, y) => {
+      const t = dropPointAt(boardRef.current, live.current.board, x, y);
+      if (!t) return;
+      touchTarget.current = t;
+      setTarget((current) => (current?.columnId === t.columnId && current.before === t.before ? current : t));
+    },
+    onDrop: (key) => {
+      const t = touchTarget.current;
+      touchTarget.current = null;
+      if (t && t.before !== key) doMove(key, t.columnId, t.before);
+      endDrag();
+    },
+    onCancel: () => {
+      touchTarget.current = null;
+      endDrag();
+    },
   };
   const select = (card: BoardCard) => {
     if (fields.details) setOpenKey((current) => (current === card.__key ? null : card.__key));
@@ -681,6 +712,7 @@ export const Kanban = () => {
           return (
             <section
               key={column.id}
+              data-kb-col={column.id}
               className={cn('ui2-kb-col', isCollapsed && 'is-collapsed', !isCollapsed && !columnWidth && 'is-fill', over && 'is-over')}
               style={
                 isCollapsed

@@ -291,7 +291,7 @@
 }
 .ui-tag--soft {
   background: color-mix(in srgb, var(--ui-tag) 14%, transparent);
-  color: color-mix(in srgb, var(--ui-tag) 80%, var(--ui-fg));
+  color: oklch(from color-mix(in oklab, var(--ui-tag) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
 }
 .ui-tag--solid {
   background: var(--ui-tag);
@@ -300,7 +300,7 @@
 .ui-tag--outline {
   border-color: color-mix(in srgb, var(--ui-tag) 50%, transparent);
   background: transparent;
-  color: color-mix(in srgb, var(--ui-tag) 85%, var(--ui-fg));
+  color: oklch(from color-mix(in oklab, var(--ui-tag) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
 }
 
 /* Breadcrumb */

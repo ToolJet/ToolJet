@@ -2,11 +2,12 @@ import React, { useMemo } from 'react';
 import { CartesianGrid, Cell, Legend, ReferenceLine, Scatter, ScatterChart as RScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AXIS, AXIS_FILL, ChartFrame, GRID, LegendContent, REF, seriesColor, useBoxSize, useChartClick } from '../lib/ui2/charts/chartParts';
-import { MAX_SERIES, PLAIN_NUMBER, animated, axisLabel, axisWidthFor, clamp, emphasis, formatter, isCompactChart, isRecord, isSet, list, num, seriesLabel, type Row } from '../lib/ui2/charts/chartModel';
+import { MAX_SERIES, PLAIN_NUMBER, animated, axisLabel, axisWidthFor, clamp, emphasis, evenSample, formatter, hiddenNote, isCompactChart, isRecord, isSet, list, num, sampledNote, seriesLabel, type Row } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
-// A point is an SVG symbol with its own handlers: past this many the chart is a blot and slow to draw.
+// A point is an SVG symbol with its own handlers: past this many the chart is a blot and slow to draw. More rows are
+// sampled evenly across the data (the axes still span it all), and a note under the chart says so.
 const MAX_POINTS = 1000;
 const FORMAT_ENUM = ['number', 'currency', 'percent', 'compact'];
 
@@ -19,10 +20,13 @@ interface Point {
 }
 
 /** Points grouped by groupField in order of first appearance; rows without both numbers are left out. When the data
- *  has neither named axis field, its first two numeric fields are used. */
+ *  has neither named axis field, its first two numeric fields are used. Past MAX_POINTS rows, an even sample of them;
+ *  past MAX_SERIES groups, the first ones. `total` and `hiddenGroups` are for the notes. */
 const scatterGroups = (data: unknown, f: { xField: string; yField: string; sizeField: string; groupField: string; nameField: string }) => {
-  const rows = list(data).filter(isRecord).slice(0, MAX_POINTS);
-  if (!rows.length) return [];
+  const all = list(data).filter(isRecord);
+  const rows = evenSample(all, MAX_POINTS);
+  const empty = { groups: [] as { name: string | number; points: Point[] }[], total: all.length, sampled: rows.length, hiddenGroups: 0 };
+  if (!rows.length) return empty;
   let xKey: string | undefined = isSet(f.xField) ? f.xField : undefined;
   let yKey: string | undefined = isSet(f.yField) ? f.yField : undefined;
   const present = (key: string | undefined) => key !== undefined && rows.some((row) => num(row[key]) !== null);
@@ -37,7 +41,12 @@ const scatterGroups = (data: unknown, f: { xField: string; yField: string; sizeF
     groups.set(name, points);
     points.push({ x, y, z: isSet(f.sizeField) ? num(row[f.sizeField]) ?? 0 : null, label: isSet(f.nameField) ? axisLabel(row[f.nameField]) : '', row });
   });
-  return [...groups.entries()].slice(0, MAX_SERIES).map(([name, points]) => ({ name, points }));
+  return {
+    groups: [...groups.entries()].slice(0, MAX_SERIES).map(([name, points]) => ({ name, points })),
+    total: all.length,
+    sampled: rows.length,
+    hiddenGroups: Math.max(0, groups.size - MAX_SERIES),
+  };
 };
 
 const ScatterTip = ({ active, payload, rows }: { active?: boolean; payload?: { payload?: Point }[]; rows: (point: Point) => [string, string][] }) => {
@@ -104,12 +113,13 @@ export const ScatterChart = () => {
   const box = useBoxSize();
 
   const m = useMemo(() => {
-    const groups = scatterGroups(data, { xField, yField, sizeField, groupField, nameField });
+    const { groups, total: rowCount, sampled, hiddenGroups } = scatterGroups(data, { xField, yField, sizeField, groupField, nameField });
     const xFormat = { format: xAxisFormat, currency };
     const yFormat = { format: yAxisFormat, currency, prefix: valuePrefix, suffix: valueSuffix };
     const yTick = formatter(yFormat, true);
     return {
       groups,
+      notes: [sampledNote(sampled, rowCount, 'points'), hiddenNote(hiddenGroups, 'group')],
       fills: groups.map((_, i) => seriesColor(colors, chartColor, i)),
       fxTick: formatter(xFormat, true),
       fyTick: yTick,
@@ -149,6 +159,7 @@ export const ScatterChart = () => {
         empty={!m.groups.length}
         emptyText={emptyText}
         label="Scatter chart"
+        notes={m.notes}
         resetKey={[data, xField, yField]}
         looks={{ '--lk-grid': gridColor, '--lk-axis': axisTextColor, '--lk-legend': legendTextColor, '--lk-ref': referenceLineColor }}
         onDoubleClick={click.doubleClick}

@@ -408,19 +408,19 @@
 }
 .t2-badge--success {
   background: color-mix(in srgb, var(--ui-success) 10%, transparent);
-  color: var(--ui-success);
+  color: var(--ui-success-ink);
 }
 .t2-badge--warning {
   background: color-mix(in srgb, var(--ui-warning) 10%, transparent);
-  color: var(--ui-warning);
+  color: var(--ui-warning-ink);
 }
 .t2-badge--destructive {
   background: color-mix(in srgb, var(--ui-destructive) 10%, transparent);
-  color: var(--ui-destructive);
+  color: var(--ui-destructive-ink);
 }
 .t2-badge--info {
   background: color-mix(in srgb, var(--ui-info) 10%, transparent);
-  color: var(--ui-info);
+  color: var(--ui-info-ink);
 }
 .t2-badge--custom {
   background: var(--t2-badge-bg);

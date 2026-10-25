@@ -19,6 +19,22 @@
   --ui-warning: var(--tj-warning, #b54708);
   --ui-info: #0369a1;
   --ui-ring: color-mix(in srgb, var(--ui-primary) 35%, transparent);
+  /* Ink: small text on a tint of a colour (a status badge, chip or tag), readable at 4.5:1 on its 10-16% tint. The
+     colour keeps its hue and chroma at an oklch lightness of at most 0.46 under dark text (a light theme) and at least
+     0.76 under light text (a dark theme), so a theme colour that already reads keeps its own lightness. The pole
+     (white under light text, black under dark) carries which side the theme is on into the mix: half the colour and
+     half the pole is lighter than 0.5 only in a dark theme. The ink of any colour X is
+       oklch(from color-mix(in oklab, X 50%, var(--ui-ink-pole)) var(--ui-ink-lch))
+     (inkOf in lib/ink.ts for inline styles); the tones have theirs below. A browser without relative colours draws
+     the text colour instead. */
+  --ui-ink-pole: lch(from var(--ui-fg) clamp(0, (l - 50) * 1000, 100) 0 0 / 1);
+  --ui-ink-lch: calc(clamp(0, (l - 0.5) * 1000, 1) * max(l * 2 - 1, 0.76) + (1 - clamp(0, (l - 0.5) * 1000, 1)) * min(l * 2, 0.46))
+    calc(c * 2) h / 1;
+  --ui-primary-ink: oklch(from color-mix(in oklab, var(--ui-primary) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
+  --ui-success-ink: oklch(from color-mix(in oklab, var(--ui-success) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
+  --ui-warning-ink: oklch(from color-mix(in oklab, var(--ui-warning) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
+  --ui-destructive-ink: oklch(from color-mix(in oklab, var(--ui-destructive) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
+  --ui-info-ink: oklch(from color-mix(in oklab, var(--ui-info) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
   --ui-radius: var(--tj-radius, 6px);
   --ui-shadow: 0 1px 2px rgb(16 24 40 / 0.06);
   --ui-shadow-lg: 0 10px 24px -6px rgb(16 24 40 / 0.18), 0 2px 6px rgb(16 24 40 / 0.08);
@@ -753,12 +769,12 @@ body {
 
 .ui-badge--success {
   background: color-mix(in srgb, var(--ui-success) 14%, transparent);
-  color: var(--ui-success);
+  color: var(--ui-success-ink);
 }
 
 .ui-badge--warning {
   background: color-mix(in srgb, var(--ui-warning) 14%, transparent);
-  color: var(--ui-warning);
+  color: var(--ui-warning-ink);
 }
 
 /* ---- Alert ---- */
@@ -802,7 +818,7 @@ body {
 
 .ui-alert--info > svg,
 .ui-alert--info .ui-alert-title {
-  color: var(--ui-info);
+  color: var(--ui-info-ink);
 }
 
 .ui-alert--success {
@@ -812,7 +828,7 @@ body {
 
 .ui-alert--success > svg,
 .ui-alert--success .ui-alert-title {
-  color: var(--ui-success);
+  color: var(--ui-success-ink);
 }
 
 .ui-alert--warning {
@@ -822,7 +838,7 @@ body {
 
 .ui-alert--warning > svg,
 .ui-alert--warning .ui-alert-title {
-  color: var(--ui-warning);
+  color: var(--ui-warning-ink);
 }
 
 .ui-alert--destructive {
@@ -832,7 +848,7 @@ body {
 
 .ui-alert--destructive > svg,
 .ui-alert--destructive .ui-alert-title {
-  color: var(--ui-destructive);
+  color: var(--ui-destructive-ink);
 }
 
 .ui-icon-btn {
@@ -1171,7 +1187,7 @@ body {
 .ui-stat-chip.is-toned {
   border-color: transparent;
   background: color-mix(in srgb, var(--ui-stat-tone) 14%, transparent);
-  color: color-mix(in srgb, var(--ui-stat-tone) 85%, var(--ui-fg));
+  color: oklch(from color-mix(in oklab, var(--ui-stat-tone) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
 }
 
 .ui-stat-context {

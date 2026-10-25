@@ -264,7 +264,8 @@ button.ui2-tag:focus-visible {
 .ui2-tag.is-mapped {
   border-color: transparent;
   background: color-mix(in srgb, var(--tg) 14%, transparent);
-  color: var(--tg);
+  /* The mapped colour as readable ink (styles/ui.css --ui-ink-*); the tint and border keep the colour itself. */
+  color: oklch(from color-mix(in oklab, var(--tg) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
 }
 .ui2-tag.is-mapped.is-solid {
   background: var(--tg);

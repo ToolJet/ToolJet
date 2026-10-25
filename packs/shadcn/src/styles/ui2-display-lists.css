@@ -41,7 +41,7 @@
   line-height: 16px;
   font-weight: 600;
   background: color-mix(in srgb, var(--u2l-c) 14%, transparent);
-  color: color-mix(in srgb, var(--u2l-c) 80%, var(--ui-fg));
+  color: oklch(from color-mix(in oklab, var(--u2l-c) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
 }
 .u2l-chip[data-tone='success'] { --u2l-tone-word: var(--u2l-success); }
 .u2l-chip[data-tone='warning'] { --u2l-tone-word: var(--u2l-warning); }
@@ -434,7 +434,7 @@
 }
 .u2l-kv-badge.is-colored {
   background: color-mix(in srgb, var(--tg) 14%, transparent);
-  color: var(--tg);
+  color: oklch(from color-mix(in oklab, var(--tg) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
 }
 .u2l-kv-link {
   overflow-wrap: anywhere;
