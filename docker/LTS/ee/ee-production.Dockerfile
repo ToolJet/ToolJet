@@ -29,7 +29,7 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
 FROM node:22.15.1 AS mcp-builder
 WORKDIR /mcp
 ARG CUSTOM_GITHUB_TOKEN
-ARG TOOLJET_MCP_REF=main
+ARG TOOLJET_MCP_REF=staging/ui2-packs
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
 RUN npm ci && npm run build:plugin
@@ -120,6 +120,16 @@ COPY ./server/ ./server/
 RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli && npm install -g copyfiles
 RUN npm --prefix server run build && npm prune --production --prefix server
+
+# Built-in component packs (packs/builtin.json): each pack is built and packaged under server/builtin-packs, which the
+# server installs into every workspace (ee custom-component-libraries/builtin-packs.ts).
+COPY ./packages/pack-tools/ ./packages/pack-tools/
+COPY ./packs/ ./packs/
+RUN npm --prefix packages/pack-tools install --no-audit --no-fund \
+    && for dir in $(node -e "console.log(require('./packs/builtin.json').packs.map((p) => p.dir).join(' '))"); do \
+         npm --prefix "$dir" ci --no-audit --no-fund; \
+       done \
+    && node packages/pack-tools/bundle-builtin.mjs
 
 # Install dependencies for PostgREST, curl, tar, etc.
 RUN apt-get update && apt-get install -y \
@@ -245,6 +255,8 @@ COPY --from=builder --chown=appuser:0 /app/server/node_modules ./app/server/node
 COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templates
 COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
+COPY --from=builder --chown=appuser:0 /app/server/builtin-packs ./app/server/builtin-packs
+ENV BUILTIN_PACKS_PATH=/app/server/builtin-packs
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 

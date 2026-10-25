@@ -148,6 +148,16 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
+# Built-in component packs (packs/builtin.json): each pack is built and packaged under server/builtin-packs, which the
+# server installs into every workspace (ee custom-component-libraries/builtin-packs.ts).
+COPY ./packages/pack-tools/ ./packages/pack-tools/
+COPY ./packs/ ./packs/
+RUN npm --prefix packages/pack-tools install --no-audit --no-fund \
+    && for dir in $(node -e "console.log(require('./packs/builtin.json').packs.map((p) => p.dir).join(' '))"); do \
+         npm --prefix "$dir" ci --no-audit --no-fund; \
+       done \
+    && node packages/pack-tools/bundle-builtin.mjs
+
 # ---------------------------------------------------------------------------
 # Runtime stage
 # Moved from node:22.15.1-bullseye to bookworm. Debian 11 reached end-of-life on
@@ -218,6 +228,8 @@ COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+COPY --from=builder /app/server/builtin-packs ./app/server/builtin-packs
+ENV BUILTIN_PACKS_PATH=/app/server/builtin-packs
 # Copy nsjail configuration for Python sandboxing
 COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 
