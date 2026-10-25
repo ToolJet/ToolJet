@@ -31,6 +31,12 @@ export const RangeSliderV2 = ({
   const labelRef = useRef(null);
   const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, stepSize } = properties;
 
+  // `stripPercent` is deliberately NOT in the widget config:
+  // a data migration writes it onto components that already existed,
+  // so nothing shows in the inspector and a newly dropped slider never carries it.
+  // Present means "render marks the pre-fix way".
+  const stripPercent = properties.stripPercent;
+
   const {
     trackColor,
     handleColor,
@@ -353,7 +359,7 @@ export const RangeSliderV2 = ({
                     if (!isNaN(itemValue) && withinMin && withinMax) {
                       acc[item.value] = {
                         style: { color: markerLabel },
-                        label: String(item.label).replace('%', ''),
+                        label: stripPercent ? String(item.label).replace('%', '') : String(item.label),
                       };
                     }
                   }
@@ -399,7 +405,7 @@ export const RangeSliderV2 = ({
                     if (!isNaN(itemValue) && withinMin && withinMax) {
                       acc[item.value] = {
                         style: { color: markerLabel },
-                        label: String(item.label).replace('%', ''),
+                        label: stripPercent ? String(item.label).replace('%', '') : String(item.label),
                       };
                     }
                   }

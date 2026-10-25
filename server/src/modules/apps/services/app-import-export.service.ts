@@ -91,7 +91,13 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2';
+type PartialRevampedComponent =
+  | 'CodeEditor'
+  | 'PDF'
+  | 'Calendar'
+  | 'CustomComponent'
+  | 'RadioButtonV2'
+  | 'RangeSliderV2';
 
 type NewRevampedComponent =
   | 'Text'
@@ -201,6 +207,7 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'Calendar',
   'CustomComponent',
   'RadioButtonV2',
+  'RangeSliderV2',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -4711,6 +4718,16 @@ function migrateProperties(
       if (properties.layout === undefined) {
         properties.layout = { value: 'wrap' };
       }
+    }
+
+    // RangeSliderV2 used to strip the first `%` from every mark label. The strip is now conditional on `stripPercent`,
+    // an unregistered property the BackfillStripPercent migration writes onto components that already existed.
+    if (
+      componentType === 'RangeSliderV2' &&
+      properties.stripPercent === undefined &&
+      !isVersionGreaterThanOrEqual(tooljetVersion, '3.21.80')
+    ) {
+      properties.stripPercent = { value: '{{true}}' };
     }
   }
   // Check if the component type is included in the specified component types

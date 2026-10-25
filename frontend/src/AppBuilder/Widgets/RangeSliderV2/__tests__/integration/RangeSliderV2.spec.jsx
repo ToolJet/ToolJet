@@ -1274,24 +1274,6 @@ describe('RangeSliderV2', () => {
       expect(markTexts(container)).toHaveLength(0);
     });
 
-    test('[RangeSliderV2-MARK-001] the first percent sign of every mark label is stripped', async () => {
-      // CHARACTERIZATION (D-07). Undocumented, and the shipped default schema
-      // labels 25%/50%/75% render as 25/50/75 — which is what makes it look
-      // accidental rather than intended. Reported to product; pinned here.
-      const { container } = widget.render({
-        properties: {
-          ...SINGLE,
-          min: binding('{{0}}'),
-          max: binding('{{100}}'),
-          value: binding('{{50}}'),
-          schema: binding("{{[{label:'25%',value:25},{label:'50% off',value:50}]}}"),
-        },
-      });
-      await waitFor(() => expect(markTexts(container)).toHaveLength(2));
-
-      expect(markTexts(container).map((el) => el.textContent)).toEqual(['25', '50 off']);
-    });
-
     test.each([
       ['a non-array', '{{"nonsense"}}'],
       ['a list of non-objects', '{{[1, 2, 3]}}'],
@@ -1333,6 +1315,79 @@ describe('RangeSliderV2', () => {
       await waitFor(() => expect(markTexts(container)).toHaveLength(2));
 
       expect(markTexts(container).map((el) => el.textContent)).toEqual(['Good', 'Fine']);
+    });
+
+    // D-07 reversed 2026-10-25. The widget shipped default marks labelled 25%/50%/75%
+    // and then stripped the % at render, so it contradicted its own defaults. The strip
+    // is now keyed off `stripPercent`, an UNREGISTERED property that a data migration
+    // writes onto components that already existed. It is deliberately absent from the
+    // widget config: new components never carry it, and nothing shows in the inspector.
+    test('[RangeSliderV2-MARK-003] a slider created after the fix keeps the % in its labels', async () => {
+      // Break this catches: stripping unconditionally, as the widget did before.
+      const { container } = widget.render({
+        properties: {
+          ...SINGLE,
+          min: binding('{{0}}'),
+          max: binding('{{100}}'),
+          value: binding('{{50}}'),
+          schema: binding("{{[{label:'25%',value:25},{label:'50%',value:50},{label:'75%',value:75}]}}"),
+        },
+      });
+      await waitFor(() => expect(markTexts(container).length).toBeGreaterThan(0));
+
+      expect(markTexts(container).map((el) => el.textContent)).toEqual(['25%', '50%', '75%']);
+    });
+
+    test('[RangeSliderV2-MARK-003] a slider migrated from before the fix still strips it', async () => {
+      // The guard that makes the fix safe for saved apps: with the migrated key
+      // present the old behaviour must survive untouched.
+      const { container } = widget.render({
+        properties: {
+          ...SINGLE,
+          min: binding('{{0}}'),
+          max: binding('{{100}}'),
+          value: binding('{{50}}'),
+          schema: binding("{{[{label:'25%',value:25},{label:'50%',value:50},{label:'75%',value:75}]}}"),
+          stripPercent: binding('{{true}}'),
+        },
+      });
+      await waitFor(() => expect(markTexts(container).length).toBeGreaterThan(0));
+
+      expect(markTexts(container).map((el) => el.textContent)).toEqual(['25', '50', '75']);
+    });
+
+    test('[RangeSliderV2-MARK-003] a migrated slider keeps the quirk, not just the tidy case', async () => {
+      // `replace('%','')` is not global and not anchored: it removes the FIRST % wherever
+      // it sits. A migrated slider must keep that verbatim, odd as it is, because that is
+      // what its app renders today.
+      const { container } = widget.render({
+        properties: {
+          ...SINGLE,
+          min: binding('{{0}}'),
+          max: binding('{{100}}'),
+          value: binding('{{50}}'),
+          schema: binding("{{[{label:'% done',value:25},{label:'50%%',value:50}]}}"),
+          stripPercent: binding('{{true}}'),
+        },
+      });
+      await waitFor(() => expect(markTexts(container).length).toBeGreaterThan(0));
+
+      expect(markTexts(container).map((el) => el.textContent)).toEqual([' done', '50%']);
+    });
+
+    test('[RangeSliderV2-MARK-003] a new slider renders those same labels as typed', async () => {
+      const { container } = widget.render({
+        properties: {
+          ...SINGLE,
+          min: binding('{{0}}'),
+          max: binding('{{100}}'),
+          value: binding('{{50}}'),
+          schema: binding("{{[{label:'% done',value:25},{label:'50%%',value:50}]}}"),
+        },
+      });
+      await waitFor(() => expect(markTexts(container).length).toBeGreaterThan(0));
+
+      expect(markTexts(container).map((el) => el.textContent)).toEqual(['% done', '50%%']);
     });
   });
 
