@@ -15,9 +15,13 @@ import {
   filterVisibleProps,
   formatRevisionLabel,
   groupPropsBySection,
+  groupStylesBySection,
+  hostStyleKeys,
+  styleFieldMeta,
+  withManifestDefaults,
 } from './utils';
 
-import type { LibraryComponentPropertiesProps } from './types';
+import type { LibraryComponentPropertiesProps, LibraryComponentStylesProps } from './types';
 
 const AccordionComponent = Accordion as React.ComponentType<any>;
 const EventManagerComponent = EventManager as React.ComponentType<any>;
@@ -51,6 +55,7 @@ export const LibraryComponentProperties = ({
   const componentManifest = componentName ? manifest?.components?.[componentName] : undefined;
   const props = componentManifest?.props ?? [];
   const visibleProps = filterVisibleProps(props);
+  const shownComponent = withManifestDefaults(component, 'properties', props);
   const events = componentManifest?.events ?? [];
 
   const eventMetaDefinition = useMemo(() => buildEventMetaDefinition(componentMeta, events), [componentMeta, events]);
@@ -88,7 +93,7 @@ export const LibraryComponentProperties = ({
         <>
           {sectionProps.map((prop) =>
             renderElement(
-              component,
+              shownComponent,
               componentMeta,
               paramUpdated,
               dataQueries,
@@ -179,6 +184,67 @@ export const LibraryComponentProperties = ({
           'others',
           currentState,
           allComponents
+        )}
+      </>
+    ),
+  });
+
+  return <AccordionComponent items={items} />;
+};
+
+// Styles tab: the pinned revision's ToolJet.useStyleX fields grouped by their `section`, then the host
+// widget's own styles (box shadow). Values land in definition.styles and reach the bundle as styles only.
+export const LibraryComponentStyles = ({
+  componentMeta,
+  component,
+  paramUpdated,
+  dataQueries,
+  currentState,
+  allComponents,
+  darkMode,
+}: LibraryComponentStylesProps) => {
+  const { libraryId, correlationId, componentName } = getLibraryComponentIdentity(component);
+  const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId);
+  const manifest = useLibraryManifest(libraryId, effectiveRevision);
+  const manifestStyles = (componentName ? manifest?.components?.[componentName]?.styles : undefined) ?? [];
+  const styles = filterVisibleProps(manifestStyles);
+  const shownComponent = withManifestDefaults(component, 'styles', manifestStyles);
+
+  const items: { title: string; isOpen: boolean; children: React.ReactNode }[] = groupStylesBySection(styles).map(
+    ({ title, props: sectionStyles }) => ({
+      title,
+      isOpen: true,
+      children: (
+        <>
+          {sectionStyles.map((style) =>
+            renderElement(
+              shownComponent,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              style.name,
+              'styles',
+              currentState,
+              allComponents,
+              darkMode,
+              '',
+              undefined,
+              null,
+              styleFieldMeta(style) as any // see the same cast in LibraryComponentProperties
+            )
+          )}
+        </>
+      ),
+    })
+  );
+
+  items.push({
+    title: 'Container',
+    isOpen: true,
+    children: (
+      <>
+        {hostStyleKeys(componentMeta).map((key) =>
+          renderElement(component, componentMeta, paramUpdated, dataQueries, key, 'styles', currentState, allComponents)
         )}
       </>
     ),

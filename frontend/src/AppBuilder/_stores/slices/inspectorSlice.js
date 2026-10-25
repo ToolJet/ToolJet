@@ -96,6 +96,14 @@ export const createInspectorSlice = (set, get) => ({
       case 'Kanban': {
         return [...get().getContainerChildrenMapping(id), ...get().getContainerChildrenMapping(`${id}-modal`)];
       }
+      case 'LibraryComponent': {
+        // ToolJet.Slot canvases are `<componentId>-<slotName>`. Slots register at runtime (e.g. one per tab
+        // from a property), so match every slot canvas by prefix; slot names never contain '-'.
+        const { containerChildrenMapping } = get();
+        return Object.keys(containerChildrenMapping)
+          .filter((key) => key.startsWith(`${id}-`) && !key.slice(id.length + 1).includes('-'))
+          .flatMap((key) => containerChildrenMapping[key]);
+      }
       default:
         return get().getContainerChildrenMapping(id);
     }

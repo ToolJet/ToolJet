@@ -14,7 +14,7 @@ import { CurrencyInput } from './Components/CurrencyInput/CurrencyInput.jsx';
 import { Modal } from './Components/Modal';
 import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
-import { LibraryComponentProperties } from './Components/LibraryComponent';
+import { LibraryComponentProperties, LibraryComponentStyles } from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
@@ -205,6 +205,8 @@ export const Inspector = ({
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
   const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
+  // Its Styles tab is manifest-driven accordions (LibraryComponentStyles), laid out like a revamped widget's.
+  const isLibraryComponent = component.component.component === 'LibraryComponent';
   const inspectorHeaderOptions = INSPECTOR_HEADER_OPTIONS.filter(
     (option) => option.value !== 'edit-module' || componentMeta?.component === 'ModuleViewer'
   );
@@ -571,16 +573,28 @@ export const Inspector = ({
       resetKeys={[selectedComponentId]}
     >
       <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
-        <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
-          <Inspector.RenderStyleOptions
-            componentMeta={componentMeta}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            currentState={currentState}
-            allComponents={allComponents}
-            hasCustomStyling={hasCustomStyling}
-          />
+        <div style={{ ...(!isRevampedComponent && !isLibraryComponent && { padding: '1rem' }) }}>
+          {isLibraryComponent ? (
+            <LibraryComponentStyles
+              componentMeta={componentMeta}
+              component={component}
+              paramUpdated={paramUpdated}
+              dataQueries={dataQueries}
+              currentState={currentState}
+              allComponents={allComponents}
+              darkMode={darkMode}
+            />
+          ) : (
+            <Inspector.RenderStyleOptions
+              componentMeta={componentMeta}
+              component={component}
+              paramUpdated={paramUpdated}
+              dataQueries={dataQueries}
+              currentState={currentState}
+              allComponents={allComponents}
+              hasCustomStyling={hasCustomStyling}
+            />
+          )}
         </div>
         {!isRevampedComponent && buildGeneralStyle()}
       </div>

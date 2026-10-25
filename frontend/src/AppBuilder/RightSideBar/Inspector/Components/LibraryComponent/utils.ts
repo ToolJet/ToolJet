@@ -1,7 +1,9 @@
-import type { FieldMeta } from './types';
+import type { FieldMeta, InspectorComponent } from './types';
 import type { ManifestEvent, ManifestProp } from '@/AppBuilder/types/libraryComponent.types';
+import { manifestDefaultToDefinitionValue } from '@/AppBuilder/Widgets/libraryComponentDefaults';
 
 const DEFAULT_PROPS_SECTION = 'Properties';
+const DEFAULT_STYLES_SECTION = 'Styles';
 
 export const filterVisibleProps = (props: ManifestProp[]): ManifestProp[] =>
   props.filter((prop) => prop.inspector !== 'hidden');
@@ -15,12 +17,12 @@ export interface PropSection {
   props: ManifestProp[];
 }
 
-export const groupPropsBySection = (props: ManifestProp[]): PropSection[] => {
+export const groupPropsBySection = (props: ManifestProp[], defaultSection = DEFAULT_PROPS_SECTION): PropSection[] => {
   const order: string[] = [];
   const groups: Record<string, ManifestProp[]> = {};
 
   for (const prop of props) {
-    const title = prop.section ?? DEFAULT_PROPS_SECTION;
+    const title = prop.section ?? defaultSection;
     if (!groups[title]) {
       groups[title] = [];
       order.push(title);
@@ -96,6 +98,19 @@ export const fieldMeta = (prop: ManifestProp): FieldMeta => {
   }
 };
 
+export const groupStylesBySection = (styles: ManifestProp[]): PropSection[] =>
+  groupPropsBySection(styles, DEFAULT_STYLES_SECTION);
+
+// Same mapping as props, except a color style gets the theme-aware swatch picker native widgets use.
+export const styleFieldMeta = (style: ManifestProp): FieldMeta => {
+  const meta = fieldMeta(style);
+  return meta.type === 'color' ? { ...meta, type: 'colorSwatches' } : meta;
+};
+
+// Static widget-config styles (e.g. boxShadow) — rendered after the manifest's own styles.
+export const hostStyleKeys = (componentMeta: { styles?: Record<string, unknown> }): string[] =>
+  Object.keys(componentMeta.styles ?? {});
+
 // EventManager's whole pipeline keys off eventMetaDefinition.events — synthesizing
 // it from the manifest reuses creation/storage/execution untouched (fireEvent(name)
 // from the shell bridge matches eventId = event.name).
@@ -106,3 +121,26 @@ export const buildEventMetaDefinition = (
   ...componentMeta,
   events: Object.fromEntries(events.map((e) => [e.name, { displayName: e.name }])),
 });
+
+// An instance stores values only for the props/styles its revision had when it was dropped (or that were
+// edited since), so a newer revision's additions have no stored value: the field would show empty (and
+// fail validation) while the bundle renders its initialValue. Show those as their manifest default; the
+// first edit saves them. Display only: returns the same object when nothing is missing.
+export const withManifestDefaults = <C extends InspectorComponent>(
+  component: C,
+  paramType: 'properties' | 'styles',
+  fields: ManifestProp[]
+): C => {
+  const definition = component?.component?.definition;
+  const stored = definition?.[paramType] ?? {};
+  const missing = fields.filter((field) => !(field.name in stored));
+  if (missing.length === 0) return component;
+
+  const filled = Object.fromEntries(
+    missing.map((field) => [field.name, { value: manifestDefaultToDefinitionValue(field) }])
+  );
+  return {
+    ...component,
+    component: { ...component.component, definition: { ...definition, [paramType]: { ...stored, ...filled } } },
+  };
+};

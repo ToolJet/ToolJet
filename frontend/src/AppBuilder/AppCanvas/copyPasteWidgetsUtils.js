@@ -122,7 +122,8 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
       parentComponent.component.component === 'Container' ||
       parentComponent.component.component === 'Accordion' ||
       parentComponent.component.component === 'Form' ||
-      isModalType(parentComponent.component.component)
+      isModalType(parentComponent.component.component) ||
+      parentComponent.component.component === 'LibraryComponent'
     );
   }
 
@@ -309,7 +310,8 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     !Object.keys(components).find(
       (key) =>
         targetParentId === key ||
-        (isTabsType(components?.[key]?.component.component) &&
+        ((isTabsType(components?.[key]?.component.component) ||
+          components?.[key]?.component.component === 'LibraryComponent') &&
           targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
         (['Container', 'Form', 'ModalV2', 'ShadDialog', 'Accordion'].includes(components?.[key]?.component.component) &&
           ['header', 'footer'].some((section) => targetParentId.includes(section)))

@@ -315,7 +315,13 @@ const Container = React.memo(
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas' && appType !== 'module',
-          'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
+          // A moved widget's parent canvas re-renders when the drag starts (is-child-being-dragged), and
+          // that className write would wipe the show-grid showGridLines added, so it is derived here too.
+          'show-grid':
+            (isDragging || isWidgetInSubContainerDragging) &&
+            (index === 0 || index === null) &&
+            currentMode === 'edit' &&
+            appType !== 'module',
           'module-container': appType === 'module',
           'is-module-editor': isModuleEditor,
           'has-no-scroll': hasNoScroll,

@@ -87,4 +87,26 @@ describe('LibraryComponent drop-time identity stamping', () => {
     });
     expect(unsized.layouts.desktop).toMatchObject({ width: 12, height: 200 });
   });
+
+  it('[LibraryComponent-DROP-002] stamps manifest style defaults into definition.styles, not properties', () => {
+    // Break this catches: dropping the styles loop (the Styles tab opens empty and the bundle falls back to
+    // its own initialValue), or stamping styles into properties (they'd surface as component props).
+    const dropped = addNewWidgetToTheEditor('LibraryComponent', 'desktop', realCanvas, 'canvas', undefined, {
+      libraryId: 'lib-42',
+      correlationId: '11111111-2222-3333-4444-555555555555',
+      libraryName: 'My UI Library',
+      componentName: 'Card',
+      props: [],
+      styles: [
+        { name: 'accentColor', type: 'string', inspector: 'color', default: 'var(--cc-primary-brand)' },
+        { name: 'padding', type: 'number', default: 16 },
+      ],
+    });
+
+    const { styles, properties } = dropped.component.definition;
+    expect(styles.accentColor.value).toBe('var(--cc-primary-brand)');
+    expect(styles.padding.value).toBe('{{16}}');
+    expect(styles.boxShadow).toBeDefined();
+    expect(properties.accentColor).toBeUndefined();
+  });
 });

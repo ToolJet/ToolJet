@@ -974,7 +974,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         checkInput
         onDragStart={(e) => {
           if (e.target.id === 'moveable-virtual-ghost-element') {
-            startAutoScroll(e.clientX, e.clientY, e.target);
+            // A component from the panel reaches the canvas at its right edge, right beside the panel.
+            startAutoScroll(e.clientX, e.clientY, e.target, 'drag', { waitForEdgeExit: true });
             return true;
           }
 
