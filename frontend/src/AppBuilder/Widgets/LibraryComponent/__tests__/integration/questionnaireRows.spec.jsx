@@ -104,3 +104,23 @@ describe.each(Object.keys(PACKS))('T16: %s Questionnaire in List view rows', (pa
     refreshed.forEach((row, i) => expect(root(i).textContent).toContain(`${row}: pick one`));
   });
 });
+
+// UI2-20 / Codex H25-01: Next taken from the button puts focus in the new question (its first answer), as shadcn's
+// does; focus left on the Next button made a keyboard user tab back into the question.
+describe('Ant Questionnaire focus', () => {
+  it('moves focus into the next question after Next', async () => {
+    const { exposed, root } = await mountRows('antd', ['alpha']);
+    await expectRowsFollow(exposed, ['alpha']);
+    act(() => {
+      fireEvent.click(root(0).querySelectorAll(PACKS.antd.choice)[0]);
+    });
+    const nextButton = [...root(0).querySelectorAll('button')].find((b) => b.textContent.trim() === 'Next');
+    expect(nextButton).toBeTruthy();
+    act(() => {
+      nextButton.focus();
+      fireEvent.click(nextButton);
+    });
+    await waitFor(() => expect(root(0).textContent).toContain('alpha: notes'));
+    await waitFor(() => expect(root(0).activeElement?.tagName).toBe('TEXTAREA'));
+  });
+});
