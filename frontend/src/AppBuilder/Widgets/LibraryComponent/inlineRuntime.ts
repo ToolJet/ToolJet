@@ -55,6 +55,11 @@ export interface PackValidation {
   touch: () => void;
 }
 
+/** How a pack's rows are drawn: `fit` rows grow with their components (a Kanban card), never below the row height. */
+export interface PackRowsOptions {
+  fit?: boolean;
+}
+
 export interface PackHost {
   disabled: boolean;
   loading: boolean;
@@ -62,8 +67,9 @@ export interface PackHost {
   fieldId: string;
   /** Judges a value with the widget's Validation section and publishes isValid / isMandatory. */
   useValidation: (value: unknown, present?: boolean) => PackValidation;
-  /** The items a list draws as rows of ToolJet components ({{listItem}}). */
-  setRows: (items: unknown[], rowHeight?: number) => void;
+  /** The items a list draws as rows of ToolJet components ({{listItem}}). With `fit`, a row grows to fit its
+   *  components, never below `rowHeight`. */
+  setRows: (items: unknown[], rowHeight?: number, options?: PackRowsOptions) => void;
   /** The slot attribute of row `index`'s projected canvas. */
   rowSlotAttr: (index: number) => string;
   /** A drop area drawn inside the popup layer (a dialog's body). */
@@ -252,12 +258,14 @@ const v2Hooks = {
     return host ? host.useValidation(value, present) : NO_VALIDATION;
   },
   useFieldId: (): string | undefined => useHost()?.fieldId,
-  /** The items drawn as rows of ToolJet components, read as {{listItem}} by the row's components. */
-  useRows: (items: unknown[], rowHeight?: number) => {
+  /** The items drawn as rows of ToolJet components, read as {{listItem}} by the row's components. With
+   *  `{ fit: true }` each row grows to fit its components (text that wraps in a narrow card), never below `rowHeight`. */
+  useRows: (items: unknown[], rowHeight?: number, options?: PackRowsOptions) => {
     const host = useHost();
+    const fit = options?.fit === true;
     React.useLayoutEffect(() => {
-      host?.setRows(Array.isArray(items) ? items : [], rowHeight);
-    }, [host, items, rowHeight]);
+      host?.setRows(Array.isArray(items) ? items : [], rowHeight, { fit });
+    }, [host, items, rowHeight, fit]);
   },
   /** Where row `index` of useRows sits: its projected ToolJet canvas. */
   RowSlot: ({ index }: { name?: string; index: number; item?: unknown }) => {

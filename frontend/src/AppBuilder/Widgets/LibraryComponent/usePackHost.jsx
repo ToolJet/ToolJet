@@ -9,6 +9,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { resolveDynamicValues } from '@/AppBuilder/_stores/utils';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { getEffectiveLayout, resolveWidgetVisibility } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { UI2_ROW_CHROME } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { ROW_VARIABLES } from './inlineRuntime';
 import { useMeasuredWidth } from './useMeasuredWidth';
 
@@ -224,8 +226,60 @@ const useRowResolve = (moduleId) =>
 
 export const rowSlotAttr = (id, index) => `tj-row-${id}-${index}`;
 
+// The height a fitted row (a Kanban card) is drawn at: the lowest bottom of its components as the reflow placed them in
+// this row (a Text that wraps in a narrow column grows and pushes the ones below it down), plus the space UI 2.0's
+// Kanban keeps under a card's lowest component, and never below the pack's row height. The native List view sizes its
+// rows from the same per-row layouts (dynamicHeightReflow getListviewTemplateHeight). Measured here rather than read
+// from the row's own temporary layout: the reflow sizes a LibraryComponent's row as a plain container, floored at the
+// whole widget's height. A component hidden on this card (a button shown only for some cards) is left out, slot and all,
+// as UI 2.0's Kanban leaves it out: the row canvas does not draw it.
+export const fittedRowHeight = ({
+  childIds,
+  components,
+  temporaryLayouts,
+  currentLayout,
+  rowContext,
+  moduleId,
+  rowHeight,
+  isVisible = () => true,
+}) => {
+  const bottom = (childIds || []).reduce((max, childId) => {
+    if (!isVisible(childId)) return max;
+    const layout = getEffectiveLayout(childId, currentLayout, components, temporaryLayouts, rowContext, moduleId);
+    return layout ? Math.max(max, (Number(layout.top) || 0) + (Number(layout.height) || 0)) : max;
+  }, 0);
+  return bottom > 0 ? Math.max(rowHeight, Math.ceil(bottom + UI2_ROW_CHROME)) : rowHeight;
+};
+
+const useRowHeight = ({ id, index, moduleId, rowHeight, currentLayout, parentIndices, fitRows }) => {
+  const rowContext = useMemo(() => [...parentIndices, index], [parentIndices, index]);
+  return useStore((state) =>
+    fitRows
+      ? fittedRowHeight({
+          childIds: state.containerChildrenMapping?.[id],
+          components: state.getCurrentPageComponents?.(moduleId),
+          temporaryLayouts: state.temporaryLayouts,
+          currentLayout,
+          rowContext,
+          moduleId,
+          rowHeight,
+          isVisible: (childId) =>
+            resolveWidgetVisibility({
+              componentId: childId,
+              contextIndices: rowContext,
+              currentLayout,
+              getResolvedComponent: (cid, ctx) => state.getResolvedComponent?.(cid, ctx, moduleId),
+              getExposedPropertyForAdditionalActions: (cid, ctx, prop) =>
+                state.getExposedPropertyForAdditionalActions?.(cid, ctx, prop, moduleId),
+            }) !== false,
+        })
+      : rowHeight
+  );
+};
+
 // One row's canvas, as wide as the pack lays the row out: a grid cell or a kanban card, not the whole widget (a
-// 4-column list drew each row's components across the full width, clipped by the cell).
+// 4-column list drew each row's components across the full width, clipped by the cell). A fitted row (fitRows: the
+// pack asked for it, a Kanban card) grows with its components and the pack's card, which wraps the row's slot, follows.
 const PackRow = ({
   slot,
   id,
@@ -235,6 +289,8 @@ const PackRow = ({
   darkMode,
   widgetWidth,
   fit,
+  fitRows,
+  parentIndices,
   items,
   currentLayout,
   visibility,
@@ -242,6 +298,7 @@ const PackRow = ({
 }) => {
   const ref = useRef(null);
   const measured = useMeasuredWidth(ref);
+  const drawnHeight = useRowHeight({ id, index, moduleId, rowHeight, currentLayout, parentIndices, fitRows });
   return (
     <div ref={ref} slot={slot} className="tw-block tw-w-full">
       <ListviewSubcontainer
@@ -249,14 +306,14 @@ const PackRow = ({
         index={index}
         moduleId={moduleId}
         mode="list"
-        rowHeight={rowHeight}
+        rowHeight={drawnHeight}
         positiveColumns={1}
         showBorder={false}
         onRecordOrRowClicked={() => {}}
         computeCanvasBackgroundColor={() => 'transparent'}
         darkMode={darkMode}
         width={measured ?? widgetWidth}
-        isDynamicHeightEnabled={fit}
+        isDynamicHeightEnabled={fit && !fitRows}
         data={items}
         currentLayout={currentLayout}
         visibility={visibility}
@@ -275,14 +332,15 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
   const updateCustomResolvables = useStore((s) => s.updateCustomResolvables);
   const initExposedValueArrayForChildren = useStore((s) => s.initExposedValueArrayForChildren);
   const updateDependencyValues = useStore((s) => s.updateDependencyValues);
-  const [rows, setRowsState] = useState({ items: [], rowHeight: 72 });
+  const [rows, setRowsState] = useState({ items: [], rowHeight: 72, fit: false });
   const setRows = useCallback(
-    (items, rowHeight) =>
-      setRowsState((prev) =>
-        isEqual(prev.items, items) && (!rowHeight || rowHeight === prev.rowHeight)
+    (items, rowHeight, options) =>
+      setRowsState((prev) => {
+        const fitRows = options?.fit === true;
+        return isEqual(prev.items, items) && (!rowHeight || rowHeight === prev.rowHeight) && fitRows === prev.fit
           ? prev
-          : { items, rowHeight: rowHeight || prev.rowHeight }
-      ),
+          : { items, rowHeight: rowHeight || prev.rowHeight, fit: fitRows };
+      }),
     []
   );
   useLayoutEffect(() => {
@@ -325,6 +383,8 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
           darkMode={darkMode}
           widgetWidth={width}
           fit={fit}
+          fitRows={rows.fit}
+          parentIndices={parentIndices}
           items={rows.items}
           currentLayout={currentLayout}
           visibility={visibility}
