@@ -209,7 +209,6 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
     <div
       ref={kb.boardRef}
       className={cls('tj-ant-kb', kb.compact && 'is-compact', kb.moreRight && 'has-more-right')}
-      data-tj-no-drag=""
       style={kb.vars}
       onDragEnd={kb.endDrag}
     >

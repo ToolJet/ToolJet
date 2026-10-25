@@ -4,6 +4,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver } from '../lib/Loading';
 import { useFormValue } from '../lib/formValue';
+import { useOwnEventGuard } from '../lib/ownEvent';
 
 // Ant's Checkbox: its label is its children; checked, indeterminate; event onChange.
 export const Checkbox = (props: Record<string, unknown>) => {
@@ -13,6 +14,7 @@ export const Checkbox = (props: Record<string, unknown>) => {
   const [indeterminate] = ToolJet.useStateBoolean({ name: 'indeterminate', label: 'Indeterminate', initialValue: false });
   const [extra] = ToolJet.useStateString({ name: 'extra', label: 'Extra', description: 'Help text under the checkbox.', initialValue: '' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const guard = useOwnEventGuard();
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked === true });
@@ -22,7 +24,7 @@ export const Checkbox = (props: Record<string, unknown>) => {
   const change = (next: boolean) => {
     setChecked(next);
     check.touch();
-    onChange();
+    guard(onChange);
   };
   ToolJet.useAction(
     { name: 'setFieldValue', displayName: 'Set checked', params: [{ handle: 'checked', displayName: 'Checked', type: 'toggle' }] },
@@ -33,7 +35,7 @@ export const Checkbox = (props: Record<string, unknown>) => {
     // From the latest value, not this render's: two toggles in one batch cancel out.
     setChecked((c: boolean) => !c);
     check.touch();
-    onChange();
+    guard(onChange);
   });
   // A Form's clearForm unchecks it (the host clears only `value`).
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => setChecked(false));

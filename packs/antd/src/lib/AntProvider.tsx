@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import type { CSSProperties } from 'react';
 import { ConfigProvider } from 'antd';
 import { createCache, StyleProvider } from '@ant-design/cssinjs';
+// The module Ant's icons insert their styles through (@ant-design/icons utils.js useInsertStyles).
+import { clearContainerCache } from 'rc-util/es/Dom/dynamicCSS';
 import { usePortalContainer } from './usePortalContainer';
 import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from './themeStyles';
 
@@ -155,6 +157,10 @@ export const AntProvider = ({
 }) => {
   const [anchorRef, container] = usePortalContainer();
   const dark = useAppDark(anchorRef);
+  // Ant's icons put their styles in each widget's shadow root through rc-util, whose module-level cache maps every root
+  // it served to its real parent and never lets go, so a page switch kept every old Ant root (and its listeners)
+  // alive. Emptied when a widget unmounts; the cache is only a lookup, refilled on the next insert.
+  useEffect(() => () => clearContainerCache(), []);
   const popup = useMemo(() => ({ className: dark ? 'tj-ant tj-ant-dark' : 'tj-ant', style: tokens ?? {}, container }), [tokens, container, dark]);
   return (
     <div
