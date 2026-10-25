@@ -1,4 +1,4 @@
-import { createTheme, getLuminance } from '@mui/material/styles';
+import { createTheme, darken, getLuminance, lighten } from '@mui/material/styles';
 import type { Theme, ThemeOptions } from '@mui/material/styles';
 
 // The pack is drawn in Material UI's own look (pack.json themeMode "own"): the host defines ToolJet's --tj-* theme
@@ -76,6 +76,34 @@ export const readAppTheme = (el: Element): AppTheme => {
   };
 };
 
+// A colour style holding a theme swatch's var(--cc-...) (or any var()) reads as the colour it resolves to at `el`:
+// MUI derives hover, focus and contrast from the palette in JavaScript, so it needs the colour itself.
+const VAR = /^var\(\s*(--[\w-]+)\s*(?:,\s*(.+))?\)$/;
+export const resolveColor = (value: string | undefined, el: Element | null, depth = 0): string | undefined => {
+  const v = value?.trim();
+  if (!v) return undefined;
+  const m = VAR.exec(v);
+  if (!m) return normalizeColor(v);
+  if (depth > 4) return undefined;
+  const own = el ? getComputedStyle(el).getPropertyValue(m[1]).trim() : '';
+  return resolveColor(own || m[2], el, depth + 1);
+};
+
+/** The component's colour styles as colours MUI can parse (a var() resolved at `el`); unparsable ones drop out. */
+export const resolveOverrides = (o: ThemeOverrides, el: Element | null): ThemeOverrides => ({
+  primary: resolveColor(o.primary, el),
+  textPrimary: resolveColor(o.textPrimary, el),
+  backgroundPaper: resolveColor(o.backgroundPaper, el),
+  divider: resolveColor(o.divider, el),
+  borderRadius: o.borderRadius,
+});
+
+// The charts' series colours when a chart sets no colors list: led by the brand (the Primary style, else the app
+// theme's), then tints and a deeper shade of it, then a palette that sits well beside it (as the shadcn pack's
+// seriesColors). Computed colours, not color-mix(): MUI X fades and highlights series by parsing them.
+const SERIES_TAIL = ['#2a9d90', '#e76e50', '#274754', '#e8c468', '#f4a462', '#8b5cf6', '#06b6d4', '#ec4899'];
+export const seriesPalette = (brand: string): string[] => [brand, lighten(brand, 0.38), lighten(brand, 0.66), darken(brand, 0.3), ...SERIES_TAIL];
+
 export const sameAppTheme = (a: AppTheme, b: AppTheme) => JSON.stringify(a) === JSON.stringify(b);
 
 const defined = <T extends object>(o: T): Partial<T> =>
@@ -90,6 +118,7 @@ export const buildTheme = (app: AppTheme, o: ThemeOverrides, container: HTMLElem
   const primary = o.primary ?? app.brand;
   const radius = o.borderRadius ?? app.radius;
   const border = app.border;
+  const surface = o.backgroundPaper ?? app.surface;
   const options: ThemeOptions = {
     palette: {
       mode: app.mode,
@@ -97,10 +126,14 @@ export const buildTheme = (app: AppTheme, o: ThemeOverrides, container: HTMLElem
       ...(app.danger ? { error: { main: app.danger } } : {}),
       ...(app.success ? { success: { main: app.success } } : {}),
       ...(app.warning ? { warning: { main: app.warning } } : {}),
-      ...(o.backgroundPaper ?? app.surface ? { background: { paper: (o.backgroundPaper ?? app.surface)!, default: (o.backgroundPaper ?? app.surface)! } } : {}),
+      // Info is the brand in a themed app, as the Ant pack maps it (MUI's stock info is a light blue of its own).
+      ...(app.brand ? { info: defined({ main: app.brand, contrastText: app.onBrand }) as { main: string } } : {}),
+      ...(surface ? { background: { paper: surface, default: surface } } : {}),
       ...(o.textPrimary ?? app.text ? { text: defined({ primary: o.textPrimary ?? app.text, secondary: app.textMuted }) } : {}),
       ...(o.divider ?? app.borderWeak ? { divider: (o.divider ?? app.borderWeak)! } : {}),
-    },
+      // MUI X's DataGrid mixes white into the paper colour in dark mode: a themed (or styled) surface is drawn as is.
+      ...(surface ? { DataGrid: { bg: surface, headerBg: surface, pinnedBg: surface } } : {}),
+    } as ThemeOptions['palette'],
     ...(radius !== undefined ? { shape: { borderRadius: radius } } : {}),
     typography: { fontFamily: app.font ?? MUI_FONT },
     components: {
@@ -108,9 +141,17 @@ export const buildTheme = (app: AppTheme, o: ThemeOverrides, container: HTMLElem
       MuiModal: { defaultProps: portal },
       MuiPopover: { defaultProps: portal },
       // A themed app's border colour on fields, and its surface on dark Paper (MUI otherwise tints it by elevation).
-      ...(border ? { MuiOutlinedInput: { styleOverrides: { notchedOutline: { borderColor: border } } } } : {}),
+      // MUI X v8+ pickers draw their own outlined field (PickersOutlinedInput), which MuiOutlinedInput does not reach.
+      ...(border
+        ? {
+            MuiOutlinedInput: { styleOverrides: { notchedOutline: { borderColor: border } } },
+            MuiPickersOutlinedInput: { styleOverrides: { notchedOutline: { borderColor: border } } },
+          }
+        : {}),
+      // The Slider's value label keeps a fixed 2px in MUI: it takes the theme radius once one is set.
+      ...(radius !== undefined ? { MuiSlider: { styleOverrides: { valueLabel: { borderRadius: radius } } } } : {}),
       ...(app.surface ? { MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } } } : {}),
-    },
+    } as ThemeOptions['components'],
   };
   return createTheme(options);
 };

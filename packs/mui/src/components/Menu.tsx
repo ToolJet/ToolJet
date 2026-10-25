@@ -39,6 +39,8 @@ export const Menu = () => {
   const [rawItems] = ToolJet.useStateArray({
     name: 'items',
     label: 'Items',
+    // The inspector's options editor, as UI 2.0's dropdown menu items (divider and other keys are kept as written).
+    inspector: 'options',
     description: `[{ label, value, icon, disabled, divider }]; icon is a name: ${Object.keys(ICONS).slice(0, 8).join(', ')}...`,
     initialValue: [
       { label: 'Edit', value: 'edit', icon: 'Edit' },

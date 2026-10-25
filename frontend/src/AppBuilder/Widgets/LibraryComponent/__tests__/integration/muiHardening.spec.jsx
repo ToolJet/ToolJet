@@ -849,3 +849,200 @@ describe('T33: MUI default heights are whole grid rows', () => {
     expect(heights.filter(([, h]) => !Number.isInteger(h))).toEqual([]);
   });
 });
+
+describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-24)', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const PACK = path.resolve(__dirname, '../../../../../../../packs/mui');
+  const Display = require('../../../../../../../packs/mui/src/components/Display');
+  const Charts = require('../../../../../../../packs/mui/src/components/Charts');
+  const { Button } = require('../../../../../../../packs/mui/src/components/Button');
+  const theme = require('../../../../../../../packs/mui/src/lib/theme');
+  const { ownColor, THEME_TOKEN } = require('../../../../../../../packs/mui/src/lib/themeStyle');
+  Object.assign(COMPONENTS, { Button, Alert: Display.Alert, StatCard: Display.StatCard, BarChart: Charts.BarChart, PieChart: Charts.PieChart });
+  const manifest = () => JSON.parse(fs.readFileSync(path.join(PACK, 'dist/manifest.json'), 'utf8')).components;
+
+  // A canvas that parses colours as a browser's does for hex and rgb(), so normalizeColor works in jsdom (the shared
+  // stub's context reads every property as a function). theme.ts makes its probe on the first colour it parses.
+  const realGetContext = HTMLCanvasElement.prototype.getContext;
+  beforeAll(() => {
+    HTMLCanvasElement.prototype.getContext = () => {
+      let fill = '#000000';
+      return {
+        get fillStyle() {
+          return fill;
+        },
+        set fillStyle(v) {
+          const t = String(v).trim().toLowerCase();
+          if (/^#[0-9a-f]{6}$/.test(t) || /^rgba?\(/.test(t)) fill = t;
+        },
+      };
+    };
+  });
+  afterAll(() => {
+    HTMLCanvasElement.prototype.getContext = realGetContext;
+  });
+
+  // One widget with given Styles (the shared mount passes none).
+  const mountStyled = async (name, props, styles) => {
+    loadLibraryModule.mockResolvedValue({ [name]: COMPONENTS[name] });
+    const view = render(
+      <InlineLibraryComponent
+        bundleUrl="pack.js"
+        cssUrl="pack.css"
+        cacheKey={`mui-round2-${name}-${(mounts += 1)}`}
+        componentName={name}
+        componentProps={props}
+        componentStyles={styles}
+        renderSlot={() => null}
+        setExposedVariable={() => {}}
+        fireEvent={() => {}}
+        actions={new Map()}
+        host={baseHost(name)}
+        dataCy="mui-widget"
+      />
+    );
+    const root = () => view.container.querySelector('[data-cy="mui-widget"]').shadowRoot;
+    await waitFor(() => expect(root().querySelector('.tj-mui-root')?.childElementCount).toBeGreaterThan(0));
+    return { view, root };
+  };
+  /** Every element's class list under the widget: Emotion's class names hash the styles, so equal lists draw alike. */
+  const classes = (root) => [...root.querySelectorAll('.tj-mui-root *')].map((el) => el.getAttribute('class') ?? '').join('|');
+  const defaultsOf = (name) =>
+    Object.fromEntries(manifest()[name].styles.filter((s) => s.default !== undefined).map((s) => [s.name, s.default]));
+
+  test('every MUI colour style (but the shared Kanban hook\'s) defaults to a theme token; every radius shows a placeholder', () => {
+    // The Kanban's board styles come from the hook it shares with the Ant pack (lib/ui2/display/kanban/useKanban.ts).
+    const shared = (s) => s.component === 'Kanban' && !['primary', 'textPrimary', 'backgroundPaper', 'divider', 'borderRadius'].includes(s.name);
+    const fields = Object.entries(manifest())
+      .flatMap(([name, c]) => c.styles.map((s) => ({ component: name, ...s })))
+      .filter((s) => !shared(s));
+    const colours = fields.filter((s) => s.inspector === 'color');
+    expect(colours.length).toBe(36 * 4 + 3);
+    expect(colours.filter((s) => !/^var\(--cc-[\w-]+\)$/.test(String(s.default)))).toEqual([]);
+    const radii = fields.filter((s) => s.name === 'borderRadius');
+    expect(radii.length).toBe(36);
+    expect(radii.filter((s) => !s.placeholder)).toEqual([]);
+  });
+
+  test('a colour style at its theme default, or cleared, adds nothing; any other value is its own', () => {
+    for (const token of Object.values(THEME_TOKEN)) {
+      expect(ownColor(token, token)).toBeUndefined();
+      expect(ownColor(token.toUpperCase().replace('(', '( '), token)).toBeUndefined();
+      expect(ownColor('', token)).toBeUndefined();
+    }
+    expect(ownColor('#ff0000', THEME_TOKEN.brand)).toBe('#ff0000');
+    expect(ownColor('var(--cc-success-systemStatus)', THEME_TOKEN.brand)).toBe('var(--cc-success-systemStatus)');
+  });
+
+  test.each(['Button', 'Alert', 'StatCard'])('%s left at its new style defaults draws exactly what blank styles drew', async (name) => {
+    const defaults = defaultsOf(name);
+    expect(defaults.primary).toBe('var(--cc-primary-brand)');
+    const blank = Object.fromEntries(Object.keys(defaults).map((k) => [k, '']));
+    const a = await mountStyled(name, {}, defaults);
+    const b = await mountStyled(name, {}, blank);
+    expect(classes(a.root())).toBe(classes(b.root()));
+    // ... while a style of its own still changes the look (each of these draws on Paper).
+    const c = await mountStyled(name, {}, { ...defaults, primary: '#ff0000', backgroundPaper: '#ff0000' });
+    expect(classes(c.root())).not.toBe(classes(b.root()));
+  });
+
+  test('the theme mapping: defaults add nothing over the app theme, with and without one', () => {
+    const themed = {
+      mode: 'light',
+      brand: '#4f46e5',
+      onBrand: '#ffffff',
+      surface: '#ffffff',
+      text: '#0f172a',
+      textMuted: '#64748b',
+      border: '#e2e8f0',
+      borderWeak: '#e2e8f0',
+      radius: 12,
+      font: 'Inter',
+    };
+    const atDefaults = { primary: undefined, textPrimary: undefined, backgroundPaper: undefined, divider: undefined, borderRadius: undefined };
+    for (const app of [{ mode: 'light' }, { mode: 'dark' }, themed, { ...themed, mode: 'dark', surface: '#111a2e' }]) {
+      const a = theme.buildTheme(app, theme.resolveOverrides(atDefaults, null), null);
+      const b = theme.buildTheme(app, {}, null);
+      expect(JSON.stringify(a.palette)).toBe(JSON.stringify(b.palette));
+      expect(JSON.stringify(a.components)).toBe(JSON.stringify(b.components));
+      expect(a.shape).toEqual(b.shape);
+    }
+  });
+
+  test('a theme swatch picked for a style resolves to its colour where the component is drawn', () => {
+    const el = document.createElement('div');
+    el.style.setProperty('--cc-success-systemStatus', '#1e823b');
+    document.body.appendChild(el);
+    expect(theme.resolveColor('var(--cc-success-systemStatus)', el)).toBe('#1e823b');
+    expect(theme.resolveColor('var(--cc-missing, #123456)', el)).toBe('#123456');
+    expect(theme.resolveColor('var(--cc-missing)', el)).toBeUndefined();
+    expect(theme.resolveColor('#ABCDEF', el)).toBe('#abcdef');
+  });
+
+  test('with an app theme: info is the brand, pickers and fields take its border, DataGrid its surface, the Slider label its radius', () => {
+    const app = { mode: 'dark', brand: '#818cf8', onBrand: '#0a0a0a', surface: '#111a2e', border: '#334155', radius: 12 };
+    const t = theme.buildTheme(app, {}, null);
+    expect(t.palette.info.main).toBe('#818cf8');
+    expect(t.palette.DataGrid).toEqual({ bg: '#111a2e', headerBg: '#111a2e', pinnedBg: '#111a2e' });
+    expect(t.components.MuiPickersOutlinedInput.styleOverrides.notchedOutline.borderColor).toBe('#334155');
+    expect(t.components.MuiOutlinedInput.styleOverrides.notchedOutline.borderColor).toBe('#334155');
+    expect(t.components.MuiSlider.styleOverrides.valueLabel.borderRadius).toBe(12);
+    // Without one, MUI's stock look stands.
+    const stock = theme.buildTheme({ mode: 'dark' }, {}, null);
+    expect(stock.palette.info.main).toBe('#29b6f6');
+    expect(stock.palette.DataGrid).toBeUndefined();
+    expect(stock.components.MuiPickersOutlinedInput).toBeUndefined();
+    expect(stock.components.MuiSlider).toBeUndefined();
+  });
+
+  test('the charts’ default series palette leads with the brand, then tints and a shade of it', () => {
+    const p = theme.seriesPalette('#4f46e5');
+    expect(p[0]).toBe('#4f46e5');
+    expect(p.length).toBeGreaterThanOrEqual(8);
+    expect(new Set(p).size).toBe(p.length);
+    // Computed colours MUI X can parse (it fades and highlights series), never color-mix().
+    expect(p.every((c) => /^(#|rgb)/.test(c))).toBe(true);
+  });
+
+  test.each(['BarChart', 'PieChart'])('%s with no colors list draws the Primary style’s brand first, not MUI X’s palette', async (name) => {
+    const t = await mountStyled(name, {}, { ...defaultsOf(name), primary: '#4f46e5' });
+    const fills = () => [...t.root().querySelectorAll('[fill]')].map((el) => el.getAttribute('fill').toLowerCase());
+    await waitFor(() => expect(fills()).toContain('#4f46e5'));
+    expect(fills()).not.toContain('#4254fb');
+    // An explicit colors list still wins.
+    const own = await mountStyled(name, { colors: ['#ff0000', '#00ff00', '#0000ff'] }, { ...defaultsOf(name), primary: '#4f46e5' });
+    await waitFor(() => expect([...own.root().querySelectorAll('[fill]')].map((el) => el.getAttribute('fill'))).toContain('#ff0000'));
+  });
+
+  test('Alert severity Custom draws its Custom styles, and they show only for it', async () => {
+    const m = manifest().Alert;
+    expect(m.props.find((p) => p.name === 'severity').enumValues).toContain('custom');
+    const custom = m.styles.filter((s) => s.section === 'Custom severity');
+    expect(custom.map((s) => s.name)).toEqual(['customAccent', 'customBackground', 'customText']);
+    expect(custom.every((s) => s.visibleWhen?.key === 'severity' && s.visibleWhen?.value === 'custom')).toBe(true);
+    const plain = await mountStyled('Alert', { severity: 'custom', title: 'T', children: 'M' }, defaultsOf('Alert'));
+    const styled = await mountStyled('Alert', { severity: 'custom', title: 'T', children: 'M' }, { ...defaultsOf('Alert'), customAccent: '#ff0000', customText: '#00ff00' });
+    expect(plain.root().querySelector('.MuiAlert-root')).not.toBeNull();
+    expect(classes(styled.root())).not.toBe(classes(plain.root()));
+  });
+
+  test('hints: StatCard samples a number shown compact, option props use the options editor, Kanban names cardData', async () => {
+    const m = manifest();
+    const prop = (c, p) => m[c].props.find((x) => x.name === p);
+    expect(prop('StatCard', 'value').default).toBe('14000');
+    expect(prop('StatCard', 'format').default).toBe('compact');
+    const t = await mountStyled('StatCard', {}, {});
+    expect(t.root().textContent).toContain('14K');
+    for (const [c, p] of [
+      ['Select', 'options'],
+      ['Autocomplete', 'options'],
+      ['AutocompleteMultiple', 'options'],
+      ['RadioGroup', 'options'],
+      ['ToggleButtonGroup', 'options'],
+      ['Menu', 'items'],
+    ])
+      expect(`${c}.${p}:${prop(c, p).inspector}`).toBe(`${c}.${p}:options`);
+    expect(fs.readFileSync(path.join(PACK, 'src/components/Kanban.tsx'), 'utf8')).toContain('{{cardData}}');
+  });
+});

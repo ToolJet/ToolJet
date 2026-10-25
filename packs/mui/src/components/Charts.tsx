@@ -4,7 +4,7 @@ import { LineChart as MuiLineChart } from '@mui/x-charts/LineChart';
 import { PieChart as MuiPieChart } from '@mui/x-charts/PieChart';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
-import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
+import { MuiProvider, useSeriesColors, useThemeStyles } from '../lib/MuiProvider';
 import { BlockSkeleton, Loading } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
 import { readField, str, toArray, toRows, type Row } from '../lib/data';
@@ -95,7 +95,7 @@ const useCartesian = () => {
   const [colors] = ToolJet.useStateArray({
     name: 'colors',
     label: 'Colors',
-    description: "The series palette; empty: MUI X Charts' default palette.",
+    description: "The series palette; empty: led by the brand (the Primary style or the app theme), else MUI X Charts' default palette.",
     initialValue: [],
   });
   const [grid] = ToolJet.useStateBoolean({ name: 'grid', label: 'Grid', description: 'Horizontal grid lines.', initialValue: true });
@@ -120,6 +120,10 @@ const useCartesian = () => {
   };
   return { rows, data, axis, list, stack, format, tick, colors: toArray(colors).map(str).filter(Boolean), grid, hideLegend, loading, setClickedItem };
 };
+
+/** Its children with the chart's series colours, read inside MuiProvider (the brand-led palette when none are set). */
+const SeriesColors = ({ given, children }: { given: string[]; children: (colors: string[] | undefined) => React.ReactElement }) =>
+  children(useSeriesColors(given));
 
 const muiSeries = (c: ReturnType<typeof useCartesian>, extra: Record<string, unknown> = {}) =>
   c.list.map((s) => ({
@@ -157,28 +161,32 @@ export const BarChart = () => {
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={c.loading} fill look={<BlockSkeleton />}>
-        <MuiBarChart
-          // Highlight clicked point makes the highlight controlled: a remount when it is turned on or off, as x-charts
-          // keeps whether it is controlled from the first render.
-          key={highlight.on ? 'pinned' : 'free'}
-          {...highlight.props}
-          dataset={c.data}
-          layout={layout as 'vertical'}
-          xAxis={horizontal ? values : band}
-          yAxis={horizontal ? [{ ...band[0], width: 90 }] : [{ ...values[0], width: 56 }]}
-          series={muiSeries(c, highlight.on ? { highlightScope: { highlight: 'item', fade: 'global' } } : {})}
-          colors={c.colors.length ? c.colors : undefined}
-          // The Border radius style rounds the bars (x-charts' borderRadius); none: MUI's square bars.
-        borderRadius={overrides.borderRadius ?? 0}
-          grid={horizontal ? { vertical: c.grid } : { horizontal: c.grid }}
-          hideLegend={c.hideLegend || c.list.length < 2}
-          onItemClick={(_, item) => {
-            c.setClickedItem(c.rows[item.dataIndex] ?? {});
-            setClickedSeries(String(item.seriesId));
-            highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
-            onItemClick();
-          }}
-        />
+        <SeriesColors given={c.colors}>
+          {(colors) => (
+            <MuiBarChart
+              // Highlight clicked point makes the highlight controlled: a remount when it is turned on or off, as x-charts
+              // keeps whether it is controlled from the first render.
+              key={highlight.on ? 'pinned' : 'free'}
+              {...highlight.props}
+              dataset={c.data}
+              layout={layout as 'vertical'}
+              xAxis={horizontal ? values : band}
+              yAxis={horizontal ? [{ ...band[0], width: 90 }] : [{ ...values[0], width: 56 }]}
+              series={muiSeries(c, highlight.on ? { highlightScope: { highlight: 'item', fade: 'global' } } : {})}
+              colors={colors}
+              // The Border radius style rounds the bars (x-charts' borderRadius); none: MUI's square bars.
+              borderRadius={overrides.borderRadius ?? 0}
+              grid={horizontal ? { vertical: c.grid } : { horizontal: c.grid }}
+              hideLegend={c.hideLegend || c.list.length < 2}
+              onItemClick={(_, item) => {
+                c.setClickedItem(c.rows[item.dataIndex] ?? {});
+                setClickedSeries(String(item.seriesId));
+                highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
+                onItemClick();
+              }}
+            />
+          )}
+        </SeriesColors>
       </Loading>
     </MuiProvider>
   );
@@ -207,23 +215,26 @@ const markAt = (showMark: boolean, on: boolean, index: unknown) => {
   return on && at >= 0 && !showMark ? ({ index: i }: { index: number }) => i === at : showMark;
 };
 
-const LineView = ({ c, l, area }: { c: ReturnType<typeof useCartesian>; l: ReturnType<typeof useLineProps>; area: boolean }) => (
-  <MuiLineChart
-    dataset={c.data}
-    xAxis={[{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: (c.axis.scaleType as 'point') || 'point' }]}
-    yAxis={[{ valueFormatter: (v: number | null) => c.tick(v), width: 56 }]}
-    series={muiSeries(c, { curve: l.curve, showMark: markAt(l.showMark, l.highlight.on, l.clickedIndex), area, connectNulls: true })}
-    colors={c.colors.length ? c.colors : undefined}
-    grid={{ horizontal: c.grid }}
-    hideLegend={c.hideLegend || c.list.length < 2}
-    onAxisClick={(_, data) => {
-      if (!data) return;
-      c.setClickedItem(c.rows[data.dataIndex] ?? {});
-      l.setClickedIndex(data.dataIndex);
-      l.onAxisClick();
-    }}
-  />
-);
+const LineView = ({ c, l, area }: { c: ReturnType<typeof useCartesian>; l: ReturnType<typeof useLineProps>; area: boolean }) => {
+  const colors = useSeriesColors(c.colors);
+  return (
+    <MuiLineChart
+      dataset={c.data}
+      xAxis={[{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: (c.axis.scaleType as 'point') || 'point' }]}
+      yAxis={[{ valueFormatter: (v: number | null) => c.tick(v), width: 56 }]}
+      series={muiSeries(c, { curve: l.curve, showMark: markAt(l.showMark, l.highlight.on, l.clickedIndex), area, connectNulls: true })}
+      colors={colors}
+      grid={{ horizontal: c.grid }}
+      hideLegend={c.hideLegend || c.list.length < 2}
+      onAxisClick={(_, data) => {
+        if (!data) return;
+        c.setClickedItem(c.rows[data.dataIndex] ?? {});
+        l.setClickedIndex(data.dataIndex);
+        l.onAxisClick();
+      }}
+    />
+  );
+};
 
 // MUI X's LineChart: dataset, xAxis [{ dataKey, scaleType }], series [{ dataKey, label, color }], curve, showMark,
 // stack, valueFormat, colors, grid, hideLegend. Event onAxisClick (anywhere on the plot: the nearest x), with
@@ -301,7 +312,8 @@ export const PieChart = () => {
     initialValue: 'USD',
     visibleWhen: { key: 'valueFormat', value: 'currency' },
   });
-  const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Colors', initialValue: [] });
+  const [rawColors] = ToolJet.useStateArray({ name: 'colors', label: 'Colors', description: 'The slice palette; empty: led by the brand (the Primary style or the app theme).', initialValue: [] });
+  const pieColors = toArray(rawColors).map(str).filter(Boolean);
   const [hideLegend] = ToolJet.useStateBoolean({ name: 'hideLegend', label: 'Hide legend', initialValue: false });
   const [, setClickedItem] = ToolJet.useStateObject({ name: 'clickedItem', initialValue: {}, inspector: 'hidden' });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
@@ -334,30 +346,34 @@ export const PieChart = () => {
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={loading} fill look={<BlockSkeleton />}>
-        <MuiPieChart
-          key={highlight.on ? 'pinned' : 'free'}
-          {...highlight.props}
-          colors={toArray(colors).map(str).filter(Boolean).length ? toArray(colors).map(str).filter(Boolean) : undefined}
-          hideLegend={hideLegend}
-          series={[
-            {
-              data: slices.map(({ id, label, value }) => ({ id, label, value })),
-              innerRadius: Number(innerRadius) || 0,
-              outerRadius: Number(outerRadius) > 0 ? Number(outerRadius) : undefined,
-              paddingAngle: Number(paddingAngle) || 0,
-              cornerRadius: Number(cornerRadius) || 0,
-              arcLabel: arc,
-              arcLabelMinAngle: 18,
-              highlightScope: { fade: 'global', highlight: 'item' },
-              valueFormatter: (v) => format(v.value),
-            },
-          ]}
-          onItemClick={(_, item) => {
-            setClickedItem(slices[item.dataIndex]?.row ?? {});
-            highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
-            onItemClick();
-          }}
-        />
+        <SeriesColors given={pieColors}>
+          {(colors) => (
+            <MuiPieChart
+              key={highlight.on ? 'pinned' : 'free'}
+              {...highlight.props}
+              colors={colors}
+              hideLegend={hideLegend}
+              series={[
+                {
+                  data: slices.map(({ id, label, value }) => ({ id, label, value })),
+                  innerRadius: Number(innerRadius) || 0,
+                  outerRadius: Number(outerRadius) > 0 ? Number(outerRadius) : undefined,
+                  paddingAngle: Number(paddingAngle) || 0,
+                  cornerRadius: Number(cornerRadius) || 0,
+                  arcLabel: arc,
+                  arcLabelMinAngle: 18,
+                  highlightScope: { fade: 'global', highlight: 'item' },
+                  valueFormatter: (v) => format(v.value),
+                },
+              ]}
+              onItemClick={(_, item) => {
+                setClickedItem(slices[item.dataIndex]?.row ?? {});
+                highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
+                onItemClick();
+              }}
+            />
+          )}
+        </SeriesColors>
       </Loading>
     </MuiProvider>
   );

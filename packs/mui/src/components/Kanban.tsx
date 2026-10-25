@@ -519,8 +519,8 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
 
 // MUI Kanban: data (the cards) grouped by statusField into columns [{ id, title, color }]; cards show the mapped fields
 // (title, description, badge, tags, progress, meta, avatar, details) or a row of ToolJet components (cardLayout custom,
-// {{listItem}}). Drag or keyboard moves, add and delete buttons and the actions change the board at once and publish
-// updatedCardData with the last moved, added, updated or removed card and an event, for a query to save.
+// reading {{cardData}}, as UI 2.0's, or {{listItem}}). Drag or keyboard moves, add and delete buttons and the actions
+// change the board at once and publish updatedCardData with the last moved, added, updated or removed card and an event, for a query to save.
 export const Kanban = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();

@@ -45,7 +45,7 @@ const focusWasLost = (active: Element | null, trigger: Element, menu: Element | 
 // clearable hides it, by the Autocomplete's name.
 export const Select = () => {
   const field = useFieldProps({ label: 'Status' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: SAMPLE.status });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: SAMPLE.status });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The picked option value.', initialValue: '' });
   const [displayEmpty] = ToolJet.useStateBoolean({ name: 'displayEmpty', label: 'Display empty', description: 'Show the placeholder while nothing is picked.', initialValue: true });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select', visibleWhen: { key: 'displayEmpty', value: true } });
@@ -208,7 +208,7 @@ const loadingSlotProps = ({ slotProps }: AutocompleteRenderInputParams, loading:
 /** The Autocomplete props both variants share. */
 const useAutocompleteProps = (defaults: { label: string; placeholder: string; options: unknown[] }) => {
   const field = useFieldProps({ label: defaults.label });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: defaults.options });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: defaults.options });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: defaults.placeholder });
   const [noOptionsText] = useStateText({ name: 'noOptionsText', label: 'No options text', initialValue: 'No options' });
   const [disableClearable] = ToolJet.useStateBoolean({ name: 'disableClearable', label: 'Disable clearable', initialValue: false });

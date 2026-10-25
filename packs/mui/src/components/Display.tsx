@@ -21,7 +21,9 @@ import {
 } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { toText, useStateText } from '../lib/text';
+import type { Theme } from '@mui/material/styles';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
+import { THEME_TOKEN, useColorStyle } from '../lib/themeStyle';
 import { PALETTE_COLORS } from '../lib/field';
 import { iconOf, ICONS } from '../lib/icons';
 import { str, toArray, type Row } from '../lib/data';
@@ -66,11 +68,35 @@ export const Chip = () => {
   );
 };
 
-// MUI's Alert: severity (success, info, warning, error), variant (standard, filled, outlined), title (AlertTitle),
-// children (the message), icon (false to hide); closable shows the close button (event onClose); actionText adds a
-// button at the right (event onAction). Actions show and close.
+/** The Custom severity's look from its styles, as UI 2.0's Custom alert: unset parts follow the theme's primary. */
+const customAlertSx = (variant: string, accent?: string, background?: string, text?: string) => (theme: Theme) => {
+  const tone = accent ?? theme.palette.primary.main;
+  if (variant === 'filled')
+    return {
+      backgroundColor: background ?? tone,
+      color: text ?? (accent ? '#fff' : theme.palette.primary.contrastText),
+      '& .MuiAlert-icon': { color: 'inherit' },
+    };
+  return {
+    // Standard sits on the paper colour (what the Background swatch names) with a soft accent border; outlined is clear.
+    backgroundColor: background ?? (variant === 'outlined' ? 'transparent' : theme.palette.background.paper),
+    border: `1px solid ${variant === 'outlined' ? tone : `color-mix(in srgb, ${tone} 40%, transparent)`}`,
+    color: text ?? theme.palette.text.primary,
+    '& .MuiAlert-icon': { color: tone },
+  };
+};
+
+// MUI's Alert: severity (success, info, warning, error, or custom: the Custom styles' colours), variant (standard,
+// filled, outlined), title (AlertTitle), children (the message), icon (false to hide); closable shows the close button
+// (event onClose); actionText adds a button at the right (event onAction). Actions show and close.
 export const Alert = () => {
-  const [severity] = ToolJet.useStateEnumeration({ name: 'severity', label: 'Severity', enumDefinition: ['success', 'info', 'warning', 'error'], initialValue: 'info' });
+  const [severity] = ToolJet.useStateEnumeration({
+    name: 'severity',
+    label: 'Severity',
+    enumDefinition: ['success', 'info', 'warning', 'error', 'custom'],
+    enumLabels: { success: 'Success', info: 'Info', warning: 'Warning', error: 'Error', custom: 'Custom' },
+    initialValue: 'info',
+  });
   const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['standard', 'filled', 'outlined'], initialValue: 'standard' });
   const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Heads up' });
   const [children] = useStateText({ name: 'children', label: 'Message', initialValue: 'This is an alert.' });
@@ -82,6 +108,11 @@ export const Alert = () => {
   const onAction = ToolJet.useEventCallback({ name: 'onAction' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
+  const whenCustom = { section: 'Custom severity', visibleWhen: { key: 'severity', value: 'custom' } };
+  const accent = useColorStyle({ name: 'customAccent', label: 'Accent (icon, border)', token: THEME_TOKEN.brand, ...whenCustom });
+  const background = useColorStyle({ name: 'customBackground', label: 'Background (filled: the accent)', token: THEME_TOKEN.surface, ...whenCustom });
+  const text = useColorStyle({ name: 'customText', label: 'Text', token: THEME_TOKEN.text, ...whenCustom });
+  const custom = severity === 'custom';
   // A title and a one-line message: MUI's natural 76px.
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 8 });
   ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setOpen(true));
@@ -93,9 +124,13 @@ export const Alert = () => {
     <MuiProvider overrides={overrides} fill>
       <Loading loading={loading} fill look={<BlockSkeleton variant="rounded" />}>
         <MuiAlert
-          severity={severity as 'info'}
+          // Custom draws on info's layout and icon, recoloured.
+          severity={(custom ? 'info' : severity) as 'info'}
           variant={variant as 'standard'}
-          sx={{ height: '100%', boxSizing: 'border-box', '& .MuiAlert-message': { overflow: 'auto', minHeight: 0 } }}
+          sx={[
+            { height: '100%', boxSizing: 'border-box', '& .MuiAlert-message': { overflow: 'auto', minHeight: 0 } },
+            custom ? customAlertSx(String(variant), accent, background, text) : null,
+          ]}
           icon={icon ? undefined : false}
           onClose={
             closable
@@ -188,8 +223,9 @@ export const Typography = () => {
 // (outlined, elevation). Event onClick.
 export const StatCard = () => {
   const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Users' });
-  const [value] = useStateText({ name: 'value', label: 'Value', initialValue: '14k' });
-  const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'auto' });
+  // A number as the sample, shown compact (14K), so the inspector reads a value to bind, not display text.
+  const [value] = useStateText({ name: 'value', label: 'Value', description: 'A number (shown in Format) or any text.', initialValue: '14000' });
+  const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'compact' });
   const [currency] = useStateText({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'format', value: 'currency' } });
   const [trend, setTrend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'neutral' });
   const [rawTrendLabel, setTrendLabel] = ToolJet.useStateString({

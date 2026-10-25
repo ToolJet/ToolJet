@@ -5,7 +5,8 @@ import { ThemeProvider } from '@mui/material/styles';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { usePortalContainer } from './usePortalContainer';
 import { createPackCache } from './emotion';
-import { buildTheme, normalizeColor, readAppTheme, sameAppTheme, type AppTheme, type ThemeOverrides } from './theme';
+import { buildTheme, readAppTheme, resolveOverrides, sameAppTheme, seriesPalette, type AppTheme, type ThemeOverrides } from './theme';
+import { THEME_TOKEN, useColorStyle } from './themeStyle';
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
@@ -38,23 +39,45 @@ const useThemeVersion = () => useSyncExternalStore(subscribe, () => version, () 
 
 const isSet = (v: unknown) => v !== undefined && v !== null && v !== '';
 
-/** The component's Styles, by MUI theme path, applied over MUI's default theme. Empty = MUI's default. */
+/**
+ * The component's Styles, by MUI theme path, applied over the app theme or MUI's default theme. Each colour defaults
+ * to the theme token it draws (themeStyle.ts); the radius shows the drawn value as its placeholder, since a stored
+ * number would replace the app theme's radius.
+ */
 export const useThemeStyles = (): ThemeOverrides => {
-  const primary = ToolJet.useStyleString({ name: 'primary', label: 'Primary (palette.primary.main)', inspector: 'color', initialValue: '' });
-  const textPrimary = ToolJet.useStyleString({ name: 'textPrimary', label: 'Text (palette.text.primary)', inspector: 'color', initialValue: '' });
-  const backgroundPaper = ToolJet.useStyleString({ name: 'backgroundPaper', label: 'Paper (palette.background.paper)', inspector: 'color', initialValue: '' });
-  const divider = ToolJet.useStyleString({ name: 'divider', label: 'Divider (palette.divider)', inspector: 'color', initialValue: '' });
-  const borderRadius = ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Border radius (shape.borderRadius)', initialValue: '' });
-  return useMemo(() => {
-    const color = (v: unknown) => (isSet(v) ? normalizeColor(String(v)) : undefined);
-    return {
-      primary: color(primary),
-      textPrimary: color(textPrimary),
-      backgroundPaper: color(backgroundPaper),
-      divider: color(divider),
+  const primary = useColorStyle({ name: 'primary', label: 'Primary (palette.primary.main)', token: THEME_TOKEN.brand });
+  const textPrimary = useColorStyle({ name: 'textPrimary', label: 'Text (palette.text.primary)', token: THEME_TOKEN.text });
+  const backgroundPaper = useColorStyle({ name: 'backgroundPaper', label: 'Paper (palette.background.paper)', token: THEME_TOKEN.surface });
+  const divider = useColorStyle({ name: 'divider', label: 'Divider (palette.divider)', token: THEME_TOKEN.borderWeak });
+  const borderRadius = ToolJet.useStyleNumber({
+    name: 'borderRadius',
+    label: 'Border radius (shape.borderRadius)',
+    placeholder: 'Theme radius (MUI: 4)',
+    initialValue: '',
+  });
+  return useMemo(
+    () => ({
+      // Colours stay as given (a var() included): MuiProvider resolves them where the component is drawn.
+      primary,
+      textPrimary,
+      backgroundPaper,
+      divider,
       borderRadius: isSet(borderRadius) && !Number.isNaN(Number(borderRadius)) ? Number(borderRadius) : undefined,
-    };
-  }, [primary, textPrimary, backgroundPaper, divider, borderRadius]);
+    }),
+    [primary, textPrimary, backgroundPaper, divider, borderRadius]
+  );
+};
+
+/** The brand the charts' default series palette leads with: undefined in an unthemed app without a Primary style. */
+const ChartBrand = createContext<string | undefined>(undefined);
+
+/** A chart's series colours: its own colors list, else the brand-led palette, else undefined (MUI X's own). */
+export const useSeriesColors = (given: string[]): string[] | undefined => {
+  const brand = useContext(ChartBrand);
+  return useMemo(
+    () => (given.length ? given : brand ? seriesPalette(brand) : undefined),
+    [given.join('\u0000'), brand] // eslint-disable-line react-hooks/exhaustive-deps
+  );
 };
 
 // MUI's typography is Roboto; like an MUI app, the page loads it once (from Google Fonts, MUI's CDN install). A font
@@ -140,8 +163,16 @@ export const MuiProvider = ({
     setApp((prev) => (sameAppTheme(prev, next) ? prev : next));
   }, [themeVersion, hostVersion]);
 
+  // A colour style that names a CSS variable (a theme swatch) resolves at the component, so it is re-read with the app
+  // theme; before the mount there is no element, and the children are not drawn yet.
+  const resolved = useMemo(
+    () => resolveOverrides(overrides ?? {}, anchorRef.current),
+    [overridesKey, app, attached, themeVersion] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const resolvedKey = JSON.stringify(resolved);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const theme = useMemo(() => buildTheme(app, overrides ?? {}, container), [app, overridesKey, container]);
+  const theme = useMemo(() => buildTheme(app, resolved, container), [app, resolvedKey, container]);
+  const chartBrand = resolved.primary ?? app.brand;
   return (
     <div
       ref={setRoot}
@@ -150,7 +181,9 @@ export const MuiProvider = ({
     >
       <CacheProvider value={cache}>
         <ThemeProvider theme={theme}>
-          <PopupContainer.Provider value={container}>{attached ? children : null}</PopupContainer.Provider>
+          <PopupContainer.Provider value={container}>
+            <ChartBrand.Provider value={chartBrand}>{attached ? children : null}</ChartBrand.Provider>
+          </PopupContainer.Provider>
         </ThemeProvider>
       </CacheProvider>
     </div>

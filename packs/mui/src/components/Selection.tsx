@@ -125,7 +125,7 @@ export const Switch = () => {
 // size, helperText; event onChange; actions setValue, clear.
 export const RadioGroup = () => {
   const field = useFieldProps({ label: 'Plan' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: SAMPLE.plans });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: SAMPLE.plans });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
   const [row] = ToolJet.useStateBoolean({ name: 'row', label: 'Row', description: 'Options side by side.', initialValue: false });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
@@ -175,7 +175,7 @@ export const RadioGroup = () => {
 // MUI's ToggleButtonGroup: options [{ label, value }], exclusive (one value) or not (value is an array, MUI's shape),
 // value, color, size, orientation, fullWidth; event onChange.
 export const ToggleButtonGroup = () => {
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value }]', initialValue: SAMPLE.periods });
+  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: SAMPLE.periods });
   const [exclusive] = ToolJet.useStateBoolean({ name: 'exclusive', label: 'Exclusive', description: 'One value at a time; off, value is an array.', initialValue: true });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The value; an array when not exclusive.', initialValue: '' });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: ['standard', ...PALETTE_COLORS], initialValue: 'primary' });
