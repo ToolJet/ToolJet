@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker as MuiDatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker as MuiTimePicker } from '@mui/x-date-pickers/TimePicker';
+import { DateTimePicker as MuiDateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
@@ -19,6 +20,8 @@ import { useValueSetter } from '../lib/sameValue';
 const DESKTOP = '@media (min-width: 0px)';
 const DATE = 'YYYY-MM-DD';
 const TIME = 'HH:mm';
+// The date-time value: local time, no zone (what the Ant pack's date-time picker writes too).
+const DATE_TIME = 'YYYY-MM-DDTHH:mm:ss';
 
 const parse = (v: unknown, format: string): Dayjs | null => {
   const s = str(v).trim();
@@ -232,6 +235,93 @@ export const TimePicker = () => {
         slotProps={slots}
         onChange={(next) => {
           if (popup.available()) change(next);
+        }}
+        onAccept={() => {
+          if (popup.available()) events.onAccept();
+        }}
+      />
+    </PickerFrame>
+  );
+};
+
+/** A date-time bound: a date alone is the start of that day as a minimum and its end as a maximum, so maxDate
+ *  2026-10-25 still allows that afternoon. */
+const bound = (v: unknown, edge: 'start' | 'end'): Dayjs | undefined => {
+  const d = parse(v, DATE_TIME);
+  if (!d) return undefined;
+  return /^\s*\d{4}-\d{2}-\d{2}\s*$/.test(str(v)) ? (edge === 'end' ? d.endOf('day') : d.startOf('day')) : d;
+};
+
+// MUI X's DateTimePicker: label, value (YYYY-MM-DDTHH:mm:ss, local time), format (display, dayjs tokens; empty follows
+// ampm), ampm (12-hour display), minutesStep, minDateTime, maxDateTime (a date alone covers that whole day),
+// disablePast, disableFuture, helperText; selectedDate, selectedTime (HH:mm) and unixTimestamp are exposed with the
+// value, as UI 2.0's Date and time picker exposes them; events onChange, onAccept, onOpen, onClose.
+export const DateTimePicker = () => {
+  const field = useFieldProps({ label: 'Date and time' });
+  const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The date and time, YYYY-MM-DDTHH:mm:ss (local).', initialValue: '' });
+  const [format] = useStateText({ name: 'format', label: 'Format', description: 'Display format (dayjs tokens); empty for MM/DD/YYYY and the time.', initialValue: '' });
+  const [ampm] = ToolJet.useStateBoolean({ name: 'ampm', label: 'AM/PM', description: '12-hour display.', initialValue: true });
+  const [minutesStep] = ToolJet.useStateNumber({ name: 'minutesStep', label: 'Minutes step', initialValue: 5, min: 1, max: 60 });
+  const [minDateTime] = useStateText({ name: 'minDateTime', label: 'Min date-time', description: 'YYYY-MM-DDTHH:mm:ss or YYYY-MM-DD; empty for none.', initialValue: '' });
+  const [maxDateTime] = useStateText({ name: 'maxDateTime', label: 'Max date-time', description: 'YYYY-MM-DDTHH:mm:ss or YYYY-MM-DD; empty for none.', initialValue: '' });
+  const [disablePast] = ToolJet.useStateBoolean({ name: 'disablePast', label: 'Disable past', initialValue: false });
+  const [disableFuture] = ToolJet.useStateBoolean({ name: 'disableFuture', label: 'Disable future', initialValue: false });
+  const [, setSelectedDate] = ToolJet.useStateString({ name: 'selectedDate', initialValue: '', inspector: 'hidden' });
+  const [, setSelectedTime] = ToolJet.useStateString({ name: 'selectedTime', initialValue: '', inspector: 'hidden' });
+  const [, setUnixTimestamp] = ToolJet.useStateNumber({ name: 'unixTimestamp', initialValue: null as unknown as number, inspector: 'hidden' });
+  const look = useTextFieldLook();
+  const events = usePickerEvents();
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  const popup = usePickerPopup(events, disabled);
+  const date = parse(value, DATE_TIME);
+  const check = ToolJet.useValidation({ section: 'date', value: date ? date.format(DATE_TIME) : '', present: !!date });
+  const overrides = useThemeStyles();
+  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 7 });
+
+  // The parts follow the value: with each change, before its event, and when the app sets the value itself.
+  const exposeParts = (d: Dayjs | null) => {
+    setSelectedDate(d ? d.format(DATE) : '');
+    setSelectedTime(d ? d.format(TIME) : '');
+    setUnixTimestamp((d ? d.valueOf() : null) as number);
+  };
+  useEffect(() => exposeParts(date), [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  const change = (next: Dayjs | null) => {
+    const d = next && next.isValid() ? next.millisecond(0) : null;
+    if (!valueSetter.set(d ? d.format(DATE_TIME) : '')) return;
+    exposeParts(d);
+    events.onChange();
+  };
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Date and time (YYYY-MM-DDTHH:mm:ss)' }] },
+    (next) => change(parse(next, DATE_TIME))
+  );
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(null));
+
+  const slots = pickerSlots({ fieldId, label: field.label, helperText: field.helperText, check, look });
+  const step = Math.max(1, Number(minutesStep) || 1);
+  return (
+    <PickerFrame overrides={overrides} className={fieldClass(look.variant, field.label)} loading={loading} look={look} rootRef={popup.rootRef}>
+      <MuiDateTimePicker
+        key={popup.fieldKey}
+        {...popup.props}
+        value={date}
+        format={format || (ampm ? 'MM/DD/YYYY hh:mm A' : 'MM/DD/YYYY HH:mm')}
+        ampm={ampm}
+        minutesStep={step}
+        timeSteps={{ minutes: step }}
+        minDateTime={bound(minDateTime, 'start')}
+        maxDateTime={bound(maxDateTime, 'end')}
+        disablePast={disablePast}
+        disableFuture={disableFuture}
+        disabled={disabled}
+        desktopModeMediaQuery={DESKTOP}
+        slotProps={slots}
+        // The clock has no seconds column: a pick keeps none.
+        onChange={(next) => {
+          if (popup.available()) change(next && next.isValid() ? next.second(0) : next);
         }}
         onAccept={() => {
           if (popup.available()) events.onAccept();

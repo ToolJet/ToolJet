@@ -6,7 +6,7 @@ import './styles/pack.css';
 export { Button } from './components/Button';
 export { TextField, MultilineTextField, NumberField } from './components/TextField';
 export { Select, Autocomplete, AutocompleteMultiple } from './components/Select';
-export { DatePicker, TimePicker } from './components/Pickers';
+export { DatePicker, TimePicker, DateTimePicker } from './components/Pickers';
 export { Checkbox, Switch, RadioGroup, ToggleButtonGroup, Rating, Slider } from './components/Selection';
 export { Menu } from './components/Menu';
 
