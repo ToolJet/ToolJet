@@ -2,6 +2,7 @@ import React, { useEffect, useId } from 'react';
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useLiveState } from '../lib/useLiveState';
+import { useOwnEventGuard } from '../lib/ownEvent';
 import { CheckedRow } from '../lib/Field';
 import { lookVars, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
@@ -37,12 +38,13 @@ export const Switch = () => {
     setLegacyChecked(checked);
   }, [checked]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const guard = useOwnEventGuard();
   const set = (next: boolean) => {
     if (next === checkedRef.current) return;
     setChecked(next);
     setValue(next);
     setLegacyChecked(next);
-    onChange();
+    guard(onChange);
   };
   ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => set(!checkedRef.current));
   ToolJet.useAction(

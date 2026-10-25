@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { usePressHoldRef } from '../lib/pressHold';
 import { themeVars } from '../lib/themeVars';
 import {
   areaShapes,
@@ -160,7 +161,8 @@ export const Map = () => {
   const loadingNow = useLoading();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 42 });
 
-  const frameRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  const frameHoldRef = usePressHoldRef(frameRef);
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const markerLayer = useRef<L.LayerGroup | null>(null);
@@ -762,9 +764,8 @@ export const Map = () => {
 
   return (
     <div
-      ref={frameRef}
+      ref={frameHoldRef}
       className="ui ui-map"
-      data-tj-no-drag=""
       data-expanded={expanded || undefined}
       data-picking={pickLocation || undefined}
       data-display={display}

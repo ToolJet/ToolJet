@@ -679,7 +679,6 @@ export const Kanban = () => {
       <div
         ref={boardRef}
         className={cn('ui ui2-kb', compact && 'is-compact', moreRight && 'has-more-right')}
-        data-tj-no-drag=""
         style={kanbanVars(styles)}
         onDragEnd={endDrag}
       >

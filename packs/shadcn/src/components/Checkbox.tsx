@@ -2,6 +2,7 @@ import React, { useEffect, useId } from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useLiveState } from '../lib/useLiveState';
+import { useOwnEventGuard } from '../lib/ownEvent';
 import { Check } from 'lucide-react';
 import { CheckedRow } from '../lib/Field';
 import { lookVars, useResetOn } from '../lib/ui2/choice/looks';
@@ -47,15 +48,18 @@ export const Checkbox = () => {
   // A mandatory checkbox must be checked: unchecked is not a value here.
   const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked });
 
+  const guard = useOwnEventGuard();
   const set = (next: boolean) => {
     if (next === checkedRef.current) return;
     setChecked(next);
     setValue(next);
     setLegacyChecked(next);
-    onChange();
-    // onChange plus onCheck or onUnCheck, as UI 2.0's Checkbox: they mean different things.
-    if (next) onCheck();
-    else onUnCheck();
+    guard(() => {
+      onChange();
+      // onChange plus onCheck or onUnCheck, as UI 2.0's Checkbox: they mean different things.
+      if (next) onCheck();
+      else onUnCheck();
+    });
   };
   ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => set(!checkedRef.current));
   ToolJet.useAction(
