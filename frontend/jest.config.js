@@ -55,6 +55,9 @@ module.exports = {
   },
   transformIgnorePatterns: [`node_modules/(?!(${esmPackages.join('|')})/)`],
   moduleNameMapper: {
+    // rc-util's ESM files, which the Ant pack imports to reach the module its icons use (packs/antd AntProvider), as
+    // the CommonJS copy those icons load under jest.
+    '^rc-util/es/(.*)$': 'rc-util/lib/$1',
     '^config$': '<rootDir>/src/test/mocks/config.js',
     '^@tooljet/plugins/client$': '<rootDir>/src/test/mocks/tooljetPluginsClient.js',
     // Real module uses top-level await (bundler-only); analytics stay dead in tests.
