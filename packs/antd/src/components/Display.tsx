@@ -24,7 +24,7 @@ import { SkeletonSwap, SpinOver, TextBone } from '../lib/Loading';
 import { str, toArray, type Row } from '../lib/data';
 import { formatCell, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
-import { useFitLayout, useFitText } from '../lib/fitText';
+import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 
 const TONE_TAG_STATUS: Record<string, string | undefined> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: undefined };
 
@@ -371,13 +371,16 @@ export const Avatar = () => {
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 3, defaultHeight: 5 });
   const text = str(children).trim();
+  const [box, px] = useFitSquare<HTMLDivElement>(Math.max(16, Math.min(240, Number(size) || 40)));
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start">
-      <SkeletonSwap loading={loading} look={<Skeleton.Avatar active shape={shape as 'circle'} size={Math.max(16, Math.min(240, Number(size) || 40))} />}>
-        <AntAvatar src={src || undefined} alt={alt || text || undefined} shape={shape as 'circle'} size={Math.max(16, Math.min(240, Number(size) || 40))}>
-          {text.includes(' ') ? initialsOf(text) : text}
-        </AntAvatar>
-      </SkeletonSwap>
+      <div ref={box} className="tj-ant-avatar-box">
+        <SkeletonSwap loading={loading} look={<Skeleton.Avatar active shape={shape as 'circle'} size={px} />}>
+          <AntAvatar src={src || undefined} alt={alt || text || undefined} shape={shape as 'circle'} size={px}>
+            {text.includes(' ') ? initialsOf(text) : text}
+          </AntAvatar>
+        </SkeletonSwap>
+      </div>
     </AntProvider>
   );
 };

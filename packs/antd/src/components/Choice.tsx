@@ -241,9 +241,17 @@ export const Slider = (props: Record<string, unknown>) => {
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 4 });
   const lo = toNumber(min) ?? 0;
   const hi = Math.max(lo, toNumber(max) ?? 100);
-  const clamp = (n: number) => Math.min(hi, Math.max(lo, n));
+  // Within the bounds and on the step grid, as Ant draws the thumb (its closest point: a grid step, or Max): an action's
+  // 1.5 on a step of 1 drew the thumb at 2 and exposed 1.5.
+  const stepSize = Math.abs(toNumber(step) || 1);
+  const clamp = (n: number) => {
+    const within = Math.min(hi, Math.max(lo, n));
+    const grid = Math.min(hi, lo + Math.round((within - lo) / stepSize) * stepSize);
+    const snapped = Math.abs(hi - within) < Math.abs(grid - within) ? hi : grid;
+    return Number(snapped.toFixed(10));
+  };
   const change = (v: unknown) => {
-    if (isRange) setValue(toRange(v, lo, hi) as unknown as number);
+    if (isRange) setValue(toRange(v, lo, hi).map(clamp) as unknown as number);
     else setValue(clamp(toNumber(Array.isArray(v) ? v[0] : v) ?? lo));
     onChange();
   };

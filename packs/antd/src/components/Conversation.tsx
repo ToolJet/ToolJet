@@ -287,13 +287,37 @@ export const Questionnaire = () => {
     setCurrentIndex(Math.max(0, Math.min(questions.length - 1, to)));
     onStepChanged();
   };
+  // A step taken from the buttons puts focus in the new question once it is drawn, as shadcn's does; goTo and reset,
+  // actions, leave focus where it is.
+  const quizRef = useRef<HTMLDivElement>(null);
+  const focusTo = useRef<number | null>(null);
+  const focusFirst = () => {
+    const root = quizRef.current;
+    const el = root?.querySelector<HTMLElement>('input:not([disabled]), textarea:not([disabled])') ?? root;
+    el?.focus();
+  };
+  useEffect(() => {
+    const wanted = focusTo.current;
+    focusTo.current = null;
+    if (wanted === index) focusFirst();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index]);
+  const step = (to: number) => {
+    const target = Math.max(0, Math.min(questions.length - 1, to));
+    focusTo.current = target === index ? null : target;
+    go(to);
+  };
   const next = () => {
     if (!item) return;
     const why = problem(item, answers[item.name]);
-    if (why) return setError(why);
-    if (index < questions.length - 1) return go(index + 1);
+    if (why) {
+      setError(why);
+      focusFirst();
+      return;
+    }
+    if (index < questions.length - 1) return step(index + 1);
     const blocked = firstProblem(questions, answers);
-    if (blocked >= 0) return go(blocked);
+    if (blocked >= 0) return step(blocked);
     setIsComplete(true);
     onSubmit();
   };
@@ -326,7 +350,7 @@ export const Questionnaire = () => {
   else if (item && answer) {
     const multiple = item.type === 'multiple';
     body = (
-      <div className="tj-ant-quiz" tabIndex={0} onKeyDown={onKey}>
+      <div ref={quizRef} className="tj-ant-quiz" tabIndex={0} onKeyDown={onKey}>
         {showProgress ? <Progress percent={Math.round((index / questions.length) * 100)} showInfo={false} size="small" /> : null}
         <Typography.Text type="secondary">
           {index + 1} / {questions.length}
@@ -374,7 +398,7 @@ export const Questionnaire = () => {
         )}
         {error ? <Typography.Text type="danger">{error}</Typography.Text> : null}
         <div className="tj-ant-quiz-nav">
-          <Button disabled={index === 0 || disabled} onClick={() => go(index - 1)}>
+          <Button disabled={index === 0 || disabled} onClick={() => step(index - 1)}>
             Back
           </Button>
           <Button type="primary" loading={loading} disabled={disabled} onClick={next}>
