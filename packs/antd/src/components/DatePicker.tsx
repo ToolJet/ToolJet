@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DatePicker as AntDatePicker } from 'antd';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
@@ -19,23 +19,57 @@ const parse = (v: unknown): Dayjs | null => {
   return d.isValid() ? d : null;
 };
 
-// Ant's DatePicker: value (as YYYY-MM-DD text; YYYY-MM-DDTHH:mm:ss with showTime), showTime, format (how it shows), picker (date, week, month, quarter, year),
-// minDate, maxDate, placeholder, allowClear; events onChange, onOpenChange.
-export const DatePicker = (props: Record<string, unknown>) => {
-  const field = useFieldProps({ label: 'Date' });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'YYYY-MM-DD, or YYYY-MM-DDTHH:mm:ss with showTime.', initialValue: '' });
-  const [showTime] = ToolJet.useStateBoolean({ name: 'showTime', label: 'Show time', description: 'Pick a time too (a date-time picker).', initialValue: false });
+/** A date-time bound: a date alone is the start of that day as a minimum and its end as a maximum, so maxDate
+ *  2026-10-25 still allows that afternoon. */
+const bound = (v: unknown, edge: 'start' | 'end'): Dayjs | undefined => {
+  const d = parse(v);
+  if (!d) return undefined;
+  return /^\s*\d{4}-\d{2}-\d{2}\s*$/.test(str(v)) ? (edge === 'end' ? d.endOf('day') : d.startOf('day')) : d;
+};
+
+/**
+ * The picker both components draw. `dateTime` is the DateTimePicker: the time is always on (no showTime or picker
+ * option), use12Hours and minuteStep set the time columns, a date-only min or max covers that whole day, `clear`
+ * empties it, and selectedDate, selectedTime (HH:mm) and unixTimestamp are exposed with the value, as UI 2.0's Date and
+ * time picker exposes them. The DatePicker keeps its options, actions and value as saved apps have them.
+ */
+const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
+  const field = useFieldProps({ label: dateTime ? 'Date and time' : 'Date' });
+  const [value, setValue] = ToolJet.useStateString(
+    dateTime
+      ? { name: 'value', label: 'Value', description: 'YYYY-MM-DDTHH:mm:ss (local time).', initialValue: '' }
+      : { name: 'value', label: 'Value', description: 'YYYY-MM-DD, or YYYY-MM-DDTHH:mm:ss with showTime.', initialValue: '' }
+  );
+  const [showTimeProp] = dateTime
+    ? [true]
+    : ToolJet.useStateBoolean({ name: 'showTime', label: 'Show time', description: 'Pick a time too (a date-time picker).', initialValue: false });
+  const showTime = !!showTimeProp;
   const [format] = ToolJet.useStateString({ name: 'format', label: 'Format', description: 'Display format (dayjs), e.g. DD MMM YYYY; empty for the default.', initialValue: '' });
-  const [picker] = ToolJet.useStateEnumeration({
-    name: 'picker',
-    label: 'Picker',
-    enumDefinition: ['date', 'week', 'month', 'quarter', 'year'],
-    initialValue: 'date',
+  const [picker] = dateTime
+    ? ['date']
+    : ToolJet.useStateEnumeration({
+        name: 'picker',
+        label: 'Picker',
+        enumDefinition: ['date', 'week', 'month', 'quarter', 'year'],
+        initialValue: 'date',
+      });
+  const [use12Hours] = dateTime ? ToolJet.useStateBoolean({ name: 'use12Hours', label: 'Use 12 hours', initialValue: false }) : [false];
+  const [minuteStep] = dateTime ? ToolJet.useStateNumber({ name: 'minuteStep', label: 'Minute step', initialValue: 5, min: 1, max: 30 }) : [1];
+  const [minDate] = ToolJet.useStateString({
+    name: 'minDate',
+    label: 'Min date',
+    description: dateTime ? 'YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss' : 'YYYY-MM-DD',
+    initialValue: '',
   });
-  const [minDate] = ToolJet.useStateString({ name: 'minDate', label: 'Min date', description: 'YYYY-MM-DD', initialValue: '' });
-  const [maxDate] = ToolJet.useStateString({ name: 'maxDate', label: 'Max date', description: 'YYYY-MM-DD', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a date' });
+  const [maxDate] = ToolJet.useStateString({
+    name: 'maxDate',
+    label: 'Max date',
+    description: dateTime ? 'YYYY-MM-DD (the whole day) or YYYY-MM-DDTHH:mm:ss' : 'YYYY-MM-DD',
+    initialValue: '',
+  });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: dateTime ? 'Pick a date and time' : 'Pick a date' });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
+  const parts = useDateTimeParts(dateTime, value);
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onOpenChange = ToolJet.useEventCallback({ name: 'onOpenChange' });
@@ -43,23 +77,31 @@ export const DatePicker = (props: Record<string, unknown>) => {
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ section: 'date', value });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({ defaultWidth: dateTime ? 12 : 10, defaultHeight: 6 });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: Dayjs | null) => {
     if (!valueSetter.set(next ? next.format(showTime ? VALUE_FORMAT_TIME : VALUE_FORMAT) : '')) return;
+    parts.expose(next);
     onChange();
   };
   ToolJet.useAction(
-    { name: 'setFieldValue', displayName: 'Set field value', params: [{ handle: 'value', displayName: 'Date (YYYY-MM-DD)' }] },
+    {
+      name: 'setFieldValue',
+      displayName: 'Set field value',
+      params: [{ handle: 'value', displayName: dateTime ? 'Date and time (YYYY-MM-DDTHH:mm:ss)' : 'Date (YYYY-MM-DD)' }],
+    },
     (next) => change(parse(next))
   );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(parse(props.value)));
+  parts.useClear(() => change(null));
   const panel = useOwnedPopup(disabled, (open) => {
     if (!open) check.touch();
     onOpenChange();
   });
+  const timeFormat = use12Hours ? 'hh:mm A' : 'HH:mm';
+  const step = Math.max(1, Number(minuteStep) || 1) as 1;
 
   return (
     <AntProvider tokens={tokens} ownerRef={panel.anchor}>
@@ -70,11 +112,11 @@ export const DatePicker = (props: Record<string, unknown>) => {
               <Picker
                 id={fieldId}
                 value={parse(value)}
-                format={str(format).trim() || (showTime ? 'YYYY-MM-DD HH:mm' : VALUE_FORMAT)}
-                showTime={showTime ? { format: 'HH:mm' } : false}
+                format={str(format).trim() || (showTime ? `YYYY-MM-DD ${timeFormat}` : VALUE_FORMAT)}
+                showTime={showTime ? (dateTime ? { format: timeFormat, use12Hours, minuteStep: step } : { format: 'HH:mm' }) : false}
                 picker={showTime ? 'date' : (picker as 'date')}
-                minDate={parse(minDate) ?? undefined}
-                maxDate={parse(maxDate) ?? undefined}
+                minDate={(dateTime ? bound(minDate, 'start') : parse(minDate)) ?? undefined}
+                maxDate={(dateTime ? bound(maxDate, 'end') : parse(maxDate)) ?? undefined}
                 placeholder={placeholder || undefined}
                 allowClear={allowClear}
                 disabled={disabled}
@@ -85,7 +127,8 @@ export const DatePicker = (props: Record<string, unknown>) => {
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
-                onChange={(d) => panel.available() && change(d as Dayjs | null)}
+                // The time columns have no seconds: a pick keeps none (Ant fills them from the clock).
+                onChange={(d) => panel.available() && change(dateTime && d ? (d as Dayjs).second(0).millisecond(0) : (d as Dayjs | null))}
               />
             )}
           </WithPopupTheme>
@@ -94,5 +137,41 @@ export const DatePicker = (props: Record<string, unknown>) => {
     </AntProvider>
   );
 };
+
+/** The DateTimePicker's exposed parts and clear action; nothing on the DatePicker. Each change publishes the parts
+ *  before its event; a value the app sets itself publishes them on render. */
+const useDateTimeParts = (dateTime: boolean, value: unknown) => {
+  const parts = dateTime
+    ? {
+        date: ToolJet.useStateString({ name: 'selectedDate', initialValue: '', inspector: 'hidden' })[1],
+        time: ToolJet.useStateString({ name: 'selectedTime', initialValue: '', inspector: 'hidden' })[1],
+        stamp: ToolJet.useStateNumber({ name: 'unixTimestamp', initialValue: null as unknown as number, inspector: 'hidden' })[1],
+      }
+    : null;
+  const expose = (d: Dayjs | null) => {
+    if (!parts) return;
+    parts.date(d ? d.format(VALUE_FORMAT) : '');
+    parts.time(d ? d.format('HH:mm') : '');
+    parts.stamp((d ? d.valueOf() : null) as number);
+  };
+  useEffect(() => expose(parse(value)), [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  return {
+    expose,
+    // A hook only on the DateTimePicker (dateTime is fixed for a component).
+    useClear: (run: () => void) => {
+      if (dateTime) ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, run); // eslint-disable-line react-hooks/rules-of-hooks
+    },
+  };
+};
+
+// Ant's DatePicker: value (as YYYY-MM-DD text; YYYY-MM-DDTHH:mm:ss with showTime), showTime, format (how it shows), picker (date, week, month, quarter, year),
+// minDate, maxDate, placeholder, allowClear; events onChange, onOpenChange.
+export const DatePicker = (props: Record<string, unknown>) => usePicker(props, false);
+
+// Ant's DatePicker with the time always on: value YYYY-MM-DDTHH:mm:ss (local time), format (display; empty for
+// YYYY-MM-DD and the time), use12Hours, minuteStep, minDate, maxDate (a date alone covers that whole day), placeholder,
+// allowClear; selectedDate, selectedTime, unixTimestamp exposed; events onChange, onOpenChange; actions setFieldValue,
+// resetFields (back to the value property), clear.
+export const DateTimePicker = (props: Record<string, unknown>) => usePicker(props, true);
 
 const Picker = (p: React.ComponentProps<typeof AntDatePicker>) => <AntDatePicker style={{ width: '100%' }} {...p} />;
