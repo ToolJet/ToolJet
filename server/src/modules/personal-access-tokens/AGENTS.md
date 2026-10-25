@@ -14,6 +14,7 @@ Owns personal access tokens (PATs) and their exchange for workspace sessions.
 - Workspace PATs can reach Apps, Data, Workflows, and the explicitly allowed Workspace Users features.
 - Workflow creation, execution, status, and node routes use the existing module metadata; do not add controller-specific PAT checks.
 - Scope access never overrides owner permissions or edition/license gates.
+- OAuth delegated and viewer requests share these scope bundles and ceilings through `../mcp-oauth/scope.interceptor.ts`; changing `constants/scopes.ts` changes PAT and OAuth access together.
 - Unassigned modules and routes without module metadata fail closed.
 - Credential modules are never grantable; a PAT must not mint another PAT.
 - Browser sessions and embed sessions (`patScope='app'`) are exempt from this workspace ceiling.
@@ -37,3 +38,5 @@ token can pin a session to an app, "has an appId" stops meaning "is an embed ses
   `PAT_APP_VIEWER_MODULES` only with a feature narrowing in `PAT_APP_VIEWER_FEATURES`.
 - The app pin reads `request.tj_app` first (guards resolve the app for slug and query routes, which
   carry no uuid in the path) and falls back to matching `/apps/<uuid>` in the URL.
+
+- On Cloud, `credential-lifecycle.ts` serializes PAT issuance/exchange with administrative termination and instance bans through a user-row SHARE lock. Recheck the live browser session for minting and the current token for exchange while holding the lock. Internal service tokens carry their initiating browser session only in memory and must recheck it on exchange. Revocation takes the policy lock before its user-row NO KEY UPDATE lock; preserve this order.
