@@ -12,6 +12,7 @@ import { rowIdOf, rowKeyOf, sameRecord, str, toArray, toRows, type Row } from '.
 import { formatCell, isIdField, toNumber } from '../lib/format';
 import { SAMPLE } from '../lib/samples';
 import { themeInk } from '../lib/ink';
+import { chipTone } from '../lib/statusTone';
 
 const ID = '__tjRowId';
 const ROW_HEIGHT = { compact: 36, standard: 52, comfortable: 67 };
@@ -51,6 +52,8 @@ const UI2_FORMATS: Record<string, string> = { currency: 'currency', percent: 'pe
  * text the colour's readable ink on that tint (lib/ink.ts). Under an applied app theme a CSS colour or colour word is
  * drawn in the theme palette colour of its hue (lib/theme chipFamily), so an author's stock blue reads as the brand.
  */
+const TONE_CHIP: Record<string, string> = { success: 'success', warning: 'warning', danger: 'error', info: 'info' };
+
 const StatusChip = ({ label, color }: { label: string; color: string }) => {
   const themed = useIsThemed();
   const family = themed && color && !CHIP_COLORS.has(color) ? chipFamily(color) : undefined;
@@ -139,7 +142,9 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
   } else if (format === 'chip') {
     col.renderCell = (p) => {
       if (p.value === undefined || p.value === null || p.value === '') return null;
-      return <StatusChip label={str(p.value)} color={str(colors?.[str(p.value)]).trim()} />;
+      // No colour set for the value: its status word's tone ('Paid' success, 'Overdue' error), as the other packs do.
+      const set = str(colors?.[str(p.value)]).trim();
+      return <StatusChip label={str(p.value)} color={set || TONE_CHIP[chipTone(str(p.value))] || ''} />;
     };
   } else if (!col.type) {
     col.valueFormatter = (v: unknown) => (isIdField(c.field) ? str(v) : formatCell(v, format));
