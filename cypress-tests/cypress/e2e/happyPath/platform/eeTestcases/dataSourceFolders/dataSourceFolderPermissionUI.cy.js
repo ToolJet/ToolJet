@@ -14,7 +14,6 @@ import {
 } from 'Support/utils/platform/dataSourceFolders';
 import { verifyGranularPermissionModalUI } from 'Support/utils/platform/groupsUI';
 
-/** UI-only validation for the data source folder permission surfaces. */
 describe('Data Source Folders — Permission and Modal UI', () => {
   let workspaceId, testId, wsName, wsSlug;
 
@@ -46,17 +45,14 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(groupsSelector.groupLink(groupName)).click();
     cy.get(groupsSelector.granularLink).click();
 
-    // Offered as its own resource type, separate from "Data sources" and "App folders".
     cy.get(groupsSelector.addPermissionButton).click();
     cy.get(dsFolderPerm.addDataSourceFolderButton).should('be.visible').click();
 
     cy.get(dsFolder.modalTitle).should('have.text', 'Add data source folders permissions');
     cy.get(dsFolder.modalCloseButton).should('be.visible');
 
-    // Labels, helper texts and the Coming Soon environment block.
     verifyGranularPermissionModalUI('data_source_folder');
 
-    // Both Resources options carry their own explanatory copy.
     cy.get(dsFolderPerm.sharedModalAllResourcesInfoText).should(
       'have.text',
       'This will select all data source folders in the workspace including any new data source folders created'
@@ -66,12 +62,11 @@ describe('Data Source Folders — Permission and Modal UI', () => {
       'Select specific data source folders you want to add to the group'
     );
 
-    // Opens with NO tier pre-selected (app folders default to Edit folder — deliberate difference).
+    // Opens with no tier pre-selected, unlike app folders which open on View apps.
     cy.get(dsFolderPerm.sharedModalEditFolderRadio).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalConfigureRadio).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).should('not.be.checked');
 
-    // The three tiers are a single-select radio group.
     cy.get(dsFolderPerm.sharedModalEditFolderRadio).click();
     cy.get(dsFolderPerm.sharedModalEditFolderRadio).should('be.checked');
     cy.get(dsFolderPerm.sharedModalConfigureRadio).click();
@@ -81,27 +76,22 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).should('be.checked');
     cy.get(dsFolderPerm.sharedModalConfigureRadio).should('not.be.checked');
 
-    // A selected tier can be cleared by clicking it again, leaving no tier at all.
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).click();
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalEditFolderRadio).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalConfigureRadio).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).click();
 
-    // e.
     cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).check();
     cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).should('be.checked');
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).should('be.checked');
 
-    // The inert Environment block is asserted in the helper above (container, label, "Coming Soon" chip).
-
-    // Grant NAME rules, in the same open modal: capped at 50, empty blocks the save.
     cy.get(dsFolderPerm.sharedModalPermissionNameInput).type('a'.repeat(51));
     cy.get(dsFolderPerm.sharedModalPermissionNameInput).invoke('val').should('have.length', 50);
     cy.get(dsFolderPerm.sharedModalPermissionNameInput).clear();
     cy.get(dsFolderPerm.sharedModalConfirmButton).should('be.disabled');
-    // NOT ASSERTED: a spaces-only name should keep Add disabled but does not (UX-6, filed).
+    // Not asserted: a spaces-only name currently keeps Add enabled.
 
     // The X is a different control from Cancel: it must discard too, leaving no row behind.
     cy.get(dsFolder.modalCloseButton).click();
@@ -120,7 +110,6 @@ describe('Data Source Folders — Permission and Modal UI', () => {
 
     openDataSourcesList();
 
-    // Create modal — submit stays disabled until a valid name is present.
     cy.get(dsFolder.createFolderIcon).click();
     cy.get(dsFolder.modalTitle).should('have.text', 'Create folder');
     cy.get(dsFolder.folderNameInput)
@@ -128,29 +117,24 @@ describe('Data Source Folders — Permission and Modal UI', () => {
       .and('have.attr', 'placeholder', dsFolder.folderNamePlaceholder);
     cy.get(dsFolder.createFolderButton).should('be.disabled');
 
-    // Whitespace only is treated as empty.
     cy.get(dsFolder.folderNameInput).type('    ');
     cy.get(dsFolder.folderNameError).should('have.text', "Folder name can't be empty");
     cy.get(dsFolder.createFolderButton).should('be.disabled');
 
-    // Special characters are refused inline.
     cy.clearAndType(dsFolder.folderNameInput, 'qa<>/|');
     cy.get(dsFolder.folderNameError).should('have.text', 'Special characters are not accepted.');
     cy.get(dsFolder.createFolderButton).should('be.disabled');
 
-    // The input is capped at 50 characters, the same limit app folders use.
     cy.clearAndType(dsFolder.folderNameInput, 'a'.repeat(51));
     cy.get(dsFolder.folderNameInput).invoke('val').should('have.length', 50);
     cy.get(dsFolder.createFolderButton).should('not.be.disabled');
 
-    // Outer spaces are trimmed and inner runs collapsed before the name is sent.
     cy.intercept('POST', '/api/folders').as('createFolder');
     cy.clearAndType(dsFolder.folderNameInput, `  Modal   Folder  ${testId}  `);
     cy.get(dsFolder.createFolderButton).should('not.be.disabled').click();
     cy.wait('@createFolder').its('request.body.name').should('equal', folderName);
     cy.verifyToastMessage(commonSelectors.toastMessage, 'Folder created successfully!');
 
-    // A duplicate name is refused by the server and surfaced as a toast.
     cy.get(dsFolder.createFolderIcon).click();
     cy.clearAndType(dsFolder.folderNameInput, folderName);
     cy.get(dsFolder.createFolderButton).click();
@@ -158,7 +142,6 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(dsFolder.cancelButton).click();
 
     cy.apiGetDataSourceFolderId(folderName).then((folderId) => {
-      // Rename modal — pre-filled; submit is disabled while the name is UNCHANGED, a different rule from the create modal's empty check.
       cy.get(dsFolder.folderMenuButton(folderId)).click({ force: true });
       cy.get(dsFolder.folderRenameOption(folderId)).click();
       cy.get(dsFolder.modalTitle).should('have.text', 'Rename folder');
@@ -168,12 +151,10 @@ describe('Data Source Folders — Permission and Modal UI', () => {
       cy.clearAndType(dsFolder.folderNameInput, `${folderName} Edited`);
       cy.get(dsFolder.renameFolderButton).should('not.be.disabled');
 
-      // Changing it back — even with extra spaces — counts as unchanged again.
       cy.clearAndType(dsFolder.folderNameInput, `  ${folderName}  `);
       cy.get(dsFolder.renameFolderButton).should('be.disabled');
       cy.clearAndType(dsFolder.folderNameInput, `${folderName} Edited`);
 
-      // Cancel discards — the folder keeps its original name.
       cy.get(dsFolder.cancelButton).click();
       cy.get(dsFolder.folderRow(folderName)).should('exist');
       cy.get(dsFolder.folderRow(`${folderName} Edited`)).should('not.exist');
@@ -181,7 +162,6 @@ describe('Data Source Folders — Permission and Modal UI', () => {
   });
 
   it('a Custom grant needs a folder, and a saved scoped grant can be switched to All', () => {
-    // Deliberately NOT merged into the block above.
     const groupName = `QA DS Grant Scope ${testId}`;
     const folderName = `Grant Scope Folder ${testId}`;
     const grantName = `scoped ${testId}`;
@@ -193,17 +173,14 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     uiOpenAddDataSourceFolderGrant();
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).click();
 
-    // Custom with no folder picked cannot be saved.
     cy.get(dsFolderPerm.sharedModalPermissionNameInput).type(grantName);
     cy.get(dsFolderPerm.sharedModalCustomRadio).check();
     cy.get(dsFolderPerm.sharedModalConfirmButton).should('be.disabled');
 
-    // Pick the folder and save the scoped grant.
     uiSelectGrantFolders([folderName]);
     cy.get(dsFolderPerm.sharedModalConfirmButton).should('not.be.disabled').click();
     cy.verifyToastMessage(commonSelectors.toastMessage, 'Permission created successfully!');
 
-    // Reopen: Custom is kept with the folder, then switch the grant to All.
     uiOpenEditDataSourceFolderGrant();
     cy.get(dsFolderPerm.sharedModalCustomRadio).should('be.checked');
     cy.get(dsFolderPerm.sharedModalSelectedResource).should('contain.text', folderName);

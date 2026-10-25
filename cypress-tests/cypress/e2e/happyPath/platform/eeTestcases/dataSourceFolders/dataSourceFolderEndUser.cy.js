@@ -6,15 +6,12 @@ import {
   apiCreateReleasedAppWithQuery,
   openGroupGranularAccess,
   uiAddUserToGroup,
-  uiOpenAddDataSourceFolderGrant,
   uiOpenEditDataSourceFolderGrant,
-  uiSelectGrantFolders,
   verifyQueryRunAllowed,
   verifyQueryRunBlocked,
   visitReleasedAppAndCaptureQueryRun,
 } from 'Support/utils/platform/dataSourceFolders';
 
-/** End users and data source folders. */
 describe('Data Source Folders — End User Role', () => {
   let workspaceId, wsName, wsSlug, testId;
   const queryName = 'enduserquery';
@@ -67,7 +64,6 @@ describe('Data Source Folders — End User Role', () => {
     const groupName = `QA EndUser Guards ${testId}`;
     const email = `ds-enduser-guards-${testId}@example.com`;
 
-    // 1 — the DEFAULT End-user group cannot be given the resource at all.
     openGroupGranularAccess('End-user');
     cy.get(groupsSelector.addPermissionButton).click();
     cy.get(dsFolderPerm.addDataSourceFolderButton).should('be.disabled');
@@ -75,19 +71,18 @@ describe('Data Source Folders — End User Role', () => {
     cy.contains('.tooltip', 'End-user cannot access data source folders').should('be.visible');
 
     setupFolder().then(({ folderId }) => {
-      // Grant FIRST, end user second: creating a restriction-only grant on a group that ALREADY holds an end user is still refused (BUG-06) — parked at the bottom.
+      // Grant first, end user second: a restriction-only grant on a group that already holds an end user is refused.
       apiCreateGroup(groupName);
       createGrant(groupName, folderId, { canRunQuery: false });
       cy.apiFullUserOnboarding('QA EndUser', email, 'end-user', 'password', wsName, {}, [groupName]);
       cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
 
-      // 2 — tiers stay enabled on purpose (a group can hold builders too); the server refuses the save and names the end user, which is asserted next.
+      // Tiers stay enabled on purpose (a group can hold builders too); the server refuses the save and names the end user, which is asserted next.
       openGroupGranularAccess(groupName);
       uiOpenEditDataSourceFolderGrant();
       cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).should('be.enabled');
       cy.get(commonSelectors.cancelButton).click();
 
-      // 3 — promoting that grant to a TIER is refused, naming the end user.
       openGroupGranularAccess(groupName);
       uiOpenEditDataSourceFolderGrant();
       cy.get(dsFolderPerm.sharedModalBuildWithRadio).click({ force: true });
@@ -96,7 +91,6 @@ describe('Data Source Folders — End User Role', () => {
       cy.get(commonSelectors.modalComponent).should('contain.text', email);
       cy.get(commonSelectors.cancelButton).click();
 
-      // 4 — mirror guard: an end user cannot join a group that already holds a tier (Q-4: different message, different code path).
       const tieredGroup = `QA Tier Group ${testId}`;
       const outsider = `ds-enduser-tier-${testId}@example.com`;
       apiCreateGroup(tieredGroup);
@@ -129,7 +123,6 @@ describe('Data Source Folders — End User Role', () => {
             cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
           };
 
-          // Folder placement alone never affects an app consumer.
           runAsEndUser(verifyQueryRunAllowed);
           cy.apiAddDataSourceToFolder(dataSourceId, other.id);
           runAsEndUser(verifyQueryRunAllowed);
@@ -138,7 +131,6 @@ describe('Data Source Folders — End User Role', () => {
           cy.apiAddDataSourceToFolder(dataSourceId, folderId);
           runAsEndUser(verifyQueryRunAllowed);
 
-          // Restricting the folder DOES reach the released app.
           apiCreateGroup(groupName);
           createGrant(groupName, folderId, { canRunQuery: false });
           cy.apiGetGroupId(groupName).then((groupId) => apiAddUserToGroup(groupId, email));

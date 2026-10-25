@@ -16,7 +16,6 @@ import {
   verifyQueryRunBlocked,
 } from 'Support/utils/platform/dataSourceFolders';
 
-/** Restrict query run on a data source folder grant. */
 describe('Data Source Folders — Restrict Query Run', () => {
   let workspaceId, wsName, wsSlug, testId;
   const queryName = 'folderquery';
@@ -39,7 +38,6 @@ describe('Data Source Folders — Restrict Query Run', () => {
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
-  /** Folder + data source inside it. */
   const setupFolder = () => {
     const folderName = `Restrict Folder ${testId}`;
     const dataSourceName = `ds-restrict-${testId}`;
@@ -55,7 +53,6 @@ describe('Data Source Folders — Restrict Query Run', () => {
       );
   };
 
-  /** Group with one folder grant. */
   const createFolderGroup = (groupName, folderId, permissions) => {
     apiCreateGroup(groupName);
     return cy.apiCreateGranularPermission(
@@ -115,7 +112,7 @@ describe('Data Source Folders — Restrict Query Run', () => {
     const email = `ds-restricted-${testId}@example.com`;
     const groupName = `QA Restricted Configure ${testId}`;
 
-    /** Toggles Restrict query run through the UI as admin, then hands the session back to the member — so "takes effect on the next run" is proven without a re-login. */
+    // Toggles Restrict query run through the UI as admin, then hands the session back to the member — so "takes effect on the next run" is proven without a re-login.
     const adminTogglesRestrict = () => {
       cy.getCookie('tj_auth_token').then((userCookie) => {
         cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
@@ -137,23 +134,19 @@ describe('Data Source Folders — Restrict Query Run', () => {
 
       cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
       apiCreateAppWithQuery(`restricted-app-${testId}`, dataSourceId, queryName).then(({ appId }) => {
-        // The restriction is narrow: the data source is still listed and still editable.
         cy.apiLogin(email, 'password');
         openDataSourcesList();
         uiEnsureFolderExpanded(folderName, dataSourceName);
         cy.get(dsFolder.dataSourceRow(dataSourceName)).click();
         cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
 
-        // but running its query is refused.
         cy.openApp('', workspaceId, appId);
         uiRunQueryInBuilder(queryName).then(verifyQueryRunBlocked);
 
-        // Lifted, and it runs again on the very next run.
         adminTogglesRestrict();
         cy.openApp('', workspaceId, appId);
         uiRunQueryInBuilder(queryName).then(verifyQueryRunAllowed);
 
-        // Re-applied, and it is refused again.
         adminTogglesRestrict();
         cy.openApp('', workspaceId, appId);
         uiRunQueryInBuilder(queryName).then(verifyQueryRunBlocked);
