@@ -333,7 +333,14 @@ export const CardGrid = () => {
     <AntProvider tokens={tokens}>
       <div className="tj-ant-cardgrid" style={{ gridTemplateColumns: cols }}>
         {loading
-          ? [0, 1, 2].map((i) => <Card key={i} loading />)
+          ? // A loaded card's two lines (title, subtitle), not Ant's four-paragraph skeleton, which is taller than the
+            // one-row default and is cut at the bottom.
+            [0, 1, 2].map((i) => (
+              <Card key={i} variant={variant as 'outlined'} className={`tj-ant-gridcard is-${layout}`}>
+                <TextBone part="title" />
+                <TextBone part="trend" />
+              </Card>
+            ))
           : items.map((it) => (
               <Card
                 key={it.key}
