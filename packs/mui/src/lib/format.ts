@@ -47,6 +47,16 @@ export const formatNumber = (n: number, format: NumberFormat = 'auto', currency 
   }
 };
 
+/** A figure as written: "75.8%" is a percent (shown with its sign under the auto or number format), a plain number is
+ *  formatted, other text shows as is. Statistic values often arrive from a query already as "75.8%" text. */
+export const formatFigure = (v: unknown, format: NumberFormat = 'auto', currency = 'USD', precision: number | null = null): string | null => {
+  const n = toNumber(v);
+  if (n === null) return null;
+  if (typeof v === 'string' && v.trim().endsWith('%') && (format === 'auto' || format === 'number' || format === 'percent'))
+    return fmt({ style: 'percent', maximumFractionDigits: precision ?? 1, ...(precision === null ? {} : { minimumFractionDigits: precision }) }).format(n / 100);
+  return formatNumber(n, format, currency, precision);
+};
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:?\d{2})?)?$/;
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 

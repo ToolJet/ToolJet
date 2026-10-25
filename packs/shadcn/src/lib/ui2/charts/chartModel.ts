@@ -63,13 +63,20 @@ export interface FormatOptions {
   locale?: unknown;
 }
 
+/** Whether a prefix or suffix already names a magnitude ("k€", "M$", "Mio", "bn", "lakh"): the values are in thousands or
+ *  millions already, and an axis that compacted them too read "4,5 k k€". */
+const MAGNITUDE = /(?:^|[\s\d.,(])(k|K|M|Mio|Mill?|Md|Mrd|bn|Bn|B|mil|mn|MM|lakhs?|cr|crores?|thousands?|millions?|billions?|Tsd|tsd)(?=$|[\s€$£¥₹%)./])/;
+export const namesMagnitude = (...affixes: unknown[]): boolean =>
+  affixes.some((a) => isScalar(a) && MAGNITUDE.test(String(a)));
+
 /** A formatter for the format ('number' | 'currency' | 'percent' | 'compact') with the value prefix and suffix. Short
  *  (axis ticks) abbreviates large numbers. Percent takes values already in percent (42 shows 42%). */
 export const formatter = ({ format, currency, prefix, suffix, locale }: FormatOptions = {}, short = false): ((v: unknown) => string) => {
   const kind = isFormat(format) ? format : 'number';
   const code = typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
   const where = localeFor(currency, locale);
-  const compact = short || kind === 'compact';
+  // Ticks abbreviate large numbers, unless the prefix or suffix already names the magnitude.
+  const compact = (short && !namesMagnitude(prefix, suffix)) || kind === 'compact';
   let f: Intl.NumberFormat;
   if (kind === 'currency') {
     f = numberFormat(where, {
@@ -101,7 +108,8 @@ export const affixFormatter =
   (v: unknown): string => {
     const n = Number(v);
     if (!Number.isFinite(n)) return String(v ?? '');
-    return withAffixes(short ? COMPACT.format(n) : PLAIN_NUMBER.format(n), isScalar(p.valuePrefix) ? p.valuePrefix : '', isScalar(p.valueSuffix) ? p.valueSuffix : '');
+    const shorten = short && !namesMagnitude(p.valuePrefix, p.valueSuffix);
+    return withAffixes(shorten ? COMPACT.format(n) : PLAIN_NUMBER.format(n), isScalar(p.valuePrefix) ? p.valuePrefix : '', isScalar(p.valueSuffix) ? p.valueSuffix : '');
   };
 
 /** How much a percent axis multiplies its values: 100 when every value is a fraction (0.39 for 39%), else 1. */

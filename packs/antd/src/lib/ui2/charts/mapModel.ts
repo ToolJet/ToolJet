@@ -82,7 +82,7 @@ const TONES: [string, RegExp][] = [
   ],
   [
     'success',
-    /\b(paid|active|done|complete|completed|resolved|approved|confirmed|in stock|won|healthy|available|delivered|shipped|success|successful|passed|live|online|published|ready|accepted|vacant|clean|fulfilled|on track|closed won|signed|settled|given|attached|received|present|in service|returned|verified|validated|cleared|expansion|upgrade|in range|within range|pass|renewed|promoters?)\b/,
+    /\b(paid|active|done|complete|completed|resolved|approved|confirmed|in stock|won|healthy|available|delivered|shipped|success|successful|passed|live|online|published|ready|accepted|vacant|clean|fulfilled|on track|closed won|signed|settled|given|attached|received|present|in service|on the road|on road|on duty|on shift|in operation|operational|operating|running|deployed|en route|on route|returned|verified|validated|cleared|expansion|upgrade|in range|within range|pass|renewed|promoters?)\b/,
   ],
   [
     'info',

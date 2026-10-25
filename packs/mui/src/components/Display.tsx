@@ -27,7 +27,7 @@ import { THEME_TOKEN, useColorStyle } from '../lib/themeStyle';
 import { PALETTE_COLORS } from '../lib/field';
 import { iconOf, ICONS } from '../lib/icons';
 import { str, toArray, type Row } from '../lib/data';
-import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
+import { formatFigure, formatNumber, toNumber, type NumberFormat } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner, TextSkeleton } from '../lib/loading';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 import { useValueSetter } from '../lib/sameValue';
@@ -261,7 +261,7 @@ export const StatCard = () => {
   );
   const n = toNumber(value);
   const p = toNumber(precision);
-  const shown = n === null ? str(value) : formatNumber(n, format as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, Math.round(p))));
+  const shown = formatFigure(value, format as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, Math.round(p)))) ?? str(value);
   // A number bound to trendLabel (today - yesterday) is the change: shown signed, in the value's format, and with
   // trend left neutral its sign gives the direction. NaN (a query not loaded yet) shows no chip.
   const change = typeof rawTrendLabel === 'number' ? (Number.isFinite(rawTrendLabel) ? (rawTrendLabel as number) : null) : undefined;

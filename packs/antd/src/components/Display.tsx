@@ -22,7 +22,7 @@ import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { THEME_COLOR, useThemeColor } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver, TextBone } from '../lib/Loading';
 import { str, toArray, type Row } from '../lib/data';
-import { formatCell, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
+import { formatCell, formatFigure, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 import { useValueSetter } from '../lib/sameValue';
@@ -278,7 +278,7 @@ export const Statistic = () => {
   );
   const n = toNumber(value);
   const p = toNumber(precision);
-  const shown = n === null ? str(value) || '-' : formatNumber(n, formatter as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, p)));
+  const shown = formatFigure(value, formatter as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, p))) ?? (str(value) || '-');
   const trendClass = trend === 'up' ? 'is-up' : trend === 'down' ? 'is-down' : '';
   // A box too short for the card's title over its figure: less padding, then the title beside the figure, then the
   // figure shrunk (shadcn's Stat in the same box). The figure also shrinks to the card's width.
