@@ -117,6 +117,29 @@
         "clear": "resetFields"
       }
     },
+    "DateTimePicker": {
+      "role": "datetimepicker",
+      "fit": true,
+      "loading": "own",
+      "usage": "Ant's DatePicker with the time always on: label, value YYYY-MM-DDTHH:mm:ss (local time), format (display; empty for YYYY-MM-DD plus the time), use12Hours, minuteStep, minDate, maxDate (YYYY-MM-DDTHH:mm:ss, or a date alone for that whole day), placeholder, allowClear; selectedDate, selectedTime and unixTimestamp are exposed; onChange, onOpenChange; setFieldValue, resetFields (back to the value property), clear.",
+      "roleProps": {
+        "description": "extra",
+        "timeFormat": "use12Hours"
+      },
+      "roleValues": {
+        "use12Hours": {
+          "12h": true,
+          "24h": false
+        }
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "setValue": "setFieldValue",
+        "clearValue": "clear"
+      }
+    },
     "Checkbox": {
       "role": "checkbox",
       "fit": true,

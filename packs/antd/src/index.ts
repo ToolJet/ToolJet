@@ -9,7 +9,7 @@ export { Input } from './components/Input';
 export { TextArea } from './components/TextArea';
 export { InputNumber } from './components/InputNumber';
 export { Select } from './components/Select';
-export { DatePicker } from './components/DatePicker';
+export { DatePicker, DateTimePicker } from './components/DatePicker';
 export { Checkbox } from './components/Checkbox';
 export { Switch } from './components/Switch';
 export { RadioGroup, Segmented, Rate, Slider } from './components/Choice';

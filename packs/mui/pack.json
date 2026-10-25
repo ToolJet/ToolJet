@@ -220,6 +220,32 @@
       },
       "loading": "own"
     },
+    "DateTimePicker": {
+      "role": "datetimepicker",
+      "fit": true,
+      "usage": "MUI X DateTimePicker: label, value YYYY-MM-DDTHH:mm:ss (local time), format (display, dayjs tokens; empty for MM/DD/YYYY plus the time), ampm (12-hour display), minutesStep, minDateTime, maxDateTime (YYYY-MM-DDTHH:mm:ss, or a date alone for that whole day), disablePast, disableFuture, helperText; selectedDate, selectedTime and unixTimestamp are exposed; onChange (each edit), onAccept (committed), onOpen, onClose. The calendar and clock open in the popup layer.",
+      "roleProps": {
+        "description": "helperText",
+        "minDate": "minDateTime",
+        "maxDate": "maxDateTime",
+        "minuteStep": "minutesStep",
+        "timeFormat": "ampm"
+      },
+      "roleValues": {
+        "ampm": {
+          "12h": true,
+          "24h": false
+        }
+      },
+      "roleEvents": {
+        "onSelect": "onChange"
+      },
+      "roleActions": {
+        "setDate": "setValue",
+        "clearValue": "clear"
+      },
+      "loading": "own"
+    },
     "Checkbox": {
       "role": "checkbox",
       "fit": true,
