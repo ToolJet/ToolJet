@@ -204,6 +204,8 @@ export const ToggleButtonGroup = () => {
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
   const [orientation] = ToolJet.useStateEnumeration({ name: 'orientation', label: 'Orientation', enumDefinition: ['horizontal', 'vertical'], initialValue: 'horizontal' });
   const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', description: 'Share the width of the box between the buttons; off, each is as wide as its label.', initialValue: false });
+  // Where the group sits when its box is wider than the buttons: a filter toggle that ends a row reads at the row's end.
+  const [alignment] = ToolJet.useStateEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], enumLabels: { left: 'Left', center: 'Center', right: 'Right' }, initialValue: 'left', visibleWhen: { key: 'fullWidth', value: false } });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
@@ -221,7 +223,7 @@ export const ToggleButtonGroup = () => {
     change(exclusive ? str(next) : toArray(next).map(str))
   );
   return (
-    <MuiProvider overrides={overrides} fill className="tj-mui-center tj-mui-start">
+    <MuiProvider overrides={overrides} fill className="tj-mui-center tj-mui-start" style={fullWidth ? undefined : { justifyContent: alignment === 'right' ? 'flex-end' : alignment === 'center' ? 'center' : 'flex-start' }}>
       <Loading loading={loading} look={<Spinner />}>
         <MuiToggleButtonGroup
           exclusive={exclusive}
