@@ -208,9 +208,11 @@ export const flexChildLineWidth = ({ fillWidth, minWidthPx = 0, width }) => (fil
  *  optional description beneath it. */
 export const SHADCN_CARD_HEADER_PX = { title: 48, withDescription: 70 };
 export const flexCardHeaderPx = (properties = {}) => {
-  const { cardStyle, cardTitle, cardExtra } = properties;
+  const { cardStyle, cardTitle, cardExtra, cardHeaderDivider } = properties;
   if (cardStyle === 'shadcnCard') {
     if (!cardTitle && !cardExtra) return 0;
+    // A divided header (Ant's Card) is one 56px strip, the description beside the title.
+    if (cardHeaderDivider === true) return 56;
     return cardExtra ? SHADCN_CARD_HEADER_PX.withDescription : SHADCN_CARD_HEADER_PX.title;
   }
   return 0;

@@ -1,5 +1,6 @@
 import { fitsContentInView, marksDynamicHeight, stretchesInRow } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { leavesFlexFlow } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { usePackRole } from '@/AppBuilder/Widgets/hooks/usePackRole';
 import React, { memo, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
@@ -163,6 +164,8 @@ const WidgetWrapper = memo(
         state.getResolvedComponent?.(id, resolveIndex, moduleId)?.properties?.useDefaultButton === false,
       shallow
     );
+    // A pack widget's role (a pack Stat stretches in an Equal heights row like UI 2.0's Stat card).
+    const packRole = usePackRole(componentType, id, moduleId);
     // Whether an Equal heights row (or Align: Stretch) stretches this child to its line's height (dynamicHeightPolicy).
     const stretchInRow = useStore(
       (state) =>
@@ -171,7 +174,8 @@ const WidgetWrapper = memo(
           { alignItems: flexAlignItems, equalHeights: flexEqualHeights },
           componentType,
           state.getResolvedComponent(id, resolveIndex, moduleId)?.properties,
-          mode
+          mode,
+          packRole
         ),
       shallow
     );
@@ -256,8 +260,8 @@ const WidgetWrapper = memo(
         ? { ...flexLayout.outerStyle, position: 'absolute', flex: 'none', width: 0, height: 0, minHeight: 0 }
         : flexLayout.outerStyle
       : modalWithoutTrigger && mode === 'view'
-      ? { ...gridOuterStyle, pointerEvents: 'none' }
-      : gridOuterStyle;
+        ? { ...gridOuterStyle, pointerEvents: 'none' }
+        : gridOuterStyle;
     const renderWidgetWidth = isFlexLayout
       ? isFlexSubcontainer && flexLayout.measuredWidth != null
         ? flexLayout.measuredWidth

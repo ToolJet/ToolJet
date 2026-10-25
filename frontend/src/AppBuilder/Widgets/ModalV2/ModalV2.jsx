@@ -19,6 +19,8 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import WidgetTooltip from '@/AppBuilder/AppCanvas/WidgetTooltip';
 
+const SHEET_SIDES = ['right', 'left', 'top', 'bottom'];
+
 export const ModalV2 = function Modal({
   id,
   component,
@@ -82,7 +84,7 @@ export const ModalV2 = function Modal({
   const computedTriggerButtonLabel =
     typeof triggerButtonLabel === 'number'
       ? String(triggerButtonLabel)
-      : textOr(triggerButtonLabel, null) ?? 'Show Modal';
+      : (textOr(triggerButtonLabel, null) ?? 'Show Modal');
   const normalizedTriggerButtonTextSize = Number(triggerButtonTextSize);
   const computedTriggerButtonFontSize = Number.isFinite(normalizedTriggerButtonTextSize)
     ? normalizedTriggerButtonTextSize
@@ -109,11 +111,12 @@ export const ModalV2 = function Modal({
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
   const footerHeightPx = getModalFooterHeight(showFooter, footerHeight);
   const isFullScreen = properties.size === 'fullscreen';
-  // The shadcn pack's Dialog is this widget in the pack's look (Widgets/Shadcn/ShadOverlays.jsx), optionally a side
-  // sheet at full height.
+  // The shadcn pack's Dialog is this widget in the pack's look (Widgets/Shadcn/ShadOverlays.jsx).
   const skin = componentType === 'ShadDialog' ? 'shadcn' : undefined;
+  // Kind "sheet" opens against one edge of the window instead of centred: full height on the right or left, full width
+  // on the top or bottom. Anything else is a dialog, as every modal was before.
   const sheetSide =
-    skin && properties.variant === 'sheet' ? (properties.side === 'left' ? 'left' : 'right') : undefined;
+    properties.variant === 'sheet' ? (SHEET_SIDES.includes(properties.side) ? properties.side : 'right') : undefined;
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;

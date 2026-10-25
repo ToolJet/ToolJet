@@ -57,6 +57,8 @@ export const FlexContainer = ({
   // stays the same flex canvas, so nesting, child order and dynamic height are unchanged.
   const isShadcnCard = cardStyle === 'shadcnCard';
   const isCard = isShadcnCard;
+  // A card on a pack's own surface draws the background, border, radius and shadow written in its styles.
+  const ownLook = isShadcnCard && properties.cardLook === 'own';
   const CARD_HEADER_PX = flexCardHeaderPx(properties);
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
@@ -130,11 +132,16 @@ export const FlexContainer = ({
     ...(isDynamicHeightEnabled && isStretched ? { minHeight: isCardSurface ? '100%' : `max(100%, ${height}px)` } : {}),
     display: isVisible ? 'flex' : 'none',
     flexDirection: isCard ? 'column' : effectiveDirection,
-    backgroundColor: isCard ? 'var(--cc-surface1-surface)' : backgroundColor,
-    borderRadius: isShadcnCard ? 14 : borderRadius ? parseFloat(borderRadius) : 0,
-    border: isCard ? '1px solid var(--cc-weak-border)' : `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
+    backgroundColor: isCard && !ownLook ? 'var(--cc-surface1-surface)' : backgroundColor,
+    borderRadius: isShadcnCard && !ownLook ? 14 : borderRadius ? parseFloat(borderRadius) : 0,
+    border:
+      isCard && !ownLook
+        ? '1px solid var(--cc-weak-border)'
+        : `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     boxShadow:
-      isShadcnCard && (!boxShadow || /^0px 0px 0px 0px/.test(boxShadow)) ? '0 1px 2px 0 rgb(0 0 0 / 0.05)' : boxShadow,
+      isShadcnCard && !ownLook && (!boxShadow || /^0px 0px 0px 0px/.test(boxShadow))
+        ? '0 1px 2px 0 rgb(0 0 0 / 0.05)'
+        : boxShadow,
     overflow: 'hidden',
     position: 'relative',
   };
@@ -156,6 +163,56 @@ export const FlexContainer = ({
     ...(isDisabled && { opacity: 0.5, pointerEvents: 'none' }),
     ...overflowStyle,
   };
+  // A divided header (cardHeaderDivider, a pack's Card such as Ant's): one strip, the title left and the description
+  // right where Ant puts a card's extra, a divider under it, the body's side padding.
+  const dividedHeader = isShadcnCard && properties.cardHeaderDivider === true;
+  const dividedHeaderNode = dividedHeader ? (
+    <div
+      style={{
+        height: CARD_HEADER_PX,
+        padding: `0 ${Math.max(8, Number(padding ?? 12) || 12)}px`,
+        boxSizing: 'border-box',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        flex: '0 0 auto',
+        overflow: 'hidden',
+        borderBottom: `1px solid ${borderColor || 'var(--cc-weak-border)'}`,
+      }}
+    >
+      <span
+        style={{
+          fontWeight: 600,
+          fontSize: 16,
+          lineHeight: '24px',
+          color: 'var(--cc-primary-text)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {String(cardTitle ?? '')}
+      </span>
+      {cardExtra ? (
+        <span
+          title={String(cardExtra)}
+          style={{
+            fontSize: 14,
+            lineHeight: '22px',
+            color: 'var(--cc-placeholder-text)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            flexShrink: 1,
+            minWidth: 0,
+          }}
+        >
+          {String(cardExtra)}
+        </span>
+      ) : null}
+    </div>
+  ) : null;
   const shadcnHeader = isShadcnCard ? (
     <div
       style={{
@@ -203,7 +260,7 @@ export const FlexContainer = ({
       ) : null}
     </div>
   ) : null;
-  const cardHeader = isShadcnCard && CARD_HEADER_PX ? shadcnHeader : null;
+  const cardHeader = isShadcnCard && CARD_HEADER_PX ? (dividedHeader ? dividedHeaderNode : shadcnHeader) : null;
 
   return (
     <div

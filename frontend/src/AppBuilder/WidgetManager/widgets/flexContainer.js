@@ -24,6 +24,26 @@ export const flexContainerConfig = {
       ],
       validation: { schema: { type: 'string' }, defaultValue: 'none' },
     },
+    // A card header drawn as a strip (title left, description right, a divider under it), as Ant's Card draws it; set
+    // by the AI compiler from a pack's surface.
+    cardHeaderDivider: {
+      type: 'toggle',
+      displayName: 'Header divider',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+    },
+    // A card in an app built on a component pack with its own design system (Ant, MUI) takes the pack's card look,
+    // written in its styles by the AI compiler ('own'), instead of the theme's card ('theme').
+    cardLook: {
+      type: 'switch',
+      displayName: 'Card look',
+      isFxNotRequired: true,
+      fullWidth: true,
+      options: [
+        { displayName: 'Theme', value: 'theme' },
+        { displayName: 'Own', value: 'own' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'theme' },
+    },
     // Optional: a title or description bound to a query reads undefined until the query answers, and the card draws
     // nothing for it; required, every page load logged "received undefined" for each card.
     cardTitle: {

@@ -11,6 +11,9 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import InlineLibraryComponent from './LibraryComponent/InlineLibraryComponent';
 import { getLibraryComponentRuntime } from './LibraryComponent/inlineRuntime';
 import LibrarySlotCanvas from './LibraryComponent/LibrarySlotCanvas';
+import { usePackHost, useRowTemplates } from './LibraryComponent/usePackHost';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 const DevBadge = ({ label }) => (
   <div className="tw-absolute tw-left-0 -tw-bottom-6 tw-h-5 tw-inline-flex tw-items-center tw-px-1 tw-py-0.5 tw-rounded-md tw-text-white tw-text-sm tw-font-medium tw-whitespace-nowrap tw-pointer-events-none tw-z-10 tw-bg-background-success-strong">
@@ -18,7 +21,17 @@ const DevBadge = ({ label }) => (
   </div>
 );
 
-const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'componentName', 'visibility', 'loadingState']);
+const META_KEYS = new Set([
+  'libraryId',
+  'correlationId',
+  'libraryName',
+  'componentName',
+  'visibility',
+  'loadingState',
+  // The host's standard properties (pack contract v2): the component reads them through ToolJet.useControlState.
+  'disabledState',
+  'dynamicHeight',
+]);
 // Styles the host widget applies itself; every other style key is the bundle's (ToolJet.useStyleX).
 const HOST_STYLE_KEYS = new Set(['boxShadow']);
 
@@ -41,6 +54,7 @@ const LibraryComponent = ({
   resetExposedVariables,
   fireEvent,
   dataCy,
+  ...hostProps
 }) => {
   const { libraryId, correlationId, componentName } = properties;
   const safeHeight = Math.max(height ?? 0, 0);
@@ -50,9 +64,11 @@ const LibraryComponent = ({
   const resolvedVisibility = properties.visibility ?? true;
   const resolvedLoading = properties.loadingState ?? false;
 
+  const resolvedDisabled = properties.disabledState === true;
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isVisible: resolvedVisibility,
     isLoading: resolvedLoading,
+    isDisabled: resolvedDisabled,
   });
 
   const updateExposedVariablesState = (key, value) => {
@@ -76,6 +92,11 @@ const LibraryComponent = ({
       setExposedVariable('isLoading', !!value);
       updateExposedVariablesState('isLoading', !!value);
     },
+    isDisabled: resolvedDisabled,
+    setDisable: async function (value) {
+      setExposedVariable('isDisabled', !!value);
+      updateExposedVariablesState('isDisabled', !!value);
+    },
   });
 
   useEffect(() => {
@@ -98,6 +119,13 @@ const LibraryComponent = ({
       sideEffect: () => {
         setExposedVariable('isLoading', resolvedLoading);
         updateExposedVariablesState('isLoading', resolvedLoading);
+      },
+    },
+    {
+      dep: resolvedDisabled,
+      sideEffect: () => {
+        setExposedVariable('isDisabled', resolvedDisabled);
+        updateExposedVariablesState('isDisabled', resolvedDisabled);
       },
     },
   ]);
@@ -159,10 +187,19 @@ const LibraryComponent = ({
 
   const fileUrl = (file) => libraryFileUrl(libraryId, effectiveRevision, file);
 
+  const manifest = useLibraryManifest(libraryId, effectiveRevision);
+  const manifestComponent = manifest?.components?.[componentName];
+
+  // Row-scoped props (ToolJet.useRowResolver) keep their {{rowData...}} / {{cellValue}} templates for the component.
+  const { overrides: rowTemplates, markRowScoped } = useRowTemplates({ id, properties, manifestComponent });
+
   // The component's own props = everything the Inspector sets minus our meta keys.
   const componentProps = useMemo(
-    () => Object.fromEntries(Object.entries(properties).filter(([k]) => !META_KEYS.has(k))),
-    [properties]
+    () => ({
+      ...Object.fromEntries(Object.entries(properties).filter(([k]) => !META_KEYS.has(k))),
+      ...rowTemplates,
+    }),
+    [properties, rowTemplates]
   );
 
   // Inspector Styles-tab values for the bundle — passed as styles, never set as exposed variables.
@@ -240,8 +277,7 @@ const LibraryComponent = ({
     setShellReady(false);
   }, [libraryId, effectiveRevision, componentName]);
 
-  const manifest = useLibraryManifest(libraryId, effectiveRevision);
-  const manifestActions = manifest?.components?.[componentName]?.actions;
+  const manifestActions = manifestComponent?.actions;
 
   useEffect(() => {
     if (!configured || !manifestActions?.length) return;
@@ -266,6 +302,56 @@ const LibraryComponent = ({
 
   // Slot drop areas exist only inline: the iframe shell has no way to host ToolJet components.
   const renderSlot = (slotName) => <LibrarySlotCanvas id={`${id}-${slotName}`} darkMode={darkMode} />;
+
+  // Pack contract v2 (manifestVersion 2): the control state, validation, fitted height, list rows and popup drop
+  // areas. A v1 manifest gets none of it and renders as before.
+  const isLoading = !!exposedVariablesTemporaryState.isLoading;
+  // "own": the component draws its loading look from useControlState().loading, so the host draws no overlay and a
+  // loading component is not also drawn disabled.
+  const ownLoading = isInline && manifestComponent?.loading === 'own';
+  const isDisabled = !!exposedVariablesTemporaryState.isDisabled;
+  const fit =
+    isInline && manifestComponent?.fit === true && properties.dynamicHeight === true && currentMode === 'view';
+  const { host, light, popupSlotNames, exposeVariable, fireHostEvent } = usePackHost(
+    { id, darkMode, setExposedVariable, fireEvent, height, ...hostProps },
+    {
+      disabled: isDisabled || (isLoading && !ownLoading),
+      loading: isLoading,
+      rowsEnabled: isInline && !!manifestComponent?.slots?.some?.((slot) => slot.kind === 'rows'),
+      // What the row's components call their row besides {{listItem}}: a kanban card's {{cardData}}, as UI 2.0's.
+      rowVariable: manifestComponent?.slots?.find?.((slot) => slot.kind === 'rows')?.variable,
+      fit,
+      visibility: exposedVariablesTemporaryState.isVisible,
+      // A field (a validation section) takes part in a Form's clearForm.
+      formField: !!manifestComponent?.validation,
+      markRowScoped,
+    }
+  );
+  // In an Equal heights row the box is stretched to the tallest sibling; a fitted component fills it.
+  const stretch = fit && !!hostProps.boxStretch;
+  // A pack in its own design system (themeMode "own": Ant, MUI) takes the app theme only once one is applied; with
+  // the basic theme it keeps its stock look. Others (shadcn) always follow the app theme.
+  const themeApplied = useStore((state) => {
+    const theme = state.globalSettings?.theme;
+    return !!theme && !(theme.isBasic ?? theme.is_basic);
+  });
+  const themed = manifest?.themeMode !== 'own' || themeApplied;
+  const fitRef = useRef(null);
+  // A pack component draws in its shadow root after the host's first measure (and again whenever its content
+  // changes), so the fitted height is measured again on every content resize, as UI 2.0's widgets do (useAutoHeight).
+  // Without it a page shown again from cache kept the first, near-empty height and the widgets below rode up over it.
+  const contentResized = useHeightObserver(fitRef, fit);
+  const fitValue = useMemo(() => ({ properties, contentResized }), [properties, contentResized]);
+  useDynamicHeight({
+    isDynamicHeightEnabled: fit,
+    id,
+    height,
+    value: fitValue,
+    currentLayout: hostProps.currentLayout,
+    width: hostProps.width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex: hostProps.subContainerIndex,
+  });
 
   if (!hasCustomComponentLibrariesAccess && currentMode === 'view') {
     return <></>;
@@ -296,9 +382,20 @@ const LibraryComponent = ({
       className={cn('tw-relative tw-w-full', {
         'tw-opacity-50 tw-pointer-events-none': !hasCustomComponentLibrariesAccess && currentMode === 'edit',
       })}
-      style={{ height: safeHeight, display: exposedVariablesTemporaryState.isVisible ? 'block' : 'none' }}
+      style={{
+        height: fit ? (stretch ? '100%' : 'auto') : safeHeight,
+        display: exposedVariablesTemporaryState.isVisible ? 'block' : 'none',
+      }}
+      // While loading or disabled the component stays mounted (what was typed, selected or scrolled is kept) and
+      // takes no input; loading shows a spinner over it, unless the component draws its own loading look.
+      {...(isLoading || isDisabled ? { inert: '' } : {})}
     >
-      {exposedVariablesTemporaryState.isLoading ? (
+      {isLoading && isInline && !ownLoading ? (
+        <div className="tw-absolute tw-inset-0 tw-z-10 tw-flex tw-items-center tw-justify-center tw-bg-[color:color-mix(in_srgb,var(--cc-surface1-surface)_60%,transparent)]">
+          <Loader width="16" absolute={false} />
+        </div>
+      ) : null}
+      {isLoading && !isInline ? (
         <div className="tw-flex tw-items-center tw-justify-center tw-h-full">
           <Loader width="16" absolute={false} />
         </div>
@@ -313,11 +410,20 @@ const LibraryComponent = ({
           componentProps={componentProps}
           componentStyles={componentStyles}
           renderSlot={renderSlot}
-          setExposedVariable={setExposedVariable}
-          fireEvent={fireEvent}
+          setExposedVariable={exposeVariable}
+          fireEvent={fireHostEvent}
           actions={inlineActions}
           boxShadow={styles.boxShadow}
           dataCy={dataCy}
+          host={host}
+          fit={fit}
+          stretch={stretch}
+          themed={themed}
+          darkMode={darkMode}
+          hostRef={fitRef}
+          light={light}
+          popupSlotNames={popupSlotNames}
+          renderPopupSlot={renderSlot}
         />
       ) : (
         <iframe

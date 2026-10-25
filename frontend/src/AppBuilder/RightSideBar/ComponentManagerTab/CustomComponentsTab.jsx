@@ -36,6 +36,8 @@ import {
   manifestDefaultSize,
 } from './utils';
 import { getDocsLink } from '../Inspector/Utils';
+import WidgetIcon from '@/../assets/images/icons/widgets';
+import { groupPackComponents, paletteFor } from './packPalette';
 
 export const CustomComponentsTab = ({ searchQuery = '' }) => {
   const libraries = useCustomComponentLibrariesStore((state) => state.libraries); // null = loading
@@ -115,11 +117,14 @@ const NoResultsMessage = ({ searchQuery }) => (
   </div>
 );
 
-const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }) => {
+// `picked`: the library is the one picked for the app (the Components tab's library): no collapsing header, only its
+// version picker, since the tab already names it.
+export const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop, picked = false }) => {
   const [open, setOpen] = useState(true);
   const { current, latest } = useLibraryCurrentRevision(library);
   const manifest = useResolvedManifest(library, current, latest);
   const { components, isVisible } = getLibrarySearchMatch(library, manifest?.components, searchQuery);
+  const sections = useMemo(() => groupPackComponents(components), [components]);
 
   // Cleanup reports "gone" on unmount (library removed from the candidate list) or
   // right before re-reporting on a query/manifest change — always a targeted add/remove
@@ -132,6 +137,58 @@ const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }
   // A dev-only library with nothing picked yet still renders its header + VersionPicker
   // so it's discoverable — the card list itself stays empty until a dev entry is chosen.
   if (!isVisible) return null;
+
+  const packSections = (list) => (
+    // A component pack (its components declare roles): ToolJet's palette sections, as widget tiles.
+    <div className="custom-library-section-content custom-library-pack-sections">
+      {list.map((section) => (
+        <div key={section.key} className="custom-library-pack-section" data-cy={`pack-section-${section.key}`}>
+          <div className="custom-library-pack-section-title">{section.title}</div>
+          <div className="component-card-group-wrapper">
+            {section.items.map(([exportName, comp]) => (
+              <CustomComponentCard
+                key={exportName}
+                libraryId={library.id}
+                correlationId={library.correlationId}
+                libraryName={library.name}
+                revisionId={current}
+                name={exportName}
+                componentConfig={comp}
+                tile
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+  const flatList = () => (
+    <div className="custom-library-section-content">
+      {components.map(([exportName, comp]) => (
+        <CustomComponentCard
+          key={exportName}
+          libraryId={library.id}
+          correlationId={library.correlationId}
+          libraryName={library.name}
+          revisionId={current}
+          name={exportName} // the bundle's export — what the shell resolves
+          componentConfig={comp}
+        />
+      ))}
+    </div>
+  );
+
+  if (picked) {
+    return (
+      <div className="custom-library-section custom-library-section--picked">
+        <div className="custom-library-section-header custom-library-version-row">
+          <span className="custom-library-version-label">Version</span>
+          <VersionPicker library={library} />
+        </div>
+        {sections ? packSections(sections) : flatList()}
+      </div>
+    );
+  }
 
   return (
     <div className="custom-library-section">
@@ -154,21 +211,7 @@ const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }
         </div>
       </div>
 
-      {open && (
-        <div className="custom-library-section-content">
-          {components.map(([exportName, comp]) => (
-            <CustomComponentCard
-              key={exportName}
-              libraryId={library.id}
-              correlationId={library.correlationId}
-              libraryName={library.name}
-              revisionId={current}
-              name={exportName} // the bundle's export — what the shell resolves
-              componentConfig={comp}
-            />
-          ))}
-        </div>
-      )}
+      {open && (sections ? packSections(sections) : flatList())}
     </div>
   );
 };
@@ -284,8 +327,17 @@ const VersionPicker = ({ library }) => {
   );
 };
 
-const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
-  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight } = componentConfig;
+const CustomComponentCard = ({
+  libraryId,
+  correlationId,
+  libraryName,
+  revisionId,
+  name,
+  componentConfig,
+  tile = false,
+}) => {
+  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight, role } = componentConfig;
+  const darkMode = useStore((state) => state.isTJDarkMode);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { handleDrop } = useCanvasDropHandler() || noop;
@@ -351,6 +403,44 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
       setRightSidebarOpen(true);
     }
   }, [isDragging, isRightSidebarPinned, setRightSidebarOpen]);
+
+  if (tile) {
+    // As a ToolJet widget in the palette (WidgetBox): its widget's icon over its name.
+    const { icon } = paletteFor(role);
+    const title = displayName ?? name;
+    return (
+      <div
+        ref={drag}
+        className="text-center align-items-center clearfix draggable-box-wrapper"
+        data-cy={`custom-component-${name.toLowerCase()}`}
+      >
+        <div
+          className="component-image-wrapper"
+          style={{ height: '56px', width: '72px', position: 'relative' }}
+          title={description || title}
+        >
+          <div className="component-image-holder d-flex flex-column justify-content-center" style={{ height: '100%' }}>
+            <center>
+              <div className="widget-svg-container" style={{ width: '24px', height: '24px' }}>
+                {icon?.startsWith('Icon') ? (
+                  <TablerIcon
+                    iconName={icon}
+                    style={{ width: 24, height: 24, color: 'var(--icon-brand)' }}
+                    stroke={1.5}
+                  />
+                ) : icon ? (
+                  <WidgetIcon name={icon} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
+                ) : (
+                  <span className="custom-component-tile-initials">{initials(title)}</span>
+                )}
+              </div>
+            </center>
+          </div>
+          <div className="component-title">{title}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={drag} className="custom-component-card" data-cy={`custom-component-${name.toLowerCase()}`}>

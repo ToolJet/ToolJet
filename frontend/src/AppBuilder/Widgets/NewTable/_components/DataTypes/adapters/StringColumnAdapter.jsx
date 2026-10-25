@@ -99,7 +99,7 @@ export const StringColumn = ({
   }
 
   // One long unbroken token (an email, a URL, an id): the shadcn look keeps it on one line with an ellipsis and the
-  // full value on hover, instead of breaking it mid-word ("olivia.chen@northstaranalytics.ex / ample").
+  // full value on hover, instead of breaking it mid-word ("jane.doe@example-company.com / pany").
   if (!isEditable && typeof cellValue === 'string' && cellValue.length > 18 && !/\s/.test(cellValue)) {
     return (
       <div

@@ -1,6 +1,12 @@
-import type { FieldMeta, InspectorComponent } from './types';
-import type { ManifestEvent, ManifestProp } from '@/AppBuilder/types/libraryComponent.types';
+import type { FieldMeta, InspectorComponent, LibraryEditorHint } from './types';
+import type {
+  ManifestComponent,
+  ManifestEvent,
+  ManifestProp,
+  ManifestValidationKind,
+} from '@/AppBuilder/types/libraryComponent.types';
 import { manifestDefaultToDefinitionValue } from '@/AppBuilder/Widgets/libraryComponentDefaults';
+import { textinputConfig } from '@/AppBuilder/WidgetManager/widgets/textinput';
 
 const DEFAULT_PROPS_SECTION = 'Properties';
 const DEFAULT_STYLES_SECTION = 'Styles';
@@ -39,10 +45,18 @@ export const formatRevisionLabel = (revision: string | undefined): string | unde
 // Static widget-config properties (e.g. visibility) — same section every other widget's
 // DefaultComponent.jsx panel groups into "Additional Actions". Kept separate from the
 // manifest-driven Properties list so dynamic CCL props never crowd these out.
-export const additionalActionProps = (componentMeta: { properties?: Record<string, { section?: string }> }): string[] =>
-  Object.entries(componentMeta.properties ?? {})
-    .filter(([, prop]) => prop.section === 'additionalActions')
+// disabledState is offered only to a component whose manifest declares controlState: anything else never reads
+// it, so the toggle would do nothing. It is listed even when the host config lacks it (the panel then renders
+// it from DISABLED_STATE_META, appended last).
+export const additionalActionProps = (
+  componentMeta: { properties?: Record<string, { section?: string }> },
+  controlState = false
+): string[] => {
+  const keys = Object.entries(componentMeta.properties ?? {})
+    .filter(([key, prop]) => prop.section === 'additionalActions' && (controlState || key !== 'disabledState'))
     .map(([key]) => key);
+  return controlState && !keys.includes('disabledState') ? [...keys, 'disabledState'] : keys;
+};
 
 // Schema types validate() actually understands — anything else gets no validation
 // rather than a broken one.
@@ -59,7 +73,7 @@ const validationDefaultValue = (prop: ManifestProp): unknown => {
 // reading the stored definition.value, so edited values would display as the default
 // again on every Inspector mount (found 2026-08-06). Drop-time stamping already writes
 // manifest defaults into definition.properties — that's the correct default channel.
-export const fieldMeta = (prop: ManifestProp): FieldMeta => {
+const baseFieldMeta = (prop: ManifestProp): FieldMeta => {
   const displayName = prop.label ?? prop.name; // label lands with C2; name until then
   const defaultValue = validationDefaultValue(prop);
 
@@ -88,8 +102,9 @@ export const fieldMeta = (prop: ManifestProp): FieldMeta => {
         options: (prop.enumValues ?? []).map((v) => ({ [optionLabelKeyName]: prop.enumLabels?.[v] ?? v, value: v })),
       };
     }
-    default: { // string | number | object | array → CodeHinter
-      const meta: FieldMeta = { displayName, name: prop.name, type: prop.inspector ?? 'code' };
+    default: {
+      // string | number | object | array → CodeHinter
+      const meta: FieldMeta = { displayName, name: prop.name, type: inspectorFieldType(prop.inspector) };
       if (VALIDATABLE_TYPES.has(prop.type)) {
         meta.validation = { schema: { type: prop.type }, ...(defaultValue !== undefined && { defaultValue }) };
       }
@@ -97,6 +112,94 @@ export const fieldMeta = (prop: ManifestProp): FieldMeta => {
     }
   }
 };
+
+// Inspector hints drawn by the panel's own editors (HintedField): their field meta is the code field, which is what
+// the editor's fx mode shows. An unmapped type would crash DynamicFxTypeRenderer.
+const EDITOR_HINTS: Record<LibraryEditorHint, string[]> = {
+  columns: ['array'],
+  options: ['array'],
+  icon: ['string'],
+};
+
+const inspectorFieldType = (inspector: string | undefined): string =>
+  !inspector || inspector in EDITOR_HINTS ? 'code' : inspector === 'color' ? 'colorSwatches' : inspector;
+
+/** The editor a prop's `inspector` hint asks for, when its type is one that editor writes; else none. */
+export const editorHint = (prop: ManifestProp): LibraryEditorHint | undefined => {
+  const hint = prop.inspector as LibraryEditorHint | undefined;
+  return hint && EDITOR_HINTS[hint]?.includes(prop.type) ? hint : undefined;
+};
+
+// Spells out declared limits for field types that do not draw them (only the slider reads min/max).
+const limitsNote = (min: number | undefined, max: number | undefined): string | undefined => {
+  if (min !== undefined && max !== undefined) return `Between ${min} and ${max}.`;
+  if (min !== undefined) return `At least ${min}.`;
+  if (max !== undefined) return `At most ${max}.`;
+  return undefined;
+};
+
+// The field meta for one manifest prop: the type mapping above plus the v2 presentation fields. description
+// becomes the label tooltip (meta.tip, native's helper channel), min/max go on the meta for the slider and
+// into the tooltip for every other field, placeholder rides along for the field's empty state.
+export const fieldMeta = (prop: ManifestProp): FieldMeta => {
+  const meta = baseFieldMeta(prop);
+  const tip = [prop.description, limitsNote(prop.min, prop.max)].filter(Boolean).join(' ');
+  return {
+    ...meta,
+    ...(tip && { tip }),
+    ...(prop.placeholder !== undefined && { placeholder: prop.placeholder }),
+    ...(prop.min !== undefined && { min: prop.min }),
+    ...(prop.max !== undefined && { max: prop.max }),
+  };
+};
+
+// visibleWhen mirrors native conditionallyRender (Utils.js renderElement), which only runs for an allow-list of
+// native component types, so the library inspector applies it itself: the field shows only while the
+// instance's resolved value of `key` equals `value` (or is one of `value` when it is an array). `key` is looked
+// up in the same definition section first, then in properties, like native's parentObjectKey fallback.
+// `resolve` is the store's getResolvedValue, injected so this stays a pure function.
+export const isFieldVisible = (
+  prop: ManifestProp,
+  component: InspectorComponent,
+  paramType: 'properties' | 'styles',
+  resolve: (value: unknown) => unknown
+): boolean => {
+  if (!prop.visibleWhen) return true;
+  const { key, value } = prop.visibleWhen;
+  const definition = component?.component?.definition;
+  const stored = definition?.[paramType]?.[key] ?? definition?.properties?.[key];
+  const resolved = resolve(stored?.value);
+  return Array.isArray(value) ? value.includes(resolved) : resolved === value;
+};
+
+// Native TextInput's validation field meta, reused so the library section matches it key for key and the
+// values land in definition.validation exactly where native inputs keep them.
+const TEXT_VALIDATION_META = textinputConfig.validation as Record<string, FieldMeta>;
+const VALIDATION_KEYS: Record<ManifestValidationKind, string[]> = {
+  text: ['mandatory', 'regex', 'minLength', 'maxLength', 'customRule'],
+  // A regex or length limit means nothing for a selected option or a date.
+  choice: ['mandatory', 'customRule'],
+  date: ['mandatory', 'customRule'],
+};
+
+// The Validation section's fields for a component that declares `validation`: [] when it declares none.
+// Unknown kinds get no section rather than a guess.
+export const validationFields = (kind: ManifestComponent['validation']): { name: string; meta: FieldMeta }[] =>
+  (kind ? (VALIDATION_KEYS[kind] ?? []) : []).map((name) => ({ name, meta: { ...TEXT_VALIDATION_META[name], name } }));
+
+// renderElement reads componentMeta[paramType][param] before customMeta, so the validation section needs a
+// componentMeta that carries the validation meta (the host widget config declares none of its own).
+export const withValidationMeta = (
+  componentMeta: Record<string, unknown>,
+  fields: { name: string; meta: FieldMeta }[]
+): Record<string, unknown> => ({
+  ...componentMeta,
+  validation: Object.fromEntries(fields.map(({ name, meta }) => [name, meta])),
+});
+
+// The host's standard disabled toggle, as native inputs declare it. Used when the host widget config does not
+// declare disabledState itself, so a controlState component always gets the field.
+export const DISABLED_STATE_META: FieldMeta = textinputConfig.properties.disabledState as FieldMeta;
 
 export const groupStylesBySection = (styles: ManifestProp[]): PropSection[] =>
   groupPropsBySection(styles, DEFAULT_STYLES_SECTION);
@@ -119,8 +222,18 @@ export const buildEventMetaDefinition = (
   events: ManifestEvent[]
 ): Record<string, unknown> => ({
   ...componentMeta,
-  events: Object.fromEntries(events.map((e) => [e.name, { displayName: e.name }])),
+  events: Object.fromEntries(events.map((e) => [e.name, { displayName: eventDisplayName(e) }])),
 });
+
+// The manifest's own display name, else the handler name in native wording: onClick -> "On click".
+export const eventDisplayName = (event: ManifestEvent): string => {
+  if (event.displayName) return event.displayName;
+  const words = event.name
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
 
 // An instance stores values only for the props/styles its revision had when it was dropped (or that were
 // edited since), so a newer revision's additions have no stored value: the field would show empty (and

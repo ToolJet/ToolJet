@@ -35,7 +35,11 @@ export const processComponentMeta = (componentMeta, component, allComponents, re
       _component.component.parent === id ||
       _component.component.parent === `${id}-footer` ||
       _component.component.parent === `${id}-header`;
-    if (validParent && _component?.component?.component === 'Button') {
+    // A pack's Button (a LibraryComponent drawing a library's Button) submits a Form too.
+    const isPackButton =
+      _component?.component?.component === 'LibraryComponent' &&
+      _component?.component?.definition?.properties?.componentName?.value === 'Button';
+    if (validParent && (_component?.component?.component === 'Button' || isPackButton)) {
       newOptions.push({ name: _component.component.name, value: componentId });
     }
   });

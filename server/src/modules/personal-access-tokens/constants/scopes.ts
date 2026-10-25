@@ -5,6 +5,7 @@ import { FEATURE_KEY as AUTH_FEATURE } from '@modules/auth/constants';
 import { FEATURE_KEY as ORGANIZATION_CONSTANT_FEATURE } from '@modules/organization-constants/constants';
 import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
+import { FEATURE_KEY as LIBRARY_FEATURE } from '@modules/custom-component-libraries/constants';
 import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
 import { FEATURE_KEY as DATA_QUERY_FOLDER_FEATURE } from '@modules/data-query-folders/constants';
 
@@ -252,6 +253,11 @@ export function patCanAccess(module: MODULES | undefined, feature?: string): boo
   // instance-admin bundle while allowing data clients to discover valid query contracts.
   if (module === MODULES.PLUGINS && feature === PLUGIN_FEATURE.GET_SPEC) {
     return PAT_ALLOWED_BUNDLES.includes(PAT_BUNDLE.DATA);
+  }
+  // The workspace's installed component packs (their manifests) are read-only component metadata the MCP builds its
+  // catalogue from. Publishing and dev uploads stay out: they put code that runs in every app that uses it.
+  if (module === MODULES.CUSTOM_COMPONENT_LIBRARIES && feature === LIBRARY_FEATURE.LIST_LIBRARIES) {
+    return PAT_ALLOWED_BUNDLES.includes(PAT_BUNDLE.APPS);
   }
   if (!ALLOWED_MODULES.has(module)) return false;
   const allowedFeatures = PAT_ALLOWED_FEATURES[module];

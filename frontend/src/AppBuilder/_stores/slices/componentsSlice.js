@@ -3617,7 +3617,8 @@ export const createComponentsSlice = (set, get) => ({
     // For ListView, we use the last index (immediate parent's row index)
     const lastIndex = Array.isArray(indices) ? indices[indices.length - 1] : indices;
 
-    if (parentType === 'Listview' || parentType === 'ShadListView') {
+    // A v2 pack list's rows (LibraryComponent with ToolJet.RowSlot) keep per-row values the native List view's way.
+    if (parentType === 'Listview' || parentType === 'ShadListView' || parentType === 'LibraryComponent') {
       let parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       if (lastIndex == null) {
         return undefined;

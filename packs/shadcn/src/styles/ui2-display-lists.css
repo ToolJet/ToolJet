@@ -1,0 +1,652 @@
+/* UI 2.0's List view, Record list, Card grid and Key-value list looks (Ui2/ListView, RecordList, CardGrid, KeyValue,
+   _sections/sectionParts), in the pack's tokens. Style values arrive as --lk-* and --lv-* variables on the root; an
+   unset one falls back to the theme. */
+
+.u2l-root {
+  --u2l-card: var(--ui-bg);
+  --u2l-accent: var(--lk-accent, var(--ui-primary));
+  --u2l-border: var(--lk-border, var(--ui-border));
+  --u2l-title: var(--lk-title, var(--ui-fg));
+  --u2l-meta: var(--lk-fg, var(--ui-muted-fg));
+  --u2l-title-font: var(--lk-title-font, inherit);
+  --u2l-success: var(--ui-success);
+  --u2l-warning: var(--ui-warning);
+  --u2l-danger: var(--ui-destructive);
+  --u2l-info: #2563eb;
+  --u2l-neutral: var(--ui-muted-fg);
+  font-variant-numeric: normal;
+}
+
+.u2l-empty-text {
+  margin: 0;
+  padding: 40px 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--ui-muted-fg);
+}
+
+/* ---- Parts ---------------------------------------------------------------------------------------------------------- */
+
+.u2l-chip {
+  --u2l-c: var(--u2l-tone, var(--u2l-tone-word, var(--u2l-neutral)));
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--u2l-c) 14%, transparent);
+  color: oklch(from color-mix(in oklab, var(--u2l-c) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
+}
+.u2l-chip[data-tone='success'] { --u2l-tone-word: var(--u2l-success); }
+.u2l-chip[data-tone='warning'] { --u2l-tone-word: var(--u2l-warning); }
+.u2l-chip[data-tone='danger'] { --u2l-tone-word: var(--u2l-danger); }
+.u2l-chip[data-tone='info'] { --u2l-tone-word: var(--u2l-info); }
+.u2l-chip.is-on-image {
+  background: rgba(255, 255, 255, 0.92);
+  color: color-mix(in srgb, var(--u2l-c) 80%, #000);
+}
+
+.u2l-avatar {
+  flex-shrink: 0;
+  border-radius: 999px;
+  object-fit: cover;
+}
+.u2l-avatar.is-rounded {
+  border-radius: calc(var(--ui-radius) + 2px);
+}
+.u2l-avatar.is-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.u2l-progress {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+.u2l-bar {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--lk-track, color-mix(in srgb, var(--ui-fg) 9%, transparent));
+}
+.u2l-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--u2l-accent);
+  transition: width 500ms ease-out;
+}
+.u2l-progress-label {
+  flex-shrink: 0;
+  min-width: 3rem;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--u2l-meta);
+}
+
+/* ---- Record list ---------------------------------------------------------------------------------------------------- */
+
+.u2l-records {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--lk-bg, transparent);
+}
+.u2l-records.is-card {
+  border: 1px solid var(--u2l-border);
+  border-radius: var(--lk-radius, calc(var(--ui-radius) + 4px));
+  background: var(--lk-bg, var(--u2l-card));
+}
+.u2l-records.is-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.u2l-records ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.u2l-record {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+.u2l-records.is-plain .u2l-record { padding-left: 4px; padding-right: 4px; }
+.u2l-records.is-plain.can-select .u2l-record { padding-left: 12px; padding-right: 12px; }
+.u2l-records.is-compact .u2l-record { padding-top: 8px; padding-bottom: 8px; }
+.u2l-records.is-comfortable .u2l-record { padding-top: 16px; padding-bottom: 16px; }
+.u2l-record.has-divider { border-top: 1px solid var(--u2l-border); }
+.u2l-record:hover { background: color-mix(in srgb, var(--ui-fg) 4%, transparent); }
+.u2l-record:focus-visible { box-shadow: inset 0 0 0 2px var(--lk-accent, var(--ui-ring)); }
+.u2l-record.is-selected {
+  background: color-mix(in srgb, var(--u2l-accent) 9%, transparent);
+  box-shadow: inset 3px 0 0 var(--u2l-accent);
+}
+.u2l-record-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.u2l-record-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.375;
+  color: var(--u2l-title);
+  font-family: var(--u2l-title-font);
+}
+.u2l-records.is-comfortable .u2l-record-title,
+.u2l-records.is-comfortable .u2l-record-value { font-size: 16px; }
+.u2l-record-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.375;
+  font-variant-numeric: tabular-nums;
+  color: var(--u2l-meta);
+}
+.u2l-records.is-comfortable .u2l-record-meta { font-size: 14px; }
+.u2l-record-progress { margin-top: 4px; max-width: 240px; }
+.u2l-record-status {
+  display: flex;
+  min-width: 0;
+  max-width: 40%;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+.u2l-record-value {
+  flex-shrink: 0;
+  min-width: 4.5rem;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--u2l-title);
+}
+
+/* ---- Card grid ------------------------------------------------------------------------------------------------------ */
+
+.u2l-card-grid {
+  display: grid;
+  gap: 16px;
+  padding: 2px;
+}
+.u2l-card {
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  outline: none;
+  cursor: pointer;
+  border: 1px solid var(--lk-border, var(--ui-border));
+  border-radius: var(--lk-radius, calc(var(--ui-radius) + 4px));
+  background: var(--lk-bg, var(--u2l-card));
+  transition: box-shadow 200ms, transform 200ms, border-color 200ms;
+}
+.u2l-card.is-stacked { flex-direction: column; }
+.u2l-card.is-row { flex-direction: row; }
+.u2l-card.is-elevated { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+.u2l-card.is-elevated:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transform: translateY(-2px);
+}
+.u2l-card.is-flat {
+  border-width: 0;
+  background: var(--lk-bg, var(--ui-muted));
+}
+.u2l-card:focus-visible { box-shadow: 0 0 0 2px var(--lk-accent, var(--ui-ring)); }
+.u2l-card.is-selected {
+  border-color: var(--u2l-accent);
+  box-shadow: 0 0 0 2px var(--u2l-accent);
+}
+.u2l-card-image {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.u2l-card-image.is-side {
+  width: 38%;
+  min-width: 96px;
+  max-width: 200px;
+  min-height: 120px;
+  align-self: stretch;
+}
+.u2l-card-image img,
+.u2l-card-image-fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.u2l-card-image-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.u2l-card-image-fallback span {
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  font-family: var(--u2l-title-font);
+}
+.u2l-card-image-badges {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  display: flex;
+  max-width: 80%;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.u2l-card-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+}
+.u2l-card-eyebrow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--u2l-accent);
+}
+.u2l-card-head {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 12px;
+}
+.u2l-card-heading {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+.u2l-card-title-row {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px 8px;
+}
+.u2l-card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 60%;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.375;
+  color: var(--u2l-title);
+  font-family: var(--u2l-title-font);
+}
+.u2l-card-badge {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+}
+.u2l-card-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--u2l-meta);
+}
+.u2l-card-badges {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.u2l-card-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.625;
+  color: var(--ui-fg);
+  opacity: 0.8;
+}
+.u2l-card-progress {
+  margin-top: auto;
+  padding-top: 8px;
+}
+.u2l-card-meta {
+  padding-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--u2l-meta);
+}
+.u2l-card-meta.is-last {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+/* ---- Key-value list ------------------------------------------------------------------------------------------------- */
+
+.u2l-kv-none {
+  margin: 0;
+  padding: 16px 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--ui-muted-fg);
+}
+.u2l-kv {
+  display: grid;
+  margin: 0;
+  column-gap: 32px;
+}
+.u2l-kv-row {
+  display: flex;
+  min-width: 0;
+  font-size: 14px;
+}
+.u2l-kv-row.is-inline {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 10px 0;
+}
+.u2l-kv-row.is-stacked {
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+}
+.u2l-kv-row.has-divider { border-bottom: 1px solid var(--lk-border, var(--ui-border)); }
+.u2l-kv-label {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 400;
+  color: var(--lk-label, var(--ui-muted-fg));
+}
+.u2l-kv-value {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: flex-start;
+  margin: 0;
+  font-weight: 500;
+  color: var(--lk-fg, var(--ui-fg));
+}
+.u2l-kv-text { overflow-wrap: anywhere; }
+.u2l-kv-text.is-figure { font-variant-numeric: tabular-nums; }
+.u2l-kv-empty { color: var(--ui-muted-fg); }
+.u2l-kv-bool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.u2l-kv-bool .is-yes { color: var(--ui-success); }
+.u2l-kv-bool .is-no { color: var(--ui-muted-fg); }
+.u2l-kv-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--ui-radius);
+  padding: 2px 8px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+.u2l-kv-badge.is-colored {
+  background: color-mix(in srgb, var(--tg) 14%, transparent);
+  color: oklch(from color-mix(in oklab, var(--tg) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
+}
+.u2l-kv-link {
+  overflow-wrap: anywhere;
+  border-radius: 2px;
+  font-weight: 500;
+  text-decoration: none;
+  text-underline-offset: 4px;
+  color: var(--lk-link, var(--ui-primary));
+}
+.u2l-kv-link:hover { text-decoration: underline; }
+.u2l-kv-link:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ui-ring); }
+.u2l-kv-copy {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--ui-radius);
+  background: transparent;
+  color: var(--ui-muted-fg);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+.u2l-kv-row:hover .u2l-kv-copy,
+.u2l-kv-copy:focus-visible { opacity: 1; }
+.u2l-kv-copy:hover { background: var(--ui-muted); color: var(--ui-fg); }
+
+/* ---- List view ------------------------------------------------------------------------------------------------------ */
+
+.u2l-listview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  overflow: hidden;
+}
+.u2l-list-empty {
+  display: flex;
+  min-height: 96px;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--ui-border);
+  border-radius: calc(var(--ui-radius) + 2px);
+  font-size: 14px;
+  color: var(--lv-empty, var(--ui-muted-fg));
+}
+.u2l-list-scroll {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+}
+.u2l-list-items {
+  display: grid;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  align-content: start;
+}
+/* Fitted to its content (Dynamic height on, the host's tj-cc-fit): the list takes its rows' height and the page
+   scrolls, not the list. Grown from a zero base in a box with no height, the list measured 0 and the widget drew 4px
+   (room bookings, 2026-10-23). */
+.tj-cc-fit .u2l-list-scroll {
+  display: block;
+  flex: 0 0 auto;
+}
+.tj-cc-fit .u2l-list-items {
+  width: 100%;
+  overflow-y: visible;
+}
+.u2l-list-item {
+  position: relative;
+  overflow: hidden;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 150ms;
+  background: var(--lv-item-bg);
+}
+.u2l-list-item:hover { background: var(--lv-hover-bg, color-mix(in srgb, var(--ui-muted) 50%, transparent)); }
+.u2l-list-item.is-framed { border: 1px solid var(--lv-item-border, var(--ui-border)); }
+.u2l-list-item.has-divider { border-bottom: 1px solid var(--lv-divider, var(--ui-border)); }
+.u2l-list-item.has-divider:last-child { border-bottom-width: 0; }
+/* The focus and selected marks are outlines drawn inside the item, so a chosen item shadow never hides them. */
+.u2l-list-item:focus-visible { outline: 2px solid var(--ui-ring); outline-offset: -2px; }
+.u2l-list-item.is-selected,
+.u2l-list-item.is-selected:hover {
+  background: var(--lv-selected-bg, color-mix(in srgb, var(--ui-primary) 8%, transparent));
+  outline: 1px solid var(--ui-primary);
+  outline-offset: -1px;
+}
+.u2l-list-item.is-canvas {
+  display: block;
+  padding: 0;
+}
+/* A framed row of ToolJet components (the Outlined card look, or an item border colour) keeps its content off the
+   frame, as a UI 2.0 card does: the components sat 4px from the left border and ran into the right one. Sideways only:
+   the row's height is the canvas the builder laid the components out on, so top and bottom padding would cut them.
+   A plain row is the card itself and keeps no padding. */
+.u2l-list-item.is-canvas.is-framed {
+  padding: 0 12px;
+}
+.u2l-list-item.is-fields {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 12px 16px;
+}
+.u2l-list-item.is-fields.is-grid {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px;
+}
+.u2l-list-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.u2l-list-item.is-grid .u2l-list-text { width: 100%; }
+.u2l-list-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ui-fg);
+}
+.u2l-list-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--ui-muted-fg);
+}
+.u2l-list-trail {
+  display: flex;
+  min-width: 0;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+}
+.u2l-list-item.is-grid .u2l-list-trail {
+  width: 100%;
+  flex-wrap: wrap;
+}
+/* A narrow row (about 280px and less) wraps its trailing badge, meta and action onto a line of their own instead of
+   squeezing the title to nothing and pushing the action past the edge: the title keeps 80px beside the avatar, and the
+   trailing group wraps within the row's width. Wide rows still lay out on one line. */
+.u2l-list-item.is-fields:not(.is-grid) {
+  flex-wrap: wrap;
+}
+.u2l-list-item.is-fields:not(.is-grid) .u2l-list-text {
+  flex: 1 1 80px;
+}
+.u2l-list-item.is-fields:not(.is-grid) .u2l-list-trail {
+  /* Never shrunk on the title's line (a rounding shrink wrapped the chip over the action in a wide row); capped at
+     the row's width on a line of its own, where it wraps. */
+  flex: 0 0 auto;
+  max-width: 100%;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  row-gap: 8px;
+}
+.u2l-list-item.is-grid .u2l-list-action { margin-left: auto; }
+/* The row's action is as wide as its label: the button's own width: 100% made it take whatever the trailing group
+   had left (81 to 89px per row) and, once that group can wrap, a line of its own. */
+.u2l-list-action {
+  width: auto;
+  flex-shrink: 0;
+}
+.u2l-list-meta {
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-fg);
+}
+.u2l-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+}
+.u2l-pager-label {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-muted-fg);
+}
+.u2l-pager-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.u2l-page-btn {
+  height: 32px;
+  min-width: 32px;
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+.u2l-page-btn.is-current {
+  border-color: color-mix(in srgb, var(--ui-primary) 35%, var(--ui-border));
+  background: color-mix(in srgb, var(--ui-primary) 10%, transparent);
+  color: var(--ui-primary);
+}
+.u2l-page-gap {
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--ui-muted-fg);
+}

@@ -6,12 +6,15 @@ import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetM
 import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
-import { CustomComponentsTab } from './CustomComponentsTab';
+import { LibrarySection } from './CustomComponentsTab';
+import { LibraryPicker } from './LibraryPicker';
+import { UI1, UI2, libraryChoices, resolveComponentLibrary, resolveLibraryChoice } from './componentLibrary';
+import { hasLibraryContent } from './utils';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
 import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
-import { UI1, UI2, resolveComponentLibrary } from './componentLibrary';
 
 // Presets (component packs): a palette entry that adds a native widget with some styles set. The shadcn/ui Table is
 // ToolJet's own Table in its shadcn look, so it keeps every Table feature and convention (the older ShadTable widget
@@ -205,14 +208,23 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
-  // The app's library: saved, else inferred (an app that already holds a UI 2.0 widget opens on UI 2.0). A switch saves
-  // it, except in a frozen editor, where it only changes the list.
+  // The app's library (componentLibrary.js): ToolJet UI 1.0 or 2.0, a component pack, or another custom library. Saved,
+  // else inferred (an app that already holds a UI 2.0 widget opens on UI 2.0). A pick saves it, except in a frozen
+  // editor, where it only changes the list. Without custom component libraries only UI 1.0 and 2.0 are offered.
+  const libraries = useCustomComponentLibrariesStore((state) => state.libraries);
+  useEffect(() => {
+    if (hasCustomComponentLibrariesAccess) useCustomComponentLibrariesStore.getState().fetchLibraries();
+  }, [hasCustomComponentLibrariesAccess]);
+  const choices = useMemo(() => libraryChoices((libraries ?? []).filter(hasLibraryContent)), [libraries]);
   const savedLibrary = useStore((state) => state.globalSettings?.componentLibrary);
   const pages = useStore((state) => state.modules?.canvas?.pages);
   const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
   const appLibrary = useMemo(
-    () => resolveComponentLibrary({ componentLibrary: savedLibrary }, pages).library,
-    [savedLibrary, pages]
+    () =>
+      hasCustomComponentLibrariesAccess
+        ? resolveLibraryChoice(savedLibrary, choices, pages)
+        : resolveComponentLibrary({ componentLibrary: savedLibrary }, pages).library,
+    [hasCustomComponentLibrariesAccess, savedLibrary, choices, pages]
   );
   // The pick shows at once; it gives way to the app's library once that is saved or another app or version loads.
   const [pickedLibrary, setPickedLibrary] = useState(null);
@@ -222,6 +234,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     setPickedLibrary(value);
     if (value !== savedLibrary && !shouldFreeze) globalSettingsChanged({ componentLibrary: value });
   };
+  const libraryChoice = [...choices.packs, ...choices.custom].find((choice) => choice.value === libraryKey);
   const library = COMPONENT_LIBRARIES.find((entry) => entry.value === libraryKey) ?? COMPONENT_LIBRARIES[0];
 
   // The widgets of the selected library: a pack's own widgets (and FlexContainer), or every native widget. A preset
@@ -456,6 +469,21 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     </div>
   );
 
+  // The picked library's components: Rocket 1.0's sections, or the library's own (a pack in the same sections).
+  function libraryComponents() {
+    if (!libraryChoice) return segregateSections();
+    return (
+      <div className="custom-components-tab">
+        <LibrarySection
+          key={libraryChoice.library.id}
+          library={libraryChoice.library}
+          searchQuery={searchQuery}
+          picked
+        />
+      </div>
+    );
+  }
+
   const searchBox = () => {
     return (
       <div className={`input-icon tj-app-input ${isModuleEditor ? '' : 'mt-3'}`}>
@@ -470,8 +498,6 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           placeholder={
             activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
-              : activeTab === 'custom'
-              ? t('globals.searchCustomComponents', 'Search components')
               : t('globals.searchModules', 'Search modules')
           }
           customClass={`tj-widgets-search-input tj-text-xsm`}
@@ -530,15 +556,21 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           >
             <Tab
               eventKey="components"
-              title={(() => {
-                const str = t('globals.components', 'Components');
-                return str.charAt(0).toUpperCase() + str.slice(1);
-              })()}
+              title={
+                hasCustomComponentLibrariesAccess ? (
+                  <LibraryPicker value={libraryKey} choices={choices} onChange={pickLibrary} />
+                ) : (
+                  (() => {
+                    const str = t('globals.components', 'Components');
+                    return str.charAt(0).toUpperCase() + str.slice(1);
+                  })()
+                )
+              }
               darkMode={darkMode}
             >
-              {libraryPicker()}
+              {!hasCustomComponentLibrariesAccess && libraryPicker()}
               <React.Fragment key={libraryKey}>{searchBox()}</React.Fragment>
-              <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
+              <div className="widgets-list col-sm-12 col-lg-12 row">{libraryComponents()}</div>
             </Tab>
             {hasModuleAccess && (
               <Tab eventKey="modules" title={t('globals.modules', 'Modules')} darkMode={darkMode}>
@@ -546,21 +578,6 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
                   {searchBox()}
                   <ModuleManager searchQuery={searchQuery} />
                 </ModuleErrorBoundary>
-              </Tab>
-            )}
-            {hasCustomComponentLibrariesAccess && (
-              <Tab
-                eventKey="custom"
-                title={
-                  <>
-                    {t('globals.custom', 'Custom')}
-                    <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-0.5" />
-                  </>
-                }
-                darkMode={darkMode}
-              >
-                {searchBox()}
-                <CustomComponentsTab searchQuery={searchQuery} />
               </Tab>
             )}
           </Tabs>
