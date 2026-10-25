@@ -9,7 +9,8 @@ import { DragLayer } from './DragLayer';
 import { LibrarySection } from './CustomComponentsTab';
 import { LibraryPicker } from './LibraryPicker';
 import { UI1, UI2, libraryChoices, resolveComponentLibrary, resolveLibraryChoice } from './componentLibrary';
-import { hasLibraryContent } from './utils';
+import { hasLibraryContent, normalizedPinsMap } from './utils';
+import { dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
@@ -230,9 +231,22 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const [pickedLibrary, setPickedLibrary] = useState(null);
   useEffect(() => setPickedLibrary(null), [appLibrary]);
   const libraryKey = pickedLibrary ?? appLibrary;
+  // Picking a pack or library also pins its latest revision when the version has no pin for it yet, as dropping one of
+  // its components does: an AI build into this app writes the components, and a component renders only while its
+  // library is pinned.
   const pickLibrary = (value) => {
     setPickedLibrary(value);
-    if (value !== savedLibrary && !shouldFreeze) globalSettingsChanged({ componentLibrary: value });
+    if (value === savedLibrary || shouldFreeze) return;
+    const picked = [...choices.packs, ...choices.custom].find((choice) => choice.value === value)?.library;
+    const pins = useStore.getState().globalSettings?.customComponentLibraries;
+    const latest = picked?.revisions?.[0]?.version;
+    const pinned = picked && normalizedPinsMap(pins)[dashlessId(picked.correlationId)];
+    globalSettingsChanged({
+      componentLibrary: value,
+      ...(latest && !pinned
+        ? { customComponentLibraries: { ...normalizedPinsMap(pins), [dashlessId(picked.correlationId)]: latest } }
+        : {}),
+    });
   };
   const libraryChoice = [...choices.packs, ...choices.custom].find((choice) => choice.value === libraryKey);
   const library = COMPONENT_LIBRARIES.find((entry) => entry.value === libraryKey) ?? COMPONENT_LIBRARIES[0];
