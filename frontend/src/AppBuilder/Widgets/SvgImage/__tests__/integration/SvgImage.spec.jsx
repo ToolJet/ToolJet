@@ -544,6 +544,7 @@ describe('SvgImage widget: dynamic height', () => {
     const layoutElement = canvasNode(container);
     layoutElement.classList.add(`ele-${ID}`);
     layoutElement.dataset.layoutContext = 'root';
+    layoutElement.dataset.moduleId = 'canvas';
 
     expect(imageNode).toHaveClass('svg-image-widget', 'svg-image-widget--dynamic');
     expect(root(container)).toHaveStyle({ height: 'auto' });
