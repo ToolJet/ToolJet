@@ -610,6 +610,17 @@ describe('[ColorPicker-FORM] Form integration', () => {
     await waitFor(() => expect(widget.exposed().selectedColorHex).toBeUndefined());
     expect(widget.exposed().selectedColorRGB).toBeUndefined();
   });
+
+  test("[ColorPicker-FORM-003] the Form's formData includes the picked color as its hex", async () => {
+    widget.renderInsideForm();
+    await waitFor(() => expect(widget.exposed().selectedColorHex).toBe('#4368e3'));
+
+    await act(async () => {
+      await widget.exposed().setColor('#00FF00');
+    });
+
+    await waitFor(() => expect(store().getExposedValueOfComponent('form1', MODULE_ID).formData[NAME]).toBe('#00ff00'));
+  });
 });
 
 describe('[ColorPicker-COMPAT] Saved-app compatibility', () => {
