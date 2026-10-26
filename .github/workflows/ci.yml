@@ -962,9 +962,12 @@ jobs:
       && (needs.detect-changes.outputs.server == 'true'
       || needs.detect-changes.outputs.frontend == 'true')
     outputs:
-      # only the tag: GitHub drops a job output that contains a secret's value,
-      # and the image name contains the Docker Hub username
-      tag: ${{ steps.tag.outputs.tag }}
+      # only the digest: GitHub drops a job output that contains a secret's value,
+      # and the image name contains the Docker Hub username. The shards pull by
+      # digest, not by the branch tag: the tag is shared with the label-triggered
+      # cypress-platform run and with overlapping main pushes, so a shard pulling
+      # it could get another run's image.
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Free up disk space
         run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
@@ -985,6 +988,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
+        id: build
         with:
           context: .
           file: cypress-tests/cypress-ci.Dockerfile
@@ -1017,7 +1021,7 @@ jobs:
     uses: ./.github/workflows/cypress-platform.yml
     with:
       edition: 'ee'
-      image: tooljet/tj-osv:${{ needs.build-cypress-image.outputs.tag }}
+      image: tooljet/tj-osv@${{ needs.build-cypress-image.outputs.digest }}
       # specs split across 4 machines, each with its own ToolJet (see cypress-tests/ci-shard.js)
       shards: '[1,2,3,4]'
     secrets: inherit
