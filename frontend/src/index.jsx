@@ -24,6 +24,9 @@ try {
   // apiUrl is already relative — no override needed
 }
 
+// TEMP: marker to check the CI image picks up frontend changes; revert after.
+window.__ciCacheCheck = 'ci-cache-check-a7f3e9';
+
 const AppWithProfiler = Sentry.withProfiler(RootRouter);
 
 appService
