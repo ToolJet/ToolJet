@@ -34,6 +34,8 @@ import {
 } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 import { AppsUtilService } from '@modules/apps/util.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+import { AppValidationService } from '@modules/app-validation/service';
+import { VersionSettingsWrite } from '@modules/app-validation/types';
 
 /** A table that resolves in the target environment but hasn't caught up on all its migrations yet. */
 export type TableBehindWarning = { tableId: string; tableName: string; missingCount: number };
@@ -49,7 +51,8 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
     protected readonly appsUtilService: AppsUtilService,
-    protected readonly relationResolverService: TooljetDbRelationResolverService
+    protected readonly relationResolverService: TooljetDbRelationResolverService,
+    protected readonly appValidationService: AppValidationService
   ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
     if (!this.isObject(target)) {
@@ -84,6 +87,10 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto, manager?: EntityManager) {
+    const touched = ['homePageId', 'globalSettings', 'pageSettings'].filter(
+      (field) => appVersionUpdateDto?.[field] !== undefined
+    );
+
     const editableParams = {};
 
     const { globalSettings, homePageId, pageSettings, name } = appVersion;
@@ -152,6 +159,27 @@ export class VersionUtilService implements IVersionUtilService {
             'version'
           );
         }
+      }
+
+      // After assertVersionEditable (a released version answers "not editable", not a
+      // validation 400) and on the write's own manager, so the lookup sees this transaction.
+      if (touched.length) {
+        await this.appValidationService.check(
+          'versionSettings',
+          [
+            {
+              op: 'update',
+              id: appVersion.id,
+              data: {
+                homePageId: appVersionUpdateDto?.homePageId,
+                globalSettings: appVersionUpdateDto?.globalSettings,
+                pageSettings: appVersionUpdateDto?.pageSettings,
+              },
+              touched,
+            } as VersionSettingsWrite,
+          ],
+          { appVersionId: appVersion.id, manager: mgr }
+        );
       }
 
       await this.versionRepository.updateVersion(appVersion.id, editableParams, mgr);
