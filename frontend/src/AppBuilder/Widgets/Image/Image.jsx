@@ -267,7 +267,6 @@ export default function Image({
   };
 
   const handlePointerDown = (e) => {
-    console.log({ x: e.clientX, y: e.clientY });
     setDragStart({ x: e.clientX, y: e.clientY });
     setIsDragging(false);
   };
@@ -280,7 +279,6 @@ export default function Image({
   };
 
   const handleZoomMode = ({ state }) => {
-    console.log(state);
     if (state.scale === 8) setZoomMode('out');
     if (state.scale === 1) setZoomMode('in');
   };
