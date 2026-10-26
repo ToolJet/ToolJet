@@ -525,6 +525,22 @@ describe("DataGrid takes UI 2.0's column shape", () => {
   });
 });
 
+describe("DataGrid's own words follow its locale", () => {
+  // A pt-BR page's grid wrote its pager in English ("Rows per page", "1–8 of 8").
+  const rows = [{ id: 1, name: 'Ana' }];
+  test('pt-BR writes the pager and empty label in Portuguese', async () => {
+    const t = await mount('DataGrid', { rows, columns: [{ field: 'name' }], locale: 'pt-BR' });
+    await waitFor(() => expect(t.root().textContent).toContain('Linhas por página'));
+    expect(t.root().textContent).not.toContain('Rows per page');
+  });
+  test('no locale keeps English, and an author empty label still wins', async () => {
+    const t = await mount('DataGrid', { rows: [], columns: [{ field: 'name' }], locale: 'pt-BR', noRowsLabel: 'Sem pedidos' });
+    await waitFor(() => expect(t.root().textContent).toContain('Sem pedidos'));
+    const en = await mount('DataGrid', { rows, columns: [{ field: 'name' }] });
+    await waitFor(() => expect(en.root().textContent).toContain('Rows per page'));
+  });
+});
+
 describe('a keyboard move into a long column', () => {
   // AM-10: the destination drew only its first 100 cards, so the moved card landed past the window, unmounted and
   // focus fell to the page.
