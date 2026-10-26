@@ -2447,8 +2447,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                        ? 'modules'
-                        : 'apps'
+                          ? 'modules'
+                          : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -2469,8 +2469,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                              ? 'modules'
-                              : 'apps'
+                                ? 'modules'
+                                : 'apps'
                           }-button`}
                         >
                           <>
@@ -2710,8 +2710,8 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}

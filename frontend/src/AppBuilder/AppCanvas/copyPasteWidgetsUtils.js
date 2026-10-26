@@ -444,7 +444,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
   // A refused component takes its subtree with it, or the children land on a parent never created.
   const getBaseParentId = useStore.getState().getBaseParentId;
   const pastedIds = new Set(finalComponents.map((component) => component.id));
-  for (let dropped = true; dropped; ) {
+  for (let dropped = true; dropped;) {
     const kept = new Set(fc.map((component) => component.id));
     const survivors = fc.filter((component) => {
       const parentId = component.component.parent;
