@@ -11,6 +11,8 @@ import { LOCALE_HINT } from '../lib/locale';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 
 type Column = {
+  /** A date column's pattern (dayjs tokens: DD/MM, MMM D, YYYY), UI 2.0's dateFormat. */
+  dateFormat?: string;
   title: string;
   dataIndex: string;
   align?: 'left' | 'right' | 'center';
@@ -73,7 +75,7 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
           const kind = str(r.columnType ?? r.type ?? r.format).trim().toLowerCase();
           if (kind === 'html' || str(r.format).trim().toLowerCase() === 'html') return { format: 'html' };
           const f = parseFormat(r.format ?? r.columnType ?? r.type);
-          return { format: f.format, currency: str(r.currency) || f.currency };
+          return { format: f.format, currency: str(r.currency) || f.currency, dateFormat: str(r.dateFormat) || undefined };
         })(),
         colors: Object.keys(map).length ? map : undefined,
       };
@@ -204,7 +206,7 @@ export const Table = () => {
             </span>
           );
         }
-        return formatCell(v, format, c.currency || str(currency) || 'USD', locale);
+        return formatCell(v, format, c.currency || str(currency) || 'USD', locale, (c as { dateFormat?: string }).dateFormat);
       },
     };
   });
