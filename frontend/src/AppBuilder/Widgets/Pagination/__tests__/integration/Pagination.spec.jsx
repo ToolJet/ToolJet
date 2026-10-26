@@ -11,10 +11,11 @@
  * page, `narrow` is not, which is the only way to exercise the ellipsis branch, and `tight`
  * leaves room for nothing but the ellipsis and the last page.
  *
- * Three characterizations here pin behaviour that differs from the documentation,
- * each under an approved decision — the loader sits on the first item of the
- * window rather than the current page (D-01), boundary operators are gated by CSS
- * alone (D-02), and re-selecting the active page fires `onPageChange` again (D-06).
+ * Loading replaces the whole page list with a centred loader that is not rendered while
+ * hidden (D-08, superseding D-01's in-list loader). Two characterizations pin behaviour
+ * that differs from the documentation, each under an approved decision — boundary
+ * operators are gated by CSS alone (D-02), and re-selecting the active page fires
+ * `onPageChange` again (D-06).
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { paginationConfig as frontendConfig } from '@tooljet/widget-definitions';
@@ -63,6 +64,7 @@ const tight = createWidgetHarness({ ...harnessArgs, widgetWidth: 200 });
 const root = (container, handle = HANDLE) => container.querySelector(`[data-cy="${handle}"]`);
 const canvasNode = (container, handle = HANDLE) => container.querySelector(`[data-cy="draggable-widget-${handle}"]`);
 const pageList = (container, handle = HANDLE) => root(container, handle).querySelector('ul');
+const loader = (container, handle = HANDLE) => root(container, handle).querySelector('.tj-widget-loader');
 const operator = (container, label, handle = HANDLE) => within(root(container, handle)).getByLabelText(label);
 const pageItem = (container, page, handle = HANDLE) =>
   within(pageList(container, handle)).getByText(String(page)).closest('li');
@@ -385,7 +387,8 @@ describe('Pagination widget', () => {
 
         await widget.act('setLoading', true);
         expect(widget.exposed().isLoading).toBe(true);
-        expect(pageList(container)).toHaveStyle({ pointerEvents: 'none' });
+        await waitFor(() => expect(loader(container)).toBeInTheDocument());
+        expect(pageList(container)).toBeNull();
       });
 
       test('[Pagination-STA-001] the state actions coerce their argument to a boolean', async () => {
@@ -449,21 +452,22 @@ describe('Pagination widget', () => {
     });
 
     describe('loading, visibility and disabled properties', () => {
-      test('[Pagination-LOAD-001] loading blocks the list and replaces the first item of the window (D-01)', async () => {
-        // Break this catches: losing the pointer-events block (navigation stays live behind the
-        // spinner) or rendering the loader in addition to every page number.
+      test('[Pagination-LOAD-001] loading replaces the page list with a centred loader (D-08)', async () => {
+        // Break this catches: leaving the list mounted (navigation stays live beside the loader),
+        // letting the row's alignment move the loader off centre, or losing the current page
+        // across the loading round trip.
         const { container } = widget.render({
           properties: { defaultPageIndex: binding('{{3}}'), loadingState: binding('{{true}}') },
+          styles: { alignment: binding('right') },
         });
 
-        await waitFor(() => expect(pageList(container)).toHaveStyle({ pointerEvents: 'none' }));
-        expect(pageList(container)).toHaveStyle({ opacity: '0.4' });
-        expect(container.querySelector('.tj-widget-loader')).toBeInTheDocument();
-        expect(pageNumbers(container)).toEqual(['', '2', '3', '4', '5']);
+        await waitFor(() => expect(loader(container)).toBeInTheDocument());
+        expect(loader(container)).toHaveClass('justify-content-center');
+        expect(pageList(container)).toBeNull();
 
         await setProperty(widget, 'loadingState', '{{false}}');
 
-        await waitFor(() => expect(container.querySelector('.tj-widget-loader')).toBeNull());
+        await waitFor(() => expect(loader(container)).toBeNull());
         expect(pageNumbers(container)).toEqual(['1', '2', '3', '4', '5']);
         expect(activePage(container)).toBe('3');
       });
@@ -490,6 +494,20 @@ describe('Pagination widget', () => {
         await waitFor(() => expect(pageList(container)).toHaveStyle({ display: 'flex' }));
         expect(root(container)).toHaveStyle({ boxShadow: SHADOW, justifyContent: 'center' });
         expect(activePage(container)).toBe('4');
+      });
+
+      test('[Pagination-VIS-001] a hidden widget does not show its loader (D-08)', async () => {
+        // Break this catches: rendering the loader regardless of visibility, which paints a
+        // spinner where a hidden widget should leave nothing.
+        const { container } = widget.render({ properties: { loadingState: binding('{{true}}') } });
+        await waitFor(() => expect(loader(container)).toBeInTheDocument());
+
+        await widget.act('setVisibility', false);
+        await waitFor(() => expect(loader(container)).toBeNull());
+        expect(root(container)).toHaveAttribute('aria-hidden', 'true');
+
+        await widget.act('setVisibility', true);
+        await waitFor(() => expect(loader(container)).toBeInTheDocument());
       });
 
       test.each(['edit', 'view'])(
@@ -569,7 +587,7 @@ describe('Pagination widget', () => {
         expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
         await setProperty(widget, 'loadingState', '{{true}}');
-        await waitFor(() => expect(pageList(container)).toHaveStyle({ pointerEvents: 'none' }));
+        await waitFor(() => expect(loader(container)).toBeInTheDocument());
         expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
       });
     });

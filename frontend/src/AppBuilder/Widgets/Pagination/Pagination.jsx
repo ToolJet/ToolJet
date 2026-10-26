@@ -153,10 +153,13 @@ export const Pagination = ({
       role="navigation"
       id={`component-${id}`}
     >
-      {isLoading && (
-        <div className="loading-overlay">
-          <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-        </div>
+      {isLoading && isVisible && (
+        <Loader
+          width="16"
+          absolute={false}
+          style={{ margin: 0, height }}
+          classes={{ loaderContainer: 'w-100 justify-content-center align-items-center' }}
+        />
       )}
       {!isLoading && (
         <ul
@@ -166,7 +169,6 @@ export const Pagination = ({
             ...computedStyles,
             overflowX: 'clip',
             alignItems: 'center',
-            ...(isLoading ? { opacity: 0.4, pointerEvents: 'none' } : {}),
           }}
         >
           <Pagination.Operator
@@ -189,7 +191,6 @@ export const Pagination = ({
             callback={gotoPage}
             darkMode={darkMode}
             containerWidth={width}
-            isLoading={isLoading}
             listRef={listRef}
           />
           <Pagination.Operator
@@ -344,7 +345,7 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
 
 const isOperator = (li) => li.hasAttribute('aria-label');
 
-const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth, isLoading, listRef }) => {
+const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth, listRef }) => {
   const [maxPageNumbers, setMaxPageNumbers] = useState(0); // page numbers that fit beside the four operators
 
   useEffect(() => {
@@ -389,24 +390,11 @@ const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth
 
     // Render page numbers
     for (let i = startPage; i <= endPage; i++) {
-      if (isLoading && i === startPage) {
-        pageNumbers.push(
-          <li key={i} className="page-item d-flex align-items-center justify-content-center" style={{ minWidth: 28 }}>
-            <Loader
-              width="16"
-              absolute={false}
-              style={{ margin: 0 }}
-              classes={{ loaderContainer: 'align-items-center' }}
-            />
-          </li>
-        );
-      } else {
-        pageNumbers.push(
-          <li key={i} onClick={() => callback(i)} className={`page-item ${currentPage === i ? 'active' : ''}`}>
-            <a className={`page-link ${darkMode && 'text-light'}`}>{i}</a>
-          </li>
-        );
-      }
+      pageNumbers.push(
+        <li key={i} onClick={() => callback(i)} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+          <a className={`page-link ${darkMode && 'text-light'}`}>{i}</a>
+        </li>
+      );
     }
     // If total pages exceed the maximum displayable page numbers, add ellipsis
     if (totalPages > maxPageNumbers) {
