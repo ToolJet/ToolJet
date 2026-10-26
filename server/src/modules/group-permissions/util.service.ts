@@ -353,6 +353,24 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
       }
 
+      // One DEFAULT group per user per workspace: runs after the end-user and unknown-user checks above
+      if (group.type === GROUP_PERMISSIONS_TYPE.DEFAULT) {
+        const otherDefaultGroups = await manager.find(GroupPermissions, {
+          where: { organizationId, type: GROUP_PERMISSIONS_TYPE.DEFAULT, id: Not(groupId) },
+          select: ['id', 'name'],
+        });
+        const adminGroup = otherDefaultGroups.find((g) => g.name === USER_ROLE.ADMIN);
+        if (adminGroup) {
+          await this.roleUtilService.assertActiveAdminRemains(organizationId, adminGroup.id, userIds, manager);
+        }
+        if (otherDefaultGroups.length) {
+          await manager.delete(GroupUsers, {
+            userId: In(userIds),
+            groupId: In(otherDefaultGroups.map((g) => g.id)),
+          });
+        }
+      }
+
       const existingRelations = await manager.find(GroupUsers, {
         where: { groupId, userId: In(userIds) },
       });
