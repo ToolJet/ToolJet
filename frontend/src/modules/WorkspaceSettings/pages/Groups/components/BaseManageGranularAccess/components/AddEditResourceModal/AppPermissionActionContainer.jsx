@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../../../resources/styles/group-permissions.styles.scss';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { EnvironmentSelect } from '@/_ui/Modal/EnvironmentSelect';
+import { EnvironmentSelect, MultiEnvironmentPaidIcon } from '@/_ui/Modal/EnvironmentSelect';
 
 function AppPermissionsActions({
   handleClickEdit,
@@ -15,6 +15,7 @@ function AppPermissionsActions({
   isBuilderLevel,
   hasEndUsers,
   isBasicPlan,
+  isMultiEnvironmentRestricted,
 }) {
   return (
     <>
@@ -114,8 +115,9 @@ function AppPermissionsActions({
       </div>
 
       <div className="form-group mt-3" data-cy="environment-selection-container">
-        <label className="form-label bold-text" data-cy="environment-label">
-          Environment
+        <label className="form-label bold-text d-flex align-items-center" style={{ gap: '4px' }}>
+          <span data-cy="environment-label">Environment</span>
+          {isMultiEnvironmentRestricted && <MultiEnvironmentPaidIcon />}
         </label>
         <EnvironmentSelect
           value={selectedEnvironments}
@@ -125,6 +127,7 @@ function AppPermissionsActions({
           isBuilderLevel={isBuilderLevel}
           hasEndUsers={hasEndUsers}
           isBasicPlan={isBasicPlan}
+          isMultiEnvironmentRestricted={isMultiEnvironmentRestricted}
           data-cy="environment-select"
         />
       </div>

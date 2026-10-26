@@ -18,6 +18,7 @@ import WorkflowFolderResourcePermissions from './components/WorkflowFolderResour
 import ModuleFolderResourcePermissions from './components/ModuleFolderResourcePermission';
 import DataSourceFolderResourcePermissions from './components/DataSourceFolderResourcePermission';
 import Spinner from 'react-bootstrap/Spinner';
+import { MultiEnvironmentPaidIcon } from '@/_ui/Modal/EnvironmentSelect';
 import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../..';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
@@ -1251,6 +1252,7 @@ class BaseManageGranularAccess extends React.Component {
             isBuilderLevel={currentGroupPermission.isBuilderLevel}
             hasEndUsers={this.props.hasEndUsers}
             isBasicPlan={isBasicPlan}
+            isMultiEnvironmentRestricted={this.props.isMultiEnvironmentRestricted}
           />
         )}
         {this.state.showEmptyResourceContainer && !isLoading ? (
@@ -1284,8 +1286,9 @@ class BaseManageGranularAccess extends React.Component {
               <p data-cy="permissions-header" className="tj-text-xsm">
                 {'Permission'}
               </p>
-              <p data-cy="environment-header" className="tj-text-xsm">
-                {'Environment'}
+              <p className="tj-text-xsm d-flex align-items-center" style={{ gap: '4px' }}>
+                <span data-cy="environment-header">{'Environment'}</span>
+                {this.props.isMultiEnvironmentRestricted && <MultiEnvironmentPaidIcon />}
               </p>
               <p data-cy="resource-header" className="tj-text-xsm">
                 {'Resource'}

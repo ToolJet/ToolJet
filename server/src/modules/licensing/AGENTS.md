@@ -62,7 +62,8 @@ Cloud plan presets: `STARTER/BASIC/PRO/TEAM_PLAN_TERMS_CLOUD` in `ee/licensing/c
 - Trial keys can't be replaced via `updateLicense()` once a paid key was set (EE util.service throws).
 - `LicenseRepository.getLicense()` memoizes per request; a tx-bound `manager` bypasses the memo.
 - Valid license without `type` defaults to `enterprise`; trial licenses still get basic-plan `workflows` limits.
-
+- Page and page-group limits (`app.pages.count` / `app.pages.groupCount`) are enforced per app version by `LicensePageService.validatePages`, which runs after the insert inside the create, duplicate-page, duplicate-group and AI-create paths. Any non-number term means unlimited: CE is `UNLIMITED`, a valid key without the fields is unlimited, and EE basic, Free and trial default to 20. Apps already over the limit cannot add more pages.
+- `automaticSsoLogin` (`LICENSE_FIELD.AUTOMATIC_SSO_LOGIN`) is gated on EE and Cloud only; CE always runs on its basic terms, which set it to `true`. Strict opt-in there: only an explicit `features.automaticSsoLogin: true` enables it, saving without it returns 451, and the stored value is never rewritten on a license change, only masked when read.
 ## Related modules
 
 - `src/modules/instance-settings` — owns the `instance_settings` table storing `LICENSE_KEY`.
