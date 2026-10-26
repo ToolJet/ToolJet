@@ -1,12 +1,9 @@
+/** @group platform */
 import { GroupExistenceGuard as BaseGroupExistenceGuard } from '@modules/group-permissions/guards/group-existance.guard';
 import { FEATURE_KEY, GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
+import { makeExecutionContext } from 'test-helper';
 
-const makeContext = (request: any) =>
-  ({
-    switchToHttp: () => ({ getRequest: () => request }),
-    getHandler: () => ({}),
-    getClass: () => ({}),
-  }) as any;
+const makeContext = (request: Record<string, unknown>) => makeExecutionContext({ request });
 
 describe('GroupExistenceGuard', () => {
   it('loads the group context onto the request for group id routes', async () => {
