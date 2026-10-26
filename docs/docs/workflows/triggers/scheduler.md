@@ -56,7 +56,7 @@ You can use Cron Syntax to configure a schedule. ToolJet offers a graphical user
 
 Each schedule runs one specific workflow version in one environment. It doesn't follow the released version: when you release a new version, edit the schedule and select the new version.
 
-<!-- TODO screenshot: schedule form showing the Version field. The showcase workflow needs a saved version first. -->
+<img className="screenshot-full img-s" src="/img/workflows/triggers/scheduler/schedule-version.png" alt="Create new schedule form with the Version field" />
 
 - The **Version** list shows the saved versions available in the selected environment. Draft versions aren't listed. In **Development**, all saved versions are listed. In **Staging**, versions promoted to staging or production are listed. In **Production**, only versions promoted to production are listed. If there are none, the list shows **No versions found**.
 - Changing the **Environment** clears the selected version.
