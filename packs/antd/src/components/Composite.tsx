@@ -13,6 +13,7 @@ import { cardItems, chipLabel, chipTone, colorFor, initials, recordItems } from 
 import { summaryFigures } from '../lib/ui2/display/summary';
 import { progressEntries, progressItem, progressMax } from '../lib/ui2/charts/progressModel';
 import { useValueSetter } from '../lib/sameValue';
+import { LOCALE_HINT } from '../lib/locale';
 
 // The tone a status word reads as (lists/model chipTone) -> Ant's Tag status colour.
 const TONE_TAG: Record<string, string> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: 'default' };
@@ -134,6 +135,7 @@ export const SummaryStrip = () => {
   ] });
   const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact', 'date'], initialValue: 'auto' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [deltaFormat] = ToolJet.useStateEnumeration({ name: 'deltaFormat', label: 'Delta format', enumDefinition: ['percent', 'number', 'currency'], initialValue: 'percent' });
   const [appearance] = ToolJet.useStateEnumeration({ name: 'appearance', label: 'Appearance', enumDefinition: ['panel', 'plain', 'cards'], initialValue: 'panel' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['sm', 'default', 'lg'], initialValue: 'default' });
@@ -141,7 +143,7 @@ export const SummaryStrip = () => {
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 13 });
-  const figures = summaryFigures(toArray(items), { valueFormat, currency, deltaFormat });
+  const figures = summaryFigures(toArray(items), { valueFormat, currency, deltaFormat, locale });
   const fontSize = size === 'sm' ? 20 : size === 'lg' ? 30 : 24;
   return (
     <AntProvider tokens={tokens}>
@@ -232,6 +234,7 @@ export const RecordList = () => {
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: '' });
   const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact', 'date', 'datetime'], initialValue: 'auto' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [statusColors] = ToolJet.useStateObject({ name: 'statusColors', label: 'Status colors', initialValue: {} });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
   const [showAvatar] = ToolJet.useStateBoolean({ name: 'showAvatar', label: 'Show avatar', initialValue: true });
@@ -244,7 +247,7 @@ export const RecordList = () => {
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
-  const items = recordItems(toArray(dataSource), { titleField, avatarField, metaFields, statusField, progressField, valueField, valueFormat, currency, idField });
+  const items = recordItems(toArray(dataSource), { titleField, avatarField, metaFields, statusField, progressField, valueField, valueFormat, currency, locale, idField });
   const { selectedItemId, select } = useSelection(items, idField);
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll">
@@ -408,6 +411,7 @@ export const ProgressList = () => {
   const [statusField] = ToolJet.useStateString({ name: 'statusField', label: 'Status field', initialValue: '' });
   const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'auto' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
   const [autoTone] = ToolJet.useStateEnumeration({ name: 'autoTone', label: 'Auto tone', enumDefinition: ['none', 'goal', 'limit'], initialValue: 'none' });
   const [showValues] = ToolJet.useStateBoolean({ name: 'showValues', label: 'Show values', initialValue: true });
@@ -420,7 +424,7 @@ export const ProgressList = () => {
   const tokens = useTokenStyles();
   // Tall enough for the sample's four rows; more rows scroll inside the box.
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 28 });
-  const fields = { labelField, valueField, targetField, percentField, captionField, statusField, idField, valueFormat, autoTone, currency };
+  const fields = { labelField, valueField, targetField, percentField, captionField, statusField, idField, valueFormat, autoTone, currency, locale };
   const entries = progressEntries(toArray(dataSource), idField);
   const max = progressMax(entries, fields);
   const items = entries.map((e) => progressItem(e, { ...fields, max }));

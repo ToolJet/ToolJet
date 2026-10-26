@@ -2,6 +2,8 @@
 // _display/displayModel.ts, NewTable chipTone / avatarHue), ported for the List view, Record list, Card grid and
 // Key-value list. Every function takes whatever the author bound and never throws.
 
+import { localeFor, moneyDigits, numberFormat } from '../../../locale';
+
 export type Row = Record<string, unknown>;
 
 export const isSet = (v: unknown): boolean => v !== undefined && v !== null && v !== '';
@@ -126,32 +128,17 @@ export const styleVars = (pairs: [unknown, string, ((v: unknown) => string)?][])
 
 const FORMATS = ['number', 'currency', 'percent', 'compact'];
 export const VALUE_FORMATS = ['auto', ...FORMATS, 'date', 'datetime'];
-const cache = new Map<string, Intl.NumberFormat>();
-const nf = (locale: string | undefined, options: Intl.NumberFormatOptions): Intl.NumberFormat => {
-  const key = `${locale ?? ''}|${JSON.stringify(options)}`;
-  let f = cache.get(key);
-  if (!f) {
-    if (cache.size > 200) cache.clear();
-    try {
-      f = new Intl.NumberFormat(locale, options);
-    } catch {
-      f = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
-    }
-    cache.set(key, f);
-  }
-  return f;
-};
+const nf = numberFormat;
 const currencyCode = (c: unknown) => (isNonBlankString(c) && /^[A-Za-z]{3}$/.test(c.trim()) ? c.trim().toUpperCase() : 'USD');
 const isNumericFigure = (v: unknown): v is number | string =>
   typeof v === 'number' ? Number.isFinite(v) : typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim());
 
-const formatNumber = (n: number, format: string, currency?: unknown): string => {
-  const code = currencyCode(currency);
-  if (format === 'currency')
-    return nf(undefined, { style: 'currency', currency: code, minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
-  if (format === 'compact') return nf(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-  if (format === 'percent') return `${nf(undefined, { maximumFractionDigits: 1 }).format(n)}%`;
-  return nf(undefined, { maximumFractionDigits: 2 }).format(n);
+const formatNumber = (n: number, format: string, currency?: unknown, locale?: unknown): string => {
+  const where = localeFor(currency, locale);
+  if (format === 'currency') return nf(where, { style: 'currency', currency: currencyCode(currency), ...moneyDigits(n, where) }).format(n);
+  if (format === 'compact') return nf(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  if (format === 'percent') return `${nf(where, { maximumFractionDigits: 1 }).format(n)}%`;
+  return nf(where, { maximumFractionDigits: 2 }).format(n);
 };
 
 /** A bare 'YYYY-MM-DD' is that day where the viewer is. null when it is not a date. */
@@ -180,7 +167,7 @@ const dateText = (d: Date, withTime: boolean): string => {
 
 /** A value in a format: numbers ('number', 'currency', 'percent', 'compact'), dates ('date', 'datetime'); 'auto' groups a
  *  bare number's digits. Anything not of the format's kind shows as written; objects show nothing. */
-export const formatValue = (value: unknown, format: unknown = 'auto', currency?: unknown): string => {
+export const formatValue = (value: unknown, format: unknown = 'auto', currency?: unknown, locale?: unknown): string => {
   if (value === null || value === undefined || typeof value === 'object') return '';
   if (typeof value === 'number' && !Number.isFinite(value)) return '';
   if (format === 'date' || format === 'datetime') {
@@ -188,8 +175,8 @@ export const formatValue = (value: unknown, format: unknown = 'auto', currency?:
     return d ? dateText(d, format === 'datetime') : String(value);
   }
   if (!isNumericFigure(value)) return String(value);
-  if (typeof format !== 'string' || !FORMATS.includes(format)) return typeof value === 'number' ? formatNumber(value, 'number') : String(value);
-  return formatNumber(Number(value), format, currency);
+  if (typeof format !== 'string' || !FORMATS.includes(format)) return typeof value === 'number' ? formatNumber(value, 'number', currency, locale) : String(value);
+  return formatNumber(Number(value), format, currency, locale);
 };
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -340,11 +327,11 @@ export const gridColumns = (columns: unknown, width: unknown, minCardWidth: unkn
 // ---- Record list ------------------------------------------------------------------------------------------------------
 
 /** 'city' shows the value, 'total|currency' formats it, 'due|date:Due {}' places it in a label. */
-const recordMetaPart = (row: Row, spec: string, currency?: unknown): string => {
+const recordMetaPart = (row: Row, spec: string, currency?: unknown, locale?: unknown): string => {
   const [head, label] = spec.split(/:(.*)/s).map((s) => (s ?? '').trim());
   const [f, format] = head.split('|').map((s) => s.trim());
   if (!f || !(f in row)) return '';
-  const value = formatValue(row[f], VALUE_FORMATS.includes(format) ? format : 'auto', currency);
+  const value = formatValue(row[f], VALUE_FORMATS.includes(format) ? format : 'auto', currency, locale);
   return value ? withLabel(label, f, value) : '';
 };
 
@@ -379,9 +366,9 @@ export const recordItems = (data: unknown, f: Record<string, unknown> = {}): Rec
         title,
         image,
         avatarName: !image && toText(avatarValue).trim() ? toText(avatarValue).trim() : title,
-        meta: metaSpecs.map((spec) => recordMetaPart(row, spec, f.currency)).filter(Boolean).join(' · '),
+        meta: metaSpecs.map((spec) => recordMetaPart(row, spec, f.currency, f.locale)).filter(Boolean).join(' · '),
         status: isNonBlankString(f.statusField) ? toText(row[f.statusField]) : '',
-        value: isNonBlankString(f.valueField) ? formatValue(row[f.valueField], format, f.currency) : '',
+        value: isNonBlankString(f.valueField) ? formatValue(row[f.valueField], format, f.currency, f.locale) : '',
         progress: isNonBlankString(f.progressField) ? percentOf(row[f.progressField]) : null,
         row,
         index,
