@@ -1,14 +1,12 @@
 // ci-shard.js — split a Cypress config's specs across CI machines.
 //
-// Each machine runs its own fresh ToolJet, so some specs must run on every
-// machine, and specs that change instance-wide state must stay together:
-//   SHARD_SETUP_SPECS  comma-separated path suffixes run on every shard, e.g.
-//                      "firstUserOnboarding.cy.js,updateLicense.cy.js"
-//   SHARD_GROUPS       groups separated by ";", each a comma-separated list of
-//                      path substrings; every spec matching a group goes to the
-//                      same shard as one unit, e.g. "/licensing/;/sso/,manageSSO.cy.js"
-// Everything else is spread by spec count. Each shard keeps the config's
-// original spec order, so setup specs still run before the specs needing them.
+// Each machine runs its own fresh ToolJet, so specs that change instance-wide
+// state must stay together:
+//   SHARD_GROUPS  groups separated by ";", each a comma-separated list of path
+//                 substrings; every spec matching a group goes to the same shard
+//                 as one unit, e.g. "/licensing/;/sso/,manageSSO.cy.js"
+// The first group always lands on the first shard. Everything else is spread by
+// spec count. Each shard keeps the config's original spec order.
 const fs = require("fs");
 const path = require("path");
 
@@ -45,19 +43,18 @@ function listSpecs(configFile) {
   return [...new Set(patterns.flatMap(expandPattern))];
 }
 
-function pickShardSpecs({ configFile, index, total, setupSpecs, groups }) {
+function pickShardSpecs({ configFile, index, total, groups }) {
   const specs = listSpecs(configFile);
-  const isSetup = (spec) => setupSpecs.some((suffix) => spec.endsWith(suffix));
   // index of the first group the spec matches, -1 for none
   const groupOf = (spec) => groups.findIndex((group) => group.some((part) => spec.includes(part)));
 
-  const runnable = specs.filter((spec) => !isSetup(spec));
   const units = [
-    ...groups.map((_, i) => runnable.filter((spec) => groupOf(spec) === i)).filter((unit) => unit.length),
-    ...runnable.filter((spec) => groupOf(spec) === -1).map((spec) => [spec]),
+    ...groups.map((_, i) => specs.filter((spec) => groupOf(spec) === i)).filter((unit) => unit.length),
+    ...specs.filter((spec) => groupOf(spec) === -1).map((spec) => [spec]),
   ];
 
-  // Same input on every machine, so every machine computes the same split.
+  // Same input on every machine, so every machine computes the same split. Groups
+  // go first and all shards start empty, so the first group lands on shard 0.
   const shards = Array.from({ length: total }, () => []);
   for (const unit of units) {
     const smallest = shards.reduce((min, shard, i) => (shard.length < shards[min].length ? i : min), 0);
@@ -65,7 +62,7 @@ function pickShardSpecs({ configFile, index, total, setupSpecs, groups }) {
   }
 
   const mine = new Set(shards[index]);
-  return specs.filter((spec) => isSetup(spec) || mine.has(spec));
+  return specs.filter((spec) => mine.has(spec));
 }
 
 module.exports = { pickShardSpecs };

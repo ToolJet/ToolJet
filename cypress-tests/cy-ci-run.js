@@ -44,7 +44,6 @@ if (shardTotal > 1) {
     configFile: process.env.CONFIG_FILE,
     index: Number(process.env.SHARD_INDEX || 0),
     total: shardTotal,
-    setupSpecs: (process.env.SHARD_SETUP_SPECS || "").split(",").filter(Boolean),
     groups: (process.env.SHARD_GROUPS || "")
       .split(";")
       .map((group) => group.split(",").filter(Boolean))

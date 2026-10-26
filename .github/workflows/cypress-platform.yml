@@ -420,6 +420,64 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SECRETS) || fromJSON(secrets.CYPRESS_EE_SECRETS)) }}
           dir: "./cypress-tests"
 
+      # The first machine onboards through the UI (firstUserOnboarding.cy.js), which
+      # needs a ToolJet with no admin yet. Every other machine is set up by API instead.
+      - name: Seeding (Setup Super Admin)
+        if: strategy.job-index != 0
+        run: |
+          curl --fail-with-body 'http://localhost:3000/api/onboarding/setup-super-admin' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "companyName": "ToolJet",
+              "name": "The Developer",
+              "workspaceName": "My workspace",
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }'
+
+      - name: Seeding (Authenticate)
+        if: strategy.job-index != 0
+        run: |
+          AUTH_RESPONSE=$(curl --fail-with-body \
+            -c /tmp/tj_cookies.txt \
+            'http://localhost:3000/api/authenticate' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }')
+          echo "$AUTH_RESPONSE"
+          ORG_ID=$(echo "$AUTH_RESPONSE" | jq -r '.current_organization_id')
+          echo "TJ_ORG_ID=$ORG_ID" >> $GITHUB_ENV
+
+      - name: Seeding (Complete Onboarding)
+        if: strategy.job-index != 0
+        run: |
+          # Without this the frontend redirects every page visit to /setup.
+          curl --fail-with-body \
+            -b /tmp/tj_cookies.txt \
+            -X POST \
+            'http://localhost:3000/api/onboarding/finish' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data-raw '{"region": "us"}'
+
+      - name: Seeding (Update License)
+        if: strategy.job-index != 0 && matrix.edition == 'ee'
+        run: |
+          # Same call as updateLicense.cy.js. The key is part of a larger secret, so
+          # GitHub doesn't mask it on its own.
+          LICENSE_KEY=$(jq -r '.license_keys.valid' cypress-tests/cypress.env.json)
+          echo "::add-mask::$LICENSE_KEY"
+          jq -n --arg key "$LICENSE_KEY" '{key: $key}' | curl --fail -sS -o /dev/null \
+            -b /tmp/tj_cookies.txt \
+            -X PATCH \
+            'http://localhost:3000/api/license' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data @-
+          echo "License updated"
+
       - name: Install Cypress & deps
         uses: cypress-io/github-action@v6
         with:
@@ -432,12 +490,12 @@ jobs:
           CELL: "Platform / ${{ matrix.edition }}${{ strategy.job-total > 1 && format(' ({0}/{1})', matrix.shard, strategy.job-total) || '' }}"
           SHARD_INDEX: ${{ strategy.job-index }}
           SHARD_TOTAL: ${{ strategy.job-total }}
-          # every machine has its own fresh ToolJet: onboard the first user and set a
-          # valid license on each; licensing specs change the license, so keep them together.
+          # every machine has its own fresh ToolJet. The first group runs on the first
+          # machine: the onboarding UI spec sets that one up, the "Seeding" steps set up
+          # the rest. Licensing specs change the license, so they stay together there.
           # manageSSO.cy.js failed every attempt on a fresh CI machine but passes after the
           # sso/ and settings/ specs (its order on main), so it runs after them on one machine.
-          SHARD_SETUP_SPECS: firstUserOnboarding.cy.js,updateLicense.cy.js
-          SHARD_GROUPS: /licensing/;/eeTestcases/sso/,/eeTestcases/settings/,workspace/manageSSO.cy.js
+          SHARD_GROUPS: firstUserOnboarding.cy.js,/licensing/;/eeTestcases/sso/,/eeTestcases/settings/,workspace/manageSSO.cy.js
           # this machine's MailHog (see "Update docker-compose file"): ToolJet sends to it
           # over the compose network, Cypress reads it on the published port
           CYPRESS_mailhog_smtp_host: mailhog
