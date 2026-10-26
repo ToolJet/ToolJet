@@ -204,12 +204,6 @@ export const uiDeleteFolder = (folderName) => {
   expectFolderListed(folderName, false);
 };
 
-// An item card's menu popover is only shown while its IntersectionObserver reports the card as
-// intersecting the viewport (AppCard: popoverVisible = isMenuOpen && entry.isIntersecting). Inside
-// Cypress that report depends on where the card sits and how the runner scales the app frame:
-// at 1800x1400 a second card's menu never opens, at the default viewport other cards fail, and
-// no single size works for every card. These specs test moving items, not on-screen position, so
-// report every observed card as visible. Call from a beforeEach; the listener is dropped per test.
 export const stubCardIntersection = () => {
   cy.on('window:before:load', (win) => {
     win.IntersectionObserver = class {
@@ -225,14 +219,6 @@ export const stubCardIntersection = () => {
   });
 };
 
-// Opens an item card's three-dot menu.
-//
-// The icon is visibility:hidden until the card's useHover state is set, and that state is lost
-// whenever a late response re-renders the card (the dashboard still has requests landing a few
-// hundred ms after the cards appear) — the mouse never moves, so no new mouseover fires and the
-// icon stays hidden for good. A single realHover therefore wins or loses a ~600ms race.
-// The icon is clickable while hidden, so dispatch mouseover and force the click. A late render
-// can also close the menu just after it opens, so click again if no option is showing.
 const openItemCardMenu = (itemName) => {
   const open = (attempts) => {
     cy.contains('.homepage-app-card', itemName, { timeout: 20000 }).within(() => {
@@ -321,9 +307,6 @@ export const uiCreateDraftVersion = (versionName) => {
   cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', versionName);
 };
 
-// A module the user may use but not edit (Build with) opens in a read-only editor behind a lock
-// banner instead of redirecting: the redirect to /error/restricted is only for a user with no
-// module access at all (AppBuilder: hasModuleAccess === false).
 export const openModuleEditorExpectingReadOnly = (workspaceSlug, moduleId) => {
   openAppEditor(workspaceSlug, moduleId);
   cy.contains('Module is locked. You do not have permissions to edit this module.', { timeout: 30000 }).should('be.visible');

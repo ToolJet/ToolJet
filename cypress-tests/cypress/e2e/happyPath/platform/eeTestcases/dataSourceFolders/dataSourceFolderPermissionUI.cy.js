@@ -51,8 +51,6 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(groupsSelector.addPermissionButton).click();
     cy.get(dsFolderPerm.addDataSourceFolderButton).should('be.visible').click();
 
-    // The shared permission modal is rendered three times over (once per render branch), all
-    // mounted and visible, so this data-cy matches three identical titles. Assert the first.
     cy.get(dsFolder.modalTitle).first().should('have.text', 'Add data source folders permissions');
     cy.get(dsFolder.modalCloseButton).first().should('be.visible');
 

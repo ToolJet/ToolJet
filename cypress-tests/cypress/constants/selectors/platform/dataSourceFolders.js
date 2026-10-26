@@ -17,25 +17,14 @@ export const dataSourceFolderSelectors = {
   folderEmptyText: (folderId) =>
     `[data-cy="datasource-folder-empty-${folderId}"]`,
 
-  // The granular permission modal (_ui/Modal) emits a fixed data-cy.
   modalTitle: '[data-cy="modal-title"]',
-  // The folder create/rename modal is a different component (HomePage/Modal), which slugs its
-  // own title into the data-cy instead — "Create folder" -> create-folder-title.
   folderModalTitle: (title) => `[data-cy="${cyParamName(title)}-title"]`,
-  // ChangeRoleModal — the role-conflict dialog. Its root carries no data-cy, and it is not
-  // commonSelectors.modalComponent.
   roleConflictModal: '.role-change-modal-content',
-  // ErrorModal — the generic refusal dialog. A grant the server refuses WITHOUT an error type
-  // (Module folder grants on a group holding an end user) lands here instead of ChangeRoleModal.
   errorModal: '.edit-role-modal',
   errorModalMessage: '.edit-role-modal [data-cy="modal-message"]',
   errorModalHeader: '.edit-role-modal [data-cy="modal-header"]',
   errorModalClose: '.edit-role-modal [data-cy="close-button"]',
-  // ChangeRoleModal renders no footer, so it has no cancel button; the icon closes it.
   roleConflictModalClose: '.role-change-modal-content [data-cy="modal-close-button"]',
-  // NOT commonSelectors.modalCloseButton — that one is [data-cy="modal-close"], which no modal
-  // on this screen renders. Both the permission modal (_ui/Modal) and the folder modal
-  // (HomePage/Modal) emit modal-close-button; commonWidgetSelector has the matching constant.
   modalCloseButton: '[data-cy="modal-close-button"]',
   folderNamePlaceholder: 'Enter folder name..',
   // A foldered row lives in .datasource-folder-contents, a loose one in the stray zone.

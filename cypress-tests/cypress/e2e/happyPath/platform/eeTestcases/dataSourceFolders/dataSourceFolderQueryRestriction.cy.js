@@ -79,9 +79,6 @@ describe('Data Source Folders — Restrict Query Run', () => {
     setupFolder().then(({ folderId, dataSourceId }) => {
       createFolderGroup(groupName, folderId, { canRunQuery: false });
       cy.apiFullUserOnboarding('QA Restricted', restrictedEmail, 'builder', 'password', wsName, {}, [groupName]);
-      // Onboarding activates the new user, leaving that user's tj_auth_token in the cookie jar
-      // beside the admin's. The next invite can then go out as the builder and answer 403, so
-      // the admin session is re-established between onboardings.
       cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
       cy.apiFullUserOnboarding('QA Other', otherEmail, 'builder', 'password', wsName);
 

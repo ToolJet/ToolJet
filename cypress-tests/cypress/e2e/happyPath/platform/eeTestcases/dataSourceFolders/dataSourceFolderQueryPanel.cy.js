@@ -42,8 +42,6 @@ describe('Data Source Folders — Query Panel Grouping', () => {
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
-  // Both pickers give a folder header the same data-cy, and the "+" popover opens over the landing
-  // picker without unmounting it, so each pass has to address its own picker by header class.
   const landingHeader = (folderName) => `${dsFolder.pickerFolderHeader(folderName)}.query-datasource-quick-action`;
   const popoverHeader = (folderName) => `${dsFolder.pickerFolderHeader(folderName)}.ds-select-item`;
 
@@ -54,8 +52,6 @@ describe('Data Source Folders — Query Panel Grouping', () => {
     cy.get(item(names.a1)).should('not.exist');
     cy.get(item(names.b1)).should('not.exist');
 
-    // Folders list first, so the loose data source sits at the bottom of the picker, below the
-    // fold and under the query pane's fixed bottom bar until it is scrolled into view.
     cy.get(item(names.stray)).scrollIntoView().should('be.visible');
 
     cy.get(header(names.folderB)).click();
