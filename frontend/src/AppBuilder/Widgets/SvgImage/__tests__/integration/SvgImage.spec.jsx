@@ -6,8 +6,11 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
-import { svgImageConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/svgImage';
-import { svgImageConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/svgImage';
+import { svgImageConfig as frontendConfig } from '@tooljet/widget-definitions';
+// eslint-disable-next-line import/no-relative-packages
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
+
+const serverConfig = serverWidgets.svgImageConfig;
 
 const ID = 'svg1';
 const HANDLE = 'svgimage1';

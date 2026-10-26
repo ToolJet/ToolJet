@@ -48,3 +48,6 @@ lerna-debug.log*
 # Throwaway per-feature verification scripts (e.g. scripts/tjdb-h1-verify*) — disposable,
 # not meant to ship; runbooks for them live in the vault instead.
 /scripts/*-verify*
+
+# Local git-sync runtime storage (created by the dev server)
+/tooljet/
