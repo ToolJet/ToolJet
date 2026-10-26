@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SolidIcon from '../Icon/SolidIcons';
-import { BreadCrumbContext } from '../../App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import cx from 'classnames';
 
 // define some custom breadcrumbs for certain routes (optional)

@@ -85,10 +85,11 @@ How migrations **run** (boot path, locks, upgrade gate, async mode, env vars, ru
   - Write each enum addition as literal `ALTER TYPE ... ADD VALUE IF NOT EXISTS '<value>'` SQL. The scanner then finds it, and the statement in the migration does nothing after the pre-commit. Code and test: `src/migration-helpers/enum-value-additions.ts`, `test/modules/migrations/unit/enum-value-additions.spec.ts`.
 - **`SET LOCAL` lasts for the full transaction.** A joint run shares one transaction for all migrations. A split run shares one for all schema or all data migrations. So `SET LOCAL lock_timeout` (or `statement_timeout`) applies to every later migration. Read the old value with `SHOW lock_timeout`. Restore it at the end with `SELECT set_config('lock_timeout', $1, true)`. Do not copy `1781868342325-AddModuleToAppTypeEnum.ts`, `1781869753341-AddModuleToResourceTypeEnum.ts` or `1782196835449-AddModuleCreateDeleteToGroupPermissions.ts`: they set it and do not restore it.
 - Prefer runtime interpretation of existing values to new sentinel columns and migrations. Reuse existing columns and tables. Do not add parallel structures.
+- **Released-app viewer cache:** a new table or column that changes what a released app shows, and can change without a new release (permissions, settings, themes), needs a trigger that moves the app's viewer-cache stamp, or viewers keep a stale copy. Checklist: `src/modules/apps/AGENTS.md` § Released-app viewer cache.
 
-### Widget config sync (CRITICAL)
+### Widget config (CRITICAL)
 
-Server widget config (`src/modules/apps/services/widget-config/`) and frontend config (`frontend/src/AppBuilder/WidgetManager/widgets/`) must change together. If a config change moves, renames, or removes a key, write a migration.
+Widget configs live in the shared `packages/widget-definitions` package and are imported by both server (`src/modules/apps/services/widget-config/index.js`) and frontend. If a config change moves, renames, or removes a key, write a migration.
 
 ### Security
 
