@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/Button/Button';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import GraphqlTabContent from './GraphqlTabContent';
+import useStore from '@/AppBuilder/_stores/store';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import './GraphqlKeyValueTabs.css';
 
 export default function GraphqlKeyValueTabs({ tabs = [], options = {}, optionchanged, componentName }) {
@@ -14,6 +16,18 @@ export default function GraphqlKeyValueTabs({ tabs = [], options = {}, optioncha
       setActiveKey(tabs[0].key);
     }
   }, [tabs]);
+
+  const queryId = useStore((state) => state.queryPanel.selectedQuery?.id);
+  useCodeSearchReveal(
+    'restTab',
+    queryId,
+    (tab) => {
+      if (!tabs.some((t) => t.key === tab)) return false;
+      setActiveKey(tab);
+      return true;
+    },
+    [tabs]
+  );
 
   const getRows = (tabKey) => {
     const raw = options[tabKey];
@@ -80,6 +94,7 @@ export default function GraphqlKeyValueTabs({ tabs = [], options = {}, optioncha
                 bsPrefix="graphql-tabpanes"
                 transition={false}
                 data-cy={`graphql-tab-${key}-pane`}
+                data-reveal-root={`restTab:${key}`}
               >
                 <GraphqlTabContent
                   options={getRows(key)}
