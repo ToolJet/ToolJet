@@ -174,7 +174,7 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.JOIN_TABLES)
   @Post('/organizations/:organizationId/join')
   @UseFilters(new TooljetDbJoinExceptionFilter())
-  @UseGuards(OrganizationAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async joinTables(@Req() req, @Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
     const params = {
       joinQueryJson: { ...tooljetDbJoinDto },
