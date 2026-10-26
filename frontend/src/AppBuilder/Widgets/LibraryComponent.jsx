@@ -17,6 +17,7 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import useThemeAccess from '@/AppBuilder/_hooks/useThemeAccess';
 import { baseTheme } from '@/AppBuilder/_stores/utils';
 import { canUseTheme } from '@/AppBuilder/_utils/themeAccess';
+import { isBuiltInPack } from '@/AppBuilder/Widgets/libraryComponentRevision';
 
 const DevBadge = ({ label }) => (
   <div className="tw-absolute tw-left-0 -tw-bottom-6 tw-h-5 tw-inline-flex tw-items-center tw-px-1 tw-py-0.5 tw-rounded-md tw-text-white tw-text-sm tw-font-medium tw-whitespace-nowrap tw-pointer-events-none tw-z-10 tw-bg-background-success-strong">
@@ -134,9 +135,9 @@ const LibraryComponent = ({
   ]);
 
   const currentMode = useStore((state) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
-  const hasCustomComponentLibrariesAccess = useStore(
-    (state) => state.license?.featureAccess?.customComponentLibraries === true
-  );
+  // A built-in pack is on every plan; another custom library needs the custom component libraries term.
+  const hasLicenseTerm = useStore((state) => state.license?.featureAccess?.customComponentLibraries === true);
+  const hasCustomComponentLibrariesAccess = hasLicenseTerm || isBuiltInPack(correlationId);
 
   const effectiveRevision = useEffectiveLibraryRevision(correlationId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));

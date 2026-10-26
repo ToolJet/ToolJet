@@ -36,6 +36,17 @@ export interface ComponentDefinitionLike {
 // id rather than implying it's library-specific.
 export const dashlessId = (id: string | undefined): string | undefined => id?.replace(/-/g, '');
 
+// The first-party component packs the server builds in (packs/builtin.json), by the correlation id in each pack's
+// .tooljet/config.json. They are on every plan: the custom component libraries term gates only a workspace's own
+// libraries, so a built-in pack's components render and edit without it.
+const BUILT_IN_PACK_CORRELATION_IDS = new Set([
+  '30c2ae01c2c04a96bca04c9f1247c8f9', // shadcn (Rocket 2.0)
+  'fc60c1b2629d496d8192d7523c105def', // Ant Design
+  'ed160c18d5234fa7b3ea2f32a5596781', // Material UI
+]);
+export const isBuiltInPack = (correlationId: string | undefined): boolean =>
+  BUILT_IN_PACK_CORRELATION_IDS.has(dashlessId(correlationId) ?? '');
+
 export const normalizePin = (pin: Pin): string | undefined =>
   typeof pin === 'string' ? pin : pin?.revisionId ?? pin?.revision_id;
 

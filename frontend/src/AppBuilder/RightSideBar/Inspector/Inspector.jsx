@@ -53,7 +53,6 @@ import { Cascader } from './Components/Cascader/Cascader';
 import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
-import { SAMPLE_ITEM_HEIGHT, sampleCardLayouts } from '@/AppBuilder/Widgets/Ui2/ListView/listSampleCard';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -162,7 +161,6 @@ export const Inspector = ({
 }) => {
   const allComponents = useStore((state) => state.getCurrentPageComponents());
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-  const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
   const currentLayout = useStore((state) => state.currentLayout);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -342,28 +340,6 @@ export const Inspector = ({
     // narrow grid card), with the item height that arrangement needs. The height rides in the definition saved below
     // (a save of its own, made while the layout was still the old one, could land last and undo the switch), and the
     // children move after that save.
-    let sampleCard = null;
-    if (
-      component.component.component === 'ShadListView' &&
-      param.name === 'mode' &&
-      paramType === 'properties' &&
-      oldValue !== value
-    ) {
-      const toMode = value === 'grid' ? 'grid' : 'list';
-      const children = Object.entries(allComponents || {})
-        .filter(([, child]) => child?.component?.parent === selectedComponentId)
-        .map(([id, child]) => ({ id, type: child.component.component, layout: child.layouts?.[currentLayout] }));
-      sampleCard = sampleCardLayouts(children, toMode);
-      const fromHeight = SAMPLE_ITEM_HEIGHT[toMode === 'grid' ? 'list' : 'grid'];
-      if (sampleCard && Number(resolveReferences(newDefinition.properties?.rowHeight?.value)) === fromHeight) {
-        const rowHeight = `{{${SAMPLE_ITEM_HEIGHT[toMode]}}}`;
-        newDefinition.properties.rowHeight = { ...newDefinition.properties.rowHeight, value: rowHeight };
-        setComponentProperty(selectedComponentId, 'rowHeight', rowHeight, 'properties', 'value', false, 'canvas', {
-          saveAfterAction: false,
-        });
-      }
-    }
-
     if (oldValue !== value) {
       const skipResolve =
         component.component.component === 'CustomComponent' && param.name === 'code' && paramType === 'properties';
@@ -375,7 +351,6 @@ export const Inspector = ({
       isParamFromTableColumn: isParamFromTableColumn,
       ...props,
     });
-    if (sampleCard) setComponentLayout(sampleCard, selectedComponentId);
   }
 
   // use following function when more than one property needs to be updated

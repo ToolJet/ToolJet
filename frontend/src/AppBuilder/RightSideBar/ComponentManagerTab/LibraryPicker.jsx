@@ -8,9 +8,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/Rocket/shadcn/dropdown-menu';
-import { ROCKET_1, ROCKET_1_LABEL, UI2, UI2_LABEL, choiceLabel } from './componentLibrary';
+import { ROCKET_1, ROCKET_1_LABEL, choiceLabel } from './componentLibrary';
 
-// The app's component library, as the Components tab's own label (Rocket 2.0 ▾): ToolJet UI 1.0 and 2.0, the component packs,
+// The app's component library, as the Components tab's own label (Rocket 2.0 ▾): ToolJet UI 1.0, the component packs,
 // then the other custom component libraries (see componentLibrary.js). Opening it does not switch tabs by itself; the
 // tab takes the click as well, so picking from Modules lands on the Components tab.
 export const LibraryPicker = ({ value, choices, onChange }) => {
@@ -42,7 +42,6 @@ export const LibraryPicker = ({ value, choices, onChange }) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="component-library-picker-menu">
         {item({ value: ROCKET_1, label: ROCKET_1_LABEL })}
-        {item({ value: UI2, label: UI2_LABEL })}
         {choices.packs.map(item)}
         {choices.custom.length > 0 && (
           <>

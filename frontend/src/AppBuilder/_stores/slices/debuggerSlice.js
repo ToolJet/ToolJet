@@ -177,6 +177,9 @@ export const createDebuggerSlice = (set, get) => ({
       const componentName = componentDefinition.component.name;
       const componentType = componentDefinition.component.component;
       const componentMeta = componentTypeDefinitionMap[componentType];
+      // A widget type this build does not register (an app saved with ToolJet UI 2.0's Shad* widgets) has no schema to
+      // validate against: its value stands as it is, so the rest of the app still loads.
+      if (!componentMeta?.[type]) return value;
       const validationSchema = componentMeta[type][property]?.validation?.schema;
 
       const defaultValue = validationSchema?.defaultValue

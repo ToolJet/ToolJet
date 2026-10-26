@@ -8,7 +8,9 @@ import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 // import { AllComponents } from '@/Editor/Box';
 import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
-import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
+// ToolJet UI 2.0's Shad* widgets are not on this branch (components come from the packs); the policies below that
+// name them keep an empty list.
+const SHADCN_COMPONENTS = [];
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 const SHOW_ADDITIONAL_ACTIONS = [

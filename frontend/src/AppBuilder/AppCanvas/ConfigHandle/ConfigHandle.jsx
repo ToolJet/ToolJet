@@ -15,6 +15,7 @@ import Popover from '@/_ui/Popover';
 import dynamicHeightSvg from '@assets/images/dynamic-height-info.svg?url';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { getInvalidLicenseTooltip } from './utils';
+import { isBuiltInPack } from '@/AppBuilder/Widgets/libraryComponentRevision';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const MentionComponentInChat = lazy(() => import('./MentionComponentInChat'));
@@ -39,8 +40,11 @@ export const ConfigHandle = ({
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
+  // A built-in pack is on every plan; another custom library needs the custom component libraries term.
   const hasCustomComponentLibrariesAccess = useStore(
-    (state) => state.license?.featureAccess?.customComponentLibraries === true
+    (state) =>
+      state.license?.featureAccess?.customComponentLibraries === true ||
+      isBuiltInPack(state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.correlationId?.value)
   );
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);

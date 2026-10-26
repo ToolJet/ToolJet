@@ -9,7 +9,9 @@ import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
-import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
+// ToolJet UI 2.0's Shad* widgets are not on this branch (components come from the packs); the policies below that
+// name them keep an empty list.
+const SHADCN_COMPONENTS = [];
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [

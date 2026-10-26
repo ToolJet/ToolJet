@@ -73,7 +73,6 @@ const ModuleContainer = lazy(() =>
 const ModuleViewer = lazy(() => import('@/modules/Modules/components').then((m) => ({ default: m.ModuleViewer })));
 
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
-import { UI2_WIDGETS } from '@/AppBuilder/Widgets/Ui2/registry';
 
 // import './requestIdleCallbackPolyfill';
 
@@ -156,7 +155,6 @@ export const AllComponents = {
   Tags,
   Spinner,
   LibraryComponent,
-  ...UI2_WIDGETS,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,

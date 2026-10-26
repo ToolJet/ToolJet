@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
-import { LOOKS } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+// ToolJet UI 2.0's Shad* widgets, whose blank styles this follows, are not on this branch: no style has a look here.
+const LOOKS = {};
+const kanbanLook = () => ({ column: {}, card: {} });
 
 // A UI 2.0 widget's colour and radius styles have no default value: blank means the app theme decides, so a theme
 // restyles every app. The inspector drew a blank colour as an empty white swatch and a blank radius as an empty box,

@@ -1,6 +1,7 @@
 /**
- * The component library (ToolJet UI 1.0 or 2.0) is saved on every app at creation:
- * - a new app (blank, from a prompt, a module) gets 'ui2';
+ * The component library (ToolJet UI 1.0, a pack or another library) is saved on every app at creation:
+ * - a new app (blank, from a prompt, a module) gets Rocket 2.0 ('pack:shadcn'), pinned to the built-in pack when the
+ *   server ships it;
  * - an imported, cloned or template app keeps its source's saved library, or the one its widgets imply;
  * - an import into an existing app (the AI flow) keeps that app's library.
  * Only apps from before the setting stay unsaved.
@@ -12,9 +13,13 @@ jest.mock('../../../../src/helpers/database.helper', () => ({
 
 import { AppsUtilService } from '../../../../src/modules/apps/util.service';
 import { AppImportExportService } from '../../../../src/modules/apps/services/app-import-export.service';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import {
   componentLibraryFor,
   definitionComponentTypes,
+  newAppLibrarySettings,
   versionComponentTypes,
 } from '../../../../src/helpers/component_library.helper';
 
@@ -55,7 +60,7 @@ describe('component library helper', () => {
 });
 
 describe('a new app', () => {
-  it('is created on ToolJet UI 2.0', async () => {
+  it('is created on Rocket 2.0', async () => {
     const manager = makeManager();
     const service = new AppsUtilService(
       {} as any,
@@ -67,7 +72,29 @@ describe('a new app', () => {
     );
     await service.create('Blank', { id: 'u1', organizationId: 'o1' } as any, 'front-end' as any, false, manager as any);
     const version = manager.saved.find((entity) => entity.globalSettings);
-    expect(version.globalSettings).toMatchObject({ componentLibrary: 'ui2' });
+    expect(version.globalSettings).toMatchObject({ componentLibrary: 'pack:shadcn' });
+  });
+
+  it('pins the built-in shadcn pack the server ships', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'builtin-packs-'));
+    fs.mkdirSync(path.join(dir, 'shadcn'));
+    fs.writeFileSync(
+      path.join(dir, 'shadcn', 'pack.json'),
+      JSON.stringify({ pack: 'shadcn', correlationId: '30c2ae01-c2c0-4a96-bca0-4c9f1247c8f9', version: '2.1.29' })
+    );
+    const previous = process.env.BUILTIN_PACKS_PATH;
+    process.env.BUILTIN_PACKS_PATH = dir;
+    try {
+      expect(newAppLibrarySettings()).toEqual({
+        componentLibrary: 'pack:shadcn',
+        customComponentLibraries: { '30c2ae01c2c04a96bca04c9f1247c8f9': '2.1.29' },
+      });
+      process.env.BUILTIN_PACKS_PATH = path.join(dir, 'missing');
+      expect(newAppLibrarySettings()).toEqual({ componentLibrary: 'pack:shadcn' });
+    } finally {
+      if (previous === undefined) delete process.env.BUILTIN_PACKS_PATH;
+      else process.env.BUILTIN_PACKS_PATH = previous;
+    }
   });
 });
 

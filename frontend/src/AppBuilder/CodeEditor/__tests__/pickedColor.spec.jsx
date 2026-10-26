@@ -1,4 +1,4 @@
-import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
+import '@/test/consoleGuard';
 /**
  * A UI 2.0 Dialog's header and footer divider colours took a preset swatch but not a colour from the picker. They
  * default to #00000000, and the picker keeps the alpha of the colour it opened on: dragging to a red wrote #e11d4800,

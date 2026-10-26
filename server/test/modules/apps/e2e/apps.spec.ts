@@ -310,9 +310,9 @@ describe('AppsController', () => {
         expect(application.name).toContain('My app');
         expect(application.id).toBe(application.slug);
 
-        // New apps are built in ToolJet UI 2.0 (the components panel and AI builds read this setting).
+        // New apps are built on Rocket 2.0 (the components panel and AI builds read this setting).
         const version = await AppVersion.findOneOrFail({ where: { appId } });
-        expect(version.globalSettings).toMatchObject({ componentLibrary: 'ui2' });
+        expect(version.globalSettings).toMatchObject({ componentLibrary: 'pack:shadcn' });
 
         // await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
       });

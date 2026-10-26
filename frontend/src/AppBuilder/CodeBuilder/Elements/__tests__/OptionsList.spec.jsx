@@ -1,4 +1,4 @@
-import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
+import '@/test/consoleGuard';
 /**
  * The UI 2.0 options field as a list (type optionsList): add, remove, drag to reorder, and per option its label,
  * value (with its type), disabled and default. Every change writes the whole list into the same options value as
