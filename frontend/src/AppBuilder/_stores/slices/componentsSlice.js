@@ -29,7 +29,11 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection, computeAutoMobileLayout } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  ROW_SCOPED_WIDGET_TYPES,
+  NESTING_LEVEL_LIMITS,
+  PROGRESS_LABEL_KEYS,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   calculateInputCanvasHeight,
   resolveInputCanvasAlignment,
@@ -3515,20 +3519,15 @@ export const createComponentsSlice = (set, get) => ({
         ? initialComponentName
         : computeComponentName(componentDefinition.component.component, currentComponents);
 
+      // A freshly dropped progress widget seeds its label with its own value binding. Only an empty
+      // label is seeded: paste, duplicate, undo and multiplayer adds carry the author's label through.
       const getComponentProperties = (componentDefinition) => {
         const properties = componentDefinition.component.definition?.properties;
-        const componentType = componentDefinition.component.component;
-        if (componentType === 'CircularProgressBar') {
+        const labelKey = PROGRESS_LABEL_KEYS[componentDefinition.component.component];
+        if (labelKey && !properties?.[labelKey]?.value) {
           return {
             ...properties,
-            text: {
-              value: `{{components.${componentDefinition.id}.value}}%`,
-            },
-          };
-        } else if (componentType === 'ProgressBar') {
-          return {
-            ...properties,
-            label: {
+            [labelKey]: {
               value: `{{components.${componentDefinition.id}.value}}%`,
             },
           };

@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
-import { NO_OF_GRIDS } from './appCanvasConstants';
+import { NO_OF_GRIDS, PROGRESS_LABEL_KEYS } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
 
@@ -358,6 +358,12 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     const pastedColumns = component.component?.definition?.properties?.columns;
     if (componentData?.component === 'Table' && pastedColumns) {
       componentData.definition.properties.columns = deepClone(pastedColumns);
+    }
+    // A progress label still holding the source's own seeded binding follows the copy; any other label is kept.
+    const labelKey = PROGRESS_LABEL_KEYS[componentData?.component];
+    const pastedLabel = labelKey && componentData.definition?.properties?.[labelKey];
+    if (pastedLabel?.value === `{{components.${component.id}.value}}%`) {
+      pastedLabel.value = `{{components.${newComponentId}.value}}%`;
     }
     if (targetParentId && !componentData.parent) {
       isChild = component.component.parent;

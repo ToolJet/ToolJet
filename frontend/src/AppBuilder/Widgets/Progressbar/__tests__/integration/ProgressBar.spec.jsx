@@ -14,6 +14,7 @@ import {
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { pasteComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
 // eslint-disable-next-line import/no-relative-packages
 import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
 
@@ -77,6 +78,32 @@ const fill = (container, handle = HANDLE) => {
 const isLoadingStrip = (container, handle = HANDLE) =>
   Boolean(fill(container, handle)?.style?.animation?.includes('progressLoading'));
 const percentOf = (computedHeight, n) => `${(computedHeight * n) / 100}px`;
+
+const pageComponents = () => store().getCurrentPageComponents(MODULE_ID);
+const storedLabel = (componentId) => pageComponents()[componentId]?.component.definition.properties.label?.value;
+
+// Mirrors copyComponents' clipboard payload for one selected widget and pastes it through the real paste path.
+async function pasteCopyOf(componentId) {
+  const source = pageComponents()[componentId];
+  const before = new Set(Object.keys(pageComponents()));
+  await widget.session.store.act(() =>
+    pasteComponents(undefined, {
+      newComponents: [
+        {
+          id: componentId,
+          component: source.component,
+          layouts: source.layouts,
+          parent: source.component.parent,
+          events: [],
+        },
+      ],
+      isCut: false,
+      isCloning: false,
+      pageId: store().getCurrentPageId(MODULE_ID),
+    })
+  );
+  return Object.keys(pageComponents()).find((id) => !before.has(id));
+}
 
 async function setProperty(property, value, componentId = ID) {
   await widget.session.store.act(() => widget.setComponentProperty(componentId, property, value, 'properties'));
@@ -345,6 +372,50 @@ describe('ProgressBar widget', () => {
     expect(created.component.definition.properties.label).toEqual({
       value: '{{components.fresh-bar.value}}%',
     });
+  });
+
+  test('[ProgressBar-REG-002] a custom label survives paste and undoing a delete', async () => {
+    // Break this catches: re-seeding the value binding on every add path, which wipes the author's label
+    // whenever the widget is duplicated, pasted or restored by undo.
+    widget.render({ properties: { labelType: binding('custom'), label: binding('Uploading…') } });
+    await waitFor(() => expect(storedLabel(ID)).toBe('Uploading…'));
+
+    const copyId = await pasteCopyOf(ID);
+    expect(copyId).toBeTruthy();
+    expect(storedLabel(copyId)).toBe('Uploading…');
+
+    await widget.session.store.act(() => store().deleteComponents([ID], MODULE_ID, { saveAfterAction: false }));
+    expect(pageComponents()[ID]).toBeUndefined();
+    await widget.session.store.act(() => store().handleUndo());
+    await waitFor(() => expect(pageComponents()[ID]).toBeDefined());
+    expect(storedLabel(ID)).toBe('Uploading…');
+  });
+
+  test('[ProgressBar-REG-003] an untouched seeded label follows the pasted copy (D-07)', async () => {
+    // Break this catches: a copy whose label still reads the source widget's value, so a duplicated
+    // bar shows the original's percentage.
+    widget.render({ properties: { labelType: binding('custom'), label: binding(`{{components.${ID}.value}}%`) } });
+    await waitFor(() => expect(storedLabel(ID)).toBe(`{{components.${ID}.value}}%`));
+
+    const copyId = await pasteCopyOf(ID);
+    expect(storedLabel(copyId)).toBe(`{{components.${copyId}.value}}%`);
+    expect(storedLabel(ID)).toBe(`{{components.${ID}.value}}%`);
+  });
+
+  test('[ProgressBar-REG-004] setValue with non-numeric text sets 0 instead of NaN (D-08)', async () => {
+    // Break this catches: text reaching the clamp as NaN, which shows "NaN%" while the fill keeps its old width.
+    const { container } = widget.render();
+    await widget.act('setValue', 40);
+    expect(fill(container)).toHaveStyle({ width: '40%' });
+
+    await widget.act('setValue', 'abc');
+    expect(widget.exposed().value).toBe(0);
+    expect(labelNode()).toHaveTextContent('0%');
+    expect(fill(container)).toHaveStyle({ width: '0%' });
+
+    await widget.act('setValue', '70');
+    expect(widget.exposed().value).toBe(70);
+    expect(fill(container)).toHaveStyle({ width: '70%' });
   });
 
   test('[ProgressBar-ISO-001] instances isolate state and styles', async () => {
