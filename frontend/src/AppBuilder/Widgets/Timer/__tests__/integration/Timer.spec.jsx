@@ -28,8 +28,7 @@ import {
 const ID = 'tm1';
 const NAME = 'timer1';
 
-// Baseline is `timer.js`'s own `definition`, copied rather than invented —
-// including the fact that `visibility`/`disabledState` live under STYLES.
+// Baseline is `timer.js`'s own `definition`, copied rather than invented.
 const widget = createWidgetHarness({
   componentType: 'Timer',
   handle: NAME,
@@ -37,10 +36,8 @@ const widget = createWidgetHarness({
   defaultProperties: {
     value: binding('00:00:00:000'),
     type: binding('countUp'),
-    collapseWhenHidden: binding('{{false}}'),
-  },
-  defaultStyles: {
     visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
     disabledState: binding('{{false}}'),
   },
   capabilities: { time: { at: '2026-01-01T00:00:00.000Z' } },
@@ -271,7 +268,7 @@ describe('Timer: states', () => {
 
   test('[Timer-STATE-001] Visibility off hides the Timer', async () => {
     // Break this catches: a "hidden" Timer still on screen.
-    await mount({ styles: { visibility: binding('{{false}}'), disabledState: binding('{{false}}') } });
+    await mount({ properties: { visibility: binding('{{false}}') } });
 
     expect(card()).toHaveStyle({ display: 'none' });
   });
@@ -290,7 +287,7 @@ describe('Timer: states', () => {
   test('[Timer-STATE-003] Disable marks every control disabled', async () => {
     // Break this catches: dropping the disabled marker, so a locked Timer looks
     // interactive. Whether the controls then refuse input is Timer-BUG-004.
-    await mount({ styles: { visibility: binding('{{true}}'), disabledState: binding('{{true}}') } });
+    await mount({ properties: { disabledState: binding('{{true}}') } });
 
     expect(control('Start').className).toContain('disabled');
     expect(control('Reset').className).toContain('disabled');
@@ -319,8 +316,6 @@ const legacyWidget = createWidgetHarness({
   defaultProperties: {
     value: binding('00:00:00:000'),
     type: binding('countUp'),
-  },
-  defaultStyles: {
     visibility: binding('{{true}}'),
     disabledState: binding('{{false}}'),
   },
@@ -329,19 +324,159 @@ const legacyWidget = createWidgetHarness({
   widgetWidth: 300,
 });
 
-describe('Timer: known unfixed bugs', () => {
+describe('Timer: the exposed value', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
-  // BUG (unfixed, contract D-01): the mount effect publishes `value` as `{}`
-  // (Timer.jsx:41-43) instead of the parsed default, so every binding against
-  // the widget's ONLY exposed variable reads `undefined` until the user presses
-  // a control. Fix: publish `getTimeObj(getDefaultValue)` on mount.
-  test.failing('[Timer-BUG-001] `value` holds the Timer s default on load', async () => {
+  test('[Timer-BUG-001] `value` holds the Timer s default on load', async () => {
+    // Break this catches: publishing `{}` on mount, so every binding to the
+    // widget's only exposed variable reads undefined until a control is pressed.
     await mount({ properties: { value: binding('00:00:02:000') } });
 
-    expect(exposed('value')).toEqual({ hour: 0, minute: 0, second: 2, mSecond: 0 });
+    await waitFor(() => expect(exposed('value')).toEqual({ hour: 0, minute: 0, second: 2, mSecond: 0 }));
   });
+
+  test('[Timer-BUG-006] `value` follows a changed Default value or Timer type', async () => {
+    // Break this catches: the reset-on-change path updating the clock but not
+    // the exposed value, so an app keeps reading the old default.
+    await mount({ properties: { value: binding('00:00:02:000') } });
+
+    act(() => {
+      widget.setComponentProperty(ID, 'value', '00:00:05:000', 'properties');
+    });
+    await waitFor(() => expect(display()).toBe('00:00:05:000'));
+    expect(exposed('value')).toEqual({ hour: 0, minute: 0, second: 5, mSecond: 0 });
+
+    fireEvent.click(control('Start'));
+    await tick(1005);
+    act(() => {
+      widget.setComponentProperty(ID, 'type', 'countDown', 'properties');
+    });
+    await waitFor(() => expect(display()).toBe('00:00:05:000'));
+    expect(exposed('value')).toEqual({ hour: 0, minute: 0, second: 5, mSecond: 0 });
+  });
+
+  test('[Timer-BUG-006] a disabled Timer s `value` follows a changed Default value', async () => {
+    // Break this catches: gating the publish on the disabled state.
+    await mount({
+      properties: { value: binding('00:01:00:000'), disabledState: binding('{{true}}') },
+    });
+
+    act(() => {
+      widget.setComponentProperty(ID, 'value', '00:10:00:000', 'properties');
+    });
+
+    await waitFor(() => expect(display()).toBe('00:10:00:000'));
+    expect(exposed('value')).toEqual({ hour: 0, minute: 10, second: 0, mSecond: 0 });
+  });
+
+  test('[Timer-BUG-007] `value` is zero when a count-down finishes', async () => {
+    // Break this catches: finishing a count-down without republishing, so the
+    // app still reads the time the count-down started from.
+    await mount({ properties: { type: binding('countDown'), value: binding('00:00:01:000') } });
+    fireEvent.click(control('Start'));
+
+    await tick(1100);
+
+    await waitFor(() => expect(controls()).toEqual(['Start', 'Reset']));
+    expect(exposed('value')).toEqual({ hour: 0, minute: 0, second: 0, mSecond: 0 });
+  });
+});
+
+describe('Timer: Visibility and Disable are properties', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Timer-BUG-008] the registered definition lists Visibility and Disable under properties', () => {
+    // Break this catches: the Inspector showing the toggles in the Styles tab.
+    const { timerConfig } = require('@tooljet/widget-definitions/src/widgets/timer');
+    expect(Object.keys(timerConfig.properties)).toEqual(expect.arrayContaining(['visibility', 'disabledState']));
+    expect(timerConfig.properties.visibility.section).toBe('additionalActions');
+    expect(timerConfig.properties.disabledState.section).toBe('additionalActions');
+    expect(timerConfig.styles.visibility).toBeUndefined();
+    expect(timerConfig.styles.disabledState).toBeUndefined();
+    expect(timerConfig.definition.properties.visibility).toEqual({ value: '{{true}}' });
+    expect(timerConfig.definition.properties.disabledState).toEqual({ value: '{{false}}' });
+  });
+});
+
+// No fake timers here: they hang Radix/user-event hover (see RenderWidgetTooltip.spec.jsx).
+const tooltipWidget = createWidgetHarness({
+  componentType: 'Timer',
+  handle: NAME,
+  id: ID,
+  defaultProperties: {
+    value: binding('00:00:00:000'),
+    type: binding('countUp'),
+    visibility: binding('{{true}}'),
+    disabledState: binding('{{false}}'),
+    tooltipFormat: binding('plainText'),
+    tooltip: binding(''),
+  },
+  widgetHeight: 128,
+  widgetWidth: 300,
+});
+
+async function hoverTimer() {
+  await waitFor(() => expect(card()).toBeTruthy());
+  await tooltipWidget.session.user.hover(document.querySelector(`[data-cy="draggable-widget-${NAME}"]`));
+}
+
+describe('Timer: tooltip', () => {
+  beforeEach(tooltipWidget.setup);
+  afterEach(tooltipWidget.teardown);
+
+  test('[Timer-BUG-009] a Markdown tooltip is rendered as Markdown', async () => {
+    // Break this catches: Timer's tooltip still read from the legacy General
+    // field, so the Properties tooltip and its format never reach the hover.
+    tooltipWidget.render({
+      properties: { tooltip: binding('**Bold** and _italic_'), tooltipFormat: binding('markdown') },
+    });
+
+    await hoverTimer();
+
+    const markdown = await waitFor(() => {
+      const found = document.querySelector('.widget-tooltip-markdown');
+      expect(found).not.toBeNull();
+      return found;
+    });
+    expect(markdown).toHaveTextContent('**Bold** and _italic_');
+  });
+
+  test('[Timer-BUG-009] a Plain text tooltip shows the text exactly as typed', async () => {
+    // Break this catches: a migrated tooltip defaulting to a rich format and
+    // changing how old text looks.
+    tooltipWidget.render({ properties: { tooltip: binding('Price * 2'), tooltipFormat: binding('plainText') } });
+
+    await hoverTimer();
+
+    const tip = await waitFor(() => {
+      const found = document.querySelector('[data-cy="widget-tooltip"]');
+      expect(found).not.toBeNull();
+      return found;
+    });
+    expect(tip).toHaveTextContent('Price * 2');
+    expect(document.querySelector('.widget-tooltip-markdown')).toBeNull();
+  });
+
+  test('[Timer-BUG-009] the registered definition has the tooltip format pair under properties', () => {
+    // Break this catches: the Inspector keeping the legacy General tooltip with
+    // no format selector, or new Timers starting without a format.
+    const { timerConfig } = require('@tooljet/widget-definitions/src/widgets/timer');
+    expect(timerConfig.properties.tooltipFormat.options.map((option) => option.value)).toEqual([
+      'plainText',
+      'markdown',
+      'html',
+    ]);
+    expect(timerConfig.properties.tooltipFormat.section).toBe('additionalActions');
+    expect(timerConfig.properties.tooltip.section).toBe('additionalActions');
+    expect(timerConfig.definition.properties.tooltipFormat).toEqual({ value: 'plainText' });
+  });
+});
+
+describe('Timer: known unfixed bugs', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
 
   // BUG (unfixed, contract D-01): `value` is written only at start/pause/reset,
   // and the start write uses the PRE-start time, so while the clock runs the
@@ -376,7 +511,7 @@ describe('Timer: known unfixed bugs', () => {
   // disabled.
   test.failing('[Timer-BUG-004] a disabled Timer does not start when its control is clicked', async () => {
     await mount({
-      styles: { visibility: binding('{{true}}'), disabledState: binding('{{true}}') },
+      properties: { disabledState: binding('{{true}}') },
       events: ALL_EVENTS,
     });
 

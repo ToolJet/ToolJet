@@ -369,6 +369,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextInput',
   'TimePicker',
   'Timeline',
+  'Timer',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -4672,6 +4673,26 @@ export function migrateProperties(
 
   if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
     properties.maxLimit = { value: '' };
+  }
+
+  // Timer: these keys moved into properties (server/data-migrations/
+  // 1792200000000-MoveTimerVisibilityDisabledTooltipToProperties.ts). Older exports carry them in the
+  // old place, with or without a version, so relocate before the unversioned early return.
+  if (['Timer'].includes(componentType)) {
+    for (const key of ['visibility', 'disabledState']) {
+      if (styles[key] !== undefined) {
+        if (properties[key] === undefined) {
+          properties[key] = styles[key];
+        }
+        delete styles[key];
+      }
+    }
+    if (general?.tooltip !== undefined) {
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general.tooltip;
+      }
+      delete general.tooltip;
+    }
   }
 
   if (TOOLTIP_FORMAT_COMPONENT_TYPES.includes(componentType) && properties.tooltipFormat === undefined) {
