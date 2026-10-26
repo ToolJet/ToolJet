@@ -14,6 +14,8 @@ describe.each([
     expect(formatFigure('150%')).toBe('150%');
     expect(formatFigure('75.8%', 'number')).toBe('75.8%');
     expect(formatFigure('75.8%', 'percent')).toBe('75.8%');
+    expect(formatFigure('57.1%', 'compact')).toBe('57.1%');
+    expect(formatFigure('57.1%', 'currency', 'USD')).toBe('57.1%');
     expect(formatFigure('12.345%', 'auto', 'USD', 2)).toBe('12.35%');
   });
   it('formats plain numbers as before and leaves text alone', () => {
