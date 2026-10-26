@@ -1430,6 +1430,10 @@ export class AppImportExportService {
         : convertSinglePageSchemaToMultiPageSchema(appParams);
       schemaUnifiedAppParams.name = appName;
 
+      if (cloning) {
+        await this.dedupeClonedDataSourceNames(manager, schemaUnifiedAppParams, user.organizationId);
+      }
+
       const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
       const isNormalizedAppDefinitionSchema = cloning
         ? true
@@ -1481,6 +1485,22 @@ export class AppImportExportService {
       });
       return { newApp, resourceMapping };
     }, manager);
+  }
+
+  // Copies cannot reuse a name (idx_unique_active_name_branch). Default sources are recognised by name; skip them.
+  private async dedupeClonedDataSourceNames(
+    manager: EntityManager,
+    appParams: { dataSources?: Pick<DataSource, 'name' | 'type'>[] },
+    organizationId: string
+  ): Promise<void> {
+    const dataSources = appParams?.dataSources;
+    if (!dataSources?.length) return;
+    for (const dataSource of dataSources) {
+      if (!dataSource?.name) continue;
+      if (DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName)) continue;
+      if (dataSource.type === DataSourceTypes.SAMPLE) continue;
+      dataSource.name = await this.dataSourcesUtilService.generateUniqueName(dataSource.name, organizationId, manager);
+    }
   }
 
   /**
