@@ -17,7 +17,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
     const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
 
-    // Minting is the only gated action: listing and deleting are scoped to the caller's own tokens in the service.
+    // Minting is the only gated action. List and delete are open: the service scopes them to own tokens, or the whole workspace for revokers.
     if (isAdmin || superAdmin || userPermission?.patCreate) {
       can(FEATURE_KEY.CREATE_PAT, UserPersonalAccessToken);
     }

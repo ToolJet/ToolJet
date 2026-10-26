@@ -18,7 +18,10 @@ Owns personal access tokens (PATs) and their exchange for workspace sessions.
 - Credential modules are never grantable; a PAT must not mint another PAT.
 - Minting (`POST /personal-access-tokens`) is gated by the `CREATE_PAT` feature ability: `isAdmin || superAdmin || patCreate`. The token binds to the request workspace (`user.organizationId`); a body `organizationId` is ignored.
 - The AI app builder's service token (`getOrCreateServicePat`) never passes through that gate and is hidden from the list.
-- `PAT_CREATE` audit is set in `createPat` via `AUDIT_LOGS_REQUEST_CONTEXT_KEY`. `PAT_REVOKE` is registered on `DELETE_PAT` but not emitted yet.
+- `PAT_CREATE` audit is set in `createPat` via `AUDIT_LOGS_REQUEST_CONTEXT_KEY`. `PAT_REVOKE` is set in `deletePat` the same way, with the token owner as `resourceData`.
+- Revoker = `isAdmin || isSuperAdmin || patRevoke` (from `@UserPermissionsDecorator()`, filled by `FeatureAbilityGuard`); the controller passes it as `canRevokeAny` to delete. A revoker deletes any non-service token of the request workspace; everyone else only their own.
+- Viewer = revoker or `patCreate`; the controller passes it as `canViewAll` to list, which then returns every non-service token of the request workspace. Users with neither list only their own. Deleting anything else is a 404, including another workspace's token and a service token that is not the caller's.
+- PAT page access = non-end-user and (admin, `patCreate`, `patRevoke` or owns a non-service workspace token). The ownership leg is `hasOwnPats` in `getPermissionDataToAuthorize` (`has_own_pats` on the session); it is only queried for users with neither flag who are not end-users, and is `false` otherwise.
 - Browser sessions and embed sessions (`patScope='app'`) are exempt from this workspace ceiling.
 
 ## Session kinds
