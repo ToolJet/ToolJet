@@ -112,7 +112,7 @@ You can track the workflow execution in two ways: by streaming live updates or b
   http://{TOOLJET_HOST}/api/v2/webhooks/workflows/:workflow_id/status/:execution_id
   ```
 
-To stop a run that's in progress, send a `DELETE` request to the terminate endpoint. The run stops before its next node starts. A run that has already completed or failed returns `409`.
+To stop a run that's in progress, send a `DELETE` request to the terminate endpoint. The run stops before its next node starts. A successful request returns `{"success": true, "previousState": "<state>"}`. Only send it for runs that are still in progress: the endpoint doesn't always check whether a run has already finished.
 ```
 http://{TOOLJET_HOST}/api/v2/webhooks/workflows/:workflow_id/execution/:execution_id/terminate
 ```
