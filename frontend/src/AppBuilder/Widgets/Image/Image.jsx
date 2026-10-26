@@ -361,7 +361,7 @@ export default function Image({
           style={{ width: '100%' }}
           placeholder={<Placeholder />}
           debounce={500}
-          scrollContainer={'.canvas-container'}
+          scrollContainer={'.canvas-content'}
         >
           {renderImageContainer()}
         </LazyLoad>
