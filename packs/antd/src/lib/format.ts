@@ -76,19 +76,24 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:?\d{2})?)?$/;
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
 // dayjs reads a date-only string in local time (new Date() would read it as UTC midnight, a day early west of UTC).
-const formatDate = (v: string) => {
+// A pattern (a column's dateFormat, dayjs tokens: DD/MM, MMM D, YYYY) is written as is; else the date reads in the
+// locale (the author's, else the currency's home one: pt-BR writes 25/10/2026), en-US by default.
+export const formatDate = (v: string, { pattern, locale, currency }: { pattern?: unknown; locale?: unknown; currency?: unknown } = {}) => {
   const d = dayjs(v);
   if (!d.isValid()) return v;
+  const written = typeof pattern === 'string' ? pattern.trim() : '';
+  if (written) return d.format(written);
+  const where = localeFor(currency, locale);
   return DATE_ONLY.test(v)
-    ? d.toDate().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-    : d.toDate().toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    ? d.toDate().toLocaleDateString(where, { year: 'numeric', month: 'short', day: 'numeric' })
+    : d.toDate().toLocaleString(where, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 };
 
 /** Fields whose numbers are identifiers, not quantities: shown as typed, without grouping. */
 export const isIdField = (field: string) => /(^id$|_id$|[a-z]Id$|^code$|_code$|year$|zip|phone|^no$|_no$|number$)/i.test(field);
 
 /** A cell value as text: numbers grouped, ISO dates shown as dates, booleans as Yes/No, objects as JSON. */
-export const formatCell = (v: unknown, format?: string, currency?: string, locale?: unknown): string => {
+export const formatCell = (v: unknown, format?: string, currency?: string, locale?: unknown, dateFormat?: unknown): string => {
   if (v === undefined || v === null || v === '') return '';
   if (format === 'text') return typeof v === 'object' ? JSON.stringify(v) : String(v);
   if (format) {
@@ -97,8 +102,9 @@ export const formatCell = (v: unknown, format?: string, currency?: string, local
   }
   if (format === 'boolean') return v === true || v === 'true' || v === 1 || v === '1' ? 'Yes' : v === false || v === 'false' || v === 0 || v === '0' ? 'No' : String(v);
   if (typeof v === 'string' && ISO_DATE.test(v) && (format === 'date' || format === 'datetime' || !format)) {
-    if (format === 'datetime' && DATE_ONLY.test(v)) return formatDate(v);
-    return format === 'date' ? formatDate(v.slice(0, 10)) : formatDate(v);
+    const how = { pattern: dateFormat, locale, currency };
+    if (format === 'datetime' && DATE_ONLY.test(v)) return formatDate(v, how);
+    return format === 'date' ? formatDate(v.slice(0, 10), how) : formatDate(v, how);
   }
   if (typeof v === 'number') return formatNumber(v, 'auto', currency || 'USD', null, locale);
   if (typeof v === 'boolean') return v ? 'Yes' : 'No';

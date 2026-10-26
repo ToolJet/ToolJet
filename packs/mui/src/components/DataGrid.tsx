@@ -14,6 +14,8 @@ import { LOCALE_HINT } from '../lib/locale';
 import { SAMPLE } from '../lib/samples';
 import { themeInk } from '../lib/ink';
 import { chipTone } from '../lib/statusTone';
+import dayjs from 'dayjs';
+import { localeFor } from '../lib/locale';
 
 const ID = '__tjRowId';
 const ROW_HEIGHT = { compact: 36, standard: 52, comfortable: 67 };
@@ -37,7 +39,7 @@ const textOf = (v: unknown) => {
 };
 const humanize = (k: string) => k.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 
-type Column = GridColDef & { format?: string; currency?: string; colors?: Record<string, string> };
+type Column = GridColDef & { format?: string; currency?: string; colors?: Record<string, string>; dateFormat?: string };
 
 // MUI's column shape ({ field, headerName, type, width, flex, align, sortable }); also { key, label }, { dataIndex,
 // title } and plain field names. A column may add format (currency, percent, compact, chip, html) with currency and,
@@ -101,6 +103,9 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
       const fmt = ['number', 'currency', 'percent', 'compact', 'chip', 'html'].includes(head.trim().toLowerCase()) ? head.trim().toLowerCase() : '';
       col.format = kind === 'html' ? 'html' : fmt || UI2_FORMATS[kind] || undefined;
       col.currency = str(r.currency) || (code && /^[a-z]{3}$/i.test(code.trim()) ? code.trim().toUpperCase() : '') || undefined;
+      // A date column's pattern: UI 2.0's dateFormat, or a date pattern given as the format ('D MMM YYYY').
+      const pattern = str(r.dateFormat).trim() || (!fmt && /[DMY]/.test(str(r.format)) ? str(r.format).trim() : '');
+      if (pattern) col.dateFormat = pattern;
       const colors = [r.colors, r.badgeColors, r.tagColors].find((m) => m && typeof m === 'object' && !Array.isArray(m));
       if (colors) col.colors = colors as Record<string, string>;
       return col;
@@ -128,7 +133,20 @@ const toGridColumn = (c: Column, rows: Row[], locale = ''): GridColDef => {
   }
   const isoOrTime = (v: unknown) => typeof v === 'number' || v instanceof Date || /^\d{4}-\d{2}-\d{2}/.test(String(v));
   if ((col.type === 'date' || col.type === 'dateTime') && filled.some((v) => !isoOrTime(v) || Number.isNaN(new Date(String(v)).getTime()))) delete col.type;
-  if (col.type === 'date' || col.type === 'dateTime') col.valueGetter = (v: unknown) => (v ? new Date(String(v)) : null);
+  if (col.type === 'date' || col.type === 'dateTime') {
+    col.valueGetter = (v: unknown) => (v ? new Date(String(v)) : null);
+    // The column's own pattern (UI 2.0's dateFormat, dayjs tokens), else the locale's date (MUI wrote the viewer's).
+    const pattern = str((c as { dateFormat?: unknown }).dateFormat).trim();
+    const where = localeFor(currency, locale);
+    const withTime = col.type === 'dateTime';
+    col.valueFormatter = (v: unknown) => {
+      if (!(v instanceof Date) || Number.isNaN(v.getTime())) return '';
+      if (pattern) return dayjs(v).format(pattern);
+      return withTime
+        ? v.toLocaleString(where, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+        : v.toLocaleDateString(where, { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+  }
   if (col.type === 'number') {
     col.valueGetter = (v: unknown) => toNumber(v);
     if (format) col.valueFormatter = (v: unknown) => (v === null || v === undefined ? '' : formatCell(v, format, currency, locale));
