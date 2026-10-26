@@ -188,7 +188,10 @@ export const verifyEnvironmentAccess = (environments, options = {}) => {
   verifyPreviewURLAccess(environments, opts);
 };
 const assertRestrictedTooltip = (selector, env) => {
-  cy.get(selector).should("be.disabled").trigger("mouseover", { force: true });
+  cy.get(selector)
+    .should("have.class", "is-disabled")
+    .and("have.attr", "aria-disabled", "true")
+    .trigger("mouseover", { force: true });
   cy.get("div.tooltip-inner")
     .should("be.visible")
     .and("contain", `Access to ${env} environment is restricted. Contact admin to know more.`);
@@ -208,21 +211,26 @@ export const verifyAppBuilderAccess = (envNames, { workspaceName, canEdit, appId
   cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
   envNames.forEach((envName) => {
     const envSelector = `[data-cy="${envName.name}-environment-name"]`;
-    if (envName.hasAccess) cy.get(envSelector).should("be.enabled");
+    if (envName.hasAccess)
+      cy.get(envSelector).should("not.have.class", "is-disabled");
     else assertRestrictedTooltip(envSelector, envName.name);
   });
 }
 
-const assertEnvRestrictedTooltip = (envButton, env) => {
-  envButton.find(multiEnvSelector.envNameDropdown)
-    .should("have.css", "cursor", "not-allowed")
-    .trigger("mouseover", { force: true });
+const assertEnvRestrictedTooltip = (env) => {
+  const envButton = () =>
+    cy.contains('[data-cy="env-name-list"] button', new RegExp(`^${env}$`, "i"));
+
+  envButton()
+    .find(multiEnvSelector.envNameDropdown)
+    .should("have.css", "cursor", "not-allowed");
+  envButton().realHover();
 
   cy.get("div.tooltip-inner")
     .should("be.visible")
     .and("contain", `Access to ${env} environment is restricted. Contact admin to know more.`);
 
-  envButton.trigger("mouseout", { force: true });
+  cy.get(multiEnvSelector.envContainer).realHover();
   cy.get("div.tooltip-inner").should("not.exist");
 };
 
@@ -260,16 +268,16 @@ export const verifyPreviewAccess = (
     openPreviewSettingsIfClosed();
     openEnvDropdown();
 
-    const envButton = cy.contains(
-      '[data-cy="env-name-list"] button',
-      new RegExp(`^${envName.name}$`, "i")
-    );
+    const envButtonRegex = new RegExp(`^${envName.name}$`, "i");
 
     if (envName.hasAccess) {
-      envButton.should("be.enabled").click();
+      cy.contains('[data-cy="env-name-list"] button', envButtonRegex).should(
+        "be.enabled"
+      );
+      cy.contains('[data-cy="env-name-list"] button', envButtonRegex).click();
       cy.get(commonWidgetSelector.draggableWidget(componentName)).should("contain", envName.name);
     } else {
-      assertEnvRestrictedTooltip(envButton, envName.name);
+      assertEnvRestrictedTooltip(envName.name);
     }
   });
 };
