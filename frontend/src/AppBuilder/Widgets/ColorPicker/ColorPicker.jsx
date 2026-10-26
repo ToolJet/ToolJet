@@ -68,6 +68,7 @@ export const ColorPicker = (props) => {
   const labelRef = useRef(null);
 
   // ===== COMPUTED VALUES =====
+  const isInactive = exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading;
   const displayedColor =
     exposedVariablesTemporaryState.colorFormat === 'rgb'
       ? exposedVariablesTemporaryState.selectedColorRGB
@@ -114,6 +115,10 @@ export const ColorPicker = (props) => {
   useFormClear(clearColorValue);
 
   // ===== EFFECTS =====
+  useEffect(() => {
+    if (isInactive) setShowColorPicker(false);
+  }, [isInactive]);
+
   useBatchedUpdateEffectArray([
     {
       dep: loadingState,
@@ -347,6 +352,7 @@ export const ColorPicker = (props) => {
           <Popover.Trigger asChild>
             <button
               type="button"
+              disabled={isInactive}
               className="color-picker-button"
               style={buttonStyles}
               data-cy={`${dataCy}-button`}
