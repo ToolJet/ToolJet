@@ -63,21 +63,21 @@ const zoomOutButton = () => document.querySelector('button[aria-label="Zoom out"
 const exposed = (key) => widget.exposed()?.[key];
 
 // A top-level (parentId === null) Image mounts a real react-lazyload
-// <LazyLoad scrollContainer=".canvas-container"> (Image.jsx:356-366); the
+// <LazyLoad scrollContainer=".canvas-content"> (Image.jsx:356-366); the
 // library resolves that selector via a plain `document.querySelector` (not
 // ancestor-scoped — react-lazyload/lib/index.js:262), so any element with
 // this class anywhere in the document satisfies it. Production always mounts
-// inside AppCanvas's own `.canvas-container`; this harness has no AppCanvas,
+// inside AppCanvas's own `.canvas-content`; this harness has no AppCanvas,
 // so it provides the same element directly.
 function setup() {
   const el = document.createElement('div');
-  el.className = 'canvas-container';
+  el.className = 'canvas-content';
   document.body.appendChild(el);
   widget.setup();
 }
 function teardown() {
   widget.teardown();
-  document.querySelector('.canvas-container')?.remove();
+  document.querySelector('.canvas-content')?.remove();
 }
 
 describe('Image: initial rendering and source resolution', () => {
