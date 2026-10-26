@@ -18,7 +18,7 @@ export const PatSettingsRoute = ({ children }) => {
       return navigate({ pathname: '/', state: { from: location } }, { replace: true });
     }
     setLoading(false);
-  }, [isValidSession, session?.admin, session?.super_admin, session?.user_permissions]);
+  }, [isValidSession, session?.admin, session?.super_admin, session?.user_permissions, session?.has_own_pats]);
 
   return <RouteLoader isLoading={isLoading}>{children}</RouteLoader>;
 };

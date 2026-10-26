@@ -188,6 +188,7 @@ export class SessionUtilService {
     role: GroupPermissions;
     groupPermissions: GroupPermissions[];
     userPermissions: UserPermissions;
+    hasOwnPats?: boolean;
   }> {
     const groupPermissions = await this.getAllGroupsOfUser(user, manager);
     const userPermissions = await this.abilityService.resourceActionsPermission(

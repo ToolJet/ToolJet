@@ -15,7 +15,7 @@ export class PersonalAccessTokensService implements IPersonalAccessTokensService
     throw new NotImplementedException();
   }
 
-  async listPats(userId: string, organizationId: string, canRevokeAny: boolean): Promise<PatView[]> {
+  async listPats(userId: string, organizationId: string, canViewAll: boolean): Promise<PatView[]> {
     throw new NotImplementedException();
   }
 

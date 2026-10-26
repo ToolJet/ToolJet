@@ -44,9 +44,9 @@ export interface ServicePatOptions {
 
 export interface IPersonalAccessTokensService {
   createPat(user: User, organizationId: string, name: string, expiresAt: Date): Promise<PatView & { token: string }>;
-  /* canRevokeAny: the caller is an admin, a super-admin or holds patRevoke. It widens the list from
-     the caller's own tokens to every non-service token in the workspace. */
-  listPats(userId: string, organizationId: string, canRevokeAny: boolean): Promise<PatView[]>;
+  /* canViewAll: the caller is an admin, a super-admin or holds patCreate or patRevoke. It widens the
+     list from the caller's own tokens to every non-service token in the workspace. */
+  listPats(userId: string, organizationId: string, canViewAll: boolean): Promise<PatView[]>;
   /* Deletes in the REQUEST workspace only. Anything the caller may not delete is a 404, never a 403. */
   deletePat(userId: string, organizationId: string, id: string, canRevokeAny: boolean): Promise<void>;
   createSessionFromPat(pat: UserPersonalAccessToken, response: Response, appId?: string): Promise<PatSession>;
