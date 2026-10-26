@@ -25,7 +25,7 @@ describe('paste preserves an edited array-valued options property', () => {
     );
   });
 
-  test('a RadioButtonV2 edited down to 2 options still has 2 options after paste', async () => {
+  test('[RadioButtonV2-PASTE-001] a RadioButtonV2 edited down to 2 options still has 2 options after paste', async () => {
     const editedOptions = [
       { label: 'option1', value: '1', disable: { value: false }, visible: { value: true }, default: { value: false } },
       { label: 'option2', value: '2', disable: { value: false }, visible: { value: true }, default: { value: true } },
