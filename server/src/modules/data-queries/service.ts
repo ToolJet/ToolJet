@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -122,7 +123,7 @@ export class DataQueriesService implements IDataQueriesService {
     }
   }
 
-  async getAll(user: User, app: App, versionId: string, mode?: string) {
+  async getAll(user: User, app: App, versionId: string, mode?: string, viewAs?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId, mode);
     return { data_queries: serializeDataQueries(queries) };
   }
@@ -306,7 +307,8 @@ export class DataQueriesService implements IDataQueriesService {
     dataSource: DataSource,
     response: Response,
     mode?: string,
-    app?: App
+    app?: App,
+    viewAs?: string
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
@@ -323,7 +325,21 @@ export class DataQueriesService implements IDataQueriesService {
       dataQuery['options'] = options;
     }
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
+    const opts = await this.executionOptionsFor(user, app, mode, viewAs);
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app, opts);
+  }
+
+  /**
+   * Hook for per-run execution options. CE enforces no query permissions, so "View as" (viewAs)
+   * has nothing to change; EE resolves it into a permission subject.
+   */
+  protected async executionOptionsFor(
+    user: User,
+    app?: App,
+    mode?: string,
+    viewAs?: string
+  ): Promise<DataQueryExecutionOptions | undefined> {
+    return undefined;
   }
 
   async runQueryForApp(
@@ -354,7 +370,8 @@ export class DataQueriesService implements IDataQueriesService {
     response: Response,
     environmentId?: string,
     mode?: string,
-    app?: App
+    app?: App,
+    opts?: DataQueryExecutionOptions
   ): Promise<object> {
     let result = {};
 
@@ -367,7 +384,7 @@ export class DataQueriesService implements IDataQueriesService {
         environmentId,
         mode,
         app,
-        undefined // opts parameter
+        opts
       );
     } catch (error) {
       if (error.constructor.name === 'QueryError') {

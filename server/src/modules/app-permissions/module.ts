@@ -17,11 +17,8 @@ export class AppPermissionsModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { AppPermissionsController, AppPermissionsService, AppPermissionsUtilService } = await this.getProviders(
-      configs,
-      'app-permissions',
-      ['controller', 'service', 'util.service']
-    );
+    const { AppPermissionsController, AppPermissionsService, AppPermissionsUtilService, ViewAsService } =
+      await this.getProviders(configs, 'app-permissions', ['controller', 'service', 'util.service', 'view-as.service']);
 
     return this.cacheModule(cacheKey, {
       module: AppPermissionsModule,
@@ -29,6 +26,7 @@ export class AppPermissionsModule extends SubModule {
       providers: [
         AppPermissionsService,
         AppPermissionsUtilService,
+        ViewAsService,
         AppsRepository,
         RolesRepository,
         PageUsersRepository,
@@ -40,7 +38,7 @@ export class AppPermissionsModule extends SubModule {
         FeatureAbilityFactory,
         GroupPermissionsRepository,
       ],
-      exports: [AppPermissionsUtilService],
+      exports: [AppPermissionsUtilService, ViewAsService],
     });
   }
 }

@@ -1,4 +1,5 @@
-import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res, Query } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res, Query, Headers } from '@nestjs/common';
+import { VIEW_AS_HEADER } from '@modules/app-permissions/constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
 import { DataQueriesService } from './service';
@@ -41,9 +42,10 @@ export class DataQueriesController implements IDataQueriesController {
     @User() user: UserEntity,
     @AppDecorator() app: App,
     @Param('versionId') versionId: string,
-    @Query('mode') mode?: string
+    @Query('mode') mode?: string,
+    @Headers(VIEW_AS_HEADER) viewAs?: string
   ) {
-    return this.dataQueriesService.getAll(user, app, versionId, mode);
+    return this.dataQueriesService.getAll(user, app, versionId, mode, viewAs);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -130,7 +132,8 @@ export class DataQueriesController implements IDataQueriesController {
     @Ability() ability: AppAbility,
     @DataSource() dataSource: DataSourceEntity,
     @Res({ passthrough: true }) response: Response,
-    @Query('mode') mode?: string
+    @Query('mode') mode?: string,
+    @Headers(VIEW_AS_HEADER) viewAs?: string
   ) {
     return this.dataQueriesService.runQueryOnBuilder(
       user,
@@ -141,7 +144,8 @@ export class DataQueriesController implements IDataQueriesController {
       dataSource,
       response,
       mode,
-      app
+      app,
+      viewAs
     );
   }
 

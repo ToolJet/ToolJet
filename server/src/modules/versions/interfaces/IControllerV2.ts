@@ -11,7 +11,8 @@ export interface IVersionControllerV2 {
     versionId: string,
     mode: string,
     req: Request,
-    res: Response
+    res: Response,
+    viewAs?: string
   ): Promise<any>;
   getModuleVersionByStableIds(
     user: UserEntity,

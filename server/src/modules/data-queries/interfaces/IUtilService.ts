@@ -3,6 +3,7 @@ import { User } from '@entities/user.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { App } from '@entities/app.entity';
 import * as ivm from 'isolated-vm';
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 
 export interface WorkflowExecutionOptions {
   bundleContent?: string | null;
@@ -12,6 +13,8 @@ export interface WorkflowExecutionOptions {
 
 export interface DataQueryExecutionOptions {
   workflow?: WorkflowExecutionOptions;
+  // Who query permissions are checked for; the requester when absent. See ViewAsService.
+  permissionSubject?: PermissionSubject;
 }
 
 export interface IDataQueriesUtilService {

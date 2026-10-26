@@ -224,7 +224,8 @@ export class VersionService implements IVersionService {
     return this.licenseTermsService.getLicenseTerms(VIEWER_LICENSE_FIELDS, organizationId);
   }
 
-  async getVersion(app: App, user: User, mode?: string): Promise<any> {
+  // CE enforces no page, component or query permissions, so viewAs has nothing to change.
+  async getVersion(app: App, user: User, mode?: string, viewAs?: string): Promise<any> {
     const prepareResponse = async (app: App, versionId: string) => {
       let appVersion,
         updatedVersionId = versionId;

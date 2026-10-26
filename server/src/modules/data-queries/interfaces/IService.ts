@@ -29,7 +29,7 @@ export interface QueryDeleteContext {
 }
 
 export interface IDataQueriesService {
-  getAll(user: User, app: App, versionId: string, mode?: string): Promise<{ data_queries: object[] }>;
+  getAll(user: User, app: App, versionId: string, mode?: string, viewAs?: string): Promise<{ data_queries: object[] }>;
 
   create(user: User, dataSource: DataSource, dataQueryDto: CreateDataQueryDto): Promise<object>;
 
@@ -47,7 +47,9 @@ export interface IDataQueriesService {
     ability: object,
     dataSource: DataSource,
     response: Response,
-    mode?: string
+    mode?: string,
+    app?: App,
+    viewAs?: string
   ): Promise<object>;
 
   runQueryForApp(

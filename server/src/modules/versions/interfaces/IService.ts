@@ -30,7 +30,8 @@ export interface IVersionService {
   deleteVersion(app: App, user: User): Promise<void>;
 
   getViewerLicenseTerms(organizationId: string): Promise<unknown>;
-  getVersion(app: App, user: User, mode?: string): Promise<any>;
+  // viewAs: raw VIEW_AS_HEADER value, honored by EE in view mode only.
+  getVersion(app: App, user: User, mode?: string, viewAs?: string): Promise<any>;
 
   getVersionByStableIds(
     coRelationId: string,

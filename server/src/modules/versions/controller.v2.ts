@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Put, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -19,6 +19,7 @@ import { IVersionControllerV2 } from './interfaces/IControllerV2';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { getConnectionInstance } from '@helpers/database.helper';
 import { getAppDataRevision } from '@modules/apps/app-data-revision';
+import { VIEW_AS_HEADER } from '@modules/app-permissions/constants';
 
 // ETag for the released version: changes with the version row (e.g. promote) and everything the
 // released-app cache key covers (getAppDataRevision). Other versions aren't tracked by the change
@@ -74,8 +75,16 @@ export class VersionControllerV2 implements IVersionControllerV2 {
     @Param('versionId') versionId: string,
     @Query('mode') mode: string,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) res: Response,
+    @Headers(VIEW_AS_HEADER) viewAs?: string
   ) {
+    // A "View as" response is filtered for someone other than the requester and the ETag doesn't
+    // know about the header, so it must never be cached or answered from cache.
+    if (viewAs) {
+      res.set('Cache-Control', 'no-store');
+      return this.versionService.getVersion(app, user, mode, viewAs);
+    }
+
     // The released version is cached by the browser but revalidated on every load (no-cache), so
     // an unchanged version costs a 304 instead of rebuilding and downloading the payload.
     const etag = await releasedVersionETag(app, versionId, mode, user.id, () =>
