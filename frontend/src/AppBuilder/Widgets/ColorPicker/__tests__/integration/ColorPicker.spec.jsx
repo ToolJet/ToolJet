@@ -328,6 +328,18 @@ describe('[ColorPicker-CLR] Clear button', () => {
 
     expect(popover()).not.toBeInTheDocument();
   });
+
+  test('[ColorPicker-CLR-004] clicking clear fires onChange', async () => {
+    widget.render({ properties: { showClearBtn: binding('{{true}}') } });
+    widget.setEvents(setVariableOn(CP, 'onChange'));
+    await waitFor(() => expect(widget.exposed().selectedColorHex).toBe('#4368e3'));
+
+    await widget.session.user.click(clearButton());
+    await drain();
+
+    await waitFor(() => expect(widget.exposed().selectedColorHex).toBeUndefined());
+    expect(widget.variables().seen).toBe('YES');
+  });
 });
 
 describe('[ColorPicker-VAL] Validation', () => {
