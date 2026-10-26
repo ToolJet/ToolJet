@@ -10,6 +10,8 @@
 // (Replaces the old sessionStorage/localStorage + cross-tab focus-sync mechanism.)
 
 const BRANCH_URL_PARAM = 'branch';
+// Per-tab branch memory: survives a reload, never shared across tabs.
+const TAB_BRANCH_KEY = 'tj-tab-branch';
 
 /**
  * Whether the given dashboard path is a Git/branch-relevant page — mirrors the Header's
@@ -44,6 +46,16 @@ export function getBranchNameFromUrl() {
   }
 }
 
+/** This tab's last branch `{ id, name }`; match by id (ids are unique per workspace). */
+export function getTabBranch() {
+  try {
+    const stored = JSON.parse(sessionStorage.getItem(TAB_BRANCH_KEY));
+    return stored?.id ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
 /** The resolved active branch ID for API calls. Null until the store resolves name -> id. */
 export function getActiveBranchId() {
   return _activeBranchId;
@@ -55,7 +67,10 @@ export function getActiveBranchId() {
  * in the current URL — pass an explicit name (e.g. the store's currentBranch.name) to override.
  * No-op when there is no branch (non-git / no branch context) or the path already sets it.
  */
-export function appendBranchName(path, branchName = getBranchNameFromUrl() || _resolvedBranchName) {
+export function appendBranchName(
+  path,
+  branchName = getBranchNameFromUrl() || _resolvedBranchName || getTabBranch()?.name
+) {
   if (!path || !branchName) return path;
   if (/[?&]branch=/.test(path)) return path;
   const separator = path.includes('?') ? '&' : '?';
@@ -92,6 +107,12 @@ export function setActiveBranch(branch) {
   _activeBranchId = branch?.id || null;
   _resolvedBranchName = branch?.name || null;
   setBranchInUrl(branch?.name || null);
+  try {
+    if (branch?.id) sessionStorage.setItem(TAB_BRANCH_KEY, JSON.stringify({ id: branch.id, name: branch.name }));
+    else sessionStorage.removeItem(TAB_BRANCH_KEY);
+  } catch {
+    // storage unavailable — URL/server fallback still apply
+  }
   // Resolution ran — unblock anything gated on whenBranchResolved().
   while (_resolutionWaiters.length) _resolutionWaiters.shift()();
 }
