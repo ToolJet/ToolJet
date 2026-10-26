@@ -24,6 +24,19 @@ export function setupCommand(env: Env = process.env): string {
   return env.MIGRATION_SETUP_COMMAND || (env.NODE_ENV === 'production' ? 'npm run db:setup:prod' : 'npm run db:setup');
 }
 
+const END_USER_MESSAGE_ENV: Record<string, string> = {
+  running: 'MIGRATION_END_USER_MESSAGE_RUNNING',
+  failed: 'MIGRATION_END_USER_MESSAGE_FAILED',
+};
+
+export const END_USER_MESSAGE_MAX_LENGTH = 200;
+
+/** Operator's banner text for end users of released apps in this state; undefined keeps the built-in text. */
+export function endUserMessage(state: string, env: Env = process.env): string | undefined {
+  const text = env[END_USER_MESSAGE_ENV[state]]?.trim();
+  return text ? text.slice(0, END_USER_MESSAGE_MAX_LENGTH) : undefined;
+}
+
 /** `joint`: MIGRATION_PHASE unset, schema and data together (blocking mode, Cloud). */
 export type MigrationPhase = 'joint' | 'schema' | 'data';
 

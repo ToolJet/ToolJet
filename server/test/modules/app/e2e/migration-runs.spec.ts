@@ -3,6 +3,8 @@ import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { initTestApp, closeTestApp, createSuperAdmin, createAdmin, getDefaultDataSource } from 'test-helper';
 import { WorkerHost } from '@nestjs/bullmq';
+import { instanceToPlain } from 'class-transformer';
+import { AppController } from '@modules/app/controller';
 import { MIGRATION_RUNS_DDL, MigrationRunsService } from '@modules/app/migration-runs/service';
 import { MIGRATION_ACTIVE_LOCK_KEY, MIGRATION_ADVISORY_LOCK_KEY } from 'src/migration-helpers/migrations-table-gate';
 
@@ -37,6 +39,34 @@ describe('MigrationRunsController', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual({ state: 'idle' });
+    });
+
+    // Called on the controller: in blocking mode, which this suite runs, the gate refuses the HTTP route while running.
+    it.each([
+      ['running', 'MIGRATION_END_USER_MESSAGE_RUNNING'],
+      ['failed', 'MIGRATION_END_USER_MESSAGE_FAILED'],
+    ] as const)("should send the operator's end-user text while %s", async (state, envVar) => {
+      process.env[envVar] = '  Orders portal is under maintenance.  ';
+      const status = jest.spyOn(app.get(MigrationRunsService), 'status').mockResolvedValue({ state });
+      try {
+        const body = instanceToPlain(await app.get(AppController).migrationStatus());
+
+        expect(body).toEqual({ state, endUserMessage: 'Orders portal is under maintenance.' });
+      } finally {
+        status.mockRestore();
+        delete process.env[envVar];
+      }
+    });
+
+    it('should leave the end-user text out when the operator set none', async () => {
+      const status = jest.spyOn(app.get(MigrationRunsService), 'status').mockResolvedValue({ state: 'running' });
+      try {
+        const body = JSON.parse(JSON.stringify(instanceToPlain(await app.get(AppController).migrationStatus())));
+
+        expect(body).toEqual({ state: 'running' });
+      } finally {
+        status.mockRestore();
+      }
     });
   });
 

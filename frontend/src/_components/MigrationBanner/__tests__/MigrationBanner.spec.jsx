@@ -77,6 +77,17 @@ describe('MigrationBanner', () => {
     expect(visibleBanner()).not.toHaveTextContent(/ToolJet|administrator/);
   });
 
+  test("shows end users the operator's text when the server sends one, and builders keep theirs", async () => {
+    const custom = 'Orders portal is under maintenance until 10pm.';
+    respondWith({ state: 'running', startedAt: '2026-10-19T10:00:00Z', endUserMessage: custom });
+    const { unmount } = render(<MigrationBanner endUser floating />);
+    await waitFor(() => expect(visibleBanner()).toHaveTextContent(custom));
+    unmount();
+
+    render(<MigrationBanner />);
+    await waitFor(() => expect(visibleBanner()).toHaveTextContent(/ToolJet is being upgraded/));
+  });
+
   test('renders no banner when idle, keeping an empty announcement region', async () => {
     let called = false;
     server.use(
