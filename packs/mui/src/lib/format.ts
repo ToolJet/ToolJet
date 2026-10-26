@@ -64,7 +64,8 @@ export const formatFigure = (
 ): string | null => {
   const n = toNumber(v);
   if (n === null) return null;
-  if (typeof v === 'string' && v.trim().endsWith('%') && (format === 'auto' || format === 'number' || format === 'percent'))
+  // Under any format: a figure written with its percent sign is a percent (compact or currency would drop the sign).
+  if (typeof v === 'string' && v.trim().endsWith('%'))
     return fmt(
       { style: 'percent', maximumFractionDigits: precision ?? 1, ...(precision === null ? {} : { minimumFractionDigits: precision }) },
       localeFor(currency, locale)

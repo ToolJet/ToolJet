@@ -20,6 +20,17 @@ const TONE_CHIP: Record<string, 'success' | 'warning' | 'error' | 'info' | 'defa
 const ASPECTS = ['16/9', '4/3', '1/1'];
 const clamp = (lines: number) => ({ display: '-webkit-box', WebkitLineClamp: lines, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' });
 
+// The data as the Ant and shadcn grids take it (an array, or its JSON text), and also a query result bound whole: an
+// object holding the records under data, rows, items, records or results (a REST or JS query's { rows: [...] }).
+const RECORD_KEYS = ['data', 'rows', 'items', 'records', 'results'];
+const recordsOf = (raw: unknown): unknown[] => {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const key = RECORD_KEYS.find((k) => Array.isArray((raw as Record<string, unknown>)[k]));
+    return key ? ((raw as Record<string, unknown>)[key] as unknown[]) : [];
+  }
+  return toArray(raw);
+};
+
 /** The element's content width, kept current as it resizes (0 until measured, and in jsdom). */
 const useWidth = () => {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -127,7 +138,7 @@ export const CardGrid = () => {
 
   const items = useMemo(
     () =>
-      cardItems(toArray(dataSource), { titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField }),
+      cardItems(recordsOf(dataSource), { titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField }),
     [dataSource, titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField]
   );
   const { selectedItemId, select } = useSelection(items as Selectable[], idField);

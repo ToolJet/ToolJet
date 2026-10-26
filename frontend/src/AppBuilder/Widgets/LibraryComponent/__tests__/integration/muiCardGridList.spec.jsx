@@ -250,3 +250,97 @@ describe('MUI List rows', () => {
     expect(c.root().querySelector('.tj-mui-list__pagination .MuiPagination-root')).not.toBeNull();
   });
 });
+
+// The recipes round (wm6, MUI 1.4.23): the grid's saved props, and every shape the Ant and shadcn grids take for them.
+const MODEL = require('../../../../../../../packs/mui/src/lib/ui2/display/lists/model.ts');
+const CUISINES = ['Italian', 'British', 'American', 'Indian', 'Mexican', 'Thai', 'French'];
+const LEVELS = ['Easy', 'Medium', 'Hard'];
+const book = Array.from({ length: 28 }, (_, i) => ({
+  id: i + 1,
+  title: `Dish ${i + 1}`,
+  cuisine: CUISINES[i % CUISINES.length],
+  difficulty: LEVELS[i % LEVELS.length],
+  description: `A short note on dish ${i + 1}.`,
+  ingredients: (i % 5) + 2,
+  prep: 15 + i,
+  serves: 4,
+}));
+const RECIPES_GRID = {
+  dataSource: book,
+  titleField: 'title',
+  subtitleField: '',
+  imageField: '',
+  badgeField: 'difficulty',
+  badgeFields: [],
+  eyebrowField: 'cuisine',
+  avatarField: '',
+  descriptionField: 'description',
+  progressField: '',
+  metaFields: 'ingredients:{} ingredients,prep:{} min',
+  idField: 'id',
+  layout: 'stacked',
+  columns: 4,
+  minCardWidth: 230,
+  imageAspect: '16/9',
+  showImage: false,
+  variant: 'outlined',
+  elevation: 1,
+  highlightSelected: true,
+  emptyText: 'No recipes match that search.',
+  dynamicHeight: true,
+};
+const cardShape = (c) =>
+  [...c.root().querySelectorAll('.tj-mui-gridcard')].map((card) => ({
+    eyebrow: card.querySelector('.MuiTypography-overline')?.textContent,
+    chips: [...card.querySelectorAll('.MuiChip-root')].map((ch) => ch.textContent),
+    meta: card.querySelector('.MuiTypography-caption')?.textContent,
+  }));
+
+describe('MUI CardGrid with the recipes round props', () => {
+  test('the saved recipesGrid props draw all 28 cards, each with its cuisine eyebrow, difficulty chip and meta', async () => {
+    const c = await mount('CardGrid', RECIPES_GRID);
+    const shape = cardShape(c);
+    expect(shape).toHaveLength(28);
+    expect(shape[0]).toEqual({ eyebrow: 'Italian', chips: ['Easy'], meta: '2 ingredients · 15 min' });
+    expect(shape[27]).toEqual({ eyebrow: 'French', chips: ['Easy'], meta: '4 ingredients · 42 min' });
+    // Four columns where four 230px cards fit (the 1257px box of the app), fewer where they do not.
+    expect(MODEL.gridColumns(4, 1257, 230)).toBe(4);
+    expect(MODEL.gridColumns(4, 600, 230)).toBe(2);
+  });
+
+  test.each([
+    ['an array', book],
+    ['its JSON text', JSON.stringify(book)],
+    ['a query result with data', { data: book }],
+    ['a query result with rows', { rows: book, count: 28 }],
+    ['a query result with items', { items: book }],
+  ])('dataSource as %s draws every card', async (_, dataSource) => {
+    const c = await mount('CardGrid', { ...RECIPES_GRID, dataSource });
+    expect(cardShape(c)).toHaveLength(28);
+  });
+
+  test.each([
+    ['an empty list', [], ['Easy']],
+    ['empty text', '', ['Easy']],
+    ['a comma list', 'difficulty, cuisine', ['Easy', 'Italian']],
+    ['a list', ['difficulty', 'cuisine'], ['Easy', 'Italian']],
+  ])('badgeFields as %s adds to the badge field chip', async (_, badgeFields, chips) => {
+    const c = await mount('CardGrid', { ...RECIPES_GRID, badgeFields });
+    expect(cardShape(c)[0].chips).toEqual(chips);
+  });
+
+  test('metaFields as a list reads as the comma text does', async () => {
+    const c = await mount('CardGrid', { ...RECIPES_GRID, metaFields: ['ingredients:{} ingredients', 'prep:{} min'] });
+    expect(cardShape(c)[0].meta).toBe('2 ingredients · 15 min');
+  });
+
+  test('columns and minCardWidth written as text count as their numbers; auto and 0 fit the width', () => {
+    expect(MODEL.gridColumns('4', 1257, '230')).toBe(4);
+    expect(MODEL.gridColumns(4, 1257, '230px')).toBe(4);
+    expect(MODEL.gridColumns(4, 1257, '300px')).toBe(4);
+    expect(MODEL.gridColumns(4, 1000, '300px')).toBe(3);
+    expect(MODEL.gridColumns('auto', 1257, 230)).toBe(5);
+    expect(MODEL.gridColumns(0, 1257, 230)).toBe(5);
+    expect(MODEL.gridColumns(undefined, 1257, undefined)).toBe(5);
+  });
+});
