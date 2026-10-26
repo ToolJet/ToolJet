@@ -9,6 +9,7 @@ import { BlockSkeleton, Loading } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
 import { readField, str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
+import { LOCALE_HINT, localeFor, numberFormat } from '../lib/locale';
 import { useHighlightPin } from '../lib/chartHighlight';
 import { pieLegendPlace, useBoxSize } from '../lib/chartLegend';
 
@@ -93,6 +94,7 @@ const useCartesian = () => {
     initialValue: 'USD',
     visibleWhen: { key: 'valueFormat', value: 'currency' },
   });
+  const [locale] = useStateText({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [colors] = ToolJet.useStateArray({
     name: 'colors',
     label: 'Colors',
@@ -107,14 +109,14 @@ const useCartesian = () => {
   const axis = toAxis(xAxis, rows);
   const list = toSeries(series, rows, axis.dataKey);
   const data = useMemo(() => numericRows(rows, list), [rows, JSON.stringify(list)]); // eslint-disable-line react-hooks/exhaustive-deps
-  const format = (v: number | null) => (v === null || v === undefined ? '' : formatNumber(v, valueFormat as NumberFormat, currency));
+  const format = (v: number | null) => (v === null || v === undefined ? '' : formatNumber(v, valueFormat as NumberFormat, currency, null, locale));
   // Axis ticks have a narrow, fixed width: from 10,000 up they are compact (2M, $1.2K), where the full figure was cut
   // to "2,000,..."; tooltips keep the full format.
   const tick = (v: number | null) => {
     if (v === null || v === undefined || valueFormat === 'percent' || Math.abs(v) < 10000) return format(v);
     try {
       const money = valueFormat === 'currency' && /^[a-z]{3}$/i.test(str(currency));
-      return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1, ...(money ? { style: 'currency', currency: str(currency) } : {}) }).format(v);
+      return numberFormat(localeFor(str(currency), locale), { notation: 'compact', maximumFractionDigits: 1, ...(money ? { style: 'currency', currency: str(currency) } : {}) }).format(v);
     } catch {
       return format(v);
     }
@@ -313,6 +315,7 @@ export const PieChart = () => {
     initialValue: 'USD',
     visibleWhen: { key: 'valueFormat', value: 'currency' },
   });
+  const [locale] = useStateText({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [rawColors] = ToolJet.useStateArray({ name: 'colors', label: 'Colors', description: 'The slice palette; empty: led by the brand (the Primary style or the app theme).', initialValue: [] });
   const pieColors = toArray(rawColors).map(str).filter(Boolean);
   const [hideLegend] = ToolJet.useStateBoolean({ name: 'hideLegend', label: 'Hide legend', initialValue: false });
@@ -334,7 +337,7 @@ export const PieChart = () => {
     }))
     .filter((s) => s.value > 0);
   const total = slices.reduce((sum, s) => sum + s.value, 0);
-  const format = (v: number) => formatNumber(v, valueFormat as NumberFormat, currency);
+  const format = (v: number) => formatNumber(v, valueFormat as NumberFormat, currency, null, locale);
   // In a narrow box the legend goes under the pie, or away, so the pie keeps a usable size (MUI's side legend kept its
   // width in a 108px box and left a 16px pie).
   const [box, room] = useBoxSize<HTMLDivElement>();
