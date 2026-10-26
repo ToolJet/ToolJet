@@ -410,24 +410,51 @@ describe('[ColorPicker-STATE] Loading, visibility, disabled state and CSA preced
     expect(widget.exposed().isDisabled).toBe(true);
   });
 
-  test.failing(
-    // BUG (D-01: characterize only): disabledState is cosmetic on ColorPicker.
-    // Popover.Trigger (ColorPicker.jsx:347-393) carries no `disabled` attribute
-    // and no click guard, so a disabled ColorPicker still opens its popover and
-    // still lets a user pick a new color. Compare Checkbox, which has the
-    // identical bug (checkbox.spec.jsx) — same root cause, no disabled gate on
-    // the click path. Right behaviour: a disabled ColorPicker ignores clicks.
-    '[ColorPicker-STATE-004] a disabled ColorPicker cannot be opened',
-    async () => {
-      widget.render({ properties: { disabledState: binding('{{true}}') } });
-      await waitFor(() => expect(widgetWrapper()).toHaveAttribute('aria-disabled', 'true'));
+  test('[ColorPicker-STATE-004] a disabled ColorPicker cannot be opened', async () => {
+    widget.render({ properties: { disabledState: binding('{{true}}') } });
+    await waitFor(() => expect(widgetWrapper()).toHaveAttribute('aria-disabled', 'true'));
 
-      await widget.session.user.click(triggerButton());
-      await drain();
+    await widget.session.user.click(triggerButton());
+    await drain();
 
-      expect(popover()).not.toBeInTheDocument();
-    }
-  );
+    expect(popover()).not.toBeInTheDocument();
+  });
+
+  test('[ColorPicker-STATE-008] a disabled ColorPicker cannot be opened with the keyboard', async () => {
+    widget.render({ properties: { disabledState: binding('{{true}}') } });
+    widget.setEvents(setVariableOn(CP, 'onFocus', { key: 'focused', value: 'YES' }));
+    await waitFor(() => expect(widgetWrapper()).toHaveAttribute('aria-disabled', 'true'));
+
+    await widget.session.user.tab();
+    await widget.session.user.keyboard(' ');
+    await drain();
+
+    expect(popover()).not.toBeInTheDocument();
+    expect(widget.variables().focused).toBeUndefined();
+  });
+
+  test('[ColorPicker-STATE-009] a loading ColorPicker cannot be opened with the keyboard', async () => {
+    widget.render({ properties: { loadingState: binding('{{true}}') } });
+    await waitFor(() => expect(loader()).toBeInTheDocument());
+
+    await widget.session.user.tab();
+    await widget.session.user.keyboard(' ');
+    await drain();
+
+    expect(popover()).not.toBeInTheDocument();
+  });
+
+  test('[ColorPicker-STATE-010] disabling an open ColorPicker closes its popover', async () => {
+    widget.render();
+    await widget.session.user.click(triggerButton());
+    await waitFor(() => expect(popover()).toBeInTheDocument());
+
+    await act(async () => {
+      await widget.exposed().setDisable(true);
+    });
+
+    await waitFor(() => expect(popover()).not.toBeInTheDocument());
+  });
 
   test('[ColorPicker-STATE-005] setDisable(true) survives an unrelated label change, but a genuine disabledState flip overrides it', async () => {
     // `disabledState` starts false (the harness default) and is never touched
