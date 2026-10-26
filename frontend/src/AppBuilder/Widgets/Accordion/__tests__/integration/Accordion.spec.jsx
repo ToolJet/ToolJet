@@ -35,6 +35,9 @@ const root = () => document.getElementById(ID);
 const bodyCanvas = () => document.getElementById(`canvas-${ID}`);
 const headerCanvas = () => document.getElementById(`canvas-${ID}-header`);
 const headerRegion = () => document.querySelector('.tj-accordion-header');
+// The wrapper between the root and the body sub-canvas. It carries the body background;
+// the root is transparent and only supplies the rounded clip (D-06).
+const contentWrapper = () => root()?.querySelector('.widget-type-container');
 const content = () => document.querySelector('.widget-type-container');
 const chevron = () => screen.queryByRole('button', { name: /accordion/i });
 const childOf = (parent, id, name, text) => {
@@ -602,14 +605,16 @@ describe('Accordion: styles', () => {
   // glaring on a dark canvas for every app that kept the literal default.
   test('[Accordion-STYLE-001] the body background honours the configured colour and the dark-mode sentinel', async () => {
     harness.render({ styles: { backgroundColor: binding('rgb(1, 2, 3)') } });
-    await waitFor(() => expect(root()).toBeTruthy());
-    expect(root().style.backgroundColor).toBe('rgb(1, 2, 3)');
+    await waitFor(() => expect(contentWrapper()).toBeTruthy());
+    expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
+    // The root paints nothing — it is the clipping box only.
+    expect(root().style.backgroundColor).toBe('transparent');
 
     harness.render({ styles: { backgroundColor: binding('#fff') }, darkMode: true });
-    await waitFor(() => expect(root().style.backgroundColor).toBe('rgb(35, 46, 60)'));
+    await waitFor(() => expect(contentWrapper().style.backgroundColor).toBe('rgb(35, 46, 60)'));
 
     harness.render({ styles: { backgroundColor: binding('rgb(9, 9, 9)') }, darkMode: true });
-    await waitFor(() => expect(root().style.backgroundColor).toBe('rgb(9, 9, 9)'));
+    await waitFor(() => expect(contentWrapper().style.backgroundColor).toBe('rgb(9, 9, 9)'));
   });
 
   // Break this catches: resolving the header background from the body's colour. Accordion
@@ -620,8 +625,9 @@ describe('Accordion: styles', () => {
     });
     await waitFor(() => expect(headerRegion()).toBeTruthy());
 
-    expect(root().style.backgroundColor).toBe('rgb(1, 2, 3)');
+    expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
     expect(headerRegion().style.backgroundColor).toBe('rgb(4, 5, 6)');
+    expect(root().style.backgroundColor).toBe('transparent');
   });
 
   // Break this catches: publishing the divider under Container's custom property name, which the
@@ -634,9 +640,10 @@ describe('Accordion: styles', () => {
     expect(root().style.getPropertyValue('--cc-container-header-divider-color')).toBe('');
   });
 
-  // Break this catches: dropping the border or box-shadow, or failing to carry the radius onto
-  // the header's top corners so the accordion square-clips its own header.
-  test('[Accordion-STYLE-004] border colour, radius and box shadow reach the root and the header corners', async () => {
+  // Break this catches: dropping the border or box-shadow, dropping the clip that gives the
+  // radius a shape, or letting the header round its own corners again. Four elements rounding
+  // themselves with nothing clipping is the reported defect.
+  test('[Accordion-STYLE-004] border colour, radius, box shadow and the clip belong to the root alone', async () => {
     harness.render({
       styles: {
         borderColor: binding('rgb(8, 8, 8)'),
@@ -649,8 +656,26 @@ describe('Accordion: styles', () => {
     expect(root().style.border).toBe('1px solid rgb(8, 8, 8)');
     expect(root().style.borderRadius).toBe('12px');
     expect(root().style.boxShadow).toBe('0px 2px 4px 0px rgba(0, 0, 0, 0.5)');
-    expect(headerRegion().style.borderTopLeftRadius).toBe('12px');
-    expect(headerRegion().style.borderTopRightRadius).toBe('12px');
+    // The clip is what the radius acts on, and what contains the children (D-06).
+    expect(root().style.overflow).toBe('hidden');
+
+    // The header must carry NO radius of its own; the root clips it instead.
+    expect(headerRegion().style.borderTopLeftRadius).toBe('');
+    expect(headerRegion().style.borderTopRightRadius).toBe('');
+  });
+
+  // Break this catches: the body grid painting or rounding itself. The radius here was the
+  // fourth of the four the defect applied at once — it made the grid render round corners
+  // inside an already-rounded accordion.
+  test('[Accordion-STYLE-008] the body sub-canvas carries neither the background nor the radius', async () => {
+    harness.render({ styles: { borderRadius: binding('12'), backgroundColor: binding('rgb(1, 2, 3)') } });
+    await waitFor(() => expect(bodyCanvas()).toBeTruthy());
+
+    expect(bodyCanvas().style.borderRadius).toBe('');
+    // AppCanvas/Container forces transparent for any non-canvas id (AppCanvas/Container.jsx:292),
+    // so the grid never paints the body colour even if something passed it down.
+    expect(bodyCanvas().style.backgroundColor).toBe('transparent');
+    expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
   });
 
   // Break this catches: clamping an unparseable radius to the documented default. The shipped
@@ -681,16 +706,24 @@ describe('Accordion: styles', () => {
 
   // Break this catches: applying the bottom corner radii unconditionally, so an EXPANDED
   // accordion rounds off the seam between its header and its content.
-  test('[Accordion-STYLE-007] a collapsed Accordion rounds its header bottom corners', async () => {
+  test('[Accordion-STYLE-007] a collapsed Accordion is rounded by the root, not by its header', async () => {
     harness.render({ styles: { borderRadius: binding('12') } });
     await waitFor(() => expect(chevron()).toBeTruthy());
+
+    // Expanded: the header sets no corner radii of its own.
     expect(headerRegion().style.borderBottomLeftRadius).toBe('');
     expect(headerRegion().style.borderBottomRightRadius).toBe('');
 
     await userEvent.click(chevron());
+    await waitFor(() => expect(root().className).toContain('jet-accordion-collapsed'));
 
-    await waitFor(() => expect(headerRegion().style.borderBottomLeftRadius).toBe('12px'));
-    expect(headerRegion().style.borderBottomRightRadius).toBe('12px');
+    // Collapsed: still none. The rounded bar comes from the root's radius plus its clip,
+    // which also removes the old asymmetry — the header slot used to set a bottom-LEFT
+    // radius with no right-hand counterpart.
+    expect(headerRegion().style.borderBottomLeftRadius).toBe('');
+    expect(headerRegion().style.borderBottomRightRadius).toBe('');
+    expect(root().style.borderRadius).toBe('12px');
+    expect(root().style.overflow).toBe('hidden');
   });
 });
 

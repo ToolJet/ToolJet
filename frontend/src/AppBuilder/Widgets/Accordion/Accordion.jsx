@@ -147,7 +147,7 @@ export const Accordion = ({
   }, [styles.backgroundColor, darkMode]);
 
   const computedStyles = {
-    backgroundColor: contentBgColor.backgroundColor,
+    backgroundColor: 'transparent',
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     ...(isDynamicHeightEnabled && exposedVariablesTemporaryState.isExpanded && { minHeight: `${height}px` }),
@@ -163,6 +163,7 @@ export const Accordion = ({
     flexDirection: 'column',
     position: 'relative',
     boxShadow,
+    overflow: 'hidden',
     '--cc-accordion-header-divider-color': headerDividerColor,
   };
 
@@ -175,8 +176,9 @@ export const Accordion = ({
         opacity: 0.5,
         pointerEvents: 'none',
       }),
+      ...contentBgColor,
     };
-  }, [exposedVariablesTemporaryState.isDisabled, exposedVariablesTemporaryState.isExpanded]);
+  }, [exposedVariablesTemporaryState.isDisabled, exposedVariablesTemporaryState.isExpanded, contentBgColor]);
 
   return (
     <div
@@ -200,7 +202,6 @@ export const Accordion = ({
               isDynamicHeightEnabled={isDynamicHeightEnabled}
               headerBackgroundColor={styles.headerBackgroundColor}
               darkMode={darkMode}
-              borderRadius={borderRadius}
               headerHeight={headerHeight}
               isExpanded={exposedVariablesTemporaryState.isExpanded}
               setExpanded={(expand) => {
@@ -224,10 +225,6 @@ export const Accordion = ({
           >
             <ContainerComponent
               id={id}
-              styles={{
-                ...contentBgColor,
-                borderRadius: `${borderRadius}px`,
-              }}
               canvasHeight={isDynamicHeightEnabled ? '100%' : height}
               canvasWidth={width}
               darkMode={darkMode}
