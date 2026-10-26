@@ -485,15 +485,18 @@ describe('Image: zoom and rotate controls', () => {
     await waitFor(() => expect(rotateIcon()).toBeInTheDocument());
     const rotateButtonEl = rotateIcon().closest('button');
 
-    expect(img()).toHaveStyle({ transform: 'rotate(0deg)' });
+    // 90/270 also carry a fit-to-box scale (Image-ROT-003), so match only the rotation.
+    const rotation = () => img().style.transform.match(/^rotate\((\d+)deg\)/)?.[1];
+
+    expect(rotation()).toBe('0');
     await widget.session.user.click(rotateButtonEl);
-    expect(img()).toHaveStyle({ transform: 'rotate(90deg)' });
+    expect(rotation()).toBe('90');
     await widget.session.user.click(rotateButtonEl);
-    expect(img()).toHaveStyle({ transform: 'rotate(180deg)' });
+    expect(rotation()).toBe('180');
     await widget.session.user.click(rotateButtonEl);
-    expect(img()).toHaveStyle({ transform: 'rotate(270deg)' });
+    expect(rotation()).toBe('270');
     await widget.session.user.click(rotateButtonEl);
-    expect(img()).toHaveStyle({ transform: 'rotate(0deg)' });
+    expect(rotation()).toBe('0');
   });
 
   test('[Image-ROT-003] A quarter-turn rotation keeps the image inside the widget box', async () => {
