@@ -281,7 +281,7 @@ export const fileButtonConfig = {
         { displayName: 'None', value: 'none' },
       ],
       validation: { schema: { type: 'string' }, defaultValue: 'default' },
-      accordian: 'button',
+      accordian: 'container',
     },
   },
   exposedVariables: {

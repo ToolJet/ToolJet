@@ -108,7 +108,7 @@ export const iconConfig = {
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
-      accordian: 'Icon',
+      accordian: 'container',
     },
     boxShadow: {
       type: 'boxShadow',

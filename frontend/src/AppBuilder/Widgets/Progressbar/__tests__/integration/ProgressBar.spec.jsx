@@ -29,8 +29,9 @@ const PROGRESS = '#ff8800';
 const COMPLETE = '#008844';
 const SHADOW = '1px 2px 3px 4px rgba(0, 0, 0, 0.5)';
 const LAYOUT_HEIGHT = 104;
+// RenderWidget insets the height it passes by 2px/side while Margin is `default`, and passes the
+// full layout height for `none`; ProgressBar sizes from that height without a second inset (D-06).
 const INNER_HEIGHT = LAYOUT_HEIGHT - 4;
-const PADDED_HEIGHT = INNER_HEIGHT - 4;
 
 const defaultProperties = {
   labelType: binding('auto'),
@@ -302,24 +303,25 @@ describe('ProgressBar widget', () => {
   });
 
   test('[ProgressBar-GEO-001] in-range size uses authored percent; out-of-range uses 26/20 fallbacks', async () => {
-    // Break this catches: using registered defaults 30/20 as the out-of-range fallback, or ignoring authored in-range values.
+    // Break this catches: using registered defaults 30/20 as the out-of-range fallback, ignoring authored in-range
+    // values, or insetting the RenderWidget height a second time (D-06).
     const { container } = widget.render();
-    expect(labelNode()).toHaveStyle({ fontSize: percentOf(PADDED_HEIGHT, 30) });
-    expect(track(container)).toHaveStyle({ height: percentOf(PADDED_HEIGHT, 20) });
+    expect(labelNode()).toHaveStyle({ fontSize: percentOf(INNER_HEIGHT, 30) });
+    expect(track(container)).toHaveStyle({ height: percentOf(INNER_HEIGHT, 20) });
 
     await setStyle('textSize', '{{40}}');
     await setStyle('progressBarThickness', '{{40}}');
-    await waitFor(() => expect(labelNode()).toHaveStyle({ fontSize: percentOf(PADDED_HEIGHT, 40) }));
-    expect(track(container)).toHaveStyle({ height: percentOf(PADDED_HEIGHT, 40) });
+    await waitFor(() => expect(labelNode()).toHaveStyle({ fontSize: percentOf(INNER_HEIGHT, 40) }));
+    expect(track(container)).toHaveStyle({ height: percentOf(INNER_HEIGHT, 40) });
 
     await setStyle('textSize', '{{51}}');
     await setStyle('progressBarThickness', '{{0}}');
-    await waitFor(() => expect(labelNode()).toHaveStyle({ fontSize: percentOf(PADDED_HEIGHT, 26) }));
-    expect(track(container)).toHaveStyle({ height: percentOf(PADDED_HEIGHT, 20) });
+    await waitFor(() => expect(labelNode()).toHaveStyle({ fontSize: percentOf(INNER_HEIGHT, 26) }));
+    expect(track(container)).toHaveStyle({ height: percentOf(INNER_HEIGHT, 20) });
 
     await setStyle('padding', 'none');
     await setStyle('textSize', '{{30}}');
-    await waitFor(() => expect(labelNode()).toHaveStyle({ fontSize: percentOf(INNER_HEIGHT, 30) }));
+    await waitFor(() => expect(labelNode()).toHaveStyle({ fontSize: percentOf(LAYOUT_HEIGHT, 30) }));
   });
 
   test('[ProgressBar-REG-001] registrations match and new instances seed their value label binding', () => {

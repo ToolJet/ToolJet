@@ -107,7 +107,7 @@ export const reorderableListConfig = {
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
-      accordian: 'Text',
+      accordian: 'container',
     },
   },
   exposedVariables: {
