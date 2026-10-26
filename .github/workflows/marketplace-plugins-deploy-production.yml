@@ -22,6 +22,11 @@ env:
     PR_NUMBER: ${{ github.event.number }}
     BRANCH_NAME: ${{ (github.event_name == 'release' && 'lts-3.16') || github.event.inputs.branch || github.head_ref || github.ref_name }}
 
+permissions:
+    contents: read
+    issues: write
+    pull-requests: write
+
 jobs:
     deploy-marketplace-plugin-production:
         if: |
@@ -87,7 +92,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v2
               with:
-                  node-version: 22.15.1
+                  node-version: 22.23.4
 
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@v4

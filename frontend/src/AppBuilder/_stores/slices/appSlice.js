@@ -6,6 +6,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import { getDynamicLayoutKey } from '../utils/dynamicHeightReflow';
 import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,6 +33,7 @@ const initialState = {
       canvas: {
         canvasHeight: null,
         app: {},
+        linkedApps: {}, // Map<correlationId, { slug }> of apps referenced by go-to-app pages/events
         isViewer: false,
         isComponentLayoutReady: false,
       },
@@ -80,6 +82,25 @@ export const createAppSlice = (set, get) => ({
       },
       false,
       'setApp'
+    ),
+  setLinkedApps: (linkedApps, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].linkedApps = linkedApps ?? {};
+      },
+      false,
+      'setLinkedApps'
+    ),
+  upsertLinkedApp: (correlationId, info, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        if (!correlationId) return;
+        const current = state.appStore.modules[moduleId].linkedApps ?? {};
+        current[correlationId] = { ...(current[correlationId] ?? {}), ...info };
+        state.appStore.modules[moduleId].linkedApps = current;
+      },
+      false,
+      'upsertLinkedApp'
     ),
   setAppName: (name, moduleId = 'canvas') =>
     set(
@@ -157,9 +178,9 @@ export const createAppSlice = (set, get) => ({
       if (currentMode === 'view' && !visibility) {
         return max;
       }
-      const temporaryLayout = temporaryLayouts?.[component.id];
+      const temporaryLayout = temporaryLayouts?.[getDynamicLayoutKey(component.id, null, '', moduleId)];
       const top = temporaryLayout?.top ?? layout.top;
-      const height = visibility ? temporaryLayout?.height ?? layout.height : 10;
+      const height = visibility ? (temporaryLayout?.height ?? layout.height) : 10;
       return Math.max(max, top + height);
     }, 0);
 
@@ -195,7 +216,7 @@ export const createAppSlice = (set, get) => ({
           if (!visibility) {
             return max;
           }
-          const temp = temporaryLayouts?.[component.id];
+          const temp = temporaryLayouts?.[getDynamicLayoutKey(component.id, null, '', moduleId)];
           const top = temp?.top ?? canonical.top;
           const height = temp?.height ?? canonical.height;
           return Math.max(max, top + height);
@@ -205,9 +226,35 @@ export const createAppSlice = (set, get) => ({
       }
     }
 
-    const bottomPadding = currentMode === 'view' ? 100 : 300;
+    // Mobile auto-layout has no manual drop zone, so it skips the 300px editor drop-zone padding.
+    const bottomPadding = currentMode === 'view' ? 100 : currentLayout === 'mobile' ? 16 : 300;
     const frameHeight =
       currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
+    // Mobile editor: measure the DOM, since stored layout lags dynamic-height widgets by a reflow cycle.
+    // The 100% floor keeps the page background filling the frame when every component is hidden.
+    if (currentLayout === 'mobile' && currentMode === 'edit') {
+      const realCanvasEl =
+        typeof document !== 'undefined'
+          ? document.getElementById(moduleId === 'canvas' ? 'real-canvas' : `canvas-${moduleId}`)
+          : null;
+      if (realCanvasEl) {
+        const canvasTop = realCanvasEl.getBoundingClientRect().top;
+        let contentBottom = 0;
+        realCanvasEl.querySelectorAll('.widget-target').forEach((widgetEl) => {
+          const bottom = widgetEl.getBoundingClientRect().bottom - canvasTop;
+          if (bottom > contentBottom) contentBottom = bottom;
+        });
+        if (contentBottom > 0) {
+          setCanvasHeight(`max(100%, ${Math.round(contentBottom) + bottomPadding}px)`, moduleId);
+          return;
+        }
+      }
+      // Fallback before widgets mount; a later reflow re-runs this.
+      setCanvasHeight(`max(100%, ${maxHeight + bottomPadding}px)`, moduleId);
+      return;
+    }
+
+    // Mobile view / desktop: keep the 100vh floor so published pages fill the screen.
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(canvasHeight, moduleId);
   },

@@ -6,6 +6,7 @@ import queryString from 'query-string';
 import _ from 'lodash';
 import { eraseCookie, getCookie } from '.';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import { appendBranchName } from '@/_helpers/active-branch';
 
 export const routes = {
   dashboard: '/',
@@ -14,6 +15,7 @@ export const routes = {
   launch: '/applications/:slug/:pageHandle',
   workspace_settings: '/workspace-settings/users',
   workspace_settings_builder: '/workspace-settings/themes',
+  workspace_settings_groups: '/workspace-settings/groups',
   settings: '/settings',
   database: '/database',
   integrations: '/integrations/marketplace',
@@ -30,7 +32,14 @@ export const routes = {
 
 export const getPrivateRoute = (page, params = {}) => {
   let url = routes[page];
-  const urlParams = url?.split('/').map((path) => {
+  // Fail safe on an unknown page key: returning early beats throwing here — a throw
+  // during render (e.g. from a header/menu) bubbles to the app-level error boundary and
+  // can trigger an infinite remount loop instead of a graceful fallback.
+  if (url == null) {
+    console.error(`[getPrivateRoute] Unknown route key "${page}" — falling back to dashboard`);
+    url = routes.dashboard;
+  }
+  const urlParams = url.split('/').map((path) => {
     if (path.startsWith(':')) {
       return params[path.substring(1)];
     }
@@ -47,9 +56,13 @@ export const getPrivateRoute = (page, params = {}) => {
 
 export const replaceEditorURL = (slug, pageHandle) => {
   const subpath = getSubpath();
-  const path = subpath
+  const base = subpath
     ? `${subpath}${getPrivateRoute('editor', { slug, pageHandle })}`
     : getPrivateRoute('editor', { slug, pageHandle });
+  // Preserve the existing query string (notably `?branch=<name>`, plus version/env) — this is a
+  // slug swap (old sub-slug -> new slug after hydration), not a navigation, so the branch context
+  // must survive. Dropping it made later getBranchNameFromUrl() reads fall back to the default branch.
+  const path = `${base}${window.location.search || ''}`;
   window.history.replaceState(null, null, path);
 };
 
@@ -97,7 +110,9 @@ export const dashboardUrl = (data, redirectTo, relativePath) => {
 };
 
 export const redirectToDashboard = (data, redirectTo, relativePath = null) => {
-  window.location = dashboardUrl(data, redirectTo, relativePath); //Get URL from DashBoardUrl
+  // Carry the active branch (e.g. from the editor) back to the dashboard so reload keeps it.
+  // No-op outside a branch context (login/onboarding have no `branch` in the URL).
+  window.location = appendBranchName(dashboardUrl(data, redirectTo, relativePath)); //Get URL from DashBoardUrl
 };
 
 export const redirectToSwitchOrArchivedAppPage = (data) => {

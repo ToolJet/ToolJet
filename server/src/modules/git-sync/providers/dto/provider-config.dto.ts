@@ -1,0 +1,67 @@
+import { GITConnectionType } from '@entities/organization_git_sync.entity';
+import { IsString, IsNotEmpty, IsOptional, IsUrl, IsBoolean, IsEnum } from 'class-validator';
+
+export class BaseConfigDTO {
+  @IsString()
+  @IsNotEmpty()
+  gitType: GITConnectionType;
+
+  @IsUrl({ require_tld: false })
+  @IsNotEmpty()
+  gitUrl: string;
+}
+
+// GitHub HTTPS Config
+export class GithubHttpsConfigDTO extends BaseConfigDTO {
+  @IsString()
+  @IsNotEmpty()
+  branchName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppInstallationId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppPrivateKey: string;
+
+  @IsUrl({ require_tld: false })
+  @IsOptional()
+  githubEnterpriseUrl?: string;
+
+  @IsUrl({ require_tld: false })
+  @IsOptional()
+  githubEnterpriseApiUrl?: string;
+}
+export class GitLabConfigDTO extends BaseConfigDTO {
+  @IsString()
+  @IsNotEmpty()
+  branchName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  gitLabProjectId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  gitLabProjectAccessToken: string;
+
+  @IsUrl({ require_tld: false })
+  @IsOptional()
+  gitLabEnterpriseUrl?: string;
+}
+
+export type ProviderConfigDTO = GithubHttpsConfigDTO | GitLabConfigDTO;
+
+export class UpdateGitEnvConfigDTO {
+  @IsBoolean()
+  useEnvConfig: boolean;
+
+  @IsEnum(GITConnectionType)
+  provider: GITConnectionType;
+}
+// need to review validation scenarion in this

@@ -365,6 +365,8 @@ describe('Timeline: dynamic height', () => {
     const layoutElement = container.querySelector('[data-cy="draggable-widget-timeline1"]');
     layoutElement.classList.add(`ele-${ID}`);
     layoutElement.dataset.layoutContext = 'root';
+    // getDynamicElementSelector also scopes by module; the top-level app is 'canvas'.
+    layoutElement.dataset.moduleId = 'canvas';
 
     await widget.session.store.act((state) => state.clearTemporaryLayouts());
     await setProperty(

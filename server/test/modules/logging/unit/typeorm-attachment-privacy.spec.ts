@@ -3,7 +3,7 @@ import { TypeormLoggerService } from '../../../../src/modules/logging/services/t
 describe('TypeORM attachment parameter privacy', () => {
   it('omits embedded originals and buffers from development error and slow-query logs', () => {
     const logger = { error: jest.fn(), warn: jest.fn(), log: jest.fn() };
-    const config = { get: (key: string) => key === 'NODE_ENV' ? 'development' : undefined };
+    const config = { get: (key: string) => (key === 'NODE_ENV' ? 'development' : undefined) };
     const service = new TypeormLoggerService(logger as any, config as any);
     const parameters = [
       { name: 'synthetic-poster', base64Data: 'private-original-one' },

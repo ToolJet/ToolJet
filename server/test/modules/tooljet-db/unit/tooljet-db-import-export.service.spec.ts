@@ -1,7 +1,7 @@
 /**
  * @group database
  */
-import { BadRequestException, ConflictException, INestApplication, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
@@ -28,7 +28,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
 
 describe('TooljetDbImportExportService', () => {
-describe('EE (plan: enterprise)', () => {
   let app: INestApplication;
   let appManager: EntityManager;
   let tjDbManager: EntityManager;
@@ -74,12 +73,12 @@ describe('EE (plan: enterprise)', () => {
         ]),
       ],
       providers: [
-          TooljetDbImportExportService,
-          TooljetDbTableOperationsService,
-          LicenseService,
-          { provide: LicenseTermsService, useValue: mockLicenseTermsService },
-          EventEmitter2,
-        ],
+        TooljetDbImportExportService,
+        TooljetDbTableOperationsService,
+        LicenseService,
+        { provide: LicenseTermsService, useValue: mockLicenseTermsService },
+        EventEmitter2,
+      ],
     })
       .overrideProvider(LicenseService)
       .useValue(mockLicenseService)
@@ -99,7 +98,9 @@ describe('EE (plan: enterprise)', () => {
     tjDbManager = tooljetDbDataSource.manager;
 
     service = moduleFixture.get<TooljetDbImportExportService>(TooljetDbImportExportService);
-    tooljetDbTableOperationsService = moduleFixture.get<TooljetDbTableOperationsService>(TooljetDbTableOperationsService);
+    tooljetDbTableOperationsService = moduleFixture.get<TooljetDbTableOperationsService>(
+      TooljetDbTableOperationsService
+    );
   });
 
   beforeEach(async () => {
@@ -116,9 +117,13 @@ describe('EE (plan: enterprise)', () => {
     await tjDbManager.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
 
     await setupTestTables(appManager, tjDbManager, tooljetDbTableOperationsService, organizationId);
-    const usersTable = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
+    const usersTable = await appManager.findOneOrFail(InternalTable, {
+      where: { organizationId, tableName: 'users' },
+    });
     usersTableId = usersTable.id;
-    const ordersTable = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
+    const ordersTable = await appManager.findOneOrFail(InternalTable, {
+      where: { organizationId, tableName: 'orders' },
+    });
     ordersTableId = ordersTable.id;
   });
 
@@ -174,8 +179,11 @@ describe('EE (plan: enterprise)', () => {
       expect(isValid).toBe(true);
     });
 
-    it('should throw NotFoundException for non-existent table', async () => {
-      await expect(service.export(organizationId, { table_id: uuidv4() }, [])).rejects.toThrow(NotFoundException);
+    it('should return null for non-existent table', async () => {
+      // Backward compatibility: export() intentionally returns null instead of throwing
+      // for a missing InternalTable, to avoid hard-failing export/clone on stale table
+      // references (see tooljet-db-import-export.service.ts).
+      await expect(service.export(organizationId, { table_id: uuidv4() }, [])).resolves.toBeNull();
     });
   });
 
@@ -256,7 +264,9 @@ describe('EE (plan: enterprise)', () => {
     });
 
     it('should not import new table cloning when table with same id and columns subset exist', async () => {
-      const existingTable = await appManager.findOne(InternalTable, { where: { organizationId, tableName: 'users' } });
+      const existingTable = await appManager.findOne(InternalTable, {
+        where: { organizationId, tableName: 'users' },
+      });
       const importData = {
         id: existingTable.id,
         table_name: 'users',
@@ -348,13 +358,15 @@ describe('EE (plan: enterprise)', () => {
 
   describe('.bulkImport | import multiple tables with foreign keys', () => {
     it('should import multiple ToolJet DB tables with foreign key relationships', async () => {
+      const productsTableId = uuidv4();
+      const ordersTableId = uuidv4();
       const importData = {
         app: null,
         organization_id: organizationId,
         tooljet_version: '2.50.5.5.8',
         tooljet_database: [
           {
-            id: 'products-table-id',
+            id: productsTableId,
             table_name: 'products',
             schema: {
               columns: [
@@ -381,7 +393,7 @@ describe('EE (plan: enterprise)', () => {
             },
           },
           {
-            id: 'orders-table-id',
+            id: ordersTableId,
             table_name: 'orders',
             schema: {
               columns: [
@@ -412,7 +424,7 @@ describe('EE (plan: enterprise)', () => {
                   referenced_column_names: ['id'],
                   on_update: 'CASCADE',
                   on_delete: 'RESTRICT',
-                  referenced_table_id: 'products-table-id',
+                  referenced_table_id: productsTableId,
                 },
               ],
             },
@@ -531,46 +543,45 @@ describe('EE (plan: enterprise)', () => {
     });
     it('should rollback changes on error during bulk import', async () => {
       await withRealTransactions(async () => {
-      const importData = {
-        organization_id: organizationId,
-        tooljet_version: '2.50.5.5.8',
-        tooljet_database: [
-          {
-            id: 'valid-table-id',
-            table_name: 'valid_table',
-            schema: {
-              columns: [
-                {
-                  column_name: 'id',
-                  data_type: 'bigint',
-                  constraints_type: {
-                    is_not_null: true,
-                    is_primary_key: true,
-                    is_unique: false,
+        const importData = {
+          organization_id: organizationId,
+          tooljet_version: '2.50.5.5.8',
+          tooljet_database: [
+            {
+              id: 'valid-table-id',
+              table_name: 'valid_table',
+              schema: {
+                columns: [
+                  {
+                    column_name: 'id',
+                    data_type: 'bigint',
+                    constraints_type: {
+                      is_not_null: true,
+                      is_primary_key: true,
+                      is_unique: false,
+                    },
                   },
-                },
-              ],
-              foreign_keys: [],
+                ],
+                foreign_keys: [],
+              },
             },
-          },
-          {
-            id: 'invalid-table-id',
-            table_name: 'invalid_table',
-            schema: {
-              columns: [], // This will cause an error
-              foreign_keys: [],
+            {
+              id: 'invalid-table-id',
+              table_name: 'invalid_table',
+              schema: {
+                columns: [], // This will cause an error
+                foreign_keys: [],
+              },
             },
-          },
-        ],
-      } as ImportResourcesDto;
+          ],
+        } as ImportResourcesDto;
 
-      await expect(service.bulkImport(importData, '2.50.5.5.8', false)).rejects.toThrow();
+        await expect(service.bulkImport(importData, '2.50.5.5.8', false)).rejects.toThrow();
 
-      // Verify that the valid table was not created due to rollback
-      const validTable = await appManager.findOne(InternalTable, { where: { tableName: 'valid_table' } });
-      expect(validTable).toBeNull();
+        // Verify that the valid table was not created due to rollback
+        const validTable = await appManager.findOne(InternalTable, { where: { tableName: 'valid_table' } });
+        expect(validTable).toBeNull();
       });
     });
   });
-});
 });

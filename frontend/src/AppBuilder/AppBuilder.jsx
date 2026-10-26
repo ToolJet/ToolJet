@@ -31,12 +31,13 @@ import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomCompo
 export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, appType = 'front-end' }) => {
   const isModuleEditor = appType === 'module';
   // Module read-only (Build-with vs Edit) is resolved inside useAppData from the session.
-  useAppData(appId, moduleId, darkMode, 'edit', {}, isModuleEditor);
+  useAppData(appId, moduleId, darkMode, 'edit', {}, isModuleEditor, isModuleEditor);
   const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);
 
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
+  const setCurrentLayout = useStore((state) => state.setCurrentLayout, shallow);
   const navigate = useNavigate();
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
@@ -52,6 +53,10 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     }
   }, [hasModuleAccess, isModuleEditor]);
 
+  // Store survives navigation between apps. Keyed on appId so page switches keep the current layout.
+  useEffect(() => {
+    setCurrentLayout('desktop');
+  }, [appId, setCurrentLayout]);
   const currentVersionId = useStore((state) => state.currentVersionId, shallow);
 
   // Tag every Sentry event raised while the editor is open — including handler/async
@@ -68,7 +73,12 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     });
     return () => {
       // Leaving the editor — drop the tags so other pages aren't mislabelled.
-      scope.setTags({ source: undefined, appId: undefined, versionId: undefined, organizationId: undefined });
+      scope.setTags({
+        source: undefined,
+        appId: undefined,
+        versionId: undefined,
+        organizationId: undefined,
+      });
     };
   }, [isEditorLoading, appId, currentVersionId]);
 

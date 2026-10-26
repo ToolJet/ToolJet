@@ -1,11 +1,11 @@
 import React from 'react';
-import * as ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import WorkspaceLimitModal from '../_components/WorkspaceLimitModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { sessionService, authenticationService } from '@/_services';
-import { redirectToSwitchOrArchivedAppPage } from './routes';
+import { redirectToSwitchOrArchivedAppPage, redirectToErrorPage } from './routes';
 import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { ERROR_TYPES } from './constants';
@@ -126,8 +126,9 @@ export function handleResponse(
         const modalContainer = document.getElementById('modal-div');
         if (!message?.includes('expired') && !avoidUpgradeModal && modalContainer) {
           // Force remount so the modal reopens on repeated 451s, not just a no-op prop update.
-          ReactDOM.unmountComponentAtNode(modalContainer);
-          ReactDOM.render(modalEl, modalContainer);
+          modalContainer._reactRoot?.unmount();
+          modalContainer._reactRoot = createRoot(modalContainer);
+          modalContainer._reactRoot.render(modalEl);
         }
       } else if ([400].indexOf(response.status) !== -1) {
         // Only hijack navigation for a signed-in visitor who landed on a workspace
@@ -138,6 +139,8 @@ export function handleResponse(
         if (currentSession?.authentication_status) {
           redirectToSwitchOrArchivedAppPage(data);
         }
+      } else if (response.status === 404 && data?.message === 'App is not available on this branch') {
+        redirectToErrorPage(ERROR_TYPES.APP_NOT_ON_BRANCH);
       }
       const error = (data && data.message) || response.statusText;
       return Promise.reject({ error, data, statusCode: response?.status });

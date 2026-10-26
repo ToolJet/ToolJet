@@ -1,7 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
 import _, { isEmpty } from 'lodash';
-import JSON5 from 'json5';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
@@ -341,14 +340,18 @@ export function validateQueryName(name) {
 }
 
 export function validateKebabCase(slug) {
-  const pattern = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
+  // Unicode letters and digits: the handle generator (lodash kebabCase of the page name)
+  // keeps non-Latin scripts, and the viewer routes them via percent-encoding. Kept in sync
+  // with the backend rule (server app-validation catalog/pages.json handlePattern) by
+  // AppBuilder/__tests__/validationCatalogParity.spec.js.
+  const pattern = /^[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*$/u;
   if (slug === '') {
     return { isValid: false, error: 'Handle cannot be empty.' };
   }
-  if (!/^[a-zA-Z0-9]/.test(slug)) {
+  if (!/^[\p{L}\p{N}]/u.test(slug)) {
     return { isValid: false, error: 'Handle must start with a letter or number.' };
   }
-  if (/[^a-zA-Z0-9-]/.test(slug)) {
+  if (/[^\p{L}\p{N}-]/u.test(slug)) {
     return { isValid: false, error: 'Handle can only contain letters, numbers, and hyphens.' };
   }
   if (/--/.test(slug)) {
@@ -597,15 +600,6 @@ export function toQuery(params, delimiter = '&') {
     return query;
   }, '');
 }
-
-export const isJson = (str) => {
-  try {
-    JSON5.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
-};
 
 export const isStringValidJson = (str) => {
   try {
@@ -1008,7 +1002,8 @@ export const validateName = (
   allowSpecialChars = true,
   allowSpaces = true,
   checkReservedWords = false,
-  allowAllCases = false
+  allowAllCases = false,
+  maxLength = 50
 ) => {
   const newName = name;
   let errorMsg = '';
@@ -1055,7 +1050,7 @@ export const validateName = (
       };
     }
 
-    if (newName.length > 50) {
+    if (newName.length > maxLength) {
       errorMsg = `Maximum length has been reached.`;
       showError &&
         toast.error(errorMsg, {
@@ -1153,7 +1148,7 @@ export const deepEqual = (obj1, obj2, excludedKeys = []) => {
         if (!deepEqual(obj1[key], obj2[key], excludedKeys)) {
           return false;
         }
-      } else if (obj1[key] != obj2[key]) {
+      } else if (obj1[key] !== obj2[key]) {
         return false;
       }
     }
@@ -1413,6 +1408,12 @@ export const checkConditionsForRoute = (conditions, conditionsObj) => {
 export const hasBuilderRole = (roleObj) => {
   if (roleObj.name) return roleObj.name === 'builder';
   return false;
+};
+
+export const canAccessTooljetDbDashboard = () => {
+  const { admin, super_admin, role } = authenticationService.currentSessionValue ?? {};
+  if (admin || super_admin) return true;
+  return hasBuilderRole(role ?? {}) && window.public_config?.TOOLJET_DB_DISABLE_BUILDER_EDIT !== 'true';
 };
 
 export function checkIfToolJetCloud(version) {

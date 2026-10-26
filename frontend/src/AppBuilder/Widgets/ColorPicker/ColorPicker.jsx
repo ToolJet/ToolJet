@@ -247,10 +247,10 @@ export const ColorPicker = (props) => {
   const buttonBorderColor = !isValid
     ? errTextColor
     : isFocusedOrOpen
-    ? accentColor
-    : isHovered
-    ? getModifiedColor(borderColor, 24)
-    : borderColor;
+      ? accentColor
+      : isHovered
+        ? getModifiedColor(borderColor, 24)
+        : borderColor;
 
   const buttonStyles = {
     borderRadius: `${borderRadius}px`,

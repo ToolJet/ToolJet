@@ -1,4 +1,14 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, Length, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 

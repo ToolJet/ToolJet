@@ -1,5 +1,4 @@
 import { SeverityNumber } from '@opentelemetry/api-logs';
-import { OtelLogStream } from '../../../../src/modules/logging/otel-log-stream';
 import { getServerLogger } from '@otel/logs';
 
 jest.mock('@otel/logs', () => ({
@@ -8,11 +7,15 @@ jest.mock('@otel/logs', () => ({
 
 describe('OtelLogStream', () => {
   const mockGetServerLogger = getServerLogger as jest.Mock;
-  let stream: OtelLogStream;
+  let stream: any; // OtelLogStream type is omitted since we require it dynamically
 
   beforeEach(() => {
     jest.clearAllMocks();
-    stream = new OtelLogStream();
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { OtelLogStream } = require('../../../../src/modules/logging/otel-log-stream');
+      stream = new OtelLogStream();
+    });
   });
 
   describe('when OTEL logging is not configured', () => {
@@ -102,7 +105,7 @@ describe('OtelLogStream', () => {
       );
     });
 
-    it('still resolves the correct severity from a bare numeric level (M2 — not dependent on service.ts\'s formatter)', () => {
+    it("still resolves the correct severity from a bare numeric level (M2 — not dependent on service.ts's formatter)", () => {
       // service.ts's formatters.level hook normally guarantees level is always a string —
       // but this file shouldn't silently misreport severity if that formatter is ever
       // reverted elsewhere. 50 is pino's own numeric code for "error".

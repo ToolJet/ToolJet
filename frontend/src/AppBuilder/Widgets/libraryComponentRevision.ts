@@ -37,7 +37,7 @@ export interface ComponentDefinitionLike {
 export const dashlessId = (id: string | undefined): string | undefined => id?.replace(/-/g, '');
 
 export const normalizePin = (pin: Pin): string | undefined =>
-  typeof pin === 'string' ? pin : pin?.revisionId ?? pin?.revision_id;
+  typeof pin === 'string' ? pin : (pin?.revisionId ?? pin?.revision_id);
 
 // F5+: the pin IS the selection now — VersionPicker writes it immediately whether the
 // chosen entry is a revision ('v3') or a dev bundle ('dev:{userId}'); there is no

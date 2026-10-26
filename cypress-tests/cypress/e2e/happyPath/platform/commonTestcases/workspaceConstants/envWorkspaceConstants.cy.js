@@ -66,10 +66,14 @@ describe("Workspace constants", () => {
         );
 
         switchToConstantTab("Secrets");
-        cy.get('[data-cy="headervalue-constant-visibility"]').click();
+        // Secret values are never revealed inline in the table (no visibility
+        // toggle is rendered for Secret-type constants, env-sourced or not) - the
+        // value always renders masked.
+        cy.get('[data-cy="headervalue-constant-visibility"]').should("not.exist");
         cy.get('[data-cy="headervalue-workspace-constant-value"]')
             .should("be.visible")
-            .and("have.text", "Values fetched at runtime, not stored in ToolJet");
+            .invoke("text")
+            .should("match", /^\*+$/);
 
         cy.get('[data-cy="headervalue-edit-button"]').should("be.disabled");
         cy.get('[data-cy="headervalue-delete-button"]').should("be.disabled");

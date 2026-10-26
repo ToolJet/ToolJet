@@ -17,7 +17,8 @@ export default function FolderFilter({ disabled, options, onChange, value }) {
 
   const updateFolderQuery = (name, id) => {
     const isWorkflow = window.location.pathname.includes('/workflows');
-    const basePath = `/${getWorkspaceId()}${isWorkflow ? '/workflows' : ''}`;
+    const isModule = window.location.pathname.includes('/modules');
+    const basePath = `/${getWorkspaceId()}${isWorkflow ? '/workflows' : isModule ? '/modules' : ''}`;
     const queryParams = id ? `?folder=${name}` : '';
     navigate({ pathname: basePath, search: queryParams }, { replace: true });
   };
@@ -27,7 +28,6 @@ export default function FolderFilter({ disabled, options, onChange, value }) {
       setCurrentFolder(defaultFolder);
     } else {
       setCurrentFolder({ ...value, value: value?.id });
-      handleFolderChange(value);
     }
   }, [value]);
 

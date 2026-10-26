@@ -302,6 +302,7 @@ describe("Custom Group Granular Access", () => {
 
         cy.defaultWorkspaceLogin();
         cleanAllUsers();
+        cy.apiDeleteAllApps();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
@@ -480,6 +481,7 @@ describe("Custom Group Granular Access", () => {
         cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
+            cy.wait(2000);
             apiAddUserToGroup(groupId1, data.email);
             cy.apiCreateGranularPermission(
                 groupName1,
@@ -596,6 +598,7 @@ describe("Custom Group Granular Access", () => {
 
         apiCreateGroup(groupName1).then((groupId) => {
             groupId1 = groupId;
+            cy.wait(2000);
             apiAddUserToGroup(groupId1, data.email);
             cy.apiCreateGranularPermission(
                 groupName1,
@@ -708,7 +711,7 @@ describe("Custom Group Granular Access", () => {
                 appId1 = appId;
             })
             .then(() => {
-                cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(()=>{
+                cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(() => {
 
                 //Scenario A : Can acces only released app and Preview button not visible
                 verifyEnvironmentAccess(
@@ -760,7 +763,7 @@ describe("Custom Group Granular Access", () => {
                     "production",
                 );
             });
-        });
+        }); 
     });
 
     it("Should verify preview and released app access for custom group End-user", () => {
@@ -914,14 +917,14 @@ describe("Custom Group Granular Access", () => {
                 });
                 cy.apiUpdateAllowSignUp(true, "organization");
                 cy.apiLogout();
-
+                cy.wait(2000);
                 //Scenario G : Signing-up with app preview link and should land on app preview
 
                 const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId1}/home?env=development&version=v1`;
                 cy.visit(previewUrl);
                 signup(data.firstName, data.email);
-                cy.wait(1500);
-                cy.get(commonSelectors.previewSettings).should('be.visible');
+                cy.wait(2000);
+                cy.waitForElement(commonSelectors.previewSettings).should('be.visible');
                 cy.get(commonWidgetSelector.draggableWidget("text1")).should(
                     "contain",
                     "development",
@@ -931,7 +934,7 @@ describe("Custom Group Granular Access", () => {
                 //Scenario H : Signing-up with app preview link without access, app preview should be restricted
                 loginAsAdmin();
                 cy.apiDeleteGranularPermission("end-user", ["app", "folder"]);
-
+                cy.wait(1000);
                 cy.apiLogout();
                 cy.visit(previewUrl);
                 signup(user1, email1);
@@ -942,7 +945,7 @@ describe("Custom Group Granular Access", () => {
 });
 
 const validateAndEditEnvironmentsInEditModal = (envTags, envOption) => {
-    cy.get(".css-uzxezq-multiValue").each(($el, index) => {
+    cy.get(".css-1dyz3mf .css-k3krtu-multiValue").each(($el, index) => {
         cy.wrap($el).should("contain", envTags[index]);
     });
     cy.get(".css-1wy0on6").click();

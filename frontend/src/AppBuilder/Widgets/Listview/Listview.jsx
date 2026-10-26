@@ -114,10 +114,10 @@ export const Listview = function Listview({
   const prevDynamicRef = useRef(isDynamicHeightEnabled);
   useEffect(() => {
     if (prevDynamicRef.current && !isDynamicHeightEnabled) {
-      clearContainerTempLayouts?.(id, parentIndices);
+      clearContainerTempLayouts?.(id, parentIndices, moduleId);
     }
     prevDynamicRef.current = isDynamicHeightEnabled;
-  }, [isDynamicHeightEnabled, id, parentIndices, clearContainerTempLayouts]);
+  }, [isDynamicHeightEnabled, id, parentIndices, clearContainerTempLayouts, moduleId]);
 
   // children/data are now derived directly in the store by deriveListviewExposedData.
   // onRecordOrRowClicked reads from the store imperatively at click time.
@@ -188,9 +188,10 @@ export const Listview = function Listview({
     // Update the customResolvables with the new listItems
     if (listItems.length > 0) {
       updateCustomResolvables(id, listItems, 'listItem', moduleId, parentIndices);
-      // Initialize exposed value arrays for children so per-row writes are correctly sized
-      initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
     }
+    // Size children's per-row exposed values to the row count. Runs for an empty list too:
+    // it is what prunes the removed rows from this Listview's children/data.
+    initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
   }
 
   const renderedRowCount = filteredData.length;
@@ -217,6 +218,7 @@ export const Listview = function Listview({
                 key={index}
                 id={id}
                 index={index}
+                moduleId={moduleId}
                 mode={mode}
                 rowHeight={rowHeight}
                 positiveColumns={positiveColumns}

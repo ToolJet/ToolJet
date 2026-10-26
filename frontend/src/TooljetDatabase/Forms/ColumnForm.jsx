@@ -1,18 +1,18 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import cx from 'classnames';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
 import Tick from '../Icons/Tick.svg';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
@@ -38,7 +38,7 @@ const ColumnForm = ({
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
 
-  const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, foreignKeys } = useTooljetDatabaseContext();
   const [timezone, setTimezone] = useState(getLocalTimeZone());
   const [onDeletePopup, setOnDeletePopup] = useState(false);
   const [isNotNull, setIsNotNull] = useState(false);
@@ -448,8 +448,8 @@ const ColumnForm = ({
                       dataType === 'serial'
                         ? 'Auto-generated'
                         : foreignKeyDefaultValue?.value === null
-                        ? 'Null'
-                        : 'Enter a value'
+                          ? 'Null'
+                          : 'Enter a value'
                     }
                     onChange={(value) => {
                       setForeignKeyDefaultValue(value);
@@ -481,12 +481,12 @@ const ColumnForm = ({
               dataType?.value === 'serial'
                 ? 'Foreign key relation cannot be created for serial type column'
                 : dataType?.value === 'boolean'
-                ? 'Foreign key relation cannot be created for boolean type column'
-                : dataType?.value === 'timestamp with time zone'
-                ? 'Foreign key relation cannot be created with this data type'
-                : isJsonbColumnType
-                ? 'Foreign key relation cannot be created for jsonb type column'
-                : 'Fill in column details to create a foreign key relation'
+                  ? 'Foreign key relation cannot be created for boolean type column'
+                  : dataType?.value === 'timestamp with time zone'
+                    ? 'Foreign key relation cannot be created with this data type'
+                    : isJsonbColumnType
+                      ? 'Foreign key relation cannot be created for jsonb type column'
+                      : 'Fill in column details to create a foreign key relation'
             }
             placement="top"
             tooltipClassName="tootip-table"
@@ -618,10 +618,10 @@ const ColumnForm = ({
               dataType?.value === 'boolean'
                 ? 'Unique constraint cannot be added for boolean type column'
                 : dataType?.value === 'timestamp with time zone'
-                ? 'Unique constraint cannot be added for this type column'
-                : isJsonbColumnType
-                ? 'Unique constraint cannot be added for JSON type column'
-                : ''
+                  ? 'Unique constraint cannot be added for this type column'
+                  : isJsonbColumnType
+                    ? 'Unique constraint cannot be added for JSON type column'
+                    : ''
             }
             placement="top"
             tooltipClassName="tootip-table"

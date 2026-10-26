@@ -13,7 +13,9 @@ export default class SlackQueryService implements QueryService {
     let clientId = null;
     if (useCredsFromEnv) clientId = process.env.SLACK_CLIENT_ID;
     if (useCredsFromDatasourceConfiguration) clientId = clientIdValue;
-    const host = useCredsFromDatasourceConfiguration ? redirectHostValue || process.env.TOOLJET_HOST : process.env.TOOLJET_HOST;
+    const host = useCredsFromDatasourceConfiguration
+      ? redirectHostValue || process.env.TOOLJET_HOST
+      : process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     return `https://slack.com/oauth/v2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${fullUrl}oauth2/authorize`;
@@ -41,7 +43,13 @@ export default class SlackQueryService implements QueryService {
       if (sourceOption.key === 'client_secret') clientSecretValue = sourceOption.value;
       if (sourceOption.key === 'tj_redirect_host') redirectHostValue = sourceOption.value;
     });
-    return { useCredsFromEnv, useCredsFromDatasourceConfiguration, clientIdValue, clientSecretValue, redirectHostValue };
+    return {
+      useCredsFromEnv,
+      useCredsFromDatasourceConfiguration,
+      clientIdValue,
+      clientSecretValue,
+      redirectHostValue,
+    };
   }
 
   async accessDetailsFrom(authCode: string, options: any, resetSecureData = false): Promise<object> {
@@ -53,8 +61,13 @@ export default class SlackQueryService implements QueryService {
     }
 
     const accessTokenUrl = 'https://slack.com/api/oauth.v2.access';
-    const { useCredsFromEnv, useCredsFromDatasourceConfiguration, clientIdValue, clientSecretValue, redirectHostValue } =
-      this.shouldUseCredentialsFromEnv(options);
+    const {
+      useCredsFromEnv,
+      useCredsFromDatasourceConfiguration,
+      clientIdValue,
+      clientSecretValue,
+      redirectHostValue,
+    } = this.shouldUseCredentialsFromEnv(options);
     let clientId = null;
     let clientSecret = null;
     if (useCredsFromEnv) {
@@ -66,7 +79,9 @@ export default class SlackQueryService implements QueryService {
       clientSecret = clientSecretValue;
     }
 
-    const host = useCredsFromDatasourceConfiguration ? redirectHostValue || process.env.TOOLJET_HOST : process.env.TOOLJET_HOST;
+    const host = useCredsFromDatasourceConfiguration
+      ? redirectHostValue || process.env.TOOLJET_HOST
+      : process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;

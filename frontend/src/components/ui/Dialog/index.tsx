@@ -6,14 +6,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from '@/components/ui/Rocket/Dialog/Dialog';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
-type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'outline'
-  | 'ghost'
-  | 'ghostBrand'
-  | 'dangerPrimary'
-  | 'dangerSecondary';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'ghostBrand' | 'dangerPrimary' | 'dangerSecondary';
 type ButtonSize = 'large' | 'default' | 'medium' | 'small';
 
 interface TjButtonProps extends React.ComponentPropsWithoutRef<'button'> {
@@ -36,9 +29,7 @@ const TypedDialogContent = DialogContent as ComponentType<
 >;
 const TypedDialogHeader = DialogHeader as ComponentType<React.ComponentPropsWithoutRef<'div'>>;
 const TypedDialogFooter = DialogFooter as ComponentType<React.ComponentPropsWithoutRef<'div'>>;
-const TypedDialogTitle = DialogTitle as ComponentType<
-  React.ComponentPropsWithoutRef<'h2'> & { 'data-cy'?: string }
->;
+const TypedDialogTitle = DialogTitle as ComponentType<React.ComponentPropsWithoutRef<'h2'> & { 'data-cy'?: string }>;
 const TypedButton = Button as ComponentType<TjButtonProps>;
 
 interface CancelBtnProps extends Omit<TjButtonProps, 'children'> {

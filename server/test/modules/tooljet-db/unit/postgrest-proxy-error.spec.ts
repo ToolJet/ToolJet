@@ -3,13 +3,21 @@ import { PostgrestProxyService } from '@modules/tooljet-db/services/postgrest-pr
 import { TooljetDatabaseError } from '@modules/tooljet-db/types';
 
 let options: any;
-jest.mock('express-http-proxy', () => (_url, config) => { options = config; return jest.fn(); });
+jest.mock('express-http-proxy', () => (_url, config) => {
+  options = config;
+  return jest.fn();
+});
 
 describe('PostgREST schema cache rejection', () => {
   it('returns a retryable explicit rejection instead of hanging when PostgREST returns an empty error', () => {
     new PostgrestProxyService({} as any, { get: () => 'http://localhost:3002' } as any, {} as any, {} as any);
     try {
-      options.userResDecorator({ statusCode: 404 }, Buffer.from('{}'), { headers: { tableInfo: { garden: 'garden' } } }, {});
+      options.userResDecorator(
+        { statusCode: 404 },
+        Buffer.from('{}'),
+        { headers: { tableInfo: { garden: 'garden' } } },
+        {}
+      );
       throw new Error('Expected rejection');
     } catch (error) {
       expect(error).toBeInstanceOf(TooljetDatabaseError);

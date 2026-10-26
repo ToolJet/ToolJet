@@ -7,9 +7,8 @@
     "cy:open": "cypress open --browser=chrome 103, --e2e"
   },
   "devDependencies": {
-    "@cypress/code-coverage": "^3.12.12",
     "@cypress/webpack-preprocessor": "^5.12.0",
-    "@faker-js/faker": "^7.3.0",
+    "@faker-js/faker": "^10.5.0",
     "chrome-remote-interface": "^0.34.0",
     "cypress": "^15.18.0",
     "cypress-live-reporter": "^0.1.0",
@@ -22,5 +21,8 @@
     "node-xlsx": "^0.4.0",
     "pdf-parse": "^1.1.1",
     "pg": "^8.8.0"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
   }
 }

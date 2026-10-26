@@ -17,11 +17,13 @@ export const ModalWidget = ({ ...restProps }) => {
     customStyles,
     parentRef,
     id,
+    moduleId,
     showConfigHandler,
     isDisabled,
     isLoading,
     modalBodyHeight,
     onHideModal,
+    onModalEntered,
     hideCloseButton,
     darkMode,
     modalWidth,
@@ -40,7 +42,7 @@ export const ModalWidget = ({ ...restProps }) => {
   const setComponentProperty = useStore((state) => state.setComponentProperty);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const temporaryLayouts = useStore((state) => {
-    return state.temporaryLayouts?.[getDynamicLayoutKey(id, subContainerIndex, '-body')];
+    return state.temporaryLayouts?.[getDynamicLayoutKey(id, subContainerIndex, '-body', moduleId)];
   }, shallow);
   const [needsBodyScroll, setNeedsBodyScroll] = useState(false);
   const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
@@ -144,6 +146,7 @@ export const ModalWidget = ({ ...restProps }) => {
         isDynamicHeightEnabled && needsBodyScroll && 'tj-modal-allow-body-scroll'
       )}
       animation={true}
+      onEntered={onModalEntered}
       onEscapeKeyDown={(e) => {
         e.preventDefault();
         if (hideOnEsc) {

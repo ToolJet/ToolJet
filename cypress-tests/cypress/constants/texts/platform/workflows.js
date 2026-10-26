@@ -6,7 +6,7 @@ export const workflowsText = {
   harperdbNodeName: "harperdb1",
   runjsInputField: "runjs-input-field",
   pgsqlQueryInputField: "query-input-field",
-  harperdbInputField: "sql-query-input-field",
+  harperdbInputField: "sql_query-input-field",
   restapiUrlInputField: "url-input-field",
   workflowNameInputField: "workflow-name-input",
   exportWFOption: "export-workflow",
@@ -34,7 +34,7 @@ export const workflowsText = {
   postgresResponseNodeQuery: "return postgresql1.data",
   // The database createPostgresDataSource connects to.
   postgresExpectedValue: "postgres",
-  
+
   restApiUrl: "http://9.234.17.31:8000/delay/10s",
   restApiResponseNodeQuery: "return restapi1.data",
   restApiExpectedValue: "<!DOCTYPE html>",

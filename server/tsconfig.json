@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "strict": false,
     "moduleResolution": "node",
     "types": [
       "node",

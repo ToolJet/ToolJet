@@ -1,28 +1,26 @@
 /** App factory with caching, license mocking, and DB lifecycle for tests. */
-import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
+import { DynamicModule, INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { AppModule } from '@modules/app/module';
-import { AuditLogsModule } from '@ee/audit-logs/module';
+import { WorkflowsModule } from '@modules/workflows/module';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
+import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
 import * as cookieParser from 'cookie-parser';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import LicenseBase from '@modules/licensing/configs/LicenseBase';
 import { getLicenseFieldValue } from '@modules/licensing/helper';
-import { LICENSE_FIELD, LICENSE_TYPE } from '@modules/licensing/constants';
-import {
-  BASIC_PLAN_TERMS,
-  STARTER_PLAN_TERMS_CLOUD,
-  PRO_PLAN_TERMS_CLOUD,
-  TEAM_PLAN_TERMS_CLOUD,
-} from '@ee/licensing/constants/PlanTerms';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { BASIC_PLAN_TERMS as CE_BASIC_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import * as fs from 'fs';
 import { getEnvVars } from 'scripts/database-config-utils';
+import { setConnectionInstance } from '@helpers/database.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 
 // ---------------------------------------------------------------------------
@@ -67,6 +65,8 @@ export function setDataSources(nestApp: INestApplication) {
   } catch {
     // tooljetDb connection may not exist in all test configurations
   }
+  // cached-app reuse skips the GetConnection ctor; resync so dbTransactionWrap reads the active app's DataSource
+  setConnectionInstance(_defaultDataSource);
 }
 
 /** Returns the default TypeORM DataSource. Throws if setDataSources() was not called. */
@@ -167,6 +167,8 @@ let _suiteDS: TypeOrmDataSource | undefined;
 // Test-level: SAVEPOINT name within the suite transaction
 let _testSavepoint: string | undefined;
 let _testSavepointId = 0;
+// Last savepoint that was actually created — recovery anchor when TX aborts between tests
+let _lastGoodSavepoint: string | undefined;
 
 /** No-op proxy: routes all queries through the suite QR, ignores transaction management. */
 function createQRProxy(realQR: QueryRunner): QueryRunner {
@@ -234,7 +236,9 @@ export async function rollbackSuiteTransaction() {
     try {
       await _suiteQR_tj.rollbackTransaction();
       await _suiteQR_tj.release();
-    } catch { /* best effort */ }
+    } catch {
+      /* best effort */
+    }
     _suiteQR_tj = undefined;
   }
   const tjDs = getTooljetDbDataSource();
@@ -244,6 +248,7 @@ export async function rollbackSuiteTransaction() {
   _suiteOrigCreateQR_tj = undefined;
   _suiteDS = undefined;
   _testSavepointId = 0;
+  _lastGoodSavepoint = undefined;
 }
 
 /** Creates a SAVEPOINT within the suite transaction. Call in beforeEach. */
@@ -254,10 +259,35 @@ export async function beginTestTransaction() {
   if (!_suiteQR) await beginSuiteTransaction();
   if (!_suiteQR) return;
   _testSavepoint = `test_${++_testSavepointId}`;
-  await _suiteQR.query(`SAVEPOINT ${_testSavepoint}`);
-  if (_suiteQR_tj) {
-    await _suiteQR_tj.query(`SAVEPOINT ${_testSavepoint}`);
+  try {
+    await createTestSavepoint(_testSavepoint);
+  } catch (err) {
+    // TX aborted between tests (stray async server work): rewind to anchor, retry
+    if (!_lastGoodSavepoint) throw err;
+    await _suiteQR.query(`ROLLBACK TO SAVEPOINT ${_lastGoodSavepoint}`);
+    if (_suiteQR_tj) {
+      await _suiteQR_tj.query(`ROLLBACK TO SAVEPOINT ${_lastGoodSavepoint}`);
+    }
+    await createTestSavepoint(_testSavepoint);
   }
+  _lastGoodSavepoint = _testSavepoint;
+}
+
+async function createTestSavepoint(name: string) {
+  await _suiteQR.query(`SAVEPOINT ${name}`);
+  if (_suiteQR_tj) {
+    await _suiteQR_tj.query(`SAVEPOINT ${name}`);
+  }
+}
+
+/** Recovers an aborted suite TX (stray async server work between tests). Returns false when not applicable. */
+export async function recoverAbortedSuiteTx(): Promise<boolean> {
+  if (!_suiteQR || !_testSavepoint) return false;
+  await _suiteQR.query(`ROLLBACK TO SAVEPOINT ${_testSavepoint}`);
+  if (_suiteQR_tj) {
+    await _suiteQR_tj.query(`ROLLBACK TO SAVEPOINT ${_testSavepoint}`);
+  }
+  return true;
 }
 
 /** Rolls back to the test SAVEPOINT. Call in afterEach. */
@@ -290,65 +320,23 @@ export async function withRealTransactions(fn: () => Promise<void>) {
 // App factory
 // ---------------------------------------------------------------------------
 
-/**
- * Enterprise Terms — all features enabled, all limits unlimited.
- * In production, these are encoded in the encrypted license key (no constant exists).
- * Defined here so enterprise tests go through the same LicenseBase parsing path
- * as every other plan — no test-mode shortcuts.
- */
-const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
-  apps: 'UNLIMITED',
-  workspaces: 'UNLIMITED',
-  users: { total: 'UNLIMITED', editor: 'UNLIMITED', viewer: 'UNLIMITED', superadmin: 'UNLIMITED' },
-  database: { table: 'UNLIMITED' },
-  type: LICENSE_TYPE.ENTERPRISE,
-  features: {
-    auditLogs: true, oidc: true, ldap: true, saml: true,
-    customStyling: true, whiteLabelling: true, appWhiteLabelling: true, customThemes: true,
-    serverSideGlobalResolve: true, multiEnvironment: true, multiPlayerEdit: true,
-    comments: true, gitSync: true, ai: true, externalApi: true, scim: true,
-    customDomains: true, google: true, github: true,
-  },
-  auditLogs: { maximumDays: 365 },
-  app: {
-    pages: { enabled: true, count: 'UNLIMITED', features: { appHeaderAndLogo: true, addNavGroup: true } },
-    permissions: { component: true, query: true, pages: true },
-    features: { promote: true, release: true, history: true, customComponentLibraries: true },
-  },
-  modules: { enabled: true },
-  permissions: { customGroups: true },
-  observability: { enabled: true },
-  workflows: {
-    // workflowExecutionTimeout is a literal timeout ceiling, not a sentinel like the
-    // 'UNLIMITED' fields above -- 0 means "time out immediately", not "no limit".
-    enabled: true, execution_timeout: 3600,
-    workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
-    instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
-  },
-  ai: { plan: 'credits' },
+/** Plan → Terms mapping. Unknown plans throw; the EE helper registers the rest. */
+const PLAN_TO_TERMS: Record<string, Partial<Terms>> = {
+  basic: CE_BASIC_PLAN_TERMS as Partial<Terms>,
 };
 
-/**
- * Plan → Terms mapping.
- * Mirrors the production flow where Terms are resolved per plan:
- *   EE:    License key is decrypted into Terms (server/ee/licensing/configs/License.ts)
- *   Cloud: Terms are pre-computed at payment time and stored in organization_license.terms
- *          (server/ee/organization-payments/service.ts → webhookInvoicePaidHandler)
- *          At runtime, OrganizationLicense falls back to plan defaults
- *          (server/ee/licensing/configs/organization-license.ts → getDefaultPlanTerms)
- */
-const PLAN_TO_TERMS: Record<string, Partial<Terms>> = {
-  enterprise: ENTERPRISE_TEST_TERMS,
-  trial: ENTERPRISE_TEST_TERMS,
-  team: TEAM_PLAN_TERMS_CLOUD as Partial<Terms>,
-  starter: STARTER_PLAN_TERMS_CLOUD as Partial<Terms>,
-  pro: PRO_PLAN_TERMS_CLOUD as Partial<Terms>,
-  basic: BASIC_PLAN_TERMS as Partial<Terms>,
-};
+/** Adds or overrides plan terms. Module-scoped, so it lasts for the current spec file. */
+export function registerPlanTerms(terms: Record<string, Partial<Terms>>): void {
+  Object.assign(PLAN_TO_TERMS, terms);
+}
 
 /** Creates a real LicenseBase instance for the given plan. */
 function createLicenseInstance(plan: string): LicenseBase {
-  const terms = PLAN_TO_TERMS[plan] ?? ENTERPRISE_TEST_TERMS;
+  const terms = PLAN_TO_TERMS[plan];
+  if (!terms)
+    throw new Error(
+      `No test terms for plan '${plan}'. Register them with registerPlanTerms() or move the spec to ee/test.`
+    );
   const futureDate = new Date();
   futureDate.setMinutes(futureDate.getMinutes() + 30);
   return new (LicenseBase as any)(CE_BASIC_PLAN_TERMS, terms, new Date(), new Date(), futureDate, plan);
@@ -388,9 +376,11 @@ function createResilientLicenseTermsMock(plan: string) {
   return mock;
 }
 
+export type TestLicenseTermsMock = ReturnType<typeof createResilientLicenseTermsMock>;
+
 /** Reconfigures the mock's LicenseBase instance for the given plan. */
-function configurePlanMock(app: INestApplication, plan: string) {
-  const lts = app.get(LicenseTermsService) as ReturnType<typeof createResilientLicenseTermsMock>;
+export function configurePlanMock(app: INestApplication, plan: string) {
+  const lts = app.get(LicenseTermsService) as TestLicenseTermsMock;
   if (!lts._licenseInstance) return; // not our mock — skip
   lts._licenseInstance = createLicenseInstance(plan);
 }
@@ -398,6 +388,11 @@ function configurePlanMock(app: INestApplication, plan: string) {
 async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {
   app.setGlobalPrefix('api');
   app.use(cookieParser());
+  // Mirrors main.ts's interceptor setup — without it, RequestContext.setLocals(...) never
+  // becomes an emitted 'auditLogEntry' event, so audit-log e2e assertions can't pass.
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(moduleRef.get(Reflector), moduleRef.get(Logger), moduleRef.get(EventEmitter2))
+  );
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
@@ -408,10 +403,10 @@ async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: 
 }
 
 export interface InitTestAppOptions {
-  /** Edition to simulate. Default: 'ee'. Each edition loads different modules — gets its own cache slot. */
+  /** Edition to simulate. Default: 'ce'. Each edition loads different modules — gets its own cache slot. */
   edition?: 'ce' | 'ee' | 'cloud';
   /**
-   * License plan to simulate. Default: 'enterprise' (all features unlocked).
+   * License plan to simulate. Default: 'basic'.
    * Does NOT create a new app — reconfigures the LicenseTermsService mock
    * on the cached app to return plan-appropriate values.
    */
@@ -422,6 +417,8 @@ export interface InitTestAppOptions {
    * The fresh app is NOT cached and will be properly closed by closeTestApp().
    */
   freshApp?: boolean;
+  /** Modules registered alongside AppModule. Called only when a new app is built, after TOOLJET_EDITION is set. */
+  extraModules?: () => Promise<DynamicModule[]>;
 }
 
 export interface InitTestAppResult {
@@ -430,11 +427,7 @@ export interface InitTestAppResult {
 
 /** Creates or reuses a cached NestJS test app for the given edition, configured with the specified license plan. */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
-  const {
-    edition = 'ee',
-    plan = 'enterprise',
-    freshApp = false,
-  } = options ?? {};
+  const { edition = 'ce', plan = 'basic', freshApp = false, extraModules } = options ?? {};
 
   // Cache key: only edition matters. Plan reconfigures the mock, not the app.
   const isCacheable = !freshApp;
@@ -466,7 +459,9 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   const moduleBuilder = Test.createTestingModule({
     imports: [
       await AppModule.register({ IS_GET_CONTEXT: true }),
-      await AuditLogsModule.register({ IS_GET_CONTEXT: true }),
+      // AppModule skips WorkflowsModule when IS_GET_CONTEXT is set, so mount its controllers here.
+      await WorkflowsModule.register({ IS_GET_CONTEXT: true }, true),
+      ...((await extraModules?.()) ?? []),
     ],
   });
 
@@ -566,6 +561,4 @@ export async function resetDB() {
 
   if (existingSet.has('instance_settings'))
     await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE'`);
-
 }
-

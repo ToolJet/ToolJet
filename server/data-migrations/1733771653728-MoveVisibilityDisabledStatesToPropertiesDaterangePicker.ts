@@ -44,7 +44,7 @@ export class MoveVisibilityDisabledStatesToPropertiesDaterangePicker173377165372
         styles.boxShadow = generalStyles?.boxShadow;
         delete generalStyles?.boxShadow;
       }
-       
+
       if (general?.tooltip) {
         properties.tooltip = general?.tooltip;
         delete general?.tooltip;

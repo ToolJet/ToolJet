@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { InitModule } from './decorators/init-module';
 import { MODULES } from './constants/modules';
 import { InitFeature } from './decorators/init-feature.decorator';
@@ -14,8 +14,8 @@ export class AppController {
 
   @Get(['/health', '/api/health'])
   @InitFeature(FEATURE_KEY.HEALTH)
-  async healthCheck() {
-    return this.appService.getHealth();
+  async healthCheck(@Query('verbose') verbose?: string) {
+    return this.appService.getHealth(verbose === 'true');
   }
 
   @Get('/')

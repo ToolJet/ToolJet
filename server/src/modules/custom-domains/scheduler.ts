@@ -85,7 +85,9 @@ export class CustomDomainStatusScheduler {
           const cfStatus = data.result.status;
           const newStatus = STATUS_MAP[cfStatus] || 'pending_verification';
           if (!STATUS_MAP[cfStatus]) {
-            this.logger.warn(`Unknown Cloudflare hostname status "${cfStatus}" for ${domain.domain}, defaulting to pending_verification`);
+            this.logger.warn(
+              `Unknown Cloudflare hostname status "${cfStatus}" for ${domain.domain}, defaulting to pending_verification`
+            );
           }
 
           const rawSslStatus = data.result.ssl?.status;
@@ -93,7 +95,9 @@ export class CustomDomainStatusScheduler {
           if (rawSslStatus) {
             newSslStatus = SSL_STATUS_MAP[rawSslStatus] || 'pending';
             if (!SSL_STATUS_MAP[rawSslStatus]) {
-              this.logger.warn(`Unknown Cloudflare SSL status "${rawSslStatus}" for ${domain.domain}, defaulting to pending`);
+              this.logger.warn(
+                `Unknown Cloudflare SSL status "${rawSslStatus}" for ${domain.domain}, defaulting to pending`
+              );
             }
           }
 

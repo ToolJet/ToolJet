@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/server"
+    schedule:
+      interval: "weekly"
+    target-branch: "lts-3.16"
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    target-branch: "lts-3.16"
+
+  - package-ecosystem: "npm"
+    directory: "/plugins"
+    schedule:
+      interval: "weekly"
+    target-branch: "lts-3.16"
+
+  - package-ecosystem: "npm"
+    directory: "/marketplace"
+    schedule:
+      interval: "weekly"
+    target-branch: "lts-3.16"

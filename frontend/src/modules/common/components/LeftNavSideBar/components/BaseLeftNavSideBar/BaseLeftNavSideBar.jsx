@@ -3,6 +3,8 @@ import { ToolTip } from '@/_components/ToolTip';
 import { NotificationCenter } from '@/_components/NotificationCenter';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
+import { appendBranchName } from '@/_helpers/active-branch';
 import { Link } from 'react-router-dom';
 import { SettingsMenu } from '@/modules/dashboard/components';
 
@@ -13,8 +15,6 @@ const BaseLeftNavSideBar = ({
   showNewHomePage,
   darkMode,
   switchDarkMode,
-  admin,
-  isBuilder,
   isAuthorizedForGDS,
   canCreateVariableOrConstant,
   featureAccess,
@@ -44,7 +44,7 @@ const BaseLeftNavSideBar = ({
         <li className="text-center cursor-pointer">
           <ToolTip message="Apps" placement="right">
             <Link
-              to={getPrivateRoute('dashboard')}
+              to={appendBranchName(getPrivateRoute('dashboard'))}
               onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               className={`tj-leftsidebar-icon-items  ${
                 (router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')) &&
@@ -86,15 +86,15 @@ const BaseLeftNavSideBar = ({
                     router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
                       ? '#3E63DD'
                       : darkMode
-                      ? '#4C5155'
-                      : '#C1C8CD'
+                        ? '#4C5155'
+                        : '#C1C8CD'
                   }
                 />
               </Link>
             </ToolTip>
           </li>
         )}
-        {(admin || isBuilder) && (
+        {canAccessTooljetDbDashboard() && (
           <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
             <ToolTip message="ToolJet Database" placement="right">
               <Link
@@ -123,7 +123,7 @@ const BaseLeftNavSideBar = ({
           <li className="text-center cursor-pointer">
             <ToolTip message="Data sources" placement="right">
               <Link
-                to={getPrivateRoute('data_sources')}
+                to={appendBranchName(getPrivateRoute('data_sources'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
                 className={`tj-leftsidebar-icon-items  ${
                   router.pathname === getPrivateRoute('data_sources') && `current-seleted-route`

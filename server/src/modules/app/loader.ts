@@ -17,6 +17,7 @@ import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.s
 import { buildBaseLogger } from '@modules/logging/base-logger';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
+import { RedisModule } from '@modules/redis/module';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -50,7 +51,10 @@ export class AppModuleLoader {
       }),
       // ScheduleModule registers cron timers that accumulate across test files.
       // Excluding it in test mode makes @Cron decorators inert (no timers fire).
-      ...(isTest ? [] : [ScheduleModule.forRoot()]),
+      // Also excluded in migration/get-context mode: a data migration only needs DB + DI, not
+      // cron timers — booting them (and the schedulers they drive) idles the shared migration
+      // transaction long enough to be killed. See AppModule.register conditional providers.
+      ...(isTest || configs.IS_GET_CONTEXT ? [] : [ScheduleModule.forRoot()]),
       BullModule.forRoot({
         connection: {
           host: process.env.REDIS_HOST || 'localhost',
@@ -134,6 +138,7 @@ export class AppModuleLoader {
       RequestContextModule,
       GuardValidatorModule,
       LoggingModule.forRoot(),
+      RedisModule.forRoot(),
     ];
 
     // Add OpenTelemetry Module if enabled

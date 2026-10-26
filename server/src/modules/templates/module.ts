@@ -20,6 +20,10 @@ import { AppHistoryModule } from '@modules/app-history/module';
 
 export class TemplatesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { TemplatesService, TemplateAppsController } = await this.getProviders(configs, 'templates', [
       'service',
       'controller',
@@ -38,7 +42,7 @@ export class TemplatesModule extends SubModule {
       'util.service',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: TemplatesModule,
       imports: [
         await EncryptionModule.register(configs),
@@ -70,6 +74,6 @@ export class TemplatesModule extends SubModule {
         FeatureAbilityFactory,
       ],
       controllers: isMainImport ? [TemplateAppsController] : [],
-    };
+    });
   }
 }

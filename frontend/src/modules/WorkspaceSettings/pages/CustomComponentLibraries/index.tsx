@@ -8,7 +8,10 @@ import Dialog from '@/components/ui/Dialog';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { Button } from '@/components/ui/Button/Button';
 import { licenseService } from '@/_services/license.service';
-import { customComponentLibrariesService, type CustomComponentLibrary } from '@/_services/customComponentLibraries.service';
+import {
+  customComponentLibrariesService,
+  type CustomComponentLibrary,
+} from '@/_services/customComponentLibraries.service';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 
 import './custom-component-libraries.styles.scss';
@@ -28,8 +31,7 @@ interface CustomComponentLibrariesProps {
 
 export default function CustomComponentLibraries({ darkMode }: CustomComponentLibrariesProps) {
   const libraries = useCustomComponentLibrariesStore((state: any) => state.libraries) as
-    | CustomComponentLibrary[]
-    | null; // null = loading
+    CustomComponentLibrary[] | null; // null = loading
   const loadFailed = useCustomComponentLibrariesStore((state: any) => state.loadFailed) as boolean; // failed fetch ≠ empty list
   const [deleteTarget, setDeleteTarget] = useState<CustomComponentLibrary | null>(null);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
@@ -70,7 +72,7 @@ export default function CustomComponentLibraries({ darkMode }: CustomComponentLi
       toast.error(
         apps?.length
           ? `Cannot delete — in use by: ${apps.join(', ')}`
-          : error?.data?.message ?? 'Could not delete library',
+          : (error?.data?.message ?? 'Could not delete library'),
         { duration: 5000 }
       );
     }
@@ -129,7 +131,11 @@ export default function CustomComponentLibraries({ darkMode }: CustomComponentLi
                   trigger="click"
                   placement="bottom-end"
                   overlay={
-                    <Popover id="popover-ccl-menu" className={(darkMode && 'dark-theme') || ''} style={{ transition: 'none' }}>
+                    <Popover
+                      id="popover-ccl-menu"
+                      className={(darkMode && 'dark-theme') || ''}
+                      style={{ transition: 'none' }}
+                    >
                       <Popover.Body bsPrefix="popover-body">
                         <ButtonComponent
                           isLucid

@@ -12,12 +12,16 @@ export interface IAppsService {
     user: User,
     validateAppAccessDto: ValidateAppAccessDto
   ): Promise<ValidateAppAccessResponseDto>;
-  validateReleasedApp(ability: any, app: App): { id: string; slug: string };
+  validateReleasedApp(
+    ability: any,
+    app: App,
+    user?: User
+  ): Promise<{ id: string; slug: string; currentVersionId: string; appDataRevision: string | null }>;
   update(app: App, appUpdateDto: AppUpdateDto, user: User): Promise<any>;
   delete(app: App, user: User): Promise<void>;
   getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any>;
   findTooljetDbTables(appId: string): Promise<{ table_id: string }[]>;
-  getOne(app: App, user: User): Promise<any>;
+  getOne(app: App, user: User, branchId?: string): Promise<any>;
   getBySlug(app: App, user: User): Promise<any>;
   getAppAuthenticationConfig(slug: string): Promise<any>;
   getRestrictedAccessInfo(slug: string, user: User): Promise<any>;

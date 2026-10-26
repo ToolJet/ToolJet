@@ -1,6 +1,8 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { isEmpty } from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
 import { Col, Container, Row } from 'react-bootstrap';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import DropDownSelect from './DropDownSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -11,13 +13,11 @@ import RightArrow from '@/_ui/Icon/solidIcons/RightArrow';
 import DownArrow from '@/_ui/Icon/solidIcons/DownArrow';
 import InfomrationCirlce from '@/_ui/Icon/solidIcons/InformationCircle';
 import { ToolTip } from '@/_components/ToolTip';
-import { v4 as uuidv4 } from 'uuid';
-import _ from 'lodash';
 import { NoCondition } from './NoConditionUI';
 
 export default function JoinSelect({ darkMode }) {
   const { joinOptions, tableInfo, joinTableOptions, joinTableOptionsChange, findTableDetails } =
-    useContext(TooljetDatabaseContext);
+    useToolJetDbOperationsContext();
 
   const joinSelectOptions = deepClone(joinTableOptions['fields']) || [];
   const setJoinSelectOptions = (fields) => {
@@ -271,7 +271,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
     .filter((col) => !preSelectedOptions.includes(col.name)) // Filter out columns
     .map((col) => ({ label: col.name, value: col.name, table: col.table, icon: 'jsonb' })); // Transform each filtered column
 
-  const isJsonbColumnSelected = _.isEmpty(selectedJsonbColumns);
+  const isJsonbColumnSelected = isEmpty(selectedJsonbColumns);
 
   return (
     <div className="d-flex flex-column custom-gap-4 w-100">
@@ -350,7 +350,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
               </div>
             );
           })}
-          {_.isEmpty(jsonPaths) && <NoCondition text="There are no columns added" />}
+          {isEmpty(jsonPaths) && <NoCondition text="There are no columns added" />}
 
           <ToolTip
             message={'There are no more JSON type columns'}
@@ -358,14 +358,14 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
             placement="top"
             trigger={['hover', 'focus']}
             width="160px"
-            show={_.isEmpty(options)}
+            show={isEmpty(options)}
           >
             <ButtonSolid
               variant="ghostBlue"
               size="sm"
               onClick={addNewColumnOptionsPair}
               className={`cursor-pointer fit-content mt-2}`}
-              disabled={_.isEmpty(options)}
+              disabled={isEmpty(options)}
               data-cy="tooljetdb-join-select-add-column-button"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">

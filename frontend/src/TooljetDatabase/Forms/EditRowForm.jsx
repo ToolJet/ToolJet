@@ -1,9 +1,9 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { isEqual } from 'lodash';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
-import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
-import _ from 'lodash';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { renderDatatypeIcon, listAllPrimaryKeyColumns, postgresErrorCode } from '../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
@@ -34,7 +34,7 @@ const compareValueInObject = (currentValue, defaultValue) => {
     }
 
     // Step 2: Use Lodash's isEqual for a deep comparison
-    return _.isEqual(cv, defaultVal);
+    return isEqual(cv, defaultVal);
   } catch (error) {
     return false;
   }
@@ -57,8 +57,7 @@ const EditRowForm = ({
   initiator,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } =
-    useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } = useTooljetDatabaseContext();
   const inputRefs = useRef({});
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
@@ -221,14 +220,14 @@ const EditRowForm = ({
           newInputValues[index].value === null
             ? null
             : newInputValues[index].value === actualDefaultVal
-            ? defaultValue === 'true'
-              ? true
-              : false
-            : newInputValues[index].value === currentValue
-            ? currentValue
-            : currentValue === null && customBooleanVal === false
-            ? null
-            : null,
+              ? defaultValue === 'true'
+                ? true
+                : false
+              : newInputValues[index].value === currentValue
+                ? currentValue
+                : currentValue === null && customBooleanVal === false
+                  ? null
+                  : null,
       });
     } else if (dataType === 'jsonb') {
       setRowData({
@@ -237,12 +236,12 @@ const EditRowForm = ({
           newInputValues[index].value === null
             ? null
             : compareValueInObject(newInputValues[index].value, defaultValue)
-            ? defaultValue
-            : _.isEqual(newInputValues[index].value, currentValue)
-            ? currentValue
-            : currentValue === null && customVal === ''
-            ? ''
-            : null,
+              ? defaultValue
+              : isEqual(newInputValues[index].value, currentValue)
+                ? currentValue
+                : currentValue === null && customVal === ''
+                  ? ''
+                  : null,
       });
     } else {
       setRowData({
@@ -251,12 +250,12 @@ const EditRowForm = ({
           newInputValues[index].value === null
             ? null
             : newInputValues[index].value === defaultValue
-            ? defaultValue
-            : newInputValues[index].value === currentValue
-            ? currentValue
-            : currentValue === null && customVal === ''
-            ? ''
-            : null,
+              ? defaultValue
+              : newInputValues[index].value === currentValue
+                ? currentValue
+                : currentValue === null && customVal === ''
+                  ? ''
+                  : null,
       });
     }
   };
@@ -801,14 +800,14 @@ const EditRowForm = ({
                               activeTab[index] === 'Null' && !darkMode
                                 ? 'white'
                                 : activeTab[index] === 'Null' && darkMode
-                                ? '#242f3c'
-                                : 'transparent',
+                                  ? '#242f3c'
+                                  : 'transparent',
                             color:
                               activeTab[index] === 'Null' && !darkMode
                                 ? '#3E63DD'
                                 : activeTab[index] === 'Null' && darkMode
-                                ? 'white'
-                                : '#687076',
+                                  ? 'white'
+                                  : '#687076',
                           }}
                           className="row-tab-content"
                         >
@@ -833,14 +832,14 @@ const EditRowForm = ({
                               activeTab[index] === 'Default' && !darkMode
                                 ? 'white'
                                 : activeTab[index] === 'Default' && darkMode
-                                ? '#242f3c'
-                                : 'transparent',
+                                  ? '#242f3c'
+                                  : 'transparent',
                             color:
                               activeTab[index] === 'Default' && !darkMode
                                 ? '#3E63DD'
                                 : activeTab[index] === 'Default' && darkMode
-                                ? 'white'
-                                : '#687076',
+                                  ? 'white'
+                                  : '#687076',
                           }}
                           className="row-tab-content"
                         >
@@ -865,14 +864,14 @@ const EditRowForm = ({
                               activeTab[index] === 'Custom' && !darkMode
                                 ? 'white'
                                 : activeTab[index] === 'Custom' && darkMode
-                                ? '#242f3c'
-                                : 'transparent',
+                                  ? '#242f3c'
+                                  : 'transparent',
                             color:
                               activeTab[index] === 'Custom' && !darkMode
                                 ? '#3E63DD'
                                 : activeTab[index] === 'Custom' && darkMode
-                                ? 'white'
-                                : '#687076',
+                                  ? 'white'
+                                  : '#687076',
                           }}
                           className="row-tab-content"
                         >
@@ -886,8 +885,8 @@ const EditRowForm = ({
                       isSerialDataTypeColumn
                         ? 'Serial data type values cannot be modified'
                         : constraints_type?.is_primary_key
-                        ? 'Cannot edit primary key values'
-                        : null
+                          ? 'Cannot edit primary key values'
+                          : null
                     }
                     placement="top"
                     tooltipClassName="tootip-table"
