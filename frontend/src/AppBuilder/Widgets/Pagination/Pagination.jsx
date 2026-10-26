@@ -13,6 +13,7 @@ export const Pagination = ({
   width,
 }) => {
   const isInitialRender = useRef(true);
+  const listRef = useRef(null);
   const { visibility, disabledState, loadingState } = properties;
   const { boxShadow, alignment } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
@@ -47,7 +48,8 @@ export const Pagination = ({
   }
 
   useEffect(() => {
-    if (properties.defaultPageIndex) {
+    // Applied as authored, 0 included: an out-of-range index selects no page.
+    if (properties.defaultPageIndex != null) {
       if (!isInitialRender.current) {
         pageChanged(properties.defaultPageIndex);
       } else {
@@ -151,47 +153,61 @@ export const Pagination = ({
       role="navigation"
       id={`component-${id}`}
     >
-      <ul
-        className="pagination m-0"
-        style={{ ...computedStyles, ...(isLoading ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
-      >
-        <Pagination.Operator
-          operator="<<"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoFirstPage}
-          darkMode={darkMode}
-        />
-        <Pagination.Operator
-          operator="<"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoPreviousPage}
-          darkMode={darkMode}
-        />
-        <Pagination.PageLinks
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          callback={gotoPage}
-          darkMode={darkMode}
-          containerWidth={width}
-          isLoading={isLoading}
-        />
-        <Pagination.Operator
-          operator=">"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoNextPage}
-          darkMode={darkMode}
-        />
-        <Pagination.Operator
-          operator=">>"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoLastPage}
-          darkMode={darkMode}
-        />
-      </ul>
+      {isLoading && (
+        <div className="loading-overlay">
+          <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        </div>
+      )}
+      {!isLoading && (
+        <ul
+          ref={listRef}
+          className="pagination m-0"
+          style={{
+            ...computedStyles,
+            overflowX: 'clip',
+            alignItems: 'center',
+            ...(isLoading ? { opacity: 0.4, pointerEvents: 'none' } : {}),
+          }}
+        >
+          <Pagination.Operator
+            operator="<<"
+            currentPage={currentPage}
+            totalPages={properties.numberOfPages}
+            handleOnClick={gotoFirstPage}
+            darkMode={darkMode}
+          />
+          <Pagination.Operator
+            operator="<"
+            currentPage={currentPage}
+            totalPages={properties.numberOfPages}
+            handleOnClick={gotoPreviousPage}
+            darkMode={darkMode}
+          />
+          <Pagination.PageLinks
+            currentPage={currentPage}
+            totalPages={properties.numberOfPages}
+            callback={gotoPage}
+            darkMode={darkMode}
+            containerWidth={width}
+            isLoading={isLoading}
+            listRef={listRef}
+          />
+          <Pagination.Operator
+            operator=">"
+            currentPage={currentPage}
+            totalPages={properties.numberOfPages}
+            handleOnClick={gotoNextPage}
+            darkMode={darkMode}
+          />
+          <Pagination.Operator
+            operator=">>"
+            currentPage={currentPage}
+            totalPages={properties.numberOfPages}
+            handleOnClick={gotoLastPage}
+            darkMode={darkMode}
+          />
+        </ul>
+      )}
     </div>
   );
 };
@@ -326,27 +342,28 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
   );
 };
 
-const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth, isLoading }) => {
-  const itemWidth = 28; // Width of each item
+const isOperator = (li) => li.hasAttribute('aria-label');
 
-  const [maxItems, setMaxItems] = useState(0); // for max items that can fit in container
+const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth, isLoading, listRef }) => {
+  const [maxPageNumbers, setMaxPageNumbers] = useState(0); // page numbers that fit beside the four operators
 
   useEffect(() => {
     if (!containerWidth || isNaN(totalPages) || totalPages <= 0) {
       return;
     }
 
-    // Calculate the maximum number of items that can fit within the container width
-    const availableWidth = containerWidth;
-    const calculatedMaxItems = Math.floor(availableWidth / itemWidth);
-    setMaxItems(calculatedMaxItems);
-  }, [containerWidth, totalPages]);
+    // Measure the rendered items. jsdom measures 0, so fall back to the CSS minimums:
+    // operator = 1.25rem icon + .25rem padding each side; page = min-width 1.75rem, ~8px per extra digit.
+    const items = Array.from(listRef.current?.children ?? []);
+    const widthOf = (li) => li.offsetWidth || (isOperator(li) ? 28 : 8 + 8 * String(totalPages).length);
+    const operators = items.filter(isOperator);
+    const operatorsWidth = operators.length ? operators.reduce((sum, li) => sum + widthOf(li), 0) : 4 * 28;
+    const itemWidth = Math.max(28, ...items.filter((li) => !isOperator(li)).map(widthOf));
+    setMaxPageNumbers(Math.floor((containerWidth - operatorsWidth) / itemWidth));
+  }, [containerWidth, totalPages, listRef]);
 
   const renderPageNumbers = () => {
     const pageNumbers = [];
-
-    // Calculate the number of page numbers that can fit, excluding arrows
-    const maxPageNumbers = maxItems - 4;
 
     // Calculate the starting and ending page numbers based on the current page and the total pages
     let startPage = 1;
@@ -374,11 +391,7 @@ const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth
     for (let i = startPage; i <= endPage; i++) {
       if (isLoading && i === startPage) {
         pageNumbers.push(
-          <li
-            key={i}
-            className="page-item d-flex align-items-center justify-content-center"
-            style={{ minWidth: itemWidth }}
-          >
+          <li key={i} className="page-item d-flex align-items-center justify-content-center" style={{ minWidth: 28 }}>
             <Loader
               width="16"
               absolute={false}
