@@ -19,7 +19,7 @@ import {
   WORKFLOW_CURRENT_BRANCH_SENTINEL,
   VERSION_BADGES,
   isCurrentBranchRow,
-  scopeVersionsForPicker,
+  scopeVersionsForQueryPicker,
   versionBadge,
   versionLabel,
 } from '@/_helpers/versionLabels';
@@ -123,7 +123,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
           // Published versions keep storing `v.name` — the value is persisted on the query, so
           // changing it would orphan every saved workflow query. Only the branch row stores a
           // sentinel, and that row is new.
-          const rowEntries = scopeVersionsForPicker(all, { activeBranchId, isGitSyncEnabled }).map((v) => ({
+          const rowEntries = scopeVersionsForQueryPicker(all, { activeBranchId, isGitSyncEnabled }).map((v) => ({
             value: isCurrentBranchRow(v, activeBranchId) ? WORKFLOW_CURRENT_BRANCH_SENTINEL : v.name,
             label: versionLabel(v, { activeBranchId, isOnMain, defaultBranchName, isGitSyncEnabled }),
             badge: versionBadge(v),
