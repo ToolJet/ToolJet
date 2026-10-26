@@ -18,7 +18,14 @@ export const dataSourceFolderSelectors = {
     `[data-cy="datasource-folder-empty-${folderId}"]`,
 
   modalTitle: '[data-cy="modal-title"]',
-  modalCloseButton: commonSelectors.modalCloseButton,
+  folderModalTitle: (title) => `[data-cy="${cyParamName(title)}-title"]`,
+  roleConflictModal: '.role-change-modal-content',
+  errorModal: '.edit-role-modal',
+  errorModalMessage: '.edit-role-modal [data-cy="modal-message"]',
+  errorModalHeader: '.edit-role-modal [data-cy="modal-header"]',
+  errorModalClose: '.edit-role-modal [data-cy="close-button"]',
+  roleConflictModalClose: '.role-change-modal-content [data-cy="modal-close-button"]',
+  modalCloseButton: '[data-cy="modal-close-button"]',
   folderNamePlaceholder: 'Enter folder name..',
   // A foldered row lives in .datasource-folder-contents, a loose one in the stray zone.
   folderContents: '.datasource-folder-contents',
