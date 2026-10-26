@@ -16,6 +16,7 @@ import {
   openAll,
   openAppEditor,
   openEditorExpectingRestricted,
+  openModuleEditorExpectingReadOnly,
   openFolder,
   openList,
   phase,
@@ -87,6 +88,7 @@ describe('Modules — Folder Permission Tiers', { retries: 0 }, () => {
 
   const expectEditable = (id) => openAppEditor(wsSlug, id);
   const expectRestricted = (id) => openEditorExpectingRestricted(wsSlug, id);
+  const expectReadOnly = (id) => openModuleEditorExpectingReadOnly(wsSlug, id);
 
   beforeEach(() => {
     wsName = `module-folder-tiers-${Date.now()}`;
@@ -112,10 +114,10 @@ describe('Modules — Folder Permission Tiers', { retries: 0 }, () => {
       setupTier('Tiers', TIERS.viewItems).then((ctx) => {
         loginAs(ctx.userEmail);
 
-        phase('Build with modules: listed, editor restricted, folder not manageable');
+        phase('Build with modules: listed, editor read-only, folder not manageable');
         expectListedInFolder(ctx.folderName, ctx.insideName);
         expectFolderMenuAbsent(ctx.folderName);
-        expectRestricted(ctx.insideId);
+        expectReadOnly(ctx.insideId);
         expectNotListed(ctx.outsideName);
 
         phase('Edit modules: the module inside opens and takes a real edit, folder still not manageable');
@@ -205,7 +207,7 @@ describe('Modules — Folder Permission Tiers', { retries: 0 }, () => {
         asAdmin(ctx.userEmail, () =>
           cy.apiGetGroupId(ctx.groupName).then((id) => cy.apiRemoveUserFromGroup(id, ctx.userEmail))
         );
-        expectRestricted(ctx.insideId);
+        expectReadOnly(ctx.insideId);
         expectListedInFolder(ctx.folderName, ctx.insideName);
         asAdmin(ctx.userEmail, () => cy.apiGetGroupId(ctx.groupName).then((id) => apiAddUserToGroup(id, ctx.userEmail)));
         expectEditable(ctx.insideId);
