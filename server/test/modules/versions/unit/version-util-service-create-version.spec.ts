@@ -8,6 +8,7 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { AppsUtilService } from '@modules/apps/util.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+import { AppValidationService } from '@modules/app-validation/service';
 import { App } from '@entities/app.entity';
 
 describe('VersionUtilService.createVersion — version metadata forwarding', () => {
@@ -55,6 +56,10 @@ describe('VersionUtilService.createVersion — version metadata forwarding', () 
         },
         { provide: AppsUtilService, useValue: {} },
         { provide: TooljetDbRelationResolverService, useValue: {} },
+        {
+          provide: AppValidationService,
+          useValue: { check: jest.fn().mockResolvedValue({ errors: [], warnings: [] }) },
+        },
       ],
     }).compile();
 

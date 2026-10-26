@@ -92,6 +92,9 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Promote** | Moving an app version from one environment to the next (e.g., dev to staging to production) (EE feature) | Deploy (informal in docs) |
 | **Maintenance Mode** | A flag that takes a released app offline temporarily while preserving the release | — |
 | **App History** | An audit trail of changes to an app version with undo capability (EE feature) | — |
+| **Write Source** | Who made an app-definition save: `ui`, `pat` (personal access token sessions — agents/MCP), `ext_api`, `import`, `git`, `ai` (AI builder sessions), `copy`, `restore` (`app-validation/core/constants.ts` `WRITE_SOURCES`; resolved from the request by `resolveSource`) | source |
+| **Validation Mode** | What app validation does per write source: `off`, `report` (log + return `validationWarnings`), `enforce` (reject with 400 `APP_VALIDATION_FAILED`). `pat` is the only enforced source today; `copy`/`restore` are hard-capped to report | — |
+| **Validation Warnings** | Non-blocking app-validation findings returned on the response (`validationWarnings` body key, `x-tooljet-validation-warnings` header) and logged for rollout calibration | — |
 
 ## Data Layer
 

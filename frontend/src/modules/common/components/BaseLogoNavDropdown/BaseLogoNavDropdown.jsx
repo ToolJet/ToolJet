@@ -6,7 +6,7 @@ import { getPrivateRoute, redirectToDashboard, routes } from '@/_helpers/routes'
 import { appendBranchName } from '@/_helpers/active-branch';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';
-import { hasBuilderRole } from '@/_helpers/utils';
+import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 
 const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-end' }) => {
@@ -34,7 +34,6 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-en
       data_source_group_permissions?.is_all_usable ||
       data_source_group_permissions?.configurable_data_source_id?.length ||
       data_source_group_permissions?.is_all_configurable;
-    const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
@@ -62,7 +61,7 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-en
                 <span>{'Workflows'}</span>
               </Link>
             )}
-        {(admin || isBuilder) && (
+        {canAccessTooljetDbDashboard() && (
           <Link
             target="_blank"
             to={getPrivateRoute('database')}
