@@ -103,8 +103,9 @@ export default function Image({
     if (isInitialRender.current) return;
     if (alternativeText === '') {
       setExposedVariable('alternativeText', null);
+    } else {
+      setExposedVariable('alternativeText', alternativeText);
     }
-    setExposedVariable('alternativeText', alternativeText);
   }, [alternativeText]);
 
   useEffect(() => {
