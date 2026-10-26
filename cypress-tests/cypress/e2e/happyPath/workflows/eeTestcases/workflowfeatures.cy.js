@@ -127,7 +127,8 @@ describe("Workflows - payloads and node preview", () => {
       workflowsText.workflowResponseNodeQuery
     );
 
-    cy.apiDeleteWorkflow(data.childWorkflowName);
+    // The parent references the child, so it has to go first.
     cy.apiDeleteWorkflow(data.parentWorkflowName);
+    cy.apiDeleteWorkflow(data.childWorkflowName);
   });
 });

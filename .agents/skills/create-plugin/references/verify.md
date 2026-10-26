@@ -1,8 +1,8 @@
 # Verify
 
-Run the checks in order from `marketplace/`. Report each as pass, fail, or skipped with the
-reason. Plugin jest tests are not a gate: the scaffolded `__tests__/index.js` is an `it.todo`
-stub and there is no jest setup for plugins (`marketplace/AGENTS.md`).
+Run in order from `marketplace/`. Report each check as pass, fail, or skipped with the reason.
+Plugin jest tests are not a gate (`__tests__/index.js` is an `it.todo` stub; no jest setup —
+`marketplace/AGENTS.md`).
 
 ## 1. Build
 
@@ -12,9 +12,8 @@ test -d plugins/common/dist || npm run build --workspace=@tooljet-marketplace/co
 npm run build --workspace=@tooljet-marketplace/<id>; echo "exit $?"
 ```
 
-`ncc` compiles `lib/index.ts`, so this is also the type check. Exit code 0 is a pass. Do not pipe
-the build: a pipe reports the last command's exit code. A
-missing module means the dependency was not added to the plugin's `package.json`
+`ncc` compiles `lib/index.ts`, so this is also the type check; exit 0 passes. Don't pipe the
+build (a pipe reports the last command's exit code). Missing module → add the dependency
 (`npm i <pkg> --workspace=@tooljet-marketplace/<id>`).
 
 ## 2. Validator
@@ -44,9 +43,8 @@ ESLINT_USE_FLAT_CONFIG=false npx eslint --fix 'plugins/<id>/lib/**/*.ts'
 ESLINT_USE_FLAT_CONFIG=false npx eslint 'plugins/<id>/lib/**/*.ts'
 ```
 
-The first run applies prettier formatting; the second must exit 0, and prints nothing when clean.
-Fix what remains by hand. The env var matches CI: without it, eslint 8 picks up the frontend's
-flat config and fails.
+The first applies prettier; the second must exit 0 (silent when clean); fix the rest by hand.
+The env var matches CI: without it eslint 8 picks up the frontend's flat config and fails.
 
 ## 4. Spec and PRD coverage
 
@@ -62,12 +60,12 @@ The validator cannot see `plugin-spec.json` or the PRD. Check by reading:
 
 ## 5. UI check (optional)
 
-Needs a browser automation tool, a ToolJet already running from this checkout with the server
-started by `npm run start:dev` (or `tools/tj/bin/tj start`), and an admin or builder login. Skip, saying which is missing, if
-any is absent, if the frontend is unreachable, or on the Cloud edition (no marketplace). Never
-block the run on it. Install facts: `marketplace/AGENTS.md`, Local install. Set
-`ENABLE_MARKETPLACE_DEV_MODE=true` in the root `.env` and restart the server first. The frontend
-URL is `TOOLJET_HOST` in that `.env`; if it is unset, ask the user.
+Needs a browser automation tool, ToolJet running from this checkout (server via
+`npm run start:dev` or `tools/tj/bin/tj start`), and an admin or builder login. Skip, naming
+what's missing, if any is absent, the frontend is unreachable, or on Cloud (no marketplace).
+Never block the run on it. Install facts: `marketplace/AGENTS.md`, Local install. First set
+`ENABLE_MARKETPLACE_DEV_MODE=true` in the root `.env` and restart the server. Frontend URL =
+`TOOLJET_HOST` in that `.env`; if unset, ask.
 
 1. Build (section 1). After any later edit, rebuild before reloading.
 2. Sign in. A fresh database redirects to `/setup`: create the first admin only if the user
