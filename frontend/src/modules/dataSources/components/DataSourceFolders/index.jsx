@@ -19,7 +19,8 @@ export const DataSourceFolders = ({
   const { folders, expandedFolderIds, toggleFolderExpanded, canUpdateDataSourceFolder, canDeleteDataSourceFolder } =
     useContext(GlobalDataSourcesContext);
 
-  const canRename = canUpdateDataSourceFolder();
+  // Delete rides a workspace-wide flag, but a granular "Edit folder" grant can be scoped to
+  // individual folders — so rename is asked per folder, at the point of render.
   const canDelete = canDeleteDataSourceFolder();
 
   // Resolve each folder's membership rows to the actual (search-visible) data-source objects, so a
@@ -61,7 +62,7 @@ export const DataSourceFolders = ({
             onDeleteDataSource={onDeleteDataSource}
             onMoveDataSource={onMoveDataSource}
             updateSelectedDatasource={updateSelectedDatasource}
-            canRename={canRename}
+            canRename={canUpdateDataSourceFolder(folder)}
             canDelete={canDelete}
             darkMode={darkMode}
           />
