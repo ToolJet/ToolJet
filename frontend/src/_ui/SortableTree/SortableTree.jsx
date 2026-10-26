@@ -338,6 +338,12 @@ export function SortableTree({
         {createPortal(
           <DragOverlay
             dropAnimation={dropAnimationConfig}
+            // dnd-kit's default overlay z-index is 999, which paints BEHIND the
+            // fixed editor sidebar (.editor-sidebar, z-index 1041) — the dragged
+            // ghost vanished while the cursor was over the pages panel. 10000 is
+            // the repo's top-layer tier (z-index.scss $hints-z-index); nothing is
+            // draggable while a modal is open, so no conflict.
+            style={{ zIndex: 10000 }}
             modifiers={
               dragOverlayModifiers !== undefined ? dragOverlayModifiers : indicator ? [adjustTranslate] : undefined
             }

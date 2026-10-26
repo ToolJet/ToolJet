@@ -4,7 +4,7 @@ import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
-import { hasBuilderRole } from '@/_helpers/utils';
+import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { TooljetDatabaseProvider } from './TooljetDatabaseContext';
 import './styles/styles.scss';
 
@@ -31,10 +31,9 @@ const TooljetDatabase = () => {
   const { collapseSidebar, setCollapseSidebar, setEnableCollapsibleSidebar } = useOutletContext();
   const navigate = useNavigate();
   const { admin, user_permissions } = authenticationService.currentSessionValue;
-  const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
   const canEditTjdb = admin || !!user_permissions?.tjdb_c_r_u_d;
 
-  if (!admin && !isBuilder) {
+  if (!canAccessTooljetDbDashboard()) {
     navigate('/');
   }
 
