@@ -28,9 +28,9 @@ const CIRCLE_SVG =
 const defaultProperties = {
   data: binding(RECT_SVG),
   collapseWhenHidden: binding('{{false}}'),
+  visibility: binding('{{true}}'),
 };
 const defaultStyles = {
-  visibility: binding('{{true}}'),
   alignment: binding('left'),
 };
 
@@ -192,12 +192,12 @@ describe('SvgImage widget', () => {
       expect(root(container).style.display).toBe('');
       expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-      await setStyle('visibility', false);
+      await setProperty('visibility', false);
       await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
       expect(within(container).getByRole('img', { hidden: true })).toBe(imageNode);
       expect(shapes(container, 'rect')).toHaveLength(2);
 
-      await setStyle('visibility', true);
+      await setProperty('visibility', true);
       await waitFor(() => expect(root(container).style.display).toBe(''));
       expect(within(container).getByRole('img')).toBe(imageNode);
       expect(shapes(container, 'rect')).toHaveLength(2);
@@ -223,31 +223,35 @@ describe('SvgImage widget', () => {
     await waitFor(() => expect(image(container)).toHaveStyle({ justifyContent: 'center' }));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-    await setStyle('visibility', false);
+    await setProperty('visibility', false);
     await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-    await setStyle('visibility', true);
+    await setProperty('visibility', true);
     await waitFor(() => expect(root(container).style.display).toBe(''));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
   });
 
-  test('[SvgImage-API-001] SvgImage publishes no actions and no widget-owned exposed variables', async () => {
+  test('[SvgImage-API-001] SvgImage publishes only the visibility API and no other actions or exposed variables', async () => {
     // Break this catches: re-introducing the exposedVariables entry removed by 5ee59e433d1, or
-    // wiring a CSA onto a widget documented and registered as having neither.
+    // wiring a CSA other than setVisibility / exposing anything beyond isVisible.
     const { container } = widget.render();
     await within(container).findByRole('img');
 
     expect(frontendConfig.events).toEqual({});
     expect(frontendConfig.exposedVariables).toEqual({});
+    expect(frontendConfig.actions.map(({ handle }) => handle)).toEqual(['setVisibility']);
 
-    const exposed = widget.exposed() ?? {};
-    expect(Object.values(exposed).some((value) => typeof value === 'function')).toBe(false);
-    expect(Object.keys(exposed).filter((key) => key !== 'id')).toEqual([]);
+    await waitFor(() => expect(widget.exposed()?.setVisibility).toBeInstanceOf(Function));
+    const published = () => Object.keys(widget.exposed() ?? {}).filter((key) => key !== 'id');
+    expect(published().sort()).toEqual(['isVisible', 'setVisibility']);
+    expect(widget.exposed().isVisible).toBe(true);
+    const functionKeys = Object.entries(widget.exposed()).filter(([, value]) => typeof value === 'function');
+    expect(functionKeys.map(([key]) => key)).toEqual(['setVisibility']);
 
     await setProperty('data', CIRCLE_SVG);
     await waitFor(() => expect(shapes(container, 'circle')).toHaveLength(1));
-    expect(Object.keys(widget.exposed() ?? {}).filter((key) => key !== 'id')).toEqual([]);
+    expect(published().sort()).toEqual(['isVisible', 'setVisibility']);
   });
 
   test('[SvgImage-A11Y-001] The image node keeps its role and component id across changes', async () => {
@@ -265,7 +269,7 @@ describe('SvgImage widget', () => {
     await waitFor(() => expect(image(container)).toHaveStyle({ justifyContent: 'center' }));
     expect(within(container).getByRole('img')).toBe(imageNode);
 
-    await setStyle('visibility', false);
+    await setProperty('visibility', false);
     await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
     expect(within(container).getByRole('img', { hidden: true })).toHaveAttribute('id', `component-${ID}`);
   });
@@ -289,7 +293,7 @@ describe('SvgImage widget', () => {
 
     await setProperty('data', CIRCLE_SVG, ID);
     await setStyle('alignment', 'center', ID);
-    await setStyle('visibility', false, ID);
+    await setProperty('visibility', false, ID);
     await waitFor(() => expect(root(container, HANDLE)).toHaveStyle({ display: 'none' }));
     expect(shapes(container, 'circle', HANDLE2)).toHaveLength(1);
     expect(image(container, HANDLE2)).toBe(second);
@@ -313,6 +317,9 @@ describe('SvgImage widget', () => {
       properties: {
         data: { type: 'code', validation: { schema: { type: 'string' } } },
         collapseWhenHidden: { type: 'toggle', validation: { schema: { type: 'boolean' }, defaultValue: false } },
+        visibility: { type: 'toggle', validation: { schema: { type: 'boolean' }, defaultValue: true } },
+        tooltipFormat: { type: 'switch', defaultValue: { value: 'plainText' } },
+        tooltip: { type: 'code' },
       },
       others: {
         showOnDesktop: { type: 'toggle' },
@@ -321,18 +328,20 @@ describe('SvgImage widget', () => {
       events: {},
       exposedVariables: {},
       styles: {
-        visibility: { type: 'toggle', validation: { defaultValue: true } },
         alignment: { type: 'alignButtons', validation: { defaultValue: 'left' } },
+        boxShadow: { type: 'boxShadow' },
       },
       definition: {
         others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
         events: [],
-        styles: { visibility: { value: '{{true}}' }, alignment: { value: 'left' } },
+        styles: { alignment: { value: 'left' } },
       },
     });
+    expect(frontendConfig.styles.visibility).toBeUndefined();
+    expect(frontendConfig.definition.properties.visibility).toEqual({ value: '{{true}}' });
     expect(frontendConfig.properties.data.validation.defaultValue).toContain('<svg');
     expect(frontendConfig.definition.properties.data.value).toContain('<svg');
     expect(frontendConfig.definition.properties.collapseWhenHidden).toEqual({ value: '{{false}}' });
-    expect(frontendConfig.actions ?? []).toEqual([]);
+    expect(frontendConfig.actions.map(({ handle }) => handle)).toEqual(['setVisibility']);
   });
 });

@@ -29,13 +29,28 @@ export default function Map({
 
   const canAddNewMarkers = properties?.addNewMarkers ?? false;
   const canSearch = properties?.canSearch ?? false;
-  const widgetVisibility = styles?.visibility ?? true;
-  const disabledState = styles?.disabledState ?? false;
+  const [isVisible, setVisibility] = useState(properties?.visibility ?? true);
+  const [isDisabled, setIsDisabled] = useState(properties?.disabledState ?? false);
 
-  // const parsedDisabledState =
-  //   typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
+  useEffect(() => {
+    if (isVisible !== properties?.visibility) setVisibility(properties?.visibility ?? true);
+    if (isDisabled !== properties?.disabledState) setIsDisabled(properties?.disabledState ?? false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties?.visibility, properties?.disabledState]);
 
-  let parsedWidgetVisibility = widgetVisibility;
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', isVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', isDisabled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDisabled]);
+
+  let parsedWidgetVisibility = isVisible;
 
   try {
     parsedWidgetVisibility = resolveWidgetFieldValue(parsedWidgetVisibility);
@@ -152,6 +167,16 @@ export default function Map({
       },
       center: addMapUrlToJson(resolvedCenter),
       markers: defaultMarkers,
+      isVisible,
+      isDisabled,
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
+      },
+      setDisable: async function (value) {
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
+      },
     };
 
     setMapCenter(resolvedCenter);
@@ -161,7 +186,7 @@ export default function Map({
 
   return (
     <div
-      data-disabled={disabledState}
+      data-disabled={isDisabled}
       style={{ height, display: parsedWidgetVisibility ? '' : 'none', boxShadow: styles.boxShadow }}
       onClick={(event) => {
         event.stopPropagation();

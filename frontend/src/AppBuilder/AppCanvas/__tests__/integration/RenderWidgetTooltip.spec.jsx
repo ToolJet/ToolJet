@@ -113,20 +113,20 @@ describe('RenderWidget tooltip', () => {
 
   test('[RenderWidget-TOOLTIP-005] a tooltip declared under general is shown on hover', async () => {
     // Break this catches: always reading from `properties` drops the tooltip
-    // on every widget that only declares it under `general` (Spinner, via the
-    // universal `general.tooltip` in componentTypes.js — it is not in
-    // SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY).
-    const spinner = createWidgetHarness({
-      componentType: 'Spinner',
-      handle: 'spinner1',
-      id: 'spinner1',
+    // on every widget that only declares it under `general` (the legacy V1
+    // widgets, e.g. ToggleSwitch, via the universal `general.tooltip` in
+    // componentTypes.js — they are not in SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY).
+    const legacy = createWidgetHarness({
+      componentType: 'ToggleSwitch',
+      handle: 'toggle1',
+      id: 'toggle1',
     });
-    spinner.setup();
-    spinner.render({
-      afterSeed: () => spinner.setComponentProperty('spinner1', 'tooltip', 'Choose a side', 'general'),
+    legacy.setup();
+    legacy.render({
+      afterSeed: () => legacy.setComponentProperty('toggle1', 'tooltip', 'Choose a side', 'general'),
     });
-    await spinner.session.user.hover(document.querySelector('[data-cy="draggable-widget-spinner1"]'));
+    await legacy.session.user.hover(document.querySelector('[data-cy="draggable-widget-toggle1"]'));
     await waitFor(() => expect(screen.getAllByText('Choose a side').length).toBeGreaterThan(0));
-    spinner.teardown();
+    legacy.teardown();
   });
 });
