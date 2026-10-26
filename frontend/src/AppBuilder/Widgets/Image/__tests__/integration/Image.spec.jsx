@@ -496,6 +496,32 @@ describe('Image: zoom and rotate controls', () => {
     expect(img()).toHaveStyle({ transform: 'rotate(0deg)' });
   });
 
+  test('[Image-ROT-003] A quarter-turn rotation keeps the image inside the widget box', async () => {
+    // Break this catches: rotating the full-size box 90/270 degrees without
+    // shrinking it, so a box wider than it is tall spills out of the widget.
+    widget.render({ properties: { rotateButton: binding('{{true}}') } });
+    await waitFor(() => expect(rotateIcon()).toBeInTheDocument());
+    const rotateButtonEl = rotateIcon().closest('button');
+    const boxWidth = Number(img().getAttribute('width'));
+    const boxHeight = Number(img().getAttribute('height'));
+    expect(boxWidth).not.toBe(boxHeight);
+
+    const rotatedFootprint = (degrees) => {
+      const scale = Number(img().style.transform.match(/scale\(([\d.]+)\)/)?.[1] ?? 1);
+      const [w, h] = degrees % 180 === 0 ? [boxWidth, boxHeight] : [boxHeight, boxWidth];
+      return { width: w * scale, height: h * scale };
+    };
+
+    for (const degrees of [90, 180, 270]) {
+      await widget.session.user.click(rotateButtonEl);
+      expect(img().style.transform).toMatch(new RegExp(`^rotate\\(${degrees}deg\\)`));
+      expect(rotatedFootprint(degrees).width).toBeLessThanOrEqual(boxWidth + 0.01);
+      expect(rotatedFootprint(degrees).height).toBeLessThanOrEqual(boxHeight + 0.01);
+      // A half-turn keeps the same footprint, so it must not shrink the image.
+      if (degrees === 180) expect(img().style.transform).toBe('rotate(180deg)');
+    }
+  });
+
   test('[Image-ROT-002] The rotate control is present under both zoomButtons on and zoomButtons off', async () => {
     widget.render({ properties: { rotateButton: binding('{{true}}'), zoomButtons: binding('{{false}}') } });
     await waitFor(() => expect(rotateIcon()).toBeInTheDocument());
