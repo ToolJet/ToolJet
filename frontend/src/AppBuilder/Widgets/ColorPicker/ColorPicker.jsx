@@ -382,6 +382,7 @@ export const ColorPicker = (props) => {
                         event.stopPropagation();
                         clearColorValue();
                         setUserInteracted(true);
+                        fireEvent('onChange');
                       }}
                     >
                       <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
