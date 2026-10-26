@@ -729,15 +729,17 @@ export default class LicenseBase {
     return !!this._app?.features?.release;
   }
 
+  // App history: trial and Pro and above, like version compare (AI turns are compared and undone through
+  // history). A licence can set it either way; without that term it follows the plan.
   public get appHistory(): boolean {
-    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL || this.licenseType === LICENSE_TYPE.BUSINESS) {
+    if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.history;
     }
-
-    if (this._app?.features?.history === undefined) {
-      return false;
+    const term = this._app?.features?.history;
+    if (term !== undefined) {
+      return !!term;
     }
-    return !!this._app?.features?.history;
+    return !PLANS_BELOW_PRO.includes(this._plan?.toLowerCase());
   }
 
   public get appJsLibraries(): boolean {
