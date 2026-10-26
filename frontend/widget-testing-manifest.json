@@ -28,7 +28,8 @@
     },
     {
       "componentType": "Chart",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Chart/TESTING.md"
     },
     {
       "componentType": "KeyValuePair",
