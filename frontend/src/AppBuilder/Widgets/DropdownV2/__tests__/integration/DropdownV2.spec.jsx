@@ -541,6 +541,22 @@ describe('DropdownV2 selection, events and actions', () => {
       expect(store().getVariable('seenValue', MODULE_ID)).toBeNull();
     });
 
+    test('picking the already-selected option again keeps it selected when allowDeselection is off', async () => {
+      // Break this catches: ignoring `allowDeselection`, so a reselect still clears the value
+      // for an author who turned deselection off.
+      widget.render({ properties: { options: OPTIONS, allowDeselection: binding('{{false}}') } });
+
+      await openMenu();
+      await pickOption('Beta');
+      await waitFor(() => expect(widget.exposed().value).toBe('b'));
+
+      await openMenu();
+      await pickOption('Beta');
+
+      expect(widget.exposed().value).toBe('b');
+      expect(widget.exposed().selectedOption).toEqual({ label: 'Beta', value: 'b', caption: null });
+      expect(displayedText()).toContain('Beta');
+    });
     test('[DropdownV2-SEL-003] the clear affordance appears only with a value, clears, revalidates and fires onSelect once', async () => {
       // Break this catches: a clear control with no accessible name (findable
       // only by CSS class), one that shows with nothing selected, or one that

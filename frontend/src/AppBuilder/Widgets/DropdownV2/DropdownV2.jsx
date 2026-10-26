@@ -87,6 +87,7 @@ export const DropdownV2 = ({
     optionsLoadingState,
     sort,
     showClearBtn,
+    allowDeselection,
     showSearchInput,
     serverSideSearch,
   } = properties;
@@ -580,7 +581,7 @@ export const DropdownV2 = ({
                 setInputValue(null);
               }
               if (actionProps.action === 'select-option') {
-                if (currentValue === selectedOption.value) {
+                if (allowDeselection !== false && currentValue === selectedOption.value) {
                   setInputValue(null);
                 } else setInputValue(selectedOption.value);
               }

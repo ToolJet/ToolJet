@@ -81,6 +81,12 @@ export const dropdownV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    allowDeselection: {
+      type: 'toggle',
+      displayName: 'Allow deselection',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
     showSearchInput: {
       type: 'toggle',
       displayName: 'Show search in options',
@@ -438,6 +444,7 @@ export const dropdownV2Config = {
       sort: { value: 'none' },
       placeholder: { value: 'Select an option' },
       showClearBtn: { value: '{{true}}' },
+      allowDeselection: { value: '{{true}}' },
       showSearchInput: { value: '{{true}}' },
       serverSideSearch: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
