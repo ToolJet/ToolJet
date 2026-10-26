@@ -58,7 +58,7 @@ Applications, modules, datasources, and folder assignments are written to Git. D
 Pulling follows the same rule in reverse. A workspace constant reference from Git updates the local value, non-encrypted values from Git overwrite local ones, and a directly entered credential is never overwritten by a pull.
 
 :::info
-Use [workspace constants](/docs/security/constants/constants) for credentials you want to travel with the repository. Constants resolve per environment, so the same reference points at the development value on one instance and the production value on another. Anything typed directly into a datasource field stays on the instance where it was entered.
+Use [workspace constants](../../../security/constants/constants.md) for credentials you want to travel with the repository. Constants resolve per environment, so the same reference points at the development value on one instance and the production value on another. Anything typed directly into a datasource field stays on the instance where it was entered.
 :::
 
 ## Pull a Commit
@@ -93,7 +93,7 @@ Pulling removes applications and modules that are no longer present in Git, and 
 ### Pull From the Builder
 
 1. Open the application in the App Builder, or the module in the Module Builder.
-2. Open the Git Sync action in the header and switch to the **Pull** tab.
+2. Open the GitSync action in the header and switch to the **Pull** tab.
 3. Choose the **Latest commit**, or a saved version.
 4. Confirm the pull.
 
@@ -120,13 +120,13 @@ There are two ways to pull one.
 
 Versions are listed per environment, so switch the **Development**, **Staging**, and **Production** tabs to see what is available in each.
 
-**From the Git Sync dialog**, when you want to choose between the latest commit and a version in one place:
+**From the GitSync dialog**, when you want to choose between the latest commit and a version in one place:
 
-1. Open the Git Sync action in the App Builder header and switch to the **Pull** tab.
+1. Open the GitSync action in the App Builder header and switch to the **Pull** tab.
 2. Choose the version from the **Version** list.
 3. Confirm the pull.
 
-<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/single-branch/push-and-pull/pull-tab-version-picker.png" alt="Pull tab of the Git Sync dialog with a saved version selected in the Version list" />
+<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/single-branch/push-and-pull/pull-tab-version-picker.png" alt="Pull tab of the GitSync dialog with a saved version selected in the Version list" />
 
 A version that already exists in the workspace is not pulled again.
 

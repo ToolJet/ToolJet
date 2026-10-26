@@ -4,9 +4,9 @@ title: GitHub Configuration
 sidebar_label: GitHub Configuration
 ---
 
-<PlanBadge type="enterprise" />
+<PlanBadge type="team" />
 
-The GitHub Configuration for GitSync introduces a more flexible way to connect your ToolJet instance to a Git repository. It works over HTTPS, helping you avoid SSH port blocks, and lets you choose branches directly from the UI.
+Connect your workspace to a GitHub repository through a GitHub App. The connection works over HTTPS, and you choose the branch to sync with directly in ToolJet.
 
 Role Required: **Admin**
 
@@ -15,7 +15,7 @@ Role Required: **Admin**
 
 ### 2. Create the GitHub App
     [Setup a GitHub App](https://github.com/settings/apps/new) and make sure it is created by the same owner as the Git repository. If you have multiple ToolJet instances, use this same GitHub App across all instances. 
-    <img className="screenshot-full img-l" src="/img/gitsync/github-config/github-app-register.png" alt="GitSync" />
+    <img className="screenshot-full img-l" src="/img/gitsync/github-config/github-app-register.png" alt="Register new GitHub App page with the GitHub App name, description, and Homepage URL fields" />
     
     Enter your App details on the **Register new GitHub App** page and make sure to uncheck the **Expire user authorization tokens** and **Active** checkbox under **Identifying and authorizing users** and **Webhook** sections respectively.
 
@@ -33,13 +33,13 @@ Role Required: **Admin**
     Make sure to copy the **App ID**. 
     :::
     Next, generate the **Private key** (`.pem `key), download it, and store it securely. This information will be essential later when configuring GitSync.
-        <img className="screenshot-full img-l" src="/img/gitsync/github-config/github-app1.png" alt="GitSync" />
+        <img className="screenshot-full img-l" src="/img/gitsync/github-config/github-app1.png" alt="GitHub App settings page showing the App ID and the prompt to generate a private key" />
 
 ### 3. Install the GitHub App
     
     To install your GitHub App, follow these steps:
     - Click on Install App on the **GitHub App Settings** page.<br />
-        <img className="screenshot-full img-s" style={{ marginTop:'15px'}}  src="/img/gitsync/github-config/github-app2.png" alt="GitSync" />
+        <img className="screenshot-full img-s" style={{ marginTop:'15px'}}  src="/img/gitsync/github-config/github-app2.png" alt="GitHub App settings sidebar with Install App highlighted" />
     - Click the **Install** button next to your organization.
     - Select repositories option and select the repositories you want to connect to ToolJet.
     - You’ll be redirected to the installation page. The number at the end of the URL is the **installation ID**. Save this for later. <br/>
@@ -49,8 +49,8 @@ Role Required: **Admin**
 
 ### 4. Configure GitHub in GitSync 
 
-Navigate to the **Workspace settings** page and click on the **Configure git** tab. Then, enter the required configuration values after selecting GitHub as your repository provider.
-    <img className="screenshot-full img-s" src="/img/gitsync/github-config/github-form-full.png" alt="GitSync" />
+Navigate to the **Workspace settings** page and click on the **Configure git sync** tab. Then, enter the required configuration values after selecting GitHub as your repository provider.
+    <img className="screenshot-full img-s" src="/img/gitsync/github-config/github-form-full.png" alt="GitHub configuration form in ToolJet with the Repository, Self hosted GitHub, and App access sections" />
 
 The table below describes each configuration values:
 
@@ -75,8 +75,17 @@ The table below describes each configuration values:
 | **GitHub app installation ID** | The [GitHub installation ID](https://docs.github.com/en/developers/apps/managing-github-apps/installing-github-apps#installing-a-github-app). |
 | **GitHub app private key** | Private key you downloaded after App creation. |
 
-Once you've entered the necessary configurations, click **Save Changes**. Your ToolJet instance will now be connected to your GitHub repository.
+Once you've entered the necessary configurations, click **Save changes**. Your workspace is now connected to your GitHub repository.
 
 :::note
 You can use the same credentials to configure a specific repository across multiple instances or workspaces.
 :::
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

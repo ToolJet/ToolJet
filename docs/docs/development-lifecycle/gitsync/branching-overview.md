@@ -1,12 +1,12 @@
 ---
-id: overview
+id: branching-overview
 title: Branching Overview
-sidebar_label: Overview
+sidebar_label: Branching Overview
 ---
 
 <PlanBadge type="team" />
 
-Git Sync connects your workspace to a Git repository. Branching decides how many branches that workspace uses and how changes reach the branch your team treats as live.
+GitSync connects your workspace to a Git repository. Branching decides how many branches that workspace uses and how changes reach the branch your team treats as live.
 
 There are two modes. Every workspace starts in single-branch mode, and multiple branches are something you opt into.
 
@@ -38,11 +38,6 @@ Some behavior does not change with the mode:
 - [Versions and Tags](./versioning.md) covers drafts, saved versions, and how versions are tagged in Git.
 - [Resolving Conflicts](./troubleshooting/resolving-conflicts.md) covers duplicate names and slugs, which are checked before anything is written in either mode.
 - [Auto-Sync](./auto-sync.md) keeps connected instances up to date from the repository.
-- [Troubleshooting](./troubleshooting/overview.md) covers what to check when a commit, pull, or sync does not behave as expected.
-
-## Resources Synced to Git
-
-Applications, modules, datasources, and their folder assignments are synced to Git in both modes. Workflows and ToolJet Database tables are not synced yet.
 
 <br/>
 ---

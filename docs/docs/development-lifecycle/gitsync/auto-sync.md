@@ -12,7 +12,7 @@ This is especially useful when you run more than one ToolJet instance against th
 
 ## Prerequisites
 
-- Git Sync configured for the workspace, using GitHub or GitLab.
+- GitSync configured for the workspace, using GitHub or GitLab.
 - The **Admin** or **Super admin** role. Builders and end users cannot configure auto-sync.
 - Permission to add a webhook to the Git repository.
 - `TOOLJET_HOST` set to a URL your Git provider can reach. The webhook URL is derived from it, so an unreachable or incorrect value means events never arrive.

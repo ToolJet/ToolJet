@@ -21,7 +21,7 @@ To commit datasource changes:
 
 <img className="screenshot-full img-m" src="/img/development-lifecycle/branching/shared/workspace-commit-modal.png" alt="Push commit modal with a commit message field limited to 50 characters" />
 
-To commit application or module changes, open the application in the App Builder or the module in the Module Builder and use the Git Sync button in the header.
+To commit application or module changes, open the application in the App Builder or the module in the Module Builder and use the GitSync button in the header.
 
 That button changes with the branch you are on and whether the resource has reached Git yet:
 
@@ -30,7 +30,7 @@ That button changes with the branch you are on and whether the resource has reac
 | **Commit** | Commits the resource to the current branch | On a feature branch |
 | **Pull commit** | Pulls changes from Git into the resource | On the default branch |
 | **Sync** | Opens the first-time push flow | On the default branch, for a resource never pushed to Git |
-| **Configure Git** | Opens the Git Sync configuration | When Git Sync is not yet configured for the workspace |
+| **Configure Git** | Opens the GitSync configuration | When GitSync is not yet configured for the workspace |
 
 It is shown in the Development environment while a draft version is selected. Saved and released versions are read-only and offer no Git action. **Sync** is the exception: it stays visible in every environment and on any version until the resource is pushed for the first time.
 
@@ -64,7 +64,7 @@ Applications, modules, datasources and folder assignments are written to Git. Da
 Pulling follows the same rule in reverse. A workspace constant reference from Git updates the local value, non-encrypted values from Git overwrite local ones, and a directly entered credential is never overwritten by a pull.
 
 :::info
-Use [workspace constants](/docs/security/constants/constants) for credentials you want to travel with the repository. Constants are resolved per environment, so the same reference points at the development value on one instance and the production value on another. Anything typed directly into a datasource field stays on the instance where it was entered, so each instance keeps its own credentials and must have them set once.
+Use [workspace constants](../../../security/constants/constants.md) for credentials you want to travel with the repository. Constants are resolved per environment, so the same reference points at the development value on one instance and the production value on another. Anything typed directly into a datasource field stays on the instance where it was entered, so each instance keeps its own credentials and must have them set once.
 :::
 
 ## Pull Changes
@@ -78,8 +78,8 @@ What a pull brings in depends on where you start it:
 | Where you pull from | What is pulled |
 |:--------------------|:---------------|
 | **Dashboard header**, on the **Applications**, **Data sources**, or **Modules** page | The whole branch: every application, module, datasource, and folder assignment |
-| **App Builder**, using the Git Sync action in the header | Only that application, plus the modules and datasources it needs to run |
-| **Module Builder**, using the same Git Sync action | Only that module, plus the resources it needs to run |
+| **App Builder**, using the GitSync action in the header | Only that application, plus the modules and datasources it needs to run |
+| **Module Builder**, using the same GitSync action | Only that module, plus the resources it needs to run |
 
 Pulling from a builder leaves the rest of the branch untouched, which is what you want when only one application is ready to test or release. Pull from the dashboard when you want the branch brought in as a whole, for example when setting up a fresh instance.
 
@@ -88,7 +88,7 @@ What you can choose also depends on the branch:
 - On the **default branch**, you choose between the latest commit and a specific saved version.
 - On a **feature branch**, there is nothing to choose. The latest commit on that branch is pulled.
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/multi-branch/pull-modal-feature-branch.png" alt="Git Sync dialog inside an application on a feature branch, showing Push and Pull tabs with the latest commit and no version to choose" />
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/multi-branch/pull-modal-feature-branch.png" alt="GitSync dialog inside an application on a feature branch, showing Push and Pull tabs with the latest commit and no version to choose" />
 
 ### Pull From the Dashboard
 

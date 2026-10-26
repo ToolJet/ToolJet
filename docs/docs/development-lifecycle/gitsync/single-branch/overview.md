@@ -6,7 +6,7 @@ sidebar_label: Overview
 
 <PlanBadge type="team" />
 
-Single-branch mode connects your workspace to one branch in a Git repository, usually `main` or `master`. You build directly on that branch and commit your changes to it. This is how Git Sync works by default, and it is the mode a workspace stays in until branching is turned on.
+Single-branch mode connects your workspace to one branch in a Git repository, usually `main` or `master`. You build directly on that branch and commit your changes to it. This is how GitSync works by default, and it is the mode a workspace stays in until branching is turned on.
 
 ## Use Cases
 
@@ -17,7 +17,7 @@ Single-branch mode connects your workspace to one branch in a Git repository, us
 
 ## How It Differs From Multiple Branches
 
-Everything happens on one branch, so there is no isolation between builders and no review step before a change reaches Git. If two builders need to work at the same time without waiting for each other, or if changes must be approved before they land, that is what [multi-branch mode](../multi-branch/overview.md) is for. The [branching overview](../overview.md) compares the two modes side by side.
+Everything happens on one branch, so there is no isolation between builders and no review step before a change reaches Git. If two builders need to work at the same time without waiting for each other, or if changes must be approved before they land, that is what [multi-branch mode](../multi-branch/overview.md) is for. The [branching overview](../branching-overview.md) compares the two modes side by side.
 
 ## Resources Synced to Git
 
@@ -25,7 +25,7 @@ Applications, modules, datasources, and their folder assignments are synced to G
 
 ## Where the Controls Are
 
-The **Pull** button appears in the header on the **Applications**, **Data sources**, and **Modules** pages. The **Commit** button appears on the **Data sources** page. Applications and modules are committed from inside their builder.
+The **Pull** button appears in the header on the **Applications**, **Data sources**, and **Modules** pages. The **Commit** button appears on the **Data sources** page. Applications and modules are committed from inside the App Builder.
 
 <img className="screenshot-full img-full" src="/img/development-lifecycle/branching/single-branch/overview/header-controls.png" alt="Applications page header showing the branch name and the Pull button, with no locked-branch banner" />
 

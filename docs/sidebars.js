@@ -1161,73 +1161,51 @@ const sidebars = {
               "type": "category",
               "label": "Connect to Git Repo",
               "items": [
-                "development-lifecycle/gitsync/connect-to-git-repo/connection-method",
-                {
-                  "type": "category",
-                  "label": "Git SSH Protocol",
-                  "items": [
-                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config",
-                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config"
-                  ]
-                },
                 "development-lifecycle/gitsync/connect-to-git-repo/github-config",
                 "development-lifecycle/gitsync/connect-to-git-repo/gitlab-config"
               ]
             },
-            "development-lifecycle/gitsync/delete-gitsync",
-            "development-lifecycle/gitsync/push",
-            "development-lifecycle/gitsync/pull",
+            "development-lifecycle/gitsync/branching-overview",
             {
               "type": "category",
-              "label": "Branching",
+              "label": "Single-Branch Mode",
               "link": {
                 "type": "doc",
-                "id": "development-lifecycle/gitsync/branching/overview"
+                "id": "development-lifecycle/gitsync/single-branch/overview"
               },
               "items": [
-                "development-lifecycle/gitsync/branching/overview",
-                {
-                  "type": "category",
-                  "label": "Single-Branch Mode",
-                  "link": {
-                    "type": "doc",
-                    "id": "development-lifecycle/gitsync/branching/single-branch/overview"
-                  },
-                  "items": [
-                    "development-lifecycle/gitsync/branching/single-branch/overview",
-                    "development-lifecycle/gitsync/branching/single-branch/push-and-pull",
-                    "development-lifecycle/gitsync/branching/single-branch/sync-resources"
-                  ]
-                },
-                {
-                  "type": "category",
-                  "label": "Multi-Branch Mode",
-                  "link": {
-                    "type": "doc",
-                    "id": "development-lifecycle/gitsync/branching/multi-branch/overview"
-                  },
-                  "items": [
-                    "development-lifecycle/gitsync/branching/multi-branch/overview",
-                    "development-lifecycle/gitsync/branching/multi-branch/enable-and-manage-branches",
-                    "development-lifecycle/gitsync/branching/multi-branch/push-and-pull",
-                    "development-lifecycle/gitsync/branching/multi-branch/sync-resources",
-                    "development-lifecycle/gitsync/branching/multi-branch/pull-requests"
-                  ]
-                },
-                "development-lifecycle/gitsync/branching/versioning",
-                "development-lifecycle/gitsync/branching/auto-sync",
-                {
-                  "type": "category",
-                  "label": "Troubleshooting",
-                  "link": {
-                    "type": "doc",
-                    "id": "development-lifecycle/gitsync/branching/troubleshooting/overview"
-                  },
-                  "items": [
-                    "development-lifecycle/gitsync/branching/troubleshooting/overview",
-                    "development-lifecycle/gitsync/branching/troubleshooting/resolving-conflicts"
-                  ]
-                }
+                "development-lifecycle/gitsync/single-branch/overview",
+                "development-lifecycle/gitsync/single-branch/push-and-pull",
+                "development-lifecycle/gitsync/single-branch/sync-resources"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Multi-Branch Mode",
+              "link": {
+                "type": "doc",
+                "id": "development-lifecycle/gitsync/multi-branch/overview"
+              },
+              "items": [
+                "development-lifecycle/gitsync/multi-branch/overview",
+                "development-lifecycle/gitsync/multi-branch/enable-and-manage-branches",
+                "development-lifecycle/gitsync/multi-branch/push-and-pull",
+                "development-lifecycle/gitsync/multi-branch/sync-resources",
+                "development-lifecycle/gitsync/multi-branch/pull-requests"
+              ]
+            },
+            "development-lifecycle/gitsync/versioning",
+            "development-lifecycle/gitsync/auto-sync",
+            {
+              "type": "category",
+              "label": "Troubleshooting",
+              "link": {
+                "type": "doc",
+                "id": "development-lifecycle/gitsync/troubleshooting/overview"
+              },
+              "items": [
+                "development-lifecycle/gitsync/troubleshooting/overview",
+                "development-lifecycle/gitsync/troubleshooting/resolving-conflicts"
               ]
             }
           ]

@@ -6,11 +6,11 @@ sidebar_label: Enable and Manage Branches
 
 <PlanBadge type="enterprise" />
 
-Git Sync starts in single-branch mode. Branching is enabled per workspace, and only after a repository connection exists. Once it is on, every branch follows the same lifecycle: it is created from the default branch, holds your work until that work is reviewed, and is deleted once the work is merged.
+GitSync starts in single-branch mode. Branching is enabled per workspace, and only after a repository connection exists. Once it is on, every branch follows the same lifecycle: it is created from the default branch, holds your work until that work is reviewed, and is deleted once the work is merged.
 
 ## Prerequisites
 
-- **Git Sync configured** with either GitHub or GitLab. See the [Git Sync Guide](/docs/development-lifecycle/gitsync/overview) to set it up.
+- **GitSync configured** with either GitHub or GitLab. See [GitHub Configuration](../connect-to-git-repo/github-config.md) or [GitLab Configuration](../connect-to-git-repo/gitlab-config.md) to set it up.
 - The **Admin** or **Super admin** role to turn branching on. Once enabled, builders can create, switch, and manage branches; end users cannot.
 - On self-hosted instances: a **Redis** connection, and at least one instance started with `WORKER=true`. Branch creation, pulls, and deletions run as background jobs on this worker. Without one, these actions are queued but never processed.
 
@@ -122,14 +122,14 @@ Existing feature branches are not deleted when branching is disabled, and the br
 
 ## License Behavior
 
-If your license expires or stops covering Git Sync, branching is **not** turned off for you and your branches are preserved. Instead, ToolJet freezes the resources it manages: applications, modules, and datasources become read-only, and the App Builder and Module Builder open in a locked state with no editing available.
+If your license expires or stops covering GitSync, branching is **not** turned off for you and your branches are preserved. Instead, ToolJet freezes the resources it manages: applications, modules, and datasources become read-only, and the App Builder and Module Builder open in a locked state with no editing available.
 
-A banner tells you which case applies, whether the license has expired or is invalid, or the license is valid but no longer covers Git Sync.
+A banner tells you which case applies, whether the license has expired or is invalid, or the license is valid but no longer covers GitSync.
 
 There are two ways out of the frozen state:
 
 - **Apply a valid license.** Once a license that includes branching is in place, everything unfreezes and your branches, commits, and versions continue to work exactly as before.
-- **Turn the toggle off yourself.** If you do not plan to renew, turn off **Branching** to continue on a single branch, or turn off **Git Sync** entirely. Editing resumes on the default branch as soon as you do.
+- **Turn the toggle off yourself.** If you do not plan to renew, turn off **Branching** to continue on a single branch, or turn off **GitSync** entirely. Editing resumes on the default branch as soon as you do.
 
 <br/>
 ---

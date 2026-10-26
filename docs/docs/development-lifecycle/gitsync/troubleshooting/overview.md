@@ -11,7 +11,7 @@ Two situations interrupt a push or a pull and ask you to act before ToolJet writ
 | Situation | What it means | Where to go |
 |:----------|:--------------|:------------|
 | Name or slug conflicts | A commit or pull stops and opens a conflict dialog, because two resources are competing for the same name or slug | [Resolving Conflicts](./resolving-conflicts.md) |
-| Unsynced resources | A resource was built before Git Sync or branching was turned on, so Git has never seen it | [Single-branch mode](../single-branch/sync-resources.md) or [multi-branch mode](../multi-branch/sync-resources.md) |
+| Unsynced resources | A resource was built before GitSync or branching was turned on, so Git has never seen it | [Single-branch mode](../single-branch/sync-resources.md) or [multi-branch mode](../multi-branch/sync-resources.md) |
 
 <br/>
 ---

@@ -23,12 +23,12 @@ All branches live inside the same workspace. You do not need a separate workspac
 
 There are two kinds of branches:
 
-- **Default branch**: The branch configured in your Git Sync connection, typically `main` or `master`. It holds the live version of your applications. When branching is enabled, this branch is read-only and changes can only enter it through a merged pull request.
+- **Default branch**: The branch configured in your GitSync connection, typically `main` or `master`. It holds the live version of your applications. When branching is enabled, this branch is read-only and changes can only enter it through a merged pull request.
 - **Feature branches**: Independent copies created from the default branch, where you make changes freely. Each feature branch is isolated until its changes are merged back.
 
 ## Single-Branch and Multi-Branch Mode
 
-Git Sync starts in single-branch mode. Multiple branches are opted into per workspace. See [Enable Branching](./enable-and-manage-branches.md) for how to turn them on.
+GitSync starts in single-branch mode. Multiple branches are opted into per workspace. See [Enable Branching](./enable-and-manage-branches.md) for how to turn them on.
 
 | Behavior | Single-branch mode | Multi-branch mode |
 |:---------|:-------------------|:------------------|
@@ -93,9 +93,9 @@ Folders are also workspace-level rather than branch-scoped, so a folder created 
 
 ## Where Branch Controls Appear
 
-The branch dropdown and the **Pull** button appear in the header on the **Applications**, **Data sources**, and **Modules** pages. The header **Commit** button appears only on the **Data sources** page. Applications and modules are committed from inside their builder, see [Push and Pull Commit](./push-and-pull.md).
+The branch dropdown and the **Pull** button appear in the header on the **Applications**, **Data sources**, and **Modules** pages. The header **Commit** button appears only on the **Data sources** page. Applications and modules are committed from inside the App Builder, see [Push and Pull Commit](./push-and-pull.md).
 
-## Using Git Sync Across Multiple Instances
+## Using GitSync Across Multiple Instances
 
 If you run separate ToolJet instances for different environments, you can connect them to the same Git repository. Git acts as the bridge between instances.
 
