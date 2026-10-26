@@ -5,7 +5,12 @@ import { authHeader } from '@/_helpers';
 import _ from 'lodash';
 import { currentEnvironmentId } from '@/TooljetDatabase/_stores/tjdbStore';
 
-const tooljetAdapter = new HttpClient();
+// Constructed on first use, not at module load. These service modules are reachable from
+// http-client's own import chain (http-client -> authentication.service -> '@/_helpers' -> ...
+// -> the '@/_services' barrel), so a module-scope `new HttpClient()` can run while http-client
+// is still initialising and has not exported the class yet.
+let httpClient;
+const getTooljetAdapter = () => (httpClient ??= new HttpClient());
 
 // The ONLY way to address /tooljet-db/proxy/*. environment_id defaults to the ambient store
 // selection - the same ambient-scope treatment HttpClient.request already gives tj-workspace-id
@@ -24,24 +29,24 @@ function proxyUrl(tableId, query = '', environmentIdOverride) {
 }
 
 function findOne(tableId, query = '', environmentIdOverride) {
-  return tooljetAdapter.get(proxyUrl(tableId, query, environmentIdOverride));
+  return getTooljetAdapter().get(proxyUrl(tableId, query, environmentIdOverride));
 }
 
 function findAll(organizationId) {
-  return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/tables`);
+  return getTooljetAdapter().get(`/tooljet-db/organizations/${organizationId}/tables`);
 }
 
 async function getTablesLimit() {
   const headers = authHeader();
   const organizationId = headers['tj-workspace-id'];
-  const res = await tooljetAdapter.get(`/tooljet-db/tables/limits/${organizationId}`);
+  const res = await getTooljetAdapter().get(`/tooljet-db/tables/limits/${organizationId}`);
   return res;
 }
 
 async function getRowsLimit() {
   const headers = authHeader();
   const organizationId = headers['tj-workspace-id'];
-  const res = await tooljetAdapter.get(`/tooljet-db/rows/limits/${organizationId}`);
+  const res = await getTooljetAdapter().get(`/tooljet-db/rows/limits/${organizationId}`);
   return res;
 }
 
@@ -53,7 +58,7 @@ function createTable(
   checkingValues = false,
   migrationName = ''
 ) {
-  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table`, {
+  return getTooljetAdapter().post(`/tooljet-db/organizations/${organizationId}/table`, {
     table_name: tableName,
     columns,
     ...(checkingValues && { foreign_keys: foreignKeyColumns }),
@@ -64,21 +69,21 @@ function createTable(
 function viewTable(organizationId, tableName, environmentIdOverride) {
   const environmentId = environmentIdOverride ?? currentEnvironmentId();
   const query = environmentId ? `?environment_id=${environmentId}` : '';
-  return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableName}${query}`);
+  return getTooljetAdapter().get(`/tooljet-db/organizations/${organizationId}/table/${tableName}${query}`);
 }
 
 function getTableMigrations(organizationId, tableId) {
-  return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableId}/migrations`);
+  return getTooljetAdapter().get(`/tooljet-db/organizations/${organizationId}/table/${tableId}/migrations`);
 }
 
 function previewPromoteTable(organizationId, tableId, environmentId) {
-  return tooljetAdapter.get(
+  return getTooljetAdapter().get(
     `/tooljet-db/organizations/${organizationId}/table/${tableId}/promote/preview?environment_id=${environmentId}`
   );
 }
 
 function promoteTable(organizationId, tableId, environmentId) {
-  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/promote`, {
+  return getTooljetAdapter().post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/promote`, {
     environment_id: environmentId,
   });
 }
@@ -89,20 +94,20 @@ function promoteTable(organizationId, tableId, environmentId) {
 function bulkUpload(organizationId, tableName, file) {
   const environmentId = currentEnvironmentId();
   const query = environmentId ? `?environment_id=${environmentId}` : '';
-  return tooljetAdapter.post(
+  return getTooljetAdapter().post(
     `/tooljet-db/organizations/${organizationId}/table/${tableName}/bulk-upload${query}`,
     file
   );
 }
 
 function sqlExecution(organizationId, tableId, body) {
-  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/sql`, body);
+  return getTooljetAdapter().post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/sql`, body);
 }
 
 // A tracked migration step, unlike sqlExecution above (a one-off DML action against whatever
 // environment is currently open). Runs against the table's own development relation.
 function recordRawSqlMigration(organizationId, tableId, sql, refs = {}, name = '', description = '') {
-  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/migrations/sql`, {
+  return getTooljetAdapter().post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/migrations/sql`, {
     sql,
     refs,
     ...(name && { name }),
@@ -111,7 +116,7 @@ function recordRawSqlMigration(organizationId, tableId, sql, refs = {}, name = '
 }
 
 function createRow(tableId, data) {
-  return tooljetAdapter.post(proxyUrl(tableId), data);
+  return getTooljetAdapter().post(proxyUrl(tableId), data);
 }
 
 function createColumn(
@@ -128,7 +133,7 @@ function createColumn(
   configurations = {},
   migrationName = ''
 ) {
-  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
+  return getTooljetAdapter().post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
       column_name: columnName,
       data_type: dataType,
@@ -145,7 +150,7 @@ function createColumn(
 }
 
 function updateTable(organizationId, tableName, columns) {
-  return tooljetAdapter.patch(`/tooljet-db/${organizationId}/perform`, {
+  return getTooljetAdapter().patch(`/tooljet-db/${organizationId}/perform`, {
     action: 'update_table',
     table_name: tableName,
     columns,
@@ -160,7 +165,7 @@ function renameTable(organizationId, tableName, newTableName, data = [], migrati
       delete obj[key]?.dataTypeDetails;
     });
   });
-  return tooljetAdapter.patch(`/tooljet-db/organizations/${organizationId}/table/${tableName}`, {
+  return getTooljetAdapter().patch(`/tooljet-db/organizations/${organizationId}/table/${tableName}`, {
     table_name: tableName,
     ...(newTableName !== tableName && { new_table_name: newTableName }),
     columns: bodyData,
@@ -169,7 +174,7 @@ function renameTable(organizationId, tableName, newTableName, data = [], migrati
 }
 
 function editForeignKey(organizationId, tableName, id, data = [], migrationName = '') {
-  return tooljetAdapter.put(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey`, {
+  return getTooljetAdapter().put(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey`, {
     foreign_key_id: id,
     foreign_keys: data,
     ...(migrationName && { migration_name: migrationName }),
@@ -177,7 +182,7 @@ function editForeignKey(organizationId, tableName, id, data = [], migrationName 
 }
 
 function createForeignKey(organizationId, tableName, data = [], migrationName = '') {
-  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey`, {
+  return getTooljetAdapter().post(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey`, {
     foreign_keys: data,
     ...(migrationName && { migration_name: migrationName }),
   });
@@ -187,17 +192,17 @@ function deleteForeignKey(organizationId, tableName, id, migrationName = '') {
   // migration_name rides the querystring, not the body - a body on DELETE has no defined HTTP
   // semantics and proxies/some clients drop it silently.
   const query = migrationName ? `?migration_name=${encodeURIComponent(migrationName)}` : '';
-  return tooljetAdapter.delete(
+  return getTooljetAdapter().delete(
     `/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey/${id}${query}`
   );
 }
 
 function updateRows(tableId, data, query = '') {
-  return tooljetAdapter.patch(proxyUrl(tableId, query), data);
+  return getTooljetAdapter().patch(proxyUrl(tableId, query), data);
 }
 
 function updateColumn(organizationId, tableName, columns) {
-  return tooljetAdapter.patch(
+  return getTooljetAdapter().patch(
     `/tooljet-db/organizations/${organizationId}/table/${tableName}/column`,
     columns,
     organizationId
@@ -205,14 +210,14 @@ function updateColumn(organizationId, tableName, columns) {
 }
 
 function deleteRows(tableId, query = '') {
-  return tooljetAdapter.delete(proxyUrl(tableId, query));
+  return getTooljetAdapter().delete(proxyUrl(tableId, query));
 }
 
 function deleteColumn(organizationId, tableName, columnName, migrationName = '') {
   // migration_name rides the querystring, not the body - a body on DELETE has no defined HTTP
   // semantics and proxies/some clients drop it silently.
   const query = migrationName ? `?migration_name=${encodeURIComponent(migrationName)}` : '';
-  return tooljetAdapter.delete(
+  return getTooljetAdapter().delete(
     `/tooljet-db/organizations/${organizationId}/table/${tableName}/column/${columnName}${query}`
   );
 }
@@ -221,18 +226,18 @@ function deleteTable(organizationId, tableName, migrationName = '') {
   // migration_name rides the querystring, not the body - a body on DELETE has no defined HTTP
   // semantics and proxies/some clients drop it silently.
   const query = migrationName ? `?migration_name=${encodeURIComponent(migrationName)}` : '';
-  return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}${query}`);
+  return getTooljetAdapter().delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}${query}`);
 }
 
 function getTableDependents(organizationId, tableId) {
-  return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableId}/dependents`);
+  return getTooljetAdapter().get(`/tooljet-db/organizations/${organizationId}/table/${tableId}/dependents`);
 }
 
 // Row count for one specific environment (not necessarily the selected one) - the proxy sets
 // `Prefer: count=exact` server-side, so `limit=1` is enough to get an exact Content-Range without
 // paying for the actual row payload.
 async function getTableRowCount(tableId, environmentId) {
-  const { headers, error } = await tooljetAdapter.get(proxyUrl(tableId, 'limit=1', environmentId));
+  const { headers, error } = await getTooljetAdapter().get(proxyUrl(tableId, 'limit=1', environmentId));
   if (error) return { count: null, error };
   const total = headers?.['content-range']?.split('/')?.[1];
   return { count: total ? Number(total) : null, error: null };
