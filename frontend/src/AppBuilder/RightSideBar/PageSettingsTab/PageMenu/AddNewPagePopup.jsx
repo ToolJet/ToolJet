@@ -49,7 +49,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const { moduleId } = useModuleContext();
   const { show, mode, type } = useStore((state) => state.newPagePopupConfig);
   const editingPage = useStore((state) => state.editingPage);
-  const pages = useStore((state) => state?.modules?.canvas?.pages ?? []);
+  const pages = useStore((state) => state?.modules?.[moduleId]?.pages ?? []);
   const addNewPage = useStore((state) => state.addNewPage);
   const updatePageName = useStore((state) => state.updatePageName);
   const updatePageHandle = useStore((state) => state.updatePageHandle);
@@ -127,6 +127,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
 
   useEffect(() => {
     setError(null);
+    hasAutoSavedRef.current = false;
   }, [show]);
 
   useEffect(() => {
@@ -283,18 +284,26 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
     setError(null);
     const newHandle = event.target.value;
 
-    if (newHandle === '') setError('Page handle cannot be empty');
-    if (newHandle === handle) setError('Page handle cannot be same as the existing page handle');
-    const isValidKebabCase = validateKebabCase(newHandle);
-    if (!isValidKebabCase.isValid) {
-      setError(isValidKebabCase.error);
+    if (newHandle === '') {
+      setError('Page handle cannot be empty');
+    } else if (pages.some((p) => p.id !== page?.id && p.handle === newHandle)) {
+      setError('Page handle cannot be same as the existing page handle');
+    } else {
+      const isValidKebabCase = validateKebabCase(newHandle);
+      if (!isValidKebabCase.isValid) {
+        setError(isValidKebabCase.error);
+      }
     }
     setHandle(newHandle);
   };
 
   const handleSave = () => {
-    if (handle === page.handle) {
+    if (handle === page?.handle) {
       setError(null);
+      return;
+    }
+    if (pages.some((p) => p.id !== page?.id && p.handle === handle)) {
+      setError('Page handle cannot be same as the existing page handle');
       return;
     }
     const { isValid, error } = validateKebabCase(handle);
