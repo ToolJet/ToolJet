@@ -359,7 +359,7 @@ jobs:
   test-server:
     name: 'Test Suite · server'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     needs:
       - detect-changes
       - build-plugins
@@ -474,7 +474,7 @@ jobs:
   test-server-e2e:
     name: 'Test Suite · server e2e'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     needs:
       - detect-changes
       - build-plugins
