@@ -15,7 +15,7 @@ export default function ConfirmationInputs({ options, darkMode, optionchanged, q
   return (
     <div className="confirmation-inputs">
       {fxMode && (
-        <div className="confirmation-fx-input">
+        <div data-param="requestConfirmation" className="confirmation-fx-input">
           <CodeHinter
             type="basic"
             initialValue={fxValue}
@@ -25,7 +25,7 @@ export default function ConfirmationInputs({ options, darkMode, optionchanged, q
           />
         </div>
       )}
-      <div className="confirmation-message-row">
+      <div data-param="confirmationMessage" className="confirmation-message-row">
         <label
           className="form-label align-items-center"
           data-cy="label-confirmation-message-input"

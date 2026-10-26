@@ -19,6 +19,9 @@ import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import { usePrevious } from '@dnd-kit/utilities';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
+// Code search names a step by its id, else its name.
+const stepIdentity = (step) => String([step?.id, step?.name].find((v) => v != null && v !== ''));
+
 export function Steps({ componentMeta, darkMode, ...restProps }) {
   const {
     layoutPropertyChanged,
@@ -304,6 +307,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={stepIdentity(item)}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
