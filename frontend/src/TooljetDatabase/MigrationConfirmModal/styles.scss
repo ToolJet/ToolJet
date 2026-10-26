@@ -1,3 +1,9 @@
+// Same width as the app's other warning dialogs (AlertDialog 410px, switch-branch 424px). The extra
+// .modal-dialog qualifier beats the viewport-media `.modal-dialog { max-width: 540px }` rule.
+.modal-dialog.tjdb-confirm-dialog {
+  max-width: 424px;
+}
+
 .migration-confirm-modal {
   .migration-confirm-modal-header {
     align-items: flex-start;
@@ -102,21 +108,49 @@
     }
   }
 
+  // Two-column table: "app name + type pill" | "query name". Rows are `display: contents` so every
+  // row shares the grid's columns and stays aligned.
   .migration-deps-list {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    column-gap: 12px;
     margin: 8px 0 0;
-    padding-left: 20px;
+    padding: 0;
+    list-style: none;
 
-    li {
+    li:not(.migration-deps-more) {
+      display: contents;
+    }
+
+    .migration-deps-cell {
       display: flex;
+      align-items: baseline;
       gap: 8px;
-      padding: 2px 0;
+      min-width: 0;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--borders-disabled-on-white);
+      overflow-wrap: anywhere;
     }
 
     .migration-deps-app-name {
       font-weight: 600;
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     .migration-deps-app-type {
+      flex-shrink: 0;
+      padding: 0 8px;
+      border-radius: 6px;
+      background: var(--slate3);
+      color: var(--slate11);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .migration-deps-more {
+      grid-column: 1 / -1;
+      padding-top: 6px;
       color: var(--text-placeholder);
     }
   }
