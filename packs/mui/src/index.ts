@@ -17,6 +17,7 @@ export { DataGrid } from './components/DataGrid';
 // Containers (builders drop ToolJet components into them)
 export { Tabs, Card, Dialog, List } from './components/Containers';
 export { Kanban } from './components/Kanban';
+export { CardGrid } from './components/CardGrid';
 
 // Charts (@mui/x-charts)
 export { BarChart, LineChart, AreaChart, PieChart } from './components/Charts';

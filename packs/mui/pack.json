@@ -543,7 +543,7 @@
     "List": {
       "role": "listview",
       "fit": false,
-      "usage": "MUI's List: items; renderItem 'listItemText' draws ListItemText from primaryField/secondaryField with an Avatar from avatarField, 'components' draws a row of ToolJet components reading {{listItem}} (rowHeight). subheader, dense, divider, pageSize, emptyText. onItemClick with selectedItem exposed.",
+      "usage": "MUI's List: items; renderItem 'listItemText' draws a ListItemButton with ListItemText from primaryField/secondaryField and an Avatar from avatarField (image URL, else initials), 'components' draws a row of ToolJet components reading {{listItem}} (rowHeight) on the same row surface. subheader, dense, divider (inset lines), pageSize (Pagination under the list), emptyText; style itemVariant (plain: rows in one Paper; outline: each row an outlined card). onItemClick with selectedItem exposed.",
       "roleProps": {
         "data": "items",
         "itemContent": "renderItem",
@@ -551,7 +551,8 @@
         "subtitleField": "secondaryField",
         "imageField": "avatarField",
         "idField": "itemKey",
-        "rowsPerPage": "pageSize"
+        "rowsPerPage": "pageSize",
+        "showBorder": "divider"
       },
       "roleValues": {
         "renderItem": {
@@ -569,6 +570,26 @@
         }
       ],
       "loading": "own"
+    },
+    "CardGrid": {
+      "role": "cardgrid",
+      "fit": true,
+      "loading": "own",
+      "usage": "A Grid of MUI Cards (CardActionArea, CardMedia, CardContent, Chip): dataSource, titleField, subtitleField, imageField (CardMedia), badgeField/badgeFields (Chips), eyebrowField, avatarField, descriptionField, progressField, metaFields; layout (stacked, row), columns (0 fits minCardWidth), imageAspect, showImage, variant (elevation, outlined), elevation, highlightSelected, emptyText; onCardClicked with selectedItem, selectedItemId, selectedItemIndex.",
+      "roleProps": {
+        "data": "dataSource",
+        "cardStyle": "variant"
+      },
+      "roleValues": {
+        "variant": {
+          "elevated": "elevation",
+          "outline": "outlined",
+          "flat": {
+            "variant": "elevation",
+            "elevation": 0
+          }
+        }
+      }
     },
     "Kanban": {
       "role": "kanban",

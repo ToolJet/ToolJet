@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   List as MuiList,
   ListItem,
   ListItemAvatar,
@@ -21,6 +22,7 @@ import {
   Tab,
   Tabs as MuiTabs,
 } from '@mui/material';
+import { alpha, type Theme } from '@mui/material/styles';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, usePopupContainer, useThemeStyles } from '../lib/MuiProvider';
@@ -31,6 +33,10 @@ import { BlockSkeleton, Loading, Spinner } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
 import { ownerAvailable } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
+import { avatarHue, initials } from '../lib/ui2/display/lists/model';
+
+// An avatar value that is a picture (else it is a name, drawn as its initials).
+const IMAGE_URL = /^(https?:\/\/|data:image\/|\/|\.\/)/i;
 
 // MUI's Tabs: tabs [{ value, label, disabled }], value (the open tab; empty opens the first), variant (standard,
 // scrollable, fullWidth), textColor / indicatorColor, centered, orientation; each tab panel is a canvas of ToolJet
@@ -347,9 +353,12 @@ const occurrenceKeys = (rows: Row[], field: string) => {
   });
 };
 
-// MUI's List: items; each is either MUI's ListItemText (primaryField, secondaryField, an avatar from avatarField)
-// or, with renderItem 'components', a row of ToolJet components reading {{listItem}} (rowHeight). subheader, dense,
-// divider (lines between items), pageSize (0 for no paging). Event onItemClick with selectedItem exposed.
+// MUI's List: items; each is either a ListItemButton with ListItemText (primaryField, secondaryField, an Avatar from
+// avatarField: an image URL, else the initials) or, with renderItem 'components', a row of ToolJet components reading
+// {{listItem}} (rowHeight), on the same row surface (padding, hover and selected states). subheader, dense, divider
+// (inset lines between items), pageSize (0 for no paging; MUI's Pagination under the list). Style itemVariant: plain
+// rows in one bordered Paper, or outline (each row its own outlined card, apart). Event onItemClick with selectedItem
+// exposed.
 export const List = () => {
   const [rawItems] = ToolJet.useStateArray({ name: 'items', label: 'Items', initialValue: SAMPLE.items });
   const [renderItem] = ToolJet.useStateEnumeration({
@@ -375,6 +384,14 @@ export const List = () => {
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
+  const itemVariant = ToolJet.useStyleEnumeration({
+    name: 'itemVariant',
+    label: 'Item look',
+    // UI 2.0's names (ShadListView's itemVariant), so the build compiler's value passes through as is.
+    enumDefinition: ['plain', 'outline'],
+    enumLabels: { plain: 'Plain rows', outline: 'Outlined cards' },
+    initialValue: 'plain',
+  });
   ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
   const [page, setPage] = useState(1);
 
@@ -430,53 +447,104 @@ export const List = () => {
   });
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null, -1));
 
+  const outlined = itemVariant === 'outline';
+  const withAvatar = !asRows && !!avatarField;
+  const between = (i: number, key: string) =>
+    divider && !outlined && i < visible.length - 1 ? (
+      <Divider key={`${key}-divider`} component="li" variant={withAvatar ? 'inset' : 'middle'} aria-hidden className="tj-mui-list__divider" />
+    ) : null;
+  // A row's surface (a components row has no ListItemButton): MUI's list item padding, hover and selected tints.
+  const rowSurface = (selected: boolean) => (t: Theme) => ({
+    width: '100%',
+    cursor: 'pointer',
+    px: 1,
+    py: 0.5,
+    borderRadius: outlined ? 1 : 0,
+    transition: t.transitions.create('background-color', { duration: t.transitions.duration.shortest }),
+    '&:hover': { bgcolor: selected ? alpha(t.palette.primary.main, t.palette.action.selectedOpacity + t.palette.action.hoverOpacity) : 'action.hover' },
+    ...(selected ? { bgcolor: alpha(t.palette.primary.main, t.palette.action.selectedOpacity) } : null),
+  });
+  const cardItem = outlined ? { mb: 1, '&:last-of-type': { mb: 0 } } : null;
+  const cardFrame = outlined ? { border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper', overflow: 'hidden' } : null;
+
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={loading} fill look={<Spinner />}>
-        <div className="tj-mui--fill tj-mui-list">
+        <div className={`tj-mui--fill tj-mui-list${outlined ? ' tj-mui-list--outlined' : ''}`}>
           <MuiList
             dense={dense}
             disablePadding
-            subheader={subheader ? <ListSubheader disableSticky>{subheader}</ListSubheader> : undefined}
-            sx={{ flex: 1, minHeight: 0, overflow: 'auto', border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }}
+            subheader={subheader ? <ListSubheader disableSticky sx={outlined ? { bgcolor: 'transparent', px: 0 } : undefined}>{subheader}</ListSubheader> : undefined}
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'auto',
+              ...(outlined ? { p: 0.25 } : { border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }),
+            }}
           >
             {visible.length === 0 ? (
-              <ListItem>
+              <ListItem sx={outlined ? cardFrame ?? undefined : undefined}>
                 <ListItemText secondary={emptyText} />
               </ListItem>
             ) : null}
             {visible.map((row, i) => {
               const key = keys[i + offset];
               const selected = key === selectedKey;
-              const isLast = i === visible.length - 1;
               if (asRows)
                 return (
-                  <ListItem key={key} disablePadding divider={divider && !isLast} onClickCapture={() => select(row, i + offset)} className={selected ? 'Mui-selected' : undefined}>
-                    <Box sx={{ width: '100%', minHeight: height }}>
-                      <ToolJet.RowSlot name="row" index={i} item={row} />
-                    </Box>
-                  </ListItem>
+                  <React.Fragment key={key}>
+                    <ListItem disablePadding className="tj-mui-list__item" sx={{ ...cardItem, ...cardFrame }}>
+                      <Box
+                        className={selected ? 'tj-mui-list__row Mui-selected' : 'tj-mui-list__row'}
+                        onClickCapture={() => select(row, i + offset)}
+                        sx={rowSurface(selected)}
+                      >
+                        <Box sx={{ width: '100%', minHeight: height }}>
+                          <ToolJet.RowSlot name="row" index={i} item={row} />
+                        </Box>
+                      </Box>
+                    </ListItem>
+                    {between(i, key)}
+                  </React.Fragment>
                 );
               const avatar = avatarField ? str(readField(row, avatarField)) : '';
               const primary = formatCell(readField(row, primaryField));
+              const secondary = secondaryField ? formatCell(readField(row, secondaryField)) || undefined : undefined;
+              const image = IMAGE_URL.test(avatar.trim()) ? avatar.trim() : '';
+              const avatarName = (!image && avatar.trim()) || primary;
               return (
-                <ListItem key={key} disablePadding divider={divider && !isLast}>
-                  <ListItemButton selected={selected} onClick={() => select(row, i + offset)}>
-                    {avatarField ? (
-                      <ListItemAvatar>
-                        <Avatar src={avatar || undefined} alt={primary}>
-                          {primary.slice(0, 1).toUpperCase() || undefined}
-                        </Avatar>
-                      </ListItemAvatar>
-                    ) : null}
-                    <ListItemText primary={primary} secondary={secondaryField ? formatCell(readField(row, secondaryField)) || undefined : undefined} />
-                  </ListItemButton>
-                </ListItem>
+                <React.Fragment key={key}>
+                  <ListItem disablePadding className="tj-mui-list__item" sx={{ ...cardItem, ...cardFrame }}>
+                    <ListItemButton
+                      selected={selected}
+                      onClick={() => select(row, i + offset)}
+                      sx={{ px: 2, py: dense ? 0.5 : 1, gap: 0, minHeight: dense ? 40 : withAvatar || secondary ? 64 : 48 }}
+                    >
+                      {withAvatar ? (
+                        <ListItemAvatar>
+                          <Avatar src={image || undefined} alt={primary} sx={image ? undefined : { bgcolor: `hsl(${avatarHue(avatarName)} 45% 46%)`, fontSize: 16 }}>
+                            {image ? undefined : initials(avatarName) || undefined}
+                          </Avatar>
+                        </ListItemAvatar>
+                      ) : null}
+                      <ListItemText
+                        primary={primary}
+                        secondary={secondary}
+                        sx={{ my: 0, minWidth: 0 }}
+                        slotProps={{
+                          primary: { noWrap: true, sx: { fontWeight: 500 } },
+                          secondary: { noWrap: true },
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  {between(i, key)}
+                </React.Fragment>
               );
             })}
           </MuiList>
           {size && items.length > size ? (
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1 }}>
+            <Box className="tj-mui-list__pagination" sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
               <Pagination size="small" count={pages} page={p} onChange={(_, n) => setPage(n)} />
             </Box>
           ) : null}

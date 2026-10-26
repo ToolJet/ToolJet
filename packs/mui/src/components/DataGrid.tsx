@@ -86,12 +86,9 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
       if (['string', 'number', 'date', 'dateTime', 'boolean'].includes(type)) col.type = type as 'string';
       const width = toNumber(r.width ?? r.columnSize);
       const flex = toNumber(r.flex);
-      // A given width is the column's least, shared out in proportion so the columns fill the grid (fixed widths left
-      // a blank band at its right).
-      if (width && !flex) {
-        col.minWidth = width;
-        col.flex = width;
-      }
+      // A given width is kept for now; toColumns settles it below, once it knows whether other columns can take the
+      // spare room.
+      if (width && !flex) col.width = width;
       if (flex) col.flex = flex;
       if (!width && !flex) col.flex = 1;
       if (r.align) col.align = col.headerAlign = r.align as 'left';
@@ -112,7 +109,18 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
     })
     .filter((c): c is Column => !!c);
   // Columns given: exactly those (hidden ones dropped); none given: every field of the first row.
-  if (given.length) return given.filter((c) => !(c as unknown as { hidden?: boolean }).hidden);
+  if (given.length) {
+    const shown = given.filter((c) => !(c as unknown as { hidden?: boolean }).hidden);
+    // As UI 2.0's Table: a column with a width (columnSize) keeps it and the others share the rest (flex 1). Sized
+    // columns grew in proportion to their width before, so an 80px id column took 210px and a text column with no
+    // width was squeezed to an ellipsis. With every column sized, they still share the grid in proportion, so the
+    // grid has no blank band at its right.
+    const anyFluid = shown.some((c) => c.width === undefined);
+    return shown.map((c) => {
+      if (c.width === undefined || c.flex !== undefined) return c;
+      return anyFluid ? c : { ...c, minWidth: c.width, flex: c.width, width: undefined };
+    });
+  }
   const first = rows[0];
   return first ? Object.keys(first).slice(0, MAX_COLUMNS).map((k) => ({ field: k, headerName: humanize(k), flex: 1 })) : [];
 };
