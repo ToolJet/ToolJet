@@ -457,6 +457,29 @@ describe('Image: zoom and rotate controls', () => {
     expect(zoomOutButton()).not.toBeInTheDocument();
   });
 
+  test('[Image-ZOOM-003] Clicking a zoomable image zooms that image, not another zoomable image on the page', async () => {
+    // Break this catches: handleClick resolving its zoom target with a
+    // document-wide query, which always lands on the first zoomable image.
+    const zoomable = { zoomButtons: binding('{{true}}') };
+    widget.render({
+      properties: zoomable,
+      extraComponents: { img2: componentDefinition('img2', 'image2', 'Image', { ...defaultProperties, ...zoomable }) },
+      also: [{ id: 'img2', componentType: 'Image' }],
+    });
+    await waitFor(() => expect(document.getElementById('component-img2')).toBeInTheDocument());
+
+    const [firstWidget, secondWidget] = document.querySelectorAll('.image-widget-wrapper');
+    const firstDblClick = jest.fn();
+    const secondDblClick = jest.fn();
+    firstWidget.addEventListener('dblclick', firstDblClick);
+    secondWidget.addEventListener('dblclick', secondDblClick);
+
+    await widget.session.user.click(document.getElementById('component-img2'));
+
+    expect(firstDblClick).not.toHaveBeenCalled();
+    expect(secondDblClick).toHaveBeenCalledTimes(1);
+  });
+
   test('[Image-ROT-001] rotateButton click rotates the image by 90 degrees, wrapping past 270 back to 0', async () => {
     widget.render({ properties: { rotateButton: binding('{{true}}') } });
     await waitFor(() => expect(rotateIcon()).toBeInTheDocument());
