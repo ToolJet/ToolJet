@@ -6,8 +6,20 @@ import { User } from '@entities/user.entity';
 // checks read this. The session, data source credentials and query data stay the requester's.
 export type PermissionSubject =
   | { kind: 'user'; userId: string; simulated: boolean }
-  // Treated like a user who belongs to exactly these groups.
+  // Treated like a user who belongs to exactly these groups. View as sends one group; the list
+  // keeps the evaluation code shared with real users, who have several.
   | { kind: 'groups'; groupIds: string[]; simulated: true };
+
+// Who a simulated response was built for, so the client can show it and mirror
+// globals.currentUser. `groups` are custom group names and `role` the role group name: the same
+// shape the session gives the client for a real user.
+export interface ViewAsIdentity {
+  kind: 'user' | 'group';
+  id: string;
+  label: string;
+  groups: string[];
+  role: string;
+}
 
 export interface ResolveViewAsInput {
   user: User;

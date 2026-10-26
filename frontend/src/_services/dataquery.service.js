@@ -1,6 +1,9 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { getActiveBranchId } from '@/_helpers/active-branch';
+import { viewAsHeaders } from '@/AppBuilder/_helpers/viewAs';
+
+const previewHeaders = (mode, viewAs) => ({ ...authHeader(), ...(mode === 'view' ? viewAsHeaders(viewAs) : {}) });
 
 export const dataqueryService = {
   create,
@@ -16,8 +19,8 @@ export const dataqueryService = {
   invoke,
 };
 
-function getAll(appVersionId, mode) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+function getAll(appVersionId, mode, viewAs) {
+  const requestOptions = { method: 'GET', headers: previewHeaders(mode, viewAs), credentials: 'include' };
   return fetch(`${config.apiUrl}/data-queries/${appVersionId}?mode=${mode}`, requestOptions).then(handleResponse);
 }
 
@@ -91,7 +94,7 @@ function del(id, versionId) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options, versionId, environmentId, mode, signal) {
+function run(queryId, resolvedOptions, options, versionId, environmentId, mode, signal, viewAs) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
@@ -108,7 +111,7 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
 
   const requestOptions = {
     method: 'POST',
-    headers: authHeader(),
+    headers: previewHeaders(mode, viewAs),
     credentials: 'include',
     body: JSON.stringify(body),
     signal,

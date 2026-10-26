@@ -33,6 +33,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Group Sync** | Login-time mapping of identity-provider groups (OIDC claims, SAML assertions, LDAP groups) to ToolJet groups and roles; configured per SSO config (`SsoConfigOidcGroupSync` mapping rows) (EE feature) | Directory sync (that's SCIM — push provisioning; Group Sync happens at login) |
 | **Permission** | A granular access right on a specific resource (app, data source, folder, constant) | — |
 | **Ability** | Internal CASL-based authorization rule set evaluated at runtime (code concept, not user-facing) | — |
+| **View as** | Preview-only simulation of one workspace user or one group, so a Builder can check page, component and query permissions without signing in as someone else; sent as the `x-tj-view-as` header (`ViewAsService`; EE feature) | Impersonation (wrong — the Builder stays signed in as themselves and only permission checks change) |
 
 ## App Building
 

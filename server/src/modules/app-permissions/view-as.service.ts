@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PermissionSubject, ResolveViewAsInput, requesterSubject } from './types/view-as';
+import { PermissionSubject, ResolveViewAsInput, ViewAsIdentity, requesterSubject } from './types/view-as';
 
 @Injectable()
 export class ViewAsService {
@@ -7,5 +7,9 @@ export class ViewAsService {
   // every request is evaluated as the requester.
   async resolve({ user }: ResolveViewAsInput): Promise<PermissionSubject> {
     return requesterSubject(user);
+  }
+
+  async describe(subject: PermissionSubject, organizationId: string): Promise<ViewAsIdentity | null> {
+    return null;
   }
 }

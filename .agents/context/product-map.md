@@ -90,6 +90,7 @@ graph TD
 
 - A Workspace is the tenant boundary for apps, users, data sources, constants, and ToolJet Database tables (`organizationId` across entities and guards).
 - Admin, Builder, and End User permissions are enforced server-side through CASL ability guards; UI visibility is not the authorization boundary (`server/src/modules/app/guards/ability.guard.ts`).
+- "View as" in Preview simulates one user or one group for page, component and query permission checks only. It is honoured on three view-mode routes (version load, query list, query run), only for Builders who can edit the app, and never on released or public apps (`server/src/modules/app-permissions/AGENTS.md`).
 - Every backend feature route must declare module/feature metadata and an ability guard; `GuardValidator` checks this at boot (`server/src/modules/app/validators/feature-guard.validator.ts`).
 - App content belongs to a Version; non-workflow app name, slug, icon, and public state are stored on version rows (`server/src/modules/apps/AGENTS.md`).
 - End users consume a released version. A public app can bypass login, but query execution remains guarded and throttled (`QueryAuthGuard`; `AppScopedThrottlerGuard`).

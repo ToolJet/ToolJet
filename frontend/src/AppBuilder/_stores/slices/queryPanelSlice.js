@@ -729,7 +729,9 @@ export const createQueryPanelSlice = (set, get) => ({
               return selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId);
             })(),
             modeStore.modules.canvas.currentMode,
-            abortController?.signal
+            abortController?.signal,
+            // Embedded modules are never simulated; their app isn't the one being previewed as.
+            moduleId === 'canvas' ? get().viewAs?.target : null
           );
         }
 

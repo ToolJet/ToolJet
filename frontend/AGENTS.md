@@ -170,3 +170,12 @@ Widget-level CSS class (shipped 2026-06):
 - Legacy non-revamped widgets (~24, mostly deprecated V1 duplicates) render the field as a top-level control rather than grouped — accepted, no wiring on the sunsetting path
 - v1 is static + `{{}}`-bound class only; imperative runtime control (CSA `setCustomClass`) deferred to v2
 - Gated behind the `customStyling` license flag (same flag as app/workspace Custom CSS, which it depends on), read via `useStore((s) => s.license.featureAccess?.customStyling)`. Two gates: the Inspector hides the control, and `RenderWidget.jsx` skips appending the class. **The saved value is never erased** — re-enabling the license restores the classes, no migration or cleanup
+
+"View as" preview (2026-10):
+
+- Builders pick **one user or one group** in Preview settings; never combined. Hidden unless the licence has an app-permission feature and the user can edit the app; the server re-checks everything
+- The choice is **session-only**: sessionStorage per app (`tj-view-as:<appId>`), never in the URL, so copied preview links are unaffected
+- Applying or exiting **reloads the page**, so no page, component, query result or global from the previous identity survives
+- The `x-tj-view-as` header goes only on version load, query list and query run, in view mode, for the canvas app. Embedded modules are never simulated
+- `globals.currentUser` changes only `groups` and `role` (from the server's `view_as`); id, email and name stay the Builder's. A group simulates an end user in it
+- If the server rejects a stale choice, the preview drops it, shows a toast and reloads as the Builder

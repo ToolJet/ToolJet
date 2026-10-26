@@ -28,5 +28,5 @@ export enum FEATURE_KEY {
 }
 
 // "View as" preview: a Builder previews the app with another user's or group's page, component
-// and query permissions. Format: `user:<uuid>` or `groups:<uuid>[,<uuid>...]`.
+// and query permissions. Format: `user:<uuid>` or `group:<uuid>` (one user or one group, never both).
 export const VIEW_AS_HEADER = 'x-tj-view-as';

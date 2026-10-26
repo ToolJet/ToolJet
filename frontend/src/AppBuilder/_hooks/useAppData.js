@@ -42,6 +42,7 @@ import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
+import { clearViewAs, readViewAs, simulatedCurrentUser } from '@/AppBuilder/_helpers/viewAs';
 
 const useAppData = (
   appId,
@@ -70,6 +71,7 @@ const useAppData = (
 
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
+  const setViewAs = useStore((state) => state.setViewAs);
   const user = useStore((state) => state.user);
   // The top-level app containing this module instance — used to let the backend verify this
   // module read is happening in the context of an app the user can edit, even when they have
@@ -346,6 +348,9 @@ const useAppData = (
     const isPublicAccess =
       (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
+    // "View as" only applies to a logged-in Builder previewing a version of the canvas app.
+    const viewAsTarget =
+      !moduleMode && mode === 'view' && queryParams.version && !isPublicAccess ? readViewAs(appId) : null;
 
     if (moduleMode && isModuleEditor) {
       // Editing the module itself directly — appId is the module's real DB id (from the
@@ -409,7 +414,9 @@ const useAppData = (
         // branch_id. The branch is resolved async (URL name -> id) by AppsRoute; without this
         // gate the load can race ahead with no branch_id and hydrate on the default branch.
         appDataPromise = whenBranchResolved().then(() =>
-          isPreviewForVersion ? appVersionService.getAppVersionData(appId, versionId, mode) : appService.fetchApp(appId)
+          isPreviewForVersion
+            ? appVersionService.getAppVersionData(appId, versionId, mode, viewAsTarget)
+            : appService.fetchApp(appId)
         );
       }
     }
@@ -428,6 +435,13 @@ const useAppData = (
         // their own. Standalone module editor (moduleId === 'canvas') is its own canvas mount too.
         const isFreshCanvasMount = !moduleMode || moduleId === 'canvas';
         if (isFreshCanvasMount) cleanUpStore();
+        // The server confirms a simulation by describing who it simulated. No description means it
+        // didn't apply (e.g. CE), so drop the stale choice rather than claim it's on.
+        const viewAsIdentity = viewAsTarget ? (result.view_as ?? null) : null;
+        if (!moduleMode) {
+          if (viewAsTarget && !viewAsIdentity) clearViewAs(appId);
+          setViewAs(viewAsIdentity ? viewAsTarget : null, viewAsIdentity);
+        }
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
@@ -755,7 +769,11 @@ const useAppData = (
         const queryData =
           isPublicAccess || (mode !== 'edit' && appData.is_public)
             ? appData
-            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
+            : await dataqueryService.getAll(
+                appData.editing_version?.id || appData.current_version_id,
+                mode,
+                viewAsTarget
+              );
 
         const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
@@ -828,15 +846,18 @@ const useAppData = (
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
           'currentUser',
-          {
-            ...user,
-            groups: currentSession?.groups,
-            role: currentSession?.role?.name,
-            ssoUserInfo: currentSession?.ssoUserInfo,
-            ...(currentSession?.currentUser?.metadata && !isEmpty(currentSession?.currentUser?.metadata)
-              ? { metadata: currentSession?.currentUser?.metadata }
-              : {}),
-          },
+          simulatedCurrentUser(
+            {
+              ...user,
+              groups: currentSession?.groups,
+              role: currentSession?.role?.name,
+              ssoUserInfo: currentSession?.ssoUserInfo,
+              ...(currentSession?.currentUser?.metadata && !isEmpty(currentSession?.currentUser?.metadata)
+                ? { metadata: currentSession?.currentUser?.metadata }
+                : {}),
+            },
+            viewAsIdentity
+          ),
           moduleId
         );
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
@@ -888,6 +909,14 @@ const useAppData = (
       })
       .catch((_error) => {
         if (cancelled) return;
+        // A stale "View as" choice (the user left the workspace, lost access, or the licence
+        // changed) makes the server reject the preview. Turn it off and load as yourself.
+        if (viewAsTarget) {
+          clearViewAs(appId);
+          toast.error(`View as was turned off: ${_error?.error || _error?.message || 'it is no longer available'}`);
+          window.location.reload();
+          return;
+        }
         // Surface load failures — this catch otherwise swallows the error and silently blanks the
         // editor, which makes load-path regressions (e.g. a throw during dependency resolution)
         // invisible in the console.
@@ -1068,7 +1097,9 @@ const useAppData = (
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
       }
-      appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
+      // Keep an active "View as" across version and environment switches in preview.
+      const { target: viewAsTarget, identity: viewAsIdentity } = useStore.getState().viewAs;
+      appVersionService.getAppVersionData(appId, selectedVersion?.id, mode, viewAsTarget).then(async (appData) => {
         cleanUpStore();
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
@@ -1170,7 +1201,7 @@ const useAppData = (
           fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
         }
 
-        const queryData = await dataqueryService.getAll(currentVersionId, mode);
+        const queryData = await dataqueryService.getAll(currentVersionId, mode, viewAsTarget);
         const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
 
@@ -1215,15 +1246,21 @@ const useAppData = (
           moduleId
         );
         setResolvedGlobals('mode', { value: mode });
-        setResolvedGlobals('currentUser', {
-          ...user,
-          groups: currentSession?.groups,
-          role: currentSession?.role?.name,
-          ssoUserInfo: currentSession?.ssoUserInfo,
-          ...(currentSession?.currentUser?.metadata && !isEmpty(currentSession?.currentUser?.metadata)
-            ? { metadata: currentSession?.currentUser?.metadata }
-            : {}),
-        });
+        setResolvedGlobals(
+          'currentUser',
+          simulatedCurrentUser(
+            {
+              ...user,
+              groups: currentSession?.groups,
+              role: currentSession?.role?.name,
+              ssoUserInfo: currentSession?.ssoUserInfo,
+              ...(currentSession?.currentUser?.metadata && !isEmpty(currentSession?.currentUser?.metadata)
+                ? { metadata: currentSession?.currentUser?.metadata }
+                : {}),
+            },
+            viewAsIdentity
+          )
+        );
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);

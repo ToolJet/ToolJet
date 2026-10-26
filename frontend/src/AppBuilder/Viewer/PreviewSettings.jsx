@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useAppType } from '@/AppBuilder/_contexts/ModuleContext';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import ViewAsChip from './ViewAs/ViewAsChip';
 // import { AppEnvironments } from '@/modules/Appbuilder/components';
 // import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
 // Lazy load editor-only components to reduce viewer bundle size
@@ -18,6 +19,10 @@ const AppVersionsManager = lazy(() =>
 const AppEnvironments = lazy(() =>
   import('@/modules/Appbuilder/components').then((m) => ({ default: m.AppEnvironments }))
 );
+const ViewAsPicker = lazy(() => import('./ViewAs/ViewAsPicker'));
+
+// Applying "View as" reloads the preview so the whole app is rebuilt for the new identity.
+const reloadPreview = () => window.location.reload();
 
 const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
   const appType = useAppType();
@@ -59,6 +64,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
             <AppVersionsManager darkMode={darkMode} disabled={isSubBranch} />
             <div className="navbar-seperator"></div>
             <AppEnvironments darkMode={darkMode} disabled={isSubBranch} />
+            <ViewAsPicker onApply={reloadPreview} showDivider />
           </Suspense>
         )}
         <span style={{ marginLeft: appType === 'module' && '10px' }}>
@@ -86,6 +92,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
               <span className="preview-chip" style={{ color: 'var(--slate11)' }} data-cy="preview-chip">
                 Preview
               </span>
+              <ViewAsChip onApply={reloadPreview} />
               <span
                 style={{ marginLeft: '12px', cursor: 'pointer' }}
                 onClick={props.onClick}
@@ -115,6 +122,9 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                 <span>
                   <AppVersionsManager darkMode={darkMode} />
                 </span>
+                <span className="tw-px-2 tw-py-2">
+                  <ViewAsPicker onApply={reloadPreview} />
+                </span>
               </Suspense>
 
               <div
@@ -141,6 +151,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
       <span className="preview-chip" style={{ color: 'var(--slate12)' }} data-cy="preview-chip">
         Preview
       </span>
+      <ViewAsChip onApply={reloadPreview} />
       <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={renderOverlay()}>
         <span style={{ marginLeft: '12px', cursor: 'pointer' }} data-cy="preview-settings">
           <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />

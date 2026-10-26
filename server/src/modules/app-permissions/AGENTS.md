@@ -27,7 +27,7 @@ run in view mode (preview and released app); CE stores nothing and enforces noth
 
 ## View as (EE)
 
-Header `x-tj-view-as: user:<uuid>` or `groups:<uuid>[,<uuid>...]` (max 20). Read by exactly three routes:
+Header `x-tj-view-as: user:<uuid>` or `group:<uuid>` (one user or one group, never combined). Read by exactly three routes:
 `GET /v2/apps/:id/versions/:versionId?mode=view`, `GET /data-queries/:versionId?mode=view` and
 `POST /data-queries/:id/versions/:versionId/run/:environmentId?mode=view`. Callers thread it into
 `ViewAsService.resolve()` and use the returned subject for page/component/query rules and the
@@ -48,6 +48,11 @@ data source `can_run_query` rule (`ee/data-queries/util.service.ts` `throwIfQuer
 - Simulated groups have no user id, so `SINGLE` rules never match them.
 - Admins are not exempt from page/component/query rules (only from `can_run_query`).
 - Audit: `APP_PREVIEW_VIEW_AS` on version loads; query runs add `metadata.viewAs`.
+- Simulated version responses carry `view_as` (`ViewAsIdentity`: kind, id, label, custom `groups`,
+  `role`), the session's shape, so the client mirrors `globals.currentUser.groups`/`role`. A custom
+  group simulates an end user in it; a role group simulates that role. No `view_as` = not simulated.
+- Frontend: `frontend/src/AppBuilder/_helpers/viewAs.js` (sessionStorage per app, header, currentUser),
+  `Viewer/ViewAs/` (picker in Preview settings + chip), `viewAsSlice`; applied by `useAppData`.
 
 ## Related modules
 
