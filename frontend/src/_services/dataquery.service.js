@@ -96,7 +96,7 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
     resolvedOptions: resolvedOptions,
     options: options,
   };
-  // Rendering a stored snapshot: the server runs the query as the snapshot had it, without saving.
+  // Rendering a point in app history: the server runs the query as it was then, without saving.
   const { snapshot } = getPreviewQueryParams();
   if (snapshot && window.location.pathname.includes('/applications/')) body.snapshotId = snapshot;
 
