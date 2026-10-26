@@ -237,6 +237,13 @@
 .tj-ant-item.is-selected {
   background: var(--ant-control-item-bg-active);
 }
+/* An unbordered Ant list puts no inline padding on its rows, so the hover and selected fills ran flush with the text
+   and bar ("Housing" read as a broken grey slab). Rows a click selects get a small inset and rounded corners, as Ant's
+   own menu items. */
+.ant-list:not(.ant-list-bordered) .ant-list-item.tj-ant-item:not(.tj-ant-item--rows) {
+  padding-inline: 8px;
+  border-radius: var(--ant-border-radius);
+}
 .tj-ant-list .ant-list-bordered .ant-list-item.tj-ant-item--rows,
 .tj-ant-list .ant-list-item.tj-ant-item--rows {
   padding: 0;
