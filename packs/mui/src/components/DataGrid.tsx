@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { Chip } from '@mui/material';
 import { DataGrid as MuiDataGrid } from '@mui/x-data-grid';
-import type { GridColDef, GridPaginationModel, GridRowSelectionModel, GridSortModel } from '@mui/x-data-grid';
+import type { GridColDef, GridLocaleText, GridPaginationModel, GridRowSelectionModel, GridSortModel } from '@mui/x-data-grid';
+import { deDE, esES, frFR, itIT, nlNL, ptBR, ptPT } from '@mui/x-data-grid/locales';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, useIsThemed, useThemeStyles } from '../lib/MuiProvider';
@@ -127,6 +128,19 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
 
 // What the grid gets for a column: numbers typed as numbers (right-aligned, numeric sort), dates read from ISO strings,
 // and the formats MUI leaves to valueFormatter / renderCell.
+// The grid's own words (pager, toolbar, column menu) in the author's locale; English otherwise. Only an explicit
+// locale picks them: a currency alone does not (an English page priced in euros keeps an English pager).
+type GridLocalization = { components: { MuiDataGrid: { defaultProps: { localeText: Partial<GridLocaleText> } } } };
+const textOfLocalization = (l: GridLocalization) => l.components.MuiDataGrid.defaultProps.localeText;
+const GRID_TEXT: Record<string, Partial<GridLocaleText>> = Object.fromEntries(
+  Object.entries({ 'pt-BR': ptBR, 'pt-PT': ptPT, pt: ptBR, es: esES, fr: frFR, de: deDE, it: itIT, nl: nlNL }).map(([k, v]) => [k, textOfLocalization(v as GridLocalization)]),
+);
+const gridTextFor = (locale: string): Partial<GridLocaleText> => {
+  const tag = locale.trim();
+  if (!tag) return {};
+  return GRID_TEXT[tag] ?? GRID_TEXT[tag.split(/[-_]/)[0].toLowerCase()] ?? {};
+};
+
 const toGridColumn = (c: Column, rows: Row[], locale = ''): GridColDef => {
   const { format, currency, colors, ...col } = c;
   const sample = rows.find((r) => r[c.field] !== undefined && r[c.field] !== null && r[c.field] !== '')?.[c.field];
@@ -201,6 +215,11 @@ export const DataGrid = () => {
   const [disableColumnMenu] = ToolJet.useStateBoolean({ name: 'disableColumnMenu', label: 'Disable column menu', initialValue: false });
   const [hideFooter] = ToolJet.useStateBoolean({ name: 'hideFooter', label: 'Hide footer', initialValue: false });
   const [noRowsLabel] = useStateText({ name: 'noRowsLabel', label: 'No rows label', initialValue: 'No rows' });
+  // An author's own empty label wins; the default 'No rows' gives way to the locale's.
+  const gridText = useMemo(() => {
+    const words = gridTextFor(str(locale));
+    return { ...words, noRowsLabel: noRowsLabel && (noRowsLabel !== 'No rows' || !words.noRowsLabel) ? noRowsLabel : words.noRowsLabel ?? 'No rows' };
+  }, [locale, noRowsLabel]);
   const [selectedRow, setSelectedRow] = ToolJet.useStateObject({ name: 'selectedRow', initialValue: {}, inspector: 'hidden' });
   const [selectedRowId, setSelectedRowId] = ToolJet.useStateString({ name: 'selectedRowId', initialValue: '', inspector: 'hidden' });
   const [selectionIds, setSelectionIds] = ToolJet.useStateArray({ name: 'rowSelectionModel', initialValue: [], inspector: 'hidden' });
@@ -345,7 +364,7 @@ export const DataGrid = () => {
         disableColumnMenu={disableColumnMenu}
         hideFooter={hideFooter}
         loading={loading}
-        localeText={{ noRowsLabel: noRowsLabel || 'No rows' }}
+        localeText={gridText}
         sx={{
           height: '100%',
           border: 1,
