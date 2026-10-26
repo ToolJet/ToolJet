@@ -29,6 +29,12 @@ const MAX_COLUMNS = 100;
 // room for the title. MUI's own least is 50px: 30 flex columns shrank to 51px, where the hover icons took the whole
 // header, the title went to 0px and a click on it landed on the column menu button, so it did not sort (B-03).
 const headerFloor = (sortable: boolean, menu: boolean) => 20 + (sortable ? 28 : 0) + (menu ? 28 : 0) + 32;
+// Where the columns' widths and floors overflow the grid, each column shares the width by its own (an unsized one by
+// FLUID_SHARE) down to SQUEEZED_FLOOR: padding, one hover button and a short title. A grid that cannot fit even that
+// scrolls sideways.
+const SQUEEZED_FLOOR = 72;
+const FLUID_SHARE = 180;
+const CHECKBOX_WIDTH = 50;
 // An html cell (columnType 'html', as UI 2.0's Table): sanitised as the Table does (DOMPurify's defaults drop
 // <script>, event-handler attributes and javascript: URLs); its text sorts, filters and exports.
 const sanitize = (v: unknown) => DOMPurify.sanitize((v === undefined || v === null ? '' : String(v)).trim());
@@ -270,16 +276,34 @@ export const DataGrid = () => {
   }, [source, field]);
   const idsOf = (keys: string[]) => keys.map((k) => rawId.get(k) ?? k);
   const defs = useMemo(() => toColumns(rawColumns, source), [rawColumns, source]);
-  const columns = useMemo(
-    () =>
-      defs.map((c) => {
-        const col = toGridColumn(c, source, str(locale));
-        // Too narrow a column scrolls the grid sideways rather than covering its title with the hover icons.
-        const floor = headerFloor(col.sortable !== false, disableColumnMenu !== true && col.disableColumnMenu !== true);
-        return { ...col, minWidth: Math.max(col.minWidth ?? 0, floor) };
-      }),
-    [defs, source, disableColumnMenu, locale]
-  );
+  // The grid's own width, measured on its root (MuiProvider mounts it late, so a callback ref rather than an effect).
+  const [gridEl, setGridEl] = useState<HTMLDivElement | null>(null);
+  const [gridWidth, setGridWidth] = useState(0);
+  useEffect(() => {
+    if (!gridEl || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => setGridWidth(gridEl.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(gridEl);
+    return () => observer.disconnect();
+  }, [gridEl]);
+  const columns = useMemo(() => {
+    const cols = defs.map((c) => {
+      const col = toGridColumn(c, source, str(locale));
+      // Too narrow a column scrolls the grid sideways rather than covering its title with the hover icons.
+      const floor = headerFloor(col.sortable !== false, disableColumnMenu !== true && col.disableColumnMenu !== true);
+      return { ...col, minWidth: Math.max(col.minWidth ?? 0, floor) };
+    });
+    const need = cols.reduce((sum, c) => sum + Math.max(c.width ?? 0, c.minWidth ?? 0), checkboxSelection ? CHECKBOX_WIDTH : 0);
+    // Seven sized columns in a two-thirds card cut off the last one and squeezed the unsized text column: share instead.
+    if (!gridWidth || need <= gridWidth) return cols;
+    return cols.map(({ width, flex, minWidth: _floor, ...col }) => ({
+      ...col,
+      // A sized column by its width; an all-sized grid already flexes by width; a fluid one (flex 1, 2) by FLUID_SHARE.
+      flex: width ?? (flex !== undefined && flex > 10 ? flex : FLUID_SHARE * (flex ?? 1)),
+      minWidth: SQUEEZED_FLOOR,
+    }));
+  }, [defs, source, disableColumnMenu, locale, gridWidth, checkboxSelection]);
   // Html cells can hold several blocks (a name over a detail line): rows grow to fit them, as MUI's auto row height.
   const htmlCells = defs.some((c) => c.format === 'html');
   // The free grid selects one row unless checkboxSelection is on, and throws on more: a bound list keeps its first id.
@@ -349,6 +373,7 @@ export const DataGrid = () => {
   return (
     <MuiProvider overrides={overrides} fill>
       <MuiDataGrid
+        ref={setGridEl}
         rows={rows}
         columns={columns}
         getRowId={(r) => String(r[ID])}
