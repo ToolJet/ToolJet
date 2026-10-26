@@ -113,6 +113,7 @@
     "@temporalio/worker": "^1.11.6",
     "@temporalio/workflow": "^1.11.6",
     "@tooljet/plugins": "../plugins",
+    "@tooljet/widget-definitions": "../packages/widget-definitions",
     "acorn": "^8.13.0",
     "acorn-walk": "^8.3.4",
     "ai": "^4.3.19",
@@ -270,7 +271,7 @@
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": "22.15.1",
-    "npm": "10.9.2"
+    "node": "22.23.4",
+    "npm": "10.9.9"
   }
 }

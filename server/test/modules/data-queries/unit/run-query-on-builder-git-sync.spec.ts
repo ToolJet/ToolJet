@@ -5,6 +5,7 @@ import { DataQueryRepository } from '@modules/data-queries/repository';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { AppValidationService } from '@modules/app-validation/service';
 import { AppVersionStatus } from '@entities/app_version.entity';
 
 // Builder runs persist options, except on read-only versions (synced default-branch draft under branching).
@@ -49,6 +50,7 @@ describe('DataQueriesService', () => {
           { provide: DataQueryRepository, useValue: { getOneById: jest.fn(), updateOne } },
           { provide: DataQueriesUtilService, useValue: {} },
           { provide: DataSourcesRepository, useValue: {} },
+          { provide: AppValidationService, useValue: {} },
           {
             provide: GitSyncConfigsUtilService,
             useValue: { getDetails, isGitEditLocked: jest.fn().mockResolvedValue(false) },

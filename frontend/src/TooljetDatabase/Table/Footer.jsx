@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Select from '@/_ui/Select';
 import Pagination from '@/_ui/Pagination';
 import Skeleton from 'react-loading-skeleton';
-import { TooljetDatabaseContext } from '../index';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import LeftNav from '../Icons/LeftNav.svg';
 import RightNav from '../Icons/RightNav.svg';
 import Enter from '../Icons/Enter.svg';
@@ -18,7 +18,7 @@ const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => 
     { label: '1000 records', value: 1000 },
   ];
 
-  const { selectedTable, totalRecords, buildPaginationQuery } = useContext(TooljetDatabaseContext);
+  const { selectedTable, totalRecords, buildPaginationQuery } = useTooljetDatabaseContext();
   const { pageCount, pageSize } = useTjdbStore(
     (state) => ({ pageCount: state.pageCount, pageSize: state.pageSize }),
     shallow
