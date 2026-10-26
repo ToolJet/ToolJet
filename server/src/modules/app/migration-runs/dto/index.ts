@@ -49,4 +49,5 @@ export class MigrationStatusResponseDto {
   @Expose() state: MigrationState;
   @Expose() startedAt?: string;
   @Expose() toVersion?: string;
+  @Expose() endUserMessage?: string;
 }

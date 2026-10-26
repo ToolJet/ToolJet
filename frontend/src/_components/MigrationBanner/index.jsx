@@ -18,6 +18,7 @@ const MESSAGES = {
 const SUPER_ADMIN_FAILED_MESSAGE = 'The latest ToolJet upgrade failed. Changes cannot be saved. See what failed';
 
 // Released and embedded apps: end users see neither the product name nor admin steps.
+// MIGRATION_END_USER_MESSAGE_RUNNING / _FAILED override these (sent as status.endUserMessage).
 const END_USER_MESSAGES = {
   running: 'Scheduled maintenance in progress. Some changes may not save until it finishes.',
   failed: 'Maintenance is taking longer than expected. Some changes may not save right now.',
@@ -71,7 +72,9 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false
   const linkToMigrations = superAdmin && status.state === 'failed';
   const message = linkToMigrations
     ? SUPER_ADMIN_FAILED_MESSAGE
-    : (endUser ? END_USER_MESSAGES : MESSAGES)[status.state];
+    : endUser
+      ? status.endUserMessage || END_USER_MESSAGES[status.state]
+      : MESSAGES[status.state];
   // Per run and state: a new run, or the same run failing, shows again after a dismissal.
   const runKey = `${status.state}:${status.startedAt ?? ''}`;
   const visible = !!message && dismissed !== runKey;

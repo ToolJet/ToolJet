@@ -8,6 +8,7 @@ import { FeatureAbilityGuard } from './ability/guard';
 import { AppService } from './service';
 import { MigrationRunsService } from './migration-runs/service';
 import { MigrationStatusResponseDto } from './migration-runs/dto';
+import { endUserMessage } from '../../migration-helpers/migration-status';
 
 @InitModule(MODULES.ROOT)
 @Controller()
@@ -29,7 +30,8 @@ export class AppController {
   @InitFeature(FEATURE_KEY.MIGRATION_STATUS)
   @UseInterceptors(ClassSerializerInterceptor)
   async migrationStatus(): Promise<MigrationStatusResponseDto> {
-    return plainToInstance(MigrationStatusResponseDto, await this.migrationRunsService.status());
+    const status = await this.migrationRunsService.status();
+    return plainToInstance(MigrationStatusResponseDto, { ...status, endUserMessage: endUserMessage(status.state) });
   }
 
   @Get('/')

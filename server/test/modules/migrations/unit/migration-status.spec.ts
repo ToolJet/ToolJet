@@ -1,5 +1,7 @@
 /** @group database */
 import {
+  END_USER_MESSAGE_MAX_LENGTH,
+  endUserMessage,
   getMigrationMode,
   isMigrationTrafficGateDisabled,
   parseMigrationPhase,
@@ -14,6 +16,27 @@ describe('migration-helpers/migration-status', () => {
       [{ MIGRATION_MODE: 'async', TOOLJET_EDITION: 'cloud' }, 'blocking'],
     ])('should read %j as %s', (env, mode) => {
       expect(getMigrationMode(env)).toBe(mode);
+    });
+  });
+
+  describe('endUserMessage | operator text for released apps', () => {
+    it('should read the variable for the state, trimmed', () => {
+      const env = { MIGRATION_END_USER_MESSAGE_RUNNING: ' Back at 10pm. ', MIGRATION_END_USER_MESSAGE_FAILED: 'Running late.' };
+
+      expect(endUserMessage('running', env)).toBe('Back at 10pm.');
+      expect(endUserMessage('failed', env)).toBe('Running late.');
+    });
+
+    it('should keep the built-in text when unset, blank, or the state shows no banner', () => {
+      expect(endUserMessage('running', {})).toBeUndefined();
+      expect(endUserMessage('running', { MIGRATION_END_USER_MESSAGE_RUNNING: '   ' })).toBeUndefined();
+      expect(endUserMessage('idle', { MIGRATION_END_USER_MESSAGE_RUNNING: 'x' })).toBeUndefined();
+    });
+
+    it('should cap the length', () => {
+      const env = { MIGRATION_END_USER_MESSAGE_FAILED: 'a'.repeat(END_USER_MESSAGE_MAX_LENGTH + 50) };
+
+      expect(endUserMessage('failed', env)).toHaveLength(END_USER_MESSAGE_MAX_LENGTH);
     });
   });
 

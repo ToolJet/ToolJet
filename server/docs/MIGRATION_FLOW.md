@@ -195,8 +195,8 @@ A hard kill (OOM, node loss) leaves a dead run. The next runner marks it failed 
 - TypeORM `query is slow:` and `execution time:` lines are dropped unless `ORM_LOGGING` is set.
 - After a success, the service deletes the logs of earlier runs. The rows stay.
 - `GET {prefix}api/migration-runs` and `GET {prefix}api/migration-runs/:id/log[?migration=<name>]` are for super admins. The log route returns the full log or the lines of one migration.
-- **Banner.** `GET {prefix}api/migration-status` (public, state only) feeds the frontend `MigrationBanner` for `running` and `failed`. The banner polls every 3s while the state is `running`, else every 30s. In blocking mode the endpoint reports `running` while another server holds the active lock.
-- Released and embedded apps show a generic maintenance message to end users. For a super admin, the `failed` banner links to `{prefix}settings/migrations`, which shows the failed migration and its log.
+- **Banner.** `GET {prefix}api/migration-status` (public: state, start, version, end-user text) feeds the frontend `MigrationBanner` for `running` and `failed`. The banner polls every 3s while the state is `running`, else every 30s. In blocking mode the endpoint reports `running` while another server holds the active lock.
+- Released and embedded apps show a generic maintenance message to end users. `MIGRATION_END_USER_MESSAGE_RUNNING` and `MIGRATION_END_USER_MESSAGE_FAILED` replace it; the endpoint sends the text as `endUserMessage` (trimmed, max 200 characters). Builders and super admins keep the built-in text. For a super admin, the `failed` banner links to `{prefix}settings/migrations`, which shows the failed migration and its log.
 
 ### 5.7 Costs
 
@@ -217,6 +217,8 @@ All are optional. `.env.example` § ROLLING UPGRADE lists them too.
 | `DISABLE_MIGRATION_TRAFFIC_GATE` | `false` | `true` turns off the 503. Locks and waits still apply. Each serving pod logs this at boot. |
 | `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS` | `60` (schema phase: `5`) | Interval between lock tries of a waiting pod. |
 | `MIGRATION_LOCK_MAX_WAIT_MINUTES` | `30` | Maximum wait before a pod fails its own boot. `0` waits with no limit. |
+| `MIGRATION_END_USER_MESSAGE_RUNNING` | unset | Banner text for end users of released apps while a run is going. Unset: "Scheduled maintenance in progress…". Max 200 characters. |
+| `MIGRATION_END_USER_MESSAGE_FAILED` | unset | Same, after a failed run. Unset: "Maintenance is taking longer than expected…". |
 | `MIGRATION_MODE` | `blocking` | `async`: see §5. Any other value means `blocking`. Cloud ignores it. |
 | `MIGRATION_SCHEMA_LOCK_TIMEOUT_MS` | `5000` | Schema phase only (§5.1). `lock_timeout` for its transaction and for the table probe. |
 | `MIGRATION_SCHEMA_LOCK_RETRIES` | `10` | Schema phase only. Total tries, first try included, before a lock timeout fails the boot. `1` means no retry. |
@@ -277,7 +279,7 @@ A held lock means a live session migrates. The gate cannot stay raised after tha
 | File | Covers |
 |---|---|
 | `test/modules/migrations/unit/migrations-table-gate.spec.ts` | Wait interval and maximum, skip-if-locked, lock session handoff, sentinel exclusion against files on disk |
-| `test/modules/migrations/unit/migration-status.spec.ts` | Mode selection (Cloud stays blocking), opt-out |
+| `test/modules/migrations/unit/migration-status.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text |
 | `test/modules/app/unit/migration-gate.middleware.spec.ts` | Gated vs ungated paths, 503 per state, async write allowlist, opt-out log |
 | `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, body runs once, active lock only during work and released on SIGKILL; a `NODE_ENV=production` race. `MIGRATION_PHASE`: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long data phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, joint run for pre-cutoff migrations |
 | `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds (rule 1), non-empty `down()` |
