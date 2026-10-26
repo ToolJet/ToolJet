@@ -99,9 +99,15 @@ export const Dialog = () => {
   // (SP-28; a text field survived only because the host stops its mousedown). A modal dialog leaves the page no
   // pointer events, so a press outside its content reaches either its own backdrop or a popup opened from its body:
   // only the backdrop dismisses.
+  // Radix decides on the click that ends the press, when the pointerdown's composedPath() is already empty, so the
+  // overlay notes the press it took and the check compares the event itself.
+  const backdropPress = React.useRef<Event | null>(null);
   const keepUnlessBackdrop = (event: { detail: { originalEvent: Event }; preventDefault: () => void }) => {
+    const press = event.detail.originalEvent;
     const overlay = overlayRef.current;
-    if (!overlay || !event.detail.originalEvent.composedPath().includes(overlay)) event.preventDefault();
+    const onBackdrop = press === backdropPress.current || (!!overlay && press.composedPath().includes(overlay));
+    backdropPress.current = null;
+    if (!onBackdrop) event.preventDefault();
   };
   // Inside another dialog's body this one stacks above that dialog, and the body's popups above this one.
   const base = open ? popupLayerOf(anchorRef.current) : undefined;
@@ -144,6 +150,9 @@ export const Dialog = () => {
             <DialogPrimitive.Portal container={container}>
               <DialogPrimitive.Overlay
                 ref={overlayRef}
+                onPointerDown={(e) => {
+                  backdropPress.current = e.nativeEvent;
+                }}
                 className="ui-dialog-overlay"
                 style={base === undefined ? undefined : { zIndex: layer }}
               />
