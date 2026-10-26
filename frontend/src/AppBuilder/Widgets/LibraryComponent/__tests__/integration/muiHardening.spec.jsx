@@ -1064,3 +1064,40 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
     expect(fs.readFileSync(path.join(PACK, 'src/components/Kanban.tsx'), 'utf8')).toContain('{{cardData}}');
   });
 });
+
+// wm6-m-room1: the Select's clear x sat in the value's flow, so a long label ran into it ("09:00x"). The x now has a
+// fixed place left of the arrow and the value's right padding reserves both, in every variant and size.
+describe('MUI Select clear button room', () => {
+  const LONG = [
+    { label: 'A very long option label that cannot fit in a narrow select field', value: 'long' },
+    { label: 'Short', value: 'short' },
+  ];
+  test.each([
+    ['outlined', 'medium', 31, 63],
+    ['outlined', 'small', 31, 63],
+    ['filled', 'medium', 31, 63],
+    ['filled', 'small', 31, 63],
+    ['standard', 'medium', 24, 56],
+    ['standard', 'small', 24, 56],
+  ])('%s %s: the x sits left of the arrow and the value stops before both', async (variant, size, clearRight, valueRight) => {
+    const t = await mount('Select', { options: LONG, value: 'long', variant, size });
+    const clear = t.root().querySelector('.tj-mui-select-clear');
+    expect(clear).not.toBeNull();
+    const slot = clear.closest('.tj-mui-select-clear-slot');
+    expect(slot.style.position).toBe('absolute');
+    expect(slot.style.right).toBe(`${clearRight}px`);
+    const display = t.root().querySelector('.MuiSelect-select');
+    expect(display.style.paddingRight).toBe(`${valueRight}px`);
+    // The value's padding covers the x (28px) and the arrow, so the label's ellipsis ends before them.
+    expect(valueRight).toBeGreaterThanOrEqual(clearRight + 28);
+    expect(display.closest('.MuiInputBase-root').style.paddingRight).toBe('0px');
+    t.view.unmount();
+  });
+
+  test('without a clear button the value keeps MUI own arrow padding', async () => {
+    const t = await mount('Select', { options: LONG, value: 'long', disableClearable: true });
+    expect(t.root().querySelector('.tj-mui-select-clear')).toBeNull();
+    expect(t.root().querySelector('.MuiSelect-select').style.paddingRight).toBe('');
+    t.view.unmount();
+  });
+});
