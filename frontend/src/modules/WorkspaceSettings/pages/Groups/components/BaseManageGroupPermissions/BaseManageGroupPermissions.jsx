@@ -17,6 +17,8 @@ import ManageGroupPermissionResources from '../ManageGroupPermissionResources';
 import '../../resources/styles/group-permissions.styles.scss';
 import { SearchBox } from '@/_components/SearchBox';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import PlanTag from '@/modules/common/components/PlanTag';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import _ from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
@@ -739,35 +741,73 @@ class BaseManageGroupPermissions extends React.Component {
                 {groups?.length} Groups
               </p>
               {isAdmin && !showNewGroupForm && !showGroupNameUpdateForm && (
-                <LicenseTooltip
-                  limits={featureAccess}
-                  feature={'Custom groups'}
-                  noTooltipIfValid={true}
-                  isAvailable={isFeatureEnabled}
-                  placement={'bottom'}
-                  customMessage={'Custom groups are not available in your plan'}
-                >
-                  <ButtonSolid
-                    className="btn btn-primary create-new-group-button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      posthogHelper.captureEvent('create_new_group', {
-                        workspace_id:
-                          authenticationService?.currentUserValue?.organization_id ||
-                          authenticationService?.currentSessionValue?.current_organization_id,
-                      });
-                      this.setState({ newGroupName: '', showNewGroupForm: true, isSaveBtnDisabled: true });
-                    }}
-                    data-cy="create-new-group-button"
-                    leftIcon="plus"
-                    isLoading={isLoading}
-                    iconWidth="16"
-                    fill={'#FDFDFE'}
-                    disabled={!isFeatureEnabled}
-                  >
-                    {this.props.t('header.organization.menus.manageGroups.permissions.addNewGroup', 'Add new group')}
-                  </ButtonSolid>
-                </LicenseTooltip>
+                <>
+                  {/* CE keeps its existing nudge. EE and cloud show only the plan tag when custom groups are
+                      unavailable (no disabled button), and the tag beside the button during a trial. */}
+                  {fetchEdition() === 'ce' ? (
+                    <LicenseTooltip
+                      limits={featureAccess}
+                      feature={'Custom groups'}
+                      noTooltipIfValid={true}
+                      isAvailable={isFeatureEnabled}
+                      placement={'bottom'}
+                      customMessage={'Custom groups are not available in your plan'}
+                    >
+                      <ButtonSolid
+                        className="btn btn-primary create-new-group-button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          posthogHelper.captureEvent('create_new_group', {
+                            workspace_id:
+                              authenticationService?.currentUserValue?.organization_id ||
+                              authenticationService?.currentSessionValue?.current_organization_id,
+                          });
+                          this.setState({ newGroupName: '', showNewGroupForm: true, isSaveBtnDisabled: true });
+                        }}
+                        data-cy="create-new-group-button"
+                        leftIcon="plus"
+                        isLoading={isLoading}
+                        iconWidth="16"
+                        fill={'#FDFDFE'}
+                        disabled={!isFeatureEnabled}
+                      >
+                        {this.props.t(
+                          'header.organization.menus.manageGroups.permissions.addNewGroup',
+                          'Add new group'
+                        )}
+                      </ButtonSolid>
+                    </LicenseTooltip>
+                  ) : (
+                    <div className="d-flex align-items-center gap-2">
+                      <PlanTag gateKey="customGroups" featureName="Custom groups" plural />
+                      {isFeatureEnabled && (
+                        <ButtonSolid
+                          className="btn btn-primary create-new-group-button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            posthogHelper.captureEvent('create_new_group', {
+                              workspace_id:
+                                authenticationService?.currentUserValue?.organization_id ||
+                                authenticationService?.currentSessionValue?.current_organization_id,
+                            });
+                            this.setState({ newGroupName: '', showNewGroupForm: true, isSaveBtnDisabled: true });
+                          }}
+                          data-cy="create-new-group-button"
+                          leftIcon="plus"
+                          isLoading={isLoading}
+                          iconWidth="16"
+                          fill={'#FDFDFE'}
+                          disabled={!isFeatureEnabled}
+                        >
+                          {this.props.t(
+                            'header.organization.menus.manageGroups.permissions.addNewGroup',
+                            'Add new group'
+                          )}
+                        </ButtonSolid>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <Modal
@@ -786,6 +826,7 @@ class BaseManageGroupPermissions extends React.Component {
                   : this.props.t('header.organization.menus.manageGroups.permissions.addNewGroup', 'Create new group')
               }
               titleAdornment={
+                fetchEdition() === 'ce' &&
                 isTrial && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>
               }
             >
@@ -1026,7 +1067,7 @@ class BaseManageGroupPermissions extends React.Component {
                     )}
                   </div>
                 </div>
-                {(!isValidLicense || planType === 'trial') && featureAccess && (
+                {fetchEdition() === 'ce' && (!isValidLicense || planType === 'trial') && featureAccess && (
                   <LicenseBanner
                     style={{ alignSelf: 'flex-end', margin: '0px !important' }}
                     limits={featureAccess}

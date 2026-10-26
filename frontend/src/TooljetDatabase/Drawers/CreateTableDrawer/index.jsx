@@ -8,25 +8,39 @@ import { authenticationService } from '@/_services/authentication.service';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { getLimitState } from '@/modules/common/helpers/limitGating';
+import { useLicenseStore } from '@/_stores/licenseStore';
 
-export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tablesLimit, setTablesLimit }) {
+export default function CreateTableDrawer({ tablesLimit, setTablesLimit }) {
   const { organizationId, setSelectedTable, setTables, tables, canEditTjdb } = useTooljetDatabaseContext();
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  setBannerVisible(tablesLimit?.current >= tablesLimit?.total - 1 || false);
+
+  const fetchTablesLimit = async () => {
+    try {
+      const data = await tooljetDatabaseService.getTablesLimit();
+      setTablesLimit(data?.data?.tablesCount);
+      return data?.data?.tablesCount;
+    } catch (error) {
+      console.error('Error fetching tables limit:', error);
+      return tablesLimit;
+    }
+  };
 
   useEffect(() => {
-    async function fetchTablesLimit() {
-      try {
-        const data = await tooljetDatabaseService.getTablesLimit();
-        setTablesLimit(data?.data?.tablesCount);
-        setBannerVisible(tablesLimit?.current >= tablesLimit?.total - 1 || false);
-      } catch (error) {
-        console.error('Error fetching tables limit:', error);
-      }
-    }
     fetchTablesLimit();
-  }, [tables, setBannerVisible]); // Empty dependency array to execute the effect only once when the component mounts
+  }, [tables]);
+
+  // Re-check the plan limit on click so the decision uses fresh counts. At the limit, the
+  // limit-reached modal opens instead of the drawer.
+  const openCreateTableDrawer = async () => {
+    const limit = await fetchTablesLimit();
+    if (getLimitState(limit).reached) {
+      useLicenseStore.getState().actions.openLimitReached({ resource: 'tables', limit });
+      return;
+    }
+    setIsCreateTableDrawerOpen(true);
+  };
 
   return (
     <div>
@@ -34,7 +48,7 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tab
         <ButtonSolid
           type="button"
           variant="primary"
-          disabled={!canEditTjdb || tablesLimit?.current >= tablesLimit?.total}
+          disabled={!canEditTjdb}
           onClick={() => {
             posthogHelper.captureEvent('click_add_tooljet_table_button', {
               workspace_id:
@@ -42,7 +56,11 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tab
                 authenticationService?.currentSessionValue?.current_organization_id,
               datasource: 'tooljet_db',
             });
-            setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen);
+            if (isCreateTableDrawerOpen) {
+              setIsCreateTableDrawerOpen(false);
+            } else {
+              openCreateTableDrawer();
+            }
           }}
           className="create-new-table-btn"
           data-cy="add-table-button"
@@ -74,6 +92,7 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tab
           }}
           onClose={() => setIsCreateTableDrawerOpen(false)}
           initiator="CreateTableForm"
+          tablesLimit={tablesLimit}
         />
       </Drawer>
     </div>

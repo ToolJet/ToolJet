@@ -9,7 +9,6 @@ import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 
 export default function Sidebar({ collapseSidebar }) {
-  const [bannerVisible, setBannerVisible] = useState(false);
   const [tablesLimit, setTablesLimit] = useState({});
   const [rowsLimit, setRowsLimit] = useState({});
   const isAdmin = authenticationService.currentSessionValue?.admin === true;
@@ -66,13 +65,8 @@ export default function Sidebar({ collapseSidebar }) {
 
   return (
     <div className={cx('tooljet-database-sidebar col d-flex flex-column', { 'visually-hidden': collapseSidebar })}>
-      <div className={`sidebar-container ${!bannerVisible ? '' : 'sidebar-container-with-banner'}`}>
-        <CreateTableDrawer
-          bannerVisible={bannerVisible}
-          setBannerVisible={setBannerVisible}
-          tablesLimit={tablesLimit}
-          setTablesLimit={setTablesLimit}
-        />
+      <div className="sidebar-container">
+        <CreateTableDrawer tablesLimit={tablesLimit} setTablesLimit={setTablesLimit} />
       </div>
       <div className="col table-left-sidebar" data-cy="all-table-column">
         <div

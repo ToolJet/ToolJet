@@ -29,21 +29,12 @@ const BaseWorkspaceActions = ({
         </ToolTip>
       ) : (
         (isAllowPersonalWorkspace || super_admin) && (
-          <LicenseTooltip
-            limits={workspacesLimit}
-            feature={'workspaces'}
-            placement="top"
-            customTitle="Add new workspace"
-            isAvailable={true}
-          >
-            <div
-              disabled={!workspacesLimit.canAddUnlimited && workspacesLimit?.percentage >= 100}
-              onClick={handleAddWorkspace}
-              style={{ marginLeft: super_admin ? '0px' : '10px' }}
-            >
+          // Never disabled for the workspace limit: at the limit the click opens the limit-reached modal.
+          <ToolTip message={'Add new workspace'} placement="top">
+            <div onClick={handleAddWorkspace} style={{ marginLeft: super_admin ? '0px' : '10px' }}>
               <SolidIcon name="plus" fill="var(--icon-strong)" dataCy="add-new-workspace-link" width="17" />
             </div>
-          </LicenseTooltip>
+          </ToolTip>
         )
       )}
     </div>

@@ -4,6 +4,7 @@ import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Dropdown } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import PlanTag from '@/modules/common/components/PlanTag';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { DefaultSSOList, DefaultSSOModal } from '@/modules/common/components';
 import { Button } from '@/components/ui/Button/Button';
@@ -359,15 +360,22 @@ class BaseSSOConfigurationList extends React.Component {
     const oidcCount =
       key === 'openid' ? this.state.ssoOptions.filter((option) => option.sso === 'openid' && option.enabled).length : 0;
 
+    // EE and cloud: OpenID / LDAP / SAML show a lock with a plan tooltip in place of the toggle when the plan
+    // lacks them. CE keeps its existing tooltip.
+    const planGated = fetchEdition() !== 'ce' && ['openid', 'ldap', 'saml'].includes(key);
+    const Wrapper = planGated ? 'div' : LicenseTooltip;
+    const wrapperProps = planGated
+      ? {}
+      : {
+          limits: this.state.featureAccess,
+          feature: name,
+          isAvailable: isFeatureAvailable,
+          noTooltipIfValid: true,
+          placement: 'left',
+        };
+
     return (
-      <LicenseTooltip
-        key={key}
-        limits={this.state.featureAccess}
-        feature={name}
-        isAvailable={isFeatureAvailable}
-        noTooltipIfValid={true}
-        placement="left"
-      >
+      <Wrapper key={key} {...wrapperProps}>
         <Button
           variant="outline"
           className="sso-option"
@@ -375,7 +383,7 @@ class BaseSSOConfigurationList extends React.Component {
           onClick={isFeatureAvailable ? () => this.openModal(key) : (e) => e.preventDefault()}
           data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-sso-card`}
         >
-          <div className="sso-option-label">
+          <div className="sso-option-label" style={planGated && !isFeatureAvailable ? { opacity: 0.6 } : undefined}>
             {
               <div
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -406,7 +414,12 @@ class BaseSSOConfigurationList extends React.Component {
               </div>
             }
           </div>
-          <label className="switch" onClick={isFeatureAvailable && ((e) => e.stopPropagation())}>
+          {planGated && <PlanTag gateKey={key} iconOnly featureName={name} />}
+          <label
+            className="switch"
+            style={planGated && !isFeatureAvailable ? { display: 'none' } : undefined}
+            onClick={isFeatureAvailable && ((e) => e.stopPropagation())}
+          >
             <input
               type="checkbox"
               checked={isEnabled}
@@ -416,7 +429,7 @@ class BaseSSOConfigurationList extends React.Component {
             <span className="slider round"></span>
           </label>
         </Button>
-      </LicenseTooltip>
+      </Wrapper>
     );
   };
 

@@ -25,7 +25,7 @@
                         justify-content: center;
                         outline: none !important;
 
-                        &:hover:not(.disabled) {
+                        &:hover:not(.disabled):not(.is-disabled) {
                                 background-color: var(--interactive-hover);
                                 color: var(--text-default);
                         }
@@ -41,6 +41,13 @@
                                 cursor: not-allowed;
                                 color: var(--text-disabled);
                                 pointer-events: none;
+                        }
+
+                        // Used instead of .disabled where a plan lock sits inside the button: Bootstrap's
+                        // disabled button fades its children and swallows hover, so the lock would dim and lose its tooltip.
+                        &.is-disabled {
+                                cursor: not-allowed;
+                                color: var(--text-disabled);
                         }
                 }
         }

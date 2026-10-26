@@ -190,6 +190,7 @@ export enum LICENSE_LIMIT {
 export enum FEATURE_KEY {
   GET_LICENSE = 'get_license',
   GET_PLANS = 'get_plans',
+  GET_PLAN_CATALOG = 'get_plan_catalog',
   GET_ACCESS = 'get_access',
   GET_DOMAINS = 'get_domains',
   GET_TERMS = 'get_terms',

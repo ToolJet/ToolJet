@@ -1,4 +1,6 @@
 import React, { useCallback } from 'react';
+import PlanTag from '@/modules/common/components/PlanTag';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import { Overlay, Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import classNames from 'classnames';
@@ -55,7 +57,15 @@ const QueryCardMenu = ({ darkMode }) => {
           height="16"
         />
       ),
-      trailingIcon: <SolidIcon width={16} name="enterprisecrown" className="mx-1" />,
+      trailingIcon: (
+        <PlanTag
+          gateKey="appPermissionQuery"
+          iconOnly
+          featureName="Query permissions"
+          className="mx-1"
+          ceFallback={<SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
+        />
+      ),
     },
     {
       label: 'Delete',
@@ -154,7 +164,7 @@ const QueryCardMenu = ({ darkMode }) => {
                     >
                       {option?.label}
                     </div>
-                    {option.value === 'permission' && !hasAppPermissionQuery && option.trailingIcon}
+                    {option.value === 'permission' && option.trailingIcon}
                   </div>
                 );
 
@@ -163,7 +173,7 @@ const QueryCardMenu = ({ darkMode }) => {
                     key={option.value}
                     message={"You don't have access to query permissions. Upgrade your plan to access this feature."}
                     placement="right"
-                    show={!hasAppPermissionQuery}
+                    show={!hasAppPermissionQuery && fetchEdition() === 'ce'}
                   >
                     {optionBody}
                   </ToolTip>

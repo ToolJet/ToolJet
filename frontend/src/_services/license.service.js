@@ -6,6 +6,7 @@ export const licenseService = {
   update,
   updateEnvSetting,
   getFeatureAccess,
+  getPlanCatalog,
   generateCloudTrial,
   getDomainsList,
   upgradePlan,
@@ -41,6 +42,12 @@ async function updateEnvSetting(body) {
 function getFeatureAccess() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/license/access`, requestOptions).then(handleResponse);
+}
+
+// Lowest plan that unlocks each paid feature, for this deployment. Public and static per edition.
+function getPlanCatalog() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/plan-catalog`, requestOptions).then(handleResponse);
 }
 
 function getDomainsList() {

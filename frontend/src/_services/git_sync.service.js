@@ -113,7 +113,10 @@ function getGitConfig(workspaceId, gitType = '') {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/git-sync/${workspaceId}?gitType=${gitType}`, requestOptions).then(handleResponse);
+  // A read on page load: a plan that lacks git sync is shown with a plan tag, not the upgrade dialog.
+  return fetch(`${config.apiUrl}/git-sync/${workspaceId}?gitType=${gitType}`, requestOptions).then((response) =>
+    handleResponse(response, false, null, true)
+  );
 }
 
 function getGitStatus(workspaceId) {

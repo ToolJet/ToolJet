@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import PlanTag from '@/modules/common/components/PlanTag';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
 import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
@@ -96,14 +97,7 @@ function Header({
                   {pathname}
                 </p>
                 {routesWithTags(pathname) && (
-                  <LicenseBanner
-                    classes="mb-3 small"
-                    isAvailable={false}
-                    showPaidFeatureBanner={
-                      !featureAccess[routesWithTags(pathname)] || featureAccess?.licenseStatus?.licenseType === 'trial'
-                    }
-                    size="small"
-                  />
+                  <PlanTag gateKey={routesWithTags(pathname)} featureName={pathname} plural />
                 )}
               </div>
               {enableCollapsibleSidebar && !collapseSidebar && (

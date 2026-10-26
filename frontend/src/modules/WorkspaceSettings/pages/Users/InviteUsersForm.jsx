@@ -13,7 +13,9 @@ import { UserGroupsSelect } from './UserGroupsSelect';
 import { EDIT_ROLE_MESSAGE } from '@/modules/common/constants';
 import ModalBase from '@/_ui/Modal';
 import { UserMetadata } from './components';
-import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import LimitCounter from '@/modules/common/components/LimitCounter';
+import { getLimitState } from '@/modules/common/helpers/limitGating';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { bulkUploadFileTooLargeMessage, isBulkUpsertEnabled, isBulkUploadFileTooLarge } from './bulkUploadLimits';
@@ -62,7 +64,7 @@ function InviteUsersForm({
     },
   ];
   const [selectedGroups, setSelectedGroups] = useState([]);
-  const [limitReachedType, setLimitReachedType] = useState({});
+  const [userLimits, setUserLimits] = useState({});
   useEffect(() => {
     setFileUpload(false);
   }, [activeTab]);
@@ -86,20 +88,23 @@ function InviteUsersForm({
   };
 
   const fetchUserLimits = () => {
-    userService.getUserLimits('all').then((data) => {
-      const licenseBannerObject = {
-        builderPercentage: data?.editorsCount?.percentage,
-        endUserPercentage: data?.viewersCount?.percentage,
-        builderTotal: data?.editorsCount?.total,
-        endUserTotal: data?.viewersCount?.total,
-        canAddUnlimitedBuilder: data?.editorsCount?.canAddUnlimited,
-        canAddUnlimitedEndUser: data?.viewersCount?.canAddUnlimited,
-        currentBuilder: data?.editorsCount?.current,
-        currentEndUser: data?.viewersCount?.current,
-      };
-      setLimitReachedType(licenseBannerObject);
-    });
+    userService.getUserLimits('all').then((data) => setUserLimits(data ?? {}));
   };
+
+  // Admins and builders count against the builder limit, end users against the end-user limit.
+  const selectedRole = selectedGroups.find((group) => group.groupType === 'default')?.value;
+  const isEndUserRole = selectedRole === 'end-user';
+  const selectedRoleLimit = isEndUserRole ? userLimits.viewersCount : userLimits.editorsCount;
+  const isUserLimitReached = () =>
+    getLimitState(selectedRoleLimit).reached || getLimitState(userLimits.usersCount).reached;
+  const openUserLimitReached = () =>
+    useLicenseStore.getState().actions.openLimitReached({
+      resource: 'users',
+      limits: [
+        { label: 'Builders', limit: userLimits.editorsCount },
+        { label: 'End-users', limit: userLimits.viewersCount },
+      ],
+    });
 
   const darkmode = localStorage.getItem('darkMode') === 'true';
 
@@ -209,6 +214,11 @@ function InviteUsersForm({
 
   const handleCreateUser = (e) => {
     e.preventDefault();
+    // The form opens while either role has room; inviting into a full role opens the limit modal.
+    if (isUserLimitReached()) {
+      openUserLimitReached();
+      return;
+    }
     const role = selectedGroups.find((group) => group.groupType === 'default').value;
     const selectedGroupsIds = selectedGroups.filter((group) => group.groupType !== 'default').map((group) => group.id);
     manageUser(currentEditingUser?.id, selectedGroupsIds, role, userMetadata);
@@ -357,7 +367,6 @@ function InviteUsersForm({
           </div>
           {activeTab == 1 ? (
             <div className="manage-users-drawer-content">
-              <LicenseBanner classes="mb-3" userLimits={limitReachedType} size="small" type={'user-limits'} />
               <div
                 className={`invite-user-by-email ${isEditing && 'enable-edit-fields'}`}
                 style={{ flexDirection: 'row' }}
@@ -445,7 +454,6 @@ function InviteUsersForm({
             </div>
           ) : (
             <div className="manage-users-drawer-content-bulk">
-              <LicenseBanner classes="mb-3" userLimits={limitReachedType} size="small" type={'user-limits'} />
               <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">
                   <div>
@@ -485,6 +493,13 @@ function InviteUsersForm({
             </div>
           )}
           <div className="manage-users-drawer-footer">
+            {!isEditing && (
+              <LimitCounter
+                limit={selectedRoleLimit}
+                unit={isEndUserRole ? 'end-user' : 'builder'}
+                className="tw-mr-auto tw-self-center"
+              />
+            )}
             <ButtonSolid
               data-cy="cancel-button"
               onClick={() => {

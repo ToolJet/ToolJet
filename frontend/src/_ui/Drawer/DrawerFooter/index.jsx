@@ -29,6 +29,7 @@ function DrawerFooter({
   showToolTipForFkOnReadDocsSection = false,
   foreignKeyDetails = [],
   initiator,
+  footerLeading = null, // left of the footer, e.g. the plan limit counter; replaces the docs link
 }) {
   useEffect(() => {
     const keyboardShortcutStore = useKeyboardShortcutStore.getState();
@@ -98,11 +99,12 @@ function DrawerFooter({
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto ">
       <div
         className={cx(
-          { 'd-flex justify-content-end drawer-footer-btn-wrap': !isDrawerWithDocumentation },
-          { 'd-flex justify-content-between drawer-footer-btn-wrap': isDrawerWithDocumentation }
+          { 'd-flex justify-content-end drawer-footer-btn-wrap': !isDrawerWithDocumentation && !footerLeading },
+          { 'd-flex justify-content-between drawer-footer-btn-wrap': isDrawerWithDocumentation || footerLeading }
         )}
       >
-        {isDrawerWithDocumentation && (
+        {footerLeading}
+        {isDrawerWithDocumentation && !footerLeading && (
           <ToolTip
             message={'Foreign key relations checks for referential integrity between two tables. Read more.'}
             placement="top"

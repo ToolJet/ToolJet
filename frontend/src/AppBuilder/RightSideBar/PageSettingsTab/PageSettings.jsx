@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import PlanTag from '@/modules/common/components/PlanTag';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import cx from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
@@ -296,10 +298,15 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
           <LicenseTooltip
             message={"You don't have access to hide app header. Upgrade your plan to access this feature."}
             placement="bottom"
-            show={!hasAppPagesHeaderAndLogoEnabled}
+            show={!hasAppPagesHeaderAndLogoEnabled && fetchEdition() === 'ce'}
           >
             <div className="d-flex align-items-center">
-              {!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}
+              <PlanTag
+                gateKey="appPagesHeaderAndLogoEnabled"
+                iconOnly
+                featureName="Hiding the app header and logo"
+                ceFallback={!hasAppPagesHeaderAndLogoEnabled ? <SolidIcon name="enterprisecrown" /> : null}
+              />
             </div>
           </LicenseTooltip>
         </label>
@@ -321,10 +328,15 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
           <LicenseTooltip
             message={"You don't have access to hide logo. Upgrade your plan to access this feature."}
             placement="bottom"
-            show={!hasAppPagesHeaderAndLogoEnabled}
+            show={!hasAppPagesHeaderAndLogoEnabled && fetchEdition() === 'ce'}
           >
             <div className="d-flex align-items-center">
-              {!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}
+              <PlanTag
+                gateKey="appPagesHeaderAndLogoEnabled"
+                iconOnly
+                featureName="Hiding the app header and logo"
+                ceFallback={!hasAppPagesHeaderAndLogoEnabled ? <SolidIcon name="enterprisecrown" /> : null}
+              />
             </div>
           </LicenseTooltip>
         </label>

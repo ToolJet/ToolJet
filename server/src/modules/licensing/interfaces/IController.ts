@@ -4,6 +4,7 @@ import { Terms } from './terms';
 import { LIMIT_TYPE } from '@modules/users/constants/lifecycle';
 import { UserEntity } from '@modules/app/decorators/user.decorator';
 import { UpdateEnvLicenseSettingDto } from '@modules/licensing/dto/update-env-license-setting.dto';
+import { PlanCatalogDto } from '../dto/plan-catalog.dto';
 
 export interface ILicenseController {
   /**
@@ -109,6 +110,12 @@ export interface ILicensePlansController {
    * @returns {Promise<any>} The available license plans.
    */
   plans(): Promise<any>;
+
+  /**
+   * Get the lowest plan that unlocks each paid feature, for this deployment.
+   * @returns {PlanCatalogDto} The plan ladder and the feature → plan map.
+   */
+  planCatalog(): PlanCatalogDto;
 }
 
 /**

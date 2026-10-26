@@ -1,4 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import PlanTag from '@/modules/common/components/PlanTag';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import cx from 'classnames';
 import { AlertTriangle } from 'lucide-react';
 import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
@@ -532,10 +534,15 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <LicenseTooltip
                 message={"You don't have access to page headers. Upgrade your plan to access this feature."}
                 placement="bottom"
-                show={!hasCanvasPageHeaderEnabled}
+                show={!hasCanvasPageHeaderEnabled && fetchEdition() === 'ce'}
               >
                 <div className="d-flex align-items-center">
-                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                  <PlanTag
+                    gateKey="canvasPageHeaderEnabled"
+                    iconOnly
+                    featureName="Page headers"
+                    ceFallback={!hasCanvasPageHeaderEnabled ? <SolidIcon name="enterprisecrown" /> : null}
+                  />
                 </div>
               </LicenseTooltip>
             </label>
@@ -558,10 +565,15 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <LicenseTooltip
                 message={"You don't have access to page headers. Upgrade your plan to access this feature."}
                 placement="bottom"
-                show={!hasCanvasPageHeaderEnabled}
+                show={!hasCanvasPageHeaderEnabled && fetchEdition() === 'ce'}
               >
                 <div className="d-flex align-items-center">
-                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                  <PlanTag
+                    gateKey="canvasPageHeaderEnabled"
+                    iconOnly
+                    featureName="Page headers"
+                    ceFallback={!hasCanvasPageHeaderEnabled ? <SolidIcon name="enterprisecrown" /> : null}
+                  />
                 </div>
               </LicenseTooltip>
             </label>
@@ -587,10 +599,15 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <LicenseTooltip
                 message={"You don't have access to page footers. Upgrade your plan to access this feature."}
                 placement="bottom"
-                show={!hasCanvasPageFooterEnabled}
+                show={!hasCanvasPageFooterEnabled && fetchEdition() === 'ce'}
               >
                 <div className="d-flex align-items-center">
-                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                  <PlanTag
+                    gateKey="canvasPageFooterEnabled"
+                    iconOnly
+                    featureName="Page footers"
+                    ceFallback={!hasCanvasPageFooterEnabled ? <SolidIcon name="enterprisecrown" /> : null}
+                  />
                 </div>
               </LicenseTooltip>
             </label>
@@ -613,10 +630,15 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <LicenseTooltip
                 message={"You don't have access to page footers. Upgrade your plan to access this feature."}
                 placement="bottom"
-                show={!hasCanvasPageFooterEnabled}
+                show={!hasCanvasPageFooterEnabled && fetchEdition() === 'ce'}
               >
                 <div className="d-flex align-items-center">
-                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                  <PlanTag
+                    gateKey="canvasPageFooterEnabled"
+                    iconOnly
+                    featureName="Page footers"
+                    ceFallback={!hasCanvasPageFooterEnabled ? <SolidIcon name="enterprisecrown" /> : null}
+                  />
                 </div>
               </LicenseTooltip>
             </label>

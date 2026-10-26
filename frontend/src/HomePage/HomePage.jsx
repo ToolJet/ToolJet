@@ -33,7 +33,8 @@ import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
-import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import LimitCounter from '@/modules/common/components/LimitCounter';
+import { getLimitState, pickTighterLimit } from '@/modules/common/helpers/limitGating';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import ModalBase from '@/_ui/Modal';
 import FolderFilter from './FolderFilter';
@@ -516,7 +517,7 @@ class HomePageComponent extends React.Component {
 
     //  Check app limit before cloning
     if (!canAddUnlimited && current >= total) {
-      toast.error('You have reached your maximum limit for apps. Upgrade your plan for more.');
+      useLicenseStore.getState().actions.openLimitReached({ resource: 'apps', limit: appsLimit });
       return;
     }
     this.setState({ isCloningApp: true });
@@ -1521,6 +1522,51 @@ class HomePageComponent extends React.Component {
     this.setState({ showCreateAppModal: true });
   };
 
+  // Apps and workflows: re-check the plan limit on click so the decision uses fresh counts. At the
+  // limit, the limit-reached modal opens instead of the create form.
+  openCreateForm = async () => {
+    const { appType } = this.props;
+    if (appType === 'workflow' || appType === 'front-end') {
+      const limit =
+        appType === 'workflow'
+          ? pickTighterLimit(...(await this.refreshWorkflowLimits()))
+          : await this.refreshAppsLimit();
+      if (getLimitState(limit).reached) {
+        useLicenseStore
+          .getState()
+          .actions.openLimitReached({ resource: appType === 'workflow' ? 'workflows' : 'apps', limit });
+        return;
+      }
+    }
+    this.setState({ showCreateAppModal: true });
+  };
+
+  refreshAppsLimit = async () => {
+    try {
+      const data = await appsService.getAppsLimit();
+      this.setState({ appsLimit: data?.appsCount });
+      return data?.appsCount;
+    } catch {
+      return this.state.appsLimit;
+    }
+  };
+
+  refreshWorkflowLimits = async () => {
+    try {
+      const [instance, workspace] = await Promise.all([
+        appsService.getWorkflowLimit('instance'),
+        appsService.getWorkflowLimit('workspace'),
+      ]);
+      this.setState({
+        workflowInstanceLevelLimit: instance?.appsCount,
+        workflowWorkspaceLevelLimit: workspace?.appsCount,
+      });
+      return [instance?.appsCount, workspace?.appsCount];
+    } catch {
+      return [this.state.workflowInstanceLevelLimit, this.state.workflowWorkspaceLevelLimit];
+    }
+  };
+
   closeCreateAppModal = () => {
     this.setState({ showCreateAppModal: false });
   };
@@ -1833,9 +1879,11 @@ class HomePageComponent extends React.Component {
       if (this.props.appType === 'module') {
         return !moduleEnabled || this.isGitSyncLicenseLocked();
       } else if (this.props.appType === 'front-end') {
-        return appsLimit?.percentage >= 100 || this.isGitSyncLicenseLocked();
+        // Never disabled for the app limit: at the limit the click opens the limit-reached modal.
+        return this.isGitSyncLicenseLocked();
       } else {
-        return this.hasWorkflowLimitReached();
+        // Never disabled for the workflow limit: at the limit the click opens the limit-reached modal.
+        return false;
       }
     };
 
@@ -1852,6 +1900,19 @@ class HomePageComponent extends React.Component {
         actionButton: `+ Create ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Creating',
         appType: this.props.appType,
+        hideCancel:
+          (this.props.appType === 'workflow' &&
+            getLimitState(pickTighterLimit(workflowInstanceLevelLimit, workflowWorkspaceLevelLimit)).limited) ||
+          (this.props.appType === 'front-end' && getLimitState(appsLimit).limited),
+        footerLeading:
+          this.props.appType === 'workflow' ? (
+            <LimitCounter
+              limit={pickTighterLimit(workflowInstanceLevelLimit, workflowWorkspaceLevelLimit)}
+              unit="workflow"
+            />
+          ) : this.props.appType === 'front-end' ? (
+            <LimitCounter limit={appsLimit} unit="app" />
+          ) : null,
       },
       clone: {
         modalType: 'clone',
@@ -2442,7 +2503,8 @@ class HomePageComponent extends React.Component {
               <div className="create-new-app-license-wrapper">
                 {showCreateAppButtonTooltip() && (
                   <LicenseTooltip
-                    limits={appsLimit}
+                    // No resting-state limit tooltip: at the app limit the click opens the limit-reached modal.
+                    limits={this.props.appType === 'front-end' ? undefined : appsLimit}
                     feature={
                       this.props.appType === 'workflow'
                         ? 'workflows'
@@ -2462,7 +2524,7 @@ class HomePageComponent extends React.Component {
                             if (this.isWorkspaceBranchLocked()) {
                               this.setState({ showSwitchBranchForCreate: true });
                             } else {
-                              this.setState({ showCreateAppModal: true });
+                              this.openCreateForm();
                             }
                           }}
                           data-cy={`create-new-${
@@ -2539,31 +2601,6 @@ class HomePageComponent extends React.Component {
                 canCreateApp={this.canCreateApp()}
                 appType={this.props.appType}
               />
-              {this.props.appType === 'front-end' && (
-                <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
-              )}
-              {this.props.appType === 'workflow' &&
-                (workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                  100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                  workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1 ||
-                  workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total ||
-                  100 > workflowWorkspaceLevelLimit.percentage >= 90 ||
-                  workflowWorkspaceLevelLimit.current === workflowWorkspaceLevelLimit.total - 1) && (
-                  <>
-                    <LicenseBanner
-                      classes="mb-3 small"
-                      limits={
-                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
-                          ? workflowInstanceLevelLimit
-                          : workflowWorkspaceLevelLimit
-                      }
-                      type="workflow"
-                      size="small"
-                    />
-                  </>
-                )}
               {authenticationService.currentSessionValue?.super_admin &&
                 this.isWithinSevenDaysOfSignUp(authenticationService.currentSessionValue?.consultation_banner_date) && (
                   <ConsultationBanner

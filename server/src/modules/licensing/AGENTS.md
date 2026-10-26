@@ -32,6 +32,7 @@ Cloud plan presets: `STARTER/BASIC/PRO/TEAM_PLAN_TERMS_CLOUD` in `ee/licensing/c
 | `constants/index.ts` | `LICENSE_FIELD`, `LICENSE_TYPE`, `LICENSE_LIMIT`, `PLAN_DETAILS`, `FEATURE_KEY` |
 | `constants/PlanTerms.ts` | CE `BASIC_PLAN_TERMS` (mostly UNLIMITED, features off) |
 | `configs/LicenseBase.ts` | Getter per term; falls back to injected `BASIC_PLAN_TERMS` when invalid/expired |
+| `constants/plan-catalog.ts` | Plan catalog: lowest plan per gate for UI plan tags (`PLAN_CATALOG`), `selectPlanCatalog(edition)`, `resolvePlanTier()` |
 | `helper.ts` | `getLicenseFieldValue(LICENSE_FIELD, licenseInstance)` — field→getter switch |
 | `services/terms.service.ts` | `LicenseTermsService.getLicenseTerms(field(s), organizationId)` — the read API |
 | `services/init.service.ts` | CE no-op init (`License.Reload('')` → invalid → basic) |
@@ -62,7 +63,15 @@ Cloud plan presets: `STARTER/BASIC/PRO/TEAM_PLAN_TERMS_CLOUD` in `ee/licensing/c
 - Feature denial is HTTP **451**, not 403 — clients key on this for upgrade prompts.
 - Trial keys can't be replaced via `updateLicense()` once a paid key was set (EE util.service throws).
 - `LicenseRepository.getLicense()` memoizes per request; a tx-bound `manager` bypasses the memo.
-- Valid license without `type` defaults to `enterprise`; trial licenses still get basic-plan `workflows` limits.
+- Valid license without `type` reports `licenseType: 'basic'` (`LicenseBase` sets `_type = type || 'basic'`); trial licenses still get basic-plan `workflows` limits.
+- Expired or invalid licenses report `licenseType: 'basic'` and `plan: 'basic'`, so the original type is not visible on `/license/access`.
+
+## Plan catalog (UI plan tags)
+
+- `GET /license/plan-catalog` (public, declared on the CE `LicensePlansController`, inherited by EE): cloud gets the cloud ladder, EE the self-hosted one, CE an empty catalog (CE shows no plan tags).
+- `/license/access` (EE/cloud) adds `planTier`: the current plan as a catalog id, or `null` when it can't be placed (trial without a plan, unknown plan name).
+- Display only: gating still comes from the terms. Gate keys are `/license/access` feature keys; `byok` is derived from `aiPlan` on the frontend.
+- Cloud gate values are pinned to the `*_PLAN_TERMS_CLOUD` presets by `test/modules/licensing/unit/plan-catalog-drift.spec.ts`; self-hosted values are not enforced by a test.
 
 ## Related modules
 

@@ -3,6 +3,7 @@ import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import LimitCounter from '@/modules/common/components/LimitCounter';
 import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 import { appendWorkspaceId, getBaseHostURL, isCustomDomain } from '@/_helpers/routes';
 import { useSessionTransferRedirect } from '@/_helpers/useSessionTransferRedirect';
@@ -11,7 +12,7 @@ import { FormWrapper } from '@/_components/FormWrapper';
 import { toast } from 'react-hot-toast';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
-export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
+export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg, workspacesLimit = null }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [name, setName] = useState({ value: null, error: '' });
   const [slug, setSlug] = useState({ value: null, error: '' });
@@ -315,6 +316,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           </div>
           <div className="row">
             <div className="col d-flex justify-content-end gap-2">
+              <LimitCounter limit={workspacesLimit} unit="workspace" className="tw-mr-auto" />
               <ButtonSolid variant="secondary" onClick={closeModal} data-cy="cancel-button" className="cancel-btn">
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
