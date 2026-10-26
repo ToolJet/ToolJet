@@ -30,9 +30,15 @@ You can write transformation code in JavaScript or Python. Let’s say you’re 
 
 But in your table, you only want to display *id*, *name*, *designation* fields. Instead of changing the API or manually filtering inside every component, you can transform the data once, at the query level.
 
+## Enabling a Transformation
+
+Open the **Transformation** tab of your query and turn on **Enable transformation**. The code editor is read-only until the transformation is enabled. Choose **JavaScript** (the default) or **Python**.
+
+The **Transformation** tab isn't available for RunJS, RunPy and Run Workflow queries.
+
 ## Using JavaScript
 
-Head to the Transformations tab of your query and write your javascript code:
+Head to the Transformation tab of your query and write your javascript code:
 
 ```javascript
 return data.map(item => ({
@@ -43,6 +49,18 @@ return data.map(item => ({
 ```
 
 This ensures every time the query runs, your components receive exactly the shape of data they need.
+
+### Available Variables in JavaScript
+
+| Variable | Description |
+|----------|-------------|
+| `data` | The query result. |
+| `components`, `queries`, `globals`, `variables`, `page`, `constants` | The app's current state, as in `{{ }}` expressions. `queries` contains query data only; you can't run queries from a transformation. |
+| `moment`, `_` | Moment.js and Lodash. |
+| `actions` | Only `actions.log()`, `actions.logInfo()` and `actions.logError()`. See [Understanding Logs](/docs/app-builder/debugging/understanding-logs). |
+| Imported libraries | Libraries and preloaded exports added in the [Libraries](/docs/app-builder/import-libraries/import-external-lib-js#importing-libraries-globally) panel. |
+
+`axios`, `parameters` and `secrets` aren't available. The code runs synchronously, so `await` can't be used, and it must `return` a value.
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/transformation_js.png" alt="App Builder: query transformations"/>
 
@@ -60,5 +78,9 @@ If you’re more comfortable with Python, just switch the language in the transf
 ```
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/transformation_python.png" alt="App Builder: query transformations"/>
+
+### Available Variables in Python
+
+Python transformations have `data` (the query result), `components`, `queries`, `tj_globals` (the app's `globals`), `variables`, `page`, `constants` and `actions`. The result of the last expression is the transformed data. `moment`, `_`, `axios`, imported JavaScript libraries and `secrets` aren't available.
 
 Transformations provide you with an easy way to adjust your data before using it in your applications.
