@@ -5,7 +5,7 @@ title: JavaScript
 
 <br/>
 
-ToolJet workflows let you import **npm packages** into your workflow so that every JavaScript node can use them. Once a package is added, it is bundled and available across all JavaScript nodes in that workflow version.
+ToolJet workflows let you add **npm packages** to your workflow so that every JavaScript node can use them. Once a package is added, it is bundled and available across all JavaScript nodes in that workflow version.
 
 :::info
 External library support for workflows is available on **Enterprise Edition** plans.
@@ -14,20 +14,24 @@ External library support for workflows is available on **Enterprise Edition** pl
 ## Adding Packages
 
 1. Open your workflow in the editor.
-2. Click the **Packages** icon in the left sidebar to open the package manager panel.
-3. Type a package name (e.g., `lodash`) in the search field — results are fetched from the npm registry.
-4. Select the package and version you want to install, then click **Add**.
-5. The package is added to the workflow's dependency list and a bundle build starts automatically.
+2. In the left sidebar, click the libraries icon to open the **Libraries** panel.
+3. In the **Javascript** section, click **Add javascript library**.
+4. In the **Add javascript libraries** dialog, search for a package (e.g., `lodash`) in **Search libraries**. Results come from the npm registry and show each package's latest version.
+5. Select one or more packages, then click **Add selected libraries**.
 
-You can add multiple packages before the bundle finishes building. The bundle regenerates with all current dependencies.
+<img className="screenshot-full img-full" src="/img/workflows/external-libraries/add-js-libraries.png" alt="Add javascript libraries dialog with lodash selected from the npm search results" />
+
+The packages are added to the workflow's dependency list and the bundle is rebuilt. While it builds, the **Javascript** section shows a loading indicator.
+
+To pin a specific version, click the JSON icon next to **Javascript** (**Modify package.json**), edit the dependencies, and click **Modify package.json**.
 
 ## Using Packages in JavaScript Nodes
 
-Once the bundle status is **Ready**, you can `import` the packages directly in any JavaScript node:
+Once the packages are installed, load them with `require()` in any JavaScript node:
 
 ```js
-import lodash from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
+const lodash = require('lodash');
+const { v4: uuidv4 } = require('uuid');
 
 const grouped = lodash.groupBy(getOrders.data, 'status');
 
@@ -37,7 +41,11 @@ return {
 };
 ```
 
-Packages are available to all JavaScript nodes in the workflow — you don't need to import them separately per node.
+Packages are available to all JavaScript nodes in the workflow — you don't need to install them separately per node.
+
+:::warning
+Use `require()`, not `import`. JavaScript node code runs inside a function, not as an ES module, so an `import` statement fails with a syntax error. Requiring a package that isn't in the workflow's libraries fails with `Package "<name>" not found. Add it to your workflow dependencies.`
+:::
 
 ## Setup Script
 
@@ -83,9 +91,9 @@ return {
 
 ## Removing Packages
 
-1. Open the package manager panel.
-2. Click the **Remove** icon next to the package you want to remove.
-3. The bundle regenerates automatically without the removed package.
+1. Open the **Libraries** panel.
+2. Open the menu next to the package and click **Delete library**.
+3. The bundle is rebuilt without the removed package.
 
 <!-- 
 ## Limitations

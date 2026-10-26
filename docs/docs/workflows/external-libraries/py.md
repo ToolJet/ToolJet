@@ -14,8 +14,9 @@ External library support for workflows is available on **Enterprise Edition** pl
 ## Adding Packages
 
 1. Open your workflow in the editor.
-2. Click the **Packages** icon in the left sidebar to open the package manager panel, then switch to the **Python** tab.
-3. Enter the packages you need in `requirements.txt` format — one package per line with a version specifier.
+2. In the left sidebar, click the libraries icon to open the **Libraries** panel.
+3. In the **Python** section, click **Add python library**.
+4. In the **Modify requirements.txt** dialog, enter the packages you need in `requirements.txt` format — one package per line with a version specifier.
 
 ```
 pydash==8.0.3
@@ -23,7 +24,9 @@ requests==2.31.0
 numpy>=1.24.0
 ```
 
-4. Click **Install**. ToolJet installs the packages and generates a bundle in the background.
+5. Click **Modify requirements.txt**. ToolJet installs the packages and generates a bundle in the background. While it builds, the **Python** section shows a loading indicator.
+
+<img className="screenshot-full img-full" src="/img/workflows/external-libraries/modify-requirements.png" alt="Modify requirements.txt dialog listing pydash, requests and numpy with version specifiers" />
 
 :::warning
 PyPI does not expose a public search API. You need to know the exact package name and version you want to install. You can look up packages at [pypi.org](https://pypi.org/).
@@ -44,7 +47,7 @@ You can manually trigger a rebuild by clicking the **Rebuild** button in the pac
 
 ## Using Packages in Python Nodes
 
-Once the bundle status is **Ready**, you can `import` the packages directly in any Python node:
+Once the packages are installed, you can `import` them directly in any Python node:
 
 ```python
 import pydash
@@ -98,9 +101,12 @@ result = pydash.map_(orders, lambda order: to_cents(order["total"]))
 
 ## Updating or Removing Packages
 
-1. Open the package manager panel and switch to the **Python** tab.
-2. Edit the requirements list — update versions or remove lines as needed.
-3. Click **Install**. The bundle regenerates automatically with the updated dependency list.
+1. Open the **Libraries** panel.
+2. Next to **Python**, click the JSON icon (**Modify requirements.txt**), or click **Add python library**.
+3. Edit the requirements list — update versions or remove lines as needed.
+4. Click **Modify requirements.txt**. The bundle is rebuilt with the updated dependency list.
+
+To remove a single package, you can also open the menu next to it and click **Delete library**.
 <!-- 
 ## Sandbox and Security
 
@@ -117,7 +123,26 @@ Python nodes execute inside a secure sandbox powered by [NsJail](https://github.
 
 The sandbox prevents user code from accessing environment variables, the host filesystem, or the network. Use datasource nodes to fetch external data before passing it to a Python node. -->
 
-### Self-Hosted Deployments
+## Self-Hosted Deployments
+
+Python nodes run inside an [NsJail](https://github.com/google/nsjail) sandbox when it's available. ToolJet decides how Python nodes run once, when the server starts:
+
+1. If `TOOLJET_WORKFLOW_SANDBOX_BYPASS` is set to `true`, the sandbox is bypassed.
+2. Otherwise, if the `nsjail` binary is on the server's `PATH`, Python nodes run inside the sandbox. The ToolJet Enterprise Docker image includes NsJail.
+3. Otherwise, the sandbox is bypassed automatically.
+
+:::warning
+If NsJail isn't installed, Python nodes run **without isolation** even though you didn't set `TOOLJET_WORKFLOW_SANDBOX_BYPASS`. The code runs as a regular `python3` process with full access to the container, including the server's environment variables, the filesystem and the network. Only the 10-second execution timeout applies.
+:::
+
+To check which mode is active, look for one of these warnings in the server logs at startup:
+
+- `Sandbox Mode: BYPASSED (nsjail not found)`
+- `Sandbox Mode: BYPASSED (TOOLJET_WORKFLOW_SANDBOX_BYPASS=true)`
+
+When the sandbox is active, the log shows `Sandbox Mode: ENABLED (nsjail available)`.
+
+If NsJail is installed but can't run, ToolJet doesn't fall back to running without isolation. Python nodes fail with `Please make sure that you have properly setup support for Python node.` and a link to this section.
 
 NsJail requires **privileged container** support (specifically the `SYS_ADMIN` Linux capability) to create the namespaces it uses for isolation. Most standard Docker and Kubernetes deployments support this out of the box.
 

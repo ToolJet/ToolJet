@@ -16,9 +16,17 @@ With the **Workflow** node, you can:
 The **Workflow** node is ideal for enterprise automation where processes need to be standardized, reusable, and easy to manage. For example, you could trigger an invoice processing workflow from an order management workflow, or call a notification workflow after a task is completed.
 You can also send parameters to the other workflow, allowing dynamic control over the triggered workflow’s execution.
 
+The Workflow node has the same settings as the **Run Workflow** query in apps:
+
+- **Workflow**: The workflow to run.
+- **Version**: One of the workflow's saved versions. If you don't select a version, the released version runs. If the workflow has never been released, the version currently being edited runs.
+- **Params**: Key-value pairs passed to the workflow. If you don't add any, the child workflow's default parameters (its **Test JSON parameters**) are used.
+
+The Workflow node always waits for the child workflow to finish, whatever the **Run workflows synchronously** setting. The child workflow's response is available under the node's name. If the child workflow fails, the node fails. To handle the failure, add an error path with [Error Handling](/docs/workflows/nodes/operations#error-handling).
+
 A workflow can call itself recursively. It’s recommended to define an exit condition to avoid creating an infinite loop.
 
-The timeout for each workflow can be configured using the `WORKFLOW_TIMEOUT_SECONDS` environment variable. For more information checkout [Customizing Workflow Configuration](/docs/setup/env-vars#customizing-workflow-configuration).
+The timeout for each workflow can be configured using the `WORKFLOW_TIMEOUT_SECONDS` environment variable. When it isn't set, the workflow execution timeout from your license applies (60 seconds on the Basic plan). A run that exceeds the timeout stops with `Workflow execution timed out after <n> seconds`. For more information, see [Customizing Workflow Configuration](/docs/setup/env-vars#customizing-workflow-configuration).
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/example.png" alt="IF Else Node Example" />
 

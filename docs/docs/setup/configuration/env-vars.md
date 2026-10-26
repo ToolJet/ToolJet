@@ -227,9 +227,10 @@ You can control workflow execution behavior using the following environment vari
 
 | Variable | Description | Default | Unit |
 |-----------|-------------|---------|-------|
-| `WORKFLOW_TIMEOUT_SECONDS` | Maximum duration a workflow execution can run before timing out. | 60 | seconds |
+| `WORKFLOW_TIMEOUT_SECONDS` | Maximum duration a workflow execution can run before timing out. When unset (or `0`), the workflow execution timeout from your license is used (60 seconds on the Basic plan). | Unset | seconds |
 | `WORKFLOW_JS_MEMORY_LIMIT_MB` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20 | MB |
 | `WORKFLOW_JS_TIMEOUT_MS` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
+| `TOOLJET_WORKFLOW_SANDBOX_BYPASS` | Set to `true` to run workflow Python nodes without the NsJail sandbox. When unset, Python nodes run in the sandbox if NsJail is installed, and without isolation if it isn't. See [Python sandbox on self-hosted deployments](/docs/workflows/external-libraries/py#self-hosted-deployments). | Unset | boolean |
 
 #### Rate Limiting Data Query Runs
 
