@@ -1,6 +1,7 @@
 // UI 2.0's summary strip figures (Ui2/_sections/summaryModel.ts and formatChange in _shared/format.ts). Every function
 // takes whatever the author bound and never throws.
 import { formatValue, isNonBlankString, isRecord, toText } from './lists/model';
+import { localeFor, numberFormat } from '../../locale';
 
 export const MAX_FIGURES = 6;
 export const STRIP_VALUE_FORMATS = ['auto', 'number', 'currency', 'percent', 'compact', 'date'];
@@ -28,17 +29,13 @@ const num = (v: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-const formatChange = (n: number, format: string, currency: unknown): Delta => {
+const formatChange = (n: number, format: string, currency: unknown, locale: unknown): Delta => {
   const code = typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
-  let f: Intl.NumberFormat;
-  try {
-    f =
-      format === 'currency'
-        ? new Intl.NumberFormat(undefined, { style: 'currency', currency: code })
-        : new Intl.NumberFormat(undefined, { minimumFractionDigits: format === 'percent' ? 1 : 0, maximumFractionDigits: 1 });
-  } catch {
-    f = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
-  }
+  const where = localeFor(currency, locale);
+  const f =
+    format === 'currency'
+      ? numberFormat(where, { style: 'currency', currency: code })
+      : numberFormat(where, { minimumFractionDigits: format === 'percent' ? 1 : 0, maximumFractionDigits: 1 });
   const digits = f.resolvedOptions().maximumFractionDigits ?? 1;
   const shown = Math.round(Math.abs(n) * 10 ** digits) / 10 ** digits;
   const direction = shown === 0 ? 0 : Math.sign(n);
@@ -47,12 +44,12 @@ const formatChange = (n: number, format: string, currency: unknown): Delta => {
 };
 
 // A change: a number signed and formatted, or text as written ('+3 this week'), its direction from a leading sign.
-const deltaOf = (delta: unknown, format: unknown, currency: unknown): Delta | null => {
+const deltaOf = (delta: unknown, format: unknown, currency: unknown, locale: unknown): Delta | null => {
   if (delta === null || delta === undefined || typeof delta === 'object' || delta === '') return null;
   const n = num(delta);
   if (typeof delta === 'number' || (n !== null && /^[+-]?[\d.,\s]+$/.test(String(delta).trim()))) {
     if (n === null) return null;
-    return formatChange(n, typeof format === 'string' && DELTA_FORMATS.includes(format) ? format : 'percent', currency);
+    return formatChange(n, typeof format === 'string' && DELTA_FORMATS.includes(format) ? format : 'percent', currency, locale);
   }
   const text = String(delta).trim();
   const direction = /^[+↑▲]/.test(text) ? 1 : /^[-−↓▼]/.test(text) ? -1 : 0;
@@ -86,7 +83,12 @@ export interface SummaryFigure {
 /** At most MAX_FIGURES figures from [{ label, value, format, delta, deltaFormat, tone, lowerIsBetter, caption }]. */
 export const summaryFigures = (
   items: unknown,
-  { valueFormat = 'auto', currency, deltaFormat = 'percent' }: { valueFormat?: unknown; currency?: unknown; deltaFormat?: unknown } = {}
+  {
+    valueFormat = 'auto',
+    currency,
+    deltaFormat = 'percent',
+    locale,
+  }: { valueFormat?: unknown; currency?: unknown; deltaFormat?: unknown; locale?: unknown } = {}
 ): SummaryFigure[] => {
   if (!Array.isArray(items)) return [];
   return items
@@ -103,7 +105,8 @@ export const summaryFigures = (
             ? autoFigureFormat(item.label, item.value)
             : valueFormat;
       const itemCurrency = isNonBlankString(item.currency) ? item.currency : currency;
-      const delta = deltaOf(item.delta, isNonBlankString(item.deltaFormat) ? item.deltaFormat : deltaFormat, itemCurrency);
+      const itemLocale = isNonBlankString(item.locale) ? item.locale : locale;
+      const delta = deltaOf(item.delta, isNonBlankString(item.deltaFormat) ? item.deltaFormat : deltaFormat, itemCurrency, itemLocale);
       let tone = TONES[isNonBlankString(item.tone) ? item.tone.trim().toLowerCase() : ''];
       if (delta && !tone) {
         const dir = item.lowerIsBetter === true ? -delta.direction : delta.direction;
@@ -113,7 +116,7 @@ export const summaryFigures = (
         {
           key: String(index),
           label: toText(item.label),
-          value: formatValue(item.value, format, itemCurrency),
+          value: formatValue(item.value, format, itemCurrency, itemLocale),
           delta: delta ? { ...delta, tone } : null,
           caption: toText(item.caption),
         },

@@ -10,6 +10,7 @@ import { chipFamily } from '../lib/theme';
 import type { Theme } from '@mui/material/styles';
 import { rowIdOf, rowKeyOf, sameRecord, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, toNumber } from '../lib/format';
+import { LOCALE_HINT } from '../lib/locale';
 import { SAMPLE } from '../lib/samples';
 import { themeInk } from '../lib/ink';
 import { chipTone } from '../lib/statusTone';
@@ -113,7 +114,7 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
 
 // What the grid gets for a column: numbers typed as numbers (right-aligned, numeric sort), dates read from ISO strings,
 // and the formats MUI leaves to valueFormatter / renderCell.
-const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
+const toGridColumn = (c: Column, rows: Row[], locale = ''): GridColDef => {
   const { format, currency, colors, ...col } = c;
   const sample = rows.find((r) => r[c.field] !== undefined && r[c.field] !== null && r[c.field] !== '')?.[c.field];
   if (!col.type && !format && !isIdField(c.field) && typeof sample === 'number') col.type = 'number';
@@ -130,7 +131,9 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
   if (col.type === 'date' || col.type === 'dateTime') col.valueGetter = (v: unknown) => (v ? new Date(String(v)) : null);
   if (col.type === 'number') {
     col.valueGetter = (v: unknown) => toNumber(v);
-    if (format) col.valueFormatter = (v: unknown) => (v === null || v === undefined ? '' : formatCell(v, format, currency));
+    if (format) col.valueFormatter = (v: unknown) => (v === null || v === undefined ? '' : formatCell(v, format, currency, locale));
+    // A plain number column follows an author's locale too (MUI's own formatter writes the viewer's browser locale).
+    else if (locale.trim()) col.valueFormatter = (v: unknown) => (v === null || v === undefined ? '' : formatCell(v, 'number', currency, locale));
   } else if (format === 'html') {
     col.renderCell = (p) => (
       <div className="tj-mui-html-cell">
@@ -147,7 +150,7 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
       return <StatusChip label={str(p.value)} color={set || TONE_CHIP[chipTone(str(p.value))] || ''} />;
     };
   } else if (!col.type) {
-    col.valueFormatter = (v: unknown) => (isIdField(c.field) ? str(v) : formatCell(v, format));
+    col.valueFormatter = (v: unknown) => (isIdField(c.field) ? str(v) : formatCell(v, format, currency, locale));
   }
   return col;
 };
@@ -160,6 +163,7 @@ const toGridColumn = (c: Column, rows: Row[]): GridColDef => {
 export const DataGrid = () => {
   const [rawRows] = ToolJet.useStateArray({ name: 'rows', label: 'Rows', initialValue: SAMPLE.rows });
   const [rawColumns] = ToolJet.useStateArray({ name: 'columns', label: 'Columns', description: '[{ field, headerName, type, width, flex }]; empty: every field.', initialValue: SAMPLE.columns });
+  const [locale] = useStateText({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [rowIdField] = useStateText({ name: 'rowIdField', label: 'Row id field', description: "The rows' id field (getRowId).", initialValue: 'id' });
   const [rawDensity] = ToolJet.useStateEnumeration({ name: 'density', label: 'Density', enumDefinition: ['compact', 'standard', 'comfortable'], initialValue: 'standard' });
   // MUI capitalizes the density as text; a binding that gives anything else (a number, null) is standard.
@@ -224,12 +228,12 @@ export const DataGrid = () => {
   const columns = useMemo(
     () =>
       defs.map((c) => {
-        const col = toGridColumn(c, source);
+        const col = toGridColumn(c, source, str(locale));
         // Too narrow a column scrolls the grid sideways rather than covering its title with the hover icons.
         const floor = headerFloor(col.sortable !== false, disableColumnMenu !== true && col.disableColumnMenu !== true);
         return { ...col, minWidth: Math.max(col.minWidth ?? 0, floor) };
       }),
-    [defs, source, disableColumnMenu]
+    [defs, source, disableColumnMenu, locale]
   );
   // Html cells can hold several blocks (a name over a detail line): rows grow to fit them, as MUI's auto row height.
   const htmlCells = defs.some((c) => c.format === 'html');

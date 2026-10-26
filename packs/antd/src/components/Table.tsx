@@ -7,6 +7,7 @@ import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { PackTag } from '../lib/PackTag';
 import { readField, rowIdOf, rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, parseFormat, tagColor, toNumber } from '../lib/format';
+import { LOCALE_HINT } from '../lib/locale';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 
 type Column = {
@@ -129,6 +130,7 @@ export const Table = () => {
   });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'No data' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', description: 'For currency columns that name none.', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [tagColors] = ToolJet.useStateObject({ name: 'tagColors', label: 'Tag colors', description: "{ 'Paid': 'green' }; else a status word's colour.", initialValue: {} });
   const [selectedRow, setSelectedRow] = ToolJet.useStateObject({ name: 'selectedRow', initialValue: {}, inspector: 'hidden' });
   const [selectedRowKeys, setSelectedRowKeys] = ToolJet.useStateArray({ name: 'selectedRowKeys', initialValue: [], inspector: 'hidden' });
@@ -202,7 +204,7 @@ export const Table = () => {
             </span>
           );
         }
-        return formatCell(v, format, c.currency || str(currency) || 'USD');
+        return formatCell(v, format, c.currency || str(currency) || 'USD', locale);
       },
     };
   });

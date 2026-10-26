@@ -318,7 +318,7 @@
       "role": "stat",
       "fit": true,
       "loading": "own",
-      "usage": "Ant's Statistic (in a card by default): title, value (a number, formatted by formatter auto, number, currency, percent, compact; currency; precision), prefix, suffix, and a trend line: trend up/down/neutral, trendValue, extra.",
+      "usage": "Ant's Statistic (in a card by default): title, value (a number, formatted by formatter auto, number, currency, percent, compact; currency; locale; precision), prefix, suffix, and a trend line: trend up/down/neutral, trendValue, extra.",
       "roleProps": {
         "label": "title",
         "valueFormat": "formatter",
@@ -330,7 +330,7 @@
       "role": "table",
       "fit": true,
       "loading": "own",
-      "usage": "Ant's Table: dataSource, columns (Ant's [{title, dataIndex, format?, align?, width?, sorter?}] or UI 2.0's [{name, key, type}]; format/type number, currency or currency:EUR, percent, date, datetime, tag/badge/status, boolean, html (sanitised markup; columnType 'html' too); empty shows every field), rowKey, pagination with pageSize, rowSelection (none, checkbox, radio), size, bordered, currency, tagColors. selectedRow (clicked), selectedRowKeys and selectedRows are exposed; onRowClick.",
+      "usage": "Ant's Table: dataSource, columns (Ant's [{title, dataIndex, format?, align?, width?, sorter?}] or UI 2.0's [{name, key, type}]; format/type number, currency or currency:EUR, percent, date, datetime, tag/badge/status, boolean, html (sanitised markup; columnType 'html' too); empty shows every field), rowKey, pagination with pageSize, rowSelection (none, checkbox, radio), size, bordered, currency, locale, tagColors. selectedRow (clicked), selectedRowKeys and selectedRows are exposed; onRowClick.",
       "roleProps": {
         "data": "dataSource",
         "rowsPerPage": "pageSize",
@@ -502,7 +502,7 @@
       "role": "keyvalue",
       "fit": true,
       "loading": "own",
-      "usage": "Ant's Descriptions: items ([{label, children or value, format or type}], [label, value] pairs, or an object of label: value; types number, currency, percent, date, datetime, boolean, tag, link), title, extra, column, bordered, layout, currency.",
+      "usage": "Ant's Descriptions: items ([{label, children or value, format or type}], [label, value] pairs, or an object of label: value; types number, currency, percent, date, datetime, boolean, tag, link), title, extra, column, bordered, layout, currency, locale.",
       "roleProps": {
         "data": "items",
         "columns": "column",
@@ -917,7 +917,7 @@
       "role": "summarystrip",
       "fit": true,
       "loading": "own",
-      "usage": "A row of Ant Statistics: items [{label, value, format?, delta, deltaFormat?, tone?, lowerIsBetter?, caption}], valueFormat, currency, deltaFormat, appearance (panel, plain, cards), size, align."
+      "usage": "A row of Ant Statistics: items [{label, value, format?, delta, deltaFormat?, tone?, lowerIsBetter?, caption}], valueFormat, currency, locale, deltaFormat, appearance (panel, plain, cards), size, align."
     },
     "Schedule": {
       "role": "schedule",
@@ -929,7 +929,7 @@
       "role": "recordlist",
       "fit": true,
       "loading": "own",
-      "usage": "An Ant List of records: dataSource, titleField, avatarField, metaFields, statusField (Tag), valueField (valueFormat, currency), progressField; size, split, bordered; onItemClicked with selectedItem, selectedItemId, selectedItemIndex.",
+      "usage": "An Ant List of records: dataSource, titleField, avatarField, metaFields, statusField (Tag), valueField (valueFormat, currency, locale), progressField; size, split, bordered; onItemClicked with selectedItem, selectedItemId, selectedItemIndex.",
       "roleProps": {
         "data": "dataSource",
         "showDividers": "split",
@@ -989,7 +989,7 @@
       "role": "progresslist",
       "fit": true,
       "loading": "own",
-      "usage": "Rows of Ant Progress bars: dataSource, labelField, valueField, targetField or percentField, captionField, statusField, valueFormat, currency, autoTone (goal, limit), showValues, showPercent, size; onItemClicked.",
+      "usage": "Rows of Ant Progress bars: dataSource, labelField, valueField, targetField or percentField, captionField, statusField, valueFormat, currency, locale, autoTone (goal, limit), showValues, showPercent, size; onItemClicked.",
       "roleProps": {
         "data": "dataSource",
         "barSize": "size",

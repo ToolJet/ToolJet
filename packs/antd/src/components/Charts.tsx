@@ -18,6 +18,7 @@ import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { ChartLoader } from '../lib/Loading';
 import { str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
+import { LOCALE_HINT } from '../lib/locale';
 import { useClickHighlight } from '../lib/chartHighlight';
 import { mixRgb, tooltipInteraction, useChartTheme, useTooltipLayer, type Theme } from '../lib/chartTheme';
 import { useNarrow } from '../lib/fitText';
@@ -68,9 +69,10 @@ const useChartProps = (defaults: { x?: string; y?: string; ys?: string[]; data?:
   const [label] = ToolJet.useStateBoolean({ name: 'label', label: 'Label', description: 'Values on the marks.', initialValue: false });
   const [yFormatter] = ToolJet.useStateEnumeration({ name: 'yFormatter', label: 'Y formatter', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'compact' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'yFormatter', value: 'currency' } });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const { highlight, highlightOn, setSelectedDatum, onElementClick } = useClicked();
   const { loading } = ToolJet.useControlState();
-  return { loading, rawData, xField, yField, colorField, title, legend, label, yFormatter, currency, setSelectedDatum, onElementClick, highlight, highlightOn };
+  return { loading, rawData, xField, yField, colorField, title, legend, label, yFormatter, currency, locale, setSelectedDatum, onElementClick, highlight, highlightOn };
 };
 
 // yField is one field name ('sales') or several (['sales', 'cost']).
@@ -126,7 +128,7 @@ const useCommon = (
   const common = useMemo(() => {
     const fmt = (v: unknown) => {
       const n = toNumber(v);
-      return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency);
+      return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency, null, p.locale);
     };
     const axisStyle = { labelFill: theme.axis, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border, gridStroke: theme.border, gridStrokeOpacity: 1, titleFill: theme.axis };
     return {
@@ -148,7 +150,7 @@ const useCommon = (
         }
       },
     };
-  }, [p.yFormatter, p.currency, p.legend, p.label, theme, series.color, series.y, tips]);
+  }, [p.yFormatter, p.currency, p.locale, p.legend, p.label, theme, series.color, series.y, tips]);
   // A fresh scale on every render: Ant's charts write into the scale they are given (a Line of all zeros sets
   // y.domainMax 1), and a memoised one kept that limit once the real data came, drawing the lines off the plot.
   // Ant compares configs by content, so a new object with the same content does not redraw the chart.
@@ -280,6 +282,7 @@ export const Pie = () => {
   const [label] = ToolJet.useStateBoolean({ name: 'label', label: 'Label', description: 'Percent on the slices.', initialValue: false });
   const [formatter] = ToolJet.useStateEnumeration({ name: 'formatter', label: 'Formatter', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'auto' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'formatter', value: 'currency' } });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const { highlight, setSelectedDatum, onElementClick } = useClicked();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 32 });
@@ -293,7 +296,7 @@ export const Pie = () => {
   const total = rows.reduce((a, r) => a + (r[angleField] as number), 0);
   const fmt = (v: unknown) => {
     const n = toNumber(v);
-    return n === null ? str(v) : formatNumber(n, formatter as 'auto', currency);
+    return n === null ? str(v) : formatNumber(n, formatter as 'auto', currency, null, locale);
   };
   return (
     <AntProvider tokens={tokens} fill>
@@ -377,7 +380,7 @@ export const DualAxes = () => {
   const common = useCommon(p, theme, { y: left }, tips);
   const fmt = (v: unknown) => {
     const n = toNumber(v);
-    return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency);
+    return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency, null, p.locale);
   };
   const axisStyle = { labelFill: theme.axis, labelFillOpacity: 1, lineStroke: theme.border, tickStroke: theme.border, gridStroke: theme.border, gridStrokeOpacity: 1, labelFormatter: fmt };
   const data = rows.map((r) => ({ ...r, [left]: toNumber(r[left]), ...(right ? { [right]: toNumber(r[right]) } : {}) }));
@@ -427,7 +430,7 @@ export const Funnel = () => {
   const first = (rows[0]?.[y] as number) || 1;
   const fmt = (v: unknown) => {
     const n = toNumber(v);
-    return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency);
+    return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency, null, p.locale);
   };
   return (
     <AntProvider tokens={tokens} fill>
@@ -465,6 +468,7 @@ export const Gauge = () => {
   const [name] = ToolJet.useStateString({ name: 'name', label: 'Name', initialValue: '' });
   const [thresholds] = ToolJet.useStateArray({ name: 'thresholds', label: 'Thresholds', description: 'Ends of the colour bands, e.g. [40, 70, 100]; empty for one brand band.', initialValue: [] });
   const [formatter] = ToolJet.useStateEnumeration({ name: 'formatter', label: 'Formatter', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'auto' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 28 });
@@ -473,7 +477,7 @@ export const Gauge = () => {
   const t = toNumber(target) ?? 0;
   const max = Math.max(1, toNumber(total) ?? 100);
   const bands = toArray(thresholds).map((v) => toNumber(v)).filter((v): v is number => v !== null);
-  const shown = formatter === 'percent' ? formatNumber(t / max, 'percent') : formatNumber(t, formatter as 'auto');
+  const shown = formatter === 'percent' ? formatNumber(t / max, 'percent', 'USD', null, locale) : formatNumber(t, formatter as 'auto', 'USD', null, locale);
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={title} empty={false} loading={loading} chartRef={ref} ready={theme.ready}>

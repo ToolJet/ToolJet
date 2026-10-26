@@ -23,6 +23,7 @@ import { THEME_COLOR, useThemeColor } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver, TextBone } from '../lib/Loading';
 import { str, toArray, type Row } from '../lib/data';
 import { formatCell, formatFigure, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
+import { LOCALE_HINT } from '../lib/locale';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 import { useValueSetter } from '../lib/sameValue';
@@ -249,6 +250,7 @@ export const Statistic = () => {
     initialValue: 'auto',
   });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'formatter', value: 'currency' } });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [precision] = ToolJet.useStateNumber({ name: 'precision', label: 'Precision', description: 'Decimal places; empty for the formatter default.', initialValue: undefined as unknown as number, min: 0, max: 10 });
   const [prefix] = ToolJet.useStateString({ name: 'prefix', label: 'Prefix', initialValue: '' });
   const [suffix] = ToolJet.useStateString({ name: 'suffix', label: 'Suffix', initialValue: '' });
@@ -278,7 +280,7 @@ export const Statistic = () => {
   );
   const n = toNumber(value);
   const p = toNumber(precision);
-  const shown = formatFigure(value, formatter as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, p))) ?? (str(value) || '-');
+  const shown = formatFigure(value, formatter as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, p)), locale) ?? (str(value) || '-');
   const trendClass = trend === 'up' ? 'is-up' : trend === 'down' ? 'is-down' : '';
   // A box too short for the card's title over its figure: less padding, then the title beside the figure, then the
   // figure shrunk (shadcn's Stat in the same box). The figure also shrinks to the card's width.
@@ -474,6 +476,7 @@ export const Descriptions = () => {
   const [layout] = ToolJet.useStateEnumeration({ name: 'layout', label: 'Layout', enumDefinition: ['horizontal', 'vertical'], initialValue: 'horizontal' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['default', 'middle', 'small'], initialValue: 'default' });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD' });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', description: 'Shown for an empty value.', initialValue: '-' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
@@ -492,7 +495,7 @@ export const Descriptions = () => {
   const items = entries.map((r, i) => {
     const f = parseFormat(r.format ?? r.type);
     const v = r.children ?? r.value;
-    const text = formatCell(v, f.format, str(r.currency) || f.currency || currency);
+    const text = formatCell(v, f.format, str(r.currency) || f.currency || currency, str(r.locale) || locale);
     let children: React.ReactNode = text || emptyText;
     if (f.format === 'tag' && text) children = <AntTag color={TONE_TAG_STATUS[chipTone(text)]} style={{ marginInlineEnd: 0 }}>{chipLabel(text)}</AntTag>;
     else if (f.format === 'link' && text) children = <Typography.Link href={str(r.href ?? v)} target="_blank">{str(r.linkText) || text}</Typography.Link>;

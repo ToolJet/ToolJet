@@ -28,6 +28,7 @@ import { PALETTE_COLORS } from '../lib/field';
 import { iconOf, ICONS } from '../lib/icons';
 import { str, toArray, type Row } from '../lib/data';
 import { formatFigure, formatNumber, toNumber, type NumberFormat } from '../lib/format';
+import { LOCALE_HINT } from '../lib/locale';
 import { BlockSkeleton, Loading, Spinner, TextSkeleton } from '../lib/loading';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 import { useValueSetter } from '../lib/sameValue';
@@ -228,6 +229,7 @@ export const StatCard = () => {
   const [value] = useStateText({ name: 'value', label: 'Value', description: 'A number (shown in Format) or any text.', initialValue: '14000' });
   const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], initialValue: 'compact' });
   const [currency] = useStateText({ name: 'currency', label: 'Currency', initialValue: 'USD', visibleWhen: { key: 'format', value: 'currency' } });
+  const [locale] = useStateText({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
   const [precision] = ToolJet.useStateNumber({ name: 'precision', label: 'Precision', description: 'Decimal places of the value; empty for the format default.', initialValue: undefined as unknown as number, min: 0, max: 10 });
   const [trend, setTrend] = ToolJet.useStateEnumeration({ name: 'trend', label: 'Trend', enumDefinition: ['up', 'down', 'neutral'], initialValue: 'neutral' });
   const [rawTrendLabel, setTrendLabel] = ToolJet.useStateString({
@@ -261,12 +263,12 @@ export const StatCard = () => {
   );
   const n = toNumber(value);
   const p = toNumber(precision);
-  const shown = formatFigure(value, format as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, Math.round(p)))) ?? str(value);
+  const shown = formatFigure(value, format as NumberFormat, currency, p === null ? null : Math.max(0, Math.min(10, Math.round(p))), locale) ?? str(value);
   // A number bound to trendLabel (today - yesterday) is the change: shown signed, in the value's format, and with
   // trend left neutral its sign gives the direction. NaN (a query not loaded yet) shows no chip.
   const change = typeof rawTrendLabel === 'number' ? (Number.isFinite(rawTrendLabel) ? (rawTrendLabel as number) : null) : undefined;
   const trendLabel =
-    change === undefined ? toText(rawTrendLabel) : change === null ? '' : `${change > 0 ? '+' : ''}${formatNumber(change, format as NumberFormat, currency)}`;
+    change === undefined ? toText(rawTrendLabel) : change === null ? '' : `${change > 0 ? '+' : ''}${formatNumber(change, format as NumberFormat, currency, null, locale)}`;
   // With trend left neutral the change's sign gives the direction: a number's, or a label's leading + or -.
   const sign = change ? Math.sign(change) : /^\s*\+/.test(trendLabel) ? 1 : /^\s*[-\u2212]/.test(trendLabel) ? -1 : 0;
   const direction = trend === 'neutral' && sign ? (sign > 0 ? 'up' : 'down') : trend;

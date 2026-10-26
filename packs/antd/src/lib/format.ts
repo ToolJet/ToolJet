@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { localeFor } from './locale';
 
 export type NumberFormat = 'auto' | 'number' | 'currency' | 'percent' | 'compact';
 
@@ -12,15 +13,18 @@ export const toNumber = (v: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
+// One formatter per locale and options. The locale is the author's, else the currency's home locale (BRL pt-BR), else
+// en-US (lib/locale.ts), so a BRL figure reads "R$ 8.799,00" and apps that set neither keep their look.
 const formatters = new Map<string, Intl.NumberFormat>();
-const fmt = (opts: Intl.NumberFormatOptions) => {
-  const key = JSON.stringify(opts);
+const fmt = (opts: Intl.NumberFormatOptions, locale = 'en-US') => {
+  const key = `${locale}|${JSON.stringify(opts)}`;
   let f = formatters.get(key);
   if (!f) {
+    if (formatters.size > 300) formatters.clear();
     try {
-      f = new Intl.NumberFormat(undefined, opts);
+      f = new Intl.NumberFormat(locale, opts);
     } catch {
-      f = new Intl.NumberFormat(undefined, { ...opts, style: 'decimal', currency: undefined });
+      f = new Intl.NumberFormat(locale, { ...opts, style: 'decimal', currency: undefined });
     }
     formatters.set(key, f);
   }
@@ -29,32 +33,43 @@ const fmt = (opts: Intl.NumberFormatOptions) => {
 
 /**
  * Formats a number. `auto` keeps integers whole and other numbers to 2 places, with grouping. `percent` reads 0.25 and
- * 25 both as 25% (a fraction when |n| <= 1). precision: fixed decimals, or null for the format's own.
+ * 25 both as 25% (a fraction when |n| <= 1). precision: fixed decimals, or null for the format's own. locale: the
+ * author's (pt-BR), or blank to follow the currency (BRL writes "R$ 8.799,00"), else en-US.
  */
-export const formatNumber = (n: number, format: NumberFormat = 'auto', currency = 'USD', precision: number | null = null) => {
+export const formatNumber = (n: number, format: NumberFormat = 'auto', currency = 'USD', precision: number | null = null, locale?: unknown) => {
   const digits = precision === null ? {} : { minimumFractionDigits: precision, maximumFractionDigits: precision };
+  const where = localeFor(currency, locale);
   switch (format) {
     case 'currency':
-      return fmt({ style: 'currency', currency: currency || 'USD', ...digits }).format(n);
+      return fmt({ style: 'currency', currency: currency || 'USD', ...digits }, where).format(n);
     case 'percent':
-      return fmt({ style: 'percent', maximumFractionDigits: precision ?? 1, ...digits }).format(Math.abs(n) <= 1 ? n : n / 100);
+      return fmt({ style: 'percent', maximumFractionDigits: precision ?? 1, ...digits }, where).format(Math.abs(n) <= 1 ? n : n / 100);
     case 'compact':
-      return fmt({ notation: 'compact', maximumFractionDigits: precision ?? 1 }).format(n);
+      return fmt({ notation: 'compact', maximumFractionDigits: precision ?? 1 }, where).format(n);
     case 'number':
-      return fmt({ maximumFractionDigits: precision ?? 2, ...digits }).format(n);
+      return fmt({ maximumFractionDigits: precision ?? 2, ...digits }, where).format(n);
     default:
-      return fmt(precision === null ? { maximumFractionDigits: Number.isInteger(n) ? 0 : 2 } : digits).format(n);
+      return fmt(precision === null ? { maximumFractionDigits: Number.isInteger(n) ? 0 : 2 } : digits, where).format(n);
   }
 };
 
 /** A figure as written: "75.8%" is a percent (shown with its sign under the auto or number format), a plain number is
  *  formatted, other text shows as is. Statistic values often arrive from a query already as "75.8%" text. */
-export const formatFigure = (v: unknown, format: NumberFormat = 'auto', currency = 'USD', precision: number | null = null): string | null => {
+export const formatFigure = (
+  v: unknown,
+  format: NumberFormat = 'auto',
+  currency = 'USD',
+  precision: number | null = null,
+  locale?: unknown
+): string | null => {
   const n = toNumber(v);
   if (n === null) return null;
   if (typeof v === 'string' && v.trim().endsWith('%') && (format === 'auto' || format === 'number' || format === 'percent'))
-    return fmt({ style: 'percent', maximumFractionDigits: precision ?? 1, ...(precision === null ? {} : { minimumFractionDigits: precision }) }).format(n / 100);
-  return formatNumber(n, format, currency, precision);
+    return fmt(
+      { style: 'percent', maximumFractionDigits: precision ?? 1, ...(precision === null ? {} : { minimumFractionDigits: precision }) },
+      localeFor(currency, locale)
+    ).format(n / 100);
+  return formatNumber(n, format, currency, precision, locale);
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:?\d{2})?)?$/;
@@ -73,19 +88,19 @@ const formatDate = (v: string) => {
 export const isIdField = (field: string) => /(^id$|_id$|[a-z]Id$|^code$|_code$|year$|zip|phone|^no$|_no$|number$)/i.test(field);
 
 /** A cell value as text: numbers grouped, ISO dates shown as dates, booleans as Yes/No, objects as JSON. */
-export const formatCell = (v: unknown, format?: string, currency?: string): string => {
+export const formatCell = (v: unknown, format?: string, currency?: string, locale?: unknown): string => {
   if (v === undefined || v === null || v === '') return '';
   if (format === 'text') return typeof v === 'object' ? JSON.stringify(v) : String(v);
   if (format) {
     const n = toNumber(v);
-    if (n !== null && ['number', 'currency', 'percent', 'compact'].includes(format)) return formatNumber(n, format as NumberFormat, currency);
+    if (n !== null && ['number', 'currency', 'percent', 'compact'].includes(format)) return formatNumber(n, format as NumberFormat, currency, null, locale);
   }
   if (format === 'boolean') return v === true || v === 'true' || v === 1 || v === '1' ? 'Yes' : v === false || v === 'false' || v === 0 || v === '0' ? 'No' : String(v);
   if (typeof v === 'string' && ISO_DATE.test(v) && (format === 'date' || format === 'datetime' || !format)) {
     if (format === 'datetime' && DATE_ONLY.test(v)) return formatDate(v);
     return format === 'date' ? formatDate(v.slice(0, 10)) : formatDate(v);
   }
-  if (typeof v === 'number') return formatNumber(v);
+  if (typeof v === 'number') return formatNumber(v, 'auto', currency || 'USD', null, locale);
   if (typeof v === 'boolean') return v ? 'Yes' : 'No';
   if (typeof v === 'object') return JSON.stringify(v);
   return String(v);
