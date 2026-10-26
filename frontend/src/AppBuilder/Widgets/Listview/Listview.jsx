@@ -157,6 +157,13 @@ export const Listview = function Listview({
       });
     }
   }
+  // A copy of the clicked item must not outlive a change to the records it came from (D-10).
+  const prevDataRef = useRef(data);
+  if (prevDataRef.current !== data) {
+    const contentChanged = !_.isEqual(prevDataRef.current, data);
+    prevDataRef.current = data;
+    if (contentChanged) setExposedVariables({ selectedListItem: undefined });
+  }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   const filteredData = _.isArray(data)
@@ -202,7 +209,8 @@ export const Listview = function Listview({
 
   const onRecordOrRowClicked = useCallback(
     (index) => {
-      setSelectedRowIndex(index);
+      // Position in the whole data, so the shrink check below works on every page.
+      setSelectedRowIndex(startIndexOfRowInThePage + index);
       // The clicked child's own write is still queued; read after it lands or selectedRecord is stale.
       useStore.getState().flushPendingPerRowWrites?.();
       const state = useStore.getState();
@@ -220,6 +228,8 @@ export const Listview = function Listview({
         selectedRecord: selectedRow,
         selectedRowId: index,
         selectedRow: selectedRow,
+        // The data item itself: selectedRecordId is page-relative, so it cannot find it past page one.
+        selectedListItem: filteredData[index],
       });
       // Every row event carries its record, so a handler on the list itself can read {{listItem}}.
       const fireRowEvent = (name) =>
@@ -230,7 +240,7 @@ export const Listview = function Listview({
       fireRowEvent('onRecordClicked');
       fireRowEvent('onRowClicked');
     },
-    [id, moduleId, parentIndices, setExposedVariables, fireEvent, filteredData]
+    [id, moduleId, parentIndices, setExposedVariables, fireEvent, filteredData, startIndexOfRowInThePage]
   );
 
   const renderedRowCount = filteredData.length;

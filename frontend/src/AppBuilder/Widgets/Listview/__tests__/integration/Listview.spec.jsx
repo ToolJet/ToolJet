@@ -1906,3 +1906,101 @@ describe('Listview: row canvases are told apart from the app canvas', () => {
     expect(container().querySelectorAll('[data-cy="sub-canvas"]')).toHaveLength(3);
   });
 });
+
+describe('Listview: the clicked item on a paginated list', () => {
+  beforeEach(paginatedWidget.setup);
+  afterEach(paginatedWidget.teardown);
+
+  const pagedUser = () => paginatedWidget.session.user;
+  const pagedExposed = (key) => paginatedWidget.exposed()?.[key];
+  const nextPage = () => pagedUser().click(document.querySelector('[data-cy="next-page-link"]'));
+  const previousPage = () => pagedUser().click(document.querySelector('[data-cy="previous-page-link"]'));
+  const rebind = (records) =>
+    paginatedWidget.session.store.act(() => {
+      paginatedWidget.setComponentProperty(ID, 'data', binding(records).value, 'properties');
+    });
+
+  async function onPageTwo() {
+    paginatedWidget.render({ currentMode: 'view' });
+    await waitFor(() => expect(rows()).toHaveLength(5));
+    await nextPage();
+    await waitFor(() => expect(rowTexts()[0]).toContain('r5'));
+  }
+
+  test('[Listview-BUG-040] a click on page two publishes that item as selectedListItem', async () => {
+    // Break this catches: publishing only the page index, so an app cannot reach the clicked item
+    // on any page but the first.
+    await onPageTwo();
+
+    await pagedUser().click(rows()[0]);
+
+    await waitFor(() => expect(pagedExposed('selectedListItem')).toEqual({ name: 'r5' }));
+    expect(pagedExposed('selectedRecordId')).toBe(0);
+  });
+
+  test('[Listview-BUG-040] selectedListItem stays the clicked item after a page change', async () => {
+    // Break this catches: deriving the item from the page index again, so turning the page swaps it.
+    await onPageTwo();
+    await pagedUser().click(rows()[0]);
+    await waitFor(() => expect(pagedExposed('selectedListItem')).toEqual({ name: 'r5' }));
+
+    await previousPage();
+
+    await waitFor(() => expect(rowTexts()[0]).toContain('r0'));
+    expect(pagedExposed('selectedListItem')).toEqual({ name: 'r5' });
+  });
+
+  test('[Listview-BUG-040] Enter on a row and a click on a row child publish the same item', async () => {
+    // Break this catches: setting the item on one input path only.
+    await onPageTwo();
+
+    rows()[1].focus();
+    await pagedUser().keyboard('{Enter}');
+    await waitFor(() => expect(pagedExposed('selectedListItem')).toEqual({ name: 'r6' }));
+
+    await pagedUser().click(document.querySelectorAll('input[type="checkbox"]')[2].parentElement);
+    await waitFor(() => expect(pagedExposed('selectedListItem')).toEqual({ name: 'r7' }));
+  });
+
+  test('[Listview-BUG-041] a change to the list data clears selectedListItem', async () => {
+    // Break this catches: keeping a copy of an item the data may no longer hold or no longer match.
+    await onPageTwo();
+    await pagedUser().click(rows()[0]);
+    await waitFor(() => expect(pagedExposed('selectedListItem')).toEqual({ name: 'r5' }));
+
+    await rebind(
+      `{{[{ name: 'r0' }, { name: 'r1' }, { name: 'r2' }, { name: 'r3' }, { name: 'r4' }, { name: 'r5 edited' }, { name: 'r6' }]}}`
+    );
+
+    await waitFor(() => expect(pagedExposed('selectedListItem')).toBeUndefined());
+    expect(pagedExposed('selectedRecordId')).toBe(0);
+  });
+
+  test('[Listview-BUG-041] data that resolves to the same records keeps selectedListItem', async () => {
+    // Break this catches: clearing on every re-evaluation, so a query re-run with identical rows drops it.
+    await onPageTwo();
+    await pagedUser().click(rows()[0]);
+    await waitFor(() => expect(pagedExposed('selectedListItem')).toEqual({ name: 'r5' }));
+
+    await rebind(
+      `{{[{ name: 'r0' }, { name: 'r1' }, { name: 'r2' }, { name: 'r3' }, { name: 'r4' }, { name: 'r5' }, { name: 'r6' }, { name: 'r7' }, { name: 'r8' }, { name: 'r9' }].map((record) => ({ ...record }))}}`
+    );
+
+    await waitFor(() => expect(rowTexts()[0]).toContain('r5'));
+    expect(pagedExposed('selectedListItem')).toEqual({ name: 'r5' });
+  });
+
+  test('[Listview-BUG-042] a selection made on page two clears when its record leaves the data', async () => {
+    // Break this catches: comparing the page index with the total count, so record 5 (index 0 on
+    // page two) survives a shrink to three records.
+    await onPageTwo();
+    await pagedUser().click(rows()[0]);
+    await waitFor(() => expect(pagedExposed('selectedRecordId')).toBe(0));
+
+    await rebind(`{{[{ name: 'r0' }, { name: 'r1' }, { name: 'r2' }]}}`);
+
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    expect(pagedExposed('selectedRecordId')).toBeUndefined();
+    expect(pagedExposed('selectedRecord')).toBeUndefined();
+  });
+});
