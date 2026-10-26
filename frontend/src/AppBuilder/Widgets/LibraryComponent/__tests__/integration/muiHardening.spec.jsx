@@ -952,10 +952,11 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
       .flatMap(([name, c]) => c.styles.map((s) => ({ component: name, ...s })))
       .filter((s) => !shared(s));
     const colours = fields.filter((s) => s.inspector === 'color');
-    expect(colours.length).toBe(38 * 4 + 3);
+    // 42 components (RecordList, ProgressList, Timeline and KeyValue added 2026-10-25), four colours each.
+    expect(colours.length).toBe(42 * 4 + 3);
     expect(colours.filter((s) => !/^var\(--cc-[\w-]+\)$/.test(String(s.default)))).toEqual([]);
     const radii = fields.filter((s) => s.name === 'borderRadius');
-    expect(radii.length).toBe(38);
+    expect(radii.length).toBe(42);
     expect(radii.filter((s) => !s.placeholder)).toEqual([]);
   });
 

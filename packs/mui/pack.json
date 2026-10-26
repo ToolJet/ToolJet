@@ -591,6 +591,30 @@
         }
       }
     },
+    "RecordList": {
+      "role": "recordlist",
+      "fit": true,
+      "loading": "own",
+      "usage": "UI 2.0's Record list in MUI's List: data (array or query result), titleField, avatarField (image URL or a name; empty: the title's initials), metaFields (comma list: 'contact, total|currency, due|date:Due {}'), statusField (a Chip toned by its words, statusColors), progressField (0 to 100, a LinearProgress), valueField (valueFormat: auto, number, currency, percent, compact, date, datetime; currency, locale), idField; showAvatar, avatarShape (circle, rounded), density (compact, default, comfortable), showDividers, listStyle (card, plain), highlightSelected, emptyText. onItemClicked with selectedItem, selectedItemId, selectedItemIndex."
+    },
+    "ProgressList": {
+      "role": "progresslist",
+      "fit": true,
+      "loading": "own",
+      "usage": "UI 2.0's Progress list in MUI's List with LinearProgress bars: data (array or query result), labelField, valueField, targetField or percentField, captionField, statusField (a Chip, or a tone name), valueFormat (auto, number, currency, percent, compact), currency, locale, idField, autoTone (none, goal, limit), showValues, showPercent, barSize (thin, default, thick), listStyle (card, plain), emptyText. onItemClicked with selectedItem, selectedItemId, selectedItemIndex."
+    },
+    "Timeline": {
+      "role": "timeline",
+      "fit": true,
+      "loading": "own",
+      "usage": "UI 2.0's Timeline drawn like MUI Lab's: items [{title, description, time, status, color, icon}] (a status word colours the dot: done, pending, current, error; statusColors for your own), marker (dot, icon: an MUI icon name), density (comfortable, compact), newestFirst, timePosition (right, top), dateFormat (dayjs tokens for ISO times). onItemClicked with selectedItem and lastClickedItem."
+    },
+    "KeyValue": {
+      "role": "keyvalue",
+      "fit": true,
+      "loading": "own",
+      "usage": "UI 2.0's Key-value list, a label and value grid like Ant's Descriptions: data (an object of label: value, [{label, value, type}] or [label, value] pairs; types text, number, currency, percent, date, datetime, badge, link, boolean), columns (1 to 4), layout (inline, stacked), labelWidth, dividers, emptyText, currency, locale, dateFormat, badgeColors, allowCopy. onFieldClick with lastClickedField {label, value}."
+    },
     "Kanban": {
       "role": "kanban",
       "fit": false,

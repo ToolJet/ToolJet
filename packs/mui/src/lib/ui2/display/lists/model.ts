@@ -441,8 +441,9 @@ export const SHADOWS: Record<string, string> = {
 
 // ---- Key-value list ---------------------------------------------------------------------------------------------------
 
-const KV_TYPES = new Set(['text', 'number', 'currency', 'date', 'datetime', 'badge', 'link', 'boolean']);
-const KV_ALIASES: Record<string, string> = { string: 'text', money: 'currency', status: 'badge', url: 'link', bool: 'boolean', toggle: 'boolean' };
+// percent and tag are the Ant Descriptions' types too, so a key-value plan for any pack reads alike in MUI.
+const KV_TYPES = new Set(['text', 'number', 'currency', 'percent', 'date', 'datetime', 'badge', 'link', 'boolean']);
+const KV_ALIASES: Record<string, string> = { string: 'text', money: 'currency', status: 'badge', tag: 'badge', url: 'link', bool: 'boolean', toggle: 'boolean' };
 const MAX_ITEMS = 500;
 
 export interface KeyValueRow extends Row {
@@ -457,7 +458,8 @@ export const keyValueItems = (data: unknown): KeyValueRow[] => {
   if (Array.isArray(data)) {
     rows = data.slice(0, MAX_ITEMS).flatMap((entry: unknown): Row[] => {
       if (Array.isArray(entry) && entry.length >= 1) return [{ label: entry[0], value: entry[1] }];
-      if (isRecord(entry)) return [{ ...entry, label: entry.label ?? entry.key ?? entry.name ?? entry.title ?? '' }];
+      // Ant's Descriptions item ({ label, children }) reads as { label, value }.
+      if (isRecord(entry)) return [{ ...entry, label: entry.label ?? entry.key ?? entry.name ?? entry.title ?? '', value: entry.value ?? entry.children }];
       return [];
     });
   } else if (isRecord(data)) {
@@ -494,6 +496,15 @@ export const keyValueText = (row: KeyValueRow, defaults: { currency?: string; lo
           ? { style: 'currency', currency: currencyCode(own.currency ?? row.currency ?? defaults.currency), minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 }
           : { minimumFractionDigits: digits ?? 0, maximumFractionDigits: digits ?? 2 };
       return wrap(nf(locale, options).format(n));
+    }
+    if (type === 'percent') {
+      // Percent text keeps its sign; a number reads as a fraction when |n| <= 1 (0.25 and 25 are both 25%).
+      const t = String(value).trim();
+      const n = typeof value === 'number' ? value : Number(t.replace(/%$/, '').replace(/,/g, ''));
+      if (!Number.isFinite(n)) return String(value);
+      const pct = t.endsWith('%') || Math.abs(n) > 1 ? n : n * 100;
+      const locale = toText(own.locale) || defaults.locale || 'en-US';
+      return wrap(`${nf(locale, { maximumFractionDigits: 1 }).format(pct)}%`);
     }
     if (type === 'date' || type === 'datetime') {
       const d = toDay(value);

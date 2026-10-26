@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Box, Card as MuiCard, CardActionArea, CardContent, CardMedia, Chip, Grid, LinearProgress, Skeleton, Typography } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
-import { toArray } from '../lib/data';
+import { recordsOf } from '../lib/data';
 import { useStateText } from '../lib/text';
 import { Loading } from '../lib/loading';
 import { useGrowingCount } from '../lib/growingList';
@@ -20,19 +20,8 @@ const TONE_CHIP: Record<string, 'success' | 'warning' | 'error' | 'info' | 'defa
 const ASPECTS = ['16/9', '4/3', '1/1'];
 const clamp = (lines: number) => ({ display: '-webkit-box', WebkitLineClamp: lines, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' });
 
-// The data as the Ant and shadcn grids take it (an array, or its JSON text), and also a query result bound whole: an
-// object holding the records under data, rows, items, records or results (a REST or JS query's { rows: [...] }).
-const RECORD_KEYS = ['data', 'rows', 'items', 'records', 'results'];
-const recordsOf = (raw: unknown): unknown[] => {
-  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-    const key = RECORD_KEYS.find((k) => Array.isArray((raw as Record<string, unknown>)[k]));
-    return key ? ((raw as Record<string, unknown>)[key] as unknown[]) : [];
-  }
-  return toArray(raw);
-};
-
 /** The element's content width, kept current as it resizes (0 until measured, and in jsdom). */
-const useWidth = () => {
+export const useWidth = () => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(0);
   useEffect(() => {
