@@ -55,6 +55,7 @@ export default function Image({
 
   const hasOnClickEvent = false;
   const imageRef = useRef(null);
+  const zoomWrapperRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [zoomReset, setZoomReset] = useState(false);
@@ -291,7 +292,7 @@ export default function Image({
         zoomOut();
       }
       if (zoomMode === 'in') {
-        const targetElement = document.querySelector('.react-transform-component');
+        const targetElement = zoomWrapperRef.current.querySelector('.react-transform-component');
         const dblClickEvent = new MouseEvent('dblclick', e);
         targetElement.dispatchEvent(dblClickEvent);
       }
@@ -310,6 +311,7 @@ export default function Image({
               <>
                 {zoomReset && resetZoom(resetTransform)}
                 <div
+                  ref={zoomWrapperRef}
                   className="transform-component-wrapper"
                   style={{ cursor: isZoomEnabled ? (zoomMode === 'in' ? 'zoom-in' : 'zoom-out') : 'default' }}
                   onPointerDown={handlePointerDown}
