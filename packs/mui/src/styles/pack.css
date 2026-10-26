@@ -180,3 +180,11 @@
   min-width: 0;
   min-height: 0;
 }
+
+/* Card grid: the cards scroll in the widget box; the sentinel after the last drawn card asks for more. */
+.tj-mui-cardgrid {
+  overflow: auto;
+}
+.tj-mui-grow-sentinel {
+  height: 1px;
+}

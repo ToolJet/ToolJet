@@ -936,10 +936,10 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
       .flatMap(([name, c]) => c.styles.map((s) => ({ component: name, ...s })))
       .filter((s) => !shared(s));
     const colours = fields.filter((s) => s.inspector === 'color');
-    expect(colours.length).toBe(37 * 4 + 3);
+    expect(colours.length).toBe(38 * 4 + 3);
     expect(colours.filter((s) => !/^var\(--cc-[\w-]+\)$/.test(String(s.default)))).toEqual([]);
     const radii = fields.filter((s) => s.name === 'borderRadius');
-    expect(radii.length).toBe(37);
+    expect(radii.length).toBe(38);
     expect(radii.filter((s) => !s.placeholder)).toEqual([]);
   });
 

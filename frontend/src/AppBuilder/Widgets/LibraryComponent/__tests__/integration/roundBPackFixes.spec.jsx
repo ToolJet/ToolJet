@@ -235,6 +235,24 @@ describe('B-03: MUI DataGrid headers keep room for their title next to the hover
     await waitFor(() => expect(headerWidth(c, 'id')).toBeGreaterThan(0));
     expect(headerWidth(c, 'id')).toBe(80);
   });
+
+  // UI 2.0's Table columns: a columnSize is the column's width and the columns without one share the rest. Sized
+  // columns grew in proportion to their size, so an 80px id took 210px and an unsized Subject was cut to an ellipsis.
+  it('keeps a columnSize and lets unsized columns share the rest', async () => {
+    gridSize();
+    const ui2 = [
+      { key: 'id', name: 'Ticket', columnSize: 80 },
+      { key: 'subject', name: 'Subject' },
+      { key: 'priority', name: 'Priority', columnType: 'badge', columnSize: 130 },
+      { key: 'owner', name: 'Owner' },
+    ];
+    const c = await mount('mui', 'DataGrid', { rows: [{ id: 1, subject: 'Seat count', priority: 'High', owner: 'Ana' }], columns: ui2 });
+    await waitFor(() => expect(headerWidth(c, 'subject')).toBeGreaterThan(0));
+    expect(headerWidth(c, 'priority')).toBe(130);
+    expect(headerWidth(c, 'id')).toBe(108);
+    expect(headerWidth(c, 'subject')).toBe(headerWidth(c, 'owner'));
+    expect(headerWidth(c, 'subject')).toBeGreaterThan(130);
+  });
 });
 
 describe('B-04: the shadcn ScatterChart says when it samples its points', () => {
