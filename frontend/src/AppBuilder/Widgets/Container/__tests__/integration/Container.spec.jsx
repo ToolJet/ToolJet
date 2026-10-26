@@ -57,6 +57,9 @@ const root = () => document.getElementById(ID);
 const bodyCanvas = () => document.getElementById(`canvas-${ID}`);
 const headerCanvas = () => document.getElementById(`canvas-${ID}-header`);
 const headerRegion = () => document.querySelector(`[data-cy="${NAME}-header-section"]`);
+// The wrapper between the root and the body sub-canvas. It carries the body background;
+// the root is transparent and only supplies the rounded clip (D-08).
+const contentWrapper = () => root()?.querySelector('.widget-type-container');
 
 describe('Container: base rendering', () => {
   // Break this catches: the body sub-canvas no longer being mounted (e.g. an early
@@ -456,18 +459,22 @@ describe('Container: header geometry and chrome', () => {
 
 describe('Container: styles', () => {
   // Break this catches: dropping the dark-mode sentinel rewrite, which would leave a white
-  // container glaring on a dark canvas for every app that kept the literal default.
+  // container glaring on a dark canvas for every app that kept the literal default. Also
+  // catches the background drifting back onto the root, which would paint outside the
+  // clipped area and re-create the defect this contract reopened for.
   test('[Container-STYLE-001] the body background honours the configured colour and the dark-mode sentinel', async () => {
     harness.render({ styles: { backgroundColor: binding('rgb(1, 2, 3)') } });
-    await waitFor(() => expect(root()).toBeTruthy());
-    expect(root().style.backgroundColor).toBe('rgb(1, 2, 3)');
+    await waitFor(() => expect(contentWrapper()).toBeTruthy());
+    expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
+    // The root paints nothing — it is the clipping box only.
+    expect(root().style.backgroundColor).toBe('transparent');
 
     harness.render({ styles: { backgroundColor: binding('#fff') }, darkMode: true });
-    await waitFor(() => expect(root().style.backgroundColor).toBe('rgb(35, 46, 60)'));
+    await waitFor(() => expect(contentWrapper().style.backgroundColor).toBe('rgb(35, 46, 60)'));
 
     // A theme token is NOT a sentinel and must survive dark mode untouched.
     harness.render({ styles: { backgroundColor: binding('rgb(9, 9, 9)') }, darkMode: true });
-    await waitFor(() => expect(root().style.backgroundColor).toBe('rgb(9, 9, 9)'));
+    await waitFor(() => expect(contentWrapper().style.backgroundColor).toBe('rgb(9, 9, 9)'));
   });
 
   // Break this catches: resolving the header background from the body's colour (an easy
@@ -479,8 +486,9 @@ describe('Container: styles', () => {
     });
     await waitFor(() => expect(headerRegion()).toBeTruthy());
 
-    expect(root().style.backgroundColor).toBe('rgb(1, 2, 3)');
+    expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
     expect(headerRegion().style.backgroundColor).toBe('rgb(4, 5, 6)');
+    expect(root().style.backgroundColor).toBe('transparent');
   });
 
   // Break this catches: writing the divider colour to a standard border property instead of
@@ -492,9 +500,12 @@ describe('Container: styles', () => {
     expect(root().style.getPropertyValue('--cc-container-header-divider-color')).toBe('rgb(7, 7, 7)');
   });
 
-  // Break this catches: dropping the border or box-shadow from the computed style, or failing
-  // to carry the radius onto the header's top corners so it square-clips its own header.
-  test('[Container-STYLE-004] border colour, radius and box shadow reach the root and the header corners', async () => {
+  // Break this catches: dropping the border or box-shadow, dropping the clip that gives the
+  // radius a shape, or letting the header round its own corners again. All three elements
+  // rounding themselves with nothing clipping is exactly the reported defect: past roughly
+  // half the container's height the header bulged into a dome and the shadow traced the
+  // root's rectangle instead of the rounded silhouette.
+  test('[Container-STYLE-004] border colour, radius, box shadow and the clip belong to the root alone', async () => {
     harness.render({
       styles: {
         borderColor: binding('rgb(8, 8, 8)'),
@@ -507,8 +518,27 @@ describe('Container: styles', () => {
     expect(root().style.border).toBe('1px solid rgb(8, 8, 8)');
     expect(root().style.borderRadius).toBe('12px');
     expect(root().style.boxShadow).toBe('0px 2px 4px 0px rgba(0, 0, 0, 0.5)');
-    expect(headerRegion().style.borderTopLeftRadius).toBe('12px');
-    expect(headerRegion().style.borderTopRightRadius).toBe('12px');
+    // The clip is what the radius acts on, and what contains the children (D-08).
+    expect(root().style.overflow).toBe('hidden');
+
+    // The header must carry NO radius of its own; the root clips it instead.
+    expect(headerRegion().style.borderTopLeftRadius).toBe('');
+    expect(headerRegion().style.borderTopRightRadius).toBe('');
+  });
+
+  // Break this catches: the body grid painting or rounding itself. The radius on this element
+  // is the third of the three the defect applied at once — it is what made the grid itself
+  // render with round corners inside an already-rounded container.
+  test('[Container-STYLE-006] the body sub-canvas carries neither the background nor the radius', async () => {
+    harness.render({ styles: { borderRadius: binding('12'), backgroundColor: binding('rgb(1, 2, 3)') } });
+    await waitFor(() => expect(bodyCanvas()).toBeTruthy());
+
+    expect(bodyCanvas().style.borderRadius).toBe('');
+    // AppCanvas/Container forces transparent for any non-canvas id (AppCanvas/Container.jsx:292),
+    // so the grid never paints the body colour even if something passed it down.
+    expect(bodyCanvas().style.backgroundColor).toBe('transparent');
+    // The colour lives on the wrapper instead.
+    expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
   });
 
   // Break this catches: "tidying" the parseFloat away, or clamping the radius to the
