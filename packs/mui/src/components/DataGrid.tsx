@@ -58,7 +58,7 @@ const UI2_FORMATS: Record<string, string> = { currency: 'currency', percent: 'pe
  */
 const TONE_CHIP: Record<string, string> = { success: 'success', warning: 'warning', danger: 'error', info: 'info' };
 
-const StatusChip = ({ label, color }: { label: string; color: string }) => {
+export const StatusChip = ({ label, color }: { label: string; color: string }) => {
   const themed = useIsThemed();
   const family = themed && color && !CHIP_COLORS.has(color) ? chipFamily(color) : undefined;
   if (family === null) return <Chip size="small" label={label} />;

@@ -13,6 +13,7 @@ export { Menu } from './components/Menu';
 // Data display and feedback
 export { Chip, Alert, TypographyHeading, Typography, StatCard, LinearProgress, Avatar, Divider, Stepper, Pagination } from './components/Display';
 export { DataGrid } from './components/DataGrid';
+export { RecordList, ProgressList, Timeline, KeyValue } from './components/Lists';
 
 // Containers (builders drop ToolJet components into them)
 export { Tabs, Card, Dialog, List } from './components/Containers';

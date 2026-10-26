@@ -15,6 +15,18 @@ export const toArray = (raw: unknown): unknown[] => {
   return [];
 };
 
+// The records of a list component: an array (or its JSON text), as the Ant and shadcn lists take it, and also a query
+// result bound whole: an object holding the records under data, rows, items, records or results (a REST or JS query's
+// { rows: [...] }).
+const RECORD_KEYS = ['data', 'rows', 'items', 'records', 'results'];
+export const recordsOf = (raw: unknown): unknown[] => {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const key = RECORD_KEYS.find((k) => Array.isArray((raw as Record<string, unknown>)[k]));
+    return key ? ((raw as Record<string, unknown>)[key] as unknown[]) : [];
+  }
+  return toArray(raw);
+};
+
 export const toRows = (raw: unknown): Row[] =>
   toArray(raw).map((r) => (r && typeof r === 'object' && !Array.isArray(r) ? (r as Row) : { value: r }));
 
