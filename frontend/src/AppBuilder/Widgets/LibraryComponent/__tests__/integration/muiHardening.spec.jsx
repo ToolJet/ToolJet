@@ -649,7 +649,8 @@ describe('DataGrid columns typed for values that arrive formatted', () => {
     const cell = (field) => t.root().querySelector(`.MuiDataGrid-cell[data-field="${field}"]`)?.textContent;
     await waitFor(() => expect(cell('amount')).toBe('$1,234.56'));
     expect(cell('on')).toBe('24 Oct 2026');
-    expect(cell('n')).toMatch(/€\s?7\.00|7\.00\s?€/);
+    // EUR is written in its home locale (de-DE) since 2026-10-25: 7,00 €.
+    expect(cell('n').replace(/[\u00a0\u202f]/g, ' ')).toBe('7,00 €');
   });
 });
 
