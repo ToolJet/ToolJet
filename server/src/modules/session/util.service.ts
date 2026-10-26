@@ -185,6 +185,7 @@ export class SessionUtilService {
     appGroupPermissions: UserAppsPermissions;
     dataSourceGroupPermissions: UserDataSourcePermissions;
     folderGroupPermissions?: UserFolderPermissions;
+    dataSourceFolderGroupPermissions?: UserFolderPermissions;
     role: GroupPermissions;
     groupPermissions: GroupPermissions[];
     userPermissions: UserPermissions;
@@ -194,7 +195,14 @@ export class SessionUtilService {
       user,
       {
         organizationId: user.organizationId,
-        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }, { resource: MODULES.FOLDER }],
+        resources: [
+          { resource: MODULES.APP },
+          { resource: MODULES.GLOBAL_DATA_SOURCE },
+          { resource: MODULES.FOLDER },
+          // Renaming a data-source folder is authorized per folder by the granular "Edit folder"
+          // grant, so the client needs the resolved id lists to gate the affordance.
+          { resource: MODULES.DATA_SOURCE_FOLDER },
+        ],
       },
       manager
     );
@@ -205,6 +213,7 @@ export class SessionUtilService {
     const appGroupPermissions = userPermissions?.[MODULES.APP];
     const dataSourceGroupPermissions = userPermissions?.[MODULES.GLOBAL_DATA_SOURCE];
     const folderGroupPermissions = userPermissions?.[MODULES.FOLDER];
+    const dataSourceFolderGroupPermissions = userPermissions?.[MODULES.DATA_SOURCE_FOLDER];
     const userDetails = await this.userRepository.getUserDetails(user.id, user.organizationId, manager);
 
     if (superAdmin && !role) {
@@ -228,6 +237,7 @@ export class SessionUtilService {
       appGroupPermissions,
       dataSourceGroupPermissions,
       folderGroupPermissions,
+      dataSourceFolderGroupPermissions,
       ssoUserInfo,
       metadata: decryptedMetadata,
       role,
