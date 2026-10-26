@@ -1,8 +1,9 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { isEqual } from 'lodash';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
-import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { postgresErrorCode, renderDatatypeIcon } from '../constants';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -17,7 +18,6 @@ import DateTimePicker from '@/AppBuilder/QueryManager/QueryEditors/TooljetDataba
 import { getLocalTimeZone, getUTCOffset } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
-import _ from 'lodash';
 
 const compareValueInObject = (currentValue, defaultValue) => {
   try {
@@ -30,7 +30,7 @@ const compareValueInObject = (currentValue, defaultValue) => {
     }
 
     // Step 2: Use Lodash's isEqual for a deep comparison
-    return _.isEqual(cv, defaultVal);
+    return isEqual(cv, defaultVal);
   } catch (error) {
     return false;
   }
@@ -52,8 +52,7 @@ const RowForm = ({
   shouldResetRowForm,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } =
-    useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } = useTooljetDatabaseContext();
   const inputRefs = useRef({});
   const primaryKeyColumns = [];
   const nonPrimaryKeyColumns = [];
@@ -227,8 +226,8 @@ const RowForm = ({
           inputValuesArr[index].value === null
             ? null
             : compareValueInObject(inputValuesArr[index].value, defaultVal)
-            ? defaultVal
-            : inputValuesArr[index].value,
+              ? defaultVal
+              : inputValuesArr[index].value,
       });
     } else {
       setData({
@@ -237,8 +236,8 @@ const RowForm = ({
           inputValuesArr[index].value === null
             ? null
             : inputValuesArr[index].value === 'Default'
-            ? defaultVal
-            : inputValuesArr[index].value,
+              ? defaultVal
+              : inputValuesArr[index].value,
       });
     }
   };
@@ -443,8 +442,8 @@ const RowForm = ({
                   isSerialDataTypeColumn
                     ? 'Auto-generated'
                     : inputValues[index]?.value === null
-                    ? ''
-                    : inputValues[index]?.value
+                      ? ''
+                      : inputValues[index]?.value
                 }
                 onFocus={handleInputFocus}
                 onChange={(e) => handleInputChange(index, e.target.value, columnName)}
@@ -456,10 +455,10 @@ const RowForm = ({
                   isSerialDataTypeColumn && !darkMode
                     ? 'primary-idKey-light'
                     : isSerialDataTypeColumn && darkMode
-                    ? 'primary-idKey-dark'
-                    : !darkMode
-                    ? 'form-control'
-                    : 'form-control dark-form-row',
+                      ? 'primary-idKey-dark'
+                      : !darkMode
+                        ? 'form-control'
+                        : 'form-control dark-form-row',
                   errorMap[columnName] ? 'input-error-border' : ''
                 )}
                 data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
@@ -758,14 +757,14 @@ const RowForm = ({
                             activeTab[index] === 'Null' && !darkMode
                               ? 'white'
                               : activeTab[index] === 'Null' && darkMode
-                              ? '#242f3c'
-                              : 'transparent',
+                                ? '#242f3c'
+                                : 'transparent',
                           color:
                             activeTab[index] === 'Null' && !darkMode
                               ? '#3E63DD'
                               : activeTab[index] === 'Null' && darkMode
-                              ? 'white'
-                              : '#687076',
+                                ? 'white'
+                                : '#687076',
                         }}
                         className="row-tab-content"
                       >
@@ -780,14 +779,14 @@ const RowForm = ({
                             activeTab[index] === 'Default' && !darkMode
                               ? 'white'
                               : activeTab[index] === 'Default' && darkMode
-                              ? '#242f3c'
-                              : 'transparent',
+                                ? '#242f3c'
+                                : 'transparent',
                           color:
                             activeTab[index] === 'Default' && !darkMode
                               ? '#3E63DD'
                               : activeTab[index] === 'Default' && darkMode
-                              ? 'white'
-                              : '#687076',
+                                ? 'white'
+                                : '#687076',
                         }}
                         className="row-tab-content"
                       >
@@ -802,14 +801,14 @@ const RowForm = ({
                             activeTab[index] === 'Custom' && !darkMode
                               ? 'white'
                               : activeTab[index] === 'Custom' && darkMode
-                              ? '#242f3c'
-                              : 'transparent',
+                                ? '#242f3c'
+                                : 'transparent',
                           color:
                             activeTab[index] === 'Custom' && !darkMode
                               ? '#3E63DD'
                               : activeTab[index] === 'Custom' && darkMode
-                              ? 'white'
-                              : '#687076',
+                                ? 'white'
+                                : '#687076',
                         }}
                         className="row-tab-content"
                       >

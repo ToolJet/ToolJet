@@ -22,7 +22,8 @@ const setPins = (pins: Record<string, string>) =>
 // syncDevPinStreams now reads the cached list from state instead of fetching it itself
 // (fetchLibraries is mocked below, so it never actually populates the store) — tests that
 // expect a sync to fire must seed this directly, same as the real fetchLibraries() would.
-const setLibraries = (libraries: unknown[] | null) => act(() => useCustomComponentLibrariesStore.setState({ libraries } as any));
+const setLibraries = (libraries: unknown[] | null) =>
+  act(() => useCustomComponentLibrariesStore.setState({ libraries } as any));
 
 describe('useCustomComponentDevPreviewSync', () => {
   let syncDevPinStreams: jest.SpyInstance;

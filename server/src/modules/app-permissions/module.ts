@@ -13,13 +13,17 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 
 export class AppPermissionsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { AppPermissionsController, AppPermissionsService, AppPermissionsUtilService } = await this.getProviders(
       configs,
       'app-permissions',
       ['controller', 'service', 'util.service']
     );
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: AppPermissionsModule,
       controllers: isMainImport ? [AppPermissionsController] : [],
       providers: [
@@ -36,7 +40,7 @@ export class AppPermissionsModule extends SubModule {
         FeatureAbilityFactory,
         GroupPermissionsRepository,
       ],
-      exports: [AppPermissionsUtilService, AppPermissionsService],
-    };
+      exports: [AppPermissionsUtilService],
+    });
   }
 }

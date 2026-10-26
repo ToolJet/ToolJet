@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString, MaxLength, IsBoolean } from 'class-validator';
+import { IsOptional, IsString, MaxLength, IsBoolean, IsUUID } from 'class-validator';
 import { sanitizeInput } from '@helpers/utils.helper';
 
 export class OrganizationConfigsUpdateDto {
@@ -40,7 +40,7 @@ export class InstanceConfigsUpdateDto {
   @Transform(({ value }) => sanitizeInput(value))
   @MaxLength(250, { message: 'Domains cannot be longer than 250 characters' })
   allowedDomains?: string;
-  
+
   @IsOptional()
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
@@ -68,4 +68,13 @@ export class InstanceConfigsUpdateDto {
   @IsOptional()
   @IsString()
   customLogoutUrl?: string;
+}
+
+export class UpdateEnvConfigDTO {
+  @IsBoolean()
+  useEnvConfig: boolean;
+
+  @IsOptional()
+  @IsUUID()
+  configId?: string;
 }

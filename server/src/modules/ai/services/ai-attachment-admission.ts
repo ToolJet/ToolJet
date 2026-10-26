@@ -26,8 +26,7 @@ export async function reserveAttachmentUpload(
   if (cloudUserId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cloudUserId)) {
     throw new HttpException('Invalid attachment user', 400);
   }
-  if (!['original', 'provider'].includes(purpose))
-    throw new HttpException('Invalid attachment purpose', 400);
+  if (!['original', 'provider'].includes(purpose)) throw new HttpException('Invalid attachment purpose', 400);
   const user = owner.startsWith('organization:') ? cloudUserId || null : null;
   const limit = purpose === 'original' ? MAX_OWNER_UPLOADS : MAX_PROVIDER_UPLOADS;
   const startedAt = Date.now();
@@ -48,7 +47,10 @@ export async function reserveAttachmentUpload(
         [value, purpose, limit]
       );
       if (Number(recent[0].count) >= limit) {
-        throw new HttpException(`Attachment ${purpose === 'original' ? 'upload' : 'provider-copy'} limit reached. Try again later.`, 429);
+        throw new HttpException(
+          `Attachment ${purpose === 'original' ? 'upload' : 'provider-copy'} limit reached. Try again later.`,
+          429
+        );
       }
     }
     await client.query(

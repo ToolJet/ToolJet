@@ -1,3 +1,4 @@
+import { sanitizeTraceObject as sanitizeObject } from './sanitize';
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
 import { getWorkspaceLabel, getWorkspaceNameLabel } from './org-plan-cache';
 import {
@@ -33,18 +34,6 @@ import { shutdownOtelLogs } from './logs';
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 }
-
-const sanitizeObject = (obj: any) => {
-  const sanitized: any = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'object' && value !== null) {
-      sanitized[key] = sanitizeObject(value);
-    } else if (typeof value !== 'function') {
-      sanitized[key] = value;
-    }
-  }
-  return sanitized;
-};
 
 // SDK instance - created lazily in startOpenTelemetry()
 let sdk: NodeSDK | null = null;
@@ -95,12 +84,13 @@ function createSDK(): NodeSDK {
       new HttpInstrumentation({
         ignoreIncomingRequestHook: (request: any) => {
           const url = request.url || '';
-          return url.includes('/api/health') || url === '/api/health';
+          return url.includes('/api/health') || url.includes('/api/mcp-oauth/');
         },
       }),
       new ExpressInstrumentation({
         requestHook: (span: Span, { request }) => {
           const path = request.route?.path || request.path || '';
+          if (path.includes('/mcp-oauth/')) return;
           if (path.startsWith('/api/') && path !== '/api/health') {
             span.updateName(`${request.method} ${path}`);
             span.setAttribute('http.route', path);
@@ -607,9 +597,10 @@ export const trackUserActivity = (attributes: {
 // Load .env file before checking ENABLE_OTEL
 // ConfigModule hasn't loaded yet, so we need to manually load .env
 // Use the same pattern as the rest of the codebase (from database-config-utils.ts)
-const fs = require('fs');
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('path');
 const dotenv = require('dotenv');
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 function loadEnvVars() {
   const envFilePath =
@@ -617,11 +608,8 @@ function loadEnvVars() {
       ? path.resolve(process.cwd(), '../.env.test')
       : path.resolve(process.cwd(), '../.env');
 
-  if (fs.existsSync(envFilePath)) {
-    const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
-    // Merge with existing process.env (existing env vars take precedence)
-    Object.assign(process.env, envConfig, process.env);
-  }
+  // dotenv skips keys already set (existing env vars take precedence) and ignores a missing file
+  dotenv.config({ path: envFilePath });
 }
 
 // Load environment variables

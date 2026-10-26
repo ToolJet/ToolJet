@@ -6,7 +6,6 @@ const DEFAULT_PROPS_SECTION = 'Properties';
 export const filterVisibleProps = (props: ManifestProp[]): ManifestProp[] =>
   props.filter((prop) => prop.inspector !== 'hidden');
 
-
 // Groups manifest props into accordion sections by their author-declared `section`,
 // defaulting ungrouped props to "Properties" (today's single-section behavior). Section
 // order follows first appearance in the manifest, so authors control ordering by prop order.
@@ -86,7 +85,8 @@ export const fieldMeta = (prop: ManifestProp): FieldMeta => {
         options: (prop.enumValues ?? []).map((v) => ({ [optionLabelKeyName]: prop.enumLabels?.[v] ?? v, value: v })),
       };
     }
-    default: { // string | number | object | array → CodeHinter
+    default: {
+      // string | number | object | array → CodeHinter
       const meta: FieldMeta = { displayName, name: prop.name, type: prop.inspector ?? 'code' };
       if (VALIDATABLE_TYPES.has(prop.type)) {
         meta.validation = { schema: { type: prop.type }, ...(defaultValue !== undefined && { defaultValue }) };

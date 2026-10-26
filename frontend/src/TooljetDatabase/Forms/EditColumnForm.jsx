@@ -1,10 +1,10 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import tjdbDropdownStyles, {
   dataTypes,
   formatOptionLabel,
@@ -21,7 +21,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
 import { ToolTip } from '@/_components/ToolTip';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
+import ChangesComponent from '../ChangesComponent';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
@@ -59,7 +60,7 @@ const ColumnForm = ({
     foreignKeys,
     configurations,
     setConfigurations,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
@@ -804,8 +805,8 @@ const ColumnForm = ({
                         selectedColumn?.dataType === 'serial'
                           ? 'Auto-generated'
                           : foreignKeyDefaultValue?.value === null || defaultValue === null
-                          ? 'Null'
-                          : 'Enter a value'
+                            ? 'Null'
+                            : 'Enter a value'
                       }
                       onChange={(value) => {
                         setForeignKeyDefaultValue(value);
@@ -847,12 +848,12 @@ const ColumnForm = ({
                 dataType === 'serial'
                   ? 'Foreign key relation cannot be created for serial type column'
                   : dataType === 'boolean'
-                  ? 'Foreign key relation cannot be created for boolean type column'
-                  : dataType === 'timestamp with time zone'
-                  ? 'Foreign key relation cannot be created for this data type'
-                  : dataType === 'jsonb'
-                  ? 'Foreign key relation cannot be created for JSON data type'
-                  : 'Fill in column details to create a foreign key relation'
+                    ? 'Foreign key relation cannot be created for boolean type column'
+                    : dataType === 'timestamp with time zone'
+                      ? 'Foreign key relation cannot be created for this data type'
+                      : dataType === 'jsonb'
+                        ? 'Foreign key relation cannot be created for JSON data type'
+                        : 'Fill in column details to create a foreign key relation'
               }
               placement="top"
               tooltipClassName="tootip-table"
@@ -966,10 +967,10 @@ const ColumnForm = ({
               selectedColumn.constraints_type.is_primary_key === true
                 ? 'Primary key values cannot be null'
                 : selectedColumn.dataType === 'serial' &&
-                  (selectedColumn.constraints_type.is_primary_key !== true ||
-                    selectedColumn.constraints_type.is_primary_key === true)
-                ? 'Serial data type cannot have null value'
-                : null
+                    (selectedColumn.constraints_type.is_primary_key !== true ||
+                      selectedColumn.constraints_type.is_primary_key === true)
+                  ? 'Serial data type cannot have null value'
+                  : null
             }
             placement="top"
             tooltipClassName="tooltip-table-edit-column"
@@ -1013,16 +1014,16 @@ const ColumnForm = ({
               selectedColumn.constraints_type.is_primary_key === true
                 ? 'Primary key values must be unique'
                 : selectedColumn.dataType === 'serial' &&
-                  (selectedColumn.constraints_type.is_primary_key !== true ||
-                    selectedColumn.constraints_type.is_primary_key === true)
-                ? 'Serial data type value must be unique'
-                : selectedColumn.dataType === 'boolean'
-                ? 'Unique constraint cannot be added for boolean type column'
-                : selectedColumn.dataType === 'timestamp with time zone'
-                ? 'Unique constraint cannot be added for this type column'
-                : selectedColumn.dataType === 'jsonb'
-                ? 'Unique constraint cannot be added for JSON type column'
-                : null
+                    (selectedColumn.constraints_type.is_primary_key !== true ||
+                      selectedColumn.constraints_type.is_primary_key === true)
+                  ? 'Serial data type value must be unique'
+                  : selectedColumn.dataType === 'boolean'
+                    ? 'Unique constraint cannot be added for boolean type column'
+                    : selectedColumn.dataType === 'timestamp with time zone'
+                      ? 'Unique constraint cannot be added for this type column'
+                      : selectedColumn.dataType === 'jsonb'
+                        ? 'Unique constraint cannot be added for JSON type column'
+                        : null
             }
             placement="top"
             tooltipClassName="tooltip-table-edit-column"
@@ -1119,15 +1120,15 @@ const ColumnForm = ({
         confirmButtonText={'Continue'}
         cancelButtonText={'Cancel'}
         footerStyle={footerStyle}
-        // currentPrimaryKeyIcons={currentPrimaryKeyIcons}
-        // newPrimaryKeyIcons={newPrimaryKeyIcons}
-        isEditToolJetDbTable={true}
-        foreignKeyChanges={newChangesInForeignKey}
-        existingReferencedTableName={existingReferencedTableName}
-        existingReferencedColumnName={existingReferencedColumnName}
-        currentReferencedTableName={currentReferencedTableName}
-        currentReferencedColumnName={currentReferencedColumnName}
-      />
+      >
+        <ChangesComponent
+          foreignKeyChanges={newChangesInForeignKey}
+          existingReferencedTableName={existingReferencedTableName}
+          existingReferencedColumnName={existingReferencedColumnName}
+          currentReferencedTableName={currentReferencedTableName}
+          currentReferencedColumnName={currentReferencedColumnName}
+        />
+      </ConfirmDialog>
     </>
   );
 };

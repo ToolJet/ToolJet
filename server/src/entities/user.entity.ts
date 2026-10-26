@@ -1,3 +1,4 @@
+import type { WorkspaceAuthentication } from '@modules/mcp-oauth/protocol';
 import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import {
   Entity,
@@ -222,12 +223,21 @@ export class User extends BaseEntity {
   componentUsers: ComponentUser[];
 
   organizationId: string;
+  // Active Git branch for the request, resolved once in the JWT strategy from the
+  // `branch_id` query param (falls back to the org's default branch). Mirrors how
+  // organizationId is resolved per-request from the tj-workspace-id header.
+  branchId?: string;
   invitedOrganizationId: string;
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;
   isSSOLogin: boolean;
   sessionId: string;
   roleGroup: USER_ROLE;
+  workspaceAuthentication?: WorkspaceAuthentication;
+  oauthGrantId?: string;
+  oauthClientId?: string;
+  oauthScopes?: string[];
+  oauthAppId?: string;
   tjApiSource?: string;
   // Session provenance, mirrored from the JWT. Session kinds: personal-access-tokens/AGENTS.md.
   isPATLogin?: boolean;

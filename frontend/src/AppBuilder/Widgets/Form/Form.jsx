@@ -94,6 +94,7 @@ const FormComponent = (props) => {
 
   const activeColor = getModifiedColor(backgroundColor, 'active');
   const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
+  const [canHeight, setCanHeight] = useState('100%');
   const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
 
   const computedStyles = {
@@ -246,6 +247,13 @@ const FormComponent = (props) => {
   const [clearCount, setClearCount] = useState(0);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
+
+  // When this Form is nested inside another Form, inherit the parent's submit
+  // attempts. A failed submit on the parent must surface validation errors on
+  // this child form's inputs too, even though they live under this form's own
+  // FormSignalContext.Provider (which would otherwise shadow the parent's).
+  const { submitAttemptCount: parentSubmitAttemptCount } = useContext(FormSignalContext);
+  const effectiveSubmitAttemptCount = submitAttemptCount + parentSubmitAttemptCount;
 
   useEffect(() => {
     const exposedVariables = {
@@ -428,7 +436,6 @@ const FormComponent = (props) => {
     setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
   };
 
-  const [canHeight, setCanHeight] = useState('100%');
   useEffect(() => {
     // const newHeight = parseInt(height, 10) - 14;
 
@@ -441,7 +448,10 @@ const FormComponent = (props) => {
     setCanHeight(`${roundedHeight}px`);
   }, [computedFormBodyHeight, canvasHeight]);
 
-  const formSignalContextValue = useMemo(() => ({ submitAttemptCount, clearCount }), [submitAttemptCount, clearCount]);
+  const formSignalContextValue = useMemo(
+    () => ({ submitAttemptCount: effectiveSubmitAttemptCount, clearCount }),
+    [effectiveSubmitAttemptCount, clearCount]
+  );
 
   return (
     <form

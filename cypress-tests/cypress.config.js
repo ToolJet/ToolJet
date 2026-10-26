@@ -14,7 +14,6 @@ module.exports = defineConfig({
     setupNodeEvents (on, config) {
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
-      require("@cypress/code-coverage/task")(on, config);
       require("./cypress/plugins/index.js")(on, config);
       // cypress-live-reporter — self-disables (one warning) when neither
       // CLR_DB nor CLR_WEBHOOK is set in cypress env, so it's a no-op otherwise.

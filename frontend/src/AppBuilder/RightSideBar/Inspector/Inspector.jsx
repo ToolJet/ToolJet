@@ -3,7 +3,7 @@ import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
-import { renderElement, renderCustomStyles, goToModule, getDocsLink } from './Utils';
+import { renderElement, renderCustomStyles, goToModule, getDocsLink, shouldClearLegacyInvalidDates } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, resolveReferences } from '@/_helpers/utils';
 import { DefaultComponent } from './Components/DefaultComponent';
@@ -49,6 +49,7 @@ import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { Cascader } from './Components/Cascader/Cascader';
 import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
@@ -159,10 +160,11 @@ export const Inspector = ({
   selectedComponentId,
   handleRightSidebarToggle,
 }) => {
+  const { isModuleEditor } = useModuleContext();
   const allComponents = useStore((state) => state.getCurrentPageComponents());
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
@@ -337,6 +339,26 @@ export const Inspector = ({
       const skipResolve =
         component.component.component === 'CustomComponent' && param.name === 'code' && paramType === 'properties';
       setComponentProperty(selectedComponentId, param.name, value, paramType, attr, skipResolve);
+
+      // A legacy DaterangePicker (migrated with properties.legacyInvalidDates)
+      // opts into the corrected invalid-date exposure the moment its date data
+      // — Default start date, Default end date, or Format — is explicitly
+      // edited. The flag is only ever cleared, never set back.
+      if (
+        shouldClearLegacyInvalidDates({
+          componentType: component.component.component,
+          paramName: param.name,
+          paramType,
+          attr,
+          definition: newDefinition,
+        })
+      ) {
+        newDefinition.properties = {
+          ...newDefinition.properties,
+          legacyInvalidDates: { value: '{{false}}' },
+        };
+        setComponentProperty(selectedComponentId, 'legacyInvalidDates', '{{false}}', 'properties', 'value', false);
+      }
     }
 
     componentDefinitionChanged(newComponent, {
@@ -454,7 +476,7 @@ export const Inspector = ({
       setTimeout(() => setInputFocus(), 0);
     }
     if (value === 'delete') {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
     if (value === 'permission') {
       if (!hasAppPermissionComponent) return;

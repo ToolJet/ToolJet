@@ -245,8 +245,8 @@ export const ButtonGroupV2 = (props) => {
         ? selected.filter((v) => v !== value)
         : [...selected, value]
       : isSelected
-      ? []
-      : [value];
+        ? []
+        : [value];
     updateExposedVariablesState('selected', next);
     setExposedVariable('selected', next);
     setExposedVariable('isValid', validate(next.length ? next : null)?.isValid);

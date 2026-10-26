@@ -22,12 +22,13 @@ import { debounce } from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
 
 const ICON_ONLY_BUTTON_BREAKPOINT = 700;
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
   const previewQuery = useStore((state) => state.queryPanel.previewQuery);
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
@@ -37,7 +38,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   const showCreateQuery = useStore((state) => state.queryPanel.showCreateQuery);
   const setShowCreateQuery = useStore((state) => state.queryPanel.setShowCreateQuery);
   const queryName = selectedQuery?.name ?? '';
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   const headerRef = useRef(null);
   const headerWidth = useContainerWidth(headerRef);
@@ -171,7 +172,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
 });
 
 const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const { isModuleEditor } = useModuleContext();
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isFocused = useStore((state) => state.queryPanel.nameInputFocused, shallow);
   const setIsFocused = useStore((state) => state.queryPanel.setNameInputFocused, shallow);
   const [name, setName] = useState(value);
@@ -312,6 +314,7 @@ const GenerateQueryButton = ({ iconOnly }) => {
   // The hook owns the mention bookkeeping; it re-renders only when the mention is added/removed,
   // not on every keystroke.
   const { openChat, isPressed } = useWriteQueryEntry('query');
+  const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
   const isLoading = useStore(
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
@@ -338,7 +341,7 @@ const GenerateQueryButton = ({ iconOnly }) => {
           iconOnly={iconOnly}
           className={isPressed ? '!tw-bg-button-outline-hover' : ''}
           onClick={openChat}
-          disabled={shouldFreeze}
+          disabled={shouldFreeze || isAiBlockedByBranch}
           data-cy="query-generate-button"
         >
           <AITripleSparkles width="14" height="14" />

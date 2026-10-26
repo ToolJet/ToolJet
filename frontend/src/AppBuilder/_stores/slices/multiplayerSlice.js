@@ -79,10 +79,23 @@ export const createMultiplayerSlice = (set, get) => ({
               }
 
               case 'update': {
-                const { componentId, property, value, paramType, attr } = diff;
-                get().setComponentProperty(componentId, property, value, paramType, attr, 'canvas', {
-                  saveAfterAction: false,
-                  skipUndoRedo: true,
+                const { componentId, property, value, paramType, attr, updates } = diff;
+                // Older peers still send a single property
+                const propertyUpdates = updates ?? [{ property, value, paramType, attr }];
+                propertyUpdates.forEach((update) => {
+                  get().setComponentProperty(
+                    componentId,
+                    update.property,
+                    update.value,
+                    update.paramType,
+                    update.attr,
+                    false,
+                    'canvas',
+                    {
+                      saveAfterAction: false,
+                      skipUndoRedo: true,
+                    }
+                  );
                 });
                 break;
               }

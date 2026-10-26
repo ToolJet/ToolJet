@@ -2,13 +2,7 @@ import pino from 'pino';
 import { buildBaseLogger, __resetBaseLoggerForTests } from '../../../../src/modules/logging/base-logger';
 
 describe('buildBaseLogger', () => {
-  const ENV_KEYS = [
-    'NODE_ENV',
-    'LOG_LEVEL',
-    'ORM_LOGGING',
-    'ENABLE_OTEL',
-    'OTEL_EXPORTER_OTLP_LOGS',
-  ];
+  const ENV_KEYS = ['NODE_ENV', 'LOG_LEVEL', 'ORM_LOGGING', 'ENABLE_OTEL', 'OTEL_EXPORTER_OTLP_LOGS'];
   const originalEnv: Record<string, string | undefined> = {};
 
   beforeEach(() => {
@@ -41,6 +35,7 @@ describe('buildBaseLogger', () => {
 
   describe('I5 — one instance means HTTP/bootstrap logs reach OTLP too, not just TransactionLogger', () => {
     it('a line written through either "consumer" reaches the same OTLP stream', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const otelLogs = require('@otel/logs');
       const emitted: unknown[] = [];
       const originalGetServerLogger = otelLogs.getServerLogger;

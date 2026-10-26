@@ -69,7 +69,7 @@ export interface IComponentsService {
    * query/transaction. Returns a map keyed by pageId; pages without components are
    * absent from the map.
    */
-  getAllComponentsForPages(pageIds: string[], manager?: EntityManager): Promise<Record<string, Record<string, any>>>;
+  getAllComponentsForPages(pageIds: string[], manager?: EntityManager): Promise<Map<string, Record<string, any>>>;
   transformComponentData(data: object): Component[];
   createComponentWithLayout(
     componentData: Component,

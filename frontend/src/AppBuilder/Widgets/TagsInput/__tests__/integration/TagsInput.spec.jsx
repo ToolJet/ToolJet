@@ -30,7 +30,7 @@ import {
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { tagsInputConfig } from '@/AppBuilder/WidgetManager/widgets/TagsInput';
+import { tagsInputConfig } from '@tooljet/widget-definitions';
 
 const ID = 'tags1';
 const NAME = 'tagsinput1';

@@ -24,12 +24,16 @@ export class BackfillSalesforceOptions1790500000000 implements MigrationInterfac
     await this.backfillCrudResourceName(queryRunner);
   }
 
+  // data_source_options was dropped in DropDataSourceOptionsTable1773300000000 once its data was copied to
+  // data_source_version_options, so main targets the new table. LTS installs that already ran this migration
+  // against data_source_options carry the backfilled values over through that copy.
   private async backfillDataSourceOptions(entityManager: EntityManager): Promise<void> {
     const totalRecords = await entityManager.query(
       `
         SELECT COUNT(*)
-        FROM data_source_options dso
-        JOIN data_sources ds ON dso.data_source_id = ds.id
+        FROM data_source_version_options dsvo
+        JOIN data_source_versions dsv ON dsv.id = dsvo.data_source_version_id
+        JOIN data_sources ds ON ds.id = dsv.data_source_id
         WHERE ds.kind = $1
       `,
       ['salesforce']
@@ -47,11 +51,12 @@ export class BackfillSalesforceOptions1790500000000 implements MigrationInterfac
       const fetchBatch = async (entityManager: EntityManager, skip: number, take: number) => {
         return await entityManager.query(
           `
-          SELECT dso.id, dso.options
-          FROM data_source_options dso
-          JOIN data_sources ds ON dso.data_source_id = ds.id
+          SELECT dsvo.id, dsvo.options
+          FROM data_source_version_options dsvo
+          JOIN data_source_versions dsv ON dsv.id = dsvo.data_source_version_id
+          JOIN data_sources ds ON ds.id = dsv.data_source_id
           WHERE ds.kind = $1
-          ORDER BY dso.id
+          ORDER BY dsvo.id
           LIMIT $2 OFFSET $3
           `,
           ['salesforce', take, skip]
@@ -70,7 +75,7 @@ export class BackfillSalesforceOptions1790500000000 implements MigrationInterfac
               }
             }
             if (changed) {
-              await entityManager.query(`UPDATE data_source_options SET options = $1 WHERE id = $2`, [
+              await entityManager.query(`UPDATE data_source_version_options SET options = $1 WHERE id = $2`, [
                 options,
                 dataSourceOption.id,
               ]);

@@ -206,9 +206,9 @@ Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
 Cypress.Commands.add("getAppId", (appName) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `select id from apps where name='${appName}';`,
+    sql: `select app_id from app_versions where app_name='${appName}';`,
   }).then((resp) => {
-    const appId = resp.rows[0]?.id;
+    const appId = resp.rows[0]?.app_id;
     return appId;
   });
 });

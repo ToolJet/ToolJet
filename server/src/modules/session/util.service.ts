@@ -1,4 +1,6 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
+import { McpOAuthService } from '@modules/mcp-oauth/service';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DeepPartial, EntityManager, MoreThanOrEqual, Not } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { UserSessions } from '@entities/user_sessions.entity';
@@ -7,6 +9,7 @@ import * as requestIp from 'request-ip';
 import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
 import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
@@ -22,7 +25,12 @@ import { SSOConfigs } from '@entities/sso_config.entity';
 import { MetadataUtilService } from '@modules/meta/util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
-import { UserAppsPermissions, UserDataSourcePermissions, UserPermissions } from '@modules/ability/types';
+import {
+  UserAppsPermissions,
+  UserDataSourcePermissions,
+  UserFolderPermissions,
+  UserPermissions,
+} from '@modules/ability/types';
 import { JwtService } from '@nestjs/jwt';
 import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionService } from '@modules/encryption/service';
@@ -32,6 +40,9 @@ import { SessionType } from '@modules/external-apis/constants';
 
 @Injectable()
 export class SessionUtilService {
+  @Inject(McpOAuthService)
+  protected readonly mcpOAuthService: McpOAuthService;
+
   constructor(
     protected readonly configService: ConfigService,
     protected readonly userRepository: UserRepository,
@@ -43,12 +54,17 @@ export class SessionUtilService {
     protected readonly rolesRepository: RolesRepository,
     protected readonly encryptionService: EncryptionService,
     protected readonly jwtService: JwtService
-  ) { }
+  ) {}
 
-  async terminateAllSessions(userId: string): Promise<void> {
+  async terminateAllSessions(userId: string, exceptSessionId?: string, manager?: EntityManager): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.delete(UserSessions, { userId });
-    });
+      // Administrative termination also invalidates external credentials on the Cloud OAuth rollout.
+      // Ordinary logout uses its separate session-only path.
+      if (this.configService.get<string>('TOOLJET_EDITION')?.toLowerCase() === 'cloud') {
+        await invalidateUserCredentials(manager, userId);
+      }
+      await manager.delete(UserSessions, { userId, ...(exceptSessionId ? { id: Not(exceptSessionId) } : {}) });
+    }, manager);
   }
 
   sign(JWTPayload: any): string {
@@ -92,14 +108,44 @@ export class SessionUtilService {
         const clientIp = (request as any)?.clientIp;
         const session: UserSessions = await this.createSession(
           user.id,
-          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
+          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
+            request?.headers['user-agent'] || 'unknown'
           }`,
-          manager
+          manager,
+          user.passwordExpiry
         );
         sessionId = session.id;
       }
 
+      // Only actual login callers set this marker; workspace switching never invents new proof.
+      const {
+        oauthAuthenticationMethod,
+        oauthAuthenticationProviderId,
+        oauthAuthenticationMcpVerified,
+        oauthAuthenticationReset: explicitReset,
+        ...publicExtraData
+      } = extraData || {};
+      // Legacy OIDC may use a configured verifier; its browser login cannot authorize MCP consent.
+      const oauthAuthenticationReset =
+        explicitReset || (oauthAuthenticationMethod === 'openid' && oauthAuthenticationMcpVerified !== true);
+      let workspaceAuthentication =
+        !isPatLogin && !oauthAuthenticationReset && loggedInUser?.id === user.id
+          ? loggedInUser.workspaceAuthentication
+          : undefined;
+      if (!isPatLogin && !oauthAuthenticationReset && oauthAuthenticationMethod) {
+        try {
+          workspaceAuthentication = await this.mcpOAuthService.captureAuthentication(
+            organization?.id,
+            oauthAuthenticationMethod,
+            oauthAuthenticationProviderId
+          );
+        } catch {
+          // Ordinary login remains available; OAuth fails closed without its signed evidence.
+          workspaceAuthentication = undefined;
+        }
+      }
       const JWTPayload: JWTPayload = {
+        ...(workspaceAuthentication ? { workspaceAuthentication } : {}),
         sessionId: sessionId,
         username: user.id,
         sub: user.email,
@@ -154,7 +200,7 @@ export class SessionUtilService {
           : { noWorkspaceAttachedInTheSession: true }),
         ...permissionData,
         noActiveWorkspaces,
-        ...(extraData ? extraData : {}),
+        ...publicExtraData,
         ...(isPatLogin ? { signedPat } : {}),
       };
 
@@ -177,6 +223,7 @@ export class SessionUtilService {
     ssoUserInfo: any;
     appGroupPermissions: UserAppsPermissions;
     dataSourceGroupPermissions: UserDataSourcePermissions;
+    folderGroupPermissions?: UserFolderPermissions;
     role: GroupPermissions;
     groupPermissions: GroupPermissions[];
     userPermissions: UserPermissions;
@@ -186,7 +233,7 @@ export class SessionUtilService {
       user,
       {
         organizationId: user.organizationId,
-        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }],
+        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }, { resource: MODULES.FOLDER }],
       },
       manager
     );
@@ -196,6 +243,7 @@ export class SessionUtilService {
     const superAdmin = userPermissions.isSuperAdmin;
     const appGroupPermissions = userPermissions?.[MODULES.APP];
     const dataSourceGroupPermissions = userPermissions?.[MODULES.GLOBAL_DATA_SOURCE];
+    const folderGroupPermissions = userPermissions?.[MODULES.FOLDER];
     const userDetails = await this.userRepository.getUserDetails(user.id, user.organizationId, manager);
 
     if (superAdmin && !role) {
@@ -218,6 +266,7 @@ export class SessionUtilService {
       superAdmin,
       appGroupPermissions,
       dataSourceGroupPermissions,
+      folderGroupPermissions,
       ssoUserInfo,
       metadata: decryptedMetadata,
       role,
@@ -248,6 +297,23 @@ export class SessionUtilService {
     return this.groupPermissionsRepository.getAllUserGroups(user.id, user.organizationId, manager);
   }
 
+  // Resolves the org's default branch id. Used by the JWT strategy to populate user.branchId
+  // when a request carries no explicit `branch_id` query param. Applies to git and non-git
+  // workspaces alike: git-sync-disabled orgs show no branch on the client, but the server still
+  // resolves the default branch so reads land on the default-branch rows (every org has exactly
+  // one default branch, seeded on creation / backfilled). folder_apps is unaffected — it reads
+  // the raw query param (absent → IS NULL for non-git), not user.branchId.
+  async getDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | null> {
+    if (!organizationId) return null;
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const branch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
+      });
+      return branch?.id ?? null;
+    }, manager);
+  }
+
   async checkUserWorkspaceStatus(userId: string, manager?: EntityManager): Promise<boolean> {
     // Return true if user has no active workspaces
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -271,14 +337,19 @@ export class SessionUtilService {
     }, manager);
   }
 
-  async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
+  async createSession(
+    userId: string,
+    device: string,
+    manager?: EntityManager,
+    passwordExpiry?: Date | null
+  ): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const session = await manager.save(
         manager.create(UserSessions, {
           userId,
           device,
           createdAt: new Date(),
-          expiry: this.getSessionExpiry(),
+          expiry: this.getSessionExpiry(passwordExpiry),
           lastLoggedIn: new Date(),
         })
       );
@@ -287,16 +358,18 @@ export class SessionUtilService {
     }, manager);
   }
 
-  getSessionExpiry(): Date {
+  getSessionExpiry(passwordExpiry?: Date | null): Date {
     // default expiry 10 days (14400 minutes)
     const now = new Date();
-    return new Date(
+    const expiry = new Date(
       now.getTime() +
-      (this.configService.get<string>('USER_SESSION_EXPIRY')
-        ? this.configService.get<number>('USER_SESSION_EXPIRY')
-        : 14400) *
-      60000
+        (this.configService.get<string>('USER_SESSION_EXPIRY')
+          ? this.configService.get<number>('USER_SESSION_EXPIRY')
+          : 14400) *
+          60000
     );
+    // A session must never outlive the user's password. Users without a password expiry are uncapped.
+    return passwordExpiry && passwordExpiry < expiry ? passwordExpiry : expiry;
   }
 
   async generateInviteSignupPayload(
@@ -311,9 +384,11 @@ export class SessionUtilService {
 
     const session: UserSessions = await this.createSession(
       user.id,
-      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
+      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+        request?.headers['user-agent'] || 'unknown'
       }`,
-      manager
+      manager,
+      user.passwordExpiry
     );
     const sessionId = session.id;
 
@@ -361,9 +436,9 @@ export class SessionUtilService {
         ? currentOrganization
           ? currentOrganization
           : await manager.findOneOrFail(Organization, {
-            where: { id: currentOrganizationId },
-            select: ['slug', 'name', 'id'],
-          })
+              where: { id: currentOrganizationId },
+              select: ['slug', 'name', 'id'],
+            })
         : null;
 
       const noWorkspaceAttachedInTheSession = (await this.checkUserWorkspaceStatus(user.id)) && !isSuperAdmin(user);
@@ -520,7 +595,13 @@ export class SessionUtilService {
           throw new UnauthorizedException('User session expired');
         }
 
-        session.expiry = this.getSessionExpiry();
+        // Password expired while the session was live (e.g. expiry shortened after login)
+        const passwordExpiry = session.user?.passwordExpiry;
+        if (passwordExpiry && new Date(passwordExpiry) < now) {
+          throw new UnauthorizedException('Password expired');
+        }
+
+        session.expiry = this.getSessionExpiry(passwordExpiry ? new Date(passwordExpiry) : null);
       }
 
       // Update last_logged_in

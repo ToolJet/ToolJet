@@ -12,7 +12,12 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
-import { generateInviteURL, generateNextNameAndSlug, getHostForOrganization, isValidDomain } from 'src/helpers/utils.helper';
+import {
+  generateInviteURL,
+  generateNextNameAndSlug,
+  getHostForOrganization,
+  isValidDomain,
+} from 'src/helpers/utils.helper';
 import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
@@ -354,7 +359,10 @@ export class OauthService implements IOAuthService {
         false,
         user,
         manager,
-        isInviteRedirect ? loginOrganiaztionId : null
+        isInviteRedirect ? loginOrganiaztionId : null,
+        isInviteRedirect
+          ? { oauthAuthenticationReset: true }
+          : { oauthAuthenticationMethod: sso, oauthAuthenticationProviderId: configId || null }
       );
     });
   }

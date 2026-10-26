@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "Fixtures/*": ["cypress/fixtures/*"],
+      "Plugins/*": ["cypress/plugins/*"],
+      "Support/*": ["cypress/support/*"],
+      "Texts/*": ["cypress/constants/texts/*"],
+      "Selectors/*": ["cypress/constants/selectors/*"],
+      "Constants/*": ["cypress/constants/*"]
+    }
+  },
+  "include": ["cypress/**/*.js"],
+  "exclude": ["node_modules"]
+}

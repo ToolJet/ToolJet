@@ -10,7 +10,7 @@ import { isEmpty } from '@tooljet-plugins/common';
 
 function getAvailablePort(): Promise<number> {
   return new Promise((resolve, reject) => {
-  const srv = net.createServer();
+    const srv = net.createServer();
     srv.unref();
     srv.listen(0, '127.0.0.1', () => {
       const port = (srv.address() as net.AddressInfo).port;
@@ -46,13 +46,25 @@ async function createSSHTunnel(sshConfig: {
 
           const cleanup = () => {
             if (!socket.destroyed) socket.destroy();
-            try { stream.close(); } catch (_) { /* ignore */ }
+            try {
+              stream.close();
+            } catch (_) {
+              /* ignore */
+            }
           };
 
           stream.on('error', cleanup);
           socket.on('error', cleanup);
-          stream.on('close', () => { if (!socket.destroyed) socket.destroy(); });
-          socket.on('close', () => { try { stream.close(); } catch (_) { /* ignore */ } });
+          stream.on('close', () => {
+            if (!socket.destroyed) socket.destroy();
+          });
+          socket.on('close', () => {
+            try {
+              stream.close();
+            } catch (_) {
+              /* ignore */
+            }
+          });
 
           socket.pipe(stream).pipe(socket);
         });
@@ -63,7 +75,9 @@ async function createSSHTunnel(sshConfig: {
         reject(err);
       });
 
-      ssh.on('close', () => { server.close(); });
+      ssh.on('close', () => {
+        server.close();
+      });
 
       server.listen(sshConfig.localPort, '127.0.0.1', () => {
         resolve({ ssh, server });
@@ -94,8 +108,16 @@ async function createSSHTunnel(sshConfig: {
 
 function closeSshResources(sshResources: { ssh: SSHClient; server: net.Server } | null): void {
   if (!sshResources) return;
-  try { sshResources.server.close(); } catch (_) { /* ignore */ }
-  try { sshResources.ssh.end(); } catch (_) { /* ignore */ }
+  try {
+    sshResources.server.close();
+  } catch (_) {
+    /* ignore */
+  }
+  try {
+    sshResources.ssh.end();
+  } catch (_) {
+    /* ignore */
+  }
 }
 
 function validateSSHOptions(sourceOptions: SourceOptions): void {
@@ -136,7 +158,7 @@ export default class MongodbService implements QueryService {
         case 'list_collections':
           result = await db.listCollections().toArray();
           break;
-         case 'create_collection':
+        case 'create_collection': {
           const collection = await db.createCollection(queryOptions.collection, this.parseEJSON(queryOptions.options));
           result = {
             collectionName: collection.collectionName,
@@ -144,6 +166,7 @@ export default class MongodbService implements QueryService {
             options: collection.options,
           };
           break;
+        }
         case 'insert_one':
           result = await db
             .collection(queryOptions.collection)
@@ -298,26 +321,23 @@ export default class MongodbService implements QueryService {
       // ListCollectionsCursor does not support .skip()/.limit(), fetch all matching then slice
       const allCollections = await db.listCollections(filter).toArray();
 
-      const mapped = allCollections.map((col) => ({
+      let collections = allCollections;
+      if (limit > 0) {
+        const offset = (page - 1) * limit;
+        collections = allCollections.slice(offset, offset + limit);
+      }
+
+      const totalCount = allCollections.length;
+
+      const result = collections.map((col) => ({
         collection_name: col.name,
         type: col.type || 'collection',
       }));
 
-      if (limit > 0) {
-        const offset = (page - 1) * limit;
-        const rows = mapped.slice(offset, offset + limit);
-        const totalCount = mapped.length;
-
-        return {
-          status: 'ok',
-          data: { rows, totalCount },
-        };
-      }
-
       return {
         status: 'ok',
-        data: mapped,
-      };
+        data: { rows: result, totalCount: limit > 0 ? totalCount : result.length },
+      } as any;
     } catch (error) {
       const errorMessage = error.message || 'An unknown error occurred';
       throw new QueryError('Could not fetch collections', errorMessage, {});
@@ -336,42 +356,31 @@ export default class MongodbService implements QueryService {
       const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
       const isPaginated = !!args?.limit;
 
-      const response = await this.listTables(
-        sourceOptions,
-        dataSourceId,
-        dataSourceUpdatedAt,
-        {
-          search: args?.search,
-          page:   args?.page,
-          limit:  args?.limit,
-        }
-      );
+      const response = await this.listTables(sourceOptions, dataSourceId, dataSourceUpdatedAt, {
+        search: args?.search,
+        page: args?.page,
+        limit: args?.limit,
+      });
 
       const payload = (response?.data ?? {}) as any;
+      const rows = payload?.rows ?? [];
+      const totalCount = payload?.totalCount ?? 0;
 
-      if (isPaginated) {
-        const rows = payload?.rows ?? [];
-        const totalCount = payload?.totalCount ?? 0;
-        const formatted = rows.map((col: any) => ({
-          label: col.collection_name,
-          value: col.collection_name,
-        }));
-        return { items: formatted, totalCount };
-      }
-
-      const collections = Array.isArray(payload) ? payload : [];
-      const formatted = collections.map((col: any) => ({
+      const formatted = rows.map((col: any) => ({
         label: col.collection_name,
         value: col.collection_name,
       }));
+
+      if (isPaginated) {
+        return { items: formatted, totalCount };
+      }
+
       return { status: 'ok', data: formatted };
     }
 
-    throw new QueryError(
-      'Method not found',
-      `Method ${methodName} is not supported for Mongodb plugin`,
-      { availableMethods: ['listCollections'] }
-    );
+    throw new QueryError('Method not found', `Method ${methodName} is not supported for Mongodb plugin`, {
+      availableMethods: ['listCollections'],
+    });
   }
 
   parseEJSON(maybeEJSON?: string): any {
@@ -389,7 +398,7 @@ export default class MongodbService implements QueryService {
       status: 'ok',
     };
   }
-  
+
   private connectionOptions(sourceOptions: SourceOptions) {
     const _connectionOptions = (sourceOptions.connection_options || []).filter((o) => o.some((e) => !isEmpty(e)));
     const connectionOptions = Object.fromEntries(_connectionOptions);
@@ -399,216 +408,206 @@ export default class MongodbService implements QueryService {
     return connectionOptions;
   }
 
-async getConnection(sourceOptions: SourceOptions): Promise<any> {
-  let db = null;
-  let client;
-  let sshResources: { ssh: SSHClient; server: net.Server } | null = null;
-  const connectionType = sourceOptions['connection_type'];
+  async getConnection(sourceOptions: SourceOptions): Promise<any> {
+    let db = null;
+    let client;
+    let sshResources: { ssh: SSHClient; server: net.Server } | null = null;
+    const connectionType = sourceOptions['connection_type'];
 
-  validateSSHOptions(sourceOptions);
+    validateSSHOptions(sourceOptions);
 
-  if (connectionType === 'manual') {
-    const format = sourceOptions.connection_format || 'mongodb';
-    const database = sourceOptions.database;
-    let host = sourceOptions.host;
-    let port = Number(sourceOptions.port) || 27017;
-    const username = encodeURIComponent(sourceOptions.username || '');
-    const password = encodeURIComponent(sourceOptions.password || '');
+    if (connectionType === 'manual') {
+      const format = sourceOptions.connection_format || 'mongodb';
+      const database = sourceOptions.database;
+      let host = sourceOptions.host;
+      let port = Number(sourceOptions.port) || 27017;
+      const username = encodeURIComponent(sourceOptions.username || '');
+      const password = encodeURIComponent(sourceOptions.password || '');
 
-    if (format === 'mongodb+srv' && sourceOptions.ssh_enabled === 'enabled') {
-      throw new QueryError('Invalid configuration', 'SSH tunnel is not supported with mongodb+srv format', {});
-    }
-
-    if (sourceOptions.ssh_enabled === 'enabled') {
-      const localPort = sourceOptions.ssh_local_port || await getAvailablePort();
-      const dstHost = sourceOptions.ssh_dst_host || host;
-      const dstPort = sourceOptions.ssh_dst_port || port;
-
-      sshResources = await createSSHTunnel({
-        host: sourceOptions.ssh_host,
-        port: sourceOptions.ssh_port || 22,
-        username: sourceOptions.ssh_username,
-        authType: sourceOptions.ssh_auth_type,
-        password: sourceOptions.ssh_password,
-        privateKey: sourceOptions.ssh_private_key,
-        passphrase: sourceOptions.ssh_passphrase || undefined,
-        dstHost,
-        dstPort,
-        localPort,
-      });
-
-      host = '127.0.0.1';
-      port = localPort;
-    }
-
-    const needsAuthentication = username !== '' && password !== '';
-    let uri = '';
-
-    if (format === 'mongodb') {
-      uri = needsAuthentication
-        ? `mongodb://${username}:${password}@${host}:${port}`
-        : `mongodb://${host}:${port}`;
-    } else {
-      uri = needsAuthentication
-        ? `mongodb+srv://${username}:${password}@${host}`
-        : `mongodb+srv://${host}`;
-    }
-
-    let clientOptions: any = {};
-
-    if (sourceOptions.tls_certificate === 'client_certificate') {
-      const secureContext = tls.createSecureContext({
-        ca: sourceOptions.ca_cert,
-        cert: sourceOptions.client_cert,
-        key: sourceOptions.client_key,
-      });
-      clientOptions = {
-        tls: true,
-        secureContext,
-      };
-    }
-
-    if (sourceOptions.tls_certificate === 'ca_certificate') {
-      const secureContext = tls.createSecureContext({
-        ca: sourceOptions.ca_cert,
-      });
-
-      if (sourceOptions.query_params) {
-        uri += sourceOptions.query_params.startsWith('?')
-          ? sourceOptions.query_params
-          : `?${sourceOptions.query_params}`;
+      if (format === 'mongodb+srv' && sourceOptions.ssh_enabled === 'enabled') {
+        throw new QueryError('Invalid configuration', 'SSH tunnel is not supported with mongodb+srv format', {});
       }
 
-      clientOptions = {
-        tls: true,
-        secureContext,
-      };
+      if (sourceOptions.ssh_enabled === 'enabled') {
+        const localPort = sourceOptions.ssh_local_port || (await getAvailablePort());
+        const dstHost = sourceOptions.ssh_dst_host || host;
+        const dstPort = sourceOptions.ssh_dst_port || port;
+
+        sshResources = await createSSHTunnel({
+          host: sourceOptions.ssh_host,
+          port: sourceOptions.ssh_port || 22,
+          username: sourceOptions.ssh_username,
+          authType: sourceOptions.ssh_auth_type,
+          password: sourceOptions.ssh_password,
+          privateKey: sourceOptions.ssh_private_key,
+          passphrase: sourceOptions.ssh_passphrase || undefined,
+          dstHost,
+          dstPort,
+          localPort,
+        });
+
+        host = '127.0.0.1';
+        port = localPort;
+      }
+
+      const needsAuthentication = username !== '' && password !== '';
+      let uri = '';
+
+      if (format === 'mongodb') {
+        uri = needsAuthentication ? `mongodb://${username}:${password}@${host}:${port}` : `mongodb://${host}:${port}`;
+      } else {
+        uri = needsAuthentication ? `mongodb+srv://${username}:${password}@${host}` : `mongodb+srv://${host}`;
+      }
+
+      let clientOptions: any = {};
+
+      if (sourceOptions.tls_certificate === 'client_certificate') {
+        const secureContext = tls.createSecureContext({
+          ca: sourceOptions.ca_cert,
+          cert: sourceOptions.client_cert,
+          key: sourceOptions.client_key,
+        });
+        clientOptions = {
+          tls: true,
+          secureContext,
+        };
+      }
+
+      if (sourceOptions.tls_certificate === 'ca_certificate') {
+        const secureContext = tls.createSecureContext({
+          ca: sourceOptions.ca_cert,
+        });
+
+        if (sourceOptions.query_params) {
+          uri += sourceOptions.query_params.startsWith('?')
+            ? sourceOptions.query_params
+            : `?${sourceOptions.query_params}`;
+        }
+
+        clientOptions = {
+          tls: true,
+          secureContext,
+        };
+      }
+
+      if (!clientOptions.tls && sourceOptions.use_ssl === true) {
+        clientOptions.tls = true;
+      }
+
+      client = new MongoClient(uri, { ...clientOptions, ...this.connectionOptions(sourceOptions) });
+      await client.connect();
+      db = client.db(database);
+    } else {
+      const connStr = sourceOptions.connection_string.trim();
+      const explicitFormat = sourceOptions.connection_format;
+      const explicitDb = sourceOptions.database;
+      const explicitHost = sourceOptions.host;
+      const explicitPort = sourceOptions.port;
+      const explicitUser = sourceOptions.username;
+      const explicitPass = sourceOptions.password;
+      const explicitQueryParams = sourceOptions.query_params;
+
+      const protocolMatch = connStr.match(/^(mongodb(?:\+srv)?):\/\//);
+      const protocol = protocolMatch ? protocolMatch[1] : explicitFormat;
+
+      const withoutProtocol = connStr.replace(/^(mongodb(?:\+srv)?):\/\//, '');
+      const lastAt = withoutProtocol.lastIndexOf('@');
+      const authPart = lastAt !== -1 ? withoutProtocol.slice(0, lastAt) : '';
+      const restPart = lastAt !== -1 ? withoutProtocol.slice(lastAt + 1) : withoutProtocol;
+
+      const restSplit = restPart.split('/');
+      const hostsPart = restSplit[0];
+      const dbAndParamsPart = restSplit.slice(1).join('/') || '';
+
+      const dbNameFromConn = dbAndParamsPart.split('?')[0] || '';
+      const queryParamsFromConn = dbAndParamsPart.includes('?') ? `?${dbAndParamsPart.split('?')[1]}` : '';
+
+      let connUser = '';
+      let connPass = '';
+
+      if (authPart.includes(':')) {
+        const colonIdx = authPart.indexOf(':');
+        connUser = safeDecode(authPart.slice(0, colonIdx));
+        connPass = safeDecode(authPart.slice(colonIdx + 1));
+      }
+
+      const finalUser = explicitUser || connUser || '';
+      const finalPass = explicitPass || connPass || '';
+      const needsAuth = finalUser !== '' && finalPass !== '';
+      const hostsList = explicitHost
+        ? (() => {
+            const list = hostsPart.split(',');
+            const newPort = explicitPort ? `:${explicitPort}` : '';
+            const existingPort = list[0].includes(':') ? `:${list[0].split(':')[1]}` : '';
+            list[0] = newPort ? `${explicitHost}${newPort}` : `${explicitHost}${existingPort}`;
+            return list;
+          })()
+        : hostsPart.split(',');
+
+      if (sourceOptions.ssh_enabled === 'enabled') {
+        if (protocol === 'mongodb+srv') {
+          throw new QueryError('Invalid configuration', 'SSH tunnel is not supported with mongodb+srv format', {});
+        }
+
+        const localPort = sourceOptions.ssh_local_port || (await getAvailablePort());
+        const firstHostname = (hostsList[0] || '').split(':')[0] || 'localhost';
+        const firstPort = Number((hostsList[0] || '').split(':')[1]) || 27017;
+        const dstHost = sourceOptions.ssh_dst_host || firstHostname;
+        const dstPort = sourceOptions.ssh_dst_port || firstPort;
+
+        sshResources = await createSSHTunnel({
+          host: sourceOptions.ssh_host,
+          port: sourceOptions.ssh_port || 22,
+          username: sourceOptions.ssh_username,
+          authType: sourceOptions.ssh_auth_type,
+          password: sourceOptions.ssh_password,
+          privateKey: sourceOptions.ssh_private_key,
+          passphrase: sourceOptions.ssh_passphrase || undefined,
+          dstHost,
+          dstPort,
+          localPort,
+        });
+
+        hostsList.splice(0, hostsList.length, `127.0.0.1:${localPort}`);
+      }
+
+      const finalHosts = hostsList.join(',');
+      const finalDb = explicitDb || dbNameFromConn || '';
+      const authSection = needsAuth ? `${encodeURIComponent(finalUser)}:${encodeURIComponent(finalPass)}@` : '';
+
+      let finalUri = `${protocol}://${authSection}${finalHosts}`;
+
+      let queryParamsToUse = '';
+      if (explicitQueryParams) {
+        queryParamsToUse = explicitQueryParams.startsWith('?') ? explicitQueryParams : `?${explicitQueryParams}`;
+      } else if (queryParamsFromConn) {
+        queryParamsToUse = queryParamsFromConn;
+      }
+
+      if (queryParamsToUse) {
+        finalUri += queryParamsToUse;
+      }
+
+      const paramsLower = queryParamsToUse.toLowerCase();
+      const hasSSLInParams = paramsLower.includes('ssl=') || paramsLower.includes('tls=');
+
+      const clientOptions: any = {};
+      const isSrvConnection = sourceOptions.connection_format === 'mongodb+srv';
+      if (sourceOptions.use_ssl === true) {
+        clientOptions.tls = true;
+      } else if (!hasSSLInParams && isSrvConnection) {
+        clientOptions.tls = true;
+      }
+      client = new MongoClient(finalUri, { ...clientOptions, ...this.connectionOptions(sourceOptions) });
+      await client.connect();
+      db = client.db(finalDb);
     }
-
-    if (!clientOptions.tls && sourceOptions.use_ssl === true) {
-      clientOptions.tls = true;
-    }
-
-    client = new MongoClient(uri, { ...clientOptions, ...this.connectionOptions(sourceOptions) });
-    await client.connect();
-    db = client.db(database);
-} else {
-  const connStr = sourceOptions.connection_string.trim();
-  const explicitFormat = sourceOptions.connection_format;
-  const explicitDb = sourceOptions.database;
-  const explicitHost = sourceOptions.host;
-  const explicitPort = sourceOptions.port;
-  const explicitUser = sourceOptions.username;
-  const explicitPass = sourceOptions.password;
-  const explicitQueryParams = sourceOptions.query_params;
-
-  const protocolMatch = connStr.match(/^(mongodb(?:\+srv)?):\/\//);
-  const protocol = protocolMatch ? protocolMatch[1] : explicitFormat;
-
-  const withoutProtocol = connStr.replace(/^(mongodb(?:\+srv)?):\/\//, "");
-  const lastAt = withoutProtocol.lastIndexOf("@");
-  const authPart = lastAt !== -1 ? withoutProtocol.slice(0, lastAt) : "";
-  const restPart = lastAt !== -1 ? withoutProtocol.slice(lastAt + 1) : withoutProtocol;
-
-  const restSplit = restPart.split("/");
-  const hostsPart = restSplit[0];
-  const dbAndParamsPart = restSplit.slice(1).join("/") || "";
-
-  const dbNameFromConn = dbAndParamsPart.split("?")[0] || "";
-  const queryParamsFromConn = dbAndParamsPart.includes("?")
-    ? `?${dbAndParamsPart.split("?")[1]}`
-    : "";
-
-  let connUser = "";
-  let connPass = "";
-
-  if (authPart.includes(":")) {
-    const colonIdx = authPart.indexOf(":");
-    connUser = safeDecode(authPart.slice(0, colonIdx));
-    connPass = safeDecode(authPart.slice(colonIdx + 1));
+    return {
+      db,
+      close: async () => {
+        await client?.close?.();
+        closeSshResources(sshResources);
+      },
+    };
   }
-
-  const finalUser = explicitUser || connUser || "";
-  const finalPass = explicitPass || connPass || "";
-  const needsAuth = finalUser !== "" && finalPass !== "";
-  const hostsList = explicitHost
-    ? (() => {
-        const list = hostsPart.split(",");
-        const newPort = explicitPort ? `:${explicitPort}` : "";
-        const existingPort = list[0].includes(":") ? `:${list[0].split(":")[1]}` : "";
-        list[0] = newPort ? `${explicitHost}${newPort}` : `${explicitHost}${existingPort}`;
-        return list;
-      })()
-    : hostsPart.split(",");
-
-  if (sourceOptions.ssh_enabled === 'enabled') {
-    if (protocol === 'mongodb+srv') {
-      throw new QueryError('Invalid configuration', 'SSH tunnel is not supported with mongodb+srv format', {});
-    }
-
-    const localPort = sourceOptions.ssh_local_port || await getAvailablePort();
-    const firstHostname = (hostsList[0] || '').split(':')[0] || 'localhost';
-    const firstPort = Number((hostsList[0] || '').split(':')[1]) || 27017;
-    const dstHost = sourceOptions.ssh_dst_host || firstHostname;
-    const dstPort = sourceOptions.ssh_dst_port || firstPort;
-
-    sshResources = await createSSHTunnel({
-      host: sourceOptions.ssh_host,
-      port: sourceOptions.ssh_port || 22,
-      username: sourceOptions.ssh_username,
-      authType: sourceOptions.ssh_auth_type,
-      password: sourceOptions.ssh_password,
-      privateKey: sourceOptions.ssh_private_key,
-      passphrase: sourceOptions.ssh_passphrase || undefined,
-      dstHost,
-      dstPort,
-      localPort,
-    });
-
-    hostsList.splice(0, hostsList.length, `127.0.0.1:${localPort}`);
-  }
-
-  const finalHosts = hostsList.join(",");
-  const finalDb = explicitDb || dbNameFromConn || "";
-  const authSection = needsAuth
-    ? `${encodeURIComponent(finalUser)}:${encodeURIComponent(finalPass)}@`
-    : "";
-
-  let finalUri = `${protocol}://${authSection}${finalHosts}`;
-
-  let queryParamsToUse = "";
-  if (explicitQueryParams) {
-    queryParamsToUse = explicitQueryParams.startsWith("?")
-      ? explicitQueryParams
-      : `?${explicitQueryParams}`;
-  } else if (queryParamsFromConn) {
-    queryParamsToUse = queryParamsFromConn;
-  }
-
-  if (queryParamsToUse) {
-    finalUri += queryParamsToUse;
-  }
-
-  const paramsLower = queryParamsToUse.toLowerCase();
-  const hasSSLInParams = paramsLower.includes('ssl=') || paramsLower.includes('tls=');
-
-  const clientOptions: any = {};
-  const isSrvConnection = sourceOptions.connection_format === 'mongodb+srv';
-  if (sourceOptions.use_ssl === true) {
-    clientOptions.tls = true;
-  } else if (!hasSSLInParams && isSrvConnection) {
-    clientOptions.tls = true;
-  }
-  client = new MongoClient(finalUri, { ...clientOptions, ...this.connectionOptions(sourceOptions) });
-  await client.connect();
-  db = client.db(finalDb);
-}
-  return {
-    db,
-    close: async () => {
-      await client?.close?.();
-      closeSshResources(sshResources);
-    },
-  };
-}
 }

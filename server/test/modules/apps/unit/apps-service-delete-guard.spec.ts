@@ -32,9 +32,20 @@ function makeMockManager() {
   const qb: any = {};
   // Chain every known QueryBuilder method back to the same object
   const chainMethods = [
-    'innerJoin', 'innerJoinAndSelect', 'leftJoin', 'leftJoinAndSelect',
-    'where', 'andWhere', 'orWhere', 'select', 'addSelect',
-    'orderBy', 'addOrderBy', 'take', 'skip', 'distinct',
+    'innerJoin',
+    'innerJoinAndSelect',
+    'leftJoin',
+    'leftJoinAndSelect',
+    'where',
+    'andWhere',
+    'orWhere',
+    'select',
+    'addSelect',
+    'orderBy',
+    'addOrderBy',
+    'take',
+    'skip',
+    'distinct',
   ];
   for (const m of chainMethods) {
     qb[m] = jest.fn().mockReturnValue(qb);
@@ -68,7 +79,6 @@ jest.mock('../../../../src/modules/folders/util.service');
 jest.mock('../../../../src/modules/folder-apps/util.service');
 jest.mock('../../../../src/modules/organization-themes/util.service');
 jest.mock('../../../../src/modules/ai/util.service');
-jest.mock('../../../../src/modules/app-git/repository');
 jest.mock('@nestjs/event-emitter', () => ({
   EventEmitter2: jest.fn().mockImplementation(() => ({ emit: jest.fn() })),
 }));
@@ -96,7 +106,13 @@ function makeService(): AppsService {
     null as any, // aiUtilService
     null as any, // componentsService
     { emitAsync: mockEmitAsync } as any, // eventEmitter
-    null as any, // appGitRepository
+    null as any, // abilityService
+    null as any, // organizationGitRepository
+    // delete() runs assertGitSyncEditAllowedForOrg against this — git off, unlocked
+    {
+      isGitEditLocked: jest.fn().mockResolvedValue(false),
+      getDetails: jest.fn().mockResolvedValue({ isEnabled: false, options: {} }),
+    } as any // gitSyncConfigsUtilService
   );
 }
 

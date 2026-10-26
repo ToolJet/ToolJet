@@ -55,6 +55,13 @@ export class ResponseInterceptor implements NestInterceptor {
         if (!logsData.metadata) {
           logsData.metadata = {};
         }
+        if (request.user?.oauthGrantId) {
+          logsData.metadata = {
+            ...logsData.metadata,
+            oauthGrantId: request.user.oauthGrantId,
+            oauthClientId: request.user.oauthClientId,
+          };
+        }
         if (response.locals?.tj_transactionId) {
           logsData.metadata = {
             ...logsData.metadata,
@@ -76,7 +83,7 @@ export class ResponseInterceptor implements NestInterceptor {
               ipAddress: clientIp || (request && requestIp.getClientIp(request)),
               userAgent: request?.headers['user-agent'],
               resourceType: module,
-              actionType: featureInfo?.auditLogsKey || features[0],
+              actionType: logsData?.actionType || featureInfo?.auditLogsKey || features[0],
             });
           } catch (error) {
             this.logger.error('Failed to create audit log:', error);

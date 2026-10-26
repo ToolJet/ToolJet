@@ -35,14 +35,14 @@ export const dashboardText = {
     dragHandleIcon: "drag-handle",
   },
   seeAllAppsTemplateButton: "See all templates",
-  addToFolderTitle: "Add to folder",
+  updateFolderTitle: "Update folder",
   appClonedToast: "App cloned successfully!",
   darkModeText: "Dark Mode",
   lightModeText: "Light Mode",
   dashboardAppsHeaderLabel: "All apps",
 
   moveAppText: (appName) => {
-    return `Move "${appName}" to`;
+    return `Update ${appName}'s folderto`;
   },
   addToFolderButton: "Add to folder",
   folderName: (folderName) => {
@@ -51,7 +51,8 @@ export const dashboardText = {
   homePageDividerText: "OR START WITH",
   homePagePromptHeader: "What do you want to build today?",
   appCardTitle: "Create a blank app",
-  appCardDescription: "Build custom apps that make internal processes efficient",
+  appCardDescription:
+    "Build custom apps that make internal processes efficient",
   datasourceCardTitle: "Connect to a data source",
   datasourceCardDescription:
     "Link your tools to existing databases, spreadsheets, APIs, and more",
@@ -61,6 +62,8 @@ export const dashboardText = {
   exploreTemplateCardTitle: "Explore templates",
   exploreTemplateCardDescription:
     "Get started quickly with ready-to-deploy applications",
+  bulkMoveSuccessToast: (folderName) =>
+    `Apps moved to "${folderName}" folder successfully!`,
 
   // AI-interface home page (new design)
   editorConnectDividerText: "OR USE TOOLJET WITH YOUR CODING AGENT",

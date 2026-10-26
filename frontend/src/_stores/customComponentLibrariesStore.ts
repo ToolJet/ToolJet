@@ -1,5 +1,8 @@
 import { create, zustandDevTools } from './utils';
-import { customComponentLibrariesService, type CustomComponentLibrary } from '@/_services/customComponentLibraries.service';
+import {
+  customComponentLibrariesService,
+  type CustomComponentLibrary,
+} from '@/_services/customComponentLibraries.service';
 import { authenticationService } from '@/_services/authentication.service';
 import {
   streamKey,
@@ -95,7 +98,10 @@ export const useCustomComponentLibrariesStore = create(
                 libraries: result,
                 loadFailed: false,
                 manifests: { ...state.manifests, ...seedLatestManifests(result) },
-                devPreviewEmailsByUserId: { ...state.devPreviewEmailsByUserId, ...buildDevPreviewEmailsByUserId(result) },
+                devPreviewEmailsByUserId: {
+                  ...state.devPreviewEmailsByUserId,
+                  ...buildDevPreviewEmailsByUserId(result),
+                },
               }),
               false,
               'fetchLibraries'
@@ -166,7 +172,12 @@ export const useCustomComponentLibrariesStore = create(
         const promise = fetch(libraryFileUrl(libraryId, revision, 'manifest.json'))
           .then((r) => (r.ok ? r.json() : null))
           .then((data) => {
-            if (data) set((state: CustomComponentLibrariesState) => ({ manifests: { ...state.manifests, [key]: data } }), false, 'fetchManifest');
+            if (data)
+              set(
+                (state: CustomComponentLibrariesState) => ({ manifests: { ...state.manifests, [key]: data } }),
+                false,
+                'fetchManifest'
+              );
           })
           .catch(() => {})
           .finally(() => manifestInFlight.delete(key));

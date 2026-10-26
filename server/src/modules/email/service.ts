@@ -100,7 +100,14 @@ export class EmailService implements IEmailService {
     await this.init(organizationId);
     const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
-    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo, host);
+    const inviteUrl = generateInviteURL(
+      invitationtoken,
+      organizationInvitationToken,
+      organizationId,
+      null,
+      redirectTo,
+      host
+    );
     const subject = isOrgInvite ? `Welcome to ${organizationName || 'ToolJet'}` : 'Set up your account!';
     const footerText = isOrgInvite
       ? 'You have received this email as an invitation to join ToolJet’s workspace'
@@ -150,7 +157,8 @@ export class EmailService implements IEmailService {
   }
 
   async sendOrganizationUserWelcomeEmail(payload: SendOrganizationUserWelcomeEmailPayload) {
-    const { to, name, sender, invitationtoken, organizationName, organizationId, redirectTo, invitationTokenExpiry } = payload;
+    const { to, name, sender, invitationtoken, organizationName, organizationId, redirectTo, invitationTokenExpiry } =
+      payload;
     await this.init(organizationId);
     const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const subject = `Welcome to ${organizationName || 'ToolJet'}`;
@@ -245,8 +253,8 @@ export class EmailService implements IEmailService {
     const url = appSlug
       ? `${effectiveHost}${basePath}applications/${appSlug}/reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}`
       : redirectTo
-      ? `${effectiveHost}${basePath}reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}${orgSlug ? `&oid=${encodeURIComponent(orgSlug)}` : ''}`
-      : `${effectiveHost}${basePath}reset-password/${token}${orgSlug ? `?oid=${encodeURIComponent(orgSlug)}` : ''}`;
+        ? `${effectiveHost}${basePath}reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}${orgSlug ? `&oid=${encodeURIComponent(orgSlug)}` : ''}`
+        : `${effectiveHost}${basePath}reset-password/${token}${orgSlug ? `?oid=${encodeURIComponent(orgSlug)}` : ''}`;
     const templateData = {
       name: firstName || '',
       resetLink: url,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
@@ -11,6 +11,11 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
 import config from 'config';
+import { captureMcpOAuthBootstrap } from './McpOAuth/bootstrap';
+
+// OAuth bootstrap fragments are credentials. Remove them before config,
+// analytics, error reporting, or the router can capture the page URL.
+captureMcpOAuthBootstrap();
 
 // When on a custom domain, use relative API path so requests go through the
 // Cloudflare Worker proxy, making cookies first-party (fixes incognito sign-in).
@@ -18,7 +23,8 @@ import config from 'config';
 try {
   const apiHostname = new URL(config.apiUrl, window.location.origin).hostname;
   if (apiHostname !== window.location.hostname) {
-    config.apiUrl = '/api';
+    const apiPath = new URL(config.apiUrl, window.location.origin).pathname.replace(/\/$/, '');
+    config.apiUrl = apiPath || '/api';
   }
 } catch {
   // apiUrl is already relative — no override needed
@@ -112,13 +118,11 @@ appService
   })
   .then(persistTemplateIdFromUrl)
   .then(() => {
-    render(<AppWithProfiler />, document.getElementById('app'));
-    // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
+    createRoot(document.getElementById('app')).render(<AppWithProfiler />);
 
-    // App booted successfully — clear reload flags from both recovery mechanisms
-    // (ChunkErrorBoundary in RootRouter.jsx and the .catch() below) so that
-    // future deployments can trigger auto-reload again if needed.
-    sessionStorage.removeItem('chunk_reload');
+    // App booted successfully — clear the .catch() below's reload flag so a later boot failure can
+    // auto-reload again. The chunk reload guard (chunkReloadGuard.ts) is time-based and isn't cleared
+    // here: route chunks load after boot, so clearing it would let a failing chunk reload forever.
     sessionStorage.removeItem('boot_reload');
   })
   .catch((error) => {

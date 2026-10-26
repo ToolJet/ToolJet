@@ -278,7 +278,7 @@ export default function generateColumnsData({
                     printOptions="on-focus"
                     multiple={columnType === 'multiselect'}
                     search={true}
-                    placeholder={t('globals.select', 'Select') + '...'}
+                    placeholder={column?.placeholder ?? ''}
                     options={columnOptions.selectOptions}
                     value={cellValue}
                     onChange={(value) =>
@@ -312,6 +312,7 @@ export default function generateColumnsData({
                 <CustomSelectColumn
                   options={columnOptions.selectOptions}
                   value={cellValue}
+                  placeholder={column?.placeholder ?? ''}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
                   disabled={!isEditable}
                   darkMode={darkMode}
@@ -357,6 +358,7 @@ export default function generateColumnsData({
                 <TagsV2Column
                   options={columnOptions.selectOptions}
                   value={cellValue}
+                  placeholder={column?.placeholder ?? ''}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
                   disabled={!isEditable}
                   darkMode={darkMode}

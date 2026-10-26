@@ -171,8 +171,8 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                                     ? '#D1D5DB'
                                     : '#656565'
                                   : password?.length
-                                  ? '#384151'
-                                  : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                               }
                             />
                           ) : (
@@ -183,8 +183,8 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                                     ? '#D1D5DB'
                                     : '#656565'
                                   : password?.length
-                                  ? '#384151'
-                                  : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                               }
                             />
                           )}

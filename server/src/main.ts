@@ -35,6 +35,7 @@ import {
   logShutdownInfo,
   initSentry,
   initializeOtel,
+  initializeEnvConfigRegistry,
 } from '@helpers/bootstrap.helper';
 
 async function bootstrap() {
@@ -125,6 +126,17 @@ async function bootstrap() {
     appLogger.log('Setting up security headers...');
     setSecurityHeaders(app, configService, appLogger);
     appLogger.log('✅ Security headers configured');
+    app.use((req, res, next) => {
+      if (req.path === `${urlPrefix.replace(/\/$/, '')}/mcp/consent`) {
+        res.setHeader('X-Frame-Options', 'DENY');
+        const csp = String(res.getHeader('Content-Security-Policy') || '');
+        res.setHeader(
+          'Content-Security-Policy',
+          `${csp.replace(/frame-ancestors[^;]*(;|$)/, '')}; frame-ancestors 'none'`
+        );
+      }
+      next();
+    });
 
     // Setup static assets
     appLogger.log('Setting up static assets...');
@@ -136,6 +148,8 @@ async function bootstrap() {
     const guardValidator = app.get(GuardValidator);
     await guardValidator.validateJwtGuard();
     appLogger.log('✅ Ability guard validation completed');
+
+    await initializeEnvConfigRegistry(app, appLogger);
 
     // Initialize Sentry
     initSentry(appLogger, configService);
@@ -193,7 +207,7 @@ function configureUrlPrefix() {
   const urlPrefix = hasSubPath ? process.env.SUB_PATH : '';
 
   // Exclude these endpoints from prefix. These endpoints are required for health checks.
-  const pathsToExclude = [];
+  const pathsToExclude = [{ path: '/.well-known/{*path}', method: RequestMethod.GET }];
   if (hasSubPath) {
     pathsToExclude.push({ path: '/', method: RequestMethod.GET });
   }

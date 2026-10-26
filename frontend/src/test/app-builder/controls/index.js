@@ -26,6 +26,15 @@ export function createAppBuilderControls() {
       },
     },
     geometry: {
+      textRange({ width = 8, height = 14 } = {}) {
+        restores.push(
+          replacePropertyAndCreateRestore(window.Range.prototype, 'getClientRects', function () {
+            const rects = [{ x: 0, y: 0, top: 0, left: 0, right: width, bottom: height, width, height }];
+            rects.item = (index) => rects[index] ?? null;
+            return rects;
+          })
+        );
+      },
       element(element, rect) {
         const value = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, ...rect };
         restores.push(

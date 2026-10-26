@@ -1,3 +1,4 @@
+import { updateSecurityEntity } from '@modules/mcp-oauth/revocation';
 import { Injectable } from '@nestjs/common';
 import {
   DataSource,
@@ -68,7 +69,7 @@ export class UserRepository extends Repository<User> {
         });
       }
     }
-    
+
     const [items, total] = await this.manager.findAndCount(User, {
       select: {
         id: true,
@@ -113,7 +114,7 @@ export class UserRepository extends Repository<User> {
       const existingUser = await manager.findOne(User, { where: { email: user.email } });
 
       if (existingUser) {
-        await manager.update(User, { id: existingUser.id }, user);
+        await updateSecurityEntity(manager, User, { id: existingUser.id }, user);
         return manager.findOne(User, { where: { id: existingUser.id } });
       } else {
         const newUser = manager.create(User, user);
@@ -172,7 +173,7 @@ export class UserRepository extends Repository<User> {
       updatableParams.password = bcrypt.hashSync(updatableParams.password, 10);
     }
     await dbTransactionWrap((manager: EntityManager) => {
-      return manager.update(User, userId, updatableParams);
+      return updateSecurityEntity(manager, User, userId, updatableParams);
     }, manager || this.manager);
   }
 

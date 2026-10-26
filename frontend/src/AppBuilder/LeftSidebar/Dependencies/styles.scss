@@ -1,0 +1,488 @@
+.left-sidebar-dependency-viewer {
+  // Fills the popover that hosts it rather than carrying a width of its own. The host is
+  // `.PopoverContent` (350px, with its padding removed by the `p-0` class the sidebar
+  // passes), so any fixed width here just leaves dead space down the right-hand edge —
+  // a 300px panel in a 350px popover left a 50px gutter.
+  //
+  // Was `resize: horizontal` inline before that, which made the browser paint its own grip
+  // in the bottom-right corner — pointing the wrong way for a horizontal-only resize, with
+  // no max bound and no persistence.
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .dependency-viewer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 48px;
+  }
+
+}
+
+/* ---------- empty states ---------- */
+
+.dependency-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 16px;
+
+  .dependency-empty-state-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .dependency-empty-state-spot {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px;
+    border-radius: 8px;
+    background: var(--surfaces-surface-02);
+  }
+
+  .dependency-empty-state-icon {
+    color: var(--icon-default);
+  }
+
+  .dependency-empty-state-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .dependency-empty-state-title {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--text-default);
+  }
+
+  .dependency-empty-state-description {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder);
+  }
+
+  .dependency-empty-state-action {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--primary-brand);
+
+    &:hover {
+      background: var(--interactive-overlays-fill-hover);
+    }
+  }
+}
+
+/* ---------- section ---------- */
+
+.dependency-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 4px 16px;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background: var(--interactive-overlays-fill-hover);
+  }
+}
+
+.dependency-section-chevron-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.dependency-section-chevron {
+  color: var(--icon-strong);
+}
+
+.dependency-section-title {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-default);
+}
+
+.dependency-section-body {
+  padding: 0 16px 8px 32px;
+}
+
+/* ---------- sub-section ---------- */
+
+.dependency-subsection-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 8px;
+}
+
+.dependency-subsection-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--icon-strong);
+}
+
+.dependency-subsection-lucide {
+  color: var(--icon-strong);
+}
+
+.dependency-subsection-title {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--text-placeholder);
+}
+
+.dependency-subsection-body {
+  padding-bottom: 8px;
+
+  &.indented {
+    padding-left: 24px;
+  }
+}
+
+/* ---------- entity row ---------- */
+
+.dependency-row {
+  display: flex;
+  gap: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+
+  &.compact {
+    align-items: center;
+    height: 32px;
+    padding: 0 8px;
+  }
+
+  &.stacked {
+    align-items: flex-start;
+    padding: 6px 8px 8px;
+  }
+
+  &.clickable {
+    cursor: pointer;
+  }
+
+  &:hover {
+    background: var(--interactive-overlays-fill-hover);
+  }
+
+  &.selected {
+    background: var(--interactive-overlays-fill-selected);
+  }
+
+  .dependency-row-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  &.stacked .dependency-row-icon {
+    padding: 2px 0;
+  }
+
+  .dependency-row-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .dependency-row-name {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-default);
+  }
+
+  .dependency-row-subtitle {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder);
+  }
+
+  .dependency-row-highlight {
+    padding: 0;
+    border-radius: 2px;
+    background: var(--yellow4);
+    color: inherit;
+  }
+
+  .dependency-row-tag {
+    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder);
+    word-break: break-word;
+  }
+}
+
+.dependency-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  svg {
+    margin-top: 0 !important;
+  }
+}
+
+.dependency-lucide-icon {
+  color: var(--icon-default);
+}
+
+/* ---------- detail tab ---------- */
+
+.dependency-detail-body {
+  padding-right: 16px;
+}
+
+// Sits inside .inspector-header (which already supplies the 16px padding),
+// in place of the search input on the main tab.
+.dependency-breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+  min-width: 0;
+}
+
+.dependency-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+
+  .dependency-breadcrumb-root {
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--text-default);
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .dependency-breadcrumb-separator {
+    color: var(--icon-default);
+    margin: 0 3px;
+    flex-shrink: 0;
+  }
+
+  .dependency-breadcrumb-leaf {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--slate12);
+  }
+}
+
+.dependency-detail-value {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 16px 4px 24px;
+
+  .dependency-detail-value-label {
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--text-placeholder);
+  }
+
+  .dependency-detail-value-text {
+    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-default);
+    word-break: break-word;
+  }
+}
+
+.dependency-detail-menu-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.dependency-detail-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 7px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+
+  &:hover {
+    background: var(--interactive-overlays-fill-hover);
+  }
+}
+
+// Three stacked dots — matches the 14px more-vertical glyph in the design.
+.dependency-kebab {
+  position: relative;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--icon-strong);
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: var(--icon-strong);
+  }
+
+  &::before {
+    top: -4px;
+  }
+
+  &::after {
+    top: 4px;
+  }
+}
+
+.dependency-detail-menu {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  z-index: 10;
+  min-width: 196px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--surfaces-surface-01);
+  border: 1px solid var(--border-weak);
+  box-shadow: var(--elevation-300-box-shadow);
+
+  .dependency-detail-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-default);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--interactive-overlays-fill-hover);
+    }
+  }
+
+  .dependency-detail-menu-icon {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: var(--icon-strong);
+  }
+}
+
+/* ---------- binding tooltip ---------- */
+
+.dependency-binding-tooltip {
+  width: max-content;
+  max-width: min(353px, calc(100vw - 16px));
+  border: none;
+  background: transparent;
+}
+
+.dependency-binding-card {
+  width: 100%;
+  max-height: calc(var(--radix-tooltip-content-available-height, 100vh) - 16px);
+  border-radius: 8px;
+  background: var(--background-inverse);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dependency-binding-title {
+  position: relative;
+  padding: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-inverse);
+  word-break: break-word;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    background: var(--text-inverse);
+    opacity: 0.06;
+  }
+}
+
+.dependency-binding-title-text {
+  opacity: 0.6;
+}
+
+.dependency-binding-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.dependency-binding-label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-inverse);
+}
+
+.dependency-binding-expression {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-inverse);
+  opacity: 0.54;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

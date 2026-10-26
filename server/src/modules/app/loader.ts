@@ -1,3 +1,4 @@
+import { sanitizeOAuthRequest, sanitizeOAuthUrl } from '@otel/sanitize';
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -17,6 +18,7 @@ import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.s
 import { buildBaseLogger } from '@modules/logging/base-logger';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
+import { RedisModule } from '@modules/redis/module';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -50,7 +52,10 @@ export class AppModuleLoader {
       }),
       // ScheduleModule registers cron timers that accumulate across test files.
       // Excluding it in test mode makes @Cron decorators inert (no timers fire).
-      ...(isTest ? [] : [ScheduleModule.forRoot()]),
+      // Also excluded in migration/get-context mode: a data migration only needs DB + DI, not
+      // cron timers — booting them (and the schedulers they drive) idles the shared migration
+      // transaction long enough to be killed. See AppModule.register conditional providers.
+      ...(isTest || configs.IS_GET_CONTEXT ? [] : [ScheduleModule.forRoot()]),
       BullModule.forRoot({
         connection: {
           host: process.env.REDIS_HOST || 'localhost',
@@ -89,6 +94,15 @@ export class AppModuleLoader {
             // so both resolve to the same pino instance and both reach the OTLP stream.
             logger: buildBaseLogger(),
             autoLogging,
+            serializers: {
+              req: sanitizeOAuthRequest,
+              res: (response) => ({
+                ...response,
+                ...(response.headers
+                  ? { headers: { ...response.headers, location: sanitizeOAuthUrl(response.headers.location) } }
+                  : {}),
+              }),
+            },
             redact: {
               paths: [
                 'req.headers.authorization',
@@ -106,6 +120,14 @@ export class AppModuleLoader {
                 'req.body.invitation_token',
                 'req.body.access_token',
                 'req.body.refresh_token',
+                'req.body.subject_token',
+                'req.body.code',
+                'req.body.code_verifier',
+                'req.body.ticket',
+                'req.body.bootstrap',
+                'req.body.nonce',
+                'req.headers["x-tooljet-delegation"]',
+                'req.headers["x-tooljet-oauth-csrf"]',
                 'req.body.secret',
                 'req.body.api_key',
                 'req.headers["x-api-key"]',
@@ -134,6 +156,7 @@ export class AppModuleLoader {
       RequestContextModule,
       GuardValidatorModule,
       LoggingModule.forRoot(),
+      RedisModule.forRoot(),
     ];
 
     // Add OpenTelemetry Module if enabled

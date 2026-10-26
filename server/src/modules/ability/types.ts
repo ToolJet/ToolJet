@@ -25,15 +25,24 @@ export interface UserPermissions {
   appRelease: boolean;
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
-  folderCRUD: boolean;
+
+  folderCreate: boolean;
+  folderDelete: boolean;
+  workflowFolderCreate: boolean;
+  workflowFolderDelete: boolean;
+  moduleFolderCreate?: boolean;
+  moduleFolderDelete?: boolean;
   orgConstantCRUD: boolean;
   tjdbCRUD: boolean;
   orgVariableCRUD: boolean;
   [MODULES.APP]?: UserAppsPermissions;
   [MODULES.GLOBAL_DATA_SOURCE]?: UserDataSourcePermissions;
   [MODULES.WORKFLOWS]?: UserWorkflowPermissions;
+  [MODULES.FOLDER]?: UserFolderPermissions;
   // Modules reuse the apps permission shape (editable/viewable sets), resolved from ResourceType.MODULE.
   [MODULES.MODULES]?: UserAppsPermissions;
+  [MODULES.WORKFLOW_FOLDER]?: UserFolderPermissions;
+  [MODULES.MODULE_FOLDER]?: UserFolderPermissions;
 }
 export interface UserWorkflowPermissions {
   editableWorkflowsId: string[];
@@ -67,4 +76,13 @@ export interface UserDataSourcePermissions {
   isAllUsable: boolean;
   configurableDataSourceId: string[];
   isAllConfigurable: boolean;
+}
+
+export interface UserFolderPermissions {
+  editableFoldersId: string[];
+  isAllEditable: boolean;
+  viewableFoldersId: string[];
+  isAllViewable: boolean;
+  editAppsInFoldersId: string[];
+  isAllEditApps: boolean;
 }

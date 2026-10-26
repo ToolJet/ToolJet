@@ -68,6 +68,7 @@ const Container = React.memo(
     );
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
+    const isMobileMainCanvas = currentLayout === 'mobile' && id === 'canvas';
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const isWidgetInSubContainerDragging = useStore(
       (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
@@ -81,6 +82,23 @@ const Container = React.memo(
       shallow
     );
     const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
+
+    function getContainerCanvasWidth() {
+      if (canvasWidth !== undefined) {
+        // A grid column divides the SAME width a list row gets, or it runs past the list's edge.
+        if (componentType === 'Listview' && listViewMode == 'grid')
+          return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef) / columns;
+        if (id === 'canvas') return canvasWidth;
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
+      }
+      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
+        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
+      }
+      return realCanvasRef?.current?.offsetWidth;
+    }
+
+    const containerCanvasWidth = getContainerCanvasWidth();
+    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
@@ -195,23 +213,6 @@ const Container = React.memo(
       components.length === 0 &&
       !isDragging;
 
-    function getContainerCanvasWidth() {
-      if (canvasWidth !== undefined) {
-        // A grid column divides the SAME width a list row gets, or it runs past the list's edge.
-        if (componentType === 'Listview' && listViewMode == 'grid')
-          return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef) / columns;
-        if (id === 'canvas') return canvasWidth;
-        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
-      }
-      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
-        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
-      }
-      return realCanvasRef?.current?.offsetWidth;
-    }
-
-    const containerCanvasWidth = getContainerCanvasWidth();
-    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
-
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -268,7 +269,9 @@ const Container = React.memo(
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : getSubContainerHeightAfterPadding(componentType),
           backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
-          padding: `${HOVER_CLICK_OUTLINE_BORDER}px`, // This is required to prevent the hover click outline from being cut off
+          // Stops the hover outline being clipped. Skipped on mobile, where widget widths come from
+          // the unpadded outer width and this would push them past the content box.
+          padding: isMobileMainCanvas ? 0 : `${HOVER_CLICK_OUTLINE_BORDER}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)

@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const appPermissionService = {
   getPagePermission,
@@ -19,12 +20,16 @@ export const appPermissionService = {
 
 function getPagePermission(appId, pageId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/pages/${pageId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/pages/${pageId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getUsers(appId, type) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/pages/${type}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/pages/${type}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function createPagePermission(appId, pageId, body) {
@@ -34,7 +39,9 @@ function createPagePermission(appId, pageId, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/pages/${pageId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/pages/${pageId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function updatePagePermission(appId, pageId, body) {
@@ -44,7 +51,9 @@ function updatePagePermission(appId, pageId, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/pages/${pageId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/pages/${pageId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function deletePagePermission(appId, pageId) {
@@ -53,7 +62,9 @@ function deletePagePermission(appId, pageId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/pages/${pageId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/pages/${pageId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getQueryPermission(appId, queryId) {
@@ -62,7 +73,9 @@ function getQueryPermission(appId, queryId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function createQueryPermission(appId, queryId, body) {
@@ -72,7 +85,9 @@ function createQueryPermission(appId, queryId, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function updateQueryPermission(appId, queryId, body) {
@@ -82,7 +97,9 @@ function updateQueryPermission(appId, queryId, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function deleteQueryPermission(appId, queryId) {
@@ -91,7 +108,9 @@ function deleteQueryPermission(appId, queryId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/queries/${queryId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getComponentPermission(appId, componentId) {
@@ -100,9 +119,10 @@ function getComponentPermission(appId, componentId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/components/${componentId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/components/${componentId}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function createComponentPermission(appId, componentId, body) {
@@ -112,9 +132,10 @@ function createComponentPermission(appId, componentId, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/components/${componentId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/components/${componentId}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function updateComponentPermission(appId, componentId, body) {
@@ -124,9 +145,10 @@ function updateComponentPermission(appId, componentId, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/components/${componentId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/components/${componentId}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function deleteComponentPermission(appId, componentId) {
@@ -135,7 +157,8 @@ function deleteComponentPermission(appId, componentId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/app-permissions/${appId}/components/${componentId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/app-permissions/${appId}/components/${componentId}`),
+    requestOptions
+  ).then(handleResponse);
 }

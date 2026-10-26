@@ -17,6 +17,10 @@ import { SSOConfigsRepository } from '@modules/login-configs/repository';
 
 export class SessionModule extends SubModule {
   static async register(config: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(config, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { SessionService, SessionController, SessionUtilService, JwtStrategy, OidcRefreshService } =
       await this.getProviders(config, 'session', [
         'service',
@@ -42,7 +46,7 @@ export class SessionModule extends SubModule {
       SSOConfigsRepository,
     ];
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: SessionModule,
       imports: [
         await EncryptionModule.register(config),
@@ -58,6 +62,6 @@ export class SessionModule extends SubModule {
       controllers: isMainImport ? [SessionController] : [],
       providers: providerImports,
       exports: [SessionUtilService],
-    };
+    });
   }
 }

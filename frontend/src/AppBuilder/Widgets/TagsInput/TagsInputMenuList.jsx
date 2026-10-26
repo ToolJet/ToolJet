@@ -24,8 +24,8 @@ const TagsInputMenuList = ({
   const selectedValues = Array.isArray(selectProps?.value)
     ? selectProps.value
     : selectProps?.value
-    ? [selectProps.value]
-    : [];
+      ? [selectProps.value]
+      : [];
 
   // The user types a label, so a label match counts as much as a value match.
   const trimmedInput = inputValue?.trim()?.toLowerCase();
