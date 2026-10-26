@@ -1,11 +1,11 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import cx from 'classnames';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import { shallow } from 'zustand/shallow';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, renderDatatypeIcon } from '../constants';
@@ -85,7 +85,7 @@ const ColumnForm = ({
     foreignKeys,
     configurations,
     setConfigurations,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
     (state) => ({
       queryFilters: state.queryFilters,

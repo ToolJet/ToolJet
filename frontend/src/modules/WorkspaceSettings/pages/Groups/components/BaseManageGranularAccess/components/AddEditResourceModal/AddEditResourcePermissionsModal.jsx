@@ -11,7 +11,7 @@ import ModulePermissionsActions from './ModulePermissionActionContainer';
 import WorkflowFolderPermissionsActions from './WorkflowFolderPermissionActionContainer';
 import ModuleFolderPermissionsActions from './ModuleFolderPermissionActionContainer';
 import DataSourceFolderPermissionsActions from './DataSourceFolderPermissionActionContainer';
-import { RESOURCE_TYPE } from '../../../../index';
+import { RESOURCE_TYPE } from '../../../../constants';
 
 function AddEditResourcePermissionsModal({
   handleClose,
