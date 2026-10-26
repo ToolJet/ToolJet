@@ -618,6 +618,23 @@ describe('team UI 2.0 report: List twins, the Alert box and the StatCard trend',
     await waitFor(() => expect(t.exposed.trend).toBe('up'));
     expect(t.exposed.trendLabel).toBe('-8%');
   });
+
+  test('StatCard: loading draws title, figure, chip and interval placeholders inside the card, not one block', async () => {
+    const t = await mount('StatCard', { title: 'Users', value: '1200', trendLabel: '+5%', interval: 'Last 30 days' }, { host: { loading: true } });
+    const card = t.root().querySelector('.MuiCard-root.tj-mui-stat');
+    expect(card.getAttribute('aria-busy')).toBe('true');
+    expect(card.querySelector('.tj-mui-stat-head h2 .MuiSkeleton-text')).toBeTruthy();
+    expect(card.querySelector('.tj-mui-stat-head .MuiSkeleton-rounded')).toBeTruthy();
+    expect(card.querySelector('.tj-mui-stat-figure .MuiSkeleton-text')).toBeTruthy();
+    expect(card.querySelector('.tj-mui-stat-interval .MuiSkeleton-text')).toBeTruthy();
+    // No skeleton spans the whole card.
+    expect(card.querySelector('.MuiSkeleton-rectangular')).toBeNull();
+    expect(card.textContent).not.toContain('Users');
+    t.update({ host: { loading: false } });
+    await waitFor(() => expect(card.querySelector('.MuiSkeleton-root')).toBeNull());
+    expect(card.textContent).toContain('Users');
+    expect(card.querySelector('.MuiChip-root').textContent).toContain('+5%');
+  });
 });
 
 describe('DataGrid columns typed for values that arrive formatted', () => {
@@ -632,7 +649,8 @@ describe('DataGrid columns typed for values that arrive formatted', () => {
     const cell = (field) => t.root().querySelector(`.MuiDataGrid-cell[data-field="${field}"]`)?.textContent;
     await waitFor(() => expect(cell('amount')).toBe('$1,234.56'));
     expect(cell('on')).toBe('24 Oct 2026');
-    expect(cell('n')).toMatch(/€\s?7\.00|7\.00\s?€/);
+    // EUR is written in its home locale (de-DE) since 2026-10-25: 7,00 €.
+    expect(cell('n').replace(/[\u00a0\u202f]/g, ' ')).toBe('7,00 €');
   });
 });
 
@@ -918,10 +936,10 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
       .flatMap(([name, c]) => c.styles.map((s) => ({ component: name, ...s })))
       .filter((s) => !shared(s));
     const colours = fields.filter((s) => s.inspector === 'color');
-    expect(colours.length).toBe(36 * 4 + 3);
+    expect(colours.length).toBe(38 * 4 + 3);
     expect(colours.filter((s) => !/^var\(--cc-[\w-]+\)$/.test(String(s.default)))).toEqual([]);
     const radii = fields.filter((s) => s.name === 'borderRadius');
-    expect(radii.length).toBe(36);
+    expect(radii.length).toBe(38);
     expect(radii.filter((s) => !s.placeholder)).toEqual([]);
   });
 
@@ -1044,5 +1062,42 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
     ])
       expect(`${c}.${p}:${prop(c, p).inspector}`).toBe(`${c}.${p}:options`);
     expect(fs.readFileSync(path.join(PACK, 'src/components/Kanban.tsx'), 'utf8')).toContain('{{cardData}}');
+  });
+});
+
+// wm6-m-room1: the Select's clear x sat in the value's flow, so a long label ran into it ("09:00x"). The x now has a
+// fixed place left of the arrow and the value's right padding reserves both, in every variant and size.
+describe('MUI Select clear button room', () => {
+  const LONG = [
+    { label: 'A very long option label that cannot fit in a narrow select field', value: 'long' },
+    { label: 'Short', value: 'short' },
+  ];
+  test.each([
+    ['outlined', 'medium', 31, 63],
+    ['outlined', 'small', 31, 63],
+    ['filled', 'medium', 31, 63],
+    ['filled', 'small', 31, 63],
+    ['standard', 'medium', 24, 56],
+    ['standard', 'small', 24, 56],
+  ])('%s %s: the x sits left of the arrow and the value stops before both', async (variant, size, clearRight, valueRight) => {
+    const t = await mount('Select', { options: LONG, value: 'long', variant, size });
+    const clear = t.root().querySelector('.tj-mui-select-clear');
+    expect(clear).not.toBeNull();
+    const slot = clear.closest('.tj-mui-select-clear-slot');
+    expect(slot.style.position).toBe('absolute');
+    expect(slot.style.right).toBe(`${clearRight}px`);
+    const display = t.root().querySelector('.MuiSelect-select');
+    expect(display.style.paddingRight).toBe(`${valueRight}px`);
+    // The value's padding covers the x (28px) and the arrow, so the label's ellipsis ends before them.
+    expect(valueRight).toBeGreaterThanOrEqual(clearRight + 28);
+    expect(display.closest('.MuiInputBase-root').style.paddingRight).toBe('0px');
+    t.view.unmount();
+  });
+
+  test('without a clear button the value keeps MUI own arrow padding', async () => {
+    const t = await mount('Select', { options: LONG, value: 'long', disableClearable: true });
+    expect(t.root().querySelector('.tj-mui-select-clear')).toBeNull();
+    expect(t.root().querySelector('.MuiSelect-select').style.paddingRight).toBe('');
+    t.view.unmount();
   });
 });

@@ -318,9 +318,11 @@ export const cardItems = (data: unknown, f: Record<string, unknown> = {}): CardI
 
 /** The set column count, never more than fit at the minimum card width; 'auto' (or 0) fits as many as the width allows. */
 export const gridColumns = (columns: unknown, width: unknown, minCardWidth: unknown = 240): number => {
-  const min = Math.max(120, Number(minCardWidth) || 240);
+  // A number written as text ('230', '230px', '4') counts as that number, as it does in the Ant grid's CSS.
+  const num = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' ? parseFloat(v) : NaN);
+  const min = Math.max(120, num(minCardWidth) || 240);
   const fit = Math.max(1, Math.floor((Number(width) || 0) / min));
-  const set = Math.floor(Number(columns));
+  const set = Math.floor(num(columns));
   return Number.isFinite(set) && set > 0 ? Math.max(1, Math.min(set, fit)) : fit;
 };
 

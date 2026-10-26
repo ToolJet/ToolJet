@@ -55,6 +55,17 @@ const focusWasLost = (active: Element | null, trigger: Element, menu: Element | 
   return hosts(trigger).includes(active) || hosts(menu).includes(active);
 };
 
+// The clear button's box (a small IconButton around a 20px icon), and where it and the value end in each variant: MUI
+// draws the 24px arrow 7px from the right (0 in standard), so the x sits just left of it and the value's right padding
+// covers both with a 4px gap.
+const CLEAR_SIZE = 28;
+const ARROW = 24;
+const clearRoom = (variant: string) => {
+  const arrowRight = variant === 'standard' ? 0 : 7;
+  const clear = arrowRight + ARROW;
+  return { clear, value: clear + CLEAR_SIZE + 4 };
+};
+
 // MUI's Select (TextField select): label, options [{ label, value, disabled }], value (the picked value), helperText,
 // displayEmpty with a placeholder, variant, size; events onChange, onOpen, onClose. selectedOption is exposed. A clear
 // button shows while a value is picked, as Ant's Select (allowClear) and this pack's Autocomplete have; Disable
@@ -132,13 +143,18 @@ export const Select = () => {
   // MUI's Select has no clear of its own: a small x before the arrow (the Autocomplete's clear indicator look), only
   // while a known value is picked. It takes no focus on press and does not open the menu; focus goes to the trigger.
   const clearable = !disableClearable && known && !disabled;
+  // As a flex item after the value, the x took its room from the value: a long label ran under it ("09:00x" in a
+  // narrow field). It sits at a fixed place left of the arrow instead, and the value's own right padding reserves both,
+  // so the label ends in an ellipsis before them in every variant and size.
+  const room = clearRoom(look.variant);
   const clearButton = clearable ? (
-    <InputAdornment position="end" sx={{ mr: 2.5 }}>
+    <InputAdornment position="end" className="tj-mui-select-clear-slot" style={{ position: 'absolute', top: '50%', right: room.clear, margin: 0 }}>
       <IconButton
         aria-label="Clear"
         title="Clear"
         size="small"
         className="tj-mui-select-clear"
+        sx={{ p: `${(CLEAR_SIZE - 20) / 2}px` }}
         onMouseDown={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -173,8 +189,9 @@ export const Select = () => {
           {...checkProps(check, field.helperText)}
           slotProps={{
             inputLabel: showEmpty ? { shrink: true } : undefined,
-            input: clearButton ? { endAdornment: clearButton } : undefined,
+            input: clearButton ? { endAdornment: clearButton, style: { paddingRight: 0 } } : undefined,
             select: {
+              SelectDisplayProps: clearButton ? { style: { paddingRight: room.value } } : undefined,
               open: menuOpen,
               MenuProps: { disableRestoreFocus: true, ref: menuRef } as Record<string, unknown>,
               displayEmpty: showEmpty,
