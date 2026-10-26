@@ -188,6 +188,12 @@ export default function Image({
     return 0;
   }
 
+  // A quarter-turn swaps the box's footprint, so a box that isn't square would spill out of the widget.
+  // Shrink it by the aspect ratio so the rotated footprint fits. Dynamic height has no fixed box to fit.
+  const isQuarterTurn = rotation === 90 || rotation === 270;
+  const rotationFitScale =
+    isQuarterTurn && !isDynamicHeightEnabled && width > 0 && height > 0 ? Math.min(width / height, height / width) : 1;
+
   const rotateImage = () => setRotation((prevValue) => (prevValue === 270 ? 0 : prevValue + 90));
 
   const renderImage = () => (
@@ -206,7 +212,7 @@ export default function Image({
         pointerEvents: 'auto',
         width,
         height: isDynamicHeightEnabled ? 'auto' : height,
-        transform: `rotate(${rotation}deg)`,
+        transform: `rotate(${rotation}deg)${rotationFitScale === 1 ? '' : ` scale(${rotationFitScale})`}`,
         border: '1px solid',
         borderRadius:
           borderType === 'rounded-circle'
