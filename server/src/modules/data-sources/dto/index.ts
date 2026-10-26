@@ -17,7 +17,7 @@ export class CreateDataSourceDto {
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
-  @Matches(/^[^/]*$/, { message: "Name should not contain '/'" })
+  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
   name: string;
 
   @IsDefined()

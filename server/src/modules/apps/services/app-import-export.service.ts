@@ -22,6 +22,10 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { TransactionLogger } from '@modules/logging/service';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { AppValidationService } from '@modules/app-validation/service';
+import { inputsByArea, readAppVersionsFromExport, toIndexData } from '@modules/app-validation/export-reader';
+import { ValidationArea, ValidationResult, WriteSource } from '@modules/app-validation/types';
+import { VersionIndex } from '@modules/app-validation/version-index';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -133,7 +137,8 @@ type NewRevampedComponent =
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu'
-  | 'Pagination';
+  | 'Pagination'
+  | 'Timeline';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -187,6 +192,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ModalV2',
   'PopoverMenu',
   'Pagination',
+  'Timeline',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -290,6 +296,17 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TreeSelect',
 ];
 
+const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Cascader',
+  'TextArea',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
@@ -344,6 +361,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextArea',
   'TextInput',
   'TimePicker',
+  'Timeline',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -361,7 +379,8 @@ export class AppImportExportService {
     protected appsRepository: AppsRepository,
     protected readonly transactionLogger: TransactionLogger,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
-    protected readonly abilityService: AbilityService
+    protected readonly abilityService: AbilityService,
+    protected readonly appValidationService: AppValidationService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -386,6 +405,13 @@ export class AppImportExportService {
       // the right app_versions row (branch-aware) instead of leaking raw NULL apps.*
       // columns into the exported JSON for non-workflow apps.
       const appToExport = await this.appsRepository.findById(id, user?.organizationId, versionId, branchId);
+
+      if (!appToExport) {
+        // Guard against an opaque "Cannot read properties of null (reading 'id')" below.
+        // Callers (e.g. recursive module export) may pass an id that doesn't resolve to a
+        // local app; surface a clear error instead of a null-property crash.
+        throw new BadRequestException(`App not found for export (id: ${id})`);
+      }
 
       const queryAppVersions = manager
         .createQueryBuilder(AppVersion, 'app_versions')
@@ -635,6 +661,24 @@ export class AppImportExportService {
       await Promise.all(
         uniqueModuleAppIds.map(async (moduleAppId) => {
           const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
+
+          // Dangling module reference: the ModuleViewer points at a module that isn't
+          // present in this workspace — e.g. an app imported from a file whose nested
+          // modules weren't imported alongside it. When co_relation_id resolution misses,
+          // resolvedId falls back to the raw moduleAppId.value (a co_relation_id, never a
+          // real app.id), so this.export() would hit a null findById() and crash the whole
+          // git push with an opaque "Cannot read properties of null (reading 'id')". Skip
+          // the unresolvable reference instead — the parent app still pushes.
+          const moduleAppExists = await manager.findOne(App, {
+            where: { id: resolvedId, organizationId: appToExport.organizationId },
+            select: ['id'],
+          });
+          if (!moduleAppExists) {
+            console.warn(
+              `Skipping git export of module reference ${moduleAppId.moduleId}: module not found in workspace ${appToExport.organizationId}`
+            );
+            return;
+          }
 
           let versionDbId: string | undefined;
           let isPinnedToVersion = false;
@@ -1349,7 +1393,8 @@ export class AppImportExportService {
     tooljetVersion = '',
     cloning = false,
     manager?: EntityManager,
-    branchId?: string
+    branchId?: string,
+    isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
@@ -1413,9 +1458,11 @@ export class AppImportExportService {
         undefined,
         branchId,
         cloning,
-        isGitApp
+        isGitApp,
+        isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -1655,6 +1702,15 @@ export class AppImportExportService {
     }
   }
 
+  // EE-only
+  protected async remapCustomComponentLibraries(
+    manager: EntityManager,
+    organizationId: string,
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    return;
+  }
+
   async createImportedAppForUser(
     //Overrides on EE to set userId to super admin's id
     manager: EntityManager,
@@ -1811,6 +1867,32 @@ export class AppImportExportService {
     };
   }
 
+  // Runs the app-validation rules over the in-memory app, one app version at a time, with a
+  // lookup built from the import data itself - no database reads. Nested modules skipped:
+  // each imports through its own import() call.
+  protected async checkImportedAppData(
+    appParams: any,
+    appType: string | undefined,
+    source: WriteSource
+  ): Promise<ValidationResult> {
+    const collected: ValidationResult = { errors: [], warnings: [] };
+    for (const version of readAppVersionsFromExport({ app: [appParams] })) {
+      if (appParams?.id && version.appId !== appParams.id) continue;
+      const index = VersionIndex.fromData(toIndexData(version));
+      for (const [area, inputs] of Object.entries(inputsByArea(version))) {
+        const result = await this.appValidationService.check(area as ValidationArea, inputs, {
+          appVersionId: version.appVersionId,
+          appType: version.appType ?? appType,
+          source,
+          index,
+        });
+        collected.errors.push(...result.errors);
+        collected.warnings.push(...result.warnings);
+      }
+    }
+    return collected;
+  }
+
   /*
    * With new multi-env changes. the imported apps will not have any released versions from now (if the importing schema has any currentVersionId).
    * All version's default environment will be development or least priority environment only.
@@ -1827,7 +1909,9 @@ export class AppImportExportService {
     createNewVersion?: boolean,
     branchId?: string,
     cloning = false,
-    isGitApp = false
+    isGitApp = false,
+    isTemplateApp = false,
+    source?: WriteSource
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -1837,6 +1921,12 @@ export class AppImportExportService {
       await this.performLegacyAppImport(manager, importedApp, appParams, externalResourceMappings, user);
       return;
     }
+
+    await this.checkImportedAppData(
+      appParams,
+      importedApp.type,
+      source ?? (cloning ? 'copy' : isGitApp ? 'git' : 'import')
+    );
 
     let appResourceMappings: AppResourceMappings = {
       defaultDataSourceIdMapping: {},
@@ -1940,7 +2030,8 @@ export class AppImportExportService {
       createNewVersion,
       branchId,
       isGitApp || cloning || !!branchId,
-      isGitApp
+      isGitApp,
+      isTemplateApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -1970,7 +2061,8 @@ export class AppImportExportService {
       importingDataQueryFolders,
       importingDataQueryFolderMappings,
       branchId,
-      isGitApp
+      isGitApp,
+      importedApp.type
     );
 
     const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
@@ -2250,7 +2342,8 @@ export class AppImportExportService {
     importingDataQueryFolders: DataQueryFolder[] = [],
     importingDataQueryFolderMappings: DataQueryFolderMapping[] = [],
     branchId?: string,
-    isGitApp = false
+    isGitApp = false,
+    appType?: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -2583,6 +2676,14 @@ export class AppImportExportService {
           newComponentIdsMap[component.id] = uuid();
         }
 
+        // Modules require every non-container component to be parented under the
+        // ModuleContainer; the builder/incremental APIs enforce this (component.service.ts),
+        // but imported bundles can carry components with no parent at all. Fall back to the
+        // page's ModuleContainer so imported modules get the same guarantee.
+        const moduleContainerComponent =
+          appType === APP_TYPES.MODULE ? pageComponents.find((c) => c.type === 'ModuleContainer') : null;
+        const moduleContainerId = moduleContainerComponent ? newComponentIdsMap[moduleContainerComponent.id] : null;
+
         for (const component of pageComponents) {
           let skipComponent = false;
           const newComponent = new Component();
@@ -2632,6 +2733,15 @@ export class AppImportExportService {
               NewRevampedComponents,
               tooljetVersion
             );
+            // ModuleContainer's visibility isn't a schema-declared property (no UI control for
+            // it), so there's no resolve-time fallback if it's missing - unlike the builder/API
+            // create paths (util.service.ts, appCanvasUtils.js) which hardcode it at creation
+            // time. Imported bundles can carry a ModuleContainer with this stripped, which
+            // renders it at 0 height. Mirror the same hardcoded default here.
+            if (component.type === 'ModuleContainer' && !properties.visibility) {
+              properties.visibility = { value: '{{true}}' };
+            }
+
             newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
             newComponent.type = component.type;
@@ -2641,7 +2751,11 @@ export class AppImportExportService {
             newComponent.general = general;
             newComponent.displayPreferences = component.displayPreferences;
             newComponent.validation = validation;
-            newComponent.parent = component.parent ? parentId : null;
+            newComponent.parent = component.parent
+              ? parentId
+              : moduleContainerId && component.type !== 'ModuleContainer'
+                ? moduleContainerId
+                : null;
 
             if (component.type === 'ModuleViewer' && moduleResourceMappings && !isGitApp) {
               // ModuleViewer properties hold references into the module app/version.
@@ -3376,13 +3490,16 @@ export class AppImportExportService {
           }
         }
       }
-      await manager.save(
+      const newDsvo = await manager.save(
         manager.create(DataSourceVersionOptions, {
           dataSourceVersionId: branchDsv.id,
           environmentId: dOpt.environmentId,
           options: clonedOptions,
         })
       );
+      // Clone OAuth token rows too — only matters when this datasource already existed in the
+      // target org (import referencing an existing DS); a freshly-imported DS has no token yet.
+      await this.dataSourcesUtilService.duplicateTokenData(dOpt.id, newDsvo.id, manager);
     }
   }
 
@@ -3427,6 +3544,11 @@ export class AppImportExportService {
     }
 
     return appResourceMappings;
+  }
+
+  // EE-only
+  protected async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
+    return globalSettings;
   }
 
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
@@ -3617,7 +3739,8 @@ export class AppImportExportService {
     createNewVersion?: boolean,
     branchId?: string,
     useBranchVersionType = false,
-    isGitApp = false
+    isGitApp = false,
+    isTemplateApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -3795,15 +3918,12 @@ export class AppImportExportService {
             isWorkflow || versionStatus !== AppVersionStatus.DRAFT
               ? importDefaultBranchId
               : (branchId ?? importDefaultBranchId),
-          // Imported apps and modules must be marked synced whenever git sync is enabled —
-          // regardless of single- vs multi-branch mode, and regardless of whether this version
-          // ends up DRAFT or PUBLISHED (e.g. a 0-draft export collapses to a single PUBLISHED
-          // version) — so they participate in the default-branch git flow (unsynced rows are
-          // treated as new/uncommitted content and can't be pushed). Workflows are excluded —
-          // they don't sync via git. Sub-branch (feature-branch) imports are also excluded:
-          // that's genuinely new, unpushed content on that branch, so the push flow still
-          // needs to pick it up.
-          isSynced: isGitSyncConfigured && !isWorkflow && !isSubBranch ? true : undefined,
+          // isSynced: isGitSyncConfigured && !isWorkflow && !isSubBranch ? true : undefined,
+          // A device import (isGitApp=false) has never been committed to git — stays false,
+          // same as every other creation path (AppsService.create, feature-branch, datasource).
+          // Git-repo imports/pulls (isGitApp=true, ee/app-git/*) keep the original behavior:
+          // that content genuinely came from git and matches remote.
+          isSynced: isGitApp && isGitSyncConfigured && !isWorkflow && !isSubBranch,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {
@@ -3818,7 +3938,10 @@ export class AppImportExportService {
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
-        version.globalSettings = appVersion.globalSettings;
+        // Only templates bring their theme into the workspace; every other import keeps the settings as exported
+        version.globalSettings = isTemplateApp
+          ? await this.importTheme(manager, organization.id, appVersion.globalSettings)
+          : appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation ?? true;
@@ -4528,6 +4651,10 @@ function migrateProperties(
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
 
+  if (LEGACY_INPUT_SIZE_COMPONENT_TYPES.includes(componentType) && properties.legacyInputSize === undefined) {
+    properties.legacyInputSize = { value: '{{true}}' };
+  }
+
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };
   }
@@ -4621,7 +4748,8 @@ function migrateProperties(
       (shouldHandleBackwardCompatibility && ['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) ||
       (['TextArea', 'DaterangePicker', 'FilePicker'].includes(componentType) && !properties.label)
     ) {
-      properties.label = '';
+      // Keep the canonical { value: ... } shape — a bare string here is a malformed property.
+      properties.label = { value: '' };
     }
 
     // NumberInput

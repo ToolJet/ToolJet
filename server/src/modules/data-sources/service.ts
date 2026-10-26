@@ -304,8 +304,13 @@ export class DataSourcesService implements IDataSourcesService {
     return dataSource;
   }
 
-  async testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object> {
-    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id);
+  async testConnection(
+    testDataSourceDto: TestDataSourceDto,
+    organization_id: string,
+    dataSourceId?: string,
+    branchId?: string
+  ): Promise<object> {
+    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id, dataSourceId, branchId);
   }
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
@@ -401,8 +406,15 @@ export class DataSourcesService implements IDataSourcesService {
       dataSourceOptions.options,
       user.organizationId,
       dataSourceOptions.environmentId,
-      user
+      user,
+      dataSourceOptions.id
     );
+
+    if (sourceOptions['oauth_type'] !== 'tooljet_app') {
+      sourceOptions['tj_redirect_host'] = await this.dataSourcesUtilService.resolveOAuthRedirectHost(
+        user.organizationId
+      );
+    }
 
     const resolvedArgs = resolvedOptions
       ? await this.dataQueriesUtilService.parseQueryOptions(
@@ -462,7 +474,8 @@ export class DataSourcesService implements IDataSourcesService {
               updatedDataSourceOptions.options,
               user.organizationId,
               updatedDataSourceOptions.environmentId,
-              user
+              user,
+              updatedDataSourceOptions.id
             );
 
             // Retry invoke

@@ -4,6 +4,19 @@ import { EntityManager } from 'typeorm';
 import { EncryptionService } from '../service';
 import { Credential } from '@entities/credential.entity';
 
+/**
+ * ███████████████████████████████████████████████████████████████████████████████
+ * █                                                                             █
+ * █                               DEPRECATED                                    █
+ * █                                                                             █
+ * █  For data-source OAuth tokens, this table/service is deprecated.            █
+ * █  Use datasource_user_token_data (see data_source_user_token.entity.ts)      █
+ * █  instead. Other encrypted fields (passwords, API keys, workspace           █
+ * █  constants) still use this service.                                        █
+ * █                                                                             █
+ * ███████████████████████████████████████████████████████████████████████████████
+ */
+
 @Injectable()
 export class CredentialsService {
   constructor(protected readonly encryptionService: EncryptionService) {}

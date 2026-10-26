@@ -18,6 +18,9 @@ export const USER_COLORS = [
 
 export const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
 
+// Temporarily hide inline AI actions that are not served by the standalone MCP agent.
+export const INLINE_AI_FEATURES_ENABLED = false;
+
 export const ON_BOARDING_ROLES = [
   'Head of engineering',
   'Head of product',
@@ -195,4 +198,20 @@ export const PLANS = {
   ENTERPRISE: 'enterprise',
   TRIAL: 'trial',
   STARTER: 'starter',
+  BASICPLUS: 'basicplus',
 };
+
+export const operators = [
+  { value: 'eq', label: 'equals' },
+  { value: 'gt', label: 'greater than' },
+  { value: 'gte', label: 'greater than or equal' },
+  { value: 'lt', label: 'less than' },
+  { value: 'lte', label: 'less than or equal' },
+  { value: 'neq', label: 'not equal' },
+  { value: 'like', label: 'like' },
+  { value: 'ilike', label: 'ilike' },
+  { value: 'match', label: 'match' },
+  { value: 'imatch', label: 'imatch' },
+  { value: 'in', label: 'in' },
+  { value: 'is', label: 'is' },
+];

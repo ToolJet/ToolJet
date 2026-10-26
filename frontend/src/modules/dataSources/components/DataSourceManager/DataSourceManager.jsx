@@ -66,7 +66,7 @@ import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import SampleDataSourceBody from './SampleDataSourceBody';
 
-class DataSourceManagerComponent extends React.Component {
+export class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -219,7 +219,8 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   onExit = () => {
-    !this.state.selectedDataSource?.id && this.props.environmentChanged(returnDevelopmentEnv(this.props.environments));
+    !this.state.selectedDataSource?.id &&
+      this.props.environmentChanged?.(returnDevelopmentEnv(this.props.environments));
     this.setState({
       dataSourceMeta: {},
       selectedDataSource: null,
@@ -310,10 +311,11 @@ class DataSourceManagerComponent extends React.Component {
       'gmail',
       'googlesheetsv2',
       'xero',
+      'confluence',
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
-    const pluginId = selectedDataSourcePluginId;
+    const pluginId = selectedDataSource?.pluginId ?? selectedDataSourcePluginId;
     const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
@@ -381,6 +383,7 @@ class DataSourceManagerComponent extends React.Component {
           });
       } else {
         this.setState({ isSaving: true, addingDataSource: true });
+        this.props.setGlobalDataSourceStatus({ isSaving: true, isEditing: false });
         service
           .create({
             plugin_id: pluginId,
@@ -405,10 +408,11 @@ class DataSourceManagerComponent extends React.Component {
             this.props.dataSourcesChanged(false, data);
             this.props.globalDataSourcesChanged && this.props.globalDataSourcesChanged();
             this.resetDataSourceConfirmModal();
+            this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: false });
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false, addingDataSource: false });
-            this.hideModal();
+            this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: true });
             error && toast.error(error, { position: 'top-center' });
             this.resetDataSourceConfirmModal();
           });
@@ -1107,6 +1111,7 @@ class DataSourceManagerComponent extends React.Component {
       'xero',
       'hubspot',
       'gmail',
+      'confluence',
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
@@ -1181,6 +1186,9 @@ class DataSourceManagerComponent extends React.Component {
                             )}
                           </div>
                           {(() => {
+                            // Dummy/unresolved data sources show their own "missing, pull from git" warning below;
+                            // the global-setting branching warning isn't relevant when the data source is missing.
+                            if (selectedDataSource.is_dummy) return null;
                             const { currentBranch, orgGitConfig, isInitialized } = useWorkspaceBranchesStore.getState();
                             if (!isInitialized || !orgGitConfig) return null;
                             const isBranchingEnabled =
@@ -1287,7 +1295,8 @@ class DataSourceManagerComponent extends React.Component {
                   shouldRenderFooterComponent &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
+                      options?.auth_type?.value === 'oauth2' &&
+                      ['authorization_code', 'authorization_code_pkce'].includes(options?.grant_type?.value)
                     )) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
@@ -1418,7 +1427,8 @@ class DataSourceManagerComponent extends React.Component {
                   dataSourceMeta.customTesting &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
+                      options?.auth_type?.value === 'oauth2' &&
+                      ['authorization_code', 'authorization_code_pkce'].includes(options?.grant_type?.value)
                     )) && (
                     <Modal.Footer>
                       <div className="col">

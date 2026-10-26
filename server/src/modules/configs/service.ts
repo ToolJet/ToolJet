@@ -2,11 +2,35 @@ import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from '@modules/insta
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Injectable } from '@nestjs/common';
 import { IConfigService } from './interfaces/IService';
+import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
+
+// Instance-wide (not per-user/per-org) settings + env vars. Concurrent calls (the bootstrap burst on
+// page load) share one lookup, which is dropped as soon as it settles: a setting saved through the API,
+// edited in the database or saved on another server shows up on the very next request. The TTL only
+// bounds a lookup that never settles.
+const PUBLIC_CONFIG_CACHE_TTL_MS = 30_000;
+const PUBLIC_CONFIG_CACHE_KEY = 'public_config';
 
 @Injectable()
 export class ConfigService implements IConfigService {
-  constructor(protected instanceSettingsUtilService: InstanceSettingsUtilService) {}
+  constructor(
+    protected instanceSettingsUtilService: InstanceSettingsUtilService,
+    protected readonly inMemoryCacheService: InMemoryCacheService
+  ) {}
   async public_config() {
+    const cached = this.inMemoryCacheService.get(PUBLIC_CONFIG_CACHE_KEY);
+    if (cached) return cached;
+
+    const configPromise = this.computePublicConfig();
+    this.inMemoryCacheService.set(PUBLIC_CONFIG_CACHE_KEY, configPromise, PUBLIC_CONFIG_CACHE_TTL_MS);
+    configPromise.then(
+      () => this.inMemoryCacheService.delete(PUBLIC_CONFIG_CACHE_KEY),
+      () => this.inMemoryCacheService.delete(PUBLIC_CONFIG_CACHE_KEY)
+    );
+    return configPromise;
+  }
+
+  private async computePublicConfig() {
     const whitelistedConfigVars = process.env.ALLOWED_CLIENT_CONFIG_VARS
       ? this.fetchAllowedConfigFromEnv()
       : this.fetchDefaultConfig();
@@ -48,6 +72,9 @@ export class ConfigService implements IConfigService {
       'ENABLE_WORKFLOW_SCHEDULING',
       'SSO_HUBSPOT_PORTAL_ID',
       'SSO_HUBSPOT_FORM_ID',
+      'ENABLE_OTEL_FRONTEND',
+      'OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS',
+      'TOOLJET_DB_DISABLE_BUILDER_EDIT',
     ];
   }
 

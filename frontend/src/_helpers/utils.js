@@ -1,7 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
 import _, { isEmpty } from 'lodash';
-import JSON5 from 'json5';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
@@ -12,6 +11,7 @@ import { getDateTimeFormat } from './appUtils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
+import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 export const reservedKeyword = ['app', 'window'];
 
@@ -141,6 +141,7 @@ export function resolveCode(code, state, customObjects = {}, withError = false, 
       console.log('the erro is', { error, code });
     }
   }
+  result = materializeFileHandleRefs(result);
   if (withError) return [result, error];
   return result;
 }
@@ -148,7 +149,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   let resolvedStr = str;
 
   // Resolve {{object}}
-  const codeRegex = /(\{\{.+?\}\})/g;
+  const codeRegex = /(\{\{.+?\}\})/gs;
   const codeMatches = resolvedStr.match(codeRegex);
 
   if (codeMatches) {
@@ -311,29 +312,8 @@ export function resolveReferences(
 }
 
 export function getDynamicVariables(text) {
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/gs) || text.match(/%%(.*?)%%/gs);
   return matchedParams;
-}
-
-export function computeComponentName(componentType, currentComponents) {
-  const currentComponentsForKind = Object.values(currentComponents).filter(
-    (component) => component.component.component === componentType
-  );
-  let found = false;
-  const componentName = componentTypes.find((component) => component?.component === componentType)?.name;
-  let currentNumber = currentComponentsForKind.length + 1;
-  let _componentName = '';
-  while (!found) {
-    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
-    if (
-      Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
-    ) {
-      found = true;
-    }
-    currentNumber = currentNumber + 1;
-  }
-
-  return _componentName;
 }
 
 export function computeActionName(actions) {
@@ -360,14 +340,18 @@ export function validateQueryName(name) {
 }
 
 export function validateKebabCase(slug) {
-  const pattern = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
+  // Unicode letters and digits: the handle generator (lodash kebabCase of the page name)
+  // keeps non-Latin scripts, and the viewer routes them via percent-encoding. Kept in sync
+  // with the backend rule (server app-validation catalog/pages.json handlePattern) by
+  // AppBuilder/__tests__/validationCatalogParity.spec.js.
+  const pattern = /^[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*$/u;
   if (slug === '') {
     return { isValid: false, error: 'Handle cannot be empty.' };
   }
-  if (!/^[a-zA-Z0-9]/.test(slug)) {
+  if (!/^[\p{L}\p{N}]/u.test(slug)) {
     return { isValid: false, error: 'Handle must start with a letter or number.' };
   }
-  if (/[^a-zA-Z0-9-]/.test(slug)) {
+  if (/[^\p{L}\p{N}-]/u.test(slug)) {
     return { isValid: false, error: 'Handle can only contain letters, numbers, and hyphens.' };
   }
   if (/--/.test(slug)) {
@@ -616,15 +600,6 @@ export function toQuery(params, delimiter = '&') {
     return query;
   }, '');
 }
-
-export const isJson = (str) => {
-  try {
-    JSON5.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
-};
 
 export const isStringValidJson = (str) => {
   try {
@@ -1376,7 +1351,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = 0;
   let shouldRemoveSpace = true;
   while (iter < str.length) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'le') {
       shouldRemoveSpace = true;
@@ -1390,7 +1365,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = str.length - 1;
   shouldRemoveSpace = true;
   while (iter >= 0) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'ri') {
       shouldRemoveSpace = true;
@@ -1435,12 +1410,20 @@ export const hasBuilderRole = (roleObj) => {
   return false;
 };
 
+export const canAccessTooljetDbDashboard = () => {
+  const { admin, super_admin, role } = authenticationService.currentSessionValue ?? {};
+  if (admin || super_admin) return true;
+  return hasBuilderRole(role ?? {}) && window.public_config?.TOOLJET_DB_DISABLE_BUILDER_EDIT !== 'true';
+};
+
 export function checkIfToolJetCloud(version) {
+  if (!version) return false;
   const parsed = version.split('-');
   return parsed[1] === 'cloud';
 }
 
 export function checkIfToolJetEE(version) {
+  if (!version) return false;
   const parsed = version.split('-');
   return parsed[1] === 'ee';
 }
@@ -1490,4 +1473,14 @@ export function formatToDDMMYYYY(isoDate) {
   const year = d.getUTCFullYear();
 
   return `${day}/${month}/${year}`;
+}
+
+export function utilityFuncForNameSeed(componentDef) {
+  const component = componentDef.component.component;
+  switch (component) {
+    case 'LibraryComponent':
+      return componentDef.component.definition?.properties?.componentName?.value ?? componentDef.component.component;
+    default:
+      return componentDef.component.component;
+  }
 }

@@ -12,6 +12,7 @@ import { AlertTriangle, Info, ExternalLink } from 'lucide-react';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { authenticationService } from '@/_services';
 import { getSubpath } from '@/_helpers/routes';
+import { buildGitPrUrl } from '@/_helpers/gitPrUrl';
 import '@/_styles/branch-dropdown.scss';
 
 export function WorkspaceBranchDropdown() {
@@ -89,36 +90,14 @@ export function WorkspaceBranchDropdown() {
   };
 
   // Build PR creation URL
-  const buildPRCreationURL = () => {
-    const sourceBranch = currentBranch?.name;
-    const repoUrl = orgGitConfig?.repo_url || orgGitConfig?.repoUrl || '';
-    const gitType = orgGitConfig?.git_type || orgGitConfig?.gitType || 'github_https';
-
-    if (!repoUrl || !sourceBranch) return null;
-
-    const githubMatch = repoUrl.match(/github\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
-    const gitlabMatch = repoUrl.match(/gitlab\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
-    const bitbucketMatch = repoUrl.match(/bitbucket\.org[:/]([^/]+)\/(.+?)(\.git)?$/);
-
-    if (githubMatch) {
-      const [, owner, repo] = githubMatch;
-      return `https://github.com/${owner}/${repo}/compare/${defaultGitBranch}...${sourceBranch}?expand=1`;
-    } else if (gitlabMatch || gitType === 'gitlab') {
-      let baseUrl = repoUrl;
-      if (gitlabMatch) {
-        const [, owner, repo] = gitlabMatch;
-        baseUrl = `https://gitlab.com/${owner}/${repo}`;
-      }
-      return `${baseUrl}/-/merge_requests/new?merge_request[source_branch]=${encodeURIComponent(
-        sourceBranch
-      )}&merge_request[target_branch]=${encodeURIComponent(defaultGitBranch)}`;
-    } else if (bitbucketMatch) {
-      const [, owner, repo] = bitbucketMatch;
-      return `https://bitbucket.org/${owner}/${repo}/pull-requests/new?source=${sourceBranch}&dest=${defaultGitBranch}`;
-    }
-
-    return null;
-  };
+  const buildPRCreationURL = () =>
+    buildGitPrUrl({
+      repoUrl: orgGitConfig?.repo_url || orgGitConfig?.repoUrl || '',
+      // Undefined when unknown → buildGitPrUrl falls back to host detection (don't force github_https).
+      gitType: orgGitConfig?.git_type || orgGitConfig?.gitType,
+      sourceBranch: currentBranch?.name,
+      defaultBranch: defaultGitBranch,
+    });
 
   // Single-branch mode: open the git configuration page where branching can be enabled.
   const handleEnableBranching = () => {

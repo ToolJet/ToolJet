@@ -1,3 +1,4 @@
 import LoginForm from './LoginForm';
+import MfaVerifyForm from './MfaVerifyForm';
 
-export { LoginForm };
+export { LoginForm, MfaVerifyForm };

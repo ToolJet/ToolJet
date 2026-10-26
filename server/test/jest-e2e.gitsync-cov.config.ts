@@ -69,8 +69,12 @@ const GITSYNC_COVERAGE_GLOBS = [
 
 const config: Config.InitialOptions = {
   ...baseConfig,
-  // Only the git-sync + git-sync-webhooks e2e specs (the base runs every e2e spec).
-  testRegex: 'test/modules/(git-sync|git-sync-webhooks)/e2e/.*spec\\.ts$',
+  // Only the git-sync + git-sync-webhooks e2e specs (the base runs every e2e spec). testRegex is
+  // per project, so it is applied to each of the base config's projects.
+  projects: (baseConfig.projects as Config.InitialProjectOptions[]).map((project) => ({
+    ...project,
+    testRegex: 'test/modules/(git-sync|git-sync-webhooks)/e2e/.*spec\\.ts$',
+  })),
   collectCoverageFrom: GITSYNC_COVERAGE_GLOBS,
   coverageDirectory: '<rootDir>/coverage-gitsync',
   // Report every reporter locally; text-summary prints the headline numbers to stdout.

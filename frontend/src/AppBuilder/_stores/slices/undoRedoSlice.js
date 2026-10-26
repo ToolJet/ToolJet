@@ -54,6 +54,8 @@ export const createUndoRedoSlice = (set, get) => {
       let newParentId = null;
       let updateParent = false;
       let componenetPropertiesToUpdate = {};
+      let autoComputeLayoutToUpdate = null;
+      let targetLayout;
 
       const hasMoreThanOnePatchWithPropertyUpdate = patches.filter((patch) => patch.op === 'propertyUpdate').length > 1;
 
@@ -67,6 +69,7 @@ export const createUndoRedoSlice = (set, get) => {
           componentLayoutsToUpdate[componentId] = value.layouts;
           newParentId = value.parentId;
           updateParent = value.updateParent;
+          targetLayout = value.layoutName;
         }
 
         if (op === 'add') {
@@ -75,6 +78,10 @@ export const createUndoRedoSlice = (set, get) => {
 
         if (op === 'parentUpdate') {
           get().setParentComponent(componentId, value, undefined, true);
+        }
+
+        if (op === 'autoComputeLayoutUpdate') {
+          autoComputeLayoutToUpdate = value;
         }
 
         if (op === 'propertyUpdate') {
@@ -110,8 +117,27 @@ export const createUndoRedoSlice = (set, get) => {
         get().addComponentToCurrentPage(componentIdsToAdd, 'canvas', { skipUndoRedo: true });
       }
 
+      // Before the layouts: turning auto layout off first stops the compute effect re-stacking them.
+      if (autoComputeLayoutToUpdate !== null) {
+        get().setAutoComputeLayout(autoComputeLayoutToUpdate);
+      }
+
       if (!isEmpty(componentLayoutsToUpdate)) {
-        get().setComponentLayout(componentLayoutsToUpdate, newParentId, 'canvas', { skipUndoRedo: true, updateParent });
+        // Guessing the layout corrupts the other one; skipping is recoverable.
+        if (!targetLayout) {
+          // eslint-disable-next-line no-console
+          console.warn('[undo] layout patch has no layout name — skipped to avoid writing to the wrong layout');
+        } else {
+          // A silent off-screen revert reads as "undo did nothing" and invites repeated presses.
+          if (targetLayout !== get().currentLayout) {
+            get().setCurrentLayout(targetLayout);
+          }
+          get().setComponentLayout(componentLayoutsToUpdate, newParentId, 'canvas', {
+            skipUndoRedo: true,
+            updateParent,
+            targetLayout,
+          });
+        }
       }
 
       if (!isEmpty(componenetPropertiesToUpdate)) {
@@ -196,6 +222,12 @@ const filterAndFormatPatches = (patches) => {
     }
 
     if (op === 'replace' && /^modules\.canvas\.pages(\.\w+)*$/.test(joinedPath)) {
+      if (path[4] === 'autoComputeLayout') {
+        changeStack.push({
+          op: 'autoComputeLayoutUpdate',
+          value,
+        });
+      }
       if (path[6] === 'layouts') {
         const parentUpdatePatch = patches.find((patch) => {
           return patch.op === 'replace' && patch.path[7] === 'parent';
@@ -205,6 +237,7 @@ const filterAndFormatPatches = (patches) => {
           componentId: path[5],
           value: {
             layouts: value,
+            layoutName: path[7],
             parentId: parentUpdatePatch?.value,
             updateParent: !!parentUpdatePatch,
           },
@@ -217,15 +250,35 @@ const filterAndFormatPatches = (patches) => {
       //     value,
       //   });
       // } else
-      if (path[6] === 'component' && path[7] !== 'parent') {
+      // path layout: [modules, moduleId, pages, pageIndex, components, componentId, 'component', 'definition', paramType, property, attr]
+      //   path[8] = paramType  (styles / properties / others / ...)
+      //   path[9] = property   (backgroundColor / label / ...)
+      //   path[10] = attr      ('value' / 'fxActive' / ...)
+      //
+      // Guard: batch operations (e.g. Form field add/remove) replace the whole paramType object at once via
+      // `definition[paramType] = { ...old, ...diff }`, which makes immer emit a single coarse patch that stops
+      // at path[8] with no property name in path[9]. Replaying that would call setComponentProperty with
+      // property=undefined, which lodash coerces to the string "undefined" and writes a phantom
+      // `definition[paramType]["undefined"]` key — silently corrupting the app JSON and making the undo a no-op.
+      if (path[6] === 'component' && path[7] !== 'parent' && path[9] !== undefined) {
+        let attr = path[10];
+        let patchValue = value;
+        // Guard: if a future code path replaces a whole property wrapper object at once
+        // (path stops at path[9] with no attr leaf at path[10]), replaying as-is would nest
+        // the { value: X } wrapper under .value -> { value: { value: X } }. Unwrap one level
+        // so the replay restores the correct { value: X } shape.
+        if (attr === undefined && patchValue && typeof patchValue === 'object' && 'value' in patchValue) {
+          attr = 'value';
+          patchValue = patchValue.value;
+        }
         changeStack.push({
           op: 'propertyUpdate',
           componentId: path[5],
           value: {
             property: path[9],
-            value: value,
+            value: patchValue,
             paramType: path[8],
-            attr: path[10],
+            attr,
           },
         });
       }

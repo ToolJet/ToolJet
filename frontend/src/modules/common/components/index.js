@@ -9,7 +9,6 @@ import SSOAuthModule from './SSOAuthModule';
 import TermsAndPrivacyInfo from './TermsAndPrivacyInfo';
 import BaseImportAppMenu from './BaseImportAppMenu';
 import DisablePasswordLoginModal from './DisablePasswordLoginModal';
-import BaseManageOrgConstants from './BaseManageOrgConstants';
 import BaseSettingsMenu from './BaseSettingsMenu';
 import LeftNavSideBar from './LeftNavSideBar';
 import BaseCreateVersionModal from './BaseCreateVersionModal';
@@ -27,9 +26,13 @@ import BaseSetupAdminPage from './BaseSetupAdminPage';
 import UsersTable from './UsersTable';
 import BaseColorSwatches from './BaseColorSwatches';
 import BaseComponentModuleTab from './BaseComponentModuleTab';
+import OtpInput from './OtpInput';
+import TroubleSigningInModal from './TroubleSigningInModal';
 import LinkExpiredCard from './LinkExpiredCard';
 
 export {
+  OtpInput,
+  TroubleSigningInModal,
   FormTextInput,
   PasswordInput,
   GeneralFeatureImage,
@@ -42,7 +45,6 @@ export {
   TermsAndPrivacyInfo,
   BaseImportAppMenu,
   DisablePasswordLoginModal,
-  BaseManageOrgConstants,
   BaseSettingsMenu,
   LeftNavSideBar,
   BaseCreateVersionModal,

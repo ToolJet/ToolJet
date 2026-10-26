@@ -1,20 +1,22 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
+const hash = require('string-hash');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
-const hash = require('string-hash');
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const { WidgetDefsAfterServerPlugin, WIDGET_DEFINITIONS_SRC } = require('./scripts/widget-defs-after-server-plugin');
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+
 const edition = process.env.TOOLJET_EDITION;
 const PYODIDE_CDN_URL = 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/';
 const PYODIDE_LOCAL_URL = '/assets/libs/pyodide-0.23.2/';
@@ -93,6 +95,7 @@ if (process.env.APM_VENDOR === 'sentry') {
 
 if (isDevEnv) {
   plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
+  plugins.push(new WidgetDefsAfterServerPlugin());
 }
 
 if (isProductionMode) {
@@ -270,6 +273,11 @@ module.exports = {
       '@cloud': path.resolve(__dirname, 'cloud/'),
       '@assets': path.resolve(__dirname, 'assets/'),
       '@white-label': path.resolve(__dirname, 'src/_helpers/white-label'),
+      // Ensures @babel/runtime helpers are always resolved from frontend/node_modules,
+      // regardless of where the file being transformed lives (e.g. packages/widget-definitions).
+      // Without this, transform-runtime resolves @babel/runtime relative to the source file
+      // and fails to find it when transforming files outside the frontend directory.
+      '@babel/runtime': path.resolve(__dirname, 'node_modules/@babel/runtime'),
     },
     fallback: {
       process: require.resolve('process/browser.js'),
@@ -288,8 +296,8 @@ module.exports = {
     environment === 'development'
       ? 'eval-source-map'
       : process.env.APM_VENDOR === 'sentry'
-      ? 'hidden-source-map'
-      : false,
+        ? 'hidden-source-map'
+        : false,
   module: {
     rules: [
       {
@@ -314,22 +322,36 @@ module.exports = {
         resourceQuery: /url/, // SVGs with path has *.svg?url
       },
       {
-        test: /\.svg$/i,
-        use: ({ resource }) => ({
-          loader: '@svgr/webpack',
-          options: {
-            svgoConfig: {
-              plugins: [
-                {
-                  name: 'prefixIds',
-                  cleanupIDs: {
-                    prefix: `svg-${hash(resource)}`,
+        test: /\.svg$/,
+        // `use` is called once per matched resource, so `info.resource` gives the full
+        // file path. We hash it here and pass a plain string to svgo's `prefixIds` plugin.
+        // This prevents ID collisions when many files share the same basename (e.g.
+        // plugins/packages/*/lib/icon.svg all resolve to the same "icon_svg__" prefix by
+        // default, breaking gradients and clip-paths when several icons render on one page).
+        use: (info) => {
+          const prefix = `svg-${hash(info.resource)}`;
+          return {
+            loader: '@svgr/webpack',
+            options: {
+              svgoConfig: {
+                plugins: [
+                  {
+                    name: 'preset-default',
+                    params: {
+                      overrides: {
+                        removeViewBox: false,
+                      },
+                    },
                   },
-                },
-              ],
+                  {
+                    name: 'prefixIds',
+                    params: { prefix },
+                  },
+                ],
+              },
             },
-          },
-        }),
+          };
+        },
         resourceQuery: { not: [/url/] }, // exclude react component if path has *.svg?url
       },
       {
@@ -338,6 +360,17 @@ module.exports = {
           environment === 'production' ? MiniCssExtractPlugin.loader : { loader: 'style-loader' },
           {
             loader: 'css-loader',
+            options: {
+              // css-loader 7 defaults *.module.css to named exports only; the app
+              // imports CSS modules as a default export (`import styles from ...`).
+              // `auto` must be set explicitly: passing `modules` as an object leaves
+              // it undefined, which turns EVERY stylesheet into a CSS module and
+              // hashes the class names of the global styles.
+              // `exportLocalsConvention` also has to be pinned: with `namedExport`
+              // off, css-loader 7 defaults it to 'camel-case-only', which lowercases
+              // PascalCase class names (`styles.Wrapper` -> undefined).
+              modules: { auto: true, namedExport: false, exportLocalsConvention: 'as-is' },
+            },
           },
         ],
       },
@@ -347,6 +380,17 @@ module.exports = {
           environment === 'production' ? MiniCssExtractPlugin.loader : { loader: 'style-loader' },
           {
             loader: 'css-loader',
+            options: {
+              // css-loader 7 defaults *.module.css to named exports only; the app
+              // imports CSS modules as a default export (`import styles from ...`).
+              // `auto` must be set explicitly: passing `modules` as an object leaves
+              // it undefined, which turns EVERY stylesheet into a CSS module and
+              // hashes the class names of the global styles.
+              // `exportLocalsConvention` also has to be pinned: with `namedExport`
+              // off, css-loader 7 defaults it to 'camel-case-only', which lowercases
+              // PascalCase class names (`styles.Wrapper` -> undefined).
+              modules: { auto: true, namedExport: false, exportLocalsConvention: 'as-is' },
+            },
           },
           {
             loader: 'postcss-loader',
@@ -392,6 +436,9 @@ module.exports = {
     ],
   },
   plugins,
+  watchOptions: {
+    ignored: [`${WIDGET_DEFINITIONS_SRC}/**`],
+  },
   devServer: {
     historyApiFallback: { index: ASSET_PATH },
     static: {
@@ -401,6 +448,13 @@ module.exports = {
     client: {
       overlay: false,
     },
+    // The custom-component shell iframe is sandboxed (opaque origin), so its import()/fetch()
+    // of these vendor files sends `Origin: null` and needs an explicit ACAO — see
+    // server/ee/custom-component-libraries/controller.ts for the matching header on the
+    // bundle/css serve routes. webpack-dev-server's array/object `headers` form applies to
+    // every request, so this needs the function form to scope it to just this path.
+    headers: (req) =>
+      req.url.startsWith('/assets/custom-components/') ? { 'Access-Control-Allow-Origin': 'null' } : {},
   },
   output: {
     filename: environment === 'production' ? '[name].[contenthash:8].js' : '[name].js',
@@ -428,8 +482,7 @@ module.exports = {
       ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
       WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.com/signup',
       TJ_SELFHOST_CREDITS_APP:
-        process.env.TJ_SELFHOST_CREDITS_APP ||
-        'https://app.tooljet.com/applications/c1ec8a6c-ee9a-4a7d-ba9b-3590bbeaf6b9',
+        process.env.TJ_SELFHOST_CREDITS_APP || 'https://app.tooljet.ai/applications/credits-portal',
       ENABLE_PASSWORD_COMPLEXITY_RULES: process.env.ENABLE_PASSWORD_COMPLEXITY_RULES || false,
     }),
   },
