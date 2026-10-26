@@ -22,24 +22,54 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
   const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
   const updateShouldPersistAddNewRow = useTableStore((state) => state.updateShouldPersistAddNewRow, shallow);
+  const disableAddNewRowSave = useTableStore((state) => state.getTableProperties(id)?.disableAddNewRowSave, shallow);
   const columnHeaderWrap = useTableStore((state) => state.getTableStyles(id)?.columnHeaderWrap, shallow);
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
   const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
   const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
+  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const getResolvedValue = useStore.getState().getResolvedValue;
   // header overflow set to wrap: let the header grow with the text instead of overflowing the fixed 32px height
   const isHeaderWrapped = getResolvedValue(columnHeaderWrap) === 'wrap';
 
   const addNewRowDetailsLength = addNewRowDetails.size;
 
+  const getDefaultCellValue = useCallback(
+    (meta) => {
+      const defaultOptionsList = meta?.defaultOptionsList || [];
+      switch (meta?.columnType) {
+        case 'rating':
+          return getResolvedValue(meta.defaultRating) ?? 0;
+        case 'boolean':
+          return false;
+        case 'select':
+          return defaultOptionsList.length ? defaultOptionsList.slice(-1)[0]?.value : '';
+        case 'newMultiSelect':
+          return defaultOptionsList.length ? defaultOptionsList : '';
+        case 'tagsV2': {
+          // Dynamic options can't be trusted to stay valid, so tagsV2 drops its default list in that
+          // case too (mirrors TagsV2ColumnAdapter's own defaultOptionsList gating).
+          const useDynamicOptions = getResolvedValue(meta.useDynamicOptions);
+          const options = useDynamicOptions ? [] : defaultOptionsList;
+          if (!options.length) return '';
+          const allowMultipleSelection = getResolvedValue(meta.allowMultipleSelection) ?? false;
+          return allowMultipleSelection ? options : options.slice(-1)[0]?.value;
+        }
+        default:
+          return '';
+      }
+    },
+    [getResolvedValue]
+  );
+
   const newEmptyRow = useMemo(() => {
     return allColumns.reduce((accumulator, column) => {
       if (column.columnDef?.meta?.skipAddNewRow) return accumulator;
       const key = column.columnDef.accessorKey;
-      accumulator[key] = '';
+      accumulator[key] = getDefaultCellValue(column.columnDef?.meta);
       return accumulator;
     }, {});
-  }, [allColumns]);
+  }, [allColumns, getDefaultCellValue]);
 
   useEffect(() => {
     clearAddNewRowDetails(id);
@@ -208,7 +238,12 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} style={{ display: 'flex' }} className="table-row" data-cy={`add-new-row-${row.index}`}>
+              <tr
+                key={row.id}
+                style={{ display: 'flex', minHeight: cellHeight === 'condensed' ? '39px' : '45px' }}
+                className="table-row"
+                data-cy={`add-new-row-${row.index}`}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
@@ -272,6 +307,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
             hideAddNewRowPopup();
           }}
           size="sm"
+          disabled={disableAddNewRowSave}
           customStyles={{ padding: '10px 20px', backgroundColor: 'var(--cc-primary-brand)' }}
         >
           <span>Save</span>

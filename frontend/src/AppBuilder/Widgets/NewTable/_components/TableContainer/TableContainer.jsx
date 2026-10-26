@@ -7,7 +7,6 @@ import { buildTableColumn } from '../../_utils/buildTableColumn';
 import { useTable } from '../../_hooks/useTable';
 import { shallow } from 'zustand/shallow';
 import TableData from '../TableData';
-import { useTranslation } from 'react-i18next';
 
 export const TableContainer = ({
   id,
@@ -25,7 +24,6 @@ export const TableContainer = ({
 }) => {
   const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
     useTableStore();
-  const { t } = useTranslation();
   const columnProperties = getColumnProperties(id);
   // Table properties
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
@@ -87,7 +85,6 @@ export const TableContainer = ({
       globalFilter,
       serverSideSearch,
       tableBodyRef,
-      t,
       enableExpandableRows,
       toggleRowExpansion,
       moduleId
@@ -112,6 +109,7 @@ export const TableContainer = ({
 
   const { table, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =
     useTable({
+      id,
       data,
       columns,
       enableSorting,
@@ -124,7 +122,15 @@ export const TableContainer = ({
       globalFilter,
       setGlobalFilter,
       expandedRows,
+      getEditedFieldsOnIndex,
     });
+
+  // Turning sorting off does not clear a sort already applied while it was on, since TanStack's
+  // sorting state is uncontrolled here; clear it explicitly so the data/UI un-sort too.
+  useEffect(() => {
+    if (!enableSorting) table.setSorting([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableSorting]);
 
   // Collapse all expanded rows when sort, filter, search or page changes
   useEffect(() => {
