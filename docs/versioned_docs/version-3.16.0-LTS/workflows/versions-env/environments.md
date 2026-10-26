@@ -51,14 +51,30 @@ Once a workflow version is promoted beyond development, its definition is locked
 
 When triggering a workflow via webhooks, you can specify which environment to execute in using query parameters:
 
-- **`environment`**: The target environment name (e.g., `staging`, `production`).
-- **`version`**: The specific version to execute.
+- **`environment`**: The target environment name in lowercase (e.g., `staging`, `production`). If omitted, `production` is used.
+- **`version`**: The name of the version to execute. If omitted, the released version runs.
 
-The system validates that the specified version has been promoted to the target environment before allowing execution. A version in development cannot be executed in a production context.
+The system validates that the specified version has been promoted to the target environment before allowing execution. A version in development cannot be executed in a production context. See [Environment and Version](/docs/workflows/triggers/webhook#environment-and-version) for the errors returned.
+
+## Constants and Secrets in Workflows
+
+Workflow nodes use the [constants and secrets](/docs/security/constants/) of the environment the workflow runs in. How you can use them depends on the node:
+
+| Where | Constants | Secrets |
+|-------|-----------|---------|
+| Data source query fields, such as a SQL query or a REST API URL or header | `{{constants.name}}` resolves to the value. | `{{secrets.name}}` resolves to the value. |
+| Agent node **System prompt** and **User prompt** | `{{constants.name}}` resolves to the value. | `{{secrets.name}}` resolves to the value. |
+| JavaScript, Python, If condition and Response node code | `constants.name` returns the value. | `secrets.name` returns `********`, not the value. |
+
+Use secrets in data source query fields and Agent node prompts, where ToolJet resolves them on the server. Code nodes can't read their values.
+
+:::warning
+Server-side global variables (`{{globals.server.*}}`) aren't available in workflows. A node that references them, including an Agent node prompt, fails with `globals is not defined`.
+:::
 
 ## Workflow Schedules and Environments
 
-Workflow schedules are tied to specific environments. When creating a schedule, you specify which environment the scheduled execution should run in. This ensures that scheduled workflows use the correct datasources, constants, and workflow version for that environment.
+Workflow schedules are tied to specific environments. When creating a schedule, you specify which environment the scheduled execution should run in and which version to run. This ensures that scheduled workflows use the correct datasources, constants, and workflow version for that environment. See [Version and Environment](/docs/workflows/triggers/scheduler#version-and-environment).
 
 ## Impacted Behavior with Environment Permission
 
