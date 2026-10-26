@@ -11,5 +11,4 @@ import '@/TooljetDatabase/Table/styles.scss';
 import '@/TooljetDatabase/Table/ActionsPopover/styles.scss';
 import '@/TooljetDatabase/Menu/CellEditMenu/styles.scss';
 import '@/TooljetDatabase/Drawers/BulkUploadDrawer/styles.scss';
-import '@/SettingsPage/resources/styles/access-tokens-card.styles.scss';
 import '@/SettingsPage/resources/styles/two-factor-auth-card.styles.scss';
