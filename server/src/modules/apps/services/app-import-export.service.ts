@@ -4639,7 +4639,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
-function migrateProperties(
+export function migrateProperties(
   componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
@@ -4868,7 +4868,9 @@ function migrateProperties(
 
     // Image
     if (componentType === 'Image') {
-      if (styles.padding) {
+      // Old exports kept the padding number in `padding`; current ones keep the switch value there and the
+      // number in `customPadding`. Only a `padding` that isn't a switch value needs moving.
+      if (styles.padding && !['default', 'custom'].includes(styles.padding.value)) {
         styles.customPadding = styles.padding;
         styles.padding = { value: 'custom' };
       }
