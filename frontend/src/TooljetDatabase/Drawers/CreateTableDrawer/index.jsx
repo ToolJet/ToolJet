@@ -2,16 +2,17 @@ import React, { useState, useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import CreateTableForm from '../../Forms/TableForm';
-import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService, authenticationService } from '@/_services';
+import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { BreadCrumbContext } from '@/App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { getLimitState } from '@/modules/common/helpers/limitGating';
 import { useLicenseStore } from '@/_stores/licenseStore';
 
 export default function CreateTableDrawer({ tablesLimit, setTablesLimit }) {
-  const { organizationId, setSelectedTable, setTables, tables, canEditTjdb } = useContext(TooljetDatabaseContext);
+  const { organizationId, setSelectedTable, setTables, tables, canEditTjdb } = useTooljetDatabaseContext();
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
