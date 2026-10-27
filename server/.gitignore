@@ -18,6 +18,8 @@ lerna-debug.log*
 /coverage-unit
 /coverage-e2e
 /coverage-combined
+/coverage-mcp-oauth
+/coverage-mcp-oauth-upload
 /.coverage
 /.coverage-all
 /.nyc_output
