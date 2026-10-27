@@ -45,7 +45,7 @@ If no modules exist in the workspace, the **Modules** tab shows a **Create Modul
 
 When you select a module on the canvas, the properties panel shows the following settings for that instance.
 
-<!-- TODO screenshot: properties panel of a module instance in an app, showing Input, General, Devices and Additional actions -->
+<img className="screenshot-full img-s" src="/img/app-builder/modules/module-instance-properties.png" alt="Properties panel of a module instance in an app" />
 
 #### Properties
 
@@ -55,9 +55,9 @@ When you select a module on the canvas, the properties panel shows the following
 | **General** | **Tooltip** | Text shown when hovering over the module. | Empty |
 | **Devices** | **Show on desktop** | Shows the module in the desktop layout. | On |
 | **Devices** | **Show on mobile** | Shows the module in the mobile layout. | Off |
-| **Additional actions** | **Visibility** | Shows or hides the module. | On |
-| **Additional actions** | **Dynamic height** | Adjusts the module's height to fit its content when the application is running. | Value set in the module builder (Off by default) |
-| **Additional actions** | **Collapse when hidden** | Removes the space the module takes up when it's hidden. | Value set in the module builder (Off by default) |
+| **Additional Actions** | **Visibility** | Shows or hides the module. | On |
+| **Additional Actions** | **Dynamic height** | Adjusts the module's height to fit its content when the application is running. | Value set in the module builder (Off by default) |
+| **Additional Actions** | **Collapse when hidden** | Removes the space the module takes up when it's hidden. | Value set in the module builder (Off by default) |
 
 #### Styles
 

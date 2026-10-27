@@ -11,9 +11,7 @@ title: Canvas and Layout
 
 **Global settings** holds app-level settings such as the app URL, maintenance mode, export, and canvas styles. To open it, click the **Settings** icon in the left sidebar of the app builder.
 
-<img className="screenshot-full img-s" src="/img/app-builder/canvas/global-settings.png" alt="App Builder: Global settings"/>
-
-<!-- TODO screenshot: refresh global-settings.png as global-settings-v2.png showing Unique app slug, App link, Maintenance mode, Export app and the expanded Canvas styles section -->
+<img className="screenshot-full img-s" src="/img/app-builder/canvas/global-settings-v2.png" alt="Global settings panel with app slug, maintenance mode, export and canvas styles" />
 
 ### Unique App Slug
 
@@ -46,7 +44,7 @@ Click **Export app** to download the app as a JSON file. In the **Select a versi
 
 ### Canvas Styles
 
-The **Canvas styles** section has the following settings:
+The **Canvas Styles** section has the following settings:
 
 - **Max width of canvas**: Sets the maximum width of the canvas in `px` or `%`. The default is `1292` px. Switching the unit to `%` sets the width to `100`. The height of the canvas expands automatically as more components are added.
 - **Canvas background**: Sets the background color of the canvas. To set it dynamically, click **fx** and enter an expression.
@@ -57,7 +55,7 @@ The **Canvas styles** section has the following settings:
 - **Theme**: Selects the [App Theme](/docs/app-builder/custom-theme) used by the app. Custom themes need a paid plan. Without one, the dropdown is disabled and the default **ToolJet** theme is used.
 
 :::info
-**Maintenance mode** and **Canvas styles** can't be changed while the app builder is locked for editing, for example when the released version is open.
+**Maintenance mode** and **Canvas Styles** can't be changed while the app builder is locked for editing, for example when the released version is open.
 :::
 
 ### Global Settings in the Module Editor
@@ -66,7 +64,7 @@ When you edit a [module](/docs/app-builder/modules/overview), **Global settings*
 
 - **Unique app slug** and **Maintenance mode** aren't available, because modules aren't launched on their own.
 - The export button is **Export module**. It downloads the module as a JSON file immediately, without a version selection dialog.
-- **Canvas styles** has no **Max width of canvas** setting, because the app that embeds the module controls its width. **App mode** is labelled **Module mode**.
+- **Canvas Styles** has no **Max width of canvas** setting, because the app that embeds the module controls its width. **App mode** is labelled **Module mode**.
 
 ## Building the User Interface
 
@@ -84,7 +82,7 @@ ToolJet's Canvas provides a grid background, smart snapping, and visual markers 
 
 Each page has a desktop layout and a mobile layout. To switch the canvas between them, use the **Desktop Layout** and **Mobile Layout** buttons in the app builder header.
 
-<!-- TODO screenshot: app builder header with the Desktop Layout / Mobile Layout toggle and the Preview button -->
+<img className="screenshot-full img-s" src="/img/app-builder/canvas/layout-toggle-preview.png" alt="Desktop and mobile layout toggle and the Preview button in the app builder header" />
 
 - Each component stores its position and size separately for desktop and mobile.
 - A component appears in a layout only when its **Show on desktop** or **Show on mobile** property, in the **Devices** section of the component's properties, is turned on. Turning on **Show on mobile** adds the component to the mobile layout using its desktop size.

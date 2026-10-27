@@ -57,4 +57,4 @@ Multi-line code editors have a find and replace panel. These include RunJS and R
 
 Search isn't case-sensitive and matches plain text; regular expressions aren't supported. The panel shows which match you're on and the total, for example `2 of 5`, and counts up to 1,000 matches. To replace every match at once, click **Replace all**.
 
-<!-- TODO screenshot: code editor find and replace panel open in a RunJS query, with Find and Replace fields filled and a match count showing -->
+<img className="screenshot-full img-full" src="/img/tutorial/keyboard-shortcuts/find-and-replace.png" alt="Find and replace panel in a RunJS query editor" />

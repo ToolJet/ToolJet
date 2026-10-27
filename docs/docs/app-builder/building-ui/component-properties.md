@@ -31,7 +31,7 @@ Select a component and click the kebab menu (three dots) next to its name at the
 | **Edit module** | Opens the module in a new browser tab so you can edit it. This option appears only when the selected component is a module. |
 | **Delete** | Deletes the component after you confirm. |
 
-<!-- TODO screenshot: properties panel kebab menu open, showing Inspect, Rename, Duplicate, Component permission, Delete -->
+<img className="screenshot-full img-s" src="/img/app-builder/building-ui/component-actions-menu.png" alt="Component actions menu in the properties panel" />
 
 ## Component Level Permissions
 

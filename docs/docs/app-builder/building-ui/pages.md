@@ -25,10 +25,10 @@ You manage pages and configure the navigation menu from the **Pages and navigati
 
 The panel has two tabs:
 
-- **Properties**: Contains the **Pages and menu** section, where you add and manage pages and nav items, and the **Header and navigation** section, where you configure the [app header](#app-header) and the [navigation menu](#navigation-menu).
+- **Properties**: Contains the **Pages And Menu** section, where you add and manage pages and nav items, and the **Header And Navigation** section, where you configure the [app header](#app-header) and the [navigation menu](#navigation-menu).
 - **Styles**: Customize the colors and pill radius of the navigation menu. See [Navigation Menu Styles](#navigation-menu-styles).
 
-<!-- TODO screenshot: Pages and navigation panel in the right sidebar with the Properties tab open -->
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/pages-and-navigation-panel.png" alt="Pages and navigation panel with the Properties tab open" />
 
 ## Page Properties
 
@@ -165,7 +165,7 @@ Use the **Styles** tab of the **Pages and navigation** panel to customize the na
 
 Each page can have its own header and footer. These areas sit above and below the page canvas, and you use them for content that should stay visible on that page, such as a logo, a title, or action buttons. Header and footer settings and content are configured per page.
 
-<!-- TODO screenshot: Page canvas in the editor with the App header and App footer enabled, each containing a few components -->
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/page-header-footer-settings.png" alt="Edit page popover with the Page header and Page footer settings" />
 
 ### Enable the Header or Footer
 
@@ -214,7 +214,7 @@ Exposed variables are values from a page that can be accessed throughout the app
 
 ### New Page
 
-You can add a new page to organize the application navigation or to separate different parts of your app. To add a new page, click the **+ New page** button at the bottom of the **Pages and menu** section in the **Pages and navigation** panel. Enter the page name and press enter to create the page.
+You can add a new page to organize the application navigation or to separate different parts of your app. To add a new page, click the **+ New page** button at the bottom of the **Pages And Menu** section in the **Pages and navigation** panel. Enter the page name and press enter to create the page.
 
 <img className="screenshot-full img-s" src="/img/app-builder/multi-page/new-page.png" alt="App Builder: Canvas"/>
 

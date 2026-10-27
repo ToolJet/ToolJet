@@ -77,7 +77,7 @@ The **Themes** tab lists every theme in the workspace. The workspace default the
 
 The built-in **ToolJet** theme can't be edited, renamed, or deleted, but you can set it back as the default.
 
-<!-- TODO screenshot: Themes tab with a custom theme selected, showing Set as default, edit and delete actions -->
+<img className="screenshot-full img-full" src="/img/app-builder/custom-theme/themes-tab.png" alt="Themes tab in workspace settings with a custom theme selected" />
 
 ### 2. Apply the Theme to Your Application
 
@@ -85,7 +85,7 @@ Role Required: **Admin/Builder**
 
 - Open the app where you want to use the theme.
 - Click the **Settings** icon in the **left sidebar** to open **Global settings**.
-- In the **Canvas styles** section, find the **Theme** dropdown. It shows the currently selected theme, and the workspace's default theme is marked **Default**.
+- In the **Canvas Styles** section, find the **Theme** dropdown. It shows the currently selected theme, and the workspace's default theme is marked **Default**.
 - Click the dropdown to view and select from all your configured themes. To create a new one, click **Create a new theme** at the bottom of the dropdown. This opens the workspace theme settings in a new tab. <br/>
   <img  className="screenshot-full img-m" src="/img/app-builder/custom-theme/select-theme.png" alt="Configure custom theme" />
 

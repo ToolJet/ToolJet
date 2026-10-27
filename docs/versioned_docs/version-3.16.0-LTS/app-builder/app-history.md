@@ -7,7 +7,7 @@ title: App History
 
 App History keeps a timeline of the changes made to an app version in the App Builder. Use it to see who changed what and when, and to restore the app to an earlier point if a change breaks something.
 
-<!-- TODO screenshot: App history panel open in the left sidebar, showing entries grouped by date with the Current version entry at the top -->
+<img className="screenshot-full img-s" src="/img/app-builder/app-history/app-history-panel.png" alt="App history panel listing changes for the current version" />
 
 ## Opening App History
 
