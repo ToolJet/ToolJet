@@ -33,7 +33,7 @@ Owns instance-wide key/value settings (the `instance_settings` table) that only 
 - Fail closed: before the first successful read the publisher sets `{ enabled: true, empty allowlist }`. A change takes up to 30 s to apply.
 - Allowlist: max 200 entries, trimmed and lowercased, CIDR `/0` rejected.
 - Rows are `type: system`, seeded by a data migration; the SSRF keys must not be added to `BASIC_PLAN_SETTINGS` (no licence gate).
-- The toggle is seeded unset. `isSSRFProtectionEnabledSetting` (`ssrf-allowlist.helper.ts`) decides it for both the publisher and the settings API: an explicit `'true'`/`'false'` wins; unset means off in dev mode (`NODE_ENV=development`, set by `npm run start:dev`) and on everywhere else.
+- The data migration seeds the toggle by install type: a new installation (no workspace yet) gets it unset; an existing setup gets an explicit value matching its old behaviour (`'false'`, or `'true'` if it had `SSRF_PROTECTION_ENABLED=true`), so upgrading never flips it. `isSSRFProtectionEnabledSetting` (`ssrf-allowlist.helper.ts`) decides it for both the publisher and the settings API: an explicit `'true'`/`'false'` wins; unset means off in dev mode (`NODE_ENV=development`, set by `npm run start:dev`) and on everywhere else.
 - Test connection runs the SSRF check for every data source kind; only the built-in database drivers in `SSRF_UNCHECKED_DATABASE_KINDS` (`data-sources/util.service.ts`) skip the `host` check (see `data-sources/AGENTS.md`).
 
 ## Related modules

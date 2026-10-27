@@ -1,4 +1,5 @@
 import { InstanceSettings } from '@entities/instance_settings.entity';
+import { Organization } from '@entities/organization.entity';
 import {
   INSTANCE_CONFIGS_DATA_TYPES,
   INSTANCE_SETTINGS_TYPE,
@@ -15,6 +16,7 @@ export const SSRF_INSTANCE_SETTINGS_ROWS = [
     labelKey: 'header.organization.menus.manageSSO.generalSettings.ssrfProtection',
     dataType: INSTANCE_CONFIGS_DATA_TYPES.BOOLEAN,
     // Unset until a super admin chooses: on by default, off in dev mode (see isSSRFProtectionEnabledSetting).
+    // Existing setups get an explicit value in up(), so upgrading never changes whether protection is on.
     value: '',
     helperText: 'Block data source requests to private, loopback and cloud metadata addresses',
     helperTextKey: 'header.organization.menus.manageSSO.generalSettings.ssrfProtection',
@@ -43,15 +45,26 @@ export class AddSsrfProtectionInstanceSettings1790600000000 implements Migration
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const total = SSRF_INSTANCE_SETTINGS_ROWS.length;
-    console.log(`${MIGRATION_NAME}: [START] SSRF instance settings to add: ${total}`);
+    // No workspace yet means a new installation; any workspace means an existing setup being upgraded, which keeps
+    // its current behaviour: off unless it had opted in through the SSRF_PROTECTION_ENABLED env var.
+    const isExistingSetup = (await entityManager.count(Organization)) > 0;
+    const existingSetupToggle = process.env.SSRF_PROTECTION_ENABLED === 'true' ? 'true' : 'false';
+    console.log(
+      `${MIGRATION_NAME}: [START] SSRF instance settings to add: ${total} (${isExistingSetup ? 'existing setup' : 'new installation'})`
+    );
 
     let inserted = 0;
     for (const [index, row] of SSRF_INSTANCE_SETTINGS_ROWS.entries()) {
       // Insert only where the key is missing, so a re-run never overwrites an admin's choice.
       const existing = await entityManager.findOne(InstanceSettings, { where: { key: row.key } });
       if (!existing) {
+        const value =
+          isExistingSetup && row.key === INSTANCE_SYSTEM_SETTINGS.SSRF_PROTECTION_ENABLED
+            ? existingSetupToggle
+            : row.value;
         await entityManager.insert(InstanceSettings, {
           ...row,
+          value,
           type: INSTANCE_SETTINGS_TYPE.SYSTEM,
           createdAt: new Date(),
         });
