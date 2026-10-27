@@ -158,7 +158,7 @@ USER appuser
 WORKDIR /app
 
 # Dependencies for scripts outside nestjs
-RUN npm install dotenv@10.0.0 joi@17.4.1
+RUN npm install dotenv@10.0.0 joi@17.13.8
 
 RUN npm cache clean --force
 
