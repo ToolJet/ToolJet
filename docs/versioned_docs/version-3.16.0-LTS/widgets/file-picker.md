@@ -25,7 +25,8 @@ To accept any/all file type(s), set `Accept file types` to an empty value.
 | Use file picker | On clicking it invokes the default OS file prompt. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Allow picking multiple files | Allows drag and drop (or selection from the file dialog) of multiple files. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Enable parsing | Enable parsing to automatically convert uploaded files into usable data within your app. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| File Type | When parsing is enabled, you can choose the file type from the dropdown - Autodetect Extension, CSV, TSV, XLS, or XLSX. When CSV is selected, you can also choose the delimiter used to separate the values. | Choose from the dropdown. |
+| File type | Shown when **Enable parsing** is on. Choose the file type to parse: **Autodetect from extension** (default), **CSV**, **TSV**, **Microsoft Excel - xls** or **Microsoft Excel - xlsx**. | Select from dropdown or dynamically configure the value by clicking on **fx**. |
+| Delimiter | Character used to separate values when parsing CSV files. Shown only when **Enable parsing** is on and **File type** is **CSV**. TSV files always use a tab, and **Autodetect from extension** always uses a comma. | String (default `,`). |
 
 ## Events
 
@@ -46,24 +47,26 @@ The following actions of the component can be controlled using the component-spe
 | <div style={{ width:"110px"}}> Actions </div> | <div style={{ width:"200px"}}> Description </div>         | <div style={{ width:"150px"}}> How To Access </div> |
 | :-------------------------------------------- | :-------------------------------------------------------- | :-------------------------------------------------- |
 | clearFiles( )                                 | Clears the selected files from the file picker component. | `components.filepicker1.clearFiles()`               |
-| setFileName( )                                | Sets the file name for the uploaded file.                 | `components.filepicker1.setFileName()`              |
-| setVisibility( )                              | Sets the visibility of the component.                     | `components.filepicker1.setVisibility()`            |
-| setLoading( )                                 | Sets the loading state of the component.                  | `components.filepicker1.setLoading()`               |
-| setDisable( )                                 | Disables the component.                                   | `components.filepicker1.setDisable()`               |
+| clear( )                                      | Same as `clearFiles()`. Available from RunJS only. | `components.filepicker1.clear()`                    |
+| setFileName( )                                | Renames selected files. Pass the file's index (starting at 0) and the new name, or an array of `{ index, newFileName }` objects to rename several files. The original extension is kept, so pass the name without it. | `components.filepicker1.setFileName(0, 'invoice')` or `components.filepicker1.setFileName([{ index: 0, newFileName: 'a' }, { index: 1, newFileName: 'b' }])` |
+| setVisibility( )                              | Sets the visibility of the component.                     | `components.filepicker1.setVisibility(true)`            |
+| setLoading( )                                 | Sets the loading state of the component.                  | `components.filepicker1.setLoading(true)`               |
+| setDisable( )                                 | Disables the component.                                   | `components.filepicker1.setDisable(true)`               |
 
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"200px"}}> Description </div>         | <div style={{ width:"200px"}}> How To Access </div> |
 | :---------------------------------------------- | :-------------------------------------------------------- | :-------------------------------------------------- |
 | file                                            | Holds information of file loaded in the file picker.      | `{{components.filepicker1.file}}`                   |
-| isParsing                                       | Indicates if the parsing is enabled                       | `{{components.filepicker1.isParsing}}`              |
+| isParsing                                       | Indicates if the selected files are being parsed.         | `{{components.filepicker1.isParsing}}`              |
 | isValid                                         | Indicates if the uploaded file is valid.                  | `{{components.filepicker1.isValid}}`                |
-| fileSize                                        | Stores the file size.                                     | `{{components.filepicker1.fileSize}}`               |
+| fileSize                                        | Stores the total size of the selected files, in bytes.    | `{{components.filepicker1.fileSize}}`               |
 | isMandatory                                     | Indicates if the component is mandatory.                  | `{{components.filepicker1.isMandatory}}`            |
 | isLoading                                       | Indicates if the component is loading.                    | `{{components.filepicker1.isLoading}}`              |
 | isVisible                                       | Indicates if the component is visible.                    | `{{components.filepicker1.isVisible}}`              |
 | isDisabled                                      | Indicates if the component is disabled.                   | `{{components.filepicker1.isDisabled}}`             |
 | files                                           | Holds an array of file objects loaded in the file picker. | `{{components.filepicker1.files}}`                  |
+| uiErrorMessage                                  | Holds the error message currently shown in the component, for example a rejected file type or a missing mandatory file. Empty when there's no error. | `{{components.filepicker1.uiErrorMessage}}` |
 
 ## Validation
 
@@ -99,18 +102,14 @@ The following actions of the component can be controlled using the component-spe
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Title | Sets the title text color. | Select a theme or choose from color picker. |
-| Active color | Sets the active state color. | Select a theme or choose from color picker. |
-| Error color | Sets the color for error text. | Select a theme or choose from color picker. |
 
 ### Container
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
-| Background | Sets the component background color. | Select a theme or choose from color picker. |
-| Border | Sets the border color of the component. | Select a theme or choose from color picker. |
 | Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Box shadow | Sets the box shadow properties of the component.  | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
-| Padding | Allows you to maintain a standard padding. | Numeric Value. |
+| Padding | Sets the padding around the component. | Select **Default** or **None**. |
 
 ### Advanced
 
