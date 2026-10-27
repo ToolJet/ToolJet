@@ -142,7 +142,7 @@ if (uncovered.length) {
     ),
     ...(uncovered.length > MAX_FILES ? [`| _…${uncovered.length - MAX_FILES} more_ | | |`] : []),
     '',
-    '<sub>Server unit + e2e + git-sync suites, v8 line coverage. Excludes module/entity/dto/migrations (`server/test/jest-coverage.config.ts`).</sub>',
+    '<sub>Server unit + e2e + OAuth + git-sync suites, v8 line coverage. Excludes module/entity/dto/migrations (`server/test/jest-coverage.config.ts`).</sub>',
     '</details>'
   );
 }
