@@ -306,7 +306,7 @@ See the diagram below for a detailed view of the authentication and embedding fl
 
     </Tabs>
 
-3. **Configure Your Backend**: Your backend is responsible for securely calling the ToolJet API to generate a Personal Access Token and return the embed URL.
+3. **Configure Your Backend**: Your backend is responsible for securely calling the ToolJet API to generate a Personal Access Token and return the embed URL. Both `sessionExpiry` and `patExpiry` are in minutes. For all request parameters, see [Personal Access Token](/docs/user-management/authentication/self-hosted/pat).
 
     <Tabs>
 
@@ -339,7 +339,7 @@ See the diagram below for a detailed view of the authentication and embedding fl
                     email: email,
                     appId: appId,
                     sessionExpiry: 60,      // Session valid for 60 minutes
-                    patExpiry: 3600         // Token valid for 1 hour (3600 seconds)
+                    patExpiry: 60           // Token valid for 60 minutes
                 },
                 {
                     headers: {
@@ -407,7 +407,7 @@ See the diagram below for a detailed view of the authentication and embedding fl
                             'email': email,
                             'appId': app_id,
                             'sessionExpiry': 60,    # Session valid for 60 minutes
-                            'patExpiry': 3600       # Token valid for 1 hour (3600 seconds)
+                            'patExpiry': 60         # Token valid for 60 minutes
                         },
                         headers={
                             'Authorization': f'Basic {TOOLJET_API_TOKEN}',
@@ -476,7 +476,7 @@ See the diagram below for a detailed view of the authentication and embedding fl
                             'email' => $validated['email'],
                             'appId' => $validated['appId'],
                             'sessionExpiry' => 60,    // Session valid for 60 minutes
-                            'patExpiry' => 3600       // Token valid for 1 hour (3600 seconds)
+                            'patExpiry' => 60         // Token valid for 60 minutes
                         ]);
                         
                         if ($response->failed()) {

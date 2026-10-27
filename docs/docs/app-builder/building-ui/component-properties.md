@@ -18,9 +18,28 @@ Each component includes a unique set of properties based on its functionality. H
 
 These are just a few commonly used property types. For detailed information on any specific component and its properties, refer to their individual documentation. 
 
+## Component Actions Menu
+
+Select a component and click the kebab menu (three dots) next to its name at the top of the properties panel. The menu has these options:
+
+| Option | What it does |
+|:--|:--|
+| **Inspect** | Opens the [Inspector](/docs/app-builder/debugging/inspector) in the left sidebar and shows the component's current values. |
+| **Rename** | Puts the cursor in the component name field so you can type a new name. |
+| **Duplicate** | Creates a copy of the component. |
+| **Component permission** | Opens the component permission settings. See [Component Level Permissions](#component-level-permissions). |
+| **Edit module** | Opens the module in a new browser tab so you can edit it. This option appears only when the selected component is a module. |
+| **Delete** | Deletes the component after you confirm. |
+
+<!-- TODO screenshot: properties panel kebab menu open, showing Inspect, Rename, Duplicate, Component permission, Delete -->
+
 ## Component Level Permissions
 
+<PlanBadge type="enterprise" />
+
 You can configure component-level permissions to allow only selected end users or user groups to interact with the component. The component will not render at all for users who don’t have access.
+
+If your plan doesn't include component permissions, **Component permission** is greyed out in the menu and marked with an upgrade icon. For more details, see [Component Level Permissions](/docs/app-builder/dynamic-access-rule/component-level).
 
 Suppose you're building an app to manage customer license details. Sales representatives should be able to create, update, and delete customer information. Meanwhile, Product, Marketing, and Customer Success teams should only view this data. To enforce this, you can configure component-level permissions to hide the Edit and Delete buttons from non-sales users. These buttons won’t render at all for users without access.
 

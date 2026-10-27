@@ -180,6 +180,29 @@ For a full architecture breakdown and a side-by-side comparison of all four setu
     />
 </div>
 
+## AI Chat in the App Builder
+
+<SectionSubtitle text="Find your past chats and other ways to build with AI" />
+
+Open the AI chat from the ToolJet AI icon in the left sidebar of the App Builder or Module Builder. The icon is shown only when AI features are enabled for your workspace.
+
+### Chat History
+
+Each app keeps its own AI chats, and you see only the chats you started. Click the **Chats** button at the top-left of the AI chat panel to open **All chats**, which lists your chats for this app with the date and number of messages for each.
+
+- To find a chat, type in **Search conversations...**. The list is filtered by chat title, which is the text of your first message in that chat.
+- To start over, click **Start new chat**. The button is disabled while the AI is working on a request.
+
+<!-- TODO screenshot: AI chat panel with the All chats menu open, showing the search box and Start new chat -->
+
+When a chat reaches its context limit, the prompt box shows **You've reached the context limit for this conversation.** Click **Continue on new chat** to open a new chat that carries over a summary of the current one, so the AI can pick up where it left off.
+
+### Build From Your Coding Agent
+
+The top of the AI chat shows a **Prefer your own agent?** banner. Click it to open **Build ToolJet apps from your coding agent**, which lists the commands to connect **Claude Code**, **Codex**, **Grok Build**, or another MCP client (**Others**) to your ToolJet instance through the [ToolJet MCP server](/docs/build-with-ai/mcp/setup). The commands already include your ToolJet URL; replace the token placeholder with a personal access token. Building this way runs on your coding agent's subscription instead of ToolJet AI credits.
+
+To hide the banner, click **x** on it. It stays hidden in that browser.
+
 ## Data & Privacy
 
 <SectionSubtitle text="Understand how ToolJet handles your data when AI is involved" />
