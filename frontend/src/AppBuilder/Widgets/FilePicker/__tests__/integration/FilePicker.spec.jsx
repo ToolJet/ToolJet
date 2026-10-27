@@ -39,6 +39,10 @@ const widget = createWidgetHarness({
     loadingState: binding('{{false}}'),
     disabledState: binding('{{false}}'),
   },
+  // Written before componentDefinition() seeded a widget's registered definition, so this
+  // spec assumes any bucket it does not name arrives empty. Registered defaults change what it renders
+  // Migration escape hatch: seed what this spec needs explicitly, then delete this line.
+  seedFromRegisteredDefinition: false,
 });
 
 const q = (container, part) => container.querySelector(`[data-cy="${NAME}-${part}"]`);
