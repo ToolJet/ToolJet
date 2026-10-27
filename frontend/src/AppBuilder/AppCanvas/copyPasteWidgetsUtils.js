@@ -408,9 +408,16 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     // (appCanvasUtils.js:149-152); `left` is clamped later in calculateComponentPosition.
     width = Math.min(width, NO_OF_GRIDS);
 
+    // A cross-page paste skips calculateComponentPosition entirely (see the currentPageId
+    // branch below), so its `left` is never bounded there. Clamp it with the width: a widget
+    // rescaled to full width but carrying a nonzero source offset would otherwise start
+    // mid-canvas and run off the right edge. A no-op for same-page, which recomputes `left`.
+    const left = Math.max(0, Math.min(component.layouts[currentLayout].left ?? 0, NO_OF_GRIDS - width));
+
     component.layouts[currentLayout] = {
       ...component.layouts[currentLayout],
       width,
+      left,
     };
 
     const newComponent = {
