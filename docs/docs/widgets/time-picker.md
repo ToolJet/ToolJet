@@ -11,6 +11,7 @@ The **Time Picker** component can be used for selecting time without date input.
 | :------------ | :-------------------------------------------------------------------------- | -------------------------------------- |
 | Label         | The text to be used as the label for the Time Picker.                       | String (e.g., `Time of Arrival`).      |
 | Time Format   | Select the time format from the dropdown. Default time format is **HH:mm**. | Select from dropdown (e.g. `hh:mm A`). |
+| Placeholder   | Hint text shown in the input when no time is selected.                      | String (default: `Select time`).       |
 | Default value | The default value that the component will hold when the app is loaded.      | String (e.g., `11:00`).                |
 
 ## Events
@@ -31,18 +32,14 @@ Following actions of component can be controlled using the Component Specific Ac
 
 | Action                | <div style={{ width:"200px"}}> Description </div>                 | How To Access                                       |
 | :-------------------- | :---------------------------------------------------------------- | :-------------------------------------------------- |
-| setTime( )            | Sets time in the time picker component.                           | `components.timepicker1.setTime(time)`              |
-| setValue( )           | Sets both the date and time value.                                | `components.timepicker1.setValue(value)`            |
+| setValue( )           | Sets the time value. Pass a time in the selected **Time Format**, or pass a format as the second argument. Doesn't trigger **On select**. | `components.timepicker1.setValue('10:30')`          |
 | setMinTime( )         | Sets the minimum time that can be selected in the time picker.    | `components.timepicker1.setMinTime(value)`          |
 | setMaxTime( )         | Sets the maximum time that can be selected in the time picker.    | `components.timepicker1.setMaxTime(value)`          |
 | clearValue( )         | Clears the value of the time picker.                              | `components.timepicker1.clearValue()`               |
-| setValueinTimeStamp() | Sets the date and time value in the Unix format.                  | `components.timepicker1.setValueinTimeStamp(value)` |
-| setDisplayTimezone( ) | Sets the timezone in which the selected time will be displayed.   | `components.timepicker1.setDisplayTimezone(value)`  |
-| setStoreTimezone( )   | Specifies the timezone in which the selected time will be stored. | `components.timepicker1.setStoreTimezone(value)`    |
-| setVisibility( )      | Sets the visibility state of the time picker.                     | `components.timepicker1.setVisibility()`            |
-| setLoading( )         | Sets the loading state of the time picker.                        | `components.timepicker1.setLoading()`               |
-| setDisable( )         | Disables the time picker.                                         | `components.timepicker1.setDisable()`               |
-| setFocus( )           | Sets the focus of the cursor on the time picker.                  | `components.timepicker1.setLoading()`               |
+| setVisibility( )      | Sets the visibility state of the time picker.                     | `components.timepicker1.setVisibility(false)`            |
+| setLoading( )         | Sets the loading state of the time picker.                        | `components.timepicker1.setLoading(true)`           |
+| setDisable( )         | Disables the time picker.                                         | `components.timepicker1.setDisable(true)`               |
+| setFocus( )           | Sets the focus of the cursor on the time picker and opens it.     | `components.timepicker1.setFocus()`                 |
 | setBlur( )            | Removes the focus of the cursor from the time picker.             | `components.timepicker1.setBlur()`                  |
 
 ## Exposed Variables
@@ -51,15 +48,12 @@ Following exposed variables can be dynamically accessed using the given JS query
 
 | Variables     | <div style={{ width:"200px"}}> Description </div>                    | How To Access                              |
 | :------------ | :------------------------------------------------------------------- | :----------------------------------------- |
-| value         | This component holds the value entered in the Time Picker component. | `{{components.timepicker1.value}}`         |
+| value         | Holds the selected time as a string in the selected **Time Format**, or `null` when empty. | `{{components.timepicker1.value}}`         |
 | label         | Holds the value of the component's label.                            | `{{components.timepicker1.label}}`         |
 | minTime       | Holds the earliest selectable time.                                  | `{{components.timepicker1.minTime}}`       |
 | maxTime       | Holds the latest selectable time.                                    | `{{components.timepicker1.maxTime}}`       |
-| selectedTime  | Holds the value of selected time.                                    | `{{components.timepicker1.selectedTime}}`  |
-| unixTimestamp | Holds the value in UNIX format.                                      | `{{components.timepicker1.unixTimestamp}}` |
-| displayValue  | Holds the display value of the component.                            | `{{components.timepicker1.displayValue}}`  |
 | timeFormat    | Returns the time format as a string.                                 | `{{components.timepicker1.timeFormat}}`    |
-| isValid       | Indicates if the input meets validation criteria.                    | `{{components.timepicker1.isValid}})`      |
+| isValid       | Indicates if the input meets validation criteria.                    | `{{components.timepicker1.isValid}}`      |
 | isMandatory   | Indicates if the field is Mandatory.                                 | `{{components.timepicker1.isMandatory}}`   |
 | isLoading     | Indicates if the component is loading.                               | `{{components.timepicker1.isLoading}}`     |
 | isVisible     | Indicates if the component is visible.                               | `{{components.timepicker1.isVisible}}`     |
@@ -71,7 +65,7 @@ Following exposed variables can be dynamically accessed using the given JS query
 | :------------------------ | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Min Time                  | Specifies the earliest selectable time. Any time before the Min Time will be disabled. | String (for e.g., `05:35`)                                                                                                                              |
 | Max Time                  | Specifies the latest selectable time. Any time after the Max Time will be disabled.    | String (for e.g., `15:45`)                                                                                                                              |
-| Custom validation         | Add a custom validation for the time input using the ternary operator.                 | Custom Validation Statement (for e.g., `{{moment(components.timepicker1.value).format('HH:mm') > moment().format('HH:mm') ? true : 'You are late!' }}`) |
+| Custom validation         | Add a custom validation for the time input using the ternary operator.                 | Custom Validation Statement (for e.g., `{{moment(components.timepicker1.value, 'HH:mm').format('HH:mm') > moment().format('HH:mm') ? true : 'You are late!' }}`) |
 | Make this field mandatory | Makes the field mandatory.                                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.                            |
 
 ## Additional Actions
