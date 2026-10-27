@@ -46,12 +46,12 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"130px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div> |
 | :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
-| setValue( )                                  | Sets the value of the component.                  | `components.rangeslider1.setValue()`                |
-| setRangeValue( )                             | Sets the range of the component.                  | `components.rangeslider1.setRangeValue()`           |
+| setValue( )                                  | Sets the value of the slider. Fires **On change**. | `components.rangeslider1.setValue(50)`                |
+| setRangeValue( )                             | Sets the start and end values of the range slider. Fires **On change**. | `components.rangeslider1.setRangeValue(20, 80)`       |
 | setVisibility( )                             | Sets the visibility of the component.             | `components.rangeslider1.setVisibility(false)`      |
 | setLoading( )                                | Sets the loading state of the component.          | `components.rangeslider1.setLoading(true)`          |
 | setDisable( )                                | Disables the component.                           | `components.rangeslider1.setDisable(true)`          |
-| reset( )                                     | Resets the component to default state.            | `components.rangeslider1.reset()`                   |
+| reset( )                                     | Resets the slider to its default value, or the range slider to its default start and end values. Doesn't fire **On change**. | `components.rangeslider1.reset()`                   |
 
 ## Exposed Variables
 
@@ -59,6 +59,9 @@ The following actions of the component can be controlled using the component-spe
 | :-------- | :------------------------------------------------------------------ | :---------------------------------- |
 | value     | Holds the value of the slider, or an array when using range slider. | `{{components.rangeslider1.value}}` |
 | label     | Holds the value of the component's label.                           | `{{components.rangeslider1.label}}` |
+| isVisible | Indicates whether the component is visible.                         | `{{components.rangeslider1.isVisible}}` |
+| isDisabled | Indicates whether the component is disabled.                       | `{{components.rangeslider1.isDisabled}}` |
+| isLoading | Indicates whether the component is in a loading state.              | `{{components.rangeslider1.isLoading}}` |
 
 ## Additional Actions
 
@@ -96,7 +99,13 @@ The following actions of the component can be controlled using the component-spe
 | Accent        | Sets the accent color.           | Select a theme or choose from color picker. |
 | Handle        | Sets the handle color.           | Select a theme or choose from color picker. |
 | Handle border | Sets the handle border color.    | Select a theme or choose from color picker. |
-| Market label  | Sets the marker label color.     | Select a theme or choose from color picker. |
+| Marker label  | Sets the marker label color.     | Select a theme or choose from color picker. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Padding | Sets the padding around the component. | Choose **Default** to keep the standard padding or **None** to remove it. |
 
 ### Advanced
 
