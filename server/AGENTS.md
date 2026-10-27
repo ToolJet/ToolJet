@@ -68,16 +68,18 @@ modules/{feature}/
 
 ### Migrations
 
-- **Schema migrations** (`src/migrations/`, EE: `ee/migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
+- **Schema migrations** (`migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
 - **Data migrations** (`data-migrations/`): any data manipulation that must run on deployment goes here, never in schema migrations.
 - Data migrations MUST log progress — `{MIGRATION_NAME}: [START] {action}: {total}`, `[PROGRESS] {i}/{total} ({%}%)`, `[SUCCESS] {action} finished.` No silent bulk updates. Exemplar: `data-migrations/1783372800000-MoveNavigationLayoutStylesToStyles.ts`.
 - **Runner / atomicity:** `db:migrate` (and `:prod`) run through `src/migration-helpers/run-all-migrations.ts`, which normally executes all schema migrations then all data migrations in **one transaction** via two `MigrationExecutor` passes sharing a single query runner. A failure in either phase rolls back both — schema no longer commits ahead of a failing data migration. (Exception: enum additions on a fresh install force a two-transaction fallback — see the enum bullet below.) Don't merge the two migration globs into one datasource: TypeORM sorts by class-name timestamp and schema/data timestamps interleave, which would break the all-schema-before-all-data ordering. Keep long-running backfills mindful of `statement_timeout` — the schema locks are held for the whole combined transaction in atomic mode.
 - **Enum `ADD VALUE` + same-deploy use (conditional atomicity):** PostgreSQL forbids using an enum value in the transaction that added it via `ALTER TYPE ... ADD VALUE` (55P04) — with **no** exemption for a type created in that same transaction (verified on PG 13). So "add a value in a schema migration, read/write it in a data migration" cannot be one transaction. `run-all-migrations.ts` reconciles this: `planEnumAdditions` scans pending schema migrations for `ALTER TYPE ... ADD VALUE` and checks whether each target type already exists. (a) All target types exist (**upgrade**) → pre-commit those values on a separate connection *before* the shared transaction, then run schema+data atomically. (b) Any target type does **not** exist yet — fresh install / `db:reset`, or a brand-new enum type introduced this run → fall back to two separate transactions (schema commits, then data), the enum-safe ordering; atomicity is lost only for that run (a fresh DB has no data to protect, and PG offers no atomic alternative). Keep new enum additions as literal `ALTER TYPE ... ADD VALUE IF NOT EXISTS '<value>'` SQL so the scanner finds them and the migration's own statement no-ops after pre-commit. Extraction logic + test: `src/migration-helpers/enum-value-additions.ts`, `test/modules/migrations/unit/enum-value-additions.spec.ts`.
+- **`SET LOCAL` lasts for the whole deploy.** All migrations share one transaction, so `SET LOCAL lock_timeout` (or `statement_timeout`) carries into every later migration. Read the old value with `SHOW lock_timeout` and restore it at the end with `SELECT set_config('lock_timeout', $1, true)`. `1781868342325-AddModuleToAppTypeEnum.ts`, `1781869753341-AddModuleToResourceTypeEnum.ts` and `1782196835449-AddModuleCreateDeleteToGroupPermissions.ts` set it without restoring; don't copy them.
 - Prefer runtime interpretation of existing values over new sentinel columns + migrations; repurpose existing columns/tables over adding parallel structures.
+- **Released-app viewer cache:** a new table or column that changes what a released app shows, and can change without a new release (permissions, settings, themes), needs a trigger that moves the app's viewer-cache stamp, or viewers keep a stale copy. Checklist: `src/modules/apps/AGENTS.md` § Released-app viewer cache.
 
-### Widget config sync (CRITICAL)
+### Widget config (CRITICAL)
 
-Server widget config (`src/modules/apps/services/widget-config/`) and frontend config (`frontend/src/AppBuilder/WidgetManager/widgets/`) must change together. If a config change moves, renames, or removes a key, write a migration.
+Widget configs live in the shared `packages/widget-definitions` package and are imported by both server (`src/modules/apps/services/widget-config/index.js`) and frontend. If a config change moves, renames, or removes a key, write a migration.
 
 ### Security
 
@@ -116,11 +118,12 @@ Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across
 - Assert shape with `toMatchObject()` + `expect.any()`, not per-field assertions. Test failure paths (401/403/404) too.
 - Helpers are stratified (import from `'test-helper'` barrel, never direct files): setup (bootstrap) / seed (factories) / api (HTTP) / utils (TypeORM) / domain files. New domain helpers → new file, added to barrel. Use seed helpers, not inline entity construction.
 - Tag suites with `/** @group platform|workflows|database|marketplace */` before the outermost describe.
-- `run-ci` coverage gate: changed server lines ≥ 80% covered, no 0% new files, overall coverage not below base branch (`scripts/coverage-gate.sh`). Details: `docs/testing.md` § Coverage.
+- `run-ci` coverage gate: changed server lines ≥ 80% covered, no 0% new files, overall coverage not below base branch (`../scripts/coverage-gate.sh`). Details: `docs/testing.md` § Coverage.
 - Run: `npm test`, `npm run test:e2e` (`--testPathPatterns`, `-t`, `--group=` filters). `DEBUG_TESTS=true` restores console output.
+- Test DB: a stale schema fails with `column ... does not exist`. Use `tools/tj/bin/tj db migrate --test`. `NODE_ENV=test npm run db:migrate` is a silent no-op, and the root `.env` overrides shell vars. In a `tj wt add` worktree the test DB is isolated per branch.
 
 ## Module context files
 
-Per-module context lives in `src/modules/<module>/AGENTS.md`. Existing: app, apps, auth, data-queries, data-sources, git-sync, group-permissions, licensing, versions, workflows.
+Per-module context lives in `src/modules/<module>/AGENTS.md`. Existing: app, apps, auth, data-queries, data-sources, git-sync, group-permissions, licensing, personal-access-tokens, templates, versions, workflows.
 
 **Maintenance rule:** meaningfully changing a module (new service, changed invariant, renamed concept, discovered gotcha) means updating its `AGENTS.md` in the same PR. No file yet? Create one from `docs/agents-module-template.md`. Keep them ≤80 lines — pointers and invariants, not prose dumps.

@@ -37,6 +37,7 @@ import {
 } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -1199,8 +1200,7 @@ export const createComponentsSlice = (set, get) => ({
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
-    let resolvedComponentValues = {};
-
+    const resolvedComponentValues = {};
     startDependencyBatch();
     Object.entries(components).forEach(([componentId, component]) => {
       resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
@@ -1208,7 +1208,6 @@ export const createComponentsSlice = (set, get) => ({
     flushDependencyBatch();
 
     setResolvedComponents(resolvedComponentValues, moduleId);
-    resolveOthers(moduleId);
 
     // Pre-populate default exposed values for all components in a single store write.
     // This prevents 600+ individual set() calls during component mount in RenderWidget
@@ -1246,7 +1245,10 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'batchSetDefaultExposedValues'
     );
-    // Register query option dependencies for queries with runOnDependencyChange enabled
+
+    resolveOthers(moduleId);
+
+    // Register query option dependencies for queries with runOnDependencyChange enabled.
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
     queries.forEach((query) => {
       if (query.options?.runOnDependencyChange) {
@@ -3294,45 +3296,9 @@ export const createComponentsSlice = (set, get) => ({
 
   replaceIdsWithName: (input, moduleId = 'canvas') => {
     const { getComponentsFromAllPages, getQueryIdNameMapping } = get();
-    const mappings = {
+    return replaceIdsWithNameUsing(input, {
       components: getComponentsFromAllPages(moduleId), // Getting components from all pages to avoid showing IDs on queries when the component is not on the current page
       queries: getQueryIdNameMapping(moduleId),
-    };
-
-    // The trailing path (".value", "?.value", "[0].name", ...) is matched with an include-list
-    // of what a JS member-path can actually contain, instead of an exclude-list of characters
-    // that "shouldn't" appear there — an exclude-list has to anticipate every operator that
-    // might sit next to a reference (this is what missed `<`/`>` previously); an include-list
-    // of valid identifier/index characters can't miss anything because it's a closed set.
-    const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?((?:\??\.[A-Za-z_$][\w$]*|\[\d+\]|\['[^']*'\]|\["[^"]*"\])*)/g;
-    return input.replace(regex, (match, category, prefix, id, closingBracket, path) => {
-      if (mappings[category] && mappings[category][id]) {
-        const name = mappings[category][id];
-
-        // Reconstruct the string with the name instead of UUID
-        let result = `${category}`;
-
-        // Handle optional chaining at the beginning
-        if (prefix.includes('?.')) {
-          result += '?.';
-        } else if (prefix.includes('.')) {
-          result += '.';
-        }
-
-        // Handle bracket notation
-        if (prefix.includes('[')) {
-          result += `["${name}"]`;
-        } else {
-          result += name;
-        }
-
-        // Append the rest of the member path as-is (already validated by the regex above)
-        result += path;
-
-        return result;
-      }
-      return match; // Return the original match if no mapping is found
     });
   },
   calculateMoveableBoxHeightWithId: (

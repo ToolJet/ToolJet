@@ -119,6 +119,9 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 ## Deployment and observability
 
 - Development Compose runs frontend, server, plugin watcher, PostgreSQL, Redis, and PostgREST (`docker-compose.yaml`).
+- Local development without Compose runs through the dev toolkit `tools/tj/bin/tj` (`tools/tj/README.md`). It needs PostgreSQL and Redis running.
+  - Per-branch worktrees each get their own DBs (`tooljet_<slug>_<hash>[_test]`) and their own free ports.
+  - Server and frontend run as background processes and are health-checked through `/api/health`.
 - Production assets support CE images plus Docker Compose, Kubernetes, Helm, and OpenShift (`docker/`; `deploy/`). Nest can serve `frontend/build` or run with `SERVE_CLIENT=false`.
 - `/health` and `/api/health` are prefix-exempt health endpoints (`AppController.healthCheck`).
 - Pino supplies structured/redacted HTTP logs and transaction IDs (`AppModuleLoader`).
@@ -144,6 +147,7 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 | Stale frontend chunks after deployment | `RootRouter.jsx::ChunkErrorBoundary` reloads once, then presents a manual refresh action. |
 | Main DB, ToolJet DB, or PostgREST unavailable at boot/runtime | Health/startup or dependent requests fail; Compose/Kubernetes declare these service dependencies. |
 | Server/frontend component config drift | Existing saved apps may render incorrectly; repository instructions require synchronized config and migrations for key changes. |
+| PAT write fails app validation | Enforced source (`pat`) gets 400 `APP_VALIDATION_FAILED` with `issues`+`warnings`; every other source saves and receives `validationWarnings` in the body and the `x-tooljet-validation-warnings` header (`server/src/modules/app-validation/`). |
 
 ## Inferences
 
