@@ -1,0 +1,51 @@
+<table align="center" class="content-body">
+  <tr>
+    <td class="content-body_wrap padding-x-40">
+      <table>
+        <tr>
+          <td>
+            <p>Hey {{name}},</p>
+          </td>
+        </tr>
+        <tr>
+          <td class="padding-y-20">
+            <p>{{headline}}.</p>
+            <p style="color: #555;">Review: <span class="text-bold">{{reviewTitle}}</span></p>
+          </td>
+        </tr>
+        {{#if note}}
+        <tr>
+          <td class="padding-y-10">
+            <p style="margin: 0; padding: 12px 16px; border-left: 3px solid #d7dbdf; color: #333; white-space: pre-wrap;">{{note}}</p>
+          </td>
+        </tr>
+        {{/if}}
+        <tr>
+          <td class="padding-y-20">
+            <a href={{reviewUrl}} target="_blank" class="padding-r-40">
+              <button class="primary-btn">
+                {{buttonText}}
+              </button>
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td class="padding-y-10">
+            <p style="font-size: 14px; color: #555;">
+              If the button isn't accessible, copy and paste this link into your browser:
+              <br />
+              <span style="color: #555; word-break: break-all;">{{reviewUrl}}</span>
+            </p>
+          </td>
+        </tr>
+        {{#if (eq whiteLabelText "ToolJet")}}
+        <tr>
+          <td class="padding-y-10 footer-note">
+            <span>– The ToolJet Team</span>
+          </td>
+        </tr>
+        {{/if}}
+      </table>
+    </td>
+  </tr>
+</table>
