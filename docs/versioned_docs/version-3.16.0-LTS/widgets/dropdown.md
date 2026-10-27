@@ -131,14 +131,14 @@ To set up server side search:
 
    Replace `dropdown1` with the name of your component.
 
-3. Bind **Option values** and **Option labels**, or the **Schema** if you are using dynamic options, to the query's data. For example, `{{queries.searchOrders.data.map(o => o.value)}}`.
+3. In the **Options** section, turn on **Dynamic options** and set **Schema** to the query's data, for example `{{queries.searchOrders.data}}` (the query already returns `label` and `value` columns). Options added manually with **Add new option** can't be bound to a query.
 
 4. Add an event handler to the component:<br/>
    Event: **On search text changed**<br/>
    Action: **Run Query**<br/>
    Query: the query you created in step 2
 
-5. Optionally, click on **fx** next to **Loading state** and enter `{{queries.searchOrders.isLoading}}` so that the menu shows a spinner while the query runs.
+5. Optionally, click on **fx** next to **Options loading state** and enter `{{queries.searchOrders.isLoading}}` so that the menu shows a spinner in place of the options while the query runs. Don't use **Loading state** for this: it shows a spinner in the field and stops the menu from opening.
 
 :::info
 **On search text changed** fires on every keystroke, so each keystroke runs the query. Keep a `LIMIT` in the query to bound the number of rows returned.
@@ -171,7 +171,7 @@ The following actions of the component can be controlled using the component-spe
 | setDisable( )                                 | Disables the component.                           | `components.dropdown1.setDisable(true)`             |
 | selectOption( )                               | Selects an option.                                | `components.dropdown1.selectOption(2)`              |
 
-**Note:** The data type passed to CSAs like `selectOption()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.dropdown1.selectOption(['2'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic.
+**Note:** The data type passed to CSAs like `selectOption()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.dropdown1.selectOption('2')`). When using dynamic options, supply values with the correct data types as they appear in your code logic.
 
 For example, if the code is:
 
@@ -263,6 +263,8 @@ components.dropdown1.selectOption(2);
 | Icon | Allows you to select an icon for the component. | Enable the icon visibility, select icon and icon color |
 | Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.  |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties. |
+| Menu width | Sets the width of the options menu. | Select **Match the field** (default) to make the menu as wide as the field, **Match the content** to fit the longest option label (up to 520px, never narrower than the field), or **Custom** to set your own width. |
+| Custom menu width | Sets the width of the options menu. Only visible when **Menu width** is set to **Custom**. | Enter a number in pixels (default `256`) or a CSS width such as `50%`, or click on **fx** and enter code that returns one. |
 
 ### Container
 
