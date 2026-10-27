@@ -248,7 +248,20 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       ],
       finishedAt: expect.any(String),
     });
-    await expect(service.status()).resolves.toMatchObject({ state: 'running', toVersion: '3.21.75' });
+    await expect(service.status()).resolves.toMatchObject({
+      state: 'running',
+      toVersion: '3.21.75',
+      progress: { done: 1, total: 2 },
+    });
+  });
+
+  it('should report no progress once a run finished', async () => {
+    await dataSource.query(
+      `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at, migrations)
+       VALUES ('3.21.75', 'succeeded', 'boot', now(), '[{"name":"A","status":"done"}]')`
+    );
+
+    await expect(service.status()).resolves.not.toHaveProperty('progress');
   });
 
   it('should keep the gate on running, not failed, for a run its server recorded as stopped at shutdown', async () => {

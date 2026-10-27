@@ -32,6 +32,8 @@ describe('migration run log', () => {
     it.each([
       [['  parameters: [', '    \'{"password":"hunter2"}\'', '  ],', '  driverError: error: boom']],
       [["  parameters: [ 'hunter2' ],", '  driverError: error: boom']],
+      [['  parameters: [', "    [ 'id-1', 'id-2' ],", "    'hunter2'", '  ],', '  driverError: error: boom']],
+      [['  parameters: [', '    [', "      'id-1'", '    ],', "    'hunter2'", '  ],', '  driverError: error: boom']],
     ])('should replace the parameters block in %j', (lines) => {
       const { logTail } = replay(lines);
 

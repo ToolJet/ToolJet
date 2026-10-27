@@ -158,7 +158,7 @@ describe('MigrationGateMiddleware', () => {
         const res = buildResponse();
         const next = jest.fn() as NextFunction;
 
-        await middleware.use(buildRequest('/api/apps'), res, next);
+        await middleware.use(buildRequest('/api/apps', 'POST'), res, next);
 
         expect(status).toHaveBeenCalled();
         expect(next).toHaveBeenCalled();
@@ -205,6 +205,16 @@ describe('MigrationGateMiddleware', () => {
   describe('in async migration mode | the app keeps serving, writes fail', () => {
     beforeEach(() => {
       process.env.MIGRATION_MODE = 'async';
+    });
+
+    it('should not read the migration status for a request that always passes', async () => {
+      const { middleware, status } = buildMiddleware('running');
+      const next = jest.fn() as NextFunction;
+
+      await middleware.use(buildRequest('/api/apps', 'GET'), buildResponse(), next);
+
+      expect(next).toHaveBeenCalled();
+      expect(status).not.toHaveBeenCalled();
     });
 
     it.each([

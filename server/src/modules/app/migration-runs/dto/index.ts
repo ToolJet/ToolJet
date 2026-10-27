@@ -50,4 +50,5 @@ export class MigrationStatusResponseDto {
   @Expose() startedAt?: string;
   @Expose() toVersion?: string;
   @Expose() endUserMessage?: string;
+  @Expose() progress?: { done: number; total: number };
 }

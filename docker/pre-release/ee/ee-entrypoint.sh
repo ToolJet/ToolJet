@@ -21,7 +21,8 @@ fi
 # Start Redis server only if REDIS_HOST is localhost or not set
 if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
   echo "Starting Redis server locally..."
-  redis-server /etc/redis/redis.conf &
+  # Own session: tini -g signals the server's process group, these stop only with the container.
+  setsid redis-server /etc/redis/redis.conf &
 elif [ -n "$REDIS_URL" ]; then
   echo "REDIS_URL connection is set: $REDIS_URL"
 else
@@ -47,7 +48,7 @@ if [[ "$PGRST_HOST" == localhost:* ]]; then
 
   # Starting PostgREST
   echo "Starting PostgREST..."
-  postgrest "$POSTGREST_CONFIG_PATH" &
+  setsid postgrest "$POSTGREST_CONFIG_PATH" &
 else
   echo "Using external PostgREST at $PGRST_HOST."
 fi

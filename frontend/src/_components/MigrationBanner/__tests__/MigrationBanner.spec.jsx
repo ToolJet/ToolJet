@@ -21,6 +21,26 @@ const asSuperAdmin = (superAdmin) =>
   act(() => authenticationService.updateCurrentSession({ ...initialSession, super_admin: superAdmin }));
 
 describe('MigrationBanner', () => {
+  test('polls again and clears the notice once the upgrade ends', async () => {
+    jest.useFakeTimers({ advanceTimers: true });
+    try {
+      let call = 0;
+      server.use(
+        http.get(STATUS_URL, () =>
+          HttpResponse.json(call++ === 0 ? { state: 'running', startedAt: '2026-10-19T10:00:00Z' } : { state: 'idle' })
+        )
+      );
+      render(<MigrationBanner />);
+      await waitFor(() => expect(visibleBanner()).toBeInTheDocument());
+
+      act(() => jest.advanceTimersByTime(3000));
+
+      await waitFor(() => expect(visibleBanner()).not.toBeInTheDocument());
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   test.each([
     ['running', /ToolJet is being upgraded/],
     ['failed', /latest ToolJet upgrade failed/],

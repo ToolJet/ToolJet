@@ -17,8 +17,8 @@ export interface RunProgress {
   migrations: MigrationStep[];
   currentMigration: string | null;
   logTail: string[];
-  /** Inside a multi-line `parameters: [` block of an error dump: lines are dropped until it closes. */
-  redactingParameters?: boolean;
+  /** Inside a multi-line `parameters: [` block of an error dump: its indent; lines are dropped until it closes. */
+  redactingParametersIndent?: number;
 }
 
 export const LOG_TAIL_LINES = 200;
@@ -77,18 +77,21 @@ export interface LogLineOptions {
 }
 
 // A QueryFailedError dump prints its bound values as `parameters: [ ... ]`, often over several lines.
-const PARAMETERS_START = /^(\s*parameters:\s*)\[/;
-const PARAMETERS_END = /\]\s*,?$/;
+// Nested arrays close with `],` too, so the block ends only at a `]` indented like `parameters:`.
+const PARAMETERS_START = /^(\s*)(parameters:\s*)\[/;
+const ONE_LINE_PARAMETERS = /\]\s*,?$/;
+const closesAt = (line: string, indent: number) => new RegExp(`^\\s{${indent}}\\]\\s*,?$`).test(line);
 
 /** Folds one line of runner output into the run. Pure: returns a new object. */
 export function applyLogLine(run: RunProgress, rawLine: string, options?: LogLineOptions): RunProgress {
   const line = redactLogLine(rawLine);
-  if (run.redactingParameters) return PARAMETERS_END.test(line) ? { ...run, redactingParameters: false } : run;
+  const indent = run.redactingParametersIndent;
+  if (indent !== undefined) return closesAt(line, indent) ? { ...run, redactingParametersIndent: undefined } : run;
   const parameters = line.match(PARAMETERS_START);
   if (!parameters) return foldLine(run, line, options);
   return {
-    ...foldLine(run, `${parameters[1]}[redacted]`, options),
-    redactingParameters: !PARAMETERS_END.test(line),
+    ...foldLine(run, `${parameters[1]}${parameters[2]}[redacted]`, options),
+    redactingParametersIndent: ONE_LINE_PARAMETERS.test(line) ? undefined : parameters[1].length,
   };
 }
 
