@@ -68,6 +68,10 @@ export async function migrateSchemaBeforeBoot(
     }).on('exit', (code) => resolve(code ?? 1));
   });
   if (exitCode !== 0) {
-    throw new Error(`${freshInstall ? 'Initial database setup' : 'Schema migrations'} failed (exit ${exitCode}).`);
+    // Not "schema": an upgrade from before 3.21.58 runs schema and data here in one transaction.
+    throw new Error(
+      `${freshInstall ? 'Initial database setup' : 'Migrations before boot'} failed (exit ${exitCode}) and were rolled back. ` +
+        'The [migrations] lines above name the migration that failed.'
+    );
   }
 }

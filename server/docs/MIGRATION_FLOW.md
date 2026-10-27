@@ -101,11 +101,13 @@ With `MIGRATION_SKIP_IF_LOCKED=true` (server-started boot runs, §5.4) the pod d
 
 ## 4. Upgrade gate
 
+Async mode only. In blocking mode the gate passes every request and `status()` is always `idle`, as before async mode existed: old pods serve everything while a new pod migrates.
+
 `MigrationGateMiddleware` answers `/api/*` with `503` while `MigrationRunsService.status()` reports a refusing state. `status()` reads both locks from `pg_locks` (`HELD_MIGRATION_LOCKS_SQL`, current database only). In async mode it also reads the latest run. A `pg_locks` read takes no table lock, so it answers at once while a migration holds ACCESS EXCLUSIVE on `migrations`.
 
 | State | When | Blocking mode | Async mode |
 |---|---|---|---|
-| `running` | Active lock held, or the latest run is running, or boot hold (§5.3) | Refuses every API request | Refuses writes (`MIGRATION_IN_PROGRESS`) |
+| `running` | Active lock held, or the latest run is running, or boot hold (§5.3) | — (no gate) | Refuses writes (`MIGRATION_IN_PROGRESS`) |
 | `failed` | Latest run failed | — | Refuses writes (`MIGRATION_FAILED`) until a server boot runs it again with success |
 
 Response: `503`, `Retry-After: 30`, body `{ statusCode, code, message, timestamp, path }`.
@@ -262,7 +264,7 @@ A held lock means a live session migrates. The gate cannot stay raised after tha
 
 **Upgrade without refused traffic:** set `DISABLE_MIGRATION_TRAFFIC_GATE=true`.
 
-**Known limitation:** the gate takes effect from the *next* upgrade. During the deploy that first ships it, the old pods have no middleware.
+**Known limitation:** the gate takes effect from the *next* async upgrade. During the deploy that first ships it, the old pods have no middleware.
 
 ## 9. Invariants
 

@@ -9,13 +9,11 @@ import {
 } from '../../../migration-helpers/migration-status';
 
 /**
- * Answers API traffic with 503 while a deploy is running database migrations.
+ * Async mode only: answers API writes with 503 while database migrations run or after they failed.
  *
- * During a rolling upgrade the pods still serving traffic are talking to a database that is
- * mid-migration. The migrating process holds an advisory lock for the duration, and
- * `MigrationRunsService.status()` reads it (plus, in async mode, the latest run);
- * this middleware turns that into a clean, retryable 503 instead of letting requests hit a
- * half-migrated schema.
+ * The migrating process holds an advisory lock for the duration, and `MigrationRunsService.status()`
+ * reads it plus the latest run; this middleware turns that into a clean, retryable 503. Blocking mode
+ * is untouched: every request passes, as before async mode existed.
  *
  * Three properties matter more than the gating itself:
  *  - Health checks are never gated. Gating them would make the orchestrator kill the very
@@ -106,9 +104,10 @@ export class MigrationGateMiddleware implements NestMiddleware {
     // Lowercased: Express matches routes case-insensitively.
     const path = (parseurl.original(req)?.pathname ?? '/').toLowerCase();
     const apiPath = this.gatedApiPath(path);
-    if (!this.enabled || apiPath === null) return next();
+    // Blocking mode stays as it was before the gate: old pods serve everything while a new pod migrates.
+    if (!this.enabled || !this.asyncMode || apiPath === null) return next();
     const { state, readsBlocked } = await this.migrationRuns.status();
-    if (!REFUSALS[state] || (this.asyncMode && this.passesAsyncGate(apiPath, req.method, readsBlocked))) return next();
+    if (!REFUSALS[state] || this.passesAsyncGate(apiPath, req.method, readsBlocked)) return next();
     this.refuse(req, res, state);
   }
 

@@ -38,9 +38,31 @@ function buildMiddleware(state: MigrationState, readsBlocked = false) {
 describe('MigrationGateMiddleware', () => {
   const originalEnv = { ...process.env };
 
+  beforeEach(() => {
+    process.env.MIGRATION_MODE = 'async';
+  });
+
   afterEach(() => {
     process.env = { ...originalEnv };
     jest.resetAllMocks();
+  });
+
+  describe('in blocking mode (the default) | nothing changes from before the gate', () => {
+    it.each([['running'], ['failed']] as [MigrationState][])(
+      'should pass every API request without reading the status while %s',
+      async (state) => {
+        process.env.MIGRATION_MODE = 'blocking';
+        const { middleware, status } = buildMiddleware(state);
+        const res = buildResponse();
+        const next = jest.fn() as NextFunction;
+
+        await middleware.use(buildRequest('/api/apps', 'POST'), res, next);
+
+        expect(next).toHaveBeenCalled();
+        expect(status).not.toHaveBeenCalled();
+        expect(res.status).not.toHaveBeenCalled();
+      }
+    );
   });
 
   describe('buildApiPrefix | matches the prefix main.ts installs', () => {
@@ -60,7 +82,7 @@ describe('MigrationGateMiddleware', () => {
       const res = buildResponse();
       const next = jest.fn() as NextFunction;
 
-      await middleware.use(buildRequest('/api/apps'), res, next);
+      await middleware.use(buildRequest('/api/apps', 'POST'), res, next);
 
       expect(next).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(503);
@@ -107,7 +129,7 @@ describe('MigrationGateMiddleware', () => {
       const { middleware } = buildMiddleware('running');
       const res = buildResponse();
 
-      await middleware.use(buildRequest('/tooljet/api/apps'), res, jest.fn() as NextFunction);
+      await middleware.use(buildRequest('/tooljet/api/apps', 'POST'), res, jest.fn() as NextFunction);
       expect(res.status).toHaveBeenCalledWith(503);
 
       const other = buildResponse();
@@ -120,7 +142,7 @@ describe('MigrationGateMiddleware', () => {
       const { middleware, logger } = buildMiddleware('running');
 
       for (let i = 0; i < 5; i++) {
-        await middleware.use(buildRequest('/api/apps'), buildResponse(), jest.fn() as NextFunction);
+        await middleware.use(buildRequest('/api/apps', 'POST'), buildResponse(), jest.fn() as NextFunction);
       }
 
       expect(logger.warn).toHaveBeenCalledTimes(1);
