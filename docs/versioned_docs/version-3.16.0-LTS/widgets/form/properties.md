@@ -39,6 +39,7 @@ Refer to the [Generate Form](/docs/widgets/form/) guide for more details.
 | Reset form on submission               | Resets all form fields after submission.         | Enable/disable the toggle, or use **fx** to enter a logical expression. |
 | Loading state                          | Enables a loading spinner during submission, often tied to `isLoading`. | Enable/disable the toggle, or use **fx** to enter a logical expression. |
 | Visibility                             | Controls whether the component is visible.       | Enable/disable the toggle, or use **fx** to enter a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Dynamic height                         | Automatically adjusts height based on content.   | Enable/disable the toggle, or use **fx** to enter a logical expression. |
 | Disable                                | Enables or disables the entire component.        | Enable/disable the toggle, or use **fx** to enter a logical expression. |
 | Tooltip | Displays a tooltip on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String value (e.g., `Enter your password here.`) |

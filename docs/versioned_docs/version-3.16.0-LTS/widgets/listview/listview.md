@@ -102,6 +102,9 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 | :------------------------------------------- | :----------------------------------------------- | :---------------------------------------------------- |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String |
 
 ## Devices
@@ -117,8 +120,6 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 | :------------------------------------------ | :--------------------------------------------- |
 | Background color | You can change the background color of the component by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Border color | You can change the border color of the listview by entering the `Hex color code` or choosing a color of your choice from the color picker. |
-| Visibility | This is to control the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
-| Disable | This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 | Border radius | Use this property to modify the border radius of the list view. The field expects only numerical value from `1` to `100`, default is `0`. |
 
 ### Advanced

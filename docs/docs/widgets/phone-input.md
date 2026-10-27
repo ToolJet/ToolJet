@@ -34,28 +34,28 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"170px"}}> Description </div> | <div style={{width: "200px"}}> RunJS Query </div> |
 | :------------------------------------------- | :------------------------------------------------ | :------------------------------------------------ |
-| setValue( )                                  | Sets the value of the **Phone Input** field.      | `components.phoneinput1.setValue(value)`          |
+| setValue( )                                  | Sets the value of the **Phone Input** field. Pass the national number or a full international number. An optional second argument sets the country by its ISO code. | `components.phoneinput1.setValue("9876543210", "IN")` |
 | clear( )                                     | Clears the input field.                           | `components.phoneinput1.clear()`                  |
 | setFocus( )                                  | Sets the focus of the cursor on the input field.  | `components.phoneinput1.setFocus()`               |
 | setBlur( )                                   | Removes focus from the input field.               | `components.phoneinput1.setBlur()`                |
 | setVisibility( )                             | Sets the visibility of the component.             | `components.phoneinput1.setVisibility(false)`     |
 | setLoading( )                                | Sets the loading state of the component.          | `components.phoneinput1.setLoading(true)`         |
 | setDisable( )                                | Disables the component.                           | `components.phoneinput1.setDisable(true)`         |
-| setCountryCode ( )                           | Programmatically sets the country code.           | `{{components.phoneinput1.setCountryCode("US")}}` |
+| setCountryCode( )                            | Sets the country. Accepts an ISO country code (e.g., `"US"`) or a dial code (e.g., `"+1"`). The number entered is kept and moved to the new dial code. | `components.phoneinput1.setCountryCode("US")`          |
 
 ## Exposed Variables
 
 | Variable       | <div style={{ width:"250px"}}> Description </div>         | How To Access                               |
 | :------------- | :-------------------------------------------------------- | :------------------------------------------ |
-| value          | Holds the value entered by the user in the component.     | `{{components.phoneinput1.value}}`          |
+| value          | Holds the full number in E.164 format (e.g., `+919876543210`). Empty when the field is empty. | `{{components.phoneinput1.value}}`          |
 | label          | Holds the value of the component's label.                 | `{{components.phoneinput1.label}}`          |
 | isValid        | Indicates if the input meets validation criteria.         | `{{components.phoneinput1.isValid}}`        |
 | isMandatory    | Indicates if the field is required.                       | `{{components.phoneinput1.isMandatory}}`    |
 | isLoading      | Indicates if the component is loading.                    | `{{components.phoneinput1.isLoading}}`      |
 | isVisible      | Indicates if the component is visible.                    | `{{components.phoneinput1.isVisible}}`      |
 | isDisabled     | Indicates if the component is disabled.                   | `{{components.phoneinput1.isDisabled}}`     |
-| country        | Holds the selected country in the phone input component.  | `{{components.phoneinput1.country}}`        |
-| countryCode    | Holds the selected country’s dial code.                   | `{{components.phoneinput1.countryCode}}`    |
+| country        | Holds the ISO code of the selected country (e.g., `IN`). | `{{components.phoneinput1.country}}`        |
+| countryCode    | Holds the selected country’s dial code (e.g., `+91`).     | `{{components.phoneinput1.countryCode}}`    |
 | domesticNumber | Holds the national number without the dial code, as digits only (e.g., `9876543210`). Use it when you need the number independent of the selected country. Empty when the field is empty. | `{{components.phoneinput1.domesticNumber}}` |
 | formattedValue | The value with the exact format shown in the phone input. Empty when the field is empty. | `{{components.phoneinput1.formattedValue}}` |
 
@@ -64,23 +64,27 @@ The following actions of the component can be controlled using the component-spe
 | <div style={{ width:"200px"}}> Validation Option </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{width: "500px"}}> Expected Value </div> |
 | :------------------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
 | Make this field mandatory | Displays a 'Field cannot be empty' message if no value is entered. The message also appears as soon as the field is emptied with the clear button or the `clear()` action. Resetting a **Form** clears the field without showing the message. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Regex | Regular Expression to validate the input. | Regular Expression Pattern (e.g., `^\d{1,10}$` ). |
-| Min length | Sets the minimum number of characters allowed. | Integer (e.g., `10` for a minimum of 10 characters). |
-| Max length | Sets the maximum number of characters allowed. | Integer (e.g., `10` for a maximum of 10 characters). |
-| Custom validation | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.phoneinput1.value.length === 10&&"Phone number must be 10 digits"}}`). |
+| Regex | Regular Expression to validate the number. It is checked against the national number without the dial code (`domesticNumber`). | Regular Expression Pattern (e.g., `^\d{1,10}$` ). |
+| Min length | Sets the minimum number of digits allowed, not counting the dial code. | Integer (e.g., `10` for a minimum of 10 digits). |
+| Max length | Sets the maximum number of digits allowed, not counting the dial code. | Integer (e.g., `10` for a maximum of 10 digits). |
+| Custom validation | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.phoneinput1.domesticNumber.length !== 10 && "Phone number must be 10 digits"}}`). |
 
 To add regex inside `Custom Validation`, you can use the below format:
 
-**Format**: `{{(<regexPattern>.test(<value>)) ? '' : 'Error message';}}`
+**Format**: `{{(<regexPattern>.test(<value>)) ? '' : 'Error message'}}`
 
-**Example**: `{{(/^\d{1,10}$/.test(components.phoneinput1.value)) ? '' : 'Error message';}}`
+**Example**: `{{(/^\d{1,10}$/.test(components.phoneinput1.domesticNumber)) ? '' : 'Error message'}}`
+
+`value` includes the `+` and the dial code, so test `domesticNumber` when you check the digits the user typed.
 
 ## Additional Actions
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Enable clear button | Shows a clear button inside the field while it has a value. Clicking it clears the value. The button is hidden while the component is disabled or loading. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Enter the contact number` ). |
 
@@ -98,7 +102,9 @@ To add regex inside `Custom Validation`, you can use the below format:
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Text | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment | Sets the position of the label and input field. | Select either `side` or `top` or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`. |
+| Direction | When alignment is set to `side`, places the label to the left or right of the field. | Select **Left** or **Right** using the icon toggles. |
 | Width | Sets the width of the input field. | Enable **Auto width** to use the standard width automatically. Disable it to manually adjust the width using the slider or by entering a numeric value via **fx**. You can also choose whether the width is calculated relative to the **Container** or relative to the **Field**. |
 
 ### Field
@@ -107,9 +113,9 @@ To add regex inside `Custom Validation`, you can use the below format:
 | :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Accent | Sets the border color of the input field and the country selector while the field is focused. A validation error border takes priority. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Text | Sets the text color of the text entered in the component. | Select the color or click on **fx** and input code that programmatically returns a hex color code. |
 | Error text | Sets the text color of the validation message that is displayed. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Icon | Allows you to select an icon for the component. | Enable the icon visibility, and select the icon and icon color. Alternatively, set it programmatically using **fx**. |
 | Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
