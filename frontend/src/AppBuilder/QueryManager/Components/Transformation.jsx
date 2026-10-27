@@ -174,7 +174,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
 
   return (
     <div className="field transformation-editor">
-      <div className="tw-flex tw-items-start">
+      <div data-param="enableTransformation" className="tw-flex tw-items-start">
         <CustomToggleSwitch
           isChecked={enableTransformation}
           toggleSwitchFunction={toggleEnableTransformation}
@@ -215,7 +215,10 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
       <div className={`d-flex copilot-codehinter-wrap ${!enableTransformation && 'read-only-codehinter'}`}>
         <div className="col flex-grow-1">
           <div style={{ borderRadius: '6px', background: darkMode ? '#272822' : '#F8F9FA' }}>
-            <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
+            <div
+              data-param="transformationLanguage"
+              className="py-3 px-3 d-flex justify-content-between copilot-section-header"
+            >
               <Tab.Container
                 activeKey={lang}
                 onSelect={(value) => {
