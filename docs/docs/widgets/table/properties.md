@@ -47,6 +47,7 @@ Example - Passing a query data:
 Go to the **[Table Columns](/docs/widgets/table/table-columns)** guide to know more about supported column types.
 
 **Lock column schema**: When this toggle is on, the configured columns are kept as they are: changes in the data no longer add or remove columns. It's off by default, and only shown when **Use dynamic column** is off.
+To stop columns from being added or removed when the shape of the data changes, turn on **[Lock column schema](/docs/widgets/table/table-columns#lock-column-schema)**.
 
 ## Action Buttons (Deprecated)
 
@@ -108,7 +109,7 @@ Expandable rows let end users reveal additional content beneath a row — such a
 | <div style={{ width:"170px"}}> Property </div> | Description                                                                                                                                 |
 | :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
 | Enable expandable rows                         | Toggles expandable rows on or off. When enabled, each row shows a chevron icon that the user can click to expand or collapse the row.       |
-| Expanded row height                               | Sets the height (in pixels) of the expanded content area. Defaults to 229 px.                                                               |
+| Expanded row height                            | Sets the height (in pixels) of the expanded content area. Defaults to 229 px. Visible only when **Enable expandable rows** is turned on.    |
 
 When a row is expanded, you can drag components into the expanded container from the component panel. All components inside the expanded area have access to **`rowData`** — a resolvable variable that holds the data of the row they belong to, similar to `listItem` in a List View.
 
