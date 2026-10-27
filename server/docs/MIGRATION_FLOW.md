@@ -1,29 +1,38 @@
 # Migration flow
 
-This document is the single source of truth for how ToolJet runs database migrations. It covers the boot path, multi-pod coordination, the upgrade gate and async mode.
+How ToolJet runs database migrations: at boot, across many pods, and in async mode.
 
 **Read this when** you change `server/src/migration-helpers/`, `server/src/modules/app/migration-runs/`, `server/src/modules/app/middlewares/migration-gate.middleware.ts` or the `db:setup` step of a container entrypoint. Update this document in the same PR.
 
-To *write* a migration (schema vs data, enum rules, logging), read [`../AGENTS.md`](../AGENTS.md) § Migrations.
+To *write* a migration (schema vs data, enum rules, logging), read the migration-writing rules in [`../AGENTS.md`](../AGENTS.md#migrations).
 
-**Sections:** [1 Boot path](#1-boot-path) · [2 Phases and transactions](#2-phases-and-transactions) · [3 Multi-pod coordination](#3-multi-pod-coordination) (locks, waiting, lock sentinels) · [4 Upgrade gate](#4-upgrade-gate) (503, states) · [5 Async mode](#5-async-mode-migration_modeasync) (schema phase, data phase, runs, shutdown, logs, banner) · [6 Environment variables](#6-environment-variables) · [7 Failure modes](#7-failure-modes) · [8 Operator runbook](#8-operator-runbook) · [9 Invariants](#9-invariants) · [10 Tests](#10-tests)
+**Sections:** [Boot path](#boot-path) · [Phases and transactions](#phases-and-transactions) · [Many pods, one migration](#many-pods-one-migration) · [Upgrade gate](#upgrade-gate) · [Async mode](#async-mode) · [Environment variables](#environment-variables) · [Failure modes](#failure-modes) · [Operator runbook](#operator-runbook) · [Invariants](#invariants) · [Tests](#tests)
 
-**Terms.** These terms have one meaning in this document:
+## In short
+
+There are two modes.
+
+- **Blocking mode** (the default, and always on Cloud). Each pod runs every pending migration before it starts serving. All schema and data migrations run in one transaction, so a failure leaves the database as it was. A long migration can outlast the liveness probe.
+- **Async mode** (`MIGRATION_MODE=async`). A pod applies schema migrations before it starts, then serves. Data migrations run in the background. While they run, or after they fail, the upgrade gate refuses writes. Rollback is: deploy the previous image.
+
+In both modes only one pod migrates at a time. The others wait.
+
+**Terms** used below:
 
 | Term | Meaning |
 |---|---|
-| runner | The process that runs `run-all-migrations.ts` |
-| joint run | A runner with `MIGRATION_PHASE` unset: schema and data migrations in one transaction |
-| schema phase | A runner with `MIGRATION_PHASE=schema` |
-| data phase | A runner with `MIGRATION_PHASE=data` |
-| migration lock | Advisory lock `MIGRATION_ADVISORY_LOCK_KEY` |
-| active lock | Advisory lock `MIGRATION_ACTIVE_LOCK_KEY` |
-| run | A row in `migration_runs` (async mode only) |
-| upgrade gate | `MigrationGateMiddleware`, which answers `503` |
+| runner | The process that runs migrations (`run-all-migrations.ts`) |
+| joint run | A runner that runs schema and data migrations in one transaction (`MIGRATION_PHASE` unset) |
+| schema phase | A runner that runs only schema migrations (`MIGRATION_PHASE=schema`) |
+| data phase | A runner that runs only data migrations (`MIGRATION_PHASE=data`) |
+| migration lock | A PostgreSQL lock that lets one runner at a time migrate (`MIGRATION_ADVISORY_LOCK_KEY`) |
+| active lock | A PostgreSQL lock held while a runner actually changes the database (`MIGRATION_ACTIVE_LOCK_KEY`) |
+| run | One async-mode data phase, recorded as a row in `migration_runs` |
+| upgrade gate | The middleware that answers unsafe requests with `503` in async mode (`MigrationGateMiddleware`) |
 
 ---
 
-## 1. Boot path
+## Boot path
 
 ```
 entrypoint → wait-for-it (PostgreSQL) → npm run db:setup:prod → exec "$@" (npm run start:prod → exec node dist/src/main)
@@ -31,221 +40,244 @@ entrypoint → wait-for-it (PostgreSQL) → npm run db:setup:prod → exec "$@" 
                                                 └── src/migration-helpers/run-all-migrations.ts
 ```
 
-- Every pod runs migrations. There is no dedicated job, so 20 pods start 20 runners.
-- The runner is a standalone process. It does not start NestJS (no `ConfigService`, no DI). It reads config with `getEnvVars()` and opens its own connections.
-- `getEnvVars()` merges the env file over `process.env`. A key in `.env` wins over an exported shell variable. A key that is not in the file comes from `process.env`. The e2e specs use this to tune the gate.
-- `NODE_ENV` only selects the file (`test` → `../.env.test`, else `../.env`). Coordination does not depend on it (`concurrent-migrations.spec.ts` pins this).
-- `NODE_ENV=test` changes `ormconfig.ts`: it lists no migrations. The e2e pods inject their own DataSources for this reason.
-- In async mode the entrypoint does not run setup. It exports `MIGRATION_SETUP_COMMAND` and the server runs it (§5).
+- **Every pod runs migrations.** There is no separate migration job, so 20 pods start 20 runners. [Many pods, one migration](#many-pods-one-migration) explains how only one of them migrates.
+- **The runner is not the server.** It is a plain Node process without NestJS (no `ConfigService`, no DI). It reads config with `getEnvVars()` and opens its own connections.
+- **Config.** `getEnvVars()` puts the env file over `process.env`: a key in `.env` wins over an exported shell variable, and a key missing from the file comes from `process.env`. The e2e specs rely on this.
+- **`NODE_ENV`** only picks the file (`test` → `../.env.test`, else `../.env`). Coordination does not depend on it (`concurrent-migrations.spec.ts` checks this). With `NODE_ENV=test`, `ormconfig.ts` lists no migrations, so the e2e pods bring their own DataSources.
+- **Async mode** skips this step in the entrypoint. The entrypoint exports the command as `MIGRATION_SETUP_COMMAND` and the server runs it.
 
-## 2. Phases and transactions
+## Phases and transactions
 
-`run-all-migrations.ts` runs all schema migrations (`server/migrations/`), then all data migrations (`server/data-migrations/`). `MIGRATION_PHASE` selects what one runner does. Any other value fails the runner.
+A runner runs all schema migrations (`server/migrations/`), then all data migrations (`server/data-migrations/`). `MIGRATION_PHASE` says which part it runs. Any value other than those below fails the runner.
 
-| `MIGRATION_PHASE` | Set by | Runs | Transaction |
+| `MIGRATION_PHASE` | Used by | Runs | Transactions |
 |---|---|---|---|
-| unset (joint run) | blocking mode, Cloud, `npm run db:migrate`, async schema phase with pre-cutoff migrations (§5.1) | schema, then data | One for both. A failing data migration also rolls back the schema changes. |
-| `schema` | async boot (§5.1) | pending schema migrations only | Its own short transaction, with `lock_timeout` and retries |
-| `data` | server-started runs (§5.2) | schema catch-up (normally empty), then all data migrations | Catch-up in its own transaction. All data in one transaction. |
+| unset (joint run) | Blocking mode, Cloud, `npm run db:migrate`, and an async boot of a database older than 3.21.58 | Schema, then data | One. A failing data migration also undoes the schema changes |
+| `schema` | Async boot | Pending schema migrations | One short transaction, with a lock timeout and retries |
+| `data` | Async runs | Any schema migration still pending (normally none), then all data migrations | One for the leftover schema, one for all data |
 
-Enum exception: PostgreSQL forbids use of an enum value in the transaction that added it (`55P04`). `planEnumAdditions` pre-commits the value on an upgrade. On a fresh install it falls back to two transactions. Details: `../AGENTS.md` § Migrations.
+**Enum exception.** PostgreSQL does not allow using an enum value in the transaction that added it (`55P04`). On an upgrade, `planEnumAdditions` commits new enum values first. On a fresh install it uses two transactions. Details: the migration-writing rules in [`../AGENTS.md`](../AGENTS.md#migrations).
 
-## 3. Multi-pod coordination
+## Many pods, one migration
 
-`migrations-table-gate.ts` defines two session-scoped advisory locks. PostgreSQL releases a lock when its connection ends, so a killed pod cannot leak one. There is no TTL, no cleanup and no Redis.
+Two PostgreSQL advisory locks (`migrations-table-gate.ts`) make sure one pod migrates and the others know about it. PostgreSQL drops a lock when its connection closes, so a killed pod cannot leave one behind. No TTL, no cleanup job, no Redis.
+
+| Lock | What it means | Held | Checked by |
+|---|---|---|---|
+| Migration lock (`6273975241000`) | "I am the pod that migrates" | From reading the pending list to commit | Waiting pods; dead-run detection |
+| Active lock (`6273975241001`) | "I am changing the database right now" | Only while real migrations execute | The upgrade gate |
 
 ```
 run()
- └── withMigrationAdvisoryLock           ← 3.1  serialises pods (migration lock)
+ └── withMigrationAdvisoryLock           ← take the migration lock
       └── migrateAsSolePod
-           ├── realPendingMigrationNames  (lock sentinels excluded)
-           ├── pg_advisory_lock(active)  ← 3.3  only when real work is pending
-           └── executeMigrations         ← per MIGRATION_PHASE (§2)
+           ├── realPendingMigrationNames  (lock sentinels left out)
+           ├── pg_advisory_lock(active)  ← only when there is real work
+           └── executeMigrations         ← per MIGRATION_PHASE
 ```
 
-| Lock | Key | Held | Read by |
-|---|---|---|---|
-| Migration lock | `MIGRATION_ADVISORY_LOCK_KEY` (`6273975241000`) | From the pending-list read to commit | Waiting pods; dead-run detection (§5.4) |
-| Active lock | `MIGRATION_ACTIVE_LOCK_KEY` (`6273975241001`) | While real migrations execute | The upgrade gate (§4) |
+### Migration lock
 
-### 3.1 Migration lock
+The runner takes the migration lock (`pg_try_advisory_lock`) **before** it reads which migrations are pending, and keeps it until commit. The lock lives on its own connection, which sits idle while the migrations run on another.
 
-`withMigrationAdvisoryLock` takes `pg_try_advisory_lock` **before** it reads the pending list. It holds the lock until commit. The lock has its own session, which stays idle while migrations run on other connections.
+Why before the read: if two pods both read the pending list first, the second one later runs migrations the first already applied and fails, for example with `duplicate key value violates unique constraint "pg_type_typname_nsp_index"`. A table lock on `migrations` taken inside the transaction (`LockMigrationsTable1/2`) comes too late to prevent this.
+
+What happens when the migrating pod goes away:
 
 | Event | Result |
 |---|---|
-| Pod killed (SIGTERM/SIGKILL) | The socket closes and the lock goes at once. The current statement finishes, then rolls back. A new runner waits behind its table locks. |
-| Pod lost without a FIN (node failure, partition) | TCP keepalive drops the session after about 60s. The OS default is about 2 hours. The lock session sets it with `DEAD_CLIENT_KEEPALIVE_SQL`. Every other runner connection sets it as startup options (`withMigrationConnectionOptions`, which also sets `statement_timeout=0` unless `PGOPTIONS` says otherwise), so the migration transaction rolls back and frees its row locks too. |
-| PgBouncer in transaction mode | The lock does not work: the unlock can go to a different backend. Use a direct connection or session pooling. |
+| Pod killed (SIGTERM/SIGKILL) | The connection closes and the lock goes at once. The transaction rolls back after its current statement. The next runner waits for the table locks to clear. |
+| Pod's node lost without closing connections | TCP keepalive notices after about 60s (the OS default is about 2 hours). The lock connection sets it with `DEAD_CLIENT_KEEPALIVE_SQL`; every other runner connection sets it at connect time (`withMigrationConnectionOptions`), so the transaction rolls back and frees its row locks too. That helper also sets `statement_timeout=0`, unless `PGOPTIONS` says otherwise, so a long migration is not cancelled. |
+| PgBouncer in transaction mode | The lock does not work, because the unlock can reach a different backend. Connect directly or use session pooling. |
 
-The table lock alone is not sufficient. `LockMigrationsTable1/2` take ACCESS EXCLUSIVE on `migrations` *inside* the migration transaction. At that time, each pod already has its own pending list. The losing pod then runs an applied migration again and fails with a catalog error, for example `duplicate key value violates unique constraint "pg_type_typname_nsp_index"`.
+### Waiting
 
-### 3.2 Waiting
-
-A pod that finds the migration lock taken sleeps for `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS`, then tries again. `MIGRATION_LOCK_MAX_WAIT_MINUTES` sets the maximum wait (`0` = no limit). The waiting pod does not query `migrations`, so a `lock_timeout` or `statement_timeout` cannot stop the wait. Log on a waiting pod:
+A pod that finds the migration lock taken sleeps for `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS` and tries again, for at most `MIGRATION_LOCK_MAX_WAIT_MINUTES` (`0` = no limit). While waiting it does not query `migrations`, so a `lock_timeout` or `statement_timeout` cannot end the wait. Its log:
 
 ```
 [migrations] Another pod is running migrations. Waited 4s so far; retrying in 2s. This pod will NOT exit.
 [migrations] Lock released; got the migration lock after 8s.
 ```
 
-With `MIGRATION_SKIP_IF_LOCKED=true` (server-started boot runs, §5.4) the pod does not wait. It exits with code `75` (`SKIPPED_EXIT_CODE`).
+With `MIGRATION_SKIP_IF_LOCKED=true` (async boot runs) the pod does not wait: it exits with code `75` (`SKIPPED_EXIT_CODE`).
 
-### 3.3 Active lock and lock sentinels
+### Lock sentinels
 
-`LockMigrationsTable1234567890000` and `…891000` are the lock sentinels (`LOCK_SENTINEL_MIGRATION_NAMES`). Each one deletes the row of the other, so one sentinel is always pending. This is how a joint run takes the table lock on every boot.
+Two old migrations, `LockMigrationsTable1234567890000` and `…891000` (`LOCK_SENTINEL_MIGRATION_NAMES`), delete each other's row, so one of them is always pending. That is how a joint run locks the `migrations` table on every boot. They are not real work:
 
-- `realPendingMigrations` (`run-all-migrations.ts`) removes the sentinels from the pending list. If they counted, every restart and scale-up would refuse traffic.
-- A runner with nothing pending does not take the active lock. It logs: `[migrations] No schema or data migrations pending — not cutting API traffic for this boot.`
-- Split phases (`MIGRATION_PHASE=schema|data`) remove the sentinels before they run (`withoutLockSentinels`). The migration lock already serialises split runners. A sentinel's `LOCK TABLE migrations` would hold the table for the full data transaction and block the pending read of a booting pod.
+- They do not count as pending (`realPendingMigrations`). Otherwise every restart and scale-up would take the active lock and refuse traffic.
+- A runner with nothing else pending does not take the active lock. It logs: `[migrations] No schema or data migrations pending — not cutting API traffic for this boot.`
+- The schema and data phases do not run them at all (`withoutLockSentinels`). The migration lock already keeps those runners apart, and a sentinel would hold `migrations` locked for the whole data transaction, which blocks booting pods.
 
-## 4. Upgrade gate
+## Upgrade gate
 
-Async mode only. In blocking mode the gate passes every request and `status()` is always `idle`, as before async mode existed: old pods serve everything while a new pod migrates.
+In async mode the server serves while migrations run. The upgrade gate stops requests that are not safe during that time: it answers them with `503` and the banner tells users why. Blocking mode has no gate; it works as on releases before async mode.
 
-`MigrationGateMiddleware` answers `/api/*` with `503` while `MigrationRunsService.status()` reports a refusing state. `status()` reads both locks from `pg_locks` (`HELD_MIGRATION_LOCKS_SQL`, current database only). In async mode it also reads the latest run. A `pg_locks` read takes no table lock, so it answers at once while a migration holds ACCESS EXCLUSIVE on `migrations`.
+**When it refuses.**
 
-| State | When | Blocking mode | Async mode |
-|---|---|---|---|
-| `running` | Active lock held, or the latest run is running, or boot hold (§5.3) | — (no gate) | Refuses writes (`MIGRATION_IN_PROGRESS`) |
-| `failed` | Latest run failed | — | Refuses writes (`MIGRATION_FAILED`) until a server boot runs it again with success |
+| Situation | Status | Refused |
+|---|---|---|
+| A migration is running | `running` | Writes (`MIGRATION_IN_PROGRESS`). Sign-in and query runs still pass |
+| The last migration failed | `failed` | Writes (`MIGRATION_FAILED`), until a server boot reruns it with success |
+| Either of the above, on an upgrade from 3.21.58–3.21.62 | same, with `readsBlocked` | Reads too. Only sign-in and the migration status pass |
 
-Response: `503`, `Retry-After: 30`, body `{ statusCode, code, message, timestamp, path }`.
+Health and metrics endpoints are never refused.
 
-The middleware must keep these rules:
+**What the client gets.** `503`, `Retry-After: 30`, body `{ statusCode, code, message, timestamp, path }`.
 
-1. **Never gate health or metrics** (`UNGATED_API_PATHS`). A gated `/api/health` makes the orchestrator kill the pods that wait for the upgrade. Add every new probe endpoint to that set.
-2. **Gate only API routes.** The SPA shell then loads and shows the upgrade state. `buildApiPrefix(SUB_PATH)` handles subpath installs.
-3. **Fail open.** A status read error means "no migration is running".
-4. **Keep it cheap.** `status()` caches for 1s, with one read in flight, on the service's own pool of two connections. Rejection logs are limited to one per 30s.
-5. **Match the raw request path** (`parseurl.original`), lowercased, the path that Express routes on. Absolute-form targets are included.
+**How it knows.** `MigrationGateMiddleware` asks `MigrationRunsService.status()`. That checks two things:
 
-## 5. Async mode (`MIGRATION_MODE=async`)
+- Is a server holding the active lock right now? It reads `pg_locks`, which never waits on a table lock, so it answers even while a migration locks `migrations`.
+- What does the latest row in `migration_runs` say?
 
-Async mode is opt-in, by env only. Use it when a long migration takes longer than a liveness probe allows. Schema migrations apply at boot, before new code serves. Data migrations run after boot, in the background.
+**Rules to keep when you change the gate:**
 
-```
-entrypoint: exports MIGRATION_SETUP_COMMAND (the edition's setup), does not run it
-main.ts → migrateSchemaBeforeBoot (async-mode.ts), before NestFactory.create:
-  fresh install (no database / no `migrations` table) → full setup, blocking (schema + data)
-  else → setup child with MIGRATION_PHASE=schema:
-           no pending schema migration → exit 0 at once, no lock
-           else → migration lock, pending schema only, own transaction → commit
-           non-zero exit → this pod exits non-zero; old pods keep serving
-Nest boots on the NEW schema
-MigrationRunsService.start() → child with MIGRATION_PHASE=data:
-  child = setup command (MIGRATION_SKIP_IF_LOCKED=true: skip if another server migrates)
-  child stdout/stderr → container logs + `migration_runs`
-```
+1. **Never refuse health or metrics** (`UNGATED_API_PATHS`). Otherwise the orchestrator kills pods for failing health checks during the upgrade. Add every new probe endpoint to that set.
+2. **Refuse only `/api/*`.** The web app still loads and can show the banner. `buildApiPrefix(SUB_PATH)` handles installs under a subpath.
+3. **When in doubt, let it through.** If the status cannot be read, treat it as "no migration running".
+4. **Keep it cheap.** The status is cached for 1s, one read at a time, on its own pool of two connections. A refusal is logged at most once per 30s.
+5. **Check the path Express routes on:** the raw request path (`parseurl.original`), lowercased, including absolute-form targets.
 
-`TOOLJET_EDITION=cloud` ignores `MIGRATION_MODE` and stays in blocking mode.
+## Async mode
 
-### 5.1 Schema phase (boot)
+Use async mode when a migration takes longer than the liveness probe allows. Turn it on with `MIGRATION_MODE=async`; nothing else is needed. Cloud ignores it and stays blocking.
 
-- **Reason.** Without this phase, an entity that maps a new column stops boot. Example: licensing init reads `instance_settings`, PostgreSQL answers `42703`, `bootstrap()` exits 1, and every new pod crash-loops.
-- **No pending schema migration.** A restart or scale-up takes no lock and starts at once, also during a long data phase. Split phases skip the lock sentinels, so no runner holds `migrations` locked.
-- **Probe before the read** (`migrationsTableLocked`). A joint run or a blocking-mode run holds `migrations` locked until it ends. The schema phase first probes the table with `lock_timeout` = `MIGRATION_SCHEMA_LOCK_TIMEOUT_MS` and `statement_timeout = 0`. On a timeout it waits on the migration lock and does not read, so a role `statement_timeout` cannot stop the pod.
-- **Wait interval.** Schema-phase waits retry the migration lock every 5s (`SCHEMA_PHASE_RETRY_INTERVAL_SECONDS`), unless `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS` is set.
-- **Pre-cutoff migrations.** Migrations at or before `MIGRATION_AUTHORING_RULES_CUTOFF` (`src/migration-helpers/migration-status.ts`) were written before the authoring rules. Upgrades from 3.21.74 onwards have none pending.
-  - **From 3.21.58 to 3.21.73:** every pending pre-cutoff migration is in `ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS` (`src/migration-helpers/async-safe-pre-cutoff-migrations.ts`), so the upgrade still splits. Their schema steps leave a database the previous release still runs on, so if the data phase fails, redeploying that release is the rollback. To get there, the steps 3.21.58 cannot run on moved to the data phase: `DropGitSyncMetaHashColumns` and `CopyWorkflowAppMetaToAppVersions` now live in `data-migrations/` (same names, so databases that ran them do not run them again); `GeneralizeUserPersonalAccessTokens` adds its workspace check `NOT VALID`, and `ValidatePatWorkspaceShape1793100000000` deletes the old workspace PATs and validates it; `ExemptUnsyncedDraftsFromDefaultBranchUniqueIndex` waits for the data migration that rebuilds those indexes. The end schema matches a joint run. A successful data phase drops columns 3.21.58 maps, so after success only the backup brings 3.21.58 back.
-  - **Older than 3.21.58:** another pre-cutoff migration is pending. This phase runs the full upgrade as a joint run before boot, with the active lock held. The later data phase finds nothing pending.
-- **Active lock.** The pod holds the active lock while it applies schema migrations, so serving pods refuse writes (§4).
-- **Lock timeout.** The transaction sets `SET LOCAL lock_timeout` to `MIGRATION_SCHEMA_LOCK_TIMEOUT_MS`, so a queued `ALTER TABLE` does not block readers of released apps. On `55P03` it rolls back, waits 2s and tries again, up to `MIGRATION_SCHEMA_LOCK_RETRIES` tries in total.
-- **No run.** The schema phase does not write a `migration_runs` row. Its output is in the pod logs only.
-- A fresh install runs the full setup, as in blocking mode.
+A boot in async mode:
 
-### 5.2 Data phase (server-started runs)
+1. **Before the server starts** (`migrateSchemaBeforeBoot` in `async-mode.ts`):
+   - Fresh install (no database, or no `migrations` table): run the full setup, as in blocking mode.
+   - Otherwise: run the schema phase in a child process. If it fails, this pod exits; the old pods keep serving.
+2. **The server starts**, on the new schema.
+3. **In the background** (`MigrationRunsService.start()`): run the data phase in a child process. Its output goes to the container logs and to `migration_runs`.
 
-- Boot runs and dead-run restarts both set `MIGRATION_PHASE=data`.
-- All data migrations run in one transaction. A failure rolls back the data changes only. The schema additions stay, and the next run executes data migrations only.
+### Schema phase (before boot)
 
-### 5.3 Serving during a run
+**Why it exists.** New code can map a column that only a new schema migration adds. Without this phase the server fails at start, for example: licensing reads `instance_settings`, PostgreSQL answers `42703` (no such column), and every new pod crash-loops.
 
-- **Boot hold.** A new pod reports `running` from boot until its own data phase takes the active lock, exits, or cannot start. Its new code thus never writes before its data migrations. On a plain restart this is the start-up time of the child, on that pod only.
-- **Allowed requests.** The gate refuses writes. Reads, login, session, OAuth/SSO and query runs pass (`ASYNC_MODE_WRITE_ALLOWLIST`). An upgrade from 3.21.58–3.21.62 runs data migrations that alter tables (`TABLE_ALTERING_DATA_MIGRATIONS`); those locks block reads until the data phase commits. While such a run is running or failed (`readsBlocked` on the status), only login, session, OAuth/SSO, the public login config, `/api/migration-status` and `/api/migration-runs` pass (`READS_BLOCKED_ALLOWLIST`), and the banner says ToolJet is unavailable. After a failure the locks are gone, but the new code would read data the data phase never converted, so reads stay refused until a retry succeeds or the previous release is redeployed. Upgrades from 3.21.63 onwards keep serving reads.
-- **Row locks.** A request that passes the gate can still wait. A row or table that a data migration locked stays locked until commit.
-- **Untracked runners.** The active lock has priority over the latest run. A blocking-mode server or a manual `db:migrate` reads as `running`.
-- **Workers.** A `WORKER=true` server pauses its BullMQ workers while the state is `running` or `failed`. It checks every 5s and resumes after. Jobs wait in Redis.
+**How it behaves:**
 
-### 5.4 Runs
+- **Nothing pending:** it exits at once without taking a lock. A restart or scale-up starts right away, even during a long data phase.
+- **`migrations` table locked** (by a joint run or a blocking-mode server): it first probes the table with a short `lock_timeout` (`migrationsTableLocked`). If the probe times out, it waits on the migration lock instead of reading, so a database `statement_timeout` cannot kill the pod.
+- **Waiting:** it retries the migration lock every 5s, unless `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS` is set.
+- **While it applies migrations** it holds the active lock, so serving pods refuse writes.
+- **Busy tables:** each try sets `lock_timeout` to `MIGRATION_SCHEMA_LOCK_TIMEOUT_MS`, so a waiting `ALTER TABLE` does not queue up readers of released apps. On a lock timeout (`55P03`) it rolls back, waits 2s and tries again, up to `MIGRATION_SCHEMA_LOCK_RETRIES` tries in total.
+- **Logs only.** It writes no `migration_runs` row; its output is in the pod logs.
 
-- **One active run.** A unique index (`migration_runs_one_active`) allows one `running` row in the cluster.
-- **Boot run.** Every async boot starts a data phase with `MIGRATION_SKIP_IF_LOCKED=true`. This includes a boot after a failed run of the same version. The boot run inserts its row only when it finds pending work. If another server holds the migration lock, the child exits `75` and records nothing.
-- **No manual retry.** There is no Retry button and no `POST /migration-runs/run`. To run a failed migration again, ship a fixed image, or fix the cause (bad data, a missing table) and restart. The migrations page is view-only.
-- **Dead runs.** A `running` row is dead when the migration lock is free and its heartbeat is older than 30s. It reads as `failed` with "The migrating server stopped without reporting a result." While a session holds the migration lock, the row is alive at any heartbeat age.
-- **A stopped run is not a failed migration.** For the write gate and the banner, a dead run, or a run recorded with that stopped error, reads as `running` (`MIGRATION_IN_PROGRESS`), not `failed`. Another server reruns it. The migrations page still shows the stopped run as failed, with its error.
-- **Dead-run restart.** Every server checks every 10s. It marks dead rows failed, then inserts a new `running` row. The unique index lets one server win. The claimed child waits for the migration lock (no skip). Without this check, writes stay refused until the next boot.
-- **Reap on insert.** A runner that holds the migration lock can find a `running` row in its way (a pod killed less than 30s before). It marks that row failed with the dead-run error, then inserts its own row.
-- **Finished rows are final.** Tracking updates skip rows that have `finished_at` set.
-- **Nothing pending after a failure.** A runner that finds nothing pending after a failed run records a `succeeded` run. Writes are then allowed again.
-- **Newer release.** A server does not start or restart a run when the `to_version` of the latest run is newer than its own. Its runner cannot see that release's migrations, so it would find nothing and record a success. Its gate also ignores a failed run of a newer release, because its code runs on the schema it knows. During a rollout, old pods take writes and new pods refuse them. A rollback to the previous image serves writes and does not clear the failed run.
-- **Boot start failure.** If `start()` cannot reach the database at boot, the 10s dead-run check calls it again until it succeeds.
-- **Failure.** No data change commits. Reads continue. Writes get 503 `MIGRATION_FAILED` ("…until it is fixed and ToolJet restarts.").
+**Older databases.** Migrations up to `MIGRATION_AUTHORING_RULES_CUTOFF` (`migration-status.ts`) were written before the rules that make the split safe. When one of them is pending, `blocksAsyncUpgrade` decides:
 
-### 5.5 Shutdown
+| Upgrade from | What happens |
+|---|---|
+| 3.21.74 or later | Nothing old is pending. Normal split |
+| 3.21.58–3.21.73 | The old migrations still pending are all in `ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS` (`async-safe-pre-cutoff-migrations.ts`). Normal split. If the data phase fails, the previous release still runs on the database |
+| older than 3.21.58 | The whole upgrade runs as one joint run before the server starts, with the active lock held. The data phase then has nothing left to do |
 
-1. SIGTERM reaches Node. The production images run `tini -g` as PID 1, and the root and server `start:prod` scripts use `exec`. So `npm run start:prod` (every shipped deploy config) delivers the signal.
-2. `onceWithDeadline` (`src/helpers/bootstrap.helper.ts`) runs shutdown once and caps it at 20s (`SHUTDOWN_TIMEOUT_MS`).
-3. `MigrationRunsService` sends SIGTERM to the process group of the child and waits up to 10s for it to exit.
-4. The open transaction rolls back. The server records the run as failed with the dead-run error, so the next boot runs it again.
+To make 3.21.58 splittable, the old schema steps 3.21.58 cannot run on moved to the data phase:
 
-A hard kill (OOM, node loss) leaves a dead run. The next runner marks it failed when it starts, because it holds the lock and any `running` row is then dead. Otherwise the dead-run check marks it after 30s.
+- `DropGitSyncMetaHashColumns` and `CopyWorkflowAppMetaToAppVersions` moved to `data-migrations/` under the same names, so databases that already ran them skip them.
+- `GeneralizeUserPersonalAccessTokens` adds its workspace check as `NOT VALID`. `ValidatePatWorkspaceShape1793100000000` deletes the old workspace PATs and validates the check.
+- `ExemptUnsyncedDraftsFromDefaultBranchUniqueIndex` skips while the data migration that rebuilds those indexes is pending.
 
-### 5.6 Tracking, logs and banner
+The final schema is the same as after a joint run. Once the data phase succeeds, it has dropped columns 3.21.58 needs, so from then on only the pre-upgrade backup brings 3.21.58 back.
 
-- The service creates `migration_runs` and `migration_run_logs`, not a migration. It writes them on its own `pg` pool, so progress shows while the transaction is open. The service keeps the last 50 runs.
-- Progress comes from runner lines `[migrations] START <name>` and `DONE <name> <ms>`, from data-migration `[PROGRESS] i/total` lines, and from `MigrationProgress` `<name> Progress N %` lines. The service keeps one line per percent.
-- Each kept line goes to `migration_run_logs`, tagged with its migration. The row keeps the last 200 lines (`LOG_TAIL_LINES`). Query parameters, emails and connection URLs are redacted.
-- TypeORM `query is slow:` and `execution time:` lines are dropped unless `ORM_LOGGING` is set.
-- After a success, the service deletes the logs of earlier runs. The rows stay.
-- `GET {prefix}api/migration-runs` and `GET {prefix}api/migration-runs/:id/log[?migration=<name>]` are for super admins. The log route returns the full log or the lines of one migration.
-- **Banner.** `GET {prefix}api/migration-status` (public: state, start, version, end-user text) feeds the frontend `MigrationBanner` for `running` and `failed`. The banner polls every 3s while the state is `running`, else every 30s. In blocking mode the endpoint reports `running` while another server holds the active lock.
-- Released and embedded apps show a generic maintenance message to end users. `MIGRATION_END_USER_MESSAGE_RUNNING` and `MIGRATION_END_USER_MESSAGE_FAILED` replace it; the endpoint sends the text as `endUserMessage` (trimmed, max 200 characters). Builders and super admins keep the built-in text. For a super admin, the `failed` banner links to `{prefix}settings/migrations`, which shows the failed migration and its log.
+### Data phase
 
-### 5.7 Costs
+- Runs as a child of the server (`MIGRATION_PHASE=data`), started at boot or by the dead-run check.
+- All data migrations run in one transaction. A failure undoes the data changes only. The schema additions stay, and the next run does the data migrations again.
 
-- There is no joint rollback of schema and data. Schema additions stay after a data failure.
-- The schema phase shows only in pod logs (§5.1).
+### Serving during a run
+
+- **What passes.** Reads, sign-in, session, OAuth/SSO and query runs (`ASYNC_MODE_WRITE_ALLOWLIST`). Other writes get 503.
+- **New pods wait for their own data phase.** From boot until its data phase takes the active lock, exits or fails to start, a pod reports `running`. So new code never writes before its data migrations ran. On a plain restart this lasts as long as the child takes to start, on that pod only.
+- **Reads blocked on upgrades from 3.21.58–3.21.62.** Their data phase includes migrations that alter tables (`TABLE_ALTERING_DATA_MIGRATIONS`), and those table locks block reads until commit. So while such a run is running or failed, the status carries `readsBlocked` and the gate also refuses reads. Only sign-in, session, OAuth/SSO, the public login config, `/api/migration-status` and `/api/migration-runs` pass (`READS_BLOCKED_ALLOWLIST`), and the banner says ToolJet is unavailable. After a failure the locks are gone, but the new code would read data that was never converted, so reads stay refused until a rerun succeeds or the previous release is redeployed. Upgrades from 3.21.63 onwards keep serving reads.
+- **Requests that pass can still wait.** A row a data migration changed stays locked until commit.
+- **Other runners count too.** A held active lock reads as `running` even without a run row, for example a manual `db:migrate` or a blocking-mode server on the same database.
+- **Workers.** A `WORKER=true` server pauses its BullMQ workers while the status is `running` or `failed`. It checks every 5s and resumes after. Jobs wait in Redis.
+
+### Runs
+
+**Starting a run.**
+
+- **One at a time.** A unique index (`migration_runs_one_active`) allows one `running` row in the cluster.
+- **Every boot tries.** Each async boot starts a data phase with `MIGRATION_SKIP_IF_LOCKED=true`, including a boot after a failed run of the same version. It records a row only when it finds pending work. If another server holds the migration lock, the child exits `75` and records nothing.
+- **No manual retry.** There is no Retry button and no `POST /migration-runs/run`. To rerun a failed migration, ship a fixed image, or fix the cause (bad data, a missing table) and restart. The migrations page only shows runs.
+- **Boot could not reach the database.** The 10s dead-run check (below) calls `start()` again until it succeeds.
+- **Nothing pending after a failure.** The runner records a `succeeded` run, which lets writes through again.
+- **A newer release ran last.** A server does not start a run when the latest run's `to_version` is newer than its own: it cannot see that release's migrations, so it would find nothing and record a false success. Its gate also ignores a failed run of the newer release, because its own code runs fine on the schema it knows. During a rollout, old pods take writes and new pods refuse them. Rolling back to the previous image serves writes and leaves the failed run on record.
+
+**When the migrating server dies.**
+
+- **Dead run.** A `running` row is dead when nobody holds the migration lock and its heartbeat is older than 30s. While a connection holds the lock, the row is alive however old its heartbeat.
+- **Dead-run check.** Every server checks every 10s. It marks dead rows failed, then inserts a new `running` row; the unique index lets one server win. The winner's child waits for the migration lock instead of skipping. Without this check, writes would stay refused until the next boot.
+- **Stale row in the way.** A runner that holds the migration lock may find a `running` row from a pod killed less than 30s ago. It marks that row failed, then inserts its own.
+- **A stopped run is not a failed migration.** The gate and banner treat a dead run, or one recorded as "The migrating server stopped without reporting a result.", as `running`, because another server reruns it. The migrations page still lists it as failed, with that error.
+- **Finished rows are final.** Updates skip rows that have `finished_at` set.
+
+**When a migration fails.** Nothing from the data phase commits. Reads continue, unless `readsBlocked`. Writes get 503 `MIGRATION_FAILED` ("…until it is fixed and ToolJet restarts.").
+
+### Shutdown
+
+1. SIGTERM reaches Node: the production images run `tini -g` as PID 1, and the root and server `start:prod` scripts use `exec`.
+2. Shutdown runs once and takes at most 20s (`onceWithDeadline`, `SHUTDOWN_TIMEOUT_MS`, `src/helpers/bootstrap.helper.ts`).
+3. `MigrationRunsService` sends SIGTERM to the child's process group and waits up to 10s.
+4. The open transaction rolls back. The run is recorded as stopped, so the next boot runs it again.
+
+A hard kill (OOM, node loss) leaves a dead run. The next runner marks it failed when it starts, since it then holds the lock and any `running` row must be dead. Otherwise the dead-run check marks it after 30s.
+
+### Progress, logs and banner
+
+- **Tables.** The service creates `migration_runs` and `migration_run_logs` itself; they are not migrations. It writes them on its own `pg` pool, so progress shows while the migration transaction is still open. It keeps the last 50 runs.
+- **Progress** comes from the runner's `[migrations] START <name>` and `DONE <name> <ms>` lines, data-migration `[PROGRESS] i/total` lines and `MigrationProgress` `<name> Progress N %` lines, keeping one line per percent.
+- **Logs.** Each kept line goes to `migration_run_logs`, tagged with its migration; the run row keeps the last 200 lines (`LOG_TAIL_LINES`). Query parameters, emails and connection URLs are redacted. TypeORM `query is slow:` and `execution time:` lines are dropped unless `ORM_LOGGING` is set. After a success, logs of earlier runs are deleted; their rows stay.
+- **Super-admin routes.** `GET {prefix}api/migration-runs` lists runs. `GET {prefix}api/migration-runs/:id/log[?migration=<name>]` returns a run's log, or one migration's lines.
+- **Banner.** The public `GET {prefix}api/migration-status` returns state, start time, version and end-user text. The frontend `MigrationBanner` shows it for `running` and `failed`, polling every 3s while `running`, else every 30s. In blocking mode the endpoint always says `idle`.
+- **Banner text.** End users of released and embedded apps see a generic maintenance message, unless `MIGRATION_END_USER_MESSAGE_RUNNING` / `_FAILED` replace it (sent as `endUserMessage`, trimmed, max 200 characters). Builders and super admins see the built-in text. A super admin's `failed` banner links to `{prefix}settings/migrations`, with the failed migration and its log.
+
+### Trade-offs
+
+- Schema and data do not roll back together. After a data failure, the schema additions stay.
+- The schema phase shows only in pod logs.
 - A pod of a newer release that boots during a long data phase of the previous release waits on the migration lock, up to `MIGRATION_LOCK_MAX_WAIT_MINUTES`.
 
-These costs are acceptable because schema migrations only add (`../AGENTS.md` § Migrations, rule 1). Old code ignores additions, so rollback is: deploy the previous image.
+This is acceptable because schema migrations only add (see the migration-writing rules in [`../AGENTS.md`](../AGENTS.md#migrations)). Old code ignores additions, so rollback is: deploy the previous image.
 
-GitLab self-managed uses the same split: [regular schema migrations before new code](https://docs.gitlab.com/development/migration_style_guide/), background migrations for data, destructive changes in a later release, and [restore the pre-upgrade backup instead of `db:rollback`](https://docs.gitlab.com/development/migration_style_guide/#reversibility). The difference: here the operator has no separate post-deploy step.
+GitLab self-managed works the same way: [regular schema migrations before new code](https://docs.gitlab.com/development/migration_style_guide/), background migrations for data, destructive changes a release later, and [restore the pre-upgrade backup instead of `db:rollback`](https://docs.gitlab.com/development/migration_style_guide/#reversibility). The difference: here the operator has no separate post-deploy step.
 
-## 6. Environment variables
+## Environment variables
 
-All are optional. `.env.example` § ROLLING UPGRADE lists them too.
+All optional. The ROLLING UPGRADE block of `.env.example` lists them too.
 
 | Variable | Default | Effect |
 |---|---|---|
-| `DISABLE_MIGRATION_TRAFFIC_GATE` | `false` | `true` turns off the 503. Locks and waits still apply. Each serving pod logs this at boot. |
-| `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS` | `60` (schema phase: `5`) | Interval between lock tries of a waiting pod. |
-| `MIGRATION_LOCK_MAX_WAIT_MINUTES` | `30` | Maximum wait before a pod fails its own boot. `0` waits with no limit. |
+| `MIGRATION_MODE` | `blocking` | `async`: see [Async mode](#async-mode). Any other value means `blocking`. Cloud ignores it. |
+| `DISABLE_MIGRATION_TRAFFIC_GATE` | `false` | Async mode: `true` turns off the 503. Locks and waits still apply. Each serving pod logs this at boot. |
+| `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS` | `60` (schema phase: `5`) | How often a waiting pod tries the migration lock again. |
+| `MIGRATION_LOCK_MAX_WAIT_MINUTES` | `30` | How long a pod waits before it fails its boot. `0` waits with no limit. |
+| `MIGRATION_SCHEMA_LOCK_TIMEOUT_MS` | `5000` | Schema phase only: `lock_timeout` for its transaction and its table probe. |
+| `MIGRATION_SCHEMA_LOCK_RETRIES` | `10` | Schema phase only: total tries, first included, before a lock timeout fails the boot. `1` means no retry. |
 | `MIGRATION_END_USER_MESSAGE_RUNNING` | unset | Banner text for end users of released apps while a run is going. Unset: "Scheduled maintenance in progress…". Max 200 characters. |
 | `MIGRATION_END_USER_MESSAGE_FAILED` | unset | Same, after a failed run. Unset: "Maintenance is taking longer than expected…". |
-| `MIGRATION_MODE` | `blocking` | `async`: see §5. Any other value means `blocking`. Cloud ignores it. |
-| `MIGRATION_SCHEMA_LOCK_TIMEOUT_MS` | `5000` | Schema phase only (§5.1). `lock_timeout` for its transaction and for the table probe. |
-| `MIGRATION_SCHEMA_LOCK_RETRIES` | `10` | Schema phase only. Total tries, first try included, before a lock timeout fails the boot. `1` means no retry. |
 
-Set by the system, not by operators: `MIGRATION_PHASE` (§2), `MIGRATION_SKIP_IF_LOCKED` (§3.2), `MIGRATION_SETUP_COMMAND` (§5).
+Set by ToolJet itself, never by operators: `MIGRATION_PHASE`, `MIGRATION_SKIP_IF_LOCKED`, `MIGRATION_SETUP_COMMAND`.
 
-## 7. Failure modes
+## Failure modes
 
-| Scenario | Migration | Gate | Cost |
+The Gate column is for async mode; blocking mode has no gate.
+
+| What happens | Migration | Gate | Cost |
 |---|---|---|---|
-| Another pod migrates | Waits, then does nothing | Not raised by the waiting pod | Duration of the other migration |
-| Migrating pod gets SIGTERM/SIGKILL | Rolled back | Released with its connection | None |
-| Node of the migrating pod is lost (no FIN) | Rolled back | Released after ~60s keepalive | About one minute |
-| Migration is broken | Rolled back, exits non-zero | Released | Fails fast, no retry |
-| Wait exceeds the maximum | Exits non-zero | — | `MIGRATION_LOCK_MAX_WAIT_MINUTES` |
-| Schema phase cannot lock a busy table (§5.1) | Rolled back, tried again, then exits non-zero | Released | Old pods keep serving |
-| Async data phase fails (§5.4) | Data rolled back, schema stays | `failed`: writes refused | Until a boot runs it with success |
-| Async runner killed (§5.5) | Rolled back | Dead run after 30s, then restarted | Up to ~40s |
-| Database unreachable from a serving pod | — | Fails open | The API is down anyway |
+| Another pod is migrating | Waits, then has nothing to do | Not raised by the waiting pod | As long as the other migration |
+| Migrating pod gets SIGTERM/SIGKILL | Rolled back | Lifted when its connection closes | None |
+| Migrating pod's node is lost | Rolled back | Lifted after ~60s keepalive | About a minute |
+| A migration is broken | Rolled back, runner exits non-zero | Lifted | Fails fast, no retry |
+| A pod waits longer than the maximum | Exits non-zero | — | `MIGRATION_LOCK_MAX_WAIT_MINUTES` |
+| Schema phase cannot lock a busy table | Rolled back, retried, then exits non-zero | Lifted | Old pods keep serving |
+| Async data phase fails | Data rolled back, schema stays | `failed`: writes refused (reads too when `readsBlocked`) | Until a boot reruns it with success |
+| Async runner killed | Rolled back | Dead run after 30s, then rerun | Up to ~40s |
+| Serving pod cannot reach the database | — | Lets requests through | The API is down anyway |
 
-## 8. Operator runbook
+## Operator runbook
 
-**Find a running migration:**
+**Is a migration running?**
 
 ```sql
 -- holders of the migration lock (6273975241000) and the active lock (6273975241001)
@@ -254,41 +286,41 @@ FROM pg_locks l JOIN pg_stat_activity a USING (pid)
 WHERE l.locktype = 'advisory' AND l.objsubid = 1 AND l.granted;
 ```
 
-A held lock means a live session migrates. The gate cannot stay raised after that session ends.
+A row means a live connection is migrating. Once that connection ends, the lock is gone.
 
 **Stop a runaway migration:**
 
 1. Run `SELECT pg_terminate_backend(<pid>)`. The transaction rolls back and both locks are released.
-2. In async mode, expect the run to show as failed. Writes stay refused until a server restarts, and that restart runs the migration again.
-3. Ship a fixed image to stop it permanently.
+2. In async mode the run then shows as failed, and writes stay refused until a server restarts. That restart runs the migration again.
+3. To stop it for good, ship a fixed image.
 
 **Upgrade without refused traffic:** set `DISABLE_MIGRATION_TRAFFIC_GATE=true`.
 
-**Known limitation:** the gate takes effect from the *next* async upgrade. During the deploy that first ships it, the old pods have no middleware.
+**Known limitation:** the gate works from the *next* async upgrade on. During the deploy that first ships it, the old pods have no gate.
 
-## 9. Invariants
+## Invariants
 
-- Serialise **before** you read the pending list (§3.1).
-- Lock sentinels are not work. Keep them out of the pending count (§3.3). Split phases do not run them.
-- Gate state comes from session locks and rows. Never use state that a person must clear manually.
-- Never gate a health or metrics endpoint.
-- The gate always fails open.
-- An error inside the migration transaction is final. Do not wrap the runner in a retry. The one exception is a lock timeout (`55P03`) in the schema phase (§5.1).
-- In async mode, only a server boot or a dead-run restart starts a run (§5.4). There is no manual retry.
-- Run all schema migrations before all data migrations, with two `MigrationExecutor` passes. Do not merge the two globs into one DataSource: TypeORM sorts by class-name timestamp, and schema and data timestamps interleave.
-- Plan enum additions before `announceEachMigration` wraps `up()`. The wrapper hides the source from the scanner.
+- Take the migration lock **before** reading the pending list.
+- Lock sentinels are not work: keep them out of the pending count. The schema and data phases do not run them.
+- Gate state comes only from connection-held locks and run rows. Never from a flag someone must clear by hand.
+- Never refuse a health or metrics endpoint.
+- If the gate cannot read the status, it lets the request through.
+- An error inside the migration transaction is final; do not wrap the runner in a retry. The one exception: a lock timeout (`55P03`) in the schema phase.
+- In async mode only a server boot or the dead-run check starts a run. There is no manual retry.
+- All schema migrations run before all data migrations, as two `MigrationExecutor` passes. Do not merge the two folders into one DataSource: TypeORM sorts by class-name timestamp, and schema and data timestamps interleave.
+- Plan enum additions before `announceEachMigration` wraps `up()`; the wrapper hides the source from the scanner.
 
-## 10. Tests
+## Tests
 
 | File | Covers |
 |---|---|
-| `test/modules/migrations/unit/migrations-table-gate.spec.ts` | Wait interval and maximum, skip-if-locked, lock session handoff, sentinel exclusion against files on disk |
-| `test/modules/migrations/unit/migration-status.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text |
-| `test/modules/app/unit/migration-gate.middleware.spec.ts` | Gated vs ungated paths, 503 per state, async write allowlist, opt-out log |
-| `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, body runs once, active lock only during work and released on SIGKILL; a `NODE_ENV=production` race. `MIGRATION_PHASE`: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long data phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, joint run for pre-cutoff migrations |
-| `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds (rule 1), non-empty `down()` |
+| `test/modules/migrations/unit/migrations-table-gate.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out (checked against files on disk) |
+| `test/modules/migrations/unit/migration-status.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist, `TABLE_ALTERING_DATA_MIGRATIONS` matches the DDL in the listed data migrations |
+| `test/modules/app/unit/migration-gate.middleware.spec.ts` | Blocking mode passes everything, gated vs ungated paths, 503 per state, what passes in async mode, what passes with `readsBlocked`, opt-out log |
+| `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, active lock only during work and released on SIGKILL, a `NODE_ENV=production` race. Split phases: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long data phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, joint run for an old database, `statement_timeout=0` on runner connections |
+| `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds, non-empty `down()` |
 | `test/modules/migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output (both progress formats), redaction, failed step |
-| `test/modules/app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races across servers, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, status cache, fail-open |
+| `test/modules/app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races across servers, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, `readsBlocked` while running and after failure, status cache, fail-open |
 
 The e2e specs run the real `run()` against a scratch database. Fixtures are in `test/modules/migrations/fixtures/`:
 
