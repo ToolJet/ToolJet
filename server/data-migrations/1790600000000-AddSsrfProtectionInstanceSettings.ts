@@ -48,7 +48,12 @@ export class AddSsrfProtectionInstanceSettings1790600000000 implements Migration
     // No workspace yet means a new installation; any workspace means an existing setup being upgraded, which keeps
     // its current behaviour: off unless it had opted in through the SSRF_PROTECTION_ENABLED env var.
     const isExistingSetup = (await entityManager.count(Organization)) > 0;
-    const existingSetupToggle = process.env.SSRF_PROTECTION_ENABLED === 'true' ? 'true' : 'false';
+    // Existing setups also skip the dashboard notice: it is meant for new installations only.
+    const existingSetupValues: Partial<Record<string, string>> = {
+      [INSTANCE_SYSTEM_SETTINGS.SSRF_PROTECTION_ENABLED]:
+        process.env.SSRF_PROTECTION_ENABLED === 'true' ? 'true' : 'false',
+      [INSTANCE_SYSTEM_SETTINGS.SSRF_UPGRADE_NOTICE_DISMISSED]: 'true',
+    };
     console.log(
       `${MIGRATION_NAME}: [START] SSRF instance settings to add: ${total} (${isExistingSetup ? 'existing setup' : 'new installation'})`
     );
@@ -58,10 +63,7 @@ export class AddSsrfProtectionInstanceSettings1790600000000 implements Migration
       // Insert only where the key is missing, so a re-run never overwrites an admin's choice.
       const existing = await entityManager.findOne(InstanceSettings, { where: { key: row.key } });
       if (!existing) {
-        const value =
-          isExistingSetup && row.key === INSTANCE_SYSTEM_SETTINGS.SSRF_PROTECTION_ENABLED
-            ? existingSetupToggle
-            : row.value;
+        const value = isExistingSetup ? (existingSetupValues[row.key] ?? row.value) : row.value;
         await entityManager.insert(InstanceSettings, {
           ...row,
           value,

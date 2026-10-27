@@ -55,6 +55,14 @@ describe('SSRF settings data migration', () => {
     expect(inserted[INSTANCE_SYSTEM_SETTINGS.SSRF_PROTECTION_ENABLED]).toBe('true');
   });
 
+  it('shows the dashboard notice on a new installation only', async () => {
+    const fresh = await runMigration({ organizations: 0 });
+    const upgraded = await runMigration({ organizations: 3 });
+
+    expect(fresh[INSTANCE_SYSTEM_SETTINGS.SSRF_UPGRADE_NOTICE_DISMISSED]).toBe('false');
+    expect(upgraded[INSTANCE_SYSTEM_SETTINGS.SSRF_UPGRADE_NOTICE_DISMISSED]).toBe('true');
+  });
+
   it('never overwrites a value that is already stored', async () => {
     const inserted = await runMigration({
       organizations: 3,
