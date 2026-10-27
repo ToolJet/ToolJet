@@ -147,7 +147,7 @@ export const Accordion = ({
   }, [styles.backgroundColor, darkMode]);
 
   const computedStyles = {
-    backgroundColor: 'transparent',
+    backgroundColor: exposedVariablesTemporaryState.isLoading ? contentBgColor.backgroundColor : 'transparent',
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     ...(isDynamicHeightEnabled && exposedVariablesTemporaryState.isExpanded && { minHeight: `${height}px` }),

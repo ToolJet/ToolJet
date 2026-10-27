@@ -77,7 +77,7 @@ export const Container = ({
   }, [styles.headerBackgroundColor, darkMode]);
 
   const computedStyles = {
-    backgroundColor: 'transparent',
+    backgroundColor: isLoading ? contentBgColor.backgroundColor : 'transparent',
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),

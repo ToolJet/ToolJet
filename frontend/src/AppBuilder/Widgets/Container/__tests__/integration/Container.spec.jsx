@@ -477,6 +477,26 @@ describe('Container: styles', () => {
     await waitFor(() => expect(contentWrapper().style.backgroundColor).toBe('rgb(9, 9, 9)'));
   });
 
+  // Break this catches: leaving the root transparent while loading. The Spinner replaces the
+  // content wrapper that owns the background, so nothing would paint and the canvas would
+  // show through a container that is merely busy.
+  test('[Container-STYLE-001] the root takes the background back while loading', async () => {
+    harness.render({
+      styles: { backgroundColor: binding('rgb(1, 2, 3)') },
+      properties: { loadingState: binding('{{true}}') },
+    });
+    await waitFor(() => expect(root()).toBeTruthy());
+
+    expect(contentWrapper()).toBeNull();
+    expect(root().style.backgroundColor).toBe('rgb(1, 2, 3)');
+
+    // ...and hands it straight back once the body returns.
+    harness.render({ styles: { backgroundColor: binding('rgb(1, 2, 3)') } });
+    await waitFor(() => expect(contentWrapper()).toBeTruthy());
+    expect(root().style.backgroundColor).toBe('transparent');
+    expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
+  });
+
   // Break this catches: resolving the header background from the body's colour (an easy
   // copy-paste slip between two near-identical useMemos), which would make the header
   // untintable.

@@ -35,6 +35,9 @@ const root = () => document.getElementById(ID);
 const bodyCanvas = () => document.getElementById(`canvas-${ID}`);
 const headerCanvas = () => document.getElementById(`canvas-${ID}-header`);
 const headerRegion = () => document.querySelector('.tj-accordion-header');
+// The HorizontalSlot inside the header. Distinct from headerRegion() above, and the element
+// that carried the one-sided `borderBottomLeftRadius` — so it needs its own assertions.
+const headerSlot = () => document.querySelector(`[data-cy="${NAME}-header-section"]`);
 // The wrapper between the root and the body sub-canvas. It carries the body background;
 // the root is transparent and only supplies the rounded clip (D-06).
 const contentWrapper = () => root()?.querySelector('.widget-type-container');
@@ -617,6 +620,25 @@ describe('Accordion: styles', () => {
     await waitFor(() => expect(contentWrapper().style.backgroundColor).toBe('rgb(9, 9, 9)'));
   });
 
+  // Break this catches: leaving the root transparent while loading. The Spinner replaces the
+  // content wrapper that owns the background, so nothing would paint and the canvas would
+  // show through an accordion that is merely busy.
+  test('[Accordion-STYLE-001] the root takes the background back while loading', async () => {
+    harness.render({
+      styles: { backgroundColor: binding('rgb(1, 2, 3)') },
+      properties: { loadingState: binding('{{true}}') },
+    });
+    await waitFor(() => expect(root()).toBeTruthy());
+
+    expect(contentWrapper()).toBeNull();
+    expect(root().style.backgroundColor).toBe('rgb(1, 2, 3)');
+
+    harness.render({ styles: { backgroundColor: binding('rgb(1, 2, 3)') } });
+    await waitFor(() => expect(contentWrapper()).toBeTruthy());
+    expect(root().style.backgroundColor).toBe('transparent');
+    expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
+  });
+
   // Break this catches: resolving the header background from the body's colour. Accordion
   // resolves it inside Header, a separate copy of the same sentinel logic.
   test('[Accordion-STYLE-002] the header background is resolved independently of the body', async () => {
@@ -659,9 +681,11 @@ describe('Accordion: styles', () => {
     // The clip is what the radius acts on, and what contains the children (D-06).
     expect(root().style.overflow).toBe('hidden');
 
-    // The header must carry NO radius of its own; the root clips it instead.
-    expect(headerRegion().style.borderTopLeftRadius).toBe('');
-    expect(headerRegion().style.borderTopRightRadius).toBe('');
+    // Neither header element carries a radius of its own; the root clips them instead.
+    for (const el of [headerRegion(), headerSlot()]) {
+      expect(el.style.borderTopLeftRadius).toBe('');
+      expect(el.style.borderTopRightRadius).toBe('');
+    }
   });
 
   // Break this catches: the body grid painting or rounding itself. The radius here was the
@@ -710,18 +734,23 @@ describe('Accordion: styles', () => {
     harness.render({ styles: { borderRadius: binding('12') } });
     await waitFor(() => expect(chevron()).toBeTruthy());
 
-    // Expanded: the header sets no corner radii of its own.
-    expect(headerRegion().style.borderBottomLeftRadius).toBe('');
-    expect(headerRegion().style.borderBottomRightRadius).toBe('');
+    // Expanded: neither header element sets corner radii of its own.
+    for (const el of [headerRegion(), headerSlot()]) {
+      expect(el.style.borderBottomLeftRadius).toBe('');
+      expect(el.style.borderBottomRightRadius).toBe('');
+    }
 
     await userEvent.click(chevron());
     await waitFor(() => expect(root().className).toContain('jet-accordion-collapsed'));
 
-    // Collapsed: still none. The rounded bar comes from the root's radius plus its clip,
-    // which also removes the old asymmetry — the header slot used to set a bottom-LEFT
-    // radius with no right-hand counterpart.
-    expect(headerRegion().style.borderBottomLeftRadius).toBe('');
-    expect(headerRegion().style.borderBottomRightRadius).toBe('');
+    // Collapsed: still none, on BOTH. The rounded bar comes from the root's radius plus its
+    // clip. The slot is asserted explicitly because it is where the old asymmetry lived — it
+    // set a bottom-LEFT radius with no right-hand counterpart, and asserting only the outer
+    // .tj-accordion-header would stay green if that were restored.
+    for (const el of [headerRegion(), headerSlot()]) {
+      expect(el.style.borderBottomLeftRadius).toBe('');
+      expect(el.style.borderBottomRightRadius).toBe('');
+    }
     expect(root().style.borderRadius).toBe('12px');
     expect(root().style.overflow).toBe('hidden');
   });
