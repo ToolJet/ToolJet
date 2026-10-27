@@ -19,8 +19,14 @@ Cypress.Commands.add(
     widgetName2 = widgetName,
     canvas = null // null = auto-detect: #real-canvas, or ModuleContainer's sub-canvas if in module editor
   ) => {
-    // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-components-button"]').click();
+    // Open widget panel and search. The sidebar button TOGGLES the panel and the
+    // panel can stay open after a drop, so only click it when the search box is
+    // not already showing — a blind click would close it.
+    cy.get("body").then(($body) => {
+      if (!$body.find(`${commonSelectors.searchField}:visible`).length) {
+        cy.get('[data-cy="right-sidebar-components-button"]').click();
+      }
+    });
     cy.get(commonSelectors.searchField)
       .should("be.visible")
       .first()
@@ -61,6 +67,14 @@ Cypress.Commands.add(
         targetY: positionY,
       });
       cy.waitForAutoSave();
+      // The panel can stay open after the drop, which narrows/shifts the canvas
+      // and breaks later coordinate-based drops. Close it so every drop starts
+      // from the full-width canvas.
+      cy.get("body").then(($b) => {
+        if ($b.find(`${commonSelectors.searchField}:visible`).length) {
+          cy.get('[data-cy="right-sidebar-components-button"]').click();
+        }
+      });
     });
   }
 );
