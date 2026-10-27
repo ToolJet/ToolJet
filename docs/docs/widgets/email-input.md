@@ -106,9 +106,10 @@ To add regex inside `Custom Validation`, you can use the below format:
 | :--------------------------------------------------- | :--------------------------------------------------------------- | :------------------------------------------- |
 | Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Accent | Sets the border color of the field while it is focused. A validation error border takes priority. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Text | Sets the text color of the text entered in the component. | Select the color or click on **fx** and input code that programmatically returns a hex color code. |
 | Error text | Sets the text color of the validation message that is displayed. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Icon | Allows you to select an icon for the component. | Enable the icon visibility, and select the icon and icon color. Alternatively, set it programmatically using **fx**. |
+| Icon | Allows you to select an icon for the component. A mail icon is shown by default. | Turn the icon visibility on or off, and select the icon and icon color. Alternatively, set it programmatically using **fx**. |
 | Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
