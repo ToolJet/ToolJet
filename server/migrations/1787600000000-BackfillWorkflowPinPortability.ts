@@ -13,9 +13,14 @@ export class BackfillWorkflowPinPortability1787600000000 implements MigrationInt
     `);
 
     // av.name IS NOT NULL required — to_jsonb(NULL) + strict jsonb_set would wipe the whole options column.
+    // A draft's name has no tag on other instances, so draft pins become the default-branch draft sentinel.
     await queryRunner.query(`
       UPDATE data_queries dq
-      SET options = jsonb_set(dq.options::jsonb, '{workflowVersionId}', to_jsonb(av.name))
+      SET options = jsonb_set(
+        dq.options::jsonb,
+        '{workflowVersionId}',
+        to_jsonb(CASE WHEN av.status = 'DRAFT' AND av.version_type = 'version' THEN '__default_branch_draft__' ELSE av.name END)
+      )
       FROM app_versions av, data_sources ds
       WHERE ds.id = dq.data_source_id
         AND ds.kind = 'workflows'
