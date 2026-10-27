@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import StringNode from './StringNode';
 import FunctionNode from './FunctionNode';
 import NumberNode from './NumberNode';
@@ -12,6 +12,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { DefaultCopyIcon } from '../../DefaultCopyIcon';
 import { copyToClipboard, extractComponentName, formatPathForCopy } from '../../utils';
 import WidgetIcon from '@/../assets/images/icons/widgets';
+import { childGroups } from '@/AppBuilder/_engines/rendering/childGroups';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const renderNodeIcons = (node, iconsList, darkMode) => {
@@ -29,6 +30,25 @@ const renderNodeIcons = (node, iconsList, darkMode) => {
   }
   return null;
 };
+
+const ExpandIcon = ({ isExpanded }) =>
+  isExpanded ? (
+    <SolidIcon
+      name="TriangleUpCenter"
+      size={14}
+      color="#1F99ED"
+      style={{ marginRight: '4px' }}
+      className="json-viewer-expand-icon"
+    />
+  ) : (
+    <SolidIcon
+      name="rightarrrow"
+      size={12}
+      color="#1F99ED"
+      style={{ marginRight: '4px' }}
+      className="json-viewer-expand-icon"
+    />
+  );
 
 const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -58,24 +78,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
       <div className="json-viewer-row-container">
         <div className="json-viewer-row" onClick={() => setIsExpanded((prev) => !prev)}>
           <div className="json-viewer-expand-icon">
-            {(isArray || isObject) &&
-              (isExpanded ? (
-                <SolidIcon
-                  name="TriangleUpCenter"
-                  size={14}
-                  color="#1F99ED"
-                  style={{ marginRight: '4px' }}
-                  className="json-viewer-expand-icon"
-                />
-              ) : (
-                <SolidIcon
-                  name="rightarrrow"
-                  size={12}
-                  color="#1F99ED"
-                  style={{ marginRight: '4px' }}
-                  className="json-viewer-expand-icon"
-                />
-              ))}
+            {(isArray || isObject) && <ExpandIcon isExpanded={isExpanded} />}
           </div>
           <div
             className="json-viewer-label-container"
@@ -117,37 +120,106 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
           </div>
         </div>
       </div>
-      {isExpanded && isObject && (
-        <div className="json-viewer-children" style={{ marginLeft: '5px', borderLeft: '1px solid var(--border-weak)' }}>
-          {Object.entries(value).map(([key, val]) => (
-            <Row
-              key={key}
-              label={key}
-              value={val}
-              level={level + 1}
-              absolutePath={`${absolutePath}.${key}`}
-              iconsList={iconsList}
-              darkMode={darkMode}
-            />
-          ))}
-        </div>
+      {isExpanded && (isObject || isArray) && (
+        <Entries
+          value={value}
+          isArray={isArray}
+          level={level}
+          absolutePath={absolutePath}
+          iconsList={iconsList}
+          darkMode={darkMode}
+        />
       )}
-      {isExpanded && isArray && (
-        <div className="json-viewer-children" style={{ marginLeft: '5px', borderLeft: '1px solid var(--border-weak)' }}>
-          {value.map((item, index) => {
-            return (
-              <Row
-                key={index}
-                label={`${index}`}
-                value={item}
-                level={level + 1}
-                absolutePath={`${absolutePath}.${index}`}
-                iconsList={iconsList}
-                darkMode={darkMode}
-              />
-            );
-          })}
+    </div>
+  );
+};
+
+// The entries of an opened array or object. A large one is listed in groups opened on demand (childGroups), so
+// opening a 5-million-row dataset renders a handful of rows, not millions.
+const Entries = ({ value, isArray, level, absolutePath, iconsList, darkMode }) => {
+  const keys = useMemo(() => (isArray ? null : Object.keys(value)), [value, isArray]);
+  const count = isArray ? value.length : keys.length;
+  return (
+    <EntryRange
+      value={value}
+      keys={keys}
+      from={0}
+      to={count - 1}
+      level={level}
+      absolutePath={absolutePath}
+      iconsList={iconsList}
+      darkMode={darkMode}
+    />
+  );
+};
+
+const childrenStyle = { marginLeft: '5px', borderLeft: '1px solid var(--border-weak)' };
+
+const EntryRange = ({ value, keys, from, to, level, absolutePath, iconsList, darkMode }) => {
+  const groups = childGroups(from, to);
+  if (groups) {
+    return (
+      <div className="json-viewer-children" style={childrenStyle}>
+        {groups.map((group) => (
+          <EntryGroup
+            key={group.from}
+            {...group}
+            value={value}
+            keys={keys}
+            level={level + 1}
+            absolutePath={absolutePath}
+            iconsList={iconsList}
+            darkMode={darkMode}
+          />
+        ))}
+      </div>
+    );
+  }
+  const rows = [];
+  for (let i = from; i <= to; i++) {
+    const key = keys ? keys[i] : `${i}`;
+    rows.push(
+      <Row
+        key={key}
+        label={key}
+        value={value[key]}
+        level={level + 1}
+        absolutePath={`${absolutePath}.${key}`}
+        iconsList={iconsList}
+        darkMode={darkMode}
+      />
+    );
+  }
+  return (
+    <div className="json-viewer-children" style={childrenStyle}>
+      {rows}
+    </div>
+  );
+};
+
+const EntryGroup = ({ from, to, value, keys, level, absolutePath, iconsList, darkMode }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  return (
+    <div style={{ marginLeft: '0.5rem' }}>
+      <div className="json-viewer-row-container">
+        <div className="json-viewer-row" onClick={() => setIsExpanded((prev) => !prev)} data-cy="inspector-entry-group">
+          <div className="json-viewer-expand-icon">
+            <ExpandIcon isExpanded={isExpanded} />
+          </div>
+          <div className="json-viewer-label-container">{`[${from} … ${to}]`}</div>
         </div>
+      </div>
+      {isExpanded && (
+        <EntryRange
+          value={value}
+          keys={keys}
+          from={from}
+          to={to}
+          level={level}
+          absolutePath={absolutePath}
+          iconsList={iconsList}
+          darkMode={darkMode}
+        />
       )}
     </div>
   );

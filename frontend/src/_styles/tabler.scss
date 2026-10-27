@@ -461,7 +461,12 @@ legend {
     }
 }
 
-legend+* {
+// Was `legend+*`. A selector ending in `*`, with only a sibling to its left, is tested on every element and marks every
+// parent as styling its children by their previous sibling: inserting an element before others then restyles all the
+// elements after it (15 ms for a row added at the top of a 50-row Table, against 0.5 ms). A legend belongs only in a
+// fieldset (as its first child), so this selects the same elements, at the same specificity, and the browser skips it
+// outside fieldsets.
+:where(fieldset)>legend+* {
     clear: left
 }
 

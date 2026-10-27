@@ -80,6 +80,9 @@ export const useSuspenseLoading = () => {
   return context?.isLoading ?? false;
 };
 
+// The page's pending count, for widgets that mount over several tasks (see useMountBatches): null without a provider.
+export const useLoadHold = () => useContext(SuspenseCountContext) ?? null;
+
 // Fallback component that tracks mount/unmount
 const SuspenseFallbackTracker = ({ fallback }) => {
   const { increment, decrement } = useContext(SuspenseCountContext);

@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
-import { showGridLines, hideGridLines } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { useSubContainerResizable } from '@/AppBuilder/_hooks/useSubContainerResizable';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useStore from '@/AppBuilder/_stores/store';
@@ -39,13 +38,6 @@ export const HorizontalSlot = React.memo(
     });
 
     const { height: resizedHeight, isDragging } = getResizeState();
-    useEffect(() => {
-      if (isDragging) {
-        showGridLines();
-      } else {
-        hideGridLines();
-      }
-    }, [isDragging, id]);
 
     const canvasHeight = parseInt(resizedHeight, 10) / 10;
 

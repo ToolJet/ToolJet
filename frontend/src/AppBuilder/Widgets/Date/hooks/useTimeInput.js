@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import moment from 'moment-timezone';
+import { timeBoundsValuesOf } from '@/AppBuilder/_engines/materialize/widgets/TimePicker';
 
 const useTimeInput = ({ validation = {}, timeFormat, setExposedVariable, setExposedVariables }) => {
   const isInitialRender = useRef(true);
@@ -20,8 +21,7 @@ const useTimeInput = ({ validation = {}, timeFormat, setExposedVariable, setExpo
 
   useEffect(() => {
     const exposedVariables = {
-      minTime: validation.minTime,
-      maxTime: validation.maxTime,
+      ...timeBoundsValuesOf(validation),
       setMinTime: (time) => {
         const momentTime = moment(time, timeFormat);
         if (momentTime.isValid()) {

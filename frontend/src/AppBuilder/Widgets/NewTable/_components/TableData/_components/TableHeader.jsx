@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { memo, useRef, useState } from 'react';
 import cx from 'classnames';
 import { OverlayTrigger } from 'react-bootstrap';
 import Loader from '../../Loader';
@@ -200,7 +200,17 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
   );
 };
 
-export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder, fireEvent, setExposedVariables }) => {
+// Memoized like the rows (see TableRow): a render of the row window alone, while scrolling, keeps the header; anything
+// else that re-renders the table reaches it through `renderVersion`, so it re-renders as before.
+export const TableHeader = memo(function TableHeader({
+  id,
+  table,
+  darkMode,
+  columnOrder,
+  setColumnOrder,
+  fireEvent,
+  setExposedVariables,
+}) {
   const { getLoadingState, getIsRefreshing } = useTableStore();
   const loadingState = getLoadingState(id);
   const isRefreshing = getIsRefreshing(id);
@@ -256,4 +266,4 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder, 
       </DndContext>
     </thead>
   );
-};
+});

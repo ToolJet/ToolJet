@@ -613,8 +613,6 @@ const TabContent = memo(function TabContent({
             overflow: isTransitioning || isDynamicHeightEnabled ? 'hidden' : 'hidden auto',
             backgroundColor: tabBackgroundColor,
             opacity: disable ? 0.5 : 1,
-            width: '100%', // Ensure it doesn't exceed container width
-            maxWidth: '100%', // Additional constraint
             boxSizing: 'border-box', // Include padding/border in width
             contain: 'layout style', // Add containment for better overflow control
           }}

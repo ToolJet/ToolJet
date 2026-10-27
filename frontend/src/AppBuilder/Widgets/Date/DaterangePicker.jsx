@@ -3,9 +3,13 @@ import { useDateInput, useDatetimeInput } from './hooks';
 import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
-import { isDateRangeValid, isDateValid } from './utils';
 import './styles.scss';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import {
+  daterangePickerStatusOf,
+  daterangePickerValuesOf,
+  rangeDateOf,
+} from '@/AppBuilder/_engines/materialize/widgets/DaterangePicker';
 
 export const DaterangePicker = ({
   height,
@@ -44,19 +48,8 @@ export const DaterangePicker = ({
   const { minDate, maxDate, excludedDates } = dateLogic;
   const { customRule } = validation;
 
-  const [startDate, setStartDate] = useState(
-    (() => {
-      const date = moment(defaultStartDate, format);
-      return date.isValid() ? date.toDate() : null;
-    })()
-  );
-
-  const [endDate, setEndDate] = useState(
-    (() => {
-      const date = moment(defaultEndDate, format);
-      return date.isValid() ? date.toDate() : null;
-    })()
-  );
+  const [startDate, setStartDate] = useState(() => rangeDateOf(defaultStartDate, format));
+  const [endDate, setEndDate] = useState(() => rangeDateOf(defaultEndDate, format));
 
   const getDisplayRange = (startDate, endDate) => {
     const isValidStartDate = startDate && moment(startDate).isValid();
@@ -166,12 +159,8 @@ export const DaterangePicker = ({
           selectedDateRange: null,
         });
       },
-      startDate: moment(startDate).format(format),
-      endDate: moment(endDate).format(format),
-      selectedDateRange: `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`,
-      startDateInUnix: startDate ? moment(startDate).valueOf() : null,
-      endDateInUnix: endDate ? moment(endDate).valueOf() : null,
-      dateFormat: format,
+      ...daterangePickerValuesOf(startDate, endDate, format),
+      // Valid until the validation effect below has run (what the store then holds is the exposure module's isValid).
       isValid: isValid,
     };
     setExposedVariables(exposedVariables);
@@ -222,30 +211,11 @@ export const DaterangePicker = ({
   }, [endDate, format]);
 
   useEffect(() => {
-    let validationStatus = isDateValid(startDate, {
-      minDate,
-      maxDate,
-      customRule,
-      isMandatory,
-      dateFormat: format,
-    });
-    if (!validationStatus.isValid) {
-      setValidationStatus(validationStatus);
-      return;
-    }
-    validationStatus = isDateValid(endDate, {
-      minDate,
-      maxDate,
-      customRule,
-      isMandatory,
-      dateFormat: format,
-    });
-    if (!validationStatus.isValid) {
-      setValidationStatus(validationStatus);
-      return;
-    }
-    validationStatus = isDateRangeValid(startDate, endDate, excludedDates, format);
-    setValidationStatus(validationStatus);
+    setValidationStatus(
+      daterangePickerStatusOf(startDate, endDate, validation, format, { minDate, maxDate, excludedDates })
+    );
+    // Of validation, the rules read customRule and mandatory (isMandatory).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minDate, maxDate, customRule, isMandatory, startDate, endDate, excludedDates, format]);
 
   useEffect(() => {

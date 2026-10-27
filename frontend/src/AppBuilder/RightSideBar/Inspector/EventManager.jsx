@@ -51,7 +51,7 @@ import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { diff } from '@/AppBuilder/_engines/data/diff';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { appsService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';

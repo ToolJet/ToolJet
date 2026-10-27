@@ -173,6 +173,28 @@ export const removeFunctionObjects = (obj) => {
   return obj;
 };
 
+/**
+ * `value` without its functions, at any depth — what removeFunctionObjects leaves of a deep copy — copying only the
+ * objects that hold one and sharing every other part (a dataset in the value isn't copied).
+ */
+export const withoutFunctions = (value) => {
+  if (typeof value !== 'object' || value === null) return value;
+  let copy = null;
+  const own = () => (copy ??= Array.isArray(value) ? value.slice() : { ...value });
+  const visit = (key) => {
+    const item = value[key];
+    if (typeof item === 'function') {
+      delete own()[key];
+      return;
+    }
+    const next = withoutFunctions(item);
+    if (next !== item) own()[key] = next;
+  };
+  if (Array.isArray(value)) for (let i = 0; i < value.length; i++) visit(i);
+  else for (const key in value) visit(key);
+  return copy ?? value;
+};
+
 export const isMobileDevice = () => {
   const userAgent = window.navigator.userAgent;
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);

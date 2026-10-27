@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import useTextColor from '../_hooks/useTextColor';
-import useTableStore from '../../../_stores/tableStore';
 import { getMaxHeight } from '../../../_utils/helper';
-import { shallow } from 'zustand/shallow';
 import { MarkdownRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/MarkdownRenderer';
+import { useTableCellSettings } from '../../TableData/TableCellSettings';
 
 export const MarkdownColumn = ({
   id,
@@ -19,8 +18,7 @@ export const MarkdownColumn = ({
   cellSize,
 }) => {
   const cellTextColor = useTextColor(id, textColor);
-  const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
-  const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+  const { isMaxRowHeightAuto, maxRowHeightValue } = useTableCellSettings(id);
 
   const [isEditing, setIsEditing] = useState(false);
 

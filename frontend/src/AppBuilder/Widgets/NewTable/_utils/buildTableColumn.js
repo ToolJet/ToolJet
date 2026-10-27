@@ -12,10 +12,8 @@ export const buildTableColumn = (
   id,
   columnProperties,
   columnSizes,
-  data,
   darkMode,
   handleCellValueChange,
-  globalFilter,
   serverSideSearch,
   tableBodyRef,
   t,
@@ -75,9 +73,10 @@ export const buildTableColumn = (
         showBulkSelector ? (
           <IndeterminateCheckbox
             {...{
-              checked: table.getIsAllPageRowsSelected(),
-              indeterminate: table.getIsSomePageRowsSelected(),
-              onChange: table.getToggleAllPageRowsSelectedHandler(),
+              // The page's rows come from the table's view (TanStack holds no rows; see _utils/tableView.js).
+              checked: table.tjView.getIsAllPageRowsSelected(),
+              indeterminate: table.tjView.getIsSomePageRowsSelected(),
+              onChange: (e) => table.tjView.toggleAllPageRowsSelected(e.target.checked),
             }}
           />
         ) : null,
@@ -102,14 +101,12 @@ export const buildTableColumn = (
       columnProperties,
       columnSizes,
       defaultColumn: { width: 150 },
-      tableData: data,
       id,
       darkMode,
       fireEvent,
       setExposedVariables,
       tableRef: tableBodyRef,
       handleCellValueChange,
-      searchText: globalFilter,
       t,
       moduleId,
     }).filter(Boolean),

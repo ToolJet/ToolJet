@@ -2,9 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import useTextColor from '../_hooks/useTextColor';
 import { getMaxHeight } from '../../../_utils/helper';
-import useTableStore from '../../../_stores/tableStore';
-import { shallow } from 'zustand/shallow';
 import { JSONRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/JSONRenderer';
+import { useTableCellSettings } from '../../TableData/TableCellSettings';
 
 export const JsonColumn = ({
   isEditable,
@@ -19,9 +18,7 @@ export const JsonColumn = ({
   cell,
 }) => {
   const cellTextColor = useTextColor(id, textColor, 'json');
-  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
-  const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
-  const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+  const { cellHeight, isMaxRowHeightAuto, maxRowHeightValue } = useTableCellSettings(id);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleChange = (newValue) => {

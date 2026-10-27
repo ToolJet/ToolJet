@@ -1,10 +1,12 @@
 import {
   validateProperties,
   generateSchemaFromValidationDefinition,
+  fitsDefinition,
   validate,
 } from '@/AppBuilder/_utils/component-properties-validation';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { any } from 'superstruct';
+import { boundedSnapshot } from '@/AppBuilder/_engines/data/bounded';
 import _ from 'lodash';
 import moment from 'moment';
 
@@ -13,6 +15,10 @@ const initialState = {
   unreadErrorCount: 0,
   pinned: false,
 };
+
+// Logs kept: beyond this many, the oldest go (each can hold what a component was given, and an app can log forever).
+// Logged values are kept as bounded snapshots, so a log of a failing binding doesn't keep a whole dataset alive.
+const MAX_LOGS = 1000;
 
 export const createDebuggerSlice = (set, get) => ({
   debugger: {
@@ -34,6 +40,7 @@ export const createDebuggerSlice = (set, get) => ({
         (state) => {
           log.page = get().getCurrentPageId('canvas');
           state.debugger.logs.unshift(log);
+          if (state.debugger.logs.length > MAX_LOGS) state.debugger.logs.splice(MAX_LOGS);
           if (log.logLevel === 'error') state.debugger.unreadErrorCount++;
         },
         false,
@@ -41,10 +48,30 @@ export const createDebuggerSlice = (set, get) => ({
       );
     },
 
+    // A binding's read of every row of a windowed ListView, refused (_engines/materialize/prepare.js): logged once per
+    // refusal, while the binding keeps its value.
+    logRefusedRead: (componentId, property, error, moduleId = 'canvas') => {
+      const componentName = get().getComponentNameFromId(componentId, moduleId) ?? componentId;
+      get().debugger.log({
+        type: 'component',
+        kind: 'component',
+        key: `${componentName} - ${property}`,
+        componentId,
+        strace: 'page_level',
+        message: error.message,
+        status: true,
+        error: { message: error.message, reason: error.reason, componentId },
+        errorTarget: 'Component Property',
+        logLevel: 'error',
+        timestamp: moment().toISOString(),
+      });
+    },
+
     logMultiple: (logs) => {
       set(
         (state) => {
           state.debugger.logs.push(...logs.map((log) => ({ ...log, page: get().getCurrentPageId('canvas') })));
+          if (state.debugger.logs.length > MAX_LOGS) state.debugger.logs.splice(MAX_LOGS);
           state.debugger.unreadErrorCount += logs.length;
         },
         false,
@@ -151,8 +178,10 @@ export const createDebuggerSlice = (set, get) => ({
         message: `${error.message}`,
         status: true,
         error: {
-          resolvedProperty: { [error.propertyHandle]: component[error.type][error.propertyHandle] },
-          effectiveProperty: { [error.propertyHandle]: newComponent[error.type][error.propertyHandle] },
+          resolvedProperty: { [error.propertyHandle]: boundedSnapshot(component[error.type][error.propertyHandle]) },
+          effectiveProperty: {
+            [error.propertyHandle]: boundedSnapshot(newComponent[error.type][error.propertyHandle]),
+          },
           componentId: id,
         },
         logLevel: 'error',
@@ -169,8 +198,9 @@ export const createDebuggerSlice = (set, get) => ({
       return newComponent;
     },
 
-    validateProperty: (componentId, type, property, value, moduleId = 'canvas') => {
-      const log = get().debugger.log;
+    // `silent`: coerces without logging (a row resolved on demand, not drawn: _engines/materialize/rows.js).
+    validateProperty: (componentId, type, property, value, moduleId = 'canvas', silent = false) => {
+      const log = silent ? () => {} : get().debugger.log;
 
       const componentDefinition = get().getComponentDefinition(componentId, moduleId);
       // A dependency cascade can reference a component that no longer exists in the current app —
@@ -193,6 +223,12 @@ export const createDebuggerSlice = (set, get) => ({
 
       const schema = _.isUndefined(validationSchema) ? any() : generateSchemaFromValidationDefinition(validationSchema);
 
+      // Validating also copies every array and object in the value (superstruct's create). A value that already fits
+      // is used as is: a dataset bound to any component isn't copied (and frozen into the store again) on every
+      // resolution, and keeps its identity for the checks downstream. (Props reach components frozen, so none can rely
+      // on a copy of its own.) fitsDefinition answers for array/object shapes.
+      if (fitsDefinition(validationSchema, value) === true) return value;
+
       const [valid, errors, newValue] = validate(value, schema, defaultValue);
 
       if (valid === false) {
@@ -206,8 +242,8 @@ export const createDebuggerSlice = (set, get) => ({
           message: `${errors.join('.')}`,
           status: true,
           error: {
-            resolvedProperty: { [property]: value },
-            effectiveProperty: { [property]: defaultValue },
+            resolvedProperty: { [property]: boundedSnapshot(value) },
+            effectiveProperty: { [property]: boundedSnapshot(defaultValue) },
             componentId,
           },
           errorTarget: 'Component Property',

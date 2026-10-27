@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import useStore from '@/AppBuilder/_stores/store';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { diff } from '@/AppBuilder/_engines/data/diff';
 import { ensureHandlebars, buildOptions } from './utils';
 import { COMPONENT_LAYOUT_DETAILS, COMPONENT_WITH_OPTIONS } from '../constants';
 

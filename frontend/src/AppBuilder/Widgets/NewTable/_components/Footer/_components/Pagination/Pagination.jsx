@@ -1,11 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { PaginationButton } from './PaginationButton';
 import useTableStore from '../../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import { OverlayTriggerComponent } from '../OverlayTriggerComponent';
 import Popover from 'react-bootstrap/Popover';
-// eslint-disable-next-line import/no-unresolved
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { WindowedList } from '@/AppBuilder/_engines/rendering/WindowedList';
 
 // TODO: Need to replace all the default data
 
@@ -85,40 +84,21 @@ export const Pagination = function Pagination({
 
   const PaginationPopoverContent = () => {
     const ref = useRef(null);
-    const virtualizer = useVirtualizer({
-      count: effectivePageCount || 0,
-      getScrollElement: () => ref.current,
-      estimateSize: () => 32,
-      overscan: 15,
-    });
-
-    useEffect(() => {
-      // Use a small timeout to ensure the DOM is fully rendered
-      const timeoutId = setTimeout(() => {
-        if (ref.current) {
-          // Scroll the current page button into view within the popover container when popover mounts
-          virtualizer.scrollToIndex(pageIndex - 1, {
-            behavior: 'auto',
-            align: 'center',
-          });
-        }
-      }, 0);
-
-      return () => clearTimeout(timeoutId);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     return (
       <Popover.Body>
         <div ref={ref} className="tw-p-[8px] tw-overflow-auto tw-flex-1">
-          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-            {virtualizer.getVirtualItems().map((virtualItem) => {
-              const pageNum = virtualItem.index + 1;
+          {/* Only the page buttons in view are rendered; the current page is centered when the popover opens. */}
+          <WindowedList
+            count={effectivePageCount || 0}
+            scrollRef={ref}
+            itemHeight={32}
+            overscan={15 * 32}
+            measure
+            initialIndex={pageIndex - 1}
+            renderItem={(index) => {
+              const pageNum = index + 1;
               return (
                 <PaginationButton
-                  key={virtualItem.key}
-                  ref={virtualizer.measureElement}
-                  data-index={virtualItem.index}
                   dataCy={`page-${pageNum}-button-option`}
                   currentPageIndex={pageIndex}
                   pageIndex={pageNum}
@@ -126,16 +106,10 @@ export const Pagination = function Pagination({
                     goToPage(pageNum);
                   }}
                   className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }}
                 />
               );
-            })}
-          </div>
+            }}
+          />
         </div>
       </Popover.Body>
     );

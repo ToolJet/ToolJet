@@ -3,6 +3,7 @@ import { isEqual } from 'lodash';
 import iframeContent from './iframe.html';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 export const CustomComponent = (props) => {
   const { height, properties, styles, id, setExposedVariable, dataCy } = props;
@@ -16,11 +17,12 @@ export const CustomComponent = (props) => {
 
   const customPropRef = useRef(data);
 
+  const stableData = useContentStable(data);
   useEffect(() => {
     setCustomProps(data);
     customPropRef.current = data;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(data)]);
+  }, [stableData]);
 
   useEffect(() => {
     if (!isEqual(exposedVariables.data, customProps)) {

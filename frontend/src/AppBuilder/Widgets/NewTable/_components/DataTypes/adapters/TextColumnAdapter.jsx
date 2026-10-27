@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
-import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 import { getMaxHeight } from '../../../_utils/helper';
 import useTextColor from '../../DataTypes/_hooks/useTextColor';
 import { TextRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/TextRenderer';
+import { useTableCellSettings } from '../../TableData/TableCellSettings';
 
 export const TextColumn = ({
   id,
@@ -20,9 +20,7 @@ export const TextColumn = ({
   horizontalAlignment,
   searchText,
 }) => {
-  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
-  const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
-  const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+  const { cellHeight, isMaxRowHeightAuto, maxRowHeightValue } = useTableCellSettings(id);
   const cellTextColor = useTextColor(id, textColor);
   const [isEditing, setIsEditing] = useState(false);
   const validateWidget = useStore((state) => state.validateWidget, shallow);

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { StringRenderer } from '@/AppBuilder/Shared/DataTypes';
 import { useStringValidation } from '@/AppBuilder/Shared/DataTypes/hooks/useValidation';
-import useTableStore from '../../../_stores/tableStore';
 import HighLightSearch from '../../HighLightSearch';
 import { getMaxHeight } from '../../../_utils/helper';
 import useTextColor from '../_hooks/useTextColor';
 import useValidationStyle from '../_hooks/useValidationStyle';
-import { shallow } from 'zustand/shallow';
+import { useTableCellSettings } from '../../TableData/TableCellSettings';
 
 /**
  * StringColumnAdapter - Table adapter for StringRenderer
@@ -28,9 +27,7 @@ export const StringColumn = ({
   searchText,
   id,
 }) => {
-  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
-  const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
-  const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+  const { cellHeight, isMaxRowHeightAuto, maxRowHeightValue } = useTableCellSettings(id);
   const [isEditing, setIsEditing] = useState(false);
   const cellTextColor = useTextColor(id, textColor);
 

@@ -3,11 +3,13 @@ import { components } from 'react-select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import './dropdownV2.scss';
-// eslint-disable-next-line import/no-unresolved
-import { useVirtualizer } from '@tanstack/react-virtual';
 import cx from 'classnames';
+import { WindowedList } from '@/AppBuilder/_engines/rendering/WindowedList';
 
 const { MenuList } = components;
+
+const SELECT_ALL = 'multiselect-custom-menulist-select-all';
+const OPTION_HEIGHT = 40;
 
 // This Menulist also used in MultiselectV2
 const CustomMenuList = ({ selectProps, ...props }) => {
@@ -26,13 +28,8 @@ const CustomMenuList = ({ selectProps, ...props }) => {
   } = selectProps;
 
   const parentRef = useRef(null);
-  const hasScrolledOnOpenRef = useRef(null);
-  const virtualizer = useVirtualizer({
-    count: props?.children?.length || 0,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 40,
-    overscan: 15,
-  });
+  // The options react-select renders (the ones the search keeps): only those in view are mounted.
+  const optionCount = props?.children?.length || 0;
 
   useEffect(() => {
     const searchInput = document.querySelector('.dropdown-multiselect-widget-search-box');
@@ -53,18 +50,9 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     (!iconColor || iconColor === 'var(--cc-default-icon)' || iconColor === '#CFD3D859');
   const searchIconColor = shouldUsePlaceholderTextColorForSearchIcon ? placeholderTextColor : 'var(--cc-default-icon)';
 
-  useEffect(() => {
-    if (!selectProps?.menuIsOpen) {
-      hasScrolledOnOpenRef.current = false;
-      return;
-    }
-    if (hasScrolledOnOpenRef.current) return;
-
-    if (firstSelectedIndex >= 0) {
-      virtualizer.scrollToIndex(firstSelectedIndex, { align: 'center' });
-      hasScrolledOnOpenRef.current = true;
-    }
-  }, [selectProps?.menuIsOpen, firstSelectedIndex]);
+  const focusedIndex = optionCount ? props.children.findIndex((child) => child?.props?.isFocused) : -1;
+  // "Select all" stays at the top while the options scroll.
+  const selectAllIndex = optionCount && props.children[0]?.props?.data?.value === SELECT_ALL ? 0 : null;
 
   return (
     <div
@@ -118,38 +106,27 @@ const CustomMenuList = ({ selectProps, ...props }) => {
             ...(menuWidthStyle || {}),
           }}
         >
-          <div
-            style={{
-              height: `${virtualizer.getTotalSize() || 38}px`,
-              position: 'relative',
-              marginTop: '5px',
-            }}
-          >
-            {!virtualizer.getTotalSize() && props.children}
-            {virtualizer.getVirtualItems().map((virtualItem) => {
-              const option = props.options[virtualItem.index];
-              const child = props.children[virtualItem.index];
-              const isSelectAll = option?.value === 'multiselect-custom-menulist-select-all';
-              return (
-                <div
-                  key={option.value}
-                  style={{
-                    position: isSelectAll ? 'sticky' : 'absolute',
-                    width: '100%',
-                    top: 0,
-                    zIndex: isSelectAll && 10,
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }}
-                  data-index={virtualItem.index}
-                  ref={virtualizer.measureElement}
-                >
-                  <MenuList {...props} selectProps={selectProps}>
-                    <div>{child}</div>
-                  </MenuList>
-                </div>
-              );
-            })}
-          </div>
+          {optionCount ? (
+            <WindowedList
+              count={optionCount}
+              scrollRef={parentRef}
+              itemHeight={OPTION_HEIGHT}
+              overscan={15 * OPTION_HEIGHT}
+              measure
+              getItemKey={(index) => props.children[index]?.key ?? index}
+              stickyIndex={selectAllIndex}
+              initialIndex={selectProps?.menuIsOpen ? firstSelectedIndex : -1}
+              focusedIndex={focusedIndex}
+              style={{ marginTop: '5px' }}
+              renderItem={(index) => (
+                <MenuList {...props} selectProps={selectProps}>
+                  <div>{props.children[index]}</div>
+                </MenuList>
+              )}
+            />
+          ) : (
+            <div style={{ height: '38px', position: 'relative', marginTop: '5px' }}>{props.children}</div>
+          )}
         </div>
       )}
       {optionsLoadingState && (

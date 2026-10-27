@@ -6,7 +6,6 @@ import {
   getSelectedTimestampFromUnixTimestamp,
   getUnixTime,
   getUnixTimestampFromSelectedTimestamp,
-  isDateValid,
 } from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
@@ -14,6 +13,11 @@ import cx from 'classnames';
 
 import './styles.scss';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import {
+  datePickerV2StatusOf,
+  datePickerV2TimestampsOf,
+  datePickerV2ValuesOf,
+} from '@/AppBuilder/_engines/materialize/widgets/DatePickerV2';
 
 export const DatePickerV2 = ({
   height,
@@ -50,9 +54,9 @@ export const DatePickerV2 = ({
   const { disable, loading, focus, visibility, isMandatory, textInputFocus, setTextInputFocus, setIsCalendarOpen } =
     dateTimeLogic;
   const { minDate, maxDate, excludedDates } = dateLogic;
-  const [unixTimestamp, setUnixTimestamp] = useState(defaultValue ? getUnixTime(defaultValue, dateFormat) : null);
+  const [unixTimestamp, setUnixTimestamp] = useState(() => datePickerV2TimestampsOf(properties).unixTimestamp);
   const [selectedTimestamp, setSelectedTimestamp] = useState(
-    defaultValue ? getSelectedTimestampFromUnixTimestamp(unixTimestamp) : null
+    () => datePickerV2TimestampsOf(properties).selectedTimestamp
   );
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
@@ -120,15 +124,9 @@ export const DatePickerV2 = ({
   }, [isValid]);
 
   useEffect(() => {
-    const selectedDate = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
-    const displayValue = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
-    const value = convertToIsoWithTimezoneOffset(unixTimestamp, moment.tz.guess());
     const exposedVariables = {
-      value: value,
-      selectedDate: selectedDate,
-      unixTimestamp: unixTimestamp,
-      displayValue: displayValue,
-      dateFormat: dateFormat,
+      ...datePickerV2ValuesOf({ unixTimestamp, selectedTimestamp }, dateFormat),
+      // Valid until the validation effect below has run (what the store then holds is the exposure module's isValid).
       isValid: isValid,
     };
     setExposedVariables(exposedVariables);
@@ -171,8 +169,10 @@ export const DatePickerV2 = ({
 
   useEffect(() => {
     setValidationStatus(
-      isDateValid(selectedTimestamp, { minDate, maxDate, customRule, isMandatory, excludedDates, dateFormat })
+      datePickerV2StatusOf(selectedTimestamp, validation, dateFormat, { minDate, maxDate, excludedDates })
     );
+    // Of validation, the rules read customRule and mandatory (isMandatory).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat]);
 
   useFormClear(() => setInputValue(null, null, true));

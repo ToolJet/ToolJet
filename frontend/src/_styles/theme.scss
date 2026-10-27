@@ -910,16 +910,6 @@ button {
         outline: 1px dotted transparent;
       }
 
-      .show-grid {
-        outline: 1px dotted #4d72da;
-        background-image: linear-gradient(to right,
-            rgba(194, 191, 191, 0.2) 1px,
-            transparent 1px),
-          linear-gradient(to bottom,
-            rgba(194, 191, 191, 0.2) 1px,
-            transparent 1px);
-      }
-
       .canvas-area {
         // background: #F9F9FB;
         margin: 0px auto;

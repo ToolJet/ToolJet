@@ -32,7 +32,7 @@ export const CalendarEventPopover = function ({
       !event.target.closest('.editor-sidebar') &&
       !event.target.closest('.left-sidebar-item ') &&
       !event.target.closest('.right-sidebar .left-sidebar-inspector') && // Right sidebar toggle button for adding components
-      !isMoveableControlClicked(event)
+      !isResizeGripClicked(event)
     ) {
       popoverClosed();
     }
@@ -144,13 +144,7 @@ export const CalendarEventPopover = function ({
   );
 };
 
-function isMoveableControlClicked(event) {
-  // Get the element that was clicked on
-  const clickedElement = event.target;
-
-  // Check if the clicked element or any of its parents have the class 'moveable-control-box'
-  return (
-    clickedElement.classList.contains('moveable-control-box') ||
-    clickedElement.closest('.moveable-control-box') !== null
-  );
+// A press on the canvas's resize grips (interaction/ComponentFrame.jsx) resizes the calendar; it doesn't close it.
+function isResizeGripClicked(event) {
+  return !!event.target.closest?.('[data-tj-handle]');
 }

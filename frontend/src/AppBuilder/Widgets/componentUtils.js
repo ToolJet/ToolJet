@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { diff } from '@/AppBuilder/_engines/data/diff';
 
 export const checkDiff = (prev, next) => {
   if (!prev || !next) return prev === next;

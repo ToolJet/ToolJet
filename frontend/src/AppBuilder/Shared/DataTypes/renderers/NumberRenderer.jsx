@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import OverlayTrigger from '@/AppBuilder/_engines/rendering/LazyOverlayTrigger';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { noop } from 'lodash';
 

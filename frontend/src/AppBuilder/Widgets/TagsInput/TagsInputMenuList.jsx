@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { components } from 'react-select';
+import { WindowedList } from '@/AppBuilder/_engines/rendering/WindowedList';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { CornerDownLeft } from 'lucide-react';
 
 const { MenuList } = components;
+
+// A menu of more options than this renders only the options in view.
+const WINDOWED_OPTIONS = 100;
+const OPTION_HEIGHT = 32;
 
 const TagsInputMenuList = ({
   children,
@@ -42,6 +47,20 @@ const TagsInputMenuList = ({
   const hasCreateOption = childrenArray.some((child) => child?.props?.data?.__isNew__);
   const hasRegularOptions = childrenArray.some((child) => !child?.props?.data?.__isNew__);
 
+  // A long menu renders only the options in view, inside react-select's own scrolling menu list; the option focused
+  // with the keyboard is kept in view.
+  const windowed = childrenArray.length > WINDOWED_OPTIONS;
+  const scrollRef = useRef(null);
+  const { innerRef } = props;
+  const menuListRef = useCallback(
+    (element) => {
+      scrollRef.current = element;
+      if (typeof innerRef === 'function') innerRef(element);
+      else if (innerRef) innerRef.current = element;
+    },
+    [innerRef]
+  );
+
   // Handler for creating tag from footer
   const handleCreateFromFooter = () => {
     if (inputValue?.trim() && onCreateTag) {
@@ -55,8 +74,20 @@ const TagsInputMenuList = ({
         <>
           <div className="tags-input-menu-list-body">
             {hasRegularOptions ? (
-              <MenuList {...props} selectProps={selectProps}>
-                {children}
+              <MenuList {...props} innerRef={windowed ? menuListRef : innerRef} selectProps={selectProps}>
+                {windowed ? (
+                  <WindowedList
+                    count={childrenArray.length}
+                    scrollRef={scrollRef}
+                    itemHeight={OPTION_HEIGHT}
+                    measure
+                    getItemKey={(index) => childrenArray[index].key ?? index}
+                    focusedIndex={childrenArray.findIndex((child) => child?.props?.isFocused)}
+                    renderItem={(index) => childrenArray[index]}
+                  />
+                ) : (
+                  children
+                )}
               </MenuList>
             ) : (
               <div className="tags-input-no-options">{inputValue?.trim() ? 'No results' : 'No options'}</div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import OverlayTrigger from '@/AppBuilder/_engines/rendering/LazyOverlayTrigger';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 
 export const RadioColumn = ({ options = [], value, onChange, readOnly, containerWidth, horizontalAlignment }) => {

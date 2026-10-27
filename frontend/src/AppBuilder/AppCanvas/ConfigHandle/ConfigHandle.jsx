@@ -3,7 +3,7 @@ import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
-import { findHighestLevelofSelection } from '../Grid/gridUtils';
+import { findHighestLevelofSelection } from '../selection';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
@@ -22,7 +22,42 @@ const MentionComponentInChat = lazy(() => import('./MentionComponentInChat'));
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
 
-export const ConfigHandle = ({
+/**
+ * A widget's handle (its name and buttons, above it on the canvas). It shows only for the widget hovered or selected
+ * (and always for a hidden widget), so the handle itself (about 20 store subscriptions, its buttons, tooltips and
+ * popovers) is mounted the first time it shows, not for every widget on the canvas: an app with thousands of widgets
+ * kept hundreds of MB of handles nobody had looked at.
+ */
+export const ConfigHandle = (props) => {
+  const { id, readOnly, showHandle, componentType, visibility, isModuleContainer, subContainerIndex, isModalOpen } =
+    props;
+  const isMultipleComponentsSelected = useStore(
+    (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
+    shallow
+  );
+  const isModal = componentType === 'Modal' || componentType === 'ModalV2';
+
+  // If one component is hovered and one is selected, show the handle for the hovered component
+  const _showHandle = useTransientStore((state) => {
+    const isWidgetHovered = state.hoveredComponentForGrid === id;
+    const anyComponentHovered = state.hoveredComponentForGrid !== '';
+    return (
+      ((subContainerIndex === 0 || subContainerIndex === null) && (isModuleContainer || (isModal && isModalOpen))) ||
+      isWidgetHovered ||
+      (showHandle && !isMultipleComponentsSelected && !anyComponentHovered)
+    );
+  });
+
+  const shows = _showHandle || visibility === false;
+  const [hasShown, setHasShown] = useState(shows);
+  if (shows && !hasShown) setHasShown(true);
+  if (readOnly || !hasShown) return null;
+  return (
+    <WidgetHandle {...props} _showHandle={_showHandle} isMultipleComponentsSelected={isMultipleComponentsSelected} />
+  );
+};
+
+const WidgetHandle = ({
   id,
   readOnly,
   widgetTop,
@@ -30,12 +65,11 @@ export const ConfigHandle = ({
   setSelectedComponentAsModal = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
   isModalOpen = false,
   customClassName = '',
-  showHandle,
   componentType,
   visibility,
-  isModuleContainer,
-  subContainerIndex,
   isDynamicHeightEnabled,
+  _showHandle,
+  isMultipleComponentsSelected,
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
@@ -44,10 +78,6 @@ export const ConfigHandle = ({
   );
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
-  const isMultipleComponentsSelected = useStore(
-    (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
-    shallow
-  );
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
@@ -66,33 +96,24 @@ export const ConfigHandle = ({
   const setEntityToViewDependencies = useStore((state) => state.setEntityToViewDependencies);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
 
-  // If one component is hovered and one is selected, show the handle for the hovered component
-  const _showHandle = useTransientStore((state) => {
-    const isWidgetHovered = state.hoveredComponentForGrid === id || state.hoveredComponentBoundaryId === id;
-    const anyComponentHovered = state.hoveredComponentForGrid !== '' || state.hoveredComponentBoundaryId !== '';
-    return (
-      ((subContainerIndex === 0 || subContainerIndex === null) && (isModuleContainer || (isModal && isModalOpen))) ||
-      isWidgetHovered ||
-      (showHandle && !isMultipleComponentsSelected && !anyComponentHovered)
-    );
-  });
-
   const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
   const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isRestricted = component?.permissions && component?.permissions?.length !== 0;
-  const draggingComponentId = useStore((state) => state.draggingComponentId);
+  // Only the lock button reads this; other handles must not re-render each time a drag starts or ends.
+  const isAnyComponentDragging = useStore((state) => !!isRestricted && !!state.draggingComponentId);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
 
   let height = visibility === false ? 10 : widgetHeight;
 
+  // Deletes this handle's component, and the rest of the selection when it is part of it. Pressing the handle's buttons
+  // doesn't select the component (the canvas leaves them to their own clicks), so the selection alone may be another one.
   const deleteComponents = () => {
     const selectedComponents = getSelectedComponents();
-    if (selectedComponents.length > 0) {
-      setWidgetDeleteConfirmation(true, isModuleEditor);
-    }
+    const targets = selectedComponents.includes(id) ? selectedComponents : [id];
+    setWidgetDeleteConfirmation(true, targets, isModuleEditor);
   };
 
   const getTooltip = () => {
@@ -150,7 +171,7 @@ export const ConfigHandle = ({
         height: '24px',
       };
   if (isDynamicHeightEnabled && !isHiddenOrModalOpen) {
-    getConfigHandleButtonStyle.background = '#9747FF';
+    getConfigHandleButtonStyle.background = 'var(--canvas-dynamic-height)';
   }
 
   const iconOnlyButtonStyle = {
@@ -316,7 +337,7 @@ export const ConfigHandle = ({
         <ConfigHandleButton
           customStyles={iconOnlyButtonStyle}
           message={getTooltip()}
-          show={licenseValid && isRestricted && !draggingComponentId}
+          show={licenseValid && isRestricted && !isAnyComponentDragging}
           dataCy={`${componentName.toLowerCase()}-permissions-button`}
         >
           <Lock size={14} color="var(--icon-strong)" />

@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { checkboxExposure } from '@/AppBuilder/_engines/materialize/widgets/Checkbox';
+
+const { actions } = checkboxExposure;
 
 export const Checkbox = ({
   height,
@@ -130,33 +133,39 @@ export const Checkbox = ({
       }
     };
 
+    // The first value's status is the one computed above; validating it again could see a store changed since.
+    const { value, ...initial } = checkboxExposure.initial({
+      properties,
+      validation,
+      validate: (val) => (Object.is(val, checked) ? validationStatus : validate(val)),
+    });
     const exposedVariables = {
-      value: defaultValueFromProperties,
+      value,
       setChecked: setCheckedAndNotify,
       setValue: setCheckedAndNotify,
       setLoading: async function (loading) {
-        setLoading(!!loading);
-        setExposedVariable('isLoading', !!loading);
+        const { isLoading } = actions.setLoading(undefined, [loading]);
+        setLoading(isLoading);
+        setExposedVariable('isLoading', isLoading);
       },
       setVisibility: async function (visibility) {
-        setVisibility(!!visibility);
-        setExposedVariable('isVisible', !!visibility);
+        const { isVisible } = actions.setVisibility(undefined, [visibility]);
+        setVisibility(isVisible);
+        setExposedVariable('isVisible', isVisible);
       },
       setDisable: async function (disable) {
-        setDisable(!!disable);
-        setExposedVariable('isDisabled', !!disable);
+        const { isDisabled } = actions.setDisable(undefined, [disable]);
+        setDisable(isDisabled);
+        setExposedVariable('isDisabled', isDisabled);
       },
       toggle: () => {
         setInputValue(!checked);
         fireEvent('onChange');
         setUserInteracted(true);
       },
-      label: label,
-      isMandatory: isMandatory,
-      isLoading: loading,
-      isVisible: visibility,
+      ...initial,
+      // Disabled while loading too, until the disabledState effect settles it to initial's isDisabled.
       isDisabled: disable,
-      isValid: isValid,
     };
 
     setExposedVariables(exposedVariables);

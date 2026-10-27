@@ -9,6 +9,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 import type {
   CascaderNode,
   CascaderPathMaps,
@@ -90,10 +91,9 @@ export function useCascader({
   validate,
   validation,
 }: UseCascaderParams): UseCascaderResult {
-  const treeSignature = JSON.stringify(tree);
   // Build path maps from the normalized tree content, not the array identity.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const maps = useMemo(() => buildPathMaps(tree), [treeSignature]);
+  const stableTree = useContentStable(tree);
+  const maps = useMemo(() => buildPathMaps(stableTree), [stableTree]);
 
   const isMandatory = validation?.mandatory ?? false;
 
@@ -221,7 +221,7 @@ export function useCascader({
   // selected value is no longer a valid leaf (hidden/removed). No onSelect.
   useUpdateEffect(() => {
     setSelection(selectedValue);
-  }, [treeSignature, pathSeparator]);
+  }, [stableTree, pathSeparator]);
 
   // Reactive label.
   useUpdateEffect(() => {

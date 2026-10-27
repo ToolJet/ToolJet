@@ -8,6 +8,7 @@ import cx from 'classnames';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import generateColumnsData from '../../../_utils/generateColumnsData';
+import { TableCellSettingsProvider } from '../../TableData/TableCellSettings';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useStore from '@/AppBuilder/_stores/store';
@@ -206,50 +207,54 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
               </tr>
             ))}
           </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} style={{ display: 'flex' }} className="table-row" data-cy={`add-new-row-${row.index}`}>
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    data-cy={`${generateCypressDataCy(
-                      typeof cell.column.columnDef?.header === 'string' ? cell.column.columnDef?.header : cell.column.id
-                    )}-column-${row.index}`}
-                    className={cx(`table-text-align-${cell.column.columnDef.meta?.horizontalAlignment} td`, {
-                      'has-actions':
-                        cell.column.columnDef.meta?.position === 'right' ||
-                        cell.column.columnDef.meta?.position === 'left',
-                      'has-left-actions': cell.column.columnDef.meta?.position === 'left',
-                      'has-right-actions': cell.column.columnDef.meta?.position === 'right',
-                      'has-text': cell.column.columnDef.meta?.columnType === 'text',
-                      'has-dropdown': cell.column.columnDef.meta?.columnType === 'dropdown',
-                      'has-multiselect': cell.column.columnDef.meta?.columnType === 'multiselect',
-                      'has-datepicker': cell.column.columnDef.meta?.columnType === 'datepicker',
-                      'align-items-center flex-column': cell.column.columnDef.meta?.columnType === 'selector',
-                      'selector-column':
-                        cell.column.columnDef.meta?.columnType === 'selector' && cell.column.id === 'selection',
-                      'has-select': ['select', 'newMultiSelect', 'tagsV2'].includes(
-                        cell.column.columnDef.meta?.columnType
-                      ),
-                      isEditable: true,
-                    })}
-                    style={{ width: cell.column.getSize() }}
-                  >
-                    <div
-                      className={`td-container ${
-                        cell.column.columnDef.meta?.columnType === 'image' && 'jet-table-image-column'
-                      } ${cell.column.columnDef.meta?.columnType !== 'image' && 'w-100 h-100'}`}
-                    >
-                      {flexRender(cell.column.columnDef.cell, {
-                        ...cell.getContext(),
+          <TableCellSettingsProvider id={id}>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id} style={{ display: 'flex' }} className="table-row" data-cy={`add-new-row-${row.index}`}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      data-cy={`${generateCypressDataCy(
+                        typeof cell.column.columnDef?.header === 'string'
+                          ? cell.column.columnDef?.header
+                          : cell.column.id
+                      )}-column-${row.index}`}
+                      className={cx(`table-text-align-${cell.column.columnDef.meta?.horizontalAlignment} td`, {
+                        'has-actions':
+                          cell.column.columnDef.meta?.position === 'right' ||
+                          cell.column.columnDef.meta?.position === 'left',
+                        'has-left-actions': cell.column.columnDef.meta?.position === 'left',
+                        'has-right-actions': cell.column.columnDef.meta?.position === 'right',
+                        'has-text': cell.column.columnDef.meta?.columnType === 'text',
+                        'has-dropdown': cell.column.columnDef.meta?.columnType === 'dropdown',
+                        'has-multiselect': cell.column.columnDef.meta?.columnType === 'multiselect',
+                        'has-datepicker': cell.column.columnDef.meta?.columnType === 'datepicker',
+                        'align-items-center flex-column': cell.column.columnDef.meta?.columnType === 'selector',
+                        'selector-column':
+                          cell.column.columnDef.meta?.columnType === 'selector' && cell.column.id === 'selection',
+                        'has-select': ['select', 'newMultiSelect', 'tagsV2'].includes(
+                          cell.column.columnDef.meta?.columnType
+                        ),
                         isEditable: true,
                       })}
-                    </div>
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
+                      style={{ width: cell.column.getSize() }}
+                    >
+                      <div
+                        className={`td-container ${
+                          cell.column.columnDef.meta?.columnType === 'image' && 'jet-table-image-column'
+                        } ${cell.column.columnDef.meta?.columnType !== 'image' && 'w-100 h-100'}`}
+                      >
+                        {flexRender(cell.column.columnDef.cell, {
+                          ...cell.getContext(),
+                          isEditable: true,
+                        })}
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </TableCellSettingsProvider>
         </table>
         <button
           className="btn btn-light btn-sm m-2"

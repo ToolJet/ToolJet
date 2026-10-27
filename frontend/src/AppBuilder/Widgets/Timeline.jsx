@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { isArray } from 'lodash';
 import { getSafeRenderableValue } from './utils';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 export const Timeline = function Timeline({
@@ -25,11 +26,14 @@ export const Timeline = function Timeline({
   // Timeline height is a function of its items (and whether dates show). Trigger the reflow
   // off that data rather than a DOM observer — width changes are already a hook dependency,
   // so text re-wrapping on resize is still re-measured.
+  // Changes when the items' content or hideDate does (a JSON string of every item was built on every render).
+  const stableData = useContentStable(data);
+  const heightSignal = useMemo(() => ({}), [stableData, hideDate]);
   useDynamicHeight({
     isDynamicHeightEnabled,
     id,
     height,
-    value: JSON.stringify({ data, hideDate }),
+    value: heightSignal,
     currentLayout,
     width,
     visibility,

@@ -12,6 +12,8 @@ import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { useCallback } from 'react';
 import moment from 'moment';
+import { controlRowOf } from '@/AppBuilder/_engines/materialize/rows';
+import { eventReadsIn, prepareReads } from '@/AppBuilder/_engines/materialize/prepare';
 
 // To unsubscribe from the changes when no longer needed
 // unsubscribe();
@@ -481,8 +483,19 @@ export const createEventsSlice = (set, get) => ({
         ?.filter((event) => event?.event.eventId === eventId && !event?.event?.disabled)
         ?.sort((a, b) => a.index - b.index);
 
+      // The rows a windowed ListView's slots showed as the event fired: a control-component action on a widget in a
+      // row runs on the data row the event fired in, though it scrolled away while earlier actions ran.
+      const firedSlots =
+        sourceSubContainerIndex !== null ? get().resolvedStore.modules[moduleId]?.listviewSlots : undefined;
       for (const event of filteredEvents) {
-        await get().eventsSlice.executeAction(event, mode, customVariables, moduleId, sourceSubContainerIndex);
+        await get().eventsSlice.executeAction(
+          event,
+          mode,
+          customVariables,
+          moduleId,
+          sourceSubContainerIndex,
+          firedSlots
+        );
       }
     },
     logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel = 'error', page) {
@@ -561,20 +574,63 @@ export const createEventsSlice = (set, get) => ({
       });
     },
     executeAction: debounce(
-      (eventObj, mode, customVariables = {}, moduleId = 'canvas', sourceSubContainerIndex = null) => {
+      (
+        eventObj,
+        mode,
+        customVariables = {},
+        moduleId = 'canvas',
+        sourceSubContainerIndex = null,
+        firedSlots = undefined
+      ) => {
         const { event = eventObj } = eventObj;
-        const { getExposedValueOfComponent, getResolvedValue } = get();
+        const { getExposedValueOfComponent } = get();
 
         if (event?.disabled) {
           return false;
         }
 
+        // The rows of a windowed ListView its runOnlyIf, then its params, read are made ready first
+        // (_engines/materialize/prepare.js): it runs once they are (debounced once, not again), resolved with them. A
+        // read refused fails it, with the reason. A runOnlyIf that is false skips it before its params are read.
+        const prepare = (reads) => {
+          const prepared =
+            reads && prepareReads(get, reads, get().getAllExposedValues(moduleId), customVariables, moduleId);
+          if (prepared?.pending) {
+            const { executeAction } = get().eventsSlice;
+            return prepared.pending.then(() =>
+              (executeAction.now ?? executeAction)(
+                eventObj,
+                mode,
+                customVariables,
+                moduleId,
+                sourceSubContainerIndex,
+                firedSlots
+              )
+            );
+          }
+          if (prepared?.error) {
+            get().eventsSlice.logError('event', event.actionId, prepared.error, eventObj, { eventId: event.eventId });
+            return Promise.reject(prepared.error);
+          }
+          return prepared?.state;
+        };
+        const resolverIn = (state) =>
+          state
+            ? (value, variables, inModule) => get().getResolvedValue(value, variables, inModule, state)
+            : get().getResolvedValue;
+
         if (event?.runOnlyIf) {
-          const shouldRun = getResolvedValue(event.runOnlyIf, customVariables, moduleId);
+          const condition = prepare(eventReadsIn(get, event, moduleId, { runOnlyIf: true }));
+          if (typeof condition?.then === 'function') return condition;
+          const shouldRun = resolverIn(condition)(event.runOnlyIf, customVariables, moduleId);
           if (!shouldRun) {
             return false;
           }
         }
+
+        const ready = event && prepare(eventReadsIn(get, event, moduleId));
+        if (typeof ready?.then === 'function') return ready;
+        const getResolvedValue = resolverIn(ready);
 
         if (event) {
           //! TODO run only if conditions
@@ -818,7 +874,8 @@ export const createEventsSlice = (set, get) => ({
               const value = getResolvedValue(event.value, customVariables, moduleId);
 
               setVariable(key, value, moduleId);
-              return Promise.resolve();
+              // Resolves once the variable's dependents have: a large update resolves them in slices.
+              return get().propagationSettled();
               // customAppVariables[key] = value;
               // const resp = useCurrentStateStore.getState().actions.setCurrentState({
               //   variables: customAppVariables,
@@ -882,7 +939,7 @@ export const createEventsSlice = (set, get) => ({
               const key = getResolvedValue(event.key, customVariables, moduleId);
               const value = getResolvedValue(event.value, customVariables, moduleId);
               setPageVariable(key, value, moduleId);
-              return Promise.resolve();
+              return get().propagationSettled();
               // const customPageVariables = {
               //   ...getCurrentState().page.variables,
               //   [key]: value,
@@ -968,6 +1025,36 @@ export const createEventsSlice = (set, get) => ({
                 const parent = componentDefinition?.component?.parent;
                 const parentDefinition = getComponentDefinition(parent, moduleId);
                 const parentType = parentDefinition?.component?.component;
+                // A child of a windowed ListView: run on the data row the event fired in (row 0 from outside its rows),
+                // drawn or not (_engines/materialize/rows.js; null at once in a module with none).
+                const row = controlRowOf(
+                  get,
+                  event.componentId,
+                  eventObj.sourceId,
+                  sourceSubContainerIndex,
+                  moduleId,
+                  firedSlots
+                );
+                if (row) {
+                  const args = event.componentSpecificActionParams.map((param) =>
+                    getResolvedValue(param.value, customVariables, moduleId)
+                  );
+                  return get()
+                    .runRowAction(
+                      row.listviewId,
+                      row.dataRow,
+                      event.componentId,
+                      event.componentSpecificActionHandle,
+                      args,
+                      moduleId
+                    )
+                    .catch((error) => {
+                      get().eventsSlice.logError('control_component', 'control-component', error, eventObj, {
+                        eventId: event.eventId,
+                      });
+                      throw error;
+                    });
+                }
                 let component = getExposedValueOfComponent(event.componentId, moduleId, sourceSubContainerIndex);
                 if (parentType === 'Form' && componentName) {
                   component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];

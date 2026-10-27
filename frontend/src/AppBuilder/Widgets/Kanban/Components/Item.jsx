@@ -4,6 +4,22 @@ import cx from 'classnames';
 import { Handle } from './Handle';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 
+// Position of each card id in a card list, built once per list: every card searching the whole list for itself was
+// cards × cards work on every render.
+const cardIndexes = new WeakMap();
+const indexOfCard = (cards, id) => {
+  if (!Array.isArray(cards)) return -1;
+  let indexes = cardIndexes.get(cards);
+  if (!indexes) {
+    indexes = new Map();
+    cards.forEach((card, index) => {
+      if (!indexes.has(card?.id)) indexes.set(card?.id, index);
+    });
+    cardIndexes.set(cards, indexes);
+  }
+  return indexes.has(id) ? indexes.get(id) : -1;
+};
+
 export const Item = React.memo(
   forwardRef(
     (
@@ -89,7 +105,7 @@ export const Item = React.memo(
                 canvasWidth={Number(cardWidth) || 300}
                 canvasHeight={Number(cardHeight) || 100}
                 id={id}
-                index={cardData.findIndex((card) => card.id === value)}
+                index={indexOfCard(cardData, value)}
                 styles={{
                   backgroundColor: 'var(--base)',
                 }}

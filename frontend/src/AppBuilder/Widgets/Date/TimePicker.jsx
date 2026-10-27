@@ -2,10 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDatetimeInput, useTimeInput } from './hooks';
 import cx from 'classnames';
 import moment from 'moment';
-import { getFormattedSelectTimestamp, getUnixTime, is24HourFormat, isDateValid } from './utils';
+import { getFormattedSelectTimestamp, getUnixTime, is24HourFormat } from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import './styles.scss';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import {
+  timePickerStatusOf,
+  timePickerTimestampOf,
+  timePickerValuesOf,
+} from '@/AppBuilder/_engines/materialize/widgets/TimePicker';
 
 export const TimePicker = ({
   height,
@@ -43,9 +48,7 @@ export const TimePicker = ({
   const { minTime, maxTime } = timeLogic;
   const { customRule } = validation;
 
-  const [selectedTimestamp, setSelectedTimestamp] = useState(
-    defaultValue ? getUnixTime(defaultValue, timeFormat) : null
-  );
+  const [selectedTimestamp, setSelectedTimestamp] = useState(() => timePickerTimestampOf(properties));
 
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
@@ -112,8 +115,8 @@ export const TimePicker = ({
 
   useEffect(() => {
     const exposedVariables = {
-      value: selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, timeFormat) : null,
-      timeFormat: timeFormat,
+      ...timePickerValuesOf(selectedTimestamp, timeFormat),
+      // Valid until the validation effect below has run (what the store then holds is the exposure module's isValid).
       isValid: isValid,
     };
     setExposedVariables(exposedVariables);
@@ -135,7 +138,9 @@ export const TimePicker = ({
   }, [selectedTimestamp, timeFormat]);
 
   useEffect(() => {
-    setValidationStatus(isDateValid(selectedTimestamp, { minTime, maxTime, customRule, isMandatory, timeFormat }));
+    setValidationStatus(timePickerStatusOf(selectedTimestamp, validation, timeFormat, { minTime, maxTime }));
+    // Of validation, the rules read customRule and mandatory (isMandatory).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat]);
 
   useFormClear(() => setInputValue(null, null, true));

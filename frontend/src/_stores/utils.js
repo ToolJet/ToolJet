@@ -1,7 +1,7 @@
 import { create as _create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { diff } from '@/AppBuilder/_engines/data/diff';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import _ from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';

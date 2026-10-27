@@ -4,7 +4,6 @@ import cx from 'classnames';
 import './radioButtonV2.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { has, isObject } from 'lodash';
-import { getSafeRenderableValue } from '../utils';
 import {
   getWidthTypeOfComponentStyles,
   getLabelFontSize,
@@ -13,6 +12,14 @@ import {
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
+import {
+  radioButtonV2Exposure,
+  selectOptionsOf,
+  defaultValueOf,
+} from '@/AppBuilder/_engines/materialize/widgets/RadioButtonV2';
+
+const { actions } = radioButtonV2Exposure;
 
 export const RadioButtonV2 = ({
   properties,
@@ -56,7 +63,7 @@ export const RadioButtonV2 = ({
   const isInitialRender = useRef(true);
   const reactId = useId();
 
-  const [checkedValue, setCheckedValue] = useState(findDefaultItem(advanced ? schema : options));
+  const [checkedValue, setCheckedValue] = useState(defaultValueOf(properties));
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setIsLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -85,30 +92,7 @@ export const RadioButtonV2 = ({
     componentType,
   });
 
-  const selectOptions = useMemo(() => {
-    let _options = advanced ? schema : options;
-    if (Array.isArray(_options)) {
-      let _selectOptions = _options
-        .filter((data) => data?.visible ?? true)
-        .map((data) => ({
-          ...data,
-          label: getSafeRenderableValue(data?.label),
-          value: data?.value,
-          isDisabled: data?.disable ?? false,
-        }));
-      return _selectOptions;
-    } else {
-      return [];
-    }
-  }, [advanced, schema, options]);
-
-  function findDefaultItem(optionSchema) {
-    if (!Array.isArray(optionSchema)) {
-      return undefined;
-    }
-    const foundItem = optionSchema?.find((item) => item?.default === true && item?.visible === true);
-    return foundItem?.value;
-  }
+  const selectOptions = useMemo(() => selectOptionsOf({ advanced, schema, options }), [advanced, schema, options]);
 
   function onSelect(value) {
     const _value = isObject(value) && has(value, 'value') ? value?.value : value;
@@ -119,10 +103,12 @@ export const RadioButtonV2 = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   }
 
+  const stableOptions = useContentStable(options);
+  const stableSchema = useContentStable(schema);
   useEffect(() => {
-    onSelect(findDefaultItem(advanced ? schema : options));
+    onSelect(defaultValueOf({ advanced, schema, options }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
+  }, [advanced, stableSchema, stableOptions]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -132,6 +118,7 @@ export const RadioButtonV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState]);
 
+  const stableSelectOptions = useContentStable(selectOptions);
   useEffect(() => {
     if (isInitialRender.current) return;
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
@@ -142,7 +129,7 @@ export const RadioButtonV2 = ({
       fireEvent('onSelectionChange');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(selectOptions)]);
+  }, [stableSelectOptions]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -183,16 +170,13 @@ export const RadioButtonV2 = ({
   }, [disabledState]);
 
   useEffect(() => {
-    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
     const exposedVariables = {
-      value: checkedValue,
-      label: label,
-      options: _options,
-      isValid: isValid,
-      isMandatory: isMandatory,
-      isLoading: loadingState,
-      isVisible: properties.visibility,
-      isDisabled: disabledState,
+      // The first value's status is the one computed above; validating it again could see a store changed since.
+      ...radioButtonV2Exposure.initial({
+        properties,
+        validation,
+        validate: (value) => (Object.is(value, checkedValue) ? validationStatus : validate(value)),
+      }),
       selectOption: async function (value) {
         onSelect(value);
         fireEvent('onSelectionChange');
@@ -202,16 +186,19 @@ export const RadioButtonV2 = ({
         fireEvent('onSelectionChange');
       },
       setVisibility: async function (value) {
-        setVisibility(!!value);
-        setExposedVariable('isVisible', !!value);
+        const { isVisible } = actions.setVisibility(undefined, [value]);
+        setVisibility(isVisible);
+        setExposedVariable('isVisible', isVisible);
       },
       setDisable: async function (value) {
-        setIsDisabled(!!value);
-        setExposedVariable('isDisabled', !!value);
+        const { isDisabled } = actions.setDisable(undefined, [value]);
+        setIsDisabled(isDisabled);
+        setExposedVariable('isDisabled', isDisabled);
       },
       setLoading: async function (value) {
-        setIsLoading(!!value);
-        setExposedVariable('isLoading', !!value);
+        const { isLoading } = actions.setLoading(undefined, [value]);
+        setIsLoading(isLoading);
+        setExposedVariable('isLoading', isLoading);
       },
     };
     setExposedVariables(exposedVariables);
