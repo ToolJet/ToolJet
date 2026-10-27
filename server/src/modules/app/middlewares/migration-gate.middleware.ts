@@ -40,10 +40,11 @@ const ASYNC_MODE_WRITE_ALLOWLIST = [
 ];
 
 /**
- * A run with pre-cutoff migrations (an upgrade from 3.21.58) holds DDL locks that block reads of the
- * tables they alter until it commits, so only sign-in and the upgrade status get through.
+ * While a run alters tables in its data transaction, those locks block reads until it commits; after it
+ * fails, the new code would read data it never converted. Only sign-in and the upgrade status get through.
  */
-const PRE_CUTOFF_RUN_ALLOWLIST = [
+const READS_BLOCKED_ALLOWLIST = [
+  /^\/login-configs\/([^/]+\/)?public$/,
   /^\/authenticate(\/|$)/,
   /^\/session(\/|$)/,
   /^\/oauth\//,
@@ -106,8 +107,8 @@ export class MigrationGateMiddleware implements NestMiddleware {
     const path = (parseurl.original(req)?.pathname ?? '/').toLowerCase();
     const apiPath = this.gatedApiPath(path);
     if (!this.enabled || apiPath === null) return next();
-    const { state, preCutoffRun } = await this.migrationRuns.status();
-    if (!REFUSALS[state] || (this.asyncMode && this.passesAsyncGate(apiPath, req.method, preCutoffRun))) return next();
+    const { state, readsBlocked } = await this.migrationRuns.status();
+    if (!REFUSALS[state] || (this.asyncMode && this.passesAsyncGate(apiPath, req.method, readsBlocked))) return next();
     this.refuse(req, res, state);
   }
 
@@ -130,9 +131,9 @@ export class MigrationGateMiddleware implements NestMiddleware {
     return UNGATED_API_PATHS.has(apiPath) ? null : apiPath;
   }
 
-  /** Async mode: an ordinary run lets reads and end-user writes through; a pre-cutoff run only sign-in and status. */
-  private passesAsyncGate(apiPath: string, method: string, preCutoffRun: boolean | undefined): boolean {
-    if (preCutoffRun) return PRE_CUTOFF_RUN_ALLOWLIST.some((pattern) => pattern.test(apiPath));
+  /** Async mode: an ordinary run lets reads and end-user writes through; one that blocks reads, only sign-in and status. */
+  private passesAsyncGate(apiPath: string, method: string, readsBlocked: boolean | undefined): boolean {
+    if (readsBlocked) return READS_BLOCKED_ALLOWLIST.some((pattern) => pattern.test(apiPath));
     return SAFE_METHODS.has(method) || ASYNC_MODE_WRITE_ALLOWLIST.some((pattern) => pattern.test(apiPath));
   }
 

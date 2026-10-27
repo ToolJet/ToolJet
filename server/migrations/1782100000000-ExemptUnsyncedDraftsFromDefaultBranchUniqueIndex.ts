@@ -21,8 +21,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  */
 export class ExemptUnsyncedDraftsFromDefaultBranchUniqueIndex1782100000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Pending, that data migration rebuilds both indexes later anyway. Leaving them until then keeps
-    // 3.21.58's single-draft guarantee if async mode's data phase fails and 3.21.58 is redeployed.
+    // MakeAppVersionBranchIdNotNullAndGitSyncFlags rebuilds these indexes; until it runs, keep 3.21.58's single-draft rule.
     const [rebuildPending] = await queryRunner.query(
       `SELECT NOT EXISTS (SELECT 1 FROM migrations WHERE name = 'MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000') AS pending`
     );

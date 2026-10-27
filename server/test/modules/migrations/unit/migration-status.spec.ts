@@ -1,7 +1,10 @@
 /** @group database */
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS } from 'src/migration-helpers/async-safe-pre-cutoff-migrations';
+import {
+  ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS,
+  TABLE_ALTERING_DATA_MIGRATIONS,
+} from 'src/migration-helpers/async-safe-pre-cutoff-migrations';
 import {
   blocksAsyncUpgrade,
   END_USER_MESSAGE_MAX_LENGTH,
@@ -70,7 +73,7 @@ describe('migration-helpers/migration-status', () => {
       ['LegacyWitness1700000000004', true],
       ['CopyWorkflowAppMetaToAppVersions1782250000000', false],
       ['DropGitSyncMetaHashColumns1782500000000', false],
-      ['CopyAndZeroWorkflowAppMeta1793000000000', false],
+      ['ValidatePatWorkspaceShape1793100000000', false],
     ])('should say %s blocks the split upgrade: %s', (name, blocks) => {
       expect(blocksAsyncUpgrade(name)).toBe(blocks);
     });
@@ -83,6 +86,20 @@ describe('migration-helpers/migration-status', () => {
           .map((file) => readFileSync(join(root, dir, file), 'utf8').match(/export class (\w+)/)?.[1])
       );
       expect([...ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS].filter((name) => !classes.includes(name))).toEqual([]);
+    });
+
+    it('should name exactly the listed data migrations that alter tables, so the gate knows when reads block', () => {
+      const dir = join(__dirname, '../../../../data-migrations');
+      const altering = readdirSync(dir)
+        .filter((file) => file.endsWith('.ts'))
+        .map((file) => readFileSync(join(dir, file), 'utf8'))
+        .filter((text) => {
+          const up = text.slice(text.indexOf('async up('), text.indexOf('async down(')).replace(/\/\/.*$/gm, '');
+          return /\b(ALTER TABLE|DROP (TABLE|COLUMN|INDEX|TRIGGER|CONSTRAINT)|CREATE (UNIQUE )?INDEX|CREATE TRIGGER)\b/i.test(up);
+        })
+        .map((text) => text.match(/export class (\w+)/)?.[1])
+        .filter((name) => ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS.has(name));
+      expect(altering.sort()).toEqual([...TABLE_ALTERING_DATA_MIGRATIONS].sort());
     });
   });
 });

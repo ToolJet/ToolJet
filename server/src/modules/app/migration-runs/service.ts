@@ -13,11 +13,8 @@ import {
   MigrationStep,
   RunProgress,
 } from '../../../migration-helpers/migration-run-log';
-import {
-  isPreCutoffMigration,
-  isServerManagedMigrationMode,
-  setupCommand,
-} from '../../../migration-helpers/migration-status';
+import { isServerManagedMigrationMode, setupCommand } from '../../../migration-helpers/migration-status';
+import { TABLE_ALTERING_DATA_MIGRATIONS } from '../../../migration-helpers/async-safe-pre-cutoff-migrations';
 import { mainDbConnectionConfig } from '../../../migration-helpers/async-mode';
 import { HELD_MIGRATION_LOCKS_SQL, SKIPPED_EXIT_CODE } from '../../../migration-helpers/migrations-table-gate';
 
@@ -28,8 +25,8 @@ export interface MigrationStatus {
   state: MigrationState;
   startedAt?: string;
   toVersion?: string;
-  /** The run includes migrations from before the authoring rules: their DDL locks block reads too. */
-  preCutoffRun?: boolean;
+  /** An unfinished run alters tables in its data transaction (an upgrade from 3.21.58–3.21.62): reads would block too. */
+  readsBlocked?: boolean;
 }
 
 export interface MigrationRun {
@@ -270,7 +267,8 @@ export class MigrationRunsService implements OnApplicationShutdown {
             state: stopped ? 'running' : state,
             startedAt: new Date(latest.started_at).toISOString(),
             toVersion: latest.to_version,
-            preCutoffRun: latest.migrations.some(({ name }) => isPreCutoffMigration(name)),
+            readsBlocked:
+              state !== 'succeeded' && latest.migrations.some(({ name }) => TABLE_ALTERING_DATA_MIGRATIONS.has(name)),
           };
         }
       }
@@ -353,13 +351,15 @@ export class MigrationRunsService implements OnApplicationShutdown {
     };
     const record = () =>
       write(async () => {
-        if (runId) return;
-        runId = await this.insertRun(triggeredBy);
-        if (runId) return;
-        // Our child holds the migration lock, so the running row in the way is a pod killed before its
-        // heartbeat went stale.
-        await this.reapDeadRuns({ holdingLock: true });
-        runId = await this.insertRun(triggeredBy);
+        if (!runId) runId = await this.insertRun(triggeredBy);
+        if (!runId) {
+          // Our child holds the migration lock, so the running row in the way is a pod killed before its
+          // heartbeat went stale.
+          await this.reapDeadRuns({ holdingLock: true });
+          runId = await this.insertRun(triggeredBy);
+        }
+        // The migration list now, not on the next heartbeat: the gate reads it to know whether reads block.
+        if (runId) await this.updateRun(runId, run, 'running');
       });
 
     // Kept lines wait here until the run has a row, then go out with the next write.
