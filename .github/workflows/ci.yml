@@ -52,16 +52,20 @@ jobs:
         id: filter
         with:
           # every: a file counts only if it matches ALL patterns of a filter, so the
-          # '!**/*.md' line drops docs-only edits (AGENTS.md, docs/) from triggering suites
+          # '!**/*.md' line drops docs-only edits (AGENTS.md, docs/) from triggering suites,
+          # and the .version excludes treat a release version bump the same way (the root
+          # .version matches no filter, so it needs no exclude)
           predicate-quantifier: 'every'
           filters: |
             server:
               - 'server/**'
               - '!**/*.md'
+              - '!server/.version'
               - '!server/ee'
             frontend:
               - 'frontend/**'
               - '!**/*.md'
+              - '!frontend/.version'
               - '!frontend/ee'
             # the frontend parity spec (validationCatalogParity.spec.js) reads these server
             # files, so a server-only catalog edit must still run the frontend suite
