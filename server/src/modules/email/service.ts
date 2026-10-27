@@ -382,6 +382,7 @@ export class EmailService implements IEmailService {
       changes_requested: [`${actorName} asked for changes to ${versionName} of ${appName}`, 'See what to change'],
       released: [`${actorName} released ${versionName} of ${appName}`, 'Open the review'],
       overridden: [`${actorName} allowed ${versionName} of ${appName} to go out without approval`, 'Open the review'],
+      rereview_requested: [`${actorName} made the changes and asked you to review ${versionName} of ${appName} again`, 'Review changes'],
     }[reason];
     if (!copy) return;
     const [headline, buttonText] = copy;
