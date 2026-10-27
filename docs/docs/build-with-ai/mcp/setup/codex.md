@@ -8,6 +8,10 @@ import TabItem from '@theme/TabItem';
 
 Connect ToolJet MCP to Codex so your agent can build and modify applications in your ToolJet workspace, whether that's ToolJet Cloud or your own self-hosted domain.
 
+:::tip Using ToolJet Cloud?
+You can connect Codex with OAuth instead. You sign in to your workspace in the browser, with no personal access token or local server to set up. See [Connect with OAuth](/docs/build-with-ai/mcp/setup#connect-with-oauth).
+:::
+
 ## Prerequisites
 
 - Codex CLI or Codex desktop installed.

@@ -13,6 +13,10 @@ Fixes for common problems when connecting ToolJet MCP to [Claude Code](/docs/bui
 | Calls fail with a connection error | `TOOLJET_DEPLOYMENT_URL` is wrong or unreachable from your machine. If your API and UI are on different origins, set `TOOLJET_URL` to the backend origin. |
 | The agent can't see the workspace you expected | A token's session is pinned to the workspace it was created in. Create a token in that workspace instead. |
 | App links point at localhost | `TOOLJET_DEPLOYMENT_URL` is still at its default. Set it to your instance URL. |
+| OAuth sign-in says AI client connections are unavailable or the request has expired | A connection request is valid for 10 minutes. Start again from your client. OAuth connections are available on ToolJet Cloud only; on a self-hosted instance, use a personal access token. |
+| OAuth sign-in says you don't have access to connect an AI client | Your account can't access that workspace. Contact your workspace administrator. |
+| OAuth sign-in asks you to open the connection in a separate tab | The sign-in page can't run inside an embedded frame. Open the link in its own browser tab. |
+| An OAuth connection that worked before stops working | The connection expired, was disconnected under **Profile settings > Connected AI clients**, or was revoked after a password, membership, or login-settings change. Reconnect from your client, for example with `/mcp` in Claude Code or `codex mcp login tooljet-oauth` in Codex. |
 
 ## Related
 
