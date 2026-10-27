@@ -1,5 +1,9 @@
 /** @group database */
+import { readdirSync, readFileSync } from 'fs';
+import { join } from 'path';
+import { ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS } from 'src/migration-helpers/async-safe-pre-cutoff-migrations';
 import {
+  blocksAsyncUpgrade,
   END_USER_MESSAGE_MAX_LENGTH,
   endUserMessage,
   getMigrationMode,
@@ -59,6 +63,26 @@ describe('migration-helpers/migration-status', () => {
 
     it('should refuse anything else rather than fall back to a joint run', () => {
       expect(() => parseMigrationPhase('Schema')).toThrow("Unknown MIGRATION_PHASE 'Schema'");
+    });
+  });
+  describe('blocksAsyncUpgrade | which pending migrations force the one-transaction upgrade', () => {
+    it.each([
+      ['LegacyWitness1700000000004', true],
+      ['CopyWorkflowAppMetaToAppVersions1782250000000', false],
+      ['DropGitSyncMetaHashColumns1782500000000', false],
+      ['CopyAndZeroWorkflowAppMeta1793000000000', false],
+    ])('should say %s blocks the split upgrade: %s', (name, blocks) => {
+      expect(blocksAsyncUpgrade(name)).toBe(blocks);
+    });
+
+    it('should list only migrations that exist, so a rename cannot silently send old databases async', () => {
+      const root = join(__dirname, '../../../..');
+      const classes = ['migrations', 'data-migrations'].flatMap((dir) =>
+        readdirSync(join(root, dir))
+          .filter((file) => file.endsWith('.ts'))
+          .map((file) => readFileSync(join(root, dir, file), 'utf8').match(/export class (\w+)/)?.[1])
+      );
+      expect([...ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS].filter((name) => !classes.includes(name))).toEqual([]);
     });
   });
 });

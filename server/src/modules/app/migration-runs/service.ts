@@ -13,7 +13,11 @@ import {
   MigrationStep,
   RunProgress,
 } from '../../../migration-helpers/migration-run-log';
-import { isServerManagedMigrationMode, setupCommand } from '../../../migration-helpers/migration-status';
+import {
+  isPreCutoffMigration,
+  isServerManagedMigrationMode,
+  setupCommand,
+} from '../../../migration-helpers/migration-status';
 import { mainDbConnectionConfig } from '../../../migration-helpers/async-mode';
 import { HELD_MIGRATION_LOCKS_SQL, SKIPPED_EXIT_CODE } from '../../../migration-helpers/migrations-table-gate';
 
@@ -24,6 +28,8 @@ export interface MigrationStatus {
   state: MigrationState;
   startedAt?: string;
   toVersion?: string;
+  /** The run includes migrations from before the authoring rules: their DDL locks block reads too. */
+  preCutoffRun?: boolean;
 }
 
 export interface MigrationRun {
@@ -109,7 +115,7 @@ function owningMigration(run: RunProgress): string | null {
 
 type StatusRow = Pick<
   MigrationRunRow,
-  'status' | 'to_version' | 'started_at' | 'error' | 'heartbeat_age_ms' | 'lock_held'
+  'status' | 'to_version' | 'started_at' | 'error' | 'migrations' | 'heartbeat_age_ms' | 'lock_held'
 >;
 
 const latestRunsSql = (columns: string) =>
@@ -252,7 +258,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
       const [{ migrating }] = await this.query<{ migrating: boolean }>(HELD_MIGRATION_LOCKS_SQL);
       // Read every second on every server: only the columns the state needs, not the log tail.
       const [latest] = this.enabled
-        ? await this.query<StatusRow>(latestRunsSql('r.status, r.to_version, r.started_at, r.error'), [1])
+        ? await this.query<StatusRow>(latestRunsSql('r.status, r.to_version, r.started_at, r.error, r.migrations'), [1])
         : [];
       if (latest) {
         const state = effectiveStatus(latest);
@@ -264,6 +270,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
             state: stopped ? 'running' : state,
             startedAt: new Date(latest.started_at).toISOString(),
             toVersion: latest.to_version,
+            preCutoffRun: latest.migrations.some(({ name }) => isPreCutoffMigration(name)),
           };
         }
       }
