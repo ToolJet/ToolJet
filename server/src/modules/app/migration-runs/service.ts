@@ -24,6 +24,8 @@ export interface MigrationStatus {
   state: MigrationState;
   startedAt?: string;
   toVersion?: string;
+  /** While running: data migrations finished out of those pending. Counts only, the endpoint is public. */
+  progress?: { done: number; total: number };
 }
 
 export interface MigrationRun {
@@ -66,7 +68,7 @@ const IDLE_WRITE_MS = 10_000;
 // node loss). The heartbeat only covers the seconds before a fresh runner takes the lock.
 const STALE_AFTER_MS = 30_000;
 const KEEP_RUNS = 50;
-// The write gate reads this on every write: one query per second per server, whatever the load.
+// The write gate reads this on every gated write: one query per second per server, whatever the load.
 const STATUS_CACHE_MS = 1000;
 const SHUTDOWN_WAIT_MS = 10_000;
 const JOBS_CHECK_MS = 5000;
@@ -109,8 +111,11 @@ function owningMigration(run: RunProgress): string | null {
 
 type StatusRow = Pick<
   MigrationRunRow,
-  'status' | 'to_version' | 'started_at' | 'error' | 'migrations' | 'heartbeat_age_ms' | 'lock_held'
->;
+  'status' | 'to_version' | 'started_at' | 'error' | 'heartbeat_age_ms' | 'lock_held'
+> & { done_count: number; total_count: number };
+
+const PROGRESS_COLUMNS = `(SELECT count(*) FROM jsonb_array_elements(r.migrations) m WHERE m->>'status' = 'done')::int AS done_count,
+  COALESCE(jsonb_array_length(r.migrations), 0) AS total_count`;
 
 const latestRunsSql = (columns: string) =>
   `SELECT ${columns}, EXTRACT(EPOCH FROM now() - r.heartbeat_at) * 1000 AS heartbeat_age_ms, held.running AS lock_held
@@ -253,7 +258,10 @@ export class MigrationRunsService implements OnApplicationShutdown {
       const [{ migrating }] = await this.query<{ migrating: boolean }>(HELD_MIGRATION_LOCKS_SQL);
       // Read every second on every server: only the columns the state needs, not the log tail.
       const [latest] = this.enabled
-        ? await this.query<StatusRow>(latestRunsSql('r.status, r.to_version, r.started_at, r.error, r.migrations'), [1])
+        ? await this.query<StatusRow>(
+            latestRunsSql(`r.status, r.to_version, r.started_at, r.error, ${PROGRESS_COLUMNS}`),
+            [1]
+          )
         : [];
       if (latest) {
         const state = effectiveStatus(latest);
@@ -265,6 +273,8 @@ export class MigrationRunsService implements OnApplicationShutdown {
             state: stopped ? 'running' : state,
             startedAt: new Date(latest.started_at).toISOString(),
             toVersion: latest.to_version,
+            ...((stopped || state === 'running') &&
+              latest.total_count > 0 && { progress: { done: latest.done_count, total: latest.total_count } }),
           };
         }
       }
@@ -354,7 +364,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
           await this.reapDeadRuns({ holdingLock: true });
           runId = await this.insertRun(triggeredBy);
         }
-        // The migration list now, not on the next heartbeat: the gate reads it to know whether reads block.
+        // The row now, not on the next heartbeat: the migrations page shows the list at once.
         if (runId) await this.updateRun(runId, run, 'running');
       });
 

@@ -99,7 +99,7 @@ A pod that finds the migration lock taken sleeps for `MIGRATION_LOCK_RETRY_INTER
 [migrations] Lock released; got the migration lock after 8s.
 ```
 
-With `MIGRATION_SKIP_IF_LOCKED=true` (async boot runs) the pod does not wait: it exits with code `75` (`SKIPPED_EXIT_CODE`).
+With `MIGRATION_SKIP_IF_LOCKED=true` (the data phase an async server starts at boot) the runner does not wait: the child process exits with code `75` (`SKIPPED_EXIT_CODE`) and the server keeps serving.
 
 ### Lock sentinels
 
@@ -131,7 +131,7 @@ Health and metrics endpoints are never refused.
 
 **Rules to keep when you change the gate:**
 
-1. **Never refuse health or metrics** (`UNGATED_API_PATHS`). Otherwise the orchestrator kills pods for failing health checks during the upgrade. Add every new probe endpoint to that set.
+1. **Never refuse health or metrics.** Otherwise the orchestrator kills pods for failing health checks during the upgrade. Both are reads, and reads always pass; a new probe must be a GET too. A request that always passes never reads the migration status.
 2. **Refuse only `/api/*`.** The web app still loads and can show the banner. `buildApiPrefix(SUB_PATH)` handles installs under a subpath.
 3. **When in doubt, let it through.** If the status cannot be read, treat it as "no migration running".
 4. **Keep it cheap.** The status is cached for 1s, one read at a time, on its own pool of two connections. A refusal is logged at most once per 30s.
@@ -187,7 +187,7 @@ The final schema is the same as after a joint run. Once the data phase succeeds,
 
 - **What passes.** Reads, sign-in, session, OAuth/SSO and query runs (`ASYNC_MODE_WRITE_ALLOWLIST`). Other writes get 503.
 - **New pods wait for their own data phase.** From boot until its data phase takes the active lock, exits or fails to start, a pod reports `running`. So new code never writes before its data migrations ran. On a plain restart this lasts as long as the child takes to start, on that pod only.
-- **Requests that pass can still wait, but not for long.** A row a data migration changed stays locked until commit, and a data migration that alters a table (upgrades from 3.21.58–3.21.62) locks the whole table. In async mode the server's database pool sets `lock_timeout` to 5s (`ASYNC_MODE_LOCK_TIMEOUT_MS` in `app/loader.ts`), so such a request fails after 5s instead of holding a pool connection. The pool and `/api/health` stay free, so the pod is not killed. Pages that read other tables keep working.
+- **Requests that pass can still wait, but not for long.** A row a data migration changed stays locked until commit, and a data migration that alters a table (upgrades from 3.21.58–3.21.62) locks the whole table. In async mode the server's database pool sets `lock_timeout` to 5s (`ASYNC_MODE_LOCK_TIMEOUT_MS` in `app/loader.ts`), so such a request fails after 5s instead of holding a pool connection. The pool and `/api/health` stay free, so the pod is not killed. Pages that read other tables keep working. The limit applies to every query on the main pool for as long as async mode is on, not only during a run.
 - **Other runners count too.** A held active lock reads as `running` even without a run row, for example a manual `db:migrate` or a blocking-mode server on the same database.
 - **Workers.** A `WORKER=true` server pauses its BullMQ workers while the status is `running` or `failed`. It checks every 5s and resumes after. Jobs wait in Redis.
 
@@ -227,7 +227,8 @@ A hard kill (OOM, node loss) leaves a dead run. The next runner marks it failed 
 - **Progress** comes from the runner's `[migrations] START <name>` and `DONE <name> <ms>` lines, data-migration `[PROGRESS] i/total` lines and `MigrationProgress` `<name> Progress N %` lines, keeping one line per percent.
 - **Logs.** Each kept line goes to `migration_run_logs`, tagged with its migration; the run row keeps the last 200 lines (`LOG_TAIL_LINES`). Query parameters, emails and connection URLs are redacted. TypeORM `query is slow:` and `execution time:` lines are dropped unless `ORM_LOGGING` is set. After a success, logs of earlier runs are deleted; their rows stay.
 - **Super-admin routes.** `GET {prefix}api/migration-runs` lists runs. `GET {prefix}api/migration-runs/:id/log[?migration=<name>]` returns a run's log, or one migration's lines.
-- **Banner.** The public `GET {prefix}api/migration-status` returns state, start time, version and end-user text. The frontend `MigrationBanner` shows it for `running` and `failed`, polling every 3s while `running`, else every 30s. In blocking mode the endpoint always says `idle`.
+- **Banner.** The public `GET {prefix}api/migration-status` returns state, start time, version and end-user text, plus `progress: { done, total }` (data migrations, counts only) while a run is in progress. The frontend `MigrationBanner` shows it for `running` and `failed`, polling every 3s while `running`, else every 30s. In blocking mode the endpoint always says `idle`.
+- **Upgrade page.** A page that fails to load lands on `/error/:errorType`. While an upgrade runs, that route shows a plain page with the progress bar instead of the error (`UpgradeInProgress`), with no product name since released apps reach it too, and returns to `/` once the run ends. The progress also shows in the pod log: `[migrations] START <name>` and `DONE <name> <ms>` per migration.
 - **Banner text.** End users of released and embedded apps see a generic maintenance message, unless `MIGRATION_END_USER_MESSAGE_RUNNING` / `_FAILED` replace it (sent as `endUserMessage`, trimmed, max 200 characters). Builders and super admins see the built-in text. A super admin's `failed` banner links to `{prefix}settings/migrations`, with the failed migration and its log.
 
 ### Trade-offs
@@ -318,7 +319,9 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 | `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, active lock only during work and released on SIGKILL, a `NODE_ENV=production` race. Split phases: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long data phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, joint run for an old database, `statement_timeout=0` on runner connections |
 | `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds, non-empty `down()` |
 | `test/modules/migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output (both progress formats), redaction, failed step |
-| `test/modules/app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races across servers, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, status cache, fail-open |
+| `test/modules/app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races across servers, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, progress counts in the status, status cache, fail-open |
+| `test/modules/migrations/unit/migrate-before-boot.spec.ts` | Blocking mode runs nothing, async runs the schema phase, fresh install runs full setup, a failed schema phase fails boot |
+| `test/modules/app/unit/graceful-shutdown.spec.ts` | Shutdown runs once per signal burst, exits 1 past the 20s deadline or when it throws |
 
 The e2e specs run the real `run()` against a scratch database. Fixtures are in `test/modules/migrations/fixtures/`:
 

@@ -53,7 +53,7 @@ Controller wiring (`src/modules/folders/controller.ts`):
 - License gating is declarative: `FeatureConfig.license` in `MODULE_INFO` → guard returns HTTP 451 when the plan lacks the feature.
 - Param decorators (`@User`, `App`, ability, permissions) return `cloneDeep` copies — mutating them never touches the request.
 - `IS_GET_CONTEXT: true` is for migrations only (switches `src`/`dist` resolution); normal server startup always passes it false.
-- `AppModule.configure()` applies `MigrationGateMiddleware` before `OtelMiddleware`, both on `'*'`. Add every new health or probe endpoint to `UNGATED_API_PATHS` (`MIGRATION_FLOW.md`, Upgrade gate).
+- `AppModule.configure()` applies `MigrationGateMiddleware` before `OtelMiddleware`, both on `'*'`. Health and probe endpoints must be GETs: reads always pass the gate (`MIGRATION_FLOW.md`, Upgrade gate).
 - Root features check abilities against `InstanceSettings` (`FeatureAbilityFactory` is an `AppModule` provider). Non-public root routes need both.
 - Workspace = `Organization` entity/`organizationId` fields (legacy naming) — user-facing term is Workspace.
 

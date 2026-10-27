@@ -22,9 +22,6 @@ import {
  *  - It fails open: a status read error is treated as "no migration running".
  */
 
-/** Relative to the API prefix — `/api/health` and `/api/metrics` in a default install. */
-const UNGATED_API_PATHS = new Set(['/health', '/metrics']);
-
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 /** Async mode keeps serving: reads and these end-user writes pass, every other write gets 503. */
@@ -91,9 +88,10 @@ export class MigrationGateMiddleware implements NestMiddleware {
     const path = (parseurl.original(req)?.pathname ?? '/').toLowerCase();
     const apiPath = this.gatedApiPath(path);
     // Blocking mode stays as it was before the gate: old pods serve everything while a new pod migrates.
-    if (!this.enabled || !this.asyncMode || apiPath === null) return next();
+    if (!this.enabled || !this.asyncMode || apiPath === null || this.passesAsyncGate(apiPath, req.method))
+      return next();
     const { state } = await this.migrationRuns.status();
-    if (!REFUSALS[state] || this.passesAsyncGate(apiPath, req.method)) return next();
+    if (!REFUSALS[state]) return next();
     this.refuse(req, res, state);
   }
 
@@ -109,11 +107,9 @@ export class MigrationGateMiddleware implements NestMiddleware {
     });
   }
 
-  /** The path below the API prefix, or null when the gate never applies (non-API, health, metrics). */
+  /** The path below the API prefix, or null for non-API paths. Health and metrics are reads, so they always pass. */
   private gatedApiPath(path: string): string | null {
-    if (!path.startsWith(this.apiPrefix)) return null;
-    const apiPath = path.slice(this.apiPrefix.length);
-    return UNGATED_API_PATHS.has(apiPath) ? null : apiPath;
+    return path.startsWith(this.apiPrefix) ? path.slice(this.apiPrefix.length) : null;
   }
 
   /** Async mode lets reads and end-user writes through. */
