@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   getCoreRowModel,
   useReactTable,
@@ -35,7 +35,18 @@ export function useTable({
   });
 
   const [columnVisibility, setColumnVisibility] = useState({});
-  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnFilters, setColumnFiltersState] = useState([]);
+  // manualPagination disables TanStack's automatic page reset, so a server-side filter change would keep
+  // the current page and request an offset past the end of the narrowed result set.
+  const setColumnFilters = useCallback(
+    (updater) => {
+      setColumnFiltersState(updater);
+      if (serverSidePagination && serverSideFilter) {
+        setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+      }
+    },
+    [serverSidePagination, serverSideFilter]
+  );
   const [columnOrder, setColumnOrder] = useState(columns.map((column) => column.id));
 
   const columnPinning = useMemo(() => {
