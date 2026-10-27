@@ -79,7 +79,7 @@ describe('RenderWidget tooltip', () => {
   });
 
   test('[RenderWidget-TOOLTIP-003] an html tooltip is rendered sanitized', async () => {
-    // Break this catches: rendering html without DOMPurify would let an app
+    // Break this catches: rendering html without the sanitizer would let an app
     // author's tooltip run script on every viewer's canvas.
     widget.render({
       properties: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import DOMPurify from 'dompurify';
+import { sanitizeSvg } from '@/_helpers/sanitizeHtml';
 
 export const SvgImage = function Timeline({ properties, styles, height, dataCy, id }) {
   const { visibility, boxShadow, alignment } = styles;
@@ -10,7 +10,7 @@ export const SvgImage = function Timeline({ properties, styles, height, dataCy, 
         role="img"
         id={`component-${id}`}
         style={{ display: 'flex', justifyContent: alignment }}
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }}
+        dangerouslySetInnerHTML={{ __html: sanitizeSvg(data) }}
       ></div>
     </div>
   );

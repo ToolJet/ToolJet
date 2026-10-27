@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { default as ReactMarkdown } from 'react-markdown';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 
 /**
  * MarkdownRenderer - Pure Markdown value renderer with editing support
@@ -48,7 +48,7 @@ export const MarkdownRenderer = ({
         transformedValue = '';
       }
     }
-    return DOMPurify.sanitize(transformedValue.trim());
+    return sanitizeHtml(transformedValue.trim());
   };
 
   const getOverlay = () => {

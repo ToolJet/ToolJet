@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isCellContentOverflowing } from '../utils';
 
@@ -166,7 +166,7 @@ export const TextRenderer = ({
             style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}
           >
             <span
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }}
               style={{ maxWidth: containerWidth, width: containerWidth }}
             />
           </div>

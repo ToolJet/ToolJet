@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Rocket/Tooltip/Tooltip';
@@ -25,7 +25,7 @@ const UNSTYLED_CLASSES = ['tw-bg-transparent', 'tw-p-0', 'tw-rounded-none', 'tw-
 
 const TooltipBody = ({ content, format }) => {
   if (format === 'html') {
-    return <div className="widget-tooltip-html" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />;
+    return <div className="widget-tooltip-html" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />;
   }
   if (format === 'markdown') {
     return (

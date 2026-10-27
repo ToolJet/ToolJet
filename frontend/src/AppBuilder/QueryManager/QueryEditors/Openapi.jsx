@@ -1,6 +1,6 @@
 import React from 'react';
 import Select from '@/_ui/Select';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 import { withTranslation } from 'react-i18next';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -312,7 +312,7 @@ class OpenapiComponent extends React.Component {
                     className="openapi-operations-desc"
                     style={{ margintTop: '12px' }}
                     dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(selectedOperation.description ?? selectedOperation.summary),
+                      __html: sanitizeHtml(selectedOperation.description ?? selectedOperation.summary),
                     }}
                   />
                 )}

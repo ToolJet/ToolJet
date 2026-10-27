@@ -37,6 +37,15 @@ const esmPackages = [
   'dnd-core', // react-dnd's ESM dep
   '@react-dnd', // scoped helpers: @react-dnd/invariant, @react-dnd/shallowequal, @react-dnd/asap
   'react-dnd-html5-backend',
+  // src/_helpers/sanitizeHtml.js. sanitize-html itself is CJS but must be listed so
+  // the pattern reaches its nested ESM-only parser deps below.
+  'sanitize-html',
+  'htmlparser2',
+  'domhandler',
+  'domutils',
+  'domelementtype',
+  'dom-serializer',
+  'entities',
 ];
 
 module.exports = {
