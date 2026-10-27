@@ -77,6 +77,7 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
+| Background color | Sets the background color of the HTML content area. When left empty, it's white in light mode and dark grey in dark mode. | Select a color from the color picker or set it programmatically using **fx**. |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
 ### Advanced
