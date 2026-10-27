@@ -1087,6 +1087,57 @@ describe('Table: search and filter', () => {
     expect(bodyRowCount()).toBe(MANY_ROWS.length);
   });
 
+  test('[Table-FILTER-SERVER-002] with serverSidePagination and serverSideFilter, changing or clearing filters resets to page 1', async () => {
+    // Break this catches: manualPagination stops TanStack from auto-resetting the page on a filter
+    // change, so a filter applied on page 3 keeps pageIndex 3 and the server is asked for an offset
+    // past the end of the narrowed result set (an empty table although rows match).
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(MANY_ROWS.slice(0, 2))}}}`),
+        serverSidePagination: binding('{{true}}'),
+        serverSideRowsPerPage: binding('{{2}}'),
+        totalRecords: binding('{{5}}'),
+        serverSideFilter: binding('{{true}}'),
+      },
+    });
+    await waitFor(() => expect(bodyRowCount()).toBe(2));
+
+    await widget.act('setPage', 3);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(3));
+
+    await widget.act('setFilters', [{ column: 'name', condition: 'contains', value: 'Row' }]);
+    await waitFor(() => expect(exposed('filters')).toHaveLength(1));
+    await waitFor(() => expect(exposed('pageIndex')).toBe(1));
+
+    await widget.act('setPage', 2);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(2));
+
+    await widget.act('clearFilters');
+    await waitFor(() => expect(exposed('filters')).toEqual([]));
+    await waitFor(() => expect(exposed('pageIndex')).toBe(1));
+  });
+
+  test('[Table-FILTER-SERVER-003] with serverSidePagination but client-side filtering, a filter change keeps the current page', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(MANY_ROWS.slice(0, 2))}}}`),
+        serverSidePagination: binding('{{true}}'),
+        serverSideRowsPerPage: binding('{{2}}'),
+        totalRecords: binding('{{5}}'),
+        serverSideFilter: binding('{{false}}'),
+      },
+    });
+    await waitFor(() => expect(bodyRowCount()).toBe(2));
+
+    await widget.act('setPage', 3);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(3));
+
+    await widget.act('setFilters', [{ column: 'name', condition: 'contains', value: 'Row' }]);
+    await waitFor(() => expect(exposed('filters')).toHaveLength(1));
+    await drain();
+    expect(exposed('pageIndex')).toBe(3);
+  });
+
   test('[Table-FILTER-001] showFilterButton gates the filter control', async () => {
     widget.render({ properties: { showFilterButton: binding('{{true}}') } });
     await waitFor(() => expect(document.querySelector(`[data-cy="${NAME}-filter-button"]`)).toBeInTheDocument());
