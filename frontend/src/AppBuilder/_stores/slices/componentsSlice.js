@@ -822,8 +822,15 @@ export const createComponentsSlice = (set, get) => ({
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
 
     if (componentType === 'EmailInput' && widgetValue) {
-      const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
-      const emailRegex = new RegExp(validationRegex, 'g');
+      // Dots and hyphens separate parts rather than being legal anywhere inside them: the
+      // local part is dot-joined chunks, and each domain label must begin and end
+      // alphanumeric. The previous pattern kept `.` and `-` inside one character class per
+      // side, so an edge dot or hyphen passed — `.user@`, `user.@`, `@.example`,
+      // `@-example`, `@example-.`. Splitting on the separators also makes the old
+      // `(?!.*\.\.)` lookahead redundant, since no part can be empty.
+      const validationRegex =
+        '^[a-zA-Z0-9_%+-]+(?:\\.[a-zA-Z0-9_%+-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$';
+      const emailRegex = new RegExp(validationRegex);
       if (!emailRegex.test(widgetValue)) {
         return {
           isValid: false,
@@ -1717,7 +1724,7 @@ export const createComponentsSlice = (set, get) => ({
     // from inside another set()'s producer gets clobbered when the outer one
     // commits. Update dependents before removeNode strips their graph edges.
     pendingDependencyUpdates.forEach(({ id, keys }) => {
-      keys.forEach((key) => updateDependencyValues(`components.${id}.${key}`, moduleId));
+      keys.forEach((key) => updateDependencyValues(`components.${id}.${key}`, moduleId, [], toDeleteComponents));
       removeNode(`components.${id}`, moduleId);
     });
 
@@ -3001,12 +3008,15 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = []) => {
+  // `excludeComponentIds` skips dependents owned by those components, eg. a component being deleted whose own
+  // property reads its own exposed value (ProgressBar label). It is already gone, so re-resolving it would throw.
+  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = [], excludeComponentIds = []) => {
     const { getDependencies, applyDependencyUpdate } = get();
     const dependencies = getDependencies(path, moduleId);
     if (!dependencies?.length) return;
 
     dependencies.forEach((dependency) => {
+      if (excludeComponentIds.includes(dependency.split('.')[1])) return;
       applyDependencyUpdate(dependency, path, moduleId, parentIndices);
     });
   },
