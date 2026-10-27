@@ -14,8 +14,8 @@ A logistics team builds an internal operations dashboard where dispatchers need 
 |  <div style={{ width:"150px"}}> Property </div>  | <div style={{ width:"300px"}}> Description </div> | Expected Value |
 |:---------|:-----------|:--------------|
 | Button group label | Text label shown alongside the button group. | String (e.g., `Status`) |
-| Mapped button | Toggle to enable dynamic button generation from a schema. When enabled, a **Schema** field appears. | Boolean: `{{true}}` or `{{false}}` |
-| Schema | Array of button objects used when **Mapped button** is on. | Array (e.g., `{{[{"label":"Button1","value":"1","icon":"IconBolt","iconVisibility":false,"disable":false,"default":true}]}}`) |
+| Mapped buttons | Toggle to enable dynamic button generation from a schema. When enabled, a **Schema** field appears. When disabled, add buttons with **Add new button** and click a button to edit its **Label**, **Value**, **Icon**, **Selected** and **Disable option** settings. | Boolean: `{{true}}` or `{{false}}` |
+| Schema | Array of button objects used when **Mapped buttons** is on. | Array (e.g., `{{[{"label":"Button1","value":"1","icon":"IconBolt","iconVisibility":false,"disable":false,"default":true}]}}`) |
 | Enable multiple selection | Allows more than one button to be selected at a time. | Boolean: `{{true}}` or `{{false}}` |
 | Layout | Controls how buttons are arranged. | `row`, `column`, or `wrap` |
 
@@ -31,7 +31,7 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
-| Select option | Selects a button by value. | `components.buttongroup1.setSelected(value)` |
+| Select option | Selects buttons by value. Pass a value or an array of values. Matching is type-strict, so `1` doesn't match `"1"`. A single value replaces the current selection. With an array, all matching values are selected when multiple selection is on; otherwise the first match is selected, and the selection is cleared if nothing matches. | `components.buttongroup1.setSelected("1")` |
 | Clear selected options | Clears all current selections. | `components.buttongroup1.clear()` |
 | Set disable | Enables or disables the component. | `components.buttongroup1.setDisable(true)` |
 | Set loading | Shows or hides the loading state. | `components.buttongroup1.setLoading(true)` |
@@ -41,17 +41,18 @@ The following actions of the component can be controlled using the component-spe
 
 | Variable | Description | How To Access |
 |:---------|:-----------|:-------------|
-| selected | Array of values for the currently selected button(s). Default is `[1]`. | `{{components.buttongroup1.selected}}` |
+| selected | Array of values for the currently selected button(s), even when multiple selection is off. When the app loads, it holds the values of the buttons marked **Selected**. | `{{components.buttongroup1.selected}}` |
 | isVisible | Whether the component is visible. | `{{components.buttongroup1.isVisible}}` |
 | isDisabled | Whether the component is disabled. | `{{components.buttongroup1.isDisabled}}` |
 | isLoading | Whether the component is in loading state. | `{{components.buttongroup1.isLoading}}` |
+| isValid | Whether the current selection passes validation (**Make this field mandatory** and **Custom validation**). Always `true` when no validation is set. | `{{components.buttongroup1.isValid}}` |
 
 ## Validation
 
 | <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:----------------|:------------------------------------------------|:---------------------------|
-| Make this field mandatory | Marks the field as required. Shows an error if no button is selected on form submission. | Toggle: `{{true}}` or `{{false}}` |
-| Custom validation | Custom rule that returns an error message string when validation fails, or `true` when valid. | Expression (e.g., `{{components.buttongroup1.selected.length > 0 && 'Please select an option'}}`) |
+| Make this field mandatory | Marks the field as required. If no button is selected, `isValid` is `false` and the error *Field cannot be empty* is shown after the user interacts with the component or the form is submitted. | Toggle: `{{true}}` or `{{false}}` |
+| Custom validation | Custom rule that returns an error message string when validation fails. Any other value, such as `false` or an empty string, means the selection is valid. | Expression (e.g., `{{components.buttongroup1.selected.length === 0 && 'Please select an option'}}`) |
 
 ## Additional Actions
 
@@ -99,7 +100,7 @@ The following actions of the component can be controlled using the component-spe
 | Error text | Color of the validation error message. | Color picker or hex value. |
 | Border radius | Corner rounding of buttons in pixels. | Number. Default: `6` |
 | Alignment | Horizontal alignment of buttons within the group. | Left (default), center, or right |
-| Box Shadow | Shadow applied to the button group container. | Box shadow value. |
+| Box Shadow | Shadow applied to each button. | Box shadow value. |
 
 ### Container
 
