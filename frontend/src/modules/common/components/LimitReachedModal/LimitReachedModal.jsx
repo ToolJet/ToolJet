@@ -21,7 +21,7 @@ const LIMIT_COPY = {
   apps: { title: 'App limit reached', noun: 'applications' },
   workflows: { title: 'Workflow limit reached', noun: 'workflows' },
   workspaces: { title: 'Workspace limit reached', noun: 'workspaces' },
-  tables: { title: 'Database limit reached', noun: 'tables' },
+  tables: { title: 'Database limit reached', noun: 'tables and/or rows' },
   users: { title: 'User limit reached', noun: 'builders and/or end-users' },
 };
 

@@ -1,5 +1,12 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { openUpgradePlanModal } from '@/_stores/upgradePlanModalStore';
+
+const openPricingOn451 = (response) =>
+  handleResponse(response, false, null, true).catch((error) => {
+    if (error?.statusCode === 451) openUpgradePlanModal();
+    return Promise.reject(error);
+  });
 
 export const groupPermissionV2Service = {
   create,
@@ -39,7 +46,7 @@ function create(name) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group-permissions`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions`, requestOptions).then(openPricingOn451);
 }
 
 function update(groupPermissionId, body) {
@@ -58,7 +65,7 @@ function del(groupPermissionId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}`, requestOptions).then(openPricingOn451);
 }
 
 function getGroup(groupPermissionId) {
@@ -281,7 +288,7 @@ function duplicate(groupPermissionId, body) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/duplicate`, requestOptions).then(
-    handleResponse
+    openPricingOn451
   );
 }
 

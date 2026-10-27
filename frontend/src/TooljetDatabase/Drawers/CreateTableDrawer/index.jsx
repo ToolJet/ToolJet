@@ -36,7 +36,17 @@ export default function CreateTableDrawer({ tablesLimit, setTablesLimit }) {
   const openCreateTableDrawer = async () => {
     const limit = await fetchTablesLimit();
     if (getLimitState(limit).reached) {
-      useLicenseStore.getState().actions.openLimitReached({ resource: 'tables', limit });
+      const rowsLimit = await tooljetDatabaseService
+        .getRowsLimit()
+        .then((data) => data?.data?.rowsCount)
+        .catch(() => null);
+      useLicenseStore.getState().actions.openLimitReached({
+        resource: 'tables',
+        limits: [
+          { label: 'Tables', limit },
+          { label: 'Rows', limit: rowsLimit },
+        ],
+      });
       return;
     }
     setIsCreateTableDrawerOpen(true);

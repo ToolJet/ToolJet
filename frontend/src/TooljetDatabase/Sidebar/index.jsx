@@ -3,7 +3,6 @@ import List from '../TableList';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 import { OrganizationList } from '@/modules/dashboard/components';
 import cx from 'classnames';
-import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { authenticationService } from '@/_services/authentication.service';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
@@ -28,37 +27,6 @@ export default function Sidebar({ collapseSidebar }) {
     fetchRowsLimit();
   }, [totalRecords]);
 
-  // A limit is "nearing or reached" using the same threshold the message generators use.
-  const isNearingOrReached = (limit) =>
-    !limit?.canAddUnlimited && (limit?.percentage >= 90 || (limit?.total <= 10 && limit?.current === limit?.total - 1));
-
-  const tablesTriggered = isNearingOrReached(tablesLimit);
-  const rowsTriggered = isNearingOrReached(rowsLimit);
-
-  // Always show the combined banner (both counters) when either limit is nearing/reached.
-  let bannerType = null;
-  let bannerLimits = {};
-  let bannerBreakdown = [];
-  if (tablesTriggered || rowsTriggered) {
-    const canAddUnlimited = (tablesLimit?.canAddUnlimited ?? true) && (rowsLimit?.canAddUnlimited ?? true);
-    bannerType = 'database';
-    bannerLimits = {
-      percentage: Math.max(tablesLimit?.percentage || 0, rowsLimit?.percentage || 0),
-      canAddUnlimited,
-      licenseStatus: tablesLimit?.licenseStatus || rowsLimit?.licenseStatus,
-    };
-    bannerBreakdown = [
-      {
-        label: 'Tables',
-        value: tablesLimit?.canAddUnlimited ? 'Unlimited' : `${tablesLimit?.current ?? 0}/${tablesLimit?.total ?? 0}`,
-      },
-      {
-        label: 'Rows',
-        value: rowsLimit?.canAddUnlimited ? 'Unlimited' : `${rowsLimit?.current ?? 0}/${rowsLimit?.total ?? 0}`,
-      },
-    ];
-  }
-
   const isResourceLimitReached =
     (!tablesLimit?.canAddUnlimited && tablesLimit?.percentage === 100) ||
     (!rowsLimit?.canAddUnlimited && rowsLimit?.percentage === 100);
@@ -70,23 +38,12 @@ export default function Sidebar({ collapseSidebar }) {
       </div>
       <div className="col table-left-sidebar" data-cy="all-table-column">
         <div
-          className={`sidebar-list-wrap ${!bannerType ? '' : 'sidebar-list-wrap-with-banner'} ${
+          className={`sidebar-list-wrap ${
             isAdmin ? 'isAdmin' : ''
           } ${isResourceLimitReached ? 'resource-limit-reached' : ''}`}
         >
           <List />
         </div>
-        {bannerType && (
-          <LicenseBanner
-            classes="mb-3 small"
-            limits={bannerLimits}
-            breakdown={bannerBreakdown}
-            type={bannerType}
-            size="small"
-            style={{ marginTop: '20px' }}
-            z-index="10000"
-          />
-        )}
         <OrganizationList />
       </div>
     </div>
