@@ -42,6 +42,7 @@ export const UpgradeInProgress = ({ children }) => {
     <main className="tw-fixed tw-inset-0 tw-z-[1100] tw-flex tw-items-center tw-justify-center tw-bg-background-surface-layer-01 tw-p-4">
       <div className="tw-flex tw-w-full tw-max-w-md tw-flex-col tw-gap-3" role="status" aria-live="polite">
         <h1 className="tw-m-0 tw-font-title-large tw-text-text-default">Scheduled maintenance in progress</h1>
+        <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">This page will be available again soon.</p>
         <div
           role="progressbar"
           aria-label="Maintenance progress"
@@ -55,7 +56,9 @@ export const UpgradeInProgress = ({ children }) => {
             style={{ width: `${percent}%` }}
           />
         </div>
-        <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">{percent}%</p>
+        <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">
+          {total ? `${done} of ${total} done (${percent}%)` : `${percent}%`}
+        </p>
       </div>
     </main>
   );

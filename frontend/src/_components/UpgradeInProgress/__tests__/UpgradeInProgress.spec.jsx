@@ -25,8 +25,8 @@ describe('UpgradeInProgress', () => {
     renderPage();
 
     expect(await screen.findByRole('heading', { name: 'Scheduled maintenance in progress' })).toBeInTheDocument();
-    expect(screen.getByText('33%')).toBeInTheDocument();
-    expect(screen.queryByText(/of 9/)).not.toBeInTheDocument();
+    expect(screen.getByText('This page will be available again soon.')).toBeInTheDocument();
+    expect(screen.getByText('3 of 9 done (33%)')).toBeInTheDocument();
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '33');
     expect(screen.queryByText('error page')).not.toBeInTheDocument();
   });
