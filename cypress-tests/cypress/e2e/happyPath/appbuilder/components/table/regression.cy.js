@@ -143,9 +143,11 @@ describe("Table", { testIsolation: false }, () => {
     cy.get(tableSelector.buttonCloseFilters).click({ force: true });
 
     // ---- column sorting via the header ----
-    // The id column ships ascending, so a SINGLE header click toggles it to
-    // descending (DIAG: 1 click -> "10" first; verified). Force-click: the header
-    // text div is overlay-covered.
+    // First header click sorts ascending, second sorts descending
+    // (useTable.js sortDescFirst: false). Force-click: the header text div is
+    // overlay-covered.
+    cy.get(tableSelector.cell("id", 0, name)).should("have.text", "1");
+    cy.get(tableSelector.columnHeader("id")).click({ force: true });
     cy.get(tableSelector.cell("id", 0, name)).should("have.text", "1");
     cy.get(tableSelector.columnHeader("id")).click({ force: true });
     cy.get(tableSelector.cell("id", 0, name)).should(
