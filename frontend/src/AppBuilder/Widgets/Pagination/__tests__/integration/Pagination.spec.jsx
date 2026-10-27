@@ -738,6 +738,16 @@ describe('Pagination widget', () => {
       expect(pageNumbers(container)).toEqual(['...', '100']);
       expect(pageList(container)).toHaveStyle({ overflowX: 'clip', alignItems: 'center' });
     });
+
+    test('[Pagination-PGL-003] the list may shrink below its content so the clip applies (D-09)', async () => {
+      // Break this catches: the list keeping the flex default min-width:auto, which grows it past the
+      // widget so the clip never runs and the operators draw outside the box on both sides.
+      const { container } = tight.render({ properties: { numberOfPages: binding('{{100}}') } });
+
+      await waitFor(() => expect(within(pageList(container)).getByText('...')).toBeInTheDocument());
+      expect(pageList(container).style.minWidth).toBe('0');
+      expect(pageList(container)).toHaveStyle({ overflowX: 'clip' });
+    });
   });
 
   describe('measured layout', () => {

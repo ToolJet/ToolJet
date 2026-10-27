@@ -167,6 +167,7 @@ export const Pagination = ({
           className="pagination m-0"
           style={{
             ...computedStyles,
+            minWidth: 0, // a flex item defaults to min-width:auto and would outgrow the widget, skipping the clip
             overflowX: 'clip',
             alignItems: 'center',
           }}
