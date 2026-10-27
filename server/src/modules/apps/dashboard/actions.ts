@@ -31,6 +31,7 @@ export interface ActionApp {
   folderId: string | null;
   currentVersionId: string | null;
   isMaintenanceOn: boolean;
+  isStub?: boolean;
 }
 export interface ActionFolder {
   id: string;
@@ -41,6 +42,12 @@ export interface GitState {
   enabled: boolean;
   multiBranch: boolean;
   onDefaultBranch: boolean;
+}
+export interface AppGitState {
+  synced: boolean;
+  version_synced: boolean;
+  stub: boolean;
+  push_version_id: string | null;
 }
 export type FolderAccess =
   | { kind: 'all' }
@@ -85,6 +92,8 @@ export function deletable(p: UserPermissions, type: APP_TYPES, userId: string, a
 function launchAction(p: UserPermissions, type: APP_TYPES, app: ActionApp): LaunchAction | null {
   // v1 parity: no Launch button for workflows or modules (AppCard.jsx:213-232, 523)
   if (type === APP_TYPES.WORKFLOW || type === APP_TYPES.MODULE) return null;
+  // v1 parity: a stub (not yet pulled from git) has no content to launch
+  if (app.isStub) return null;
   if (!app.currentVersionId) return { enabled: false, reason: 'not_released' };
   if (app.isMaintenanceOn) return { enabled: false, reason: 'maintenance' };
   const a = appPermissionsFor(p, type);

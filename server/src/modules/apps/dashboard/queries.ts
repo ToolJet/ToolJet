@@ -32,6 +32,7 @@ export interface EntryRow {
   last_viewed_at: Date | null;
   pin_position: number | null;
   pinned: boolean;
+  created_at: Date | null;
 }
 
 export interface BuiltQuery {
@@ -42,10 +43,11 @@ export interface BuiltQuery {
 // Same column list for both kinds so root / search can UNION them.
 export const APP_COLUMNS = `'app' AS kind, va.id, va.name, va.slug, va.icon, va.owner_id,
   va.current_version_id, va.is_maintenance_on, va.folder_id, NULL::int AS app_count,
-  va.last_modified_at, va.modified_by_id, va.last_viewed_at, va.activity_at`;
+  va.last_modified_at, va.modified_by_id, va.last_viewed_at, va.activity_at, va.created_at`;
 export const FOLDER_COLUMNS = `'folder' AS kind, vf.id, vf.name, NULL::varchar AS slug, NULL::varchar AS icon,
   vf.owner_id, NULL::uuid AS current_version_id, NULL::boolean AS is_maintenance_on,
-  NULL::uuid AS folder_id, vf.app_count, vf.last_modified_at, vf.modified_by_id, vf.last_viewed_at, vf.activity_at`;
+  NULL::uuid AS folder_id, vf.app_count, vf.last_modified_at, vf.modified_by_id, vf.last_viewed_at, vf.activity_at,
+  NULL::timestamp AS created_at`;
 
 // Every mode: pins first by position, then the mode's order. Needs `pin_position` (NULL = unpinned).
 export const PIN_ORDER = '(pin_position IS NULL), pin_position';
@@ -59,7 +61,7 @@ export function dashboardCtes(s: DashboardScope, p: SqlParams): string {
   const user = p.add(s.userId);
   const org = p.add(s.organizationId);
   return `WITH visible_apps AS (
-    SELECT a.id, a.user_id AS owner_id, a.current_version_id, a.is_maintenance_on,
+    SELECT a.id, a.user_id AS owner_id, a.current_version_id, a.is_maintenance_on, a.created_at,
            meta.app_name AS name, meta.slug, meta.icon,
            meta.updated_at AS last_modified_at, editor.user_id AS modified_by_id,
            fa.folder_id, ua.last_viewed_at, ua.${s.activityColumn} AS activity_at
@@ -68,7 +70,7 @@ export function dashboardCtes(s: DashboardScope, p: SqlParams): string {
       SELECT av.app_name, av.slug, av.icon, av.updated_at
       FROM app_versions av
       WHERE av.app_id = a.id AND av.branch_id = ${branch}
-      ORDER BY av.updated_at DESC
+      ORDER BY av.is_stub ASC, av.updated_at DESC
       LIMIT 1
     ) meta ON true
     LEFT JOIN LATERAL (
