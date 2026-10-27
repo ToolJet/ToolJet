@@ -31,18 +31,34 @@ The following actions of the link component can be controlled using the componen
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 | :-------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
 | click                                         | Triggers click action of the link component.      | Employ a RunJS query to execute component-specific actions such as `await components.link1.click()` or trigger it using an event. |
+| setLinkTarget | Sets the URL the link opens. | `await components.link1.setLinkTarget('https://tooljet.com')` |
+| setLinkText | Sets the text of the link. Only text values are applied. | `await components.link1.setLinkText('Open docs')` |
+| setVisibility | Sets the visibility of the component. | `await components.link1.setVisibility(false)` |
+| setDisable | Disables the component. | `await components.link1.setDisable(true)` |
+| setLoading | Sets the loading state of the component. | `await components.link1.setLoading(true)` |
+
+If the **Link target** or **Link text** property changes later, it replaces the value set with `setLinkTarget` or `setLinkText`.
 
 ## Exposed Variables
 
-There are currently no exposed variables for the component.
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| linkTarget | Holds the current URL of the link. | `{{components.link1.linkTarget}}` |
+| linkText | Holds the current text of the link. | `{{components.link1.linkText}}` |
+| isVisible | Indicates if the component is visible. | `{{components.link1.isVisible}}` |
+| isDisabled | Indicates if the component is disabled. | `{{components.link1.isDisabled}}` |
+| isLoading | Indicates if the component is loading. | `{{components.link1.isLoading}}` |
 
-## General
+## Additional Actions
 
-### Tooltip
-
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
-
-Under the **General** accordion, you can set the value as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field. Now hovering over the component will display the tooltip.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Track shipment`). |
 
 ## Devices
 
@@ -53,12 +69,22 @@ Under the **General** accordion, you can set the value as **Plain text**, **Mark
 
 ## Styles
 
+### Link Text
+
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> |
 | :------------------------------------------ | :------------------------------------------------ |
-| Text color | You can change the background color of the text by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Text size | By default, the text size is set to 14. You can enter any value from 1-100 to set a custom text size. |
-| Underline | You can change the underline of the text in the following ways: **on-hover (default), never, always**. |
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| Text color | Sets the color of the link text. The hover color is derived from it. Select a color or enter a Hex color code. |
+| Text size | Sets the size of the link text. Defaults to `14`. |
+| Alignment | Sets the horizontal alignment of the link: **Left** (default), **Center** or **Right**. Use the icons next to it to set the vertical alignment: top, center (default) or bottom. |
+| Icon | Shows an icon before the link text. Select the icon and use the eye toggle to show or hide it. The icon is hidden by default. |
+| Underline | Sets when the text is underlined: **Never**, **On Hover** (default) or **Always**. |
+| Box shadow | Sets the box shadow properties of the component. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> |
+| :------------------------------------------ | :------------------------------------------------ |
+| Padding | Sets the padding around the component: **Default** or **None**. |
 
 ### Advanced
 

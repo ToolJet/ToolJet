@@ -14,7 +14,7 @@ The **Toggle Switch** component can be used for binary choices, such as turning 
 | Property       | Description                                             | Expected Value                                                             |
 | :------------- | :------------------------------------------------------ | :------------------------------------------------------------------------- |
 | Label          | The text to be used as the label for the toggle switch. | String (e.g., `Enable notifications`).                                     |
-| Default status | Sets the default status when the app is loaded.         | Toggle the on/off switch or click on **fx** and dynamically set the value. |
+| Default state  | Sets the default state (On/Off) when the app is loaded. | Select **On** or **Off**, or click **fx** and enter a logical expression.   |
 
 </div>
 
@@ -24,9 +24,7 @@ The **Toggle Switch** component can be used for binary choices, such as turning 
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div>                    |
 | :------------------------------------------ | :------------------------------------------------------------------- |
-| On change                                   | On change event is triggered when toggle switch input is changed.    |
-| On check (deprecated)                       | On check event is triggered when toggle switch input is checked.     |
-| On uncheck (deprecated)                     | On uncheck event is triggered when toggle switch input is unchecked. |
+| On change                                   | Triggers when the toggle switch is turned on or off by the user, or with the `toggle()` CSA. |
 
 :::info
 Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
@@ -42,12 +40,11 @@ Following actions of Toggle switch component can be controlled using the compone
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div>                                                                | <div style={{ width:"135px"}}> How To Access </div>                                                             |
 | :------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| setChecked                                   | Changes the status of the toggle switch component using component-specific action from within any event handler. | Employ a RunJS query (e.g., `await components.toggleswitch1.setChecked(true)`) or trigger it using an event.    |
-| setValue                                     | Sets the value of the toggle switch.                                                                             | Employ a RunJS query (e.g., `await components.toggleswitch1.setValue(true)`) or trigger it using an event.      |
+| setValue                                     | Sets the value of the toggle switch. Doesn't trigger the **On change** event.                                     | Employ a RunJS query (e.g., `await components.toggleswitch1.setValue(true)`) or trigger it using an event.      |
 | setLoading                                   | Toggles the loading state of the toggle switch.                                                                  | Employ a RunJS query (e.g., `await components.toggleswitch1.setLoading(true)`) or trigger it using an event.    |
 | setVisibility                                | Changes the visibility of the toggle switch.                                                                     | Employ a RunJS query (e.g., `await components.toggleswitch1.setVisibility(true)`) or trigger it using an event. |
 | setDisable                                   | Disables or enables the toggle switch.                                                                           | Employ a RunJS query (e.g., `await components.toggleswitch1.setDisable(true)`) or trigger it using an event.    |
-| toggle                                       | Toggles the current state of the toggle switch.                                                                  | Employ a RunJS query (e.g., `await components.toggleswitch1.toggle()`) or trigger it using an event.            |
+| toggle                                       | Toggles the current state of the toggle switch and triggers the **On change** event.                              | Employ a RunJS query (e.g., `await components.toggleswitch1.toggle()`) or trigger it using an event.            |
 
 </div>
 
@@ -73,7 +70,7 @@ Following actions of Toggle switch component can be controlled using the compone
 
 | <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div>                  | <div style={{width: "200px"}}> Expected Value </div>                                                                         |
 | :------------------------------------------------------ | :----------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Make this field mandatory                               | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Make this field mandatory                               | Displays a 'Field cannot be empty' message if the switch is off. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Custom validation                                       | Specifies a validation error message for specific conditions.      | Logical Expression (e.g., `{{components.toggleswitch1.value === false &&"Value needs to be checked"}}`).                     |
 
 To add regex inside `Custom Validation`, you can use the below format:
@@ -88,6 +85,7 @@ To add regex inside `Custom Validation`, you can use the below format:
 | :------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
 | Loading state                                | Enables a loading spinner, often used with the isLoading property to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility                                   | Controls component visibility. Toggle or set dynamically.                                                          | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable                                      | Enables or disables the component. Toggle or set dynamically.                                                      | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Are you a registered user?` ).                                                                                |
 
@@ -111,11 +109,12 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div>              | <div style={{ width:"250px"}}> Configuration Options </div>                                            |
 | :--------------------------------------------------- | :------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
-| Border color                                         | Sets the color of the toggle switch.                           | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
+| Border color                                         | Sets the border color of the switch.                           | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
 | Checked color                                        | Sets the color of the toggle switch when it is checked.        | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
 | Unchecked color                                      | Sets the color of the toggle switch when it is not checked.    | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
-| Handle color                                         | Sets the color of the checked symbol inside the toggle switch. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
+| Handle color                                         | Sets the color of the switch handle (knob).                    | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
 | Box shadow                                           | Sets the box shadow properties of the component.               | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
+| Padding | Sets the padding around the component. **Default** adds 2px of padding; **None** removes it. | Choose **Default** or **None**. |
 
 ### Advanced
 

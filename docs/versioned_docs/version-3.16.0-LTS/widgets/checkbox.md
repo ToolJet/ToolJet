@@ -12,7 +12,7 @@ The **Checkbox** component allows users to make a binary choice, such as selecti
 | Property       | Description                                        | Expected Value                                                             |
 | :------------- | :------------------------------------------------- | :------------------------------------------------------------------------- |
 | Label          | The text to be used as the label for the checkbox. | String (e.g., `Select payment preference`).                                |
-| Default status | Sets the default status when the app is loaded.    | Toggle the on/off switch or click on **fx** and dynamically set the value. |
+| Default state  | Sets the default state when the app is loaded.     | Select **On** or **Off**, or click on **fx** and dynamically set the value. |
 
 ## Events
 
@@ -32,12 +32,12 @@ Following actions of Checkbox component can be controlled using the component sp
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 | :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
-| setChecked | Changes the status of the checkbox component using component-specific action from within any event handler. | Employ a RunJS query (e.g., `await components.checkbox1.setChecked(true)`) or trigger it using an event.    |
-| setValue | Sets the value of the checkbox. | Employ a RunJS query (e.g., `await components.checkbox1.setValue(true)`) or trigger it using an event.      |
+| setValue | Sets the value of the checkbox. Fires **On check** or **On uncheck**, but not **On change**. | Employ a RunJS query (e.g., `await components.checkbox1.setValue(true)`) or trigger it using an event.      |
 | setLoading | Toggles the loading state of the checkbox. | Employ a RunJS query (e.g., `await components.checkbox1.setLoading(true)`) or trigger it using an event.    |
 | setVisibility | Changes the visibility of the checkbox. | Employ a RunJS query (e.g., `await components.checkbox1.setVisibility(true)`) or trigger it using an event. |
 | setDisable | Disables or enables the checkbox. | Employ a RunJS query (e.g., `await components.checkbox1.setDisable(true)`) or trigger it using an event.    |
-| toggle | Toggles the current state of the checkbox. | Employ a RunJS query (e.g., `await components.checkbox1.toggle()`) or trigger it using an event.            |
+| toggle | Toggles the current state of the checkbox. Fires **On change**. | Employ a RunJS query (e.g., `await components.checkbox1.toggle()`) or trigger it using an event.            |
+| setChecked (deprecated) | Same as `setValue`. Use `setValue` instead. | Employ a RunJS query (e.g., `await components.checkbox1.setChecked(true)`) or trigger it using an event.    |
 
 ## Exposed Variables
 
@@ -70,6 +70,7 @@ To add regex inside `Custom Validation`, you can use the below format:
 | :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Are you a registered user?` ). |
 
@@ -91,13 +92,14 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 ### Switch
 
-| <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div>         | <div style={{ width:"250px"}}> Configuration Options </div> |
+| <div style={{ width:"100px"}}> Switch Property </div> | <div style={{ width:"150px"}}> Description </div>         | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :--------------------------------------------------- | :-------------------------------------------------------- | :---------------------------------------------------------- |
-| Border color | Sets the color of the checkbox. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
+| Border color | Sets the border color of the checkbox. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
 | Checked color | Sets the color of the checkbox when it is checked. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
 | Unchecked color | Sets the color of the checkbox when it is not checked. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
 | Handle color | Sets the color of the checked symbol inside the checkbox. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.     |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
+| Padding | Sets the padding around the component. | Choose **Default** to keep the standard padding or **None** to remove it. |
  
 ### Advanced
 
