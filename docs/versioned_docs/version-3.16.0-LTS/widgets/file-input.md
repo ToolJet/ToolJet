@@ -50,10 +50,11 @@ The following actions can be controlled using component-specific actions (CSA), 
 
 | <div style={{ width:"120px"}}> Variable </div> | <div style={{ width:"220px"}}> Description </div> | <div style={{ width:"220px"}}> How To Access </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
-| files | Array of file objects selected by the user. Each object includes the file name, content, and metadata. | `{{components.fileinput1.files}}` |
+| files | Array of file objects selected by the user. Each object has `name`, `size`, `type`, `lastModified`, `content` and `base64Data`, plus `parsedValue` (the parsed content) when **Enable parsing** is on. | `{{components.fileinput1.files}}` |
 | isParsing | Indicates whether file content is currently being parsed. | `{{components.fileinput1.isParsing}}` |
-| isValid | Indicates whether the selected file(s) pass all validation rules. | `{{components.fileinput1.isValid}}` |
-| fileSize | The size of the selected file in bytes. | `{{components.fileinput1.fileSize}}` |
+| isValid | Indicates whether the **Mark as mandatory** and **Min files** requirements are met. Files rejected for their type, size or count aren't added to `files`, so they don't affect this value. | `{{components.fileinput1.isValid}}` |
+| uiErrorMessage | The error message shown below the field, for example for a rejected file type or size, too few files, or a missing mandatory file. Empty when there is no error. | `{{components.fileinput1.uiErrorMessage}}` |
+| fileSize | The total size of all selected files in bytes. | `{{components.fileinput1.fileSize}}` |
 | isMandatory | Indicates whether the field is marked as mandatory. | `{{components.fileinput1.isMandatory}}` |
 | isLoading | Indicates whether the component is in a loading state. | `{{components.fileinput1.isLoading}}` |
 | isVisible | Indicates whether the component is currently visible. | `{{components.fileinput1.isVisible}}` |
@@ -63,8 +64,8 @@ The following actions can be controlled using component-specific actions (CSA), 
 
 | <div style={{ width:"130px"}}> Validation Option </div> | <div style={{ width:"230px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
 | :------------------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
-| Mark as mandatory | Displays a validation error if no file is selected on form submission. | Toggle (default: disabled). |
-| File type | Restricts accepted file types using MIME types or extensions. | String (e.g., `image/*`, `.pdf`, `*/*`). Default: `*/*`. |
+| Mark as mandatory | Requires at least one file. If none is selected, an error is shown after the user opens the file dialog or the form is submitted, and `isValid` is `false`. | Toggle (default: disabled). |
+| File type | Restricts accepted file types. Choose a preset: **Any Files**, **Image files**, **Document files**, **Spreadsheet files**, **Text files**, **Audio files**, **Video files** or **Archive/Compressed files**. Click **fx** to enter your own comma-separated list of MIME types or extensions. | Preset, or a string via **fx** (e.g., `image/*,.pdf`). Default: **Any Files** (`*/*`). |
 | Min size (Bytes) | The minimum allowed file size in bytes. | Number (default: `50`). |
 | Max size (Bytes) | The maximum allowed file size in bytes. | Number (default: `51200000`, ~51 MB). |
 | Min files | The minimum number of files required. Only shown when **Allow uploading multiple files** is enabled. | Number (default: `0`). |
