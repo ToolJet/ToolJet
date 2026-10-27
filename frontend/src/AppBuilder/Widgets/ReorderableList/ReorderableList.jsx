@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import './reorderableList.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 import Markdown from 'react-markdown';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -208,7 +208,7 @@ export const ReorderableList = (props) => {
         return (
           <span
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(safeText || ''),
+              __html: sanitizeHtml(safeText || ''),
             }}
           />
         );

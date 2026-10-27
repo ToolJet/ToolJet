@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -66,16 +66,6 @@ export const Html = function ({
   useEffect(() => {
     setRawHtml(stringifyHTML || '');
   }, [stringifyHTML]);
-
-  useEffect(() => {
-    DOMPurify.addHook('afterSanitizeAttributes', function (node) {
-      // set all elements owning target to target=_blank
-      if ('target' in node) {
-        node.setAttribute('target', '_blank');
-        node.setAttribute('rel', 'noopener');
-      }
-    });
-  }, []);
 
   useBatchedUpdateEffectArray([
     {
@@ -171,7 +161,7 @@ export const Html = function ({
         <div
           ref={contentRef}
           style={baseStyle}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(rawHtml, { FORCE_BODY: true }) }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(rawHtml, { htmlWidget: true }) }}
         />
       )}
     </div>

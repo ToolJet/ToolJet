@@ -6,7 +6,7 @@ import '@/_styles/widgets/richtext.scss';
 import { stateFromHTML } from 'draft-js-import-html';
 import { stateToHTML } from 'draft-js-export-html';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 
 // Custom overrides for "code" style.
 const styleMap = {
@@ -153,7 +153,7 @@ class DraftEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      editorState: EditorState.createWithContent(stateFromHTML(DOMPurify.sanitize(this.props.defaultValue))),
+      editorState: EditorState.createWithContent(stateFromHTML(sanitizeHtml(this.props.defaultValue))),
     };
 
     this.editorContainerRef = React.createRef();
@@ -181,7 +181,7 @@ class DraftEditor extends React.Component {
     }
 
     if (prevProps.defaultValue !== this.props.defaultValue) {
-      const newContentState = stateFromHTML(DOMPurify.sanitize(this.props.defaultValue));
+      const newContentState = stateFromHTML(sanitizeHtml(this.props.defaultValue));
       const newEditorState = EditorState.createWithContent(newContentState);
       const html = stateToHTML(newContentState);
 
@@ -214,7 +214,7 @@ class DraftEditor extends React.Component {
       isVisible: this.props.isVisible,
       isLoading: this.props.isLoading,
       setValue: async (text) => {
-        const newContentState = stateFromHTML(DOMPurify.sanitize(text));
+        const newContentState = stateFromHTML(sanitizeHtml(text));
         const newEditorState = EditorState.createWithContent(newContentState);
         const html = stateToHTML(newContentState);
         this.props.handleChange(html);
@@ -315,7 +315,7 @@ class DraftEditor extends React.Component {
             placeholder={
               <div
                 dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(this.props.placeholder || ''),
+                  __html: sanitizeHtml(this.props.placeholder || ''),
                 }}
               />
             }

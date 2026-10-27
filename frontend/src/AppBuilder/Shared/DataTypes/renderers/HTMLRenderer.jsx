@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { determineJustifyContentValue } from '@/_helpers/utils';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 
 /**
  * HTMLRenderer - Pure HTML value renderer with editing support
@@ -47,7 +47,7 @@ export const HTMLRenderer = ({
         transformedValue = '';
       }
     }
-    return DOMPurify.sanitize(transformedValue.trim());
+    return sanitizeHtml(transformedValue.trim());
   };
 
   const getOverlay = () => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { openapiService } from '@/_services';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 import { ToolTip } from '@/_components';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { withTranslation } from 'react-i18next';
@@ -472,7 +472,7 @@ const ApiEndpointInput = (props) => {
                 <small
                   style={{ marginTop: '10px' }}
                   className="my-2"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(options?.selectedOperation?.description) }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(options?.selectedOperation?.description) }}
                 />
               )}
             </div>
@@ -535,7 +535,7 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
   const paramLabelWithDescription = (param) => {
     return (
       <ToolTip
-        message={type === 'request' ? DOMPurify.sanitize(parameters[param]?.description || '') : param.description}
+        message={type === 'request' ? sanitizeHtml(parameters[param]?.description || '') : param.description}
       >
         <div className="cursor-help">
           <input

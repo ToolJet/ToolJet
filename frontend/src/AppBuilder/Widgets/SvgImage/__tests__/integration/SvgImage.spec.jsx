@@ -120,7 +120,7 @@ describe('SvgImage widget', () => {
   });
 
   test('[SvgImage-SEC-001] Executable markup cannot survive into the rendered vector', async () => {
-    // Break this catches: dropping the DOMPurify call (or widening it) so authored SVG data can
+    // Break this catches: dropping the sanitizeSvg call (or widening it) so authored SVG data can
     // ship a <script>, an inline event handler, or a javascript: link into every viewer's page.
     const hostile = [
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" onload="window.__svgPwned = true">',

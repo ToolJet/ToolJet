@@ -59,7 +59,7 @@ describe('Html widget', () => {
   });
 
   test('[Html-SEC-001] executable HTML is removed while safe content remains', async () => {
-    // Break this catches: bypassing DOMPurify leaves scripts or inline event handlers in viewer-controlled DOM.
+    // Break this catches: bypassing sanitizeHtml leaves scripts or inline event handlers in viewer-controlled DOM.
     const { container } = html.render({
       properties: {
         rawHtml: binding(

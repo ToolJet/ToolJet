@@ -2,7 +2,7 @@ import React from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import cx from 'classnames';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
 
@@ -86,7 +86,7 @@ export const CustomOptions = (props) => {
         return (
           <span
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(safeText || ''),
+              __html: sanitizeHtml(safeText || ''),
             }}
           />
         );

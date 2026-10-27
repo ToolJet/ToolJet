@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/_helpers/sanitizeHtml';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -225,7 +225,7 @@ export const Text = function Text({
             <div
               style={commonScrollStyle}
               dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(text || ''),
+                __html: sanitizeHtml(text || ''),
               }}
             />
           )}
