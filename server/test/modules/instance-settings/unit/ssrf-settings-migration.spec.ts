@@ -55,6 +55,25 @@ describe('SSRF settings data migration', () => {
     expect(inserted[INSTANCE_SYSTEM_SETTINGS.SSRF_PROTECTION_ENABLED]).toBe('true');
   });
 
+  it('keeps protection off on an existing setup that set SSRF_PROTECTION_ENABLED=false', async () => {
+    process.env.SSRF_PROTECTION_ENABLED = 'false';
+
+    const inserted = await runMigration({ organizations: 3 });
+
+    expect(inserted[INSTANCE_SYSTEM_SETTINGS.SSRF_PROTECTION_ENABLED]).toBe('false');
+  });
+
+  it.each(['true', 'false'])(
+    'ignores SSRF_PROTECTION_ENABLED=%s on a new installation, leaving the toggle unset',
+    async (envValue) => {
+      process.env.SSRF_PROTECTION_ENABLED = envValue;
+
+      const inserted = await runMigration({ organizations: 0 });
+
+      expect(inserted[INSTANCE_SYSTEM_SETTINGS.SSRF_PROTECTION_ENABLED]).toBe('');
+    }
+  );
+
   it('shows the dashboard notice on a new installation only', async () => {
     const fresh = await runMigration({ organizations: 0 });
     const upgraded = await runMigration({ organizations: 3 });

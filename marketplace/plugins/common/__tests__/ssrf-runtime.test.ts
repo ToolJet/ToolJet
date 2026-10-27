@@ -29,6 +29,12 @@ afterEach(() => {
 });
 
 describe('getSSRFConfig with runtime config', () => {
+  it('keeps protection off when the toggle is turned off, even with SSRF_PROTECTION_ENABLED=true', async () => {
+    process.env.SSRF_PROTECTION_ENABLED = 'true';
+    (globalThis as any)[KEY] = { enabled: false, allowedHostnames: new Set(), allowedRanges: ranges() };
+    expect(getSSRFConfig().enabled).toBe(false);
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
+  });
   it('ignores env vars and fixes DNS check + blocked schemes when the runtime key is present', () => {
     process.env.SSRF_PROTECTION_ENABLED = 'false';
     (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges() };

@@ -1,4 +1,8 @@
-import { buildSSRFRuntimeConfig, normalizeSSRFAllowlistEntry } from '@helpers/ssrf-allowlist.helper';
+import {
+  buildSSRFRuntimeConfig,
+  isSSRFProtectionEnabledSetting,
+  normalizeSSRFAllowlistEntry,
+} from '@helpers/ssrf-allowlist.helper';
 
 describe('ssrf-allowlist.helper', () => {
   describe('normalizeSSRFAllowlistEntry', () => {
@@ -36,6 +40,31 @@ describe('ssrf-allowlist.helper', () => {
       expect(config.enabled).toBe(false);
       expect(config.allowedRanges.check('10.0.4.12', 'ipv4')).toBe(true);
       expect(config.allowedRanges.check('10.0.4.13', 'ipv4')).toBe(false);
+    });
+  });
+
+  describe('isSSRFProtectionEnabledSetting', () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    afterEach(() => {
+      process.env.NODE_ENV = originalNodeEnv;
+    });
+
+    it.each([
+      ['true', 'development', true],
+      ['true', 'production', true],
+      ['false', 'development', false],
+      ['false', 'production', false],
+      ['', 'development', false],
+      ['', 'production', true],
+      ['', 'test', true],
+      [undefined, 'development', false],
+      [undefined, 'production', true],
+      [null, 'production', true],
+      ['yes', 'development', false],
+      ['yes', 'production', true],
+    ])('stored %j with NODE_ENV=%s is %s', (stored, nodeEnv, expected) => {
+      process.env.NODE_ENV = nodeEnv;
+      expect(isSSRFProtectionEnabledSetting(stored)).toBe(expected);
     });
   });
 });
