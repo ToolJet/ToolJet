@@ -13,8 +13,8 @@ import {
   SKIPPED_EXIT_CODE,
   withMigrationConnectionOptions,
   withMigrationAdvisoryLock,
-} from './migrations-table-gate';
-import { blocksAsyncUpgrade, MigrationPhase, parseMigrationPhase } from './migration-status';
+} from './migration-locks';
+import { blocksAsyncUpgrade, MigrationPhase, parseMigrationPhase } from './migration-mode';
 import { getEnvVars } from '../../scripts/database-config-utils';
 
 /**

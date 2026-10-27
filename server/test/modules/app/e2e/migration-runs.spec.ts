@@ -6,7 +6,7 @@ import { WorkerHost } from '@nestjs/bullmq';
 import { instanceToPlain } from 'class-transformer';
 import { AppController } from '@modules/app/controller';
 import { MIGRATION_RUNS_DDL, MigrationRunsService } from '@modules/app/migration-runs/service';
-import { MIGRATION_ACTIVE_LOCK_KEY, MIGRATION_ADVISORY_LOCK_KEY } from 'src/migration-helpers/migrations-table-gate';
+import { MIGRATION_ACTIVE_LOCK_KEY, MIGRATION_ADVISORY_LOCK_KEY } from 'src/migration-helpers/migration-locks';
 
 type Internals = {
   query: (sql: string, params?: unknown[]) => Promise<unknown[]>;

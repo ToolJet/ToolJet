@@ -1,5 +1,5 @@
 /** @group database */
-import { migrateSchemaBeforeBoot } from 'src/migration-helpers/async-mode';
+import { migrateSchemaBeforeBoot } from 'src/migration-helpers/migrate-before-boot';
 import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/concurrent-pods/harness';
 
 // The test database is migrated, so it is never a fresh install. The command stands in for setup.
@@ -13,7 +13,7 @@ const scratch = (database: string) => ({
   database,
 });
 
-describe('migration-helpers/async-mode', () => {
+describe('migration-helpers/migrate-before-boot', () => {
   describe('migrateSchemaBeforeBoot | schema before Nest boots', () => {
     beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => undefined));
     afterEach(() => jest.restoreAllMocks());

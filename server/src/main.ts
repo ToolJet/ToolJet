@@ -20,7 +20,7 @@ import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-inf
 import { shutdownOtelLogs, initializeOtelLogs } from '@otel/logs';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { migrateSchemaBeforeBoot } from './migration-helpers/async-mode';
+import { migrateSchemaBeforeBoot } from './migration-helpers/migrate-before-boot';
 import { MigrationRunsService } from '@modules/app/migration-runs/service';
 
 // Import helper functions

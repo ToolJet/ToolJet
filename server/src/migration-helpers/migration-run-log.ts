@@ -1,4 +1,4 @@
-import { LOCK_SENTINEL_MIGRATION_NAMES } from './migrations-table-gate';
+import { LOCK_SENTINEL_MIGRATION_NAMES } from './migration-locks';
 
 export type MigrationStepStatus = 'pending' | 'running' | 'done' | 'failed';
 

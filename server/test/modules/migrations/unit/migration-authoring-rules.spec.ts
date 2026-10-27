@@ -2,7 +2,7 @@
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import * as ts from 'typescript';
-import { MIGRATION_AUTHORING_RULES_CUTOFF } from 'src/migration-helpers/migration-status';
+import { MIGRATION_AUTHORING_RULES_CUTOFF } from 'src/migration-helpers/migration-mode';
 
 /**
  * Async mode applies schema migrations at boot, while the previous release still serves.

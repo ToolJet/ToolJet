@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import { Client, ClientConfig } from 'pg';
 import ormconfig from '../../ormconfig';
-import { isServerManagedMigrationMode, setupCommand } from './migration-status';
+import { isServerManagedMigrationMode, setupCommand } from './migration-mode';
 
 type Env = Record<string, string | undefined>;
 

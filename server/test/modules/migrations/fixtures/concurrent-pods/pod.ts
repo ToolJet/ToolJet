@@ -14,7 +14,7 @@
 import { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { run } from '../../../../../src/migration-helpers/run-all-migrations';
-import { SKIPPED_EXIT_CODE } from '../../../../../src/migration-helpers/migrations-table-gate';
+import { SKIPPED_EXIT_CODE } from '../../../../../src/migration-helpers/migration-locks';
 
 const podId = process.env.POD_ID ?? 'pod-?';
 const fixtureSet = process.env.FIXTURE_SET ?? 'concurrent-pods';
