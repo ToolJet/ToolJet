@@ -282,7 +282,7 @@ class AppComponent extends React.Component {
                 <p>A new version of ToolJet has been released.</p>
                 <div className="btn-list">
                   <a
-                    href="https://docs.tooljet.io/docs/setup/updating"
+                    href="https://docs.tooljet.com/docs/setup/upgrade-to-lts"
                     target="_blank"
                     className="btn btn-info"
                     rel="noreferrer"
