@@ -14,7 +14,8 @@ export const SSRF_INSTANCE_SETTINGS_ROWS = [
     label: 'SSRF protection',
     labelKey: 'header.organization.menus.manageSSO.generalSettings.ssrfProtection',
     dataType: INSTANCE_CONFIGS_DATA_TYPES.BOOLEAN,
-    value: 'true',
+    // Unset until a super admin chooses: on by default, off in dev mode (see isSSRFProtectionEnabledSetting).
+    value: '',
     helperText: 'Block data source requests to private, loopback and cloud metadata addresses',
     helperTextKey: 'header.organization.menus.manageSSO.generalSettings.ssrfProtection',
   },

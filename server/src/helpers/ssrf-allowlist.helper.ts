@@ -31,6 +31,17 @@ export function normalizeSSRFAllowlistEntry(entry: string): string | null {
   return isValidHostname(value) ? value : null;
 }
 
+/**
+ * The effective SSRF toggle from its stored value. An explicit 'true' or 'false' always wins. Never set (empty), it is
+ * off in dev mode (`npm run start:dev` sets NODE_ENV=development), so local work isn't blocked until a developer turns
+ * it on, and on everywhere else.
+ */
+export function isSSRFProtectionEnabledSetting(stored: string | null | undefined): boolean {
+  if (stored === 'true') return true;
+  if (stored === 'false') return false;
+  return process.env.NODE_ENV !== 'development';
+}
+
 /** Builds the runtime config published for the SSRF checks. Invalid entries are skipped. */
 export function buildSSRFRuntimeConfig(enabled: boolean, entries: string[]): SSRFRuntimeConfig {
   const allowedHostnames = new Set<string>();
