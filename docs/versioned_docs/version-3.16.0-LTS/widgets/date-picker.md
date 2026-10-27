@@ -11,6 +11,7 @@ The **Date Picker** component can be used for selecting dates without time input
 | :------------ | :------------------------------------------------------------------------------- | :---------------------------------------- |
 | Label         | Text to display as the label for the field.                                      | String (e.g., `Date of Birth`).           |
 | Date Format   | Select the date format from the dropdown. Default date format is **DD/MM/YYYY**. | Select from dropdown (e.g. `MM/DD/YYYY`). |
+| Placeholder   | A hint displayed in the input field when no date is selected. Default is **Select date**. | String (e.g., `Select date`). |
 | Default value | The default value that the component will hold when the app is loaded.           | String (e.g., `01/01/2022`).              |
 
 :::caution
@@ -36,10 +37,11 @@ Following actions of component can be controlled using the Component Specific Ac
 | Action               | <div style={{ width:"150px"}}> Description </div>     | How To Access                                             |
 | :------------------- | :---------------------------------------------------- | :-------------------------------------------------------- |
 | clearValue( )        | Clears the date value.                                | `components.datepicker1.clearValue()`                     |
-| setValue( )          | Sets the date in the component.                       | `components.datepicker1.setValue(date)`                   |
-| setDate( )           | Sets the date value.                                  | `components.datepicker1.setDate(date)`                    |
+| setValue( )          | Sets the date in the component. Optionally pass a format string to parse the date. Doesn't trigger **On select**. | `components.datepicker1.setValue('20/07/2023', 'DD/MM/YYYY')` |
+| setDate( )           | Sets the date while keeping the existing time part. Optionally pass a format string. | `components.datepicker1.setDate('20/07/2023', 'DD/MM/YYYY')` |
+| setValueInTimestamp( ) | Sets the date using a Unix timestamp in milliseconds. | `components.datepicker1.setValueInTimestamp(1704067200000)` |
 | setDisabledDates( )  | Disables specific dates.                              | `components.datepicker1.setDisabledDates([date1, date2])` |
-| clearDisabledDates() | Clears all disabled date.                             | `components.datepicker1.clearDisabledDates()`             |
+| clearDisabledDates() | Clears all disabled dates.                            | `components.datepicker1.clearDisabledDates()`             |
 | setMinDate( )        | Sets the minimum selectable date.                     | `components.datepicker1.setMinDate(date)`                 |
 | setMaxDate( )        | Sets the maximum selectable date.                     | `components.datepicker1.setMaxDate(date)`                 |
 | setFocus( )          | Sets the focus of the cursor on the input field.      | `components.datepicker1.setFocus()`                       |
@@ -54,11 +56,14 @@ Following exposed variables can be dynamically accessed using the given JS query
 
 | Variable      | Description                                       | How To Access                              |
 | :------------ | :------------------------------------------------ | :----------------------------------------- |
-| value         | Holds the date in the component.                  | `{{components.datepicker1.value}}`         |
+| value         | Holds the selected date as an ISO 8601 string with the timezone offset (e.g., `2022-01-01T00:00:00.000+05:30`). | `{{components.datepicker1.value}}`         |
 | label         | Holds the value of the component's label.         | `{{components.datepicker1.label}}`         |
-| unixTimestamp | Holds the value in UNIX format.                   | `{{components.datepicker1.unixTimestamp}}` |
-| selectedDate  | Holds the value of the selcted date.              | `{{components.datepicker1.selectedDate}}`  |
+| unixTimestamp | Holds the selected date as a Unix timestamp in milliseconds. | `{{components.datepicker1.unixTimestamp}}` |
+| selectedDate  | Holds the selected date in the configured date format. | `{{components.datepicker1.selectedDate}}`  |
+| displayValue  | Holds the date as displayed in the input, in the configured date format. | `{{components.datepicker1.displayValue}}` |
 | dateFormat    | Holds the date format.                            | `{{components.datepicker1.dateFormat}}`    |
+| minDate       | Holds the minimum selectable date.                | `{{components.datepicker1.minDate}}`       |
+| maxDate       | Holds the maximum selectable date.                | `{{components.datepicker1.maxDate}}`       |
 | isValid       | Indicates if the input meets validation criteria. | `{{components.datepicker1.isValid}}`       |
 | isMandatory   | Indicates if the field is required.               | `{{components.datepicker1.isMandatory}}`   |
 | isLoading     | Indicates if the component is loading.            | `{{components.datepicker1.isLoading}}`     |
