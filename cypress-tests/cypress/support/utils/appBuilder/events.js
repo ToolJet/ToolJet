@@ -32,7 +32,29 @@
 
 // Alias /events requests. Handlers save via POST (create) and PATCH (update), so the
 // pattern is method-agnostic; call before any `cy.wait("@events")`.
-const interceptEvents = () => cy.intercept(/\/events(\/|\?|$)/).as("events");
+// Also tracks in-flight saves (by request id) so waitForEventSavesToSettle can hold
+// typing until a late autosave has landed and re-rendered the popover.
+const inFlightEventSaves = new Set();
+const interceptEvents = () =>
+  cy
+    .intercept(/\/events(\/|\?|$)/, (req) => {
+      inFlightEventSaves.add(req.id);
+      req.on("after:response", () => inFlightEventSaves.delete(req.id));
+    })
+    .as("events");
+
+// Soft wait (never fails): poll until no /events save is in flight, giving up after
+// ~5s. A save that lands mid-type re-renders the popover's CodeHinter and detaches
+// the element being typed into ("page updated as a result of this command").
+const waitForEventSavesToSettle = (attempts = 20) => {
+  cy.wait(250).then(() => {
+    if (inFlightEventSaves.size && attempts > 1) {
+      waitForEventSavesToSettle(attempts - 1);
+    } else {
+      inFlightEventSaves.clear();
+    }
+  });
+};
 
 // Blur the popover's active field so its value commits.
 const commitEventConfig = () =>
@@ -41,13 +63,27 @@ const commitEventConfig = () =>
 // Open a handler's config popover if it is closed. `index` is the card index, or
 // "last" for the most recently created handler. Force-click is required: an open Radix
 // popover sets `body { pointer-events: none }`.
+// A newly created handler auto-opens its popover (useNewEventAutoPopoverOpen) shortly
+// after its card renders, so: wait for the card to exist, give the auto-open up to ~2s,
+// and only click when it is still closed — clicking during the auto-open would toggle
+// it shut again.
+const handlerCardSelector = '[data-cy="event-handler-card"]';
 const ensureHandlerCardOpen = (index = 0) => {
-  const card = cy.get('[data-cy="event-handler-card"]');
-  return (index === "last" ? card.last() : card.eq(index)).then(($card) => {
-    if ($card.attr("data-state") !== "open") {
-      cy.wrap($card).click({ force: true });
-    }
-  });
+  if (index !== "last") {
+    cy.get(handlerCardSelector).should("have.length.greaterThan", index);
+  }
+  const pickCard = () => {
+    const $cards = Cypress.$(handlerCardSelector);
+    return index === "last" ? $cards.last() : $cards.eq(index);
+  };
+  const waitForOpen = (attempts) =>
+    cy.wait(200).then(() => {
+      if (pickCard().attr("data-state") === "open") return;
+      if (attempts > 1) return waitForOpen(attempts - 1);
+      const card = cy.get(handlerCardSelector);
+      (index === "last" ? card.last() : card.eq(index)).click({ force: true });
+    });
+  return waitForOpen(10);
 };
 
 // Add an event handler and set its action.
@@ -191,6 +227,7 @@ export const addSupportCSAData = (field, data) => {
       ensureHandlerCardOpen("last");
     }
   });
+  waitForEventSavesToSettle();
   cy.get(`[data-cy="${field}-input-field"]`)
     .should("be.visible")
     .click({ force: true })

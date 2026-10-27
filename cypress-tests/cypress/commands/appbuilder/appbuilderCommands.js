@@ -67,14 +67,6 @@ Cypress.Commands.add(
         targetY: positionY,
       });
       cy.waitForAutoSave();
-      // The panel can stay open after the drop, which narrows/shifts the canvas
-      // and breaks later coordinate-based drops. Close it so every drop starts
-      // from the full-width canvas.
-      cy.get("body").then(($b) => {
-        if ($b.find(`${commonSelectors.searchField}:visible`).length) {
-          cy.get('[data-cy="right-sidebar-components-button"]').click();
-        }
-      });
     });
   }
 );

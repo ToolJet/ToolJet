@@ -133,14 +133,24 @@ export const verifyCSA = (component) => {
  * @tjUsage  addCSA('textinput1', [{ event: 'On click', action: 'Set text', value: 'hello' }])
  * @tjDom    canvas drag-drop buttons → Control Component events + CSA action values
  */
-export const addCSA = (componentName, actions) => {
-  // Start every CSA run from a closed components panel (dragAndDropWidget
-  // opens it on demand and closes it after each drop).
+// Drop one action button, then close the Components panel: main keeps it open after a
+// drop, and an open panel shifts the canvas so the next coordinate-based drop misses.
+const closeComponentsPanel = () => {
   cy.get("body").then(($b) => {
     if ($b.find('[data-cy="widget-search-box-search-bar"]:visible').length) {
       cy.get('[data-cy="right-sidebar-components-button"]').click();
     }
   });
+};
+const dropActionButton = (x, y) => {
+  cy.dragAndDropWidget(buttonText.defaultWidgetText, x, y);
+  closeComponentsPanel();
+};
+
+export const addCSA = (componentName, actions) => {
+  // Start every CSA run from a closed components panel (dragAndDropWidget
+  // opens it on demand and closes it after each drop).
+  closeComponentsPanel();
 
   actions.forEach((action, index) => {
     cy.forceClickOnCanvas();
@@ -151,11 +161,11 @@ export const addCSA = (componentName, actions) => {
     // dropped. The real CDP drag occasionally doesn't land; dragAndDropWidget
     // doesn't verify the drop, so re-drop once if the button isn't on the canvas.
     const buttonName = `button${index + 1}`;
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, xOffset, yOffset);
+    dropActionButton(xOffset, yOffset);
     cy.wait(1000);
     cy.get("body").then(($b) => {
       if (!$b.find(`[data-cy=draggable-widget-${buttonName}]`).length) {
-        cy.dragAndDropWidget(buttonText.defaultWidgetText, xOffset, yOffset);
+        dropActionButton(xOffset, yOffset);
       }
     });
     // `add-event-handler` only renders once the dropped button's inspector is
