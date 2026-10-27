@@ -18,6 +18,13 @@ import { buildBaseLogger } from '@modules/logging/base-logger';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { RedisModule } from '@modules/redis/module';
+import { getMigrationMode } from '../../migration-helpers/migration-mode';
+
+/**
+ * Async mode serves while a data run can hold an ACCESS EXCLUSIVE table lock until it commits. A read on that
+ * table fails after this instead of holding a pool connection, so the pool and the health check stay free.
+ */
+const ASYNC_MODE_LOCK_TIMEOUT_MS = 5000;
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -25,18 +32,24 @@ export class AppModuleLoader {
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
     const isTest = process.env.NODE_ENV === 'test';
     const mainDbTestOverrides = isTest ? { retryAttempts: 0 } : {};
+    const mainDbOptions = {
+      ...ormconfig,
+      ...mainDbTestOverrides,
+      ...(getMigrationMode() === 'async' && {
+        extra: { ...(ormconfig as { extra?: object }).extra, lock_timeout: ASYNC_MODE_LOCK_TIMEOUT_MS },
+      }),
+    };
 
     const getMainDBConnectionModule = (): DynamicModule => {
       return process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true'
         ? TypeOrmModule.forRootAsync({
             inject: [TypeormLoggerService],
             useFactory: (profilerLogger: TypeormLoggerService) => ({
-              ...ormconfig,
-              ...mainDbTestOverrides,
+              ...mainDbOptions,
               logger: profilerLogger,
             }),
           })
-        : TypeOrmModule.forRoot({ ...ormconfig, ...mainDbTestOverrides });
+        : TypeOrmModule.forRoot(mainDbOptions);
     };
 
     // Static imports that are always loaded

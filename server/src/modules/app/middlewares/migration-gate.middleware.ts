@@ -37,20 +37,6 @@ const ASYNC_MODE_WRITE_ALLOWLIST = [
   /^\/data-queries\/[^/]+\/versions\/[^/]+\/run\/[^/]+$/,
 ];
 
-/**
- * While a run alters tables in its data transaction, those locks block reads until it commits; after it
- * fails, the new code would read data it never converted. Only sign-in and the upgrade status get through.
- */
-const READS_BLOCKED_ALLOWLIST = [
-  /^\/login-configs\/([^/]+\/)?public$/,
-  /^\/authenticate(\/|$)/,
-  /^\/session(\/|$)/,
-  /^\/oauth\//,
-  /^\/sso\//,
-  /^\/migration-status$/,
-  /^\/migration-runs(\/|$)/,
-];
-
 /** How often to repeat the "requests are being rejected" line. */
 const LOG_THROTTLE_MS = 30_000;
 
@@ -106,8 +92,8 @@ export class MigrationGateMiddleware implements NestMiddleware {
     const apiPath = this.gatedApiPath(path);
     // Blocking mode stays as it was before the gate: old pods serve everything while a new pod migrates.
     if (!this.enabled || !this.asyncMode || apiPath === null) return next();
-    const { state, readsBlocked } = await this.migrationRuns.status();
-    if (!REFUSALS[state] || this.passesAsyncGate(apiPath, req.method, readsBlocked)) return next();
+    const { state } = await this.migrationRuns.status();
+    if (!REFUSALS[state] || this.passesAsyncGate(apiPath, req.method)) return next();
     this.refuse(req, res, state);
   }
 
@@ -130,9 +116,8 @@ export class MigrationGateMiddleware implements NestMiddleware {
     return UNGATED_API_PATHS.has(apiPath) ? null : apiPath;
   }
 
-  /** Async mode: an ordinary run lets reads and end-user writes through; one that blocks reads, only sign-in and status. */
-  private passesAsyncGate(apiPath: string, method: string, readsBlocked: boolean | undefined): boolean {
-    if (readsBlocked) return READS_BLOCKED_ALLOWLIST.some((pattern) => pattern.test(apiPath));
+  /** Async mode lets reads and end-user writes through. */
+  private passesAsyncGate(apiPath: string, method: string): boolean {
     return SAFE_METHODS.has(method) || ASYNC_MODE_WRITE_ALLOWLIST.some((pattern) => pattern.test(apiPath));
   }
 

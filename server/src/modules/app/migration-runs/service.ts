@@ -14,7 +14,6 @@ import {
   RunProgress,
 } from '../../../migration-helpers/migration-run-log';
 import { isServerManagedMigrationMode, setupCommand } from '../../../migration-helpers/migration-mode';
-import { TABLE_ALTERING_DATA_MIGRATIONS } from '../../../migration-helpers/pre-cutoff-allowlist';
 import { mainDbConnectionConfig } from '../../../migration-helpers/migrate-before-boot';
 import { HELD_MIGRATION_LOCKS_SQL, SKIPPED_EXIT_CODE } from '../../../migration-helpers/migration-locks';
 
@@ -25,8 +24,6 @@ export interface MigrationStatus {
   state: MigrationState;
   startedAt?: string;
   toVersion?: string;
-  /** An unfinished run alters tables in its data transaction (an upgrade from 3.21.58–3.21.62): reads would block too. */
-  readsBlocked?: boolean;
 }
 
 export interface MigrationRun {
@@ -268,8 +265,6 @@ export class MigrationRunsService implements OnApplicationShutdown {
             state: stopped ? 'running' : state,
             startedAt: new Date(latest.started_at).toISOString(),
             toVersion: latest.to_version,
-            readsBlocked:
-              state !== 'succeeded' && latest.migrations.some(({ name }) => TABLE_ALTERING_DATA_MIGRATIONS.has(name)),
           };
         }
       }
