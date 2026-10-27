@@ -34,7 +34,7 @@ OAuth works with MCP clients that support remote (Streamable HTTP) servers and O
 ### Step 1: Copy the Connection Command
 
 1. In ToolJet Cloud, open the workspace you want the agent to build in.
-2. Open the **Build ToolJet apps from your coding agent** dialog. <!-- TODO verify: where users open this dialog in the UI (e.g. the dashboard card or the app builder) -->
+2. Open the **Build ToolJet apps from your coding agent** dialog. 
 3. Under **Connect your agent**, select **OAuth**.
 4. Select your client and copy the commands shown.
 
@@ -114,8 +114,6 @@ Your client opens ToolJet in your browser.
    The client can make changes only within your existing workspace permissions. Approving a permission doesn't give a viewer edit rights or a builder admin rights.
 3. Check the callback address shown under the buttons. ToolJet doesn't verify the client's name, so continue only if you started this connection and recognize the address.
 4. Click **Allow access**. Your browser returns you to your client. To deny the request, click **Cancel**.
-
-<!-- TODO screenshot: the MCP OAuth consent screen ("Connect <client> to ToolJet") showing the account, the workspace permission rows, and the Allow access / Cancel buttons -->
 
 ### Step 4: Install the App-Builder Skill
 
