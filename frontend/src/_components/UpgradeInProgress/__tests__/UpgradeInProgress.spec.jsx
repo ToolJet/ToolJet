@@ -20,11 +20,11 @@ const renderPage = () =>
   );
 
 describe('UpgradeInProgress', () => {
-  test('shows upgrade progress instead of the error page while an upgrade runs', async () => {
+  test('shows maintenance progress instead of the error page while an upgrade runs', async () => {
     respondWith({ state: 'running', startedAt: '2026-10-19T10:00:00Z', progress: { done: 3, total: 9 } });
     renderPage();
 
-    expect(await screen.findByRole('heading', { name: 'Upgrade in progress' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Maintenance in progress' })).toBeInTheDocument();
     expect(screen.getByText(/3 of 9 done \(33%\)/)).toBeInTheDocument();
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '33');
     expect(screen.queryByText('error page')).not.toBeInTheDocument();
@@ -42,7 +42,7 @@ describe('UpgradeInProgress', () => {
     renderPage();
 
     expect(await screen.findByText('error page')).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Upgrade in progress' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Maintenance in progress' })).not.toBeInTheDocument();
   });
 
   test('goes back to the app once the upgrade ends', async () => {
@@ -54,7 +54,7 @@ describe('UpgradeInProgress', () => {
     try {
       respondWith({ state: 'running', progress: { done: 1, total: 2 } }, { state: 'succeeded' });
       renderPage();
-      await screen.findByRole('heading', { name: 'Upgrade in progress' });
+      await screen.findByRole('heading', { name: 'Maintenance in progress' });
 
       jest.advanceTimersByTime(3000);
 
