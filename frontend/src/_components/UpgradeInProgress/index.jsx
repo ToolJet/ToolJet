@@ -42,13 +42,13 @@ export const UpgradeInProgress = ({ children }) => {
   return (
     <main className="tw-fixed tw-inset-0 tw-z-[1100] tw-flex tw-items-center tw-justify-center tw-bg-background-surface-layer-01 tw-p-4">
       <div className="tw-flex tw-w-full tw-max-w-md tw-flex-col tw-gap-3" role="status" aria-live="polite">
-        <h1 className="tw-m-0 tw-font-title-large tw-text-text-default">Upgrade in progress</h1>
+        <h1 className="tw-m-0 tw-font-title-large tw-text-text-default">Maintenance in progress</h1>
         <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">
-          This page will be available again when the upgrade finishes. It reloads on its own.
+          This page will be available again when maintenance finishes.
         </p>
         <div
           role="progressbar"
-          aria-label="Upgrade progress"
+          aria-label="Maintenance progress"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={percent ?? undefined}
