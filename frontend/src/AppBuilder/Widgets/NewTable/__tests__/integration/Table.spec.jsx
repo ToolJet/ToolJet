@@ -13,7 +13,7 @@ import React from 'react';
 import Papa from 'papaparse';
 import { waitFor, within, fireEvent as rtlFireEvent, act } from '@testing-library/react';
 import { componentDefinition, seedApp, binding } from '@/test/app-builder';
-import { createWidgetHarness, store, MODULE_ID, drain } from '@/AppBuilder/Widgets/widgetHarness';
+import { createWidgetHarness, store, MODULE_ID, drain, widgetProps } from '@/AppBuilder/Widgets/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
 import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 import { tableConfig } from '@tooljet/widget-definitions';
@@ -34,56 +34,58 @@ const ROWS = [
   { id: 3, name: 'Rosalind', email: 'rosalind@example.com', age: 35 },
 ];
 
+// Baseline mirrors table.js's own shipped `definition.properties` values
+// (table.js:715-882) for every boolean/toggle default; `data`/`columns` are a
+// small deterministic fixture instead of the 10-row/7-column onboarding
+// sample, so individual scenario tests can assert exact rows/cells.
+const TABLE_DEFAULT_PROPERTIES = {
+  title: binding('Table'),
+  dataSourceSelector: binding('rawJson'),
+  data: binding(`{{${JSON.stringify(ROWS)}}}`),
+  columns: { value: COLUMNS },
+  autogenerateColumns: { value: false },
+  useDynamicColumn: binding('{{false}}'),
+  loadingState: binding('{{false}}'),
+  rowsPerPage: binding('{{10}}'),
+  serverSidePagination: binding('{{false}}'),
+  enableNextButton: binding('{{true}}'),
+  enablePrevButton: binding('{{true}}'),
+  totalRecords: binding('{{10}}'),
+  enablePagination: binding('{{true}}'),
+  serverSideSort: binding('{{false}}'),
+  serverSideFilter: binding('{{false}}'),
+  displaySearchBox: binding('{{true}}'),
+  showDownloadButton: binding('{{true}}'),
+  showFilterButton: binding('{{true}}'),
+  isAllColumnsEditable: binding('{{false}}'),
+  showBulkUpdateActions: binding('{{true}}'),
+  disableSaveChanges: binding('{{false}}'),
+  disableAddNewRowSave: binding('{{false}}'),
+  showBulkSelector: binding('{{false}}'),
+  highlightSelectedRow: binding('{{false}}'),
+  enabledSort: binding('{{true}}'),
+  defaultSortColumn: binding(''),
+  defaultSortDirection: binding('auto'),
+  hideColumnSelectorButton: binding('{{false}}'),
+  defaultSelectedRow: binding('{{{}}}'),
+  showAddNewRowButton: binding('{{true}}'),
+  showRefreshButton: binding('{{false}}'),
+  allowSelection: binding('{{true}}'),
+  visibility: binding('{{true}}'),
+  collapseWhenHidden: binding('{{false}}'),
+  disabledState: binding('{{false}}'),
+  dynamicHeight: binding('{{false}}'),
+  selectRowOnCellEdit: binding('{{false}}'),
+  enableExpandableRows: binding('{{false}}'),
+  expansionHeight: binding('{{229}}'),
+  disableRowDeselection: binding('{{false}}'),
+};
+
 const widget = createWidgetHarness({
   componentType: 'Table',
   handle: NAME,
   id: ID,
-  // Baseline mirrors table.js's own shipped `definition.properties` values
-  // (table.js:715-882) for every boolean/toggle default; `data`/`columns` are a
-  // small deterministic fixture instead of the 10-row/7-column onboarding
-  // sample, so individual scenario tests can assert exact rows/cells.
-  defaultProperties: {
-    title: binding('Table'),
-    dataSourceSelector: binding('rawJson'),
-    data: binding(`{{${JSON.stringify(ROWS)}}}`),
-    columns: { value: COLUMNS },
-    autogenerateColumns: { value: false },
-    useDynamicColumn: binding('{{false}}'),
-    loadingState: binding('{{false}}'),
-    rowsPerPage: binding('{{10}}'),
-    serverSidePagination: binding('{{false}}'),
-    enableNextButton: binding('{{true}}'),
-    enablePrevButton: binding('{{true}}'),
-    totalRecords: binding('{{10}}'),
-    enablePagination: binding('{{true}}'),
-    serverSideSort: binding('{{false}}'),
-    serverSideFilter: binding('{{false}}'),
-    displaySearchBox: binding('{{true}}'),
-    showDownloadButton: binding('{{true}}'),
-    showFilterButton: binding('{{true}}'),
-    isAllColumnsEditable: binding('{{false}}'),
-    showBulkUpdateActions: binding('{{true}}'),
-    disableSaveChanges: binding('{{false}}'),
-    disableAddNewRowSave: binding('{{false}}'),
-    showBulkSelector: binding('{{false}}'),
-    highlightSelectedRow: binding('{{false}}'),
-    enabledSort: binding('{{true}}'),
-    defaultSortColumn: binding(''),
-    defaultSortDirection: binding('auto'),
-    hideColumnSelectorButton: binding('{{false}}'),
-    defaultSelectedRow: binding('{{{}}}'),
-    showAddNewRowButton: binding('{{true}}'),
-    showRefreshButton: binding('{{false}}'),
-    allowSelection: binding('{{true}}'),
-    visibility: binding('{{true}}'),
-    collapseWhenHidden: binding('{{false}}'),
-    disabledState: binding('{{false}}'),
-    dynamicHeight: binding('{{false}}'),
-    selectRowOnCellEdit: binding('{{false}}'),
-    enableExpandableRows: binding('{{false}}'),
-    expansionHeight: binding('{{229}}'),
-    disableRowDeselection: binding('{{false}}'),
-  },
+  defaultProperties: TABLE_DEFAULT_PROPERTIES,
   // TableData's virtualizer measures `tableBodyRef.current`'s scroll-container
   // height; jsdom reports 0 for every layout metric, which without a spy leaves
   // `useVirtualizer` computing zero visible rows despite a non-empty dataset.
@@ -4057,5 +4059,95 @@ describe('Table: column cell click event', () => {
 
     await waitFor(() => expect(store().getVariable('toggleFired', MODULE_ID)).toBe(true));
     expect(store().getVariable('nameCellClicked', MODULE_ID)).toBeUndefined();
+  });
+});
+
+describe('Table: inside a Listview row', () => {
+  const LV_ID = 'lv1';
+  const LV_NAME = 'listview1';
+
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  /** Container only mounts children shown on the current layout. */
+  const nestInListview = (def) => {
+    def.component.parent = LV_ID;
+    def.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
+    return def;
+  };
+
+  function renderInListview({ listData, tableProperties = {} }) {
+    const listview = componentDefinition(LV_ID, LV_NAME, 'Listview', {
+      dataSourceSelector: binding('rawJson'),
+      data: binding(`{{${JSON.stringify(listData)}}}`),
+      mode: binding('list'),
+      rowHeight: binding('400'),
+      visibility: binding('{{true}}'),
+      loadingState: binding('{{false}}'),
+      disabledState: binding('{{false}}'),
+      enablePagination: binding('{{false}}'),
+    });
+    const tableDef = nestInListview(
+      componentDefinition(ID, NAME, 'Table', { ...TABLE_DEFAULT_PROPERTIES, ...tableProperties })
+    );
+    seedApp({ [LV_ID]: listview, [ID]: tableDef }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('view', MODULE_ID);
+    return widget.session.render(<RenderWidget {...widgetProps(LV_ID, 'Listview', { currentMode: 'view' })} />);
+  }
+
+  const listRow = (index) => document.querySelector(`[data-cy="${LV_NAME}-row-${index}"]`);
+  const tableIn = (listIndex) => listRow(listIndex)?.querySelector('.jet-table');
+  const headersIn = (listIndex) =>
+    [...(listRow(listIndex)?.querySelectorAll('thead [data-cy$="-column-header"]') ?? [])]
+      .map((el) => el.textContent)
+      .filter(Boolean);
+
+  test('[Table-BUG-035] expanding a row in one Listview row does not expand the same row in the other Listview rows', async () => {
+    renderInListview({
+      listData: [{ items: [{ id: 1, name: 'Ada' }] }, { items: [{ id: 1, name: 'Ada' }] }],
+      tableProperties: {
+        data: binding('{{listItem.items}}'),
+        columns: { value: COLUMNS.filter((column) => column.key === 'name') },
+        enableExpandableRows: binding('{{true}}'),
+      },
+    });
+    const toggleIn = (listIndex) => tableIn(listIndex)?.querySelector('.table-expansion-toggle');
+    await waitFor(() => {
+      expect(toggleIn(0)).toBeInTheDocument();
+      expect(toggleIn(1)).toBeInTheDocument();
+    });
+
+    rtlFireEvent.click(toggleIn(0));
+
+    await waitFor(() => expect(tableIn(0).querySelectorAll('.table-expanded-row-content')).toHaveLength(1));
+    await drain();
+    expect(tableIn(1).querySelectorAll('.table-expanded-row-content')).toHaveLength(0);
+  });
+
+  test("[Table-BUG-036] each Listview row's Table shows the columns of the first row's data, not of the last row's", async () => {
+    renderInListview({
+      listData: [{ rows: [{ a: 1 }] }, { rows: [{ b: 2 }] }],
+      tableProperties: {
+        data: binding('{{listItem.rows}}'),
+        columns: { value: [] },
+        autogenerateColumns: { value: true },
+      },
+    });
+
+    await waitFor(() => expect(headersIn(0)).toEqual(['a']));
+    await drain();
+    expect(headersIn(1)).toEqual(['a']);
+  });
+
+  test('[Table-BUG-037] a Table whose visibility is bound to listItem is hidden only in the Listview rows where it resolves to false', async () => {
+    renderInListview({
+      listData: [{ show: true }, { show: false }],
+      tableProperties: { visibility: binding('{{listItem.show}}') },
+    });
+
+    await waitFor(() => expect(tableIn(1)).toBeInTheDocument());
+    await waitFor(() => expect(tableIn(1)).toHaveStyle({ display: 'none' }));
+    expect(tableIn(0)).not.toHaveStyle({ display: 'none' });
   });
 });
