@@ -4,9 +4,10 @@
  * Isolated OAuth tests. Never loads ToolJet's database-truncating global setup.
  * Keep ts-node for extensionless imports on Node >= 22.18, as in jest.config.ts.
  */
+import type { Config } from '@jest/types';
 import { coverageConfig } from './test/jest-coverage.config';
 
-export default {
+const config: Config.InitialOptions = {
   ...coverageConfig(false),
   rootDir: '.',
   testEnvironment: 'node',
@@ -29,3 +30,5 @@ export default {
     '^.+\\.[jt]s$': ['ts-jest', { tsconfig: { types: ['node', 'jest'], allowJs: true, isolatedModules: true } }],
   },
 };
+
+export default config;
