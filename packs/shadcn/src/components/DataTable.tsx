@@ -567,14 +567,26 @@ export const DataTable = () => {
     setHoveredRowId(entry.index);
     onRowHovered();
   };
-  // An action acts on its row as a click on the row does: the row selects and onRowClicked fires, after
-  // onActionButtonClicked.
+  // An action acts on its row as a click on the row does. The row is selected BEFORE onActionButtonClicked, so a
+  // handler reading selectedRow gets the row its button is on: selected after, a "Mark resolved" query resolved the
+  // row selected before (codex lifecycle audit, 2026-10-26). onRowClicked still follows the action, as before.
   const onAction: OnAction = (buttonId, column, row, rowIndex) => {
     if (disabled) return;
+    const entry = live.current.entries.find((e) => e.index === rowIndex);
+    const selectable = allowSelection && !bulk;
+    // A button on the selected row never deselects it (clickRow's `keep`).
+    const newlySelected = !!entry && selectable && !selected.has(entry.key);
+    if (entry && newlySelected) select(new Set([entry.key]), entry.key);
+    else if (entry && !selectable) {
+      setFocusKey(entry.key);
+      setSelectedRow(entry.row);
+      setSelectedRowId(entry.index);
+    }
     setLastActionClicked({ buttonId, columnKey: column.key, columnName: column.name, row });
     onActionButtonClicked();
-    const entry = live.current.entries.find((e) => e.index === rowIndex);
-    if (entry) clickRow(entry, { keep: true });
+    if (!entry) return;
+    onRowClicked();
+    if (newlySelected) onSelectionChanged();
   };
   const runDownload = (type: 'csv' | 'json') => {
     const rows = live.current.processed.map((e) => e.row);
