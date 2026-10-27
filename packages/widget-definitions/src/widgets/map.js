@@ -104,6 +104,20 @@ export const mapConfig = {
     },
   ],
   styles: {
+    // Look: in ToolJet UI 2.0 apps the map sits in the pack's frame (theme radius, hairline border, card surface), as
+    // the Table does with tableLook; the map itself works the same in both looks.
+    mapLook: {
+      type: 'select',
+      displayName: 'Look',
+      options: [
+        { name: 'ToolJet UI 1.0', value: 'default' },
+        { name: 'ToolJet UI 2.0', value: 'shadcn' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'default',
+      },
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -152,6 +166,7 @@ export const mapConfig = {
     },
     events: [],
     styles: {
+      mapLook: { value: 'default' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },

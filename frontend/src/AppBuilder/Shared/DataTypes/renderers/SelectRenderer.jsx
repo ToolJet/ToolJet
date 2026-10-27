@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import { selectedOption } from './selectedOption';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
@@ -353,17 +354,7 @@ export const SelectRenderer = ({
     [isMulti, defaultOptionsList]
   );
 
-  const selectedValue = useMemo(() => {
-    if (!value) return null;
-    if (isMulti && value?.length) {
-      return isArray(value)
-        ? options?.filter((option) =>
-            value?.find((val) => (val.hasOwnProperty('value') ? option.value === val.value : option.value === val))
-          )
-        : [];
-    }
-    return options?.find((option) => option.value === value) || [];
-  }, [options, value, isMulti]);
+  const selectedValue = useMemo(() => selectedOption(options, value, isMulti), [options, value, isMulti]);
 
   const handleChange = useCallback(
     (newValue) => {

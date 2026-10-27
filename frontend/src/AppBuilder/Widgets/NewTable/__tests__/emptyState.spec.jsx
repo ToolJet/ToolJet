@@ -1,0 +1,146 @@
+/**
+ * A Table with no rows draws its header row, then the empty state as the body under it. The empty state was placed
+ * absolutely and took no room, so the shadcn look (a table as tall as its rows) drew a table as tall as its header,
+ * the icon squeezed into the header row and the "No data" message cut off.
+ */
+import fs from 'fs';
+import path from 'path';
+import React from 'react';
+import { act, render } from '@testing-library/react';
+import useTableStore from '../_stores/tableStore';
+import { TableData } from '../_components/TableData/TableData';
+import { EmptyState } from '../_components/TableData/_components/EmptyState';
+
+jest.mock('../_components/TableData/_components/TableHeader', () => ({
+  TableHeader: () => (
+    <thead>
+      <tr>
+        {['ORDER', 'CUSTOMER', 'PLACED', 'DELIVERY', 'ITEMS', 'VALUE', 'STATUS'].map((name) => (
+          <th key={name}>{name}</th>
+        ))}
+      </tr>
+    </thead>
+  ),
+}));
+
+const emptyTable = { getRowModel: () => ({ rows: [] }), getColumn: () => undefined };
+
+const renderEmpty = () => {
+  useTableStore.getState().initializeComponent('orders');
+  return render(
+    <TableData
+      id="orders"
+      data={[]}
+      tableBodyRef={{ current: null }}
+      darkMode={false}
+      table={emptyTable}
+      columnOrder={[]}
+      setColumnOrder={() => {}}
+      setExposedVariables={() => {}}
+      fireEvent={() => {}}
+      lastClickedRowRef={{ current: {} }}
+      componentName="ordersTable"
+      loadingState={false}
+    />
+  );
+};
+
+const scss = (file) => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+
+describe('Table with no rows', () => {
+  it('draws the empty state as the body under the header, not inside it', () => {
+    const { container, getByText } = renderEmpty();
+    const message = getByText('No data');
+    const head = container.querySelector('thead');
+    const body = container.querySelector('.tj-ntable-empty-body');
+
+    expect(head).not.toBeNull();
+    expect(head.textContent).toContain('DELIVERY');
+    expect(head.contains(message)).toBe(false);
+    expect(head.querySelector('.warning-no-data')).toBeNull();
+
+    // The body comes after the header, in the same box, and holds the icon above the message.
+    expect(body).not.toBeNull();
+    expect(body.contains(message)).toBe(true);
+    expect(head.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // It is the body's one row, in the same table as the header.
+    expect(body.closest('tbody')).not.toBeNull();
+    expect(body.closest('table')).toBe(head.closest('table'));
+    const icon = body.querySelector('.warning-no-data');
+    expect(icon.compareDocumentPosition(message) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('keeps the empty state in the flow, so it takes room under the header', () => {
+    const { container } = renderEmpty();
+    const box = container.querySelector('.jet-data-table');
+    expect(box.classList.contains('tj-ntable-empty')).toBe(true);
+    // Not the ToolJet database's tj-table-empty, whose global rule drew near-black header borders.
+    expect(container.querySelector('.tj-table-empty')).toBeNull();
+    // The same table classes as with rows, so the header is drawn the same.
+    expect(box.querySelector('table')).toHaveClass('table');
+    for (const el of [box, ...box.querySelectorAll('*')]) {
+      expect(el.style.position).not.toBe('absolute');
+    }
+  });
+
+  it('gives the body the height under the header, in both looks', () => {
+    const table = scss('table.scss');
+    // The body fills what is under the header and is never sized to nothing.
+    expect(table).toMatch(/\.tj-ntable-empty-body \{[^}]*flex: 1 1 auto;/);
+    expect(table).toMatch(/\.tj-ntable-empty-body \{[^}]*contain-intrinsic-height: \d+px;/);
+    // A short table keeps the header and a line of the message (the footer is what the card cuts), tightens the
+    // padding, then drops the icon: at 183px and 150px the message was cut in half or gone.
+    expect(table).toMatch(/\.jet-data-table\.tj-ntable-empty \{[^}]*min-height: 72px;/);
+    expect(table).toMatch(/> table > tbody \{[^}]*min-height: 28px;/);
+    expect(table).toMatch(
+      /@container tj-ntable-empty \(max-height: 103px\) \{\s*\.tj-ntable-empty-body > div \{\s*padding: 4px 12px;/
+    );
+    // A short table drops the icon and keeps the message.
+    expect(table).toMatch(
+      /@container tj-ntable-empty \(max-height: \d+px\) \{\s*\.tj-ntable-empty-body \.warning-no-data/
+    );
+
+    // The shadcn look sizes the table to its rows; an empty one keeps its box and lets the body grow.
+    const look = scss('shadcnLook.scss');
+    expect(look).toMatch(/&:has\(> \.table-responsive\.tj-ntable-empty\) \{\s*height: 100% !important;/);
+    expect(look).toMatch(/> \.table-responsive\.tj-ntable-empty \{\s*flex: 1 1 auto !important;/);
+  });
+});
+
+describe('Table with no rows, too short for its message', () => {
+  // At 110px the toolbar and the header left 17px, and the table's box cut "No data" to a sliver of its top (message
+  // 101 to 121px, cut at 108). It shows whole or not at all.
+  let report;
+  let observed;
+  beforeEach(() => {
+    global.IntersectionObserver = class {
+      constructor(callback, options) {
+        report = (ratio) => act(() => callback([{ intersectionRatio: ratio, boundingClientRect: { height: 40 } }]));
+        this.options = options;
+      }
+      observe(el) {
+        observed = { el, root: this.options.root };
+      }
+      disconnect() {}
+    };
+  });
+  afterEach(() => {
+    delete global.IntersectionObserver;
+  });
+
+  it('hides the message while the table cuts any of it', () => {
+    const { container, getByText } = render(
+      <div className="card jet-table">
+        <EmptyState />
+      </div>
+    );
+    const body = container.querySelector('.tj-ntable-empty-body');
+    expect(observed.root).toBe(container.firstChild);
+    expect(observed.el.contains(getByText('No data'))).toBe(true);
+    report(0.3);
+    expect(body).toHaveClass('tj-ntable-empty-cut');
+    report(1);
+    expect(body).not.toHaveClass('tj-ntable-empty-cut');
+    expect(scss('table.scss')).toMatch(/&\.tj-ntable-empty-cut > div \{\s*visibility: hidden;/);
+  });
+});

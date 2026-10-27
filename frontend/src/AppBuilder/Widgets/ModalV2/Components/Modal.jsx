@@ -37,6 +37,8 @@ export const ModalWidget = ({ ...restProps }) => {
     isFullScreen,
     subContainerIndex,
     isDynamicHeightEnabled,
+    skin,
+    sheetSide,
   } = restProps['modalProps'];
 
   const setComponentProperty = useStore((state) => state.setComponentProperty);
@@ -99,7 +101,19 @@ export const ModalWidget = ({ ...restProps }) => {
     setTimeout(() => {
       const modalContent = document.querySelector(`.tj-modal-content-${id}`);
       if (restProps.show && modalContent) {
-        if (!isFalsyOrMultipleZeros(modalHeight)) {
+        if (sheetSide) {
+          // A side sheet spans the visible height of the window; its body scrolls. The modal layer is as tall as the
+          // window but can start below a bar (the viewer's Preview header), so 100% ran past the bottom and hid the
+          // footer buttons: size the dialog to what is visible from the layer's top.
+          const layerTop = Math.max(0, modalContent.closest('.modal')?.getBoundingClientRect().top ?? 0);
+          const visibleHeight = `${Math.max(0, window.innerHeight - layerTop)}px`;
+          const dialog = modalContent.closest('.modal-dialog');
+          dialog?.style.setProperty('height', visibleHeight, 'important');
+          dialog?.style.setProperty('max-height', visibleHeight, 'important');
+          modalContent.style.setProperty('height', '100%', 'important');
+          modalContent.style.setProperty('max-height', '100%', 'important');
+          setNeedsBodyScroll(true);
+        } else if (!isFalsyOrMultipleZeros(modalHeight)) {
           if (isDynamicHeightEnabled) {
             const canvasHeaderHeight = getCanvasHeight(headerHeight);
             const canvasFooterHeight = getCanvasHeight(footerHeight);
@@ -135,6 +149,7 @@ export const ModalWidget = ({ ...restProps }) => {
     temporaryLayouts,
     _modalHeight,
     id,
+    sheetSide,
   ]);
 
   return (
@@ -143,8 +158,11 @@ export const ModalWidget = ({ ...restProps }) => {
       contentClassName={classNames(
         `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`,
         isDynamicHeightEnabled && `dynamic-${id}`,
-        isDynamicHeightEnabled && needsBodyScroll && 'tj-modal-allow-body-scroll'
+        (isDynamicHeightEnabled || sheetSide) && needsBodyScroll && 'tj-modal-allow-body-scroll',
+        skin && 'tj-shad-tokens tj-shad-dialog-content'
       )}
+      dialogClassName={classNames(skin && 'tj-shad-dialog', sheetSide && `tj-shad-sheet tj-shad-sheet--${sheetSide}`)}
+      backdropClassName={skin ? 'tj-shad-backdrop' : undefined}
       animation={true}
       onEntered={onModalEntered}
       onEscapeKeyDown={(e) => {
@@ -195,27 +213,39 @@ export const ModalWidget = ({ ...restProps }) => {
             onDrop={(e) => e.stopPropagation()}
           />
         )}
-        {!isLoading ? (
-          <>
-            <SubContainer
-              id={`${id}`}
-              canvasHeight={modalBodyHeight}
-              styles={{
-                backgroundColor: customStyles.modalBody.backgroundColor,
-                overflowY: isDisabled || (isDynamicHeightEnabled && !needsBodyScroll) ? 'hidden' : 'auto',
-              }}
-              canvasWidth={modalWidth}
-              darkMode={darkMode}
-              componentType="ModalV2"
-            />
-          </>
-        ) : (
-          <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+        {/* Loading, the body's canvas stays mounted, hidden and inert under the spinner: swapping it for the spinner
+            unmounted the modal's components, and what was typed in them was lost. Disabled, it stays drawn but is
+            inert and aria-disabled: the overlay only stopped the pointer, so Tab reached the body and an open Select
+            in it still took a choice (the pack's popups close and refuse one in an inert or aria-disabled part). */}
+        <div
+          inert={isLoading || isDisabled ? '' : undefined}
+          aria-hidden={isLoading || undefined}
+          aria-disabled={isDisabled && !isLoading ? 'true' : undefined}
+          style={isLoading ? { visibility: 'hidden', height: '100%' } : { display: 'contents' }}
+        >
+          <SubContainer
+            id={`${id}`}
+            canvasHeight={modalBodyHeight}
+            styles={{
+              backgroundColor: customStyles.modalBody.backgroundColor,
+              overflowY: isDisabled || (isDynamicHeightEnabled && !needsBodyScroll) ? 'hidden' : 'auto',
+            }}
+            canvasWidth={modalWidth}
+            darkMode={darkMode}
+            componentType="ModalV2"
+          />
+        </div>
+        {isLoading ? (
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ position: 'absolute', inset: 0, zIndex: 2 }}
+            aria-busy="true"
+          >
             <center>
               <Spinner />
             </center>
           </div>
-        )}
+        ) : null}
       </BootstrapModal.Body>
       {showFooter && (
         <ModalFooter

@@ -64,10 +64,10 @@ export const ModalV2 = function Modal({
     headerBackgroundColor,
     footerBackgroundColor,
     bodyBackgroundColor,
-    triggerButtonBackgroundColor,
+    triggerButtonBackgroundColor: rawTriggerButtonBackgroundColor,
     triggerButtonHoverBackgroundMode,
-    triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
-    triggerButtonTextColor,
+    triggerButtonHoverBackgroundColor: rawTriggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
+    triggerButtonTextColor: rawTriggerButtonTextColor,
     triggerButtonTextSize = 14,
     triggerButtonFontWeight,
     triggerButtonContentAlignment,
@@ -75,6 +75,17 @@ export const ModalV2 = function Modal({
     headerDividerColor,
     footerDividerColor,
   } = styles;
+  // A colour or label bound to a non-text value (a number, `false`, an object) falls back to the definition default
+  // rather than crashing the hover-shade maths or rendering an object as a React child. An unset value keeps its old
+  // behaviour.
+  const textOr = (value, fallback) => (value == null || typeof value === 'string' ? value : fallback);
+  const triggerButtonBackgroundColor = textOr(rawTriggerButtonBackgroundColor, 'var(--cc-primary-brand)');
+  const triggerButtonHoverBackgroundColor = textOr(rawTriggerButtonHoverBackgroundColor, 'var(--cc-primary-brand)');
+  const triggerButtonTextColor = textOr(rawTriggerButtonTextColor, 'var(--cc-surface1-surface)');
+  const computedTriggerButtonLabel =
+    typeof triggerButtonLabel === 'number'
+      ? String(triggerButtonLabel)
+      : textOr(triggerButtonLabel, null) ?? 'Show Modal';
   const normalizedTriggerButtonTextSize = Number(triggerButtonTextSize);
   const computedTriggerButtonFontSize = Number.isFinite(normalizedTriggerButtonTextSize)
     ? normalizedTriggerButtonTextSize
@@ -101,6 +112,11 @@ export const ModalV2 = function Modal({
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
   const footerHeightPx = getModalFooterHeight(showFooter, footerHeight);
   const isFullScreen = properties.size === 'fullscreen';
+  // The shadcn pack's Dialog is this widget in the pack's look (Widgets/Shadcn/ShadOverlays.jsx), optionally a side
+  // sheet at full height.
+  const skin = componentType === 'ShadDialog' ? 'shadcn' : undefined;
+  const sheetSide =
+    skin && properties.variant === 'sheet' ? (properties.side === 'left' ? 'left' : 'right') : undefined;
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
@@ -307,7 +323,7 @@ export const ModalV2 = function Modal({
         <WidgetTooltip {...tooltipProps} darkMode={darkMode}>
           <button
             disabled={isDisabledTrigger}
-            className="jet-btn btn btn-primary overflow-hidden"
+            className={`jet-btn btn btn-primary overflow-hidden${skin ? ' tj-shad-trigger' : ''}`}
             style={customStyles.buttonStyles}
             onClick={(event) => {
               /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -331,7 +347,7 @@ export const ModalV2 = function Modal({
                 fontWeight: computedTriggerButtonFontWeight,
               }}
             >
-              {triggerButtonLabel ?? 'Show Modal'}
+              {computedTriggerButtonLabel}
             </span>
             {iconVisibility && (
               <TablerIcon
@@ -404,6 +420,8 @@ export const ModalV2 = function Modal({
           darkMode,
           subContainerIndex: contextIndices,
           isDynamicHeightEnabled,
+          skin,
+          sheetSide,
         }}
       />
     </div>
