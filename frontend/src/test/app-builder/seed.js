@@ -15,9 +15,24 @@
  * the two never meet.
  */
 import useStore from '@/AppBuilder/_stores/store';
+import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager/componentTypes';
 
-/** Component definition in the shape `buildComponentDefinition` produces. */
-export function componentDefinition(id, name, type, properties = {}) {
+/** Component definition in the shape `buildComponentDefinition` produces.
+ *  - Seed from the widget's OWN registered `definition` and let the caller override any bucket.
+ *  - A spec then states only what it varies, and can never drift from production defaults.
+ *
+ * NOTE - `seedFromRegisteredDefinition: false` is a MIGRATION ESCAPE HATCH, not a supported mode.
+ *        Specs written before this seeding existed assume every bucket they did not name arrives empty,
+ *        and registered defaults change what they render
+ */
+export function componentDefinition(
+  id,
+  name,
+  type,
+  properties = {},
+  { styles, validation, others, seedFromRegisteredDefinition = true } = {}
+) {
+  const registered = seedFromRegisteredDefinition ? (componentTypeDefinitionMap[type]?.definition ?? {}) : {};
   return {
     id,
     name,
@@ -25,7 +40,14 @@ export function componentDefinition(id, name, type, properties = {}) {
       component: type,
       name,
       displayName: type,
-      definition: { properties, styles: {}, validation: {}, general: {}, generalStyles: {}, others: {} },
+      definition: {
+        properties: { ...registered.properties, ...properties },
+        styles: { ...registered.styles, ...styles },
+        validation: { ...registered.validation, ...validation },
+        general: { ...registered.general },
+        generalStyles: { ...registered.generalStyles },
+        others: { ...registered.others, ...others },
+      },
     },
     layouts: { desktop: { top: 0, left: 0, width: 8, height: 40 } },
   };
