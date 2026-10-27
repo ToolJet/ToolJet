@@ -47,9 +47,13 @@ You can reorder fields by dragging them in the Fields list. Use the **Add new fi
 | :------------ | :---------- |
 | Field clicked | Triggered when the user clicks on a field row. The `lastClickedField` variable is updated before this event fires. |
 | Save changes | Triggered when the user clicks the **Save changes** button after editing one or more field values. |
+| Field edited | Triggered each time the value of an editable field changes. The new value is added to `changeSet` before this event fires. |
+| Cancel changes | Triggered when the user clicks **Cancel**, or when `resetChanges()` is called. Pending edits are discarded before this event fires. |
 
 :::info
-When a user edits any field value, a popover appears at the bottom of the component with **Cancel** and **Save changes** buttons. Clicking **Cancel** discards all pending edits. Clicking **Save changes** fires the event and resets the change set.
+When **Show update buttons** is on and a user edits any field value, a popover appears at the bottom of the component with **Cancel** and **Save changes** buttons. Clicking **Cancel** discards all pending edits and fires **Cancel changes**. Clicking **Save changes** resets the change set and fires **Save changes**.
+
+When **Show update buttons** is off, no buttons appear. Edits are still collected in `changeSet` and **Field edited** still fires, so you can save changes from the **Field edited** event and discard them with `resetChanges()`.
 :::
 
 ## Component Specific Actions (CSA)
@@ -61,6 +65,7 @@ The following actions of the component can be controlled using the component-spe
 | setVisibility() | Sets the visibility of the component. | `components.keyvaluepair1.setVisibility(false)` |
 | setDisable() | Disables or enables the component. | `components.keyvaluepair1.setDisable(true)` |
 | setLoading() | Sets the loading state of the component. | `components.keyvaluepair1.setLoading(true)` |
+| resetChanges() | Discards all pending edits, restores the original values and fires the **Cancel changes** event. Available from RunJS; it isn't listed in the **Control component** action. | `components.keyvaluepair1.resetChanges()` |
 
 ## Exposed Variables
 
@@ -77,6 +82,7 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Show update buttons | Shows the **Cancel** and **Save changes** buttons when a field has unsaved edits. On by default. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
@@ -100,7 +106,7 @@ The following actions of the component can be controlled using the component-spe
 | Color | Sets the color of the field labels. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Alignment | Sets the position of the label relative to the value field. | Click on the toggle options to select **Top** or **Side**. |
 | Direction | Sets the alignment direction of side-positioned labels. Only visible when alignment is set to **Side**. | Click the left-align or right-align icon button. |
-| Width | Sets the width of the label area. Only visible when alignment is set to **Side**. | Enable **Auto width** for automatic sizing, or disable it to manually adjust the width using the slider. |
+| Width | Sets the width of the label area. Only visible when alignment is set to **Side**. | Enable **Auto label width** for automatic sizing, or disable it to manually adjust the width using the slider. |
 
 ### Values
 
@@ -108,11 +114,17 @@ The following actions of the component can be controlled using the component-spe
 | :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Accent | Sets the accent color used for interactive elements like toggles and selections. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Text | Sets the text color of the field values. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Hover background | Sets the background of an editable field when the user hovers over it. | Select **Auto** to use the default hover color, or **Manual** to pick a color. |
 
 ### Container
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Padding inside | Sets the space between the component's border and its fields, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
+| Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Border radius | Sets the radius of the component's corners, in pixels. Defaults to `6`. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
+| Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties. |
 | Padding | Controls the internal spacing of the component. | Select **Default** to use standard padding, or **None** to remove all padding. |
 
 ### Advanced
