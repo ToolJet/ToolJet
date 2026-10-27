@@ -114,6 +114,17 @@ describe('DashboardAppsController', () => {
       });
       const stubVersion = await findEntityOrFail(AppVersion, { appId: stub.id });
       await updateEntity(AppVersion, stubVersion.id, { isStub: true, isSynced: false });
+      const { app: mixed } = await seedDashboardApp(nestApp, { user: admin.user, name: 'Real name' });
+      const realVersion = await findEntityOrFail(AppVersion, { appId: mixed.id });
+      const newerStub = await saveEntity(AppVersion, {
+        ...realVersion,
+        id: undefined,
+        name: 'stub-row',
+        slug: `${realVersion.slug}-stub`,
+        appName: 'Stub name',
+        isStub: true,
+      } as AppVersion);
+      await updateEntity(AppVersion, newerStub.id, { updatedAt: new Date(Date.now() + 60_000) });
       const spy = jest.spyOn(GitSyncConfigsUtilService.prototype, 'getDetails').mockResolvedValue({
         isEnabled: true,
         isMultiBranchingEnabled: false,
@@ -130,6 +141,7 @@ describe('DashboardAppsController', () => {
           git: { synced: false, version_synced: false, stub: true },
           actions: { launch: null },
         });
+        expect(byId.get(mixed.id)).toMatchObject({ name: 'Real name', git: { stub: false } });
       } finally {
         spy.mockRestore();
       }

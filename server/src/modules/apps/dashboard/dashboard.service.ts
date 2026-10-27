@@ -248,7 +248,6 @@ export class DashboardService {
     });
   }
 
-  // Null when git-sync is off or the page's scope is workflows (workflows aren't git-tracked).
   private async gitStates(appIds: string[], scope: DashboardScope): Promise<Map<string, AppGitState>> {
     if (!scope.git.enabled || scope.type === APP_TYPES.WORKFLOW || appIds.length === 0) return new Map();
     const rows: {
