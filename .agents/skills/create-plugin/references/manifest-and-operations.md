@@ -1,10 +1,9 @@
 # manifest.json and operations.json
 
-`manifest.json` defines the connection form, `operations.json` the query form. Both are
-validated against `plugins/schemas/manifest.schema.json` and `operations.schema.json`; the V1 widget
-`type` enums there are the complete list of accepted names (V2 `tj:ui:properties.*.widget` is not
-schema-checked). Templates live in
-`../assets/templates/`; replace every `{{PLACEHOLDER}}` with real values: `PLUGIN_TITLE` and
+`manifest.json` = connection form, `operations.json` = query form. Both are validated against
+`plugins/schemas/manifest.schema.json` and `operations.schema.json`, whose V1 widget `type` enums
+are the complete list of accepted names (V2 `tj:ui:properties.*.widget` is not schema-checked).
+Templates: `../assets/templates/`; replace every `{{PLACEHOLDER}}`: `PLUGIN_TITLE` and
 `PLUGIN_NAME` are the display name, `PLUGIN_KIND` the id, `SPEC_NAME` the `@spec/` file name,
 `DEFAULT_BASE_URL` the API base URL, the OAuth ones come from the provider's docs, and
 `OPERATION_1_*` / `PARAM_1_*` are copied once per operation and parameter.
@@ -72,12 +71,12 @@ choice.
 Rules:
 
 - Every secret is encrypted: V1 `source.options.<key>.encrypted: true`, V2 `tj:encrypted`.
-- `customTesting`: semantics in `marketplace/AGENTS.md`. The non-OAuth templates set `false` (the
-  test-connection button shows, so implement `testConnection`). `oauth-manifest.json` sets `true`
-  (no button; connecting validates), as most OAuth plugins do. Change either deliberately.
+- `customTesting` (semantics: `marketplace/AGENTS.md`): non-OAuth templates set `false` (button
+  shows; implement `testConnection`); `oauth-manifest.json` sets `true` (no button; connecting
+  validates). Change either deliberately.
 - Keep `exposedVariables` as in the templates.
-- `required` lists keys that must be filled before saving. Optional credential: empty `required`
-  and have the backend skip the auth header when the value is undefined.
+- `required`: keys that must be filled before saving. Optional credential: leave it out of
+  `required`; the backend skips the auth header when undefined.
 - OAuth: copy `oauth_configs` from the template; edit `auth_url`, `access_token_url`, `scopes`,
   and `allowed_field_groups`. Leave `redirect_url` empty. Working references:
   `marketplace/plugins/hubspot/lib/manifest.json`, `quickbooks`, `xero`.
@@ -120,9 +119,8 @@ Template: `v1/api-endpoint-operations.json`.
 
 - `spec_url` is a string for one spec, or an object `{ "Label": "@spec/<id>/<name>" }` for an
   Entity dropdown over several.
-- Spelling: `spec_url` is the key the frontend form reads. Existing plugins also use `specUrl`,
-  which reaches the form as `spec_url` because the data-sources API decamelizes keys. New
-  plugins use `spec_url`; `plugin-spec.json` uses `specUrl`.
+- Spelling: new plugins use `spec_url` (the key the form reads); `plugin-spec.json` uses
+  `specUrl`. Older plugins' `specUrl` still works (the data-sources API decamelizes keys).
 - Prefer `@spec/` over external URLs: no runtime dependency on a third-party host or CSP.
 - The widget reads path-level and operation-level parameters, renders path, query and body
   inputs, and sends `{ operation, path, params: { path, query, request } }` to `run()`.
