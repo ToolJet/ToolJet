@@ -36,6 +36,12 @@ describe('getSSRFConfig with runtime config', () => {
       blockedSchemes: ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'],
     });
   });
+  it('keeps protection off when the toggle is turned off, even with SSRF_PROTECTION_ENABLED=true', async () => {
+    process.env.SSRF_PROTECTION_ENABLED = 'true';
+    (globalThis as any)[KEY] = { enabled: false, allowedHostnames: new Set(), allowedRanges: ranges() };
+    expect(getSSRFConfig().enabled).toBe(false);
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
+  });
   it('falls back to env behaviour when the runtime key is absent', () => {
     expect(getSSRFConfig().enabled).toBe(false);
   });

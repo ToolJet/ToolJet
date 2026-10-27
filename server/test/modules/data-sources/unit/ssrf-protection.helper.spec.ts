@@ -81,6 +81,12 @@ describe('validateUrlForSSRF with runtime config', () => {
     process.env.SSRF_PROTECTION_ENABLED = 'false';
     await expect(validateUrlForSSRF('http://127.0.0.1/')).rejects.toThrow(BadRequestException);
   });
+
+  it('keeps protection off when the toggle is turned off, even with SSRF_PROTECTION_ENABLED=true', async () => {
+    process.env.SSRF_PROTECTION_ENABLED = 'true';
+    publish({ enabled: false });
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
+  });
 });
 
 describe('validateUrlForSSRF without runtime config', () => {
