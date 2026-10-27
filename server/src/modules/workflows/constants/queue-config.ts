@@ -38,12 +38,12 @@ export const WORKFLOW_JOB_RETRY_CONFIG = {
 /**
  * Job retention policy
  *
- * removeOnComplete: Keep last N completed jobs for debugging/auditing
- * removeOnFail: Keep last N failed jobs for debugging/troubleshooting
+ * removeOnComplete: Keep last N completed jobs, at most 1 hour (job holds the full run result)
+ * removeOnFail: Keep last N failed jobs, at most 1 day
  */
 export const WORKFLOW_QUEUE_RETENTION = {
-  removeOnComplete: 100, // Keep last 100 completed jobs
-  removeOnFail: 50, // Keep last 50 failed jobs
+  removeOnComplete: { age: 3600, count: 100 },
+  removeOnFail: { age: 86400, count: 50 },
 };
 
 /**
