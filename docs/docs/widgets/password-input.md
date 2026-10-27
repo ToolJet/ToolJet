@@ -3,7 +3,7 @@ id: password-input
 title: Password Input
 ---
 
-The **Password Input** component allows users to enter passwords securely. In this component, passwords are concealed, displaying each character as an asterisk to ensure privacy. In this document, we'll go through all the configuration options for the **Password Input** component.
+The **Password Input** component allows users to enter passwords securely. In this component, passwords are masked to ensure privacy. Users can click the eye icon at the end of the field to show or hide the password. In this document, we'll go through all the configuration options for the **Password Input** component.
 
 ## Properties
 
@@ -32,7 +32,7 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div>     | <div style={{width: "200px"}}> How To Access </div> |
 | :------------------------------------------- | :---------------------------------------------------- | :-------------------------------------------------- |
-| setText() | Sets the value of the input field. | `components.passwordinput1.setText()` |
+| setText() | Sets the value of the input field. | `components.passwordinput1.setText('password123')` |
 | clear() | Clears the entered text in the input field. | `components.passwordinput1.clear()` |
 | setFocus() | Sets the focus of the cursor on the input field. | `components.passwordinput1.setFocus()` |
 | setBlur() | Removes the focus of the cursor from the input field. | `components.passwordinput1.setBlur()` |
@@ -100,10 +100,11 @@ To add regex inside `Custom Validation`, you can use the below format:
 | :--------------------------------------------------- | :--------------------------------------------------- | :---------------------------------------------------------- |
 | Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Accent | Sets the border color of the field while it is focused. A validation error border takes priority. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Text | Sets the color of the text entered in the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Placeholder text | Sets the color of the placeholder text displayed when the field is empty. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Error text | Sets the color of validation message that displays. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Icon | Allows you to select an icon for the component. | Enable the icon visibility, select icon and icon color. Alternatively, you can set it programmatically using **fx**. |
+| Icon | Allows you to select an icon for the component. A lock icon is shown by default. | Turn the icon visibility on or off, select icon and icon color. Alternatively, you can set it programmatically using **fx**. |
 | Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
