@@ -503,7 +503,7 @@ function unresolvedReason(failure?: string): string {
 function privateNetworkBlockedMessage(host: string, reason: string): string {
   const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
   const hint = (globalThis as unknown as Record<string, unknown>)[runtimeKey]
-    ? ' A super admin can allow it in Settings → Security → Private network access.'
+    ? ' A super admin can allow it in Settings → Security → Outbound requests.'
     : '';
   return `Requests to ${host} are blocked because it ${reason}.${hint}`;
 }

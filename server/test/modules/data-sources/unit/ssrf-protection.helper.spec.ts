@@ -181,7 +181,7 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     });
   });
   describe('block messages name the host, the reason and where to allow it', () => {
-    const hint = 'A super admin can allow it in Settings → Security → Private network access.';
+    const hint = 'A super admin can allow it in Settings → Security → Outbound requests.';
     let spies: jest.SpyInstance[] = [];
     afterEach(() => spies.forEach((spy) => spy.mockRestore()));
 
