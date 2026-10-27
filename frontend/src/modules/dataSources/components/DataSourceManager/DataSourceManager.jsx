@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { pluginIconFile } from '@/_helpers/pluginIcon';
+import { resolvePluginKind } from '@/_helpers/pluginKind';
 import { TestConnection } from './TestConnection';
 import { getWorkspaceId, deepEqual, returnDevelopmentEnv, decodeEntities } from '@/_helpers/utils';
 import { getSubpath } from '@/_helpers/routes';
@@ -828,6 +829,7 @@ export class DataSourceManagerComponent extends React.Component {
                 src={item.src}
                 handleClick={() => openDataSourceConfirmModal(item)}
                 usePluginIcon={isEmpty(item?.iconFile?.data)}
+                iconKind={resolvePluginKind(item)}
                 height="35px"
                 width="35px"
               />
@@ -936,6 +938,7 @@ export class DataSourceManagerComponent extends React.Component {
               src={item?.src}
               handleClick={() => openDataSourceConfirmModal(item)}
               usePluginIcon={isEmpty(item?.iconFile?.data)}
+              iconKind={resolvePluginKind(item)}
               height="35px"
               width="35px"
             />
