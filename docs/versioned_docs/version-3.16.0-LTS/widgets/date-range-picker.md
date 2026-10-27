@@ -10,9 +10,10 @@ The **Range Picker** component enables users to select a range of dates. It can 
 | Property           | Description                                                     | Expected Value                                                |
 | :----------------- | :-------------------------------------------------------------- | :------------------------------------------------------------ |
 | Label              | Text to display as the label for the field.                     | String (e.g., `Select Check-In and Check-Out Dates`).         |
+| Placeholder        | Text shown in the field when no date range is selected. Default value is **Select Date Range**. | String (e.g., `Select check-in and check-out dates`). |
 | Default start date | Set the start date to be selected by default in the component.  | Date in correct format (e.g., 01/04/2024).                    |
 | Default end date   | Set the end date to be selected by default in the component.    | Date in correct format (e.g., 10/04/2024).                    |
-| Format             | Defines the date format. Default date format is **DD/MM/YYYY**. | Date format in ISO 8601 defined formats (e.g., `MM/DD/YYYY`). |
+| Format             | Defines the date format. Default date format is **DD/MM/YYYY**. | A [Moment.js](https://momentjs.com/docs/#/displaying/format/) format string (e.g., `MM/DD/YYYY`). |
 
 :::caution
 Click the **fx** button next to **Format** to enter a custom format string. ToolJet uses **[Moment.js](https://momentjs.com/docs/#/displaying/format/)** to parse and format dates, so the format string must use Moment.js tokens, and these tokens are case-sensitive — for example, `D` is the day of the month (`1`–`31`), while lowercase `d` is the day of the week (`0`–`6`, Sunday to Saturday). Also note that `YYYY` gives a 4-digit year, but lowercase `yyyy` isn't a valid Moment.js token and gets rendered as literal text. Use a format like `MMM D, YYYY` (e.g., `Jan 5, 2024`), not `MMM d, yyyy`.
@@ -36,11 +37,11 @@ Following actions of component can be controlled using the Component Specific Ac
 
 | <div style={{ width:"155px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div>             | How To Access                                                  |
 | :------------------------------------------- | :------------------------------------------------------------ | :------------------------------------------------------------- |
-| setStartDate( )                              | Sets the start date of the selected date range.               | `components.daterangepicker1.setStartDate(date)`               |
+| setStartDate( )                              | Sets the start date of the selected date range. An optional second argument sets the format to parse the date with. | `components.daterangepicker1.setStartDate(date, format)`               |
 | clearStartDate( )                            | Clears the selected start date.                               | `components.daterangepicker1.clearStartDate()`                 |
-| setEndDate( )                                | Sets the end date of the selected date range.                 | ` await components.daterangepicker1.setEndDate(date)`          |
+| setEndDate( )                                | Sets the end date of the selected date range. An optional second argument sets the format. | `components.daterangepicker1.setEndDate(date, format)`                 |
 | clearEndDate( )                              | Clears the selected end date.                                 | `components.daterangepicker1.clearEndDate()`                   |
-| setDateRange( )                              | Sets both the start and end dates of the selected date range. | `components.daterangepicker1.setDateRange(startDate, endDate)` |
+| setDateRange( )                              | Sets both the start and end dates of the selected date range. An optional third argument sets the format. | `components.daterangepicker1.setDateRange(startDate, endDate, format)` |
 | clearDateRange( )                            | Clears both the start and end dates.                          | `components.daterangepicker1.clearDateRange()`                 |
 | setDisabledDates( )                          | Sets specific dates as disabled, preventing selection.        | `components.daterangepicker1.setDisabledDates([date1, date2])` |
 | clearDisabledDates( )                        | Clears all disabled date restrictions.                        | `components.daterangepicker1.clearDisabledDates()`             |
@@ -48,9 +49,9 @@ Following actions of component can be controlled using the Component Specific Ac
 | setMaxDate( )                                | Sets the maximum selectable date.                             | `components.daterangepicker1.setMaxDate(date)`                 |
 | setFocus( )                                  | Sets the focus of the cursor on the input field.              | `components.daterangepicker1.setFocus()`                       |
 | setBlur( )                                   | Removes the focus of the cursor from the input field.         | `components.daterangepicker1.setBlur()`                        |
-| setVisibility()                              | Sets the visibility of the component.                         | `components.daterangepicker1.setVisibility()`                  |
-| setLoading()                                 | Sets the loading state of the component.                      | `components.daterangepicker1.setLoading()`                     |
-| setDisable()                                 | Disables the component.                                       | `components.daterangepicker1.setDisable()`                     |
+| setVisibility()                              | Sets the visibility of the component.                         | `components.daterangepicker1.setVisibility(true)`                      |
+| setLoading()                                 | Sets the loading state of the component.                      | `components.daterangepicker1.setLoading(true)`                         |
+| setDisable()                                 | Disables the component.                                       | `components.daterangepicker1.setDisable(true)`                         |
 
 ## Exposed Variables
 
@@ -64,9 +65,10 @@ Following exposed variables can be dynamically accessed using the given JS query
 | minDate           | Holds the value of the minimum date allowed in the component.     | `{{components.daterangepicker1.minDate}}`           |
 | maxDate           | Holds the value of the maximum date allowed in the component.     | `{{components.daterangepicker1.maxDate}}`           |
 | selectedDateRange | Holds the value of the component's date range.                    | `{{components.daterangepicker1.selectedDateRange}}` |
-| startDateInUnix   | Holds the start date in Unix timestamp format.                    | `{{components.daterangepicker1.startDateInUnix}}`   |
-| endDateInUnix     | Holds the end date in Unix timestamp format.                      | `{{components.daterangepicker1.endDateInUnix}}`     |
+| startDateInUnix   | Holds the start date as a Unix timestamp in milliseconds.         | `{{components.daterangepicker1.startDateInUnix}}`   |
+| endDateInUnix     | Holds the end date as a Unix timestamp in milliseconds.           | `{{components.daterangepicker1.endDateInUnix}}`     |
 | dateFormat        | Defines the format in which the selected date range is displayed. | `{{components.daterangepicker1.dateFormat}}`        |
+| isValid           | Indicates if the selected date range meets validation criteria.   | `{{components.daterangepicker1.isValid}}`           |
 | isMandatory       | Indicates if the field is required.                               | `{{components.daterangepicker1.isMandatory}}`       |
 | isLoading         | Indicates if the component is loading.                            | `{{components.daterangepicker1.isLoading}}`         |
 | isVisible         | Indicates if the component is visible.                            | `{{components.daterangepicker1.isVisible}}`         |
@@ -76,28 +78,23 @@ Following exposed variables can be dynamically accessed using the given JS query
 
 | <div style={{ width:"200px"}}> Validation Option </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{width: "500px"}}> Expected Value </div> |
 | :------------------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
-| Make this field mandatory | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Min Date | Sets the minimum date allowed. | Date in correct format (e.g. `01/01/2020`). |
 | Max Date | Sets the maximum date allowed. | Date in correct format (e.g. `31/12/2026`). |
-| Disabled dates | Sets the dates that are not acceptable. | Date in correct format (e.g. `23/07/2024`). |
+| Disabled dates | Sets the dates that can't be part of the range. If the selected range includes one of them, the error *Selected date range is excluded* is shown. | An array of dates in the Format (e.g. `{{['23/07/2024', '24/07/2024']}}`). |
 | Custom validation | Specifies a validation error message for specific conditions. | Logical Expression |
+| Make this field mandatory | Displays an 'Input is mandatory' message if no date range is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 To add regex inside `Custom Validation`, you can use the below format:
 
-**Format**: `{{(<regexPattern>.test(<value>)) ? '' : 'Error message';}}`
+**Format**: `{{(<regexPattern>.test(<value>)) ? '' : 'Error message'}}`
 
 **Example**:
 
 ```js
-{
-  {
-    /^\d{4}-\d{2}-\d{2}$/.test(components.daterangepicker1.startDate) &&
-    /^\d{4}-\d{2}-\d{2}$/.test(components.daterangepicker1.endDate)
-      ? ""
-      : "Please enter a valid date in YYYY-MM-DD format";
-  }
-}
+{{ /^\d{4}-\d{2}-\d{2}$/.test(components.daterangepicker1.startDate) && /^\d{4}-\d{2}-\d{2}$/.test(components.daterangepicker1.endDate) ? '' : 'Please enter a valid date in YYYY-MM-DD format' }}
 ```
+
+`startDate` and `endDate` use the **Format** property, so this example works only when **Format** is set to `YYYY-MM-DD`.
 
 ## Additional Actions
 
