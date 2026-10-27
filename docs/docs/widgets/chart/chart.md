@@ -48,18 +48,26 @@ When using Plotly JSON schema mode, the `shapes` array inside the `layout` objec
 
 Refer to the [Plotly shapes documentation](https://plotly.com/javascript/shapes/) for the full list of supported shape types and properties.
 
+## Bar mode
+
+Available when **Use Plotly JSON schema** is enabled. Sets how bar traces are arranged: **Stack**, **Group** (default), **Overlay** or **Relative**. This value overrides any `barmode` set in the JSON `layout`.
+
 ## Component specific actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div> |
+| :-------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
+| clearClickedPoint( ) | Clears the clicked data point and resets `clickedDataPoint` to an empty object. | `components.chart1.clearClickedPoint()` |
 
 ## Exposed variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div>       | <div style={{width: "200px"}}> How To Access </div>                                                                                                                                     |
 | :--------------------------------------------- | :------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | chartTitle                                     | Holds the title of the chart component.                 | Accessible dynamically with JS (for e.g., `{{components.chart1.chartTitle}}`).                                                                                                          |
-| xAxisTitle                                     | Contains the title for the X-axis of the chart.         | Accessible dynamically with JS (for e.g., `{{components.chart1.xAxisTitle}}`).                                                                                                          |
-| yAxisTitle                                     | Contains the title for the Y-axis of the chart.         | Accessible dynamically with JS (for e.g., `{{components.chart1.yAxisTitle}}`).                                                                                                          |
-| clickedDataPoints                              | Stores details about the data points that were clicked. | Accessible dynamically with JS (for e.g., `{{components.chart1.clickedDataPoints}}`). Each data point includes `xAxisLabel`, `yAxisLabel`, `dataLabel`, `dataValue`, and `dataPercent`. |
+| xAxisTitle                                     | Contains the title for the X-axis of the chart. Only set when **Use Plotly JSON schema** is on and the layout defines `xaxis.title`. | Accessible dynamically with JS (for e.g., `{{components.chart1.xAxisTitle}}`). |
+| yAxisTitle                                     | Contains the title for the Y-axis of the chart. Only set when **Use Plotly JSON schema** is on and the layout defines `yaxis.title`. | Accessible dynamically with JS (for e.g., `{{components.chart1.yAxisTitle}}`). |
+| clickedDataPoint                               | Stores details of the last data point that was clicked. Empty object `{}` until a point is clicked. | Accessible dynamically with JS (for e.g., `{{components.chart1.clickedDataPoint}}`). The object includes `xAxisLabel`, `yAxisLabel`, `dataLabel`, `dataValue`, `dataPercent`, and `dataSeriesName`. |
 
 ## Properties
 
@@ -86,15 +94,15 @@ The data needs to be in JSON format and should have `x` and `y` keys. The compon
 
 ## Marker Color
 
-Available for line and bar charts, `Marker Color` defines the color of the line or bars on the chart.
+Available for line and bar charts when **Use Plotly JSON schema** is off, `Marker Color` defines the color of the line or bars on the chart.
 
 ## Options
 
 | <div style={{ width:"100px"}}> Option </div> | <div style={{ width:"150px"}}> Description </div>                                                       | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
 | :------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
 | Loading state                                | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show axis                                    | Hides or displays the axes on the chart.                                                                | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show grid lines                              | Hides or displays the grid lines on the chart.                                                          | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show axes                                    | Hides or displays the axes on the chart. Not available for pie charts.                                                              | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show grid lines                              | Hides or displays the grid lines on the chart. Not available for pie charts.                                                          | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Events
 
@@ -120,10 +128,10 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | :--------------------------------------------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
 | Background color                                     | Sets the background color of the component.                                                     | Select the color or click on **fx** and input code that programmatically returns a Hex color code.                                 |
 | Border color                                         | Sets the border color of the component.                                                         | Select the color or click on **fx** and input code that programmatically returns a Hex color code.                                 |
-| Paddings                                             | Sets the padding of the component.                                                              | Enter a numeric value. (for e.g., `22`)                                                                                            |
+| Padding                                              | Sets the padding of the component. Defaults to `50`.                                            | Enter a numeric value. (for e.g., `22`)                                                                                            |
 | Border radius                                        | Modifies the border radius of the component.                                                    | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.                                  |
 | Visibility                                           | Sets the visibility of the component.                                                           | Enable/disable using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disables                                             | Allows you to enable/disable a component. The component is not interactive when it is disabled. | Enable/disable using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable                                              | Allows you to enable/disable a component. The component is not interactive when it is disabled. | Enable/disable using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ### Advanced
 
