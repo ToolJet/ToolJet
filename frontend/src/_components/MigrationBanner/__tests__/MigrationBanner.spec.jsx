@@ -32,6 +32,17 @@ describe('MigrationBanner', () => {
     expect(screen.getByRole('status')).toHaveTextContent(text);
   });
 
+  test.each([
+    ['builders', {}, 'running', /ToolJet is being upgraded and is unavailable until it finishes/],
+    ['builders', {}, 'failed', /ToolJet is unavailable until an administrator fixes it/],
+    ['end users', { endUser: true, floating: true }, 'running', /This app is unavailable until it finishes/],
+  ])('tells %s ToolJet is unavailable (%s) when the server refuses reads too', async (_who, props, state, text) => {
+    respondWith({ state, startedAt: '2026-10-19T10:00:00Z', readsBlocked: true });
+    render(<MigrationBanner {...props} />);
+
+    await waitFor(() => expect(visibleBanner()).toHaveTextContent(text));
+  });
+
   test('links a super admin to the migrations page when the upgrade failed', async () => {
     asSuperAdmin(true);
     respondWith({ state: 'failed', startedAt: '2026-10-19T10:00:00Z' });

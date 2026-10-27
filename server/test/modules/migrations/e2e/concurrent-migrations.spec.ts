@@ -4,7 +4,7 @@ import {
   HELD_MIGRATION_LOCKS_SQL,
   MIGRATION_ADVISORY_LOCK_KEY,
   SKIPPED_EXIT_CODE,
-  withDeadClientKeepalive,
+  withMigrationConnectionOptions,
 } from 'src/migration-helpers/migrations-table-gate';
 import {
   createScratchDatabase,
@@ -496,12 +496,28 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       }
     }, 120_000);
 
+    it('should open runner connections with no statement timeout, so a server or role limit cannot cancel a long run', async () => {
+      const previous = process.env.PGOPTIONS;
+      delete process.env.PGOPTIONS;
+      const dataSource = new DataSource({ type: 'postgres', ...postgres, database: phaseDatabase });
+      try {
+        withMigrationConnectionOptions(dataSource);
+        await dataSource.initialize();
+        const [{ timeout }] = await dataSource.query(`SELECT current_setting('statement_timeout') AS timeout`);
+
+        expect(timeout).toBe('0');
+      } finally {
+        if (previous !== undefined) process.env.PGOPTIONS = previous;
+        if (dataSource.isInitialized) await dataSource.destroy();
+      }
+    });
+
     it('should open every runner connection with the dead-client keepalive, keeping PGOPTIONS', async () => {
       const previous = process.env.PGOPTIONS;
       process.env.PGOPTIONS = '-c statement_timeout=12345';
       const dataSource = new DataSource({ type: 'postgres', ...postgres, database: phaseDatabase });
       try {
-        withDeadClientKeepalive(dataSource);
+        withMigrationConnectionOptions(dataSource);
         await dataSource.initialize();
         const [settings] = await dataSource.query(
           `SELECT current_setting('tcp_keepalives_idle') AS idle, current_setting('tcp_keepalives_count') AS count,

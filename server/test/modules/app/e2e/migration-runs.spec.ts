@@ -289,6 +289,22 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       await expect(fresh(server).status()).resolves.toEqual({ state: 'idle' });
     });
 
+    it.each([
+      ['succeeded', false],
+      ['failed', true],
+    ])(
+      'should block reads only while a run that alters tables is unfinished (latest run %s: %s)',
+      async (status, readsBlocked) => {
+        await dataSource.query(
+          `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at, migrations)
+           VALUES ($1, $2, 'boot', now(), $3::jsonb)`,
+          [version(), status, JSON.stringify([{ name: 'DropPulledAtAndRemoteUpdatedAt1785600000000', status: 'done' }])]
+        );
+
+        await expect(booting().status()).resolves.toMatchObject({ state: expect.any(String), readsBlocked });
+      }
+    );
+
     it('should retry on boot a failed run of this version, so a restart or new image is the fix', async () => {
       await dataSource.query(
         `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at) VALUES ($1, 'failed', 'boot', now())`,

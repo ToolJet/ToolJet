@@ -2,27 +2,28 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
  * Copies workflow-app metadata (name/slug/icon/is_public) from apps.* onto
- * app_versions.*. Zeroing apps.* afterwards is the same placeholder pattern
+ * app_versions.*, then zeroes out apps.* — the same placeholder pattern
  * 1778000000000 already used for front-end/module. Split out of
  * 1782300000000 (which originally bundled this with trigger installation)
  * so the data-copy concern and the slug-uniqueness-trigger concern each
  * live in their own migration.
  *
- * Ordering: dedupe apps.slug -> backfill app_versions from apps. Zeroing apps.*
- * moved to data migration CopyAndZeroWorkflowAppMeta1793000000000: this runs in
- * async mode's schema phase, and a release that still reads apps.* (3.21.58) must
- * keep working if the data phase fails. 1782300000000 installs the uniqueness trigger AFTER this runs, so
- * the trigger never fires during this migration's own UPDATEs (CREATE
- * TRIGGER doesn't validate existing rows, only future writes).
+ * Ordering: dedupe apps.slug -> backfill app_versions from apps -> zero out
+ * apps.*.
  *
  * apps.slug keeps its existing entity-level UNIQUE constraint (APP_SLUG_UNIQUE
  * / "UQ_35eef0fb1f3f2b435b8b6d82ba0", from `@Column({ unique: true })` on
  * App.slug — present in every edition, not Cloud-only). It is NOT dropped
- * by the zeroing step: `apps.slug = id` is itself unique (every app has a
+ * here: setting `apps.slug = id` (below) is itself unique (every app has a
  * distinct id), so it never collides.
  *
  * down() is a schema-only no-op, matching this migration family's
  * established convention of not reverting data on rollback.
+ *
+ * A data migration: 3.21.58 reads workflow name/slug/icon from apps.*, and async mode's schema phase
+ * must leave a database 3.21.58 still runs on. Moved from migrations/ under the same name, so databases
+ * that already ran it do not run it again. The slug trigger from 1782300000000 already exists
+ * when this runs; step 1's dedupe keeps step 2 from tripping it.
  */
 export class CopyWorkflowAppMetaToAppVersions1782250000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -77,6 +78,16 @@ export class CopyWorkflowAppMetaToAppVersions1782250000000 implements MigrationI
           is_public = a.is_public
       FROM apps a
       WHERE av.app_id = a.id AND a.type = 'workflow'
+    `);
+
+    // Step 3: Zero out apps.* for workflows, same placeholder pattern as front-end/module
+    // in 1778000000000 step 5. slug=id satisfies APP_SLUG_UNIQUE (every id is distinct),
+    // so the entity-level constraint is left in place, not dropped. Must run after step 2
+    // (which reads apps.* before it's zeroed).
+    await queryRunner.query(`
+      UPDATE apps
+      SET slug = id, name = NULL, icon = NULL, is_public = false
+      WHERE type = 'workflow'
     `);
   }
 

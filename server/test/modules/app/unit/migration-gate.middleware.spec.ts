@@ -28,9 +28,9 @@ function buildResponse() {
 }
 
 /** Caching, single flight and failing open live in MigrationRunsService.status (e2e). */
-function buildMiddleware(state: MigrationState, preCutoffRun = false) {
+function buildMiddleware(state: MigrationState, readsBlocked = false) {
   const logger = { warn: jest.fn(), log: jest.fn(), error: jest.fn() } as unknown as Logger;
-  const status = jest.fn().mockResolvedValue({ state, preCutoffRun });
+  const status = jest.fn().mockResolvedValue({ state, readsBlocked });
   const runs = { status } as unknown as MigrationRunsService;
   return { middleware: new MigrationGateMiddleware(logger, runs), logger, status };
 }
@@ -261,12 +261,14 @@ describe('MigrationGateMiddleware', () => {
       );
     });
 
-    describe('a run with pre-cutoff migrations (upgrade from 3.21.58) | only sign-in and status pass', () => {
+    describe('a run that alters tables in its data phase (upgrade from 3.21.58) | only sign-in and status pass', () => {
       it.each([
         ['POST', '/api/authenticate'],
         ['GET', '/api/session'],
         ['GET', '/api/migration-status'],
         ['GET', '/api/migration-runs'],
+        ['GET', '/api/login-configs/o1/public'],
+        ['GET', '/api/login-configs/public'],
       ])('should let %s %s through', async (method, path) => {
         const { middleware } = buildMiddleware('running', true);
         const next = jest.fn() as NextFunction;

@@ -63,7 +63,7 @@ export function isPreCutoffMigration(name: string): boolean {
   return migrationTimestamp(name) <= MIGRATION_AUTHORING_RULES_CUTOFF;
 }
 
-/** Pending, it means a database older than 3.21.58: async mode runs the whole upgrade before boot instead. */
+/** A pending pre-cutoff migration outside the allowlist: the database predates 3.21.58, so the upgrade runs jointly before boot. */
 export function blocksAsyncUpgrade(name: string): boolean {
   return isPreCutoffMigration(name) && !ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS.has(name);
 }

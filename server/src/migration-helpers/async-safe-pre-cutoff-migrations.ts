@@ -63,3 +63,19 @@ export const ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS: ReadonlySet<string> = new Set([
   'ClearSalesforceUserTokensWithoutInstanceUrl1787800000000',
   'AddAiRunCancellation1788820000000',
 ]);
+
+/**
+ * Data migrations in that list which also alter tables. Their locks last until the data phase commits and
+ * block reads of those tables too. All first shipped in 3.21.63, so only upgrades from 3.21.58 to 3.21.62 run them.
+ */
+export const TABLE_ALTERING_DATA_MIGRATIONS: ReadonlySet<string> = new Set([
+  'MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000',
+  'MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000',
+  'BackfillWorkflowBranchIdAndEnforceNotNull1782400000000',
+  'DropGitSyncMetaHashColumns1782500000000',
+  'MergeWorkflowSlugUniqueTrigger1782500000000',
+  'DropOrganizationGitSshTable1782900000000',
+  'MakeDataSourceVersionNameCaseSensitive1785500000000',
+  'DropPulledAtAndRemoteUpdatedAt1785600000000',
+  'BackfillFolderAppsDefaultBranchIdAndEnforceNotNull1785700000000',
+]);

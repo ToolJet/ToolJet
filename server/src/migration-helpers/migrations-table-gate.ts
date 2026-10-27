@@ -89,13 +89,14 @@ export const HELD_MIGRATION_LOCKS_SQL = `
 export const DEAD_CLIENT_KEEPALIVE_SQL =
   'SET tcp_keepalives_idle = 30; SET tcp_keepalives_interval = 10; SET tcp_keepalives_count = 3';
 
-const DEAD_CLIENT_KEEPALIVE_OPTIONS =
-  '-c tcp_keepalives_idle=30 -c tcp_keepalives_interval=10 -c tcp_keepalives_count=3';
+// A server or role statement_timeout would cancel a long migration and roll back the whole run.
+const MIGRATION_CONNECTION_OPTIONS =
+  '-c tcp_keepalives_idle=30 -c tcp_keepalives_interval=10 -c tcp_keepalives_count=3 -c statement_timeout=0';
 
-/** The same keepalive for every connection a runner opens, as startup options; keeps PGOPTIONS. Call before initialize(). */
-export function withDeadClientKeepalive(dataSource: DataSource): void {
+/** Startup options for every connection a runner opens: keepalive, no statement timeout. PGOPTIONS still wins. Call before initialize(). */
+export function withMigrationConnectionOptions(dataSource: DataSource): void {
   const extra = (dataSource.options.extra ?? {}) as { options?: string };
-  const options = [process.env.PGOPTIONS, extra.options, DEAD_CLIENT_KEEPALIVE_OPTIONS].filter(Boolean).join(' ');
+  const options = [MIGRATION_CONNECTION_OPTIONS, extra.options, process.env.PGOPTIONS].filter(Boolean).join(' ');
   dataSource.setOptions({ extra: { ...extra, options } });
 }
 
