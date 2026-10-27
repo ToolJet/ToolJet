@@ -21,7 +21,7 @@ Use **Dynamic options** to populate tabs dynamically from an array of objects an
 | Property | Type   | Description | 
 |--------- |--------|-------------|
 | title    | String | The label displayed on the tab. | 
-| id       | String | A unique identifier for the tab.| 
+| id       | String or Number | A unique identifier for the tab. |
 | icon     | String | The icon to display alongside the tab title. | 
 | iconVisibility | Boolean	| Controls whether the tab icon is displayed. |
 | backgroundColor | String	| Sets the background color of the tab. |
@@ -45,6 +45,16 @@ The following example shows the object structure accepted by the Dynamic options
   }
 ]
 ```
+
+### Default Tab
+
+When **Dynamic options** is enabled, the **Options** section also shows a **Default tab** field.
+
+| Property | Description | Expected Value |
+|----------|-------------|----------------|
+| Default tab | The tab that is active when the app loads. If the id doesn't match a visible tab, the first visible tab is active. If the value changes later, the active tab switches, but **On tab switch** doesn't fire. | The `id` of a tab (e.g., `1`). The type must match the tab's id: `{{1}}` (a number) doesn't match the id `"1"` (a string). |
+
+With **Dynamic options** disabled, the first visible tab is active when the app loads.
 
 ## Events
 

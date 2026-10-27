@@ -29,6 +29,7 @@ The following actions of the component can be controlled using the component-spe
 | :------------ | :---------- | :------------ |
 | setValue      | Sets the progress value of the component. Values are automatically clamped between 0-100. | `components.progressbar1.setValue(75)` |
 | setVisibility | Sets the visibility of the component. | `components.progressbar1.setVisibility(false)` |
+| setLoading | Sets the loading state of the component. When enabled, the bar shows an animated loading indicator instead of the progress fill. | `components.progressbar1.setLoading(true)` |
 
 ## Exposed Variables
 
@@ -36,12 +37,14 @@ The following actions of the component can be controlled using the component-spe
 |:--------|:-----------|:------------|
 | value | Holds the current progress value of the component (0-100). | `{{components.progressbar1.value}}` |
 | isVisible | Indicates if the component is visible. | `{{components.progressbar1.isVisible}}` |
+| isLoading | Indicates if the component is in a loading state. | `{{components.progressbar1.isLoading}}` |
 
 ## Additional Actions
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
 | Visibility         | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Loading state | Replaces the progress fill with an animated loading indicator. Often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Task completion status`). |
 
 ## Devices
@@ -58,8 +61,9 @@ The following actions of the component can be controlled using the component-spe
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
 | Color | Sets the text color of the label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Size | Sets the font size of the label text. | Enter a value or use the slider. |
+| Size | Sets the font size of the label as a percentage of the component height. Defaults to `30`. | Enter a value or use the slider. |
 | Alignment | Sets the position of the label relative to the progress bar. | Select `side` to place the label beside the bar, or `top` to place it above the bar. |
+| Direction | Sets the label position relative to the bar. With `side` alignment, places the label to the left or right of the bar; with `top` alignment, aligns the label to the left or right above the bar. | Select **Left** or **Right** using the icon toggles. |
 | Width | Sets the width of the label area when alignment is set to `side`. | Enable **Auto width** to use the standard width automatically, or disable it to manually adjust using the slider. |
 
 ### Progress Bar
@@ -69,7 +73,7 @@ The following actions of the component can be controlled using the component-spe
 | Track | Sets the background color of the progress bar track. | Select a color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Progress track | Sets the color of the filled progress portion. | Select a color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Completion | Sets the color displayed when progress reaches 100%. | Select a color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Progress bar width | Sets the height/thickness of the progress bar. | Enter a value or use the slider. |
+| Progress bar width | Sets the thickness of the progress bar as a percentage of the component height. Defaults to `20`. | Enter a value or use the slider. |
 
 ### Container
 

@@ -84,6 +84,7 @@ The following actions of the component can be controlled using the component-spe
 | <div style={{ width:"130px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :---------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Text | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment | Sets the position of the label relative to the input field. | Click the toggle options or click on **fx** to enter a value — `side` (label and field on the same row) or `top` (label above the field). |
 | Direction | When alignment is set to `side`, controls whether the label appears to the left or right of the field. | Select **Left** or **Right** using the icon toggles. |
 | Width | Sets the width of the label. Available when alignment is `side`. | Enable **Auto** to use the standard width automatically, or disable it to manually set the width using the slider or **fx**. |
