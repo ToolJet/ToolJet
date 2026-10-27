@@ -49,13 +49,17 @@ jobs:
               return typeof json?.license === 'string' ? json.license : 'UNKNOWN';
             }
 
-            // ── License check — MIT or Apache-2.0 only ───────────────────────
+            // ── License check — permissive licenses only ─────────────────────
+            // Add licenses that are suitable dependencies for an AGPL-3.0
+            // product; no per-package exceptions.
             // SPDX "A OR B" lets us choose, so one permitted option is enough:
-            // "(MPL-2.0 OR Apache-2.0)" passes, "(MIT OR GPL-3.0)" passes as MIT.
+            // "(MPL-2.0 OR Apache-2.0)" passes, "(MIT OR GPL-3.0)" passes as MIT,
+            // provided the elected license is recorded in THIRD-PARTY-NOTICES.
             // "A AND B" applies both, so every part must be permitted.
             // Mixed AND/OR, WITH exceptions and unknown licenses fail closed.
 
-            const PERMITTED_LICENSES = ['MIT', 'Apache-2.0'];
+            const PERMITTED_LICENSES = ['MIT', 'Apache-2.0', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause'];
+            const PERMITTED_LIST     = PERMITTED_LICENSES.map(l => `\`${l}\``).join(', ');
 
             function isPermitted(license) {
               if (!license || license === 'UNKNOWN') return false;
@@ -67,6 +71,31 @@ jobs:
               return hasOr
                 ? ids.some(id => PERMITTED_LICENSES.includes(id))
                 : ids.every(id => PERMITTED_LICENSES.includes(id));
+            }
+
+            function isDualLicense(license) {
+              return /\sOR\s/i.test(license);
+            }
+
+            // Entries in THIRD-PARTY-NOTICES start with "<n>. <package> (<url>)".
+            let noticesText;
+            async function isInNotices(pkg) {
+              if (noticesText === undefined) {
+                try {
+                  const { data } = await github.rest.repos.getContent({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    path: 'THIRD-PARTY-NOTICES',
+                    ref: context.payload.pull_request.head.sha,
+                  });
+                  noticesText = Buffer.from(data.content, 'base64').toString();
+                } catch (e) {
+                  if (e.status !== 404) throw e;
+                  noticesText = '';
+                }
+              }
+              const escaped = pkg.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+              return new RegExp(`^\\s*\\d+\\.\\s+${escaped}\\s`, 'm').test(noticesText);
             }
 
             // ── Get PR diff files from GitHub API ─────────────────────────────
@@ -156,7 +185,10 @@ jobs:
                 const license = await fetchLicense(dep.pkg, dep.range);
                 const entry   = { pkg: dep.pkg, change: describeChange(dep), license, file: file.filename };
 
-                if (isPermitted(license)) {
+                if (isPermitted(license) && isDualLicense(license) && !(await isInNotices(dep.pkg))) {
+                  console.log(`  [FAIL]     ${dep.pkg} — ${license} (not in THIRD-PARTY-NOTICES)`);
+                  violations.push({ ...entry, note: 'dual-licensed, elected license missing from `THIRD-PARTY-NOTICES`' });
+                } else if (isPermitted(license)) {
                   console.log(`  [OK]       ${dep.pkg} — ${license}`);
                   permitted.push(entry);
                 } else {
@@ -198,23 +230,23 @@ jobs:
 
             function table(rows) {
               return `| Package | Change | License | File |\n|---|---|---|---|\n` +
-                rows.map(r => `| \`${r.pkg}\` | ${r.change} | \`${r.license}\` | \`${r.file}\` |`).join('\n') + '\n';
+                rows.map(r => `| \`${r.pkg}\` | ${r.change} | \`${r.license}\`${r.note ? ` (${r.note})` : ''} | \`${r.file}\` |`).join('\n') + '\n';
             }
 
             let body = `<!-- license-compliance-bot -->\n`;
 
             if (violations.length === 0) {
               body += `## ✅ License Compliance Check Passed\n\n`;
-              body += `All packages added or updated in this PR use permitted licenses (MIT or Apache-2.0).\n\n`;
+              body += `All packages added or updated in this PR use permitted licenses (${PERMITTED_LIST}).\n\n`;
               body += table(permitted);
             } else {
               body += `## ❌ License Compliance Check Failed\n\n`;
               body += `This PR adds or updates package(s) with licenses that are **not permitted**.\n`;
-              body += `Only \`MIT\` and \`Apache-2.0\` licenses are allowed. For SPDX \`OR\` expressions, one permitted option is enough.\n\n`;
+              body += `Allowed licenses: ${PERMITTED_LIST}. For SPDX \`OR\` expressions, one permitted option is enough, and the elected license must be recorded in \`THIRD-PARTY-NOTICES\`.\n\n`;
               body += `### 🚫 Not Permitted\n\n`;
               body += table(violations);
               body += `\n`;
-              body += `> ❌ The package(s) above are not permitted. Please replace them with an equivalent that uses an MIT or Apache-2.0 license.\n`;
+              body += `> ❌ Replace the package(s) above with an equivalent under a permitted license. For a dual-licensed package, add its elected license to \`THIRD-PARTY-NOTICES\`.\n`;
               body += `> If this package genuinely needs to be exempted, a maintainer can bypass this check using the bypass rules option on this PR.\n\n`;
               if (permitted.length > 0) {
                 body += `### ✅ Permitted Packages\n\n`;
