@@ -1,4 +1,7 @@
-import { APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
+import { McpDelegationGuard } from '@modules/mcp-oauth/delegation.guard';
+import { McpOAuthScopeInterceptor } from '@modules/mcp-oauth/scope.interceptor';
+import { McpOAuthModule } from '@modules/mcp-oauth/module';
+import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 import { OnModuleInit, DynamicModule, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
@@ -119,6 +122,7 @@ export class AppModule implements OnModuleInit, NestModule {
      * ████████████████████████████████████████████████████████████████████
      */
     const baseImports = [
+      await McpOAuthModule.register(configs),
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
       await FilesModule.register(configs, true),
@@ -250,6 +254,8 @@ export class AppModule implements OnModuleInit, NestModule {
         /* Bound here rather than in main.ts so enforcement is part of the module graph: any
            consumer that builds this module gets it, including the e2e harness, which never runs
            main.ts. Registering it only at bootstrap made the check depend on the entry point. */
+        { provide: APP_GUARD, useClass: McpDelegationGuard },
+        { provide: APP_INTERCEPTOR, useClass: McpOAuthScopeInterceptor },
         { provide: APP_INTERCEPTOR, useClass: PatScopeInterceptor },
         ShutdownHook,
         GetConnection,

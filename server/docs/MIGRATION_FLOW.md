@@ -119,7 +119,6 @@ In async mode the server serves while migrations run. The upgrade gate stops req
 |---|---|---|
 | A migration is running | `running` | Writes (`MIGRATION_IN_PROGRESS`). Sign-in and query runs still pass |
 | The last migration failed | `failed` | Writes (`MIGRATION_FAILED`), until a server boot reruns it with success |
-| Either of the above, on an upgrade from 3.21.58–3.21.62 | same, with `readsBlocked` | Reads too. Only sign-in and the migration status pass |
 
 Health and metrics endpoints are never refused.
 
@@ -188,8 +187,7 @@ The final schema is the same as after a joint run. Once the data phase succeeds,
 
 - **What passes.** Reads, sign-in, session, OAuth/SSO and query runs (`ASYNC_MODE_WRITE_ALLOWLIST`). Other writes get 503.
 - **New pods wait for their own data phase.** From boot until its data phase takes the active lock, exits or fails to start, a pod reports `running`. So new code never writes before its data migrations ran. On a plain restart this lasts as long as the child takes to start, on that pod only.
-- **Reads blocked on upgrades from 3.21.58–3.21.62.** Their data phase includes migrations that alter tables (`TABLE_ALTERING_DATA_MIGRATIONS`), and those table locks block reads until commit. So while such a run is running or failed, the status carries `readsBlocked` and the gate also refuses reads. Only sign-in, session, OAuth/SSO, the public login config, `/api/migration-status` and `/api/migration-runs` pass (`READS_BLOCKED_ALLOWLIST`), and the banner says ToolJet is unavailable. After a failure the locks are gone, but the new code would read data that was never converted, so reads stay refused until a rerun succeeds or the previous release is redeployed. Upgrades from 3.21.63 onwards keep serving reads.
-- **Requests that pass can still wait.** A row a data migration changed stays locked until commit.
+- **Requests that pass can still wait, but not for long.** A row a data migration changed stays locked until commit, and a data migration that alters a table (upgrades from 3.21.58–3.21.62) locks the whole table. In async mode the server's database pool sets `lock_timeout` to 5s (`ASYNC_MODE_LOCK_TIMEOUT_MS` in `app/loader.ts`), so such a request fails after 5s instead of holding a pool connection. The pool and `/api/health` stay free, so the pod is not killed. Pages that read other tables keep working.
 - **Other runners count too.** A held active lock reads as `running` even without a run row, for example a manual `db:migrate` or a blocking-mode server on the same database.
 - **Workers.** A `WORKER=true` server pauses its BullMQ workers while the status is `running` or `failed`. It checks every 5s and resumes after. Jobs wait in Redis.
 
@@ -212,7 +210,7 @@ The final schema is the same as after a joint run. Once the data phase succeeds,
 - **A stopped run is not a failed migration.** The gate and banner treat a dead run, or one recorded as "The migrating server stopped without reporting a result.", as `running`, because another server reruns it. The migrations page still lists it as failed, with that error.
 - **Finished rows are final.** Updates skip rows that have `finished_at` set.
 
-**When a migration fails.** Nothing from the data phase commits. Reads continue, unless `readsBlocked`. Writes get 503 `MIGRATION_FAILED` ("…until it is fixed and ToolJet restarts.").
+**When a migration fails.** Nothing from the data phase commits. Reads continue. Writes get 503 `MIGRATION_FAILED` ("…until it is fixed and ToolJet restarts.").
 
 ### Shutdown
 
@@ -271,7 +269,7 @@ The Gate column is for async mode; blocking mode has no gate.
 | A migration is broken | Rolled back, runner exits non-zero | Lifted | Fails fast, no retry |
 | A pod waits longer than the maximum | Exits non-zero | — | `MIGRATION_LOCK_MAX_WAIT_MINUTES` |
 | Schema phase cannot lock a busy table | Rolled back, retried, then exits non-zero | Lifted | Old pods keep serving |
-| Async data phase fails | Data rolled back, schema stays | `failed`: writes refused (reads too when `readsBlocked`) | Until a boot reruns it with success |
+| Async data phase fails | Data rolled back, schema stays | `failed`: writes refused | Until a boot reruns it with success |
 | Async runner killed | Rolled back | Dead run after 30s, then rerun | Up to ~40s |
 | Serving pod cannot reach the database | — | Lets requests through | The API is down anyway |
 
@@ -315,12 +313,12 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 | File | Covers |
 |---|---|
 | `test/modules/migrations/unit/migration-locks.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out (checked against files on disk) |
-| `test/modules/migrations/unit/migration-mode.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist, `TABLE_ALTERING_DATA_MIGRATIONS` matches the DDL in the listed data migrations |
-| `test/modules/app/unit/migration-gate.middleware.spec.ts` | Blocking mode passes everything, gated vs ungated paths, 503 per state, what passes in async mode, what passes with `readsBlocked`, opt-out log |
+| `test/modules/migrations/unit/migration-mode.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist |
+| `test/modules/app/unit/migration-gate.middleware.spec.ts` | Blocking mode passes everything, gated vs ungated paths, 503 per state, what passes in async mode, opt-out log |
 | `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, active lock only during work and released on SIGKILL, a `NODE_ENV=production` race. Split phases: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long data phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, joint run for an old database, `statement_timeout=0` on runner connections |
 | `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds, non-empty `down()` |
 | `test/modules/migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output (both progress formats), redaction, failed step |
-| `test/modules/app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races across servers, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, `readsBlocked` while running and after failure, status cache, fail-open |
+| `test/modules/app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races across servers, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, status cache, fail-open |
 
 The e2e specs run the real `run()` against a scratch database. Fixtures are in `test/modules/migrations/fixtures/`:
 

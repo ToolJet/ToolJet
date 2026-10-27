@@ -22,7 +22,7 @@ The base module every other backend module builds on. Owns: the `SubModule` base
 | `guards/cloud-feature.guard.ts` | Route allowed only when edition is Cloud |
 | `module.ts` | Root `AppModule.register()` — `AppModuleLoader.loadModules` + every feature module's `register(configs, true)`; conditional imports (Workflows + BullBoard non-Cloud, `SessionTransferModule` Cloud-only, Metrics via env) |
 | `loader.ts` | Infra modules: TypeORM (main + `tooljetDb`), BullMQ, ConfigModule, pino logger, otel/Sentry, Redis, `GuardValidatorModule` |
-| `middlewares/migration-gate.middleware.ts` | Upgrade gate, async mode only (blocking mode passes everything): answers API writes with 503 while a migration runs or after a failed run. When `readsBlocked` (upgrade from 3.21.58–3.21.62) it refuses reads too, except sign-in, session and migration status. Details: `server/docs/MIGRATION_FLOW.md` (Upgrade gate) |
+| `middlewares/migration-gate.middleware.ts` | Upgrade gate, async mode only (blocking mode passes everything): answers API writes with 503 while a migration runs or after a failed run. Details: `server/docs/MIGRATION_FLOW.md` (Upgrade gate) |
 | `migration-runs/` | `MigrationRunsService`: gate status, and async-mode runs (data phase in a child process). Super-admin `migration-runs` routes. The public `migration-status` route is on `AppController`. Details: `MIGRATION_FLOW.md` (Async mode) |
 | `validators/feature-guard.validator.ts` | `GuardValidator` — boot-time scan asserting every route has an `AbilityGuard` |
 | `interceptors/response.interceptor.ts` | Emits audit-log events after responses, driven by `MODULE_INFO` feature config |
