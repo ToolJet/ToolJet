@@ -5,11 +5,11 @@
  * Keep ts-node for extensionless imports on Node >= 22.18, as in jest.config.ts.
  */
 import type { Config } from '@jest/types';
-import { coverageConfig } from './test/jest-coverage.config';
+import { coverageConfig } from './jest-coverage.config';
 
 const config: Config.InitialOptions = {
   ...coverageConfig(false),
-  rootDir: '.',
+  rootDir: '..',
   testEnvironment: 'node',
   testMatch: [
     '<rootDir>/test/modules/mcp-oauth/**/*.spec.ts',
