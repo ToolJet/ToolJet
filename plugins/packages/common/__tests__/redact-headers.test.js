@@ -1,6 +1,6 @@
 'use strict';
 
-import { redactHeaders } from '../lib/utils.helper';
+const { redactHeaders } = require('../lib/utils.helper');
 
 describe('redactHeaders', () => {
   it('redacts a blacklisted header regardless of casing', () => {
