@@ -171,13 +171,46 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
     it('blocks it as resolving to a private IP when the allowlist is empty', async () => {
       mockDns([{ address: '192.168.49.2', family: 4 }]);
       publishRanges();
-      const privateIP = /resolves to (a blocked )?private/i;
+      const privateIP = /resolves to a private network address \(192\.168\.49\.2\)/;
       await expect(validateUrlForSSRF('http://tooljet.localhost/')).rejects.toThrow(privateIP);
     });
     it('blocks it when the hosts-file lookup finds nothing either', async () => {
       mockDns([]);
       publishRanges('192.168.49.0/24');
       await expect(validateUrlForSSRF('http://tooljet.localhost/')).rejects.toThrow();
+    });
+  });
+  describe('block messages name the host, the reason and where to allow it', () => {
+    const hint = 'A super admin can allow it in Settings → Security → Private network access.';
+    let spies: jest.SpyInstance[] = [];
+    afterEach(() => spies.forEach((spy) => spy.mockRestore()));
+
+    it('says an IP literal is a private network address', async () => {
+      publishRanges();
+      await expect(validateUrlForSSRF('http://10.0.0.5/')).rejects.toThrow(
+        `Requests to 10.0.0.5 are blocked because it is a private network address. ${hint}`
+      );
+    });
+    it('says which private address a hostname resolves to', async () => {
+      spies = [
+        jest.spyOn(dnsPromises, 'resolve4').mockResolvedValue(['192.168.49.2']),
+        jest.spyOn(dnsPromises, 'resolve6').mockRejectedValue(new Error('queryAaaa ENODATA db.corp')),
+      ];
+      publishRanges();
+      await expect(validateUrlForSSRF('http://db.corp/')).rejects.toThrow(
+        `Requests to db.corp are blocked because it resolves to a private network address (192.168.49.2). ${hint}`
+      );
+    });
+    it('keeps the resolver error for a host that does not resolve', async () => {
+      spies = [
+        jest.spyOn(dnsPromises, 'resolve4').mockRejectedValue(new Error('queryA ENOTFOUND invalid-host')),
+        jest.spyOn(dnsPromises, 'resolve6').mockRejectedValue(new Error('queryAaaa ENOTFOUND invalid-host')),
+        jest.spyOn(dnsPromises, 'lookup').mockRejectedValue(new Error('getaddrinfo ENOTFOUND invalid-host')),
+      ];
+      publishRanges();
+      await expect(validateUrlForSSRF('http://invalid-host/')).rejects.toThrow(
+        `Requests to invalid-host are blocked because it could not be resolved (getaddrinfo ENOTFOUND invalid-host). ${hint}`
+      );
     });
   });
 });
@@ -198,6 +231,13 @@ describe('edition defaults without a runtime key', () => {
   ])('Cloud blocks %s', async (url) => {
     process.env.TOOLJET_EDITION = 'cloud';
     await expect(validateUrlForSSRF(url)).rejects.toThrow(BadRequestException);
+  });
+
+  it('Cloud names the blocked address without pointing at a settings page it does not have', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    const rejection = expect(validateUrlForSSRF('http://10.0.0.1/')).rejects;
+    await rejection.toThrow('Requests to 10.0.0.1 are blocked because it is a private network address.');
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).rejects.not.toThrow(/Settings/);
   });
 
   it('Cloud blocks an IPv4-mapped RFC1918 literal', async () => {

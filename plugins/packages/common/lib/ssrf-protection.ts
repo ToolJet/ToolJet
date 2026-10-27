@@ -340,71 +340,94 @@ function isPrivateIPv6(ip: string): boolean {
   return ipv4 !== null && isPrivateIP(ipv4);
 }
 
-// Shared hosts-file fallback (keep identical in all three SSRF copies).
+// Shared host resolution and block messages (keep identical in all three SSRF copies).
 /**
- * dns.resolve4/resolve6 query DNS servers only and never see /etc/hosts. Under the EE runtime config, when they
- * return nothing, ask dns.lookup (which reads the hosts file) so the resolved IP can still be classified and
- * allowlisted. Without the runtime config the answer is returned unchanged.
+ * Every address a hostname resolves to. dns.resolve4/resolve6 query DNS servers only and never see /etc/hosts, so
+ * under the EE runtime config, when they return nothing, dns.lookup (which reads the hosts file) is asked as well.
+ * With no addresses, `failure` is the resolver's own error (e.g. "getaddrinfo ENOTFOUND host") for the block message.
  */
-async function withHostsFileFallback(hostname: string, addresses: string[]): Promise<string[]> {
+async function resolveHostAddresses(hostname: string): Promise<{ addresses: string[]; failure?: string }> {
+  const addresses: string[] = [];
+  let failure: string | undefined;
+  const collect = (answer: Promise<string[]>) =>
+    answer.then(
+      (found) => {
+        addresses.push(...found);
+      },
+      (error) => {
+        failure = failure || (error as Error)?.message;
+      }
+    );
+  await Promise.all([collect(dns.resolve4(hostname)), collect(dns.resolve6(hostname))]);
   const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
-  if (addresses.length > 0 || !(globalThis as unknown as Record<string, unknown>)[runtimeKey]) return addresses;
+  if (addresses.length > 0 || !(globalThis as unknown as Record<string, unknown>)[runtimeKey]) {
+    return { addresses, failure };
+  }
   try {
     const answers = await dns.lookup(hostname, { all: true });
-    return answers.map((answer) => answer.address);
-  } catch {
-    return [];
+    return { addresses: answers.map((answer) => answer.address), failure };
+  } catch (error) {
+    return { addresses: [], failure: (error as Error)?.message || failure };
   }
 }
-// End of the shared hosts-file fallback.
+
+/** The reason for a host that resolved to nothing, carrying the resolver's error when there is one. */
+function unresolvedReason(failure?: string): string {
+  return failure ? `could not be resolved (${failure})` : 'could not be resolved';
+}
 
 /**
- * Check if a hostname resolves to any private IP address
- * This includes all RFC1918, link-local, loopback, and cloud metadata ranges
+ * The error text for a blocked request: the host, why (`reason` finishes "because it ..."), and, under the EE runtime
+ * config, where a super admin can allow it. Cloud and CE have no settings page for it, so they get no hint.
  */
-export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtectionOptions): Promise<boolean> {
+function privateNetworkBlockedMessage(host: string, reason: string): string {
+  const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
+  const hint = (globalThis as unknown as Record<string, unknown>)[runtimeKey]
+    ? ' A super admin can allow it in Settings → Security → Private network access.'
+    : '';
+  return `Requests to ${host} are blocked because it ${reason}.${hint}`;
+}
+// End of the shared host resolution and block messages.
+
+/**
+ * Why a hostname must be blocked (finishing "because it ..."), or null when every address it resolves to is public
+ * or allowlisted. Covers all RFC1918, link-local, loopback, and cloud metadata ranges.
+ */
+async function hostnameBlockReason(hostname: string, config?: SSRFProtectionOptions): Promise<string | null> {
   // IP literals have no DNS answer; the caller has already run isPrivateIP on them.
   if (net.isIP(hostname)) {
-    return false;
+    return null;
   }
 
   try {
-    // Try to resolve as both IPv4 and IPv6
-    const addresses: string[] = [];
-
-    try {
-      const ipv4Addresses = await dns.resolve4(hostname);
-      addresses.push(...ipv4Addresses);
-    } catch (error) {
-      // IPv4 resolution failed, continue
-    }
-
-    try {
-      const ipv6Addresses = await dns.resolve6(hostname);
-      addresses.push(...ipv6Addresses);
-    } catch (error) {
-      // IPv6 resolution failed, continue
-    }
-    const checked = await withHostsFileFallback(hostname, addresses);
+    const { addresses, failure } = await resolveHostAddresses(hostname);
 
     // No answer: fail closed under the EE runtime config and on Cloud, fail open otherwise (self-hosted compatibility)
-    if (checked.length === 0) {
+    if (addresses.length === 0) {
       console.warn(`DNS resolution failed for ${hostname}`);
-      return (
-        !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__ || process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud'
-      );
+      const failClosed =
+        !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__ || process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud';
+      return failClosed ? unresolvedReason(failure) : null;
     }
 
-    // Check if any resolved address is a private IP
-    return checked.some((addr) => isPrivateIP(addr) && !(config && isAllowlisted(addr, config)));
+    const blocked = addresses.find((addr) => isPrivateIP(addr) && !(config && isAllowlisted(addr, config)));
+    return blocked === undefined ? null : `resolves to a private network address (${blocked})`;
   } catch (error) {
     // Fail-closed here too: a resolver error is exactly as unverifiable as an
     // empty answer above, and shouldn't be treated as "safe" (was previously
     // `return false`, the opposite of the empty-address case's intentional
     // fail-closed default — part of GHSA-9gjw-8vc2-fjcv).
     console.warn(`DNS resolution error for ${hostname}, blocking as precaution:`, error.message);
-    return true;
+    return unresolvedReason(error.message);
   }
+}
+
+/**
+ * Check if a hostname resolves to any private IP address
+ * This includes all RFC1918, link-local, loopback, and cloud metadata ranges
+ */
+export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtectionOptions): Promise<boolean> {
+  return (await hostnameBlockReason(hostname, config)) !== null;
 }
 
 /**
@@ -482,7 +505,7 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
   // When SSRF protection is enabled, block direct access to private IPs
   if (isPrivateIP(hostname)) {
     throw new QueryError(
-      'Private IP address blocked',
+      privateNetworkBlockedMessage(hostname, 'is a private network address'),
       'Direct access to private IP addresses is not allowed for security reasons',
       { hostname }
     );
@@ -491,11 +514,11 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
   // 3. DNS resolution check (if enabled)
   // This protects against DNS rebinding attacks like 169.254.169.254.nip.io
   if (config.dnsResolutionCheck) {
-    const resolves = await resolvesToPrivateIP(hostname, config);
-    if (resolves) {
+    const reason = await hostnameBlockReason(hostname, config);
+    if (reason) {
       throw new QueryError(
-        'Hostname resolves to private IP',
-        'This hostname resolves to a private IP address and is blocked for security reasons',
+        privateNetworkBlockedMessage(hostname, reason),
+        'This hostname resolves to a private network address or could not be resolved, and is blocked for security reasons',
         { hostname }
       );
     }
@@ -553,7 +576,7 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
       );
       if (blocked !== undefined) {
         const error: any = new Error(
-          `Hostname "${hostname}" resolves to private IP address "${blocked}" which is blocked for security reasons`
+          privateNetworkBlockedMessage(hostname, `resolves to a private network address (${blocked})`)
         );
         error.code = 'SSRF_BLOCKED';
         error.hostname = hostname;
@@ -657,7 +680,7 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
         await validateUrlForSSRF(redirectUrl, config);
       } catch (error) {
         throw new QueryError(
-          'Redirect blocked by SSRF protection',
+          `Redirect to ${redirectUrl} was blocked. ${error.message}`,
           `Redirect to "${redirectUrl}" was blocked: ${error.message}`,
           { redirectUrl, originalError: error }
         );
@@ -692,7 +715,7 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
  * Behavior:
  * - If url redirects to private IP, beforeRedirect hook blocks it
  * - Example blocked redirect: http://allowed.com/redirect -> http://169.254.169.254
- * - Error thrown: "Redirect blocked by SSRF protection"
+ * - Error thrown: "Redirect to <url> was blocked. <reason>"
  */
 
 /**
@@ -731,7 +754,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
   // Check if hostname is a private IP
   if (isPrivateIP(hostname)) {
     throw new QueryError(
-      'Private IP address blocked',
+      privateNetworkBlockedMessage(hostname, 'is a private network address'),
       'Direct access to private IP addresses is not allowed for security reasons',
       { hostname }
     );

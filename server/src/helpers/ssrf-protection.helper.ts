@@ -158,45 +158,67 @@ function isDangerousPrivateIP(ip: string): boolean {
   return ipv4 !== null && isDangerousPrivateIP(ipv4);
 }
 
-// Shared hosts-file fallback (keep identical in all three SSRF copies).
+// Shared host resolution and block messages (keep identical in all three SSRF copies).
 /**
- * dns.resolve4/resolve6 query DNS servers only and never see /etc/hosts. Under the EE runtime config, when they
- * return nothing, ask dns.lookup (which reads the hosts file) so the resolved IP can still be classified and
- * allowlisted. Without the runtime config the answer is returned unchanged.
+ * Every address a hostname resolves to. dns.resolve4/resolve6 query DNS servers only and never see /etc/hosts, so
+ * under the EE runtime config, when they return nothing, dns.lookup (which reads the hosts file) is asked as well.
+ * With no addresses, `failure` is the resolver's own error (e.g. "getaddrinfo ENOTFOUND host") for the block message.
  */
-async function withHostsFileFallback(hostname: string, addresses: string[]): Promise<string[]> {
+async function resolveHostAddresses(hostname: string): Promise<{ addresses: string[]; failure?: string }> {
+  const addresses: string[] = [];
+  let failure: string | undefined;
+  const collect = (answer: Promise<string[]>) =>
+    answer.then(
+      (found) => {
+        addresses.push(...found);
+      },
+      (error) => {
+        failure = failure || (error as Error)?.message;
+      }
+    );
+  await Promise.all([collect(dns.resolve4(hostname)), collect(dns.resolve6(hostname))]);
   const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
-  if (addresses.length > 0 || !(globalThis as unknown as Record<string, unknown>)[runtimeKey]) return addresses;
+  if (addresses.length > 0 || !(globalThis as unknown as Record<string, unknown>)[runtimeKey]) {
+    return { addresses, failure };
+  }
   try {
     const answers = await dns.lookup(hostname, { all: true });
-    return answers.map((answer) => answer.address);
-  } catch {
-    return [];
+    return { addresses: answers.map((answer) => answer.address), failure };
+  } catch (error) {
+    return { addresses: [], failure: (error as Error)?.message || failure };
   }
 }
-// End of the shared hosts-file fallback.
 
-async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
-  if (net.isIP(hostname)) return false; // raw IPs are checked by the caller before DNS
+/** The reason for a host that resolved to nothing, carrying the resolver's error when there is one. */
+function unresolvedReason(failure?: string): string {
+  return failure ? `could not be resolved (${failure})` : 'could not be resolved';
+}
 
-  const addresses: string[] = [];
-  await Promise.all([
-    dns
-      .resolve4(hostname)
-      .then((a) => addresses.push(...a))
-      .catch(() => undefined),
-    dns
-      .resolve6(hostname)
-      .then((a) => addresses.push(...a))
-      .catch(() => undefined),
-  ]);
-  const checked = await withHostsFileFallback(hostname, addresses);
+/**
+ * The error text for a blocked request: the host, why (`reason` finishes "because it ..."), and, under the EE runtime
+ * config, where a super admin can allow it. Cloud and CE have no settings page for it, so they get no hint.
+ */
+function privateNetworkBlockedMessage(host: string, reason: string): string {
+  const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
+  const hint = (globalThis as unknown as Record<string, unknown>)[runtimeKey]
+    ? ' A super admin can allow it in Settings → Security → Private network access.'
+    : '';
+  return `Requests to ${host} are blocked because it ${reason}.${hint}`;
+}
+// End of the shared host resolution and block messages.
+
+/** Why a hostname must be blocked (finishing "because it ..."), or null when every address it resolves to is safe. */
+async function hostnameBlockReason(hostname: string): Promise<string | null> {
+  if (net.isIP(hostname)) return null; // raw IPs are checked by the caller before DNS
+
+  const { addresses, failure } = await resolveHostAddresses(hostname);
 
   // Fail closed: an unresolvable host can't be verified safe.
-  if (checked.length === 0) return true;
+  if (addresses.length === 0) return unresolvedReason(failure);
 
   const runtime = getRuntimeConfig();
-  return checked.some((addr) => isDangerousPrivateIP(addr) && !isAllowlisted(addr, runtime));
+  const blocked = addresses.find((addr) => isDangerousPrivateIP(addr) && !isAllowlisted(addr, runtime));
+  return blocked === undefined ? null : `resolves to a private network address (${blocked})`;
 }
 
 /**
@@ -237,15 +259,14 @@ export async function validateUrlForSSRF(urlString: string): Promise<void> {
   const isRawIP = net.isIP(address) !== 0;
 
   if (isRawIP && isDangerousPrivateIP(address)) {
-    throw new BadRequestException('URL points to a blocked private/internal address');
+    throw new BadRequestException(privateNetworkBlockedMessage(address, 'is a private network address'));
   }
 
   // Under the runtime key and on Cloud an IP literal is decided by the check above. Elsewhere a bracketed
   // IPv6 literal still goes to the DNS step (which fails closed on it), as before.
   const literalDecided = isRawIP && (!!runtime || getTooljetEdition() === 'cloud');
-  if (!literalDecided && (await resolvesToPrivateIP(hostname))) {
-    throw new BadRequestException('URL resolves to a blocked private/internal address');
-  }
+  const reason = literalDecided ? null : await hostnameBlockReason(hostname);
+  if (reason) throw new BadRequestException(privateNetworkBlockedMessage(hostname, reason));
 }
 
 /**
@@ -302,7 +323,7 @@ export function createSSRFSafeLookup(): GotOptions['lookup'] | undefined {
 
       if (blocked !== undefined) {
         const error = new Error(
-          `Hostname "${hostname}" resolves to blocked private/internal address "${blocked}"`
+          privateNetworkBlockedMessage(hostname, `resolves to a private network address (${blocked})`)
         ) as NodeJS.ErrnoException & { address?: string; hostname?: string };
         error.code = 'SSRF_BLOCKED';
         error.hostname = hostname;

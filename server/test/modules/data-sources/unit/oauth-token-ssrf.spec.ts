@@ -101,7 +101,13 @@ describe('createSSRFSafeLookup', () => {
     publish(true, []);
     const { err } = await runLookup('localhost', { family: 4 });
 
-    expect(err).toMatchObject({ code: 'SSRF_BLOCKED', address: '127.0.0.1' });
+    expect(err).toMatchObject({
+      code: 'SSRF_BLOCKED',
+      address: '127.0.0.1',
+      message: expect.stringContaining(
+        'Requests to localhost are blocked because it resolves to a private network address (127.0.0.1).'
+      ),
+    });
   });
 
   it('allows the resolved address when it is allowlisted', async () => {
