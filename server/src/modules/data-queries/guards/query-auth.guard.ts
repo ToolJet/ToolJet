@@ -5,6 +5,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TransactionLogger } from '@modules/logging/service';
 import { APP_TYPES } from '@modules/apps/constants';
+import { App } from '@entities/app.entity';
 import { DataQueryRepository } from '../repository';
 
 @Injectable()
@@ -46,6 +47,21 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
       request.tj_resource_id = app.id;
 
       if (app.isPublic === true) {
+        // A public front-end app exposes only its RELEASED version to anonymous callers; a draft
+        // query requires auth. Scoped to front-end: workflows/modules keep is_public elsewhere and
+        // the module branch below handles public-parent embedding.
+        if (app.type === APP_TYPES.FRONT_END && !(await this.isQueryInReleasedVersion(id, app))) {
+          try {
+            // An authenticated builder may still preview a draft; an anonymous caller may not.
+            return await super.canActivate(context);
+          } catch {
+            throw new UnauthorizedException(
+              JSON.stringify({
+                message: 'App is not released yet',
+              })
+            );
+          }
+        }
         // No need to do user validation
         this.organizationRepository.touchLastAccessedAt(app.organizationId);
         return true;
@@ -53,8 +69,9 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
 
       if (app.type === APP_TYPES.MODULE) {
         // Module queries require authentication unless the module is embedded in a public parent app.
+        let authed: boolean;
         try {
-          return await super.canActivate(context);
+          authed = (await super.canActivate(context)) as boolean;
         } catch {
           // If the module is embedded in a public parent app, allow access and mark the module app as public
           const parentApp = await this.dataQueryRepository.findPublicParentAppForModuleQuery(app.id, id);
@@ -69,10 +86,14 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
             })
           );
         }
+        // Reject modules outside the caller's workspace.
+        this.validateUserBelongsToAppOrg(request, app);
+        return authed;
       }
       // Throw a custom exception if the app is not public
+      let authed: boolean;
       try {
-        return await super.canActivate(context);
+        authed = (await super.canActivate(context)) as boolean;
       } catch {
         throw new UnauthorizedException(
           JSON.stringify({
@@ -80,8 +101,34 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
           })
         );
       }
+      // Reject apps outside the caller's workspace.
+      this.validateUserBelongsToAppOrg(request, app);
+      return authed;
     } finally {
       this.transactionLogger.log(`QueryAuthGuard completed at ${new Date().toISOString()} for app id ${id}`);
+    }
+  }
+
+  // True only when the query belongs to the app's released version (apps.current_version_id).
+  private async isQueryInReleasedVersion(dataQueryId: string, app: App): Promise<boolean> {
+    if (!app.currentVersionId) {
+      return false;
+    }
+    return this.dataQueryRepository.isQueryInVersion(dataQueryId, app.currentVersionId);
+  }
+
+  // Rejects a request whose caller does not belong to the app's workspace.
+  private validateUserBelongsToAppOrg(
+    request: { user?: { organizationId?: string } },
+    app: { organizationId?: string }
+  ) {
+    const user = request.user;
+    if (!user || !app?.organizationId || user.organizationId !== app.organizationId) {
+      throw new UnauthorizedException(
+        JSON.stringify({
+          message: 'You do not have permission to access this resource.',
+        })
+      );
     }
   }
 }

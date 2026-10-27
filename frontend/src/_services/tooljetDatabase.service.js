@@ -139,10 +139,6 @@ function deleteTable(organizationId, tableName) {
   return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}`);
 }
 
-function joinTables(headers, organizationId, data) {
-  return tooljetAdapter.post(`tooljet-db/organizations/${organizationId}/join`, data, headers);
-}
-
 export const tooljetDatabaseService = {
   findOne,
   findAll,
@@ -159,7 +155,6 @@ export const tooljetDatabaseService = {
   getTablesLimit,
   getRowsLimit,
   bulkUpload,
-  joinTables,
   updateColumn,
   editForeignKey,
   createForeignKey,

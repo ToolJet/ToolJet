@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
@@ -308,9 +314,16 @@ export class DataSourcesService implements IDataSourcesService {
     testDataSourceDto: TestDataSourceDto,
     organization_id: string,
     dataSourceId?: string,
-    branchId?: string
+    branchId?: string,
+    context?: { dataSource?: DataSource; canEditDataSource?: boolean }
   ): Promise<object> {
-    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id, dataSourceId, branchId);
+    return await this.dataSourcesUtilService.testConnection(
+      testDataSourceDto,
+      organization_id,
+      dataSourceId,
+      branchId,
+      context
+    );
   }
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
@@ -321,18 +334,36 @@ export class DataSourcesService implements IDataSourcesService {
       user.defaultOrganizationId
     );
     testDataSourceDto.options = dataSource.options;
+    testDataSourceDto.kind = dataSource.kind;
+    testDataSourceDto.plugin_id = dataSource.pluginId;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }
 
-  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
-    return this.dataSourcesUtilService.getAuthUrl(getDataSourceOauthUrlDto);
+  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto, user: User): Promise<{ url: string }> {
+    const organizationId = user.organizationId;
+    const { organization_id, environment_id } = getDataSourceOauthUrlDto;
+
+    if (organization_id && organization_id !== organizationId) {
+      throw new ForbiddenException();
+    }
+
+    if (environment_id) {
+      try {
+        await this.appEnvironmentsUtilService.get(organizationId, environment_id);
+      } catch {
+        throw new NotFoundException('Environment not found');
+      }
+    }
+
+    return this.dataSourcesUtilService.getAuthUrl({ ...getDataSourceOauthUrlDto, organization_id: organizationId });
   }
 
   async authorizeOauth2(
     dataSourceId: string,
     environmentId: string,
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
-    user: User
+    user: User,
+    canConfigureDataSource: boolean
   ) {
     const { code } = authorizeDataSourceOauthDto;
 
@@ -345,14 +376,23 @@ export class DataSourcesService implements IDataSourcesService {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
-    // TODO: add privilege if user has data source privilege or user should have app read privilege of the apps using the data source
+
+    // Multi-auth off = shared token; rebinding it needs configure privilege. On = per-user, open to any app user.
+    const isMultiAuthEnabled = !!dataSource.options?.['multiple_auth_enabled']?.value;
+    if (!isMultiAuthEnabled && !canConfigureDataSource) {
+      throw new ForbiddenException('You do not have permission to configure this data source');
+    }
 
     await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
     return;
   }
 
-  async findQueriesLinkedToDatasource(datasourceId: string, organizationId?: string, branchId?: string) {
-    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(datasourceId, branchId || null);
+  async findQueriesLinkedToDatasource(datasourceId: string, organizationId: string, branchId?: string) {
+    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(
+      datasourceId,
+      organizationId,
+      branchId || null
+    );
     if (dataSourceDetails.length == 0) return { datasources: 0, dependent_queries: 0 };
 
     const queries = [];

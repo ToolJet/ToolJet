@@ -201,6 +201,10 @@
       "ws": "$ws"
     },
     "mailparser": {
+      "nodemailer": "^9.0.1",
+      "linkify-it": "^5.0.2"
+    },
+    "preview-email": {
       "nodemailer": "^9.0.1"
     },
     "jsondiffpatch": "^0.7.6",
@@ -208,12 +212,14 @@
     "@opentelemetry/core": "^2.8.0",
     "@grpc/grpc-js": "^1.14.4",
     "brace-expansion": "^1.1.18",
-    "fast-uri": "^3.1.5",
+    "fast-uri": "^3.1.6",
     "multer": "^2.2.0",
     "nanoid": "^3.3.17",
     "socket.io-parser": "^4.2.7",
     "js-yaml": "^4.3.1",
-    "proxy-addr": "^2.0.8"
+    "proxy-addr": "^2.0.8",
+    "browserslist": "^4.28.7",
+    "form-data": "^4.0.6"
   },
   "optionalDependencies": {
     "html-minifier": "^5.0.0",
@@ -269,7 +275,7 @@
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": "22.15.1",
-    "npm": "10.9.2"
+    "node": "22.23.4",
+    "npm": "10.9.9"
   }
 }
