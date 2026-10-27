@@ -171,7 +171,8 @@ The following actions of the component can be controlled using the component-spe
 | Icon                                                   | Allows you to select an icon for the component.          | Enable the icon visibility, select icon and icon color. |
 | Border radius                                          | Modifies the border radius of the component.             | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Box shadow                                             | Sets the box shadow properties of the component.         | Select the box shadow color and adjust the related properties. |
-| Menu width                                             | Controls the width of the dropdown menu.                 | Choose **Match the field**, **Match the content**, or **Custom** (enter a custom width value). |
+| Menu width                                             | Controls the width of the dropdown menu.                 | Choose **Match the field** (default), **Match the content**, or **Custom**. |
+| Custom menu width                                      | Sets the width of the dropdown menu in pixels. Shown only when **Menu width** is **Custom**. | Enter a number. Default: `256`. The menu is never narrower than the field or wider than 420px. |
 
 ### Container
 
