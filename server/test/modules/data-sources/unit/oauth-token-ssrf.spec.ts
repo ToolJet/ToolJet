@@ -123,10 +123,12 @@ describe('createSSRFSafeLookup', () => {
   it('returns the array shape for all:true lookups', async () => {
     publish(true, ['127.0.0.1']);
 
-    await expect(runLookup('localhost', { all: true, family: 4 })).resolves.toMatchObject({
-      err: null,
-      address: [{ address: '127.0.0.1', family: 4 }],
-    });
+    const { err, address } = await runLookup('localhost', { all: true, family: 4 });
+
+    // How many entries come back depends on the host's /etc/hosts (CI containers list localhost twice),
+    // so check the array shape rather than its length.
+    expect(err).toBeNull();
+    expect(address).toEqual(expect.arrayContaining([{ address: '127.0.0.1', family: 4 }]));
   });
 
   it('rejects an all:true lookup when any resolved address is blocked', async () => {
