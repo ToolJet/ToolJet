@@ -1,6 +1,6 @@
 # instance-settings module
 
-Owns instance-wide key/value settings (the `instance_settings` table) that only a Super Admin can read or change, plus the SSRF protection settings exposed on Settings -> Security.
+Owns instance-wide key/value settings (the `instance_settings` table) that only a Super Admin can read or change, plus the SSRF protection settings exposed on Settings -> Security -> Private network access (the user-facing name; code, setting keys and the API keep `ssrf`).
 
 ## Domain terms
 
