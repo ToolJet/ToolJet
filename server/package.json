@@ -29,7 +29,7 @@
     "test:cov:gitsync:unit": "SKIP_GLOBAL_SETUP=true NODE_ENV=test NODE_OPTIONS='--max-old-space-size=8192' jest --config test/jest-unit.gitsync-cov.config.ts --runInBand",
     "test:cov:gitsync:merge": "node scripts/merge-lcov.mjs coverage-gitsync-combined/lcov.info coverage-gitsync/lcov.info coverage-gitsync-unit/lcov.info",
     "test:e2e:record": "POLLY_MODE=record bash scripts/run-e2e.sh",
-    "test:cov:merge": "node scripts/merge-coverage.mjs --out coverage-combined coverage-unit coverage-e2e",
+    "test:cov:merge": "node scripts/merge-coverage.mjs --out coverage-combined coverage-unit coverage-e2e coverage-mcp-oauth",
     "db:create": "ts-node ./scripts/create-database.ts",
     "db:create:prod": "node dist/scripts/create-database.js ",
     "db:drop": "ts-node ./scripts/drop-database.ts",
@@ -57,7 +57,7 @@
     "copy-schemas": "copyfiles -u 4 src/dto/validators/schemas/**/*.json dist/src/dto/validators/schemas",
     "worker:dev": "WORKER=true NODE_ENV=development nest start --watch",
     "worker:prod": "WORKER=true NODE_ENV=production node dist/src/main",
-    "test:mcp-oauth": "ts-node -r tsconfig-paths/register --transpile-only test/prepare-mcp-oauth-db.ts && jest --config test/mcp-oauth.jest.config.cjs --runInBand"
+    "test:mcp-oauth": "ts-node -r tsconfig-paths/register --transpile-only test/prepare-mcp-oauth-db.ts && jest --config test/jest-mcp-oauth.config.ts --runInBand"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",

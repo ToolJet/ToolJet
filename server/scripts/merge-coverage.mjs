@@ -18,11 +18,12 @@ import libReport from 'istanbul-lib-report';
 import reports from 'istanbul-reports';
 
 function parseArgs(argv) {
-  const args = { out: null, reporters: ['json', 'html', 'lcovonly', 'json-summary'], inputs: [] };
+  const args = { out: null, reporters: ['json', 'html', 'lcovonly', 'json-summary'], inputs: [], relativePaths: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--out') args.out = argv[++i];
     else if (arg === '--reporters') args.reporters = argv[++i].split(',');
+    else if (arg === '--relative-paths') args.relativePaths = true;
     else args.inputs.push(arg);
   }
   if (!args.out || args.inputs.length === 0) {
@@ -47,7 +48,7 @@ function findCoverageFiles(dir) {
   return found;
 }
 
-const { out, reporters, inputs } = parseArgs(process.argv.slice(2));
+const { out, reporters, inputs, relativePaths } = parseArgs(process.argv.slice(2));
 
 const files = inputs.flatMap(findCoverageFiles);
 if (files.length === 0) {
@@ -61,7 +62,14 @@ files.forEach((f) => console.log(`  ${f}`));
 
 const map = libCoverage.createCoverageMap({});
 for (const file of files) {
-  map.merge(JSON.parse(fs.readFileSync(file, 'utf8')));
+  const coverage = JSON.parse(fs.readFileSync(file, 'utf8'));
+  for (const entry of Object.values(coverage)) {
+    // Jobs can run at different absolute checkout paths. Transport reports relative
+    // to server/, then restore paths in the receiving job before merging counters.
+    const absolute = path.resolve(entry.path);
+    entry.path = relativePaths ? path.relative(process.cwd(), absolute) : absolute;
+    map.addFileCoverage(entry);
+  }
 }
 
 fs.rmSync(out, { recursive: true, force: true });

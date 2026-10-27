@@ -9,6 +9,14 @@ on:
       - 'plugins/**'
       - '.github/workflows/ai-tests.yml'
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ci-coverage:
+        type: boolean
+        default: false
+    secrets:
+      CUSTOM_GITHUB_TOKEN:
+        required: true
 
 permissions:
   contents: read
@@ -19,6 +27,7 @@ jobs:
     # Run only on explicit request; private code is restricted to same-repository PRs.
     if: >-
       github.event_name == 'workflow_dispatch'
+      || inputs.ci-coverage == true
       || (github.event_name == 'pull_request'
           && github.event.pull_request.head.repo.full_name == github.repository
           && contains(github.event.pull_request.labels.*.name, 'run-ai-tests')
@@ -53,6 +62,17 @@ jobs:
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci
+      - name: Verify coverage transfer between checkout paths
+        run: node --test server/scripts/merge-coverage.test.mjs
       - name: Apply real schema migrations and run all OAuth security tests
         working-directory: server
-        run: npm run test:mcp-oauth
+        run: npm run test:mcp-oauth -- --coverage --coverageReporters=json --coverageDirectory=coverage-mcp-oauth
+      - name: Make coverage paths portable between CI jobs
+        working-directory: server
+        run: node scripts/merge-coverage.mjs --relative-paths --reporters json --out coverage-mcp-oauth-upload coverage-mcp-oauth
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage-mcp-oauth
+          path: server/coverage-mcp-oauth-upload/coverage-final.json
+          if-no-files-found: error
+          retention-days: 1
