@@ -1,3 +1,5 @@
+import { ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS } from './async-safe-pre-cutoff-migrations';
+
 type Env = Record<string, string | undefined>;
 
 /** Operator opt-out: serving pods never refuse writes during migrations. */
@@ -46,5 +48,22 @@ export function parseMigrationPhase(raw: string | undefined): MigrationPhase {
   throw new Error(`Unknown MIGRATION_PHASE '${raw}': use 'schema' or 'data', or leave it unset.`);
 }
 
-/** Migrations at or before this timestamp predate the async-mode authoring rules (`server/AGENTS.md` § Migrations). */
-export const MIGRATION_AUTHORING_RULES_CUTOFF = 1790700000000;
+/**
+ * Migrations at or before this timestamp predate the async-mode authoring rules (`server/AGENTS.md` § Migrations).
+ * Just below the oldest migration pending on 3.21.74-beta, so upgrades from 3.21.74 onwards run async.
+ */
+export const MIGRATION_AUTHORING_RULES_CUTOFF = 1789300000000;
+
+/** TypeORM's rule: a migration name ends in its 13-digit timestamp. */
+export function migrationTimestamp(name: string): number {
+  return Number(name.slice(-13));
+}
+
+export function isPreCutoffMigration(name: string): boolean {
+  return migrationTimestamp(name) <= MIGRATION_AUTHORING_RULES_CUTOFF;
+}
+
+/** A pending pre-cutoff migration outside the allowlist: the database predates 3.21.58, so the upgrade runs jointly before boot. */
+export function blocksAsyncUpgrade(name: string): boolean {
+  return isPreCutoffMigration(name) && !ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS.has(name);
+}

@@ -14,6 +14,7 @@ import {
   RunProgress,
 } from '../../../migration-helpers/migration-run-log';
 import { isServerManagedMigrationMode, setupCommand } from '../../../migration-helpers/migration-status';
+import { TABLE_ALTERING_DATA_MIGRATIONS } from '../../../migration-helpers/async-safe-pre-cutoff-migrations';
 import { mainDbConnectionConfig } from '../../../migration-helpers/async-mode';
 import { HELD_MIGRATION_LOCKS_SQL, SKIPPED_EXIT_CODE } from '../../../migration-helpers/migrations-table-gate';
 
@@ -24,6 +25,8 @@ export interface MigrationStatus {
   state: MigrationState;
   startedAt?: string;
   toVersion?: string;
+  /** An unfinished run alters tables in its data transaction (an upgrade from 3.21.58–3.21.62): reads would block too. */
+  readsBlocked?: boolean;
 }
 
 export interface MigrationRun {
@@ -109,7 +112,7 @@ function owningMigration(run: RunProgress): string | null {
 
 type StatusRow = Pick<
   MigrationRunRow,
-  'status' | 'to_version' | 'started_at' | 'error' | 'heartbeat_age_ms' | 'lock_held'
+  'status' | 'to_version' | 'started_at' | 'error' | 'migrations' | 'heartbeat_age_ms' | 'lock_held'
 >;
 
 const latestRunsSql = (columns: string) =>
@@ -252,7 +255,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
       const [{ migrating }] = await this.query<{ migrating: boolean }>(HELD_MIGRATION_LOCKS_SQL);
       // Read every second on every server: only the columns the state needs, not the log tail.
       const [latest] = this.enabled
-        ? await this.query<StatusRow>(latestRunsSql('r.status, r.to_version, r.started_at, r.error'), [1])
+        ? await this.query<StatusRow>(latestRunsSql('r.status, r.to_version, r.started_at, r.error, r.migrations'), [1])
         : [];
       if (latest) {
         const state = effectiveStatus(latest);
@@ -264,6 +267,8 @@ export class MigrationRunsService implements OnApplicationShutdown {
             state: stopped ? 'running' : state,
             startedAt: new Date(latest.started_at).toISOString(),
             toVersion: latest.to_version,
+            readsBlocked:
+              state !== 'succeeded' && latest.migrations.some(({ name }) => TABLE_ALTERING_DATA_MIGRATIONS.has(name)),
           };
         }
       }
@@ -346,13 +351,15 @@ export class MigrationRunsService implements OnApplicationShutdown {
     };
     const record = () =>
       write(async () => {
-        if (runId) return;
-        runId = await this.insertRun(triggeredBy);
-        if (runId) return;
-        // Our child holds the migration lock, so the running row in the way is a pod killed before its
-        // heartbeat went stale.
-        await this.reapDeadRuns({ holdingLock: true });
-        runId = await this.insertRun(triggeredBy);
+        if (!runId) runId = await this.insertRun(triggeredBy);
+        if (!runId) {
+          // Our child holds the migration lock, so the running row in the way is a pod killed before its
+          // heartbeat went stale.
+          await this.reapDeadRuns({ holdingLock: true });
+          runId = await this.insertRun(triggeredBy);
+        }
+        // The migration list now, not on the next heartbeat: the gate reads it to know whether reads block.
+        if (runId) await this.updateRun(runId, run, 'running');
       });
 
     // Kept lines wait here until the run has a row, then go out with the next write.
