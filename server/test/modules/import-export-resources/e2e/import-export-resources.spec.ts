@@ -243,7 +243,8 @@ describe('ImportExportResourcesController', () => {
         .send(body);
     }
 
-    it("should not export another workspace's ToolJet Database table (403)", async () => {
+    // The controller resolves the workspace from the session and ignores organization_id in the body.
+    it("should not export another workspace's ToolJet Database table", async () => {
       const adminA = await createAdmin(app, 'admin@tooljet.io');
       const adminB = await createAdmin(app, 'admin-b@tooljet.io');
       const orgB = adminB.user.defaultOrganizationId;
@@ -261,7 +262,7 @@ describe('ImportExportResourcesController', () => {
       const response = await exportAs(adminA, {
         organization_id: orgB,
         tooljet_database: [{ table_id: table.id }],
-      }).expect(403);
+      }).expect(201);
       expect(JSON.stringify(response.body)).not.toContain('workspace_b_table');
     });
 
