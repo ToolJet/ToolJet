@@ -149,8 +149,9 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 
 ### Container
 
-**Padding** <br/>
-Allows you to maintain a standard padding by enabling the `Default` option.
+| <div style={{ width:"130px"}}> Container Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :---------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Padding | Sets the padding around the component. | Choose **Default** to keep the standard padding or **None** to remove it. |
 
 ### Advanced
 
