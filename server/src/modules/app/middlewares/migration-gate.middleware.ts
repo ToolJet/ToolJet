@@ -39,6 +39,19 @@ const ASYNC_MODE_WRITE_ALLOWLIST = [
   /^\/data-queries\/[^/]+\/versions\/[^/]+\/run\/[^/]+$/,
 ];
 
+/**
+ * A run with pre-cutoff migrations (an upgrade from 3.21.58) holds DDL locks that block reads of the
+ * tables they alter until it commits, so only sign-in and the upgrade status get through.
+ */
+const PRE_CUTOFF_RUN_ALLOWLIST = [
+  /^\/authenticate(\/|$)/,
+  /^\/session(\/|$)/,
+  /^\/oauth\//,
+  /^\/sso\//,
+  /^\/migration-status$/,
+  /^\/migration-runs(\/|$)/,
+];
+
 /** How often to repeat the "requests are being rejected" line. */
 const LOG_THROTTLE_MS = 30_000;
 
@@ -91,11 +104,15 @@ export class MigrationGateMiddleware implements NestMiddleware {
     // resolves `..`, `\` and `%2e`, so the gate would check a different route than the one that runs.
     // Lowercased: Express matches routes case-insensitively.
     const path = (parseurl.original(req)?.pathname ?? '/').toLowerCase();
-    if (!this.enabled || !this.shouldGate(path, req.method)) return next();
-    const { state } = await this.migrationRuns.status();
-    const refusal = REFUSALS[state];
-    if (!refusal) return next();
+    const apiPath = this.gatedApiPath(path);
+    if (!this.enabled || apiPath === null) return next();
+    const { state, preCutoffRun } = await this.migrationRuns.status();
+    if (!REFUSALS[state] || (this.asyncMode && this.passesAsyncGate(apiPath, req.method, preCutoffRun))) return next();
+    this.refuse(req, res, state);
+  }
 
+  private refuse(req: Request, res: Response, state: MigrationState): void {
+    const refusal = REFUSALS[state];
     this.logRejection(req, state);
     res.setHeader('Retry-After', String(RETRY_AFTER_SECONDS));
     res.status(HttpStatus.SERVICE_UNAVAILABLE).json({
@@ -106,12 +123,17 @@ export class MigrationGateMiddleware implements NestMiddleware {
     });
   }
 
-  private shouldGate(path: string, method: string): boolean {
-    if (!path.startsWith(this.apiPrefix)) return false;
+  /** The path below the API prefix, or null when the gate never applies (non-API, health, metrics). */
+  private gatedApiPath(path: string): string | null {
+    if (!path.startsWith(this.apiPrefix)) return null;
     const apiPath = path.slice(this.apiPrefix.length);
-    if (UNGATED_API_PATHS.has(apiPath)) return false;
-    if (!this.asyncMode) return true;
-    return !SAFE_METHODS.has(method) && !ASYNC_MODE_WRITE_ALLOWLIST.some((pattern) => pattern.test(apiPath));
+    return UNGATED_API_PATHS.has(apiPath) ? null : apiPath;
+  }
+
+  /** Async mode: an ordinary run lets reads and end-user writes through; a pre-cutoff run only sign-in and status. */
+  private passesAsyncGate(apiPath: string, method: string, preCutoffRun: boolean | undefined): boolean {
+    if (preCutoffRun) return PRE_CUTOFF_RUN_ALLOWLIST.some((pattern) => pattern.test(apiPath));
+    return SAFE_METHODS.has(method) || ASYNC_MODE_WRITE_ALLOWLIST.some((pattern) => pattern.test(apiPath));
   }
 
   private logRejection(req: Request, state: MigrationState): void {
@@ -119,7 +141,7 @@ export class MigrationGateMiddleware implements NestMiddleware {
     if (now - this.lastRejectionLoggedAt < LOG_THROTTLE_MS) return;
     this.lastRejectionLoggedAt = now;
     this.logger.warn(
-      `[migration-gate] Migration ${state}: answering API writes with 503 (most recent: ${req.method} ${req.originalUrl}).`
+      `[migration-gate] Migration ${state}: answering API requests with 503 (most recent: ${req.method} ${req.originalUrl}).`
     );
   }
 }

@@ -14,7 +14,7 @@ import {
   withDeadClientKeepalive,
   withMigrationAdvisoryLock,
 } from './migrations-table-gate';
-import { MIGRATION_AUTHORING_RULES_CUTOFF, MigrationPhase, parseMigrationPhase } from './migration-status';
+import { blocksAsyncUpgrade, MigrationPhase, parseMigrationPhase } from './migration-status';
 import { getEnvVars } from '../../scripts/database-config-utils';
 
 /**
@@ -280,7 +280,7 @@ async function migrationsTableLocked(dataSource: DataSource, lockTimeoutMs: numb
 /** Older migrations may drop, rename or SET NOT NULL, which breaks the release still serving. */
 async function pendingBeforeAuthoringRules(schemaDS: DataSource, dataDS: DataSource): Promise<string[]> {
   const pending = [...(await realPendingMigrations(schemaDS)), ...(await realPendingMigrations(dataDS))];
-  return pending.filter(({ timestamp }) => timestamp <= MIGRATION_AUTHORING_RULES_CUTOFF).map(({ name }) => name);
+  return pending.map(({ name }) => name).filter(blocksAsyncUpgrade);
 }
 
 /** Split phases are serialised by the advisory lock; the sentinels' LOCK TABLE would stall booting pods. */
@@ -318,7 +318,7 @@ export async function run(
     const legacy = await pendingBeforeAuthoringRules(schemaDS, dataDS);
     if (legacy.length) {
       console.log(
-        `[migrations] ${legacy[0]} predates the async-mode authoring rules (${legacy.length} such pending); ` +
+        `[migrations] ${legacy[0]} is pending: this database is older than 3.21.58 (${legacy.length} such pending); ` +
           'running the whole upgrade before boot in one transaction, the blocking way.'
       );
       phase = 'joint';

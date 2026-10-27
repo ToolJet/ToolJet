@@ -523,7 +523,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
         const pod = await phasePod('legacy-1', 'schema', database, {}, { fixtureSet: 'legacy' }).done;
 
         expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
-        expect(pod.stdout).toContain('LegacyWitness1700000000004 predates the async-mode authoring rules');
+        expect(pod.stdout).toContain('LegacyWitness1700000000004 is pending: this database is older than 3.21.58');
         expect(pod.stdout).toContain('Committed schema + data migrations in a single transaction.');
         expect(await withScratchConnection(database, (db) => db.query('SELECT 1 FROM legacy_witness'))).toEqual([]);
       } finally {

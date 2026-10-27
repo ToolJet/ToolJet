@@ -28,9 +28,9 @@ function buildResponse() {
 }
 
 /** Caching, single flight and failing open live in MigrationRunsService.status (e2e). */
-function buildMiddleware(state: MigrationState) {
+function buildMiddleware(state: MigrationState, preCutoffRun = false) {
   const logger = { warn: jest.fn(), log: jest.fn(), error: jest.fn() } as unknown as Logger;
-  const status = jest.fn().mockResolvedValue({ state });
+  const status = jest.fn().mockResolvedValue({ state, preCutoffRun });
   const runs = { status } as unknown as MigrationRunsService;
   return { middleware: new MigrationGateMiddleware(logger, runs), logger, status };
 }
@@ -259,6 +259,49 @@ describe('MigrationGateMiddleware', () => {
           message: 'The latest ToolJet upgrade failed. Changes cannot be saved until it is fixed and ToolJet restarts.',
         })
       );
+    });
+
+    describe('a run with pre-cutoff migrations (upgrade from 3.21.58) | only sign-in and status pass', () => {
+      it.each([
+        ['POST', '/api/authenticate'],
+        ['GET', '/api/session'],
+        ['GET', '/api/migration-status'],
+        ['GET', '/api/migration-runs'],
+      ])('should let %s %s through', async (method, path) => {
+        const { middleware } = buildMiddleware('running', true);
+        const next = jest.fn() as NextFunction;
+
+        await middleware.use(buildRequest(path, method), buildResponse(), next);
+
+        expect(next).toHaveBeenCalled();
+      });
+
+      it.each([
+        ['running', 'GET', '/api/apps'],
+        ['running', 'POST', '/api/data-queries/q1/run'],
+        ['failed', 'GET', '/api/apps'],
+      ] as [MigrationState, string, string][])(
+        'should answer %s %s %s with 503, as its DDL locks block reads too',
+        async (state, method, path) => {
+          const { middleware } = buildMiddleware(state, true);
+          const res = buildResponse();
+          const next = jest.fn() as NextFunction;
+
+          await middleware.use(buildRequest(path, method), res, next);
+
+          expect(next).not.toHaveBeenCalled();
+          expect(res.status).toHaveBeenCalledWith(503);
+        }
+      );
+
+      it('should let reads through once it succeeded', async () => {
+        const { middleware } = buildMiddleware('succeeded', true);
+        const next = jest.fn() as NextFunction;
+
+        await middleware.use(buildRequest('/api/apps'), buildResponse(), next);
+
+        expect(next).toHaveBeenCalled();
+      });
     });
 
     it('should let writes through once the migrations succeeded', async () => {
