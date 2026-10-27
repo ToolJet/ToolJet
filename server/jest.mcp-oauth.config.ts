@@ -4,11 +4,11 @@
  * Isolated OAuth tests. Never loads ToolJet's database-truncating global setup.
  * Keep ts-node for extensionless imports on Node >= 22.18, as in jest.config.ts.
  */
-import { coverageConfig } from './jest-coverage.config';
+import { coverageConfig } from './test/jest-coverage.config';
 
 export default {
   ...coverageConfig(false),
-  rootDir: '..',
+  rootDir: '.',
   testEnvironment: 'node',
   testMatch: [
     '<rootDir>/test/modules/mcp-oauth/**/*.spec.ts',
