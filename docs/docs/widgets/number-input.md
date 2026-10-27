@@ -10,8 +10,8 @@ The **Number Input** component allows users to enter numeric values. It can be u
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div>                      | <div style={{ width:"250px"}}> Expected Value </div> |
 | :--------------------------------------------- | :--------------------------------------------------------------------- | :--------------------------------------------------- |
 | Label                                          | Text to display as the label for the field.                            | String (e.g., `Age`).                                |
-| Placeholder                                    | A hint displayed to guide the user on what to enter.                   | String (e.g., `John Doe`).                           |
-| Default value                                  | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`).                       |
+| Placeholder                                    | A hint displayed to guide the user on what to enter.                   | String (e.g., `Enter quantity`).                     |
+| Default value                                  | The default value that the component will hold when the app is loaded. | Number (e.g., `10`).                                 |
 | Decimal places                                 | Specifies the number of decimal places for numerical values.           | Integer (e.g., `2`).                                 |
 
 ## Events
@@ -65,7 +65,7 @@ Check the **component specific actions** available for this component **[here](/
 | Regex | Regular Expression to validate the input. | Regular Expression Pattern (e.g., `^\d{10}$`). |
 | Min value | Sets the minimum value allowed. | Integer (e.g., `10` for a minimum value of 10). |
 | Max value | Sets the maximum value allowed. | Integer (e.g., `1000` for a maximum value of 1000). |
-| Custom validation | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.numberinput1.value<5&&"Value needs to be more than 5"}}`). |
+| Custom validation | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.numberinput1.value<5&&"Value needs to be at least 5"}}`). |
 
 To add regex inside `Custom Validation`, you can use the below format:
 
@@ -109,12 +109,19 @@ To add regex inside `Custom Validation`, you can use the below format:
 | :--------------------------------------------------- | :------------------------------------------------------- | :---------------------------------------------------------- |
 | Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Accent | Sets the border color of the field while it is focused. A validation error border takes priority. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Text | Sets the color of the number entered in the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Placeholder text | Sets the color of the placeholder text displayed when the field is empty. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Error text | Sets the text color of validation message that displays. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Icon | Allows you to select an icon for the component. | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using **fx**. |
 | Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Container Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Padding | Sets the padding around the component. | Choose **Default** to keep the standard padding or **None** to remove it. |
 
 ### Advanced
 
@@ -126,7 +133,3 @@ To add regex inside `Custom Validation`, you can use the below format:
 The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
 :::
 
-## Container
-
-**Padding** <br/>
-Allows you to maintain a standard padding by enabling the `Default` option.
