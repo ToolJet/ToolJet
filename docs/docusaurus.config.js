@@ -322,7 +322,7 @@ module.exports = {
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: true, 
           lastVersion: '3.16.0-LTS',
-          onlyIncludeVersions: process.env.build_lts ? ['3.16.0-LTS'] : undefined,
+          onlyIncludeVersions: process.env.build_lts === 'true' ? ['3.16.0-LTS'] : undefined,
           versions: {
             current: {
               label: 'beta 🚧',
