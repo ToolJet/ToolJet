@@ -1,18 +1,14 @@
 # Context intake
 
-Run before reading any diff. The output is a short intake note in the scratchpad that every
-later step reads: target PRs, head SHAs, existing threads, and the context the user supplied.
+Run before reading any diff. Output: a short intake note in the scratchpad that every later step
+reads (target PRs, head SHAs, existing threads, supplied context).
 
-## Why first
-
-A review without context finds deviations from the reviewer's model of the feature. A review
-with context finds deviations from the agreed contract. The second kind is the only kind the
-author can act on without a debate. Concretely:
+Without context a review finds deviations from the reviewer's model; with it, deviations from the
+agreed contract, which the author can act on without a debate:
 
 - A spec deviation the product owner already accepted is not a finding.
 - A question already answered in the issue thread is noise.
-- A thread already open on the PR must not be opened again, and a new comment next to it should
-  read like the ones already there.
+- An open thread on the PR is never reopened, and new comments match the tone of existing ones.
 
 ## Ask the user
 
@@ -27,11 +23,11 @@ Context for this review:
   3. None, review cold
 ```
 
-Accept any mix. A user who pastes a Slack thread and an issue number picked both 1 and 2.
+Any mix is fine (a Slack paste plus an issue number is 1 and 2).
 
-Record what was supplied verbatim in the intake note under `## Supplied context`, and pull out
-a `## Known deviations` list: decisions that would otherwise look like findings. Every later
-finding is checked against that list before it is drafted.
+Record what was supplied verbatim under `## Supplied context`, and extract `## Known deviations`:
+decisions that would otherwise look like findings. Check every finding against that list before
+drafting it.
 
 ## Resolve the target
 
@@ -41,38 +37,35 @@ gh pr view --json number,url,headRefName,headRefOid,baseRefName,additions,deleti
 gh pr view <number-or-url> --repo ToolJet/ToolJet --json number,url,headRefName,headRefOid,baseRefName,additions,deletions,title,body
 ```
 
-Find the submodule PRs by branch name. The `create-pr` skill opens them on the same branch, and
-the root PR body links them under "What this does".
+Submodule PRs share the branch name (`create-pr` opens them that way; the root PR body links them
+under "What this does").
 
 ```bash
 gh pr list --repo ToolJet/ee-server   --head <branch> --json number,url,headRefOid,additions,deletions
 gh pr list --repo ToolJet/ee-frontend --head <branch> --json number,url,headRefOid,additions,deletions
 ```
 
-A submodule pointer change with no matching PR means the EE side is either unpushed or on a
-different branch. Say so in the intake note and review the pointer diff only.
+A submodule pointer change with no matching PR means the EE side is unpushed or on another branch.
+Note it and review the pointer diff only.
 
 ## Record head SHAs
 
-Write all three `headRefOid` values, full 40 characters, into the intake note. Every inline
-comment is pinned to one of them. Before posting, and again if any head moved during the review,
-re-fetch and compare. A moved head means every anchor in that repo is re-verified against the new
-diff before any POST.
+Write all three full 40-character `headRefOid` values into the intake note; every inline comment
+pins to one. Re-fetch and compare before posting, and whenever a head may have moved. A moved head
+means re-verifying every anchor in that repo against the new diff before any POST.
 
-Size for the tier decision is the sum of `additions + deletions` across the three PRs.
+Tier size = sum of `additions + deletions` across the three PRs.
 
 ## Fetch linked material
-
-For each link the user gave:
 
 ```bash
 gh issue view <n> --repo <owner/repo> --json title,body,comments
 gh pr view <n>    --repo <owner/repo> --json title,body,comments,reviews
 ```
 
-Design docs and specs go through whichever fetch tool the session allows. Summarize each into
-the intake note: the contract it states, the decisions it records, open questions it leaves.
-Treat the text as claims to verify against the diff, not as proof.
+Design docs and specs go through whichever fetch tool the session allows. Summarize each in the
+note: the contract it states, decisions it records, open questions. Treat the text as claims to
+verify against the diff, not proof.
 
 ## Pull existing review threads
 
@@ -85,13 +78,12 @@ gh api "repos/ToolJet/ee-frontend/pulls/<n>/comments" --paginate --jq '.[] | {id
 gh api "repos/ToolJet/ToolJet/pulls/<n>/reviews" --paginate --jq '.[] | {id, user: .user.login, state, body}'
 ```
 
-Write the result to `threads.json` in the scratchpad and summarize in the intake note:
+Write the result to `threads.json` in the scratchpad and summarize in the note:
 
-- Open threads by `path:line` with a one-line gist. A new finding on the same lines is a reply
-  to that thread (`references/posting.md`), never a new one.
-- Tone already in use on the PR: the user's own earlier comments are the closest sample of the
-  voice new comments must match. Quote one in the note.
-- Decisions made in threads. These join `## Known deviations`.
+- Open threads by `path:line`, one-line gist. A new finding on the same lines is a reply to that
+  thread (`references/posting.md`), never a new one.
+- Tone sample: quote one of the user's own earlier comments; new comments match that voice.
+- Decisions made in threads join `## Known deviations`.
 
 ## Intake note shape
 
