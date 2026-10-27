@@ -25,16 +25,17 @@ The following actions of the component can be controlled using component-specifi
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
-| setURL | Sets the URL of the iframe to display different content dynamically. | `components.iframe1.setURL('https://example.com')` |
+| setUrl | Sets the URL of the iframe to display different content dynamically. Only text values are applied. | `components.iframe1.setUrl('https://example.com')` |
 | setVisibility | Sets the visibility of the component. | `components.iframe1.setVisibility(true)` |
 | setDisable | Disables or enables the component. | `components.iframe1.setDisable(false)` |
 | setLoading | Sets the loading state of the component. | `components.iframe1.setLoading(true)` |
+| reload | Reloads the content of the iframe. | `components.iframe1.reload()` |
 
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 |:--------|:-----------|:------------|
-| url | Holds the URL currently loaded in the iframe. | `{{components.iframe1.url}}` |
+| url | Holds the URL set with the **URL** property or `setUrl()`. | `{{components.iframe1.url}}` |
 | isVisible | Indicates whether the component is visible. | `{{components.iframe1.isVisible}}` |
 | isDisabled | Indicates whether the component is disabled. | `{{components.iframe1.isDisabled}}` |
 | isLoading | Indicates whether the component is in a loading state. | `{{components.iframe1.isLoading}}` |
@@ -60,7 +61,7 @@ The following actions of the component can be controlled using component-specifi
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
-| Box Shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
+| Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
 ### Advanced
 
