@@ -5,6 +5,10 @@ title: Button Group
 
 The **Button Group** component is used to group a series of buttons together in a single line. It is used to group related buttons.
 
+:::info
+This is a legacy component. You'll find it in the **Legacy** section of the components panel. Check out the new version of the button group component [here](/docs/widgets/button-group-v2).
+:::
+
 <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/button-group/buttongroup1.png" alt="Button group" />
 
 ## Properties
@@ -14,7 +18,7 @@ The **Button Group** component is used to group a series of buttons together in 
 | label | Sets the title of the button-group. | Any **String** value: `Select the options` or `{{queries.queryname.data.text}}`.     |
 | values | Sets the values of the Button Group items. | **Array** of strings and numbers: `{{[1,2,3]}}`. |
 | Labels | Sets the labels of the Button Group items. | **Array** of strings and numbers: `{{['A','B','C']}}`. |
-| Default selected | Sets the initial selected values. | **Array** of strings and numbers: `{{[1]}}` will select the first button by default. |
+| Default selected | Sets the initial selected values. | **Array** of strings and numbers: `{{[1]}}` selects the button whose value is `1`. |
 | Enable multiple selection | Toggle on or off to enable multiple selection.    | **Boolean** value: `{{true}}` or `{{false}}`. |
 
 ## Events
@@ -29,19 +33,23 @@ Check [Action Reference](/docs/actions/run-query) docs to get the detailed infor
 
 ## Component Specific Actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the button-group component.
+The following action can be triggered using an event or a RunJS query:
+
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
+| Select option | Selects buttons by value. Pass a value or an array of values. Values not in **values** are ignored, and matching is type-strict, so `1` doesn't match `"1"`. With multiple selection off, only the first matching value is selected. Doesn't fire **On click**. | `components.buttongrouplegacy1.setSelected(1)` |
 
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
-| selected | Holds the currently selected button value as an array of objects. | Accessible dynamically with JS (for e.g., `{{components.buttongroup1.selected[0]}} or {{components.buttongroup1.selected}}`). |
+| selected | Holds the selected button values. When the app loads, and after a click with multiple selection off, it's an array (e.g., `[1]`). After a click with multiple selection on, or after **Select option**, it's a comma-separated string (e.g., `1,2`). | Accessible dynamically with JS (for e.g., `{{components.buttongrouplegacy1.selected}}`). |
 
 ## General
 
 #### Tooltip
 
-A Tooltip is often used to display additional information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text. You can enter the content as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field.
+A Tooltip is often used to display additional information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as plain text.
 
 <img className="screenshot-full" src="/img/widgets/button-group/grouptooltip.png" alt="Button group layout" />
 
@@ -60,9 +68,11 @@ A Tooltip is often used to display additional information when the user hovers t
 | Text color | Set a text color for the buttons in buttons group. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
 | Visibility | Make the component visible or hidden. | **`{{true}}`** or **`{{false}}`**, By default, its value is set to `{{true}}`. |
 | Disable | Disable the component. | **`{{true}}`** or **`{{false}}`**, By default, its value is set to `{{false}}`. |
-| Border radius. | Add a border radius to the buttons in the component using this property. | Any numerical value from `0` to `100`. |
+| Border radius | Add a border radius to the buttons in the component using this property. | Any numerical value from `0` to `100`. |
 | Selected text color | Use this property to modify the text color of selected button. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
 | Selected background color | Use this property to modify the background color of selected button. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
+| Alignment | Aligns the buttons to the **Left**, **Center** or **Right**. | By default, its value is set to **Left**. |
+| Padding | Sets the padding around the component. | **Default** keeps the standard padding; **None** removes it. |
 | Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent X, Y, blur, spread, and color. Example: `9px 11px 5px 5px #00000040`. |
 
 ### Advanced
