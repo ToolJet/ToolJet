@@ -49,7 +49,7 @@ describe('migration-helpers/async-mode', () => {
     it('should fail the boot when the schema run fails', async () => {
       await expect(
         migrateSchemaBeforeBoot({ MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: 'exit 3' })
-      ).rejects.toThrow('Schema migrations failed (exit 3).');
+      ).rejects.toThrow('Migrations before boot failed (exit 3) and were rolled back.');
     });
   });
 });

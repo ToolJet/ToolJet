@@ -162,8 +162,8 @@ const isNewerRelease = (version: string): boolean =>
 
 /**
  * MIGRATION_MODE=async: runs the migration runner as a child of the serving process and
- * tracks it in `migration_runs`.
- * Every mode: `status()` also reports a migration another server runs, from its advisory lock.
+ * tracks it in `migration_runs`. `status()` also reports a migration another server runs, from its
+ * advisory lock. Blocking mode behaves as before this existed: `status()` is always idle.
  * Own small pg pool: progress stays visible while the migration transaction is open, and
  * heartbeats stay out of TypeORM's query log.
  */
@@ -240,6 +240,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
 
   /** Latest run, or a migration another server runs before this one boots. Fails open: the gate reads it. */
   async status(): Promise<MigrationStatus> {
+    if (!this.enabled) return { state: 'idle' };
     if (this.cachedStatus && Date.now() - this.cachedStatus.at < STATUS_CACHE_MS) return this.cachedStatus.value;
     // Single flight: a burst of requests on a cold cache shares one query.
     this.statusRead ??= this.readStatus().finally(() => {
