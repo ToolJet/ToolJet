@@ -9,6 +9,7 @@ export interface InspectorComponent {
   component?: {
     definition?: {
       properties?: Record<string, { value?: string }>;
+      styles?: Record<string, { value?: unknown }>;
     };
   };
 }
@@ -47,4 +48,14 @@ export interface LibraryComponentPropertiesProps {
   apps: unknown;
   allComponents: Record<string, unknown>;
   pages: unknown;
+}
+
+export interface LibraryComponentStylesProps {
+  componentMeta: Record<string, unknown>;
+  component: InspectorComponent;
+  paramUpdated: ParamUpdated;
+  dataQueries: unknown;
+  currentState: unknown;
+  allComponents: Record<string, unknown>;
+  darkMode: boolean;
 }
