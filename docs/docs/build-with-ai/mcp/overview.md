@@ -103,7 +103,7 @@ To connect your agent, follow the [Setup](/docs/build-with-ai/mcp/setup) guide.
 - **No ToolJet credits**: Operations run on your AI client's own model subscription, so building through MCP doesn't draw down your ToolJet AI credits.
 - **Better output**: Agents build against ToolJet's governed first-party contracts, so they work from the platform's real schemas instead of guessing at its internals.
 - **Stays in your workflow**: Create and modify apps from the editor you already work in, with no context switching into ToolJet.
-- **Self-verifying**: Agents can run their own queries to confirm the data is right, and those with browser access can open the app they built and check it works before handing it back.
+- **Self-verifying**: Agents can run their own queries to confirm the data is right, and those with browser access can open the app they built and check it works before handing it back. To open the app, the agent uses a [read-only session pinned to that app](/docs/user-management/profile-management/personal-access-tokens#open-a-read-only-session-for-one-app).
 - **Extensible**: Pair ToolJet MCP with other skills, tools, and MCP servers to extend what your agent can do, such as reading a Figma design before building from it.
 
 ## ToolJet MCP Auditability
