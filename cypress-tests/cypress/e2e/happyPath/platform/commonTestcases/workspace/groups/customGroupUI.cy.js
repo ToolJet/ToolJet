@@ -2,7 +2,12 @@ import { fake } from "Fixtures/fake";
 
 import { commonSelectors } from "Selectors/common";
 import { commonEeSelectors } from "Selectors/platform/eeCommon";
-import { groupsSelector } from "Selectors/platform/manageGroups";
+import { groupsSelector, groupAdminSelector } from "Selectors/platform/manageGroups";
+import { groupAdminText } from "Texts/platform/manageGroups";
+import {
+  verifyGroupAdminTabOrder,
+  verifyGroupAdminEmptyState,
+} from "Support/utils/platform/groupAdmin";
 import {
   apiAddUserToGroup,
   apiCreateGroup,
@@ -376,4 +381,37 @@ describe("Custom groups UI and Functionality verification", () => {
   //   apiDeleteGroup(duplicatedGroupName);
   //   apiDeleteGroup(groupName3);
   // });
+
+  it("Group admins tab renders for a workspace admin (visibility, tab order, empty state, users-table column)", () => {
+    visitGroupsSettingsPage();
+    createGroupViaUI(groupName);
+    cy.get(groupsSelector.groupLink(groupName)).click();
+
+    // Tab is visible in a custom group
+    cy.get(groupAdminSelector.groupAdminsLink)
+      .should("be.visible")
+      .and("contain.text", groupAdminText.groupAdminsTab);
+
+    // Tabs render Users -> Group admins -> Permissions -> Granular access; Users is the default active tab
+    verifyGroupAdminTabOrder();
+    cy.get(`${groupAdminSelector.usersLink}.active`).should("exist");
+
+    // Group admins tab shows the assign section and the empty state
+    cy.get(groupAdminSelector.groupAdminsLink).click();
+    cy.wait(1000);
+    verifyGroupAdminEmptyState();
+
+    // Tab is hidden in the default groups
+    ["Admin", "Builder", "End-user"].forEach((defaultGroup) => {
+      cy.get(groupsSelector.groupLink(defaultGroup)).click();
+      cy.get(groupAdminSelector.groupAdminsLink).should("not.exist");
+    });
+
+    // Workspace Settings users table exposes the "Group admins" column
+    cy.visit(`${data.workspaceSlug}/workspace-settings/users`);
+    cy.wait(2000);
+    cy.get(groupAdminSelector.usersTableAdminGroupsColumnHeader).should(
+      "be.visible"
+    );
+  });
 });

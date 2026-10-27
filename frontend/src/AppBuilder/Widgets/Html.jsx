@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
-import DOMPurify from 'dompurify';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { sanitizeAuthoredHtml } from '@/_helpers/sanitizeAuthoredHtml';
 import './html.scss';
 
 export const Html = function ({
@@ -23,18 +23,26 @@ export const Html = function ({
   componentType,
 }) {
   const { rawHtml: stringifyHTML, loadingState, disabledState, visibility } = properties || {};
+  const { boxShadow, backgroundColor } = styles || {};
   const baseStyle = {
-    backgroundColor: darkMode ? '#47505D' : '#ffffff',
+    backgroundColor: backgroundColor ? backgroundColor : darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',
     width: '100%',
+    // This element carries the background and is a flex item of a scrolling, fixed-height
+    // container, so the default `stretch` sizes it to the VISIBLE height — a taller document then
+    // scrolls out of the painted area. Flooring it at its own content height lets it grow past
+    // that, while stretch still fills a widget that is taller than its content (dynamic height
+    // with a short document), which a percentage min-height could not do: percentages resolve
+    // against an `auto` parent height as zero.
+    minHeight: 'max-content',
   };
-  const { boxShadow } = styles || {};
 
   const isInitialRender = useRef(true);
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
+  const wrapperRef = useRef(null);
   const contentRef = useRef(null);
-  const heightChangeValue = useHeightObserver(contentRef, isDynamicHeightEnabled);
+  const heightChangeValue = useHeightObserver(wrapperRef, isDynamicHeightEnabled);
 
   const [rawHtml, setRawHtml] = useState('');
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -67,15 +75,41 @@ export const Html = function ({
     setRawHtml(stringifyHTML || '');
   }, [stringifyHTML]);
 
-  useEffect(() => {
-    DOMPurify.addHook('afterSanitizeAttributes', function (node) {
-      // set all elements owning target to target=_blank
-      if ('target' in node) {
-        node.setAttribute('target', '_blank');
-        node.setAttribute('rel', 'noopener');
+  // index.ejs sets `<base href="/">`, and a fragment-only href resolves against the BASE url rather than the current page.
+  // so an authored `#test` link resolves to `/#test` and leaves the app for the dashboard instead of scrolling.
+  // Handle the click here and scroll to the target ourselves, and every link that is not in-page is left to the browser.
+  //
+  // The search is bounded by the nearest canvas rather than the document, so a link can reach a heading in another widget.
+  // — which is the native behaviour an author expects
+  // — `closest` also means a widget inside a Modal or Tab searches that nested canvas rather than the whole page.
+  const handleAuthoredClick = (event) => {
+    const anchor = event.target.closest?.('a[href^="#"]');
+    if (!anchor || !contentRef.current?.contains(anchor)) return;
+
+    event.preventDefault();
+    const fragment = anchor.getAttribute('href').slice(1);
+    if (!fragment) {
+      // `href="#"` conventionally means "back to the top".
+      contentRef.current.scrollIntoView({ block: 'start' });
+      return;
+    }
+    const searchRoot = contentRef.current.closest('.real-canvas') ?? contentRef.current;
+    const escape = (value) => (window.CSS?.escape ? window.CSS.escape(value) : value);
+    const find = (value) => searchRoot.querySelector(`#${escape(value)}, [name="${escape(value)}"]`);
+
+    // A fragment is percent-encoded in the href but the id is not: `#caf%C3%A9` points at `id="café"`.
+    // Try the literal first so an id that really contains a `%` still wins, then the decoded form.
+    let target = find(fragment);
+    if (!target) {
+      try {
+        const decoded = decodeURIComponent(fragment);
+        if (decoded !== fragment) target = find(decoded);
+      } catch {
+        // Malformed encoding: nothing to scroll to.
       }
-    });
-  }, []);
+    }
+    target?.scrollIntoView({ block: 'start' });
+  };
 
   useBatchedUpdateEffectArray([
     {
@@ -142,6 +176,7 @@ export const Html = function ({
 
   return (
     <div
+      ref={wrapperRef}
       className={cx('jet-container', 'html-widget-container', {
         'dynamic-height': isDynamicHeightEnabled,
         'jet-container-loading': exposedVariablesTemporaryState.isLoading,
@@ -170,8 +205,9 @@ export const Html = function ({
       ) : (
         <div
           ref={contentRef}
+          onClick={handleAuthoredClick}
           style={baseStyle}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(rawHtml, { FORCE_BODY: true }) }}
+          dangerouslySetInnerHTML={{ __html: sanitizeAuthoredHtml(rawHtml) }}
         />
       )}
     </div>
