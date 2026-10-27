@@ -510,6 +510,14 @@ function privateNetworkBlockedMessage(host: string, reason: string): string {
 // End of the shared host resolution and block messages.
 
 /**
+ * The message for a failed outbound request: a private network block's own explanation (it names the host, the
+ * reason and where to allow it), otherwise the plugin's generic failure. got keeps the `code` of a lookup or hook error.
+ */
+export function queryErrorMessage(error: any, fallback = 'Query could not be completed'): string {
+  return error?.code === 'SSRF_BLOCKED' && error.message ? error.message : fallback;
+}
+
+/**
  * Why a hostname must be blocked (finishing "because it ..."), or null when every address it resolves to is safe.
  * Covers all RFC1918, link-local, loopback, and cloud metadata ranges.
  */
@@ -825,11 +833,13 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
         // Validate the redirect URL
         await validateUrlForSSRF(redirectUrl, config);
       } catch (error) {
-        throw new QueryError(
+        const blocked: any = new QueryError(
           `Redirect to ${redirectUrl} was blocked. ${error.message}`,
           `Redirect to "${redirectUrl}" was blocked: ${error.message}`,
           { redirectUrl, originalError: error }
         );
+        blocked.code = 'SSRF_BLOCKED';
+        throw blocked;
       }
     }
   };

@@ -8,6 +8,7 @@ import {
   createSSRFSafeLookup,
   isAllowlisted,
   getSSRFProtectionOptions,
+  queryErrorMessage,
   isPrivateIP,
   isDangerousPrivateIP,
 } from '../lib/ssrf-protection';
@@ -376,9 +377,30 @@ describe('redirect hook resolves the target before validating', () => {
       res.end();
     });
     await expect(got(`${base}/start`, getSSRFProtectionOptions(undefined, {}))).rejects.toMatchObject({
+      code: 'SSRF_BLOCKED',
       message: expect.stringContaining(
         'Redirect to http://169.254.169.254/ was blocked. Requests to 169.254.169.254 are blocked because it is a private network address.'
       ),
     });
+  });
+});
+
+describe('queryErrorMessage', () => {
+  it("shows a private network block's own explanation instead of the generic failure", () => {
+    const blocked = Object.assign(
+      new Error('Requests to 10.0.0.2 are blocked because it is a private network address.'),
+      {
+        code: 'SSRF_BLOCKED',
+      }
+    );
+    expect(queryErrorMessage(blocked)).toBe(
+      'Requests to 10.0.0.2 are blocked because it is a private network address.'
+    );
+  });
+  it('keeps the generic message for every other failure', () => {
+    expect(queryErrorMessage(Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' }))).toBe(
+      'Query could not be completed'
+    );
+    expect(queryErrorMessage(undefined)).toBe('Query could not be completed');
   });
 });

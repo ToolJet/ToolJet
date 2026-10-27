@@ -4,6 +4,7 @@ import {
   QueryService,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
+  queryErrorMessage,
 } from '@tooljet-plugins/common';
 import { QueryOptions, SourceOptions } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -81,7 +82,7 @@ export default class N8n implements QueryService {
           code: error.code,
         };
       }
-      throw new QueryError('Query could not be completed', error.message, result);
+      throw new QueryError(queryErrorMessage(error), error.message, result);
     }
 
     return {
