@@ -7,6 +7,7 @@ import {
   SendEmailOtpPayload,
   SendUserBannedEmailPayload,
   SendWorkspaceBannedEmailPayload,
+  SendAppBuildCompletedEmailPayload,
   SendWorkflowApprovalEmailPayload,
 } from '../dto';
 
@@ -19,6 +20,7 @@ export enum EMAIL_EVENTS {
   SEND_EMAIL_OTP = 'sendEmailOtp',
   SEND_USER_BANNED_EMAIL = 'sendUserBannedEmail',
   SEND_WORKSPACE_BANNED_EMAIL = 'sendWorkspaceBannedEmail',
+  SEND_APP_BUILD_COMPLETED_EMAIL = 'sendAppBuildCompletedEmail',
   SEND_WORKFLOW_APPROVAL_EMAIL = 'sendWorkflowApprovalEmail',
 }
 
@@ -31,4 +33,5 @@ export type EmailEventPayload =
   | { type: EMAIL_EVENTS.SEND_EMAIL_OTP; payload: SendEmailOtpPayload }
   | { type: EMAIL_EVENTS.SEND_USER_BANNED_EMAIL; payload: SendUserBannedEmailPayload }
   | { type: EMAIL_EVENTS.SEND_WORKSPACE_BANNED_EMAIL; payload: SendWorkspaceBannedEmailPayload }
+  | { type: EMAIL_EVENTS.SEND_APP_BUILD_COMPLETED_EMAIL; payload: SendAppBuildCompletedEmailPayload }
   | { type: EMAIL_EVENTS.SEND_WORKFLOW_APPROVAL_EMAIL; payload: SendWorkflowApprovalEmailPayload };

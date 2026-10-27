@@ -21,6 +21,7 @@ services:
     platform: linux/x86_64
     volumes:
       - ./frontend:/app/frontend:delegated
+      - ./packages:/app/packages
       - ./plugins:/app/plugins
       - /app/frontend/node_modules/
     ports:
@@ -44,6 +45,7 @@ services:
       - postgrest
     volumes:
       - ./server:/app/server:delegated
+      - ./packages:/app/packages
       - ./plugins:/app/plugins
       - /app/server/node_modules/
       - ./.env:/app/.env

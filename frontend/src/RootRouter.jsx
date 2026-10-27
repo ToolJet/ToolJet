@@ -1,9 +1,11 @@
 import React, { Component, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
+import { claimChunkReload, isChunkLoadError } from '@/_helpers/chunkReloadGuard';
 
 // Lazy load ENTIRE APP ROUTERS (not just pages)
 // This is CRITICAL for bundle isolation - each router imports completely different code
+const McpOAuthConsent = lazy(() => import('./McpOAuth/ConsentPage'));
 const ViewerApp = lazy(() => import('./ViewerApp'));
 const MainApp = lazy(() => import('./App').then((module) => ({ default: module.App })));
 
@@ -24,11 +26,10 @@ const LoadingFallback = () => (
  * imports will fail with ChunkLoadError.
  *
  * ChunkLoadError recovery strategy:
- *  1. On first ChunkLoadError → auto-reload once (picks up new index.html with correct chunk names)
- *  2. If the reload didn't help (flag still set) → show a user-facing error with a manual Refresh button
- *  3. On successful app boot → flags are cleared (in index.jsx) so future deployments can auto-recover
+ *  1. On a ChunkLoadError → auto-reload (picks up new index.html with correct chunk names)
+ *  2. If it fails again within a minute → show a user-facing error with a manual Refresh button
  *
- * The `chunk_reload` flag in sessionStorage prevents infinite reload loops.
+ * `claimChunkReload` allows one automatic reload per minute, which prevents infinite reload loops.
  */
 class ChunkErrorBoundary extends Component {
   state = { hasError: false, isChunkError: false };
@@ -37,18 +38,13 @@ class ChunkErrorBoundary extends Component {
     // Every error must flip hasError. Returning null here leaves the boundary rendering the
     // same crashing children, which remount and throw again — a silent infinite remount that
     // pegs the CPU and exhausts the browser's connection pool instead of showing anything.
-    return { hasError: true, isChunkError: error?.name === 'ChunkLoadError' };
+    return { hasError: true, isChunkError: isChunkLoadError(error) };
   }
 
   componentDidCatch(error, errorInfo) {
-    if (error?.name === 'ChunkLoadError') {
-      if (!sessionStorage.getItem('chunk_reload')) {
-        // First failure — attempt one automatic reload to pick up new chunks
-        sessionStorage.setItem('chunk_reload', 'true');
-        window.location.reload();
-      }
-      // If chunk_reload flag is already set, we've already tried reloading once.
-      // Don't reload again — render() will show the error UI instead.
+    if (isChunkLoadError(error)) {
+      // Already reloaded within the last minute: render() shows the error UI instead.
+      if (claimChunkReload()) window.location.reload();
       return;
     }
     // React reports boundary-caught errors to this hook and nowhere else, so without
@@ -58,8 +54,6 @@ class ChunkErrorBoundary extends Component {
   }
 
   handleRefresh = () => {
-    // Clear the flag so the reload gets a fresh attempt
-    sessionStorage.removeItem('chunk_reload');
     window.location.reload();
   };
 
@@ -110,6 +104,7 @@ class ChunkErrorBoundary extends Component {
  * How it works:
  * - /applications/* routes load ViewerApp.jsx (viewer bundle ONLY)
  * - /embed-apps/* routes load ViewerApp.jsx (viewer bundle ONLY)
+ * - /mcp/consent loads the isolated OAuth consent page
  * - All other routes load App.jsx (main app bundle)
  *
  * Why this matters:
@@ -119,7 +114,7 @@ class ChunkErrorBoundary extends Component {
  * - Result: Viewer bundle < 1.5MB (90% reduction from ~15MB)
  *
  * WARNING: Do NOT import feature components directly in this file!
- * Only lazy load the two top-level router components (ViewerApp and MainApp).
+ * Lazy load top-level route components to keep their bundles isolated.
  */
 export const RootRouter = () => {
   return (
@@ -127,6 +122,7 @@ export const RootRouter = () => {
       <ChunkErrorBoundary>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
+            <Route path="/mcp/consent" element={<McpOAuthConsent />} />
             {/* Viewer routes - ISOLATED BUNDLE */}
             {/* App-scoped auth routes (login/signup) are lazy-loaded inside ViewerApp */}
             <Route path="/applications/*" element={<ViewerApp />} />

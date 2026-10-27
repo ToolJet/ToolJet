@@ -25,7 +25,7 @@ describe('Data source name casing (case-sensitive coexistence)', () => {
   let nestApp: INestApplication;
 
   beforeAll(async () => {
-    ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app: nestApp } = await initTestApp());
   });
 
   afterEach(() => {
