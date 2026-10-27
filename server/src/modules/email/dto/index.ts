@@ -78,7 +78,14 @@ export interface SendVersionReviewEmailPayload {
   to: string;
   name: string;
   actorName: string;
-  reason: 'review_requested' | 'mentioned' | 'approved' | 'changes_requested' | 'released' | 'overridden';
+  reason:
+    | 'review_requested'
+    | 'mentioned'
+    | 'approved'
+    | 'changes_requested'
+    | 'released'
+    | 'overridden'
+    | 'rereview_requested';
   /** The comment, note or reason with mentions written as @Name; null when there is none. */
   note: string | null;
   appName: string;
