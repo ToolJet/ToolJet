@@ -37,8 +37,8 @@ The following actions of the component can be controlled using the component-spe
 | :------------------------------------------- | :------------------------------------------------ | :------------------------------------------------ |
 | open                                         | Open a modal.                                     | `components.modal1.open()`                        |
 | close                                        | Close a modal.                                    | `components.modal1.close()`                       |
-| setDisableTrigger                            | Disables the modal button.                        | `components.modal1.setDisableTrigger()`           |
-| setDisableModal                              | Disables the modal pop-up.                        | `components.modal1.setDisableModal()`             |
+| setDisableTrigger( )                         | Disables the modal button.                        | `components.modal1.setDisableTrigger(true)`       |
+| setDisableModal( )                           | Disables the modal pop-up.                        | `components.modal1.setDisableModal(true)`         |
 | setVisibility( )                             | Sets the visibility of the component.             | `components.modal1.setVisibility(false)`          |
 | setLoading( )                                | Sets the loading state of the component.          | `components.modal1.setLoading(true)`              |
 
@@ -59,7 +59,7 @@ The following actions of the component can be controlled using the component-spe
 | Modal trigger visibility   | Sets the visibility of modal button.                   |
 | Disable modal trigger      | Disables modal button.                                 |
 | Use default trigger button | Choose whether to use the default modal button or not. |
-| Trigger button label       | Provide label for the modal button.                    |
+| Trigger button label       | Provide label for the modal button. Only shown when **Use default trigger button** is on. Default: `Launch Modal`. |
 
 ## Additional Actions
 
@@ -86,11 +86,17 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| Icon | Add an icon to the modal trigger button. | Choose from the icon library. |
+| Background | Sets the background color of the trigger button. | Select a color from the color picker or set it programmatically using **fx**. |
+| Hover background | Sets the background color of the trigger button on hover. | Select `Auto` (default) to derive the hover color from the background color, or `Manual` to choose a custom color from the color picker. |
+| Text | Sets the text color of the trigger button. | Select a color from the color picker or set it programmatically using **fx**. |
+| Font size | Sets the font size of the trigger button label. | Enter a number (default `14`) or set it programmatically using **fx**. |
+| Font weight | Sets the font weight of the trigger button label. | Select `normal` (default), `medium`, `bold`, `lighter` or `bolder`. |
+| Content alignment | Sets the horizontal alignment of the label and icon within the trigger button. | Select `Left`, `Center` (default) or `Right`. |
+| Icon | Add an icon to the modal trigger button. | Choose from the icon library and toggle its visibility. |
 | Icon color | Sets the color of the icon. | Select a color from the color picker or set it programmatically using **fx**. |
 | Icon position | Sets the position of the icon. | Choose between **Left** or **Right**. |
-| Background | Sets the background color of the trigger button. | Select a color from the color picker or set it programmatically using **fx**. |
-| Text | Sets the text color of the trigger button. | Select a color from the color picker or set it programmatically using **fx**. |
+
+Trigger button styles apply only when **Use default trigger button** is enabled.
 
 ### Header
 
