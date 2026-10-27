@@ -13,10 +13,10 @@ import {
   MigrationStep,
   RunProgress,
 } from '../../../migration-helpers/migration-run-log';
-import { isServerManagedMigrationMode, setupCommand } from '../../../migration-helpers/migration-status';
-import { TABLE_ALTERING_DATA_MIGRATIONS } from '../../../migration-helpers/async-safe-pre-cutoff-migrations';
-import { mainDbConnectionConfig } from '../../../migration-helpers/async-mode';
-import { HELD_MIGRATION_LOCKS_SQL, SKIPPED_EXIT_CODE } from '../../../migration-helpers/migrations-table-gate';
+import { isServerManagedMigrationMode, setupCommand } from '../../../migration-helpers/migration-mode';
+import { TABLE_ALTERING_DATA_MIGRATIONS } from '../../../migration-helpers/pre-cutoff-allowlist';
+import { mainDbConnectionConfig } from '../../../migration-helpers/migrate-before-boot';
+import { HELD_MIGRATION_LOCKS_SQL, SKIPPED_EXIT_CODE } from '../../../migration-helpers/migration-locks';
 
 export type MigrationRunStatus = 'running' | 'failed' | 'succeeded';
 export type MigrationState = 'idle' | MigrationRunStatus;

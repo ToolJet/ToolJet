@@ -1,4 +1,4 @@
-import { ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS } from './async-safe-pre-cutoff-migrations';
+import { ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS } from './pre-cutoff-allowlist';
 
 type Env = Record<string, string | undefined>;
 

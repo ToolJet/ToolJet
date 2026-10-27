@@ -8,7 +8,7 @@ import { FeatureAbilityGuard } from './ability/guard';
 import { AppService } from './service';
 import { MigrationRunsService } from './migration-runs/service';
 import { MigrationStatusResponseDto } from './migration-runs/dto';
-import { endUserMessage } from '../../migration-helpers/migration-status';
+import { endUserMessage } from '../../migration-helpers/migration-mode';
 
 @InitModule(MODULES.ROOT)
 @Controller()

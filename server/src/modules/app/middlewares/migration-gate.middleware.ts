@@ -6,7 +6,7 @@ import { MigrationRunsService, MigrationState } from '../migration-runs/service'
 import {
   isServerManagedMigrationMode,
   isMigrationTrafficGateDisabled,
-} from '../../../migration-helpers/migration-status';
+} from '../../../migration-helpers/migration-mode';
 
 /**
  * Async mode only: answers API writes with 503 while database migrations run or after they failed.

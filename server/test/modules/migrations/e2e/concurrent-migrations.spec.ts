@@ -5,7 +5,7 @@ import {
   MIGRATION_ADVISORY_LOCK_KEY,
   SKIPPED_EXIT_CODE,
   withMigrationConnectionOptions,
-} from 'src/migration-helpers/migrations-table-gate';
+} from 'src/migration-helpers/migration-locks';
 import {
   createScratchDatabase,
   dropScratchDatabase,

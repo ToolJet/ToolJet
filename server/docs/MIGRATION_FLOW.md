@@ -60,7 +60,7 @@ A runner runs all schema migrations (`server/migrations/`), then all data migrat
 
 ## Many pods, one migration
 
-Two PostgreSQL advisory locks (`migrations-table-gate.ts`) make sure one pod migrates and the others know about it. PostgreSQL drops a lock when its connection closes, so a killed pod cannot leave one behind. No TTL, no cleanup job, no Redis.
+Two PostgreSQL advisory locks (`migration-locks.ts`) make sure one pod migrates and the others know about it. PostgreSQL drops a lock when its connection closes, so a killed pod cannot leave one behind. No TTL, no cleanup job, no Redis.
 
 | Lock | What it means | Held | Checked by |
 |---|---|---|---|
@@ -144,7 +144,7 @@ Use async mode when a migration takes longer than the liveness probe allows. Tur
 
 A boot in async mode:
 
-1. **Before the server starts** (`migrateSchemaBeforeBoot` in `async-mode.ts`):
+1. **Before the server starts** (`migrateSchemaBeforeBoot` in `migrate-before-boot.ts`):
    - Fresh install (no database, or no `migrations` table): run the full setup, as in blocking mode.
    - Otherwise: run the schema phase in a child process. If it fails, this pod exits; the old pods keep serving.
 2. **The server starts**, on the new schema.
@@ -163,12 +163,12 @@ A boot in async mode:
 - **Busy tables:** each try sets `lock_timeout` to `MIGRATION_SCHEMA_LOCK_TIMEOUT_MS`, so a waiting `ALTER TABLE` does not queue up readers of released apps. On a lock timeout (`55P03`) it rolls back, waits 2s and tries again, up to `MIGRATION_SCHEMA_LOCK_RETRIES` tries in total.
 - **Logs only.** It writes no `migration_runs` row; its output is in the pod logs.
 
-**Older databases.** Migrations up to `MIGRATION_AUTHORING_RULES_CUTOFF` (`migration-status.ts`) were written before the rules that make the split safe. When one of them is pending, `blocksAsyncUpgrade` decides:
+**Older databases.** Migrations up to `MIGRATION_AUTHORING_RULES_CUTOFF` (`migration-mode.ts`) were written before the rules that make the split safe. When one of them is pending, `blocksAsyncUpgrade` decides:
 
 | Upgrade from | What happens |
 |---|---|
 | 3.21.74 or later | Nothing old is pending. Normal split |
-| 3.21.58–3.21.73 | The old migrations still pending are all in `ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS` (`async-safe-pre-cutoff-migrations.ts`). Normal split. If the data phase fails, the previous release still runs on the database |
+| 3.21.58–3.21.73 | The old migrations still pending are all in `ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS` (`pre-cutoff-allowlist.ts`). Normal split. If the data phase fails, the previous release still runs on the database |
 | older than 3.21.58 | The whole upgrade runs as one joint run before the server starts, with the active lock held. The data phase then has nothing left to do |
 
 To make 3.21.58 splittable, the old schema steps 3.21.58 cannot run on moved to the data phase:
@@ -314,8 +314,8 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 
 | File | Covers |
 |---|---|
-| `test/modules/migrations/unit/migrations-table-gate.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out (checked against files on disk) |
-| `test/modules/migrations/unit/migration-status.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist, `TABLE_ALTERING_DATA_MIGRATIONS` matches the DDL in the listed data migrations |
+| `test/modules/migrations/unit/migration-locks.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out (checked against files on disk) |
+| `test/modules/migrations/unit/migration-mode.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist, `TABLE_ALTERING_DATA_MIGRATIONS` matches the DDL in the listed data migrations |
 | `test/modules/app/unit/migration-gate.middleware.spec.ts` | Blocking mode passes everything, gated vs ungated paths, 503 per state, what passes in async mode, what passes with `readsBlocked`, opt-out log |
 | `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, active lock only during work and released on SIGKILL, a `NODE_ENV=production` race. Split phases: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long data phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, joint run for an old database, `statement_timeout=0` on runner connections |
 | `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds, non-empty `down()` |

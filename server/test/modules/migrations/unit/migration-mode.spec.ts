@@ -4,7 +4,7 @@ import { join } from 'path';
 import {
   ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS,
   TABLE_ALTERING_DATA_MIGRATIONS,
-} from 'src/migration-helpers/async-safe-pre-cutoff-migrations';
+} from 'src/migration-helpers/pre-cutoff-allowlist';
 import {
   blocksAsyncUpgrade,
   END_USER_MESSAGE_MAX_LENGTH,
@@ -12,9 +12,9 @@ import {
   getMigrationMode,
   isMigrationTrafficGateDisabled,
   parseMigrationPhase,
-} from 'src/migration-helpers/migration-status';
+} from 'src/migration-helpers/migration-mode';
 
-describe('migration-helpers/migration-status', () => {
+describe('migration-helpers/migration-mode', () => {
   describe('getMigrationMode | who runs migrations', () => {
     it.each([
       [{}, 'blocking'],

@@ -13,7 +13,7 @@ import {
   LockWaitOptions,
   MigrationLockWaitTimeoutError,
   withMigrationAdvisoryLock,
-} from 'src/migration-helpers/migrations-table-gate';
+} from 'src/migration-helpers/migration-locks';
 
 // Shapes the two ways a PostgreSQL error reaches us: raw from the pg driver (`code` on the
 // error) and wrapped by TypeORM's QueryFailedError (`code` on `driverError`).
@@ -42,7 +42,7 @@ function lockSentinelClassNamesOnDisk(directory: string): string[] {
     .sort();
 }
 
-describe('migration-helpers/migrations-table-gate', () => {
+describe('migration-helpers/migration-locks', () => {
   describe('LOCK_SENTINEL_MIGRATION_NAMES | an ordinary restart must not look like an upgrade', () => {
     // If this list stops matching the files, every pod restart and scale-up would raise the
     // upgrade gate and answer live API traffic with 503.
