@@ -72,6 +72,24 @@ export interface SendAppBuildCompletedEmailPayload {
   organizationId: string;
 }
 
+// A step on a version review that someone should hear about: they were asked to review,
+// mentioned, or their review was decided on or released.
+export interface SendVersionReviewEmailPayload {
+  to: string;
+  name: string;
+  actorName: string;
+  reason: 'review_requested' | 'mentioned' | 'approved' | 'changes_requested' | 'released' | 'overridden';
+  /** The comment, note or reason with mentions written as @Name; null when there is none. */
+  note: string | null;
+  appName: string;
+  appSlug: string;
+  workspaceSlug: string;
+  organizationId: string;
+  reviewId: string;
+  reviewTitle: string;
+  versionName: string;
+}
+
 export interface SendUserBannedEmailPayload {
   to: string;
   name: string;
