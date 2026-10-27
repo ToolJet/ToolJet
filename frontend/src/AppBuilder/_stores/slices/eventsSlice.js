@@ -7,6 +7,7 @@ import urlJoin from 'url-join';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
+import { isCompareMuted } from '@/AppBuilder/_utils/compareFrame';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
@@ -98,6 +99,8 @@ export const createEventsSlice = (set, get) => ({
       // stale value. Resolve every pending write that isn't part of an explicit mount-time
       // bracket (ListView/Form/page-switch) — never touches bracket-protected writes.
       get().flushImplicitBatchEntries();
+      // A dialog the compare view opened in its read-only frame runs none of its own actions.
+      if (isCompareMuted(id)) return;
       const events = get().eventsSlice.module[moduleId].events;
       const componentEvents = events.filter((event) => event.sourceId === id);
       const mode = getCurrentMode(moduleId);
@@ -1055,7 +1058,8 @@ export const createEventsSlice = (set, get) => ({
                   });
                   const currentUrlParams = new URLSearchParams(window.location.search);
                   currentUrlParams.forEach((value, key) => {
-                    if (key === 'version' || key === 'env') {
+                    // snapshot: a stored snapshot is being rendered; switching page must keep it.
+                    if (key === 'version' || key === 'env' || key === 'snapshot') {
                       // if version or env is in current url query param but not in resolved params then add it to resolvedQueryParams
                       const exists = resolvedQueryParams.some(([resolvedKey]) => resolvedKey === key);
                       if (!exists) {

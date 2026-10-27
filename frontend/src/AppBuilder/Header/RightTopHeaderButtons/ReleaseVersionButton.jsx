@@ -15,7 +15,15 @@ const ReleaseVersionButton = function DeployVersionButton() {
   const { moduleId } = useModuleContext();
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { isVersionReleased, editingVersion, updateReleasedVersionId, appId, versionToBeReleased, name } = useStore(
+  const {
+    isVersionReleased,
+    editingVersion,
+    updateReleasedVersionId,
+    appId,
+    versionToBeReleased,
+    name,
+    releasedVersionId,
+  } = useStore(
     (state) => ({
       isVersionReleased: state.releasedVersionId === state.selectedVersion?.id,
       name: state?.selectedVersion?.name,
@@ -24,6 +32,7 @@ const ReleaseVersionButton = function DeployVersionButton() {
       updateReleasedVersionId: state.updateReleasedVersionId,
       appId: state.appStore.modules[moduleId].app.appId,
       versionToBeReleased: state.currentVersionId,
+      releasedVersionId: state.releasedVersionId,
       // selectedVersionId: state.selectedVersion.id,
     }),
     shallow
@@ -34,7 +43,7 @@ const ReleaseVersionButton = function DeployVersionButton() {
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
     appsService
-      .releaseVersion(appId, versionToBeReleased)
+      .releaseVersion(appId, versionToBeReleased, releasedVersionId ?? '')
       .then(() => {
         toast(`Version ${name} released`, {
           icon: '🚀',
@@ -46,9 +55,19 @@ const ReleaseVersionButton = function DeployVersionButton() {
         setIsReleasing(false);
         setShowConfirmation(false);
       })
-      .catch((_error) => {
-        toast.error('Oops, something went wrong');
+      .catch((error) => {
         setIsReleasing(false);
+        // Someone released another version while this confirmation was open: show it what it would replace now,
+        // rather than replacing that release unseen.
+        if (error?.statusCode === 409) {
+          toast.error(error.error);
+          appsService
+            .getApp(appId)
+            .then((app) => updateReleasedVersionId(app?.current_version_id ?? null))
+            .catch(() => {});
+          return;
+        }
+        toast.error('Oops, something went wrong');
       });
   };
 

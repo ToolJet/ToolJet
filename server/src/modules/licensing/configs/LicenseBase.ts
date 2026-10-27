@@ -1,4 +1,4 @@
-import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
+import { LICENSE_LIMIT, LICENSE_TYPE, PLANS_BELOW_PRO } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import {
   BUSINESS_PLAN_TERMS,
@@ -467,6 +467,19 @@ export default class LicenseBase {
     return !!this._app?.features?.customComponentLibraries;
   }
 
+  // Version compare, AI-turn snapshots and reviews: trial and Pro and above. A licence can set it
+  // either way; without that term it follows the plan, so existing licences need no reissue.
+  public get versionReview(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS?.app?.features?.versionReview;
+    }
+    const term = this._app?.features?.versionReview;
+    if (term !== undefined) {
+      return !!term;
+    }
+    return !PLANS_BELOW_PRO.includes(this._plan?.toLowerCase());
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -627,6 +640,7 @@ export default class LicenseBase {
       appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
       customComponentLibraries: this.customComponentLibraries,
+      versionReview: this.versionReview,
       aiPlan: this.aiPlan,
       publicApp: this.publicApp,
     };
@@ -715,15 +729,17 @@ export default class LicenseBase {
     return !!this._app?.features?.release;
   }
 
+  // App history: trial and Pro and above, like version compare (AI turns are compared and undone through
+  // history). A licence can set it either way; without that term it follows the plan.
   public get appHistory(): boolean {
-    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL || this.licenseType === LICENSE_TYPE.BUSINESS) {
+    if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.history;
     }
-
-    if (this._app?.features?.history === undefined) {
-      return false;
+    const term = this._app?.features?.history;
+    if (term !== undefined) {
+      return !!term;
     }
-    return !!this._app?.features?.history;
+    return !PLANS_BELOW_PRO.includes(this._plan?.toLowerCase());
   }
 
   public get appJsLibraries(): boolean {

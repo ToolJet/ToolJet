@@ -274,6 +274,8 @@ export const getPreviewQueryParams = () => {
   return {
     ...(queryParams['version'] && { version: queryParams.version }),
     ...(queryParams['env'] && { env: queryParams.env }),
+    // Renders a stored snapshot of the version, read-only.
+    ...(queryParams['snapshot'] && { snapshot: queryParams.snapshot }),
   };
 };
 

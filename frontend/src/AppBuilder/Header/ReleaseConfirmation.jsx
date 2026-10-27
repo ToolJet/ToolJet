@@ -1,24 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import ReleaseConfirmationExtras from './ReleaseConfirmationExtras';
 
 export default function ReleaseConfirmation(props) {
   const { onClose, onConfirm, show } = props;
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
-  const { name, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } = useStore(
-    (state) => ({
-      name: state?.selectedVersion?.name,
-      releasedVersionId: state.releasedVersionId,
-      versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
-      developmentVersions: state.developmentVersions,
-    }),
-    shallow
-  );
+  const { name, selectedVersionId, appId, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } =
+    useStore(
+      (state) => ({
+        name: state?.selectedVersion?.name,
+        selectedVersionId: state?.selectedVersion?.id,
+        appId: state.appStore.modules.canvas?.app?.appId,
+        releasedVersionId: state.releasedVersionId,
+        versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
+        developmentVersions: state.developmentVersions,
+      }),
+      shallow
+    );
+  // A full-screen view opened from this dialog needs the focus and the Escape key.
+  const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
+  const [releaseLocked, setReleaseLocked] = useState(false);
   const releasedVersionName =
     versionsPromotedToEnvironment.find((v) => v.id === releasedVersionId)?.name ||
     developmentVersions.find((v) => v.id === releasedVersionId)?.name;
@@ -26,6 +33,8 @@ export default function ReleaseConfirmation(props) {
     <Modal
       show={show}
       onHide={onClose}
+      enforceFocus={!overlayOpen}
+      keyboard={!overlayOpen}
       size="sm"
       animation={false}
       centered={true}
@@ -58,12 +67,20 @@ export default function ReleaseConfirmation(props) {
             ? `Are you sure you want to release version ${name}?`
             : `Releasing version ${name} will override ${releasedVersionName}. Are you sure you want to continue?`}
         </div>
+        <ReleaseConfirmationExtras
+          show={show}
+          appId={appId}
+          versionId={selectedVersionId}
+          releasedVersionId={releasedVersionId}
+          releasedVersionName={releasedVersionName}
+          onLockedChange={setReleaseLocked}
+        />
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
-        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button">
+        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button" disabled={releaseLocked}>
           Yes
         </ButtonSolid>
       </Modal.Footer>

@@ -2,6 +2,7 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
 export const appVersionService = {
+  getSnapshotDefinition,
   getAll,
   getOne,
   getAppVersionData,
@@ -39,6 +40,16 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
   };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote`, requestOptions).then(handleResponse);
 }
+// The definition of a version as of a point in app history (before an AI turn), shaped like
+// getAppVersionData's, for rendering it read-only in the compare view.
+function getSnapshotDefinition(appId, versionId, snapshotId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/snapshots/${snapshotId}/definition`,
+    requestOptions
+  ).then(handleResponse);
+}
+
 function getAppVersionData(appId, versionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(

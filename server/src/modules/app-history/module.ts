@@ -74,7 +74,8 @@ export class AppHistoryModule extends SubModule {
       imports,
       controllers: isMainImport ? [AppHistoryController] : [],
       providers,
-      exports: [AppHistoryUtilService, EntityChangeService],
+      // AppHistoryService: version compare's Undo restores through it.
+      exports: [AppHistoryService, AppHistoryUtilService, EntityChangeService],
     };
   }
 }
