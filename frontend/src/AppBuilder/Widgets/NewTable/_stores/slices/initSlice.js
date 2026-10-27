@@ -2,6 +2,7 @@ import { has } from 'lodash';
 import { utilityForNestedNewRow } from '../helper';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
+import { getTableComponentId } from '../../_utils/tableStoreKey';
 
 export const createInitSlice = (set, get) => ({
   initializeComponent: (id) => {
@@ -201,7 +202,7 @@ export const createInitSlice = (set, get) => ({
       (state) => {
         // if the component is not present in the DOM, then remove it - this is to handle the case where the component is removed from the DOM and then added back
         // Like when the component is moved from one container to another
-        if (state.components[id] && !document.querySelector(`[id="${id}"]`)) {
+        if (state.components[id] && !document.querySelector(`[id="${getTableComponentId(id)}"]`)) {
           delete state.components[id];
         }
       },

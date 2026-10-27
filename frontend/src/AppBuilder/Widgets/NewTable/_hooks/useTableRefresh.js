@@ -3,11 +3,13 @@ import useTableStore from '../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
+import { getTableComponentId } from '../_utils/tableStoreKey';
 
 const EMPTY_ARRAY = [];
 
 export const useTableRefresh = (id, fireEvent = () => {}) => {
   const { moduleId } = useModuleContext();
+  const componentId = getTableComponentId(id);
 
   const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
   const setIsRefreshing = useTableStore((state) => state.setIsRefreshing);
@@ -21,8 +23,8 @@ export const useTableRefresh = (id, fireEvent = () => {}) => {
   const handleRefresh = useCallback(() => {
     if (isRefreshing) return;
 
-    const dataDeps = getDependents(`components.${id}.properties.data`, moduleId);
-    const selectorDeps = getDependents(`components.${id}.properties.dataSourceSelector`, moduleId);
+    const dataDeps = getDependents(`components.${componentId}.properties.data`, moduleId);
+    const selectorDeps = getDependents(`components.${componentId}.properties.dataSourceSelector`, moduleId);
     const allDeps = [...new Set([...dataDeps, ...selectorDeps])];
 
     const seen = new Set();
@@ -51,7 +53,18 @@ export const useTableRefresh = (id, fireEvent = () => {}) => {
       fireEvent('onRefresh');
       setIsRefreshing(id, false);
     });
-  }, [id, moduleId, isRefreshing, getDependents, dataQueries, currentMode, runQuery, setIsRefreshing, fireEvent]);
+  }, [
+    id,
+    componentId,
+    moduleId,
+    isRefreshing,
+    getDependents,
+    dataQueries,
+    currentMode,
+    runQuery,
+    setIsRefreshing,
+    fireEvent,
+  ]);
 
   return { handleRefresh, isRefreshing };
 };

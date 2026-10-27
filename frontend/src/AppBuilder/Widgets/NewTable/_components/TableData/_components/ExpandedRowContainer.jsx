@@ -5,6 +5,7 @@ import { DEFAULT_EXPANSION_HEIGHT } from '../../../_utils/helper';
 import { CONTAINER_FORM_CANVAS_PADDING, BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
+import { getTableComponentId } from '../../../_utils/tableStoreKey';
 
 export const ExpandedRowContainer = ({
   tableId,
@@ -18,12 +19,13 @@ export const ExpandedRowContainer = ({
   virtualItemIndex,
 }) => {
   const parentContext = useSubcontainerContext();
+  const componentId = getTableComponentId(tableId);
 
   const contextValue = useMemo(
     () => ({
-      contextPath: [...parentContext.contextPath, { containerId: tableId, index: rowIndex }],
+      contextPath: [...parentContext.contextPath, { containerId: componentId, index: rowIndex }],
     }),
-    [parentContext.contextPath, tableId, rowIndex]
+    [parentContext.contextPath, componentId, rowIndex]
   );
 
   // Computed styles
@@ -64,7 +66,7 @@ export const ExpandedRowContainer = ({
       >
         <div className="table-expanded-row-content" style={containerWrapperStyle}>
           <SubContainer
-            id={tableId}
+            id={componentId}
             index={rowIndex}
             canvasWidth={canvasWidth}
             darkMode={darkMode}

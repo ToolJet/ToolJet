@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { Tooltip } from 'react-tooltip';
 import useStore from '@/AppBuilder/_stores/store';
+import { getTableComponentId } from '../../../_utils/tableStoreKey';
 
 // This overlayTriggerComponent is used in the Table component, for download, manage columns popover and pagination
 export const OverlayTriggerComponent = ({
@@ -14,8 +15,9 @@ export const OverlayTriggerComponent = ({
   tooltipId,
 }) => {
   const [isOpen, setOpen] = useState(false);
-  const isResizing = useStore((state) => state.resizingComponentId === id);
-  const isDragging = useStore((state) => state.draggingComponentId === id);
+  const componentId = getTableComponentId(id);
+  const isResizing = useStore((state) => state.resizingComponentId === componentId);
+  const isDragging = useStore((state) => state.draggingComponentId === componentId);
   const modifiedChild = React.cloneElement(children, {
     className: `${children.props.className} ${isOpen && 'always-active-btn'}`,
   });

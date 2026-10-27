@@ -26,6 +26,7 @@ import {
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 import { normalizeButtonEvent } from './normalizeButtonEvent';
+import { getTableComponentId } from './tableStoreKey';
 import { createTableRowEventOptions } from './tableEventUtils';
 import SelectSearch from 'react-select-search';
 import { parseDate, getDateTimeFormat } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
@@ -588,7 +589,7 @@ export default function generateColumnsData({
                       const button = buttons.find((b) => b.id === buttonId);
                       const inlineEvents = (button?.events || [])
                         .map((evt) => {
-                          const normalized = normalizeButtonEvent(evt, buttonId, id);
+                          const normalized = normalizeButtonEvent(evt, buttonId, getTableComponentId(id));
                           if (!normalized) return null;
                           return { event: { ...normalized, ref: `${columnKey}::${buttonId}` } };
                         })

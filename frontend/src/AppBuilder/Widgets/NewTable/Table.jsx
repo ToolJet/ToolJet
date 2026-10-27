@@ -13,6 +13,8 @@ import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/A
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import { getTableStoreKey } from './_utils/tableStoreKey';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './table.scss';
@@ -35,42 +37,50 @@ const Table = memo(
     componentType,
   }) => {
     const { moduleId } = useModuleContext();
+    // Every ListView row mounts a Table with the same component id, so the table store is keyed per row.
+    const { contextPath } = useSubcontainerContext();
+    const storeKey = useMemo(() => getTableStoreKey(id, contextPath), [id, contextPath]);
+    // The saved `columns` property is shared by all rows, so only the editable row-0 instance may autogenerate it.
+    const isSchemaOwner = contextPath.every(({ index }) => index === 0);
     // get table store functions
     const initializeComponent = useTableStore((state) => state.initializeComponent, shallow);
     const removeComponent = useTableStore((state) => state.removeComponent, shallow);
-    const expandedRows = useTableStore((state) => state.getExpandedRows(id), shallow);
-    const lastExpandedRowIndex = useTableStore((state) => state.components[id]?.lastExpandedRowIndex ?? null, shallow);
+    const expandedRows = useTableStore((state) => state.getExpandedRows(storeKey), shallow);
+    const lastExpandedRowIndex = useTableStore(
+      (state) => state.components[storeKey]?.lastExpandedRowIndex ?? null,
+      shallow
+    );
     const collapseAllRows = useTableStore((state) => state.collapseAllRows, shallow);
     const setTableProperties = useTableStore((state) => state.setTableProperties, shallow);
     const setTableActions = useTableStore((state) => state.setTableActions, shallow);
     const setTableEvents = useTableStore((state) => state.setTableEvents, shallow);
     const setTableStyles = useTableStore((state) => state.setTableStyles, shallow);
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
-    const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
+    const transformations = useTableStore((state) => state.getColumnTransformations(storeKey), shallow);
     const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
     const tableBodyRef = useRef(null);
 
     // get table properties
-    const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
-    const disabledState = useTableStore((state) => state.getTableProperties(id)?.disabledState, shallow);
-    const borderRadius = useTableStore((state) => state.getTableStyles(id)?.borderRadius, shallow);
+    const visibility = useTableStore((state) => state.getTableProperties(storeKey)?.visibility, shallow);
+    const disabledState = useTableStore((state) => state.getTableProperties(storeKey)?.disabledState, shallow);
+    const borderRadius = useTableStore((state) => state.getTableStyles(storeKey)?.borderRadius, shallow);
 
     // get table styles
-    const boxShadow = useTableStore((state) => state.getTableStyles(id)?.boxShadow, shallow);
-    const borderColor = useTableStore((state) => state.getTableStyles(id)?.borderColor, shallow);
+    const boxShadow = useTableStore((state) => state.getTableStyles(storeKey)?.boxShadow, shallow);
+    const borderColor = useTableStore((state) => state.getTableStyles(storeKey)?.borderColor, shallow);
     const containerBackgroundColor = useTableStore(
-      (state) => state.getTableStyles(id)?.containerBackgroundColor,
+      (state) => state.getTableStyles(storeKey)?.containerBackgroundColor,
       shallow
     );
-    const selectedRowColor = useTableStore((state) => state.getTableStyles(id)?.selectedRowColor, shallow);
+    const selectedRowColor = useTableStore((state) => state.getTableStyles(storeKey)?.selectedRowColor, shallow);
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
     const updateCustomResolvablesLazy = useStore((state) => state.updateCustomResolvablesLazy, shallow);
     const resolveExpandedRows = useStore((state) => state.resolveExpandedRows, shallow);
     const cleanupLazyResolvables = useStore((state) => state.cleanupLazyResolvables, shallow);
     const themeChanged = useStore((state) => state.themeChanged);
-    const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
-    const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
+    const loadingState = useTableStore((state) => state.getLoadingState(storeKey), shallow);
+    const isRefreshing = useTableStore((state) => state.getIsRefreshing(storeKey), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
     const hoverColor = getModifiedColor(containerBackgroundColor, 6);
@@ -179,9 +189,9 @@ const Table = memo(
     useEffect(() => {
       if (prevEnableExpandableRowsRef.current === enableExpandableRows) return;
       prevEnableExpandableRowsRef.current = enableExpandableRows;
-      collapseAllRows(id);
+      collapseAllRows(storeKey);
       setExposedVariables({ currentExpandedRows: [], lastExpandedRow: null });
-    }, [enableExpandableRows, collapseAllRows, id, setExposedVariables]);
+    }, [enableExpandableRows, collapseAllRows, storeKey, setExposedVariables]);
 
     // Expose currentExpandedRows / lastExpandedRow and fire onExpand on new expansions
     const prevExpandedRowsRef = useRef({});
@@ -210,32 +220,35 @@ const Table = memo(
 
     // Initialize component on the table store
     useEffect(() => {
-      initializeComponent(id);
+      initializeComponent(storeKey);
       return () => {
-        removeComponent(id);
+        removeComponent(storeKey);
         cleanupLazyResolvables(id, moduleId);
       };
-    }, [id, initializeComponent, removeComponent, cleanupLazyResolvables, moduleId]);
+    }, [id, storeKey, initializeComponent, removeComponent, cleanupLazyResolvables, moduleId]);
 
     // Set properties to the table store
     useEffect(() => {
-      setTableProperties(id, restOfProperties);
-    }, [id, restOfProperties, setTableProperties]);
+      setTableProperties(storeKey, restOfProperties);
+    }, [storeKey, restOfProperties, setTableProperties]);
 
     // Set actions to the table store
     useEffect(() => {
-      setTableActions(id, actions);
-    }, [id, actions, setTableActions]);
+      setTableActions(storeKey, actions);
+    }, [storeKey, actions, setTableActions]);
 
     useEffect(() => {
-      if (useDynamicColumn || (!isEqual(prevFirstRowOfTable, firstRowOfTable) && !isEmpty(firstRowOfTable)))
+      if (
+        useDynamicColumn ||
+        (isSchemaOwner && !isEqual(prevFirstRowOfTable, firstRowOfTable) && !isEmpty(firstRowOfTable))
+      )
         shouldAutogenerateColumns.current = true;
-    }, [firstRowOfTable, useDynamicColumn, columnData, prevFirstRowOfTable]);
+    }, [firstRowOfTable, useDynamicColumn, columnData, prevFirstRowOfTable, isSchemaOwner]);
 
     // Set column details to the table store. This is responsible for auto-generating columns
     useEffect(() => {
       setColumnDetails(
-        id,
+        storeKey,
         columns,
         useDynamicColumn,
         columnData,
@@ -247,7 +260,7 @@ const Table = memo(
       );
       shouldAutogenerateColumns.current = false;
     }, [
-      id,
+      storeKey,
       columns,
       useDynamicColumn,
       columnData,
@@ -260,13 +273,13 @@ const Table = memo(
 
     // Set styles to the table store
     useEffect(() => {
-      setTableStyles(id, styles, darkMode);
-    }, [id, styles, darkMode, setTableStyles]);
+      setTableStyles(storeKey, styles, darkMode);
+    }, [storeKey, styles, darkMode, setTableStyles]);
 
     // Set events to the table store
     useEffect(() => {
-      setTableEvents(id, allAppEvents);
-    }, [id, allAppEvents, setTableEvents]);
+      setTableEvents(storeKey, allAppEvents);
+    }, [storeKey, allAppEvents, setTableEvents]);
 
     useBatchedUpdateEffectArray([
       {
@@ -366,7 +379,7 @@ const Table = memo(
         }}
       >
         <TableContainer
-          id={id}
+          id={storeKey}
           data={tableData}
           width={width}
           height={height}

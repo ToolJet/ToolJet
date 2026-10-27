@@ -1,5 +1,6 @@
 import useStore from '@/AppBuilder/_stores/store';
 import autogenerateColumns from '../../_utils/autoGenerateColumns';
+import { getTableComponentId } from '../../_utils/tableStoreKey';
 import { removeNullValues } from '../helper';
 import { isEmpty, isEqual } from 'lodash';
 export const createColumnSlice = (set, get) => ({
@@ -75,6 +76,7 @@ export const createColumnSlice = (set, get) => ({
   ) => {
     if (autogenerateColumnsFlag) {
       const { setComponentProperty, getShouldFreeze } = useStore.getState();
+      const componentId = getTableComponentId(id);
       const generatedColumns = autogenerateColumns(
         firstRowOfTable,
         columns,
@@ -82,12 +84,12 @@ export const createColumnSlice = (set, get) => ({
         isDynamicColumnSelected,
         columnData ?? [],
         autogenerateColumns ?? false,
-        id
+        componentId
       );
 
       if (!isDynamicColumnSelected && !isEqual(columns, generatedColumns)) {
         const shouldFreeze = getShouldFreeze();
-        setComponentProperty(id, 'columns', generatedColumns, 'properties', 'value', false, moduleId, {
+        setComponentProperty(componentId, 'columns', generatedColumns, 'properties', 'value', false, moduleId, {
           skipUndoRedo: true,
           saveAfterAction: !shouldFreeze,
         });

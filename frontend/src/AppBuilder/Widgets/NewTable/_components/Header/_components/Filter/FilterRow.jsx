@@ -5,11 +5,12 @@ import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
 import { FILTER_OPTIONS } from './filterConstants';
 import useStore from '@/AppBuilder/_stores/store';
+import { getTableComponentId } from '../../../../_utils/tableStoreKey';
 
 export const FilterRow = memo(
   ({ id, filter, index, columns, darkMode, onColumnChange, onOperationChange, onValueChange, onRemove }) => {
     const { t } = useTranslation();
-    const isDragging = useStore((state) => state.draggingComponentId === id);
+    const isDragging = useStore((state) => state.draggingComponentId === getTableComponentId(id));
 
     const selectStyles = (width) => {
       return {

@@ -12,6 +12,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useTableRefresh } from '../../_hooks/useTableRefresh';
 import { isEditedFieldsMapValid } from '../../_utils/columnValidity';
 import { createTableRowEventOptions } from '../../_utils/tableEventUtils';
+import { getTableComponentId } from '../../_utils/tableStoreKey';
 // Component to expose variables & fire events from the table
 // It might miss some variables which are tightly coupled with the component state
 export const TableExposedVariables = ({
@@ -42,6 +43,7 @@ export const TableExposedVariables = ({
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const { handleRefresh } = useTableRefresh(id, fireEvent);
+  const componentId = getTableComponentId(id);
 
   const mounted = useMounted();
 
@@ -268,7 +270,7 @@ export const TableExposedVariables = ({
           type: 'component',
           kind: 'component',
           key: `Table "${componentName}" - setPage called with an invalid page`,
-          componentId: id,
+          componentId,
           strace: 'page_level',
           message: knowsUpperBound
             ? `setPage() was called with ${JSON.stringify(
@@ -277,7 +279,7 @@ export const TableExposedVariables = ({
             : `setPage() was called with ${JSON.stringify(
                 targetPageIndex
               )}, which is not a valid page number. Expected a positive integer.`,
-          error: { componentId: id, value: targetPageIndex },
+          error: { componentId, value: targetPageIndex },
           errorTarget: 'Component Property',
           timestamp: moment().toISOString(),
         });
@@ -288,7 +290,7 @@ export const TableExposedVariables = ({
       setPageIndex(numericTarget - 1);
     }
     setExposedVariables({ setPage });
-  }, [setPageIndex, setExposedVariables, table, componentName, id]);
+  }, [setPageIndex, setExposedVariables, table, componentName, componentId]);
 
   useEffect(() => {
     if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
@@ -386,12 +388,12 @@ export const TableExposedVariables = ({
           type: 'component',
           kind: 'component',
           key: `Table "${componentName}" - selectRow called with no matching row`,
-          componentId: id,
+          componentId,
           strace: 'page_level',
           message: `selectRow() was called with key ${JSON.stringify(key)} and value ${JSON.stringify(
             value
           )}, which matched no row. The current selection was left unchanged.`,
-          error: { componentId: id, key, value },
+          error: { componentId, key, value },
           errorTarget: 'Component Property',
           timestamp: moment().toISOString(),
         });
@@ -474,12 +476,12 @@ export const TableExposedVariables = ({
           type: 'component',
           kind: 'component',
           key: `Table "${componentName}" - setFilters called with an invalid filter`,
-          componentId: id,
+          componentId,
           strace: 'page_level',
           message: `setFilters() was called with ${JSON.stringify(
             invalidFilters
           )}, which references a column or condition not found on this table. Expected a configured column name and one of the supported filter conditions.`,
-          error: { componentId: id, value: invalidFilters },
+          error: { componentId, value: invalidFilters },
           errorTarget: 'Component Property',
           timestamp: moment().toISOString(),
         });
@@ -491,7 +493,7 @@ export const TableExposedVariables = ({
       setColumnFilters([]);
     }
     setExposedVariables({ clearFilters, setFilters });
-  }, [setColumnFilters, setExposedVariables, columns, componentName, id]);
+  }, [setColumnFilters, setExposedVariables, columns, componentName, componentId]);
 
   // CSA to set sort programmatically
   const setSort = useCallback(
@@ -554,7 +556,7 @@ export const TableExposedVariables = ({
   // Create debounced function using useRef to persist between renders
   const debouncedSetProperty = useRef(
     debounce((sizing) => {
-      setComponentProperty(id, 'columnSizes', sizing, 'properties', 'value', false, moduleId);
+      setComponentProperty(componentId, 'columnSizes', sizing, 'properties', 'value', false, moduleId);
     }, 300)
   ).current;
 
@@ -567,7 +569,7 @@ export const TableExposedVariables = ({
     return () => {
       debouncedSetProperty.cancel();
     };
-  }, [columnSizing, columnSizes, debouncedSetProperty, id]);
+  }, [columnSizing, columnSizes, debouncedSetProperty, componentId]);
 
   useEffect(() => {
     function discardChanges() {
