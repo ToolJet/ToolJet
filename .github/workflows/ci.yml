@@ -400,7 +400,7 @@ jobs:
       !cancelled()
       && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.server == 'true'
-      && needs.test-mcp-oauth.result == 'success'
+      && contains(fromJSON('["success","failure"]'), needs.test-mcp-oauth.result)
       && needs.build-plugins.result == 'success'
       && needs.build-server.result == 'success'
       && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
@@ -517,15 +517,16 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
       - name: Download OAuth coverage
+        if: needs.test-mcp-oauth.result == 'success'
         uses: actions/download-artifact@v8
         with:
           name: coverage-mcp-oauth
           path: server/coverage-mcp-oauth/
       - name: Merge coverage
         # Feeds ci-gate's coverage gate, so no continue-on-error: a failed merge must fail
-        # the job, not silently skip the gate. Runs only if both unit and e2e passed — a
+        # the job, not silently skip the gate. Runs only if unit, e2e and OAuth passed — a
         # report merged from a failing/incomplete suite would misrepresent coverage.
-        if: ${{ !cancelled() && steps.unit.outcome == 'success' && steps.e2e.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.unit.outcome == 'success' && steps.e2e.outcome == 'success' && needs.test-mcp-oauth.result == 'success' }}
         run: npm run --prefix server test:cov:merge
       - name: Upload combined coverage report
         if: ${{ !cancelled() }}
@@ -549,7 +550,7 @@ jobs:
       - name: Prepare PR diff for the coverage gate
         if: >-
           ${{ !cancelled() && github.event_name == 'pull_request'
-          && steps.unit.outcome == 'success' && steps.e2e.outcome == 'success' }}
+          && steps.unit.outcome == 'success' && steps.e2e.outcome == 'success' && needs.test-mcp-oauth.result == 'success' }}
         shell: bash
         run: |
           mkdir -p /tmp/cov
