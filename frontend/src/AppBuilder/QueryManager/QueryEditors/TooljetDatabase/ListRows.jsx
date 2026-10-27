@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import React from 'react';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
-import { operators } from '@/TooljetDatabase/constants';
+import { operators } from '@/_helpers/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -13,7 +13,7 @@ import { NoCondition } from './NoConditionUI';
 
 export const ListRows = React.memo(({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, offsetOptionChanged } =
-    useContext(TooljetDatabaseContext);
+    useToolJetDbOperationsContext();
 
   function handleWhereFiltersChange(filters) {
     handleOptionsChange('where_filters', filters);

@@ -211,6 +211,7 @@ export const PageMenuItem = withRouter(
           className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
             (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
           }`}
+          data-page-id={page?.id}
           style={{
             position: 'relative',
             width: '100%',

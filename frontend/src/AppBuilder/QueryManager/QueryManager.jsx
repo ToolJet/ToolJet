@@ -6,6 +6,10 @@ import { CodeHinterContext } from '@/AppBuilder/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { getQueryManagerClassName } from '@/AppBuilder/panelLayout';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
+
+// Code search's tab names → QueryManagerHeader's tab ids.
+const QUERY_TAB_IDS = { setup: 1, transformation: 2, settings: 3 };
 
 const QueryManager = ({ mode, darkMode, surface = 'bottom' }) => {
   // TODO to be moved into queryPanelStore and reimplemented
@@ -32,6 +36,13 @@ const QueryManager = ({ mode, darkMode, surface = 'bottom' }) => {
       setActiveTab(1);
     }
   }, [selectedQuery?.id]);
+
+  // Code search opens the tab a field lives in. Declared after the reset above so it wins when both
+  // run for a newly selected query.
+  useCodeSearchReveal('queryTab', selectedQuery?.id, (tab) => {
+    setActiveTab(QUERY_TAB_IDS[tab] ?? 1);
+    return true;
+  });
 
   useEffect(() => {
     if (queryToBeRun !== null) {

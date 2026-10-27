@@ -29,6 +29,7 @@ import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsM
 import { appPermissionService } from '@/_services';
 import { getPageSettingsSections } from '@/AppBuilder/panelLayout';
 import './PageMenu/style.scss';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 export const PageSettings = ({ onClose, surface = 'configuration' }) => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -57,6 +58,12 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
     setRightSidebarOpen(false);
   };
   const treeRef = useRef(null);
+  const [activeTab, setActiveTab] = useState('properties');
+  // Code search opens the tab (Properties / Styles) a page setting lives under.
+  useCodeSearchReveal('inspectorTab', 'pageSettings', (tab) => {
+    setActiveTab(tab);
+    return true;
+  });
 
   const pagesMeta = useMemo(() => JSON.parse(JSON.stringify(pageConfig)), []);
 
@@ -76,7 +83,7 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
       };
 
       return (
-        <div key={name} className={cx('d-flex align-items-center justify-content-between mb-3')}>
+        <div key={name} data-param={name} className={cx('d-flex align-items-center justify-content-between mb-3')}>
           <div className={`field`}>
             <OverflowTooltip style={{ width: '120px' }} childrenClassName={'tj-text-xsm color-slate12 mb-2'}>
               {style.displayName}
@@ -176,7 +183,7 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
           </div>
         </div>
         <div className={cx({ disabled: shouldFreeze })}>
-          <Tabs defaultActiveKey={'properties'} id={`page-settings-${surface}`}>
+          <Tabs activeKey={activeTab} onSelect={setActiveTab} id={`page-settings-${surface}`}>
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
               <div className="tj-text-xsm color-slate12 ">
                 {propertySections.includes('page-list') && (
@@ -297,7 +304,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       <div className="section-header pb-2">
         <div className="title">App header</div>
       </div>
-      <div className=" d-flex justify-content-between align-items-center pb-2">
+      <div data-param="hideHeader" className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show app title
           <LicenseTooltip
@@ -322,7 +329,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
           />
         </label>
       </div>
-      <div className=" d-flex justify-content-between align-items-center pb-2">
+      <div data-param="hideLogo" className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show logo
           <LicenseTooltip
@@ -347,7 +354,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
           />
         </label>
       </div>
-      <div className="pb-2">
+      <div data-param="name" className="pb-2">
         <div className="col pb-1">
           <label className="form-label font-weight-400 mb-0">Title</label>
           <input
@@ -404,7 +411,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
       <ShowNavigationMenu moduleId={moduleId} darkMode={darkMode} disableMenu={disableMenu} />
       {!isPagesSidebarHidden && (
         <>
-          <div className="d-flex justify-content-between align-items-center pb-2">
+          <div data-param="position" className="d-flex justify-content-between align-items-center pb-2">
             <label className="form-label font-weight-400 mb-0">Position</label>
             <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
               <ToggleGroup
@@ -426,7 +433,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
               </ToggleGroup>
             </div>
           </div>
-          <div className="pb-2">
+          <div data-param="style" className="pb-2">
             <div className="col d-flex justify-content-between align-items-center">
               <label className="form-label font-weight-400 mb-0">Style</label>
               <Select
@@ -444,7 +451,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
             </div>
           </div>
           {position == 'side' && style !== 'text' && style !== 'icon' && (
-            <div className="d-flex justify-content-between align-items-center pb-2">
+            <div data-param="collapsable" className="d-flex justify-content-between align-items-center pb-2">
               <label className="form-label font-weight-400 mb-0">Collapsable</label>
               <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
                 <ToggleGroup
@@ -477,7 +484,7 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
 
   return (
     <>
-      <div className=" d-flex justify-content-between align-items-center pb-2">
+      <div data-param="showOnDesktop" className=" d-flex justify-content-between align-items-center pb-2">
         <label className="form-label font-weight-400 mb-0">Show on desktop</label>
         <label className={`form-switch`}>
           <input
@@ -491,7 +498,7 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
           />
         </label>
       </div>
-      <div className=" d-flex justify-content-between align-items-center pb-2">
+      <div data-param="showOnMobile" className=" d-flex justify-content-between align-items-center pb-2">
         <label className="form-label font-weight-400 mb-0">Show on mobile</label>
         <label className={`form-switch`}>
           <input
@@ -516,7 +523,7 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
   const resolveOthers = useStore((state) => state.resolveOthers, shallow);
 
   return (
-    <div className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor pb-2')}>
+    <div data-param="disableMenu" className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor pb-2')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         <div className={`field`}>
           <InspectorTooltip

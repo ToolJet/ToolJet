@@ -13,7 +13,11 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { Blocks, DatabaseZap, Files, Network, Settings } from 'lucide-react';
+import { Blocks, DatabaseZap, Files, Network, Search, Settings } from 'lucide-react';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { EditorView } from '@codemirror/view';
+import CodeSearch from './CodeSearch/CodeSearch';
+import Beta from '@/_ui/Beta';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
 // eslint-disable-next-line import/no-unresolved
@@ -34,6 +38,7 @@ const LEFT_SIDEBAR_PANEL_LABELS = {
   pages: 'Pages',
   components: 'Components',
   queries: 'Queries',
+  search: 'Code search',
   libraries: 'Libraries',
   dependencies: 'Dependencies',
   apphistory: 'App history',
@@ -90,6 +95,8 @@ export const BaseLeftSidebar = ({
   const [animatePanelSwitch, setAnimatePanelSwitch] = useState(false);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const returnToSearch = useStore((state) => state.codeSearch.returnToSearch);
+  const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
   const { isLeftPanelOpen, isRightChatOpen, isFabVisible, shouldMountLeftPanel } = getAiChatSurfaceState(
@@ -106,6 +113,8 @@ export const BaseLeftSidebar = ({
       setAiChatOpen(true);
       return;
     }
+    // Only a search result opens Settings with a way back to the search panel.
+    setCodeSearchReturnToSearch(false);
     // Left-rail clicks never close the right panel; it closes only from its own ×.
     setAnimatePanelSwitch(!isSidebarOpen || item !== selectedSidebarItem);
     setSelectedSidebarItem(item);
@@ -125,6 +134,26 @@ export const BaseLeftSidebar = ({
       toggleLeftSidebar(true);
     }
   };
+
+  // Same shortcut builders know from code editors' app-wide search. It behaves like the Code search
+  // rail icon (opens it, or closes it when it's already showing), except that a word selected in a
+  // code editor seeds the search and always opens the panel.
+  useHotkeys(
+    'mod+shift+f',
+    () => {
+      const editorElement = document.activeElement?.closest?.('.cm-editor');
+      const view = editorElement && EditorView.findFromDOM(editorElement);
+      const { from, to } = view?.state.selection.main || {};
+      const selected = view && from !== to ? view.state.sliceDoc(from, to) : '';
+      if (selected && selected.length <= 100 && !selected.includes('\n')) {
+        useStore.getState().setCodeSearchTerm(selected);
+        if (selectedSidebarItem === 'search' && isSidebarOpen) return;
+      }
+      handleSelectedSidebarItem('search');
+    },
+    { enabled: currentMode !== 'view', enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true },
+    [selectedSidebarItem, isSidebarOpen, currentMode]
+  );
 
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
@@ -201,6 +230,8 @@ export const BaseLeftSidebar = ({
             <QueryDataPane darkMode={darkMode} surface="left" onClose={() => toggleLeftSidebar(false)} />
           </div>
         );
+      case 'search':
+        return <CodeSearch darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'libraries':
         return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'dependencies':
@@ -213,6 +244,7 @@ export const BaseLeftSidebar = ({
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
             onClose={() => toggleLeftSidebar(false)}
+            onBackToSearch={returnToSearch ? () => handleSelectedSidebarItem('search') : undefined}
           />
         );
     }
@@ -278,6 +310,19 @@ export const BaseLeftSidebar = ({
   const renderManageItems = () => (
     <>
       <div className="left-sidebar-section-divider" role="separator" aria-label="Manage tools" />
+      <SidebarItem
+        icon="search"
+        selectedSidebarItem={selectedSidebarItem}
+        darkMode={darkMode}
+        onClick={() => handleSelectedSidebarItem('search')}
+        className="left-sidebar-item left-sidebar-layout tw-overflow-visible"
+        tip="Code search"
+        railLabel="Search"
+        ref={setSideBarBtnRefs('search')}
+      >
+        <Search size={16} strokeWidth={1.8} />
+        <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
+      </SidebarItem>
       <SidebarItem
         icon="dependencies"
         selectedSidebarItem={selectedSidebarItem}
