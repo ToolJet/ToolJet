@@ -100,6 +100,7 @@ export class DataQueryRepository extends Repository<DataQuery> {
       query
         .leftJoinAndSelect('data_query.plugins', 'plugins')
         .leftJoinAndSelect('plugins.iconFile', 'iconFile')
+        .leftJoinAndSelect('plugins.darkIconFile', 'darkIconFile')
         .leftJoinAndSelect('plugins.manifestFile', 'manifestFile');
     }
 
@@ -120,6 +121,7 @@ export class DataQueryRepository extends Repository<DataQuery> {
       .innerJoinAndSelect('data_query.dataSource', 'data_source')
       .leftJoinAndSelect('data_query.plugins', 'plugins')
       .leftJoinAndSelect('plugins.iconFile', 'iconFile')
+      .leftJoinAndSelect('plugins.darkIconFile', 'darkIconFile')
       .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
       .leftJoinAndSelect('data_query.permissions', 'permission')
       .leftJoinAndSelect('permission.users', 'queryUser')
