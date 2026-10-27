@@ -10,13 +10,19 @@ This guide covers component-specific actions for the **Chat Component** and its 
 | <div style={{ width:'170px' }}> Action </div> | <div style={{ width:'200px' }}> Description </div> | How to Access |
 |--------|-------------|---------------|
 | sendMessage( ) | Sends a message in the chat. | Employ a RunJS query (for e.g. `components.chat1.sendMessage({message: "Hey! How can I help you?", type: "response"})`) or trigger it using an event. |
-| clearHistory( ) | Clear chat history. | Employ a RunJS query (for e.g. `components.chat1.clearHistory()`) or trigger it using an event. |
-| deleteMessage( ) | Delete a message using the MessageID | Employ a RunJS query (for e.g. `components.chat1.deleteMessage(MessageID)`) or trigger it using an event. |
+| clearHistory( ) | Resets the chat history to the **Initial chat** value. | Employ a RunJS query (for e.g. `components.chat1.clearHistory()`) or trigger it using an event. |
 | downloadChat( ) | Download the chat in JSON format. | Employ a RunJS query (for e.g. `components.chat1.downloadChat()`) or trigger it using an event. |
 | setHistory( ) | Sets the chat history. | Employ a RunJS query (for e.g. `components.chat1.setHistory(History Object)`) or trigger it using an event. |
 | appendHistory( ) | Appends chat history. | Employ a RunJS query (for e.g. `components.chat1.appendHistory(Message Object)`) or trigger it using an event. |
 | setResponderAvatar( ) | Sets Responder's Avatar. | Employ a RunJS query (for e.g. `components.chat1.setResponderAvatar(Image URL)`) or trigger it using an event. |
 | setUserAvatar( ) | Sets User's Avatar. | Employ a RunJS query (for e.g. `components.chat1.setUserAvatar(Image URL)`) or trigger it using an event. |
+| setVisibility( ) | Shows or hides the component. | Employ a RunJS query (for e.g. `components.chat1.setVisibility(false)`) or trigger it using an event. |
+| setInputDisable( ) | Disables or enables the message input and send button. It can't enable the input while the **Disable input state** property is on. | Employ a RunJS query (for e.g. `components.chat1.setInputDisable(true)`) or trigger it using an event. |
+| setError( ) | Shows an error message after the chat history. It isn't added to `history`, and is removed when the history changes. Defaults to *Some error occurred. Please retry.* | Employ a RunJS query (for e.g. `components.chat1.setError("Something went wrong")`) or trigger it using an event. |
+| setResponseLoading( ) | Shows a typing indicator for the respondent. Messages can't be sent while it's on. | Employ a RunJS query (for e.g. `components.chat1.setResponseLoading(true)`) or trigger it using an event. |
+| setHistoryLoading( ) | Shows a loading state in place of the chat history. | Employ a RunJS query (for e.g. `components.chat1.setHistoryLoading(true)`) or trigger it using an event. |
+
+`sendMessage()` and `clearHistory()` called from a query or event don't trigger the **On message sent** and **On history cleared** events.
 
 ## Exposed Variables
 
