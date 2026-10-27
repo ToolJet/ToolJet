@@ -46,7 +46,8 @@ colocated `__tests__/` directory and integration specs in its `integration/` sub
 
 - Pure Jest calls an exported deterministic product API.
 - Store integration uses the real composed App Builder store through `AppBuilderTestSession.store.act`
-  and `store.read`.
+  and `store.read`. Standalone stores are read-only through `store.read(selector, { store })`;
+  `'grid'` is the editor grid store.
 - RTL renders the smallest production UI boundary with real providers, store, resolver, bindings,
   events, and `RenderWidget` where widget integration is the behavior.
 - Contract tests use immutable inputs and an independent semantic oracle.
