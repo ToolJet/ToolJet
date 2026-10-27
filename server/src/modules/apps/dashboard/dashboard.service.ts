@@ -9,7 +9,7 @@ import type { AppsUtilService } from '@modules/apps/util.service';
 import { FOLDER_RESOURCE_TYPE_BY_APP_TYPE } from '@modules/folder-apps/ability';
 import { getPermissionResourceForAppType } from '@modules/folder-apps/util.service';
 import type { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
-import { appActions, folderActions, resolveFolderAccess } from './actions';
+import { AppGitState, appActions, folderActions, resolveFolderAccess } from './actions';
 import {
   BuiltQuery,
   DashboardScope,
@@ -181,7 +181,9 @@ export class DashboardService {
     const ids = (pick: (r: EntryRow) => string | null) => [
       ...new Set(rows.map(pick).filter((id): id is string => !!id)),
     ];
-    const [users, versions, folders] = await Promise.all([
+    const { scope, permissions } = ctx;
+    const appIds = rows.filter((r) => r.kind === 'app').map((r) => r.id);
+    const [users, versions, folders, gitStates] = await Promise.all([
       this.names<UserNameRow>(
         `SELECT id, first_name, last_name FROM users WHERE id = ANY($1::uuid[])`,
         [...ids((r) => r.owner_id), ...ids((r) => r.modified_by_id)],
@@ -197,10 +199,10 @@ export class DashboardService {
         ids((r) => r.folder_id),
         (f) => f.name
       ),
+      this.gitStates(appIds, scope),
     ]);
     const ref = (map: Map<string, string>, id: string | null): RefDto | null =>
       id && map.has(id) ? { id, name: map.get(id) } : null;
-    const { scope, permissions } = ctx;
     return rows.map((r) => {
       const common = {
         kind: r.kind,
@@ -225,8 +227,11 @@ export class DashboardService {
           ),
         });
       }
+      const git = gitStates.get(r.id) ?? null;
       return Object.assign(new DashboardEntryDto(), {
         ...common,
+        createdAt: r.created_at,
+        git,
         slug: r.slug,
         icon: r.icon,
         folder: ref(folders, r.folder_id),
@@ -237,9 +242,47 @@ export class DashboardService {
           folderId: r.folder_id,
           currentVersionId: r.current_version_id,
           isMaintenanceOn: !!r.is_maintenance_on,
+          isStub: git?.stub,
         }),
       });
     });
+  }
+
+  // Null when git-sync is off or the page's scope is workflows (workflows aren't git-tracked).
+  private async gitStates(appIds: string[], scope: DashboardScope): Promise<Map<string, AppGitState>> {
+    if (!scope.git.enabled || scope.type === APP_TYPES.WORKFLOW || appIds.length === 0) return new Map();
+    const rows: {
+      app_id: string;
+      id: string;
+      status: string;
+      version_type: string;
+      is_synced: boolean;
+      is_stub: boolean;
+    }[] = await this.dataSource.query(
+      `SELECT DISTINCT ON (av.app_id) av.app_id, av.id, av.status, av.version_type, av.is_synced, av.is_stub
+       FROM app_versions av
+       WHERE av.app_id = ANY($1::uuid[]) AND av.branch_id = $2
+       ORDER BY av.app_id, av.is_stub ASC, av.updated_at DESC`,
+      [appIds, scope.branchId]
+    );
+    const holders: { id: string; isAppSynced?: boolean }[] = appIds.map((id) => ({ id }));
+    await this.appsUtilService.stampIsAppSynced(
+      holders as unknown as Parameters<AppsUtilService['stampIsAppSynced']>[0],
+      scope.branchId,
+      scope.type
+    );
+    const synced = new Map(holders.map((h) => [h.id, !!h.isAppSynced]));
+    return new Map(
+      rows.map((r) => [
+        r.app_id,
+        {
+          synced: !!synced.get(r.app_id),
+          version_synced: r.is_synced,
+          stub: r.is_stub,
+          push_version_id: r.status === 'DRAFT' && r.version_type === 'version' ? r.id : null,
+        },
+      ])
+    );
   }
 
   private async names<R extends { id: string }>(

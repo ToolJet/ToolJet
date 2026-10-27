@@ -1,14 +1,17 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { App } from '@entities/app.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { APP_TYPES } from '@modules/apps/constants';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import {
   initTestApp,
   closeTestApp,
   createAdmin,
   createEndUser,
   createFolder,
+  findEntityOrFail,
   resolveOrSeedDefaultBranch,
   saveEntity,
   seedActivity,
@@ -88,11 +91,48 @@ describe('DashboardAppsController', () => {
             owner: { id: admin.user.id, name: expect.any(String) },
             pinned: false,
             actions: { launch: { enabled: true, reason: null }, edit: true, delete: true, pin: true },
+            created_at: expect.any(String),
+            git: null,
           },
         ],
       });
       expect(res.body.items.map((i: { id: string }) => i.id)).not.toContain(inFolder.id);
       expect(res.body.items[1]).not.toHaveProperty('is_public');
+      expect(res.body.items[0]).not.toHaveProperty('git');
+    });
+
+    it('should return git-sync state per app when git-sync is on, and no Launch for a stub', async () => {
+      const admin = await createAdmin(nestApp, 'dash-list-git@tooljet.io');
+      const branch = await resolveOrSeedDefaultBranch(admin.workspace.id);
+      const { app: synced } = await seedDashboardApp(nestApp, { user: admin.user, name: 'Synced' });
+      const { app: stub } = await seedDashboardApp(nestApp, { user: admin.user, name: 'Stub' });
+      const syncedVersion = await findEntityOrFail(AppVersion, { appId: synced.id });
+      await updateEntity(AppVersion, syncedVersion.id, {
+        isSynced: true,
+        status: AppVersionStatus.DRAFT,
+        versionType: AppVersionType.VERSION,
+      });
+      const stubVersion = await findEntityOrFail(AppVersion, { appId: stub.id });
+      await updateEntity(AppVersion, stubVersion.id, { isStub: true, isSynced: false });
+      const spy = jest.spyOn(GitSyncConfigsUtilService.prototype, 'getDetails').mockResolvedValue({
+        isEnabled: true,
+        isMultiBranchingEnabled: false,
+        options: { type: null, defaultBranch: { id: branch.id, name: branch.name }, isBranchingEnabled: false },
+        orgGit: null,
+      } as any);
+      try {
+        const res = await list(nestApp, admin.cookie, admin.workspace.id, { type: 'front-end' });
+        const byId = new Map(res.body.items.map((i: { id: string }) => [i.id, i]));
+        expect(byId.get(synced.id)).toMatchObject({
+          git: { synced: true, version_synced: true, stub: false, push_version_id: syncedVersion.id },
+        });
+        expect(byId.get(stub.id)).toMatchObject({
+          git: { synced: false, version_synced: false, stub: true },
+          actions: { launch: null },
+        });
+      } finally {
+        spy.mockRestore();
+      }
     });
 
     it('should order a builder’s rows by their own last edit, untouched rows last by name', async () => {

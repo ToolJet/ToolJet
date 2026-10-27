@@ -1,7 +1,7 @@
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min } from 'class-validator';
 import { APP_TYPES } from '@modules/apps/constants';
-import { AppActions, FolderActions } from '../actions';
+import { AppActions, AppGitState, FolderActions } from '../actions';
 
 export class ListAppsV2QueryDto {
   @IsEnum(APP_TYPES)
@@ -56,6 +56,8 @@ export class DashboardEntryDto {
   @Expose() owner: RefDto | null;
   @Expose() pinned: boolean;
   @Expose() actions: AppActions | FolderActions;
+  @Expose({ name: 'created_at' }) createdAt?: Date | null;
+  @Expose() git?: AppGitState | null;
 }
 
 @Exclude()
