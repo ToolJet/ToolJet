@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import moment from 'moment';
 import { migrationsService } from '@/_services/migrations.service';
 import { getSubpath } from '@/_helpers/routes';
 
@@ -37,31 +36,28 @@ export const UpgradeInProgress = ({ children }) => {
   if (status.state !== 'running') return children;
 
   const { done, total } = status.progress ?? {};
-  const percent = total ? Math.round((done / total) * 100) : null;
+  const percent = total ? Math.round((done / total) * 100) : 0;
 
   return (
     <main className="tw-fixed tw-inset-0 tw-z-[1100] tw-flex tw-items-center tw-justify-center tw-bg-background-surface-layer-01 tw-p-4">
       <div className="tw-flex tw-w-full tw-max-w-md tw-flex-col tw-gap-3" role="status" aria-live="polite">
-        <h1 className="tw-m-0 tw-font-title-large tw-text-text-default">Maintenance in progress</h1>
-        <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">
-          This page will be available again when maintenance finishes.
-        </p>
+        <h1 className="tw-m-0 tw-font-title-large tw-text-text-default">Scheduled maintenance in progress</h1>
+        <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">This page will be available again soon.</p>
         <div
           role="progressbar"
           aria-label="Maintenance progress"
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-valuenow={percent ?? undefined}
+          aria-valuenow={percent}
           className="tw-h-2 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-background-surface-layer-02"
         >
           <div
             className="tw-h-full tw-bg-background-accent-strong tw-transition-[width] tw-duration-300"
-            style={{ width: `${percent ?? 0}%` }}
+            style={{ width: `${percent}%` }}
           />
         </div>
         <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">
-          {total ? `${done} of ${total} done (${percent}%)` : 'Preparing'}
-          {status.startedAt && ` · started ${moment(status.startedAt).fromNow()}`}
+          {total ? `${done} of ${total} done (${percent}%)` : `${percent}%`}
         </p>
       </div>
     </main>
