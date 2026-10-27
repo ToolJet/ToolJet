@@ -262,10 +262,13 @@ const headersToRedact = [
   'authentication-info', // Provides additional authentication details
 ];
 
+// Lowercased so redaction is case-insensitive (HTTP header names are case-insensitive).
+const headersToRedactLowerCased = headersToRedact.map((key) => key.toLowerCase());
+
 export const redactHeaders = (headers) => {
   const redactedHeaders = { ...headers };
-  headersToRedact.forEach((key) => {
-    if (Object.prototype.hasOwnProperty.call(redactedHeaders, key)) {
+  Object.keys(redactedHeaders).forEach((key) => {
+    if (headersToRedactLowerCased.includes(key.toLowerCase())) {
       redactedHeaders[key] = '[REDACTED]';
     }
   });

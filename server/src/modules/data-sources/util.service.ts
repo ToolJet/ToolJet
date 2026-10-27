@@ -1109,7 +1109,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return dataSource;
   }
 
-  async resolveConstants(str: string, organizationId: string, environmentId: string, user?: User): Promise<string> {
+  // collectedSecretValues, when passed, accumulates resolved SECRET plaintexts so callers can scrub them from metadata.
+  async resolveConstants(
+    str: string,
+    organizationId: string,
+    environmentId: string,
+    user?: User,
+    collectedSecretValues?: string[]
+  ): Promise<string> {
     const regex = /\{\{(constants|secrets)\.(.*?)\}\}/g;
 
     const matches = Array.from(str.matchAll(regex));
@@ -1132,11 +1139,17 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
           if (!constant) return fullMatch;
 
-          return await this.encryptionService.decryptColumnValue(
+          const resolved = await this.encryptionService.decryptColumnValue(
             'org_environment_constant_values',
             organizationId,
             constant.value
           );
+
+          if (type === OrganizationConstantType.SECRET && collectedSecretValues && typeof resolved === 'string') {
+            collectedSecretValues.push(resolved);
+          }
+
+          return resolved;
         } catch (error) {
           console.error(`Error resolving constant ${key}:`, error);
           return fullMatch;
@@ -1583,7 +1596,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     organizationId: string,
     environmentId: string,
     user?: User,
-    dataSourceOptionId?: string
+    dataSourceOptionId?: string,
+    collectedSecretValues?: string[]
   ): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
@@ -1604,7 +1618,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(inner)) {
-                const resolved = await this.resolveConstants(inner, organizationId, environmentId, user);
+                const resolved = await this.resolveConstants(
+                  inner,
+                  organizationId,
+                  environmentId,
+                  user,
+                  collectedSecretValues
+                );
                 curr[j] = resolved;
               }
             }
@@ -1615,7 +1635,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(objValue)) {
-                const resolved = await this.resolveConstants(objValue, organizationId, environmentId, user);
+                const resolved = await this.resolveConstants(
+                  objValue,
+                  organizationId,
+                  environmentId,
+                  user,
+                  collectedSecretValues
+                );
                 curr[objKey] = resolved;
               }
             }
@@ -1624,7 +1650,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
 
       if (constantMatcher.test(currentOption)) {
-        const resolved = await this.resolveConstants(currentOption, organizationId, environmentId, user);
+        const resolved = await this.resolveConstants(
+          currentOption,
+          organizationId,
+          environmentId,
+          user,
+          collectedSecretValues
+        );
         options[key]['value'] = resolved;
       }
     }
@@ -1639,7 +1671,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const value = await this.credentialService.getValue(credentialId);
 
         if (value.includes('{{constants') || value.includes('{{secrets')) {
-          const resolved = await this.resolveConstants(value, organizationId, environmentId, user);
+          const resolved = await this.resolveConstants(
+            value,
+            organizationId,
+            environmentId,
+            user,
+            collectedSecretValues
+          );
           parsedOptions[key] = resolved;
           continue;
         } else {
