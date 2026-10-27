@@ -52,7 +52,7 @@ Allows you to add options to the multiselect component field. You can click on `
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                       | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
 | :------------------------------------------- | :---------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Options Loading State                        | Allows you to add a loading state to the dynamically generated options. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Options loading state                        | Allows you to add a loading state to the dynamically generated options. Shown only when **Dynamic options** is on. The menu shows a spinner in place of the options while it is on. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Enable select all option                     | Adds "Select all" option in the list to select all the option at once.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show "All items are selected"                | Shows "All items are selected" when all the options are selected.       | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Sort options                                 | Sort all the options in the selected pattern.                           | Choose from **None**, **a-z** or **z-a**.                                                                                    |
@@ -88,14 +88,14 @@ To set up server side search:
 
    Replace `multiselect1` with the name of your component.
 
-3. Bind **Option values** and **Option labels**, or the **Schema** if you are using dynamic options, to the query's data. For example, `{{queries.searchOrders.data.map(o => o.value)}}`.
+3. In the **Options** section, turn on **Dynamic options** and set **Schema** to the query's data. For example, `{{queries.searchOrders.data.map(o => ({ label: o.label, value: o.value }))}}`. Options added manually with **Add new option** can't be bound to a query.
 
 4. Add an event handler to the component:<br/>
    Event: **On search text changed**<br/>
    Action: **Run Query**<br/>
    Query: the query you created in step 2
 
-5. Optionally, click on **fx** next to **Loading state** and enter `{{queries.searchOrders.isLoading}}` so that the menu shows a spinner while the query runs.
+5. Optionally, click on **fx** next to **Options loading state** and enter `{{queries.searchOrders.isLoading}}` so that the menu shows a spinner in place of the options while the query runs.
 
 :::info
 **On search text changed** fires on every keystroke, so each keystroke runs the query. Keep a `LIMIT` in the query to bound the number of rows returned.
@@ -103,7 +103,7 @@ To set up server side search:
 
 **Sort options** still applies in Server side mode and re-sorts whatever the query returned, in the browser. Set it to **None** if your query already sorts the results.
 
-When the search box has text and **Show "All items are selected"** is enabled, the select all row reads `Select all <search text>`. In Server side mode, selecting it selects every option the query currently returned, not the entire underlying dataset.
+When **Enable select all option** is on, the menu shows a **Select all** row. Selecting it selects every option currently loaded in the component, including options hidden by the search text. In Server side mode, that means every option the query currently returned, not the entire underlying dataset.
 
 ## Events
 
@@ -128,8 +128,8 @@ The following actions of the component can be controlled using the component-spe
 | setVisibility( )                              | Sets the visibility of the component.             | `components.multiselect1.setVisibility(false)`      |
 | setLoading( )                                 | Sets the loading state of the component.          | `components.multiselect1.setLoading(true)`          |
 | setDisable( )                                 | Disables the component.                           | `components.multiselect1.setDisable(true)`          |
-| selectOptions( )                              | Selects an option.                                | `components.multiselect1.selectOptions(['2','3'])`  |
-| deselectOptions( )                            | Deselects all options.                            | `components.multiselect1.deselectOptions()`         |
+| selectOptions( )                              | Selects the options with the given values. Respects **Max selection limit**. | `components.multiselect1.selectOptions(['2','3'])`  |
+| deselectOptions( )                            | Deselects the options with the given values. Use `clear()` to deselect all options. | `components.multiselect1.deselectOptions(['2'])`    |
 
 **Note:**
 
@@ -167,10 +167,11 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div>                       | <div style={{width: "200px"}}> How To Access </div> |
 | :--------------------------------------------- | :---------------------------------------------------------------------- | :-------------------------------------------------- |
-| searchText                                     | This variable is initially empty and holds the value whenever the user searches on the multiselect. | `{{components.multiselect1.searchText}}`            |
+| searchText                                     | Holds the text typed in the options search box. Empty until the user types, and keeps the last typed text after the menu closes. | `{{components.multiselect1.searchText}}`            |
 | label                                          | Holds the label name of the multiselect component.                      | `{{components.multiselect1.label}}`                 |
-| value                                          | Holds the value selected by the user in the component.                  | `{{components.multiselect1.value}}`                 |
-| options                                        | Holds all the option values of the multiselect component in array form. | `{{components.multiselect1.options}}`               |
+| values                                         | Holds an array of the values of the selected options. Empty array when nothing is selected. | `{{components.multiselect1.values}}`                |
+| selectedOptions                                | Holds an array of the selected options, each with `label`, `value`, and `caption` (`null` if not set). | `{{components.multiselect1.selectedOptions[0].label}}` |
+| options                                        | Holds all visible options in array form. Each entry includes `label`, `value`, and `caption`. | `{{components.multiselect1.options}}`               |
 | isValid                                        | Indicates if the input meets validation criteria.                       | `{{components.multiselect1.isValid}}`               |
 | isMandatory                                    | Indicates if the field is required.                                     | `{{components.multiselect1.isMandatory}}`           |
 | isLoading                                      | Indicates if the component is loading.                                  | `{{components.multiselect1.isLoading}}`             |
@@ -182,7 +183,7 @@ The following actions of the component can be controlled using the component-spe
 | <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div>                    | <div style={{width: "200px"}}> Expected Value </div>                                                                         |
 | :------------------------------------------------------ | :------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
 | Make this field mandatory                               | Displays a 'Field cannot be empty' message if no option is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Custom validation                                       | Specifies a validation error message for specific conditions.        | Logical Expression (e.g., `{{!components.multiselect1.value && "Please select an option"}}`).                                |
+| Custom validation                                       | Specifies a validation error message for specific conditions.        | Logical Expression (e.g., `{{!components.multiselect1.values?.length && "Please select an option"}}`).                                |
 
 ## Additional Actions
 
