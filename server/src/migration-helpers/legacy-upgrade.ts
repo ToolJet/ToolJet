@@ -167,12 +167,12 @@ const noOpTriggerFunctions = (...names: string[]): VariantStep =>
 
 interface LegacyVariant {
   up: VariantStep;
-  tail?: VariantStep;
+  beforeCommit?: VariantStep;
 }
 
 const noOp: LegacyVariant = { up: async () => undefined };
 
-/** Lock-free replacements, by class name: row changes in up(), index builds in tail(), removals in contract. */
+/** Lock-free replacements, by class name: row changes in up(), index builds in beforeCommit(), removals in contract. */
 export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<string, LegacyVariant>([
   [
     'MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000',
@@ -199,13 +199,13 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
            )`
       ),
       // Final shape (MakeDataSourceVersionNameCaseSensitive); loosen dropped the old index of this name.
-      tail: run(
+      beforeCommit: run(
         `CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_active_name_branch
            ON data_source_versions (name, branch_id) WHERE is_active = true`
       ),
     },
   ],
-  // The tail above already builds the case-sensitive index.
+  // The beforeCommit() above already builds the case-sensitive index.
   ['MakeDataSourceVersionNameCaseSensitive1785500000000', noOp],
   [
     'MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000',
@@ -231,7 +231,7 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
           )
         )
       ),
-      tail: inOrder(
+      beforeCommit: inOrder(
         // Final names: loosen dropped the old single-draft indexes.
         runOriginal(uniqueIndex),
         runOriginal(
@@ -245,7 +245,7 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
         // backfill. The SET NULL key goes in the same statement that makes branch_id required, so deleting a branch
         // never sets NULL into a required column. The CHECK rides this lock; contract validates both and its
         // setNotNull turns the CHECK into NOT NULL.
-        // ponytail: must stay the last tail; a later backfill with a tail() would run under this lock.
+        // ponytail: must stay the last beforeCommit() statement; a later backfill with a beforeCommit() would run under this lock.
         run(
           "SET LOCAL lock_timeout = '2s'",
           `ALTER TABLE app_versions
@@ -292,14 +292,15 @@ async function recordStatements(up: (queryRunner: QueryRunner) => Promise<void>)
   return statements;
 }
 
-/** Swaps in the variants. Call before announcing or collecting tails, which wrap up() and read tail(). */
+/** Swaps in the variants. Call before announcing or collecting beforeCommit() steps, which wrap up() and read beforeCommit(). */
 export function useLegacyVariants(dataDS: DataSource): void {
   for (const migration of dataDS.migrations as BackfillMigration[]) {
     const variant = LEGACY_VARIANTS.get(migration.name || migration.constructor.name);
     if (!variant) continue;
     const originalUp = migration.up.bind(migration);
-    const { up, tail } = variant;
+    const { up, beforeCommit } = variant;
     migration.up = async (queryRunner) => up(queryRunner, await recordStatements(originalUp));
-    migration.tail = tail && (async (queryRunner) => tail(queryRunner, await recordStatements(originalUp)));
+    migration.beforeCommit =
+      beforeCommit && (async (queryRunner) => beforeCommit(queryRunner, await recordStatements(originalUp)));
   }
 }

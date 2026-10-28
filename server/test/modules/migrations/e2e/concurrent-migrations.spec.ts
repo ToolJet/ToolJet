@@ -660,8 +660,8 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
     }, 120_000);
   });
 
-  /** Lock-taking backfill statements wait for the tail; transient errors roll back and retry. */
-  describe('backfill tail and retries', () => {
+  /** Lock-taking backfill statements wait for beforeCommit(); transient errors roll back and retry. */
+  describe('backfill beforeCommit() and retries', () => {
     const database = `tooljet_migration_tail_${process.pid}`;
     const marker = join(tmpdir(), `tooljet-deadlock-${process.pid}`);
     const backfillPod = (podId: string, migrationSleepSeconds: number, env: Record<string, string> = {}) =>
@@ -669,7 +669,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
         podId,
         database,
         migrationSleepSeconds,
-        fixtureSet: 'backfill-tail',
+        fixtureSet: 'backfill-before-commit',
         env: { MIGRATION_PHASE: 'backfill', ...env },
       });
 
@@ -679,8 +679,8 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
     }, 60_000);
     afterEach(() => dropScratchDatabase(database), 60_000);
 
-    it('should build tail indexes only after every backfill up() ran', async () => {
-      const pod = backfillPod('tail-1', 3);
+    it('should build beforeCommit() indexes only after every backfill up() ran', async () => {
+      const pod = backfillPod('before-commit-1', 3);
       let stdout = '';
       pod.child.stdout.on('data', (chunk) => (stdout += chunk));
 
@@ -696,7 +696,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
 
       expect(locksMidRun).not.toContainEqual({ mode: 'ShareLock' });
       expect(outcome).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(outcome.stdout.indexOf('TAIL FillFixtureRows')).toBeGreaterThan(
+      expect(outcome.stdout.indexOf('BEFORE COMMIT FillFixtureRows')).toBeGreaterThan(
         outcome.stdout.indexOf('DONE SlowFixtureStep')
       );
       const indexes = await withScratchConnection(database, (db) =>

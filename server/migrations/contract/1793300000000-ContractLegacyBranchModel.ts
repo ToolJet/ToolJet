@@ -41,7 +41,7 @@ export class ContractLegacyBranchModel1793300000000 implements MigrationInterfac
     ]);
     await setNotNull(queryRunner, 'data_source_versions', 'branch_id');
 
-    // app_versions: the backfill's tail swapped the branch key to CASCADE and added the branch CHECK, both NOT VALID.
+    // app_versions: the backfill's beforeCommit() swapped the branch key to CASCADE and added the branch CHECK, both NOT VALID.
     await withShortLock(queryRunner, ['ALTER TABLE app_versions VALIDATE CONSTRAINT fk_app_versions_branch']);
     await setNotNull(queryRunner, 'app_versions', 'branch_id');
     // The backfill emptied these two functions; the default-branch slug function covers both rules now.
