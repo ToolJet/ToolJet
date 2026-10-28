@@ -14,6 +14,7 @@ import {
   withMigrationConnectionOptions,
   withMigrationAdvisoryLock,
 } from './migration-locks';
+import { retryOnLockTimeout } from './with-short-lock';
 import { blocksAsyncUpgrade, MigrationPhase, parseMigrationPhase, runStrategy } from './migration-mode';
 import { getEnvVars } from '../../scripts/database-config-utils';
 
@@ -211,7 +212,7 @@ async function applySchemaUnderLockTimeout(
 ): Promise<void> {
   await precommitEnumValueAdditions((await planEnumAdditions(schemaDS)).precommittable, schemaDS);
   announceEachMigration(schemaDS);
-  for (let attempt = 1; ; attempt++) {
+  const applyOnce = async () => {
     const queryRunner = schemaDS.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -220,21 +221,23 @@ async function applySchemaUnderLockTimeout(
       await runPassInSharedTransaction('expand', schemaDS, queryRunner);
       await queryRunner.commitTransaction();
       console.log('[migrations] Committed expand migrations.');
-      return;
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      if (!isLockNotAvailableError(error) || attempt >= lockAttempts) {
-        console.error('[migrations] Expand migrations failed. Rolled back the expand changes.');
-        throw error;
-      }
-      console.warn(
-        `[migrations] An expand migration waited over ${lockTimeoutMs}ms for a table lock; rolled back so ` +
-          `readers are not stalled behind it. Retrying (attempt ${attempt + 1} of ${lockAttempts}).`
-      );
+      throw error;
     } finally {
       await queryRunner.release();
     }
-    await new Promise((resolve) => setTimeout(resolve, SCHEMA_LOCK_RETRY_DELAY_MS));
+  };
+  try {
+    await retryOnLockTimeout(applyOnce, { attempts: lockAttempts, retryDelayMs: SCHEMA_LOCK_RETRY_DELAY_MS }, (next) =>
+      console.warn(
+        `[migrations] An expand migration waited over ${lockTimeoutMs}ms for a table lock; rolled back so ` +
+          `readers are not stalled behind it. Retrying (attempt ${next} of ${lockAttempts}).`
+      )
+    );
+  } catch (error) {
+    console.error('[migrations] Expand migrations failed. Rolled back the expand changes.');
+    throw error;
   }
 }
 
