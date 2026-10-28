@@ -186,6 +186,8 @@ const NOT_STATIC = Symbol('NOT_STATIC');
 
 export interface ManifestResult {
   manifest: Manifest;
+  /** Per component, the project's own functions it calls that use ToolJet hooks: fields reading alone can't see. */
+  helperDeclared: Record<string, string[]>;
   tsErrorCount: number;
   tsErrorReport: string;
   warnings: string[];
@@ -207,6 +209,7 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
 
   const components: Record<string, ManifestComponent> = {};
   const warnings: string[] = [];
+  const helperDeclared: Record<string, string[]> = {};
 
   // Walk exports of src/index.ts
   const sourceFile = program.getSourceFile(entryFile);
@@ -234,7 +237,11 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
     if (!decl) continue;
 
     const component = walkComponentDeclaration(decl, checker, componentName, warnings);
-    if (component) components[componentName] = component;
+    if (component) {
+      components[componentName] = component;
+      const helpers = sdkHelpersCalledBy(decl, checker);
+      if (helpers.length) helperDeclared[componentName] = helpers;
+    }
   }
 
   const tsErrors = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error);
@@ -250,6 +257,7 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
 
   return {
     manifest: { components },
+    helperDeclared,
     tsErrorCount: tsErrors.length,
     tsErrorReport,
     warnings,
@@ -768,6 +776,60 @@ function getFunctionLikeNode(
   }
 
   return undefined;
+}
+
+// The project's own function a call resolves to (not a library's, not a type declaration), or undefined.
+function projectFunctionOf(
+  callee: ts.Expression,
+  checker: ts.TypeChecker
+): ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction | undefined {
+  let symbol = checker.getSymbolAtLocation(callee);
+  if (symbol && symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
+  const decl = symbol?.declarations?.[0];
+  const file = decl?.getSourceFile();
+  if (!decl || !file || file.isDeclarationFile || file.fileName.includes('/node_modules/')) return undefined;
+  return getFunctionLikeNode(decl);
+}
+
+// Whether a function uses the SDK (a ToolJet.x call or <ToolJet.X>), directly or through more of the project's own
+// functions.
+function usesSdk(
+  fn: ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction,
+  checker: ts.TypeChecker,
+  seen: Set<ts.Node>
+): boolean {
+  if (seen.has(fn) || !fn.body) return false;
+  seen.add(fn);
+  const visit = (node: ts.Node): boolean => {
+    if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'ToolJet') {
+      if (isToolJetSdkIdentifier(node.expression, checker)) return true;
+    }
+    if (ts.isCallExpression(node)) {
+      const helper = projectFunctionOf(node.expression, checker);
+      if (helper && usesSdk(helper, checker, seen)) return true;
+    }
+    return !!ts.forEachChild(node, (child) => (visit(child) ? true : undefined));
+  };
+  return visit(fn.body);
+}
+
+// The project's own functions a component calls that use ToolJet hooks. Reading the component alone doesn't see the
+// fields they declare; recording a render does (manifest-recorder.ts).
+function sdkHelpersCalledBy(decl: ts.Declaration, checker: ts.TypeChecker): string[] {
+  const fn = getFunctionLikeNode(decl);
+  if (!fn?.body) return [];
+  const names = new Set<string>();
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node)) {
+      const helper = projectFunctionOf(node.expression, checker);
+      if (helper && helper !== fn && usesSdk(helper, checker, new Set([fn]))) {
+        names.add(node.expression.getText());
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(fn.body, visit);
+  return [...names];
 }
 
 // Confirms `expr` resolves to the real `ToolJet` binding imported from the SDK,

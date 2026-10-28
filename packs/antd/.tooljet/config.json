@@ -1,6 +1,7 @@
 {
   "libraryName": "Ant Design",
   "correlationId": "fc60c1b2-629d-496d-8192-d7523c105def",
+  "recordRender": true,
   "themeMode": "own",
   "surface": {
     "page": "#f5f5f5",
