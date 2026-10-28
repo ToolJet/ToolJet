@@ -13,8 +13,8 @@
  */
 import { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { run } from '../../../../../src/migration-helpers/run-all-migrations';
-import { SKIPPED_EXIT_CODE } from '../../../../../src/migration-helpers/migration-locks';
+import { run } from '../../../../src/migration-helpers/run-all-migrations';
+import { SKIPPED_EXIT_CODE } from '../../../../src/migration-helpers/migration-locks';
 
 const podId = process.env.POD_ID ?? 'pod-?';
 const fixtureSet = process.env.FIXTURE_SET ?? 'concurrent-pods';
@@ -32,16 +32,16 @@ function dataSourceFor(migrationsDirectory: string): DataSource {
     migrationsRun: false,
     migrationsTransactionMode: 'all',
     migrations: [
-      join(__dirname, migrationsDirectory, 'LockMigrationsTable*.ts'),
-      join(__dirname, '..', fixtureSet, migrationsDirectory, '1*.ts'),
+      join(__dirname, 'concurrent-pods', migrationsDirectory, 'LockMigrationsTable*.ts'),
+      join(__dirname, fixtureSet, migrationsDirectory, '1*.ts'),
     ],
   };
   return new DataSource(options);
 }
 
 async function main() {
-  const schemaDS = dataSourceFor('migrations');
-  const dataDS = dataSourceFor('data-migrations');
+  const schemaDS = dataSourceFor('expand');
+  const dataDS = dataSourceFor('backfill');
   const contractDS = dataSourceFor('contract');
 
   // Every pod is released at the same wall-clock instant, so ts-node start-up jitter cannot

@@ -1,7 +1,7 @@
 /** @group database */
 import { DataSource } from 'typeorm';
 import { appVersionOnBranch, nullBranchLast } from 'src/helpers/branch_scope.helper';
-import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/concurrent-pods/harness';
+import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/harness';
 
 const DEFAULT = '00000000-0000-0000-0000-00000000000d';
 const FEATURE = '00000000-0000-0000-0000-00000000000f';

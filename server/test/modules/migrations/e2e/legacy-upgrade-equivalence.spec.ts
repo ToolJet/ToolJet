@@ -6,7 +6,7 @@ import { DataSource } from 'typeorm';
 import { LEGACY_LOOSEN_RULES, LEGACY_UPGRADE_MARKER } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 import { LOCK_SENTINEL_MIGRATION_NAMES } from 'src/migration-helpers/migration-locks';
 import { MigrationPhase } from 'src/migration-helpers/migration-mode';
-import { createScratchDatabase, dropScratchDatabase, postgres, SERVER_ROOT } from '../fixtures/concurrent-pods/harness';
+import { createScratchDatabase, dropScratchDatabase, postgres, SERVER_ROOT } from '../fixtures/harness';
 
 /**
  * Async upgrade of a 3.21.58 database (expand, backfill with the legacy variants, contract) must end where a
