@@ -58,8 +58,10 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   Memory: Redis is shared with BullMQ (`noeviction`), so `RedisQueryCacheStore` counts bytes itself
   (`MEMORY USAGE` per entry + `2 × key length + 224` for its index member and record) in 10-minute expiry windows
   (`tj:qc:usage:ws:{orgId}`, `tj:qc:usage:global`) and refuses writes over `QUERY_CACHE_MAX_WORKSPACE_BYTES` /
-  `QUERY_CACHE_MAX_TOTAL_BYTES` (0 = no writes); it never evicts. A write reserves space, then a plain `SET … PXAT`,
-  then confirms the real size; the payload never goes through Lua. Clear/refresh give bytes back immediately.
+  `QUERY_CACHE_MAX_TOTAL_BYTES` (0 = no writes); it never evicts. A write reserves space, then a plain `SET … PXAT`
+  to its own staging key (`<entry>:pending:<reservationId>`), then confirm `RENAME`s it onto the entry and charges the
+  real size; the payload never goes through Lua. Only the save whose reservation the record holds publishes, in the
+  same script that checks it, so a stale save can never overwrite a newer save's entry. Clear/refresh give bytes back immediately.
   Invariant: bytes are released only from the per-query record `tj:qc:{queryId}:rec` (`bytes|window|reservationId`),
   never by measuring a value (it may not be written yet); confirm acts only while the record holds its own id.
   Usage keys are outside the query hash tag, so the cache needs single-node Redis.
