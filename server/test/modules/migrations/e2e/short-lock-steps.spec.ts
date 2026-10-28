@@ -4,7 +4,7 @@
  */
 import { DataSource, QueryRunner } from 'typeorm';
 import { notNullSteps, setNotNull, SHORT_LOCK_TIMEOUT_MS, withShortLock } from 'src/migration-helpers/with-short-lock';
-import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/harness';
+import { createScratchDatabase, dropScratchDatabase, postgres, waitFor } from '../fixtures/harness';
 
 describe('migration-helpers/with-short-lock', () => {
   const database = `tooljet_short_lock_${process.pid}`;
@@ -52,6 +52,31 @@ describe('migration-helpers/with-short-lock', () => {
       expect(Date.now() - startedAt).toBeLessThan(2 * SHORT_LOCK_TIMEOUT_MS + 1500);
       await reader.rollbackTransaction();
       await reader.release();
+    }, 30_000);
+
+    it('should let readers queued behind its waiting ALTER through once it gives up', async () => {
+      const reader = await holdReadLock();
+      try {
+        const step = withShortLock(runner, ['ALTER TABLE widgets DROP COLUMN IF EXISTS name'], { attempts: 1 });
+        await waitFor(
+          'the ALTER to queue',
+          () => db.query(`SELECT 1 FROM pg_locks WHERE relation = 'widgets'::regclass AND NOT granted`),
+          (rows) => rows.length > 0
+        );
+        const startedAt = Date.now();
+
+        // Queued behind the ALTER: it would wait as long as the reader holds the table.
+        const queued = await Promise.race([
+          db.query('SELECT count(*) FROM widgets').then(() => Date.now() - startedAt),
+          new Promise<'stalled'>((resolveStalled) => setTimeout(() => resolveStalled('stalled'), 10_000)),
+        ]);
+
+        expect(queued).toBeLessThan(SHORT_LOCK_TIMEOUT_MS + 1000);
+        await expect(step).rejects.toMatchObject({ driverError: { code: '55P03' } });
+      } finally {
+        await reader.rollbackTransaction();
+        await reader.release();
+      }
     }, 30_000);
 
     it('should succeed on a retry once the reader lets go', async () => {
