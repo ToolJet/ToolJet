@@ -12,7 +12,21 @@ export interface ManifestProp {
   enumLabels?: Record<string, string>; // only present when type === 'enumeration'
   section?: string; // groups this prop into an Inspector accordion section by name
   exposed?: boolean; // styles only: also set as a read-only exposed variable (useStyleX `expose: true`)
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  visibleWhen?: ManifestVisibleWhen; // Inspector shows the field only while prop `key` equals `value`
 }
+
+export interface ManifestVisibleWhen {
+  key: string;
+  value: unknown;
+}
+
+// Which native validation fields the Inspector offers: text inputs get them all, choice and date controls only
+// mandatory and a custom rule.
+const VALIDATION_KINDS = ['text', 'choice', 'date'] as const;
+export type ManifestValidationKind = (typeof VALIDATION_KINDS)[number];
 
 export interface ManifestEvent {
   name: string;
@@ -43,6 +57,9 @@ export interface ManifestComponent {
   styles: ManifestProp[]; // Inspector Styles tab; never exposed variables
   events: ManifestEvent[];
   actions: ManifestAction[];
+  validation?: ManifestValidationKind; // set when the component calls ToolJet.useValidation
+  role?: string; // the native widget this component stands in for (e.g. 'stat'), from useComponentSettings
+  fit?: boolean; // grows to its content when the builder turns on dynamic height, from useComponentSettings
 }
 
 export interface Manifest {
@@ -80,6 +97,9 @@ const RESERVED_STYLE_NAMES = new Set(['boxShadow']);
 
 // Exposed variables the builder's LibraryComponent always sets; a prop or action with one of these names would clobber it.
 const RESERVED_EXPOSED_NAMES = new Set(['isVisible', 'isLoading', 'setVisibility', 'setLoading']);
+
+// Exposed variables the builder also sets on a component that calls ToolJet.useValidation.
+const VALIDATION_EXPOSED_NAMES = ['isValid', 'isMandatory'];
 
 // Marks a value that can't be worked out without running the component.
 const NOT_STATIC = Symbol('NOT_STATIC');
@@ -183,6 +203,11 @@ function walkComponentDeclaration(
   const exposedNames = new Map<string, ExposedKind>();
   let defaultWidth = 6;
   let defaultHeight = 5;
+  let role: string | undefined;
+  let fit: boolean | undefined;
+  let validation: ManifestValidationKind | undefined;
+  // visibleWhen keys are checked once every prop is collected, so a field may name a prop declared after it.
+  const visibleWhenKeys: { key: string; context: string }[] = [];
 
   const claimExposedName = (name: string, kind: ExposedKind) => {
     if (RESERVED_EXPOSED_NAMES.has(name)) {
@@ -254,6 +279,14 @@ function walkComponentDeclaration(
     const description = readStringProp(options, 'description', checker, propContext);
     const inspector = readStringProp(options, 'inspector', checker, propContext);
     const section = readStringProp(options, 'section', checker, propContext);
+    const placeholder = readStringProp(options, 'placeholder', checker, propContext);
+    const min = readNumberProp(options, 'min', checker, propContext);
+    const max = readNumberProp(options, 'max', checker, propContext);
+    if (min !== undefined && max !== undefined && min > max) {
+      throw new Error(`${propContext}: "min" is above "max".`);
+    }
+    const visibleWhen = readVisibleWhen(options, checker, propContext);
+    if (visibleWhen) visibleWhenKeys.push({ key: visibleWhen.key, context: propContext });
 
     let defaultValue: unknown;
     const initialValueNode = getPropNode(options, 'initialValue', checker);
@@ -307,6 +340,10 @@ function walkComponentDeclaration(
       ...(enumLabels ? { enumLabels } : {}),
       ...(section ? { section } : {}),
       ...(exposed ? { exposed } : {}),
+      ...(placeholder ? { placeholder } : {}),
+      ...(min !== undefined ? { min } : {}),
+      ...(max !== undefined ? { max } : {}),
+      ...(visibleWhen ? { visibleWhen } : {}),
     });
   };
 
@@ -400,12 +437,34 @@ function walkComponentDeclaration(
     };
   };
 
-  // ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 4 })
+  // ToolJet.useValidation({ kind: 'text', value }): the value is read at runtime, only the kind is static.
+  const collectValidation = (node: ts.CallExpression, hookContext: string) => {
+    if (validation) {
+      throw new Error(`ToolJet.useValidation is called more than once in component "${componentName}".`);
+    }
+    const kind = readStringProp(readOptions(node.arguments[0], hookContext), 'kind', checker, hookContext) ?? 'text';
+    if (!(VALIDATION_KINDS as readonly string[]).includes(kind)) {
+      throw new Error(`${hookContext}: "kind" must be 'text', 'choice' or 'date'.`);
+    }
+    validation = kind as ManifestValidationKind;
+  };
+
+  // ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 4, role: 'stat', fit: true })
   const applySettings = (node: ts.CallExpression, hookContext: string) => {
     const [settingsArg] = node.arguments;
     if (!settingsArg) return;
 
     const settings = readOptions(settingsArg, hookContext);
+    role = readStringProp(settings, 'role', checker, hookContext);
+    const fitNode = getPropNode(settings, 'fit', checker);
+    if (fitNode) {
+      const val = evalLiteralNode(fitNode, checker);
+      if (typeof val !== 'boolean') {
+        throw new Error(`Invalid "fit" in component "${componentName}": must be true or false.`);
+      }
+      fit = val;
+    }
+
     for (const key of ['defaultWidth', 'defaultHeight'] as const) {
       const valueNode = getPropNode(settings, key, checker);
       if (!valueNode) continue;
@@ -436,6 +495,7 @@ function walkComponentDeclaration(
           else if (method === 'useEventCallback') collectEvent(node, hookContext);
           else if (method === 'useAction') collectAction(node, hookContext);
           else if (method === 'useComponentSettings') applySettings(node, hookContext);
+          else if (method === 'useValidation') collectValidation(node, hookContext);
         }
       }
     }
@@ -449,6 +509,19 @@ function walkComponentDeclaration(
 
   ts.forEachChild(fnNode.body, visitor);
 
+  const validationClash = validation && VALIDATION_EXPOSED_NAMES.find((name) => exposedNames.has(name));
+  if (validationClash) {
+    throw new Error(
+      `Name "${validationClash}" in component "${componentName}" is reserved by ToolJet while the component calls useValidation.`
+    );
+  }
+
+  for (const { key, context } of visibleWhenKeys) {
+    if (!props.some((prop) => prop.name === key)) {
+      throw new Error(`${context}: visibleWhen key "${key}" is not a prop of component "${componentName}".`);
+    }
+  }
+
   return {
     displayName: toDisplayName(componentName),
     defaultWidth,
@@ -457,6 +530,9 @@ function walkComponentDeclaration(
     styles,
     events,
     actions,
+    ...(validation ? { validation } : {}),
+    ...(role !== undefined ? { role } : {}),
+    ...(fit !== undefined ? { fit } : {}),
   };
 }
 
@@ -603,6 +679,43 @@ function readStringProp(
   if (ts.isStringLiteralLike(node)) return node.text;
 
   throw new Error(`${context}: "${key}" must be a string literal or a const string.`);
+}
+
+function readNumberProp(
+  obj: ts.ObjectLiteralExpression,
+  key: string,
+  checker: ts.TypeChecker,
+  context: string
+): number | undefined {
+  const node = getPropNode(obj, key, checker);
+  if (!node) return undefined;
+
+  const value = evalLiteralNode(node, checker);
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+
+  throw new Error(`${context}: "${key}" must be a number.`);
+}
+
+function readVisibleWhen(
+  obj: ts.ObjectLiteralExpression,
+  checker: ts.TypeChecker,
+  context: string
+): ManifestVisibleWhen | undefined {
+  const node = getPropNode(obj, 'visibleWhen', checker);
+  if (!node) return undefined;
+
+  const rule = resolveObjectLiteral(node, checker);
+  const valueNode = rule && getPropNode(rule, 'value', checker);
+  const key = rule && readStringProp(rule, 'key', checker, `${context}, visibleWhen`);
+  if (!rule || !key || !valueNode) {
+    throw new Error(`${context}: "visibleWhen" must be an object literal with a "key" and a "value".`);
+  }
+
+  const value = evalLiteralNode(valueNode, checker);
+  if (value === NOT_STATIC) {
+    throw new Error(`${context}: "visibleWhen" value must be a static literal.`);
+  }
+  return { key, value };
 }
 
 function toDisplayName(name: string): string {

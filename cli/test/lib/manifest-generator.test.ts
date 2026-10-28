@@ -1300,3 +1300,223 @@ const PARAMS = [{ handle: 'v', displayName: 'V' }];
     expect(warnings[1]).to.include('Prop "n" in component "Widget"');
   }).timeout(30000);
 });
+
+describe('generateManifest - field settings', () => {
+  const cwd = withTempCwd();
+
+  it('passes placeholder, min and max through to props and styles', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`ToolJet.useStateString({ name: 'email', placeholder: 'you@example.com' });
+  ToolJet.useStateNumber({ name: 'interval', initialValue: 5000, min: 1000, max: 60000 });
+  ToolJet.useStyleNumber({ name: 'radius', placeholder: 'Theme radius', min: 0 });`)
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props).to.deep.equal([
+      { name: 'email', type: 'string', default: undefined, placeholder: 'you@example.com' },
+      { name: 'interval', type: 'number', default: 5000, min: 1000, max: 60000 },
+    ]);
+    expect(manifest.components.Widget.styles).to.deep.equal([
+      { name: 'radius', type: 'number', default: undefined, placeholder: 'Theme radius', min: 0 },
+    ]);
+  }).timeout(30000);
+
+  it('passes visibleWhen through when its key names a prop of the component', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`ToolJet.useStateBoolean({ name: 'autoplay', initialValue: false });
+  ToolJet.useStateNumber({ name: 'interval', visibleWhen: { key: 'autoplay', value: true } });
+  ToolJet.useStyleString({ name: 'thumbColor', visibleWhen: { key: 'autoplay', value: true } });`)
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props[1].visibleWhen).to.deep.equal({ key: 'autoplay', value: true });
+    expect(manifest.components.Widget.styles[0].visibleWhen).to.deep.equal({ key: 'autoplay', value: true });
+  }).timeout(30000);
+
+  it('accepts a visibleWhen key declared after the field that uses it', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`ToolJet.useStateNumber({ name: 'columns', visibleWhen: { key: 'mode', value: 'grid' } });
+  ToolJet.useStateEnumeration({ name: 'mode', enumDefinition: ['list', 'grid'] });`)
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props[0].visibleWhen).to.deep.equal({ key: 'mode', value: 'grid' });
+  }).timeout(30000);
+
+  it('omits placeholder, min, max and visibleWhen when a field declares none', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useStateNumber({ name: 'count', initialValue: 1 });`));
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props[0]).to.deep.equal({ name: 'count', type: 'number', default: 1 });
+  }).timeout(30000);
+
+  it('passes the options and icon Inspector hints through', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`ToolJet.useStateArray({ name: 'buttons', inspector: 'options' });
+  ToolJet.useStateString({ name: 'icon', inspector: 'icon' });`)
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props.map((p) => p.inspector)).to.deep.equal(['options', 'icon']);
+  }).timeout(30000);
+
+  const rejections: [string, string, RegExp][] = [
+    [
+      'a min that is not a number',
+      `ToolJet.useStateNumber({ name: 'n', min: '1' });`,
+      /prop "n": "min" must be a number/,
+    ],
+    [
+      'a max that is not a number',
+      `ToolJet.useStyleNumber({ name: 'n', max: true });`,
+      /style "n": "max" must be a number/,
+    ],
+    ['a min above max', `ToolJet.useStateNumber({ name: 'n', min: 10, max: 1 });`, /prop "n": "min" is above "max"/],
+    [
+      'a placeholder that is not a string',
+      `ToolJet.useStateString({ name: 's', placeholder: 3 });`,
+      /prop "s": "placeholder" must be a string literal/,
+    ],
+    [
+      'a visibleWhen that is not an object',
+      `ToolJet.useStateString({ name: 's', visibleWhen: 'mode' });`,
+      /prop "s": "visibleWhen" must be an object literal with a "key" and a "value"/,
+    ],
+    [
+      'a visibleWhen without a key',
+      `ToolJet.useStateString({ name: 's', visibleWhen: { value: true } });`,
+      /prop "s": "visibleWhen" must be an object literal with a "key" and a "value"/,
+    ],
+    [
+      'a visibleWhen value that is not a static literal',
+      `ToolJet.useStateBoolean({ name: 'on' });
+  ToolJet.useStateString({ name: 's', visibleWhen: { key: 'on', value: Date.now() > 0 } });`,
+      /prop "s": "visibleWhen" value must be a static literal/,
+    ],
+    [
+      'a visibleWhen key that names no prop of the component',
+      `ToolJet.useStateString({ name: 's', visibleWhen: { key: 'missing', value: true } });`,
+      /prop "s": visibleWhen key "missing" is not a prop of component "Widget"/,
+    ],
+  ];
+
+  for (const [label, body, error] of rejections) {
+    it(`throws on ${label}`, async () => {
+      writeProject(cwd.get(), widgetWith(body));
+
+      await expect(generateManifest(cwd.get())).to.be.rejectedWith(error);
+    }).timeout(30000);
+  }
+});
+
+describe('generateManifest - useValidation', () => {
+  const cwd = withTempCwd();
+
+  it('records the validation kind the component asks for', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`const [value] = ToolJet.useStateString({ name: 'value' });
+  ToolJet.useValidation({ kind: 'date', value });`)
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.validation).to.equal('date');
+  }).timeout(30000);
+
+  it("defaults the validation kind to 'text'", async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`const [value] = ToolJet.useStateString({ name: 'value' });
+  ToolJet.useValidation({ value });`)
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.validation).to.equal('text');
+  }).timeout(30000);
+
+  it('omits validation when the component does not call useValidation', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useStateString({ name: 'value' });`));
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget).to.not.have.property('validation');
+  }).timeout(30000);
+
+  it('throws on an unknown validation kind', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useValidation({ kind: 'email', value: '' });`));
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(
+      /useValidation in component "Widget": "kind" must be 'text', 'choice' or 'date'/
+    );
+  }).timeout(30000);
+
+  it('throws when a prop takes a name useValidation exposes', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`const [value] = ToolJet.useStateString({ name: 'value' });
+  ToolJet.useStateBoolean({ name: 'isMandatory' });
+  ToolJet.useValidation({ value });`)
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(
+      /Name "isMandatory" in component "Widget" is reserved by ToolJet while the component calls useValidation/
+    );
+  }).timeout(30000);
+
+  it('throws when useValidation is called twice', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`ToolJet.useValidation({ value: '' });
+  ToolJet.useValidation({ value: '' });`)
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(
+      /useValidation is called more than once in component "Widget"/
+    );
+  }).timeout(30000);
+});
+
+describe('generateManifest - role and fit', () => {
+  const cwd = withTempCwd();
+
+  it('passes role and fit from useComponentSettings through', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useComponentSettings({ defaultWidth: 4, role: 'stat', fit: true });`));
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget).to.include({ defaultWidth: 4, role: 'stat', fit: true });
+  }).timeout(30000);
+
+  it('omits role and fit when useComponentSettings sets neither', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useComponentSettings({ defaultWidth: 4 });`));
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget).to.not.have.any.keys('role', 'fit');
+  }).timeout(30000);
+
+  it('throws on a role that is not a string', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useComponentSettings({ role: 1 });`));
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/"role" must be a string literal/);
+  }).timeout(30000);
+
+  it('throws on a fit that is not true or false', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useComponentSettings({ fit: 'yes' });`));
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(
+      /Invalid "fit" in component "Widget": must be true or false/
+    );
+  }).timeout(30000);
+});
