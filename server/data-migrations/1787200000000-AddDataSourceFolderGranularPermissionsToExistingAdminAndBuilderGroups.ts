@@ -101,5 +101,7 @@ export class AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGrou
     console.log(`${MIGRATION_NAME}: [SUCCESS] Seeding data-source-folder permissions finished.`);
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {
+    // One-way: these rows cannot be told apart from permissions admins have edited since.
+  }
 }

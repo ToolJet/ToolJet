@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the unique index is on the table this migration creates
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**

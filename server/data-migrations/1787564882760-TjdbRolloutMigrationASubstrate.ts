@@ -1,5 +1,6 @@
+// migration-lint: allow-destructive the co_relation_id unique index is partial, and the default gives the previous release's inserts a fresh UUID
 import { tooljetDbOrmconfig } from 'ormconfig';
-import { DataSource, MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 import { findTenantSchema } from '@helpers/tooljet_db.helper';
@@ -36,11 +37,11 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
       await tooljetDbConnection.destroy();
     }
 
-    // Only safe once every internal_tables row has a relation carrying its configurations.
+    // Every internal_tables row must leave with a relation carrying its configurations.
     // repairAndBaselineOneTable can return (missing dev env/branch) or throw (per-row failure,
     // caught in the caller) without ever writing that row's relation — enforce the precondition
     // instead of trusting it, so a bad row rolls back the whole run (migrationsTransactionMode:
-    // 'all') instead of silently losing that table's column identity forever.
+    // 'all') instead of leaving a table the new code cannot resolve.
     const orphans: { id: string; table_name: string; organization_id: string }[] = await queryRunner.query(`
       SELECT it.id, it.table_name, it.organization_id
       FROM internal_tables it
@@ -50,23 +51,18 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     `);
     if (orphans.length) {
       throw new Error(
-        `${MIGRATION_NAME}: ${orphans.length} internal_tables row(s) have no relation; refusing to drop ` +
-          `internal_tables.configurations. Each is also logged above by id/org, matched here by name for ` +
+        `${MIGRATION_NAME}: ${orphans.length} internal_tables row(s) have no relation; refusing to finish ` +
+          `the environments rollout. Each is also logged above by id/org, matched here by name for ` +
           `triage (showing up to 50): ${JSON.stringify(orphans)}`
       );
     }
 
-    // No IF EXISTS: migrationsTransactionMode: 'all' rolls back everything above on any failure,
-    // so a retry always starts with the column still present.
-    await queryRunner.query(`ALTER TABLE internal_tables DROP COLUMN configurations`);
+    // internal_tables.configurations stays: the previous release still reads it, so dropping it here
+    // breaks a rollback. Drop it a release later, once no shipped code reads it.
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.addColumn(
-      'internal_tables',
-      new TableColumn({ name: 'configurations', type: 'jsonb', isNullable: true })
-    );
-    // Restore the install's shape from each table's priority-1-environment relation. Prefer this
+    // Copy configurations back from the relations, where this release writes them. Prefer this
     // migration's own row (id = internal_table_id) if present, else the development-environment
     // relation, else the earliest — deterministic even when Migration B has created a second
     // relation per table. Duplicate co_relation_id cleanup and column-identity repair are data
@@ -84,7 +80,7 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     `);
 
     await queryRunner.query(`DROP INDEX IF EXISTS organization_id_co_relation_id_unique`);
-    await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP DEFAULT`);
   }
 
   private async dedupeAndLockDownCoRelationId(queryRunner: QueryRunner): Promise<void> {
@@ -125,7 +121,9 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
       );
     }
 
-    await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id SET NOT NULL`);
+    // No SET NOT NULL: the previous release creates tables without a co_relation_id, so it would
+    // break a rollback. The default gives those tables one instead. Lock it down a release later.
+    await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id SET DEFAULT gen_random_uuid()`);
     // Live tables only, like organization_id_table_name_unique: drop_table soft-deletes the row and it
     // keeps its co_relation_id, which a later import or git pull of the same table reuses.
     await queryRunner.query(`
