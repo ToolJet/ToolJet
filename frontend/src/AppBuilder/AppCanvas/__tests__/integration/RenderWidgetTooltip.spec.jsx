@@ -113,21 +113,21 @@ describe('RenderWidget tooltip', () => {
 
   test('[RenderWidget-TOOLTIP-005] a tooltip declared under general is shown on hover', async () => {
     // Break this catches: always reading from `properties` drops the tooltip
-    // on every widget that only declares it under `general` (Spinner, via the
+    // on every widget that only declares it under `general` (SvgImage, via the
     // universal `general.tooltip` in componentTypes.js — it is not in
     // SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY).
-    const spinner = createWidgetHarness({
-      componentType: 'Spinner',
-      handle: 'spinner1',
-      id: 'spinner1',
+    const svgImage = createWidgetHarness({
+      componentType: 'SvgImage',
+      handle: 'svgimage1',
+      id: 'svgimage1',
     });
-    spinner.setup();
-    spinner.render({
-      afterSeed: () => spinner.setComponentProperty('spinner1', 'tooltip', 'Choose a side', 'general'),
+    await svgImage.setup();
+    svgImage.render({
+      afterSeed: () => svgImage.setComponentProperty('svgimage1', 'tooltip', 'Choose a side', 'general'),
     });
-    await spinner.session.user.hover(document.querySelector('[data-cy="draggable-widget-spinner1"]'));
+    await svgImage.session.user.hover(document.querySelector('[data-cy="draggable-widget-svgimage1"]'));
     await waitFor(() => expect(screen.getAllByText('Choose a side').length).toBeGreaterThan(0));
-    spinner.teardown();
+    svgImage.teardown();
   });
 
   test('[RenderWidget-TOOLTIP-006] Html reads its tooltip from properties, where import leaves it', async () => {
