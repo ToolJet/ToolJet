@@ -72,3 +72,44 @@ describe('a DataTable in another language', () => {
     expect(one().textContent).toContain('Filter');
   });
 });
+
+// A row button's handler reads the row it was pressed on: the table selects that row before onActionButtonClicked
+// fires. It fired first, so a query reading selectedRow acted on the row selected before ("Mark resolved" resolved
+// nothing, codex lifecycle audit 2026-10-26). onRowClicked still follows the action.
+describe('a DataTable row button', () => {
+  test('selects its row before its handler runs', async () => {
+    const calls = [];
+    loadLibraryModule.mockResolvedValue({ DataTable });
+    const view = render(
+      <InlineLibraryComponent
+        bundleUrl="pack.js"
+        cssUrl="pack.css"
+        cacheKey={`action-${Math.random()}`}
+        componentName="DataTable"
+        componentProps={{
+          data: rows(3),
+          allowSelection: true,
+          columns: [...columns, { key: 'act', name: '', columnType: 'button', buttons: [{ id: 'resolve', label: 'Resolve' }] }],
+        }}
+        componentStyles={{}}
+        renderSlot={() => null}
+        setExposedVariable={(name, value) => calls.push(['set', name, value])}
+        fireEvent={(name) => calls.push(['event', name])}
+        actions={new Map()}
+        host={{ disabled: false, loading: false, setRows: () => {} }}
+        dataCy="pack-widget"
+      />
+    );
+    const root = () => view.container.querySelector('[data-cy="pack-widget"]').shadowRoot;
+    await waitFor(() => expect(root().querySelectorAll('tbody tr').length).toBe(3));
+    calls.length = 0;
+    const second = root().querySelectorAll('tbody tr')[1];
+    fireEvent.click([...second.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Resolve'));
+    await waitFor(() => expect(calls.some(([kind, name]) => kind === 'event' && name === 'onActionButtonClicked')).toBe(true));
+    const fired = calls.findIndex(([kind, name]) => kind === 'event' && name === 'onActionButtonClicked');
+    const selectedBefore = calls.slice(0, fired).filter(([kind, name]) => kind === 'set' && name === 'selectedRow').pop();
+    expect(selectedBefore?.[2]).toMatchObject({ id: 2 });
+    const rowClicked = calls.findIndex(([kind, name]) => kind === 'event' && name === 'onRowClicked');
+    expect(rowClicked).toBeGreaterThan(fired);
+  });
+});
