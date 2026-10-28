@@ -1,3 +1,4 @@
+import { MigrationInterface, QueryRunner } from 'typeorm';
 import { ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS } from './pre-cutoff-allowlist';
 
 type Env = Record<string, string | undefined>;
@@ -52,6 +53,14 @@ export type MigrationPhase = 'expand' | 'backfill' | 'contract';
  * - multi-transaction: one process and transaction per phase (async mode); MIGRATION_PHASE names it.
  */
 export type RunStrategy = 'single-transaction' | 'multi-transaction';
+
+/**
+ * `tail` holds a backfill's lock-taking statements (index builds, triggers, NOT VALID, VALIDATE). Tails run after
+ * every backfill up(), just before commit, so their locks last seconds instead of the whole run.
+ */
+export interface BackfillMigration extends MigrationInterface {
+  tail?(queryRunner: QueryRunner): Promise<void>;
+}
 
 /** Unset: all phases, single-transaction. */
 export function parseMigrationPhase(raw: string | undefined): MigrationPhase | undefined {

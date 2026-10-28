@@ -1,4 +1,7 @@
 /** @group database */
+import { rmSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { DataSource } from 'typeorm';
 import {
   CONTRACT_ADVISORY_LOCK_KEY,
@@ -632,6 +635,63 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       const pod = await holdingLock(CONTRACT_ADVISORY_LOCK_KEY, () => contractPod('contract-busy', 'contract'));
 
       expect(pod).toMatchObject({ exitCode: SKIPPED_EXIT_CODE });
+    }, 120_000);
+  });
+
+  /** Lock-taking backfill statements wait for the tail; transient errors roll back and retry. */
+  describe('backfill tail and retries', () => {
+    const database = `tooljet_migration_tail_${process.pid}`;
+    const marker = join(tmpdir(), `tooljet-deadlock-${process.pid}`);
+    const backfillPod = (podId: string, migrationSleepSeconds: number, env: Record<string, string> = {}) =>
+      spawnPod({
+        podId,
+        database,
+        migrationSleepSeconds,
+        fixtureSet: 'backfill-tail',
+        env: { MIGRATION_PHASE: 'backfill', ...env },
+      });
+
+    beforeEach(async () => {
+      rmSync(marker, { force: true });
+      await createScratchDatabase(database);
+    }, 60_000);
+    afterEach(() => dropScratchDatabase(database), 60_000);
+
+    it('should build tail indexes only after every backfill up() ran', async () => {
+      const pod = backfillPod('tail-1', 3);
+      let stdout = '';
+      pod.child.stdout.on('data', (chunk) => (stdout += chunk));
+
+      await waitFor(
+        'the slow backfill to start',
+        async () => stdout,
+        (out) => out.includes('START SlowFixtureStep')
+      );
+      const locksMidRun = await withScratchConnection(database, (db) =>
+        db.query(`SELECT l.mode FROM pg_locks l JOIN pg_class c ON c.oid = l.relation WHERE c.relname = 'fixture_rows'`)
+      );
+      const outcome = await pod.done;
+
+      expect(locksMidRun).not.toContainEqual({ mode: 'ShareLock' });
+      expect(outcome).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(outcome.stdout.indexOf('TAIL FillFixtureRows')).toBeGreaterThan(
+        outcome.stdout.indexOf('DONE SlowFixtureStep')
+      );
+      const indexes = await withScratchConnection(database, (db) =>
+        db.query(`SELECT indexname FROM pg_indexes WHERE tablename = 'fixture_rows'`)
+      );
+      expect(indexes).toEqual([{ indexname: 'fixture_rows_label' }]);
+    }, 120_000);
+
+    it('should roll back and retry the backfill after a deadlock', async () => {
+      const outcome = await backfillPod('deadlock-1', 0, { FIXTURE_DEADLOCK_ONCE: marker }).done;
+
+      expect(outcome).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(outcome.stdout).toContain('Retrying (attempt 2 of 3)');
+      const [{ count }] = await withScratchConnection(database, (db) =>
+        db.query('SELECT count(*)::int AS count FROM fixture_rows')
+      );
+      expect(count).toBe(10);
     }, 120_000);
   });
 });

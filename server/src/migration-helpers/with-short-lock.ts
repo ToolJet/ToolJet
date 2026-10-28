@@ -28,8 +28,9 @@ export function notNullSteps(table: string, column: string): string[][] {
   ];
 }
 
-/** Retries `work` on a lock timeout (55P03); any other error, or the last attempt, throws. */
-export async function retryOnLockTimeout<T>(
+/** Retries `work` while `retryable(error)`; any other error, or the last attempt, throws. */
+export async function retryWhen<T>(
+  retryable: (error: unknown) => boolean,
   work: () => Promise<T>,
   { attempts, retryDelayMs }: Pick<LockRetryPolicy, 'attempts' | 'retryDelayMs'>,
   onRetry: (nextAttempt: number) => void = () => undefined
@@ -38,12 +39,18 @@ export async function retryOnLockTimeout<T>(
     try {
       return await work();
     } catch (error) {
-      if (!isLockNotAvailableError(error) || attempt >= attempts) throw error;
+      if (!retryable(error) || attempt >= attempts) throw error;
       onRetry(attempt + 1);
     }
     await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
   }
 }
+
+export const retryOnLockTimeout = <T>(
+  work: () => Promise<T>,
+  policy: Pick<LockRetryPolicy, 'attempts' | 'retryDelayMs'>,
+  onRetry?: (nextAttempt: number) => void
+): Promise<T> => retryWhen(isLockNotAvailableError, work, policy, onRetry);
 
 /**
  * Runs one step in its own short transaction: waits at most `lockTimeoutMs` for a lock, so readers queued
