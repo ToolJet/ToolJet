@@ -35,6 +35,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
+import { onBranch } from '@helpers/branch_scope.helper';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
@@ -2064,12 +2065,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       })
       .andWhere('ds.organizationId = :organizationId', { organizationId });
 
-    if (branchId) {
-      query.andWhere('dsv.branchId = :branchId', { branchId });
-    } else {
-      const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
-      query.andWhere('dsv.branchId = :defaultBranchId', { defaultBranchId });
-    }
+    // onBranch: a legacy 3.21.58 NULL-branch row counts as default-branch, else CleanupLegacyBranchModel hits 23505.
+    const scopeBranchId = branchId || (await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId));
+    query.andWhere(onBranch('dsv.branch_id', 'scopeBranchId'), { scopeBranchId });
 
     const existing = await query.getOne();
 
