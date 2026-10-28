@@ -137,5 +137,13 @@ export class MoveCalendarAdditionalActions1793232000000 implements MigrationInte
     }
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {
+    // Cannot be undone:
+    // - After up(), editors write visibility/tooltip/boxShadow to the new
+    //   locations natively, indistinguishable from migrated rows — a reverse
+    //   move would also rewrite components authored after the deploy.
+    // - up() deletes the app-history snapshots of the touched app versions
+    //   (deleteAppHistoryForStructuralMigration); those rows are unrecoverable.
+    // Recovery: restore the pre-upgrade backup (server/AGENTS.md § Migrations).
+  }
 }
