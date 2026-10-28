@@ -448,4 +448,240 @@ describe('Camera widget', () => {
     const capture = await screen.findByRole('button', { name: 'Capture photo' });
     await waitFor(() => expect(capture).toBeDisabled());
   });
+
+  // --- Bug-fix batch 2026-10-26 -------------------------------------------------
+
+  test('[Camera-INT-001] a hidden Camera never asks for the camera or microphone', async () => {
+    // Break this catches: the stream-acquisition effect running regardless of
+    // visibility, so a widget hidden since mount still turns the hardware light
+    // on (JAM bug 5: hidden Camera opens cam+mic).
+    const getUserMedia = jest.fn(() => Promise.resolve(fakeStream()));
+    setMediaDevices({
+      getUserMedia,
+      enumerateDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({ properties: { visibility: binding('{{false}}') } });
+
+    await waitFor(() => expect(camContainer()).toBeInTheDocument());
+    // generous settle: acquisition is async and would land after a tick
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(getUserMedia).not.toHaveBeenCalled();
+  });
+
+  test('[Camera-INT-002] a disabled Camera never asks for the camera or microphone', async () => {
+    // Break this catches: the stream-acquisition effect ignoring disabledState,
+    // so a disabled Camera still opens cam+mic (JAM bug 5, disabled variant).
+    const getUserMedia = jest.fn(() => Promise.resolve(fakeStream()));
+    setMediaDevices({
+      getUserMedia,
+      enumerateDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({ properties: { disabledState: binding('{{true}}') } });
+
+    await waitFor(() => expect(camContainer()).toBeInTheDocument());
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(getUserMedia).not.toHaveBeenCalled();
+  });
+
+  test('[Camera-INT-003] hiding a live Camera via CSA stops every acquired track', async () => {
+    // Break this catches: no release on the visible->hidden transition, so the
+    // hardware stays on behind display:none (JAM bug 5 runtime variant; same
+    // release path a page switch depends on for bug 1).
+    const stops = [];
+    const trackedStream = () => ({
+      getTracks: () => [
+        { kind: 'video', stop: () => stops.push('video') },
+        { kind: 'audio', stop: () => stops.push('audio') },
+      ],
+    });
+    setMediaDevices({
+      getUserMedia: () => Promise.resolve(trackedStream()),
+      enumerateDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({});
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Capture photo' })).not.toBeDisabled());
+    await widget.act('setVisibility', false);
+
+    await waitFor(() => expect(stops).toContain('video'));
+  });
+
+  test('[Camera-MIC-001] an image-mode Camera asks for video only — audio:false', async () => {
+    // Break this catches: the getUserMedia constraints hardcoding an audio
+    // request, so a photo-only Camera prompts for and opens the microphone
+    // (JAM bug 8: image mode asks for the microphone).
+    const getUserMedia = jest.fn(() => Promise.resolve(fakeStream()));
+    setMediaDevices({
+      getUserMedia,
+      enumerateDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({ properties: { content: binding('image') } });
+
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalled());
+    const constraints = getUserMedia.mock.calls[0][0];
+    expect(constraints.audio).toBe(false);
+  });
+
+  test('[Camera-ALERT-001] a getUserMedia failure never raises window.alert', async () => {
+    // Break this catches: reintroducing the debugAlert block (deleted per its own
+    // TEMPORARY note), which pops a blocking browser alert with debug text on
+    // every load whenever the camera fails (JAM bug 2). NotReadableError is used
+    // because it is unique in this file: debugAlert's module-scope dedupe Set
+    // would silently swallow an error name an earlier test already alerted.
+    setMediaDevices({
+      getUserMedia: rejectGetUserMedia('NotReadableError'),
+      enumerateDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({});
+
+    await waitFor(() => expect(camContainer()).toHaveAttribute('data-permission-error', 'NotReadableError'));
+    expect(window.alert).not.toHaveBeenCalled();
+  });
+
+  test('[Camera-KEY-001] a disabled video Camera cannot start recording from the keyboard', async () => {
+    // Break this catches: the capture controls staying enabled (and the handler
+    // unguarded) while disabledState is true — the wrapper's CSS only blocks the
+    // POINTER, so Enter on the focused button still records/saves (JAM bug 3).
+    setMediaDevices({
+      getUserMedia: () => Promise.resolve(fakeStream()),
+      enumerateDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({
+      properties: { content: binding('video'), disabledState: binding('{{true}}') },
+      events: onRecordingStartCounter(),
+    });
+
+    const start = await screen.findByRole('button', { name: 'Start recording' });
+    await waitFor(() => expect(start).toBeDisabled());
+    // fireEvent.click models keyboard activation: CSS pointer-events never applies.
+    await widget.session.store.act(async () => {
+      fireEvent.click(start);
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(widget.variables().onRecordingStartCount).toBeUndefined();
+  });
+
+  test('[Camera-DISC-001] discarding a NEW recording keeps the previously saved videoDataURL', async () => {
+    // Break this catches: the discard branch nulling the exposed videoDataURL,
+    // so throwing away a retake erases the capture the app already saved
+    // (JAM bug 6).
+    setMediaDevices({
+      getUserMedia: () => Promise.resolve(fakeStream()),
+      enumerateDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({ properties: { content: binding('video') }, events: onRecordingSaveCounter() });
+
+    const record = async () => {
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Start recording' })).not.toBeDisabled());
+      await widget.session.store.act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Start recording' }));
+      });
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Stop recording' })).toBeInTheDocument());
+      await widget.session.store.act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Stop recording' }));
+      });
+      await waitFor(() => expect(document.querySelector('.camera-save-button')).toBeInTheDocument());
+    };
+
+    await record();
+    await widget.session.store.act(async () => {
+      fireEvent.click(document.querySelector('.camera-save-button'));
+    });
+    await waitFor(() => expect(exposed().videoDataURL).toMatch(/^data:video\/webm/));
+    const savedDataURL = exposed().videoDataURL;
+
+    await record(); // retake
+    await widget.session.store.act(async () => {
+      fireEvent.click(document.querySelector('.camera-discard-button'));
+    });
+
+    await waitFor(() => expect(document.querySelector('.camera-save-button')).not.toBeInTheDocument());
+    expect(exposed().videoDataURL).toBe(savedDataURL);
+    expect(widget.variables().onRecordingSaveCount).toBe(1);
+  });
+
+  test('[Camera-FORM-001] saving a recording exposes it as `value` for Form collection', async () => {
+    // Break this catches: Camera exposing only imageDataURL/videoDataURL — keys
+    // Form's formData collector ignores — so a Form submits without the capture
+    // (JAM bug 4, user-approved option B: form data only).
+    setMediaDevices({
+      getUserMedia: () => Promise.resolve(fakeStream()),
+      enumerateDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({ properties: { content: binding('video') } });
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Start recording' })).not.toBeDisabled());
+    await widget.session.store.act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Start recording' }));
+    });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Stop recording' })).toBeInTheDocument());
+    await widget.session.store.act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Stop recording' }));
+    });
+    await waitFor(() => expect(document.querySelector('.camera-save-button')).toBeInTheDocument());
+    await widget.session.store.act(async () => {
+      fireEvent.click(document.querySelector('.camera-save-button'));
+    });
+
+    await waitFor(() => expect(exposed().videoDataURL).toMatch(/^data:video\/webm/));
+    expect(exposed().value).toBe(exposed().videoDataURL);
+
+    await widget.act('resetVideo');
+    await waitFor(() => expect(exposed().videoDataURL).toBeNull());
+    expect(exposed().value).toBeNull();
+  });
+
+  test('[Camera-KEYNAV-001] a device menu option is selectable with Enter', async () => {
+    // Break this catches: device options being click-only divs — a keyboard user
+    // can open the menu but can never choose a device (JAM bug 7).
+    setMediaDevices({
+      getUserMedia: () => Promise.resolve(fakeStream()),
+      enumerateDevices: () =>
+        Promise.resolve([
+          { kind: 'videoinput', deviceId: 'cam-1', label: 'FaceTime HD Camera' },
+          { kind: 'videoinput', deviceId: 'cam-2', label: 'Logitech C920' },
+        ]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({});
+
+    const trigger = await screen.findByRole('button', { name: 'Select camera device' });
+    await waitFor(() => expect(trigger).not.toBeDisabled());
+    await widget.session.store.act(async () => {
+      fireEvent.click(trigger);
+    });
+
+    const second = await screen.findByText('Logitech C920');
+    const option = second.closest('[role="option"]');
+    expect(option).not.toBeNull();
+    await widget.session.store.act(async () => {
+      option.focus();
+      fireEvent.keyDown(option, { key: 'Enter' });
+    });
+
+    // Selection moved: reopen and the second device carries aria-selected.
+    await widget.session.store.act(async () => {
+      fireEvent.click(trigger);
+    });
+    const reopened = await screen.findByText('Logitech C920');
+    await waitFor(() => expect(reopened.closest('[role="option"]')).toHaveAttribute('aria-selected', 'true'));
+  });
 });
