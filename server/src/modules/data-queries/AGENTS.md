@@ -52,6 +52,9 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   Run body `cacheControl: 'refresh'` (`RunDataQueryDto` → `runExecutionOptions`) = replace the token, run, cache
   the result; Preview replaces only its own entry. CE accepts and ignores `cacheControl`. RunJS/RunPy are never
   cached; workflow queries are cached at the workflow trigger instead (see `workflows/AGENTS.md`).
+  License: `QueryResultCacheService.begin` bypasses (no read, write or token change) unless the workspace license
+  has `features.queryResponseCache` (`LICENSE_FIELD.QUERY_RESPONSE_CACHE`); a missing key or failed check means off.
+  The builder disables the toggle with the upgrade crown; Clear stays available to free entries saved earlier.
   Memory: Redis is shared with BullMQ (`noeviction`), so `RedisQueryCacheStore` counts bytes itself
   (`MEMORY USAGE` per entry + `2 × key length + 224` for its index member and record) in 10-minute expiry windows
   (`tj:qc:usage:ws:{orgId}`, `tj:qc:usage:global`) and refuses writes over `QUERY_CACHE_MAX_WORKSPACE_BYTES` /

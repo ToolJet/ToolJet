@@ -41,6 +41,7 @@ export interface Terms {
     github?: boolean;
     observability?: boolean;
     queryFolders?: boolean;
+    queryResponseCache?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
