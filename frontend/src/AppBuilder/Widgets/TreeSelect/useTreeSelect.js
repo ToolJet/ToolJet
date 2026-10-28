@@ -1,5 +1,60 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+
+// One cascade for clicks and selectOptions; mutates checkedSet and returns whether the value exists
+export const toggleCascade = (nodes, checkedSet, value, isCurrentlyChecked) => {
+  let targetNode = null;
+  let targetPath = [];
+  const findNode = (list, val, path = []) => {
+    for (const node of list) {
+      if (node.value === val) {
+        targetNode = node;
+        targetPath = [...path, node];
+        return true;
+      }
+      if (node.children) {
+        if (findNode(node.children, val, [...path, node])) return true;
+      }
+    }
+    return false;
+  };
+  findNode(nodes, value);
+
+  if (targetNode) {
+    if (isCurrentlyChecked) {
+      // Disabled descendants keep their state, as in react-checkbox-tree (D-07)
+      const removeDescendants = (node) => {
+        if (node !== targetNode && node.disabled) return;
+        checkedSet.delete(node.value);
+        if (node.children) node.children.forEach(removeDescendants);
+      };
+      removeDescendants(targetNode);
+      targetPath.forEach((p) => checkedSet.delete(p.value));
+    } else {
+      const addDescendants = (node) => {
+        if (node !== targetNode && node.disabled) return;
+        checkedSet.add(node.value);
+        if (node.children) node.children.forEach(addDescendants);
+      };
+      addDescendants(targetNode);
+      for (let i = targetPath.length - 2; i >= 0; i--) {
+        const parent = targetPath[i];
+        const allChildrenChecked = parent.children.every((child) => child.disabled || checkedSet.has(child.value));
+        if (allChildrenChecked) {
+          checkedSet.add(parent.value);
+        } else {
+          // Not all children selected — remove this ancestor and all higher ancestors
+          // so pre-existing selections (e.g. from checkedData) don't stay as "fully checked"
+          for (let j = i; j >= 0; j--) {
+            checkedSet.delete(targetPath[j].value);
+          }
+          break;
+        }
+      }
+    }
+  }
+  return targetNode !== null;
+};
 
 /**
  * Hook that manages all exposed variable logic for the TreeSelect widget.
@@ -62,6 +117,9 @@ export function useTreeSelect({
     return [];
   };
 
+  // Actions are registered once, so they must read the current tree and callbacks through this ref
+  const latest = useRef({});
+
   // Register CSA functions on mount
   useEffect(() => {
     setExposedVariables({
@@ -83,7 +141,16 @@ export function useTreeSelect({
         setExposedVariable('isDisabled', !!value);
       },
       selectOptions: async function (values) {
-        const updated = normalizeValues(values);
+        const { computeExposedVars, validate, data, allowIndependentSelection } = latest.current;
+        let updated = normalizeValues(values);
+        if (!allowIndependentSelection) {
+          // Replace semantics: cascade each value into an empty selection, keeping unknown values as given
+          const cascaded = new Set();
+          updated.forEach((value) => {
+            if (!toggleCascade(data, cascaded, value, false)) cascaded.add(value);
+          });
+          updated = Array.from(cascaded);
+        }
         setChecked(updated);
         setExposedVariables(computeExposedVars(updated));
         if (validate) {
@@ -93,6 +160,7 @@ export function useTreeSelect({
         }
       },
       deselectOptions: async function (values) {
+        const { computeExposedVars, validate } = latest.current;
         const toRemove = new Set(normalizeValues(values));
         setChecked((prev) => {
           const updated = prev.filter((v) => !toRemove.has(v));
@@ -175,6 +243,7 @@ export function useTreeSelect({
     },
     [pathObj, leafValues]
   );
+  latest.current = { computeExposedVars, validate, data, allowIndependentSelection };
 
   useFormClear(() => {
     setChecked([]);
@@ -198,7 +267,8 @@ export function useTreeSelect({
       checkedArr = [];
       const updateCheckedArr = (array = [], selected, isSelected = false) => {
         array.forEach((node) => {
-          if (isSelected || selected.includes(node.value)) {
+          // The cascade skips disabled nodes; an explicit selection still applies (D-07)
+          if ((isSelected && !node.disabled) || selected.includes(node.value)) {
             checkedArr.push(node.value);
             updateCheckedArr(node.children, selected, true);
           } else {
