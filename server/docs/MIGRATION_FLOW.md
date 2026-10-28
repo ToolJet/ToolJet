@@ -12,7 +12,7 @@ To *write* a migration (expand vs backfill, enum rules, logging), read the migra
 
 There are two modes.
 
-- **Blocking mode** (the default, and always on Cloud). Each pod runs every pending migration before it starts serving. All expand and backfill migrations run in one transaction, so a failure leaves the database as it was. A long migration can outlast the liveness probe.
+- **Blocking mode** (the default). Each pod runs every pending migration before it starts serving. All expand and backfill migrations run in one transaction, so a failure leaves the database as it was. A long migration can outlast the liveness probe.
 - **Async mode** (`MIGRATION_MODE=async`). A pod applies expand migrations before it starts, then serves. Backfill migrations run in the background. While they run, or after they fail, the upgrade gate refuses writes. Rollback is: deploy the previous image.
 
 In both modes only one pod migrates at a time. The others wait.
@@ -55,7 +55,7 @@ The phase and run-strategy meanings are defined once, at `MigrationPhase` and `R
 
 | `MIGRATION_PHASE` | Used by | Runs | Transactions |
 |---|---|---|---|
-| unset (single-transaction run) | Blocking mode, Cloud, `npm run db:migrate`, and an async boot of a database older than 3.21.58 | Expand, backfill, then contract | One. A failing backfill migration also undoes the schema changes |
+| unset (single-transaction run) | Blocking mode, `npm run db:migrate`, and an async boot of a database older than 3.21.58 | Expand, backfill, then contract | One. A failing backfill migration also undoes the schema changes |
 | `expand` | Async boot | Pending expand migrations | One short transaction, with a lock timeout and retries |
 | `backfill` | Async runs | Any expand migration still pending (normally none), then all backfill migrations | One for the leftover expand, one for all backfill |
 | `contract` | Async, after a successful backfill run | Pending contract migrations | One short transaction per step (`withShortLock`) |
@@ -146,7 +146,7 @@ Health and metrics endpoints are never refused.
 
 ## Async mode
 
-Use async mode when a migration takes longer than the liveness probe allows. Turn it on with `MIGRATION_MODE=async`; nothing else is needed. Cloud ignores it and stays blocking.
+Use async mode when a migration takes longer than the liveness probe allows. Turn it on with `MIGRATION_MODE=async`; nothing else is needed. Cloud follows it like EE: its entrypoint runs the expand phase and the plugin steps before boot, and exports a database-only `MIGRATION_SETUP_COMMAND`, so the server's backfill runs no plugin steps.
 
 A boot in async mode:
 
@@ -264,7 +264,7 @@ All optional. The ROLLING UPGRADE block of `.env.example` lists them too.
 
 | Variable | Default | Effect |
 |---|---|---|
-| `MIGRATION_MODE` | `blocking` | `async`: see [Async mode](#async-mode). Any other value means `blocking`. Cloud ignores it. |
+| `MIGRATION_MODE` | `blocking` | `async`: see [Async mode](#async-mode). Any other value means `blocking`. |
 | `DISABLE_MIGRATION_TRAFFIC_GATE` | `false` | Async mode: `true` turns off the 503. Locks and waits still apply. Each serving pod logs this at boot. |
 | `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS` | `60` (expand phase: `5`) | How often a waiting pod tries the migration lock again. |
 | `MIGRATION_LOCK_MAX_WAIT_MINUTES` | `30` | How long a pod waits before it fails its boot. `0` waits with no limit. |
@@ -332,7 +332,7 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 | File | Covers |
 |---|---|
 | `test/modules/migrations/unit/migration-locks.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out (checked against files on disk) |
-| `test/modules/migrations/unit/migration-mode.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist |
+| `test/modules/migrations/unit/migration-mode.spec.ts` | Mode selection (Cloud follows `MIGRATION_MODE`), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist |
 | `test/modules/app/unit/migration-gate.middleware.spec.ts` | Blocking mode passes everything, gated vs ungated paths, 503 per state, what passes in async mode, opt-out log |
 | `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, active lock only during work and released on SIGKILL, a `NODE_ENV=production` race. Split phases: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long backfill phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, single-transaction run for an old database, `statement_timeout=0` on runner connections. Contract: inside a single-transaction run, left out of the backfill phase, stops while a run holds the migration lock, never makes a backfill run skip |
 | `test/modules/migrations/e2e/with-short-lock.spec.ts` | Short-lock steps against a held reader lock: give up within the timeout, succeed once released, inline inside an open transaction; `setNotNull` sets the column and leaves no check, even when it fails |
