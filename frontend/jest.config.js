@@ -55,6 +55,9 @@ module.exports = {
   },
   transformIgnorePatterns: [`node_modules/(?!(${esmPackages.join('|')})/)`],
   moduleNameMapper: {
+    // rc-util's ESM files, which the Ant pack imports to reach the module its icons use (packs/antd AntProvider), as
+    // the CommonJS copy those icons load under jest.
+    '^rc-util/es/(.*)$': 'rc-util/lib/$1',
     '^config$': '<rootDir>/src/test/mocks/config.js',
     '^@tooljet/plugins/client$': '<rootDir>/src/test/mocks/tooljetPluginsClient.js',
     // Real module uses top-level await (bundler-only); analytics stay dead in tests.
@@ -107,6 +110,13 @@ module.exports = {
     '^@white-label/(.*)$': '<rootDir>/src/_helpers/white-label/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@tooljet/widget-definitions$': '<rootDir>/../packages/widget-definitions/src/index.js',
+    // A component pack's source (packs/*) rendered in a test: the runtime's SDK, and the app's React, as inline in
+    // ToolJet (a pack's own node_modules copy of React would be a second React and break its hooks).
+    '^@tooljet/custom-component-sdk$': '<rootDir>/src/test/mocks/customComponentSdk.js',
+    '^react$': '<rootDir>/node_modules/react',
+    '^react/(.*)$': '<rootDir>/node_modules/react/$1',
+    '^react-dom$': '<rootDir>/node_modules/react-dom',
+    '^react-dom/(.*)$': '<rootDir>/node_modules/react-dom/$1',
   },
   // jsdom patched to keep Node's native fetch/TextEncoder/BroadcastChannel —
   // required by MSW v2. Suites can still opt into `@jest-environment node`.

@@ -102,6 +102,33 @@ export const modalV2Config = {
         defaultValue: 'lg',
       },
     },
+    variant: {
+      type: 'switch',
+      displayName: 'Kind',
+      accordian: 'Data',
+      options: [
+        { displayName: 'Dialog', value: 'dialog' },
+        { displayName: 'Side sheet', value: 'sheet' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'dialog' },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    side: {
+      type: 'switch',
+      displayName: 'Sheet side',
+      accordian: 'Data',
+      options: [
+        { displayName: 'Right', value: 'right' },
+        { displayName: 'Left', value: 'left' },
+        { displayName: 'Top', value: 'top' },
+        { displayName: 'Bottom', value: 'bottom' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'right' },
+      isFxNotRequired: true,
+      fullWidth: true,
+      conditionallyRender: { key: 'variant', value: 'sheet' },
+    },
     modalHeight: {
       type: 'numberInput',
       displayName: 'Height',
@@ -419,6 +446,8 @@ export const modalV2Config = {
       footerHeight: { value: 80 },
       tooltipFormat: { value: 'plainText' },
       tooltip: { value: '' },
+      variant: { value: 'dialog' },
+      side: { value: 'right' },
     },
     events: [],
     styles: {

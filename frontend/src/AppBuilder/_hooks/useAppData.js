@@ -1034,6 +1034,10 @@ const useAppData = (
       else root.style.removeProperty(`--cc-radius-${size}`);
     });
     setOnBrandColors(root, themeObj?.brand?.colors?.primary?.[mode]);
+    // The theme's font, for component packs (their shadow roots read --cc-font-family, else the page font).
+    const font = typeof themeObj?.text?.font === 'string' ? themeObj.text.font.trim() : '';
+    if (font) root.style.setProperty('--cc-font-family', `'${font.replace(/'/g, '')}', ui-sans-serif, system-ui, sans-serif`);
+    else root.style.removeProperty('--cc-font-family');
     detectThemeChange();
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 

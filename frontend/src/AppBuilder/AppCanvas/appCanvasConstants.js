@@ -66,7 +66,9 @@ export const SUBCONTAINER_WIDGETS = [
 ];
 
 // Subcontainer widget types that use per-row resolution (customResolvables)
-export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table', 'ShadKanban', 'ShadListView'];
+// A LibraryComponent is row-scoped where a v2 pack list draws rows of components (ToolJet.RowSlot): its rows' children
+// are parented to it directly, while its named slots are `<id>-<slot>` canvases.
+export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table', 'ShadKanban', 'ShadListView', 'LibraryComponent'];
 
 // Maps per-row subcontainer type → custom resolvable key used inside {{ }} expressions
 export const ROW_SCOPED_RESOLVABLE_KEY_MAP = {
@@ -75,6 +77,7 @@ export const ROW_SCOPED_RESOLVABLE_KEY_MAP = {
   Table: 'rowData',
   ShadKanban: 'cardData',
   ShadListView: 'listItem',
+  LibraryComponent: 'listItem',
 };
 
 // Max allowed nesting levels per widget type. Add a new entry to restrict any future widget.
