@@ -29,7 +29,7 @@ const emptyModulePath = path.resolve(__dirname, 'src/modules/emptyModule');
 
 const API_URL = {
   production: process.env.TOOLJET_SERVER_URL || (process.env.SERVE_CLIENT !== 'false' ? '__REPLACE_SUB_PATH__' : ''),
-  development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
+  development: process.env.TOOLJET_SERVER_URL || `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
 };
 
 const ASSET_PATH = process.env.ASSET_PATH || '';

@@ -271,6 +271,7 @@ export const phoneinputConfig = {
   },
   exposedVariables: {
     value: '',
+    domesticNumber: '',
     isMandatory: false,
     isVisible: true,
     isDisabled: false,

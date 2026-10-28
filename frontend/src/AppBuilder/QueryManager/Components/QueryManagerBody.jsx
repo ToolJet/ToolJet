@@ -317,6 +317,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     return (
       <div
         className={cx('d-flex', { 'disabled ': isFreezed })}
+        data-param="query_timeout"
         data-cy="query-timeout-section"
         style={{ marginBottom: '16px' }}
       >
@@ -337,7 +338,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
 
   const renderDisableQuery = () => {
     return (
-      <div className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })} data-cy="query-disable-section">
+      <div
+        className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })}
+        data-param="disableQuery"
+        data-cy="query-disable-section"
+      >
         <div className="form-label mt-2" data-cy="query-manager-disable-label">
           {t('editor.queryManager.disableQuery', 'Disable query')}
         </div>
@@ -357,7 +362,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const renderDisabledMessage = () => {
     const hasDisableExpression = !!selectedQuery?.options?.disableQuery?.trim();
     return (
-      <div className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })} data-cy="query-disabled-message-section">
+      <div
+        className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })}
+        data-param="disabledMessage"
+        data-cy="query-disabled-message-section"
+      >
         <div className="form-label mt-2" data-cy="query-manager-disabled-message-label">
           {t('editor.queryManager.disabledMessageLabel', 'Disable message')}
         </div>
@@ -662,7 +671,7 @@ const CustomToggleFlag = ({
   if (isHidden) return null;
 
   return (
-    <div className="query-manager-settings-toggles">
+    <div data-param={action} className="query-manager-settings-toggles">
       <div className={cx({ 'toggle-fx-row': fx && onFxToggle, 'fx-active': fxMode })}>
         <CustomToggleSwitch
           dataCy={dataCy}

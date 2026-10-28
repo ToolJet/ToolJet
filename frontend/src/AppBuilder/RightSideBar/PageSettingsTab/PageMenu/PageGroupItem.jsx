@@ -88,6 +88,7 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
           className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${
             darkMode ? 'dark-theme theme-dark' : ''
           } ${(showPageOptions || showEditPopover) && isEditing ? 'is-selected' : ''}`}
+          data-page-id={page?.id}
           onClick={() => {
             handleOpenPopup('group', page);
           }}

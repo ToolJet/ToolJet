@@ -129,4 +129,20 @@ describe('RenderWidget tooltip', () => {
     await waitFor(() => expect(screen.getAllByText('Choose a side').length).toBeGreaterThan(0));
     spinner.teardown();
   });
+
+  test('[RenderWidget-TOOLTIP-006] Html reads its tooltip from properties, where import leaves it', async () => {
+    // Break this catches: Html is listed in the server's NewRevampedComponents, so importing an app
+    // moves general.tooltip into properties.tooltip and DELETES the original
+    // (app-import-export.service.ts migrateProperties). While Html is absent from
+    // SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY the canvas keeps reading `general`, so every imported
+    // Html tooltip renders blank — the two sides of the move have to name the same bucket.
+    const html = createWidgetHarness({ componentType: 'Html', handle: 'html1', id: 'html1' });
+    await html.setup();
+    html.render({
+      afterSeed: () => html.setComponentProperty('html1', 'tooltip', 'Explains the markup', 'properties'),
+    });
+    await html.session.user.hover(document.querySelector('[data-cy="draggable-widget-html1"]'));
+    await waitFor(() => expect(screen.getAllByText('Explains the markup').length).toBeGreaterThan(0));
+    html.teardown();
+  });
 });

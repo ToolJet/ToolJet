@@ -55,6 +55,13 @@ export class ResponseInterceptor implements NestInterceptor {
         if (!logsData.metadata) {
           logsData.metadata = {};
         }
+        if (request.user?.oauthGrantId) {
+          logsData.metadata = {
+            ...logsData.metadata,
+            oauthGrantId: request.user.oauthGrantId,
+            oauthClientId: request.user.oauthClientId,
+          };
+        }
         if (response.locals?.tj_transactionId) {
           logsData.metadata = {
             ...logsData.metadata,

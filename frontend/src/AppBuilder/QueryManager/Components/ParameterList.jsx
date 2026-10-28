@@ -132,7 +132,7 @@ const ParameterList = ({
                   .filter((param) => !param.isVisible)
                   .map((parameter) => {
                     return (
-                      <span key={parameter.name}>
+                      <span key={parameter.name} data-list-item-id={parameter.name}>
                         <PillButton
                           name={parameter.name}
                           idPrefix={idPrefix}

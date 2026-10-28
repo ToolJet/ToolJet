@@ -1,0 +1,330 @@
+.code-search {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-width: 300px;
+  font-size: 12px;
+
+  .code-search-header {
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+
+  .code-search-input-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  // Shrinks so the three match toggles and two view buttons share the input's line.
+  .code-search-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .code-search-divider {
+    width: 1px;
+    height: 16px;
+    margin: 0 2px;
+    background: var(--border-weak);
+  }
+
+  .code-search-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 4px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-placeholder);
+
+    &--text {
+      font-family: var(--font-family-mono, monospace);
+      font-size: 12px;
+    }
+
+    &:hover {
+      background: var(--interactive-hover);
+    }
+
+    &.active {
+      color: var(--text-accent);
+      border-color: var(--border-accent-weak);
+      background: var(--background-accent-weak);
+    }
+  }
+
+  .code-search-filters,
+  .code-search-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .code-search-chip svg {
+    vertical-align: -1px;
+  }
+
+  .code-search-empty-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 4px;
+  }
+
+  .code-search-chip {
+    padding: 1px 8px;
+    border: 1px solid var(--border-weak);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-default);
+    font-size: 11px;
+    line-height: 18px;
+
+    &:hover {
+      background: var(--interactive-hover);
+    }
+
+    &.active {
+      color: var(--text-accent);
+      border-color: var(--border-accent-weak);
+      background: var(--background-accent-weak);
+    }
+  }
+
+  .code-search-chip-count {
+    color: var(--text-placeholder);
+  }
+
+  .code-search-chip.active .code-search-chip-count {
+    color: inherit;
+  }
+
+  .code-search-summary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    color: var(--text-placeholder);
+  }
+
+  .code-search-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0 16px;
+  }
+
+  .code-search-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 16px;
+    color: var(--text-placeholder);
+  }
+
+  .code-search-error {
+    color: var(--text-danger);
+  }
+
+  // Shared header-row reset: group and entity headers are buttons so they toggle on click / Enter.
+  .code-search-group-header,
+  .code-search-entity-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    height: 28px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--interactive-hover);
+    }
+  }
+
+  // Section header (Components / Queries / Events / Pages & app): the top level, so it reads largest.
+  .code-search-group-header {
+    height: 32px;
+    padding: 0 12px 0 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-default);
+  }
+
+  .code-search-group + .code-search-group {
+    margin-top: 8px;
+  }
+
+  .code-search-group-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .code-search-entity-header {
+    padding: 0 12px 0 20px;
+    color: var(--text-default);
+  }
+
+  // Air between components so each reads as its own block.
+  .code-search-entity + .code-search-entity {
+    margin-top: 4px;
+  }
+
+  .code-search-chevron {
+    flex-shrink: 0;
+    color: var(--icon-default);
+  }
+
+  .code-search-entity-name {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .code-search-entity-type {
+    color: var(--text-placeholder);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // The page a component is on; the current page in accent so it's easy to spot.
+  .code-search-entity-page {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--text-placeholder);
+
+    &.current {
+      color: var(--text-accent);
+    }
+  }
+
+  .code-search-count {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 10px;
+    line-height: 16px;
+    color: var(--text-default);
+    background: var(--interactive-default, var(--slate3));
+  }
+
+  .code-search-tag {
+    flex-shrink: 0;
+    padding: 0 4px;
+    border-radius: 4px;
+    font-size: 10px;
+    line-height: 16px;
+    color: var(--text-accent);
+    background: var(--background-accent-weak);
+  }
+
+  // One field per line: short label column, then the snippet, then a count when > 1.
+  .code-search-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: 28px;
+    padding: 0 12px 0 40px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--interactive-hover);
+    }
+
+    &.active {
+      background: var(--background-accent-weak);
+    }
+
+    .code-search-count {
+      margin-left: 0;
+    }
+  }
+
+  .code-search-row-label {
+    // Sized to the label (event and list-item labels run long); the preview keeps at least 40%.
+    display: flex;
+    flex: 0 1 auto;
+    gap: 4px;
+    max-width: 60%;
+    min-width: 0;
+    font-size: 12px;
+    color: var(--text-placeholder);
+  }
+
+  // The path gives up its width first and takes the ellipsis; the field name only shrinks once the
+  // path is gone (a lone label longer than the column).
+  .code-search-row-path,
+  .code-search-row-field {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .code-search-row-path {
+    flex-shrink: 1000;
+  }
+
+  .code-search-row-sep {
+    flex-shrink: 0;
+  }
+
+  .code-search-row-field {
+    color: var(--text-default);
+  }
+
+  .code-search-row-preview.code-search-row-title {
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-default);
+  }
+
+  .code-search-row-preview {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-family-mono, monospace);
+    font-size: 11.5px;
+    color: var(--text-placeholder);
+
+    mark {
+      padding: 0 2px;
+      border-radius: 2px;
+      color: var(--text-default);
+      background: var(--background-warning-weak, #ffe9a8);
+    }
+  }
+}
+
+// Applied by highlightMatch to the field (or panel) a result jumps to.
+.tj-code-search-flash {
+  animation: tj-code-search-flash 1.5s ease-out;
+}
+
+@keyframes tj-code-search-flash {
+  0%,
+  40% {
+    box-shadow: 0 0 0 2px var(--border-accent-strong, #3e63dd);
+  }
+  100% {
+    box-shadow: 0 0 0 2px transparent;
+  }
+}
+
+// Every match of the active search term inside code editors (codeSearchHighlight).
+.tj-code-search-match {
+  border-radius: 2px;
+  background: #cde7fc;
+}

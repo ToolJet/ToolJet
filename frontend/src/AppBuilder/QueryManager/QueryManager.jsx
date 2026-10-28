@@ -7,10 +7,14 @@ import { CodeHinterContext } from '@/AppBuilder/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useCodeSearchReveal } from '@/AppBuilder/CodeBuilder/useCodeSearchReveal';
 
 // name -> resolved default, for a list of { name, defaultValue } (parameters, or a library query's inputs).
 const resolveDefaults = (list) =>
   list?.reduce((acc, { name, defaultValue }) => ({ ...acc, [name]: resolveReferences(defaultValue, undefined) }), {});
+
+// Code search's tab names → QueryManagerHeader's tab ids.
+const QUERY_TAB_IDS = { setup: 1, transformation: 2, settings: 3 };
 
 const QueryManager = ({ mode, darkMode }) => {
   const { moduleId } = useModuleContext();
@@ -39,6 +43,13 @@ const QueryManager = ({ mode, darkMode }) => {
       setActiveTab(1);
     }
   }, [selectedQuery?.id]);
+
+  // Code search opens the tab a field lives in. Declared after the reset above so it wins when both
+  // run for a newly selected query.
+  useCodeSearchReveal('queryTab', selectedQuery?.id, (tab) => {
+    setActiveTab(QUERY_TAB_IDS[tab] ?? 1);
+    return true;
+  });
 
   useEffect(() => {
     if (queryToBeRun !== null) {

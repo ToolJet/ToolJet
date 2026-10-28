@@ -458,6 +458,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={String(item.id ?? '')}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}

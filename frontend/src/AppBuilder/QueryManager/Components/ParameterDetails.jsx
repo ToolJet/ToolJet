@@ -99,7 +99,7 @@ const ParameterDetails = ({
         </Popover>
       }
     >
-      <span className="parameterItem">
+      <span className="parameterItem" data-list-item-id={isEdit ? String(name ?? '') : undefined}>
         {isEdit ? (
           <PillButton
             className="parameterItemPillButton"

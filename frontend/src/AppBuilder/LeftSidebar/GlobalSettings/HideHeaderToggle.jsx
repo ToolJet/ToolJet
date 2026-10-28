@@ -14,7 +14,7 @@ const HideHeaderToggle = () => {
   const { hideHeader } = globalSettings || {};
 
   return (
-    <div className="tw-flex tw-mb-3">
+    <div data-param="hideHeader" className="tw-flex tw-mb-3">
       <SwitchComponent
         align="right"
         label="Hide header for launched apps"
