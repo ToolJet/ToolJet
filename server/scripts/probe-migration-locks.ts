@@ -76,9 +76,10 @@ async function probe(queryRunner: QueryRunner, migrations: ProbedMigration[]): P
     await step(migration, 'up', () => migration.instance.up(queryRunner));
   }
   for (const migration of ordered) {
-    const tail = migration.instance.tail?.bind(migration.instance);
-    // Only the backfill phase runs tails.
-    if (tail && migration.phase === 'backfill') await step(migration, 'tail', () => tail(queryRunner));
+    const beforeCommit = migration.instance.beforeCommit?.bind(migration.instance);
+    // Only the backfill phase runs beforeCommit().
+    if (beforeCommit && migration.phase === 'backfill')
+      await step(migration, 'beforeCommit', () => beforeCommit(queryRunner));
   }
   for (const migration of ordered.filter(({ phase }) => phase === 'contract')) {
     await step(migration, 'up', () => migration.instance.up(queryRunner));

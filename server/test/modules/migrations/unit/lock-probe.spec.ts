@@ -11,9 +11,9 @@ describe('migration-helpers/lock-probe', () => {
       ['backfill', 'up', 'RowExclusiveLock', []],
       ['backfill', 'up', 'ShareLock', ['apps: ShareLock']],
       ['backfill', 'up', 'AccessExclusiveLock', ['apps: AccessExclusiveLock']],
-      ['backfill', 'tail', 'ShareLock', []],
-      ['backfill', 'tail', 'ShareRowExclusiveLock', []],
-      ['backfill', 'tail', 'AccessExclusiveLock', ['apps: AccessExclusiveLock']],
+      ['backfill', 'beforeCommit', 'ShareLock', []],
+      ['backfill', 'beforeCommit', 'ShareRowExclusiveLock', []],
+      ['backfill', 'beforeCommit', 'AccessExclusiveLock', ['apps: AccessExclusiveLock']],
       ['contract', 'up', 'AccessExclusiveLock', []],
     ] as const)('should judge %s %s taking %s', (phase, part, mode, expected) => {
       expect(classifyLocks(phase, part, [lock(mode)])).toEqual(expected);

@@ -7,20 +7,20 @@ export interface ProbedLock {
   existed: boolean;
 }
 
-export type MigrationPart = 'up' | 'tail';
+export type MigrationPart = 'up' | 'beforeCommit';
 
 /**
  * Locks that stall the release still serving, per phase. Expand may take ACCESS EXCLUSIVE briefly (lock_timeout
  * bounds the wait) but not scan under a write-blocking lock. A backfill holds its locks for the whole run, so up()
- * only writes rows; its tail, just before commit, may block writes but not reads. Contract steps are short anyway.
+ * only writes rows; its beforeCommit(), just before commit, may block writes but not reads. Contract steps are short anyway.
  */
 const FORBIDDEN_ON_EXISTING_TABLES: Record<MigrationPhase, Record<MigrationPart, readonly string[]>> = {
-  expand: { up: ['ShareLock', 'ShareRowExclusiveLock', 'ExclusiveLock'], tail: [] },
+  expand: { up: ['ShareLock', 'ShareRowExclusiveLock', 'ExclusiveLock'], beforeCommit: [] },
   backfill: {
     up: ['ShareUpdateExclusiveLock', 'ShareLock', 'ShareRowExclusiveLock', 'ExclusiveLock', 'AccessExclusiveLock'],
-    tail: ['ExclusiveLock', 'AccessExclusiveLock'],
+    beforeCommit: ['ExclusiveLock', 'AccessExclusiveLock'],
   },
-  contract: { up: [], tail: [] },
+  contract: { up: [], beforeCommit: [] },
 };
 
 export function classifyLocks(phase: MigrationPhase, part: MigrationPart, locks: readonly ProbedLock[]): string[] {
