@@ -61,6 +61,40 @@ export interface BackfillMigration extends MigrationInterface {
   tail?(queryRunner: QueryRunner): Promise<void>;
 }
 
+/**
+ * Removes what an earlier release stopped using. `requires` names a migration of that release: the contract runs
+ * only once an earlier upgrade recorded it, so an instance that skipped that release can still roll back.
+ */
+export interface ContractMigration extends MigrationInterface {
+  transaction: false;
+  requires: string;
+}
+
+export interface ContractCandidate {
+  name: string;
+  requires?: string;
+}
+
+export interface ContractPlan {
+  run: string[];
+  deferred: { name: string; waitingFor: string }[];
+}
+
+/** `baselineId`: last migration id recorded before this code first ran; 0 on a fresh install, where all run. */
+export function planContract(
+  candidates: readonly ContractCandidate[],
+  recordedIds: ReadonlyMap<string, number>,
+  baselineId: number
+): ContractPlan {
+  const plan: ContractPlan = { run: [], deferred: [] };
+  for (const { name, requires } of candidates) {
+    const recordedAt = requires ? recordedIds.get(requires) : undefined;
+    if (baselineId === 0 || (recordedAt !== undefined && recordedAt <= baselineId)) plan.run.push(name);
+    else plan.deferred.push({ name, waitingFor: requires ?? 'a requires migration' });
+  }
+  return plan;
+}
+
 /** Unset: all phases, single-transaction. */
 export function parseMigrationPhase(raw: string | undefined): MigrationPhase | undefined {
   if (!raw) return undefined;

@@ -22,8 +22,11 @@ import { retryOnLockTimeout, retryWhen } from './with-short-lock';
 import {
   BackfillMigration,
   blocksAsyncUpgrade,
+  ContractMigration,
   MigrationPhase,
+  migrationTimestamp,
   parseMigrationPhase,
+  planContract,
   runStrategy,
 } from './migration-mode';
 import { getEnvVars } from '../../scripts/database-config-utils';
@@ -207,6 +210,59 @@ async function runInSeparateTransactions(
   console.log('[migrations] Committed expand and backfill migrations in separate transactions.');
 }
 
+const BASELINES_DDL = `
+  CREATE TABLE IF NOT EXISTS migration_baselines (
+    code_head text PRIMARY KEY,
+    last_migration_id integer NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`;
+
+/** The newest migration this code ships: it changes with every release that adds one. */
+function codeHead(...dataSources: DataSource[]): string {
+  const names = dataSources.flatMap(({ migrations }) =>
+    migrations.map((migration) => migration.name || migration.constructor.name)
+  );
+  return names.reduce((newest, name) => (migrationTimestamp(name) > migrationTimestamp(newest) ? name : newest), '');
+}
+
+/**
+ * The last migration id recorded before this code first ran, saved once by its first runner; 0 on a fresh install.
+ * Call it holding a lock that keeps other runners out, before applying anything.
+ */
+async function upgradeBaseline(dataSource: DataSource, head: string): Promise<number> {
+  await dataSource.query(BASELINES_DDL).catch((error: { code?: string }) => {
+    // Two pods racing CREATE TABLE IF NOT EXISTS: one loses on the type's unique index.
+    if (error.code !== '23505' && error.code !== '42P07') throw error;
+  });
+  const [{ table }] = await dataSource.query(`SELECT to_regclass('migrations') AS table`);
+  await dataSource.query(
+    `INSERT INTO migration_baselines (code_head, last_migration_id)
+     SELECT $1, ${table ? 'COALESCE(max(id), 0) FROM migrations' : '0'} ON CONFLICT (code_head) DO NOTHING`,
+    [head]
+  );
+  const [{ id }] = await dataSource.query(
+    'SELECT last_migration_id AS id FROM migration_baselines WHERE code_head = $1',
+    [head]
+  );
+  return id;
+}
+
+/** Leaves out each contract whose `requires` an earlier upgrade has not recorded yet; it runs on a later upgrade. */
+async function holdBackContracts(contractDS: DataSource, baselineId: number): Promise<void> {
+  if (baselineId === 0 || !contractDS.migrations.length) return;
+  const recorded: { id: number; name: string }[] = await contractDS.query('SELECT id, name FROM migrations');
+  const candidates = (contractDS.migrations as unknown as ContractMigration[]).map((migration) => ({
+    name: migration.name || migration.constructor.name,
+    requires: migration.requires,
+  }));
+  const { run, deferred } = planContract(candidates, new Map(recorded.map(({ name, id }) => [name, id])), baselineId);
+  for (const { name, waitingFor } of deferred) {
+    console.log(`[migrations] Holding back ${name} until an earlier upgrade has recorded ${waitingFor}.`);
+  }
+  const kept = contractDS.migrations.filter((migration) => run.includes(migration.name || migration.constructor.name));
+  contractDS.migrations.splice(0, contractDS.migrations.length, ...kept);
+}
+
 class YieldToMigrationRun extends Error {}
 
 /** Contract never holds the migration lock, so a run never waits on it; it stops when one starts. */
@@ -222,7 +278,7 @@ function yieldBeforeEachMigration(dataSource: DataSource, session: LockSession):
 }
 
 /** After writes reopen: each step in its own short transaction. A failed step stays pending for the next boot. */
-async function runContractPhase(contractDS: DataSource, lockWait: LockWaitOptions): Promise<boolean> {
+async function runContractPhase(contractDS: DataSource, lockWait: LockWaitOptions, head: string): Promise<boolean> {
   if (!(await pendingNames(contractDS)).length) {
     console.log('[migrations] No contract migrations pending.');
     return true;
@@ -232,6 +288,7 @@ async function runContractPhase(contractDS: DataSource, lockWait: LockWaitOption
     lockWait,
     {},
     async (session) => {
+      await holdBackContracts(contractDS, await upgradeBaseline(contractDS, head));
       announceEachMigration(contractDS);
       yieldBeforeEachMigration(contractDS, session);
       try {
@@ -248,7 +305,7 @@ async function runContractPhase(contractDS: DataSource, lockWait: LockWaitOption
   return !!ran;
 }
 
-async function runExpandPhase(schemaDS: DataSource, options: SchemaPhaseOptions): Promise<boolean> {
+async function runExpandPhase(schemaDS: DataSource, options: SchemaPhaseOptions, head: string): Promise<boolean> {
   // Restarts and scale-ups end here, without waiting on the advisory lock.
   if (!(await pendingNames(schemaDS)).length) {
     console.log('[migrations] No expand migrations pending before boot.');
@@ -261,6 +318,7 @@ async function runExpandPhase(schemaDS: DataSource, options: SchemaPhaseOptions)
       return;
     }
     console.log(`[migrations] ${pending.length} expand migration(s) pending: ${pending.join(', ')}`);
+    await upgradeBaseline(schemaDS, head);
     await holdingActiveLock(session, () => applyExpandUnderLockTimeout(schemaDS, options));
   });
   return true;
@@ -371,8 +429,11 @@ async function executeMigrations(
 async function migrateAsSolePod(
   [schemaDS, dataDS, contractDS]: [DataSource, DataSource, DataSource],
   session: LockSession,
-  phase: MigrationPhase | undefined
+  phase: MigrationPhase | undefined,
+  head: string
 ): Promise<void> {
+  const baseline = await upgradeBaseline(schemaDS, head);
+  if (!phase) await holdBackContracts(contractDS, baseline);
   const pending = await pendingNames(schemaDS, dataDS, ...(phase ? [] : [contractDS]));
   const execute = () => executeMigrations(schemaDS, dataDS, contractDS, phase);
   if (!pending.length) {
@@ -400,7 +461,8 @@ export async function run(
 
   // getEnvVars(): this process has no ConfigModule, so settings only in the env file would be missed.
   const env = getEnvVars();
-  if (phase === 'contract') return runContractPhase(contractDS, getLockWaitOptions(env));
+  const head = codeHead(schemaDS, dataDS, contractDS);
+  if (phase === 'contract') return runContractPhase(contractDS, getLockWaitOptions(env), head);
   const expandOptions = getSchemaPhaseOptions(env);
   if (phase === 'expand') {
     // A single-transaction run holds LOCK TABLE migrations to the end; reading behind it hits statement_timeout.
@@ -421,7 +483,7 @@ export async function run(
     withoutLockSentinels(schemaDS);
     withoutLockSentinels(dataDS);
   }
-  if (phase === 'expand') return runExpandPhase(schemaDS, expandOptions);
+  if (phase === 'expand') return runExpandPhase(schemaDS, expandOptions, head);
 
   // A server already migrating owns the run; waiting would re-run its migrations after it ends, even failed ones.
   const ran = await withMigrationAdvisoryLock(
@@ -429,7 +491,7 @@ export async function run(
     getLockWaitOptions(env),
     {},
     async (session) => {
-      await migrateAsSolePod([schemaDS, dataDS, contractDS], session, phase);
+      await migrateAsSolePod([schemaDS, dataDS, contractDS], session, phase, head);
       return true;
     },
     { skipIfBusy: process.env.MIGRATION_SKIP_IF_LOCKED === 'true' }

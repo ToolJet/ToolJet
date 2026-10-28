@@ -198,6 +198,7 @@ The final schema is the same as after a single-transaction run. Once the backfil
 - Holds only the contract lock, never the migration or active lock, so the gate stays open and a backfill run never skips for it.
 - Before each step it checks whether any server holds the migration lock; if one does, it stops and the remaining steps run on the next boot.
 - Each step is its own short transaction (`withShortLock`). A step that fails stays pending; the run stays `succeeded` and writes stay open. Its output goes to the pod log only.
+- **Held back on a skipped release.** Each contract names in `requires` a migration of the release that stopped using what it removes. It runs only if that migration was recorded before this code first ran: `migration_baselines` keeps, per newest migration the code ships (`code_head`), the last migration id recorded when its first runner started (0 on a fresh install, where everything runs). An instance that skipped that release records it in the same upgrade, so the contract waits for the next one and the previous image can still roll back. Single-transaction runs apply the same rule.
 - Contract migrations declare `transaction = false`, change tables only through `withShortLock` / `setNotNull`, and use `IF EXISTS` on every drop (`migration-authoring-rules.spec.ts`).
 
 ### Serving during a run
