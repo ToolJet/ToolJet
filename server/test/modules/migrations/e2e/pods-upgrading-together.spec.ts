@@ -3,13 +3,12 @@
  * @group database
  */
 import { DataSource } from 'typeorm';
+import { HELD_MIGRATION_LOCKS_SQL } from 'src/migration-helpers/migration-locks';
 import {
   createScratchDatabase,
   dropScratchDatabase,
-  heldLocks,
   PodOutcome,
   postgres,
-  runPod,
   spawnPod,
   waitFor,
   watchActiveLock,
@@ -30,7 +29,20 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
     scratch = await new DataSource({ type: 'postgres', ...postgres, database: scratchDatabase }).initialize();
 
     const watcher = watchActiveLock(scratch);
-    pods = await startPodsTogether(POD_COUNT);
+    // Released at the same instant; the generous lead time absorbs ts-node start-up.
+    const startAt = Date.now() + 12_000;
+    pods = await Promise.all(
+      Array.from(
+        { length: POD_COUNT },
+        (_unused, index) =>
+          spawnPod({
+            podId: `pod-${index + 1}`,
+            database: scratchDatabase,
+            startAt,
+            migrationSleepSeconds: MIGRATION_SLEEP_SECONDS,
+          }).done
+      )
+    );
     watcher.stop();
     activeLockSamples = watcher.samples;
   }, 180_000);
@@ -106,14 +118,15 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
       await createScratchDatabase(productionDatabase);
       const startAt = Date.now() + 8000;
       productionPods = await Promise.all(
-        ['prod-pod-1', 'prod-pod-2'].map((podId) =>
-          runPod({
-            podId,
-            database: productionDatabase,
-            startAt,
-            migrationSleepSeconds: 5,
-            env: { NODE_ENV: 'production' },
-          })
+        ['prod-pod-1', 'prod-pod-2'].map(
+          (podId) =>
+            spawnPod({
+              podId,
+              database: productionDatabase,
+              startAt,
+              migrationSleepSeconds: 5,
+              env: { NODE_ENV: 'production' },
+            }).done
         )
       );
     }, 180_000);
@@ -157,7 +170,7 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
     });
 
     it('should release both migration locks once migrations finish', async () => {
-      expect(await heldLocks(scratch)).toEqual({ running: false, migrating: false });
+      expect(await scratch.query(HELD_MIGRATION_LOCKS_SQL)).toEqual([{ running: false, migrating: false }]);
     });
 
     it('should not pause API traffic from the pods that had no migrations to run', () => {
@@ -176,11 +189,9 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
         const pod = spawnPod({ podId: 'pod-sigkill', database, migrationSleepSeconds: 25 });
         await waitFor(
           'the active lock',
-          () => heldLocks(connection),
-          ({ migrating }) => migrating,
-          {
-            timeoutMs: 60_000,
-          }
+          () => connection.query(HELD_MIGRATION_LOCKS_SQL),
+          ([{ migrating }]) => migrating,
+          { timeoutMs: 60_000 }
         );
 
         pod.child.kill('SIGKILL');
@@ -188,8 +199,8 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
 
         await waitFor(
           'the locks to go',
-          () => heldLocks(connection),
-          ({ running, migrating }) => !running && !migrating,
+          () => connection.query(HELD_MIGRATION_LOCKS_SQL),
+          ([{ running, migrating }]) => !running && !migrating,
           { timeoutMs: 5000 }
         );
 
@@ -201,19 +212,3 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
     }, 180_000);
   });
 });
-
-/** Starts `count` pods on the shared database, released at the same instant, and waits for all of them. */
-function startPodsTogether(count: number): Promise<PodOutcome[]> {
-  // The generous lead time absorbs ts-node start-up.
-  const startAt = Date.now() + 12_000;
-  return Promise.all(
-    Array.from({ length: count }, (_unused, index) =>
-      runPod({
-        podId: `pod-${index + 1}`,
-        database: scratchDatabase,
-        startAt,
-        migrationSleepSeconds: MIGRATION_SLEEP_SECONDS,
-      })
-    )
-  );
-}

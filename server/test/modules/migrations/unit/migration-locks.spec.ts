@@ -30,7 +30,14 @@ describe('migration-helpers/migration-locks', () => {
     it.each([['migrations/schema'], ['migrations/data']])(
       'should name every LockMigrationsTable migration file in %s',
       (directory) => {
-        expect(lockSentinelClassNamesOnDisk(directory)).toEqual([...LOCK_SENTINEL_MIGRATION_NAMES].sort());
+        // Class names TypeORM reports as pending, read from the migration files themselves.
+        const absolute = join(__dirname, '../../../../', directory);
+        const classNames = readdirSync(absolute)
+          .filter((file) => file.startsWith('LockMigrationsTable'))
+          .map((file) => readFileSync(join(absolute, file), 'utf8').match(/export class (\w+)/)?.[1])
+          .sort();
+
+        expect(classNames).toEqual([...LOCK_SENTINEL_MIGRATION_NAMES].sort());
       }
     );
   });
@@ -88,10 +95,15 @@ describe('migration-helpers/migration-locks', () => {
   });
 
   describe('isLockNotAvailableError(): which schema-run failures are worth retrying', () => {
+    // The pg driver puts `code` on the error; TypeORM's QueryFailedError puts it on `driverError`.
     it.each([
-      ['a lock timeout from the pg driver', pgError('55P03'), true],
-      ['a lock timeout wrapped by TypeORM', typeormError('55P03'), true],
-      ['any other database error', pgError('42P07'), false],
+      ['a lock timeout from the pg driver', Object.assign(new Error('lock timeout'), { code: '55P03' }), true],
+      [
+        'a lock timeout wrapped by TypeORM',
+        Object.assign(new Error('query failed'), { driverError: { code: '55P03' } }),
+        true,
+      ],
+      ['any other database error', Object.assign(new Error('relation exists'), { code: '42P07' }), false],
       ['something that is not an error', undefined, false],
     ])('should say whether to retry %s: %s', (_shape, error, retryable) => {
       expect(isLockNotAvailableError(error)).toBe(retryable);
@@ -214,28 +226,6 @@ describe('migration-helpers/migration-locks', () => {
     });
   });
 });
-
-// Shapes the two ways a PostgreSQL error reaches us: raw from the pg driver (`code` on the
-// error) and wrapped by TypeORM's QueryFailedError (`code` on `driverError`).
-function pgError(code: string, message = `pg error ${code}`): Error {
-  return Object.assign(new Error(message), { code });
-}
-
-function typeormError(code: string, message = `query failed ${code}`): Error {
-  return Object.assign(new Error(message), { driverError: { code } });
-}
-
-/** Class names TypeORM reports as pending, read from the migration files themselves. */
-function lockSentinelClassNamesOnDisk(directory: string): string[] {
-  const absolute = join(__dirname, '../../../../', directory);
-  return readdirSync(absolute)
-    .filter((file) => file.startsWith('LockMigrationsTable'))
-    .flatMap((file) => {
-      const [, className] = readFileSync(join(absolute, file), 'utf8').match(/export class (\w+)/) ?? [];
-      return className ? [className] : [];
-    })
-    .sort();
-}
 
 /** A data source whose advisory-lock attempts return `lockResults` in turn; records every query. */
 function fakeDataSource(lockResults: boolean[]) {

@@ -55,11 +55,17 @@ describe('getAppDataRevision', () => {
   });
 
   it('changes after a migration commits, such as a data migration that rewrites components while the server runs', async () => {
-    // Answers with `latest` as the newest recorded migration and no change stamp.
-    const latestMigrationIs = (latest: string) => jest.fn(() => Promise.resolve([{ stamp: null, epoch: latest }]));
-
-    const before = await getAppDataRevision(makeManager(latestMigrationIs('520')), app, scope);
-    const after = await getAppDataRevision(makeManager(latestMigrationIs('521')), app, scope);
+    // `epoch` is the newest recorded migration.
+    const before = await getAppDataRevision(
+      makeManager(jest.fn(() => Promise.resolve([{ stamp: null, epoch: '520' }]))),
+      app,
+      scope
+    );
+    const after = await getAppDataRevision(
+      makeManager(jest.fn(() => Promise.resolve([{ stamp: null, epoch: '521' }]))),
+      app,
+      scope
+    );
 
     expect(after).not.toBe(before);
   });
