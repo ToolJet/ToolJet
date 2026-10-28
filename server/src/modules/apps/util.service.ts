@@ -4,6 +4,7 @@ import { User } from '@entities/user.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
+import { appVersionOnBranch, nullBranchLast, onBranch } from '@helpers/branch_scope.helper';
 import { catchDbException, cleanObject } from '@helpers/utils.helper';
 import {
   BadRequestException,
@@ -966,10 +967,10 @@ export class AppsUtilService implements IAppsUtilService {
     branchId: string | undefined,
     isGetAll: boolean
   ): void {
-    const branchPick = `appVersions.branchId = :branchId AND appVersions.id = (
+    const branchPick = `appVersions.id = (
       SELECT av_pick.id FROM app_versions av_pick
-      WHERE av_pick.app_id = apps.id AND av_pick.branch_id = :branchId
-      ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+      WHERE av_pick.app_id = apps.id AND ${onBranch('av_pick.branch_id', 'branchId')}
+      ORDER BY ${nullBranchLast('av_pick.branch_id')}, av_pick.is_stub ASC, av_pick.updated_at DESC
       LIMIT 1
     )`;
     if (type === APP_TYPES.MODULE) {
@@ -1410,15 +1411,17 @@ export class AppsUtilService implements IAppsUtilService {
         .distinctOn(['av.appId'])
         .where('av.appId IN (:...moduleIds)', { moduleIds })
         .andWhere('av.isStub = false')
-        .orderBy('av.appId', 'ASC')
-        .addOrderBy('av.updatedAt', 'DESC');
+        .orderBy('av.appId', 'ASC');
       // A branch in scope → that branch's row; otherwise the default branch, where every
       // non-stub row carries the same metadata. Read from any non-stub row — no status /
       // git-on-off branching.
       const metaTargetBranchId = parentBranchId ?? defaultBranchId;
       if (metaTargetBranchId) {
-        metaQb.andWhere('av.branchId = :metaTargetBranchId', { metaTargetBranchId });
+        metaQb
+          .andWhere(onBranch('av.branch_id', 'metaTargetBranchId'), { metaTargetBranchId })
+          .addOrderBy(nullBranchLast('av.branch_id'), 'ASC');
       }
+      metaQb.addOrderBy('av.updatedAt', 'DESC');
       const metaRows = await metaQb.getMany();
       const metaMap = new Map(metaRows.map((v) => [v.appId, v]));
 
@@ -1529,10 +1532,10 @@ export class AppsUtilService implements IAppsUtilService {
     const mgr = manager ?? getConnectionInstance().manager;
 
     const releasedJoin = branchId
-      ? 'released.id = app.currentVersionId AND released.branch_id = :branchId'
+      ? `released.id = app.currentVersionId AND ${appVersionOnBranch('released', 'branchId')}`
       : 'released.id = app.currentVersionId';
     const avJoin = branchId
-      ? 'av.appId = app.id AND av.slug IS NOT NULL AND av.branch_id = :branchId'
+      ? `av.appId = app.id AND av.slug IS NOT NULL AND ${appVersionOnBranch('av', 'branchId')}`
       : 'av.appId = app.id AND av.slug IS NOT NULL';
 
     const qb = mgr
@@ -1561,7 +1564,7 @@ export class AppsUtilService implements IAppsUtilService {
           .select('1')
           .from(AppVersion, 'scope')
           .where('scope.appId = app.id')
-          .andWhere('scope.branch_id = :branchId', { branchId })
+          .andWhere(appVersionOnBranch('scope', 'branchId'), { branchId })
           .getQuery();
         return 'EXISTS ' + exists;
       });
