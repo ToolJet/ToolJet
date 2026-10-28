@@ -3,7 +3,7 @@
  * @group database
  */
 import { Migration } from 'typeorm';
-import { bareTypeName, extractEnumValueAdditions } from 'src/migration-helpers/enum-value-additions';
+import { extractEnumValueAdditions } from 'src/migration-helpers/enum-value-additions';
 
 // Builds a Migration-shaped stub whose up().toString() contains `sql` as a literal,
 // mimicking how real migrations embed SQL and how extractEnumValueAdditions reads it
@@ -16,17 +16,9 @@ function migrationWithUpSql(name: string, sql: string): Migration {
 }
 
 describe('migration-helpers/enum-value-additions', () => {
-  describe('bareTypeName(): the type name without quotes or schema', () => {
-    it('should strip the quotes and the schema name from the type name', () => {
-      expect(bareTypeName('source')).toBe('source');
-      expect(bareTypeName('"resource_type"')).toBe('resource_type');
-      expect(bareTypeName('"public"."resource_type"')).toBe('resource_type');
-    });
-  });
-
   describe('extractEnumValueAdditions(): finding the enum values a migration adds, so they can be saved before it runs', () => {
     // One case per real migration SQL form shipped in server/migrations, so a future
-    // regex tweak that stops matching any variant fails here.
+    // regex tweak that stops matching any variant fails here. typeName is bareTypeName(): no quotes, no schema.
     it.each([
       [`ALTER TYPE source ADD VALUE 'openid'`, 'source', 'openid'],
       [`ALTER TYPE "page_type_enum" ADD VALUE 'custom';`, 'page_type_enum', 'custom'],
@@ -63,19 +55,21 @@ describe('migration-helpers/enum-value-additions', () => {
       ]);
     });
 
-    it('should ignore CREATE TYPE, since only values added to an existing type are saved ahead', () => {
-      const sql = `CREATE TYPE "app_type" AS ENUM ('front-end', 'workflow');`;
-      expect(extractEnumValueAdditions([migrationWithUpSql('M1', sql)])).toEqual([]);
-    });
-
-    it('should skip a migration that has no up()', () => {
-      const noUp = { name: 'M1', instance: undefined } as unknown as Migration;
-      expect(extractEnumValueAdditions([noUp])).toEqual([]);
-    });
-
-    it('should return nothing for a migration that touches no enum', () => {
-      const sql = `ALTER TABLE "permission_groups" ADD COLUMN "workflow_folder_create" boolean NOT NULL DEFAULT false;`;
-      expect(extractEnumValueAdditions([migrationWithUpSql('M1', sql)])).toEqual([]);
+    it.each([
+      [
+        'creates a type, since only values added to an existing type are saved ahead',
+        migrationWithUpSql('M1', `CREATE TYPE "app_type" AS ENUM ('front-end', 'workflow');`),
+      ],
+      ['has no up()', { name: 'M1', instance: undefined } as unknown as Migration],
+      [
+        'touches no enum',
+        migrationWithUpSql(
+          'M1',
+          `ALTER TABLE "permission_groups" ADD COLUMN "workflow_folder_create" boolean NOT NULL DEFAULT false;`
+        ),
+      ],
+    ])('should return nothing for a migration that %s', (_case, migration) => {
+      expect(extractEnumValueAdditions([migration])).toEqual([]);
     });
   });
 });
