@@ -1091,11 +1091,6 @@ const sidebars = {
                 "user-management/sso/saml/okta",
                 "user-management/sso/saml/entra-id"
               ]
-            },
-            {
-              "type": "link",
-              "label": "SCIM",
-              "href": "/api/scim/"
             }
           ]
         },
@@ -1120,6 +1115,7 @@ const sidebars = {
             }
           ]
         },
+        "user-management/scim-provisioning",
         {
           "type": "category",
           "label": "Profile Management",

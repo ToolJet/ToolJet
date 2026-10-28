@@ -94,6 +94,10 @@ DNS changes can take a few minutes to propagate, depending on your DNS provider 
 
 After some time, click **Test connection** on the Custom Domain settings page to verify that your domain is correctly mapped. Once the test passes, your ToolJet workspace will be accessible at your custom domain.
 
+:::info
+ToolJet checks pending domains every 10 minutes. If a domain is still pending verification or SSL setup after 48 hours, ToolJet removes it. Check your DNS record and add the domain again.
+:::
+
 ### Impact of Updating a Custom Domain
 
 When a custom domain is configured or updated for a ToolJet Cloud workspace, the workspace will start resolving from the new domain once DNS propagation completes.
