@@ -36,3 +36,4 @@ export * from './workflow_bundles.service';
 export * from './workspace_branches.service';
 export * from './custom-domain.service';
 export * from './dataQueryFolder.service';
+export * from './migrations.service';
