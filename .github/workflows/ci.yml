@@ -87,7 +87,7 @@ jobs:
               - '!**/*.md'
             # toolchain / workflow changes affect every suite
             root:
-              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**}'
+              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**,scripts/ai-*,scripts/check-ai-*,scripts/report-ai-*,scripts/test-ai-*}'
       # a submodule bump counts only if the EE diff touches more than docs/skills;
       # any lookup failure counts as changed
       - name: Detect EE submodule changes
@@ -304,9 +304,23 @@ jobs:
       # must fail the build before the suite reports a misleading green.
       - name: Validate test layout
         run: npm run test:layout
+      - name: Validate AI placement, discovery and pinned EE revision
+        run: TOOLJET_EDITION=ee node ../scripts/check-ai-tests.cjs frontend
       # Widget testing contracts are validated in the separate `widget-contracts` job below.
       - name: Run full test suite with coverage
-        run: npm run test:ci
+        run: |
+          mkdir -p coverage-ai/ee
+          TOOLJET_EDITION=ee npm run test:ci -- --json --outputFile=coverage-ai/ee/results.json
+      - name: Verify AI execution and extract full-scope AI coverage
+        run: |
+          node ../scripts/check-ai-test-results.cjs frontend coverage-ai/ee/results.json
+          node ../scripts/report-ai-coverage.cjs frontend coverage/app-builder/ee/jest/coverage-final.json coverage-ai/ee/report
+      - name: Upload AI frontend coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-ai-frontend
+          path: frontend/coverage-ai/ee/report/
+          if-no-files-found: error
       # Fails if an App Builder source file is not assigned to a subsystem in
       # app-builder-coverage-manifest.json. The harness contract spec already
       # runs in the full suite above via testMatch.
@@ -418,6 +432,7 @@ jobs:
       PG_USER: postgres
       PG_PASS: postgres
       PG_DB: tooljet_test
+      ATTACHMENT_TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tooljet_ai_test_ci
       TOOLJET_DB_USER: postgres
       TOOLJET_DB_PASS: postgres
       TOOLJET_DB_HOST: postgres
@@ -452,6 +467,10 @@ jobs:
       - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Validate AI placement and discovery
+        run: TOOLJET_EDITION=ee node scripts/check-ai-tests.cjs server
+      - name: Create isolated attachment fixture database
+        run: PGPASSWORD="$PG_PASS" createdb --host "$PG_HOST" --username "$PG_USER" tooljet_ai_test_ci
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Unit tests
@@ -462,6 +481,8 @@ jobs:
           --group=-gitsync
           --coverage --coverageReporters=json
           --json --outputFile /tmp/tj-unit-results.json
+      - name: Verify all AI assertions executed
+        run: node scripts/check-ai-test-results.cjs server /tmp/tj-unit-results.json
       - name: Strip coverage map from results JSON
         # --coverage attaches a full coverageMap to the --json output (~12MB for this
         # suite) — coverage-unit/coverage-final.json below is the report that matters.
@@ -594,6 +615,14 @@ jobs:
           path: server/coverage-e2e
       - name: Merge coverage
         run: npm run --prefix server test:cov:merge
+      - name: Extract and enforce full-scope AI backend coverage
+        run: node scripts/report-ai-coverage.cjs server server/coverage-combined/coverage-final.json server/coverage-ai/ee/report
+      - name: Upload AI backend coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-ai-backend
+          path: server/coverage-ai/ee/report/
+          if-no-files-found: error
       - name: Upload combined coverage report
         uses: actions/upload-artifact@v7
         with:
@@ -680,12 +709,18 @@ jobs:
       - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Validate AI placement and discovery
+        run: TOOLJET_EDITION=ce node scripts/check-ai-tests.cjs server
+      - name: Create isolated attachment fixture database
+        run: PGPASSWORD="$PG_PASS" createdb --host "$PG_HOST" --username "$PG_USER" tooljet_ai_test_ci
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Unit tests
         id: unit
         continue-on-error: true
-        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync
+        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync --json --outputFile=/tmp/tj-ce-unit-results.json
+      - name: Verify CE AI execution without private submodules
+        run: TOOLJET_EDITION=ce node scripts/check-ai-test-results.cjs server /tmp/tj-ce-unit-results.json
       - name: E2E tests
         id: e2e
         run: TOOLJET_EDITION=ce npm run --prefix server test:e2e -- --group=-gitsync --testTimeout=60000
@@ -876,6 +911,7 @@ jobs:
       PG_USER: postgres
       PG_PASS: postgres
       PG_DB: tooljet_test
+      ATTACHMENT_TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tooljet_ai_test_ci
       TOOLJET_DB_USER: postgres
       TOOLJET_DB_PASS: postgres
       TOOLJET_DB_HOST: postgres
@@ -924,6 +960,10 @@ jobs:
       - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Validate AI placement and discovery
+        run: TOOLJET_EDITION=ee node scripts/check-ai-tests.cjs server
+      - name: Create isolated attachment fixture database
+        run: PGPASSWORD="$PG_PASS" createdb --host "$PG_HOST" --username "$PG_USER" tooljet_ai_test_ci
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Run changed tests (unit + e2e)

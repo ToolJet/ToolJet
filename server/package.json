@@ -57,7 +57,8 @@
     "copy-schemas": "copyfiles -u 4 src/dto/validators/schemas/**/*.json dist/src/dto/validators/schemas",
     "worker:dev": "WORKER=true NODE_ENV=development nest start --watch",
     "worker:prod": "WORKER=true NODE_ENV=production node dist/src/main",
-    "test:mcp-oauth": "ts-node -r tsconfig-paths/register --transpile-only test/prepare-mcp-oauth-db.ts && jest --config test/mcp-oauth.jest.config.cjs --runInBand"
+    "test:mcp-oauth": "ts-node -r tsconfig-paths/register --transpile-only test/prepare-mcp-oauth-db.ts && jest --config test/mcp-oauth.jest.config.cjs --runInBand",
+    "test:ai": "NODE_ENV=test jest --config test/jest-ai.config.ts --runInBand"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
@@ -273,7 +274,11 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "micromatch": "^4.0.8",
+    "istanbul-lib-coverage": "^3.2.2",
+    "istanbul-lib-report": "^3.0.1",
+    "istanbul-reports": "^3.2.0"
   },
   "engines": {
     "node": "22.23.4",

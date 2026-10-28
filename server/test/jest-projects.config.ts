@@ -17,7 +17,9 @@ export function editionProjects(
     rootDir,
     globals: { ...shared.globals, tjEdition: name },
     setupFiles: ['<rootDir>/test/jest-edition-setup.ts', ...(shared.setupFiles ?? [])],
-    roots: [`<rootDir>/${tree}`],
+    // Jest only collects untouched files inside project roots. Include AI source
+    // so the normal and focused reports measure untested code as well.
+    roots: [`<rootDir>/${tree}`, `<rootDir>/${name === 'ce' ? 'src/modules/ai' : 'ee/ai'}`],
     moduleNameMapper: { ...shared.moduleNameMapper, '^test-helper$': `<rootDir>/${helper}` },
   });
 

@@ -1,4 +1,5 @@
 /** @group working */
+import { assertAiTestDatabase } from '../../../helpers/ai-test-database';
 // Opt in only with a disposable PostgreSQL database; all tables live in a private random schema.
 import { randomUUID, createHash } from 'crypto';
 import { DataSource } from 'typeorm';
@@ -29,7 +30,7 @@ integration('attachment lifecycle with PostgreSQL', () => {
     };
   };
   beforeAll(async () => {
-    const url = process.env.ATTACHMENT_TEST_DATABASE_URL;
+    const url = assertAiTestDatabase(process.env.ATTACHMENT_TEST_DATABASE_URL);
     admin = await new DataSource({ type: 'postgres', url }).initialize();
     await admin.query(`CREATE SCHEMA "${schema}"`);
     db = await new DataSource({
