@@ -14,11 +14,12 @@ import {
   withMigrationConnectionOptions,
   withMigrationAdvisoryLock,
 } from './migration-locks';
-import { blocksAsyncUpgrade, MigrationPhase, parseMigrationPhase } from './migration-mode';
+import { blocksAsyncUpgrade, MigrationPhase, parseMigrationPhase, runStrategy } from './migration-mode';
 import { getEnvVars } from '../../scripts/database-config-utils';
 
 /**
- * Runs schema migrations (src/migrations) then data migrations (data-migrations).
+ * Runs expand migrations (migrations/expand) then backfill migrations (migrations/backfill).
+ * Phase and run-strategy meanings: `MigrationPhase` in migration-mode.ts.
  *
  * Why this exists:
  * `typeorm migration:run` was previously invoked twice (schema, then data) as two
@@ -156,13 +157,13 @@ async function runAtomic(precommittable: EnumValueAddition[], schemaDS: DataSour
   await queryRunner.connect();
   await queryRunner.startTransaction();
   try {
-    await runPassInSharedTransaction('schema', schemaDS, queryRunner);
-    await runPassInSharedTransaction('data', dataDS, queryRunner);
+    await runPassInSharedTransaction('expand', schemaDS, queryRunner);
+    await runPassInSharedTransaction('backfill', dataDS, queryRunner);
     await queryRunner.commitTransaction();
-    console.log('[migrations] Committed schema + data migrations in a single transaction.');
+    console.log('[migrations] Committed expand + backfill migrations in a single transaction.');
   } catch (error) {
     await queryRunner.rollbackTransaction();
-    console.error('[migrations] Migration failed. Rolled back schema AND data changes.');
+    console.error('[migrations] Migration failed. Rolled back expand AND backfill changes.');
     throw error;
   } finally {
     await queryRunner.release();
@@ -170,35 +171,35 @@ async function runAtomic(precommittable: EnumValueAddition[], schemaDS: DataSour
 }
 
 async function runTwoPhase(schemaDS: DataSource, dataDS: DataSource, reason: string): Promise<void> {
-  console.log(`[migrations] ${reason} Schema commits before data runs.`);
-  await runPassInOwnTransaction('schema', schemaDS);
-  await runPassInOwnTransaction('data', dataDS);
-  console.log('[migrations] Committed schema and data migrations in separate transactions.');
+  console.log(`[migrations] ${reason} Expand commits before backfill runs.`);
+  await runPassInOwnTransaction('expand', schemaDS);
+  await runPassInOwnTransaction('backfill', dataDS);
+  console.log('[migrations] Committed expand and backfill migrations in separate transactions.');
 }
 
 const ENUM_TWO_PHASE_REASON =
   'A pending ALTER TYPE ADD VALUE targets an enum type created in this run; running schema and data in ' +
   'separate transactions (PostgreSQL cannot add and use an enum value in one transaction).';
 
-const DATA_PHASE_REASON =
-  'Data phase: running schema (catch-up, normally empty) and data in separate transactions, so a data ' +
-  'failure rolls back the data only.';
+const BACKFILL_PHASE_REASON =
+  'Backfill phase: running expand (catch-up, normally empty) and backfill in separate transactions, so a ' +
+  'backfill failure rolls back the backfill only.';
 
 const SCHEMA_LOCK_RETRY_DELAY_MS = 2000;
 
 async function runSchemaPhase(schemaDS: DataSource, options: SchemaPhaseOptions): Promise<boolean> {
   // Most boots (restart, scale-up, a pod booting during a long data phase) end here without the advisory lock.
   if ((await realPendingMigrationNames(schemaDS)).length === 0) {
-    console.log('[migrations] No schema migrations pending before boot.');
+    console.log('[migrations] No expand migrations pending before boot.');
     return true;
   }
   await withMigrationAdvisoryLock(schemaDS, options.lockWait, {}, async (session) => {
     const pending = await realPendingMigrationNames(schemaDS);
     if (pending.length === 0) {
-      console.log('[migrations] Another pod applied the schema migrations.');
+      console.log('[migrations] Another pod applied the expand migrations.');
       return;
     }
-    console.log(`[migrations] ${pending.length} schema migration(s) pending: ${pending.join(', ')}`);
+    console.log(`[migrations] ${pending.length} expand migration(s) pending: ${pending.join(', ')}`);
     await holdingActiveLock(session, () => applySchemaUnderLockTimeout(schemaDS, options));
   });
   return true;
@@ -216,18 +217,18 @@ async function applySchemaUnderLockTimeout(
     await queryRunner.startTransaction();
     try {
       await queryRunner.query(`SET LOCAL lock_timeout = ${lockTimeoutMs}`);
-      await runPassInSharedTransaction('schema', schemaDS, queryRunner);
+      await runPassInSharedTransaction('expand', schemaDS, queryRunner);
       await queryRunner.commitTransaction();
-      console.log('[migrations] Committed schema migrations.');
+      console.log('[migrations] Committed expand migrations.');
       return;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (!isLockNotAvailableError(error) || attempt >= lockAttempts) {
-        console.error('[migrations] Schema migrations failed. Rolled back the schema changes.');
+        console.error('[migrations] Expand migrations failed. Rolled back the expand changes.');
         throw error;
       }
       console.warn(
-        `[migrations] A schema migration waited over ${lockTimeoutMs}ms for a table lock; rolled back so ` +
+        `[migrations] An expand migration waited over ${lockTimeoutMs}ms for a table lock; rolled back so ` +
           `readers are not stalled behind it. Retrying (attempt ${attempt + 1} of ${lockAttempts}).`
       );
     } finally {
@@ -310,8 +311,8 @@ export async function run(
   // live only in the env file would otherwise be invisible here.
   const env = getEnvVars();
   const schemaOptions = getSchemaPhaseOptions(env);
-  if (phase === 'schema') {
-    // A joint or blocking run holds LOCK TABLE migrations to the end; reading behind it hits statement_timeout.
+  if (phase === 'expand') {
+    // A single-transaction or blocking run holds LOCK TABLE migrations to the end; reading behind it hits statement_timeout.
     if (await migrationsTableLocked(schemaDS, schemaOptions.lockTimeoutMs)) {
       console.log('[migrations] Another server is migrating with the migrations table locked; waiting for it.');
       await withMigrationAdvisoryLock(schemaDS, schemaOptions.lockWait, {}, async () => undefined);
@@ -322,15 +323,15 @@ export async function run(
         `[migrations] ${legacy[0]} is pending: this database is older than 3.21.58 (${legacy.length} such pending); ` +
           'running the whole upgrade before boot in one transaction, the blocking way.'
       );
-      phase = 'joint';
+      phase = undefined;
     }
   }
-  if (phase !== 'joint') {
+  if (runStrategy(phase) === 'multi-transaction') {
     withoutLockSentinels(schemaDS);
     withoutLockSentinels(dataDS);
   }
 
-  if (phase === 'schema') return runSchemaPhase(schemaDS, schemaOptions);
+  if (phase === 'expand') return runSchemaPhase(schemaDS, schemaOptions);
   const lockWaitOptions = getLockWaitOptions(env);
 
   // Server-managed modes: another server already migrating owns the run. Waiting would make this one
@@ -354,12 +355,12 @@ async function migrateAsSolePod(
   schemaDS: DataSource,
   dataDS: DataSource,
   session: LockSession,
-  phase: MigrationPhase
+  phase: MigrationPhase | undefined
 ): Promise<void> {
   const pending = [...(await realPendingMigrationNames(schemaDS)), ...(await realPendingMigrationNames(dataDS))];
 
   if (pending.length === 0) {
-    console.log('[migrations] No schema or data migrations pending — not cutting API traffic for this boot.');
+    console.log('[migrations] No expand or backfill migrations pending — not cutting API traffic for this boot.');
     await executeMigrations(schemaDS, dataDS, phase);
     return;
   }
@@ -382,12 +383,16 @@ function announceEachMigration(dataSource: DataSource): void {
   }
 }
 
-async function executeMigrations(schemaDS: DataSource, dataDS: DataSource, phase: MigrationPhase): Promise<void> {
+async function executeMigrations(
+  schemaDS: DataSource,
+  dataDS: DataSource,
+  phase: MigrationPhase | undefined
+): Promise<void> {
   // Plan before announcing: it scans up() source, which the announcing wrapper hides.
-  const plan = phase === 'data' ? null : await planEnumAdditions(schemaDS);
+  const plan = phase === 'backfill' ? null : await planEnumAdditions(schemaDS);
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
-  if (!plan) return runTwoPhase(schemaDS, dataDS, DATA_PHASE_REASON);
+  if (!plan) return runTwoPhase(schemaDS, dataDS, BACKFILL_PHASE_REASON);
   const { precommittable, hasMissingType } = plan;
 
   if (hasMissingType) {

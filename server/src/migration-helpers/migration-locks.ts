@@ -47,7 +47,7 @@ export interface SchemaPhaseOptions {
   lockAttempts: number;
 }
 
-/** MIGRATION_PHASE=schema: the run a booting pod waits on. */
+/** MIGRATION_PHASE=expand: the run a booting pod waits on. */
 export function getSchemaPhaseOptions(env: Record<string, string | undefined> = process.env): SchemaPhaseOptions {
   return {
     // Poll faster than the default unless the operator chose an interval.

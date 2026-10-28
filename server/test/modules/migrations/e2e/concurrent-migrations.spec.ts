@@ -124,7 +124,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
 
     it('should have exactly one pod report it as pending, and the rest find nothing to do', () => {
       const migrated = pods.filter(({ stdout }) => stdout.includes('1 migration(s) pending'));
-      const noWork = pods.filter(({ stdout }) => stdout.includes('No schema or data migrations pending'));
+      const noWork = pods.filter(({ stdout }) => stdout.includes('No expand or backfill migrations pending'));
 
       expect(migrated).toHaveLength(1);
       expect(noWork).toHaveLength(POD_COUNT - 1);
@@ -185,7 +185,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       expect(migrated).toHaveLength(1);
       expect(waited).toHaveLength(1);
       expect(waited[0].stdout).toContain('This pod will NOT exit.');
-      expect(waited[0].stdout).toContain('No schema or data migrations pending');
+      expect(waited[0].stdout).toContain('No expand or backfill migrations pending');
     });
   });
 
@@ -199,7 +199,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
     });
 
     it('should not take the active lock on the pods that had no migrations to run', () => {
-      const noWork = pods.filter(({ stdout }) => stdout.includes('No schema or data migrations pending'));
+      const noWork = pods.filter(({ stdout }) => stdout.includes('No expand or backfill migrations pending'));
 
       noWork.forEach(({ stdout }) => expect(stdout).toContain('not cutting API traffic for this boot'));
       // Two pods found nothing; had either taken the lock, the samples would show it after the run.
@@ -240,8 +240,8 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
     }, 180_000);
   });
 
-  /** Async mode: schema at boot (`migrateSchemaBeforeBoot`), data in the server-spawned run. */
-  describe('MIGRATION_PHASE | schema at boot, data after', () => {
+  /** Async mode: expand at boot (`migrateSchemaBeforeBoot`), backfill in the server-spawned run. */
+  describe('MIGRATION_PHASE | expand at boot, backfill after', () => {
     const phaseDatabase = `tooljet_migration_phase_${process.pid}`;
     let connection: DataSource;
 
@@ -265,27 +265,27 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
 
     it('should apply the schema migrations in the schema phase, and let the next boot skip the lock', async () => {
       const watcher = watchActiveLock(connection);
-      const first = await phasePod('schema-1', 'schema', phaseDatabase, {}, { migrationSleepSeconds: 3 }).done;
+      const first = await phasePod('schema-1', 'expand', phaseDatabase, {}, { migrationSleepSeconds: 3 }).done;
       watcher.stop();
-      const second = await phasePod('schema-2', 'schema').done;
+      const second = await phasePod('schema-2', 'expand').done;
 
       expect(watcher.samples.filter(Boolean).length).toBeGreaterThan(0);
 
       expect(first).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(first.stdout).toContain('1 schema migration(s) pending: SlowWitnessedMigration1790700000001');
-      expect(first.stdout).toContain('Committed schema migrations.');
+      expect(first.stdout).toContain('1 expand migration(s) pending: SlowWitnessedMigration1790700000001');
+      expect(first.stdout).toContain('Committed expand migrations.');
       expect(second).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(second.stdout).toContain('No schema migrations pending before boot.');
+      expect(second.stdout).toContain('No expand migrations pending before boot.');
       expect(await connection.query('SELECT 1 FROM migration_witness')).toHaveLength(1);
       expect(await heldLocks(connection)).toEqual({ running: false, migrating: false });
     }, 120_000);
 
     it('should run schema and data in separate transactions in the data phase', async () => {
-      const pod = await phasePod('data-1', 'data').done;
+      const pod = await phasePod('data-1', 'backfill').done;
 
       expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(pod.stdout).toContain('Data phase:');
-      expect(pod.stdout).toContain('Committed schema and data migrations in separate transactions.');
+      expect(pod.stdout).toContain('Backfill phase:');
+      expect(pod.stdout).toContain('Committed expand and backfill migrations in separate transactions.');
     }, 120_000);
 
     it('should refuse an unknown phase', async () => {
@@ -327,7 +327,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
 
       it('should roll back and retry until the lock frees, then apply it once', async () => {
         const lock = await holdTableLock();
-        const pod = phasePod('blocked-1', 'schema', blockedDatabase, {
+        const pod = phasePod('blocked-1', 'expand', blockedDatabase, {
           MIGRATION_SCHEMA_LOCK_TIMEOUT_MS: '300',
           MIGRATION_SCHEMA_LOCK_RETRIES: '30',
         });
@@ -350,7 +350,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       it('should fail the boot once the attempts run out', async () => {
         const lock = await holdTableLock();
         try {
-          const outcome = await phasePod('blocked-2', 'schema', blockedDatabase, {
+          const outcome = await phasePod('blocked-2', 'expand', blockedDatabase, {
             MIGRATION_SCHEMA_LOCK_TIMEOUT_MS: '200',
             MIGRATION_SCHEMA_LOCK_RETRIES: '2',
           }).done;
@@ -397,17 +397,17 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
 
       it('should pre-commit the value in the schema phase too', async () => {
         await createColorType();
-        const pod = await enumPod('enum-schema', 'schema');
+        const pod = await enumPod('enum-schema', 'expand');
 
         expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
         expect(pod.stdout).toContain("pre-committed enum value fixture_color.'blue'");
       }, 120_000);
 
       it('should boot a pod at once while another pod runs a long data phase', async () => {
-        expect(await enumPod('split-schema', 'schema')).toMatchObject({ exitCode: 0 });
+        expect(await enumPod('split-schema', 'expand')).toMatchObject({ exitCode: 0 });
         const dataPod = phasePod(
           'split-data',
-          'data',
+          'backfill',
           enumDatabase,
           {},
           {
@@ -424,10 +424,10 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
           { timeoutMs: 60_000 }
         );
 
-        const booting = await enumPod('split-boot', 'schema');
+        const booting = await enumPod('split-boot', 'expand');
 
         expect(booting).toMatchObject({ exitCode: 0, result: { error: null } });
-        expect(booting.stdout).toContain('No schema migrations pending before boot.');
+        expect(booting.stdout).toContain('No expand migrations pending before boot.');
         expect(booting.result.durationMs).toBeLessThan(5000);
         expect(await dataPod.done).toMatchObject({ exitCode: 0, result: { error: null } });
       }, 180_000);
@@ -442,7 +442,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
           await holder.connect();
           try {
             await holder.query('SELECT pg_advisory_lock($1)', [MIGRATION_ADVISORY_LOCK_KEY]);
-            const pod = await phasePod('skip-1', 'data', database, { MIGRATION_SKIP_IF_LOCKED: 'true' }).done;
+            const pod = await phasePod('skip-1', 'backfill', database, { MIGRATION_SKIP_IF_LOCKED: 'true' }).done;
 
             expect(pod).toMatchObject({ exitCode: SKIPPED_EXIT_CODE, result: { error: null } });
             expect(pod.stdout).toContain('leaving the run to it');
@@ -460,7 +460,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       const database = `tooljet_migration_table_held_${process.pid}`;
       await createScratchDatabase(database);
       try {
-        expect(await phasePod('held-setup', 'schema', database).done).toMatchObject({ exitCode: 0 });
+        expect(await phasePod('held-setup', 'expand', database).done).toMatchObject({ exitCode: 0 });
         await withScratchConnection(database, async (db) => {
           // A joint run: the advisory lock plus the sentinels' LOCK TABLE, held to the end.
           const holder = db.createQueryRunner();
@@ -469,7 +469,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
           await holder.startTransaction();
           await holder.query('LOCK TABLE migrations');
           try {
-            const pod = phasePod('held-1', 'schema', database, {
+            const pod = phasePod('held-1', 'expand', database, {
               PGOPTIONS: '-c statement_timeout=2000',
               MIGRATION_SCHEMA_LOCK_TIMEOUT_MS: '300',
               MIGRATION_LOCK_RETRY_INTERVAL_SECONDS: '1',
@@ -536,11 +536,11 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       const database = `tooljet_migration_legacy_${process.pid}`;
       await createScratchDatabase(database);
       try {
-        const pod = await phasePod('legacy-1', 'schema', database, {}, { fixtureSet: 'legacy' }).done;
+        const pod = await phasePod('legacy-1', 'expand', database, {}, { fixtureSet: 'legacy' }).done;
 
         expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
         expect(pod.stdout).toContain('LegacyWitness1700000000004 is pending: this database is older than 3.21.58');
-        expect(pod.stdout).toContain('Committed schema + data migrations in a single transaction.');
+        expect(pod.stdout).toContain('Committed expand + backfill migrations in a single transaction.');
         expect(await withScratchConnection(database, (db) => db.query('SELECT 1 FROM legacy_witness'))).toEqual([]);
       } finally {
         await dropScratchDatabase(database);

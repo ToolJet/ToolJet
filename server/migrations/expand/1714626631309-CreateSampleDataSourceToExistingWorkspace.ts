@@ -1,7 +1,7 @@
 import { Organization } from '@entities/organization.entity';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { NestFactory } from '@nestjs/core/nest-factory';
-import { filePathForEnvVars } from '../scripts/database-config-utils';
+import { filePathForEnvVars } from '../../scripts/database-config-utils';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { DataSource } from '@entities/data_source.entity';
 import * as fs from 'fs';

@@ -39,13 +39,29 @@ export function endUserMessage(state: string, env: Env = process.env): string | 
   return text ? text.slice(0, END_USER_MESSAGE_MAX_LENGTH) : undefined;
 }
 
-/** `joint`: MIGRATION_PHASE unset, schema and data together (blocking mode, Cloud). */
-export type MigrationPhase = 'joint' | 'schema' | 'data';
+/**
+ * Expand and contract (standard pattern; also "parallel change"):
+ * - expand:   adds only; old and new code both run on it. Before boot. Folder `migrations/expand`.
+ * - backfill: fills what expand added; reads keep working. After boot, writes paused. Folder `migrations/backfill`.
+ * - contract: removes or tightens what no released code uses any more. After writes reopen.
+ */
+export type MigrationPhase = 'expand' | 'backfill' | 'contract';
 
-export function parseMigrationPhase(raw: string | undefined): MigrationPhase {
-  if (!raw) return 'joint';
-  if (raw === 'schema' || raw === 'data') return raw;
-  throw new Error(`Unknown MIGRATION_PHASE '${raw}': use 'schema' or 'data', or leave it unset.`);
+/**
+ * - single-transaction: every phase in one transaction before boot (blocking mode, fresh install, `db:migrate`).
+ * - multi-transaction: one process and transaction per phase (async mode); MIGRATION_PHASE names it.
+ */
+export type RunStrategy = 'single-transaction' | 'multi-transaction';
+
+/** Unset: all phases, single-transaction. */
+export function parseMigrationPhase(raw: string | undefined): MigrationPhase | undefined {
+  if (!raw) return undefined;
+  if (raw === 'expand' || raw === 'backfill') return raw;
+  throw new Error(`Unknown MIGRATION_PHASE '${raw}': use 'expand' or 'backfill', or leave it unset.`);
+}
+
+export function runStrategy(phase: MigrationPhase | undefined): RunStrategy {
+  return phase ? 'multi-transaction' : 'single-transaction';
 }
 
 /**

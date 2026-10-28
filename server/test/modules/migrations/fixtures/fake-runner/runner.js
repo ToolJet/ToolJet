@@ -9,7 +9,7 @@ if (process.argv[2] === 'slow') {
   return;
 }
 if (process.argv[2] === 'none') {
-  console.log('[migrations] No schema or data migrations pending.');
+  console.log('[migrations] No expand or backfill migrations pending.');
   process.exit(0);
 }
 if (process.argv[2] === 'skip') {

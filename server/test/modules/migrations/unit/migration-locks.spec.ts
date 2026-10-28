@@ -46,7 +46,7 @@ describe('migration-helpers/migration-locks', () => {
   describe('LOCK_SENTINEL_MIGRATION_NAMES | an ordinary restart must not look like an upgrade', () => {
     // If this list stops matching the files, every pod restart and scale-up would raise the
     // upgrade gate and answer live API traffic with 503.
-    it.each([['migrations'], ['data-migrations']])(
+    it.each([['migrations/expand'], ['migrations/backfill']])(
       'should list every LockMigrationsTable class actually shipped in %s',
       (directory) => {
         expect(lockSentinelClassNamesOnDisk(directory)).toEqual([...LOCK_SENTINEL_MIGRATION_NAMES].sort());

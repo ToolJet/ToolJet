@@ -3,7 +3,7 @@ import { migrateSchemaBeforeBoot } from 'src/migration-helpers/migrate-before-bo
 import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/concurrent-pods/harness';
 
 // The test database is migrated, so it is never a fresh install. The command stands in for setup.
-const exitsZeroOnlyInSchemaPhase = `node -e "process.exit(process.env.MIGRATION_PHASE === 'schema' ? 0 : 7)"`;
+const exitsZeroOnlyInSchemaPhase = `node -e "process.exit(process.env.MIGRATION_PHASE === 'expand' ? 0 : 7)"`;
 const exitsZeroOnlyWithoutPhase = `node -e "process.exit(process.env.MIGRATION_PHASE ? 7 : 0)"`;
 const scratch = (database: string) => ({
   host: postgres.host,
@@ -22,7 +22,7 @@ describe('migration-helpers/migrate-before-boot', () => {
       await expect(migrateSchemaBeforeBoot({ MIGRATION_SETUP_COMMAND: 'exit 1' })).resolves.toBeUndefined();
     });
 
-    it('should run setup with MIGRATION_PHASE=schema in async mode', async () => {
+    it('should run setup with MIGRATION_PHASE=expand in async mode', async () => {
       await expect(
         migrateSchemaBeforeBoot({ MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: exitsZeroOnlyInSchemaPhase })
       ).resolves.toBeUndefined();
