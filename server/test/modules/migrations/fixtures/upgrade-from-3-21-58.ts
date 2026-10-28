@@ -5,7 +5,7 @@
 import { spawn } from 'child_process';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { LEGACY_LOOSEN_RULES, LEGACY_UPGRADE_MARKER } from 'src/migration-helpers/legacy-3-21-58-upgrade';
+import { LEGACY_LOOSEN_RULES, LEGACY_BRANCH_MIGRATION } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 import { LOCK_SENTINEL_MIGRATION_NAMES } from 'src/migration-helpers/migration-locks';
 import { MigrationPhase } from 'src/migration-helpers/migration-mode';
 import { createScratchDatabase, postgres, SERVER_ROOT, withScratchConnection } from './harness';
@@ -212,7 +212,7 @@ export const failTheDataPhase = (database: string) =>
     db.query(`
       CREATE FUNCTION fail_legacy_backfill() RETURNS trigger LANGUAGE plpgsql AS $$
       BEGIN
-        IF NEW.name = '${LEGACY_UPGRADE_MARKER}' THEN RAISE EXCEPTION 'injected data failure'; END IF;
+        IF NEW.name = '${LEGACY_BRANCH_MIGRATION}' THEN RAISE EXCEPTION 'injected data failure'; END IF;
         RETURN NEW;
       END $$;
       CREATE TRIGGER fail_legacy_backfill BEFORE INSERT ON migrations

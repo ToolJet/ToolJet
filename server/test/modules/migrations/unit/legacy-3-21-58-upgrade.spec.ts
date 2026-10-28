@@ -10,18 +10,11 @@ import { CleanupLegacyBranchModel1793300000000 } from '../../../../migrations/cl
 import {
   LEGACY_VARIANTS,
   useLegacyVariants,
-  legacyUpgradePending,
   loosenStep,
   restoreSteps,
-  LEGACY_UPGRADE_MARKER,
 } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 
 describe('migration-helpers/legacy-3-21-58-upgrade', () => {
-  it('should apply only while the 3.21.58 data migration has not run yet', () => {
-    expect(legacyUpgradePending(['Other1700000000000', LEGACY_UPGRADE_MARKER])).toBe(true);
-    expect(legacyUpgradePending(['Other1700000000000'])).toBe(false);
-  });
-
   it.each([
     ['check', 'ALTER TABLE app_versions DROP CONSTRAINT IF EXISTS chk'],
     ['index', 'DROP INDEX IF EXISTS chk'],

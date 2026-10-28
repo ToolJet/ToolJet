@@ -4,7 +4,7 @@
  */
 import { DataSource } from 'typeorm';
 import { appVersionOnBranch, nullBranchLast } from 'src/helpers/branch_scope.helper';
-import { LEGACY_LOOSEN_RULES, LEGACY_UPGRADE_MARKER } from 'src/migration-helpers/legacy-3-21-58-upgrade';
+import { LEGACY_LOOSEN_RULES, LEGACY_BRANCH_MIGRATION } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/harness';
 import {
   branchlessRowCounts,
@@ -90,7 +90,7 @@ describe('Upgrading a 3.21.58 database', () => {
       expect(output).toContain('injected data failure');
       expect(output).toContain(`Legacy upgrade: dropped ${LEGACY_LOOSEN_RULES.length} old rules`);
       expect(await loosenedRules(failingDatabase)).toEqual(rulesBeforeData);
-      expect(await recorded(failingDatabase, LEGACY_UPGRADE_MARKER)).toBe(false);
+      expect(await recorded(failingDatabase, LEGACY_BRANCH_MIGRATION)).toBe(false);
       expect(await rulesAwaitingRestore(failingDatabase)).toEqual([]);
     },
     RUN_TIMEOUT_MS
