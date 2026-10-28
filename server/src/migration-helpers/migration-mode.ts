@@ -106,7 +106,7 @@ export function runStrategy(phase: MigrationPhase | undefined): RunStrategy {
 }
 
 /**
- * Migrations at or before this timestamp predate the async-mode authoring rules (`server/AGENTS.md` § Migrations).
+ * Migrations at or before this timestamp predate the async-mode authoring rules (the Migrations section of `server/AGENTS.md`).
  * Just below the oldest migration pending on 3.21.74-beta, so upgrades from 3.21.74 onwards run async.
  */
 export const MIGRATION_AUTHORING_RULES_CUTOFF = 1789300000000;
@@ -186,7 +186,7 @@ export const ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS: ReadonlySet<string> = new Set([
   'AddAiRunCancellation1788820000000',
 ]);
 
-/** A pending pre-cutoff migration outside the allowlist: the database predates 3.21.58, so the upgrade runs jointly before boot. */
+/** A pending pre-cutoff migration outside the allowlist: the database predates 3.21.58, so the upgrade runs as one single-transaction run before boot. */
 export function blocksAsyncUpgrade(name: string): boolean {
   return isPreCutoffMigration(name) && !ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS.has(name);
 }

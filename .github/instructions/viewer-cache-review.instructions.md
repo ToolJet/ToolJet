@@ -13,4 +13,4 @@ Flag a change that alters what an End User sees in a released app, unless the PR
 - **New table or column an admin or builder can change without a release** (permissions, app or workspace settings, themes) → a migration trigger that calls `tj_viewer_cache_touch_apps`, `tj_viewer_cache_touch_versions` or `tj_viewer_cache_touch_workspaces`, plus a case in `server/test/modules/apps/e2e/viewer-cache-stamps.spec.ts`.
 - **Something that differs per viewer** → added to the inputs of `getAppDataRevision`.
 
-No action needed for changes that only ship in a new ToolJet version (code, widget defaults, migrations): the server version is in the key. Full checklist: `server/src/modules/apps/AGENTS.md` § Released-app viewer cache.
+No action needed for changes that only ship in a new ToolJet version (code, widget defaults, migrations): the server version is in the key. Full checklist: the Released-app viewer cache section of `server/src/modules/apps/AGENTS.md`.

@@ -131,7 +131,7 @@ probe catch the mechanical cases; this lens covers what they cannot judge.
 - **Rerunnable.** Cleanup steps and anything that may run twice use `IF EXISTS` / `IF NOT EXISTS` or a guard, and
   go through `withShortLock` / `setNotNull`.
 - **Reads during the data phase.** Code in this PR serves while data migrations run and after they fail. A new read
-  that assumes backfilled rows (a new non-null column, a moved value) returns wrong data until then; it must read both
+  that assumes rows the data phase fills (a new non-null column, a moved value) returns wrong data until then; it must read both
   shapes.
 - **Rollback.** The previous image must run on the database after the schema phase, and after a failed data phase.
 - **Entities.** A schema change matched by its entity; an entity field no released code can read yet is fine.

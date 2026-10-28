@@ -17,7 +17,7 @@ export const PHASE_FOLDERS = ['schema', 'data', 'cleanup'];
 export const PHASE_RULES_FROM = 1793100000000;
 
 const OPT_OUT = /\/\/\s*migration-lint:\s*allow-destructive\s+\S/;
-const RULES_DOC = 'Rules: server/AGENTS.md § Migrations.';
+const RULES_DOC = 'Rules: the Migrations section of server/AGENTS.md.';
 
 type Rule = [string, RegExp];
 
