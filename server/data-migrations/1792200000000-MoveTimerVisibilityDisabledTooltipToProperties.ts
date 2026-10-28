@@ -96,5 +96,7 @@ export class MoveTimerVisibilityDisabledTooltipToProperties1792200000000 impleme
     console.log(`${MIGRATION_NAME}: [SUCCESS] Move Timer keys to properties finished.`);
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {
+    // Not reversible: up() deletes app history, and a key already in properties wins, so the old values are lost.
+  }
 }
