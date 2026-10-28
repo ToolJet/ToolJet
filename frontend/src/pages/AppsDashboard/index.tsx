@@ -1,4 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+
+import { getWorkspaceId } from '@/_helpers/utils';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import { authenticationService } from '@/_services/authentication.service';
 
 import { useFetchAppsLimit } from '@/_services/hooks/appsServiceHooks';
 import { useIsWorkspaceBranchLocked } from '@/_hooks/useIsWorkspaceBranchLocked';
@@ -17,7 +23,12 @@ import Dialogs from './components/Dialogs';
 
 import { PLACEHOLDER_APPS, PLACEHOLDER_FOLDERS } from './placeholderItems';
 
-import { appTypeToDisplayNameMapping, staticContentMappingByAppType, type TAppType } from './helper';
+import {
+  appTypeToDisplayNameMapping,
+  canUserPerformWorkflowAction,
+  staticContentMappingByAppType,
+  type TAppType,
+} from './helper';
 
 const classes = { contentContainer: 'tw-h-dvh tw-flex tw-flex-col', contentBody: 'tw-pt-0' };
 
@@ -30,8 +41,45 @@ export default function AppsDashboard({
   darkMode: boolean;
   switchDarkMode: () => void;
 }) {
+  const navigate = useNavigate();
+
   const isWorkspaceBranchLocked = useIsWorkspaceBranchLocked();
   const { data: appsLimit } = useFetchAppsLimit();
+
+  useEffect(() => {
+    let timeoutId: number;
+
+    const gitSyncToast = sessionStorage.getItem('git_sync_toast');
+
+    if (gitSyncToast) {
+      sessionStorage.removeItem('git_sync_toast');
+      timeoutId = window.setTimeout(() => toast.error(gitSyncToast), 500);
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const workspaceId = getWorkspaceId();
+
+    if (appType === 'module') {
+      authenticationService.currentSessionValue?.role?.name == 'end-user' && navigate(`/${workspaceId}/home`);
+    }
+
+    if (appType === 'workflow') {
+      const { hasViewPermission } = canUserPerformWorkflowAction();
+
+      const canView = hasViewPermission && isWorkflowsFeatureEnabled();
+
+      if (!canView) {
+        toast.error('You do not have permission to view workflows');
+
+        navigate(`/${workspaceId}/home`);
+      }
+    }
+  }, [appType, navigate]);
 
   const hasItems = appType === 'front-end' ? PLACEHOLDER_FOLDERS.length > 0 || PLACEHOLDER_APPS.length > 0 : false;
 
@@ -66,7 +114,7 @@ export default function AppsDashboard({
         />
 
         {hasItems ? (
-          <ViewTabs />
+          <ViewTabs appType={appType} />
         ) : (
           <>
             <Separator className="tw-mx-[4.375rem] tw-w-auto" />

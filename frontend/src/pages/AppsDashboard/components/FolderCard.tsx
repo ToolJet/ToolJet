@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pin } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/Button/Button';
 import DashboardCard from './DashboardCard';
@@ -9,14 +9,20 @@ interface FolderCardProps {
   /** Preformatted, e.g. "9 apps • Edited Sep 12, 2026". */
   description: string;
   isPinned?: boolean;
-  onOpen?: () => void;
   onMoreClick?: () => void;
 }
 
 // Two-tone folder from Figma; Lucide has no filled two-color folder.
-function FolderIllustration() {
+function FolderIllustration({ size = 18.33, className }: { size?: number; className?: string }) {
   return (
-    <svg width="18.33" height="16.37" viewBox="0 0 18.3341 16.3749" fill="none" aria-hidden>
+    <svg
+      width={size}
+      height={(size * 16.3749) / 18.3341}
+      viewBox="0 0 18.3341 16.3749"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
       <path
         d="M2.5 0.5H5.75977L5.90332 0.503906C6.19022 0.522385 6.4701 0.602625 6.72363 0.739258C7.01236 0.894862 7.25847 1.11962 7.44043 1.39355L7.44238 1.39648L8.11816 2.39648L8.12012 2.39941L8.125 2.40723V2.40625C8.24702 2.58913 8.41267 2.74003 8.60742 2.84375C8.80302 2.94782 9.02124 3.00042 9.24219 2.99902V3H15.833C16.3632 3 16.8719 3.21087 17.2471 3.58594C17.6222 3.96111 17.833 4.4697 17.833 5V13.333C17.833 13.8633 17.6222 14.3719 17.2471 14.7471C16.8719 15.1222 16.3633 15.333 15.833 15.333H2.5C1.9697 15.333 1.46111 15.1222 1.08594 14.7471C0.71087 14.3719 0.5 13.8632 0.5 13.333V2.5C0.5 1.9697 0.710768 1.46111 1.08594 1.08594C1.46111 0.710768 1.9697 0.5 2.5 0.5Z"
         className="tw-fill-folder-icon-back tw-stroke-folder-icon-back"
@@ -31,29 +37,33 @@ function FolderIllustration() {
   );
 }
 
-export default function FolderCard({ name, description, isPinned = false, onOpen, onMoreClick }: FolderCardProps) {
+export default function FolderCard({ name, description, isPinned = false }: FolderCardProps) {
+  const [, setSearchParams] = useSearchParams();
+
+  const handleOpenFolder = () => {
+    // Functional update keeps unrelated params such as `branch`, sort and filters.
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.set('folder', name);
+        return next;
+      },
+      { replace: true }
+    );
+  };
+
   return (
     <DashboardCard
       name={name}
       description={description}
-      header={
-        <>
-          <span className="tw-flex tw-size-5 tw-items-center tw-justify-center">
-            <FolderIllustration />
-          </span>
-          {isPinned && (
-            <span className="tw-flex tw-size-5 tw-items-center tw-justify-center" aria-label="Pinned" role="img">
-              <Pin size={12} className="tw-fill-current tw-text-icon-default" />
-            </span>
-          )}
-        </>
-      }
+      icon={<FolderIllustration size={20} className="tw-p-px" />}
+      pinned={isPinned}
       endAction={
-        <Button variant="secondary" size="medium" isLucid trailingIcon="arrow-right" onClick={onOpen}>
+        <Button isLucid variant="secondary" size="medium" trailingIcon="arrow-right" onClick={handleOpenFolder}>
           Open
         </Button>
       }
-      onMoreClick={onMoreClick}
+      itemKind="folder"
     />
   );
 }

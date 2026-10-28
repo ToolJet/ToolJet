@@ -4,11 +4,23 @@ import { APP_ICON_COLORS } from '../../AppIcon';
 
 const MOCK_LATENCY_MS = 400;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const FOLDER_COUNT = 28;
-const STRAY_APP_COUNT = 104;
-// Folder 1 is oversized to exercise the virtualized, infinitely loaded view; folder 2 is empty.
+const FOLDER_COUNT = 25;
+const STRAY_APP_COUNT = 100;
+// How many of the first stray apps are pinned.
+const PINNED_STRAY_APP_COUNT = 4;
 const LARGE_FOLDER_APP_COUNT = 300;
 const MAX_FOLDER_APP_COUNT = 25;
+// Fixed counts for the first folders: folder 1 is oversized to exercise the virtualized, infinitely loaded view
+// and folder pagination, folders 2-4 are empty, and the rest are small. Later folders get random counts.
+const FIXED_FOLDER_APP_COUNTS = [LARGE_FOLDER_APP_COUNT, 0, 0, 0, 12, 8, 6, 10];
+// Folder indexes shown under "Pinned".
+const PINNED_FOLDER_INDEXES = [4, 5, 6];
+// Indexes of apps (within the stray apps, or within a folder by folder index) that are not yet synced to git.
+// Index 1 of the stray apps and index 2 of folder 1 are also pinned, to cover both flags on one card.
+const UNSYNCED_STRAY_APP_INDEXES = [1, 4, 7, 12];
+const UNSYNCED_APP_INDEXES_BY_FOLDER_INDEX = { 0: [2, 5, 20], 4: [0, 3], 7: [1] };
+// Folder index -> how many of its first apps are pinned.
+const PINNED_APP_COUNT_BY_FOLDER_INDEX = { 0: 3, 7: 2 };
 
 const USERS = [
   'Priya Shah',
@@ -62,15 +74,32 @@ function buildDataset() {
       icon: pick(configs.iconList),
       // Figma assigns colors in rotation.
       icon_color: APP_ICON_COLORS[appSequence % APP_ICON_COLORS.length],
+      is_pinned: false,
+      is_app_synced: true,
     };
   };
 
   const appsByFolderId = {};
+  const usedFolderNames = new Set();
+  // Folder names are unique per workspace; the folder view resolves a folder from its name.
+  const pickUniqueFolderName = () => {
+    const name = `${pick(NAME_PREFIXES)} ${pick(NAME_SUFFIXES)}`;
+    let uniqueName = name;
+    for (let copy = 2; usedFolderNames.has(uniqueName); copy += 1) uniqueName = `${name} ${copy}`;
+    usedFolderNames.add(uniqueName);
+    return uniqueName;
+  };
   const folders = Array.from({ length: FOLDER_COUNT }, (_, index) => {
     const id = `folder-${index + 1}`;
     const randomAppCount = Math.floor(random() * (MAX_FOLDER_APP_COUNT + 1));
-    const appCount = [LARGE_FOLDER_APP_COUNT, 0][index] ?? randomAppCount;
+    const appCount = FIXED_FOLDER_APP_COUNTS[index] ?? randomAppCount;
     const apps = Array.from({ length: appCount }, createApp);
+    apps.slice(0, PINNED_APP_COUNT_BY_FOLDER_INDEX[index] ?? 0).forEach((app) => {
+      app.is_pinned = true;
+    });
+    (UNSYNCED_APP_INDEXES_BY_FOLDER_INDEX[index] ?? []).forEach((appIndex) => {
+      if (apps[appIndex]) apps[appIndex].is_app_synced = false;
+    });
     appsByFolderId[id] = apps;
     const updatedAt = randomPastTimestamp(30);
     const lastActivityAt = apps.reduce(
@@ -80,17 +109,25 @@ function buildDataset() {
     return {
       kind: 'folder',
       id,
-      name: `${pick(NAME_PREFIXES)} ${pick(NAME_SUFFIXES)}`,
+      name: pickUniqueFolderName(),
       updated_at: new Date(updatedAt).toISOString(),
       last_activity_at: lastActivityAt,
       modified_by: pick(USERS),
       owner: pick(USERS),
       released_version: null,
       app_count: appCount,
+      is_pinned: PINNED_FOLDER_INDEXES.includes(index),
+      has_pinned_apps: apps.some((app) => app.is_pinned),
     };
   });
 
   const strayApps = Array.from({ length: STRAY_APP_COUNT }, createApp);
+  strayApps.slice(0, PINNED_STRAY_APP_COUNT).forEach((app) => {
+    app.is_pinned = true;
+  });
+  UNSYNCED_STRAY_APP_INDEXES.forEach((appIndex) => {
+    strayApps[appIndex].is_app_synced = false;
+  });
   return { folders, strayApps, appsByFolderId };
 }
 
@@ -110,6 +147,13 @@ const SORT_COMPARATORS = {
   activity_desc: (a, b) => b.last_activity_at.localeCompare(a.last_activity_at),
   activity_asc: (a, b) => a.last_activity_at.localeCompare(b.last_activity_at),
 };
+
+// Folders holding a pinned app belong to the pinned group too, as in the grid's Pinned section.
+const isInPinnedGroup = (item) => Boolean(item.is_pinned || item.has_pinned_apps);
+
+// The pinned group always comes first, then the requested sort.
+const compareBySort = (sort) => (a, b) =>
+  Number(isInPinnedGroup(b)) - Number(isInPinnedGroup(a)) || SORT_COMPARATORS[sort](a, b);
 
 const matchesSearch = (item, searchKey) => !searchKey || item.name.toLowerCase().includes(searchKey.toLowerCase());
 
@@ -144,7 +188,7 @@ function getRootItems(params, { signal } = {}) {
   const visibleItems = [
     ...folders.filter((folder) => isFolderVisible(folder, appsByFolderId[folder.id], params)),
     ...strayApps.filter((app) => matchesAppFilters(app, params) && matchesSearch(app, params.searchKey)),
-  ].sort(SORT_COMPARATORS[sort]);
+  ].sort(compareBySort(sort));
 
   const start = (page - 1) * perPage;
   return respondAfterLatency(
@@ -170,14 +214,16 @@ function getFolderItems(folderId, params, { signal } = {}) {
 
   const visibleApps = appsByFolderId[folderId]
     .filter((app) => matchesAppFilters(app, params) && (!searchApps || matchesSearch(app, searchKey)))
-    .sort(SORT_COMPARATORS[sort]);
+    .sort(compareBySort(sort));
 
   const start = (page - 1) * perPage;
   return respondAfterLatency(
     {
       meta: {
         total_count: visibleApps.length,
+        total_pages: Math.max(1, Math.ceil(visibleApps.length / perPage)),
         current_page: page,
+        per_page: perPage,
         has_more: start + perPage < visibleApps.length,
       },
       items: visibleApps.slice(start, start + perPage),

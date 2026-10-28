@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Grid2x2, ListTodo } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Rocket/Tabs/Tabs';
 import Tooltip from '@/components/ui/Rocket/Tooltip';
-import { NoMatchesFound } from './EmptyStates';
-import { FooterLoading, GridViewLoading } from './LoadingStates';
+import { useIsRootItemsLoading } from '../useIsRootItemsLoading';
 import GridView from './GridView';
 import ItemsList from '@/HomePage/ItemsList/ItemsList';
-import ListFooter from '@/HomePage/ItemsList/ListFooter';
 import { useItemsListStore } from '@/HomePage/ItemsList/store/itemsListStore';
+
+import type { TAppType } from '../helper';
 
 const VIEW_ACTIONS = [
   // { label: 'Filter', icon: 'funnel' },
@@ -19,22 +19,14 @@ const VIEW_ACTIONS = [
 
 // Actions sit beside TabsList, not inside it: a tablist may only own tabs (ARIA), and
 // Radix's arrow-key roving would skip them anyway.
-export default function ViewTabs() {
-  // TODO: Placeholder until search/filter results are wired; flip to preview the empty state.
-  const hasNoMatches = false;
-  // TODO: Placeholder until the loading trigger is decided; flip to preview the skeletons.
-  const isLoading = false;
+export default function ViewTabs({ appType }: { appType: TAppType }) {
+  const isLoading = useIsRootItemsLoading();
 
-  const setExpanded = useItemsListStore((state) => state.setExpanded);
-  const page = useItemsListStore((state: { query: { page: number } }) => state.query.page);
-  const gridScrollRef = useRef<HTMLDivElement>(null);
+  const setExpanded = useItemsListStore(
+    (state: { setExpanded: (expanded: Record<string, boolean>) => void }) => state.setExpanded
+  );
 
-  // A new page starts from the top, as in the list view.
-  useEffect(() => {
-    gridScrollRef.current?.scrollTo({ top: 0 });
-  }, [page]);
-
-  const [selectedView, setSelectedView] = useState('list');
+  const [selectedView, setSelectedView] = useState('grid');
 
   const handleCollapseFolder = () => {
     setExpanded({});
@@ -76,18 +68,12 @@ export default function ViewTabs() {
 
       {/* Panels fill the remaining height so only their content scrolls; `data-[state=active]` keeps Radix's `hidden` working. */}
       <TabsContent value="list" className="tw-min-h-0 tw-flex-col data-[state=active]:tw-flex">
-        {hasNoMatches && !isLoading ? <NoMatchesFound /> : <ItemsList isLoading={isLoading} />}
+        <ItemsList isLoading={isLoading} />
       </TabsContent>
 
-      {/* Content scrolls inside so the loading footer stays pinned below it, as in the list view. */}
+      {/* Content scrolls inside so the footer stays pinned below it, as in the list view. */}
       <TabsContent value="grid" className="tw-min-h-0 tw-flex-col data-[state=active]:tw-flex">
-        <div
-          ref={gridScrollRef}
-          className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-y-auto tw-px-[4.375rem]"
-        >
-          {isLoading ? <GridViewLoading /> : hasNoMatches ? <NoMatchesFound /> : <GridView />}
-        </div>
-        {isLoading ? <FooterLoading /> : <ListFooter />}
+        <GridView isLoading={isLoading} appType={appType} />
       </TabsContent>
     </Tabs>
   );

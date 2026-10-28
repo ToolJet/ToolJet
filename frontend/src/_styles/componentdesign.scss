@@ -80,6 +80,8 @@
     --interactive-weak: rgba(255, 255, 255, 0);
     --interactive-default: rgba(136, 144, 153, 0.08);
     --controls-base-inactive: rgba(136, 144, 153, 0.12);
+    // edge shadow of a docked (sticky) table column; no dark variant in Figma yet
+    --docked-column-shadow: rgba(15, 23, 41, 0.12);
     --interactive-hover: rgba(136, 144, 153, 0.12);
     --interactive-selected: rgba(136, 144, 153, 0.18);
     --interactive-disabled: rgba(255, 255, 255, 0);

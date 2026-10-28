@@ -16,8 +16,9 @@ import BuildWithAIButton from './BuildWithAIButton';
 interface NoAppsExistProps {
   icon: React.ReactNode;
   title: string;
-  description: string;
+  description?: string;
   appType: TAppType;
+  showContent?: boolean;
   onAddApp?: () => void;
   onAddFolder?: () => void;
   onBuildWithAI?: () => void;
@@ -28,10 +29,11 @@ export function NoAppsExist({
   title,
   description,
   appType,
+  showContent = false,
   onAddApp,
   onAddFolder,
   onBuildWithAI,
-}: NoAppsExistProps & { appType: TAppType }) {
+}: NoAppsExistProps) {
   return (
     <Empty className="tw-gap-3 tw-px-4 tw-py-10" data-cy="dashboard-no-apps">
       <EmptyHeader className="tw-gap-0">
@@ -41,13 +43,17 @@ export function NoAppsExist({
 
         <EmptyTitle className="tw-mt-2">{title}</EmptyTitle>
 
-        <EmptyDescription className="tw-mt-0.5 tw-whitespace-pre-line">{description}</EmptyDescription>
+        {Boolean(description) && (
+          <EmptyDescription className="tw-mt-0.5 tw-whitespace-pre-line">{description}</EmptyDescription>
+        )}
       </EmptyHeader>
 
-      <EmptyContent className="tw-flex-row tw-justify-center tw-gap-1">
-        <AddNewMenu appType={appType} onAddApp={onAddApp} onAddFolder={onAddFolder} />
-        <BuildWithAIButton onClick={onBuildWithAI} data-cy="no-apps-build-with-ai" />
-      </EmptyContent>
+      {showContent && (
+        <EmptyContent className="tw-flex-row tw-justify-center tw-gap-1">
+          <AddNewMenu appType={appType} onAddApp={onAddApp} onAddFolder={onAddFolder} />
+          <BuildWithAIButton onClick={onBuildWithAI} data-cy="no-apps-build-with-ai" />
+        </EmptyContent>
+      )}
     </Empty>
   );
 }
@@ -68,7 +74,7 @@ function NoResults({ title, description, 'data-cy': dataCy }: NoResultsProps) {
 
         <EmptyTitle className="tw-mt-2.5">{title}</EmptyTitle>
 
-        {description && <EmptyDescription className="tw-mt-0.5">{description}</EmptyDescription>}
+        {Boolean(description) && <EmptyDescription className="tw-mt-0.5">{description}</EmptyDescription>}
       </EmptyHeader>
     </Empty>
   );

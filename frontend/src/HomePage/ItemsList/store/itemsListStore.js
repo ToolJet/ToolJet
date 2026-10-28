@@ -12,6 +12,8 @@ const initialState = {
   expanded: {},
   // Loaded children per folder id: { items, page, hasMore, status: 'loading' | 'loadingMore' | 'success' | 'error' }.
   folders: {},
+  // The folder opened in grid view: one numbered page of its apps, unlike `folders`, which accumulates pages.
+  folderView: { items: [], meta: null, status: 'idle' },
   // TanStack RowSelectionState keyed by row id; shared by the root table and every folder table.
   rowSelection: {},
 };
@@ -21,6 +23,7 @@ export const getSelectedKind = (rowSelection) => Object.keys(rowSelection)[0]?.s
 
 // Kept outside the store because immer freezes state and an AbortController must stay mutable.
 let rootItemsRequest = null;
+let folderViewRequest = null;
 const folderItemsRequests = new Map();
 
 export const useItemsListStore = createZustandStoreWithImmer(
@@ -96,6 +99,48 @@ export const useItemsListStore = createZustandStoreWithImmer(
           state.root.status = 'error';
         });
       }
+    },
+
+    fetchFolderViewItems: async (folderId, { sort, releaseStatus, visibility }) => {
+      folderViewRequest?.abort();
+      const controller = new AbortController();
+      folderViewRequest = controller;
+
+      // Meta is kept while a new page loads so the footer doesn't flicker.
+      set((state) => {
+        state.folderView.items = [];
+        state.folderView.status = 'loading';
+      });
+
+      try {
+        const { items, meta } = await dashboardItemsService.getFolderItems(
+          folderId,
+          {
+            sort,
+            releaseStatus,
+            visibility,
+            searchKey: get().query.searchKey,
+            page: get().query.page,
+            perPage: ITEMS_PER_PAGE,
+          },
+          { signal: controller.signal }
+        );
+        set((state) => {
+          state.folderView = { items, meta, status: 'success' };
+        });
+      } catch {
+        if (controller.signal.aborted) return;
+        set((state) => {
+          state.folderView.status = 'error';
+        });
+      }
+    },
+
+    resetFolderView: () => {
+      folderViewRequest?.abort();
+      set((state) => {
+        state.folderView = { items: [], meta: null, status: 'idle' };
+      });
     },
 
     fetchFolderItems: async (folderId, { sort, releaseStatus, visibility }, { nextPage = false } = {}) => {

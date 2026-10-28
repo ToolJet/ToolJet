@@ -71,6 +71,14 @@ Figma: `Dashboards--Sep-2026` — list `1118-98555`, table constraints `1222-127
 - The Delete button is UI only; wiring bulk actions is separate work.
 
 ### Layout
+- **Docked Name column** (Figma 3352-14623):
+  - The Name column is `minmax(328px, 1fr)`; below that width the list scrolls sideways.
+  - The checkbox column and the Name block (including the ⋮ menu, which now sits beside the name) stay docked on the left; the info columns scroll under them.
+  - A 10px edge shadow (`--docked-column-shadow`) shows only while the list is scrolled sideways.
+  - Root rows and the header use CSS `sticky`. Sticky offsets are measured from the scroller's content edge (inside its 70px padding), so the gutter docks at `-70px` and the name at `0`.
+  - Apps inside an open folder can't use `sticky`, because the folder's own scroll box would be their reference. They follow the list's horizontal scroll timeline instead (`itemsList.scss`: a scroll-driven animation from 0 to `--list-max-scroll-left`, kept current by a ResizeObserver), so they move in the same frame as sticky rows. Browsers without `animation-timeline` fall back to a `--list-scroll-left` variable written on scroll, which trails by about a frame.
+  - The right 70px page gutter is a margin on the scroller, not padding: content shows through a scroller's padding while scrolled. The scrollbars therefore end at the table's right edge, not the page edge.
+  - The selection checkbox column now spans the full 70px page padding, so it also hides columns that scroll under the padding.
 - Info columns are a fixed 160px, truncated with a tooltip on hover.
 - The Name column takes the remaining space and truncates first.
 
@@ -91,5 +99,9 @@ Figma: `Dashboards--Sep-2026` — list `1118-98555`, table constraints `1222-127
 - [ ] The empty-folder row ("No apps in this folder") and the load-error row ("Couldn't load apps. Retry") have no Figma design yet.
 - [ ] When a folder's scroll area reaches its end, further scrolling continues into the main list (browser default). Should it stop at the folder instead (`overscroll-behavior: contain`)?
 - [ ] Apps selected inside a folder stay selected after the folder is collapsed (they're hidden but counted). Should collapsing deselect them?
-- [ ] The column header uses `pr-3` while rows use `px-2`, so the info-column labels sit 4px left of the row values.
 - [ ] `--controls-base-inactive` (disabled checkbox/radio background) was missing from the token files, which made Rocket's disabled `Checkbox`/`RadioGroup` invisible everywhere. It has been added; the light value is from Figma, but the dark value `rgba(133, 140, 148, 0.12)` is inferred and needs design confirmation.
+- [ ] Row action menus (Figma 1194-110986 app / 1194-121374 folder) are UI only; no item has a handler yet. The folder menu's Pin/Unpin item waits for pinning (Phase 6).
+- [ ] Figma labels the folder menu's first item "Rename app"; built as "Rename folder", matching the stray "Rename folder" label in the frame. Confirm with design.
+- [ ] Menu item icons were matched by eye from the screenshot (`app-window`, `pencil-ruler`, `copy`, `folder-input`, `file-up`, `trash-2`); Figma's metadata doesn't expose the Lucide names.
+- [ ] The `--docked-column-shadow` color `rgba(15, 23, 41, 0.12)` is a raw Figma value without a variable, and there is no dark variant.
+- [ ] Tablet layout (Figma uses 24px page padding there) is not built; the checkbox column needs 70px of padding.

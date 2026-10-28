@@ -21,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 
 // Keyed by the legacy icon names stored in the DB; remove once icons are migrated to lucide names there.
-const ICONS_BY_LEGACY_NAME = {
+export const ICONS_BY_LEGACY_NAME = {
   apps: Blocks,
   archive: BriefcaseBusiness,
   floppydisk: FileText,

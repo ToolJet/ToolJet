@@ -13,7 +13,7 @@ import { ITEMS_PER_PAGE, useItemsListStore } from './store/itemsListStore';
 
 // Shared with the loading footer so both keep the same height and border.
 export const FOOTER_CLASS =
-  'tw-flex tw-h-12 tw-shrink-0 tw-items-center tw-justify-between tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-px-20';
+  'tw-flex tw-h-12 tw-shrink-0 tw-items-center tw-justify-between tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-px-[4.375rem]';
 
 // First, last and the current page's neighbours; a gap of one page shows that page instead of an ellipsis.
 function getPageItems(currentPage, totalPages) {
@@ -28,15 +28,18 @@ function getPageItems(currentPage, totalPages) {
   });
 }
 
-export default function ListFooter() {
-  const meta = useItemsListStore((state) => state.root.meta);
+// Defaults to the root list's page; pass `meta` to paginate another list, e.g. the folder opened in grid view.
+export default function ListFooter({ meta: metaProp, itemLabel = 'items' }) {
+  const rootMeta = useItemsListStore((state) => state.root.meta);
   const setPage = useItemsListStore((state) => state.setPage);
+  const meta = metaProp ?? rootMeta;
 
   if (!meta?.total_count) return null;
 
   const { current_page: currentPage, total_pages: totalPages, total_count: totalCount } = meta;
-  const firstItem = (currentPage - 1) * ITEMS_PER_PAGE + 1;
-  const lastItem = Math.min(currentPage * ITEMS_PER_PAGE, totalCount);
+  const perPage = meta.per_page ?? ITEMS_PER_PAGE;
+  const firstItem = (currentPage - 1) * perPage + 1;
+  const lastItem = Math.min(currentPage * perPage, totalCount);
 
   // Rocket's links are anchors; href="#" keeps them keyboard-focusable, so the navigation itself is prevented.
   const goToPage = (page) => (event) => {
@@ -47,7 +50,7 @@ export default function ListFooter() {
   return (
     <div className={FOOTER_CLASS}>
       <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">
-        Showing {firstItem}-{lastItem} of {totalCount} items
+        Showing {firstItem}-{lastItem} of {totalCount} {itemLabel}
       </p>
 
       <Pagination className="tw-mx-0 tw-w-auto">

@@ -14,28 +14,40 @@ interface AppCardProps {
   /** Legacy icon name stored on the app; see `HomePage/AppIcon.jsx`. */
   icon?: string;
   iconColor?: string;
+  isPinned?: boolean;
+  isUnsynced?: boolean;
   onLaunch?: () => void;
   onEdit?: () => void;
   onMoreClick?: () => void;
 }
 
-export default function AppCard({ name, description, icon, iconColor, onLaunch, onEdit, onMoreClick }: AppCardProps) {
+export default function AppCard({
+  name,
+  description,
+  icon,
+  isPinned = false,
+  isUnsynced = false,
+  onLaunch,
+  onEdit,
+}: AppCardProps) {
   return (
     <DashboardCard
       name={name}
       description={description}
-      header={<AppIcon icon={icon} color={iconColor} size={20} />}
+      icon={<AppIcon icon={icon} color="blue" size={20} />}
+      pinned={isPinned}
       startAction={
-        <Button variant="ghost" size="medium" isLucid leadingIcon="play" onClick={onLaunch}>
+        <Button isLucid variant="ghost" size="medium" leadingIcon="play" onClick={onLaunch}>
           Launch
         </Button>
       }
       endAction={
-        <Button variant="secondary" size="medium" isLucid leadingIcon="square-pen" onClick={onEdit}>
+        <Button isLucid variant="secondary" size="medium" leadingIcon="square-pen" onClick={onEdit}>
           Edit
         </Button>
       }
-      onMoreClick={onMoreClick}
+      itemKind="app"
+      isUnsynced={isUnsynced}
     />
   );
 }

@@ -12,6 +12,11 @@ export interface RootItem {
   app_count?: number;
   icon?: string;
   icon_color?: string;
+  is_pinned?: boolean;
+  /** Folders only: at least one app inside is pinned. */
+  has_pinned_apps?: boolean;
+  /** Apps only: false when the app has changes not yet pushed to git. */
+  is_app_synced?: boolean;
 }
 
 const toFolderItem = (item: RootItem): FolderItem => {
@@ -20,8 +25,8 @@ const toFolderItem = (item: RootItem): FolderItem => {
     id: item.id,
     name: item.name,
     description: `${appCount} ${appCount === 1 ? 'app' : 'apps'} • Edited ${moment(item.updated_at).format('MMM DD, YYYY')}`,
-    // TODO: Pinning has no API field yet.
-    isPinned: false,
+    isPinned: item.is_pinned ?? false,
+    hasPinnedApps: item.has_pinned_apps ?? false,
   };
 };
 
@@ -31,6 +36,8 @@ const toAppItem = (item: RootItem): AppItem => ({
   description: `Edited ${moment(item.updated_at).fromNow()}${item.modified_by ? ` by ${item.modified_by.name}` : ''}`,
   icon: item.icon,
   iconColor: item.icon_color,
+  isPinned: item.is_pinned ?? false,
+  isUnsynced: item.is_app_synced === false,
 });
 
 export const toGridItems = (items: RootItem[]) => ({

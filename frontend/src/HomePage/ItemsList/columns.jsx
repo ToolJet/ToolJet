@@ -3,7 +3,6 @@ import moment from 'moment';
 
 import TruncatedText from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import ItemNameCell from './ItemNameCell';
-import { RowMenuButton } from './RowHoverActions';
 
 // "1 hour ago" / "Yesterday" / "3 days ago" / "2 weeks ago", then an absolute date after a month.
 function formatLastModified(isoDate) {
@@ -28,7 +27,8 @@ export const columns = [
     id: 'name',
     header: 'Name',
     accessorKey: 'name',
-    meta: { width: 'minmax(0, 1fr)', sortField: 'name' },
+    // Figma 3352-14623: below 328px the Name column stops shrinking and the list scrolls sideways instead.
+    meta: { width: 'minmax(328px, 464px)', sortField: 'name' },
     // Folder child tables pass `meta.depth: 1`; the root table has no meta.
     cell: ({ row, table }) => <ItemNameCell row={row} depth={table.options.meta?.depth ?? 0} />,
   },
@@ -60,12 +60,6 @@ export const columns = [
     accessorFn: (item) => (item.kind === 'app' ? (item.released_version?.name ?? '-') : ''),
     meta: { width: '160px' },
     cell: ({ getValue }) => renderTruncatedText(getValue()),
-  },
-  {
-    id: 'actions',
-    header: () => <span className="tw-sr-only">Actions</span>,
-    meta: { width: '28px' },
-    cell: ({ row }) => <RowMenuButton itemName={row.original.name} />,
   },
 ];
 

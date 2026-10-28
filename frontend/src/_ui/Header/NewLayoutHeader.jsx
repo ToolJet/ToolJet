@@ -43,17 +43,11 @@ export default function NewLayoutHeader({ featureAccess, showBranchingBtns }) {
   return (
     <header
       className={cn(
-        'tw-grid tw-grid-cols-3 tw-items-center tw-h-12 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-pl-3 tw-pr-8',
+        'tw-grid tw-grid-cols-3 tw-items-center tw-h-12 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-px-3',
         { 'tw-grid-cols-1': isHomePageRoute }
       )}
     >
-      <div className="tw-flex tw-items-center tw-gap-1">
-        <OrganizationList variant="new" />
-
-        {Object.keys(featureAccess).length > 0 && (
-          <LicenseBanner limits={featureAccess} showNavBarActions={true} showConsultationBtn={isHomePageRoute} />
-        )}
-      </div>
+      <OrganizationList variant="new" />
 
       {!isHomePageRoute && (
         <>
@@ -75,6 +69,10 @@ export default function NewLayoutHeader({ featureAccess, showBranchingBtns }) {
             </div>
           )}
         </>
+      )}
+
+      {Object.keys(featureAccess).length > 0 && (
+        <LicenseBanner limits={featureAccess} showNavBarActions={true} showConsultationBtn={isHomePageRoute} />
       )}
     </header>
   );

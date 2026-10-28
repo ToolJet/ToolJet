@@ -26,6 +26,6 @@
     "noImplicitReturns": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "ee/modules/**/*.ts", "ee/modules/**/*.tsx"],
   "exclude": ["node_modules", "build"]
 }

@@ -8,7 +8,7 @@ const TOOLTIP_DELAY = 700; // matches Radix Tooltip default delayDuration
 
 // Note: The element needs a constrained width (e.g. tw-max-w-*, a flex/grid parent, etc.)
 // for overflow to be detected. Without a width constraint, text expands and never truncates.
-export default function TruncatedText({ as: Tag = 'p', className, children, content, ...props }) {
+export default function TruncatedText({ as: Tag = 'p', className, children, content, arrow, ...props }) {
   const timerRef = useRef(null);
   const [open, setOpen] = useState(false);
   const { ref, isOverflowing } = useTextOverflow();
@@ -25,7 +25,7 @@ export default function TruncatedText({ as: Tag = 'p', className, children, cont
   };
 
   return (
-    <TooltipComp content={content} open={isOverflowing && open}>
+    <TooltipComp content={content} open={isOverflowing && open} arrow={arrow}>
       <Tag
         {...props}
         ref={ref}

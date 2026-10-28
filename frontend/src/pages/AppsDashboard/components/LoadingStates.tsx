@@ -5,7 +5,6 @@ import { Skeleton } from '@/components/ui/Rocket/Skeleton/Skeleton';
 import { GRID_TEMPLATE_COLUMNS } from '@/HomePage/ItemsList/columns';
 import { INFO_SKELETON_WIDTHS, SKELETON_BAR_CLASS } from '@/HomePage/ItemsList/FolderStatusRow';
 import { FOOTER_CLASS } from '@/HomePage/ItemsList/ListFooter';
-import { GRID_CLASS } from './GridSection';
 
 const SKELETON_CLASS = 'tw-rounded tw-bg-interactive-default';
 const LIST_ROW_COUNT = 8;
@@ -14,6 +13,9 @@ const GRID_SECTIONS = [
   { id: 'pinned', cardCount: 4, isPinned: true },
   { id: 'folders', cardCount: 8, isPinned: false },
 ];
+
+// Figma 2149-152187: two rows of 4 app cards.
+const FOLDER_VIEW_CARD_COUNT = 8;
 
 const range = (count: number) => Array.from({ length: count }, (_, index) => index);
 
@@ -55,18 +57,28 @@ function CardSkeleton({ isPinned }: { isPinned: boolean }) {
   );
 }
 
-export function GridViewLoading() {
+export function GridViewLoading({ classes }: { classes?: { gridContainer: string } }) {
   return (
     <div aria-hidden className="tw-flex tw-flex-col tw-gap-6">
       {GRID_SECTIONS.map(({ id, cardCount, isPinned }) => (
         <div key={id} className="tw-flex tw-flex-col tw-gap-2">
           <Skeleton className={cn(SKELETON_CLASS, 'tw-h-4 tw-w-[120px]')} />
-          <div className={GRID_CLASS}>
+          <div className={cn(classes?.gridContainer)}>
             {range(cardCount).map((index) => (
               <CardSkeleton key={index} isPinned={isPinned} />
             ))}
           </div>
         </div>
+      ))}
+    </div>
+  );
+}
+
+export function FolderViewLoading({ classes }: { classes?: { gridContainer: string } }) {
+  return (
+    <div aria-hidden className={cn(classes?.gridContainer)}>
+      {range(FOLDER_VIEW_CARD_COUNT).map((index) => (
+        <CardSkeleton key={index} isPinned={false} />
       ))}
     </div>
   );

@@ -81,6 +81,7 @@ module.exports = {
         'interactive-weak': 'var(--interactive-weak)',
         'interactive-default': 'var(--interactive-default)',
         'controls-base-inactive': 'var(--controls-base-inactive)',
+        'docked-column-shadow': 'var(--docked-column-shadow)',
         'interactive-hover': 'var(--interactive-hover)',
         'interactive-selected': 'var(--interactive-selected)',
         'interactive-disabled': 'var(--interactive-disabled)',

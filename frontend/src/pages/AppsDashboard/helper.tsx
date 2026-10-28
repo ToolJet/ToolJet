@@ -1,6 +1,8 @@
 import React from 'react';
 import { LayoutTemplate, Workflow, ToyBrick } from 'lucide-react';
 
+import { authenticationService } from '@/_services/authentication.service';
+
 export const appTypeToDisplayNameMapping = {
   'front-end': 'app',
   module: 'module',
@@ -50,3 +52,40 @@ export const staticContentMappingByAppType: TStaticContentMappingByAppType = {
     },
   },
 } as const;
+
+export function canUserPerformWorkflowAction(app = {} as { id?: string }) {
+  const { user_permissions, workflow_group_permissions, super_admin, admin } =
+    authenticationService.currentSessionValue;
+
+  if (super_admin)
+    return {
+      hasCreatePermission: true,
+      hasUpdatePermission: true,
+      hasDeletePermission: true,
+      hasReadPermission: true,
+      hasViewPermission: true,
+    };
+
+  const canCreate = admin || user_permissions?.workflow_create;
+  const canUpdate =
+    workflow_group_permissions?.is_all_editable || workflow_group_permissions?.editable_workflows_id?.includes(app?.id);
+  const canExecute =
+    canUpdate ||
+    workflow_group_permissions?.is_all_executable ||
+    workflow_group_permissions?.executable_workflows_id?.includes(app?.id);
+  const canDelete = user_permissions?.workflow_delete || admin;
+
+  return {
+    hasCreatePermission: canCreate,
+    hasUpdatePermission: canUpdate,
+    hasDeletePermission: canDelete,
+    hasReadPermission: canCreate || canUpdate || canDelete || canExecute,
+    hasViewPermission:
+      canCreate ||
+      canUpdate ||
+      canDelete ||
+      canExecute ||
+      workflow_group_permissions?.editable_workflows_id?.length > 0 ||
+      workflow_group_permissions?.executable_workflows_id?.length > 0,
+  };
+}
