@@ -24,16 +24,20 @@ SCIM is configured entirely via server-side environment variables. Set these on 
 
 | Variable | Required | Description |
 |:---------|:---------|:------------|
-| `SCIM_ENABLED` | Yes | Must be `"true"` to enable the SCIM API |
-| `SCIM_HEADER_AUTH_TOKEN` | Yes | Bearer token — any secret string you generate (e.g. a UUID) |
-| `SCIM_BASIC_AUTH_USER` | Yes | Username for Basic auth |
-| `SCIM_BASIC_AUTH_PASS` | Yes | Password for Basic auth |
+| `SCIM_ENABLED` | Yes | Must be `"true"` to enable the SCIM API. |
+| `SCIM_HEADER_AUTH_TOKEN` | For Bearer auth | Bearer token. Use a long random secret, for example from `openssl rand -hex 32`. |
+| `SCIM_BASIC_AUTH_USER` | For Basic auth | Username for Basic auth. |
+| `SCIM_BASIC_AUTH_PASS` | For Basic auth | Password for Basic auth. |
+
+Set the credentials for the authentication method your Identity Provider uses. Bearer and Basic auth are both accepted at the same time.
 
 :::warning
-Make sure `SCIM_ENABLED` is set to `"true"` — otherwise all SCIM endpoints will return errors.
+- Make sure `SCIM_ENABLED` is set to `"true"`. Otherwise, all SCIM endpoints return `401` with `SCIM not enabled`.
+- Set `SCIM_HEADER_AUTH_TOKEN` to a strong value whenever SCIM is enabled, even if your Identity Provider uses Basic auth. Don't reuse the sample values from `.env.example`.
+- SCIM also needs a license that includes SCIM. Without it, the Users and Groups endpoints return `451`.
 :::
 
-Once the server restarts with these variables set, copy the token value into your Identity Provider's SCIM connector configuration. Both Bearer and Basic auth are supported simultaneously.
+Once the server restarts with these variables set, copy the token value (or the Basic credentials) into your Identity Provider's SCIM connector configuration.
 
 ## Authentication
 
@@ -76,10 +80,14 @@ All SCIM operations — user and group creation, updates, and deletions — are 
 - ToolJet only manages **Custom Groups** via SCIM.
 - **User roles** (`admin`, `builder`, `end-user`) must be passed as part of the user's attributes — not through group membership.
 - If no role is provided during provisioning, the user defaults to **end-user**. This may cause permission mismatches if the user belongs to a builder or admin custom group.
+- A full replace (`PUT /Users/{id}`) without a role resets the user to **end-user**, and a `PUT` without `groups` removes the user from all custom groups. Map the role attribute for every user before you turn on provisioning updates.
 
 ### User Management
 
 - Users must be **assigned to the ToolJet SCIM application** in your IdP before any provisioning events (create, update, deactivate, delete) are synchronized with ToolJet.
+- ToolJet uses `userName` as the user's email address. Send it in lowercase: ToolJet stores emails in lowercase, and the `userName eq` filter is case-sensitive.
+- Deactivating a user (`active: false`) and deleting a user (`DELETE /Users/{id}`) both **archive** the user in every workspace. ToolJet doesn't permanently delete users over SCIM.
+- Reactivating a user (`active: true`) unarchives them in the default workspace only. Unarchive them in other workspaces from ToolJet.
 
 ### Group Management
 
@@ -93,11 +101,14 @@ ToolJet accepts SCIM updates for the following user attributes:
 
 | Attribute | Description |
 |:----------|:------------|
+| `userName` | Email address. ToolJet uses `userName` first, then the primary `emails[].value`. |
 | `name.givenName` | First name |
 | `name.familyName` | Last name |
-| `emails[].value` | Email address |
 | `active` | Account active / archived status |
-| `groups` | Group memberships |
+| `groups` | Custom group memberships, replaced on `PUT`. To change memberships individually, use the [Groups](/api/scim/groups/patch-group) endpoints. |
+| `urn:ietf:params:scim:schemas:extension:tooljet:User:2.0:role` | ToolJet role: `admin`, `builder`, or `end-user` |
+
+`PATCH /Users/{id}` applies `replace` operations only; `add` and `remove` operations are ignored.
 
 ## Supported Resources
 
