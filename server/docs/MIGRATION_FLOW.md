@@ -329,11 +329,11 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 | `migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output, redaction, failed step |
 | `migrations/unit/migration-lint.spec.ts` | The rules in `migration-lint.ts`, then every real migration against them; the frozen pre-cutoff list |
 | `migrations/unit/lock-probe.spec.ts` | Which table locks each phase may take (`classifyLocks`). CI also runs `npm run db:probe-locks` on a copy of the migration snapshot and fails on a forbidden lock |
-| `migrations/unit/legacy-3-21-58-upgrade.spec.ts` | Legacy variants, loosen and restore steps. Delete with `legacy-3-21-58-upgrade.ts` |
+| `migrations/unit/legacy-3-21-58-upgrade.spec.ts` | Loosen and restore steps (rerun-safe saves, two-step checks, index if missing); every variant names a real data migration. Delete with `legacy-3-21-58-upgrade.ts` |
 | `migrations/e2e/pods-upgrading-together.spec.ts` | Three real pods on one database: no crash loop, every pod boots only after the migration, migration body runs once, a `NODE_ENV=production` race, active lock only during work (a pod with nothing to do never waits on it) and released on SIGKILL |
 | `migrations/e2e/schema-then-data-then-cleanup.spec.ts` | Split phases, single-transaction run for an old database, lock-timeout retry, enum `ADD VALUE` (including one a schema migration uses), boot during a long data phase, skip-if-locked, connection options, cleanup hold-back and stop rules, `beforeCommit()`, deadlock retry, a failing data migration (single-transaction run undoes the schema too; data phase keeps the schema and records nothing) |
 | `migrations/e2e/short-lock-steps.spec.ts` | `withShortLock` against a held reader lock, and readers queued behind it getting through; inline inside an open transaction; `setNotNull` |
-| `migrations/e2e/upgrade-from-3-21-58.spec.ts` | A 3.21.58 database upgraded async ends like a single-transaction upgrade; cleanup held back once; failed data restores loosened rules; branchless rows read on the default branch. Delete with `legacy-3-21-58-upgrade.ts` |
+| `migrations/e2e/upgrade-from-3-21-58.spec.ts` | A 3.21.58 database upgraded async matches a single-transaction upgrade after the data phase and at the end; the data phase takes no stalling lock but the final key swap (locks recorded by `fixtures/print-data-phase-locks.js`); repository reads match before and after the data phase; cleanup held back once; a failed data restores the old rules, and a rule old rows no longer meet stays NOT VALID; rows old pods write during and after the data phase end on the default branch. Delete with `legacy-3-21-58-upgrade.ts` |
 | `app/unit/migration-gate.middleware.spec.ts` | Blocking passes everything, gated vs ungated paths, 503 per state, async allowlist, opt-out log |
 | `app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, real runner output parsed into the run, cleanup run, status cache, fail-open; an async-mode app: 503 per state with `Retry-After` on writes, reads and `/api/health` pass, 5s `lock_timeout` |
 | `apps/e2e/viewer-cache-stamps.spec.ts` | The released-app cache key moves when a migration is recorded, and differs while one runs |
@@ -345,6 +345,6 @@ Fixtures are in `test/modules/migrations/fixtures/`. The e2e specs run the real 
 - `migration-files.ts`: reads this repo's migrations and entities for the lint checks.
 - `fake-runner.js`: a stand-in runner for `app/e2e/migration-runs.spec.ts`.
 - `migration-sets/<set>/{schema,data,cleanup}/`: `concurrent-pods` (sentinels, loaded by every set, and a slow schema migration), `split-phases`, `cleanup-phase`, `data-before-commit`, `pre-cutoff`.
-- `3-21-58-database.sql`: a seeded 3.21.58 database (synthetic data, secrets redacted).
+- `3-21-58-database.sql`: a seeded 3.21.58 database (synthetic data and imported templates, secrets redacted). Its header says how to rebuild it.
 
 Start pods with `process.execPath`, **not** `npx`: `npx` does not forward SIGKILL and leaves the pod orphaned.
