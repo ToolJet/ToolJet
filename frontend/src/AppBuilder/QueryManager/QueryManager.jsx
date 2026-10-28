@@ -7,7 +7,7 @@ import { CodeHinterContext } from '@/AppBuilder/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { useCodeSearchReveal } from '@/AppBuilder/CodeBuilder/useCodeSearchReveal';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 // name -> resolved default, for a list of { name, defaultValue } (parameters, or a library query's inputs).
 const resolveDefaults = (list) =>
