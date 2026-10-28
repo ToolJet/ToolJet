@@ -15446,6 +15446,12 @@ textarea.tj-text-input-widget {
   opacity: 1;
 }
 
+// keeps the field actions (e.g. a cog) visible while their popover or keyboard focus is inside
+.fx-button-container.show-on-focus-within:focus-within,
+.fx-button-container.show-on-focus-within:has([data-state='open']) {
+  opacity: 1;
+}
+
 .add-new-group-modal {
   .modal-title {
     display: flex;

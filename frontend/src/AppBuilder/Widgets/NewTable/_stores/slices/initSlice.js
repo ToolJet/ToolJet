@@ -2,6 +2,7 @@ import { has } from 'lodash';
 import { utilityForNestedNewRow } from '../helper';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
+import { resolveAddNewRowIn } from '../../_utils/addNewRowConfig';
 
 export const createInitSlice = (set, get) => ({
   initializeComponent: (id) => {
@@ -49,6 +50,10 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.displaySearchBox = properties?.displaySearchBox ?? true;
         state.components[id].properties.showFilterButton = properties?.showFilterButton ?? true;
         state.components[id].properties.showAddNewRowButton = properties?.showAddNewRowButton ?? true;
+        state.components[id].properties.addNewRowIn = resolveAddNewRowIn(properties?.addNewRowIn);
+        // missing on apps saved before the property existed, which always allowed several rows
+        state.components[id].properties.allowAddingMultipleRows = properties?.allowAddingMultipleRows ?? true;
+        state.components[id].properties.addNewRowColumns = properties?.addNewRowColumns;
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
         state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? false;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
