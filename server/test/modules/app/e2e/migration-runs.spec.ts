@@ -569,49 +569,51 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       );
     });
 
-    describe('cleanup run | after writes reopen', () => {
-      const marker = join(tmpdir(), `tooljet-cleanup-${process.pid}`);
-      const cleanupRan = () => existsSync(marker);
+    describe('cleanup run: dropping old schema once the upgrade has succeeded', () => {
+      // The fake runner creates this file when it runs the cleanup phase.
+      const cleanupMarkerFile = join(tmpdir(), `tooljet-cleanup-${process.pid}`);
+      const cleanupRan = () => existsSync(cleanupMarkerFile);
 
-      beforeEach(() => rmSync(marker, { force: true }));
+      beforeEach(() => rmSync(cleanupMarkerFile, { force: true }));
       afterEach(() => {
         delete process.env.FAKE_CLEANUP_MARKER;
         delete process.env.FAKE_CLEANUP_EXIT;
         jest.restoreAllMocks();
       });
 
-      async function runAndCleanupToExit(args = ''): Promise<void> {
-        process.env.FAKE_CLEANUP_MARKER = marker;
+      /** Runs the upgrade, then waits for the cleanup process it may start to exit. */
+      async function runUpgradeAndWaitForCleanup(args = ''): Promise<void> {
+        process.env.FAKE_CLEANUP_MARKER = cleanupMarkerFile;
         await runToExit(args);
         const internals = service as unknown as { cleanupChild: unknown };
         while (internals.cleanupChild) await new Promise((resolve) => setTimeout(resolve, 50));
       }
 
-      it('should start cleanup once the run is recorded as succeeded', async () => {
+      it('should start cleanup only after the upgrade is recorded as succeeded', async () => {
         const internals = service as unknown as { updateRun: jest.Mock; runCleanupChild: jest.Mock };
-        const recorded = jest.spyOn(internals, 'updateRun');
-        const cleanup = jest.spyOn(internals, 'runCleanupChild');
+        const recordRun = jest.spyOn(internals, 'updateRun');
+        const startCleanup = jest.spyOn(internals, 'runCleanupChild');
 
-        await runAndCleanupToExit();
+        await runUpgradeAndWaitForCleanup();
 
-        const succeededAt = recorded.mock.calls.findIndex((call) => call[2] === 'succeeded');
+        const succeededAt = recordRun.mock.calls.findIndex((call) => call[2] === 'succeeded');
         expect(succeededAt).toBeGreaterThanOrEqual(0);
-        expect(recorded.mock.invocationCallOrder[succeededAt]).toBeLessThan(cleanup.mock.invocationCallOrder[0]);
+        expect(recordRun.mock.invocationCallOrder[succeededAt]).toBeLessThan(startCleanup.mock.invocationCallOrder[0]);
         expect(cleanupRan()).toBe(true);
         await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
       });
 
-      it('should keep the run succeeded and writes open when a cleanup step fails', async () => {
+      it('should still report the upgrade as succeeded, and keep the app writable, when a cleanup step fails', async () => {
         process.env.FAKE_CLEANUP_EXIT = '1';
 
-        await runAndCleanupToExit();
+        await runUpgradeAndWaitForCleanup();
 
         expect(cleanupRan()).toBe(true);
         await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
       });
 
-      it('should not start cleanup after a failed run', async () => {
-        await runAndCleanupToExit('fail');
+      it('should not start cleanup when the upgrade failed', async () => {
+        await runUpgradeAndWaitForCleanup('fail');
 
         expect(cleanupRan()).toBe(false);
       });
