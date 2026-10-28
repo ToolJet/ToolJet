@@ -34,9 +34,13 @@ export const Button = () => {
     inspector: 'switch',
     section: 'Appearance',
   });
-  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Stretch in flex container', initialValue: false, section: 'Appearance' });
-  const [legacyDisabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable (legacy)', initialValue: false });
-  const [legacyLoading] = ToolJet.useStateBoolean({ name: 'loading', label: 'Show spinner', initialValue: false });
+  // Kept, hidden, for apps that set it: the button always fills its box, and in a Flex container the box is what
+  // stretches (the child's Fill or fixed width), as with ToolJet's Button, so the option changed nothing.
+  ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Stretch in flex container', initialValue: false, section: 'Appearance', inspector: 'hidden' });
+  // The pack's earlier Disable and Show spinner, hidden for the host's Disable and Loading (setDisable, setLoading) but
+  // still honoured when an older app saved them on.
+  const [legacyDisabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable (legacy)', initialValue: false, inspector: 'hidden' });
+  const [legacyLoading] = ToolJet.useStateBoolean({ name: 'loading', label: 'Show spinner', initialValue: false, inspector: 'hidden' });
   const [, setButtonText] = ToolJet.useStateString({ name: 'buttonText', initialValue: 'Button', inspector: 'hidden' });
   const onClickEvent = ToolJet.useEventCallback({ name: 'onClick' });
   // Inside a Form whose submit button this is, a click submits it first, as UI 2.0's and the native Button do.
@@ -54,8 +58,8 @@ export const Button = () => {
   const label = override ?? String(text ?? '');
   useEffect(() => setButtonText(label), [label, setButtonText]);
 
-  const loading = control.loading || legacyLoading;
-  const busy = control.disabled || legacyDisabled || loading;
+  const loading = control.loading || legacyLoading === true;
+  const busy = control.disabled || legacyDisabled === true || loading;
   const latest = useRef(busy);
   latest.current = busy;
   ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => {
@@ -94,7 +98,6 @@ export const Button = () => {
           'ui-btn n2-btn n2-btn-fill',
           `ui-btn--${look}`,
           scale !== 'default' && `ui-btn--${scale}`,
-          fullWidth && 'is-full',
           isSet(backgroundColor) && 'has-bg',
           isSet(hoverBackgroundColor) && 'has-hover',
           isSet(textColor) && 'has-fg',

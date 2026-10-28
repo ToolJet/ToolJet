@@ -46,8 +46,6 @@ export interface TableColumn {
   width?: number;
   minWidth?: number;
   visible: boolean;
-  /** Off until the column chooser shows it: an id column of columns derived from the data. */
-  hiddenByDefault: boolean;
   sortable: boolean;
   searchable: boolean;
   wrap: boolean;
@@ -186,8 +184,8 @@ const COUNT_WORDS = new Set([
   'minutes', 'mins', 'visits', 'views', 'clicks', 'score', 'rating', 'age', 'year', 'years', 'points', 'sessions',
   'tickets', 'calls', 'leads', 'headcount', 'employees', 'nights', 'guests', 'pages', 'weight', 'kg', 'lbs', 'km', 'miles',
 ]);
-// Figures that are labels: grouping their digits ("2,026") misreads them.
-const LABEL_NUMBER_WORDS = new Set(['year', 'zip', 'zipcode', 'postcode', 'pin', 'phone', 'mobile', 'code', 'ext', 'extension', 'sku', 'version']);
+// Figures that are labels: grouping their digits ("2,026", an order id "1,042") misreads them.
+const LABEL_NUMBER_WORDS = new Set(['year', 'zip', 'zipcode', 'postcode', 'pin', 'phone', 'mobile', 'code', 'ext', 'extension', 'sku', 'version', 'id', 'uuid', 'guid']);
 const STATUS_WORDS = new Set(['status', 'state', 'stage', 'priority', 'severity', 'tier', 'level', 'health', 'risk', 'urgency', 'phase', 'sentiment']);
 const CURRENCY_MARKS: [RegExp, string][] = [
   [/€|\beur\b/i, 'EUR'],
@@ -204,10 +202,6 @@ const isNumeric = (v: unknown): boolean =>
   (typeof v === 'number' && Number.isFinite(v)) || (typeof v === 'string' && NUMERIC_TEXT.test(v.trim()));
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 const ISO_TIME = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/;
-
-/** Whether a field is an id: the row id field, "id", or a key ending in id ("customer_id", "orderId", "uuid"). */
-export const isIdField = (key: string, idField: string): boolean =>
-  key === idField || /^(id|uuid|guid|_id)$/i.test(key) || /(_id|Id|_uuid|Uuid)$/.test(key);
 
 /** The currency a column's name gives ("Price (€)", "amount_gbp"), if any. */
 const currencyIn = (text: string): string | undefined => CURRENCY_MARKS.find(([re]) => re.test(text))?.[1];
@@ -266,31 +260,60 @@ const IDENTIFIER = /^[a-z][a-z0-9]*([_-][a-z0-9]+)*$|^[a-z]+([A-Z][a-z0-9]*)+$/;
 /** Past this many columns a binding of rows bound as columns froze the page. */
 export const MAX_COLUMNS = 100;
 
+// A field that first shows in a late row still gets its column: every row is read for its keys (one pass, no copies).
+// Typing reads up to SAMPLE_VALUES filled values of a field, found within the first SAMPLE_SCAN rows.
+const SAMPLE_VALUES = 50;
+const SAMPLE_SCAN = 5000;
+
+/** Up to SAMPLE_VALUES filled values of a field (`key` may be dotted), from the first SAMPLE_SCAN rows. */
+const sampleValues = (rows: Row[], key: string): unknown[] => {
+  const out: unknown[] = [];
+  const end = Math.min(rows.length, SAMPLE_SCAN);
+  for (let i = 0; i < end && out.length < SAMPLE_VALUES; i += 1) {
+    const value = readCell(rows[i], key);
+    if (!isEmptyValue(value)) out.push(value);
+  }
+  return out;
+};
+
 /** Columns as one shape, from native column objects ({key, name, columnType, ...}), the pack's earlier keys ({key,
- *  label, align}), or, when none are given, the keys of the first rows (nested objects skipped). */
-export const normalizeColumns = (columns: unknown, data: unknown, idField = 'id'): TableColumn[] => {
+ *  label, align}), or, when none are given, the keys of every row (nested objects skipped). */
+export const normalizeColumns = (columns: unknown, data: unknown): TableColumn[] => {
   let source: Loose[] = Array.isArray(columns)
     ? columns.filter((c) => c && typeof c === 'object' && !Array.isArray(c))
     : [];
-  const sample: Row[] = (Array.isArray(data) ? data : []).filter((row) => row && typeof row === 'object').slice(0, 50);
+  const rows: Row[] = (Array.isArray(data) ? data : []).filter((row) => row && typeof row === 'object' && !Array.isArray(row));
   const derived = !source.length;
+  // A derived column's filled values, gathered in the same pass that finds its key.
+  const found = new Map<string, unknown[]>();
   if (derived) {
-    const seen = new Map<string, unknown>();
-    sample.forEach((row) =>
-      Object.keys(row).forEach((key) => {
-        if (!seen.has(key)) seen.set(key, undefined);
-        if (seen.get(key) === undefined && row[key] !== null && row[key] !== undefined) seen.set(key, row[key]);
+    // Each key's first filled value: a field holding objects is skipped.
+    const first = new Map<string, unknown>();
+    rows.forEach((row) => {
+      for (const key of Object.keys(row)) {
+        const value = row[key];
+        let values = found.get(key);
+        if (!values) {
+          values = [];
+          found.set(key, values);
+        }
+        if (value === null || value === undefined) continue;
+        if (!first.has(key)) first.set(key, value);
+        if (values.length < SAMPLE_VALUES && !isEmptyValue(value)) values.push(value);
+      }
+    });
+    source = [...found.keys()]
+      .filter((key) => {
+        const value = first.get(key);
+        return !(value !== null && typeof value === 'object');
       })
-    );
-    source = [...seen.entries()]
-      .filter(([, value]) => !(value !== null && typeof value === 'object'))
-      .map(([key]) => ({ key }));
+      .map((key) => ({ key }));
   }
   const ids = new Set<string>();
   return source.slice(0, MAX_COLUMNS).map((c, index): TableColumn => {
     const key = String(c.key ?? c.dataIndex ?? c.accessor ?? c.name ?? c.title ?? c.label ?? `column${index + 1}`);
     const given = c.columnType ?? c.kind ?? c.type;
-    const values = () => sample.map((row) => readCell(row, key));
+    const values = () => (derived ? found.get(key) ?? [] : sampleValues(rows, key));
     const ownName = c.name ?? c.title ?? c.header ?? c.label;
     // A column with no type is typed from its values and words, as a derived one is. A type the author gave is kept:
     // columnType 'number' is a plain number, whatever its name ("Total claims" drew $20.00 beside plain number
@@ -302,11 +325,6 @@ export const normalizeColumns = (columns: unknown, data: unknown, idField = 'id'
     const type = inferred?.type ?? TYPE_ALIASES[given] ?? 'string';
     const named = isSet(ownName) && !(String(ownName) === key && IDENTIFIER.test(key));
     const name = named ? String(ownName) : headerLabel(key);
-    // Derived columns leave the ids out (they stay in the column chooser); a set column named only "id" or "Id" too.
-    const hiddenByDefault =
-      isIdField(key, idField) &&
-      !isSet(c.columnVisibility ?? c.visible) &&
-      (derived || /^(id|Id)$/.test(String(ownName ?? key)));
     let id = String(c.id ?? key);
     for (let n = 2; ids.has(id); n += 1) id = `${c.id ?? key}-${n}`;
     ids.add(id);
@@ -319,7 +337,6 @@ export const normalizeColumns = (columns: unknown, data: unknown, idField = 'id'
       width: Number(c.columnSize ?? c.width) || undefined,
       minWidth: Number(c.minWidth) || undefined,
       visible: !falsy(c.columnVisibility ?? c.visible),
-      hiddenByDefault,
       sortable: !NOT_DATA.has(type) && !falsy(c.sortable),
       searchable: !NOT_DATA.has(type) && !falsy(c.searchable),
       wrap: c.wrap === true,
@@ -719,6 +736,19 @@ export const pageOf = (rows: Entry[], { enablePagination, serverSidePagination, 
 /** A stable key for a row: its id field when it has one ("id:"), else its position ("#"). */
 export const rowKey = (row: unknown, idField: string, index: number): string =>
   row && typeof row === 'object' && isSet(readCell(row, idField)) ? `id:${String(readCell(row, idField))}` : `#${index}`;
+
+/** Each row's own key (rowKey), a repeated id suffixed by its occurrence (id:7, then id:7~1): rows that share an id
+ *  shared one React key, so paging left old rows on screen, and selecting one marked every row with that id. */
+export const rowKeys = (rows: unknown[], idField: string): string[] => {
+  const seen = new Set<string>();
+  return rows.map((row, index) => {
+    const base = rowKey(row, idField, index);
+    let key = base;
+    for (let n = 1; seen.has(key); n += 1) key = `${base}~${n}`;
+    seen.add(key);
+    return key;
+  });
+};
 
 const PRIMITIVE = new Set(['string', 'number', 'boolean']);
 

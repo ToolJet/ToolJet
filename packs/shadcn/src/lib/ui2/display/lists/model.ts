@@ -430,6 +430,19 @@ export const pageWindow = (page: number, count: number | null): (number | string
 export const itemKey = (item: unknown, idField: string, index: number): string =>
   isRecord(item) && isSet(item[idField]) ? String(item[idField]) : `#${index}`;
 
+/** Keys of their own for a list's items, as cardItems and recordItems key theirs: the id field's value, `#index`
+ *  without one, a repeated key suffixed by occurrence ("7~2"). `repeated` names the ids more than one item holds. */
+export const itemKeys = (items: unknown[], idField: string): { keys: string[]; repeated: string[] } => {
+  const fromId = items.map((item) => isRecord(item) && isSet(item[idField]));
+  const base = items.map((item, i) => ({ key: itemKey(item, idField, i) }));
+  const counts = new Map<string, number>();
+  base.forEach(({ key }, i) => fromId[i] && counts.set(key, (counts.get(key) ?? 0) + 1));
+  return {
+    keys: uniqueKeys(base, fromId).map(({ key }) => key),
+    repeated: [...counts].filter(([, n]) => n > 1).map(([key]) => key),
+  };
+};
+
 export const SHADOWS: Record<string, string> = {
   none: 'none',
   sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',

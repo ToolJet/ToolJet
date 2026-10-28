@@ -150,16 +150,13 @@ export interface GroupButton {
   tooltip: string;
 }
 
-/** Buttons as `{ label, value, icon, disabled, variant, tooltip }`, unique by value (the first wins). */
+/** Buttons as `{ label, value, icon, disabled, variant, tooltip }`. Every button is kept: buttons sharing a value (by
+ *  its text) are one choice drawn twice, selected together, so the caller keys them by position. */
 export const groupButtons = (buttons: unknown): GroupButton[] => {
-  const seen = new Set<string>();
   const out: GroupButton[] = [];
   for (const raw of list(buttons).slice(0, MAX_CHILDREN)) {
     const entry = menuEntry(raw);
     if (!entry || 'separatorOnly' in entry || !entry.visible) continue;
-    const key = String(entry.value);
-    if (seen.has(key)) continue;
-    seen.add(key);
     const o = isRecord(raw) ? raw : {};
     out.push({
       // An icon-only button: an empty label with an icon.
@@ -196,7 +193,9 @@ export const toggleSelection = (selected: string[], key: string, mode: string, a
 
 /** value (single: the value or ''; multiple: the list) and selected (always a list). */
 export const selectionExposed = (selected: readonly string[], mode: string, buttons: readonly GroupButton[]) => {
-  const byKey = new Map(buttons.map((b) => [String(b.value), b.value]));
+  // The first button of each value, as a lookup by value would find it.
+  const byKey = new Map<string, Text>();
+  for (const b of buttons) if (!byKey.has(String(b.value))) byKey.set(String(b.value), b.value);
   const values = selected.map((k) => byKey.get(k)).filter((v): v is Text => v !== undefined);
   return { value: mode === 'multiple' ? values : values[0] ?? '', selected: values };
 };

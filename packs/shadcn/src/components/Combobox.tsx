@@ -7,7 +7,7 @@ import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { popupLayerStyle } from '../lib/popupLayer';
 import { cn } from '../lib/cn';
-import { initialKey, isDisabledOption, keyOf, keptOptions, toChoiceOptions, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
+import { initialKey, isDisabledOption, keyForValue, keptOptions, optionKey, toChoiceOptions, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { useBusy, useColorStyle, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
@@ -68,19 +68,19 @@ export const Combobox = () => {
 
   const [anchorRef, container] = usePortalContainer();
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const options = toChoiceOptions(rawOptions);
+  const options = toChoiceOptions(rawOptions, 'Combobox');
   const serverSide = serverSideSearch === true;
   // Live: an action reads the key as last chosen, ahead of the next render.
-  const [key, setKey, keyRef] = useLiveState<string | null>(() => initialKey(defaultValue) ?? initialKey(legacyValue));
+  const [key, setKey, keyRef] = useLiveState<string | null>(() => initialKey(defaultValue, options) ?? initialKey(legacyValue, options));
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  useResetOn(defaultValue, () => setKey(initialKey(defaultValue)));
+  useResetOn(defaultValue, () => setKey(initialKey(defaultValue, options)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
   ToolJet.useFormClear(() => { setOpen(false); setSearch(''); setKey(null); });
-  useDropRemovedChoices(options.map((o) => keyOf(o.value)), key === null ? [] : [key], () => setKey(null), serverSide);
+  useDropRemovedChoices(options.map((o) => optionKey(o)), key === null ? [] : [key], () => setKey(null), serverSide);
   const kept = useRef(new Map<string, ChoiceOption>());
   const [selected] = keptOptions(options, key === null ? [] : [key], serverSide ? kept.current : null);
-  kept.current = new Map(selected ? [[keyOf(selected.value), selected]] : []);
+  kept.current = new Map(selected ? [[optionKey(selected), selected]] : []);
 
   const expose = (option: ChoiceOption | undefined) => {
     setValue((option?.value ?? '') as string);
@@ -121,7 +121,7 @@ export const Combobox = () => {
     disabled
   );
   const pick = (option: ChoiceOption) => {
-    setKey(keyOf(option.value));
+    setKey(optionKey(option));
     expose(option);
     openChange(false);
     onSelect();
@@ -135,10 +135,11 @@ export const Combobox = () => {
   const selectByValue = (v: unknown) => {
     const wanted = wantedValue(v);
     if (wanted === undefined || wanted === null || typeof wanted === 'object') return;
-    const option = options.find((o) => keyOf(o.value) === keyOf(wanted));
+    const k = keyForValue(options, wanted);
+    const option = options.find((o) => optionKey(o) === k);
     // The option already chosen: nothing changes and nothing fires.
-    if (!option || isDisabledOption(option) || keyOf(wanted) === keyRef.current) return;
-    setKey(keyOf(wanted));
+    if (!option || isDisabledOption(option) || k === keyRef.current) return;
+    setKey(k);
     expose(option);
     onSelect();
   };
@@ -206,7 +207,7 @@ export const Combobox = () => {
                     emptyText={emptyText || 'No results found.'}
                     loading={optionsLoadingState === true}
                     serverSideSearch={serverSide}
-                    isSelected={(o) => !!selected && keyOf(o.value) === key}
+                    isSelected={(o) => !!selected && optionKey(o) === key}
                     isDisabled={(o) => isDisabledOption(o)}
                     onPick={pick}
                   />

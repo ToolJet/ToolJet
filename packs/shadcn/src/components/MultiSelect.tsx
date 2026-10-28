@@ -11,8 +11,9 @@ import {
   addKeys,
   clampLimit,
   isDisabledOption,
-  keyOf,
+  keyForValue,
   keptOptions,
+  optionKey,
   removeKeys,
   toChoiceOptions,
   toValueList,
@@ -85,10 +86,10 @@ export const MultiSelect = () => {
 
   const [anchorRef, container] = usePortalContainer();
   const fieldRef = useRef<HTMLDivElement>(null);
-  const options = toChoiceOptions(rawOptions);
+  const options = toChoiceOptions(rawOptions, 'MultiSelect');
   const limit = clampLimit(maxSelections) || clampLimit(maxSelected);
   const serverSide = serverSideSearch === true;
-  const keysOf = (given: unknown) => [...new Set(toValueList(given).map(keyOf))].slice(0, limit || undefined);
+  const keysOf = (given: unknown) => [...new Set(toValueList(given).map((v) => keyForValue(options, v)))].slice(0, limit || undefined);
   // An app saved before defaultValue existed starts on its `values` when no default is given.
   const [keys, setKeys] = useState<string[]>(() => keysOf(toValueList(defaultValue).length ? defaultValue : legacyValues));
   const [open, setOpen] = useState(false);
@@ -101,11 +102,11 @@ export const MultiSelect = () => {
   useEffect(() => {
     if (limit > 0) setKeys((k) => (k.length > limit ? k.slice(0, limit) : k));
   }, [limit]);
-  useDropRemovedChoices(options.map((o) => keyOf(o.value)), keys, (gone) => setKeys((k) => k.filter((x) => !gone.has(x))), serverSide);
+  useDropRemovedChoices(options.map((o) => optionKey(o)), keys, (gone) => setKeys((k) => k.filter((x) => !gone.has(x))), serverSide);
   // With server-side search, a selected option off the current results keeps the record it had when last seen.
   const kept = useRef(new Map<string, ChoiceOption>());
   const selectedOptions = keptOptions(options, keys, serverSide ? kept.current : null);
-  kept.current = new Map(selectedOptions.map((o) => [keyOf(o.value), o] as [string, ChoiceOption]));
+  kept.current = new Map(selectedOptions.map((o) => [optionKey(o), o] as [string, ChoiceOption]));
   const values = selectedOptions.map((o) => o.value);
   useEffect(() => {
     setValues(values);
@@ -153,11 +154,11 @@ export const MultiSelect = () => {
     },
     disabled
   );
-  const selectedKeys = new Set(selectedOptions.map((o) => keyOf(o.value)));
-  const isOn = (o: ChoiceOption) => selectedKeys.has(keyOf(o.value));
+  const selectedKeys = new Set(selectedOptions.map((o) => optionKey(o)));
+  const isOn = (o: ChoiceOption) => selectedKeys.has(optionKey(o));
   const full = limit > 0 && selectedOptions.length >= limit;
   const toggle = (o: ChoiceOption) => {
-    const k = keyOf(o.value);
+    const k = optionKey(o);
     if (isOn(o)) commit(keys.filter((x) => x !== k));
     else if (!full) commit([...keys.filter((x) => selectedKeys.has(x) || !options.length), k]);
   };
@@ -183,19 +184,28 @@ export const MultiSelect = () => {
   const enabled = options.filter((o) => !isDisabledOption(o));
   const allOn = enabled.length > 0 && enabled.every(isOn);
   const toggleAll = () => {
-    const enabledKeys = enabled.map((o) => keyOf(o.value));
+    const enabledKeys = [...new Set(enabled.map((o) => optionKey(o)))];
     const enabledSet = new Set(enabledKeys);
     const keySet = new Set(keys);
     commit(allOn ? keys.filter((k) => !enabledSet.has(k)) : [...keys, ...enabledKeys.filter((k) => !keySet.has(k))]);
   };
 
+  // An action publishes at once, as a pick does: it set only the keys, so a query reading values on its next line got
+  // the old selection until the next render. Calls in one frame build on the keys the last one set.
+  const actionKeys = useRef(keys);
+  actionKeys.current = keys;
+  const set = (next: string[]) => {
+    actionKeys.current = next;
+    setKeys(next);
+    publish(next);
+  };
   ToolJet.useAction({ name: 'selectOptions', displayName: 'Select options', params: [{ handle: 'values', displayName: 'Values' }] }, (v) =>
-    setKeys((k) => addKeys(k, v, options, limit))
+    set(addKeys(actionKeys.current, v, options, limit))
   );
   ToolJet.useAction({ name: 'deselectOptions', displayName: 'Deselect options', params: [{ handle: 'values', displayName: 'Values' }] }, (v) =>
-    setKeys((k) => removeKeys(k, v))
+    set(removeKeys(actionKeys.current, v, options))
   );
-  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => setKeys([]));
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => set([]));
   ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => fieldRef.current?.focus());
   ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => {
     if (open) openChange(false);
@@ -203,7 +213,7 @@ export const MultiSelect = () => {
   });
   // The pack's earlier name: replaces the selection.
   ToolJet.useAction({ name: 'setValues', displayName: 'Set values', params: [{ handle: 'values', displayName: 'Values (array)' }] }, (v) =>
-    setKeys(addKeys([], v, options, limit))
+    set(addKeys([], v, options, limit))
   );
 
   const maxChips = clampLimit(maxVisibleChips);
@@ -260,7 +270,7 @@ export const MultiSelect = () => {
                     <span className="ui-placeholder uc-truncate">{placeholder}</span>
                   ) : (
                     chips.map((o, i) => (
-                      <Chip key={keyOf(o.value)} label={o.label} removeLabel={`Remove ${o.label}`} onRemove={disabled ? undefined : () => removeChip(o, i)} />
+                      <Chip key={optionKey(o)} label={o.label} removeLabel={`Remove ${o.label}`} onRemove={disabled ? undefined : () => removeChip(o, i)} />
                     ))
                   )}
                   {extra > 0 ? <Chip label={`+${extra} more`} /> : null}

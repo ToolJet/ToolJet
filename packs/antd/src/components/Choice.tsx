@@ -4,9 +4,14 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver } from '../lib/Loading';
 import { FormField, useFieldProps } from '../lib/FormField';
-import { str, toOptions } from '../lib/data';
+import { keyForValue, str, toOptions, valueForKey, type Option } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { useValueSetter } from '../lib/sameValue';
+
+// A wanted value as a choice stores it: the option it names, with that option's own value (1 stays a number, and the text
+// '1' picks the option 1 when no option is '1'), else the value as text; nothing is ''. lib/data Option has the keys.
+const storedChoice = (options: Option[], v: unknown): unknown =>
+  v === undefined || v === null || v === '' ? '' : valueForKey(options, keyForValue(options, v));
 
 const useValueActions = (change: (v: unknown) => void, initial: unknown) => {
   ToolJet.useAction(
@@ -63,17 +68,21 @@ export const RadioGroup = (props: Record<string, unknown>) => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'choice', value, present: value !== '' });
+  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: value !== '' });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 6 });
-  const options = toOptions(rawOptions);
+  const options = toOptions(rawOptions, 'RadioGroup');
+  // The radios hold option keys; the value keeps its type (lib/data Option).
+  const key = value === '' ? '' : keyForValue(options, value);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
-    if (!valueSetter.set(str(v))) return;
+    if (!valueSetter.set(storedChoice(options, v))) return;
     check.touch();
     onChange();
   };
+  // A radio's own key, picked by a click.
+  const pick = (k: unknown) => change(k === '' ? '' : valueForKey(options, k));
   useValueActions(change, props.value);
 
   return (
@@ -82,34 +91,36 @@ export const RadioGroup = (props: Record<string, unknown>) => {
         <SpinOver loading={loading} as="inline">
           <Radio.Group
             id={fieldId}
-            options={allowDeselect === true ? undefined : options}
-            value={value || undefined}
+            value={key || undefined}
             optionType={optionType as 'default'}
             buttonStyle={buttonStyle as 'solid'}
             size={size as 'middle'}
             disabled={disabled}
             style={vertical && optionType === 'default' ? { display: 'flex', flexDirection: 'column', gap: 8 } : undefined}
-            onChange={(e) => change(e.target.value)}
+            onChange={(e) => pick(e.target.value)}
           >
-            {/* Ant fires no onChange for a click on the checked radio, so deselecting is the option's own click
-                (Ant's Radio reports one click for the label and its input). */}
-            {allowDeselect === true
-              ? options.map((o) => {
-                  const Option = optionType === 'button' ? Radio.Button : Radio;
-                  return (
-                    <Option
-                      key={o.value}
-                      value={o.value}
-                      disabled={o.disabled}
-                      onClick={() => {
-                        if (!disabled && !o.disabled && o.value === value) change('');
-                      }}
-                    >
-                      {o.label}
-                    </Option>
-                  );
-                })
-              : null}
+            {/* The radios are drawn here, not from Ant's options, so each has a React key of its own (two options
+                with one value drew with one key). Ant fires no onChange for a click on the checked radio, so
+                deselecting is the option's own click (Ant's Radio reports one click for the label and its input). */}
+            {options.map((o) => {
+              const Item = optionType === 'button' ? Radio.Button : Radio;
+              return (
+                <Item
+                  key={o.key}
+                  value={o.value}
+                  disabled={o.disabled}
+                  onClick={
+                    allowDeselect === true
+                      ? () => {
+                          if (!disabled && !o.disabled && o.value === key) change('');
+                        }
+                      : undefined
+                  }
+                >
+                  {o.label}
+                </Item>
+              );
+            })}
           </Radio.Group>
         </SpinOver>
       </FormField>
@@ -133,18 +144,22 @@ export const Segmented = (props: Record<string, unknown>) => {
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'middle', 'large'], initialValue: 'middle' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
-  const check = ToolJet.useValidation({ section: 'choice', value, present: value !== '' });
+  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: value !== '' });
   const tokens = useTokenStyles();
   // Its label over a 32px control, as Ant's Input (the 4-row box cut the control by 20px).
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 6 });
-  const options = toOptions(rawOptions);
+  const options = toOptions(rawOptions, 'Segmented');
+  // Ant's Segmented keys each item by its value, so it gets each option's own React key as the value (two options with
+  // one value drew with one key); the value keeps its type (lib/data Option). An option drawn twice shows the first.
+  const items = options.map((o) => ({ label: o.label, value: o.key, disabled: o.disabled }));
+  const key = value === '' ? '' : keyForValue(options, value);
   // An empty value selects nothing (null; undefined would make Ant select the first option), so a required
   // Segmented does not look filled.
-  const current = options.some((o) => o.value === value) ? value : (null as unknown as string);
+  const current = options.find((o) => o.value === key)?.key ?? (null as unknown as string);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
-    if (!valueSetter.set(str(v))) return;
+    if (!valueSetter.set(storedChoice(options, v))) return;
     check.touch();
     onChange();
   };
@@ -157,13 +172,13 @@ export const Segmented = (props: Record<string, unknown>) => {
           <SpinOver loading={loading} as="inline">
             {options.length ? (
               <AntSegmented
-                options={options}
+                options={items}
                 value={current}
                 block={block}
                 vertical={vertical}
                 size={size as 'middle'}
                 disabled={disabled}
-                onChange={(v) => change(v)}
+                onChange={(v) => change(options.find((o) => o.key === v)?.data ?? '')}
               />
             ) : (
               <span />

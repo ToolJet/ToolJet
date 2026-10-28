@@ -227,7 +227,7 @@ export const Toolbar = (p: ToolbarProps) => {
                   <label key={c.id} className="t2-menu-check">
                     <TableCheckbox
                       label={c.name}
-                      checked={p.hiddenIds.has(c.id) === c.hiddenByDefault}
+                      checked={!p.hiddenIds.has(c.id)}
                       onChange={() =>
                         p.setHiddenIds((all) => {
                           const next = new Set(all);

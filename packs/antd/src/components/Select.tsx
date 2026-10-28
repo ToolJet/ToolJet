@@ -4,7 +4,7 @@ import type { RefSelectProps } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
-import { str, toOptions } from '../lib/data';
+import { controlOptions, exposedOption, keyForValue, str, toChoiceValue, toOptions, valueForKey } from '../lib/data';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
 
@@ -56,26 +56,46 @@ export const Select = (props: Record<string, unknown>) => {
   const ref = useRef<RefSelectProps>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const options = toOptions(rawOptions);
+  const options = toOptions(rawOptions, 'Select');
   const many = mode === 'multiple' || mode === 'tags';
-  // In multiple and tags modes the value is an array (an Inspector value may also be one value or a JSON array).
+  // In multiple and tags modes the value is an array (an Inspector value may also be one value or a JSON array). Values
+  // keep their type (1 stays a number); Ant's control holds each option's key (lib/data Option), so 1 and '1' are two
+  // choices and the one clicked is the one exposed.
   const values = toValues(value);
-  const known = value !== '' && options.some((o) => o.value === value);
-  const check = ToolJet.useValidation({ section: 'choice', value: many ? values.join(',') : value, present: many ? values.length > 0 : value !== '' });
+  const keys = values.map((v) => keyForValue(options, v));
+  const key = keyForValue(options, value);
+  const known = value !== '' && options.some((o) => o.value === key);
+  const check = ToolJet.useValidation({ section: 'choice', value: many ? values.map(str).join(',') : str(value), present: many ? values.length > 0 : value !== '' });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
 
   const optionsFor = (raw: unknown) => {
     const list = many ? toValues(raw) : [];
+    const optionOf = (v: unknown) => {
+      const k = keyForValue(options, v);
+      return options.find((o) => o.value === k);
+    };
     return {
-      option: many ? {} : options.find((o) => o.value === str(raw)) ?? {},
-      options: many ? list.map((v) => options.find((o) => o.value === v) ?? { label: v, value: v }) : [],
+      option: many ? {} : exposedOption(raw === '' ? undefined : optionOf(raw)),
+      options: many ? list.map((v) => (optionOf(v) ? exposedOption(optionOf(v)) : { label: str(v), value: v })) : [],
     };
   };
+  // A wanted value as stored: the option it names, with that option's own value (the text '1' picks the option 1), else
+  // as given; nothing is ''.
+  const toStored = (v: unknown): unknown => (v === undefined || v === null || v === '' ? '' : valueForKey(options, keyForValue(options, v)));
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(many ? values : value, (v) => setValue(v as string));
+  // A value given by the app (an action): see toStored. Ant's onChange gives keys instead (pick).
   const change = (next: unknown) => {
-    const stored = many ? toValues(next) : next === undefined || next === null ? '' : str(Array.isArray(next) ? next[0] : next);
+    const stored = many ? toValues(next).map(toStored) : toStored(Array.isArray(next) ? next[0] : next);
+    commit(stored);
+  };
+  const pick = (next: unknown) => {
+    const picked = Array.isArray(next) ? next : next === undefined || next === null ? [] : [next];
+    const stored = picked.map((k) => valueForKey(options, k));
+    commit(many ? stored : (stored[0] ?? ''));
+  };
+  const commit = (stored: unknown) => {
     if (!valueSetter.set(stored)) return;
     // Set with the value, so an onChange handler reads them already.
     const picked = optionsFor(stored);
@@ -121,12 +141,12 @@ export const Select = (props: Record<string, unknown>) => {
           ref={ref}
           id={fieldId}
           style={{ width: '100%' }}
-          options={options}
+          options={controlOptions(options)}
           mode={many ? (mode as 'multiple') : undefined}
           maxTagCount={many ? 'responsive' : undefined}
           // Single: a value not (yet) among the options shows as the placeholder, not as a bare value. Multiple keeps
           // only known values; tags keeps every value (a tag is any text).
-          value={many ? (mode === 'tags' ? values : values.filter((v) => options.some((o) => o.value === v))) : known ? value : undefined}
+          value={many ? (mode === 'tags' ? keys : keys.filter((k) => options.some((o) => o.value === k))) : known ? key : undefined}
           placeholder={placeholder || undefined}
           disabled={disabled}
           loading={loading}
@@ -140,7 +160,7 @@ export const Select = (props: Record<string, unknown>) => {
           open={popup.open}
           onOpenChange={popup.onOpenChange}
           // A pick in the instant the owner stopped taking input (before the guard closed the list) is refused.
-          onChange={(v) => popup.available() && change(v)}
+          onChange={(v) => popup.available() && pick(v)}
           onSelect={() => popup.available() && onSelect()}
           onClear={() => onClear()}
           onSearch={(text) => {
@@ -153,14 +173,17 @@ export const Select = (props: Record<string, unknown>) => {
   );
 };
 
-const toValues = (raw: unknown): string[] => {
-  if (Array.isArray(raw)) return raw.map(str).filter((v) => v !== '');
+// Values as a list, each keeping its type (a number, text or boolean; anything else as text). Empty ones are dropped.
+const toValues = (raw: unknown): unknown[] => {
+  const keep = (list: unknown[]) => list.map(toChoiceValue).filter((v) => v !== '');
+  if (Array.isArray(raw)) return keep(raw);
+  if (typeof raw === 'number' || typeof raw === 'boolean') return keep([raw]);
   const s = str(raw).trim();
   if (!s) return [];
   if (s.startsWith('[')) {
     try {
       const parsed = JSON.parse(s);
-      if (Array.isArray(parsed)) return parsed.map(str).filter((v) => v !== '');
+      if (Array.isArray(parsed)) return keep(parsed);
     } catch {
       // not JSON: one value
     }
