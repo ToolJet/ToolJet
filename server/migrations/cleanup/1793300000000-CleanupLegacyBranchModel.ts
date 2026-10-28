@@ -1,12 +1,12 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { setNotNull, withShortLock } from '../../src/migration-helpers/with-short-lock'; // migration-import-allowed: contract steps must go through the short-lock helper
-import { branchlessRowFixes } from '../../src/migration-helpers/legacy-3-21-58-upgrade'; // migration-import-allowed: reruns the legacy backfills' own branch fixes
-import { MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000 } from '../backfill/1781740900000-MakeDataSourceVersionBranchIdNotNullAndDropIsDefault'; // migration-import-allowed: source of the branch fixes
-import { MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 } from '../backfill/1781741000000-MakeAppVersionBranchIdNotNullAndGitSyncFlags'; // migration-import-allowed: source of the branch fixes
-import { BackfillWorkflowBranchIdAndEnforceNotNull1782400000000 } from '../backfill/1782400000000-BackfillWorkflowBranchIdAndEnforceNotNull'; // migration-import-allowed: source of the branch fixes
-import { BackfillFolderAppsDefaultBranchIdAndEnforceNotNull1785700000000 } from '../backfill/1785700000000-BackfillFolderAppsDefaultBranchIdAndEnforceNotNull'; // migration-import-allowed: source of the branch fixes
+import { setNotNull, withShortLock } from '../../src/migration-helpers/with-short-lock'; // migration-import-allowed: cleanup steps must go through the short-lock helper
+import { branchlessRowFixes } from '../../src/migration-helpers/legacy-3-21-58-upgrade'; // migration-import-allowed: reruns the legacy data migrations' own branch fixes
+import { MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000 } from '../data/1781740900000-MakeDataSourceVersionBranchIdNotNullAndDropIsDefault'; // migration-import-allowed: source of the branch fixes
+import { MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 } from '../data/1781741000000-MakeAppVersionBranchIdNotNullAndGitSyncFlags'; // migration-import-allowed: source of the branch fixes
+import { BackfillWorkflowBranchIdAndEnforceNotNull1782400000000 } from '../data/1782400000000-BackfillWorkflowBranchIdAndEnforceNotNull'; // migration-import-allowed: source of the branch fixes
+import { BackfillFolderAppsDefaultBranchIdAndEnforceNotNull1785700000000 } from '../data/1785700000000-BackfillFolderAppsDefaultBranchIdAndEnforceNotNull'; // migration-import-allowed: source of the branch fixes
 
-/** Rows 3.21.58 pods wrote without a branch after the backfill; NOT NULL would fail on them. */
+/** Rows 3.21.58 pods wrote without a branch after the data phase; NOT NULL would fail on them. */
 const fixBranchlessRows = async (queryRunner: QueryRunner, table: string) =>
   withShortLock(
     queryRunner,
@@ -32,13 +32,13 @@ const finalTrigger = (name: string, columns: string, fn: string) => `DO $$ BEGIN
 END $$`;
 
 /**
- * Removes what the 3.21.58 branch model left behind after an async upgrade ran the lock-free backfill variants
+ * Removes what the 3.21.58 branch model left behind after an async upgrade ran the lock-free data variants
  * (legacy-3-21-58-upgrade.ts). After a single-transaction upgrade the original migrations already did all of this, so every
  * step is a no-op there.
  */
-export class ContractLegacyBranchModel1793300000000 implements MigrationInterface {
+export class CleanupLegacyBranchModel1793300000000 implements MigrationInterface {
   transaction = false;
-  // Waits one upgrade after the legacy backfill, like any removal.
+  // Waits one upgrade after the legacy data phase, like any removal.
   requires = 'MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -59,11 +59,11 @@ export class ContractLegacyBranchModel1793300000000 implements MigrationInterfac
     ]);
     await setNotNull(queryRunner, 'data_source_versions', 'branch_id');
 
-    // app_versions: the backfill's beforeCommit() swapped the branch key to CASCADE and added the branch CHECK, both NOT VALID.
+    // app_versions: the data phase's beforeCommit() swapped the branch key to CASCADE and added the branch CHECK, both NOT VALID.
     await withShortLock(queryRunner, ['ALTER TABLE app_versions VALIDATE CONSTRAINT fk_app_versions_branch']);
     await fixBranchlessRows(queryRunner, 'app_versions');
     await setNotNull(queryRunner, 'app_versions', 'branch_id');
-    // The backfill emptied these two functions; the default-branch slug function covers both rules now.
+    // The data phase emptied these two functions; the default-branch slug function covers both rules now.
     await withShortLock(queryRunner, [
       'DROP TRIGGER IF EXISTS trg_app_versions_slug_default_branch_unique ON app_versions',
       'DROP FUNCTION IF EXISTS enforce_app_versions_slug_default_branch_unique()',
@@ -72,7 +72,7 @@ export class ContractLegacyBranchModel1793300000000 implements MigrationInterfac
       'DROP TRIGGER IF EXISTS trg_app_versions_workflow_slug_unique ON app_versions',
       'DROP FUNCTION IF EXISTS enforce_app_versions_workflow_slug_unique()',
     ]);
-    // The backfill replaced these bodies; their triggers still fire on 3.21.58's columns.
+    // The data phase replaced these bodies; their triggers still fire on 3.21.58's columns.
     await withShortLock(queryRunner, [
       finalTrigger(
         'trg_app_versions_app_name_branch_unique',
@@ -112,11 +112,11 @@ export class ContractLegacyBranchModel1793300000000 implements MigrationInterfac
     await setNotNull(queryRunner, 'folder_apps', 'branch_id');
     await withShortLock(queryRunner, ['DROP INDEX IF EXISTS uniq_folder_apps_app_no_branch']);
 
-    // Saved by loosen for a restore, which a committed backfill refuses.
+    // Saved by loosen for a restore, which a committed data refuses.
     await withShortLock(queryRunner, ['DROP TABLE IF EXISTS legacy_upgrade_dropped_rules']);
   }
 
   public async down(): Promise<void> {
-    // Not reversible: is_default values were derived from rows the backfill deleted. Restore the pre-upgrade backup.
+    // Not reversible: is_default values were derived from rows the data phase deleted. Restore the pre-upgrade backup.
   }
 }

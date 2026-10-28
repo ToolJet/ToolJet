@@ -12,7 +12,7 @@ import { createHash } from 'crypto';
 import { DataSource, getMetadataArgsStorage, QueryFailedError } from 'typeorm';
 import { AiAttachment } from '@entities/ai_attachment.entity';
 import { AiAttachmentService, MAX_AI_ATTACHMENT_BYTES } from '@modules/ai/services/ai-attachment.service';
-import { CreateAiAttachments1789689600000 } from '../../../../migrations/expand/1789689600000-CreateAiAttachments';
+import { CreateAiAttachments1789689600000 } from '../../../../migrations/schema/1789689600000-CreateAiAttachments';
 
 const ids = Array.from({ length: 6 }, (_, i) => `02bf02ad-e9fd-4b70-8061-${String(i).padStart(12, '0')}`);
 const digest = (data: Buffer) => createHash('sha256').update(data).digest('hex');

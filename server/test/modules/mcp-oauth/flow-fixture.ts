@@ -13,7 +13,7 @@ import { OrganizationUser } from '@entities/organization_user.entity';
 import { SSOConfigs } from '@entities/sso_config.entity';
 import { SsoConfigOidcGroupSync } from '@entities/sso_config_oidc_group_sync.entity';
 import { InstanceSettings } from '@entities/instance_settings.entity';
-import { AddGrantTypeKeyInSSOConfig1761556597329 } from '../../../migrations/backfill/1761556597329-AddGrantTypeKeyInSSOConfig';
+import { AddGrantTypeKeyInSSOConfig1761556597329 } from '../../../migrations/data/1761556597329-AddGrantTypeKeyInSSOConfig';
 import { assertPatMintSession, assertPatExchange } from '@modules/personal-access-tokens/credential-lifecycle';
 jest.mock('@helpers/utils.helper', () => ({
   getTooljetEdition: jest.fn(() => 'cloud'),
@@ -52,9 +52,9 @@ import * as cookieParser from 'cookie-parser';
 import { McpOAuthThrottleGuard } from '@modules/mcp-oauth/throttle.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { McpOAuthController, McpOAuthMetadataController } from '@modules/mcp-oauth/controller';
-import { AddMcpOAuth1789416000000 } from '../../../migrations/expand/1789416000000-AddMcpOAuth';
-import { AddMcpOAuthRevocationHooks1791290000000 } from '../../../migrations/expand/1791290000000-AddMcpOAuthRevocationHooks';
-import { AddMcpOAuthClientAuthentication1791763200000 } from '../../../migrations/expand/1791763200000-AddMcpOAuthClientAuthentication';
+import { AddMcpOAuth1789416000000 } from '../../../migrations/schema/1789416000000-AddMcpOAuth';
+import { AddMcpOAuthRevocationHooks1791290000000 } from '../../../migrations/schema/1791290000000-AddMcpOAuthRevocationHooks';
+import { AddMcpOAuthClientAuthentication1791763200000 } from '../../../migrations/schema/1791763200000-AddMcpOAuthClientAuthentication';
 
 jest.mock('@modules/users/repositories/repository', () => ({ UserRepository: class {} }));
 import { McpOAuthService } from '@modules/mcp-oauth/service';

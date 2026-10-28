@@ -1,10 +1,10 @@
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
-import { BackfillMigration } from './migration-mode';
+import { DataMigration } from './migration-mode';
 import { withShortLock } from './with-short-lock';
 
 /**
- * Async upgrade of a 3.21.58 database. Its backfill would break a few old rules, and the original migrations drop
- * them inside the backfill transaction, holding ACCESS EXCLUSIVE to the end. Instead: drop them first, each in its
+ * Async upgrade of a 3.21.58 database. Its data would break a few old rules, and the original migrations drop
+ * them inside the data phase transaction, holding ACCESS EXCLUSIVE to the end. Instead: drop them first, each in its
  * own short transaction (loosen); run lock-free variants; on failure add them back (restore), so 3.21.58 runs again.
  * Delete this module when upgrades from 3.21.58 are no longer supported.
  */
@@ -16,7 +16,7 @@ export interface LooseRule {
   table: string;
 }
 
-/** Each one the backfill breaks (spike on seeded 3.21.58 data); `default_must_be_active_check` holds, so it stays. */
+/** Each one the data phase breaks (spike on seeded 3.21.58 data); `default_must_be_active_check` holds, so it stays. */
 export const LEGACY_LOOSEN_RULES: readonly LooseRule[] = [
   { name: 'data_source_versions_default_branch_null_check', kind: 'check', table: 'data_source_versions' },
   { name: 'idx_unique_active_name_branch', kind: 'index', table: 'data_source_versions' },
@@ -75,7 +75,7 @@ export async function loosenLegacyRules(dataSource: DataSource): Promise<void> {
   try {
     for (const rule of LEGACY_LOOSEN_RULES) await withShortLock(queryRunner, loosenStep(rule));
     console.log(
-      `[migrations] Legacy upgrade: dropped ${LEGACY_LOOSEN_RULES.length} old rules the backfill would break.`
+      `[migrations] Legacy upgrade: dropped ${LEGACY_LOOSEN_RULES.length} old rules the data phase would break.`
     );
   } finally {
     await queryRunner.release();
@@ -83,7 +83,7 @@ export async function loosenLegacyRules(dataSource: DataSource): Promise<void> {
 }
 
 /**
- * Adds every saved rule back. Refused once the backfill committed: the rules no longer fit the data. A rule that
+ * Adds every saved rule back. Refused once the data phase committed: the rules no longer fit the data. A rule that
  * no longer validates (3.21.58 pods wrote rows without it) stays NOT VALID, still enforcing new rows, and is reported.
  */
 export async function restoreLegacyRules(dataSource: DataSource): Promise<string[]> {
@@ -91,9 +91,7 @@ export async function restoreLegacyRules(dataSource: DataSource): Promise<string
   if (!table) return [];
   const [committed] = await dataSource.query('SELECT 1 FROM migrations WHERE name = $1', [LEGACY_UPGRADE_MARKER]);
   if (committed) {
-    throw new Error(
-      'The legacy backfill has committed; its old rules no longer fit the data, so they are not restored.'
-    );
+    throw new Error('The legacy data has committed; its old rules no longer fit the data, so they are not restored.');
   }
   const saved: SavedRule[] = await dataSource.query(
     'SELECT name, kind, table_name, definition FROM legacy_upgrade_dropped_rules'
@@ -156,7 +154,7 @@ const triggerNamed = (...names: string[]) => named(/^\s*CREATE TRIGGER (\w+)\s/i
 
 /**
  * The original drops these trigger functions before its row changes and recreates the survivors after. A body swap
- * takes no table lock and stays invisible to other sessions until commit; contract drops the dead ones.
+ * takes no table lock and stays invisible to other sessions until commit; cleanup drops the dead ones.
  */
 const noOpTriggerFunctions = (...names: string[]): VariantStep =>
   run(
@@ -172,12 +170,12 @@ interface LegacyVariant {
 
 const noOp: LegacyVariant = { up: async () => undefined };
 
-/** Lock-free replacements, by class name: row changes in up(), index builds in beforeCommit(), removals in contract. */
+/** Lock-free replacements, by class name: row changes in up(), index builds in beforeCommit(), removals in cleanup. */
 export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<string, LegacyVariant>([
   [
     'MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000',
     {
-      // The original's row changes, verbatim; its drops and NOT NULL move to contract.
+      // The original's row changes, verbatim; its drops and NOT NULL move to cleanup.
       up: run(
         'SET LOCAL statement_timeout = 0',
         'UPDATE data_source_versions SET is_synced = true WHERE branch_id IS NOT NULL',
@@ -219,7 +217,7 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
           'enforce_app_versions_slug_default_branch_unique'
         ),
         runOriginal(rowChange),
-        // New bodies only; the triggers keep 3.21.58's column lists until contract recreates them.
+        // New bodies only; the triggers keep 3.21.58's column lists until cleanup recreates them.
         // enforce_app_versions_branch_id_required is skipped: 1782400000000 drops it again.
         runOriginal(
           functionNamed(
@@ -242,10 +240,10 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
           )
         ),
         // Last statement before commit, so its ACCESS EXCLUSIVE lock lasts milliseconds; a timeout retries the
-        // backfill. The SET NULL key goes in the same statement that makes branch_id required, so deleting a branch
-        // never sets NULL into a required column. The CHECK rides this lock; contract validates both and its
+        // data. The SET NULL key goes in the same statement that makes branch_id required, so deleting a branch
+        // never sets NULL into a required column. The CHECK rides this lock; cleanup validates both and its
         // setNotNull turns the CHECK into NOT NULL.
-        // ponytail: must stay the last beforeCommit() statement; a later backfill with a beforeCommit() would run under this lock.
+        // ponytail: must stay the last beforeCommit() statement; a later data with a beforeCommit() would run under this lock.
         run(
           "SET LOCAL lock_timeout = '2s'",
           `ALTER TABLE app_versions
@@ -259,7 +257,7 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
   ],
   [
     'BackfillWorkflowBranchIdAndEnforceNotNull1782400000000',
-    // Its trigger drop is moot (the variant above never creates it); NOT NULL moves to contract.
+    // Its trigger drop is moot (the variant above never creates it); NOT NULL moves to cleanup.
     {
       up: inOrder(
         runOriginal(rowChange),
@@ -276,11 +274,11 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
       ),
     },
   ],
-  // Pure drops: contract does them.
+  // Pure drops: cleanup does them.
   ['DropGitSyncMetaHashColumns1782500000000', noOp],
   ['DropOrganizationGitSshTable1782900000000', noOp],
   ['DropPulledAtAndRemoteUpdatedAt1785600000000', noOp],
-  // NOT NULL and the branchless index drop move to contract.
+  // NOT NULL and the branchless index drop move to cleanup.
   ['BackfillFolderAppsDefaultBranchIdAndEnforceNotNull1785700000000', { up: runOriginal(rowChange) }],
 ]);
 
@@ -293,8 +291,8 @@ async function recordStatements(up: (queryRunner: QueryRunner) => Promise<void>)
 }
 
 /**
- * The originals' statements that give `table`'s branchless rows a branch (or delete them). Contract reruns them before
- * NOT NULL: 3.21.58 pods without the write gate can add such rows after the backfill.
+ * The originals' statements that give `table`'s branchless rows a branch (or delete them). Cleanup reruns them before
+ * NOT NULL: 3.21.58 pods without the write gate can add such rows after the data phase.
  */
 export async function branchlessRowFixes(table: string, originals: MigrationInterface[]): Promise<string[]> {
   const statements = await Promise.all(originals.map((migration) => recordStatements((qr) => migration.up(qr))));
@@ -306,7 +304,7 @@ export async function branchlessRowFixes(table: string, originals: MigrationInte
 
 /** Swaps in the variants. Call before announcing or collecting beforeCommit() steps, which wrap up() and read beforeCommit(). */
 export function useLegacyVariants(dataDS: DataSource): void {
-  for (const migration of dataDS.migrations as BackfillMigration[]) {
+  for (const migration of dataDS.migrations as DataMigration[]) {
     const variant = LEGACY_VARIANTS.get(migration.name || migration.constructor.name);
     if (!variant) continue;
     const originalUp = migration.up.bind(migration);

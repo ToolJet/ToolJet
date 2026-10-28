@@ -5161,7 +5161,7 @@ function migrateProperties(
     styles.padding = { value: 'default' };
   }
 
-  // Navigation: these keys moved from properties to styles (see server/migrations/backfill/
+  // Navigation: these keys moved from properties to styles (see server/migrations/data/
   // 1783372800000-MoveNavigationLayoutStylesToStyles.ts for the equivalent one-off DB fixup).
   // Apps exported before that change still carry them under properties, so relocate on import too.
   if (['Navigation'].includes(componentType)) {

@@ -47,7 +47,7 @@ export interface SchemaPhaseOptions {
   lockAttempts: number;
 }
 
-/** MIGRATION_PHASE=expand: the run a booting pod waits on. */
+/** MIGRATION_PHASE=schema: the run a booting pod waits on. */
 export function getSchemaPhaseOptions(env: Record<string, string | undefined> = process.env): SchemaPhaseOptions {
   return {
     // Poll faster than the default unless the operator chose an interval.
@@ -77,8 +77,8 @@ export const MIGRATION_ADVISORY_LOCK_KEY = 6273975241000;
 /** Held only while real migrations run, so serving pods can refuse writes (`MigrationRunsService.status`). */
 export const MIGRATION_ACTIVE_LOCK_KEY = 6273975241001;
 
-/** Serialises contract runs. Separate from the migration lock, so a contract run never delays or skips a backfill run. */
-export const CONTRACT_ADVISORY_LOCK_KEY = 6273975241002;
+/** Serialises cleanup runs. Separate from the migration lock, so a cleanup run never delays or skips a data run. */
+export const CLEANUP_ADVISORY_LOCK_KEY = 6273975241002;
 
 /** Both locks as the database sees them: held by any live session, released when it ends. */
 export const HELD_MIGRATION_LOCKS_SQL = `

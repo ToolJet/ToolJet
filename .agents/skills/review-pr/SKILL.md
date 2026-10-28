@@ -88,7 +88,7 @@ Cite the repo's authority in the finding instead of restating the rule. Read
 | Design       | `server/AGENTS.md` Design principles: pure calculations out of I/O, stratified design, deep modules. Practical refactors only.                                                                         |
 | Conventions  | Closest `AGENTS.md` plus the living-docs rule in root `AGENTS.md`: a changed invariant with no `AGENTS.md` update is a finding. Glossary terms from `UBIQUITOUS_LANGUAGE.md`.                          |
 | API contract | `.agents/skills/api-design/SKILL.md`. Only when `server/src/modules/**/controller*.ts`, `dto/`, or `external-apis/` are touched.                                                                       |
-| Migrations   | `server/AGENTS.md` Migrations, `server/docs/MIGRATION_FLOW.md`. Phase placement, backfill tail, rerunnable steps, reads during the backfill, rollback. Only when migrations or their runner are touched.          |
+| Migrations   | `server/AGENTS.md` Migrations, `server/docs/MIGRATION_FLOW.md`. Phase placement, `beforeCommit()` steps, rerunnable steps, reads during the data phase, rollback. Only when migrations or their runner are touched.          |
 | Merge impact | Honest reversible verdict, stated Reach vs the diff, Rollback plan and Evidence on irreversible PRs.                                                                                                   |
 | Security     | `server/AGENTS.md` Security, `frontend/AGENTS.md` Security, root `AGENTS.md` Public/private boundary.                                                                                                  |
 

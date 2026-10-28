@@ -4,6 +4,6 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 
 const dataSource = new DataSource({
   ...ormconfig,
-  migrations: [join(__dirname, '../../migrations/contract/**/*{.ts,.js}')],
+  migrations: [join(__dirname, '../../migrations/cleanup/**/*{.ts,.js}')],
 } as DataSourceOptions);
 export default dataSource;

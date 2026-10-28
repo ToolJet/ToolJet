@@ -1,5 +1,5 @@
 {
-  "migrations/expand": [
+  "migrations/schema": [
     "AddAiActiveRuns1784527465000",
     "AddAiBuildNotificationPreference1784527468000",
     "AddAiRunCancellation1788820000000",
@@ -253,7 +253,7 @@
     "createEnvironments1667070216520",
     "tabsWidth1656083459220"
   ],
-  "migrations/backfill": [
+  "migrations/data": [
     "AddAiGenerationFlagsInApp1748331051836",
     "AddAllowedDomainsInInstanceSettings1706012772483",
     "AddApiKeytoSelfhostCustomer1758192692905",

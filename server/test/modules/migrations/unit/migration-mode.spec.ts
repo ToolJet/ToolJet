@@ -11,7 +11,7 @@ import {
   getMigrationMode,
   isMigrationTrafficGateDisabled,
   parseMigrationPhase,
-  planContract,
+  planCleanup,
   runStrategy,
 } from 'src/migration-helpers/migration-mode';
 
@@ -49,7 +49,7 @@ describe('migration-helpers/migration-mode', () => {
     });
 
     it.each([
-      ['async', 'npm run db:setup phase=expand'],
+      ['async', 'npm run db:setup phase=schema'],
       ['blocking', 'npm run db:setup phase=none'],
     ])('should apply the schema before the plugin steps in %s mode', (mode, setup) => {
       const lines = boot(mode)
@@ -111,23 +111,23 @@ describe('migration-helpers/migration-mode', () => {
     it.each([
       [undefined, undefined, 'single-transaction'],
       ['', undefined, 'single-transaction'],
-      ['expand', 'expand', 'multi-transaction'],
-      ['backfill', 'backfill', 'multi-transaction'],
-      ['contract', 'contract', 'multi-transaction'],
+      ['schema', 'schema', 'multi-transaction'],
+      ['data', 'data', 'multi-transaction'],
+      ['cleanup', 'cleanup', 'multi-transaction'],
     ])('should read %j as %s, run %s', (raw, phase, strategy) => {
       expect(parseMigrationPhase(raw)).toBe(phase);
       expect(runStrategy(parseMigrationPhase(raw))).toBe(strategy);
     });
 
-    it.each(['Expand', 'schema', 'data'])(
+    it.each(['Schema', 'joint', 'contract'])(
       'should refuse %j rather than fall back to a single-transaction run',
       (raw) => {
         expect(() => parseMigrationPhase(raw)).toThrow(`Unknown MIGRATION_PHASE '${raw}'`);
       }
     );
   });
-  describe('planContract | removals wait until an earlier upgrade ran the release that stopped using them', () => {
-    const contract = { name: 'DropOldIcon1799000000002', requires: 'StopReadingOldIcon1799000000001' };
+  describe('planCleanup | removals wait until an earlier upgrade ran the release that stopped using them', () => {
+    const cleanup = { name: 'DropOldIcon1799000000002', requires: 'StopReadingOldIcon1799000000001' };
 
     it.each([
       ['recorded by an earlier upgrade', new Map([['StopReadingOldIcon1799000000001', 40]]), 50, 'run'],
@@ -146,13 +146,13 @@ describe('migration-helpers/migration-mode', () => {
       ['not recorded yet', new Map<string, number>(), 50, 'deferred'],
       ['on a fresh install', new Map<string, number>(), 0, 'run'],
     ])('should %s → %s', (_when, recorded, baseline, outcome) => {
-      const plan = planContract([contract], recorded, baseline);
-      expect(outcome === 'run' ? plan.run : plan.deferred.map(({ name }) => name)).toEqual([contract.name]);
+      const plan = planCleanup([cleanup], recorded, baseline);
+      expect(outcome === 'run' ? plan.run : plan.deferred.map(({ name }) => name)).toEqual([cleanup.name]);
     });
 
-    it('should hold back a contract that names no requires migration', () => {
-      expect(planContract([{ name: contract.name }], new Map(), 50).deferred).toEqual([
-        { name: contract.name, waitingFor: 'a requires migration' },
+    it('should hold back a cleanup that names no requires migration', () => {
+      expect(planCleanup([{ name: cleanup.name }], new Map(), 50).deferred).toEqual([
+        { name: cleanup.name, waitingFor: 'a requires migration' },
       ]);
     });
   });
@@ -169,7 +169,7 @@ describe('migration-helpers/migration-mode', () => {
 
     it('should list only migrations that exist, so a rename cannot silently send old databases async', () => {
       const root = join(__dirname, '../../../..');
-      const classes = ['migrations/expand', 'migrations/backfill'].flatMap((dir) =>
+      const classes = ['migrations/schema', 'migrations/data'].flatMap((dir) =>
         readdirSync(join(root, dir))
           .filter((file) => file.endsWith('.ts'))
           .map((file) => readFileSync(join(root, dir, file), 'utf8').match(/export class (\w+)/)?.[1])

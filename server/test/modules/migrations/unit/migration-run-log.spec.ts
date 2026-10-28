@@ -95,7 +95,7 @@ describe('migration run log', () => {
     });
 
     it('should not report pending work when the runner found nothing to do', () => {
-      expect(replay(['[migrations] No expand or backfill migrations pending']).hasPendingWork).toBe(false);
+      expect(replay(['[migrations] No schema or data migrations pending']).hasPendingWork).toBe(false);
     });
 
     it('should keep only the last lines of output', () => {

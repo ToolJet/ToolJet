@@ -54,7 +54,7 @@ describe('getAppDataRevision', () => {
     expect(after).not.toBe(before);
   });
 
-  it('changes when a migration commits, such as a backfill that rewrites components after boot', async () => {
+  it('changes when a migration commits, such as a data migration that rewrites components after boot', async () => {
     const epoch = (latest: string) => jest.fn(() => Promise.resolve([{ stamp: null, epoch: latest }]));
 
     const before = await getAppDataRevision(makeManager(epoch('520')), app, scope);
