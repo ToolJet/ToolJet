@@ -1,9 +1,0 @@
-{
-  "name": "@tooljet/pack-tools",
-  "private": true,
-  "type": "module",
-  "description": "Build and publish ToolJet component packs (custom-component libraries) with a v2 manifest.",
-  "dependencies": {
-    "esbuild": "^0.25.9"
-  }
-}

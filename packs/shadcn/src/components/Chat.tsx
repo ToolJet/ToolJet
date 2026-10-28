@@ -72,28 +72,43 @@ const CopyButton = ({ value }: { value: string }) => {
   );
 };
 
-const MessageRow = React.memo(({ row, showAvatars, showTimestamps }: { row: RunRow; showAvatars: boolean; showTimestamps: boolean }) => {
-  const mine = row.type === 'message';
-  const isError = row.type === 'error';
-  return (
-    <div className={cn('ui2c-row', mine && 'is-mine', row.first && 'is-first')} data-type={row.type} data-message-key={row.key}>
-      {showAvatars ? <div className="ui2c-avatar-slot">{row.last ? <ChatAvatar src={row.who.avatar} name={row.who.name} /> : null}</div> : null}
-      <div className="ui2c-col">
-        {row.first ? (
-          <div className="ui2c-meta">
-            <span className="ui2c-name">{row.who.name}</span>
-            {showTimestamps ? <span className="ui2c-time">{formatTimestamp(row.timestamp)}</span> : null}
+const MessageRow = React.memo(
+  ({ row, showAvatars, showTimestamps }: { row: RunRow; showAvatars: boolean; showTimestamps: boolean }) => {
+    const mine = row.type === 'message';
+    const isError = row.type === 'error';
+    return (
+      <div
+        className={cn('ui2c-row', mine && 'is-mine', row.first && 'is-first')}
+        data-type={row.type}
+        data-message-key={row.key}
+      >
+        {showAvatars ? (
+          <div className="ui2c-avatar-slot">
+            {row.last ? <ChatAvatar src={row.who.avatar} name={row.who.name} /> : null}
           </div>
         ) : null}
-        <div className={cn('ui2c-bubble', mine ? 'ui2c-bubble--mine' : isError ? 'ui2c-bubble--error' : 'ui2c-bubble--reply')}>
-          {isError ? <AlertCircle className="ui2c-error-icon" aria-hidden="true" /> : null}
-          {mine || isError ? <span className="ui2c-plain">{row.text}</span> : <Markdown content={row.text} />}
+        <div className="ui2c-col">
+          {row.first ? (
+            <div className="ui2c-meta">
+              <span className="ui2c-name">{row.who.name}</span>
+              {showTimestamps ? <span className="ui2c-time">{formatTimestamp(row.timestamp)}</span> : null}
+            </div>
+          ) : null}
+          <div
+            className={cn(
+              'ui2c-bubble',
+              mine ? 'ui2c-bubble--mine' : isError ? 'ui2c-bubble--error' : 'ui2c-bubble--reply'
+            )}
+          >
+            {isError ? <AlertCircle className="ui2c-error-icon" aria-hidden="true" /> : null}
+            {mine || isError ? <span className="ui2c-plain">{row.text}</span> : <Markdown content={row.text} />}
+          </div>
+          <div className="ui2c-tools">{row.text ? <CopyButton value={row.text} /> : null}</div>
         </div>
-        <div className="ui2c-tools">{row.text ? <CopyButton value={row.text} /> : null}</div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 MessageRow.displayName = 'MessageRow';
 
 type Event = { name: string };
@@ -117,31 +132,90 @@ export const Chat = () => {
   });
   // UI 2.0 binds {{globals.currentUser.firstName}} here; a pack default is a plain value.
   const [userName] = ToolJet.useStateString({ name: 'userName', label: 'User name', initialValue: 'You' });
-  const [userAvatar, setUserAvatar] = ToolJet.useStateString({ name: 'userAvatar', label: 'User avatar', initialValue: '' });
-  const [respondentName] = ToolJet.useStateString({ name: 'respondentName', label: 'Respondent name', initialValue: 'Assistant' });
-  const [respondentAvatar, setRespondentAvatar] = ToolJet.useStateString({ name: 'respondentAvatar', label: 'Respondent avatar', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder for input field', initialValue: 'Ask me anything!' });
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty chat text', initialValue: 'Start the conversation' });
-  const [disableInput, setDisableInput] = ToolJet.useStateBoolean({ name: 'disableInput', label: 'Disable input state', initialValue: false });
-  const [loadingHistory, setLoadingHistory] = ToolJet.useStateBoolean({ name: 'loadingHistory', label: 'History loading state', initialValue: false });
-  const [loadingResponse, setLoadingResponse] = ToolJet.useStateBoolean({ name: 'loadingResponse', label: 'Response loading state', initialValue: false });
-  const [enableClearHistoryButton] = ToolJet.useStateBoolean({ name: 'enableClearHistoryButton', label: 'Enable clear history icon', initialValue: true });
+  const [userAvatar, setUserAvatar] = ToolJet.useStateString({
+    name: 'userAvatar',
+    label: 'User avatar',
+    initialValue: '',
+  });
+  const [respondentName] = ToolJet.useStateString({
+    name: 'respondentName',
+    label: 'Respondent name',
+    initialValue: 'Assistant',
+  });
+  const [respondentAvatar, setRespondentAvatar] = ToolJet.useStateString({
+    name: 'respondentAvatar',
+    label: 'Respondent avatar',
+    initialValue: '',
+  });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder for input field',
+    initialValue: 'Ask me anything!',
+  });
+  const [emptyText] = ToolJet.useStateString({
+    name: 'emptyText',
+    label: 'Empty chat text',
+    initialValue: 'Start the conversation',
+  });
+  const [disableInput, setDisableInput] = ToolJet.useStateBoolean({
+    name: 'disableInput',
+    label: 'Disable input state',
+    initialValue: false,
+  });
+  const [loadingHistory, setLoadingHistory] = ToolJet.useStateBoolean({
+    name: 'loadingHistory',
+    label: 'History loading state',
+    initialValue: false,
+  });
+  const [loadingResponse, setLoadingResponse] = ToolJet.useStateBoolean({
+    name: 'loadingResponse',
+    label: 'Response loading state',
+    initialValue: false,
+  });
+  const [enableClearHistoryButton] = ToolJet.useStateBoolean({
+    name: 'enableClearHistoryButton',
+    label: 'Enable clear history icon',
+    initialValue: true,
+  });
   const [enableDownloadHistoryButton] = ToolJet.useStateBoolean({
     name: 'enableDownloadHistoryButton',
     label: 'Enable download history icon',
     initialValue: true,
   });
   const [showAvatars] = ToolJet.useStateBoolean({ name: 'showAvatars', label: 'Show avatars', initialValue: true });
-  const [showTimestamps] = ToolJet.useStateBoolean({ name: 'showTimestamps', label: 'Show timestamps', initialValue: true });
+  const [showTimestamps] = ToolJet.useStateBoolean({
+    name: 'showTimestamps',
+    label: 'Show timestamps',
+    initialValue: true,
+  });
   // Exposed values.
-  const [history, setHistory] = ToolJet.useStateArray({ name: 'history', initialValue: Array.isArray(initialChat) ? initialChat : [], inspector: 'hidden' });
-  const [, setIsHistoryLoading] = ToolJet.useStateBoolean({ name: 'isHistoryLoading', initialValue: false, inspector: 'hidden' });
-  const [, setIsInputDisabled] = ToolJet.useStateBoolean({ name: 'isInputDisabled', initialValue: false, inspector: 'hidden' });
-  const [, setIsResponseLoading] = ToolJet.useStateBoolean({ name: 'isResponseLoading', initialValue: false, inspector: 'hidden' });
+  const [history, setHistory] = ToolJet.useStateArray({
+    name: 'history',
+    initialValue: Array.isArray(initialChat) ? initialChat : [],
+    inspector: 'hidden',
+  });
+  const [, setIsHistoryLoading] = ToolJet.useStateBoolean({
+    name: 'isHistoryLoading',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [, setIsInputDisabled] = ToolJet.useStateBoolean({
+    name: 'isInputDisabled',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [, setIsResponseLoading] = ToolJet.useStateBoolean({
+    name: 'isResponseLoading',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const [, setLastMessage] = ToolJet.useStateObject({ name: 'lastMessage', initialValue: {}, inspector: 'hidden' });
   const [, setLastResponse] = ToolJet.useStateObject({ name: 'lastResponse', initialValue: {}, inspector: 'hidden' });
   const onMessageSent = ToolJet.useEventCallback({ name: 'onMessageSent', displayName: 'On message sent' } as Event);
-  const onClearHistory = ToolJet.useEventCallback({ name: 'onClearHistory', displayName: 'On history cleared' } as Event);
+  const onClearHistory = ToolJet.useEventCallback({
+    name: 'onClearHistory',
+    displayName: 'On history cleared',
+  } as Event);
 
   const containerBackgroundColor = useThemeColor('containerBackgroundColor', 'Background', TOKEN.surface);
   const borderColorContainer = useThemeColor('borderColorContainer', 'Border', TOKEN.border);
@@ -156,7 +230,7 @@ export const Chat = () => {
   const textColorField = useThemeColor('textColorField', 'Input text color', TOKEN.text);
   const sendIconColorField = useThemeColor('sendIconColorField', 'Send icon color', TOKEN.surface);
   const loadingNow = useLoading();
-  ToolJet.useComponentSettings({ defaultWidth: 15, defaultHeight: 48 });
+  ToolJet.useComponentSettings({ role: 'chat', fit: false, loading: 'own', defaultWidth: 15, defaultHeight: 48 });
 
   const people = useMemo(
     () => ({ userName, userAvatar, respondentName, respondentAvatar }),
@@ -238,7 +312,11 @@ export const Chat = () => {
   // appendHistory records it as lastMessage or lastResponse by its type. Plain text reads as a message (sendMessage)
   // or a reply (appendHistory).
   ToolJet.useAction(
-    { name: 'appendHistory', displayName: 'Append history', params: [{ handle: 'message', displayName: 'Message', defaultValue: '{{{}}}' }] },
+    {
+      name: 'appendHistory',
+      displayName: 'Append history',
+      params: [{ handle: 'message', displayName: 'Message', defaultValue: '{{{}}}' }],
+    },
     (raw) => {
       const input = toMessageInput(raw, 'response');
       if (!input) return;
@@ -251,7 +329,11 @@ export const Chat = () => {
   ToolJet.useAction({ name: 'clearHistory', displayName: 'Clear history' }, () => clearHistory(false));
   ToolJet.useAction({ name: 'downloadChat', displayName: 'Download chat' }, () => download());
   ToolJet.useAction(
-    { name: 'sendMessage', displayName: 'Send message', params: [{ handle: 'message', displayName: 'Message', defaultValue: '{{{}}}' }] },
+    {
+      name: 'sendMessage',
+      displayName: 'Send message',
+      params: [{ handle: 'message', displayName: 'Message', defaultValue: '{{{}}}' }],
+    },
     (raw) => {
       const input = toMessageInput(raw, 'message');
       if (!input) return;
@@ -260,12 +342,22 @@ export const Chat = () => {
       setLastMessage(asRecord(message));
     }
   );
-  ToolJet.useAction({ name: 'setError', displayName: 'Set error', params: [{ handle: 'error', displayName: 'Error' }] }, (message) => {
-    setError(typeof message === 'string' && message ? message : 'Some error occurred. Please retry.');
-  });
-  ToolJet.useAction({ name: 'setHistory', displayName: 'Set history', params: [{ handle: 'history', displayName: 'History', defaultValue: '{{[]}}' }] }, (next) => {
-    if (Array.isArray(next)) commit(next);
-  });
+  ToolJet.useAction(
+    { name: 'setError', displayName: 'Set error', params: [{ handle: 'error', displayName: 'Error' }] },
+    (message) => {
+      setError(typeof message === 'string' && message ? message : 'Some error occurred. Please retry.');
+    }
+  );
+  ToolJet.useAction(
+    {
+      name: 'setHistory',
+      displayName: 'Set history',
+      params: [{ handle: 'history', displayName: 'History', defaultValue: '{{[]}}' }],
+    },
+    (next) => {
+      if (Array.isArray(next)) commit(next);
+    }
+  );
   ToolJet.useAction(
     {
       name: 'setHistoryLoading',
@@ -282,8 +374,13 @@ export const Chat = () => {
     },
     (v) => setDisableInput(truthy(v))
   );
-  ToolJet.useAction({ name: 'setResponderAvatar', displayName: 'Set respondent avatar', params: [{ handle: 'avatar', displayName: 'Avatar' }] }, (v) =>
-    setRespondentAvatar(typeof v === 'string' ? v : '')
+  ToolJet.useAction(
+    {
+      name: 'setResponderAvatar',
+      displayName: 'Set respondent avatar',
+      params: [{ handle: 'avatar', displayName: 'Avatar' }],
+    },
+    (v) => setRespondentAvatar(typeof v === 'string' ? v : '')
   );
   ToolJet.useAction(
     {
@@ -293,8 +390,9 @@ export const Chat = () => {
     },
     (v) => setLoadingResponse(truthy(v))
   );
-  ToolJet.useAction({ name: 'setUserAvatar', displayName: 'Set user avatar', params: [{ handle: 'avatar', displayName: 'Avatar' }] }, (v) =>
-    setUserAvatar(typeof v === 'string' ? v : '')
+  ToolJet.useAction(
+    { name: 'setUserAvatar', displayName: 'Set user avatar', params: [{ handle: 'avatar', displayName: 'Avatar' }] },
+    (v) => setUserAvatar(typeof v === 'string' ? v : '')
   );
 
   // ---- Rows
@@ -304,7 +402,10 @@ export const Chat = () => {
   const hidden = Math.max(0, allRows.length - shown);
   const rows = useMemo(() => withRuns(allRows.slice(hidden), people), [allRows, hidden, people]);
   const errorRow = error
-    ? withRuns([{ key: 'error', type: 'error', text: error, name: '', avatar: '', timestamp: new Date().toISOString() }], people)[0]
+    ? withRuns(
+        [{ key: 'error', type: 'error', text: error, name: '', avatar: '', timestamp: new Date().toISOString() }],
+        people
+      )[0]
     : null;
   const respondent = sender({ type: 'response', name: '', avatar: '' }, people);
 
@@ -315,7 +416,8 @@ export const Chat = () => {
   const atEndRef = useRef(true);
   const toEnd = (smooth: boolean) => {
     const el = viewportRef.current;
-    if (el && typeof el.scrollTo === 'function') el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    if (el && typeof el.scrollTo === 'function')
+      el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
   };
   useLayoutEffect(() => {
     if (appended.current || atEndRef.current) toEnd(appended.current);
@@ -369,12 +471,24 @@ export const Chat = () => {
           <div className="ui2c-head">
             <span className="ui2c-title">{String(chatTitle ?? '')}</span>
             {enableDownloadHistoryButton ? (
-              <button type="button" className="ui2c-icon-btn" aria-label="Download chat history" title="Download chat history" onClick={download}>
+              <button
+                type="button"
+                className="ui2c-icon-btn"
+                aria-label="Download chat history"
+                title="Download chat history"
+                onClick={download}
+              >
                 <Download />
               </button>
             ) : null}
             {enableClearHistoryButton ? (
-              <button type="button" className="ui2c-icon-btn" aria-label="Clear history" title="Clear history" onClick={() => clearHistory(true)}>
+              <button
+                type="button"
+                className="ui2c-icon-btn"
+                aria-label="Clear history"
+                title="Clear history"
+                onClick={() => clearHistory(true)}
+              >
                 <Trash2 />
               </button>
             ) : null}
@@ -382,7 +496,14 @@ export const Chat = () => {
         ) : null}
 
         <div className="ui2c-body">
-          <div ref={viewportRef} role="region" aria-label="Messages" tabIndex={0} onScroll={onScroll} className="ui2c-viewport">
+          <div
+            ref={viewportRef}
+            role="region"
+            aria-label="Messages"
+            tabIndex={0}
+            onScroll={onScroll}
+            className="ui2c-viewport"
+          >
             <div role="log" aria-live="polite" aria-relevant="additions" aria-busy={loadingResponse || undefined}>
               {hidden > 0 && !loadingHistory ? (
                 <div className="ui2c-earlier">
@@ -404,9 +525,13 @@ export const Chat = () => {
                   ))}
                 </div>
               ) : (
-                rows.map((row) => <MessageRow key={row.key} row={row} showAvatars={!!showAvatars} showTimestamps={!!showTimestamps} />)
+                rows.map((row) => (
+                  <MessageRow key={row.key} row={row} showAvatars={!!showAvatars} showTimestamps={!!showTimestamps} />
+                ))
               )}
-              {!loadingHistory && errorRow ? <MessageRow row={errorRow} showAvatars={!!showAvatars} showTimestamps={!!showTimestamps} /> : null}
+              {!loadingHistory && errorRow ? (
+                <MessageRow row={errorRow} showAvatars={!!showAvatars} showTimestamps={!!showTimestamps} />
+              ) : null}
               {loadingResponse && !loadingHistory ? (
                 <div className="ui2c-row is-first" role="status" aria-label={`${respondent.name} is typing`}>
                   {showAvatars ? (
@@ -467,7 +592,14 @@ export const Chat = () => {
               className="ui2c-input"
               style={{ maxHeight: MAX_INPUT_HEIGHT }}
             />
-            <button type="button" className="ui2c-send" aria-label="Send message" title="Send" onClick={submit} disabled={!canSend}>
+            <button
+              type="button"
+              className="ui2c-send"
+              aria-label="Send message"
+              title="Send"
+              onClick={submit}
+              disabled={!canSend}
+            >
               <ArrowUp />
             </button>
           </div>

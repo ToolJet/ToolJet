@@ -7,6 +7,7 @@ import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
 import { CustomComponentsTab } from './CustomComponentsTab';
+import { BuiltinPackCards, useBuiltinPacks } from './BuiltinPackSections';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
@@ -82,6 +83,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
   const [searchQuery, setSearchQuery] = useState('');
+  const builtinPacks = useBuiltinPacks();
   const [moduleError, setModuleError] = useState(false);
   const [activeTab, setActiveTab] = useState('components');
 
@@ -170,6 +172,18 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   }
 
   function segregateSections() {
+    // Built-in packs sit with the native widgets; while searching, their matching components follow the native ones.
+    if (searchQuery && builtinPacks.length > 0) {
+      return (
+        <>
+          {renderList(filteredComponents)}
+          {builtinPacks.map((pack) => (
+            <BuiltinPackCards key={pack.pack} pack={pack} searchQuery={searchQuery} />
+          ))}
+        </>
+      );
+    }
+
     if (filteredComponents.length === 0) {
       return (
         <div className="empty">
@@ -211,6 +225,9 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           children: renderList(section.items),
         });
       }
+    });
+    builtinPacks.forEach((pack) => {
+      items.push({ title: pack.displayName, isOpen: false, children: <BuiltinPackCards pack={pack} /> });
     });
 
     return (

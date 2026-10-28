@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { TJ } from './sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
 import { themeVars } from '../../themeVars';
 import { TOKEN, unlessDefault } from '../../styleDefaults';
 
@@ -36,7 +36,12 @@ export const POPOVER: Look[] = [
 
 /** FIELD with some labels as the widget words them. */
 export const field = (labels: Record<string, string> = {}, omit: string[] = []): Look[] =>
-  FIELD.filter(([name]) => !omit.includes(name)).map(([name, label, cssVar, drawn]) => [name, labels[name] ?? label, cssVar, drawn]);
+  FIELD.filter(([name]) => !omit.includes(name)).map(([name, label, cssVar, drawn]) => [
+    name,
+    labels[name] ?? label,
+    cssVar,
+    drawn,
+  ]);
 
 const isSet = (v: unknown) => v !== undefined && v !== null && v !== '';
 
@@ -51,10 +56,18 @@ export const useLooks = (looks: Look[]): CSSProperties => {
     // the number field, as useThemeRadius's (styleDefaults.ts): the code field drew a blank number as invalid.
     const px = isPx(drawn);
     const initialValue = drawn === undefined || drawn === 'px' ? '' : drawn;
-    const themeRadius = { placeholder: 'Theme radius', inspector: 'numberInput', description: 'Blank follows the theme radius.' };
+    const themeRadius = {
+      placeholder: 'Theme radius',
+      inspector: 'numberInput',
+      description: 'Blank follows the theme radius.',
+    } as const;
     const raw = px
-      ? TJ.useStyleNumber({ name, label, ...(drawn === 'px' ? themeRadius : { initialValue: initialValue as number }) })
-      : TJ.useStyleString({ name, label, inspector: 'color', initialValue: initialValue as string });
+      ? ToolJet.useStyleNumber({
+          name,
+          label,
+          ...(drawn === 'px' ? themeRadius : { initialValue: initialValue as number }),
+        })
+      : ToolJet.useStyleString({ name, label, inspector: 'color', initialValue: initialValue as string });
     const value = unlessDefault(raw ?? '', initialValue);
     if (!isSet(value)) continue;
     if (cssVar === 'accent') accent = String(value);

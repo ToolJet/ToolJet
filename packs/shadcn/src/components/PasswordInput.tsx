@@ -2,11 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { cn } from '../lib/cn';
-import { TJ } from '../lib/ui2/inputs/sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
 import { TOKEN } from '../lib/styleDefaults';
-import { isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
+import { isEnter, useReseed } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
 import { useValueSetter } from '../lib/sameValue';
@@ -22,22 +22,49 @@ const LOOKS: Look[] = [
 ];
 
 export const PasswordInput = () => {
-  const [label] = TJ.useStateString({ name: 'label', label: 'Label', initialValue: 'Password' });
-  const [description] = TJ.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [placeholder] = TJ.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter password' });
-  const [defaultValue] = TJ.useStateString({ name: 'defaultValue', label: 'Default value', initialValue: '' });
-  const [showToggle] = TJ.useStateBoolean({ name: 'showToggle', label: 'Show/hide button', initialValue: true });
-  const [showStrength] = TJ.useStateBoolean({ name: 'showStrength', label: 'Strength meter', initialValue: false });
-  const [rawValue, setValue] = TJ.useStateString({ name: 'value', initialValue: defaultValue, inspector: 'hidden' });
-  const [, setStrength] = TJ.useStateString({ name: 'strength', initialValue: '', inspector: 'hidden' });
+  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Password' });
+  const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Enter password',
+  });
+  const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value', initialValue: '' });
+  const [showToggle] = ToolJet.useStateBoolean({ name: 'showToggle', label: 'Show/hide button', initialValue: true });
+  const [showStrength] = ToolJet.useStateBoolean({
+    name: 'showStrength',
+    label: 'Strength meter',
+    initialValue: false,
+  });
+  const [rawValue, setValue] = ToolJet.useStateString({
+    name: 'value',
+    initialValue: defaultValue,
+    inspector: 'hidden',
+  });
+  const [, setStrength] = ToolJet.useStateString({ name: 'strength', initialValue: '', inspector: 'hidden' });
   // The pack's earlier names, honoured when set; the Validation section's Min length and Mandatory replace them.
-  const [legacyMinLength] = TJ.useStateNumber({ name: 'minLength', label: 'Min length', initialValue: 0, inspector: 'hidden' });
-  const [legacyRequired] = TJ.useStateBoolean({ name: 'required', label: 'Required', initialValue: false, inspector: 'hidden' });
-  const [legacyDisabled] = TJ.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
-  const onChange = TJ.useEventCallback({ name: 'onChange' });
-  const onEnterPressed = TJ.useEventCallback({ name: 'onEnterPressed' });
-  const onFocus = TJ.useEventCallback({ name: 'onFocus' });
-  const onBlur = TJ.useEventCallback({ name: 'onBlur' });
+  const [legacyMinLength] = ToolJet.useStateNumber({
+    name: 'minLength',
+    label: 'Min length',
+    initialValue: 0,
+    inspector: 'hidden',
+  });
+  const [legacyRequired] = ToolJet.useStateBoolean({
+    name: 'required',
+    label: 'Required',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [legacyDisabled] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onEnterPressed = ToolJet.useEventCallback({ name: 'onEnterPressed' });
+  const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
+  const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const value = rawValue === null || rawValue === undefined ? '' : String(rawValue);
@@ -61,25 +88,35 @@ export const PasswordInput = () => {
     change(next === null || next === undefined ? '' : String(next), true);
     rule.touch();
   };
-  TJ.useAction({ name: 'setText', displayName: 'Set text', params: [{ handle: 'value', displayName: 'Value' }] }, setText);
-  TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => setText(''));
-  TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
-  TJ.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
-
-  const fieldId = TJ.useFieldId();
-  const control = TJ.useControlState();
-  const check = TJ.useValidation({ section: 'text', value });
-  const minLength = Number(legacyMinLength) || 0;
-  const rule = useRuleCheck(
-    check,
-    legacyRequired && !value
-      ? 'This field is mandatory'
-      : value && value.length < minLength
-        ? `Minimum ${minLength} characters is needed`
-        : ''
+  ToolJet.useAction(
+    { name: 'setText', displayName: 'Set text', params: [{ handle: 'value', displayName: 'Value' }] },
+    setText
   );
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => setText(''));
+  ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
+  ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
+
+  const fieldId = ToolJet.useFieldId();
+  const control = ToolJet.useControlState();
+  const minLength = Number(legacyMinLength) || 0;
+  const rule = ToolJet.useValidation({
+    kind: 'text',
+    value,
+    rule:
+      legacyRequired && !value
+        ? 'This field is mandatory'
+        : value && value.length < minLength
+          ? `Minimum ${minLength} characters is needed`
+          : '',
+  });
   const looks = useLooks(LOOKS);
-  TJ.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'passwordinput',
+    fit: true,
+    loading: 'own',
+    defaultWidth: 10,
+    defaultHeight: 7,
+  });
 
   // Turning the toggle off masks a password it revealed, and turning it back on starts masked.
   const canReveal = showToggle !== false;

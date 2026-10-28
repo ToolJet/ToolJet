@@ -9,7 +9,9 @@ const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'li
 const SIZES = ['sm', 'default', 'lg'];
 /** A variant or size, now that they can be bound: a known name in any case, anything else the default. */
 const oneOf = (names: string[], value: unknown) => {
-  const name = String(value ?? '').trim().toLowerCase();
+  const name = String(value ?? '')
+    .trim()
+    .toLowerCase();
   return names.includes(name) ? name : 'default';
 };
 
@@ -21,7 +23,14 @@ export const Button = () => {
     name: 'variant',
     label: 'Variant',
     enumDefinition: ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'],
-    enumLabels: { default: 'Default', secondary: 'Secondary', outline: 'Outline', ghost: 'Ghost', destructive: 'Destructive', link: 'Link' },
+    enumLabels: {
+      default: 'Default',
+      secondary: 'Secondary',
+      outline: 'Outline',
+      ghost: 'Ghost',
+      destructive: 'Destructive',
+      link: 'Link',
+    },
     initialValue: 'default',
     section: 'Appearance',
   });
@@ -36,11 +45,27 @@ export const Button = () => {
   });
   // Kept, hidden, for apps that set it: the button always fills its box, and in a Flex container the box is what
   // stretches (the child's Fill or fixed width), as with ToolJet's Button, so the option changed nothing.
-  ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Stretch in flex container', initialValue: false, section: 'Appearance', inspector: 'hidden' });
+  ToolJet.useStateBoolean({
+    name: 'fullWidth',
+    label: 'Stretch in flex container',
+    initialValue: false,
+    section: 'Appearance',
+    inspector: 'hidden',
+  });
   // The pack's earlier Disable and Show spinner, hidden for the host's Disable and Loading (setDisable, setLoading) but
   // still honoured when an older app saved them on.
-  const [legacyDisabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable (legacy)', initialValue: false, inspector: 'hidden' });
-  const [legacyLoading] = ToolJet.useStateBoolean({ name: 'loading', label: 'Show spinner', initialValue: false, inspector: 'hidden' });
+  const [legacyDisabled] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable (legacy)',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [legacyLoading] = ToolJet.useStateBoolean({
+    name: 'loading',
+    label: 'Show spinner',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const [, setButtonText] = ToolJet.useStateString({ name: 'buttonText', initialValue: 'Button', inspector: 'hidden' });
   const onClickEvent = ToolJet.useEventCallback({ name: 'onClick' });
   // Inside a Form whose submit button this is, a click submits it first, as UI 2.0's and the native Button do.
@@ -65,15 +90,20 @@ export const Button = () => {
   ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => {
     if (!latest.current) onClick();
   });
-  ToolJet.useAction({ name: 'setText', displayName: 'Set text', params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }] }, (t) =>
-    setOverride(t === undefined || t === null ? '' : String(t))
+  ToolJet.useAction(
+    {
+      name: 'setText',
+      displayName: 'Set text',
+      params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
+    },
+    (t) => setOverride(t === undefined || t === null ? '' : String(t))
   );
   const backgroundColor = useThemeColor('backgroundColor', 'Button background', TOKEN.brand);
   const hoverBackgroundColor = useThemeColor('hoverBackgroundColor', 'Button hover background', TOKEN.brand);
   const textColor = useThemeColor('textColor', 'Button text color', TOKEN.surface);
   const borderColor = useThemeColor('borderColor', 'Button border color', 'transparent');
   const radius = useThemeRadius('borderRadius', 'Button radius');
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
+  ToolJet.useComponentSettings({ role: 'button', fit: false, loading: 'own', defaultWidth: 6, defaultHeight: 4 });
 
   const look = oneOf(VARIANTS, variant);
   const scale = oneOf(SIZES, size);

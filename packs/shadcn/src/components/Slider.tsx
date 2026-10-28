@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { Field } from '../lib/Field';
-import { TJ } from '../lib/ui2/inputs/sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
 import { TOKEN } from '../lib/styleDefaults';
@@ -18,22 +18,36 @@ const LOOKS: Look[] = [
   ['trackColor', 'Track color', '--lk-track', TOKEN.brand],
 ];
 
-const numeric = (n: unknown) => (typeof n === 'number' || (typeof n === 'string' && n.trim() !== '')) && Number.isFinite(Number(n));
+const numeric = (n: unknown) =>
+  (typeof n === 'number' || (typeof n === 'string' && n.trim() !== '')) && Number.isFinite(Number(n));
 
 export const Slider = () => {
-  const [label] = TJ.useStateString({ name: 'label', label: 'Label', initialValue: 'Label' });
-  const [description] = TJ.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [min] = TJ.useStateNumber({ name: 'min', label: 'Minimum', initialValue: 0 });
-  const [max] = TJ.useStateNumber({ name: 'max', label: 'Maximum', initialValue: 100 });
-  const [step] = TJ.useStateNumber({ name: 'step', label: 'Step', initialValue: 1 });
-  const [range] = TJ.useStateBoolean({ name: 'range', label: 'Range', initialValue: false });
-  const [defaultValue] = TJ.useStateNumber({ name: 'defaultValue', label: 'Default value (number, or [start, end] for a range)', initialValue: 50 });
+  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Label' });
+  const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
+  const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Minimum', initialValue: 0 });
+  const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Maximum', initialValue: 100 });
+  const [step] = ToolJet.useStateNumber({ name: 'step', label: 'Step', initialValue: 1 });
+  const [range] = ToolJet.useStateBoolean({ name: 'range', label: 'Range', initialValue: false });
+  const [defaultValue] = ToolJet.useStateNumber({
+    name: 'defaultValue',
+    label: 'Default value (number, or [start, end] for a range)',
+    initialValue: 50,
+  });
   // The pack's own: the value beside the label (UI 2.0 always shows it).
-  const [showValue] = TJ.useStateBoolean({ name: 'showValue', label: 'Show value', initialValue: true });
+  const [showValue] = ToolJet.useStateBoolean({ name: 'showValue', label: 'Show value', initialValue: true });
   // Exposed: a number, or [start, end] for a range.
-  const [rawValue, setValue] = TJ.useStateNumber({ name: 'value', initialValue: defaultValue, inspector: 'hidden' });
-  const [legacyDisabled] = TJ.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
-  const onChange = TJ.useEventCallback({ name: 'onChange' });
+  const [rawValue, setValue] = ToolJet.useStateNumber({
+    name: 'value',
+    initialValue: defaultValue,
+    inspector: 'hidden',
+  });
+  const [legacyDisabled] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
 
   // Range: two thumbs, from the Range toggle or a default given as an array; a range whose default is one number
   // starts at the minimum and the maximum.
@@ -63,13 +77,17 @@ export const Slider = () => {
     if (keptOnMount && JSON.stringify(isRange ? values : values[0]) !== JSON.stringify(rawValue)) publish(values);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  TJ.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'num1', displayName: 'Value' }] }, (n) => {
-    if (!numeric(n)) return;
-    const [v] = M.sliderValues(Number(n), bounds);
-    const now = isRange && Array.isArray(valueSetter.latest.current) ? (valueSetter.latest.current as number[]) : null;
-    if (publish(isRange ? M.sliderValues([v, Math.max(v, now?.[1] ?? values[1] ?? v)], bounds) : [v])) onChange();
-  });
-  TJ.useAction(
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'num1', displayName: 'Value' }] },
+    (n) => {
+      if (!numeric(n)) return;
+      const [v] = M.sliderValues(Number(n), bounds);
+      const now =
+        isRange && Array.isArray(valueSetter.latest.current) ? (valueSetter.latest.current as number[]) : null;
+      if (publish(isRange ? M.sliderValues([v, Math.max(v, now?.[1] ?? values[1] ?? v)], bounds) : [v])) onChange();
+    }
+  );
+  ToolJet.useAction(
     {
       name: 'setRangeValue',
       displayName: 'Set range value',
@@ -85,11 +103,11 @@ export const Slider = () => {
     }
   );
   // As UI 2.0's (and the native Range slider's) reset: back to the default, without onChange.
-  TJ.useAction({ name: 'reset', displayName: 'Reset' }, () => setValue(start() as number));
+  ToolJet.useAction({ name: 'reset', displayName: 'Reset' }, () => setValue(start() as number));
 
-  const control = TJ.useControlState();
+  const control = ToolJet.useControlState();
   const looks = useLooks(LOOKS);
-  TJ.useComponentSettings({ defaultWidth: 14, defaultHeight: 6 });
+  ToolJet.useComponentSettings({ role: 'slider', fit: true, loading: 'own', defaultWidth: 14, defaultHeight: 6 });
 
   // The thumbs while dragging; a new value or new bounds put them back on the value.
   const [live, setLive] = useState(values);

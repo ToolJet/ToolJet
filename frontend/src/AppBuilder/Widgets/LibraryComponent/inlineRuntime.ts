@@ -22,7 +22,8 @@ export type LibraryRuntime = 'inline' | 'iframe';
 
 const RUNTIME_STORAGE_KEY = 'tj-cc-runtime';
 
-// localStorage.setItem('tj-cc-runtime', 'iframe') switches back to the shell iframe for comparison.
+// Every library runs inline for now; the sandboxed iframe stays available behind
+// localStorage.setItem('tj-cc-runtime', 'iframe').
 export const getLibraryComponentRuntime = (): LibraryRuntime => {
   try {
     return window.localStorage.getItem(RUNTIME_STORAGE_KEY) === 'iframe' ? 'iframe' : 'inline';
@@ -60,8 +61,8 @@ export interface PackHost {
   loading: boolean;
   /** The id for the component's control, so its label names it. */
   fieldId: string;
-  /** Judges a value with the widget's Validation section and publishes isValid / isMandatory. */
-  useValidation: (value: unknown, present?: boolean) => PackValidation;
+  /** Judges a value with the component's own rule, then the widget's Validation section, and publishes isValid / isMandatory. */
+  useValidation: (value: unknown, present?: boolean, rule?: string) => PackValidation;
   /** The items a list draws as rows of ToolJet components ({{listItem}}). */
   setRows: (items: unknown[], rowHeight?: number) => void;
   /** The slot attribute of row `index`'s projected canvas. */
@@ -212,11 +213,20 @@ const v2Hooks = {
     const host = useHost();
     return { disabled: !!host?.disabled, loading: !!host?.loading };
   },
-  /** Judges `value` with the widget's Validation section ('text', 'choice' or 'date', read by the pack build). */
-  useValidation: ({ value, present }: { section?: string; value: unknown; present?: boolean }): PackValidation => {
+  /** Judges `value` with the component's own `rule` message, then the widget's Validation section ('text', 'choice' or 'date', read by the build). */
+  useValidation: ({
+    value,
+    present,
+    rule,
+  }: {
+    kind?: string;
+    value: unknown;
+    present?: boolean;
+    rule?: string;
+  }): PackValidation => {
     const host = useHost();
     // The host's hook runs on every render or never (no host), so hook order stays fixed.
-    return host ? host.useValidation(value, present) : NO_VALIDATION;
+    return host ? host.useValidation(value, present, rule || undefined) : NO_VALIDATION;
   },
   useFieldId: (): string | undefined => useHost()?.fieldId,
   /** The items drawn as rows of ToolJet components, read as {{listItem}} by the row's components. */

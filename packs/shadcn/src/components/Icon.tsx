@@ -24,7 +24,14 @@ const clampCoerce = (value: unknown, min: number, max: number, fallback: number)
 };
 
 export const Icon = () => {
-  const [icon] = ToolJet.useStateString({ name: 'icon', label: 'Icon', description: 'Any lucide name (trending-up, TrendingUp, bell) or Tabler name (IconBell).', initialValue: 'trending-up', inspector: 'icon' });
+  const [icon] = ToolJet.useStateString({
+    name: 'icon',
+    label: 'Icon',
+    description: 'Any lucide name (trending-up, TrendingUp, bell) or Tabler name (IconBell).',
+    initialValue: 'trending-up',
+    inspector: 'icon',
+    iconSet: 'lucide',
+  });
   const [size] = ToolJet.useStateNumber({ name: 'size', label: 'Icon size (px)', initialValue: 20 });
   const [strokeWidth] = ToolJet.useStateNumber({ name: 'strokeWidth', label: 'Stroke width', initialValue: 2 });
   const [tone] = ToolJet.useStateEnumeration({
@@ -41,15 +48,25 @@ export const Icon = () => {
     initialValue: 'square',
     inspector: 'switch',
   });
-  const [chipSize] = ToolJet.useStateString({ name: 'chipSize', label: 'Chip size (px, empty: icon x 2)', initialValue: '' });
+  const [chipSize] = ToolJet.useStateString({
+    name: 'chipSize',
+    label: 'Chip size (px, empty: icon x 2)',
+    initialValue: '',
+  });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onHover = ToolJet.useEventCallback({ name: 'onHover' });
   const iconColor = useThemeColor('iconColor', 'Icon color', TOKEN.brand);
   const chipColor = useThemeColor('chipColor', 'Chip background (default: icon color tint)', TOKEN.brand);
   const chipRadius = useThemeRadius('chipRadius', 'Chip radius (square chip)');
-  const alignment = ToolJet.useStyleEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], initialValue: 'left', inspector: 'switch' });
+  const alignment = ToolJet.useStyleEnumeration({
+    name: 'alignment',
+    label: 'Alignment',
+    enumDefinition: ['left', 'center', 'right'],
+    initialValue: 'left',
+    inspector: 'switch',
+  });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 3, defaultHeight: 4 });
+  ToolJet.useComponentSettings({ role: 'icon', fit: false, loading: 'own', defaultWidth: 3, defaultHeight: 4 });
 
   ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => onClick());
 
@@ -97,7 +114,11 @@ export const Icon = () => {
           onClick={onClick}
           onMouseEnter={onHover}
         >
-          {Glyph ? <Glyph size={glyphPx} strokeWidth={stroke} aria-hidden="true" /> : <span className="ui-description">?</span>}
+          {Glyph ? (
+            <Glyph size={glyphPx} strokeWidth={stroke} aria-hidden="true" />
+          ) : (
+            <span className="ui-description">?</span>
+          )}
         </span>
       </InPlace>
     </div>

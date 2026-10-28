@@ -38,8 +38,11 @@ export const groupPropsBySection = (props: ManifestProp[], defaultSection = DEFA
   return order.map((title) => ({ title, props: groups[title] }));
 };
 
-export const formatRevisionLabel = (revision: string | undefined): string | undefined =>
-  revision?.startsWith?.('dev:') ? 'Dev preview' : revision;
+export const formatRevisionLabel = (revision: string | undefined): string | undefined => {
+  if (revision?.startsWith?.('dev:')) return 'Dev preview';
+  if (revision?.startsWith?.('builtin:')) return 'Built in';
+  return revision;
+};
 
 // Static widget-config properties (e.g. visibility) — same section every other widget's
 // DefaultComponent.jsx panel groups into "Additional Actions". Kept separate from the
@@ -103,10 +106,13 @@ const baseFieldMeta = (prop: ManifestProp): FieldMeta => {
     }
     default: {
       // string | number | object | array → CodeHinter
-      const meta: FieldMeta = { displayName, name: prop.name, type: inspectorFieldType(prop.inspector) };
+      const meta: FieldMeta = { displayName, name: prop.name, type: inspectorFieldType(prop) };
       if (VALIDATABLE_TYPES.has(prop.type)) {
         meta.validation = { schema: { type: prop.type }, ...(defaultValue !== undefined && { defaultValue }) };
       }
+      // ToolJet's icon field picks Tabler icons; its show/hide toggle writes an iconVisibility style that a library
+      // component never reads, so it is hidden.
+      if (meta.type === 'icon') meta.visibility = false;
       return meta;
     }
   }
@@ -120,12 +126,24 @@ const EDITOR_HINTS: Record<LibraryEditorHint, string[]> = {
   icon: ['string'],
 };
 
-const inspectorFieldType = (inspector: string | undefined): string =>
-  !inspector || inspector in EDITOR_HINTS ? 'code' : inspector === 'color' ? 'colorSwatches' : inspector;
+// The native field types each value type can be drawn with. Any other hint (a typo, a hint for another type) gets
+// the code field: DynamicFxTypeRenderer has no element for an unknown type and the field would not render.
+const NATIVE_FIELD_TYPES: Record<string, string[]> = {
+  string: ['code', 'color', 'boxShadow', 'icon'],
+  number: ['code', 'number', 'numberInput', 'slider'],
+};
 
-/** The editor a prop's `inspector` hint asks for, when its type is one that editor writes; else none. */
+const inspectorFieldType = (prop: ManifestProp): string => {
+  const { inspector } = prop;
+  if (!inspector || editorHint(prop) || !NATIVE_FIELD_TYPES[prop.type]?.includes(inspector)) return 'code';
+  return inspector === 'color' ? 'colorSwatches' : inspector;
+};
+
+/** The editor a prop's `inspector` hint asks for, when its type is one that editor writes; else none. An icon prop
+ *  gets the panel's lucide picker only when the component draws lucide (iconSet); else ToolJet's Tabler icon field. */
 export const editorHint = (prop: ManifestProp): LibraryEditorHint | undefined => {
   const hint = prop.inspector as LibraryEditorHint | undefined;
+  if (hint === 'icon' && prop.iconSet !== 'lucide') return undefined;
   return hint && EDITOR_HINTS[hint]?.includes(prop.type) ? hint : undefined;
 };
 
@@ -173,7 +191,7 @@ export const isFieldVisible = (
 
 // Native TextInput's validation field meta, reused so the library section matches it key for key and the
 // values land in definition.validation exactly where native inputs keep them.
-const TEXT_VALIDATION_META = textinputConfig.validation as Record<string, FieldMeta>;
+const TEXT_VALIDATION_META = textinputConfig.validation as unknown as Record<string, FieldMeta>;
 const VALIDATION_KEYS: Record<ManifestValidationKind, string[]> = {
   text: ['mandatory', 'regex', 'minLength', 'maxLength', 'customRule'],
   // A regex or length limit means nothing for a selected option or a date.
@@ -198,7 +216,7 @@ export const withValidationMeta = (
 
 // The host's standard disabled toggle, as native inputs declare it. Used when the host widget config does not
 // declare disabledState itself, so a controlState component always gets the field.
-export const DISABLED_STATE_META: FieldMeta = textinputConfig.properties.disabledState as FieldMeta;
+export const DISABLED_STATE_META: FieldMeta = textinputConfig.properties.disabledState as unknown as FieldMeta;
 
 export const groupStylesBySection = (styles: ManifestProp[]): PropSection[] =>
   groupPropsBySection(styles, DEFAULT_STYLES_SECTION);

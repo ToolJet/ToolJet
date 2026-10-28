@@ -1,9 +1,49 @@
 import React, { useMemo } from 'react';
-import { CartesianGrid, Cell, Legend, ReferenceLine, Scatter, ScatterChart as RScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
+import {
+  CartesianGrid,
+  Cell,
+  Legend,
+  ReferenceLine,
+  Scatter,
+  ScatterChart as RScatterChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+  ZAxis,
+} from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { LOCALE_HINT } from '../lib/locale';
-import { AXIS, AXIS_FILL, ChartFrame, GRID, LegendContent, REF, seriesColor, useBoxSize, useChartClick } from '../lib/ui2/charts/chartParts';
-import { MAX_SERIES, PLAIN_NUMBER, animated, axisLabel, axisWidthFor, clamp, emphasis, evenSample, formatter, hiddenNote, isCompactChart, isRecord, isSet, list, num, sampledNote, seriesLabel, type Row } from '../lib/ui2/charts/chartModel';
+import {
+  AXIS,
+  AXIS_FILL,
+  ChartFrame,
+  GRID,
+  LegendContent,
+  REF,
+  seriesColor,
+  useBoxSize,
+  useChartClick,
+} from '../lib/ui2/charts/chartParts';
+import {
+  MAX_SERIES,
+  PLAIN_NUMBER,
+  animated,
+  axisLabel,
+  axisWidthFor,
+  clamp,
+  emphasis,
+  evenSample,
+  formatter,
+  hiddenNote,
+  isCompactChart,
+  isRecord,
+  isSet,
+  list,
+  num,
+  sampledNote,
+  seriesLabel,
+  type Row,
+} from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
@@ -23,15 +63,24 @@ interface Point {
 /** Points grouped by groupField in order of first appearance; rows without both numbers are left out. When the data
  *  has neither named axis field, its first two numeric fields are used. Past MAX_POINTS rows, an even sample of them;
  *  past MAX_SERIES groups, the first ones. `total` and `hiddenGroups` are for the notes. */
-const scatterGroups = (data: unknown, f: { xField: string; yField: string; sizeField: string; groupField: string; nameField: string }) => {
+const scatterGroups = (
+  data: unknown,
+  f: { xField: string; yField: string; sizeField: string; groupField: string; nameField: string }
+) => {
   const all = list(data).filter(isRecord);
   const rows = evenSample(all, MAX_POINTS);
-  const empty = { groups: [] as { name: string | number; points: Point[] }[], total: all.length, sampled: rows.length, hiddenGroups: 0 };
+  const empty = {
+    groups: [] as { name: string | number; points: Point[] }[],
+    total: all.length,
+    sampled: rows.length,
+    hiddenGroups: 0,
+  };
   if (!rows.length) return empty;
   let xKey: string | undefined = isSet(f.xField) ? f.xField : undefined;
   let yKey: string | undefined = isSet(f.yField) ? f.yField : undefined;
   const present = (key: string | undefined) => key !== undefined && rows.some((row) => num(row[key]) !== null);
-  if (!present(xKey) && !present(yKey)) [xKey, yKey] = [...new Set(rows.slice(0, 50).flatMap((row) => Object.keys(row)))].filter(present);
+  if (!present(xKey) && !present(yKey))
+    [xKey, yKey] = [...new Set(rows.slice(0, 50).flatMap((row) => Object.keys(row)))].filter(present);
   const groups = new Map<string | number, Point[]>();
   rows.forEach((row) => {
     const x = num(row[String(xKey)]);
@@ -40,7 +89,13 @@ const scatterGroups = (data: unknown, f: { xField: string; yField: string; sizeF
     const name = isSet(f.groupField) ? axisLabel(row[f.groupField]) || 'Other' : '';
     const points = groups.get(name) ?? [];
     groups.set(name, points);
-    points.push({ x, y, z: isSet(f.sizeField) ? num(row[f.sizeField]) ?? 0 : null, label: isSet(f.nameField) ? axisLabel(row[f.nameField]) : '', row });
+    points.push({
+      x,
+      y,
+      z: isSet(f.sizeField) ? (num(row[f.sizeField]) ?? 0) : null,
+      label: isSet(f.nameField) ? axisLabel(row[f.nameField]) : '',
+      row,
+    });
   });
   return {
     groups: [...groups.entries()].slice(0, MAX_SERIES).map(([name, points]) => ({ name, points })),
@@ -50,7 +105,15 @@ const scatterGroups = (data: unknown, f: { xField: string; yField: string; sizeF
   };
 };
 
-const ScatterTip = ({ active, payload, rows }: { active?: boolean; payload?: { payload?: Point }[]; rows: (point: Point) => [string, string][] }) => {
+const ScatterTip = ({
+  active,
+  payload,
+  rows,
+}: {
+  active?: boolean;
+  payload?: { payload?: Point }[];
+  rows: (point: Point) => [string, string][];
+}) => {
   const point = active ? payload?.[0]?.payload : null;
   if (!point) return null;
   return (
@@ -83,19 +146,57 @@ export const ScatterChart = () => {
   });
   const [xField] = ToolJet.useStateString({ name: 'xField', label: 'X field', initialValue: 'spend' });
   const [yField] = ToolJet.useStateString({ name: 'yField', label: 'Y field', initialValue: 'revenue' });
-  const [sizeField] = ToolJet.useStateString({ name: 'sizeField', label: 'Size field (bubbles)', initialValue: 'seats' });
-  const [groupField] = ToolJet.useStateString({ name: 'groupField', label: 'Group field (one colour each)', initialValue: 'segment' });
-  const [nameField] = ToolJet.useStateString({ name: 'nameField', label: 'Name field (tooltip title)', initialValue: 'account' });
-  const [xLabel] = ToolJet.useStateString({ name: 'xLabel', label: 'X axis title', initialValue: 'Marketing spend ($k)' });
+  const [sizeField] = ToolJet.useStateString({
+    name: 'sizeField',
+    label: 'Size field (bubbles)',
+    initialValue: 'seats',
+  });
+  const [groupField] = ToolJet.useStateString({
+    name: 'groupField',
+    label: 'Group field (one colour each)',
+    initialValue: 'segment',
+  });
+  const [nameField] = ToolJet.useStateString({
+    name: 'nameField',
+    label: 'Name field (tooltip title)',
+    initialValue: 'account',
+  });
+  const [xLabel] = ToolJet.useStateString({
+    name: 'xLabel',
+    label: 'X axis title',
+    initialValue: 'Marketing spend ($k)',
+  });
   const [yLabel] = ToolJet.useStateString({ name: 'yLabel', label: 'Y axis title', initialValue: 'Revenue ($k)' });
-  const [xAxisFormat] = ToolJet.useStateEnumeration({ name: 'xAxisFormat', label: 'X format', enumDefinition: FORMAT_ENUM, initialValue: 'number', inspector: 'switch' });
-  const [yAxisFormat] = ToolJet.useStateEnumeration({ name: 'yAxisFormat', label: 'Y format', enumDefinition: FORMAT_ENUM, initialValue: 'number', inspector: 'switch' });
+  const [xAxisFormat] = ToolJet.useStateEnumeration({
+    name: 'xAxisFormat',
+    label: 'X format',
+    enumDefinition: FORMAT_ENUM,
+    initialValue: 'number',
+    inspector: 'switch',
+  });
+  const [yAxisFormat] = ToolJet.useStateEnumeration({
+    name: 'yAxisFormat',
+    label: 'Y format',
+    enumDefinition: FORMAT_ENUM,
+    initialValue: 'number',
+    inspector: 'switch',
+  });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency code', initialValue: 'USD' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Locale',
+    description: LOCALE_HINT,
+    initialValue: '',
+  });
   const [referenceX] = ToolJet.useStateString({ name: 'referenceX', label: 'Vertical line at x', initialValue: '' });
   const [referenceY] = ToolJet.useStateString({ name: 'referenceY', label: 'Horizontal line at y', initialValue: '' });
   const [pointSize] = ToolJet.useStateNumber({ name: 'pointSize', label: 'Point size (px)', initialValue: 6 });
-  const [fillOpacity] = ToolJet.useStateString({ name: 'fillOpacity', label: 'Fill opacity (0 to 1)', description: 'Blank: 0.6 for bubbles, 0.85 for points.', initialValue: '' });
+  const [fillOpacity] = ToolJet.useStateString({
+    name: 'fillOpacity',
+    label: 'Fill opacity (0 to 1)',
+    description: 'Blank: 0.6 for bubbles, 0.85 for points.',
+    initialValue: '',
+  });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
@@ -103,7 +204,12 @@ export const ScatterChart = () => {
   const [showGrid] = ToolJet.useStateBoolean({ name: 'showGrid', label: 'Grid', initialValue: true });
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Legend', initialValue: true });
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
-  const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked point emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
+  const [highlightClicked] = ToolJet.useStateBoolean({
+    name: 'highlightClicked',
+    label: 'Highlight clicked point',
+    description: 'Draws the clicked point emphasised until Clear clicked point runs or another is clicked.',
+    initialValue: false,
+  });
   const click = useChartClick(highlightClicked);
   const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
   const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
@@ -111,11 +217,22 @@ export const ScatterChart = () => {
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const referenceLineColor = useThemeColor('referenceLineColor', 'Reference line color', TOKEN.mutedText);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 32 });
+  ToolJet.useComponentSettings({
+    role: 'scatterchart',
+    fit: false,
+    loading: 'own',
+    defaultWidth: 16,
+    defaultHeight: 32,
+  });
   const box = useBoxSize();
 
   const m = useMemo(() => {
-    const { groups, total: rowCount, sampled, hiddenGroups } = scatterGroups(data, { xField, yField, sizeField, groupField, nameField });
+    const {
+      groups,
+      total: rowCount,
+      sampled,
+      hiddenGroups,
+    } = scatterGroups(data, { xField, yField, sizeField, groupField, nameField });
     const xFormat = { format: xAxisFormat, currency, locale };
     const yFormat = { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix };
     const yTick = formatter(yFormat, true);
@@ -127,9 +244,27 @@ export const ScatterChart = () => {
       fyTick: yTick,
       fx: formatter(xFormat, false),
       fy: formatter(yFormat, false),
-      yWidth: axisWidthFor(groups.flatMap((g) => g.points.map((pt) => pt.y)), yTick),
+      yWidth: axisWidthFor(
+        groups.flatMap((g) => g.points.map((pt) => pt.y)),
+        yTick
+      ),
     };
-  }, [data, colors, chartColor, xField, yField, sizeField, groupField, nameField, xAxisFormat, yAxisFormat, currency, locale, valuePrefix, valueSuffix]);
+  }, [
+    data,
+    colors,
+    chartColor,
+    xField,
+    yField,
+    sizeField,
+    groupField,
+    nameField,
+    xAxisFormat,
+    yAxisFormat,
+    currency,
+    locale,
+    valuePrefix,
+    valueSuffix,
+  ]);
   const compact = box.height > 0 && isCompactChart(box.height);
   const bubbles = isSet(sizeField);
   const size = clamp(pointSize, 2, 40, 6);
@@ -163,7 +298,12 @@ export const ScatterChart = () => {
         label="Scatter chart"
         notes={m.notes}
         resetKey={[data, xField, yField]}
-        looks={{ '--lk-grid': gridColor, '--lk-axis': axisTextColor, '--lk-legend': legendTextColor, '--lk-ref': referenceLineColor }}
+        looks={{
+          '--lk-grid': gridColor,
+          '--lk-axis': axisTextColor,
+          '--lk-legend': legendTextColor,
+          '--lk-ref': referenceLineColor,
+        }}
         onDoubleClick={click.doubleClick}
       >
         <RScatterChart margin={{ left: 4, right: 16, top: 12, bottom: 0 }}>
@@ -179,12 +319,32 @@ export const ScatterChart = () => {
             height={isSet(xLabel) && !compact ? 46 : 30}
             label={axisTitle(xLabel, 'x')}
           />
-          <YAxis type="number" dataKey="y" {...AXIS} hide={compact} domain={['auto', 'auto']} width={m.yWidth + (isSet(yLabel) ? 18 : 0)} tickFormatter={m.fyTick} label={axisTitle(yLabel, 'y')} />
-          {bubbles ? <ZAxis type="number" dataKey="z" range={[size * 8, size * 120]} /> : <ZAxis range={[size * size * 3, size * size * 3]} />}
-          <Tooltip cursor={{ strokeDasharray: '3 3', stroke: 'var(--ui-border)' }} content={<ScatterTip rows={tipRows} />} />
+          <YAxis
+            type="number"
+            dataKey="y"
+            {...AXIS}
+            hide={compact}
+            domain={['auto', 'auto']}
+            width={m.yWidth + (isSet(yLabel) ? 18 : 0)}
+            tickFormatter={m.fyTick}
+            label={axisTitle(yLabel, 'y')}
+          />
+          {bubbles ? (
+            <ZAxis type="number" dataKey="z" range={[size * 8, size * 120]} />
+          ) : (
+            <ZAxis range={[size * size * 3, size * size * 3]} />
+          )}
+          <Tooltip
+            cursor={{ strokeDasharray: '3 3', stroke: 'var(--ui-border)' }}
+            content={<ScatterTip rows={tipRows} />}
+          />
           {showLegend !== false && m.groups.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
-          {refX !== null ? <ReferenceLine x={refX} stroke={REF} strokeDasharray="4 4" ifOverflow="extendDomain" /> : null}
-          {refY !== null ? <ReferenceLine y={refY} stroke={REF} strokeDasharray="4 4" ifOverflow="extendDomain" /> : null}
+          {refX !== null ? (
+            <ReferenceLine x={refX} stroke={REF} strokeDasharray="4 4" ifOverflow="extendDomain" />
+          ) : null}
+          {refY !== null ? (
+            <ReferenceLine y={refY} stroke={REF} strokeDasharray="4 4" ifOverflow="extendDomain" />
+          ) : null}
           {m.groups.map((g, i) => (
             <Scatter
               key={String(g.name) || 'points'}
@@ -197,7 +357,11 @@ export const ScatterChart = () => {
               isAnimationActive={animated(animate, total)}
               onClick={(pt: { payload?: Point; row?: Row }) => click.pick(pt?.payload?.row ?? pt?.row)}
             >
-              {click.highlighted ? g.points.map((pt, d) => <Cell key={d} fill={m.fills[i]} fillOpacity={opacity * emphasis(pt.row, click.highlighted)} />) : null}
+              {click.highlighted
+                ? g.points.map((pt, d) => (
+                    <Cell key={d} fill={m.fills[i]} fillOpacity={opacity * emphasis(pt.row, click.highlighted)} />
+                  ))
+                : null}
             </Scatter>
           ))}
         </RScatterChart>

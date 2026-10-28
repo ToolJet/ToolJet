@@ -18,7 +18,11 @@ export const Tabs = () => {
     label: 'Tabs',
     description: 'Array of { value, label, content, icon, badge, disable, visible, loading } objects.',
     initialValue: [
-      { value: 'overview', label: 'Overview', content: 'Revenue is up 20% this quarter, driven by enterprise renewals.' },
+      {
+        value: 'overview',
+        label: 'Overview',
+        content: 'Revenue is up 20% this quarter, driven by enterprise renewals.',
+      },
       { value: 'analytics', label: 'Analytics', content: '12,234 active users this week (+18%).' },
       { value: 'reports', label: 'Reports', content: 'Three reports are scheduled for Friday.' },
     ],
@@ -78,11 +82,21 @@ export const Tabs = () => {
   const tabFontSize = useDrawnNumber('tabFontSize', 'Tab font size', 14);
   const showBorder = ToolJet.useStyleBoolean({ name: 'showBorder', label: 'Border around tabs', initialValue: true });
   // The pack's earlier style names, still read when set.
-  const listColor = ToolJet.useStyleString({ name: 'listBackground', label: 'Tab list (legacy)', inspector: 'color', initialValue: '' });
-  const activeColor = ToolJet.useStyleString({ name: 'activeBackground', label: 'Active tab (legacy)', inspector: 'color', initialValue: '' });
+  const listColor = ToolJet.useStyleString({
+    name: 'listBackground',
+    label: 'Tab list (legacy)',
+    inspector: 'color',
+    initialValue: '',
+  });
+  const activeColor = ToolJet.useStyleString({
+    name: 'activeBackground',
+    label: 'Active tab (legacy)',
+    inspector: 'color',
+    initialValue: '',
+  });
   const ld = useLoadingLook();
   const idBase = useTabIdBase(ToolJet.useFieldId());
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 14 });
+  ToolJet.useComponentSettings({ role: 'tabs', fit: true, loading: 'own', defaultWidth: 16, defaultHeight: 14 });
 
   // Tabs keyed by value (or id); content by the same key.
   const contents = new Map(
@@ -91,7 +105,9 @@ export const Tabs = () => {
       .map((t, i) => [text(t.id ?? t.value) || String(i + 1), text(t.content)])
   );
   const t = useTabs({
-    raw: list(rawTabs).map((tab) => (isRecord(tab) && tab.id === undefined && tab.value !== undefined ? { ...tab, id: tab.value } : tab)),
+    raw: list(rawTabs).map((tab) =>
+      isRecord(tab) && tab.id === undefined && tab.value !== undefined ? { ...tab, id: tab.value } : tab
+    ),
     fallbackLabel: 'Tab',
     current: value,
     setCurrent: setValue,
@@ -154,7 +170,7 @@ export const Tabs = () => {
                   <Spinner />
                 </div>
               ) : (
-                contents.get(t.tab.id) ?? ''
+                (contents.get(t.tab.id) ?? '')
               )}
             </div>
           ) : null}

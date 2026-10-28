@@ -7,11 +7,13 @@ export interface ManifestProp {
   label?: string;
   type: 'boolean' | 'enumeration' | string;
   inspector?: string;
+  // The icon set an `inspector: 'icon'` prop's picker offers: Tabler (ToolJet's own, the default) or lucide.
+  iconSet?: 'tabler' | 'lucide';
   enumValues?: string[];
   enumLabels?: Record<string, string>;
   default?: unknown;
   section?: string;
-  // v2 manifest (packages/pack-tools/build.mjs): what the SDK hook call declared beyond the CLI's static fields.
+  // Presentation fields the CLI reads from each SDK hook call.
   description?: string;
   placeholder?: string;
   min?: number;

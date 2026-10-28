@@ -117,3 +117,32 @@ describe('inline SDK: styles and slots', () => {
     warn.mockRestore();
   });
 });
+
+describe('inline SDK: host disabled mark', () => {
+  beforeEach(() => {
+    loadLibraryModule.mockResolvedValue({ Card });
+  });
+
+  const hostWith = (disabled) => ({
+    disabled,
+    loading: false,
+    fieldId: 'field-1',
+    useValidation: () => ({ isValid: true, error: '', required: false, touch: () => {} }),
+    setRows: () => {},
+    rowSlotAttr: (i) => `row-${i}`,
+    registerPopupSlot: () => () => {},
+    popupSlotAttr: (name) => name,
+  });
+
+  it('marks the component root while the host disables it, so the pack dims once without a wrapper', async () => {
+    // Break this catches: the pack needing its own wrapper (withHostDisabled) to learn it is host-disabled, which
+    // hides every wrapped component from the CLI's build; or the mark staying after the host re-enables it.
+    const { host, rerenderWith } = renderCard({ host: hostWith(true) });
+    const root = () => host.shadowRoot.querySelector('.tj-cc-root');
+    await waitFor(() => expect(root()).toBeTruthy());
+
+    await waitFor(() => expect(root().hasAttribute('data-tj-host-disabled')).toBe(true));
+    rerenderWith({ host: hostWith(false) });
+    await waitFor(() => expect(root().hasAttribute('data-tj-host-disabled')).toBe(false));
+  });
+});

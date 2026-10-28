@@ -259,6 +259,13 @@ const InlineLibraryComponent = ({
     hostRef.current?.classList.toggle('tj-themed', themed);
   }, [shadow, fit, stretch, themed]);
 
+  // The host already dims a disabled widget's box. It marks the root too, so a component whose controls dim
+  // themselves when disabled can keep them at full opacity (the pack's CSS reads the mark) instead of dimming twice.
+  const hostDisabled = !!host?.disabled;
+  useLayoutEffect(() => {
+    shadow?.mount.toggleAttribute('data-tj-host-disabled', hostDisabled);
+  }, [shadow, hostDisabled]);
+
   useEffect(() => {
     let cancelled = false;
     setComponent(null);

@@ -1,7 +1,7 @@
 {
   "name": "tooljet-shadcn-library",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.1.31",
   "type": "module",
   "description": "shadcn/ui-style components for ToolJet, built as a custom component library.",
   "scripts": {
@@ -25,7 +25,7 @@
     "@radix-ui/react-switch": "^1.4.1",
     "@radix-ui/react-tabs": "^1.2.1",
     "@radix-ui/react-toggle-group": "^1.2.1",
-    "@tooljet/custom-component-sdk": "0.1.0-beta.2",
+    "@tooljet/custom-component-sdk": "0.1.0-beta.3",
     "dompurify": "^3.4.17",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.460.0",

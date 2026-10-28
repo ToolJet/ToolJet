@@ -22,6 +22,8 @@ export interface InspectorComponent {
 export type LibraryEditorHint = 'columns' | 'options' | 'icon';
 
 export interface FieldMeta {
+  // false hides the native icon field's show/hide toggle
+  visibility?: boolean;
   displayName?: string;
   name: string;
   type?: string;

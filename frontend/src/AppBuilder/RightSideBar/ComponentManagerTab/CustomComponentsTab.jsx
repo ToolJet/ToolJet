@@ -14,6 +14,7 @@ import {
 } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { normalizePin, dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { isBuiltinLibrary } from '@/_helpers/builtinPacks';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { Container } from 'lucide-react';
@@ -284,7 +285,7 @@ const VersionPicker = ({ library }) => {
   );
 };
 
-const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
+export const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
   const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight } = componentConfig;
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
@@ -330,6 +331,8 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
           ? findNewParentIdFromMousePosition(releasedAt.x, releasedAt.y)
           : useGridStore.getState().currentDragCanvasId;
         handleDrop(item, canvasId ?? useGridStore.getState().currentDragCanvasId);
+        // A built-in pack is never pinned: it always runs the version ToolJet ships.
+        if (isBuiltinLibrary(correlationId)) return;
         const { globalSettings, globalSettingsChanged } = useStore.getState();
         const pins = globalSettings?.customComponentLibraries ?? {};
         if (!normalizePin(pins[dashlessId(correlationId)] ?? pins[correlationId])) {

@@ -2,7 +2,17 @@ import React, { useMemo } from 'react';
 import { Cell, Label, Legend, Pie, PieChart as RPieChart, Tooltip } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChartFrame, ChartTooltip, LegendContent, seriesColor, useChartClick } from '../lib/ui2/charts/chartParts';
-import { affixFormatter, animated, centreValueFit, emphasis, hiddenNote, isRecord, isSet, list, statusColors } from '../lib/ui2/charts/chartModel';
+import {
+  affixFormatter,
+  animated,
+  centreValueFit,
+  emphasis,
+  hiddenNote,
+  isRecord,
+  isSet,
+  list,
+  statusColors,
+} from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
@@ -19,7 +29,11 @@ export const PieChart = () => {
       { type: 'Event', value: 14 },
     ],
   });
-  const [categoryField] = ToolJet.useStateString({ name: 'categoryField', label: 'Category field', initialValue: 'type' });
+  const [categoryField] = ToolJet.useStateString({
+    name: 'categoryField',
+    label: 'Category field',
+    initialValue: 'type',
+  });
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: 'value' });
   const [donut] = ToolJet.useStateBoolean({ name: 'donut', label: 'Donut', initialValue: true });
   const [centerValue] = ToolJet.useStateString({ name: 'centerValue', label: 'Center figure', initialValue: '' });
@@ -29,7 +43,12 @@ export const PieChart = () => {
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
-  const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked slice emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
+  const [highlightClicked] = ToolJet.useStateBoolean({
+    name: 'highlightClicked',
+    label: 'Highlight clicked point',
+    description: 'Draws the clicked slice emphasised until Clear clicked point runs or another is clicked.',
+    initialValue: false,
+  });
   const click = useChartClick(highlightClicked);
   const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
@@ -37,7 +56,7 @@ export const PieChart = () => {
   const centerValueColor = useThemeColor('centerValueColor', 'Center figure color', TOKEN.text);
   const centerLabelColor = useThemeColor('centerLabelColor', 'Center caption color', TOKEN.mutedText);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 28 });
+  ToolJet.useComponentSettings({ role: 'piechart', fit: false, loading: 'own', defaultWidth: 12, defaultHeight: 28 });
 
   const slices = useMemo(() => {
     const drawn = list(data).filter(isRecord).slice(0, MAX_SLICES);
@@ -56,7 +75,12 @@ export const PieChart = () => {
         emptyText={emptyText}
         label={['Pie chart', centerLabel, centerValue].filter(Boolean).join(', ')}
         resetKey={[data, categoryField, valueField]}
-        looks={{ '--lk-legend': legendTextColor, '--lk-slice-border': sliceBorderColor, '--lk-center-value': centerValueColor, '--lk-center-label': centerLabelColor }}
+        looks={{
+          '--lk-legend': legendTextColor,
+          '--lk-slice-border': sliceBorderColor,
+          '--lk-center-value': centerValueColor,
+          '--lk-center-label': centerLabelColor,
+        }}
         notes={[hiddenNote(list(data).length - slices.length, 'slice')]}
         onDoubleClick={click.doubleClick}
       >
@@ -89,13 +113,25 @@ export const PieChart = () => {
                   return (
                     <text x={vb.cx} y={cy} textAnchor="middle" dominantBaseline="middle">
                       {centerValue ? (
-                        <tspan x={vb.cx} y={cy} style={{ fill: 'var(--lk-center-value, var(--ui-fg))', fontSize: fit.fontSize, fontWeight: 700 }}>
+                        <tspan
+                          x={vb.cx}
+                          y={cy}
+                          style={{
+                            fill: 'var(--lk-center-value, var(--ui-fg))',
+                            fontSize: fit.fontSize,
+                            fontWeight: 700,
+                          }}
+                        >
                           <title>{String(centerValue)}</title>
                           {fit.text}
                         </tspan>
                       ) : null}
                       {centerLabel ? (
-                        <tspan x={vb.cx} y={cy + 22} style={{ fill: 'var(--lk-center-label, var(--ui-muted-fg))', fontSize: 12 }}>
+                        <tspan
+                          x={vb.cx}
+                          y={cy + 22}
+                          style={{ fill: 'var(--lk-center-label, var(--ui-muted-fg))', fontSize: 12 }}
+                        >
                           {String(centerLabel)}
                         </tspan>
                       ) : null}

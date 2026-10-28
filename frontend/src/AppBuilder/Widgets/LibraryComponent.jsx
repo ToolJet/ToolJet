@@ -10,6 +10,7 @@ import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibra
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import InlineLibraryComponent from './LibraryComponent/InlineLibraryComponent';
 import { getLibraryComponentRuntime } from './LibraryComponent/inlineRuntime';
+import { isBuiltinLibrary } from '@/_helpers/builtinPacks';
 import LibrarySlotCanvas from './LibraryComponent/LibrarySlotCanvas';
 import { usePackHost, useRowTemplates } from './LibraryComponent/usePackHost';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -35,8 +36,8 @@ const META_KEYS = new Set([
 // Styles the host widget applies itself; every other style key is the bundle's (ToolJet.useStyleX).
 const HOST_STYLE_KEYS = new Set(['boxShadow']);
 
-/* POC: renders inline by default (shadow root + host React, see LibraryComponent/inlineRuntime.ts);
-   localStorage 'tj-cc-runtime' = 'iframe' falls back to the shell below.
+/* A built-in pack renders inline (shadow root + host React, see LibraryComponent/inlineRuntime.ts); an uploaded
+   library renders in the shell below. localStorage 'tj-cc-runtime' = 'iframe' sends a built-in pack there too.
 
    sandboxed (opaque-origin) iframe — no parent DOM/cookie access, postMessage only:
    shell → ready → we send load {bundleUrl, cssUrl, componentName}
@@ -131,9 +132,10 @@ const LibraryComponent = ({
   ]);
 
   const currentMode = useStore((state) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
-  const hasCustomComponentLibrariesAccess = useStore(
-    (state) => state.license?.featureAccess?.customComponentLibraries === true
-  );
+  // Built-in packs ship with ToolJet like native widgets, in every edition: no licence needed.
+  const builtIn = isBuiltinLibrary(correlationId);
+  const licensed = useStore((state) => state.license?.featureAccess?.customComponentLibraries === true);
+  const hasCustomComponentLibrariesAccess = builtIn || licensed;
 
   const effectiveRevision = useEffectiveLibraryRevision(correlationId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
@@ -175,7 +177,7 @@ const LibraryComponent = ({
 
   const configured = Boolean(libraryId && componentName && effectiveRevision);
 
-  const [runtime] = useState(getLibraryComponentRuntime);
+  const [runtime] = useState(() => getLibraryComponentRuntime());
   const isInline = runtime === 'inline';
   // Inline mode: ToolJet.useAction handlers register here directly, no postMessage round trip.
   const [inlineActions] = useState(() => new Map());

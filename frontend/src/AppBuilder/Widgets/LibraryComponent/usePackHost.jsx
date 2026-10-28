@@ -19,11 +19,12 @@ const filled = (value) =>
 
 // The widget's Validation section judged on the component's value, as native inputs do: isValid and isMandatory are
 // published, and the error shows once the field was touched. 0 and false are values.
-const useHostValidation = (latest, value, present) => {
+// `rule` is the component's own check (a format or range message, '' when it passes), checked before the section's.
+export const useHostValidation = (latest, value, present, rule) => {
   const { validate, validation, setExposedVariable } = latest.current;
   const status =
     (typeof validate === 'function' ? validate((present ?? filled(value)) ? value : undefined) : null) || {};
-  const isValid = status.isValid !== false;
+  const isValid = status.isValid !== false && !rule;
   const isMandatory = validation?.mandatory === true;
   const [touched, setTouched] = useState(false);
   // A Form around the field shows its message after a failed submit, and clearForm hides it again.
@@ -38,11 +39,11 @@ const useHostValidation = (latest, value, present) => {
   return useMemo(
     () => ({
       isValid,
-      error: touched && !isValid ? status.validationError || 'Invalid value' : '',
+      error: touched && !isValid ? rule || status.validationError || 'Invalid value' : '',
       required: isMandatory,
       touch: () => setTouched(true),
     }),
-    [isValid, touched, status.validationError, isMandatory]
+    [isValid, touched, rule, status.validationError, isMandatory]
   );
 };
 
@@ -307,7 +308,7 @@ export const usePackHost = (
       loading,
       fieldId: `tj-pack-${id}`,
       // eslint-disable-next-line react-hooks/rules-of-hooks -- called by ToolJet.useValidation on every render of the component
-      useValidation: (value, present) => useHostValidation(latest, value, present),
+      useValidation: (value, present, rule) => useHostValidation(latest, value, present, rule),
       setRows,
       rowSlotAttr: (index) => rowSlotAttr(id, index),
       registerPopupSlot,

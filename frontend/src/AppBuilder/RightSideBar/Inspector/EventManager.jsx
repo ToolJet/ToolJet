@@ -81,6 +81,7 @@ export const EventManager = ({
   const components = useStore((state) => state.getCurrentPageComponents());
   const libraryPins = useStore((state) => state.globalSettings?.customComponentLibraries);
   const libraryManifests = useCustomComponentLibrariesStore((state) => state.manifests);
+  const builtinHashes = useCustomComponentLibrariesStore((state) => state.builtinHashes);
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
   );
@@ -249,7 +250,7 @@ export const EventManager = ({
     if (componentDef?.component?.component === 'LibraryComponent') {
       // libraryManifests is real Zustand state, so this re-evaluates (and the open action
       // picker re-renders) once an in-flight manifest fetch resolves elsewhere.
-      const dynamicActions = resolveLibraryComponentActions(componentDef, libraryManifests, libraryPins);
+      const dynamicActions = resolveLibraryComponentActions(componentDef, libraryManifests, libraryPins, builtinHashes);
       return mergeStaticAndDynamicActions(staticActions, dynamicActions);
     }
     return staticActions;

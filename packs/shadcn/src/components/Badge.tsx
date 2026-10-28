@@ -9,7 +9,9 @@ import '../styles/ui2-display.css';
 const VARIANTS = ['default', 'secondary', 'outline', 'success', 'warning', 'destructive'];
 // UI 2.0's badgeVariant: a known name in any case ("Success"), danger as destructive, anything else the default look.
 const badgeVariant = (value: unknown) => {
-  const name = String(value ?? '').trim().toLowerCase();
+  const name = String(value ?? '')
+    .trim()
+    .toLowerCase();
   if (name === 'danger') return 'destructive';
   return VARIANTS.includes(name) ? name : 'default';
 };
@@ -39,7 +41,7 @@ export const Badge = () => {
   const borderColor = useThemeColor('borderColor', 'Badge border color', 'transparent');
   const borderRadius = useThemeRadius('borderRadius', 'Badge radius');
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 4, defaultHeight: 3 });
+  ToolJet.useComponentSettings({ role: 'badge', fit: false, loading: 'own', defaultWidth: 4, defaultHeight: 3 });
 
   const vars = styleVars([
     [background, '--lk-bg'],
@@ -50,7 +52,11 @@ export const Badge = () => {
   return (
     <LoadingFrame loading={ld.loading} look={ld.skeleton ? <PillSkel /> : <LoadingBox />}>
       <div className="ui ui-badge-wrap" style={{ justifyContent: align, ...vars }}>
-        <span className={cn('ui-badge', 'ui2-badge', `ui-badge--${badgeVariant(variant)}`, 'ui-badge--clickable')} title={String(text ?? '')} onClick={onClick}>
+        <span
+          className={cn('ui-badge', 'ui2-badge', `ui-badge--${badgeVariant(variant)}`, 'ui-badge--clickable')}
+          title={String(text ?? '')}
+          onClick={onClick}
+        >
           <span className="ui2-truncate">{String(text ?? '')}</span>
         </span>
       </div>

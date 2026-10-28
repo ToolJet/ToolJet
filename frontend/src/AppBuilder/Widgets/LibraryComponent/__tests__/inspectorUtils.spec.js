@@ -351,3 +351,45 @@ describe('additionalActionProps with controlState', () => {
     expect(DISABLED_STATE_META).toMatchObject({ type: 'toggle', displayName: 'Disable' });
   });
 });
+
+describe('inspector hints the panel does not know, and the icon set', () => {
+  const {
+    fieldMeta: meta,
+    editorHint: hint,
+    formatRevisionLabel: label,
+  } = jest.requireActual('@/AppBuilder/RightSideBar/Inspector/Components/LibraryComponent/utils');
+
+  it.each([
+    ['a typo', { name: 'x', type: 'string', inspector: 'colour' }],
+    ['a hint for another type', { name: 'n', type: 'number', inspector: 'boxShadow' }],
+    ['a list hint on an object', { name: 'o', type: 'object', inspector: 'options' }],
+  ])('draws the code field for %s instead of a field type that cannot render', (_label, prop) => {
+    // Break this catches: an unknown hint passed through as the field type, which DynamicFxTypeRenderer cannot draw.
+    expect(meta(prop).type).toBe('code');
+  });
+
+  it('keeps the native field types each value type supports', () => {
+    // Break this catches: the fallback swallowing hints the packs rely on.
+    expect(meta({ name: 'c', type: 'string', inspector: 'color' }).type).toBe('colorSwatches');
+    expect(meta({ name: 's', type: 'string', inspector: 'boxShadow' }).type).toBe('boxShadow');
+    expect(meta({ name: 'r', type: 'number', inspector: 'numberInput' }).type).toBe('numberInput');
+  });
+
+  it("gives a Tabler icon prop ToolJet's own icon field, without the show/hide eye", () => {
+    // Break this catches: a Tabler component handed lucide names, or the eye writing an unused iconVisibility style.
+    const prop = { name: 'icon', type: 'string', inspector: 'icon' };
+    expect(hint(prop)).toBeUndefined();
+    expect(meta(prop)).toMatchObject({ type: 'icon', visibility: false });
+  });
+
+  it('gives a lucide icon prop the lucide picker', () => {
+    // Break this catches: a lucide component (the shadcn pack) handed Tabler names it cannot draw.
+    expect(hint({ name: 'icon', type: 'string', inspector: 'icon', iconSet: 'lucide' })).toBe('icon');
+  });
+
+  it('labels a built-in version "Built in"', () => {
+    // Break this catches: the Inspector showing the raw content hash as the version.
+    expect(label('builtin:abc123def4567890')).toBe('Built in');
+    expect(label('v3')).toBe('v3');
+  });
+});

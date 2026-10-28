@@ -22,18 +22,42 @@ export const SummaryStrip = () => {
       { label: 'Revenue', value: 48210, delta: 12.4, caption: 'vs last month' },
       { label: 'Orders', value: 1284, format: 'number', delta: 5.1, caption: 'vs last month' },
       { label: 'Average order', value: 37.55, delta: -2.3, caption: 'vs last month' },
-      { label: 'Refund rate', value: 2.1, format: 'percent', delta: -0.4, deltaFormat: 'number', lowerIsBetter: true, caption: 'points' },
+      {
+        label: 'Refund rate',
+        value: 2.1,
+        format: 'percent',
+        delta: -0.4,
+        deltaFormat: 'number',
+        lowerIsBetter: true,
+        caption: 'points',
+      },
     ],
   });
   const [valueFormat] = ToolJet.useStateEnumeration({
     name: 'valueFormat',
     label: 'Value format',
     enumDefinition: STRIP_VALUE_FORMATS,
-    enumLabels: { auto: 'Auto', number: 'Number', currency: 'Currency', percent: 'Percent', compact: 'Compact', date: 'Date' },
+    enumLabels: {
+      auto: 'Auto',
+      number: 'Number',
+      currency: 'Currency',
+      percent: 'Percent',
+      compact: 'Compact',
+      date: 'Date',
+    },
     initialValue: 'auto',
   });
-  const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (ISO code, e.g. USD)', initialValue: 'USD' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
+  const [currency] = ToolJet.useStateString({
+    name: 'currency',
+    label: 'Currency (ISO code, e.g. USD)',
+    initialValue: 'USD',
+  });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Locale',
+    description: LOCALE_HINT,
+    initialValue: '',
+  });
   const [deltaFormat] = ToolJet.useStateEnumeration({
     name: 'deltaFormat',
     label: 'Change format (numbers)',
@@ -74,9 +98,21 @@ export const SummaryStrip = () => {
   const positive = useThemeColor('positiveColor', 'Positive change color', TOKEN.success);
   const negative = useThemeColor('negativeColor', 'Negative change color', TOKEN.error);
   const borderRadius = useThemeRadius('borderRadius', 'Panel radius');
-  const valueFontFamily = ToolJet.useStyleEnumeration({ name: 'valueFontFamily', label: 'Figure typeface', enumDefinition: FONT_VALUES, enumLabels: FONT_LABELS, initialValue: 'theme' });
+  const valueFontFamily = ToolJet.useStyleEnumeration({
+    name: 'valueFontFamily',
+    label: 'Figure typeface',
+    enumDefinition: FONT_VALUES,
+    enumLabels: FONT_LABELS,
+    initialValue: 'theme',
+  });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 11 });
+  ToolJet.useComponentSettings({
+    role: 'summarystrip',
+    fit: true,
+    loading: 'own',
+    defaultWidth: 43,
+    defaultHeight: 11,
+  });
 
   const [ref, width] = useWidth<HTMLDivElement>();
   const figures = summaryFigures(items, { valueFormat, currency, deltaFormat, locale });
@@ -103,7 +139,13 @@ export const SummaryStrip = () => {
     <LoadingFrame
       loading={ld.loading && !veiled}
       minHeight={80}
-      look={ld.skeleton ? <FiguresSkel count={4} columns={stripColumns(4, width || 960, MIN_WIDTH[sizeKey])} captions={false} /> : <LoadingBox />}
+      look={
+        ld.skeleton ? (
+          <FiguresSkel count={4} columns={stripColumns(4, width || 960, MIN_WIDTH[sizeKey])} captions={false} />
+        ) : (
+          <LoadingBox />
+        )
+      }
     >
       <div ref={ref} className="ui ui2-strip-box" style={vars}>
         {!figures.length ? (
@@ -117,7 +159,10 @@ export const SummaryStrip = () => {
             style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
           >
             {figures.map((f, i) => (
-              <div key={f.key} className={cn('ui2-strip-cell', i % columns !== 0 && 'has-left', i >= columns && 'has-top')}>
+              <div
+                key={f.key}
+                className={cn('ui2-strip-cell', i % columns !== 0 && 'has-left', i >= columns && 'has-top')}
+              >
                 {f.label ? (
                   <dt className="ui2-strip-label">
                     <Veil on={veiled}>{f.label}</Veil>

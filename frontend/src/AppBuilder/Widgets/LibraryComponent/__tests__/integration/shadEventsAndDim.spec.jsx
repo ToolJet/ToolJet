@@ -220,56 +220,74 @@ describe('T59: the OTP placeholder gives each box its own character', () => {
 });
 
 describe('T6: a host-disabled component is dimmed once, by the host', () => {
-  const marker = (root) => root().querySelector('.tj-cc-root > template[data-tj-host-disabled]');
+  // The host marks the component's root while it disables it; the pack's CSS reads the mark, so the pack exports
+  // its components plainly (no wrapper) and the CLI's static build sees them.
+  const marked = (root) => root().querySelector('.tj-cc-root[data-tj-host-disabled]');
 
-  it('Button: the marker comes first in the root while the host disables it, without remounting the button', async () => {
+  it('Button: the host marks the root while it disables it, without remounting the button', async () => {
     const { root, rerender } = await mount('Button', { text: 'Save' });
     const button = root().querySelector('button');
-    expect(marker(root)).toBeNull();
+    expect(marked(root)).toBeNull();
     rerender({ text: 'Save' }, { disabled: true });
-    await waitFor(() => expect(marker(root)).toBeTruthy());
-    expect(root().querySelector('.tj-cc-root').firstElementChild).toBe(marker(root));
+    await waitFor(() => expect(marked(root)).toBeTruthy());
     expect(root().querySelector('button')).toBe(button);
     expect(button.disabled).toBe(true);
     rerender({ text: 'Save' }, { disabled: false });
-    await waitFor(() => expect(marker(root)).toBeNull());
+    await waitFor(() => expect(marked(root)).toBeNull());
   });
 
-  // A part the component disables on its own (Stepper's Back on the first step) keeps its own dim: no marker.
-  it("Stepper: Back on the first step is disabled by the component itself, and draws no marker", async () => {
-    const { root } = await mount('Stepper', { steps: [{ id: 'one', label: 'One' }, { id: 'two', label: 'Two' }], currentStep: 'one' });
+  // A part the component disables on its own (Stepper's Back on the first step) keeps its own dim: no mark.
+  it('Stepper: Back on the first step is disabled by the component itself, and the root is not marked', async () => {
+    const { root } = await mount('Stepper', {
+      steps: [
+        { id: 'one', label: 'One' },
+        { id: 'two', label: 'Two' },
+      ],
+      currentStep: 'one',
+    });
     const back = Array.from(root().querySelectorAll('button')).find((b) => b.textContent === 'Back');
     expect(back.disabled).toBe(true);
-    expect(marker(root)).toBeNull();
+    expect(marked(root)).toBeNull();
   });
 
   test.each(['Input', 'Switch', 'Checkbox', 'Select', 'RadioGroup', 'Textarea', 'Slider'])(
-    '%s: draws the marker while the host disables it',
+    '%s: the root is marked while the host disables it',
     async (name) => {
       const { root } = await mount(name, {}, { disabled: true });
-      await waitFor(() => expect(marker(root)).toBeTruthy());
+      await waitFor(() => expect(marked(root)).toBeTruthy());
     }
   );
 
-  it('ui.css keeps every self-dimming control at full opacity after the marker, outranking the rules that dim it', () => {
+  it('ui.css keeps every self-dimming control at full opacity under the mark, outranking the rules that dim it', () => {
     const css = fs.readFileSync(path.join(PACK_SRC, 'styles/ui.css'), 'utf8');
-    const start = css.indexOf('template[data-tj-host-disabled] ~ :is(');
+    const start = css.indexOf('.tj-cc-root[data-tj-host-disabled] :is(');
     expect(start).toBeGreaterThan(-1);
     const rule = css.slice(start, css.indexOf('}', start));
     expect(rule).toMatch(/opacity: 1;/);
-    for (const part of ['.ui-btn', '.ui-input', '.ui-textarea', '.ui-select-trigger', '.ui-checkbox', '.ui-switch', '.ui-radio', '.ui-toggle', '.ui-slider', '.uc-select-trigger', '.ui2-otp', '.ui2-group'])
+    for (const part of [
+      '.ui-btn',
+      '.ui-input',
+      '.ui-textarea',
+      '.ui-select-trigger',
+      '.ui-checkbox',
+      '.ui-switch',
+      '.ui-radio',
+      '.ui-toggle',
+      '.ui-slider',
+      '.uc-select-trigger',
+      '.ui2-otp',
+      '.ui2-group',
+    ])
       expect(rule).toContain(part);
-    // The carousel's end arrows are hidden (opacity 0), not dimmed: never shown again under the marker.
+    // The carousel's end arrows are hidden (opacity 0), not dimmed: never shown again under the mark.
     expect(rule).not.toContain('.ui-carousel-arrow');
   });
 
-  // The components the index leaves unwrapped read no control state; wrapping one would add a Disable field to it.
-  it('the index wraps every component but Card, Form, Separator, Skeleton and Spinner', () => {
-    const unwrapped = Object.entries(pack)
-      .filter(([, c]) => typeof c === 'function' && !c.displayName)
-      .map(([name]) => name)
-      .sort();
-    expect(unwrapped).toEqual(['Card', 'Form', 'Separator', 'Skeleton', 'Spinner']);
+  it('the index exports every component plainly, with no wrapper', () => {
+    const wrapped = Object.entries(pack)
+      .filter(([, c]) => typeof c === 'function' && c.displayName)
+      .map(([name]) => name);
+    expect(wrapped).toEqual([]);
   });
 });
 
@@ -295,14 +313,16 @@ describe('Q6: a Dialog handler reads the dialog as closed', () => {
     const t = await openDialog();
     fireEvent.click(button('Cancel'));
     await waitFor(() => expect(t.events).toContain('onClose'));
-    for (const event of ['onCancel', 'onClose']) expect(closedAt(t.seen, event)).toMatchObject({ isOpen: false, show: false });
+    for (const event of ['onCancel', 'onClose'])
+      expect(closedAt(t.seen, event)).toMatchObject({ isOpen: false, show: false });
   });
 
   it('Confirm: onConfirm and onClose see show and isOpen false', async () => {
     const t = await openDialog();
     fireEvent.click(button('Continue'));
     await waitFor(() => expect(t.events).toContain('onClose'));
-    for (const event of ['onConfirm', 'onClose']) expect(closedAt(t.seen, event)).toMatchObject({ isOpen: false, show: false });
+    for (const event of ['onConfirm', 'onClose'])
+      expect(closedAt(t.seen, event)).toMatchObject({ isOpen: false, show: false });
   });
 
   it('the close action: onClose sees show false, and open sets show true before onOpen', async () => {
@@ -318,12 +338,35 @@ describe('UI2-12: each tab names its panel and each panel its tab', () => {
   const linked = (root) => {
     const tab = root().querySelector('[role="tab"][aria-selected="true"]');
     const panel = tab?.getAttribute('aria-controls') ? root().getElementById(tab.getAttribute('aria-controls')) : null;
-    return { id: tab?.id, panelRole: panel?.getAttribute('role'), labelledBy: panel?.getAttribute('aria-labelledby'), hidden: panel?.hidden };
+    return {
+      id: tab?.id,
+      panelRole: panel?.getAttribute('role'),
+      labelledBy: panel?.getAttribute('aria-labelledby'),
+      hidden: panel?.hidden,
+    };
   };
 
   it.each([
-    ['Tabs', { tabs: [{ value: 'a b', label: 'A' }, { value: 'b', label: 'B' }], defaultTab: 'a b' }],
-    ['TabsContainer', { tabs: [{ id: 'a b', title: 'A' }, { id: 'b', title: 'B' }], defaultTab: 'a b' }],
+    [
+      'Tabs',
+      {
+        tabs: [
+          { value: 'a b', label: 'A' },
+          { value: 'b', label: 'B' },
+        ],
+        defaultTab: 'a b',
+      },
+    ],
+    [
+      'TabsContainer',
+      {
+        tabs: [
+          { id: 'a b', title: 'A' },
+          { id: 'b', title: 'B' },
+        ],
+        defaultTab: 'a b',
+      },
+    ],
   ])('%s: the active tab and its panel point at each other, ids scoped to the widget', async (name, props) => {
     const { root, run } = await mount(name, props);
     for (const next of ['a b', 'b']) {

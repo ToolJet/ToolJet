@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import type { BuiltinPack } from '@/_helpers/builtinPacks';
 import { fetchEventSource, type EventSourceMessage } from '@microsoft/fetch-event-source';
 import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types';
 
@@ -67,8 +68,16 @@ async function streamDevBundleUpdates(
   return controller;
 }
 
+// The packs that ship with ToolJet (server builtin-packs.controller.ts): no login needed, public apps load them too.
+function listBuiltinPacks(): Promise<BuiltinPack[]> {
+  return fetch(`${config.apiUrl}/builtin-packs`, { method: 'GET', credentials: 'include' as const }).then(
+    handleResponse
+  );
+}
+
 export const customComponentLibrariesService = {
   list,
+  listBuiltinPacks,
   deleteLibrary,
   streamDevBundleUpdates,
 };
