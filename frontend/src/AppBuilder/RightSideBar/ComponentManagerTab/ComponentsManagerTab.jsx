@@ -6,8 +6,12 @@ import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetM
 import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
-import { CustomComponentsTab } from './CustomComponentsTab';
-import { BuiltinPackCards, useBuiltinPacks } from './BuiltinPackSections';
+import { LibrarySection } from './CustomComponentsTab';
+import { PackSection, useBuiltinPacks } from './BuiltinPackSections';
+import { LibraryPicker } from './LibraryPicker';
+import { ROCKET_1, libraryChoices, resolveLibraryChoice } from './componentLibrary';
+import { hasLibraryContent } from './utils';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
@@ -18,7 +22,6 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
-import Beta from '@/_ui/Beta';
 import './styles.scss';
 
 // Simple error boundary component for module errors
@@ -67,6 +70,31 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
+  // The app's component library (componentLibrary.js): ToolJet UI 1.0, a pack that ships with ToolJet (every
+  // edition), or a custom library the plan allows.
+  const builtinPacks = useBuiltinPacks();
+  const libraries = useCustomComponentLibrariesStore((state) => state.libraries);
+  useEffect(() => {
+    if (hasCustomComponentLibrariesAccess) useCustomComponentLibrariesStore.getState().fetchLibraries();
+  }, [hasCustomComponentLibrariesAccess]);
+  const choices = useMemo(
+    () =>
+      libraryChoices(
+        builtinPacks,
+        hasCustomComponentLibrariesAccess ? (libraries ?? []).filter(hasLibraryContent) : []
+      ),
+    [builtinPacks, libraries, hasCustomComponentLibrariesAccess]
+  );
+  const hasLibraryChoices = choices.packs.length + choices.custom.length > 0;
+  const savedLibrary = useStore((state) => state.globalSettings?.componentLibrary);
+  const library = hasLibraryChoices
+    ? resolveLibraryChoice(savedLibrary, choices, useStore.getState().getCurrentPageComponents?.() ?? {})
+    : ROCKET_1;
+  const libraryChoice = [...choices.packs, ...choices.custom].find((choice) => choice.value === library);
+  const pickLibrary = (value) => {
+    if (value !== savedLibrary) useStore.getState().globalSettingsChanged({ componentLibrary: value });
+  };
+
   const componentList = useMemo(() => {
     return componentTypes
       .map((component) => component.component)
@@ -83,7 +111,6 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
   const [searchQuery, setSearchQuery] = useState('');
-  const builtinPacks = useBuiltinPacks();
   const [moduleError, setModuleError] = useState(false);
   const [activeTab, setActiveTab] = useState('components');
 
@@ -172,18 +199,6 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   }
 
   function segregateSections() {
-    // Built-in packs sit with the native widgets; while searching, their matching components follow the native ones.
-    if (searchQuery && builtinPacks.length > 0) {
-      return (
-        <>
-          {renderList(filteredComponents)}
-          {builtinPacks.map((pack) => (
-            <BuiltinPackCards key={pack.pack} pack={pack} searchQuery={searchQuery} />
-          ))}
-        </>
-      );
-    }
-
     if (filteredComponents.length === 0) {
       return (
         <div className="empty">
@@ -226,9 +241,6 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
         });
       }
     });
-    builtinPacks.forEach((pack) => {
-      items.push({ title: pack.displayName, isOpen: false, children: <BuiltinPackCards pack={pack} /> });
-    });
 
     return (
       <div className="mt-3">
@@ -240,6 +252,23 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   // Remove handleChangeTab and related logic
 
   // Remove renderSection, replace with Tabs/Tab logic below
+
+  // The picked library's components: ToolJet UI 1.0's sections, a pack's in the same sections, or a custom library's.
+  function libraryComponents() {
+    if (libraryChoice?.pack)
+      return <PackSection key={libraryChoice.pack.pack} pack={libraryChoice.pack} searchQuery={searchQuery} />;
+    if (!libraryChoice) return segregateSections();
+    return (
+      <div className="custom-components-tab">
+        <LibrarySection
+          key={libraryChoice.library.id}
+          library={libraryChoice.library}
+          searchQuery={searchQuery}
+          picked
+        />
+      </div>
+    );
+  }
 
   const searchBox = () => {
     return (
@@ -255,9 +284,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           placeholder={
             activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
-              : activeTab === 'custom'
-                ? t('globals.searchCustomComponents', 'Search components')
-                : t('globals.searchModules', 'Search modules')
+              : t('globals.searchModules', 'Search modules')
           }
           customClass={`tj-widgets-search-input tj-text-xsm`}
           showClearButton={false}
@@ -285,8 +312,13 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               />
             </div>
           </div>
+          {hasLibraryChoices && (
+            <div className="tw-px-4 tw-pt-3">
+              <LibraryPicker value={library} choices={choices} onChange={pickLibrary} />
+            </div>
+          )}
           {searchBox()}
-          <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
+          <div className="widgets-list col-sm-12 col-lg-12 row">{libraryComponents()}</div>
         </>
       ) : (
         <>
@@ -314,14 +346,20 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           >
             <Tab
               eventKey="components"
-              title={(() => {
-                const str = t('globals.components', 'Components');
-                return str.charAt(0).toUpperCase() + str.slice(1);
-              })()}
+              title={
+                hasLibraryChoices ? (
+                  <LibraryPicker value={library} choices={choices} onChange={pickLibrary} />
+                ) : (
+                  (() => {
+                    const str = t('globals.components', 'Components');
+                    return str.charAt(0).toUpperCase() + str.slice(1);
+                  })()
+                )
+              }
               darkMode={darkMode}
             >
               {searchBox()}
-              <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
+              <div className="widgets-list col-sm-12 col-lg-12 row">{libraryComponents()}</div>
             </Tab>
             {hasModuleAccess && (
               <Tab eventKey="modules" title={t('globals.modules', 'Modules')} darkMode={darkMode}>
@@ -329,21 +367,6 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
                   {searchBox()}
                   <ModuleManager searchQuery={searchQuery} />
                 </ModuleErrorBoundary>
-              </Tab>
-            )}
-            {hasCustomComponentLibrariesAccess && (
-              <Tab
-                eventKey="custom"
-                title={
-                  <>
-                    {t('globals.custom', 'Custom')}
-                    <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-0.5" />
-                  </>
-                }
-                darkMode={darkMode}
-              >
-                {searchBox()}
-                <CustomComponentsTab searchQuery={searchQuery} />
               </Tab>
             )}
           </Tabs>

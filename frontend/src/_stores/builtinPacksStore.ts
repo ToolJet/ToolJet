@@ -67,13 +67,15 @@ export const useBuiltinPacksStore = create(
   )
 );
 
-/** The packs this release ships ([] until listed). */
+const NO_PACKS: BuiltinPack[] = [];
+
+/** The packs this release ships ([] until listed; the same [] each time, so it can be a memo dependency). */
 export const useBuiltinPacks = (): BuiltinPack[] => {
   const packs = useBuiltinPacksStore((state: BuiltinPacksState) => state.packs);
   useEffect(() => {
     useBuiltinPacksStore.getState().fetchPacks();
   }, []);
-  return packs ?? [];
+  return packs ?? NO_PACKS;
 };
 
 /** One shipped pack, or undefined until the packs are listed (or when this release has no such pack). */

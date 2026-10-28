@@ -114,9 +114,11 @@ const makeStateHook = (hookName: string, cleared?: () => unknown) =>
     const [value, setValue] = React.useState(external !== undefined ? external : initialValue);
     const valueRef = React.useRef(value);
     const lastExternal = React.useRef(external);
-    if (lastExternal.current !== external) {
+    // Object.is, so a NaN binding (e.g. arithmetic on a query that has not loaded) is equal to itself and does not
+    // set state on every render.
+    if (!Object.is(lastExternal.current, external)) {
       lastExternal.current = external;
-      if (external !== undefined && external !== value) {
+      if (external !== undefined && !Object.is(external, value)) {
         valueRef.current = external;
         setValue(external);
       }
