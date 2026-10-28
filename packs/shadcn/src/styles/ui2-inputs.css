@@ -4,7 +4,9 @@
 
 .ui2-in {
   --ui2-ring: var(--ui-primary);
-  --ui2-control-radius: var(--lk-radius, calc(var(--ui-radius) - 2px));
+  /* The theme radius, as the pack's selects, date pickers and buttons draw (4px fields beside 6px selects read as two
+     looks in one form). */
+  --ui2-control-radius: var(--lk-radius, var(--ui-radius));
   --ui2-edge: var(--lk-invalid, var(--lk-border, var(--ui-border)));
 }
 

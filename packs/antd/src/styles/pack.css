@@ -1350,6 +1350,17 @@
 .tj-ant .ant-skeleton {
   --ant-skeleton-block-radius: var(--ant-border-radius-sm);
 }
+/* The same for the Table's header corners and the Menu's items: antd writes its large and small radius into them as
+   numbers (8px, 4px), so under a theme they stayed at stock beside cards and fields drawn in the theme's radius. */
+.tj-ant .ant-table-css-var {
+  --ant-table-header-border-radius: var(--ant-border-radius-lg);
+}
+.tj-ant .ant-menu-css-var {
+  --ant-menu-item-border-radius: var(--ant-border-radius-lg);
+  --ant-menu-radius-item: var(--ant-border-radius-lg);
+  --ant-menu-sub-menu-item-border-radius: var(--ant-border-radius-sm);
+  --ant-menu-radius-sub-menu-item: var(--ant-border-radius-sm);
+}
 .tj-ant-root .ant-skeleton.ant-skeleton-element.ant-skeleton-block {
   width: 100%;
 }
