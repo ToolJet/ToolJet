@@ -8,7 +8,8 @@ import { withShortLock } from './with-short-lock';
  * own short transaction (loosen); run lock-free variants; on failure add them back (restore), so 3.21.58 runs again.
  * Delete this module when upgrades from 3.21.58 are no longer supported.
  */
-export const LEGACY_UPGRADE_MARKER = 'MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000';
+/** The 3.21.58 data migration that gives every row a branch. Still pending = the database is on 3.21.58. */
+export const LEGACY_BRANCH_MIGRATION = 'MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000';
 
 export interface LooseRule {
   name: string;
@@ -40,9 +41,6 @@ const DROPPED_RULES_DDL = `
     definition text NOT NULL,
     dropped_at timestamptz NOT NULL DEFAULT now()
   )`;
-
-export const legacyUpgradePending = (pendingNames: readonly string[]): boolean =>
-  pendingNames.includes(LEGACY_UPGRADE_MARKER);
 
 /** Saves the definition (first save wins, so a rerun never overwrites the original) and drops the rule. */
 export function loosenStep({ name, kind, table }: LooseRule): string[] {
@@ -89,7 +87,7 @@ export async function loosenLegacyRules(dataSource: DataSource): Promise<void> {
 export async function restoreLegacyRules(dataSource: DataSource): Promise<string[]> {
   const [{ table }] = await dataSource.query(`SELECT to_regclass('legacy_upgrade_dropped_rules') AS table`);
   if (!table) return [];
-  const [committed] = await dataSource.query('SELECT 1 FROM migrations WHERE name = $1', [LEGACY_UPGRADE_MARKER]);
+  const [committed] = await dataSource.query('SELECT 1 FROM migrations WHERE name = $1', [LEGACY_BRANCH_MIGRATION]);
   if (committed) {
     throw new Error('The legacy data has committed; its old rules no longer fit the data, so they are not restored.');
   }

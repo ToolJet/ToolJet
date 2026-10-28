@@ -20,7 +20,7 @@ import {
 } from './migration-locks';
 import { retryOnLockTimeout, retryWhen } from './with-short-lock';
 import {
-  legacyUpgradePending,
+  LEGACY_BRANCH_MIGRATION,
   loosenLegacyRules,
   restoreLegacyRules,
   useLegacyVariants,
@@ -422,7 +422,7 @@ async function executeMigrations(
   // Plan before announcing: it scans up() source, which the announcing wrapper hides.
   const plan = phase === 'data' ? undefined : await planEnumAdditions(schemaDS);
   // Variants replace up() and beforeCommit(), so they go in before the wrappers below.
-  const legacy = phase === 'data' && legacyUpgradePending(await pendingNames(dataDS));
+  const legacy = phase === 'data' && (await pendingNames(dataDS)).includes(LEGACY_BRANCH_MIGRATION);
   if (legacy) useLegacyVariants(dataDS);
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
