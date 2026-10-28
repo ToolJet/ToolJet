@@ -1,6 +1,8 @@
 /** @group database */
-import { readdirSync, readFileSync } from 'fs';
-import { join } from 'path';
+import { chmodSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { execFileSync } from 'child_process';
+import { tmpdir } from 'os';
+import { join, resolve } from 'path';
 import { ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS } from 'src/migration-helpers/pre-cutoff-allowlist';
 import {
   blocksAsyncUpgrade,
@@ -14,6 +16,54 @@ import {
 } from 'src/migration-helpers/migration-mode';
 
 describe('migration-helpers/migration-mode', () => {
+  describe('Cloud entrypoint | what it runs before boot', () => {
+    const entrypoint = resolve(__dirname, '../../../../../docker/LTS/cloud/cloud-entrypoint.sh');
+    let dir: string;
+
+    beforeEach(() => {
+      dir = mkdtempSync(join(tmpdir(), 'cloud-entrypoint-'));
+      mkdirSync(join(dir, 'bin'));
+      mkdirSync(join(dir, 'server/scripts'), { recursive: true });
+      // npm and wait-for-it only log, so nothing touches a database.
+      writeFileSync(join(dir, 'bin/npm'), '#!/bin/bash\necho "npm $* phase=${MIGRATION_PHASE:-none}" >&2\n');
+      writeFileSync(
+        join(dir, 'server/scripts/wait-for-it.sh'),
+        '#!/bin/bash\nwhile [ "$1" != "--" ]; do shift; done; shift; exec "$@"\n'
+      );
+      chmodSync(join(dir, 'bin/npm'), 0o755);
+      chmodSync(join(dir, 'server/scripts/wait-for-it.sh'), 0o755);
+    });
+    afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+    const boot = (mode: string) => {
+      const exported = execFileSync('bash', ['-c', `bash "${entrypoint}" printenv MIGRATION_SETUP_COMMAND 2>log`], {
+        cwd: dir,
+        env: { PATH: `${join(dir, 'bin')}:/usr/bin:/bin`, PG_HOST: 'localhost', MIGRATION_MODE: mode },
+      }).toString();
+      const log = readFileSync(join(dir, 'log'), 'utf8');
+      return { exported: exported.trim().split('\n').pop(), log };
+    };
+
+    it('should give the server a database-only setup command', () => {
+      expect(boot('async').exported).toBe('npm run db:setup');
+    });
+
+    it.each([
+      ['async', 'npm run db:setup phase=expand'],
+      ['blocking', 'npm run db:setup phase=none'],
+    ])('should apply the schema before the plugin steps in %s mode', (mode, setup) => {
+      const lines = boot(mode)
+        .log.split('\n')
+        .filter((line) => line.startsWith('npm run'));
+      expect(lines).toEqual([
+        setup,
+        'npm run plugins:install phase=none',
+        'npm run plugins:uninstall phase=none',
+        'npm run plugins:reload phase=none',
+      ]);
+    });
+  });
+
   describe('getMigrationMode | who runs migrations', () => {
     it.each([
       [{}, 'blocking'],
@@ -81,6 +131,12 @@ describe('migration-helpers/migration-mode', () => {
 
     it.each([
       ['recorded by an earlier upgrade', new Map([['StopReadingOldIcon1799000000001', 40]]), 50, 'run'],
+      [
+        'recorded as the last migration before this upgrade',
+        new Map([['StopReadingOldIcon1799000000001', 50]]),
+        50,
+        'run',
+      ],
       [
         'recorded by this upgrade (a skipped release)',
         new Map([['StopReadingOldIcon1799000000001', 60]]),

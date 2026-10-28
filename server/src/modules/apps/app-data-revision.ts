@@ -29,15 +29,16 @@ export interface AppDataRevisionScope {
 
 // `stamp`: set by database triggers (migration AddViewerCacheStamps) whenever something changes what the
 // released app shows without a new release: its permissions, the theme, an embedded module, a link.
-// `epoch`: the last migration recorded. In async mode a backfill can rewrite components after the new
-// server version is already serving, so the version alone would keep the pre-backfill copy.
+// `epoch`: the last migration id handed out. In async mode a backfill can rewrite components after the new
+// server version is already serving, so the version alone would keep the pre-backfill copy. Read from the
+// sequence, not the table: an upgrade holds LOCK TABLE migrations until it commits.
 async function getChangeStamps(
   manager: EntityManager,
   appId: string
 ): Promise<{ stamp: string | null; epoch: string | null }> {
   const [row]: { stamp: string | null; epoch: string | null }[] = await manager.query(
     `SELECT (SELECT updated_at::text FROM app_viewer_cache_stamps WHERE app_id = $1) AS stamp,
-            (SELECT max(id)::text FROM migrations) AS epoch`,
+            (SELECT last_value::text FROM migrations_id_seq) AS epoch`,
     [appId]
   );
   return { stamp: row?.stamp ?? null, epoch: row?.epoch ?? null };
