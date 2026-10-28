@@ -361,7 +361,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-ai-backend
-          path: server/coverage-ai/ee/report/
+          path: server/coverage-ai/ee/report/coverage-summary.json
           if-no-files-found: error
       - name: Enforce AI coverage verdict after publishing reports
         if: ${{ !cancelled() && steps.ai-coverage.outcome == 'failure' }}

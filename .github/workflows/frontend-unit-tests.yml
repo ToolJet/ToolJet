@@ -119,7 +119,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-ai-frontend
-          path: frontend/coverage-ai/ee/report/
+          path: frontend/coverage-ai/ee/report/coverage-summary.json
           if-no-files-found: error
 
       # Fails if an App Builder source file is not assigned to a subsystem in
