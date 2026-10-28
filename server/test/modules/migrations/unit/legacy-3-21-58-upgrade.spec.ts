@@ -6,7 +6,7 @@ import { readdirSync } from 'fs';
 import { join } from 'path';
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
 import { DataMigration } from 'src/migration-helpers/migration-mode';
-import { CleanupLegacyBranchModel1793300000000 } from '../../../../migrations/cleanup/1793300000000-CleanupLegacyBranchModel';
+import { CleanupLegacyBranchModel1793300000000 } from '@migrations/cleanup/1793300000000-CleanupLegacyBranchModel';
 import {
   LEGACY_VARIANTS,
   useLegacyVariants,

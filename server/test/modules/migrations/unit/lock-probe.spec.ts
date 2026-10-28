@@ -6,24 +6,33 @@ import { classifyLocks, phaseOfMigrationFile } from 'src/migration-helpers/lock-
 
 describe('migration-helpers/lock-probe', () => {
   describe('classifyLocks() and phaseOfMigrationFile(): which table locks each phase may take', () => {
-    const lock = (mode: string, existed = true) => ({ table: 'apps', mode, existed });
-
     it.each([
-      ['schema', 'up', 'AccessExclusiveLock', []],
-      ['schema', 'up', 'ShareLock', ['apps: ShareLock']],
-      ['data', 'up', 'RowExclusiveLock', []],
-      ['data', 'up', 'ShareLock', ['apps: ShareLock']],
-      ['data', 'up', 'AccessExclusiveLock', ['apps: AccessExclusiveLock']],
-      ['data', 'beforeCommit', 'ShareLock', []],
-      ['data', 'beforeCommit', 'ShareRowExclusiveLock', []],
-      ['data', 'beforeCommit', 'AccessExclusiveLock', ['apps: AccessExclusiveLock']],
-      ['cleanup', 'up', 'AccessExclusiveLock', []],
-    ] as const)('should judge a %s migration whose %s() takes a %s', (phase, part, mode, expected) => {
-      expect(classifyLocks(phase, part, [lock(mode)])).toEqual(expected);
-    });
+      { phase: 'schema', part: 'up', sql: 'ADD COLUMN', lock: 'AccessExclusiveLock', verdict: 'allow' },
+      { phase: 'schema', part: 'up', sql: 'CREATE INDEX', lock: 'ShareLock', verdict: 'reject' },
+      { phase: 'data', part: 'up', sql: 'UPDATE', lock: 'RowExclusiveLock', verdict: 'allow' },
+      { phase: 'data', part: 'up', sql: 'CREATE INDEX', lock: 'ShareLock', verdict: 'reject' },
+      { phase: 'data', part: 'up', sql: 'DROP or SET NOT NULL', lock: 'AccessExclusiveLock', verdict: 'reject' },
+      { phase: 'data', part: 'beforeCommit', sql: 'CREATE INDEX', lock: 'ShareLock', verdict: 'allow' },
+      {
+        phase: 'data',
+        part: 'beforeCommit',
+        sql: 'CREATE TRIGGER or FOREIGN KEY',
+        lock: 'ShareRowExclusiveLock',
+        verdict: 'allow',
+      },
+      { phase: 'data', part: 'beforeCommit', sql: 'DROP', lock: 'AccessExclusiveLock', verdict: 'reject' },
+      { phase: 'cleanup', part: 'up', sql: 'DROP via withShortLock', lock: 'AccessExclusiveLock', verdict: 'allow' },
+    ] as const)(
+      "should $verdict $sql ($lock on an existing table) in a $phase migration's $part()",
+      ({ phase, part, lock, verdict }) => {
+        const locks = [{ table: 'apps', mode: lock, existed: true }];
+
+        expect(classifyLocks(phase, part, locks)).toEqual(verdict === 'reject' ? [`apps: ${lock}`] : []);
+      }
+    );
 
     it('should allow any lock on a table the same run created', () => {
-      expect(classifyLocks('data', 'up', [lock('AccessExclusiveLock', false)])).toEqual([]);
+      expect(classifyLocks('data', 'up', [{ table: 'apps', mode: 'AccessExclusiveLock', existed: false }])).toEqual([]);
     });
 
     it.each([

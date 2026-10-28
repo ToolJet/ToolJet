@@ -572,7 +572,6 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     describe('cleanup run: dropping old schema once the upgrade has succeeded', () => {
       // The fake runner creates this file when it runs the cleanup phase.
       const cleanupMarkerFile = join(tmpdir(), `tooljet-cleanup-${process.pid}`);
-      const cleanupRan = () => existsSync(cleanupMarkerFile);
 
       beforeEach(() => rmSync(cleanupMarkerFile, { force: true }));
       afterEach(() => {
@@ -599,7 +598,7 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
         const succeededAt = recordRun.mock.calls.findIndex((call) => call[2] === 'succeeded');
         expect(succeededAt).toBeGreaterThanOrEqual(0);
         expect(recordRun.mock.invocationCallOrder[succeededAt]).toBeLessThan(startCleanup.mock.invocationCallOrder[0]);
-        expect(cleanupRan()).toBe(true);
+        expect(existsSync(cleanupMarkerFile)).toBe(true);
         await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
       });
 
@@ -608,14 +607,14 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
 
         await runUpgradeAndWaitForCleanup();
 
-        expect(cleanupRan()).toBe(true);
+        expect(existsSync(cleanupMarkerFile)).toBe(true);
         await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
       });
 
       it('should not start cleanup when the upgrade failed', async () => {
         await runUpgradeAndWaitForCleanup('fail');
 
-        expect(cleanupRan()).toBe(false);
+        expect(existsSync(cleanupMarkerFile)).toBe(false);
       });
     });
 

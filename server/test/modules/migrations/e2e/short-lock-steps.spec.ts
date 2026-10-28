@@ -40,13 +40,6 @@ describe('migration-helpers/with-short-lock', () => {
     return reader;
   }
 
-  async function columnIsNullable(): Promise<boolean> {
-    const [{ is_nullable }] = await db.query(
-      `SELECT is_nullable FROM information_schema.columns WHERE table_name = 'widgets' AND column_name = 'name'`
-    );
-    return is_nullable === 'YES';
-  }
-
   describe('withShortLock(): each step in its own short transaction, so live traffic is never blocked for long', () => {
     it('should give up after its attempts when a reader holds the table, waiting only briefly each time', async () => {
       const reader = await holdReadLock();
@@ -83,7 +76,11 @@ describe('migration-helpers/with-short-lock', () => {
       await runner.rollbackTransaction();
 
       expect(after).toBe(before);
-      expect(await columnIsNullable()).toBe(true);
+      expect(
+        await db.query(
+          `SELECT is_nullable FROM information_schema.columns WHERE table_name = 'widgets' AND column_name = 'name'`
+        )
+      ).toEqual([{ is_nullable: 'YES' }]);
     });
   });
 
@@ -107,7 +104,11 @@ describe('migration-helpers/with-short-lock', () => {
 
       await setNotNull(runner, 'widgets', 'name');
 
-      expect(await columnIsNullable()).toBe(false);
+      expect(
+        await db.query(
+          `SELECT is_nullable FROM information_schema.columns WHERE table_name = 'widgets' AND column_name = 'name'`
+        )
+      ).toEqual([{ is_nullable: 'NO' }]);
       expect(await db.query(`SELECT conname FROM pg_constraint WHERE conrelid = 'widgets'::regclass`)).toEqual([]);
     });
 
@@ -116,7 +117,11 @@ describe('migration-helpers/with-short-lock', () => {
 
       await expect(setNotNull(runner, 'widgets', 'name')).rejects.toMatchObject({ driverError: { code: '23514' } });
 
-      expect(await columnIsNullable()).toBe(true);
+      expect(
+        await db.query(
+          `SELECT is_nullable FROM information_schema.columns WHERE table_name = 'widgets' AND column_name = 'name'`
+        )
+      ).toEqual([{ is_nullable: 'YES' }]);
       await expect(db.query('INSERT INTO widgets VALUES (2, NULL)')).resolves.toBeDefined();
     });
   });

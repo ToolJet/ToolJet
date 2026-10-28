@@ -52,6 +52,7 @@ const shared: Config.InitialProjectOptions = {
     '@entities/(.*)': '<rootDir>/src/entities/$1',
     '@controllers/(.*)': '<rootDir>/src/controllers/$1',
     '@modules/(.*)': '<rootDir>/src/modules/$1',
+    '^@migrations/(.*)': '<rootDir>/migrations/$1',
     '@ee/(.*)': '<rootDir>/ee/$1',
     '@helpers/(.*)': '<rootDir>/src/helpers/$1',
     '@licensing/(.*)': '<rootDir>/ee/licensing/$1',
