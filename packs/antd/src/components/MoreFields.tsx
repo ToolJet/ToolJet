@@ -5,7 +5,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
-import { str, toOptions, type Row } from '../lib/data';
+import { controlOptions, exposedOption, keyForValue, str, toOptions, valueForKey, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
 import { countryOf, flagOf, nationalOf, phoneCountries, phoneCountry, phoneInfo, type Country } from '../lib/ui2/inputs/phone';
@@ -47,19 +47,24 @@ export const Combobox = (props: Record<string, unknown>) => {
   const ref = useRef<{ focus: () => void; blur: () => void }>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'choice', value, present: value !== '' });
+  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: value !== '' });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
-  const options = toOptions(rawOptions);
-  const expose = (next: string) => {
-    const opt = options.find((o) => o.value === next);
-    setSelectedOption(opt ?? {});
+  const options = toOptions(rawOptions, 'Combobox');
+  // Ant's control holds option keys; the value keeps its type (lib/data Option), so 1 and '1' are two choices.
+  const key = value === '' ? '' : keyForValue(options, value);
+  const expose = (next: unknown) => {
+    const k = next === '' ? '' : keyForValue(options, next);
+    const opt = k === '' ? undefined : options.find((o) => o.value === k);
+    setSelectedOption(exposedOption(opt));
     setSelectedLabel(opt?.label ?? '');
   };
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // A value given by the app: the option it names, with that option's own value (the text '1' picks the option 1),
+  // else as text.
   const change = (v: unknown) => {
-    const next = v === undefined || v === null ? '' : str(v);
+    const next = v === undefined || v === null || v === '' ? '' : valueForKey(options, keyForValue(options, v));
     if (!valueSetter.set(next)) return;
     expose(next);
     onChange();
@@ -67,9 +72,9 @@ export const Combobox = (props: Record<string, unknown>) => {
   // The selected option follows the value however it changes (a binding, a Form's clearForm emptying it) and the
   // options' labels: set only on a pick, a cleared Form kept exposing the old choice.
   useEffect(() => {
-    expose(str(value));
+    expose(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [str(value), JSON.stringify(options)]);
+  }, [JSON.stringify(value), JSON.stringify(options)]);
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => setSearchValue(''));
   ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set field value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => change(v));
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(props.value));
@@ -85,8 +90,8 @@ export const Combobox = (props: Record<string, unknown>) => {
               id={fieldId}
               style={{ width: '100%' }}
               showSearch
-              options={options}
-              value={value !== '' ? value : undefined}
+              options={controlOptions(options)}
+              value={key !== '' ? key : undefined}
               placeholder={placeholder || undefined}
               notFoundContent={loading ? <Spin size="small" /> : notFoundContent || undefined}
               allowClear={allowClear}
@@ -100,7 +105,7 @@ export const Combobox = (props: Record<string, unknown>) => {
               styles={{ popup: { root: popup.style } }}
               open={list.open}
               onOpenChange={list.onOpenChange}
-              onChange={(v) => list.available() && change(v)}
+              onChange={(v) => list.available() && change(v === undefined || v === null ? '' : valueForKey(options, v))}
               onSelect={() => list.available() && onSelect()}
               onSearch={(text) => {
                 setSearchValue(text);
