@@ -1,4 +1,7 @@
-/** @group database */
+/**
+ * Covers: migration-helpers/migration-locks.ts
+ * @group database
+ */
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { DataSource } from 'typeorm';

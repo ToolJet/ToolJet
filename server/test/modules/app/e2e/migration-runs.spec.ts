@@ -532,7 +532,7 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
   });
 
   describe('a real runner process | what the page reads back', () => {
-    const runner = `node ${require.resolve('../../migrations/fixtures/fake-runner/runner.js')}`;
+    const runner = `node ${require.resolve('../../migrations/fixtures/fake-runner.js')}`;
     const originalCommand = process.env.MIGRATION_SETUP_COMMAND;
 
     afterEach(() => {
