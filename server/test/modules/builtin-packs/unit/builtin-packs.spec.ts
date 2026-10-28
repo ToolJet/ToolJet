@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { loadBuiltinPacks, readBuiltinPackFile } from 'src/modules/custom-component-libraries/builtin-packs';
+import { loadBuiltinPacks, readBuiltinPackFile } from 'src/modules/builtin-packs/builtin-packs';
 
 // A release folder as the build step writes it: builtin-packs/<pack>/{builtin.json, manifest.json, index.js, index.css}.
 const writePack = (root: string, pack: string, files: Record<string, string>) => {

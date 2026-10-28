@@ -1,5 +1,4 @@
 import { buildManifestCacheKey } from '@/_helpers/customComponentLibrariesStoreUtils';
-import { builtinRevision, isBuiltinLibrary, type BuiltinHashes } from '@/_helpers/builtinPacks';
 import type { LibraryManifest, ManifestAction } from '@/AppBuilder/types/libraryComponent.types';
 
 export type Pin = string | { revisionId?: string; revision_id?: string } | undefined | null;
@@ -45,15 +44,10 @@ export const normalizePin = (pin: Pin): string | undefined =>
 // separate session-local preview layer anymore (see invariant #14, HANDOFF-NISHIDH.md).
 // Keyed by the library's correlationId (stable across workspaces), not its workspace-scoped
 // id — so a pin keeps resolving after the app is exported/imported into another workspace.
-// A built-in pack is never pinned: it always resolves to the version the server ships (builtinHashes).
 export const resolveEffectiveRevision = (
   pins: Record<string, Pin> | undefined,
-  correlationId: string | undefined,
-  builtinHashes?: BuiltinHashes
-): string | undefined =>
-  isBuiltinLibrary(correlationId)
-    ? builtinRevision(correlationId as string, builtinHashes)
-    : normalizePin(pins?.[dashlessId(correlationId) ?? ''] ?? pins?.[correlationId ?? '']);
+  correlationId: string | undefined
+): string | undefined => normalizePin(pins?.[dashlessId(correlationId) ?? ''] ?? pins?.[correlationId ?? '']);
 
 // Reads a LibraryComponent instance's identity off its definition.properties — the only
 // place it lives (never rendered as editable inspector fields). Shared by the Inspector
@@ -106,11 +100,10 @@ export const mergeStaticAndDynamicActions = (
 export const resolveLibraryComponentActions = (
   componentDef: ComponentDefinitionLike,
   manifests: Record<string, LibraryManifest>,
-  pins: Record<string, Pin> | undefined,
-  builtinHashes?: BuiltinHashes
+  pins: Record<string, Pin> | undefined
 ): ResolvedAction[] => {
   const { libraryId, correlationId, componentName } = getLibraryComponentIdentity(componentDef);
-  const revision = resolveEffectiveRevision(pins, correlationId, builtinHashes);
+  const revision = resolveEffectiveRevision(pins, correlationId);
   if (!libraryId || !revision) return [];
   const key = buildManifestCacheKey(libraryId, revision);
   return resolveManifestActions(manifests[key], componentName);

@@ -3,22 +3,16 @@
 
 import config from 'config';
 import { dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
-import { BUILTIN_PREFIX, builtinPackOf } from '@/_helpers/builtinPacks';
 import type { CustomComponentLibrary } from '@/_services/customComponentLibraries.service';
 
 // Builds bundle/css/manifest URLs for either a published revision ('v2') or a
 // dev slot ('dev:{userId}' → the per-developer no-store endpoint). Lives in this leaf
 // helpers file (rather than libraryComponentRevision.ts) so customComponentLibrariesStore
 // can import it without a store <-> libraryComponentRevision import cycle.
-// A built-in pack ('builtin:<hash>') is served from the built-in route under its content hash.
-export const libraryFileUrl = (libraryId: string, revision: string | undefined, file: string): string => {
-  if (revision?.startsWith?.(BUILTIN_PREFIX)) {
-    return `${config.apiUrl}/builtin-packs/${builtinPackOf(libraryId)}/${builtinPackOf(revision)}/${file}`;
-  }
-  return revision?.startsWith?.('dev:')
+export const libraryFileUrl = (libraryId: string, revision: string | undefined, file: string): string =>
+  revision?.startsWith?.('dev:')
     ? `${config.apiUrl}/custom-component-libraries/${libraryId}/dev/${revision.slice(4)}/files/${file}`
     : `${config.apiUrl}/custom-component-libraries/${libraryId}/revisions/${revision}/files/${file}`;
-};
 
 // Stable key by (libraryId, revision) — no devNonce. Dev-slot staleness is handled by
 // explicitly invalidating this key (see customComponentLibrariesStore's invalidateManifest)

@@ -14,7 +14,6 @@ import {
 } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { normalizePin, dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
-import { isBuiltinLibrary } from '@/_helpers/builtinPacks';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { Container } from 'lucide-react';
@@ -285,37 +284,18 @@ const VersionPicker = ({ library }) => {
   );
 };
 
-export const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
-  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight } = componentConfig;
+// A draggable card for one SDK-built component (a library's or a pack's): drops `dragComponent` as a
+// `componentType` widget, with the same rules as the built-in components' DragLayer. `onDropped` runs after a drop.
+export const SdkComponentCard = ({ componentType, dragComponent, name, displayName, description, onDropped }) => {
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { handleDrop } = useCanvasDropHandler() || noop;
 
-  const dragComponent = useMemo(() => {
-    const defaultSize = manifestDefaultSize({ defaultWidth, defaultHeight });
-    return {
-      component: 'LibraryComponent',
-      displayName: name,
-      defaultSize,
-      libraryComponentInfo: {
-        libraryId,
-        correlationId,
-        libraryName,
-        componentName: name,
-        revisionId,
-        props,
-        styles,
-        defaultSize,
-      },
-    };
-  }, [libraryId, correlationId, libraryName, name, revisionId, props, styles, defaultWidth, defaultHeight]);
-
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: 'box',
-      item: { componentType: 'LibraryComponent', component: dragComponent },
+      item: { componentType, component: dragComponent },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
-      // Same rules as the built-in components' DragLayer.
       end: (item, monitor) => {
         // Released over the component panel: the drag is cancelled. The panel overlays the canvas, so the
         // position lookup below would otherwise find the canvas underneath and add the component.
@@ -331,16 +311,10 @@ export const CustomComponentCard = ({ libraryId, correlationId, libraryName, rev
           ? findNewParentIdFromMousePosition(releasedAt.x, releasedAt.y)
           : useGridStore.getState().currentDragCanvasId;
         handleDrop(item, canvasId ?? useGridStore.getState().currentDragCanvasId);
-        // A built-in pack is never pinned: it always runs the version ToolJet ships.
-        if (isBuiltinLibrary(correlationId)) return;
-        const { globalSettings, globalSettingsChanged } = useStore.getState();
-        const pins = globalSettings?.customComponentLibraries ?? {};
-        if (!normalizePin(pins[dashlessId(correlationId)] ?? pins[correlationId])) {
-          globalSettingsChanged({ customComponentLibraries: { ...pins, [dashlessId(correlationId)]: revisionId } });
-        }
+        onDropped?.();
       },
     }),
-    [dragComponent]
+    [componentType, dragComponent, onDropped]
   );
 
   useEffect(() => {
@@ -363,5 +337,48 @@ export const CustomComponentCard = ({ libraryId, correlationId, libraryName, rev
         {description && <div className="custom-component-card-description">{description}</div>}
       </div>
     </div>
+  );
+};
+
+const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
+  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight } = componentConfig;
+
+  const dragComponent = useMemo(() => {
+    const defaultSize = manifestDefaultSize({ defaultWidth, defaultHeight });
+    return {
+      component: 'LibraryComponent',
+      displayName: name,
+      defaultSize,
+      libraryComponentInfo: {
+        libraryId,
+        correlationId,
+        libraryName,
+        componentName: name,
+        revisionId,
+        props,
+        styles,
+        defaultSize,
+      },
+    };
+  }, [libraryId, correlationId, libraryName, name, revisionId, props, styles, defaultWidth, defaultHeight]);
+
+  // The first drop of a library pins the app to the revision it was dropped from.
+  const pinRevision = useCallback(() => {
+    const { globalSettings, globalSettingsChanged } = useStore.getState();
+    const pins = globalSettings?.customComponentLibraries ?? {};
+    if (!normalizePin(pins[dashlessId(correlationId)] ?? pins[correlationId])) {
+      globalSettingsChanged({ customComponentLibraries: { ...pins, [dashlessId(correlationId)]: revisionId } });
+    }
+  }, [correlationId, revisionId]);
+
+  return (
+    <SdkComponentCard
+      componentType="LibraryComponent"
+      dragComponent={dragComponent}
+      name={name}
+      displayName={displayName}
+      description={description}
+      onDropped={pinRevision}
+    />
   );
 };

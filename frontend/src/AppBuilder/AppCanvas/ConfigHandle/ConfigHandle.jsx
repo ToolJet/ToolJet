@@ -42,9 +42,6 @@ export const ConfigHandle = ({
   const hasCustomComponentLibrariesAccess = useStore(
     (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
-  const libraryCorrelationId = useStore(
-    (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.correlationId?.value
-  );
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
@@ -130,7 +127,6 @@ export const ConfigHandle = ({
     isModulesEnabled,
     isModuleEditor,
     hasCustomComponentLibrariesAccess,
-    libraryCorrelationId,
   });
 
   const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);
@@ -222,10 +218,10 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-              ? '-26px'
-              : insideFlex
-                ? 'auto'
-                : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+            ? '-26px'
+            : insideFlex
+            ? 'auto'
+            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         // In a flex container the handle anchors to the widget's bottom edge: placed from the height it hung 3px below
         // it (the handle is 24px, not 20), and the flex canvas scrolled by that much under the pointer on hover.
         ...(insideFlex && position !== 'top' && !(componentType === 'Modal' && isModalOpen)

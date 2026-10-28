@@ -9,6 +9,8 @@ import { getLibraryComponentIdentity } from '@/AppBuilder/Widgets/libraryCompone
 import { useEffectiveLibraryRevision } from '@/AppBuilder/Widgets/hooks/useEffectiveLibraryRevision';
 import { useLibraryManifest } from '@/AppBuilder/Widgets/hooks/useLibraryManifest';
 import useStore from '@/AppBuilder/_stores/store';
+import { usePackManifest } from '@/_stores/builtinPacksStore';
+import type { ManifestComponent } from '@/AppBuilder/types/libraryComponent.types';
 import {
   DISABLED_STATE_META,
   additionalActionProps,
@@ -38,12 +40,10 @@ const EventManagerComponent = EventManager as React.ComponentType<any>;
 const resolveLive = (value: unknown): unknown =>
   (useStore.getState() as { getResolvedValue: (v: unknown) => unknown }).getResolvedValue(value);
 
-// F4b: manifest-driven Inspector panel for the LibraryComponent widget (LLD §5.6,
-// ModuleViewerInspector pattern). Identity (libraryId/componentName) lives ONLY in
-// definition.properties — never rendered as editable fields. Props and events come
-// from the PINNED revision's manifest (public, immutable-cached endpoint), so the
-// Inspector always matches what the instance actually runs — not the library's latest.
-export const LibraryComponentProperties = ({
+// Manifest-driven Properties tab for a component built with the custom-component SDK (LibraryComponent, PackComponent;
+// LLD §5.6, ModuleViewerInspector pattern). Which component the instance draws lives ONLY in definition.properties —
+// never rendered as editable fields. `identityRows` is read-only context shown first (a library's revision).
+const ManifestPropertiesPanel = ({
   componentMeta,
   darkMode,
   layoutPropertyChanged,
@@ -55,16 +55,9 @@ export const LibraryComponentProperties = ({
   apps,
   allComponents,
   pages,
-}: LibraryComponentPropertiesProps) => {
-  const { libraryId, correlationId, componentName } = getLibraryComponentIdentity(component);
-
-  // F5: same resolution as the runner — the library-level pin only, no per-instance
-  // fallback — so the Inspector always describes the revision that's actually rendering.
-  const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId);
-
-  const manifest = useLibraryManifest(libraryId, effectiveRevision);
-
-  const componentManifest = componentName ? manifest?.components?.[componentName] : undefined;
+  componentManifest,
+  identityRows = [],
+}: LibraryComponentPropertiesProps & { componentManifest?: ManifestComponent; identityRows?: [string, string?][] }) => {
   const props = componentManifest?.props ?? [];
   const shownComponent = withManifestDefaults(component, 'properties', props);
   // visibleWhen is checked against shownComponent so a driver the instance never stored counts as its default.
@@ -86,23 +79,21 @@ export const LibraryComponentProperties = ({
   const items: { id?: string; title: string; isOpen: boolean; children: React.ReactNode }[] = [];
 
   // Identity — read-only context (picker UX arrives with F5's revision picker).
-  items.push({
-    title: 'Component',
-    isOpen: true,
-    children: (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0' }}>
-        {[
-          ['Component', componentManifest?.displayName ?? componentName],
-          ['Revision', formatRevisionLabel(effectiveRevision)],
-        ].map(([label, value]) => (
-          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-            <span style={{ color: 'var(--text-placeholder)' }}>{label}</span>
-            <span style={{ color: 'var(--text-default)', fontWeight: 500 }}>{value}</span>
-          </div>
-        ))}
-      </div>
-    ),
-  });
+  if (identityRows.length > 0)
+    items.push({
+      title: 'Component',
+      isOpen: true,
+      children: (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0' }}>
+          {identityRows.map(([label, value]) => (
+            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+              <span style={{ color: 'var(--text-placeholder)' }}>{label}</span>
+              <span style={{ color: 'var(--text-default)', fontWeight: 500 }}>{value}</span>
+            </div>
+          ))}
+        </div>
+      ),
+    });
 
   groupPropsBySection(visibleProps).forEach(({ title, props: sectionProps }) => {
     items.push({
@@ -258,9 +249,47 @@ export const LibraryComponentProperties = ({
   return <AccordionComponent items={items} />;
 };
 
-// Styles tab: the pinned revision's ToolJet.useStyleX fields grouped by their `section`, then the host
+// F4b: a custom-component library's instance. Props and events come from the PINNED revision's manifest (public,
+// immutable-cached endpoint), so the Inspector always matches what the instance actually runs — not the latest.
+export const LibraryComponentProperties = (props: LibraryComponentPropertiesProps) => {
+  const { libraryId, correlationId, componentName } = getLibraryComponentIdentity(props.component);
+  // F5: same resolution as the runner — the library-level pin only, no per-instance
+  // fallback — so the Inspector always describes the revision that's actually rendering.
+  const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId);
+  const manifest = useLibraryManifest(libraryId, effectiveRevision);
+  const componentManifest = componentName ? manifest?.components?.[componentName] : undefined;
+  return (
+    <ManifestPropertiesPanel
+      {...props}
+      componentManifest={componentManifest}
+      identityRows={[
+        ['Component', componentManifest?.displayName ?? componentName],
+        ['Revision', formatRevisionLabel(effectiveRevision)],
+      ]}
+    />
+  );
+};
+
+// A pack component, like a native widget: the build the release ships, with nothing to pick.
+export const PackComponentProperties = (props: LibraryComponentPropertiesProps) => {
+  const { pack, componentName } = packIdentity(props.component);
+  const manifest = usePackManifest(pack);
+  return (
+    <ManifestPropertiesPanel
+      {...props}
+      componentManifest={componentName ? manifest?.components?.[componentName] : undefined}
+    />
+  );
+};
+
+const packIdentity = (component: LibraryComponentPropertiesProps['component']) => {
+  const properties = (component as any)?.component?.definition?.properties ?? {};
+  return { pack: properties.pack?.value as string | undefined, componentName: properties.componentName?.value as string | undefined };
+};
+
+// Styles tab: the manifest's ToolJet.useStyleX fields grouped by their `section`, then the host
 // widget's own styles (box shadow). Values land in definition.styles and reach the bundle as styles only.
-export const LibraryComponentStyles = ({
+const ManifestStylesPanel = ({
   componentMeta,
   component,
   paramUpdated,
@@ -268,11 +297,9 @@ export const LibraryComponentStyles = ({
   currentState,
   allComponents,
   darkMode,
-}: LibraryComponentStylesProps) => {
-  const { libraryId, correlationId, componentName } = getLibraryComponentIdentity(component);
-  const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId);
-  const manifest = useLibraryManifest(libraryId, effectiveRevision);
-  const manifestStyles = (componentName ? manifest?.components?.[componentName]?.styles : undefined) ?? [];
+  componentManifest,
+}: LibraryComponentStylesProps & { componentManifest?: ManifestComponent }) => {
+  const manifestStyles = componentManifest?.styles ?? [];
   const shownComponent = withManifestDefaults(component, 'styles', manifestStyles);
   const styles = filterVisibleProps(manifestStyles).filter((style) =>
     isFieldVisible(style, shownComponent, 'styles', resolveLive)
@@ -319,4 +346,27 @@ export const LibraryComponentStyles = ({
   });
 
   return <AccordionComponent items={items} />;
+};
+
+export const LibraryComponentStyles = (props: LibraryComponentStylesProps) => {
+  const { libraryId, correlationId, componentName } = getLibraryComponentIdentity(props.component);
+  const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId);
+  const manifest = useLibraryManifest(libraryId, effectiveRevision);
+  return (
+    <ManifestStylesPanel
+      {...props}
+      componentManifest={componentName ? manifest?.components?.[componentName] : undefined}
+    />
+  );
+};
+
+export const PackComponentStyles = (props: LibraryComponentStylesProps) => {
+  const { pack, componentName } = packIdentity(props.component);
+  const manifest = usePackManifest(pack);
+  return (
+    <ManifestStylesPanel
+      {...props}
+      componentManifest={componentName ? manifest?.components?.[componentName] : undefined}
+    />
+  );
 };

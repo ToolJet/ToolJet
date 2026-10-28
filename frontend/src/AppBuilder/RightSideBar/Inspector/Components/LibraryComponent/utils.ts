@@ -40,7 +40,6 @@ export const groupPropsBySection = (props: ManifestProp[], defaultSection = DEFA
 
 export const formatRevisionLabel = (revision: string | undefined): string | undefined => {
   if (revision?.startsWith?.('dev:')) return 'Dev preview';
-  if (revision?.startsWith?.('builtin:')) return 'Built in';
   return revision;
 };
 

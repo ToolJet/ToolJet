@@ -1,5 +1,3 @@
-import { isBuiltinLibrary } from '@/_helpers/builtinPacks';
-
 export interface InvalidLicenseTooltip {
   id: string;
   html: string;
@@ -11,7 +9,6 @@ interface GetInvalidLicenseTooltipParams {
   isModulesEnabled?: boolean;
   isModuleEditor?: boolean;
   hasCustomComponentLibrariesAccess?: boolean;
-  libraryCorrelationId?: string;
 }
 
 // A config handle can need at most one of these at a time (componentType picks which) --
@@ -23,7 +20,6 @@ export const getInvalidLicenseTooltip = ({
   isModulesEnabled,
   isModuleEditor,
   hasCustomComponentLibrariesAccess,
-  libraryCorrelationId,
 }: GetInvalidLicenseTooltipParams): InvalidLicenseTooltip | null => {
   const isModuleLicenseInvalid =
     (componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && !isModuleEditor;
@@ -34,11 +30,7 @@ export const getInvalidLicenseTooltip = ({
     };
   }
 
-  // Built-in packs ship with ToolJet like native widgets, in every edition: no licence needed.
-  const isLibraryLicenseInvalid =
-    componentType === 'LibraryComponent' &&
-    !hasCustomComponentLibrariesAccess &&
-    !isBuiltinLibrary(libraryCorrelationId);
+  const isLibraryLicenseInvalid = componentType === 'LibraryComponent' && !hasCustomComponentLibrariesAccess;
   if (isLibraryLicenseInvalid) {
     return {
       id: `invalid-license-library-component-${componentName?.toLowerCase()}`,

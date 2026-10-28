@@ -72,6 +72,8 @@ export interface ManifestComponent {
   role?: string;
   usage?: string;
   fit?: boolean;
+  // 'own': the component draws its own loading look (useControlState().loading), so the host draws no overlay.
+  loading?: 'own';
 }
 
 export interface LibraryManifest {

@@ -1,29 +1,46 @@
-import React, { useEffect } from 'react';
-import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
-import { useLibraryManifest } from '@/AppBuilder/Widgets/hooks/useLibraryManifest';
-import { builtinIdentity, BUILTIN_PREFIX, type BuiltinPack } from '@/_helpers/builtinPacks';
+import React, { useMemo } from 'react';
+import { usePackManifest } from '@/_stores/builtinPacksStore';
+import type { BuiltinPack } from '@/_helpers/builtinPacks';
 import type { ManifestComponent } from '@/AppBuilder/types/libraryComponent.types';
-import { CustomComponentCard } from './CustomComponentsTab';
+import { SdkComponentCard } from './CustomComponentsTab';
+import { manifestDefaultSize } from './utils';
 
-const CardComponent = CustomComponentCard as React.ComponentType<any>;
+const Card = SdkComponentCard as React.ComponentType<any>;
 
-// The packs that ship with ToolJet, listed in the Components tab next to the native widgets (not under Custom
-// components): one accordion section per pack. Search narrows them by component name like the native list.
-export const useBuiltinPacks = (): BuiltinPack[] => {
-  const packs = useCustomComponentLibrariesStore((state: any) => state.builtinPacks);
-  useEffect(() => {
-    useCustomComponentLibrariesStore.getState().fetchBuiltinPacks();
-  }, []);
-  return packs ?? [];
-};
+export { useBuiltinPacks } from '@/_stores/builtinPacksStore';
 
 const matches = (name: string, component: ManifestComponent, query: string): boolean =>
   !query || `${component.displayName ?? name} ${name}`.toLowerCase().includes(query.toLowerCase());
 
+// One pack component's card: drops a PackComponent that names its pack and component, pre-filled with the
+// manifest's defaults. Nothing is pinned: the instance always draws the build the release ships.
+const PackComponentCard = ({ pack, name, component }: { pack: string; name: string; component: ManifestComponent }) => {
+  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight } = component as any;
+  const dragComponent = useMemo(() => {
+    const defaultSize = manifestDefaultSize({ defaultWidth, defaultHeight });
+    return {
+      component: 'PackComponent',
+      displayName: name,
+      defaultSize,
+      libraryComponentInfo: { pack, componentName: name, props, styles, defaultSize },
+    };
+  }, [pack, name, props, styles, defaultWidth, defaultHeight]);
+
+  return (
+    <Card
+      componentType="PackComponent"
+      dragComponent={dragComponent}
+      name={name}
+      displayName={displayName}
+      description={description}
+    />
+  );
+};
+
+// The packs that ship with ToolJet, listed in the Components tab next to the native widgets: one section per pack.
+// Search narrows them by component name like the native list.
 export const BuiltinPackCards = ({ pack, searchQuery = '' }: { pack: BuiltinPack; searchQuery?: string }) => {
-  const { libraryId, correlationId } = builtinIdentity(pack.pack);
-  const revision = `${BUILTIN_PREFIX}${pack.hash}`;
-  const manifest = useLibraryManifest(libraryId, revision);
+  const manifest = usePackManifest(pack.pack);
   const components = Object.entries(manifest?.components ?? {}).filter(([name, component]) =>
     matches(name, component, searchQuery)
   );
@@ -31,15 +48,7 @@ export const BuiltinPackCards = ({ pack, searchQuery = '' }: { pack: BuiltinPack
   return (
     <div className="custom-library-section-content" data-cy={`builtin-pack-${pack.pack}`}>
       {components.map(([name, component]) => (
-        <CardComponent
-          key={name}
-          libraryId={libraryId}
-          correlationId={correlationId}
-          libraryName={pack.displayName}
-          revisionId={revision}
-          name={name}
-          componentConfig={component}
-        />
+        <PackComponentCard key={name} pack={pack.pack} name={name} component={component} />
       ))}
     </div>
   );

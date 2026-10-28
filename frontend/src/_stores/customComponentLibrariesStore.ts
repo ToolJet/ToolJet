@@ -13,7 +13,6 @@ import {
   buildManifestCacheKey,
 } from '@/_helpers/customComponentLibrariesStoreUtils';
 import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types';
-import type { BuiltinHashes, BuiltinPack } from '@/_helpers/builtinPacks';
 
 interface CustomComponentLibrariesState {
   libraries: CustomComponentLibrary[] | null; // null = not yet fetched
@@ -21,9 +20,6 @@ interface CustomComponentLibrariesState {
   devPreviewEmailsByUserId: Record<string, string>; // { [userId]: email } — feeds the canvas "dev: email" badge
   devBundleUpdatedAt: Record<string, number>; // { [libraryId]: number } — nonce bumped on each live-reload push
   manifests: Record<string, LibraryManifest>; // keyed by buildManifestCacheKey(libraryId, revision)
-  builtinPacks: BuiltinPack[] | null; // null = not yet fetched; the packs that ship with ToolJet
-  builtinHashes: BuiltinHashes | undefined; // pack → shipped content hash, what built-in instances resolve to
-  fetchBuiltinPacks: () => Promise<BuiltinPack[]>;
   fetchLibraries: (options?: { force?: boolean }) => Promise<CustomComponentLibrary[]>;
   invalidate: () => void;
   syncDevPinStreams: (devPinKeys: Record<string, string>) => void;
@@ -39,9 +35,6 @@ const activeStreams = new Map<string, AbortController | null>(); // `${libraryId
 // Dedupes concurrent fetchLibraries() calls (e.g. the RightSideBar tab and the dev-pin
 // sync effect both running around the same time) into a single request.
 let inFlightFetch: Promise<CustomComponentLibrary[]> | null = null;
-
-// The built-in packs only change with a server release, so they are fetched once per page load.
-let builtinFetch: Promise<BuiltinPack[]> | null = null;
 
 // Dedupes concurrent fetchManifest() calls for the same cache key (e.g. the widget
 // runtime and the Inspector both mounting for the same instance at once).
@@ -89,31 +82,6 @@ export const useCustomComponentLibrariesStore = create(
       devPreviewEmailsByUserId: {},
       devBundleUpdatedAt: {},
       manifests: {},
-      builtinPacks: null,
-      builtinHashes: undefined,
-
-      fetchBuiltinPacks: () => {
-        builtinFetch ??= customComponentLibrariesService
-          .listBuiltinPacks()
-          .then((packs) => {
-            const list = Array.isArray(packs) ? packs : [];
-            set(
-              {
-                builtinPacks: list,
-                builtinHashes: Object.fromEntries(list.map((p) => [p.pack, p.hash])),
-              },
-              false,
-              'fetchBuiltinPacks'
-            );
-            return list;
-          })
-          .catch(() => {
-            builtinFetch = null; // a failed listing is retried by the next caller
-            set({ builtinPacks: [], builtinHashes: {} }, false, 'fetchBuiltinPacks:error');
-            return [];
-          });
-        return builtinFetch;
-      },
 
       // Cache-first: only the first caller hits the network, same staleness contract as a
       // published version (no polling). Pass force:true to bypass the cache (Retry, delete).

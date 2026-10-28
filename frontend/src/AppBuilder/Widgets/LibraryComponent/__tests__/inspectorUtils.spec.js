@@ -353,11 +353,9 @@ describe('additionalActionProps with controlState', () => {
 });
 
 describe('inspector hints the panel does not know, and the icon set', () => {
-  const {
-    fieldMeta: meta,
-    editorHint: hint,
-    formatRevisionLabel: label,
-  } = jest.requireActual('@/AppBuilder/RightSideBar/Inspector/Components/LibraryComponent/utils');
+  const { fieldMeta: meta, editorHint: hint } = jest.requireActual(
+    '@/AppBuilder/RightSideBar/Inspector/Components/LibraryComponent/utils'
+  );
 
   it.each([
     ['a typo', { name: 'x', type: 'string', inspector: 'colour' }],
@@ -385,11 +383,5 @@ describe('inspector hints the panel does not know, and the icon set', () => {
   it('gives a lucide icon prop the lucide picker', () => {
     // Break this catches: a lucide component (the shadcn pack) handed Tabler names it cannot draw.
     expect(hint({ name: 'icon', type: 'string', inspector: 'icon', iconSet: 'lucide' })).toBe('icon');
-  });
-
-  it('labels a built-in version "Built in"', () => {
-    // Break this catches: the Inspector showing the raw content hash as the version.
-    expect(label('builtin:abc123def4567890')).toBe('Built in');
-    expect(label('v3')).toBe('v3');
   });
 });
