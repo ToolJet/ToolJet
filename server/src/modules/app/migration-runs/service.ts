@@ -24,8 +24,6 @@ export interface MigrationStatus {
   state: MigrationState;
   startedAt?: string;
   toVersion?: string;
-  /** While running: data migrations finished out of those pending. Counts only, the endpoint is public. */
-  progress?: { done: number; total: number };
 }
 
 export interface MigrationRun {
@@ -112,10 +110,7 @@ function owningMigration(run: RunProgress): string | null {
 type StatusRow = Pick<
   MigrationRunRow,
   'status' | 'to_version' | 'started_at' | 'error' | 'heartbeat_age_ms' | 'lock_held'
-> & { done_count: number; total_count: number };
-
-const PROGRESS_COLUMNS = `(SELECT count(*) FROM jsonb_array_elements(r.migrations) m WHERE m->>'status' = 'done')::int AS done_count,
-  COALESCE(jsonb_array_length(r.migrations), 0) AS total_count`;
+>;
 
 const latestRunsSql = (columns: string) =>
   `SELECT ${columns}, EXTRACT(EPOCH FROM now() - r.heartbeat_at) * 1000 AS heartbeat_age_ms, held.running AS lock_held
@@ -272,10 +267,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
       const [{ migrating }] = await this.query<{ migrating: boolean }>(HELD_MIGRATION_LOCKS_SQL);
       // Read every second on every server: only the columns the state needs, not the log tail.
       const [latest] = this.enabled
-        ? await this.query<StatusRow>(
-            latestRunsSql(`r.status, r.to_version, r.started_at, r.error, ${PROGRESS_COLUMNS}`),
-            [1]
-          )
+        ? await this.query<StatusRow>(latestRunsSql('r.status, r.to_version, r.started_at, r.error'), [1])
         : [];
       if (latest) {
         const state = effectiveStatus(latest);
@@ -287,8 +279,6 @@ export class MigrationRunsService implements OnApplicationShutdown {
             state: stopped ? 'running' : state,
             startedAt: new Date(latest.started_at).toISOString(),
             toVersion: latest.to_version,
-            ...((stopped || state === 'running') &&
-              latest.total_count > 0 && { progress: { done: latest.done_count, total: latest.total_count } }),
           };
         }
       }
