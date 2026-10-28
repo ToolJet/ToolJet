@@ -336,7 +336,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
         ...process.env,
         MIGRATION_SKIP_IF_LOCKED: String(!claimedRunId),
         // Schema already applied at boot (migrateSchemaBeforeBoot); data rolls back on its own.
-        MIGRATION_PHASE: 'data',
+        MIGRATION_PHASE: 'backfill',
       },
     });
     this.child = child;

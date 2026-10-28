@@ -64,7 +64,7 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     migrationsRun: false,
     migrationsTransactionMode: 'all',
     logging: data.ORM_LOGGING || false,
-    migrations: data.NODE_ENV === 'test' ? [] : [__dirname + '/migrations/**/*{.ts,.js}'],
+    migrations: data.NODE_ENV === 'test' ? [] : [__dirname + '/migrations/expand/**/*{.ts,.js}'],
   };
 }
 

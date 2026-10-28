@@ -11,7 +11,7 @@ This folder holds only the server's widget registry (`index.js`), which imports 
 
 ## Key Changes Require Migrations
 
-If a config change moves, renames, or removes a key, a migration MUST be written in `server/migrations/` to transform saved app definitions. Flag any key restructuring that lacks an accompanying migration.
+If a config change moves, renames, or removes a key, a migration MUST be written in `server/migrations/backfill/` to transform saved app definitions. Flag any key restructuring that lacks an accompanying migration.
 
 ## Backward Compatibility
 

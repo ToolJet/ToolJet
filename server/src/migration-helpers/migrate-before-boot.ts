@@ -64,7 +64,7 @@ export async function migrateSchemaBeforeBoot(
     spawn(setupCommand(env), {
       shell: true,
       stdio: 'inherit',
-      env: freshInstall ? process.env : { ...process.env, MIGRATION_PHASE: 'schema' },
+      env: freshInstall ? process.env : { ...process.env, MIGRATION_PHASE: 'expand' },
     }).on('exit', (code) => resolve(code ?? 1));
   });
   if (exitCode !== 0) {

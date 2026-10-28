@@ -13,7 +13,6 @@ on:
     branches: [main, 'lts-*']
     paths:
       - 'server/migrations/**'
-      - 'server/data-migrations/**'
   workflow_dispatch:
 
 # one refresh at a time per branch; a skipped queued run is harmless because the next
@@ -131,7 +130,7 @@ jobs:
           git fetch --no-tags --depth=1 origin "$BEFORE"
           # the ledger holds the class name's timestamp, so read it from the deleted file's
           # content at $BEFORE (it can differ from the filename's)
-          deleted=$(git diff --name-only --diff-filter=D "$BEFORE" "$GITHUB_SHA" -- server/migrations server/data-migrations \
+          deleted=$(git diff -M --name-only --diff-filter=D "$BEFORE" "$GITHUB_SHA" -- server/migrations server/data-migrations \
             | while read -r f; do git show "$BEFORE:$f"; done \
             | grep -oE 'class [A-Za-z0-9_]+[0-9]{13}' | grep -oE '[0-9]{13}$' || true)
           for ts in $deleted; do

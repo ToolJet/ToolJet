@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { loadEnvironmentVariables } from '../scripts/env-utils';
+import { loadEnvironmentVariables } from '../../scripts/env-utils';
 
 export class AddLdapGroupSyncToggle1763837608217 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

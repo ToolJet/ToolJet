@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
-import { filePathForEnvVars } from '../scripts/database-config-utils';
+import { filePathForEnvVars } from '../../scripts/database-config-utils';
 
 export class MigrateSSHBranchColumnData1754048735123 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
