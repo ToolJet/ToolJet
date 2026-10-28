@@ -169,6 +169,17 @@ const isNewerRelease = (version: string): boolean =>
  * Own small pg pool: progress stays visible while the migration transaction is open, and
  * heartbeats stay out of TypeORM's query log.
  */
+/** Detached group: kills npm and the runner under it, so its open transaction rolls back. */
+async function stopChild(child: ChildProcess | null, exit: Promise<void> | null): Promise<void> {
+  if (!child?.pid) return;
+  try {
+    process.kill(-child.pid, 'SIGTERM');
+  } catch {
+    // Already gone (ESRCH): its exit handler records the result.
+  }
+  await Promise.race([exit, new Promise((resolve) => setTimeout(resolve, SHUTDOWN_WAIT_MS))]);
+}
+
 @Injectable()
 export class MigrationRunsService implements OnApplicationShutdown {
   private readonly enabled = isServerManagedMigrationMode(process.env);
@@ -177,6 +188,9 @@ export class MigrationRunsService implements OnApplicationShutdown {
   private statusRead: Promise<MigrationStatus> | null = null;
   private pool: Pool | null = null;
   private childExit: Promise<void> | null = null;
+  /** Separate from `child`: a contract run never blocks a migration run. */
+  private contractChild: ChildProcess | null = null;
+  private contractExit: Promise<void> | null = null;
   private finalWrite: Promise<void> | null = null;
   private shuttingDown = false;
   private jobsTimer: NodeJS.Timeout | null = null;
@@ -308,16 +322,8 @@ export class MigrationRunsService implements OnApplicationShutdown {
     this.shuttingDown = true;
     if (this.jobsTimer) clearInterval(this.jobsTimer);
     if (this.deadRunTimer) clearInterval(this.deadRunTimer);
-    if (this.child?.pid) {
-      try {
-        // Detached group: kill npm and the runner under it. The open transaction rolls back.
-        process.kill(-this.child.pid, 'SIGTERM');
-      } catch {
-        // Already gone (ESRCH): its exit handler records the result.
-      }
-      // Let the exit handler record "failed" before the pool closes, so the row does not wait out the stale rule.
-      await Promise.race([this.childExit, new Promise((resolve) => setTimeout(resolve, SHUTDOWN_WAIT_MS))]);
-    }
+    // Let the exit handler record "failed" before the pool closes, so the row does not wait out the stale rule.
+    await Promise.all([stopChild(this.child, this.childExit), stopChild(this.contractChild, this.contractExit)]);
     await this.finalWrite;
     await this.pool?.end().catch(() => undefined);
   }
@@ -440,6 +446,27 @@ export class MigrationRunsService implements OnApplicationShutdown {
         }
         if (await this.updateRun(runId, run, 'succeeded')) await this.dropEarlierLogs(runId);
       });
+      // After the status write, so writes have reopened before contract starts.
+      if (succeeded) void this.finalWrite.then(() => this.runContractChild());
+    });
+  }
+
+  /** Output goes to the pod log only. A failed step stays pending for the next boot; the run stays succeeded. */
+  private runContractChild(): void {
+    if (this.shuttingDown || this.contractChild) return;
+    const child = spawn(setupCommand(process.env), {
+      shell: true,
+      detached: true,
+      stdio: ['ignore', 'inherit', 'inherit'],
+      env: { ...process.env, MIGRATION_PHASE: 'contract' },
+    });
+    this.contractChild = child;
+    this.contractExit = new Promise((resolve) => child.once('close', () => resolve()));
+    child.on('close', (code) => {
+      this.contractChild = null;
+      if (code && code !== SKIPPED_EXIT_CODE) {
+        console.warn(`[migrations] Contract migrations stopped (exit ${code}); the rest run on the next boot.`);
+      }
     });
   }
 

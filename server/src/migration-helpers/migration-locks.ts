@@ -77,6 +77,9 @@ export const MIGRATION_ADVISORY_LOCK_KEY = 6273975241000;
 /** Held only while real migrations run, so serving pods can refuse writes (`MigrationRunsService.status`). */
 export const MIGRATION_ACTIVE_LOCK_KEY = 6273975241001;
 
+/** Serialises contract runs. Separate from the migration lock, so a contract run never delays or skips a backfill run. */
+export const CONTRACT_ADVISORY_LOCK_KEY = 6273975241002;
+
 /** Both locks as the database sees them: held by any live session, released when it ends. */
 export const HELD_MIGRATION_LOCKS_SQL = `
   SELECT COALESCE(bool_or(k = ${MIGRATION_ADVISORY_LOCK_KEY}), false) AS running,
@@ -117,7 +120,7 @@ export async function withMigrationAdvisoryLock<T>(
   options: LockWaitOptions,
   deps: LockWaitDeps,
   critical: (session: LockSession) => Promise<T>,
-  { skipIfBusy = false }: { skipIfBusy?: boolean } = {}
+  { skipIfBusy = false, key = MIGRATION_ADVISORY_LOCK_KEY }: { skipIfBusy?: boolean; key?: number } = {}
 ): Promise<T | undefined> {
   const sleep = deps.sleep ?? defaultSleep;
   const now = deps.now ?? Date.now;
@@ -130,9 +133,7 @@ export async function withMigrationAdvisoryLock<T>(
     await queryRunner.query(DEAD_CLIENT_KEEPALIVE_SQL).catch(() => undefined);
     const startedAt = now();
     for (let attempt = 1; ; attempt++) {
-      const [{ locked }] = await queryRunner.query('SELECT pg_try_advisory_lock($1) AS locked', [
-        MIGRATION_ADVISORY_LOCK_KEY,
-      ]);
+      const [{ locked }] = await queryRunner.query('SELECT pg_try_advisory_lock($1) AS locked', [key]);
       if (locked) {
         if (attempt > 1)
           log(`[migrations] Lock released; got the migration lock after ${seconds(now() - startedAt)}s.`);
@@ -153,7 +154,7 @@ export async function withMigrationAdvisoryLock<T>(
     try {
       return await critical(queryRunner);
     } finally {
-      await queryRunner.query('SELECT pg_advisory_unlock($1)', [MIGRATION_ADVISORY_LOCK_KEY]).catch(() => undefined);
+      await queryRunner.query('SELECT pg_advisory_unlock($1)', [key]).catch(() => undefined);
     }
   } finally {
     await queryRunner.release().catch(() => undefined);

@@ -25,6 +25,7 @@ In both modes only one pod migrates at a time. The others wait.
 | single-transaction run | A runner that runs expand and backfill migrations in one transaction (`MIGRATION_PHASE` unset) |
 | expand phase | A runner that runs only expand migrations (`MIGRATION_PHASE=expand`) |
 | backfill phase | A runner that runs only backfill migrations (`MIGRATION_PHASE=backfill`) |
+| contract phase | A runner that runs only contract migrations (`MIGRATION_PHASE=contract`), after writes reopen |
 | migration lock | A PostgreSQL lock that lets one runner at a time migrate (`MIGRATION_ADVISORY_LOCK_KEY`) |
 | active lock | A PostgreSQL lock held while a runner actually changes the database (`MIGRATION_ACTIVE_LOCK_KEY`) |
 | run | One async-mode backfill phase, recorded as a row in `migration_runs` |
@@ -48,15 +49,16 @@ entrypoint → wait-for-it (PostgreSQL) → npm run db:setup:prod → exec "$@" 
 
 ## Phases and transactions
 
-A runner runs all expand migrations (`server/migrations/expand/`), then all backfill migrations (`server/migrations/backfill/`). `MIGRATION_PHASE` says which part it runs. Any value other than those below fails the runner.
+A runner runs all expand migrations (`server/migrations/expand/`), then all backfill migrations (`server/migrations/backfill/`), then all contract migrations (`server/migrations/contract/`). `MIGRATION_PHASE` says which part it runs. Any value other than those below fails the runner.
 
 The phase and run-strategy meanings are defined once, at `MigrationPhase` and `RunStrategy` in `migration-mode.ts`. A single-transaction run is the `single-transaction` strategy; the expand and backfill phases of async mode are the `multi-transaction` strategy.
 
 | `MIGRATION_PHASE` | Used by | Runs | Transactions |
 |---|---|---|---|
-| unset (single-transaction run) | Blocking mode, Cloud, `npm run db:migrate`, and an async boot of a database older than 3.21.58 | Expand, then backfill | One. A failing backfill migration also undoes the schema changes |
+| unset (single-transaction run) | Blocking mode, Cloud, `npm run db:migrate`, and an async boot of a database older than 3.21.58 | Expand, backfill, then contract | One. A failing backfill migration also undoes the schema changes |
 | `expand` | Async boot | Pending expand migrations | One short transaction, with a lock timeout and retries |
 | `backfill` | Async runs | Any expand migration still pending (normally none), then all backfill migrations | One for the leftover expand, one for all backfill |
+| `contract` | Async, after a successful backfill run | Pending contract migrations | One short transaction per step (`withShortLock`) |
 
 **Short-lock steps.** A step that changes an existing table outside the expand phase goes through `withShortLock` (`with-short-lock.ts`): one short transaction per step, `lock_timeout` 2000 ms (below the server pool's 5000 ms, so readers queued behind it give up after it does), `statement_timeout` 0, retried on a lock timeout. Inside a transaction the caller opened (a single-transaction run) it runs inline. `setNotNull` sets NOT NULL without a long scan under an exclusive lock: a `NOT VALID` check, `VALIDATE`, `SET NOT NULL`, then drops the check; it needs PostgreSQL 12 or later. The expand phase's lock-timeout retry uses the same `retryOnLockTimeout`.
 
@@ -70,6 +72,7 @@ Two PostgreSQL advisory locks (`migration-locks.ts`) make sure one pod migrates 
 |---|---|---|---|
 | Migration lock (`6273975241000`) | "I am the pod that migrates" | From reading the pending list to commit | Waiting pods; dead-run detection |
 | Active lock (`6273975241001`) | "I am changing the database right now" | Only while real migrations execute | The upgrade gate |
+| Contract lock (`6273975241002`) | "I am running contract migrations" | For a contract run | Other contract runs only, so a backfill run never waits on or skips for it |
 
 ```
 run()
@@ -187,6 +190,14 @@ The final schema is the same as after a single-transaction run. Once the backfil
 - Runs as a child of the server (`MIGRATION_PHASE=backfill`), started at boot or by the dead-run check.
 - All backfill migrations run in one transaction. A failure undoes the data changes only. The schema additions stay, and the next run does the backfill migrations again.
 
+### Contract phase
+
+- Runs as a child of the server (`MIGRATION_PHASE=contract`) after the run row is recorded `succeeded`, so writes have reopened. A single-transaction run runs contract inside its one transaction instead (executor `transaction = 'none'`: TypeORM's `'all'` refuses classes with `transaction = false`).
+- Holds only the contract lock, never the migration or active lock, so the gate stays open and a backfill run never skips for it.
+- Before each step it checks whether any server holds the migration lock; if one does, it stops and the remaining steps run on the next boot.
+- Each step is its own short transaction (`withShortLock`). A step that fails stays pending; the run stays `succeeded` and writes stay open. Its output goes to the pod log only.
+- Contract migrations declare `transaction = false`, change tables only through `withShortLock` / `setNotNull`, and use `IF EXISTS` on every drop (`migration-authoring-rules.spec.ts`).
+
 ### Serving during a run
 
 - **What passes.** Reads, sign-in, session, OAuth/SSO and query runs (`ASYNC_MODE_WRITE_ALLOWLIST`). Other writes get 503.
@@ -260,7 +271,7 @@ All optional. The ROLLING UPGRADE block of `.env.example` lists them too.
 | `MIGRATION_END_USER_MESSAGE_RUNNING` | unset | Banner text for end users of released apps while a run is going. Unset: "Scheduled maintenance in progress…". Max 200 characters. |
 | `MIGRATION_END_USER_MESSAGE_FAILED` | unset | Same, after a failed run. Unset: "Maintenance is taking longer than expected…". |
 
-Set by ToolJet itself, never by operators: `MIGRATION_PHASE`, `MIGRATION_SKIP_IF_LOCKED`, `MIGRATION_SETUP_COMMAND`.
+Set by ToolJet itself, never by operators: `MIGRATION_PHASE` (`expand`, `backfill`, `contract`), `MIGRATION_SKIP_IF_LOCKED`, `MIGRATION_SETUP_COMMAND`.
 
 ## Failure modes
 
@@ -275,6 +286,7 @@ The Gate column is for async mode; blocking mode has no gate.
 | A pod waits longer than the maximum | Exits non-zero | — | `MIGRATION_LOCK_MAX_WAIT_MINUTES` |
 | Expand phase cannot lock a busy table | Rolled back, retried, then exits non-zero | Lifted | Old pods keep serving |
 | Async backfill phase fails | Data rolled back, schema stays | `failed`: writes refused | Until a boot reruns it with success |
+| A contract step fails or keeps timing out | That step rolled back; finished steps stay | Open | The step reruns on the next boot |
 | Async runner killed | Rolled back | Dead run after 30s, then rerun | Up to ~40s |
 | Serving pod cannot reach the database | — | Lets requests through | The API is down anyway |
 
@@ -320,7 +332,7 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 | `test/modules/migrations/unit/migration-locks.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out (checked against files on disk) |
 | `test/modules/migrations/unit/migration-mode.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist |
 | `test/modules/app/unit/migration-gate.middleware.spec.ts` | Blocking mode passes everything, gated vs ungated paths, 503 per state, what passes in async mode, opt-out log |
-| `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, active lock only during work and released on SIGKILL, a `NODE_ENV=production` race. Split phases: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long backfill phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, single-transaction run for an old database, `statement_timeout=0` on runner connections |
+| `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, active lock only during work and released on SIGKILL, a `NODE_ENV=production` race. Split phases: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long backfill phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, single-transaction run for an old database, `statement_timeout=0` on runner connections. Contract: inside a single-transaction run, left out of the backfill phase, stops while a run holds the migration lock, never makes a backfill run skip |
 | `test/modules/migrations/e2e/with-short-lock.spec.ts` | Short-lock steps against a held reader lock: give up within the timeout, succeed once released, inline inside an open transaction; `setNotNull` sets the column and leaves no check, even when it fails |
 | `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds, non-empty `down()` |
 | `test/modules/migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output (both progress formats), redaction, failed step |
@@ -332,6 +344,7 @@ The e2e specs run the real `run()` against a scratch database. Fixtures are in `
 
 - `concurrent-pods/`: the lock sentinels and a slow expand migration (`1790700000001`, after the cutoff).
 - `split-phases/`: a schema `ADD VALUE` and a backfill migration that uses it.
+- `contract-phase/`: an expand migration that adds a column, and a contract migration that drops it.
 - `legacy/`: one pre-cutoff migration.
 
 `pod.ts` loads the sentinels and the migrations of `FIXTURE_SET`, and exits 75 when `run()` returns false. The specs start pods with `process.execPath`, **not** `npx`, because `npx` does not forward SIGKILL and leaves the pod orphaned.

@@ -43,7 +43,7 @@ export function endUserMessage(state: string, env: Env = process.env): string | 
  * Expand and contract (standard pattern; also "parallel change"):
  * - expand:   adds only; old and new code both run on it. Before boot. Folder `migrations/expand`.
  * - backfill: fills what expand added; reads keep working. After boot, writes paused. Folder `migrations/backfill`.
- * - contract: removes or tightens what no released code uses any more. After writes reopen.
+ * - contract: removes or tightens what no released code uses any more. After writes reopen. Folder `migrations/contract`.
  */
 export type MigrationPhase = 'expand' | 'backfill' | 'contract';
 
@@ -56,8 +56,8 @@ export type RunStrategy = 'single-transaction' | 'multi-transaction';
 /** Unset: all phases, single-transaction. */
 export function parseMigrationPhase(raw: string | undefined): MigrationPhase | undefined {
   if (!raw) return undefined;
-  if (raw === 'expand' || raw === 'backfill') return raw;
-  throw new Error(`Unknown MIGRATION_PHASE '${raw}': use 'expand' or 'backfill', or leave it unset.`);
+  if (raw === 'expand' || raw === 'backfill' || raw === 'contract') return raw;
+  throw new Error(`Unknown MIGRATION_PHASE '${raw}': use 'expand', 'backfill' or 'contract', or leave it unset.`);
 }
 
 export function runStrategy(phase: MigrationPhase | undefined): RunStrategy {

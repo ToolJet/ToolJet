@@ -1,7 +1,7 @@
 /**
  * One simulated pod.
  *
- * Runs the REAL `run()` from `src/migration-helpers/run-all-migrations.ts` — only the two
+ * Runs the REAL `run()` from `src/migration-helpers/run-all-migrations.ts` — only the
  * DataSources are swapped for ones pointing at a scratch database and the fixture migration
  * set, so the test exercises the production gate and waiting-room code paths verbatim.
  *
@@ -42,6 +42,7 @@ function dataSourceFor(migrationsDirectory: string): DataSource {
 async function main() {
   const schemaDS = dataSourceFor('migrations');
   const dataDS = dataSourceFor('data-migrations');
+  const contractDS = dataSourceFor('contract');
 
   // Every pod is released at the same wall-clock instant, so ts-node start-up jitter cannot
   // decide who wins the lock and the contention is real rather than incidental.
@@ -53,13 +54,14 @@ async function main() {
   let error: string | null = null;
   let skipped = false;
   try {
-    skipped = !(await run(schemaDS, dataDS));
+    skipped = !(await run(schemaDS, dataDS, contractDS));
   } catch (caught) {
     error = caught instanceof Error ? caught.message : String(caught);
   }
 
   await schemaDS.destroy().catch(() => undefined);
   await dataDS.destroy().catch(() => undefined);
+  await contractDS.destroy().catch(() => undefined);
 
   console.log(`__POD_RESULT__${JSON.stringify({ podId, error, durationMs: Date.now() - startedAt })}`);
   process.exit(error ? 1 : skipped ? SKIPPED_EXIT_CODE : 0);
