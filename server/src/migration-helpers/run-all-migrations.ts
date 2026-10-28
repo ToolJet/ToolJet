@@ -423,19 +423,22 @@ async function executeMigrations(
   const plan = phase === 'data' ? undefined : await planEnumAdditions(schemaDS);
   // Variants replace up() and beforeCommit(), so they go in before the wrappers below.
   const legacy = phase === 'data' && legacyUpgradePending(await pendingNames(dataDS));
-  if (legacy) {
-    await loosenLegacyRules(dataDS);
-    useLegacyVariants(dataDS);
-  }
+  if (legacy) useLegacyVariants(dataDS);
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
   const data: [DataSource, BeforeCommitSteps] = [dataDS, collectBeforeCommitSteps(dataDS)];
   if (!plan) {
     try {
+      // Inside the try: a loosen that stops part way restores the rules it already dropped.
+      if (legacy) await loosenLegacyRules(dataDS);
       return await runInSeparateTransactions(schemaDS, data, DATA_PHASE_REASON);
     } catch (error) {
       // Still holding the migration lock, so no other runner sees the loosened rules.
-      if (legacy) await restoreLegacyRules(dataDS);
+      if (legacy) {
+        await restoreLegacyRules(dataDS).catch((restoreError) =>
+          console.error(`[migrations] Legacy upgrade: restore failed: ${(restoreError as Error).message}`)
+        );
+      }
       throw error;
     }
   }

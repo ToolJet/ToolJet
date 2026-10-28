@@ -3,6 +3,7 @@ import { EntityManager } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { findUserGroupsWithAppAccess } from '@modules/group-permissions/repository';
+import { HELD_MIGRATION_LOCKS_SQL } from '../../migration-helpers/migration-locks';
 
 // License terms the released-app and released-version responses depend on: permission filtering,
 // page groups and modules, JS libraries (stripped without the license), and the environment and
@@ -31,14 +32,16 @@ export interface AppDataRevisionScope {
 // released app shows without a new release: its permissions, the theme, an embedded module, a link.
 // `epoch`: the last migration id handed out. In async mode a data migration can rewrite components after the new
 // server version is already serving, so the version alone would keep the pre-migration copy. Read from the
-// sequence, not the table: an upgrade holds LOCK TABLE migrations until it commits.
+// sequence, not the table: an upgrade holds LOCK TABLE migrations until it commits. The sequence moves before the
+// run commits, so a held active lock marks the epoch too: nothing read mid-run is cached under the final key.
 async function getChangeStamps(
   manager: EntityManager,
   appId: string
 ): Promise<{ stamp: string | null; epoch: string | null }> {
   const [row]: { stamp: string | null; epoch: string | null }[] = await manager.query(
     `SELECT (SELECT updated_at::text FROM app_viewer_cache_stamps WHERE app_id = $1) AS stamp,
-            (SELECT last_value::text FROM migrations_id_seq) AS epoch`,
+            (SELECT last_value::text FROM migrations_id_seq)
+              || CASE WHEN (SELECT migrating FROM (${HELD_MIGRATION_LOCKS_SQL}) migration_locks) THEN ':migrating' ELSE '' END AS epoch`,
     [appId]
   );
   return { stamp: row?.stamp ?? null, epoch: row?.epoch ?? null };
