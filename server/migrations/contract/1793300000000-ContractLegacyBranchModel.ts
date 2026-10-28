@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { setNotNull, withShortLock } from '../../src/migration-helpers/with-short-lock'; // migration-import-allowed: contract steps must go through the short-lock helper
-import { branchlessRowFixes } from '../../src/migration-helpers/legacy-upgrade'; // migration-import-allowed: reruns the legacy backfills' own branch fixes
+import { branchlessRowFixes } from '../../src/migration-helpers/legacy-3-21-58-upgrade'; // migration-import-allowed: reruns the legacy backfills' own branch fixes
 import { MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000 } from '../backfill/1781740900000-MakeDataSourceVersionBranchIdNotNullAndDropIsDefault'; // migration-import-allowed: source of the branch fixes
 import { MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 } from '../backfill/1781741000000-MakeAppVersionBranchIdNotNullAndGitSyncFlags'; // migration-import-allowed: source of the branch fixes
 import { BackfillWorkflowBranchIdAndEnforceNotNull1782400000000 } from '../backfill/1782400000000-BackfillWorkflowBranchIdAndEnforceNotNull'; // migration-import-allowed: source of the branch fixes
@@ -33,7 +33,7 @@ END $$`;
 
 /**
  * Removes what the 3.21.58 branch model left behind after an async upgrade ran the lock-free backfill variants
- * (legacy-upgrade.ts). After a single-transaction upgrade the original migrations already did all of this, so every
+ * (legacy-3-21-58-upgrade.ts). After a single-transaction upgrade the original migrations already did all of this, so every
  * step is a no-op there.
  */
 export class ContractLegacyBranchModel1793300000000 implements MigrationInterface {
