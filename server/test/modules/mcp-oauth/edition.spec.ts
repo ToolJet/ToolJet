@@ -33,11 +33,11 @@ test.each(['cloud', 'Cloud', 'CLOUD'])('%s requires the explicit flag and valid 
 });
 
 test.each([
-  ['ce', 'true'],
-  ['ee', 'true'],
-  ['cloud', 'false'],
-])('edition %s enabled=%s exposes no OAuth routes or background work', async (edition, enabled) => {
-  const values = { ...settings, TOOLJET_EDITION: edition, MCP_OAUTH_ENABLED: enabled };
+  { deploymentEdition: 'ce', enabled: 'true' },
+  { deploymentEdition: 'ee', enabled: 'true' },
+  { deploymentEdition: 'cloud', enabled: 'false' },
+])('OAuth stays disabled for $deploymentEdition enabled=$enabled', async ({ deploymentEdition, enabled }) => {
+  const values = { ...settings, TOOLJET_EDITION: deploymentEdition, MCP_OAUTH_ENABLED: enabled };
   const db = { query: jest.fn(), transaction: jest.fn(), manager: { query: jest.fn() } };
   const login = { fetchOrganizationDetails: jest.fn() };
   const oauth = new McpOAuthService(db as any, config(values), new JwtService(), login as any);
