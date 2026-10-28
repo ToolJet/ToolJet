@@ -3,7 +3,8 @@ import base from '../jest.config';
 import * as path from 'path';
 import * as aiCoverageScope from '../../scripts/ai-coverage-scope.cjs';
 
-const isCE = process.env.TOOLJET_EDITION === 'ce';
+import { editionFor } from '../../scripts/ai-test-scope.cjs';
+const isCE = editionFor('server') === 'ce';
 export default {
   ...base,
   rootDir: path.resolve(__dirname, '..'),
@@ -12,7 +13,7 @@ export default {
   // application's global table truncation for this focused suite.
   globalSetup: '<rootDir>/test/ai-global-setup.ts',
   setupFilesAfterEnv: [],
-  testPathIgnorePatterns: ['/node_modules/', ...(isCE ? ['/ee/'] : [])],
+  testPathIgnorePatterns: ['/node_modules/', ...(isCE ? ['<rootDir>/ee/'] : [])],
   collectCoverageFrom: aiCoverageScope.backend(isCE ? 'ce' : 'ee'),
   coverageDirectory: `<rootDir>/coverage-ai/${isCE ? 'ce' : 'ee'}`,
   coverageReporters: ['json', 'json-summary', 'lcovonly', 'html'],

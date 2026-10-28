@@ -1,8 +1,8 @@
 {
   "server": {
     "lines": {
-      "ce": 39,
-      "ee": 16
+      "ce": 39.8,
+      "ee": 17
     },
     "files": {
       "src/modules/ai/services/ai-attachment-cleanup.listener.ts": 95,
@@ -12,8 +12,8 @@
   },
   "frontend": {
     "lines": {
-      "ce": 60,
-      "ee": 36
+      "ce": 52.2,
+      "ee": 38
     },
     "files": {
       "src/_services/ai.service.js": 65,

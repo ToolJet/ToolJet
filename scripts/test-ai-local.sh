@@ -12,13 +12,13 @@ docker run --rm -d --name "$container" \
   -p 127.0.0.1::5432 postgres:16-alpine >/dev/null
 ready=false
 for attempt in {1..60}; do
-  if docker exec "$container" pg_isready -U ai_test -d tooljet_ai_test_local >/dev/null 2>&1; then ready=true; break; fi
+  if docker exec "$container" pg_isready -h 127.0.0.1 -p 5432 -U ai_test -d tooljet_ai_test_local >/dev/null 2>&1; then ready=true; break; fi
   sleep 1
 done
 if [[ "$ready" != true ]]; then echo 'Disposable PostgreSQL did not start' >&2; exit 1; fi
 port=$(docker port "$container" 5432/tcp | sed 's/.*://')
 export ATTACHMENT_TEST_DATABASE_URL="postgresql://ai_test:ai_test@127.0.0.1:${port}/tooljet_ai_test_local"
-export TOOLJET_EDITION="${TOOLJET_EDITION:-ee}"
+export TOOLJET_EDITION="${TOOLJET_EDITION:-$(node -e "process.stdout.write(require('./scripts/ai-test-scope.cjs').editionFor('server'))")}"
 node scripts/check-ai-tests.cjs
 for package in server frontend; do
   mkdir -p "$package/coverage-ai/$TOOLJET_EDITION"

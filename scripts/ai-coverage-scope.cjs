@@ -9,8 +9,15 @@ const backend = (edition) => [
   '!**/*.(spec|test).ts',
 ];
 const frontend = (edition) => [
-  'src/_services/ai*.js',
-  'src/AppBuilder/_stores/slices/{aiSlice,fixWithAi}.js',
+  'src/_services/ai.service.js',
+  'src/_services/ai-onboarding.service.js',
+  'src/_services/copilot.service.js',
+  'src/_ui/AiBanner.jsx',
+  'src/AppBuilder/_helpers/queryDataShape.js',
+  'src/AppBuilder/_helpers/componentTargetShape.js',
+  'src/AppBuilder/QueryManager/_hooks/useWriteQueryEntry.js',
+  'src/AppBuilder/_stores/slices/aiSlice.js',
+  'src/AppBuilder/_stores/slices/fixWithAi.js',
   'src/AppBuilder/CodeEditor/FixWithAi.jsx',
   ...(edition === 'ce'
     ? []

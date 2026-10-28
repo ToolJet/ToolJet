@@ -10,26 +10,13 @@ if (!['server', 'frontend'].includes(pkg) || !input || !output) {
 const root = path.resolve(__dirname, '..');
 const cwd = path.join(root, pkg);
 const localRequire = createRequire(path.join(cwd, 'package.json'));
-const micromatch = localRequire('micromatch');
 const { createCoverageMap } = localRequire('istanbul-lib-coverage');
 const { createContext } = localRequire('istanbul-lib-report');
 const reports = localRequire('istanbul-reports');
-const edition = process.env.TOOLJET_EDITION || 'ee';
-const patterns = require('./ai-coverage-scope.cjs')[pkg === 'server' ? 'backend' : 'frontend'](edition);
-function walk(dir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    if (['node_modules', '.git', 'dist', 'build'].includes(entry.name) || entry.isSymbolicLink()) return [];
-    const file = path.join(dir, entry.name);
-    return entry.isDirectory() ? walk(file) : [path.relative(cwd, file).split(path.sep).join('/')];
-  });
-}
-const expected = micromatch(
-  ['src', ...(edition === 'ce' ? [] : ['ee'])].flatMap((dir) => walk(path.join(cwd, dir))),
-  patterns
-);
+const { editionFor, sourceFiles } = require('./ai-test-scope.cjs');
+const edition = editionFor(pkg);
+const expected = sourceFiles(pkg, edition);
 if (!expected.length) throw new Error('AI source scope is empty');
-if (edition !== 'ce' && !expected.some((file) => file.startsWith('ee/'))) throw new Error('Missing EE sources');
 const raw = JSON.parse(fs.readFileSync(input, 'utf8'));
 const map = createCoverageMap({});
 const seen = new Set();

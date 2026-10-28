@@ -4,18 +4,10 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const root = path.resolve(__dirname, '..');
-const edition = process.env.TOOLJET_EDITION || 'ee';
+const edition = require('./ai-test-scope.cjs').editionFor(process.argv[2] || 'server');
 if (!['ce', 'ee', 'cloud'].includes(edition)) throw new Error('Unknown TOOLJET_EDITION');
 const useEE = edition !== 'ce';
 const errors = [];
-function walk(dir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    if (['node_modules', 'dist', 'build', '.git', 'coverage'].includes(entry.name) || entry.isSymbolicLink()) return [];
-    const file = path.join(dir, entry.name);
-    return entry.isDirectory() ? walk(file) : [file];
-  });
-}
 function listTests(pkg, config) {
   const cwd = path.join(root, pkg);
   const jest = require.resolve('jest/bin/jest', { paths: [cwd] });
@@ -28,25 +20,25 @@ function listTests(pkg, config) {
   if (result.status !== 0) throw new Error(`${pkg}/${config} discovery failed: ${result.stderr}`);
   return new Set(JSON.parse(result.stdout).map((f) => path.relative(root, f).split(path.sep).join('/')));
 }
-for (const pkg of ['server', 'frontend']) {
+const selected = process.argv[2];
+if (selected && !['server', 'frontend'].includes(selected)) throw new Error('Expected server or frontend');
+for (const pkg of selected ? [selected] : ['server', 'frontend']) {
   if (useEE && !fs.existsSync(path.join(root, pkg, 'ee', pkg === 'server' ? 'ai' : 'modules/AiBuilder'))) {
     errors.push(`${pkg}: EE checkout is required; initialize the pinned submodule or explicitly select ce`);
     continue;
   }
-  const files = ['src', 'test', 'ee'].flatMap((dir) => walk(path.join(root, pkg, dir)));
-  const scoped = files
-    .filter((file) => /\.(spec|test)\.[jt]sx?$/.test(file))
-    .filter((file) => {
-      const rel = path.relative(root, file).split(path.sep).join('/');
-      return (
-        /\/(ai|AiBuilder|ManageLLMKeyPage|ApiKeyContainer)\//.test(rel) ||
-        /\/ai[^/]*\.(spec|test)\./i.test(rel) ||
-        (pkg === 'server' &&
-          /(?:from\s*|require\s*\()\s*['"][^'"]*(?:\/ai\/|\/AiBuilder\/|\/ai\.service)/.test(
-            fs.readFileSync(file, 'utf8')
-          ))
-      );
-    });
+  if (useEE && process.env.GITHUB_ACTIONS === 'true') {
+    const readGit = (args) => {
+      const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+      if (result.status !== 0) throw new Error(result.stderr);
+      return result.stdout.trim();
+    };
+    const pinned = readGit(['rev-parse', `HEAD:${pkg}/ee`]);
+    const actual = readGit(['-C', `${pkg}/ee`, 'rev-parse', 'HEAD']);
+    if (pinned !== actual) throw new Error(`${pkg}: checked out EE commit differs from the parent pointer`);
+    console.log(`${pkg}: verified pinned EE commit ${actual}`);
+  }
+  const scoped = require('./ai-test-scope.cjs').findAiTests(pkg);
   const expected = new Set();
   for (const file of scoped) {
     const rel = path.relative(root, file).split(path.sep).join('/');
@@ -55,6 +47,29 @@ for (const pkg of ['server', 'frontend']) {
         ? /^server\/(ee\/)?test\/modules\/ai\/unit\/[^/]+\.spec\.ts$/.test(rel)
         : /\/__tests__\/.*\.spec\.[jt]sx?$/.test(rel);
     if (!valid) errors.push(`Misplaced AI test: ${rel}`);
+    const source = fs.readFileSync(file, 'utf8');
+    if (/\b(?:it|test|describe)\s*\.\s*(?:only|skip|todo|failing)\s*(?:\(|\.)/.test(source)) {
+      errors.push(`Disabled, focused or expected-failing AI test: ${rel}`);
+    }
+    if (
+      !rel.startsWith(`${pkg}/ee/`) &&
+      require('./ai-test-scope.cjs')
+        .imports(source)
+        .some((specifier) => /^(?:@ee\/|@licensing\/|@instance-settings\/|@apps\/)|(?:^|\/)ee\//.test(specifier))
+    ) {
+      errors.push(`Public AI test imports private code: ${rel}`);
+    }
+    if (pkg === 'server') {
+      const groupRunner = require(require.resolve('jest-runner-groups', { paths: [path.join(root, 'server')] }));
+      if (!groupRunner.filterTest({ include: ['working', 'workflows', 'security'], exclude: [] }, { path: file })) {
+        errors.push(`Normal CI group filtering excludes AI test: ${rel}`);
+      }
+      const groups = [...source.matchAll(/@group\s+(\w+)/g)].map((match) => match[1]);
+      if (!groups.some((group) => ['working', 'workflows', 'security'].includes(group))) {
+        errors.push(`AI test is missing a normal CI group: ${rel}`);
+      }
+    }
+
     if (pkg === 'server' && /(?:from\s*|require\s*\()\s*['"]node:test['"]/.test(fs.readFileSync(file, 'utf8'))) {
       errors.push(`Node runner in Jest suite: ${rel}`);
     }

@@ -242,7 +242,11 @@
     "webpack": "^5.75.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^5.2.2"
+    "webpack-dev-server": "^5.2.2",
+    "micromatch": "^4.0.8",
+    "istanbul-lib-coverage": "^3.2.2",
+    "istanbul-lib-report": "^3.0.1",
+    "istanbul-reports": "^3.2.0"
   },
   "overrides": {
     "react-dates": {
