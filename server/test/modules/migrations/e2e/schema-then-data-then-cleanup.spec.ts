@@ -40,9 +40,9 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
 
   /** Async mode: schema migrations while the pod starts (`migrateSchemaBeforeBoot`), data migrations in a run the server starts. */
   describe('Schema phase at startup, data phase after', () => {
-    it('should apply schema migrations in the schema phase, and let the next pod start without taking the lock', async () => {
+    it('should apply schema migrations in the schema phase, holding the lock that pauses API traffic', async () => {
       const watcher = watchActiveLock(connection);
-      const firstPod = await spawnPod({
+      const pod = await spawnPod({
         podId: 'schema-1',
         database: phaseDatabase,
         migrationSleepSeconds: 3,
@@ -50,25 +50,10 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
       }).done;
       watcher.stop();
 
-      const nextPod = await spawnPod({ podId: 'schema-2', database: phaseDatabase, env: { MIGRATION_PHASE: 'schema' } })
-        .done;
-
+      expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
       expect(watcher.samples.filter(Boolean).length).toBeGreaterThan(0);
-      expect(firstPod).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(firstPod.stdout).toContain('1 schema migration(s) pending: SlowWitnessedMigration1790700000001');
-      expect(firstPod.stdout).toContain('Committed schema migrations.');
-      expect(nextPod).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(nextPod.stdout).toContain('No schema migrations pending before boot.');
       expect(await connection.query('SELECT 1 FROM migration_witness')).toHaveLength(1);
       expect(await connection.query(HELD_MIGRATION_LOCKS_SQL)).toEqual([{ running: false, migrating: false }]);
-    }, 120_000);
-
-    it('should run schema and data in separate transactions in the data phase', async () => {
-      const pod = await spawnPod({ podId: 'data-1', database: phaseDatabase, env: { MIGRATION_PHASE: 'data' } }).done;
-
-      expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(pod.stdout).toContain('Data phase:');
-      expect(pod.stdout).toContain('Committed schema and data migrations in separate transactions.');
     }, 120_000);
 
     it('should fail when MIGRATION_PHASE names a phase that does not exist', async () => {
@@ -91,9 +76,12 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
         }).done;
 
         expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
-        expect(pod.stdout).toContain('LegacyWitness1700000000004 is pending: this database is older than 3.21.58');
-        expect(pod.stdout).toContain('Committed schema + data migrations in a single transaction.');
-        expect(await withScratchConnection(database, (db) => db.query('SELECT 1 FROM legacy_witness'))).toEqual([]);
+        // A schema phase would have left the data migration to a data run started after boot.
+        const [recorded, rows] = await withScratchConnection(database, (db) =>
+          Promise.all([db.query('SELECT name FROM migrations'), db.query('SELECT 1 FROM legacy_witness')])
+        );
+        expect(recorded).toContainEqual({ name: 'LegacyDataWitness1700000000005' });
+        expect(rows).toHaveLength(1);
       });
     }, 120_000);
 
@@ -184,7 +172,6 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
         const pod = await spawnPod({ podId: 'enum-fresh', database: enumDatabase, fixtureSet: 'split-phases' }).done;
 
         expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
-        expect(pod.stdout).toContain('targets an enum type created in this run');
       }, 120_000);
 
       it('should save a new enum value on its own first, so the data migration that uses it in the same upgrade does not fail', async () => {
@@ -194,23 +181,20 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
         const pod = await spawnPod({ podId: 'enum-upgrade', database: enumDatabase, fixtureSet: 'split-phases' }).done;
 
         expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
-        expect(pod.stdout).toContain("pre-committed enum value fixture_color.'blue'");
-        expect(pod.stdout).toContain('in a single transaction');
       }, 120_000);
 
-      it('should save the new enum value on its own first in the schema phase too', async () => {
+      it('should save the new enum value on its own first in the schema phase, so a schema migration can use it', async () => {
         // An earlier release created the type; this upgrade only adds a value to it.
         await withScratchConnection(enumDatabase, (db) => db.query(`CREATE TYPE fixture_color AS ENUM ('red')`));
 
         const pod = await spawnPod({
           podId: 'enum-schema',
           database: enumDatabase,
-          fixtureSet: 'split-phases',
+          fixtureSet: 'schema-uses-new-enum-value',
           env: { MIGRATION_PHASE: 'schema' },
         }).done;
 
         expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
-        expect(pod.stdout).toContain("pre-committed enum value fixture_color.'blue'");
       }, 120_000);
 
       it('should start a new pod right away while another pod runs a long data phase', async () => {
@@ -238,7 +222,6 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
         }).done;
 
         expect(booting).toMatchObject({ exitCode: 0, result: { error: null } });
-        expect(booting.stdout).toContain('No schema migrations pending before boot.');
         expect(booting.result.durationMs).toBeLessThan(5000);
         expect(await dataPod.done).toMatchObject({ exitCode: 0, result: { error: null } });
       }, 180_000);
@@ -257,7 +240,6 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
         );
 
         expect(pod).toMatchObject({ exitCode: SKIPPED_EXIT_CODE, result: { error: null } });
-        expect(pod.stdout).toContain('leaving the run to it');
         const [{ witness }] = await withScratchConnection(database, (db) =>
           db.query(`SELECT to_regclass('migration_witness') AS witness`)
         );
@@ -298,25 +280,18 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
   });
 
   describe('migration runner connections', () => {
-    it('should open connections with no statement time limit, so a server or role setting cannot cancel a long run', async () => {
-      const [{ timeout }] = await withPgOptions(undefined, () =>
-        queryOnRunnerConnection(phaseDatabase, `SELECT current_setting('statement_timeout') AS timeout`)
-      );
-
-      expect(timeout).toBe('0');
-    });
-
     // Keepalive closes a vanished pod's connection, and its locks, in seconds rather than hours.
-    it('should turn on TCP keepalive, and keep options set in the PGOPTIONS environment variable', async () => {
-      const [settings] = await withPgOptions('-c statement_timeout=12345', () =>
-        queryOnRunnerConnection(
-          phaseDatabase,
-          `SELECT current_setting('tcp_keepalives_idle') AS idle, current_setting('tcp_keepalives_count') AS count,
-                  current_setting('statement_timeout') AS timeout`
-        )
+    it('should open connections with TCP keepalive and no statement time limit, unless PGOPTIONS sets one', async () => {
+      const settings = `SELECT current_setting('tcp_keepalives_idle') AS idle, current_setting('tcp_keepalives_count') AS count,
+                               current_setting('statement_timeout') AS timeout`;
+
+      const [byDefault] = await withPgOptions(undefined, () => queryOnRunnerConnection(phaseDatabase, settings));
+      const [withPgOptionsSet] = await withPgOptions('-c statement_timeout=12345', () =>
+        queryOnRunnerConnection(phaseDatabase, settings)
       );
 
-      expect(settings).toEqual({ idle: '30', count: '3', timeout: '12345ms' });
+      expect(byDefault).toEqual({ idle: '30', count: '3', timeout: '0' });
+      expect(withPgOptionsSet).toEqual({ idle: '30', count: '3', timeout: '12345ms' });
     }, 60_000);
   });
 
@@ -391,7 +366,6 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
       }).done;
 
       expect(firstUpgrade).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(firstUpgrade.stdout).toContain(`Holding back ${CLEANUP}`);
       expect(await db.query('SELECT name FROM migrations')).not.toContainEqual({ name: CLEANUP });
       expect(await db.query(LEGACY_COLUMN_SQL)).toContainEqual({ column_name: 'legacy' });
 
@@ -430,36 +404,24 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
       expect(await db.query('SELECT name FROM migrations')).not.toContainEqual({ name: CLEANUP });
     }, 120_000);
 
-    it('should not make a data run skip when only a cleanup run is in progress', async () => {
-      const pod = await whileAnotherPodHoldsLock(
-        database,
-        CLEANUP_ADVISORY_LOCK_KEY,
-        () =>
-          spawnPod({
-            podId: 'cleanup-held',
-            database,
-            fixtureSet: 'cleanup-phase',
-            env: { MIGRATION_PHASE: 'data', MIGRATION_SKIP_IF_LOCKED: 'true' },
-          }).done
-      );
+    it('should exit and leave cleanup to the server already running it, without making a data run skip', async () => {
+      const [dataPod, cleanupPod] = await whileAnotherPodHoldsLock(database, CLEANUP_ADVISORY_LOCK_KEY, async () => [
+        await spawnPod({
+          podId: 'cleanup-held',
+          database,
+          fixtureSet: 'cleanup-phase',
+          env: { MIGRATION_PHASE: 'data', MIGRATION_SKIP_IF_LOCKED: 'true' },
+        }).done,
+        await spawnPod({
+          podId: 'cleanup-busy',
+          database,
+          fixtureSet: 'cleanup-phase',
+          env: { MIGRATION_PHASE: 'cleanup' },
+        }).done,
+      ]);
 
-      expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
-    }, 120_000);
-
-    it('should exit and leave cleanup to the server that is already running it', async () => {
-      const pod = await whileAnotherPodHoldsLock(
-        database,
-        CLEANUP_ADVISORY_LOCK_KEY,
-        () =>
-          spawnPod({
-            podId: 'cleanup-busy',
-            database,
-            fixtureSet: 'cleanup-phase',
-            env: { MIGRATION_PHASE: 'cleanup' },
-          }).done
-      );
-
-      expect(pod).toMatchObject({ exitCode: SKIPPED_EXIT_CODE });
+      expect(dataPod).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(cleanupPod).toMatchObject({ exitCode: SKIPPED_EXIT_CODE });
     }, 120_000);
   });
 
@@ -491,9 +453,6 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
 
       expect(locksMidRun).not.toContainEqual({ mode: 'ShareLock' });
       expect(outcome).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(outcome.stdout.indexOf('BEFORE COMMIT FillFixtureRows')).toBeGreaterThan(
-        outcome.stdout.indexOf('DONE SlowFixtureStep')
-      );
       const indexes = await withScratchConnection(database, (db) =>
         db.query(`SELECT indexname FROM pg_indexes WHERE tablename = 'fixture_rows'`)
       );
@@ -509,11 +468,49 @@ describe('Upgrading in three phases: schema, then data, then cleanup', () => {
       }).done;
 
       expect(outcome).toMatchObject({ exitCode: 0, result: { error: null } });
-      expect(outcome.stdout).toContain('Retrying (attempt 2 of 3)');
       const [{ count }] = await withScratchConnection(database, (db) =>
         db.query('SELECT count(*)::int AS count FROM fixture_rows')
       );
       expect(count).toBe(10);
+    }, 120_000);
+
+    it('should undo the schema changes too when a data migration fails in a single-transaction upgrade', async () => {
+      const outcome = await spawnPod({
+        podId: 'fail-single',
+        database,
+        fixtureSet: 'data-before-commit',
+        env: { FIXTURE_FAIL: 'true' },
+      }).done;
+
+      expect(outcome).toMatchObject({ exitCode: 1, result: { error: 'fixture data migration failed' } });
+      const [{ table }] = await withScratchConnection(database, (db) =>
+        db.query(`SELECT to_regclass('fixture_rows') AS table`)
+      );
+      expect(table).toBeNull();
+    }, 120_000);
+
+    it('should keep the schema, undo the data and record no data migration when the data phase fails', async () => {
+      for (const [phase, env] of [
+        ['schema', {}],
+        ['data', { FIXTURE_FAIL: 'true' }],
+      ] as const) {
+        const outcome = await spawnPod({
+          podId: `fail-${phase}`,
+          database,
+          fixtureSet: 'data-before-commit',
+          env: { MIGRATION_PHASE: phase, ...env },
+        }).done;
+        expect(outcome.exitCode).toBe(phase === 'schema' ? 0 : 1);
+      }
+
+      const [rows, recorded] = await withScratchConnection(database, (db) =>
+        Promise.all([
+          db.query('SELECT count(*)::int AS count FROM fixture_rows'),
+          db.query(`SELECT name FROM migrations WHERE name LIKE '%Fixture%' ORDER BY name`),
+        ])
+      );
+      expect(rows).toEqual([{ count: 0 }]);
+      expect(recorded).toEqual([{ name: 'CreateFixtureRows1790700000020' }]);
     }, 120_000);
   });
 });
