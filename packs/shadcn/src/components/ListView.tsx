@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
-import { SHADOWS, isSet, itemKey, pageOf, positive, px, styleVars, toText, type Row } from '../lib/ui2/display/lists/model';
+import { SHADOWS, isSet, itemKeys, pageOf, positive, px, styleVars, toText, type Row } from '../lib/ui2/display/lists/model';
 import { Chip, Pager, RecordAvatar, onKeyActivate } from '../lib/ui2/display/lists/parts';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { useRecordSelection, type SelectableRecord } from '../lib/ui2/display/lists/useRecordSelection';
@@ -114,8 +114,6 @@ export const ListView = () => {
   const items = paged.items as unknown[];
   const pageSize = enablePagination && !serverSidePagination ? positive(rowsPerPage, 10) : Infinity;
   const pageStart = Number.isFinite(pageSize) ? (paged.page - 1) * pageSize : 0;
-  // Keyed by the item's position in the whole data, as the selection's records are.
-  const keys = useMemo(() => items.map((item, i) => itemKey(item, idKey, pageStart + i)), [items, idKey, pageStart]);
   const asRows = itemContent === 'components';
   ToolJet.useRows(asRows ? items : [], Math.min(1200, Math.max(24, Number(rowHeight) || 72)));
 
@@ -123,14 +121,32 @@ export const ListView = () => {
   // refresh republishes the current row, a removal clears it (Codex review CODE-02, 2026-10-25). Client-side, every
   // row of the data is a candidate, so paging away keeps the selection; server-side the data is the current page, so a
   // record the new page does not hold is cleared. selectedRecordId is the record's index on its page, as UI 2.0's.
-  const records = useMemo<SelectableRecord[]>(() => {
+  // Every record has a key of its own (itemKeys, the guard RecordList and CardGrid use): two rows with one id were
+  // both drawn selected, and a refresh followed the first of them (Codex review RELATED-01, 2026-10-27). A repeated id
+  // is told apart by its occurrence, which a reorder does not keep: the selection then follows its record by content or
+  // clears (useRecordSelection's followSelection), and the repeat is reported once as a data problem.
+  const { records, repeated } = useMemo(() => {
     const all = (Array.isArray(data) ? data : []).filter((r) => r !== undefined && r !== null);
-    return all.map((item, i) => ({
-      key: itemKey(item, idKey, i),
+    const keyed = itemKeys(all, idKey);
+    const list: SelectableRecord[] = all.map((item, i) => ({
+      key: keyed.keys[i],
       row: (item && typeof item === 'object' ? item : {}) as Row,
       index: Number.isFinite(pageSize) ? i % pageSize : i,
     }));
+    return { records: list, repeated: keyed.repeated };
   }, [data, idKey, pageSize]);
+  // The page's keys, by the item's position in the whole data, as the selection's records are.
+  const keys = useMemo(() => records.slice(pageStart, pageStart + items.length).map((r) => r.key), [records, pageStart, items.length]);
+  const warned = useRef(false);
+  useEffect(() => {
+    if (warned.current || !repeated.length) return;
+    warned.current = true;
+    console.warn(
+      `[ListView] Item ids should be unique: ${repeated.slice(0, 5).map((id) => JSON.stringify(id)).join(', ')} ` +
+        `${repeated.length === 1 ? 'is' : 'are'} held by more than one item in the "${idKey}" field. A selected item whose ` +
+        'id is repeated stays selected only while it is the same record; a change that leaves that unclear clears it.'
+    );
+  }, [repeated, idKey]);
   const selection = useRecordSelection(
     records,
     (row) => (isSet(row[idKey]) ? String(row[idKey]) : ''),

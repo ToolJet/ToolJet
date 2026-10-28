@@ -50,10 +50,13 @@ export const DropdownMenu = () => {
     label: 'Items',
     inspector: 'options',
     description:
-      '{ label, value, icon, description, shortcut, disabled, visible, destructive, separator, group }, plain strings, or { heading: "..." }.',
+      '{ label, value, icon, description, shortcut, disabled, visible, destructive, separator, group }, plain strings, or { heading: "..." }. ' +
+      'shortcut is display text only (e.g. "⌘E"): it is drawn beside the label and pressing those keys does nothing. ' +
+      'value keeps its type (text, number or true/false). To compute a value with {{ }}, switch Items to code (fx) and ' +
+      "write the whole list, e.g. {{[{ label: 'Edit', value: components.table1.selectedRow.id }]}}.",
     initialValue: [
-      { label: 'Edit', value: 'edit', icon: 'IconPencil', shortcut: '⌘E' },
-      { label: 'Duplicate', value: 'duplicate', icon: 'IconCopy', shortcut: '⌘D' },
+      { label: 'Edit', value: 'edit', icon: 'IconPencil' },
+      { label: 'Duplicate', value: 'duplicate', icon: 'IconCopy' },
       { label: 'Archive', value: 'archive', icon: 'IconArchive' },
       { label: 'Delete', value: 'delete', icon: 'IconTrash', destructive: true, separator: true },
     ],
@@ -77,6 +80,7 @@ export const DropdownMenu = () => {
   });
   const [optionsLoading] = ToolJet.useStateBoolean({ name: 'optionsLoadingState', label: 'Options loading state', initialValue: false });
   const [, setLastClickedOption] = ToolJet.useStateObject({ name: 'lastClickedOption', initialValue: {}, inspector: 'hidden' });
+  // The picked item's value with its type kept (1 stays 1, true stays true), as lastClickedOption.value holds it.
   const [, setSelectedItem] = ToolJet.useStateString({ name: 'selectedItem', initialValue: '', inspector: 'hidden' });
   const [, setIsOpen] = ToolJet.useStateBoolean({ name: 'isOpen', initialValue: false, inspector: 'hidden' });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
@@ -201,7 +205,7 @@ export const DropdownMenu = () => {
     if (disabled) return;
     const option = clickedOption(row as Parameters<typeof clickedOption>[0]);
     setLastClickedOption(option);
-    setSelectedItem(String(option.value));
+    setSelectedItem(option.value as string);
     onSelect();
   };
 

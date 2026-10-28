@@ -2,7 +2,21 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
-import { MAX_CHOICES, choiceKey, defaultKey, isDisabledOption, shownOptions, toChoiceOptions, toValueList, type ChoiceOption } from '../lib/ui2/choice/options';
+import {
+  MAX_CHOICES,
+  choiceKey,
+  defaultKey,
+  isDisabledOption,
+  keyForValue,
+  optionKey,
+  optionsByKey,
+  shownOptions,
+  toChoiceOptions,
+  toValueList,
+  uniqueKeys,
+  wantedValue,
+  type ChoiceOption,
+} from '../lib/ui2/choice/options';
 import { lookVars, useDropRemovedChoices, useResetOn } from '../lib/ui2/choice/looks';
 import { moveRovingFocus, rovingEntry } from '../lib/activeElement';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
@@ -61,18 +75,24 @@ export const ToggleGroup = () => {
   ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 4 });
   const { disabled, loading } = useBusy(disabledProp);
 
-  const options = toChoiceOptions(rawOptions);
-  const byKey = new Map(options.map((o) => [choiceKey(o.value), o] as [string, ChoiceOption]));
+  const options = toChoiceOptions(rawOptions, 'ToggleGroup');
+  const keyFor = (o: ChoiceOption) => optionKey(o, choiceKey);
+  const byKey = optionsByKey(options, choiceKey);
+  // The keys a value or a list of values names (the option of each value's own type first), once each.
+  const keysFor = (v: unknown) => [...new Set(toValueList(v).map((x) => keyForValue(options, x, choiceKey)))];
   const [key, setKey] = useState(() => {
-    const k = defaultKey(defaultValue);
-    return byKey.has(k) || legacyValue === '' || legacyValue === undefined ? k : defaultKey(legacyValue);
+    const k = defaultKey(defaultValue, options);
+    return byKey.has(k) || legacyValue === '' || legacyValue === undefined ? k : defaultKey(legacyValue, options);
   });
-  const [keys, setKeys] = useState<string[]>(() => toValueList(defaultValues).map(choiceKey));
-  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue)));
-  useResetOn(defaultValues, () => setKeys(toValueList(defaultValues).map(choiceKey)));
-  useDropRemovedChoices(options.map((o) => choiceKey(o.value)), key ? [key] : [], () => setKey(''), false);
+  const [keys, setKeys] = useState<string[]>(() => keysFor(defaultValues));
+  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
+  useResetOn(defaultValues, () => setKeys(keysFor(defaultValues)));
+  useDropRemovedChoices(options.map(keyFor), key ? [key] : [], () => setKey(''), false);
   const selected = byKey.get(key);
   const pickedValues = keys.map((k) => byKey.get(k)?.value).filter((v) => v !== undefined);
+  // Live, as keyRef below: an action reads the multiple selection as last set.
+  const keysRef = useRef(keys);
+  keysRef.current = keys;
   useEffect(() => setValue((selected?.value ?? '') as string), [key, JSON.stringify(selected)]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => setValues(pickedValues), [JSON.stringify(pickedValues)]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -86,16 +106,33 @@ export const ToggleGroup = () => {
     setValue((byKey.get(next)?.value ?? '') as string);
     if (fire && !same) onChange();
   };
+  // With Allow multiple, the actions set the whole selection: the enabled options a value or a list names, in that
+  // order (a value no option has is skipped). A list that names no option changes nothing; clear empties it.
+  const changeMany = (next: string[], fire: boolean) => {
+    const same = next.join('\u0000') === keysRef.current.join('\u0000');
+    keysRef.current = next;
+    setKeys(next);
+    if (fire && !same) onChange();
+  };
+  const pickMany = (v: unknown, fire: boolean) => {
+    const wanted = Array.isArray(v) ? v.map(wantedValue) : [wantedValue(v)];
+    const next = keysFor(wanted).filter((k) => byKey.has(k) && !isDisabledOption(byKey.get(k)));
+    if (next.length || (Array.isArray(v) && !v.length)) changeMany(next, fire);
+  };
+  // In single mode a list picks its first value.
+  const pickOne = (v: unknown, fire: boolean) => {
+    const raw = wantedValue(Array.isArray(v) ? v[0] : v);
+    const k = raw === undefined || raw === null || typeof raw === 'object' ? null : keyForValue(options, raw, choiceKey);
+    if (k !== null && byKey.has(k)) change(k, fire);
+  };
   // The native Button group's actions: setSelected picks an option (a value no option has changes nothing).
-  ToolJet.useAction({ name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'selected', displayName: 'Value' }] }, (v) => {
-    const k = v === undefined || v === null || typeof v === 'object' ? null : choiceKey(v);
-    if (k !== null && byKey.has(k)) change(k, false);
-  });
-  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change('', false));
-  ToolJet.useAction({ name: 'setValue', displayName: 'Select option (value)', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => {
-    const k = v === undefined || v === null || typeof v === 'object' ? null : choiceKey(v);
-    if (k !== null && byKey.has(k)) change(k);
-  });
+  ToolJet.useAction({ name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'selected', displayName: 'Value (or a list)' }] }, (v) =>
+    multiple ? pickMany(v, false) : pickOne(v, false)
+  );
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => (multiple ? changeMany([], false) : change('', false)));
+  ToolJet.useAction({ name: 'setValue', displayName: 'Select option (value)', params: [{ handle: 'value', displayName: 'Value (or a list)' }] }, (v) =>
+    multiple ? pickMany(v, true) : pickOne(v, true)
+  );
 
   const look = variant === 'outline' || variant === 'default' ? variant : 'segmented';
   const vars = lookVars({
@@ -107,8 +144,11 @@ export const ToggleGroup = () => {
     '--ui-border': borderColor,
   });
   const shown = shownOptions(options, selected, MAX_CHOICES);
-  const items = shown.map((o) => (
-    <ToggleGroupPrimitive.Item key={choiceKey(o.value)} value={choiceKey(o.value)} disabled={isDisabledOption(o)} className="ui-toggle ui-focus">
+  // Options with the same value are one choice drawn twice: their buttons share a value, so they press together.
+  const shownKeys = shown.map(keyFor);
+  const reactKeys = uniqueKeys(shownKeys);
+  const items = shown.map((o, i) => (
+    <ToggleGroupPrimitive.Item key={reactKeys[i]} value={shownKeys[i]} disabled={isDisabledOption(o)} className="ui-toggle ui-focus">
       {o.label}
     </ToggleGroupPrimitive.Item>
   ));
@@ -144,10 +184,7 @@ export const ToggleGroup = () => {
               {...keyboard}
               value={keys}
               disabled={disabled}
-              onValueChange={(next) => {
-                setKeys(next.filter((k) => !isDisabledOption(byKey.get(k))));
-                onChange();
-              }}
+              onValueChange={(next) => changeMany([...new Set(next)].filter((k) => !isDisabledOption(byKey.get(k))), true)}
             >
               {items}
             </ToggleGroupPrimitive.Root>

@@ -6,7 +6,7 @@ const TONE_TAG: Record<string, string | undefined> = { success: 'success', warni
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver } from '../lib/Loading';
-import { readField, rowIdOf, rowKeyOf, str, toKeyedItems, toRows, type Row } from '../lib/data';
+import { followSelection, idGroup, readField, repeatedIds, rowIdOf, rowIdText, rowKeyOf, str, toKeyedItems, toRows, type Row } from '../lib/data';
 import { formatCell } from '../lib/format';
 import { slotNames } from '../lib/slots';
 import { useDialogOwner } from '../lib/useOwnerGuard';
@@ -281,25 +281,56 @@ export const List = () => {
   const rowsKey = JSON.stringify(rows);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const keys = useMemo(() => occurrenceKeys(rows, field), [rowsKey, field]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const ids = useMemo(() => rows.map((r) => rowIdText(r, field)), [rowsKey, field]);
+  // A repeated id is a data problem the selection can only partly work around (lib/data followSelection): reported once.
+  const warned = useRef(false);
+  useEffect(() => {
+    const repeated = repeatedIds(ids);
+    if (warned.current || !repeated.length) return;
+    warned.current = true;
+    console.warn(
+      `[List] Item ids should be unique: ${repeated.slice(0, 5).map((id) => JSON.stringify(id)).join(', ')} ` +
+        `${repeated.length === 1 ? 'is' : 'are'} held by more than one item in the "${field}" field. A selected item whose ` +
+        'id is repeated stays selected only while it is the same record; a change that leaves that unclear clears it.'
+    );
+  }, [ids, field]);
   // The picked row's own key (its occurrence of a repeated id). Without one (nothing picked here yet), the exposed
   // record's id names it.
   const [picked, setPicked] = useState('');
+  // The selected id's rows (their content) when picked or last followed (lib/data followSelection).
+  const group = useRef<string[]>([]);
   const exposedKey = selectedItem && Object.keys(selectedItem).length ? rowKeyOf(selectedItem as Row, field, -1) : '';
   const selectedKey = picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(rows[i], field, i) === exposedKey) ?? '') : '');
 
   const select = (row: Row | null, index: number) => {
     setPicked(row && index >= 0 ? keys[index] ?? '' : '');
+    group.current = row ? idGroup(rows, ids, rowIdText(row, field)) : [];
     setSelectedItem(row ?? {});
     setSelectedItemKey((row ? rowIdOf(row, field, index) : '') as string);
     if (row) onItemClick();
   };
   // The selection follows its record by key across a refresh or a reorder (an edited record is exposed as it is now),
-  // and clears once the record is gone: the old row stayed exposed and highlighted nothing (SP-31).
+  // and clears once the record is gone: the old row stayed exposed and highlighted nothing (SP-31). A repeated id is
+  // followed only to the same record by content, else cleared (lib/data followSelection), with no event either way.
   useEffect(() => {
     if (!selectedKey && !exposedKey) return;
     // A row with no id (keyed by its position, exposedKey -1) is found by its content.
     const same = JSON.stringify(selectedItem);
-    const index = exposedKey === '-1' ? rows.findIndex((r) => JSON.stringify(r) === same) : selectedKey ? keys.indexOf(selectedKey) : -1;
+    let index: number;
+    if (exposedKey === '-1') index = rows.findIndex((r) => JSON.stringify(r) === same);
+    else {
+      const followed = followSelection({
+        rows,
+        ids,
+        at: selectedKey ? keys.indexOf(selectedKey) : -1,
+        id: rowIdText(selectedItem as Row, field),
+        record: selectedItem,
+        before: group.current,
+      });
+      index = followed.index;
+      group.current = index >= 0 ? followed.group : [];
+    }
     const row = rows[index];
     if (!row) {
       setPicked('');

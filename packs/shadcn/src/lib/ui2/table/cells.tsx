@@ -120,7 +120,8 @@ export const renderCell = ({ value: cellValue, row, column, defaults, onAction, 
     ...column.format,
     currency: column.format.currency ?? defaults.currency,
     locale: column.format.locale ?? defaults.locale,
-    dateFormat: column.format.dateFormat ?? defaults.dateFormat,
+    // The table's default is for date columns: a datetime column without its own format keeps its time (DEFAULT_DATETIME).
+    dateFormat: column.format.dateFormat ?? (column.type === 'datetime' ? undefined : defaults.dateFormat),
   };
   switch (column.type) {
     case 'badge':

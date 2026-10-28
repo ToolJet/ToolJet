@@ -3,7 +3,7 @@ import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { Field } from '../lib/Field';
 import { cn } from '../lib/cn';
-import { MAX_CHOICES, choiceKey, defaultKey, isDisabledOption, isScalar, shownOptions, toChoiceOptions, type ChoiceOption } from '../lib/ui2/choice/options';
+import { MAX_CHOICES, choiceKey, defaultKey, isDisabledOption, isScalar, keyForValue, optionKey, optionsByKey, shownOptions, toChoiceOptions, uniqueKeys, type ChoiceOption } from '../lib/ui2/choice/options';
 import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { moveRovingFocus, rovingEntry } from '../lib/activeElement';
 import { lookVars, useDropRemovedChoices, useResetOn } from '../lib/ui2/choice/looks';
@@ -51,17 +51,18 @@ export const RadioGroup = () => {
   const { disabled, loading } = useBusy(disabledProp);
   const fieldId = ToolJet.useFieldId();
 
-  const options = toChoiceOptions(rawOptions);
-  const byKey = new Map(options.map((o) => [choiceKey(o.value), o] as [string, ChoiceOption]));
+  const options = toChoiceOptions(rawOptions, 'RadioGroup');
+  const keyFor = (o: ChoiceOption) => optionKey(o, choiceKey);
+  const byKey = optionsByKey(options, choiceKey);
   // An app saved before defaultValue existed starts on its `value` when the new default names no option.
   const [key, setKey] = useState(() => {
-    const k = isScalar(defaultValue) ? defaultKey(defaultValue) : '';
-    return byKey.has(k) || !isScalar(legacyValue) || legacyValue === '' ? k : defaultKey(legacyValue);
+    const k = isScalar(defaultValue) ? defaultKey(defaultValue, options) : '';
+    return byKey.has(k) || !isScalar(legacyValue) || legacyValue === '' ? k : defaultKey(legacyValue, options);
   });
-  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue)));
+  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
   ToolJet.useFormClear(() => setKey(''));
-  useDropRemovedChoices(options.map((o) => choiceKey(o.value)), key ? [key] : [], () => setKey(''), false);
+  useDropRemovedChoices(options.map(keyFor), key ? [key] : [], () => setKey(''), false);
   const selected = byKey.get(key);
   useEffect(() => {
     setValue((selected?.value ?? '') as string);
@@ -86,7 +87,7 @@ export const RadioGroup = () => {
     onSelectionChange();
   };
   ToolJet.useAction({ name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
-    change(v === undefined || v === null || typeof v === 'object' ? '' : choiceKey(v), true)
+    change(v === undefined || v === null || typeof v === 'object' ? '' : keyForValue(options, v, choiceKey), true)
   );
   ToolJet.useAction({ name: 'deselectOption', displayName: 'Deselect option' }, () => change('', true));
 
@@ -100,7 +101,8 @@ export const RadioGroup = () => {
     '--lk-fg': optionTextColor || textColor,
     '--ui-destructive': errorColor,
   });
-  const itemId = (o: ChoiceOption) => `${fieldId ?? 'radio'}-${choiceKey(o.value)}`;
+  // By position: options with the same value draw a radio each, and each label needs its own.
+  const itemId = (i: number) => `${fieldId ?? 'radio'}-${i}`;
   // A user's pick: the radio's own click, or an arrow key moving to it. A pick of the chosen radio changes nothing.
   const pickKey = (next: string) => {
     if (next === keyRef.current || isDisabledOption(byKey.get(next))) return;
@@ -120,6 +122,9 @@ export const RadioGroup = () => {
   };
   // Tab onto the group lands on its checked radio (else its first enabled one), as Radix means to; its own walk ends on
   // the last radio in a shadow root. Focus on a radio itself is Radix's.
+  const shown = shownOptions(options, selected, MAX_CHOICES);
+  const shownKeys = shown.map(keyFor);
+  const reactKeys = uniqueKeys(shownKeys);
   const onFocus = (e: React.FocusEvent<HTMLDivElement>) => {
     if (e.target !== e.currentTarget) return;
     e.preventDefault();
@@ -143,16 +148,16 @@ export const RadioGroup = () => {
             onKeyDownCapture={onKeyDownCapture}
             onFocus={onFocus}
           >
-            {shownOptions(options, selected, MAX_CHOICES).map((o) => (
-              <div className="ui-radio-item" key={choiceKey(o.value)}>
+            {shown.map((o, i) => (
+              <div className="ui-radio-item" key={reactKeys[i]}>
                 <RadioGroupPrimitive.Item
                   className="ui-radio ui-focus"
-                  value={choiceKey(o.value)}
-                  data-choice-key={choiceKey(o.value)}
-                  id={itemId(o)}
+                  value={shownKeys[i]}
+                  data-choice-key={shownKeys[i]}
+                  id={itemId(i)}
                   disabled={isDisabledOption(o)}
                   onClick={
-                    deselectable && choiceKey(o.value) === key
+                    deselectable && shownKeys[i] === key
                       ? (e) => {
                           e.preventDefault();
                           change('');
@@ -163,7 +168,7 @@ export const RadioGroup = () => {
                 >
                   <RadioGroupPrimitive.Indicator className="ui-radio-dot" />
                 </RadioGroupPrimitive.Item>
-                <label htmlFor={itemId(o)}>{o.label}</label>
+                <label htmlFor={itemId(i)}>{o.label}</label>
               </div>
             ))}
           </RadioGroupPrimitive.Root>

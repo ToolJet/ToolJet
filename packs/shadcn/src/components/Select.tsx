@@ -7,7 +7,7 @@ import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { popupLayerStyle } from '../lib/popupLayer';
 import { cn } from '../lib/cn';
-import { choiceKey, defaultKey, isDisabledOption, shownOptions, toChoiceOptions, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
+import { choiceKey, defaultKey, isDisabledOption, keyForValue, optionKey, optionsByKey, shownOptions, toChoiceOptions, uniqueKeys, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { useBusy, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
@@ -57,18 +57,19 @@ export const Select = () => {
 
   const [anchorRef, container] = usePortalContainer();
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const options = toChoiceOptions(rawOptions);
-  const byKey = new Map(options.map((o) => [choiceKey(o.value), o] as [string, ChoiceOption]));
+  const options = toChoiceOptions(rawOptions, 'Select');
+  const keyFor = (o: ChoiceOption) => optionKey(o, choiceKey);
+  const byKey = optionsByKey(options, choiceKey);
   // Live: an action reads the key as last chosen, ahead of the next render.
-  const [key, setKey, keyRef] = useLiveState(() => defaultKey(defaultValue) || defaultKey(legacyValue));
+  const [key, setKey, keyRef] = useLiveState(() => defaultKey(defaultValue, options) || defaultKey(legacyValue, options));
   const [open, setOpen] = useState(false);
   // A new default value starts the selection again.
-  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue)));
+  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
   ToolJet.useFormClear(() => { setOpen(false); setKey(''); });
   const selected = byKey.get(key);
   // An option that is removed takes its choice with it, so it does not come back selected when it reappears.
-  useDropRemovedChoices(options.map((o) => choiceKey(o.value)), key ? [key] : [], () => setKey(''), false);
+  useDropRemovedChoices(options.map(keyFor), key ? [key] : [], () => setKey(''), false);
 
   const expose = (option: ChoiceOption | undefined) => {
     setValue((option?.value ?? '') as string);
@@ -109,9 +110,10 @@ export const Select = () => {
   const selectByValue = (v: unknown) => {
     const wanted = wantedValue(v);
     if (wanted === undefined || wanted === null || typeof wanted === 'object') return;
-    const option = byKey.get(choiceKey(wanted));
+    const k = keyForValue(options, wanted, choiceKey);
+    const option = byKey.get(k);
     // The option already chosen: nothing changes and nothing fires.
-    if (option && !isDisabledOption(option) && choiceKey(wanted) !== keyRef.current) choose(choiceKey(wanted));
+    if (option && !isDisabledOption(option) && k !== keyRef.current) choose(k);
   };
   ToolJet.useAction({ name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] }, selectByValue);
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => choose('', false));
@@ -132,6 +134,8 @@ export const Select = () => {
   const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
   // Radix mounts every item even while closed: the list shows the first MAX_SELECT_OPTIONS (and the selected one).
   const shown = shownOptions(options, selected, MAX_SELECT_OPTIONS);
+  const shownKeys = shown.map(keyFor);
+  const reactKeys = uniqueKeys(shownKeys);
 
   return (
     <div className="ui uc" ref={anchorRef} style={vars}>
@@ -176,11 +180,11 @@ export const Select = () => {
                   }}
                 >
                     <SelectPrimitive.Viewport>
-                      {shown.map((o) => {
-                        const k = choiceKey(o.value);
+                      {shown.map((o, i) => {
+                        const k = shownKeys[i];
                         return (
                           <SelectPrimitive.Item
-                            key={k}
+                            key={reactKeys[i]}
                             value={k}
                             disabled={isDisabledOption(o)}
                             className="ui-menu-item"

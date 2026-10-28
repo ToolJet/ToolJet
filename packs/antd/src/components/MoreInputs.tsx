@@ -421,7 +421,9 @@ export const AutoComplete = (props: Record<string, unknown>) => {
               <AntAutoComplete
                 id={fieldId}
                 style={{ width: '100%' }}
-                options={toOptions(rawOptions)}
+                // Free text: an option fills in its value as text. Each keeps a React key of its own (lib/data Option), so
+                // options with one text (1 and '1', or a repeat) draw apart.
+                options={toOptions(rawOptions, 'AutoComplete').map((o) => ({ key: o.key, label: o.label, value: str(o.data), disabled: o.disabled }))}
                 value={value}
                 placeholder={placeholder || undefined}
                 filterOption={filterOption ? (input, option) => str(option?.label ?? option?.value).toLowerCase().includes(input.toLowerCase()) : false}

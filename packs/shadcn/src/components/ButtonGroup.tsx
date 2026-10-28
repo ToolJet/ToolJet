@@ -30,12 +30,14 @@ export const ButtonGroup = () => {
   const [mode] = ToolJet.useStateEnumeration({
     name: 'mode',
     label: 'Mode',
-    enumDefinition: ['actions', 'single', 'multiple', 'none'],
-    enumLabels: { actions: 'Actions', single: 'Single', multiple: 'Multiple', none: 'Buttons only (legacy)' },
+    // 'none' (Buttons only), the pack's earlier name for Actions, is no longer offered but still read as Actions.
+    enumDefinition: ['actions', 'single', 'multiple'],
+    enumLabels: { actions: 'Actions', single: 'Single', multiple: 'Multiple' },
     initialValue: 'single',
     inspector: 'switch',
   });
   const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default selected (value, or a list when multiple)', initialValue: '' });
+  // Exposed: the selected value (single), the list of them (multiple), '' with none. Read back only as a button's value.
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Selected value (single)', initialValue: 'week' });
   const [selected, setSelected] = ToolJet.useStateArray({ name: 'selected', label: 'Selected values (multiple)', initialValue: [] });
   const [allowDeselect] = ToolJet.useStateBoolean({ name: 'allowDeselect', label: 'Allow deselecting (single)', initialValue: false });
@@ -64,7 +66,8 @@ export const ButtonGroup = () => {
     inspector: 'switch',
   });
   const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', initialValue: false });
-  const [legacyDisabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable (legacy)', initialValue: false });
+  // The pack's earlier Disable, hidden for the host's Disable (setDisable) but still honoured when an app saved it on.
+  const [legacyDisabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable (legacy)', initialValue: false, inspector: 'hidden' });
   const [, setLastClicked] = ToolJet.useStateObject({ name: 'lastClicked', initialValue: {}, inspector: 'hidden' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -83,18 +86,27 @@ export const ButtonGroup = () => {
   const kind = mode === 'none' ? 'actions' : mode;
   const source = useStable(buttons);
   const items = useMemo(() => groupButtons(source), [source]);
-  // The selection as keys, read from the exposed values (single: value, multiple: selected).
-  const keys = kind === 'multiple' ? list(selected).map(String) : kind === 'single' && value !== '' && value != null ? [String(value)] : [];
+  // The selection as keys, read from the exposed values (single: value, multiple: selected), keeping only values a
+  // button has: a value no button has (the sample 'week' beside custom buttons) is no selection.
+  const known = new Set(items.map((b) => String(b.value)));
+  const one = Array.isArray(value) ? value[0] : value;
+  const wanted = kind === 'multiple' ? list(selected).map(String) : kind === 'single' && one !== '' && one != null ? [String(one)] : [];
+  const keys = [...new Set(wanted)].filter((k) => known.has(k));
   const live = useRef({ kind, items, keys });
   live.current = { kind, items, keys };
+  // value and selected as `keys` publishes them (multiple: value is the list too).
+  const exposedFor = (next: string[]) => {
+    const e = selectionExposed(next, live.current.kind, live.current.items);
+    return { value: live.current.kind === 'multiple' ? e.value : String(e.value), selected: e.selected };
+  };
+  const shown = useRef({ value: value as unknown, selected: selected as unknown });
+  shown.current = { value, selected };
   const apply = (next: string[]) => {
-    const { value: v, selected: s } = selectionExposed(next, live.current.kind, live.current.items);
+    const e = exposedFor(next);
     live.current.keys = next;
-    if (live.current.kind === 'multiple') setSelected(s);
-    else {
-      setValue(String(v));
-      setSelected(s);
-    }
+    shown.current = e;
+    setValue(e.value as unknown as string);
+    setSelected(e.selected);
   };
   // A new Default selected (or mode) starts the selection again, as UI 2.0's does.
   const firstRun = useRef(true);
@@ -109,8 +121,19 @@ export const ButtonGroup = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stableDefault, kind]);
 
+  // Once there are buttons, the exposed value and selected follow the selection they hold: a value no button has
+  // empties, and in Multiple mode value is the list. No event: nothing was picked. (With no buttons yet, a list still
+  // loading, a saved selection is kept for when they come.)
+  const signature = JSON.stringify([kind, items.map((b) => b.value)]);
+  useEffect(() => {
+    if (!live.current.items.length) return;
+    const e = exposedFor(live.current.keys);
+    if (JSON.stringify(e) !== JSON.stringify(shown.current)) apply(live.current.keys);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature, JSON.stringify(value), JSON.stringify(selected)]);
+
   const check = ToolJet.useValidation({ section: 'choice', value: kind === 'multiple' ? keys : keys[0] ?? '', present: keys.length > 0 });
-  const disabled = control.disabled || legacyDisabled;
+  const disabled = control.disabled || legacyDisabled === true;
   const click = (button: GroupButton) => {
     if (disabled || button.disabled) return;
     setLastClicked({ label: button.label, value: button.value });
@@ -156,12 +179,13 @@ export const ButtonGroup = () => {
                 look === 'outline' ? 'is-outline' : look === 'ghost' ? 'is-ghost' : 'is-filled'
               )}
             >
-              {items.map((button) => {
+              {items.map((button, index) => {
                 const isOn = kind !== 'actions' && on.has(String(button.value));
                 const own = button.variant || look;
                 return (
                   <button
-                    key={String(button.value)}
+                    // By position: buttons sharing a value each draw (and select together, by value).
+                    key={index}
                     type="button"
                     data-state={kind === 'actions' ? undefined : isOn ? 'on' : 'off'}
                     aria-pressed={kind === 'actions' ? undefined : isOn}
