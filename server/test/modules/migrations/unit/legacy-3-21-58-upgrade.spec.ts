@@ -11,9 +11,9 @@ import {
   loosenStep,
   restoreSteps,
   LEGACY_UPGRADE_MARKER,
-} from 'src/migration-helpers/legacy-upgrade';
+} from 'src/migration-helpers/legacy-3-21-58-upgrade';
 
-describe('migration-helpers/legacy-upgrade | async upgrade from 3.21.58', () => {
+describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58', () => {
   it('should run only while the 3.21.58 backfill is pending', () => {
     expect(legacyUpgradePending(['Other1700000000000', LEGACY_UPGRADE_MARKER])).toBe(true);
     expect(legacyUpgradePending(['Other1700000000000'])).toBe(false);

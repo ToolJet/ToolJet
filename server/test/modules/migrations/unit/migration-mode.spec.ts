@@ -3,8 +3,8 @@ import { chmodSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, w
 import { execFileSync } from 'child_process';
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';
-import { ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS } from 'src/migration-helpers/pre-cutoff-allowlist';
 import {
+  ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS,
   blocksAsyncUpgrade,
   END_USER_MESSAGE_MAX_LENGTH,
   endUserMessage,
