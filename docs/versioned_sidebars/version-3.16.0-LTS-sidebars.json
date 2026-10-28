@@ -1081,6 +1081,11 @@
                 "user-management/sso/saml/okta",
                 "user-management/sso/saml/entra-id"
               ]
+            },
+            {
+              "type": "link",
+              "label": "SCIM",
+              "href": "/api/scim/"
             }
           ]
         },
@@ -1105,7 +1110,6 @@
             }
           ]
         },
-        "user-management/scim-provisioning",
         {
           "type": "category",
           "label": "Profile Management",

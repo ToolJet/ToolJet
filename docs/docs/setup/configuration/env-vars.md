@@ -195,7 +195,7 @@ Both values must be positive numbers. Any other value falls back to the default.
 
 <PlanBadge type="enterprise" />
 
-Settings for [SCIM provisioning](/docs/user-management/scim-provisioning) from an identity provider. SCIM also needs a license that includes SCIM.
+Settings for [SCIM provisioning](/api/scim/) from an identity provider. SCIM also needs a license that includes SCIM.
 
 - `SCIM_ENABLED`: Set to `true` to turn on the SCIM API at `/api/scim/v2`. Any other value turns it off. Default: unset (off).
 - `SCIM_HEADER_AUTH_TOKEN`: Token the identity provider sends as `Authorization: Bearer <token>`. No default. Use a long random value.
