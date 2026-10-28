@@ -50,30 +50,30 @@ function isTransientError(error: unknown): boolean {
   return TRANSIENT_ERROR_CODES.has(driverError?.code ?? code ?? '');
 }
 
-interface DeferredTails {
+interface BeforeCommitSteps {
   run(queryRunner: QueryRunner): Promise<void>;
   clear(): void;
 }
 
-/** Collects the tail of each backfill whose up() ran in this attempt. */
-function deferTails(dataDS: DataSource): DeferredTails {
-  const tails: { name: string; tail: (queryRunner: QueryRunner) => Promise<void> }[] = [];
+/** Collects the beforeCommit() step of each backfill whose up() ran in this attempt. */
+function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
+  const beforeCommitSteps: { name: string; beforeCommit: (queryRunner: QueryRunner) => Promise<void> }[] = [];
   for (const migration of dataDS.migrations as BackfillMigration[]) {
-    if (!migration.tail) continue;
+    if (!migration.beforeCommit) continue;
     const name = migration.name || migration.constructor.name;
-    const tail = migration.tail.bind(migration);
+    const beforeCommit = migration.beforeCommit.bind(migration);
     const up = migration.up.bind(migration);
     migration.up = async (queryRunner: QueryRunner) => {
       await up(queryRunner);
-      tails.push({ name, tail });
+      beforeCommitSteps.push({ name, beforeCommit });
     };
   }
   return {
-    clear: () => tails.splice(0),
+    clear: () => beforeCommitSteps.splice(0),
     async run(queryRunner) {
-      for (const { name, tail } of tails.splice(0)) {
-        console.log(`[migrations] TAIL ${name}`);
-        await tail(queryRunner);
+      for (const { name, beforeCommit } of beforeCommitSteps.splice(0)) {
+        console.log(`[migrations] BEFORE COMMIT ${name}`);
+        await beforeCommit(queryRunner);
       }
     },
   };
@@ -166,7 +166,7 @@ async function runAtomic(
   schemaDS: DataSource,
   dataDS: DataSource,
   contractDS: DataSource,
-  tails: DeferredTails
+  beforeCommitSteps: BeforeCommitSteps
 ): Promise<void> {
   await precommitEnumValueAdditions(precommittable, schemaDS);
   await inTransaction(
@@ -174,7 +174,7 @@ async function runAtomic(
     async (queryRunner) => {
       await runPass('expand', schemaDS, queryRunner);
       await runPass('backfill', dataDS, queryRunner);
-      await tails.run(queryRunner);
+      await beforeCommitSteps.run(queryRunner);
       // 'all' throws for contract classes (transaction = false); 'none' still runs inside this transaction.
       await runPass('contract', contractDS, queryRunner, 'none');
     },
@@ -186,7 +186,7 @@ async function runAtomic(
 /** `contractDS` only for a single-transaction run; the backfill phase leaves contract to its own run. */
 async function runInSeparateTransactions(
   schemaDS: DataSource,
-  [dataDS, tails]: [DataSource, DeferredTails],
+  [dataDS, beforeCommitSteps]: [DataSource, BeforeCommitSteps],
   reason: string,
   contractDS?: DataSource
 ): Promise<void> {
@@ -195,10 +195,10 @@ async function runInSeparateTransactions(
   await retryWhen(
     isTransientError,
     () => {
-      tails.clear();
+      beforeCommitSteps.clear();
       return inTransaction(dataDS, async (queryRunner) => {
         await runPass('backfill', dataDS, queryRunner);
-        await tails.run(queryRunner);
+        await beforeCommitSteps.run(queryRunner);
       });
     },
     { attempts: BACKFILL_ATTEMPTS, retryDelayMs: BACKFILL_RETRY_DELAY_MS },
@@ -416,7 +416,7 @@ async function executeMigrations(
 ): Promise<void> {
   // Plan before announcing: it scans up() source, which the announcing wrapper hides.
   const plan = phase === 'backfill' ? undefined : await planEnumAdditions(schemaDS);
-  // Variants replace up() and tail(), so they go in before the wrappers below.
+  // Variants replace up() and beforeCommit(), so they go in before the wrappers below.
   const legacy = phase === 'backfill' && legacyUpgradePending(await pendingNames(dataDS));
   if (legacy) {
     await loosenLegacyRules(dataDS);
@@ -424,7 +424,7 @@ async function executeMigrations(
   }
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
-  const backfill: [DataSource, DeferredTails] = [dataDS, deferTails(dataDS)];
+  const backfill: [DataSource, BeforeCommitSteps] = [dataDS, collectBeforeCommitSteps(dataDS)];
   if (!plan) {
     try {
       return await runInSeparateTransactions(schemaDS, backfill, BACKFILL_PHASE_REASON);

@@ -68,16 +68,20 @@ describe('migration-helpers/legacy-upgrade | async upgrade from 3.21.58', () => 
       expect(originals).toHaveLength(LEGACY_VARIANTS.size);
     });
 
-    it('should change rows and function bodies only in up(), leaving table locks to tail() and contract', async () => {
+    it('should change rows and function bodies only in up(), leaving table locks to beforeCommit() and contract', async () => {
       useLegacyVariants({ migrations: originals } as unknown as DataSource);
       const ups = (await Promise.all(originals.map((migration) => recorded((qr) => migration.up(qr))))).flat();
       expect(ups.filter((sql) => /\b(DROP|ALTER TABLE|CREATE (UNIQUE )?INDEX|CREATE TRIGGER)\b/i.test(sql))).toEqual(
         []
       );
-      const tails = (
-        await Promise.all(originals.filter((m) => m.tail).map((migration) => recorded((qr) => migration.tail(qr))))
+      const beforeCommitSteps = (
+        await Promise.all(
+          originals.filter((m) => m.beforeCommit).map((migration) => recorded((qr) => migration.beforeCommit(qr)))
+        )
       ).flat();
-      expect(tails.at(-1)).toMatch(/ALTER TABLE app_versions\s+DROP CONSTRAINT IF EXISTS fk_app_versions_branch/);
+      expect(beforeCommitSteps.slice(-1)[0]).toMatch(
+        /ALTER TABLE app_versions\s+DROP CONSTRAINT IF EXISTS fk_app_versions_branch/
+      );
     });
   });
 });

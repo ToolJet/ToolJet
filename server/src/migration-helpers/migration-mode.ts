@@ -54,11 +54,11 @@ export type MigrationPhase = 'expand' | 'backfill' | 'contract';
 export type RunStrategy = 'single-transaction' | 'multi-transaction';
 
 /**
- * `tail` holds a backfill's lock-taking statements (index builds, triggers, foreign keys NOT VALID, VALIDATE). Tails run after
+ * `beforeCommit` holds a backfill's lock-taking statements (index builds, triggers, foreign keys NOT VALID, VALIDATE). They run after
  * every backfill up(), just before commit, so their locks last seconds instead of the whole run.
  */
 export interface BackfillMigration extends MigrationInterface {
-  tail?(queryRunner: QueryRunner): Promise<void>;
+  beforeCommit?(queryRunner: QueryRunner): Promise<void>;
 }
 
 /**

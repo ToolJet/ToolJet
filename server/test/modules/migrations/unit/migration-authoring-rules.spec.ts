@@ -210,8 +210,8 @@ const BACKFILL_FORBIDDEN: Rule[] = [
   ['ALTER INDEX', /\bALTER\s+INDEX\b/i],
   ['ALTER TRIGGER', /\bALTER\s+TRIGGER\b/i],
 ];
-/** Short locks, so they belong in tail(), which runs just before commit. */
-const TAIL_ONLY: Rule[] = [
+/** Short locks, so they belong in beforeCommit(), which runs just before commit. */
+const BEFORE_COMMIT_ONLY: Rule[] = [
   ['CREATE INDEX', /\bCREATE\s+(?:UNIQUE\s+)?INDEX\b/i],
   ['CREATE TRIGGER', /\bCREATE\s+(?:OR\s+REPLACE\s+)?TRIGGER\b/i],
   ['foreign key NOT VALID', /\bFOREIGN\s+KEY\b[^;]*\bNOT\s+VALID\b/i],
@@ -241,7 +241,7 @@ function indexesOnExistingTables(sql: string): string[] {
     .map((table) => `CREATE INDEX on existing table ${table}`);
 }
 
-/** Expand adds only and changes no rows; backfill keeps lock-taking statements to tail(). */
+/** Expand adds only and changes no rows; backfill keeps lock-taking statements to beforeCommit(). */
 function phaseViolations(phase: 'expand' | 'backfill', { file, text }: MigrationSource): string[] {
   if (OPT_OUT.test(text)) return [];
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
@@ -255,18 +255,18 @@ function phaseViolations(phase: 'expand' | 'backfill', { file, text }: Migration
       ? [`${file}: expand changes rows or locks a table (${found.join(', ')}); move it to backfill. ${RULES_DOC}`]
       : [];
   }
-  const tail = method(cls, 'tail');
-  const tailCode = tail?.body ? codeIn(tail.body) : { sql: '', identifiers: new Set<string>() };
+  const beforeCommit = method(cls, 'beforeCommit');
+  const beforeCommitCode = beforeCommit?.body ? codeIn(beforeCommit.body) : { sql: '', identifiers: new Set<string>() };
   const violations: string[] = [];
   const forbidden = [
-    ...matching(BACKFILL_FORBIDDEN, `${sql} ${tailCode.sql}`),
-    ...[...identifiers, ...tailCode.identifiers].filter((name) => SCHEMA_API.has(name)),
+    ...matching(BACKFILL_FORBIDDEN, `${sql} ${beforeCommitCode.sql}`),
+    ...[...identifiers, ...beforeCommitCode.identifiers].filter((name) => SCHEMA_API.has(name)),
   ];
   if (forbidden.length) {
     violations.push(`${file}: backfill holds a long lock (${forbidden.join(', ')}); move it to contract. ${RULES_DOC}`);
   }
-  const tailOnly = matching(TAIL_ONLY, sql);
-  if (tailOnly.length) violations.push(`${file}: ${tailOnly.join(', ')} in up(); move it to tail(). ${RULES_DOC}`);
+  const beforeCommitOnly = matching(BEFORE_COMMIT_ONLY, sql);
+  if (beforeCommitOnly.length) violations.push(`${file}: ${beforeCommitOnly.join(', ')} in up(); move it to beforeCommit(). ${RULES_DOC}`);
   return violations;
 }
 
@@ -390,13 +390,13 @@ describe('Migration authoring rules | migrations newer than the cutoff', () => {
 });
 
 describe('Migration authoring rules | expand and backfill placement', () => {
-  const migration = (up: string, tail = '') => ({
+  const migration = (up: string, beforeCommit = '') => ({
     file: 'migrations/backfill/1799999999999-Sample.ts',
     text: `
 import { MigrationInterface, QueryRunner } from 'typeorm';
 export class Sample1799999999999 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> { ${up} }
-  ${tail ? `public async tail(queryRunner: QueryRunner): Promise<void> { ${tail} }` : ''}
+  ${beforeCommit ? `public async beforeCommit(queryRunner: QueryRunner): Promise<void> { ${beforeCommit} }` : ''}
   public async down(): Promise<void> { /* rows only */ }
 }`,
   });
@@ -417,7 +417,7 @@ export class Sample1799999999999 implements MigrationInterface {
     expect(phaseViolations('expand', migration(up))).toEqual([]);
   });
 
-  it('should pass a backfill that adds a foreign key NOT VALID and validates it in tail()', () => {
+  it('should pass a backfill that adds a foreign key NOT VALID and validates it in beforeCommit()', () => {
     const source = migration(
       'await queryRunner.query(`UPDATE apps SET owner_id = created_by`);',
       'await queryRunner.query(`ALTER TABLE apps ADD CONSTRAINT fk FOREIGN KEY (owner_id) REFERENCES users(id) NOT VALID`); await queryRunner.query(`ALTER TABLE apps VALIDATE CONSTRAINT fk`);'
@@ -425,7 +425,7 @@ export class Sample1799999999999 implements MigrationInterface {
     expect(phaseViolations('backfill', source)).toEqual([]);
   });
 
-  it('should pass a backfill that updates rows and builds its index in tail()', () => {
+  it('should pass a backfill that updates rows and builds its index in beforeCommit()', () => {
     const source = migration(
       'await queryRunner.query(`UPDATE apps SET slug = name`);',
       'await queryRunner.query(`CREATE INDEX apps_slug ON apps (slug)`);'
@@ -437,7 +437,7 @@ export class Sample1799999999999 implements MigrationInterface {
     [
       'an index build in up()',
       'await queryRunner.query(`CREATE INDEX apps_slug ON apps (slug)`);',
-      'move it to tail()',
+      'move it to beforeCommit()',
     ],
     ['a DROP', 'await queryRunner.query(`ALTER TABLE apps DROP COLUMN slug`);', 'move it to contract'],
     [
