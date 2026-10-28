@@ -155,6 +155,22 @@ export async function waitFor<T>(
   throw new Error(`Timed out after ${timeoutMs}ms waiting for ${describeWhat}. Last value: ${JSON.stringify(last)}`);
 }
 
+/**
+ * Starts collecting a running pod's output at once; the returned wait resolves when `text` shows up.
+ * Call it right after `spawnPod`, before awaiting anything, so no output is missed.
+ */
+export function waitForPodOutput(pod: RunningPod, describeWhat: string, text: string): Promise<string> {
+  let output = '';
+  pod.child.stdout.on('data', (chunk) => (output += chunk));
+  pod.child.stderr.on('data', (chunk) => (output += chunk));
+  return waitFor(
+    describeWhat,
+    async () => output,
+    (out) => out.includes(text),
+    { timeoutMs: 60_000 }
+  );
+}
+
 export interface HeldLocks {
   running: boolean;
   migrating: boolean;

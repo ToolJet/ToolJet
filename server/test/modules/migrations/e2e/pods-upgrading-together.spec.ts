@@ -20,7 +20,7 @@ const MIGRATION_SLEEP_SECONDS = 6;
 
 const scratchDatabase = `tooljet_migration_gate_${process.pid}`;
 
-describe('Pods upgrading together | rolling upgrade against one database', () => {
+describe('Several pods upgrading the same database at once (a rolling upgrade)', () => {
   let scratch: DataSource;
   let pods: PodOutcome[];
   let activeLockSamples: boolean[];
@@ -30,18 +30,7 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
     scratch = await new DataSource({ type: 'postgres', ...postgres, database: scratchDatabase }).initialize();
 
     const watcher = watchActiveLock(scratch);
-    // One shared release instant; the generous lead time absorbs ts-node start-up.
-    const startAt = Date.now() + 12_000;
-    pods = await Promise.all(
-      Array.from({ length: POD_COUNT }, (_unused, index) =>
-        runPod({
-          podId: `pod-${index + 1}`,
-          database: scratchDatabase,
-          startAt,
-          migrationSleepSeconds: MIGRATION_SLEEP_SECONDS,
-        })
-      )
-    );
+    pods = await startPodsTogether(POD_COUNT);
     watcher.stop();
     activeLockSamples = watcher.samples;
   }, 180_000);
@@ -51,8 +40,8 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
     await dropScratchDatabase(scratchDatabase);
   }, 60_000);
 
-  describe('no pod crash-loops', () => {
-    it('should exit 0 from every pod, including the ones that had to wait', () => {
+  describe('no pod crashes and restarts', () => {
+    it('should finish every pod successfully, including the ones that had to wait', () => {
       expect(pods.map(({ podId, exitCode }) => ({ podId, exitCode }))).toEqual([
         { podId: 'pod-1', exitCode: 0 },
         { podId: 'pod-2', exitCode: 0 },
@@ -61,7 +50,7 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
       expect(pods.map(({ result }) => result?.error)).toEqual([null, null, null]);
     });
 
-    it('should report the blocked pods waiting rather than failing', () => {
+    it('should log that the other pods are waiting, not failing', () => {
       const waiting = pods.filter(({ stdout }) => stdout.includes('Another pod is running migrations'));
 
       expect(waiting.length).toBe(POD_COUNT - 1);
@@ -81,7 +70,7 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
   });
 
   describe('the migration runs exactly once', () => {
-    it('should execute the slow migration body a single time across all pods', async () => {
+    it('should run the migration once across all pods', async () => {
       const witnesses = await scratch.query('SELECT pod FROM migration_witness');
 
       expect(witnesses).toHaveLength(1);
@@ -109,7 +98,7 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
    * reads `.env.test`). Production pods do not. NODE_ENV must not be load-bearing for any of the
    * coordination, so this repeats the race under a production-like value.
    */
-  describe('without NODE_ENV=test | coordination is not an artifact of test mode', () => {
+  describe('with NODE_ENV=production: the same result outside test mode', () => {
     const productionDatabase = `tooljet_migration_gate_prod_${process.pid}`;
     let productionPods: PodOutcome[];
 
@@ -133,7 +122,7 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
       await dropScratchDatabase(productionDatabase);
     }, 60_000);
 
-    it('should still let every pod boot cleanly', () => {
+    it('should still start every pod successfully', () => {
       expect(productionPods.map(({ exitCode }) => exitCode)).toEqual([0, 0]);
       expect(productionPods.map(({ result }) => result?.error)).toEqual([null, null]);
     });
@@ -151,7 +140,7 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
       }
     });
 
-    it('should still make the loser wait on the advisory lock rather than exit', () => {
+    it('should still make the second pod wait for the first instead of exiting', () => {
       const migrated = productionPods.filter(({ stdout }) => stdout.includes('1 migration(s) pending'));
       const waited = productionPods.filter(({ stdout }) => stdout.includes('Another pod is running migrations'));
 
@@ -162,16 +151,16 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
     });
   });
 
-  describe('the upgrade gate', () => {
-    it('should hold the active lock while the migration is running', () => {
+  describe('pausing API traffic during the upgrade', () => {
+    it('should hold the lock that pauses API traffic while the migration runs', () => {
       expect(activeLockSamples.filter(Boolean).length).toBeGreaterThan(0);
     });
 
-    it('should release both locks once migrations finish, leaving nothing to leak', async () => {
+    it('should release both migration locks once migrations finish', async () => {
       expect(await heldLocks(scratch)).toEqual({ running: false, migrating: false });
     });
 
-    it('should not take the active lock on the pods that had no migrations to run', () => {
+    it('should not pause API traffic from the pods that had no migrations to run', () => {
       const noWork = pods.filter(({ stdout }) => stdout.includes('No schema or data migrations pending'));
 
       noWork.forEach(({ stdout }) => expect(stdout).toContain('not cutting API traffic for this boot'));
@@ -179,7 +168,7 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
       expect(activeLockSamples[activeLockSamples.length - 1]).toBe(false);
     });
 
-    it('should release the gate the moment a migrating pod is killed, with no expiry to wait out', async () => {
+    it('should resume API traffic as soon as a migrating pod is killed, without waiting for a timeout', async () => {
       const database = `tooljet_migration_gate_kill_${process.pid}`;
       await createScratchDatabase(database);
       const connection = await new DataSource({ type: 'postgres', ...postgres, database }).initialize();
@@ -201,10 +190,9 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
           'the locks to go',
           () => heldLocks(connection),
           ({ running, migrating }) => !running && !migrating,
-          {
-            timeoutMs: 5000,
-          }
+          { timeoutMs: 5000 }
         );
+
         expect(await connection.query('SELECT 1 FROM migration_witness').catch(() => [])).toHaveLength(0);
       } finally {
         await connection.destroy().catch(() => undefined);
@@ -213,3 +201,19 @@ describe('Pods upgrading together | rolling upgrade against one database', () =>
     }, 180_000);
   });
 });
+
+/** Starts `count` pods on the shared database, released at the same instant, and waits for all of them. */
+function startPodsTogether(count: number): Promise<PodOutcome[]> {
+  // The generous lead time absorbs ts-node start-up.
+  const startAt = Date.now() + 12_000;
+  return Promise.all(
+    Array.from({ length: count }, (_unused, index) =>
+      runPod({
+        podId: `pod-${index + 1}`,
+        database: scratchDatabase,
+        startAt,
+        migrationSleepSeconds: MIGRATION_SLEEP_SECONDS,
+      })
+    )
+  );
+}

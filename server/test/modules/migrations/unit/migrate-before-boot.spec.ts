@@ -23,7 +23,7 @@ const scratch = (database: string) => ({
 });
 
 describe('migration-helpers/migrate-before-boot', () => {
-  describe('Cloud entrypoint | what it runs before boot', () => {
+  describe('Cloud entrypoint: the commands it runs before the server starts', () => {
     const entrypoint = resolve(__dirname, '../../../../../docker/LTS/cloud/cloud-entrypoint.sh');
     let dir: string;
 
@@ -42,7 +42,7 @@ describe('migration-helpers/migrate-before-boot', () => {
     });
     afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-    const boot = (mode: string) => {
+    const runEntrypoint = (mode: string) => {
       const exported = execFileSync('bash', ['-c', `bash "${entrypoint}" printenv MIGRATION_SETUP_COMMAND 2>log`], {
         cwd: dir,
         env: { PATH: `${join(dir, 'bin')}:/usr/bin:/bin`, PG_HOST: 'localhost', MIGRATION_MODE: mode },
@@ -51,15 +51,15 @@ describe('migration-helpers/migrate-before-boot', () => {
       return { exported: exported.trim().split('\n').pop(), log };
     };
 
-    it('should give the server a database-only setup command', () => {
-      expect(boot('async').exported).toBe('npm run db:setup');
+    it('should hand the server a setup command that only migrates the database', () => {
+      expect(runEntrypoint('async').exported).toBe('npm run db:setup');
     });
 
     it.each([
       ['async', 'npm run db:setup phase=schema'],
       ['blocking', 'npm run db:setup phase=none'],
-    ])('should apply the schema before the plugin steps in %s mode', (mode, setup) => {
-      const lines = boot(mode)
+    ])('should migrate the database before installing plugins in %s mode', (mode, setup) => {
+      const lines = runEntrypoint(mode)
         .log.split('\n')
         .filter((line) => line.startsWith('npm run'));
       expect(lines).toEqual([
@@ -71,21 +71,21 @@ describe('migration-helpers/migrate-before-boot', () => {
     });
   });
 
-  describe('migrateSchemaBeforeBoot | schema before Nest boots', () => {
+  describe('migrateSchemaBeforeBoot(): schema migrations before the server starts', () => {
     beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => undefined));
     afterEach(() => jest.restoreAllMocks());
 
-    it('should run nothing in blocking mode: the entrypoint already migrated', async () => {
+    it('should run nothing in blocking mode, because the entrypoint already migrated', async () => {
       await expect(migrateSchemaBeforeBoot({ MIGRATION_SETUP_COMMAND: 'exit 1' })).resolves.toBeUndefined();
     });
 
-    it('should run setup with MIGRATION_PHASE=schema in async mode', async () => {
+    it('should run only the schema migrations in async mode', async () => {
       await expect(
         migrateSchemaBeforeBoot({ MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: exitsZeroOnlyInSchemaPhase })
       ).resolves.toBeUndefined();
     });
 
-    describe('on a fresh install | full setup, no MIGRATION_PHASE', () => {
+    describe('on a fresh install: the full setup, not just the schema', () => {
       const emptyDatabase = `tooljet_async_mode_empty_${process.pid}`;
       const freshSetup = { MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: exitsZeroOnlyWithoutPhase };
 
@@ -103,7 +103,7 @@ describe('migration-helpers/migrate-before-boot', () => {
       }, 60_000);
     });
 
-    it('should fail the boot when the schema run fails', async () => {
+    it('should stop the server from starting when the schema migrations fail', async () => {
       await expect(
         migrateSchemaBeforeBoot({ MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: 'exit 3' })
       ).rejects.toThrow('Migrations before boot failed (exit 3) and were rolled back.');

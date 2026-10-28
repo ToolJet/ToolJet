@@ -47,8 +47,8 @@ describe('migration-helpers/with-short-lock', () => {
     return is_nullable === 'YES';
   }
 
-  describe('withShortLock | one short transaction per step', () => {
-    it('should wait at most the short lock timeout per attempt, then give up', async () => {
+  describe('withShortLock(): each step in its own short transaction, so live traffic is never blocked for long', () => {
+    it('should give up after its attempts when a reader holds the table, waiting only briefly each time', async () => {
       const reader = await holdReadLock();
       const startedAt = Date.now();
 
@@ -73,22 +73,22 @@ describe('migration-helpers/with-short-lock', () => {
       expect(columns).toEqual([]);
     }, 30_000);
 
-    it('should run inline, without its own commit, inside a transaction the caller opened', async () => {
+    it('should run inside a transaction the caller already opened, without committing it', async () => {
       await runner.startTransaction();
       const [{ lock_timeout: before }] = await runner.query('SHOW lock_timeout');
+
       await withShortLock(runner, ['ALTER TABLE widgets DROP COLUMN IF EXISTS name']);
       // Its own transaction would be a savepoint here, and its SET LOCAL would outlive it.
       const [{ lock_timeout: after }] = await runner.query('SHOW lock_timeout');
       await runner.rollbackTransaction();
 
       expect(after).toBe(before);
-
       expect(await columnIsNullable()).toBe(true);
     });
   });
 
-  describe('setNotNull | NOT NULL without a long ACCESS EXCLUSIVE scan', () => {
-    it('should build the check, validate, set, drop sequence', () => {
+  describe('setNotNull(): making a column required without locking the table for a full scan', () => {
+    it('should add a check, verify old rows against it, set NOT NULL, then drop the check', () => {
       expect(notNullSteps('widgets', 'name')).toEqual([
         [
           'ALTER TABLE "widgets" DROP CONSTRAINT IF EXISTS "widgets_name_not_null", ' +
@@ -102,7 +102,7 @@ describe('migration-helpers/with-short-lock', () => {
       ]);
     });
 
-    it('should make the column NOT NULL and leave no helper check behind', async () => {
+    it('should make the column required and leave no extra check behind', async () => {
       await db.query(`INSERT INTO widgets VALUES (1, 'a')`);
 
       await setNotNull(runner, 'widgets', 'name');
@@ -111,7 +111,7 @@ describe('migration-helpers/with-short-lock', () => {
       expect(await db.query(`SELECT conname FROM pg_constraint WHERE conrelid = 'widgets'::regclass`)).toEqual([]);
     });
 
-    it('should fail on a NULL and leave no check that would refuse NULL writes', async () => {
+    it('should fail when a row holds NULL, and leave nothing behind that would refuse new NULL writes', async () => {
       await db.query('INSERT INTO widgets VALUES (1, NULL)');
 
       await expect(setNotNull(runner, 'widgets', 'name')).rejects.toMatchObject({ driverError: { code: '23514' } });

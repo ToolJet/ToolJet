@@ -54,11 +54,12 @@ describe('getAppDataRevision', () => {
     expect(after).not.toBe(before);
   });
 
-  it('changes when a migration commits, such as a data migration that rewrites components after boot', async () => {
-    const epoch = (latest: string) => jest.fn(() => Promise.resolve([{ stamp: null, epoch: latest }]));
+  it('changes after a migration commits, such as a data migration that rewrites components while the server runs', async () => {
+    // Answers with `latest` as the newest recorded migration and no change stamp.
+    const latestMigrationIs = (latest: string) => jest.fn(() => Promise.resolve([{ stamp: null, epoch: latest }]));
 
-    const before = await getAppDataRevision(makeManager(epoch('520')), app, scope);
-    const after = await getAppDataRevision(makeManager(epoch('521')), app, scope);
+    const before = await getAppDataRevision(makeManager(latestMigrationIs('520')), app, scope);
+    const after = await getAppDataRevision(makeManager(latestMigrationIs('521')), app, scope);
 
     expect(after).not.toBe(before);
   });
