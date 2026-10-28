@@ -3,7 +3,7 @@
  * @group database
  */
 import { DataSource } from 'typeorm';
-import { HELD_MIGRATION_LOCKS_SQL } from 'src/migration-helpers/migration-locks';
+import { HELD_MIGRATION_LOCKS_SQL, MIGRATION_ACTIVE_LOCK_KEY } from 'src/migration-helpers/migration-locks';
 import {
   createScratchDatabase,
   dropScratchDatabase,
@@ -12,6 +12,7 @@ import {
   spawnPod,
   waitFor,
   watchActiveLock,
+  withScratchConnection,
 } from '../fixtures/harness';
 
 const POD_COUNT = 3;
@@ -53,31 +54,15 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
   }, 60_000);
 
   describe('no pod crashes and restarts', () => {
-    it('should finish every pod successfully, including the ones that had to wait', () => {
+    // The migrating pod sleeps that long, and the rest wait on its lock: no pod boots before the schema is ready.
+    it('should finish every pod successfully, only once the migration is done', () => {
       expect(pods.map(({ podId, exitCode }) => ({ podId, exitCode }))).toEqual([
         { podId: 'pod-1', exitCode: 0 },
         { podId: 'pod-2', exitCode: 0 },
         { podId: 'pod-3', exitCode: 0 },
       ]);
       expect(pods.map(({ result }) => result?.error)).toEqual([null, null, null]);
-    });
-
-    it('should log that the other pods are waiting, not failing', () => {
-      const waiting = pods.filter(({ stdout }) => stdout.includes('Another pod is running migrations'));
-
-      expect(waiting.length).toBe(POD_COUNT - 1);
-      waiting.forEach(({ stdout }) => {
-        expect(stdout).toContain('This pod will NOT exit.');
-        expect(stdout).toContain('Lock released');
-      });
-    });
-
-    it('should keep the waiting pods alive for the whole migration instead of exiting early', () => {
-      const waiting = pods.filter(({ stdout }) => stdout.includes('Another pod is running migrations'));
-
-      waiting.forEach(({ result }) => {
-        expect(result.durationMs).toBeGreaterThanOrEqual(MIGRATION_SLEEP_SECONDS * 1000);
-      });
+      pods.forEach(({ result }) => expect(result.durationMs).toBeGreaterThanOrEqual(MIGRATION_SLEEP_SECONDS * 1000));
     });
   });
 
@@ -95,14 +80,6 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
 
       expect(count).toBe(1);
     });
-
-    it('should have exactly one pod report it as pending, and the rest find nothing to do', () => {
-      const migrated = pods.filter(({ stdout }) => stdout.includes('1 migration(s) pending'));
-      const noWork = pods.filter(({ stdout }) => stdout.includes('No schema or data migrations pending'));
-
-      expect(migrated).toHaveLength(1);
-      expect(noWork).toHaveLength(POD_COUNT - 1);
-    });
   });
 
   /**
@@ -112,12 +89,15 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
    */
   describe('with NODE_ENV=production: the same result outside test mode', () => {
     const productionDatabase = `tooljet_migration_gate_prod_${process.pid}`;
-    let productionPods: PodOutcome[];
 
-    beforeAll(async () => {
+    afterAll(async () => {
+      await dropScratchDatabase(productionDatabase);
+    }, 60_000);
+
+    it('should still start both pods once the migration is done, and run it exactly once', async () => {
       await createScratchDatabase(productionDatabase);
       const startAt = Date.now() + 8000;
-      productionPods = await Promise.all(
+      const productionPods = await Promise.all(
         ['prod-pod-1', 'prod-pod-2'].map(
           (podId) =>
             spawnPod({
@@ -129,39 +109,16 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
             }).done
         )
       );
+
+      expect(productionPods.map(({ exitCode, result }) => ({ exitCode, error: result?.error }))).toEqual([
+        { exitCode: 0, error: null },
+        { exitCode: 0, error: null },
+      ]);
+      productionPods.forEach(({ result }) => expect(result.durationMs).toBeGreaterThanOrEqual(5000));
+      expect(
+        await withScratchConnection(productionDatabase, (db) => db.query('SELECT 1 FROM migration_witness'))
+      ).toHaveLength(1);
     }, 180_000);
-
-    afterAll(async () => {
-      await dropScratchDatabase(productionDatabase);
-    }, 60_000);
-
-    it('should still start every pod successfully', () => {
-      expect(productionPods.map(({ exitCode }) => exitCode)).toEqual([0, 0]);
-      expect(productionPods.map(({ result }) => result?.error)).toEqual([null, null]);
-    });
-
-    it('should still run the migration exactly once', async () => {
-      const connection = await new DataSource({
-        type: 'postgres',
-        ...postgres,
-        database: productionDatabase,
-      }).initialize();
-      try {
-        expect(await connection.query('SELECT 1 FROM migration_witness')).toHaveLength(1);
-      } finally {
-        await connection.destroy().catch(() => undefined);
-      }
-    });
-
-    it('should still make the second pod wait for the first instead of exiting', () => {
-      const migrated = productionPods.filter(({ stdout }) => stdout.includes('1 migration(s) pending'));
-      const waited = productionPods.filter(({ stdout }) => stdout.includes('Another pod is running migrations'));
-
-      expect(migrated).toHaveLength(1);
-      expect(waited).toHaveLength(1);
-      expect(waited[0].stdout).toContain('This pod will NOT exit.');
-      expect(waited[0].stdout).toContain('No schema or data migrations pending');
-    });
   });
 
   describe('pausing API traffic during the upgrade', () => {
@@ -173,13 +130,25 @@ describe('Several pods upgrading the same database at once (a rolling upgrade)',
       expect(await scratch.query(HELD_MIGRATION_LOCKS_SQL)).toEqual([{ running: false, migrating: false }]);
     });
 
-    it('should not pause API traffic from the pods that had no migrations to run', () => {
-      const noWork = pods.filter(({ stdout }) => stdout.includes('No schema or data migrations pending'));
+    it('should not pause API traffic from a pod that has no migrations to run', async () => {
+      // A pod that took the active lock would wait here behind this session.
+      const holder = scratch.createQueryRunner();
+      await holder.connect();
+      await holder.query('SELECT pg_advisory_lock($1)', [MIGRATION_ACTIVE_LOCK_KEY]);
+      const pod = spawnPod({ podId: 'pod-no-work', database: scratchDatabase });
+      try {
+        const outcome = await Promise.race([
+          pod.done,
+          new Promise<'hung'>((resolveHung) => setTimeout(() => resolveHung('hung'), 30_000)),
+        ]);
 
-      noWork.forEach(({ stdout }) => expect(stdout).toContain('not cutting API traffic for this boot'));
-      // Two pods found nothing; had either taken the lock, the samples would show it after the run.
-      expect(activeLockSamples[activeLockSamples.length - 1]).toBe(false);
-    });
+        expect(outcome).toMatchObject({ exitCode: 0, result: { error: null } });
+      } finally {
+        pod.child.kill('SIGKILL');
+        await holder.query('SELECT pg_advisory_unlock($1)', [MIGRATION_ACTIVE_LOCK_KEY]);
+        await holder.release();
+      }
+    }, 60_000);
 
     it('should resume API traffic as soon as a migrating pod is killed, without waiting for a timeout', async () => {
       const database = `tooljet_migration_gate_kill_${process.pid}`;
