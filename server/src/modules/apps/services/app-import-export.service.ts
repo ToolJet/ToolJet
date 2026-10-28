@@ -945,6 +945,8 @@ export class AppImportExportService {
         ? await manager
             .createQueryBuilder(App, 'app')
             .where('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            // A same-named front-end app must never be reused as the module.
+            .andWhere('app.type = :appType', { appType: APP_TYPES.MODULE })
             .andWhere(
               new Brackets((qb: any) => {
                 if (moduleAppNames.length > 0) {
