@@ -1338,14 +1338,15 @@
   display: flex;
   width: 100%;
 }
+/* The group's ends round like a single Button (the theme radius), not 2px less. */
 .n2-group.is-outline {
-  border-radius: var(--lk-radius, calc(var(--ui-radius) - 2px));
+  border-radius: var(--lk-radius, var(--ui-radius));
   box-shadow: var(--ui-shadow);
 }
 .n2-group > .ui-btn {
   width: auto;
   flex-shrink: 0;
-  border-radius: var(--lk-radius, calc(var(--ui-radius) - 2px));
+  border-radius: var(--lk-radius, var(--ui-radius));
   box-shadow: none;
 }
 .n2-group.is-full > .ui-btn {

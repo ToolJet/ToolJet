@@ -17,6 +17,9 @@ import useStore from '@/AppBuilder/_stores/store';
 const BASE_CSS = `
 :host { display: block; position: relative; font-family: var(--cc-font-family, inherit); }
 .tj-cc-root { width: 100%; height: 100%; overflow: hidden; }
+/* A control that fills its box draws its focus ring (Ant's 2px glow, the shadcn pack's 1px ring) just outside it: clipped
+   at the box, an Ant input in the editor kept its ring on the top edge only, under its label. Paint 4px past the box. */
+@supports (overflow-clip-margin: 4px) { .tj-cc-root { overflow: clip; overflow-clip-margin: 4px; } }
 .tj-cc-root.tj-cc-fit { height: auto; overflow: visible; }
 .tj-cc-root.tj-cc-fit > * { height: auto; }
 .tj-cc-root.tj-cc-fit.tj-cc-stretch, .tj-cc-root.tj-cc-fit.tj-cc-stretch > * { height: 100%; }
@@ -29,11 +32,14 @@ const BASE_CSS = `
 // A pack maps them onto its own variables (the shadcn pack: --ui-*), or reads them directly.
 // The app theme as --tj-* tokens, defined only when the host has tj-themed: a pack drawn in its own design system
 // (manifest themeMode "own") gets them only once the app applies a theme, and falls back to its stock look otherwise.
+// A theme's small and large radius are optional, and 0 means not set (the shipped ToolJet themes save 6/0/0): either
+// one at 0 follows the default radius as stock Ant's scale does (6/4/8), else Ant drew square cards, tags and Segmented
+// thumbs beside 6px inputs. max(set, min(derived, (1px - set) * 1000)) is the set value from 1px up, the derived one at 0.
 const TOKEN_CSS = `
 :host(.tj-themed) {
   --tj-radius: var(--cc-radius-default, 6px);
-  --tj-radius-small: var(--cc-radius-small, 4px);
-  --tj-radius-large: var(--cc-radius-large, 12px);
+  --tj-radius-small: max(var(--cc-radius-small, 0px), min(max(0px, var(--tj-radius) - 2px), (1px - var(--cc-radius-small, 0px)) * 1000));
+  --tj-radius-large: max(var(--cc-radius-large, 0px), min(var(--tj-radius) + min(var(--tj-radius), 2px), (1px - var(--cc-radius-large, 0px)) * 1000));
   --tj-on-brand: var(--cc-on-primary-brand, #ffffff);
   --tj-brand: var(--cc-primary-brand, #4368e3);
   --tj-brand-strong: var(--cc-primary-brand-strong, var(--cc-primary-brand, #4368e3));
