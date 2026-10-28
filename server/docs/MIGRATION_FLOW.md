@@ -347,7 +347,7 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 | `test/modules/migrations/e2e/with-short-lock.spec.ts` | Short-lock steps against a held reader lock: give up within the timeout, succeed once released, inline inside an open transaction; `setNotNull` sets the column and leaves no check, even when it fails |
 | `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds, non-empty `down()`; contract migrations never drop what an entity still maps |
 | `test/modules/migrations/e2e/legacy-upgrade-equivalence.spec.ts` | A 3.21.58 database upgraded async (expand, backfill, contract) ends with the same schema and rows as a single-transaction upgrade; contract held back once; a failed backfill puts the loosened rules back. Delete with `legacy-3-21-58-upgrade.ts` |
-| `test/modules/migrations/unit/lock-probe.spec.ts` | Which table locks each phase may take on an existing table (`classifyLocks`). CI runs `npm run db:probe-locks` on a copy of the migration snapshot with the PR's new migrations, one transaction per step, and fails on a forbidden lock; fixtures in `fixtures/lock-probe/` |
+| `test/modules/migrations/unit/lock-probe.spec.ts` | Which table locks each phase may take on an existing table (`classifyLocks`). CI runs `npm run db:probe-locks` on a copy of the migration snapshot with the PR's new migrations, one transaction per step, and fails on a forbidden lock |
 | `test/modules/migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output (both progress formats), redaction, failed step |
 | `test/modules/app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races across servers, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, progress counts in the status, status cache, fail-open |
 | `test/modules/migrations/unit/migrate-before-boot.spec.ts` | Blocking mode runs nothing, async runs the expand phase, fresh install runs full setup, a failed expand phase fails boot |
@@ -355,10 +355,13 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 
 The e2e specs run the real `run()` against a scratch database. Fixtures are in `test/modules/migrations/fixtures/`:
 
-- `concurrent-pods/`: the lock sentinels and a slow expand migration (`1790700000001`, after the cutoff).
-- `split-phases/`: a schema `ADD VALUE` and a backfill migration that uses it.
-- `contract-phase/`: an expand migration that adds a column, and a contract migration that drops it.
-- `legacy/`: one pre-cutoff migration.
+- `harness.ts`, `pod.ts`: scratch databases and the pod process the specs spawn.
+- One folder per set, each with `expand/`, `backfill/` and `contract/` like `server/migrations/`:
+  - `concurrent-pods/`: the lock sentinels (every set loads them) and a slow expand migration (`1790700000001`, after the cutoff).
+  - `split-phases/`: an expand `ADD VALUE` and a backfill migration that uses it.
+  - `contract-phase/`: an expand migration that adds a column, and a contract migration that drops it.
+  - `backfill-before-commit/`: a backfill whose index build waits for `beforeCommit()`.
+  - `pre-cutoff/`: one pre-cutoff migration.
 - `legacy-3-21-58/database.sql`: a seeded 3.21.58 database (synthetic data, secrets redacted), loaded as plain SQL. The equivalence spec runs the real migrations on it.
 
 `pod.ts` loads the sentinels and the migrations of `FIXTURE_SET`, and exits 75 when `run()` returns false. The specs start pods with `process.execPath`, **not** `npx`, because `npx` does not forward SIGKILL and leaves the pod orphaned.
