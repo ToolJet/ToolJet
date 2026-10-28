@@ -115,7 +115,19 @@ const DROP_WITHOUT_IF_EXISTS =
  * Contract runs after writes reopen, one short transaction per step, so up() goes through
  * withShortLock / setNotNull, never queryRunner directly, and every step is safe to run twice.
  */
-function contractViolations({ file, text }: MigrationSource): string[] {
+/** Class names in every phase folder. */
+function migrationClassNames(): Set<string> {
+  return new Set(
+    ['expand', 'backfill', 'contract'].flatMap((phase) =>
+      readdirSync(join(SERVER_ROOT, 'migrations', phase))
+        .filter((name) => name.endsWith('.ts'))
+        .map((name) => readFileSync(join(SERVER_ROOT, 'migrations', phase, name), 'utf8').match(/class\s+(\w+)/)?.[1])
+        .filter((name): name is string => !!name)
+    )
+  );
+}
+
+function contractViolations({ file, text }: MigrationSource, knownMigrations: ReadonlySet<string>): string[] {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const cls = migrationClass(source);
   if (!cls) return [`${file}: no migration class found. ${RULES_DOC}`];
@@ -151,6 +163,18 @@ function contractViolations({ file, text }: MigrationSource): string[] {
   if (up?.body && DROP_WITHOUT_IF_EXISTS.test(codeIn(up.body).sql)) {
     violations.push(
       `${file}: every DROP in up() needs IF EXISTS, so a rerun after a partial run succeeds. ${RULES_DOC}`
+    );
+  }
+
+  const requires = cls.members.find(
+    (member): member is ts.PropertyDeclaration =>
+      ts.isPropertyDeclaration(member) && member.name.getText() === 'requires'
+  )?.initializer;
+  const required = requires && ts.isStringLiteralLike(requires) ? requires.text : undefined;
+  if (!required || !knownMigrations.has(required)) {
+    violations.push(
+      `${file}: requires must name the migration of the release that stopped using what this removes` +
+        `${required ? ` (no migration ${required})` : ''}. ${RULES_DOC}`
     );
   }
 
@@ -425,7 +449,7 @@ export class Sample1799999999999 implements MigrationInterface {
 describe('Migration authoring rules | contract migrations', () => {
   const contract = (
     up: string,
-    header = 'transaction = false;',
+    header = "transaction = false; requires = 'StopReadingSlug1799999999998';",
     down = '// re-adding the column restores nothing'
   ) => ({
     file: 'migrations/contract/1799999999999-Sample.ts',
@@ -438,13 +462,24 @@ export class Sample1799999999999 implements MigrationInterface {
 }`,
   });
   const shortDrop = "await withShortLock(queryRunner, ['ALTER TABLE apps DROP COLUMN IF EXISTS slug']);";
+  const known = new Set(['StopReadingSlug1799999999998']);
 
   it('should pass a step that goes through withShortLock', () => {
-    expect(contractViolations(contract(shortDrop))).toEqual([]);
+    expect(contractViolations(contract(shortDrop), known)).toEqual([]);
   });
 
   it.each([
-    ['runs inside a transaction', contract(shortDrop, ''), 'declare transaction = false'],
+    [
+      'runs inside a transaction',
+      contract(shortDrop, "requires = 'StopReadingSlug1799999999998';"),
+      'declare transaction = false',
+    ],
+    ['names no requires', contract(shortDrop, 'transaction = false;'), 'requires must name'],
+    [
+      'requires an unknown migration',
+      contract(shortDrop, "transaction = false; requires = 'Nope1799999999997';"),
+      'no migration Nope1799999999997',
+    ],
     [
       'calls queryRunner directly',
       contract('await queryRunner.query(`ALTER TABLE apps DROP COLUMN IF EXISTS slug`);'),
@@ -455,13 +490,20 @@ export class Sample1799999999999 implements MigrationInterface {
       contract("await withShortLock(queryRunner, ['ALTER TABLE apps DROP COLUMN slug']);"),
       'needs IF EXISTS',
     ],
-    ['has an empty down()', contract(shortDrop, 'transaction = false;', ''), 'down() is missing or empty'],
+    [
+      'has an empty down()',
+      contract(shortDrop, "transaction = false; requires = 'StopReadingSlug1799999999998';", ''),
+      'down() is missing or empty',
+    ],
   ])('should flag a contract migration that %s', (_how, source, message) => {
-    expect(contractViolations(source)).toEqual([expect.stringContaining(message)]);
+    expect(contractViolations(source, known)).toEqual([expect.stringContaining(message)]);
   });
 
   it('should keep contract migrations to short, rerunnable steps', () => {
-    const violations = migrationsNewerThanCutoff('migrations/contract').flatMap((source) => contractViolations(source));
+    const known = migrationClassNames();
+    const violations = migrationsNewerThanCutoff('migrations/contract').flatMap((source) =>
+      contractViolations(source, known)
+    );
     expect(violations).toEqual([]);
   });
 });

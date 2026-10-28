@@ -9,6 +9,7 @@ import {
   getMigrationMode,
   isMigrationTrafficGateDisabled,
   parseMigrationPhase,
+  planContract,
   runStrategy,
 } from 'src/migration-helpers/migration-mode';
 
@@ -75,6 +76,31 @@ describe('migration-helpers/migration-mode', () => {
       }
     );
   });
+  describe('planContract | removals wait until an earlier upgrade ran the release that stopped using them', () => {
+    const contract = { name: 'DropOldIcon1799000000002', requires: 'StopReadingOldIcon1799000000001' };
+
+    it.each([
+      ['recorded by an earlier upgrade', new Map([['StopReadingOldIcon1799000000001', 40]]), 50, 'run'],
+      [
+        'recorded by this upgrade (a skipped release)',
+        new Map([['StopReadingOldIcon1799000000001', 60]]),
+        50,
+        'deferred',
+      ],
+      ['not recorded yet', new Map<string, number>(), 50, 'deferred'],
+      ['on a fresh install', new Map<string, number>(), 0, 'run'],
+    ])('should %s → %s', (_when, recorded, baseline, outcome) => {
+      const plan = planContract([contract], recorded, baseline);
+      expect(outcome === 'run' ? plan.run : plan.deferred.map(({ name }) => name)).toEqual([contract.name]);
+    });
+
+    it('should hold back a contract that names no requires migration', () => {
+      expect(planContract([{ name: contract.name }], new Map(), 50).deferred).toEqual([
+        { name: contract.name, waitingFor: 'a requires migration' },
+      ]);
+    });
+  });
+
   describe('blocksAsyncUpgrade | which pending migrations force the one-transaction upgrade', () => {
     it.each([
       ['LegacyWitness1700000000004', true],

@@ -3,6 +3,7 @@ import { withShortLock } from '../../../../../../src/migration-helpers/with-shor
 
 export class DropFixtureGadgetsLegacy1790700000011 implements MigrationInterface {
   transaction = false;
+  requires = 'CreateFixtureGadgets1790700000010';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await withShortLock(queryRunner, ['ALTER TABLE fixture_gadgets DROP COLUMN IF EXISTS legacy']);
