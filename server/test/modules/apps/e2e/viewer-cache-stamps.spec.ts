@@ -9,6 +9,7 @@ import { PageUser } from '@entities/page_users.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { PAGE_PERMISSION_TYPE } from '@modules/app-permissions/constants';
 import { getAppDataRevision } from '@modules/apps/app-data-revision';
+import { MIGRATION_ACTIVE_LOCK_KEY } from 'src/migration-helpers/migration-locks';
 import {
   initTestApp,
   closeTestApp,
@@ -191,14 +192,42 @@ describe('Viewer cache change stamps | database triggers', () => {
     });
   });
 
-  describe("the viewer's groups", () => {
-    const revision = (app: App) =>
-      getAppDataRevision(getDefaultDataSource().manager, app, {
-        versionId: app.currentVersionId,
-        userId: user.id,
-        licenseTerms: {},
-      });
+  const revision = (app: App) =>
+    getAppDataRevision(getDefaultDataSource().manager, app, {
+      versionId: app.currentVersionId,
+      userId: user.id,
+      licenseTerms: {},
+    });
 
+  describe('migrations', () => {
+    // A data migration can rewrite components while this server already serves, so a copy read mid-run
+    // must not be cached under the key the app has once the run commits.
+    it('change the key when a migration is recorded, and mark it while one is running', async () => {
+      const { app } = await createReleasedApp('Migrated');
+      const released = await findEntity(App, { id: app.id });
+      const before = await revision(released);
+
+      await query("SELECT nextval('migrations_id_seq')");
+      const recorded = await revision(released);
+      expect(recorded).not.toBe(before);
+
+      const runner = getDefaultDataSource().createQueryRunner();
+      await runner.connect();
+      try {
+        await runner.query('SELECT pg_advisory_lock($1)', [MIGRATION_ACTIVE_LOCK_KEY]);
+        const running = await revision(released);
+        expect(running).not.toBe(recorded);
+        expect(running).not.toBe(before);
+
+        await runner.query('SELECT pg_advisory_unlock($1)', [MIGRATION_ACTIVE_LOCK_KEY]);
+        expect(await revision(released)).toBe(recorded);
+      } finally {
+        await runner.release();
+      }
+    });
+  });
+
+  describe("the viewer's groups", () => {
     it('change the key when the viewer joins or leaves a group with access to the app', async () => {
       const { app } = await createReleasedApp('Group members');
       const released = await findEntity(App, { id: app.id });
