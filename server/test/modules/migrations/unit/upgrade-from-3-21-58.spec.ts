@@ -1,4 +1,7 @@
-/** @group database */
+/**
+ * Covers: migration-helpers/legacy-3-21-58-upgrade.ts
+ * @group database
+ */
 import { readdirSync } from 'fs';
 import { join } from 'path';
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';

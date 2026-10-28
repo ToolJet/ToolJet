@@ -1,5 +1,5 @@
 import { QueryRunner } from 'typeorm';
-import { DataMigration } from '../../../../../../src/migration-helpers/migration-mode';
+import { DataMigration } from '../../../../../../../src/migration-helpers/migration-mode';
 
 /** Fills rows in up(); builds the index in beforeCommit(), after every later data. */
 export class FillFixtureRows1790700000021 implements DataMigration {

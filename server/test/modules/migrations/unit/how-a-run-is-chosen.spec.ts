@@ -1,8 +1,13 @@
-/** @group database */
+/**
+ * Covers: migration-helpers/migration-mode.ts, migrate-before-boot.ts, enum-value-additions.ts,
+ * docker/LTS/cloud/cloud-entrypoint.sh
+ * @group database
+ */
 import { chmodSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { execFileSync } from 'child_process';
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';
+import { Migration } from 'typeorm';
 import {
   ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS,
   blocksAsyncUpgrade,
@@ -14,6 +19,32 @@ import {
   planCleanup,
   runStrategy,
 } from 'src/migration-helpers/migration-mode';
+import { bareTypeName, extractEnumValueAdditions } from 'src/migration-helpers/enum-value-additions';
+import { migrateSchemaBeforeBoot } from 'src/migration-helpers/migrate-before-boot';
+import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/harness';
+
+// --- Helpers ---
+
+// The test database is migrated, so it is never a fresh install. The command stands in for setup.
+const exitsZeroOnlyInSchemaPhase = `node -e "process.exit(process.env.MIGRATION_PHASE === 'schema' ? 0 : 7)"`;
+const exitsZeroOnlyWithoutPhase = `node -e "process.exit(process.env.MIGRATION_PHASE ? 7 : 0)"`;
+const scratch = (database: string) => ({
+  host: postgres.host,
+  port: postgres.port,
+  user: postgres.username,
+  password: postgres.password,
+  database,
+});
+
+// Builds a Migration-shaped stub whose up().toString() contains `sql` as a literal,
+// mimicking how real migrations embed SQL and how extractEnumValueAdditions reads it
+// via Function.prototype.toString(). We override toString directly so the SQL lands in
+// the source text verbatim (a closure variable would only show up as `${sql}`).
+function migrationWithUpSql(name: string, sql: string): Migration {
+  const up = (async () => undefined) as (...args: unknown[]) => Promise<unknown>;
+  up.toString = () => `async up(queryRunner) { await queryRunner.query(\`${sql}\`); }`;
+  return { name, instance: { up, down: async () => undefined } } as unknown as Migration;
+}
 
 describe('migration-helpers/migration-mode', () => {
   describe('Cloud entrypoint | what it runs before boot', () => {
@@ -175,6 +206,112 @@ describe('migration-helpers/migration-mode', () => {
           .map((file) => readFileSync(join(root, dir, file), 'utf8').match(/export class (\w+)/)?.[1])
       );
       expect([...ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS].filter((name) => !classes.includes(name))).toEqual([]);
+    });
+  });
+});
+
+describe('migration-helpers/migrate-before-boot', () => {
+  describe('migrateSchemaBeforeBoot | schema before Nest boots', () => {
+    beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => undefined));
+    afterEach(() => jest.restoreAllMocks());
+
+    it('should run nothing in blocking mode: the entrypoint already migrated', async () => {
+      await expect(migrateSchemaBeforeBoot({ MIGRATION_SETUP_COMMAND: 'exit 1' })).resolves.toBeUndefined();
+    });
+
+    it('should run setup with MIGRATION_PHASE=schema in async mode', async () => {
+      await expect(
+        migrateSchemaBeforeBoot({ MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: exitsZeroOnlyInSchemaPhase })
+      ).resolves.toBeUndefined();
+    });
+
+    describe('on a fresh install | full setup, no MIGRATION_PHASE', () => {
+      const emptyDatabase = `tooljet_async_mode_empty_${process.pid}`;
+      const freshSetup = { MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: exitsZeroOnlyWithoutPhase };
+
+      afterAll(() => dropScratchDatabase(emptyDatabase), 60_000);
+
+      it('should run the full setup when the database does not exist', async () => {
+        await expect(
+          migrateSchemaBeforeBoot(freshSetup, scratch(`tooljet_async_mode_missing_${process.pid}`))
+        ).resolves.toBeUndefined();
+      });
+
+      it('should run the full setup when the database has no migrations table', async () => {
+        await createScratchDatabase(emptyDatabase);
+        await expect(migrateSchemaBeforeBoot(freshSetup, scratch(emptyDatabase))).resolves.toBeUndefined();
+      }, 60_000);
+    });
+
+    it('should fail the boot when the schema run fails', async () => {
+      await expect(
+        migrateSchemaBeforeBoot({ MIGRATION_MODE: 'async', MIGRATION_SETUP_COMMAND: 'exit 3' })
+      ).rejects.toThrow('Migrations before boot failed (exit 3) and were rolled back.');
+    });
+  });
+});
+
+describe('migration-helpers/enum-value-additions', () => {
+  describe('bareTypeName', () => {
+    it('should return an unquoted, un-schema-qualified type name for every form', () => {
+      expect(bareTypeName('source')).toBe('source');
+      expect(bareTypeName('"resource_type"')).toBe('resource_type');
+      expect(bareTypeName('"public"."resource_type"')).toBe('resource_type');
+    });
+  });
+
+  describe('extractEnumValueAdditions', () => {
+    // One case per real migration SQL form shipped in server/migrations, so a future
+    // regex tweak that stops matching any variant fails here.
+    it.each([
+      [`ALTER TYPE source ADD VALUE 'openid'`, 'source', 'openid'],
+      [`ALTER TYPE "page_type_enum" ADD VALUE 'custom';`, 'page_type_enum', 'custom'],
+      [`ALTER TYPE "git_type" ADD VALUE 'gitlab';`, 'git_type', 'gitlab'],
+      [`ALTER TYPE "resource_type" ADD VALUE IF NOT EXISTS 'folder';`, 'resource_type', 'folder'],
+      [`ALTER TYPE "resource_type" ADD VALUE IF NOT EXISTS 'workflow';`, 'resource_type', 'workflow'],
+      [`ALTER TYPE "app_type" ADD VALUE IF NOT EXISTS 'module';`, 'app_type', 'module'],
+      [
+        `ALTER TYPE "public"."resource_type" ADD VALUE IF NOT EXISTS 'workflow_folder';`,
+        'resource_type',
+        'workflow_folder',
+      ],
+    ])('should extract %s', (sql, typeName, value) => {
+      const [addition, ...rest] = extractEnumValueAdditions([migrationWithUpSql('M1', sql)]);
+      expect(rest).toHaveLength(0);
+      expect(addition).toMatchObject({ typeName, value, migrationName: 'M1' });
+    });
+
+    it('should preserve the schema-qualified type expression verbatim for the ALTER statement', () => {
+      const [addition] = extractEnumValueAdditions([
+        migrationWithUpSql('M1', `ALTER TYPE "public"."resource_type" ADD VALUE IF NOT EXISTS 'workflow_folder'`),
+      ]);
+      expect(addition.typeExpression).toBe('"public"."resource_type"');
+    });
+
+    it('should extract every addition when one migration adds several values', () => {
+      const sql = `
+        ALTER TYPE "resource_type" ADD VALUE IF NOT EXISTS 'workflow';
+        ALTER TYPE "resource_type" ADD VALUE IF NOT EXISTS 'workflow_folder';
+      `;
+      expect(extractEnumValueAdditions([migrationWithUpSql('M1', sql)])).toMatchObject([
+        { value: 'workflow' },
+        { value: 'workflow_folder' },
+      ]);
+    });
+
+    it('should ignore CREATE TYPE — only ALTER TYPE ADD VALUE is pre-committed', () => {
+      const sql = `CREATE TYPE "app_type" AS ENUM ('front-end', 'workflow');`;
+      expect(extractEnumValueAdditions([migrationWithUpSql('M1', sql)])).toEqual([]);
+    });
+
+    it('should skip migrations without an up() implementation', () => {
+      const noUp = { name: 'M1', instance: undefined } as unknown as Migration;
+      expect(extractEnumValueAdditions([noUp])).toEqual([]);
+    });
+
+    it('should return nothing for a migration that touches no enum', () => {
+      const sql = `ALTER TABLE "permission_groups" ADD COLUMN "workflow_folder_create" boolean NOT NULL DEFAULT false;`;
+      expect(extractEnumValueAdditions([migrationWithUpSql('M1', sql)])).toEqual([]);
     });
   });
 });

@@ -44,7 +44,7 @@ entrypoint → wait-for-it (PostgreSQL) → npm run db:setup:prod → exec "$@" 
 - **Every pod runs migrations.** There is no separate migration job, so 20 pods start 20 runners. [Many pods, one migration](#many-pods-one-migration) explains how only one of them migrates.
 - **The runner is not the server.** It is a plain Node process without NestJS (no `ConfigService`, no DI). It reads config with `getEnvVars()` and opens its own connections.
 - **Config.** `getEnvVars()` puts the env file over `process.env`: a key in `.env` wins over an exported shell variable, and a key missing from the file comes from `process.env`. The e2e specs rely on this.
-- **`NODE_ENV`** only picks the file (`test` → `../.env.test`, else `../.env`). Coordination does not depend on it (`concurrent-migrations.spec.ts` checks this). With `NODE_ENV=test`, `ormconfig.ts` lists no migrations, so the e2e pods bring their own DataSources.
+- **`NODE_ENV`** only picks the file (`test` → `../.env.test`, else `../.env`). Coordination does not depend on it (`pods-upgrading-together.spec.ts` checks this). With `NODE_ENV=test`, `ormconfig.ts` lists no migrations, so the e2e pods bring their own DataSources.
 - **Async mode** skips this step in the entrypoint. The entrypoint exports the command as `MIGRATION_SETUP_COMMAND` and the server runs it.
 
 ## Phases and transactions
@@ -205,7 +205,7 @@ Removals wait for `CleanupLegacyBranchModel`, one upgrade later. It first reruns
 - Before each step it checks whether any server holds the migration lock; if one does, it stops and the remaining steps run on the next boot.
 - Each step is its own short transaction (`withShortLock`). A step that fails stays pending; the run stays `succeeded` and writes stay open. Its output goes to the pod log only.
 - **Held back on a skipped release.** Each cleanup names in `requires` a migration of the release that stopped using what it removes. It runs only if that migration was recorded before this code first ran: `migration_baselines` keeps, per newest migration the code ships (`code_head`), the last migration id recorded when its first runner started (0 on a fresh install, where everything runs). An instance that skipped that release records it in the same upgrade, so the cleanup waits for the next one and the previous image can still roll back. Single-transaction runs apply the same rule.
-- Cleanup migrations declare `transaction = false`, change tables only through `withShortLock` / `setNotNull`, and use `IF EXISTS` on every drop (`migration-authoring-rules.spec.ts`).
+- Cleanup migrations declare `transaction = false`, change tables only through `withShortLock` / `setNotNull`, and use `IF EXISTS` on every drop (`writing-a-migration.spec.ts`).
 
 ### Serving during a run
 
@@ -340,28 +340,29 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 
 | File | Covers |
 |---|---|
-| `test/modules/migrations/unit/migration-locks.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out (checked against files on disk) |
-| `test/modules/migrations/unit/migration-mode.spec.ts` | Mode selection (Cloud follows `MIGRATION_MODE`), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist |
+| `test/modules/migrations/unit/how-a-run-is-chosen.spec.ts` | Mode selection (Cloud follows `MIGRATION_MODE`), opt-out, end-user banner text, `MIGRATION_PHASE` parsing, cleanup hold-back plan, `blocksAsyncUpgrade` and allowlist names exist; the Cloud entrypoint's setup steps; schema before boot (blocking runs nothing, async runs the schema phase, fresh install runs full setup, a failed schema phase fails boot); enum `ADD VALUE` scanning |
+| `test/modules/migrations/unit/one-runner-at-a-time.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out (checked against files on disk) |
+| `test/modules/migrations/unit/run-progress-and-logs.spec.ts` | Run rebuilt from runner output (both progress formats), redaction, failed step |
+| `test/modules/migrations/unit/writing-a-migration.spec.ts` | The rules in `migration-lint.ts`, one example each, then every real migration against them: schema only adds, non-empty `down()`, data keeps lock-taking steps to `beforeCommit()`, cleanup steps are short and rerunnable and never drop what an entity still maps, the pre-cutoff list is frozen. Also which table locks each phase may take (`classifyLocks`); CI runs `npm run db:probe-locks` on a copy of the migration snapshot with the PR's new migrations, one transaction per step, and fails on a forbidden lock |
+| `test/modules/migrations/unit/upgrade-from-3-21-58.spec.ts` | Legacy variants, loosen and restore steps for the 3.21.58 upgrade. Delete with `legacy-3-21-58-upgrade.ts` |
+| `test/modules/migrations/e2e/pods-upgrading-together.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, a `NODE_ENV=production` race, active lock only during work and released on SIGKILL |
+| `test/modules/migrations/e2e/schema-then-data-then-cleanup.spec.ts` | Split phases: schema then data, single-transaction run for an old database, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long data phase. Another run in progress: exit 75 with skip-if-locked, wait behind a locked `migrations` table. `statement_timeout=0` and keepalive on runner connections. Cleanup: inside a single-transaction run, left out of the data phase, held back until its `requires` was recorded, stops while a run holds the migration lock, never makes a data run skip. Data `beforeCommit()` and deadlock retry |
+| `test/modules/migrations/e2e/short-lock-steps.spec.ts` | Short-lock steps against a held reader lock: give up within the timeout, succeed once released, inline inside an open transaction; `setNotNull` sets the column and leaves no check, even when it fails |
+| `test/modules/migrations/e2e/upgrade-from-3-21-58.spec.ts` | A 3.21.58 database upgraded async (schema, data, cleanup) ends with the same schema and rows as a single-transaction upgrade; cleanup held back once; a failed data puts the loosened rules back; reads find 3.21.58 rows with no branch on the default branch. Delete with `legacy-3-21-58-upgrade.ts` |
 | `test/modules/app/unit/migration-gate.middleware.spec.ts` | Blocking mode passes everything, gated vs ungated paths, 503 per state, what passes in async mode, opt-out log |
-| `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, active lock only during work and released on SIGKILL, a `NODE_ENV=production` race. Split phases: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long data phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, single-transaction run for an old database, `statement_timeout=0` on runner connections. Cleanup: inside a single-transaction run, left out of the data phase, stops while a run holds the migration lock, never makes a data run skip |
-| `test/modules/migrations/e2e/with-short-lock.spec.ts` | Short-lock steps against a held reader lock: give up within the timeout, succeed once released, inline inside an open transaction; `setNotNull` sets the column and leaves no check, even when it fails |
-| `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds, non-empty `down()`; cleanup migrations never drop what an entity still maps |
-| `test/modules/migrations/e2e/legacy-upgrade-equivalence.spec.ts` | A 3.21.58 database upgraded async (schema, data, cleanup) ends with the same schema and rows as a single-transaction upgrade; cleanup held back once; a failed data puts the loosened rules back. Delete with `legacy-3-21-58-upgrade.ts` |
-| `test/modules/migrations/unit/lock-probe.spec.ts` | Which table locks each phase may take on an existing table (`classifyLocks`). CI runs `npm run db:probe-locks` on a copy of the migration snapshot with the PR's new migrations, one transaction per step, and fails on a forbidden lock |
-| `test/modules/migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output (both progress formats), redaction, failed step |
 | `test/modules/app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races across servers, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, progress counts in the status, status cache, fail-open |
-| `test/modules/migrations/unit/migrate-before-boot.spec.ts` | Blocking mode runs nothing, async runs the schema phase, fresh install runs full setup, a failed schema phase fails boot |
 | `test/modules/app/unit/graceful-shutdown.spec.ts` | Shutdown runs once per signal burst, exits 1 past the 20s deadline or when it throws |
 
 The e2e specs run the real `run()` against a scratch database. Fixtures are in `test/modules/migrations/fixtures/`:
 
-- `harness.ts`, `pod.ts`: scratch databases and the pod process the specs spawn.
-- One folder per set, each with `schema/`, `data/` and `cleanup/` like `server/migrations/`:
+- `harness.ts`, `pod.ts`: scratch databases and the pod process the specs spawn. `migration-files.ts`: reads this repo's migrations and entities for the rule checks in `migration-lint.ts`.
+- `fake-runner.js`: a stand-in runner for `test/modules/app/e2e/migration-runs.spec.ts`.
+- `migration-sets/`: one folder per set, each with `schema/`, `data/` and `cleanup/` like `server/migrations/`:
   - `concurrent-pods/`: the lock sentinels (every set loads them) and a slow schema migration (`1790700000001`, after the cutoff).
   - `split-phases/`: a schema `ADD VALUE` and a data migration that uses it.
   - `cleanup-phase/`: a schema migration that adds a column, and a cleanup migration that drops it.
   - `data-before-commit/`: a data migration whose index build waits for `beforeCommit()`.
   - `pre-cutoff/`: one pre-cutoff migration.
-- `legacy-3-21-58/database.sql`: a seeded 3.21.58 database (synthetic data, secrets redacted), loaded as plain SQL. The equivalence spec runs the real migrations on it.
+- `3-21-58-database.sql`: a seeded 3.21.58 database (synthetic data, secrets redacted), loaded as plain SQL. `e2e/upgrade-from-3-21-58.spec.ts` runs the real migrations on it.
 
 `pod.ts` loads the sentinels and the migrations of `FIXTURE_SET`, and exits 75 when `run()` returns false. The specs start pods with `process.execPath`, **not** `npx`, because `npx` does not forward SIGKILL and leaves the pod orphaned.

@@ -8,6 +8,7 @@
 import { ChildProcess, spawn } from 'child_process';
 import { join, resolve } from 'path';
 import { DataSource } from 'typeorm';
+import { HELD_MIGRATION_LOCKS_SQL } from 'src/migration-helpers/migration-locks';
 
 export const SERVER_ROOT = resolve(__dirname, '../../../..');
 const POD_SCRIPT = join(SERVER_ROOT, 'test/modules/migrations/fixtures/pod.ts');
@@ -39,7 +40,7 @@ export interface PodOptions {
   /** Shared wall-clock release instant, so start-up jitter cannot decide who wins a race. */
   startAt?: number;
   migrationSleepSeconds?: number;
-  /** Fixture directory under `fixtures/` (default `concurrent-pods`) whose migrations the pod runs. */
+  /** Fixture directory under `fixtures/migration-sets/` (default `concurrent-pods`) whose migrations the pod runs. */
   fixtureSet?: string;
   /** Extra env for the pod. Keys absent from `.env.test` survive `getEnvVars()`. */
   env?: Record<string, string>;
@@ -152,4 +153,21 @@ export async function waitFor<T>(
     await new Promise((resolveSleep) => setTimeout(resolveSleep, intervalMs));
   }
   throw new Error(`Timed out after ${timeoutMs}ms waiting for ${describeWhat}. Last value: ${JSON.stringify(last)}`);
+}
+
+export interface HeldLocks {
+  running: boolean;
+  migrating: boolean;
+}
+
+export const heldLocks = async (connection: DataSource): Promise<HeldLocks> =>
+  (await connection.query(HELD_MIGRATION_LOCKS_SQL))[0];
+
+/** Samples the active lock throughout the run, so the spec can see it taken AND released. */
+export function watchActiveLock(connection: DataSource) {
+  const samples: boolean[] = [];
+  const timer = setInterval(() => {
+    void heldLocks(connection).then(({ migrating }) => samples.push(migrating));
+  }, 100);
+  return { samples, stop: () => clearInterval(timer) };
 }
