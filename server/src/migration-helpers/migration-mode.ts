@@ -11,9 +11,8 @@ export function isMigrationTrafficGateDisabled(env: Env = process.env): boolean 
 /** blocking: entrypoint migrates before boot. async: server migrates in the background. */
 export type MigrationMode = 'blocking' | 'async';
 
-/** Cloud always migrates before boot: it has no migrations page, and its deploy sets the env. */
+/** Every edition, Cloud included: the deploy sets MIGRATION_MODE. */
 export function getMigrationMode(env: Env = process.env): MigrationMode {
-  if (env.TOOLJET_EDITION === 'cloud') return 'blocking';
   return env.MIGRATION_MODE === 'async' ? 'async' : 'blocking';
 }
 
@@ -22,7 +21,7 @@ export function isServerManagedMigrationMode(env: Env = process.env): boolean {
   return getMigrationMode(env) !== 'blocking';
 }
 
-/** The entrypoint exports its edition's command (Cloud: cloud:setup:prod). */
+/** The entrypoint exports its edition's database-only command. */
 export function setupCommand(env: Env = process.env): string {
   return env.MIGRATION_SETUP_COMMAND || (env.NODE_ENV === 'production' ? 'npm run db:setup:prod' : 'npm run db:setup');
 }
