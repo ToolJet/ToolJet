@@ -5,9 +5,7 @@
       "ee": 16.5
     },
     "files": {
-      "src/modules/ai/services/ai-attachment-cleanup.listener.ts": 95,
-      "ee/ai/helpers/component-type-validator.ts": 95,
-      "ee/ai/ai-cache.ts": 80
+      "src/modules/ai/services/ai-attachment-cleanup.listener.ts": 95
     }
   },
   "frontend": {
