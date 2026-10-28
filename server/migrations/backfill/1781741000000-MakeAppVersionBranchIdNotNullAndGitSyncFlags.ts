@@ -57,6 +57,11 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
       ALTER TABLE app_versions DROP CONSTRAINT IF EXISTS chk_app_versions_branched_implies_draft
     `);
 
+    // The old single-draft indexes have no is_synced exemption, so the branch_id backfill below would
+    // collide on gitsync-off apps with several drafts. Rebuilt with the exemption in step 3.
+    await queryRunner.query(`DROP INDEX IF EXISTS app_versions_app_default_branch_draft_unique`);
+    await queryRunner.query(`DROP INDEX IF EXISTS app_versions_app_default_branch_draft_unique_ensure_single_stub`);
+
     // ── 3. Backfill branch_id = org default branch, then enforce NOT NULL ────────
     // Covers the remaining NULL rows: DRAFT version rows and PUBLISHED rows.
     // Workflows are excluded from the backfill and from the NOT NULL requirement below —
@@ -146,7 +151,6 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     // operates a single row. So per (app_id, branch_id) there must be at most one
     // is_synced row for each is_stub value — one (is_synced, non-stub draft)
     // and one (is_synced, stub draft). Rows with is_synced = false are exempt.
-    await queryRunner.query(`DROP INDEX IF EXISTS app_versions_app_default_branch_draft_unique`);
     await queryRunner.query(`
       CREATE UNIQUE INDEX app_versions_app_default_branch_draft_unique
         ON app_versions (app_id, branch_id)
@@ -155,7 +159,6 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
           AND is_stub = false
           AND is_synced = true
     `);
-    await queryRunner.query(`DROP INDEX IF EXISTS app_versions_app_default_branch_draft_unique_ensure_single_stub`);
     await queryRunner.query(`
       CREATE UNIQUE INDEX app_versions_app_default_branch_draft_unique_ensure_single_stub
         ON app_versions (app_id, branch_id)
