@@ -27,7 +27,21 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, usePopupContainer, useThemeStyles } from '../lib/MuiProvider';
 import { PALETTE_COLORS } from '../lib/field';
-import { followSelection, idGroup, readField, repeatedIds, rowIdOf, rowIdText, rowKeyOf, sameRecord, slotNames, str, toKeyedItems, toRows, type Row } from '../lib/data';
+import {
+  followSelection,
+  idGroup,
+  readField,
+  repeatedIds,
+  rowIdOf,
+  rowIdText,
+  rowKeyOf,
+  sameRecord,
+  slotNames,
+  str,
+  toKeyedItems,
+  toRows,
+  type Row,
+} from '../lib/data';
 import { formatCell } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
@@ -51,17 +65,53 @@ export const Tabs = () => {
       { value: 'tab2', label: 'Tab 2' },
     ],
   });
-  const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The open tab; empty opens the first.', initialValue: '' });
-  const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['standard', 'scrollable', 'fullWidth'], initialValue: 'standard' });
+  const [value, setValue] = useStateText({
+    name: 'value',
+    label: 'Value',
+    description: 'The open tab; empty opens the first.',
+    initialValue: '',
+  });
+  const [variant] = ToolJet.useStateEnumeration({
+    name: 'variant',
+    label: 'Variant',
+    enumDefinition: ['standard', 'scrollable', 'fullWidth'],
+    initialValue: 'standard',
+  });
   // MUI's colour options are styles (ToolJet keeps colours under styles).
-  const textColor = ToolJet.useStyleEnumeration({ name: 'textColor', label: 'Text color', enumDefinition: ['primary', 'secondary', 'inherit'], initialValue: 'primary' });
-  const indicatorColor = ToolJet.useStyleEnumeration({ name: 'indicatorColor', label: 'Indicator color', enumDefinition: ['primary', 'secondary'], initialValue: 'primary' });
+  const textColor = ToolJet.useStyleEnumeration({
+    name: 'textColor',
+    label: 'Text color',
+    enumDefinition: ['primary', 'secondary', 'inherit'],
+    initialValue: 'primary',
+  });
+  const indicatorColor = ToolJet.useStyleEnumeration({
+    name: 'indicatorColor',
+    label: 'Indicator color',
+    enumDefinition: ['primary', 'secondary'],
+    initialValue: 'primary',
+  });
   const [centered] = ToolJet.useStateBoolean({ name: 'centered', label: 'Centered', initialValue: false });
-  const [orientation] = ToolJet.useStateEnumeration({ name: 'orientation', label: 'Orientation', enumDefinition: ['horizontal', 'vertical'], initialValue: 'horizontal' });
+  const [orientation] = ToolJet.useStateEnumeration({
+    name: 'orientation',
+    label: 'Orientation',
+    enumDefinition: ['horizontal', 'vertical'],
+    initialValue: 'horizontal',
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 40 });
+  ToolJet.useComponentSettings({
+    role: 'tabs',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI's Tabs: tabs [{value, label}], value (the open tab), variant (standard, scrollable, fullWidth), centered, orientation; styles textColor and indicatorColor; each tab panel holds ToolJet components (slot tab_<value>). onChange; setValue.",
+    roleProps: { tabs: 'tabs', currentTab: 'value' },
+    roleEvents: { onTabSwitch: 'onChange' },
+    roleActions: { setTab: 'setValue' },
+    defaultWidth: 30,
+    defaultHeight: 40,
+  });
   const tabs = toKeyedItems(rawTabs);
   const current = tabs.some((t) => t.key === value) ? value : (tabs[0]?.key ?? false);
   // The open tab is the exposed one: an empty value or a tab that is gone opens the first, and value now says so, with
@@ -70,7 +120,14 @@ export const Tabs = () => {
     if (typeof current === 'string' && current !== value) setValue(current);
   }, [current, value, setValue]);
   // Every tab's canvas, kept apart even when two values fold to the same slot characters ('a-b' and 'a_b').
-  const slots = useMemo(() => slotNames('tab', tabs.map((t) => t.key)), [tabs.map((t) => t.key).join('\u0000')]); // eslint-disable-line react-hooks/exhaustive-deps
+  const slots = useMemo(
+    () =>
+      slotNames(
+        'tab',
+        tabs.map((t) => t.key)
+      ),
+    [tabs.map((t) => t.key).join('\u0000')]
+  ); // eslint-disable-line react-hooks/exhaustive-deps
   // The tab a value opens (one that names no tab opens the first, as above); the tab already open changes nothing and
   // fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(current, (v) => setValue(v as never));
@@ -79,12 +136,18 @@ export const Tabs = () => {
     if (!valueSetter.set(opens)) return;
     onChange();
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Tab value' }] }, (v) => change(str(v)));
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Tab value' }] },
+    (v) => change(str(v))
+  );
   const vertical = orientation === 'vertical';
   // Each tab names its panel and each panel its tab (aria-controls, aria-labelledby), with ids unique to this widget.
   const ownId = useId();
   const idBase = ToolJet.useFieldId() || `tabs${ownId.replace(/:/g, '')}`;
-  const partIds = (key: string) => ({ tab: `${idBase}-tab-${encodeURIComponent(key)}`, panel: `${idBase}-panel-${encodeURIComponent(key)}` });
+  const partIds = (key: string) => ({
+    tab: `${idBase}-tab-${encodeURIComponent(key)}`,
+    panel: `${idBase}-panel-${encodeURIComponent(key)}`,
+  });
 
   return (
     <MuiProvider overrides={overrides} fill>
@@ -102,7 +165,14 @@ export const Tabs = () => {
             sx={vertical ? { borderRight: 1, borderColor: 'divider' } : { borderBottom: 1, borderColor: 'divider' }}
           >
             {tabs.map((t) => (
-              <Tab key={t.key} value={t.key} label={t.label} disabled={t.disabled} id={partIds(t.key).tab} aria-controls={partIds(t.key).panel} />
+              <Tab
+                key={t.key}
+                value={t.key}
+                label={t.label}
+                disabled={t.disabled}
+                id={partIds(t.key).tab}
+                aria-controls={partIds(t.key).panel}
+              />
             ))}
           </MuiTabs>
           {/* MUI's tab panel pattern: every panel mounted, the inactive ones hidden, so each keeps its canvas. */}
@@ -129,13 +199,39 @@ export const Tabs = () => {
 export const Card = () => {
   const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Card title' });
   const [subheader] = useStateText({ name: 'subheader', label: 'Subheader', initialValue: '' });
-  const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['outlined', 'elevation'], initialValue: 'outlined' });
-  const [elevation] = ToolJet.useStateNumber({ name: 'elevation', label: 'Elevation', initialValue: 1, min: 0, max: 24, visibleWhen: { key: 'variant', value: 'elevation' } });
-  const [raised] = ToolJet.useStateBoolean({ name: 'raised', label: 'Raised', initialValue: false, visibleWhen: { key: 'variant', value: 'elevation' } });
+  const [variant] = ToolJet.useStateEnumeration({
+    name: 'variant',
+    label: 'Variant',
+    enumDefinition: ['outlined', 'elevation'],
+    initialValue: 'outlined',
+  });
+  const [elevation] = ToolJet.useStateNumber({
+    name: 'elevation',
+    label: 'Elevation',
+    initialValue: 1,
+    min: 0,
+    max: 24,
+    visibleWhen: { key: 'variant', value: 'elevation' },
+  });
+  const [raised] = ToolJet.useStateBoolean({
+    name: 'raised',
+    label: 'Raised',
+    initialValue: false,
+    visibleWhen: { key: 'variant', value: 'elevation' },
+  });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 40 });
+  ToolJet.useComponentSettings({
+    role: 'card',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI's Card: CardHeader title and subheader, variant (outlined, elevation), elevation, raised; CardContent holds ToolJet components (slot body). onClick.",
+    roleProps: { description: 'subheader' },
+    defaultWidth: 16,
+    defaultHeight: 40,
+  });
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={loading} fill look={<BlockSkeleton />}>
@@ -146,8 +242,16 @@ export const Card = () => {
           onClick={() => onClick()}
           sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
         >
-          {title || subheader ? <CardHeader title={title || undefined} subheader={subheader || undefined} slotProps={{ title: { variant: 'h6' } }} /> : null}
-          <CardContent sx={{ flex: 1, minHeight: 0, pt: title || subheader ? 0 : undefined, '&:last-child': { pb: 2 } }}>
+          {title || subheader ? (
+            <CardHeader
+              title={title || undefined}
+              subheader={subheader || undefined}
+              slotProps={{ title: { variant: 'h6' } }}
+            />
+          ) : null}
+          <CardContent
+            sx={{ flex: 1, minHeight: 0, pt: title || subheader ? 0 : undefined, '&:last-child': { pb: 2 } }}
+          >
             <ToolJet.Slot name="body" style={{ height: '100%' }} />
           </CardContent>
         </MuiCard>
@@ -163,26 +267,89 @@ export const Card = () => {
 // actions open and close.
 export const Dialog = () => {
   const [triggerText] = useStateText({ name: 'triggerText', label: 'Trigger text', initialValue: 'Open dialog' });
-  const [showTrigger] = ToolJet.useStateBoolean({ name: 'showTrigger', label: 'Show trigger', description: 'A button on the canvas that opens the dialog.', initialValue: true });
+  const [showTrigger] = ToolJet.useStateBoolean({
+    name: 'showTrigger',
+    label: 'Show trigger',
+    description: 'A button on the canvas that opens the dialog.',
+    initialValue: true,
+  });
   const [title] = useStateText({ name: 'title', label: 'Title', initialValue: 'Dialog' });
-  const [contentText] = useStateText({ name: 'contentText', label: 'Content text', description: 'Text above the body components.', initialValue: '' });
-  const [confirmText] = useStateText({ name: 'confirmText', label: 'Confirm text', description: 'Empty for no confirm button.', initialValue: 'Confirm' });
-  const [cancelText] = useStateText({ name: 'cancelText', label: 'Cancel text', description: 'Empty for no cancel button.', initialValue: 'Cancel' });
-  const [confirmColor] = ToolJet.useStateEnumeration({ name: 'confirmColor', label: 'Confirm color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
-  const [maxWidth] = ToolJet.useStateEnumeration({ name: 'maxWidth', label: 'Max width', enumDefinition: ['xs', 'sm', 'md', 'lg', 'xl'], initialValue: 'sm' });
-  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', description: 'As wide as maxWidth.', initialValue: true });
+  const [contentText] = useStateText({
+    name: 'contentText',
+    label: 'Content text',
+    description: 'Text above the body components.',
+    initialValue: '',
+  });
+  const [confirmText] = useStateText({
+    name: 'confirmText',
+    label: 'Confirm text',
+    description: 'Empty for no confirm button.',
+    initialValue: 'Confirm',
+  });
+  const [cancelText] = useStateText({
+    name: 'cancelText',
+    label: 'Cancel text',
+    description: 'Empty for no cancel button.',
+    initialValue: 'Cancel',
+  });
+  const [confirmColor] = ToolJet.useStateEnumeration({
+    name: 'confirmColor',
+    label: 'Confirm color',
+    enumDefinition: PALETTE_COLORS,
+    initialValue: 'primary',
+  });
+  const [maxWidth] = ToolJet.useStateEnumeration({
+    name: 'maxWidth',
+    label: 'Max width',
+    enumDefinition: ['xs', 'sm', 'md', 'lg', 'xl'],
+    initialValue: 'sm',
+  });
+  const [fullWidth] = ToolJet.useStateBoolean({
+    name: 'fullWidth',
+    label: 'Full width',
+    description: 'As wide as maxWidth.',
+    initialValue: true,
+  });
   const [fullScreen] = ToolJet.useStateBoolean({ name: 'fullScreen', label: 'Full screen', initialValue: false });
-  const [scroll] = ToolJet.useStateEnumeration({ name: 'scroll', label: 'Scroll', enumDefinition: ['paper', 'body'], initialValue: 'paper' });
-  const [bodyHeight] = ToolJet.useStateNumber({ name: 'bodyHeight', label: 'Body height (px)', description: '0 for no body components.', initialValue: 200, min: 0, max: 2000 });
-  const [disableEscapeKeyDown] = ToolJet.useStateBoolean({ name: 'disableEscapeKeyDown', label: 'Disable Escape key', initialValue: false });
-  const [open, setOpen] = ToolJet.useStateBoolean({ name: 'open', initialValue: false, inspector: 'hidden' });
+  const [scroll] = ToolJet.useStateEnumeration({
+    name: 'scroll',
+    label: 'Scroll',
+    enumDefinition: ['paper', 'body'],
+    initialValue: 'paper',
+  });
+  const [bodyHeight] = ToolJet.useStateNumber({
+    name: 'bodyHeight',
+    label: 'Body height (px)',
+    description: '0 for no body components.',
+    initialValue: 200,
+    min: 0,
+    max: 2000,
+  });
+  const [disableEscapeKeyDown] = ToolJet.useStateBoolean({
+    name: 'disableEscapeKeyDown',
+    label: 'Disable Escape key',
+    initialValue: false,
+  });
+  const [open, setOpen] = ToolJet.useStateBoolean({ name: 'isOpen', initialValue: false, inspector: 'hidden' });
   const onClose = ToolJet.useEventCallback({ name: 'onClose' });
   const onConfirm = ToolJet.useEventCallback({ name: 'onConfirm' });
   const onCancel = ToolJet.useEventCallback({ name: 'onCancel' });
   const onEntered = ToolJet.useEventCallback({ name: 'onEntered' });
   const { disabled, loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
+  ToolJet.useComponentSettings({
+    role: 'dialog',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI's Dialog with a trigger Button on the canvas: title, contentText, confirmText/cancelText (DialogActions), confirmColor (error for destructive), maxWidth (xs to xl), fullWidth, fullScreen, scroll; the body holds ToolJet components in the popup layer (slot body, bodyHeight). onClose, onConfirm, onCancel, onEntered; open, close.",
+    roleProps: { description: 'contentText', destructive: 'confirmColor' },
+    roleValues: { confirmColor: { true: 'error', false: 'primary' } },
+    roleEvents: { onOpen: 'onEntered' },
+    slots: [{ name: 'body', kind: 'popup' }],
+    defaultWidth: 6,
+    defaultHeight: 4,
+  });
   ToolJet.useAction({ name: 'open', displayName: 'Open' }, () => setOpen(true));
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => setOpen(false));
   const close = () => {
@@ -199,7 +366,14 @@ export const Dialog = () => {
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-center" rootRef={rootRef}>
       {showTrigger ? (
-        <Button variant="contained" fullWidth disabled={disabled} loading={loading} title={triggerText || undefined} onClick={() => setOpen(true)}>
+        <Button
+          variant="contained"
+          fullWidth
+          disabled={disabled}
+          loading={loading}
+          title={triggerText || undefined}
+          onClick={() => setOpen(true)}
+        >
           <span className="tj-mui-button-label">{triggerText}</span>
         </Button>
       ) : null}
@@ -259,7 +433,8 @@ const useProjectedEscape = (
       const path = e.composedPath();
       const origin = path[0];
       // Only keys from the projected light DOM: MUI's Modal already closes on its own elements' keys.
-      if (!path.includes(content) || !(origin instanceof Node) || origin.getRootNode() === content.getRootNode()) return;
+      if (!path.includes(content) || !(origin instanceof Node) || origin.getRootNode() === content.getRootNode())
+        return;
       if (origin instanceof Element && origin.closest('[aria-expanded="true"]')) return;
       const collapsed = origin instanceof Element && origin.getAttribute('aria-expanded') === 'false';
       window.clearTimeout(timer);
@@ -323,14 +498,22 @@ const DialogBody = (p: {
     >
       {p.title ? <DialogTitle>{p.title}</DialogTitle> : null}
       <DialogContent ref={contentRef} dividers={p.scroll === 'paper' && p.bodyHeight > 0}>
-        {p.contentText ? <DialogContentText sx={{ mb: p.bodyHeight > 0 ? 2 : 0 }}>{p.contentText}</DialogContentText> : null}
+        {p.contentText ? (
+          <DialogContentText sx={{ mb: p.bodyHeight > 0 ? 2 : 0 }}>{p.contentText}</DialogContentText>
+        ) : null}
         {p.bodyHeight > 0 ? <ToolJet.PopupSlot name="body" style={{ height: p.bodyHeight }} /> : null}
       </DialogContent>
       {p.cancelText || p.confirmText ? (
         <DialogActions>
           {p.cancelText ? <Button onClick={p.onCancel}>{p.cancelText}</Button> : null}
           {p.confirmText ? (
-            <Button variant="contained" color={p.confirmColor} loading={p.loading} disabled={p.confirmDisabled} onClick={p.onConfirm}>
+            <Button
+              variant="contained"
+              color={p.confirmColor}
+              loading={p.loading}
+              disabled={p.confirmDisabled}
+              onClick={p.onConfirm}
+            >
               {p.confirmText}
             </Button>
           ) : null}
@@ -369,18 +552,66 @@ export const List = () => {
     initialValue: 'listItemText',
   });
   const textMode = { key: 'renderItem', value: 'listItemText' };
-  const [primaryField] = useStateText({ name: 'primaryField', label: 'Primary field', initialValue: 'title', visibleWhen: textMode });
-  const [secondaryField] = useStateText({ name: 'secondaryField', label: 'Secondary field', initialValue: 'description', visibleWhen: textMode });
-  const [avatarField] = useStateText({ name: 'avatarField', label: 'Avatar field', description: 'An image URL field.', initialValue: '', visibleWhen: textMode });
-  const [rowHeight] = ToolJet.useStateNumber({ name: 'rowHeight', label: 'Row height (px)', initialValue: 64, min: 24, max: 1200, visibleWhen: { key: 'renderItem', value: 'components' } });
-  const [itemKey] = useStateText({ name: 'itemKey', label: 'Item key', description: 'The id field of the items.', initialValue: 'id' });
+  const [primaryField] = useStateText({
+    name: 'primaryField',
+    label: 'Primary field',
+    initialValue: 'title',
+    visibleWhen: textMode,
+  });
+  const [secondaryField] = useStateText({
+    name: 'secondaryField',
+    label: 'Secondary field',
+    initialValue: 'description',
+    visibleWhen: textMode,
+  });
+  const [avatarField] = useStateText({
+    name: 'avatarField',
+    label: 'Avatar field',
+    description: 'An image URL field.',
+    initialValue: '',
+    visibleWhen: textMode,
+  });
+  const [rowHeight] = ToolJet.useStateNumber({
+    name: 'rowHeight',
+    label: 'Row height (px)',
+    initialValue: 64,
+    min: 24,
+    max: 1200,
+    visibleWhen: { key: 'renderItem', value: 'components' },
+  });
+  const [itemKey] = useStateText({
+    name: 'itemKey',
+    label: 'Item key',
+    description: 'The id field of the items.',
+    initialValue: 'id',
+  });
   const [subheader] = useStateText({ name: 'subheader', label: 'Subheader', initialValue: '' });
   const [dense] = ToolJet.useStateBoolean({ name: 'dense', label: 'Dense', initialValue: false });
-  const [divider] = ToolJet.useStateBoolean({ name: 'divider', label: 'Divider', description: 'Lines between items.', initialValue: true });
-  const [pageSize] = ToolJet.useStateNumber({ name: 'pageSize', label: 'Page size', description: '0 for no paging.', initialValue: 0, min: 0, max: 500 });
+  const [divider] = ToolJet.useStateBoolean({
+    name: 'divider',
+    label: 'Divider',
+    description: 'Lines between items.',
+    initialValue: true,
+  });
+  const [pageSize] = ToolJet.useStateNumber({
+    name: 'pageSize',
+    label: 'Page size',
+    description: '0 for no paging.',
+    initialValue: 0,
+    min: 0,
+    max: 500,
+  });
   const [emptyText] = useStateText({ name: 'emptyText', label: 'Empty text', initialValue: 'No items' });
-  const [selectedItem, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedItemKey] = ToolJet.useStateString({ name: 'selectedItemKey', initialValue: '', inspector: 'hidden' });
+  const [selectedItem, setSelectedItem] = ToolJet.useStateObject({
+    name: 'selectedItem',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [, setSelectedItemKey] = ToolJet.useStateString({
+    name: 'selectedItemKey',
+    initialValue: '',
+    inspector: 'hidden',
+  });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
@@ -392,7 +623,28 @@ export const List = () => {
     enumLabels: { plain: 'Plain rows', outline: 'Outlined cards' },
     initialValue: 'plain',
   });
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
+  ToolJet.useComponentSettings({
+    role: 'listview',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI's List: items; renderItem 'listItemText' draws a ListItemButton with ListItemText from primaryField/secondaryField and an Avatar from avatarField (image URL, else initials), 'components' draws a row of ToolJet components reading {{listItem}} (rowHeight) on the same row surface. subheader, dense, divider (inset lines), pageSize (Pagination under the list), emptyText; style itemVariant (plain: rows in one Paper; outline: each row an outlined card). onItemClick with selectedItem exposed.",
+    roleProps: {
+      data: 'items',
+      itemContent: 'renderItem',
+      titleField: 'primaryField',
+      subtitleField: 'secondaryField',
+      imageField: 'avatarField',
+      idField: 'itemKey',
+      rowsPerPage: 'pageSize',
+      showBorder: 'divider',
+    },
+    roleValues: { renderItem: { fields: 'listItemText', components: 'components' } },
+    roleEvents: { onRecordClicked: 'onItemClick' },
+    slots: [{ name: 'row', kind: 'rows' }],
+    defaultWidth: 20,
+    defaultHeight: 30,
+  });
   const [page, setPage] = useState(1);
 
   const items = toRows(rawItems);
@@ -416,7 +668,10 @@ export const List = () => {
     if (warned.current || !repeated.length) return;
     warned.current = true;
     console.warn(
-      `[List] Item ids should be unique: ${repeated.slice(0, 5).map((id) => JSON.stringify(id)).join(', ')} ` +
+      `[List] Item ids should be unique: ${repeated
+        .slice(0, 5)
+        .map((id) => JSON.stringify(id))
+        .join(', ')} ` +
         `${repeated.length === 1 ? 'is' : 'are'} held by more than one item in the "${field}" field. A selected item whose ` +
         'id is repeated stays selected only while it is the same record; a change that leaves that unclear clears it.'
     );
@@ -427,10 +682,11 @@ export const List = () => {
   // The selected id's items (their content) when picked or last followed (lib/data followSelection).
   const group = useRef<string[]>([]);
   const exposedKey = selectedItem && Object.keys(selectedItem).length ? rowKeyOf(selectedItem as Row, field, -1) : '';
-  const selectedKey = picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(items[i], field, i) === exposedKey) ?? '') : '');
+  const selectedKey =
+    picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(items[i], field, i) === exposedKey) ?? '') : '');
 
   const select = (row: Row | null, index: number) => {
-    setPicked(row && index >= 0 ? keys[index] ?? '' : '');
+    setPicked(row && index >= 0 ? (keys[index] ?? '') : '');
     group.current = row ? idGroup(items, ids, rowIdText(row, field)) : [];
     setSelectedItem(row ?? {});
     // The item's own key value, as the app wrote it (a number stays a number).
@@ -468,17 +724,26 @@ export const List = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keys]);
-  ToolJet.useAction({ name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Item key' }] }, (key) => {
-    const index = items.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
-    select(items[index] ?? null, index);
-  });
+  ToolJet.useAction(
+    { name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Item key' }] },
+    (key) => {
+      const index = items.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
+      select(items[index] ?? null, index);
+    }
+  );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null, -1));
 
   const outlined = itemVariant === 'outline';
   const withAvatar = !asRows && !!avatarField;
   const between = (i: number, key: string) =>
     divider && !outlined && i < visible.length - 1 ? (
-      <Divider key={`${key}-divider`} component="li" variant={withAvatar ? 'inset' : 'middle'} aria-hidden className="tj-mui-list__divider" />
+      <Divider
+        key={`${key}-divider`}
+        component="li"
+        variant={withAvatar ? 'inset' : 'middle'}
+        aria-hidden
+        className="tj-mui-list__divider"
+      />
     ) : null;
   // A row's surface (a components row has no ListItemButton): MUI's list item padding, hover and selected tints.
   const rowSurface = (selected: boolean) => (t: Theme) => ({
@@ -488,11 +753,17 @@ export const List = () => {
     py: 0.5,
     borderRadius: outlined ? 1 : 0,
     transition: t.transitions.create('background-color', { duration: t.transitions.duration.shortest }),
-    '&:hover': { bgcolor: selected ? alpha(t.palette.primary.main, t.palette.action.selectedOpacity + t.palette.action.hoverOpacity) : 'action.hover' },
+    '&:hover': {
+      bgcolor: selected
+        ? alpha(t.palette.primary.main, t.palette.action.selectedOpacity + t.palette.action.hoverOpacity)
+        : 'action.hover',
+    },
     ...(selected ? { bgcolor: alpha(t.palette.primary.main, t.palette.action.selectedOpacity) } : null),
   });
   const cardItem = outlined ? { mb: 1, '&:last-of-type': { mb: 0 } } : null;
-  const cardFrame = outlined ? { border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper', overflow: 'hidden' } : null;
+  const cardFrame = outlined
+    ? { border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper', overflow: 'hidden' }
+    : null;
 
   return (
     <MuiProvider overrides={overrides} fill>
@@ -501,16 +772,24 @@ export const List = () => {
           <MuiList
             dense={dense}
             disablePadding
-            subheader={subheader ? <ListSubheader disableSticky sx={outlined ? { bgcolor: 'transparent', px: 0 } : undefined}>{subheader}</ListSubheader> : undefined}
+            subheader={
+              subheader ? (
+                <ListSubheader disableSticky sx={outlined ? { bgcolor: 'transparent', px: 0 } : undefined}>
+                  {subheader}
+                </ListSubheader>
+              ) : undefined
+            }
             sx={{
               flex: 1,
               minHeight: 0,
               overflow: 'auto',
-              ...(outlined ? { p: 0.25 } : { border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }),
+              ...(outlined
+                ? { p: 0.25 }
+                : { border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }),
             }}
           >
             {visible.length === 0 ? (
-              <ListItem sx={outlined ? cardFrame ?? undefined : undefined}>
+              <ListItem sx={outlined ? (cardFrame ?? undefined) : undefined}>
                 <ListItemText secondary={emptyText} />
               </ListItem>
             ) : null}
@@ -545,11 +824,20 @@ export const List = () => {
                     <ListItemButton
                       selected={selected}
                       onClick={() => select(row, i + offset)}
-                      sx={{ px: 2, py: dense ? 0.5 : 1, gap: 0, minHeight: dense ? 40 : withAvatar || secondary ? 64 : 48 }}
+                      sx={{
+                        px: 2,
+                        py: dense ? 0.5 : 1,
+                        gap: 0,
+                        minHeight: dense ? 40 : withAvatar || secondary ? 64 : 48,
+                      }}
                     >
                       {withAvatar ? (
                         <ListItemAvatar>
-                          <Avatar src={image || undefined} alt={primary} sx={image ? undefined : { bgcolor: `hsl(${avatarHue(avatarName)} 45% 46%)`, fontSize: 16 }}>
+                          <Avatar
+                            src={image || undefined}
+                            alt={primary}
+                            sx={image ? undefined : { bgcolor: `hsl(${avatarHue(avatarName)} 45% 46%)`, fontSize: 16 }}
+                          >
                             {image ? undefined : initials(avatarName) || undefined}
                           </Avatar>
                         </ListItemAvatar>

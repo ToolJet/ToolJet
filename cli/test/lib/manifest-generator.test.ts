@@ -1275,12 +1275,6 @@ const PARAMS = [{ handle: 'v', displayName: 'V' }];
       /action "go": "params" must be an array literal or a const array/,
     ],
     [
-      'a label from a function call',
-      `ToolJet.useStateString({ name: 's', label: t('Title') });`,
-      `const t = (s: string) => s;\n`,
-      /ToolJet\.useStateString in component "Widget", prop "s": "label" must be a string literal or a const string/,
-    ],
-    [
       'an enumDefinition from a function call',
       `ToolJet.useStateEnumeration({ name: 'e', enumDefinition: getVariants() });`,
       `const getVariants = () => ['a'];\n`,
@@ -1318,6 +1312,42 @@ const PARAMS = [{ handle: 'v', displayName: 'V' }];
     expect(warnings[0]).to.include('Prop "createdAt" in component "Widget"');
     expect(warnings[1]).to.include('Prop "n" in component "Widget"');
   }).timeout(30000);
+});
+
+describe('generateManifest - display text built at runtime', () => {
+  const cwd = withTempCwd();
+
+  it('keeps building, without the text, and warns when a label is computed', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}const t = (s: string) => s;
+export const Widget = () => {
+  ToolJet.useStateString({ name: 's', label: t('Title') });
+  return <div />;
+};
+`
+    );
+
+    const { manifest, warnings } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props[0]).to.not.have.property('label');
+    expect(warnings).to.include(
+      `Prop "s" in component "Widget": label isn't a static string, so the builder shows none.`
+    );
+  });
+
+  it('still fails the build on a label that is not text', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}export const Widget = () => {
+  ToolJet.useStateString({ name: 's', label: 3 as any });
+  return <div />;
+};
+`
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/prop "s": "label" must be a string/);
+  });
 });
 
 describe('generateManifest - field settings', () => {
@@ -1403,7 +1433,7 @@ describe('generateManifest - field settings', () => {
     [
       'a placeholder that is not a string',
       `ToolJet.useStateString({ name: 's', placeholder: 3 });`,
-      /prop "s": "placeholder" must be a string literal/,
+      /prop "s": "placeholder" must be a string/,
     ],
     [
       'a visibleWhen that is not an object',
@@ -1658,10 +1688,13 @@ describe('generateManifest - static strings built from parts', () => {
     expect(warnings).to.deep.equal([]);
   }).timeout(30000);
 
-  it('still rejects a string that needs the component to run', async () => {
+  it('leaves a label that needs the component to run to the render, with a warning', async () => {
     writeProject(cwd.get(), widgetWith(`ToolJet.useStateString({ name: 's', label: 'Hi ' + Date.now() });`));
 
-    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/prop "s": "label" must be a string literal/);
+    const { manifest, warnings } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props[0]).to.not.have.property('label');
+    expect(warnings.join('\n')).to.include(`Prop "s" in component "Widget": label isn't a static string`);
   }).timeout(30000);
 });
 

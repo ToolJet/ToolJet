@@ -71,6 +71,11 @@ const stub: any = new Proxy(function () {}, {
   construct: () => stub,
 });
 
+// In a "type": "module" package esbuild imports a CommonJS package Node's way (`__toESM(require(x), 1)`): its default
+// export is the whole module.exports, even for a compiled ES module (__esModule). The library's real bundle resolves
+// such packages the bundlers' way (default is exports.default), so the recording does too (e.g. @emotion/cache).
+const withBundlerInterop = (code: string): string => code.replace(/__toESM\((require\("[^"]+"\)), 1\)/g, '__toESM($1)');
+
 function createRecordingSdk() {
   let calls: RecordedCall[] | null = null;
   const push = (call: RecordedCall) => calls?.push(call);
@@ -190,7 +195,11 @@ export async function recordManifest(projectRoot: string, manifest: Manifest, wa
     };
     const module = { exports: {} as Record<string, unknown> };
     // eslint-disable-next-line no-new-func
-    new Function('module', 'exports', 'require', result.outputFiles[0].text)(module, module.exports, safeRequire);
+    new Function('module', 'exports', 'require', withBundlerInterop(result.outputFiles[0].text))(
+      module,
+      module.exports,
+      safeRequire
+    );
     mod = module.exports;
   } catch (error) {
     warnings.push(
@@ -230,14 +239,16 @@ export async function recordManifest(projectRoot: string, manifest: Manifest, wa
     console.warn = quietWarn;
     delete (globalThis as any)[sdkKey];
   }
-  // A default the static pass couldn't read is no longer lost once the render recorded it.
-  const staleDefault = /^(Prop|Style) "(.+)" in component "(.+)": initialValue isn't a static literal/;
+  // A default or display text the static pass couldn't read is no longer lost once the render recorded it.
+  const notStatic =
+    /^(Prop|Style) "(.+)" in component "(.+)": (initialValue|label|description|placeholder) isn't a static/;
   const kept = warnings.filter((warning) => {
-    const match = staleDefault.exec(warning);
+    const match = notStatic.exec(warning);
     if (!match) return true;
-    const [, kind, field, componentName] = match;
+    const [, kind, field, componentName, option] = match;
     const fields = kind === 'Style' ? components[componentName]?.styles : components[componentName]?.props;
-    return fields?.find((entry) => entry.name === field)?.default === undefined;
+    const key = option === 'initialValue' ? 'default' : option;
+    return (fields?.find((entry) => entry.name === field) as Record<string, unknown> | undefined)?.[key] === undefined;
   });
   warnings.splice(0, warnings.length, ...kept);
   return { ...manifest, components };

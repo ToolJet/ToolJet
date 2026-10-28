@@ -18,6 +18,7 @@ declare module '@tooljet/custom-component-sdk' {
   export const ToolJet: any;
 }
 declare module 'browser-only';
+declare module 'compiled-esm';
 declare namespace JSX {
   interface Element {}
   interface IntrinsicElements {
@@ -227,6 +228,25 @@ export function Field() {
     expect(result.warnings.join('\n')).to.not.include('initialValue');
   }).timeout(30000);
 
+  it('reads display text built at runtime from the render, and drops its warning', async () => {
+    writeProject(cwd.get(), {
+      'index.ts': `export { Field } from './Field';\n`,
+      'Field.tsx': `${SDK_IMPORT}
+const COLORS = ['red', 'blue'];
+export function Field() {
+  ToolJet.useStateString({ name: 'color', label: 'Color', description: \`\${COLORS.join(', ')} or a CSS colour\` });
+  return <div />;
+}
+`,
+    });
+
+    const result = await build(cwd.get());
+
+    const color = readManifest(cwd.get()).components.Field.props[0];
+    expect(color.description).to.equal('red, blue or a CSS colour');
+    expect(result.warnings.join('\n')).to.not.include('description');
+  }).timeout(30000);
+
   it('stands in for a package that fails to load outside a browser', async () => {
     writeProject(cwd.get(), {
       'index.ts': `export { MapView } from './MapView';\n`,
@@ -245,6 +265,38 @@ export function MapView() {
 
     const styles = readManifest(cwd.get()).components.MapView.styles.map((s: { name: string }) => s.name);
     expect(styles).to.deep.equal(['markerColor']);
+  }).timeout(30000);
+
+  it("loads a compiled package's default export the bundlers' way in an ES module project", async () => {
+    // A "type": "module" project importing a CommonJS build of an ES module (exports.default, __esModule), as MUI's
+    // @emotion/cache is: Node's interop would hand over the whole module.exports, and calling it threw.
+    writeProject(cwd.get(), {
+      'index.ts': `export { Field } from './Field';\n`,
+      'Field.tsx': `${SDK_IMPORT}import makeName from 'compiled-esm';
+const useLook = () => ToolJet.useStyleString({ name: makeName(), initialValue: 'red' });
+export function Field() {
+  useLook();
+  return <div />;
+}
+`,
+    });
+    fs.writeFileSync(path.join(cwd.get(), 'package.json'), '{ "name": "library", "type": "module" }');
+    fs.mkdirSync(path.join(cwd.get(), 'node_modules', 'compiled-esm'), { recursive: true });
+    fs.writeFileSync(
+      path.join(cwd.get(), 'node_modules', 'compiled-esm', 'package.json'),
+      '{ "name": "compiled-esm", "main": "index.js" }'
+    );
+    fs.writeFileSync(
+      path.join(cwd.get(), 'node_modules', 'compiled-esm', 'index.js'),
+      'Object.defineProperty(exports, "__esModule", { value: true });\nexports.default = () => "tint";'
+    );
+
+    const result = await build(cwd.get());
+
+    expect(readManifest(cwd.get()).components.Field.styles.map((s: { name: string }) => s.name)).to.deep.equal([
+      'tint',
+    ]);
+    expect(result.warnings.join('\n')).to.not.include('threw');
   }).timeout(30000);
 
   it('keeps what was recorded before a component throws, and warns', async () => {
@@ -332,7 +384,7 @@ export function Field() {
       settingsComponent(`{
     role: 'button',
     roleProps: { text: 'children' },
-    roleValues: { variant: { outline: 'outlined' }, hour12: { '12h': true, size: 2 } },
+    roleValues: { variant: { outline: 'outlined' }, hour12: { '12h': true, size: 2 }, tone: { ghost: { variant: 'text', color: 'inherit' } } },
     roleEvents: { onClick: 'onPress' },
     roleActions: { setText: 'setLabel' },
     labelCase: 'upper',
@@ -350,7 +402,11 @@ export function Field() {
     );
     expect(readManifest(cwd.get()).components.Field).to.deep.include({
       roleProps: { text: 'children' },
-      roleValues: { variant: { outline: 'outlined' }, hour12: { '12h': true, size: 2 } },
+      roleValues: {
+        variant: { outline: 'outlined' },
+        hour12: { '12h': true, size: 2 },
+        tone: { ghost: { variant: 'text', color: 'inherit' } },
+      },
       roleEvents: { onClick: 'onPress' },
       roleActions: { setText: 'setLabel' },
       labelCase: 'upper',

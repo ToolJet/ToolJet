@@ -83,7 +83,7 @@ export interface ManifestComponent {
   // How the component names the props, events and actions of the native widget it stands in for (its `role`), and
   // the values a role prop takes: the AI app builder plans in native widgets and maps them through these.
   roleProps?: Record<string, string>;
-  roleValues?: Record<string, Record<string, string | number | boolean>>;
+  roleValues?: Record<string, Record<string, RoleValue>>;
   roleEvents?: Record<string, string>;
   roleActions?: Record<string, string>;
   labelCase?: 'upper'; // the component writes its label in capitals, so a layout sized for its text widens it
@@ -106,8 +106,15 @@ export type RoleMap = (typeof ROLE_MAPS)[number];
 const isStringMap = (value: unknown): value is Record<string, string> =>
   isPlainObject(value) && Object.values(value).every((v) => typeof v === 'string');
 
-const isValueMap = (value: unknown): value is Record<string, string | number | boolean> =>
-  isPlainObject(value) && Object.values(value).every((v) => ['string', 'number', 'boolean'].includes(typeof v));
+type RoleScalar = string | number | boolean;
+// A role prop's value in this component: one value, or several props set together ({ variant: 'text', color: 'inherit' }).
+export type RoleValue = RoleScalar | Record<string, RoleScalar>;
+
+const isRoleScalar = (value: unknown): value is RoleScalar => ['string', 'number', 'boolean'].includes(typeof value);
+
+const isValueMap = (value: unknown): value is Record<string, RoleValue> =>
+  isPlainObject(value) &&
+  Object.values(value).every((v) => isRoleScalar(v) || (isPlainObject(v) && Object.values(v).every(isRoleScalar)));
 
 /** Throws unless `settings` holds valid role mappings and labelCase; returns the ones it holds. */
 export function readRoleSettings(
@@ -128,7 +135,7 @@ export function readRoleSettings(
     if (!isPlainObject(value) || !Object.values(value).every(isValueMap)) {
       throw new Error(`Invalid "roleValues" in component "${componentName}": must map each prop to a map of values.`);
     }
-    out.roleValues = value as Record<string, Record<string, string | number | boolean>>;
+    out.roleValues = value as Record<string, Record<string, RoleValue>>;
   }
   if (settings.labelCase !== undefined) {
     if (settings.labelCase !== 'upper') {
@@ -360,11 +367,24 @@ function walkComponentDeclaration(
       claimExposedName(name, 'prop');
     }
 
-    const label = readStringProp(options, 'label', checker, propContext);
-    const description = readStringProp(options, 'description', checker, propContext);
+    // Display text built at runtime (a list joined into a description) is read from the render (manifest-recorder.ts).
+    const readText = (key: 'label' | 'description' | 'placeholder') => {
+      const node = getPropNode(options, key, checker);
+      const value = node ? evalLiteralNode(node, checker) : undefined;
+      if (value === undefined || typeof value === 'string') return value;
+      if (value !== NOT_STATIC) throw new Error(`${propContext}: "${key}" must be a string.`);
+      warnings.push(
+        `${
+          kind === 'style' ? 'Style' : 'Prop'
+        } "${name}" in component "${componentName}": ${key} isn't a static string, so the builder shows none.`
+      );
+      return undefined;
+    };
+    const label = readText('label');
+    const description = readText('description');
     const inspector = readStringProp(options, 'inspector', checker, propContext);
     const section = readStringProp(options, 'section', checker, propContext);
-    const placeholder = readStringProp(options, 'placeholder', checker, propContext);
+    const placeholder = readText('placeholder');
     const min = readNumberProp(options, 'min', checker, propContext);
     const max = readNumberProp(options, 'max', checker, propContext);
     if (min !== undefined && max !== undefined && min > max) {

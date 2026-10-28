@@ -3,7 +3,7 @@ import { CircularProgress, Skeleton, Typography } from '@mui/material';
 import type { TypographyProps } from '@mui/material';
 import type { FieldSize, TextFieldVariant } from './field';
 
-// The pack draws MUI's own loading looks (pack.json "loading": "own", so the host draws no overlay): a component with a
+// The pack draws MUI's own loading looks (useComponentSettings loading: 'own', so the host draws no overlay): a component with a
 // loading prop or state uses it (Button, Menu and Dialog triggers, Autocomplete, DataGrid, an indeterminate
 // LinearProgress); the rest wrap their content in <Loading>, which keeps it mounted and in place (hidden, so the box
 // keeps its size and the content comes back as it was) and draws MUI's Skeleton or a CircularProgress over it. The
