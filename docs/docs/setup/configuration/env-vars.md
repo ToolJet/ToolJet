@@ -215,6 +215,10 @@ If ToolJet needs to connect to self-signed HTTPS endpoints, ensure the `NODE_EXT
 
 - `NODE_EXTRA_CA_CERTS=/path/to/cert.pem`: Absolute path to the PEM file (can contain multiple certificates).
 
+:::warning
+The startup script of the `tooljet/tooljet` image sets `NODE_EXTRA_CA_CERTS` to the AWS RDS certificate bundle in the image. This replaces a value passed as a container environment variable. Set `NODE_EXTRA_CA_CERTS` in a file mounted at `/app/.env` in the container instead. See [Custom CA Certificates](/docs/setup/docker/#custom-ca-certificates) for a Docker Compose example.
+:::
+
 #### ToolJet API Import Application
 
 By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable:

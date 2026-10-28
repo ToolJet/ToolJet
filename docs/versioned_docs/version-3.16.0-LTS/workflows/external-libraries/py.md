@@ -109,7 +109,7 @@ Running without the sandbox removes all execution restrictions. User code can ac
 
 **Option B: Deploy a worker with privileged access**
 
-Deploy ToolJet in **worker mode** on a platform that supports privileged containers (e.g., a standard Docker host or a Kubernetes cluster with appropriate security contexts), and route Python workflow execution to that worker. This lets you keep the main ToolJet deployment on a managed platform while still benefiting from sandboxed execution.
+Run ToolJet on a platform that can give its containers the `SYS_ADMIN` capability. A Python node runs in the ToolJet container that runs the workflow: a worker (`WORKER=true`) for queued runs, such as scheduled runs and webhook calls to `/trigger-async`, or the ToolJet server that receives the request for synchronous runs, such as webhook calls to `/trigger` and workflows run from an app with **Run workflows synchronously** turned on (the default). ToolJet can't send only Python nodes to a particular container, so every ToolJet container that runs workflows needs the capability.
 <!-- 
 ## Limitations
 
