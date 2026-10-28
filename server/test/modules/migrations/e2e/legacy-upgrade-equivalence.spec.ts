@@ -2,11 +2,16 @@
 import { spawn } from 'child_process';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { DataSource } from 'typeorm';
 import { LEGACY_LOOSEN_RULES, LEGACY_UPGRADE_MARKER } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 import { LOCK_SENTINEL_MIGRATION_NAMES } from 'src/migration-helpers/migration-locks';
 import { MigrationPhase } from 'src/migration-helpers/migration-mode';
-import { createScratchDatabase, dropScratchDatabase, postgres, SERVER_ROOT } from '../fixtures/harness';
+import {
+  createScratchDatabase,
+  dropScratchDatabase,
+  postgres,
+  SERVER_ROOT,
+  withScratchConnection,
+} from '../fixtures/harness';
 
 /**
  * Async upgrade of a 3.21.58 database (schema, data with the legacy variants, cleanup) must end where a
@@ -28,18 +33,9 @@ interface RunnerOutcome {
   output: string;
 }
 
-async function withDatabase<T>(database: string, fn: (db: DataSource) => Promise<T>): Promise<T> {
-  const db = await new DataSource({ type: 'postgres', ...postgres, database }).initialize();
-  try {
-    return await fn(db);
-  } finally {
-    await db.destroy().catch(() => undefined);
-  }
-}
-
 async function restoreFixture(database: string): Promise<void> {
   await createScratchDatabase(database);
-  await withDatabase(database, (db) => db.query(readFileSync(FIXTURE_SQL, 'utf8')));
+  await withScratchConnection(database, (db) => db.query(readFileSync(FIXTURE_SQL, 'utf8')));
 }
 
 /** The real runner with the real migrations. NODE_ENV=test would list no schema migrations (ormconfig.ts). */
@@ -73,10 +69,13 @@ async function runOk(database: string, phase?: MigrationPhase): Promise<string> 
 
 /** Cleanup waits for the next upgrade; dropping the baseline makes this one count as that next upgrade. */
 const forgetBaseline = (database: string) =>
-  withDatabase(database, (db) => db.query('DELETE FROM migration_baselines'));
+  withScratchConnection(database, (db) => db.query('DELETE FROM migration_baselines'));
 
 const recorded = (database: string, name: string) =>
-  withDatabase(database, async (db) => (await db.query('SELECT 1 FROM migrations WHERE name = $1', [name])).length > 0);
+  withScratchConnection(
+    database,
+    async (db) => (await db.query('SELECT 1 FROM migrations WHERE name = $1', [name])).length > 0
+  );
 
 const SCHEMA_QUERIES: Record<string, string> = {
   columns: `
@@ -104,7 +103,7 @@ const SCHEMA_QUERIES: Record<string, string> = {
 };
 
 async function schemaOf(database: string): Promise<Record<string, string[]>> {
-  return withDatabase(database, async (db) => {
+  return withScratchConnection(database, async (db) => {
     const schema: Record<string, string[]> = {};
     for (const [kind, sql] of Object.entries(SCHEMA_QUERIES)) {
       schema[kind] = ((await db.query(sql)) as { item: string }[]).map(({ item }) => item).sort();
@@ -123,7 +122,7 @@ const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
  * which only the single-transaction path runs.
  */
 async function rowsOf(database: string): Promise<Record<string, string[]>> {
-  return withDatabase(database, async (db) => {
+  return withScratchConnection(database, async (db) => {
     const branches: { id: string; label: string }[] = await db.query(
       `SELECT id, 'branch:' || organization_id || '/' || branch_name AS label FROM organization_git_sync_branches`
     );
@@ -207,7 +206,7 @@ const LOOSENED_RULES_SQL = `
   ORDER BY name`;
 
 const loosenedRules = (database: string) =>
-  withDatabase(database, (db) => db.query(LOOSENED_RULES_SQL, [LEGACY_LOOSEN_RULES.map(({ name }) => name)]));
+  withScratchConnection(database, (db) => db.query(LOOSENED_RULES_SQL, [LEGACY_LOOSEN_RULES.map(({ name }) => name)]));
 
 describe('Upgrading a 3.21.58 database', () => {
   let asyncCleanupOutput: string;
@@ -263,7 +262,7 @@ describe('Upgrading a 3.21.58 database', () => {
       await runOk(failingDatabase, 'schema');
       const before = await loosenedRules(failingDatabase);
       expect(before).toHaveLength(LEGACY_LOOSEN_RULES.length);
-      await withDatabase(failingDatabase, (db) =>
+      await withScratchConnection(failingDatabase, (db) =>
         db.query(`
           CREATE FUNCTION fail_legacy_backfill() RETURNS trigger LANGUAGE plpgsql AS $$
           BEGIN
@@ -281,7 +280,7 @@ describe('Upgrading a 3.21.58 database', () => {
       expect(output).toContain(`Legacy upgrade: dropped ${LEGACY_LOOSEN_RULES.length} old rules`);
       expect(await loosenedRules(failingDatabase)).toEqual(before);
       expect(await recorded(failingDatabase, LEGACY_UPGRADE_MARKER)).toBe(false);
-      const pendingRestore = await withDatabase(failingDatabase, (db) =>
+      const pendingRestore = await withScratchConnection(failingDatabase, (db) =>
         db.query('SELECT name FROM legacy_upgrade_dropped_rules')
       );
       expect(pendingRestore).toEqual([]);
@@ -296,7 +295,7 @@ describe('Upgrading a 3.21.58 database', () => {
       await runOk(lateWritesDatabase, 'schema');
       await runOk(lateWritesDatabase, 'data');
       // What a 3.21.58 pod writes: a new data source's is_default row, and an app filed into a folder.
-      await withDatabase(lateWritesDatabase, (db) =>
+      await withScratchConnection(lateWritesDatabase, (db) =>
         db.query(`
           WITH source AS (
             INSERT INTO data_sources (name, kind, organization_id, scope)
@@ -311,7 +310,7 @@ describe('Upgrading a 3.21.58 database', () => {
           WHERE NOT EXISTS (SELECT 1 FROM folder_apps fa WHERE fa.app_id = a.id)
           LIMIT 1;`)
       );
-      const branchless = await withDatabase(lateWritesDatabase, (db) =>
+      const branchless = await withScratchConnection(lateWritesDatabase, (db) =>
         db.query(`SELECT (SELECT count(*) FROM data_source_versions WHERE branch_id IS NULL)::int AS versions,
                          (SELECT count(*) FROM folder_apps WHERE branch_id IS NULL)::int AS folder_apps`)
       );
@@ -321,7 +320,7 @@ describe('Upgrading a 3.21.58 database', () => {
       await runOk(lateWritesDatabase, 'cleanup');
 
       expect(await recorded(lateWritesDatabase, CLEANUP)).toBe(true);
-      const onDefaultBranch = await withDatabase(lateWritesDatabase, (db) =>
+      const onDefaultBranch = await withScratchConnection(lateWritesDatabase, (db) =>
         db.query(`
           SELECT 'data_source_versions' AS rows, b.is_default AS on_default_branch
           FROM data_source_versions v JOIN data_sources s ON s.id = v.data_source_id
