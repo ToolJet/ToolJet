@@ -8,8 +8,6 @@ import { DataSource } from 'typeorm';
 import {
   LOCK_SENTINEL_MIGRATION_NAMES,
   DEAD_CLIENT_KEEPALIVE_SQL,
-  DEFAULT_MAX_WAIT_MINUTES,
-  DEFAULT_RETRY_INTERVAL_SECONDS,
   getLockWaitOptions,
   getSchemaPhaseOptions,
   isLockNotAvailableError,
@@ -44,10 +42,7 @@ describe('migration-helpers/migration-locks', () => {
 
   describe("getLockWaitOptions(): how long a pod waits for another pod's migration run", () => {
     it('should check every 60s and give up after 30 minutes when nothing is configured', () => {
-      expect(getLockWaitOptions({})).toEqual({
-        retryIntervalMs: DEFAULT_RETRY_INTERVAL_SECONDS * 1000,
-        maxWaitMs: DEFAULT_MAX_WAIT_MINUTES * 60_000,
-      });
+      expect(getLockWaitOptions({})).toEqual({ retryIntervalMs: 60_000, maxWaitMs: 1_800_000 });
     });
 
     it('should use the configured interval and limit', () => {
@@ -82,23 +77,24 @@ describe('migration-helpers/migration-locks', () => {
   });
 
   describe('getSchemaPhaseOptions(): retry settings for the schema migrations run at boot', () => {
-    it('should check every 5s and try 10 times, waiting up to 5s for a table lock each time, when nothing is configured', () => {
-      expect(getSchemaPhaseOptions({})).toEqual({
-        lockWait: { retryIntervalMs: 5000, maxWaitMs: DEFAULT_MAX_WAIT_MINUTES * 60_000 },
-        lockTimeoutMs: 5000,
-        lockAttempts: 10,
-      });
-    });
-
-    it('should use configured values, and the default for any that is not a number', () => {
-      expect(
-        getSchemaPhaseOptions({
+    it.each([
+      [
+        'check every 5s and try 10 times, waiting up to 5s for a table lock each time, when nothing is configured',
+        {},
+        { lockWait: { retryIntervalMs: 5000, maxWaitMs: 1_800_000 }, lockTimeoutMs: 5000, lockAttempts: 10 },
+      ],
+      [
+        'use configured values, and the default for any that is not a number',
+        {
           MIGRATION_LOCK_RETRY_INTERVAL_SECONDS: '20',
           MIGRATION_LOCK_MAX_WAIT_MINUTES: '0',
           MIGRATION_SCHEMA_LOCK_TIMEOUT_MS: '1500',
           MIGRATION_SCHEMA_LOCK_RETRIES: 'many',
-        })
-      ).toEqual({ lockWait: { retryIntervalMs: 20_000, maxWaitMs: 0 }, lockTimeoutMs: 1500, lockAttempts: 10 });
+        },
+        { lockWait: { retryIntervalMs: 20_000, maxWaitMs: 0 }, lockTimeoutMs: 1500, lockAttempts: 10 },
+      ],
+    ])('should %s', (_case, env, options) => {
+      expect(getSchemaPhaseOptions(env)).toEqual(options);
     });
   });
 
@@ -121,14 +117,16 @@ describe('migration-helpers/migration-locks', () => {
   describe('withMigrationAdvisoryLock(): only one pod runs migrations at a time', () => {
     const noWait = { sleep: async () => undefined, now: () => 0, log: jest.fn() };
 
-    it('should retry on the configured interval and log each wait, so operators can see the pod is alive', async () => {
+    it('should retry on the configured interval, log each wait, and run migrations once the other pod lets go', async () => {
       const { dataSource } = fakeDataSource([false, false, true]);
       const clock = fakeClock();
       const log = jest.fn();
+      const critical = jest.fn().mockResolvedValue(undefined);
 
-      await withMigrationAdvisoryLock(dataSource, lockWaitOptions, { ...clock, log }, async () => undefined);
+      await withMigrationAdvisoryLock(dataSource, lockWaitOptions, { ...clock, log }, critical);
 
       expect(clock.slept).toEqual([60_000, 60_000]);
+      expect(critical).toHaveBeenCalledTimes(1);
       expect(log).toHaveBeenCalledWith(expect.stringContaining('Another pod is running migrations'));
       expect(log).toHaveBeenCalledWith(expect.stringContaining('This pod will NOT exit.'));
       expect(log).toHaveBeenCalledWith(expect.stringContaining('Lock released'));
@@ -163,40 +161,33 @@ describe('migration-helpers/migration-locks', () => {
     });
 
     it('should run the migrations on the connection that holds the lock, so their locks end when it closes', async () => {
-      const { dataSource, queryRunner } = fakeDataSource([true]);
+      const { dataSource, queries } = fakeDataSource([true]);
       const critical = jest.fn().mockResolvedValue(undefined);
 
       await withMigrationAdvisoryLock(dataSource, lockWaitOptions, noWait, critical);
 
-      expect(critical).toHaveBeenCalledWith(queryRunner);
+      const lockHolder = queries.find(({ sql }) => sql.includes('pg_try_advisory_lock'))?.runner;
+      expect(critical).toHaveBeenCalledWith(lockHolder);
     });
 
     it('should hold the lock while the migrations run and release it afterwards', async () => {
-      const { dataSource, queryRunner, queries } = fakeDataSource([true]);
-      const order: string[] = [];
+      const { dataSource, runners, queries } = fakeDataSource([true]);
 
       await withMigrationAdvisoryLock(dataSource, lockWaitOptions, noWait, async () => {
-        order.push('critical');
+        queries.push({ sql: 'migrations ran' });
         return undefined;
       });
 
       // Keepalive first: a silently lost pod must not hold the lock for the OS default of ~2 hours.
-      expect(queries[0].sql).toBe(DEAD_CLIENT_KEEPALIVE_SQL);
-      expect(queries[1].sql).toContain('pg_try_advisory_lock');
-      expect(order).toEqual(['critical']);
-      expect(queries[queries.length - 1].sql).toContain('pg_advisory_unlock');
+      expect(queries.map(({ sql }) => sql)).toEqual([
+        DEAD_CLIENT_KEEPALIVE_SQL,
+        expect.stringContaining('pg_try_advisory_lock'),
+        'migrations ran',
+        expect.stringContaining('pg_advisory_unlock'),
+      ]);
       // Same key both ways, or the lock would never be released.
-      expect(queries[1].parameters).toEqual(queries[queries.length - 1].parameters);
-      expect(queryRunner.release).toHaveBeenCalled();
-    });
-
-    it('should run migrations only once the other pod lets go of the lock', async () => {
-      const { dataSource } = fakeDataSource([false, false, true]);
-      const critical = jest.fn().mockResolvedValue(undefined);
-
-      await withMigrationAdvisoryLock(dataSource, lockWaitOptions, noWait, critical);
-
-      expect(critical).toHaveBeenCalledTimes(1);
+      expect(queries[1].parameters).toEqual(queries[3].parameters);
+      expect(runners[0].release).toHaveBeenCalled();
     });
 
     it('should not start migrations while another pod holds the lock', async () => {
@@ -221,7 +212,7 @@ describe('migration-helpers/migration-locks', () => {
     });
 
     it('should release the lock when the migration fails, so the next pod is not locked out', async () => {
-      const { dataSource, queries, queryRunner } = fakeDataSource([true]);
+      const { dataSource, queries, runners } = fakeDataSource([true]);
 
       await expect(
         withMigrationAdvisoryLock(dataSource, lockWaitOptions, noWait, async () => {
@@ -230,24 +221,32 @@ describe('migration-helpers/migration-locks', () => {
       ).rejects.toThrow('migration blew up');
 
       expect(queries.some(({ sql }) => sql.includes('pg_advisory_unlock'))).toBe(true);
-      expect(queryRunner.release).toHaveBeenCalled();
+      expect(runners[0].release).toHaveBeenCalled();
     });
   });
 });
 
-/** A data source whose advisory-lock attempts return `lockResults` in turn; records every query. */
+/**
+ * A data source whose advisory-lock attempts return `lockResults` in turn. Each createQueryRunner()
+ * is a new connection, and every query records the connection that ran it.
+ */
 function fakeDataSource(lockResults: boolean[]) {
-  const queries: Array<{ sql: string; parameters?: unknown[] }> = [];
-  const queryRunner = {
-    connect: jest.fn().mockResolvedValue(undefined),
-    release: jest.fn().mockResolvedValue(undefined),
-    query: jest.fn(async (sql: string, parameters?: unknown[]) => {
-      queries.push({ sql, parameters });
-      if (sql.includes('pg_try_advisory_lock')) return [{ locked: lockResults.shift() ?? true }];
-      return [{}];
-    }),
+  const queries: Array<{ sql: string; parameters?: unknown[]; runner?: object }> = [];
+  const runners: Array<{ release: jest.Mock }> = [];
+  const createQueryRunner = () => {
+    const runner = {
+      connect: jest.fn().mockResolvedValue(undefined),
+      release: jest.fn().mockResolvedValue(undefined),
+      query: jest.fn(async (sql: string, parameters?: unknown[]) => {
+        queries.push({ sql, parameters, runner });
+        if (sql.includes('pg_try_advisory_lock')) return [{ locked: lockResults.shift() ?? true }];
+        return [{}];
+      }),
+    };
+    runners.push(runner);
+    return runner;
   };
-  return { dataSource: { createQueryRunner: () => queryRunner } as unknown as DataSource, queryRunner, queries };
+  return { dataSource: { createQueryRunner } as unknown as DataSource, runners, queries };
 }
 
 // A clock the test advances only through sleep(), so elapsed time is exactly the time slept.
