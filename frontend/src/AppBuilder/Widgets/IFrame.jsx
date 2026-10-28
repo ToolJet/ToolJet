@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { toSafeFrameSrc } from '@/_helpers/frameSourceSafety';
 
 export const IFrame = function IFrame({
   width,
@@ -8,6 +9,7 @@ export const IFrame = function IFrame({
   properties,
   styles,
   dataCy,
+  componentName,
   setExposedVariable,
   setExposedVariables,
 }) {
@@ -113,6 +115,8 @@ export const IFrame = function IFrame({
     <div
       className="tw-h-full"
       data-disabled={exposedVariablesTemporaryState.isDisabled}
+      aria-disabled={exposedVariablesTemporaryState.isDisabled ? 'true' : undefined}
+      inert={exposedVariablesTemporaryState.isDisabled ? '' : undefined}
       style={{ display: exposedVariablesTemporaryState.isVisible ? '' : 'none', boxShadow }}
       data-cy={dataCy}
     >
@@ -126,8 +130,8 @@ export const IFrame = function IFrame({
           key={exposedVariablesTemporaryState.url}
           width={width - 4}
           height={height}
-          src={exposedVariablesTemporaryState.url}
-          title="IFrame Widget"
+          src={toSafeFrameSrc(exposedVariablesTemporaryState.url)}
+          title={componentName}
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
