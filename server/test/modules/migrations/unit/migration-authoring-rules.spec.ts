@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import * as ts from 'typescript';
 import { MIGRATION_AUTHORING_RULES_CUTOFF } from 'src/migration-helpers/migration-mode';
+import * as frozenPreCutoff from './pre-cutoff-migrations.json';
 
 /**
  * Async mode applies schema migrations at boot, while the previous release still serves.
@@ -117,6 +118,23 @@ function migrationsNewerThanCutoff(directory: string): MigrationSource[] {
     });
 }
 
+/** Class names at or before the cutoff, which TypeORM records in `migrations`. */
+function preCutoffMigrations(directory: string): string[] {
+  return readdirSync(join(SERVER_ROOT, directory))
+    .filter((name) => name.endsWith('.ts') && !name.includes('LockMigrationsTable'))
+    .map((name) => readFileSync(join(SERVER_ROOT, directory, name), 'utf8').match(/class\s+(\w*?\d{13})\b/)?.[1])
+    .filter((name): name is string => !!name && Number(name.slice(-13)) <= MIGRATION_AUTHORING_RULES_CUTOFF)
+    .sort();
+}
+
+/** Names on one side only: `added` were back-dated past the cutoff, `missing` were removed or renamed. */
+function frozenListDrift(frozen: string[], current: string[]): { added: string[]; missing: string[] } {
+  return {
+    added: current.filter((name) => !frozen.includes(name)),
+    missing: frozen.filter((name) => !current.includes(name)),
+  };
+}
+
 const sample = (up: string, down = '// irreversible: values only grow', header = '') => ({
   file: 'migrations/1799999999999-Sample.ts',
   text: `${header}
@@ -201,5 +219,22 @@ describe('Migration authoring rules | migrations newer than the cutoff', () => {
   it('should keep data migrations additive and reversible', () => {
     const violations = migrationsNewerThanCutoff('data-migrations').flatMap((source) => authoringViolations(source));
     expect(violations).toEqual([]);
+  });
+});
+
+/**
+ * Migrations at or before the cutoff skip the rules above, so the list is frozen. A new migration
+ * dated before the cutoff would skip them silently. Use a current timestamp instead.
+ */
+describe('Migration authoring rules | migrations at or before the cutoff', () => {
+  it('should report back-dated and removed names', () => {
+    expect(frozenListDrift(['A1', 'B2'], ['A1', 'C3'])).toEqual({ added: ['C3'], missing: ['B2'] });
+  });
+
+  it.each(['migrations', 'data-migrations'] as const)('should keep the %s list frozen', (directory) => {
+    expect(frozenListDrift(frozenPreCutoff[directory], preCutoffMigrations(directory))).toEqual({
+      added: [],
+      missing: [],
+    });
   });
 });
