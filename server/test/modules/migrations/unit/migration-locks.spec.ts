@@ -63,14 +63,22 @@ describe('migration-helpers/migration-locks', () => {
       expect(getLockWaitOptions({ MIGRATION_LOCK_MAX_WAIT_MINUTES: '0' }).maxWaitMs).toBe(0);
     });
 
-    it('should use the defaults for values that are not positive numbers, so the pod never retries in a tight loop', () => {
-      const parsed = getLockWaitOptions({
-        MIGRATION_LOCK_RETRY_INTERVAL_SECONDS: 'soon',
-        MIGRATION_LOCK_MAX_WAIT_MINUTES: '-1',
-      });
-      expect(parsed.retryIntervalMs).toBe(DEFAULT_RETRY_INTERVAL_SECONDS * 1000);
-      expect(parsed.maxWaitMs).toBe(DEFAULT_MAX_WAIT_MINUTES * 60_000);
-    });
+    // A blank value must not read as 0, which for the limit means "wait forever".
+    it.each([
+      ['not numbers', 'soon', '-1'],
+      ['blank', '', ''],
+      ['only spaces', '  ', '  '],
+    ])(
+      'should use the defaults for values that are %s, so the pod never retries in a tight loop or waits forever',
+      (_shape, interval, maxWait) => {
+        expect(
+          getLockWaitOptions({
+            MIGRATION_LOCK_RETRY_INTERVAL_SECONDS: interval,
+            MIGRATION_LOCK_MAX_WAIT_MINUTES: maxWait,
+          })
+        ).toEqual({ retryIntervalMs: 60_000, maxWaitMs: 1_800_000 });
+      }
+    );
   });
 
   describe('getSchemaPhaseOptions(): retry settings for the schema migrations run at boot', () => {
