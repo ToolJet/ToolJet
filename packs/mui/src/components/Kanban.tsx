@@ -221,7 +221,9 @@ const BoardSkeleton = () => (
 const boardSx = (t: Theme) => {
   const primary = t.palette.primary.main;
   const text2 = t.palette.text.secondary;
-  const radius = Number(t.shape.borderRadius) || 4;
+  // 0 is a radius (square), not a missing one: only a non-number falls back to MUI's 4.
+  const set = Number(t.shape.borderRadius);
+  const radius = Number.isFinite(set) ? set : 4;
   const cardBorder = `var(--kb-card-border, ${t.palette.divider})`;
   const cardBg = `var(--kb-card-bg, ${t.palette.background.paper})`;
   return {

@@ -35,7 +35,7 @@ export const useThemeColor = (name: string, label: string, initialValue: string,
  * blank one ('') reached the inspector as {{""}}, an invalid number in red that hid the placeholder.
  */
 export const useThemeNumber = (name: string, label: string, placeholder: string, extra: Extra = {}) =>
-  ToolJet.useStyleNumber({ name, label, placeholder, ...extra }) as unknown as number | '' | undefined;
+  ToolJet.useStyleNumber({ name, label, placeholder, inspector: 'numberInput', ...extra }) as unknown as number | '' | undefined;
 
 // Placeholders for the number styles, as drawn in stock Ant (no app theme) and under one.
 export const RADIUS_HINT = 'Theme radius (6 in stock Ant)';

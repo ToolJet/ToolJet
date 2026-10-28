@@ -53,6 +53,8 @@ export const useThemeStyles = (): ThemeOverrides => {
     name: 'borderRadius',
     label: 'Border radius (shape.borderRadius)',
     placeholder: 'Theme radius (MUI: 4)',
+    // A number field: the code field drew a blank optional number as invalid (red).
+    inspector: 'numberInput',
     // No stored default: a '' default was saved on drop as {{""}}, shown as code in an invalid field.
   });
   return useMemo(
