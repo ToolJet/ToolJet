@@ -38,7 +38,7 @@ The token is a credential with the same reach as the account that created it. Tr
 
 ## Review OAuth Connections
 
-On ToolJet Cloud, you can [connect with OAuth](/docs/build-with-ai/mcp/setup#connect-with-oauth) instead of a token. There's no token to store in your shell profile or configuration file, but the same care applies to what you approve.
+On ToolJet Cloud, you can [connect with OAuth](/docs/build-with-ai/mcp/setup#choose-an-authentication-method) instead of a token. There's no token to store in your shell profile or configuration file, but the same care applies to what you approve.
 
 - **Approve one workspace at a time.** A connection is bound to the workspace you approved it in. Connect separately for each workspace.
 - **Read the consent screen.** It lists the permissions the client is requesting. The client can never act beyond your own permissions in that workspace.

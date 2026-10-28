@@ -8,17 +8,73 @@ import TabItem from '@theme/TabItem';
 
 Connect ToolJet MCP to Codex so your agent can build and modify applications in your ToolJet workspace, whether that's ToolJet Cloud or your own self-hosted domain.
 
-:::tip Using ToolJet Cloud?
-You can connect Codex with OAuth instead. You sign in to your workspace in the browser, with no personal access token or local server to set up. See [Connect with OAuth](/docs/build-with-ai/mcp/setup#connect-with-oauth).
-:::
+You can connect with OAuth on ToolJet Cloud, or with a personal access token on ToolJet Cloud or a self-hosted instance. To compare the two, see [Choose an Authentication Method](/docs/build-with-ai/mcp/setup#choose-an-authentication-method).
 
 ## Prerequisites
 
 - Codex CLI or Codex desktop installed.
-- Node.js 20 or newer, available to Codex.
+- For the personal access token method: Node.js 20 or newer, available to Codex.
 - Access to the ToolJet workspace you want the agent to build in.
 
-## How It Works
+## Connect with OAuth
+
+:::info Available on ToolJet Cloud
+OAuth is available on ToolJet Cloud only. On a self-hosted instance, [connect with a personal access token](#connect-with-a-personal-access-token).
+:::
+
+**Codex > ToolJet's hosted MCP server > ToolJet workspace**
+
+Codex connects to the MCP server that ToolJet hosts, and you authorize it by signing in to your workspace in the browser. There's no token to create and no server to run on your machine.
+
+### Step 1: Copy the Server Commands
+
+1. In ToolJet Cloud, open the workspace you want the agent to build in.
+2. Open the **Build ToolJet apps from your coding agent** dialog.
+3. Under **Connect your agent**, select **OAuth**, then select **Codex**.
+4. Copy the commands. The server URL in them ends with your workspace ID, so each workspace has its own URL.
+
+### Step 2: Add the Server
+
+Run the first command in your terminal. It looks like this, with your workspace's URL in place of `<workspace-mcp-url>`:
+
+```bash
+codex mcp add tooljet-oauth --url '<workspace-mcp-url>'
+```
+
+### Step 3: Sign In and Approve Access
+
+1. Run the second command, which opens ToolJet in your browser:
+
+   ```bash
+   codex mcp login tooljet-oauth
+   ```
+
+2. Sign in to the workspace with any method it allows, such as password or SSO. If you're already signed in, ToolJet skips this step.
+3. Review the permissions the client is requesting, and check the callback address shown under the buttons. For what each permission allows, see [What You Approve](/docs/build-with-ai/mcp/setup#what-you-approve).
+4. Click **Allow access**. Your browser returns you to Codex.
+
+### Step 4: Install the App-Builder Skill
+
+The OAuth connection gives your agent ToolJet's tools. To also give it the `tooljet-app-builder` skill, which teaches the agent ToolJet's app model and build recipe, install the skill-only plugin:
+
+```
+codex plugin marketplace add ToolJet/tooljet-mcp --ref main
+codex plugin add tooljet-app-builder-skills@tooljet
+```
+
+Install `tooljet-app-builder-skills`, not the `tooljet-app-builder` plugin used with a personal access token. That plugin also registers a local server, and using both loads the same guidance twice.
+
+### Step 5: Verify the Connection
+
+Ask your agent whether it can reach ToolJet:
+
+> Can you connect to ToolJet?
+
+The agent should confirm the connection and name your workspace. To see or revoke the connection later, go to **Profile settings > Connected AI clients** in ToolJet.
+
+## Connect with a Personal Access Token
+
+### How It Works
 
 **Codex > ToolJet MCP server > ToolJet workspace**
 
@@ -26,7 +82,7 @@ The ToolJet plugin runs the ToolJet MCP server on your machine and installs the 
 
 A token only works in the workspace it was created in, and every tool call runs with the permissions of the token's owner. The token you choose decides what the agent can see and change.
 
-## Step 1: Create a Personal Access Token
+### Step 1: Create a Personal Access Token
 
 1. In ToolJet, open the workspace you want the agent to build in.
 2. Go to **Profile settings > Personal access tokens** and click **Create new token**.
@@ -34,7 +90,7 @@ A token only works in the workspace it was created in, and every tool call runs 
 
 <img className="screenshot-full img-full" src="/img/tooljet-ai/mcp/pat.png" alt="Personal access tokens in Profile settings" />
 
-## Step 2: Set Your Environment Variables
+### Step 2: Set Your Environment Variables
 
 The server reads two variables from the environment Codex is launched from.
 
@@ -112,7 +168,7 @@ Close and reopen PowerShell to load the variables.
 
 Launch Codex from that same terminal once the variables are set.
 
-### Verify Before You Continue
+#### Verify Before You Continue
 
 Confirm the variables are set in the terminal you'll launch Codex from. Both must print a value; if either is empty, the server reports a missing-variable error at startup.
 
@@ -138,7 +194,7 @@ echo $env:TOOLJET_PAT
 
 </Tabs>
 
-## Step 3: Install the Plugin
+### Step 3: Install the Plugin
 
 The plugin registers two things together: the MCP server and the `tooljet-app-builder` skill. Run these two commands in order:
 
@@ -149,7 +205,7 @@ codex plugin add tooljet-app-builder@tooljet
 
 On Codex desktop, run the marketplace command, restart the app, open **Plugins**, select the ToolJet source, and install **ToolJet App Builder**. In the Codex CLI you can also install it from `/plugins`.
 
-## Step 4: Verify the Connection
+### Step 4: Verify the Connection
 
 Ask your agent whether it can reach ToolJet:
 
