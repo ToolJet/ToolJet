@@ -34,7 +34,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
         return request?.query?.parentAppId
           ? [{ resourceType: MODULES.MODULES }, { resourceType: MODULES.APP }]
           : { resourceType: MODULES.MODULES };
-      // Query libraries ride the Module permission bucket (spec D9); they are never embedded.
+      // Query libraries ride the Module permission bucket; they are never embedded.
       case APP_TYPES.QUERY_LIBRARY:
         return { resourceType: MODULES.MODULES };
       default:

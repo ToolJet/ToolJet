@@ -201,7 +201,7 @@ export class AbilityUtilService {
         where: {
           userId: user.id,
           organizationId: user.organizationId,
-          // The Module bucket also covers owned query libraries (spec D9).
+          // The Module bucket also covers owned query libraries: they share the Module permissions.
           type: appType === APP_TYPES.MODULE ? In([APP_TYPES.MODULE, APP_TYPES.QUERY_LIBRARY]) : appType,
         },
       });

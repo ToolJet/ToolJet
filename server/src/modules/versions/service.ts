@@ -1,5 +1,6 @@
 import { App } from '@entities/app.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
@@ -36,6 +37,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { LibraryPin } from '@modules/data-queries/library/library-query.util';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -128,7 +130,7 @@ export class VersionService implements IVersionService {
     // No-op in CE, EE overrides to capture history
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
-    const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
+    const effectiveBranchId = app.type === 'workflow' || app.type === APP_TYPES.QUERY_LIBRARY ? undefined : branchId;
     let gitEnabled = false;
     let defaultBranchId: string | null = null;
     if (app.type !== APP_TYPES.WORKFLOW) {
@@ -225,6 +227,22 @@ export class VersionService implements IVersionService {
   // License terms the released-app cache key depends on (see getAppDataRevision).
   getViewerLicenseTerms(organizationId: string): Promise<unknown> {
     return this.licenseTermsService.getLicenseTerms(VIEWER_LICENSE_FIELDS, organizationId);
+  }
+
+  // ValidAppGuard ignores versionId when the URL names the app by slug, so tie the version to this workspace's app
+  // here: another workspace's version must not leak its query names.
+  async getLibraryPins(app: App, versionId: string, user: User): Promise<{ pins: LibraryPin[] }> {
+    const owned =
+      app.organizationId === user.organizationId &&
+      isUUID(versionId) &&
+      (await this.versionRepository.exists({ where: { id: versionId, appId: app.id } }));
+    if (!owned) throw new NotFoundException('App version not found');
+    const pins = await this.appUtilService.getLibraryPinsForAppVersion(
+      versionId,
+      user.organizationId,
+      this.versionRepository.manager
+    );
+    return { pins };
   }
 
   async getVersion(app: App, user: User, mode?: string): Promise<any> {

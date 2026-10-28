@@ -19,3 +19,12 @@ export const MODULE_VERSION_AUDIT_KEYS: Record<string, string> = {
   PROMOTE: 'MODULE_VERSION_PROMOTE',
   RELEASE: 'MODULE_VERSION_RELEASE',
 };
+
+/**
+ * Audit log action types for query library query versions.
+ * Passed as `actionType` in the audit-log request context by the release and delete routes.
+ */
+export const LIBRARY_QUERY_VERSION_AUDIT_KEYS: Record<string, string> = {
+  RELEASE: 'LIBRARY_QUERY_VERSION_RELEASE',
+  DELETE: 'LIBRARY_QUERY_VERSION_DELETE',
+};

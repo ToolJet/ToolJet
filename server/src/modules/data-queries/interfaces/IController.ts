@@ -5,6 +5,7 @@ import { UpdatingReferencesOptionsDto } from '../dto';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { App } from '@entities/app.entity';
 import { UpdateSourceDto } from '../dto';
+import { LibraryCatalog } from '../library/library-query.util';
 import { Response } from 'express';
 export interface IDataQueriesController {
   index(user: UserEntity, app: App, versionId: string, mode?: string): Promise<object>;
@@ -23,6 +24,14 @@ export interface IDataQueriesController {
     versionId: string,
     updateDataQueryDto: UpdateDataQueryDto
   ): Promise<void>;
+
+  releaseLibraryQuery(
+    user: UserEntity,
+    app: App,
+    dataQueryId: string
+  ): Promise<{ id: string; name: string; versionNumber: number; createdAt: Date }>;
+
+  deleteLibraryQueryVersion(app: App, dataQueryId: string, libraryVersionId: string): Promise<void>;
 
   bulkUpdate(user: UserEntity, updatingReferencesOptions: UpdatingReferencesOptionsDto): Promise<object>;
 
@@ -48,7 +57,9 @@ export interface IDataQueriesController {
     response: Response
   ): Promise<object>;
 
-  libraryUsage(app: App): Promise<object>;
+  libraryUsage(app: App, versionId: string): Promise<object>;
+
+  libraryCatalog(app: App, versionId: string): Promise<LibraryCatalog>;
 
   getLibraryDefinition(user: UserEntity, app: App, dataQueryId: string, dto: LibraryDefinitionDto): Promise<object>;
 

@@ -14,6 +14,7 @@ import {
   AiSources,
 } from '@/modules/common/components/DataSourceComponents';
 import { canCreateDataSource } from '@/_helpers';
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
@@ -148,6 +149,7 @@ function DataSourceSelect({
     const defaultsList = (workflowDataSources ? defaultDataSources || [] : staticSources).filter(
       (ds) =>
         !(workflowDataSources && ds.kind === 'library') &&
+        (ds.kind !== 'library' || isQueryLibraryEnabled()) &&
         (!isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(ds.kind))
     );
     const filteredDefaults = searchTerm

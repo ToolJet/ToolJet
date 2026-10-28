@@ -96,7 +96,7 @@ sequenceDiagram
 6. `PluginsServiceSelector.getService` chooses ToolJet DB, REST API, workflow, or a built-in/marketplace connector and executes it with a timeout.
 7. The result becomes `queries.<name>.data` in frontend state; dependency resolution updates bound components and query success/failure events run.
 
-Library queries (kind `library`) take a variant of this path: the browser resolves the consumer's `inputs` and calls `POST /data-queries/:id/run-library` with the consumer query id; `DataQueriesService.runLibraryQuery` loads the referenced Query Library query, resolves `{{parameters.x}}` in isolated-vm, and runs it through the same `runAndGetResult` pipeline under the consumer's authorization. RunJS library queries instead fetch their code from `library-definition` and run in the browser (`frontend/src/AppBuilder/_utils/libraryQuery.js`).
+Library queries (kind `library`) take a variant of this path: the browser resolves the consumer's `inputs` and calls `POST /data-queries/:id/run-library` with the consumer query id; `DataQueriesService.runLibraryQuery` loads the library query version the consumer pins (a released `library_query_versions` snapshot, or the draft for testing), resolves `{{input.x}}` and `{{parameters.x}}` in isolated-vm, and runs it through the same `runAndGetResult` pipeline under the consumer's authorization. App release (`AppsUtilService.checkLibraryQueriesReleasedInApp`) is the release gate: it blocks a draft or unresolvable pin, and `GET /apps/:id/versions/:versionId/library-pins` reports newer releases without blocking. RunJS library queries instead fetch their code from `library-definition` and run in the browser (`frontend/src/AppBuilder/_utils/libraryQuery.js`).
 
 ### 4. Operate on ToolJet Database
 

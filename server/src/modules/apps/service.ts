@@ -25,7 +25,7 @@ import { serializeDataQueries } from '@modules/data-queries/serialization.helper
 import { App } from '@entities/app.entity';
 import { getAppDataRevision, VIEWER_LICENSE_FIELDS } from './app-data-revision';
 import { AppBase } from '@entities/app_base.entity';
-import { queryLibraryConsumers } from '@modules/data-queries/library/library-query.util';
+import { libraryUsedByMessage, queryLibraryConsumers } from '@modules/data-queries/library/library-query.util';
 import { AppsUtilService } from './util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -108,11 +108,21 @@ export class AppsService implements IAppsService {
       await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, user.organizationId);
     }
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Workflows always resolve to the org's default branch, ignoring any DTO-supplied
-      // branchId (frontend may send the current dashboard branch even for workflow
-      // creation) — they don't support feature-branch creation, so there is only ever
-      // one branch context for a workflow.
-      let branchId = type === APP_TYPES.WORKFLOW ? undefined : appCreateDto.branchId;
+      // One query library per workspace. No DB constraint: the dashboard opens through
+      // get-or-create, which re-lists after this error.
+      if (type === APP_TYPES.QUERY_LIBRARY) {
+        const existing = await manager.count(App, {
+          where: { organizationId: user.organizationId, type: APP_TYPES.QUERY_LIBRARY },
+        });
+        if (existing > 0) throw new BadRequestException('This workspace already has a query library');
+      }
+
+      // Workflows and the query library always resolve to the org's default branch, ignoring
+      // any DTO-supplied branchId (frontend may send the current dashboard branch even for
+      // their creation) — neither is branch-authored or pushed to git, so there is only ever
+      // one branch context for them.
+      const isDefaultBranchOnly = type === APP_TYPES.WORKFLOW || type === APP_TYPES.QUERY_LIBRARY;
+      let branchId = isDefaultBranchOnly ? undefined : appCreateDto.branchId;
       if (!branchId) {
         const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         branchId = options.defaultBranch?.id;
@@ -123,7 +133,7 @@ export class AppsService implements IAppsService {
       // directly on main would bypass the git-sync review flow entirely.
       // Single-branch mode (and no-multi-branch-license) is exempt — there are no feature
       // branches, so the default branch IS the working branch.
-      if (type !== APP_TYPES.WORKFLOW && branchId) {
+      if (!isDefaultBranchOnly && branchId) {
         const { isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         if (isMultiBranchingEnabled) {
           const targetBranch = await manager.findOne(WorkspaceBranch, {
@@ -530,11 +540,11 @@ export class AppsService implements IAppsService {
     }
 
     if (app.type === APP_TYPES.QUERY_LIBRARY) {
-      const consumers = await queryLibraryConsumers(this.appRepository.manager, organizationId, app.id);
-      const appCount = new Set(consumers.filter((c) => c.appId !== app.id).map((c) => c.appId)).size;
-      if (appCount > 0) {
-        throw new BadRequestException(`Used by ${appCount} app(s). Remove it from those apps first.`);
-      }
+      // A library has a single app version; consumers point at queries of that version.
+      const manager = this.appRepository.manager;
+      const libraryVersion = await manager.findOne(AppVersion, { select: ['id'], where: { appId: id } });
+      const consumers = libraryVersion ? await queryLibraryConsumers(manager, organizationId, libraryVersion.id) : [];
+      if (consumers.length) throw new BadRequestException(libraryUsedByMessage(consumers));
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -717,6 +727,8 @@ export class AppsService implements IAppsService {
     type: string,
     providedBranchId?: string
   ): Promise<string | undefined> {
+    // The query library has one version, on the default branch, shared by every branch: list it unscoped.
+    if (type === APP_TYPES.QUERY_LIBRARY) return undefined;
     if (providedBranchId) return providedBranchId;
     // Resolve default branch for git-synced app types (FRONT_END and MODULE).
     // Workflows are never branch-scoped — their folder_apps rows always use branch_id=NULL.
@@ -1132,6 +1144,8 @@ export class AppsService implements IAppsService {
       }
 
       await this.appsUtilService.checkModulesReleasedInApp(versionToBeReleased, user.organizationId, manager);
+      // Apps and modules alike: EE release() reaches this through super.release.
+      await this.appsUtilService.checkLibraryQueriesReleasedInApp(versionToBeReleased, user.organizationId, manager);
 
       // Get version details for audit log
       const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);

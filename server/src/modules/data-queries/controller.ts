@@ -51,8 +51,15 @@ export class DataQueriesController implements IDataQueriesController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Get(':versionId/library-usage')
-  libraryUsage(@AppDecorator() app: App) {
-    return this.dataQueriesService.getLibraryUsage(app);
+  libraryUsage(@AppDecorator() app: App, @Param('versionId') versionId: string) {
+    return this.dataQueriesService.getLibraryUsage(app, versionId);
+  }
+
+  @InitFeature(FEATURE_KEY.GET)
+  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
+  @Get(':versionId/library-catalog')
+  libraryCatalog(@AppDecorator() app: App, @Param('versionId') versionId: string) {
+    return this.dataQueriesService.getLibraryCatalog(app, versionId);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -97,6 +104,20 @@ export class DataQueriesController implements IDataQueriesController {
     return;
   }
 
+  @InitFeature(FEATURE_KEY.UPDATE_ONE)
+  @UseGuards(
+    JwtAuthGuard,
+    ValidateQueryAppGuard,
+    AppFeatureAbilityGuard,
+    ValidateQuerySourceGuard,
+    DataSourceFeatureAbilityGuard,
+    GitSyncQueryEditGuard
+  )
+  @Post(':id/versions/:versionId/library-release')
+  releaseLibraryQuery(@User() user: UserEntity, @AppDecorator() app: App, @Param('id') dataQueryId: string) {
+    return this.dataQueriesService.releaseLibraryQuery(user, dataQueryId, app);
+  }
+
   @InitFeature(FEATURE_KEY.UPDATE)
   //* On Updating references, need update the options of multiple queries
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
@@ -117,6 +138,25 @@ export class DataQueriesController implements IDataQueriesController {
   @Delete(':id/versions/:versionId')
   async delete(@Param('id') dataQueryId, @Param('versionId') versionId) {
     await this.dataQueriesService.delete(dataQueryId, versionId);
+    return;
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE)
+  @UseGuards(
+    JwtAuthGuard,
+    ValidateQueryAppGuard,
+    AppFeatureAbilityGuard,
+    ValidateQuerySourceGuard,
+    DataSourceFeatureAbilityGuard,
+    GitSyncQueryEditGuard
+  )
+  @Delete(':id/versions/:versionId/library-versions/:libraryVersionId')
+  async deleteLibraryQueryVersion(
+    @AppDecorator() app: App,
+    @Param('id') dataQueryId: string,
+    @Param('libraryVersionId') libraryVersionId: string
+  ) {
+    await this.dataQueriesService.deleteLibraryQueryVersion(dataQueryId, libraryVersionId, app);
     return;
   }
 

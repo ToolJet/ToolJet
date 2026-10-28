@@ -632,6 +632,34 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
+  // Reads `{{constants.x}}` / `{{secrets.x}}` references for a library run, against the environment the run will use
+  // (the same lookup runQuery does). Used for library DEFAULT values only; callers never pass a supplied value here.
+  async resolveLibraryServerReferences(
+    references: string[],
+    dataSource: DataSource,
+    organizationId: string,
+    envId?: string,
+    branchId?: string,
+    user?: User
+  ): Promise<Map<string, string>> {
+    const { environmentId } = await this.appEnvironmentUtilService.getOptions(
+      dataSource.id,
+      organizationId,
+      envId,
+      branchId
+    );
+    return new Map(
+      await Promise.all(
+        references.map(
+          async (reference): Promise<[string, string]> => [
+            reference,
+            await this.dataSourceUtilService.resolveConstants(reference, organizationId, environmentId, user),
+          ]
+        )
+      )
+    );
+  }
+
   async parseQueryOptions(
     object: any,
     options: object,

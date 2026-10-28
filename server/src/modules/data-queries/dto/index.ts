@@ -95,6 +95,11 @@ export class RunLibraryQueryDto {
   @IsOptional()
   inputs?: Record<string, unknown>;
 
+  // Runtime values passed to `.run()`; missing names fall back to the version's defaults.
+  @IsObject()
+  @IsOptional()
+  parameters?: Record<string, unknown>;
+
   @IsUUID()
   @IsOptional()
   libraryQueryId?: string;

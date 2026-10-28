@@ -3,7 +3,9 @@ import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+
+type RequestWithUser = Request & { user?: { id: string } };
 import { DataQueryRepository } from './repository';
 import { decamelizeKeys } from 'humps';
 import { serializeDataQueries } from './serialization.helper';
@@ -15,20 +17,44 @@ import {
   UpdateDataQueryDto,
 } from './dto';
 import {
+  assertLibraryDataSource,
   assertLibraryTarget,
+  assertNotCalledByReleasedVersions,
+  assertReleasableLibraryDraft,
   assertSameLibrary,
+  assertSupportedLibraryKind,
   buildLibraryVariableMap,
   CLIENT_SIDE_LIBRARY_KINDS,
+  isSameLibrarySnapshot,
+  latestReleaseOrThrow,
+  LibraryCatalog,
+  libraryServerReferences,
+  libraryTransformationOf,
+  libraryUsedByMessage,
+  libraryVersionName,
   LIBRARY_QUERY_IS_CLIENT_SIDE,
+  parseLibraryVersionRef,
+  pickPinnedVersion,
+  replaceLibraryServerReferences,
+  toLibraryCatalog,
   toLibraryRunEntity,
+  toLibrarySiblings,
+  toLibraryUsage,
+  toRunTarget,
+  withoutLibraryRequestDetails,
+  UNSUPPORTED_LIBRARY_KINDS,
 } from './library/library-query.util';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
-import { isEmpty } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
+import { isUUID } from 'class-validator';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDeleteContext } from './interfaces/IService';
 import { App } from '@entities/app.entity';
+import { LibraryQueryVersion } from '@entities/library_query_version.entity';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { LIBRARY_QUERY_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { APP_TYPES } from '@modules/apps/constants';
@@ -211,6 +237,10 @@ export class DataQueriesService implements IDataQueriesService {
       }
       if (name !== undefined && existing.name !== name) {
         await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
+        // A rename breaks released code that calls the old name.
+        const library = await this.findLibraryQuery(dataQueryId, versionId);
+        // Its own released versions never block its rename (same rule as delete).
+        if (library) await assertNotCalledByReleasedVersions(library.appVersionId, existing.name, manager, library.id);
       }
 
       const touched = Object.keys({ ...(name !== undefined && { name }), ...(options !== undefined && { options }) });
@@ -236,29 +266,187 @@ export class DataQueriesService implements IDataQueriesService {
     );
   }
 
-  async getLibraryUsage(app: App) {
-    const rows = await this.dataQueryRepository.findLibraryConsumers(app.organizationId, app.id);
-    const byApp = new Map<string, { id: string; name: string; queries: any[] }>();
-    for (const row of rows) {
-      const entry = byApp.get(row.appId) ?? { id: row.appId, name: row.appName, queries: [] };
-      entry.queries.push({ id: row.queryId, name: row.queryName, libraryQueryId: row.libraryQueryId });
-      byApp.set(row.appId, entry);
-    }
-    return { apps: [...byApp.values()] };
+  // `versionId` is the library app's version (the route's :versionId, already checked against `app`).
+  async getLibraryUsage(app: App, versionId: string) {
+    const consumers = await this.dataQueryRepository.findLibraryConsumers(app.organizationId, versionId);
+    return toLibraryUsage(consumers);
   }
 
-  protected async assertLibraryQueryNotInUse(dataQueryId: string) {
+  // Library pickers: names, kinds and input/parameter definitions only, never query text (see toLibraryCatalog).
+  async getLibraryCatalog(app: App, versionId: string): Promise<LibraryCatalog> {
+    if (app.type !== APP_TYPES.QUERY_LIBRARY) throw new BadRequestException('Not a query library');
+    const manager = this.dataQueryRepository.manager;
+    const rows = await manager.find(DataQuery, { where: { appVersionId: versionId }, relations: { dataSource: true } });
+    const drafts = rows
+      .map((row) => ({
+        id: row.id,
+        name: row.name,
+        kind: row.dataSource.kind,
+        dataSourceId: row.dataSourceId,
+        options: row.options as Record<string, unknown>,
+      }))
+      .filter((draft) => !UNSUPPORTED_LIBRARY_KINDS.includes(draft.kind));
+    if (!drafts.length) return { queries: [] };
+
+    const queryIds = drafts.map((draft) => draft.id);
+    // The entity's @DeleteDateColumn leaves soft-deleted versions out.
+    const versions = await manager.find(LibraryQueryVersion, {
+      where: { dataQueryId: In(queryIds) },
+      order: { versionNumber: 'DESC' },
+    });
+    // Nested folders: the mapping's parent is always the immediate folder.
+    const folderRows: { queryId: string; folder: string }[] = await manager.query(
+      `SELECT m.child_id AS "queryId", f.name AS "folder"
+         FROM data_query_folder_mappings m
+         JOIN data_query_folders f ON f.id = m.parent_id
+        WHERE m.child_type = 'query' AND m.child_id = ANY($1::uuid[])`,
+      [queryIds]
+    );
+    // Soft-deleted rows count, same as release, so the next number matches what Release will assign.
+    const highestRows: { queryId: string; highest: number }[] = await manager.query(
+      `SELECT data_query_id AS "queryId", MAX(version_number)::int AS "highest"
+         FROM library_query_versions WHERE data_query_id = ANY($1::uuid[]) GROUP BY data_query_id`,
+      [queryIds]
+    );
+    return toLibraryCatalog(
+      drafts,
+      versions,
+      new Map(folderRows.map((row) => [row.queryId, row.folder])),
+      new Map(highestRows.map((row) => [row.queryId, row.highest]))
+    );
+  }
+
+  // Copies the draft into the next `vN` snapshot. The draft row stays editable; pinned apps run the snapshot.
+  async releaseLibraryQuery(
+    user: User,
+    dataQueryId: string,
+    app: App
+  ): Promise<{ id: string; name: string; versionNumber: number; createdAt: Date }> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      // Lock the draft so two releases of the same query run one after the other.
+      await manager.query('SELECT id FROM data_queries WHERE id = $1 FOR UPDATE', [dataQueryId]);
+      const draft = await manager.findOne(DataQuery, {
+        where: { id: dataQueryId },
+        relations: { dataSource: true, appVersion: true },
+      });
+      if (!draft || draft.appVersion?.appId !== app.id) throw new NotFoundException('Library query not found');
+      if (app.type !== APP_TYPES.QUERY_LIBRARY) {
+        throw new BadRequestException('Only query library queries can be released');
+      }
+      const kind = draft.dataSource.kind;
+      assertReleasableLibraryDraft(kind, draft.options);
+
+      // Soft-deleted rows count here so a version number is never reused.
+      const [{ latest }] = await manager.query(
+        'SELECT COALESCE(MAX(version_number), 0)::int AS latest FROM library_query_versions WHERE data_query_id = $1',
+        [dataQueryId]
+      );
+      const latestRelease = await manager.findOne(LibraryQueryVersion, {
+        where: { dataQueryId },
+        order: { versionNumber: 'DESC' },
+      });
+      const snapshot = { kind, dataSourceId: draft.dataSourceId, options: draft.options };
+      if (latestRelease && isSameLibrarySnapshot(latestRelease, snapshot)) {
+        throw new BadRequestException(`Nothing changed since ${libraryVersionName(latestRelease)}`);
+      }
+
+      const released = await manager.save(
+        manager.create(LibraryQueryVersion, {
+          dataQueryId,
+          versionNumber: latest + 1,
+          kind,
+          dataSourceId: draft.dataSourceId,
+          options: cloneDeep(draft.options),
+          createdBy: user.id,
+        })
+      );
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: draft.id,
+        resourceName: draft.name,
+        actionType: LIBRARY_QUERY_VERSION_AUDIT_KEYS.RELEASE,
+        resourceData: { appId: app.id, versionNumber: released.versionNumber, kind },
+        metadata: { data: { name: 'Library Query Released', version: libraryVersionName(released) } },
+      });
+
+      return {
+        id: released.id,
+        name: libraryVersionName(released),
+        versionNumber: released.versionNumber,
+        createdAt: released.createdAt,
+      };
+    });
+  }
+
+  // Soft-deletes one released version. Blocked while any app or module version pins it. The route's guards
+  // already resolved `app` from the query inside the URL's app version, so a query of another app is a 404.
+  async deleteLibraryQueryVersion(dataQueryId: string, libraryVersionId: string, app: App): Promise<void> {
+    if (app.type !== APP_TYPES.QUERY_LIBRARY) throw new BadRequestException('Not a query library');
+    const manager = this.dataQueryRepository.manager;
+    const query = await manager.findOne(DataQuery, { where: { id: dataQueryId }, relations: { appVersion: true } });
+    if (!query || query.appVersion?.appId !== app.id) throw new NotFoundException('Library query not found');
+    // The entity's @DeleteDateColumn leaves already-deleted versions out.
+    const version = isUUID(libraryVersionId)
+      ? await manager.findOne(LibraryQueryVersion, { where: { id: libraryVersionId, dataQueryId } })
+      : null;
+    if (!version) throw new NotFoundException('Library query version not found');
+
+    const consumers = await this.dataQueryRepository.findLibraryConsumers(
+      app.organizationId,
+      query.appVersionId,
+      query.id,
+      version.id
+    );
+    if (consumers.length) throw new ConflictException(libraryUsedByMessage(consumers));
+
+    await manager.softDelete(LibraryQueryVersion, { id: version.id });
+
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: (RequestContext.currentContext?.req as RequestWithUser | undefined)?.user?.id,
+      organizationId: app.organizationId,
+      resourceId: query.id,
+      resourceName: query.name,
+      actionType: LIBRARY_QUERY_VERSION_AUDIT_KEYS.DELETE,
+      resourceData: { appId: app.id, versionNumber: version.versionNumber, kind: version.kind },
+      metadata: { data: { name: 'Library Query Version Deleted', version: libraryVersionName(version) } },
+    });
+  }
+
+  // The library query a data query id points at, or null for a query in any other kind of app.
+  // Scoped to the URL's version before any message is built: a library query of another app or workspace is a
+  // 404, never a list of its consumers or callers.
+  protected async findLibraryQuery(dataQueryId: string, versionId: string) {
     const query = await this.dataQueryRepository.getOneById(dataQueryId, { appVersion: { app: true } });
-    const app = (query?.appVersion as any)?.app;
-    if (app?.type !== APP_TYPES.QUERY_LIBRARY) return;
-    const consumers = await this.dataQueryRepository.findLibraryConsumers(app.organizationId, app.id, dataQueryId);
-    const appCount = new Set(consumers.map((c) => c.appId)).size;
-    if (appCount > 0) throw new ConflictException(`Used by ${appCount} app(s). Remove it from those apps first.`);
+    const app = query?.appVersion?.app;
+    if (app?.type !== APP_TYPES.QUERY_LIBRARY) return null;
+    if (query.appVersionId !== versionId) throw new NotFoundException('Data query not found');
+    return { id: query.id, name: query.name, appVersionId: query.appVersionId, organizationId: app.organizationId };
+  }
+
+  // Deleting a library query is refused while an app/module version uses it or a released version
+  // of another library query calls it by name.
+  protected async assertLibraryQueryDeletable(dataQueryId: string, versionId: string) {
+    const library = await this.findLibraryQuery(dataQueryId, versionId);
+    if (!library) return;
+    const consumers = await this.dataQueryRepository.findLibraryConsumers(
+      library.organizationId,
+      library.appVersionId,
+      library.id
+    );
+    if (consumers.length) throw new ConflictException(libraryUsedByMessage(consumers));
+    await assertNotCalledByReleasedVersions(
+      library.appVersionId,
+      library.name,
+      this.dataQueryRepository.manager,
+      library.id
+    );
   }
 
   async delete(dataQueryId: string, versionId: string) {
-    await this.assertLibraryQueryNotInUse(dataQueryId);
-    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
+    await this.assertLibraryQueryDeletable(dataQueryId, versionId);
+    const historyUserId = (RequestContext.currentContext?.req as RequestWithUser | undefined)?.user?.id;
     const context = await this.beforeQueryDelete(dataQueryId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -379,7 +567,10 @@ export class DataQueriesService implements IDataQueriesService {
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
   }
 
-  protected async loadLibraryTarget(consumerQueryId: string, app: App, libraryQueryId?: string) {
+  // Primary: the consumer's pinned version (or the draft). Sibling: the sibling's latest release.
+  // `libraryDraft` is the library query row behind the target; the run uses its app version.
+  protected async loadLibraryTarget(consumerQueryId: string, app: App, siblingQueryId?: string) {
+    const manager = this.dataQueryRepository.manager;
     const consumer = await this.dataQueryRepository.getOneById(consumerQueryId, {
       dataSource: true,
       permissions: true,
@@ -388,37 +579,56 @@ export class DataQueriesService implements IDataQueriesService {
     const primary = primaryId
       ? await this.dataQueryRepository.getOneById(primaryId, { dataSource: true, appVersion: { app: true } })
       : null;
+    const libraryApp = primary?.appVersion?.app ?? null;
+    assertLibraryTarget({ consumer, library: primary, consumerApp: app, libraryApp });
 
-    let library = primary;
-    if (primary && libraryQueryId && libraryQueryId !== primary.id) {
-      const sibling = await this.dataQueryRepository.getOneById(libraryQueryId, {
-        dataSource: true,
-        appVersion: { app: true },
-      });
-      assertSameLibrary(primary, sibling);
-      library = sibling;
+    const ref = parseLibraryVersionRef(consumer.options?.libraryQueryVersionId);
+    const pinned = ref.draft
+      ? null
+      : pickPinnedVersion(await manager.findOneBy(LibraryQueryVersion, { id: ref.versionId }), primary.id);
+    const primaryTarget = toRunTarget(primary, pinned);
+
+    if (!siblingQueryId || siblingQueryId === primary.id) {
+      assertSupportedLibraryKind(primaryTarget.kind);
+      return { consumer, target: primaryTarget, libraryDraft: primary, libraryApp };
     }
 
-    const libraryApp = (library?.appVersion as any)?.app ?? null;
-    assertLibraryTarget({ consumer, library, consumerApp: app, libraryApp });
-    return { consumer, library, libraryApp };
+    const sibling = await this.dataQueryRepository.getOneById(siblingQueryId, {
+      dataSource: true,
+      appVersion: { app: true },
+    });
+    assertSameLibrary({ kind: primaryTarget.kind, appVersionId: primary.appVersionId }, sibling);
+    const latest = await manager.findOne(LibraryQueryVersion, {
+      where: { dataQueryId: sibling.id },
+      order: { versionNumber: 'DESC' },
+    });
+    const target = toRunTarget(sibling, latestReleaseOrThrow(sibling.name, latest));
+    assertSupportedLibraryKind(target.kind);
+    return { consumer, target, libraryDraft: sibling, libraryApp };
   }
 
   // `user` is used by the EE override to apply query-level permissions on the consumer query.
 
   async getLibraryDefinition(consumerQueryId: string, app: App, libraryQueryId?: string, user?: User) {
-    const { library } = await this.loadLibraryTarget(consumerQueryId, app, libraryQueryId);
-    if (!CLIENT_SIDE_LIBRARY_KINDS.includes(library.kind)) {
+    const { target, libraryDraft } = await this.loadLibraryTarget(consumerQueryId, app, libraryQueryId);
+    if (!CLIENT_SIDE_LIBRARY_KINDS.includes(target.kind)) {
       throw new BadRequestException('Only RunJS library queries run in the browser');
     }
-    const siblings = await this.dataQueryRepository.getAll(library.appVersionId);
+    const drafts = await this.dataQueryRepository.getAll(libraryDraft.appVersionId);
+    // The entity's @DeleteDateColumn leaves soft-deleted versions out.
+    const versions = await this.dataQueryRepository.manager.find(LibraryQueryVersion, {
+      where: { dataQueryId: In(drafts.map((draft) => draft.id)) },
+      select: { dataQueryId: true, versionNumber: true, kind: true },
+    });
     return {
-      id: library.id,
-      name: library.name,
-      kind: library.kind,
-      code: library.options?.code ?? '',
-      parameters: library.options?.parameters ?? [],
-      siblings: siblings.map((q) => ({ id: q.id, name: q.name, kind: q.kind })),
+      id: target.queryId,
+      name: target.name,
+      kind: target.kind,
+      code: target.options.code ?? '',
+      inputs: target.options.inputs ?? [],
+      parameters: target.options.parameters ?? [],
+      transformation: libraryTransformationOf(target.options),
+      siblings: toLibrarySiblings(drafts, versions),
     };
   }
 
@@ -430,24 +640,48 @@ export class DataQueriesService implements IDataQueriesService {
     app: App,
     environmentId?: string
   ): Promise<object> {
-    const { consumer, library } = await this.loadLibraryTarget(consumerQueryId, app, dto?.libraryQueryId);
-    if (CLIENT_SIDE_LIBRARY_KINDS.includes(library.kind)) {
+    const { consumer, target, libraryDraft } = await this.loadLibraryTarget(consumerQueryId, app, dto?.libraryQueryId);
+    if (CLIENT_SIDE_LIBRARY_KINDS.includes(target.kind)) {
       throw new BadRequestException(LIBRARY_QUERY_IS_CLIENT_SIDE);
     }
+    // Refuses a Python transformation (a draft pin can have one) before the query runs.
+    const libraryTransformation = libraryTransformationOf(target.options);
+    const dataSource = assertLibraryDataSource(
+      target.dataSourceId
+        ? await this.dataQueryRepository.manager.findOneBy(DataSource, { id: target.dataSourceId })
+        : null
+    );
     const currentUser = user
       ? { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName }
       : undefined;
-    const { variableMap } = buildLibraryVariableMap(library.options, dto?.inputs, { currentUser });
-    // Always 'view': runQueryOnBuilder's option write-back must never touch a library query.
-    return this.runAndGetResult(
-      user,
-      toLibraryRunEntity(library, consumer),
-      variableMap,
-      response,
-      environmentId,
-      'view',
-      app
+    // Constants/secrets in defaults are read here, in the consumer's environment, and only for defaults: a supplied
+    // value is never resolved. The scope sent to the browser keeps the unresolved text.
+    const references = libraryServerReferences(target.options);
+    const resolvedReferences = references.length
+      ? await this.dataQueryUtilService.resolveLibraryServerReferences(
+          references,
+          dataSource,
+          user ? user.organizationId : app.organizationId,
+          environmentId,
+          libraryDraft.appVersion?.branchId,
+          user
+        )
+      : undefined;
+    const { scope, variableMap } = buildLibraryVariableMap(
+      target.options,
+      { inputs: dto?.inputs, parameters: dto?.parameters },
+      {
+        currentUser,
+        resolveServerText: resolvedReferences && ((text) => replaceLibraryServerReferences(text, resolvedReferences)),
+      }
     );
+    // Always 'view': runQueryOnBuilder's option write-back must never touch a library query.
+    const entity = toLibraryRunEntity(target, libraryDraft, dataSource, consumer);
+    const result = withoutLibraryRequestDetails(
+      await this.runAndGetResult(user, entity, variableMap, response, environmentId, 'view', app)
+    );
+    // The browser runs the transformation with the scope the server resolved (declared names, defaults applied).
+    return libraryTransformation === undefined ? result : { ...result, libraryTransformation, libraryScope: scope };
   }
 
   async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {

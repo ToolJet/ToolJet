@@ -14,10 +14,13 @@ import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import {
   executeLibraryJS,
+  hasServerReference,
   LIBRARY_KIND,
   LIBRARY_QUERY_IS_CLIENT_SIDE,
   libraryTemplateState,
   mergeLibraryParameters,
+  raceAbort,
+  runLibraryTransformation,
 } from '@/AppBuilder/_utils/libraryQuery';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
@@ -26,6 +29,20 @@ const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPre
 const toastIfQueryRunRestricted = (errorData) => {
   if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN) toast.error(errorData.data.responseObject.responseBody);
 };
+
+const LIBRARY_PYTHON_ERROR = 'Library transformations must be JavaScript';
+
+const resolveLibraryDefault = (value) => resolveReferences(value, undefined);
+
+// Inputs in the library editor have no consumer to bind them, so `input` is each declared input's default.
+const libraryEditorInputDefaults = (query) => mergeLibraryParameters(query?.options?.inputs, {}, resolveLibraryDefault);
+
+const libraryFailure = ({ message, description = message, data }) => ({
+  status: 'failed',
+  message,
+  description,
+  data: data ?? { message, description },
+});
 
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
@@ -465,19 +482,23 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       if (_.isEmpty(parameters)) {
-        parameters = dataQuery.options?.parameters?.reduce(
-          (parameters, parameter) => ({
-            ...parameters,
-            [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
-          }),
-          {}
-        );
+        // A library default naming constants or secrets is left out, so the server applies the version default;
+        // resolving it here would send text like "undefined-undefined".
+        parameters = dataQuery.options?.parameters
+          ?.filter((parameter) => dataQuery.kind !== LIBRARY_KIND || !hasServerReference(parameter.defaultValue))
+          .reduce(
+            (parameters, parameter) => ({
+              ...parameters,
+              [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
+            }),
+            {}
+          );
       }
 
       const exposedValues = get().getAllExposedValues(moduleId);
       const queryState =
         get().getAppType(moduleId) === 'query_library'
-          ? libraryTemplateState(exposedValues, parameters)
+          ? libraryTemplateState(exposedValues, parameters, libraryEditorInputDefaults(query))
           : { ...exposedValues, parameters };
 
       const options = getQueryVariables(dataQuery.options, queryState, {
@@ -549,7 +570,8 @@ export const createQueryPanelSlice = (set, get) => ({
             query.options.transformationLanguage,
             query,
             mode,
-            moduleId
+            moduleId,
+            parameters
           );
 
           if (finalData.status === 'failed') {
@@ -718,6 +740,7 @@ export const createQueryPanelSlice = (set, get) => ({
           );
         } else if (query.kind === LIBRARY_KIND) {
           queryExecutionPromise = get().queryPanel.runLibraryQuery(query, moduleId, {
+            parameters,
             signal: abortController?.signal,
           });
         } else {
@@ -976,19 +999,22 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       if (_.isEmpty(parameters)) {
-        parameters = query.options?.parameters?.reduce(
-          (parameters, parameter) => ({
-            ...parameters,
-            [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
-          }),
-          {}
-        );
+        // Same server-reference filter as runQuery.
+        parameters = query.options?.parameters
+          ?.filter((parameter) => query.kind !== LIBRARY_KIND || !hasServerReference(parameter.defaultValue))
+          .reduce(
+            (parameters, parameter) => ({
+              ...parameters,
+              [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
+            }),
+            {}
+          );
       }
 
       const exposedValues = get().getAllExposedValues(moduleId);
       const queryState =
         get().getAppType(moduleId) === 'query_library'
-          ? libraryTemplateState(exposedValues, parameters)
+          ? libraryTemplateState(exposedValues, parameters, libraryEditorInputDefaults(query))
           : { ...exposedValues, parameters };
       const options = getQueryVariables(query.options, queryState, {
         components: get().getComponentNameIdMapping(),
@@ -1024,6 +1050,7 @@ export const createQueryPanelSlice = (set, get) => ({
           );
         } else if (query.kind === LIBRARY_KIND) {
           queryExecutionPromise = get().queryPanel.runLibraryQuery(query, moduleId, {
+            parameters,
             isPreview: true,
             signal: abortController?.signal,
           });
@@ -1221,7 +1248,8 @@ export const createQueryPanelSlice = (set, get) => ({
                     query.options.transformationLanguage,
                     query,
                     'edit',
-                    moduleId
+                    moduleId,
+                    parameters
                   );
                   if (finalData?.status === 'failed') {
                     onEvent('onDataQueryFailure', queryEvents);
@@ -1412,7 +1440,8 @@ export const createQueryPanelSlice = (set, get) => ({
       transformationLanguage = 'javascript',
       query,
       mode = 'edit',
-      moduleId = 'canvas'
+      moduleId = 'canvas',
+      parameters = {}
     ) => {
       const data = rawData;
       const {
@@ -1423,6 +1452,36 @@ export const createQueryPanelSlice = (set, get) => ({
       let result = {};
       const currentState = getResolvedState(moduleId);
       const appType = getAppType(moduleId);
+
+      if (appType === 'query_library') {
+        // Same restricted scope consumers get: input, parameters, utilities, data. Library transformations are JavaScript only.
+        if (transformationLanguage === 'python') {
+          return { status: 'failed', data: { message: LIBRARY_PYTHON_ERROR, description: LIBRARY_PYTHON_ERROR } };
+        }
+        const outcome = await runLibraryTransformation({
+          code: transformation,
+          data,
+          input: libraryEditorInputDefaults(query),
+          parameters: mergeLibraryParameters(query?.options?.parameters, parameters, resolveLibraryDefault),
+          constants: currentState?.constants,
+          currentUser: currentState?.globals?.currentUser,
+        });
+        if (outcome.status !== 'failed') return outcome.data;
+        // Same debugger entry the normal JavaScript path writes on failure.
+        get().debugger.log({
+          logLevel: 'error',
+          type: 'transformation',
+          kind: query.kind,
+          key: `${query.name}, transformation`,
+          message: outcome.message,
+          error: outcome.data,
+          isTransformation: true,
+          isQuerySuccessLog: false,
+          errorTarget: 'Queries',
+        });
+        // Callers expect the transformed value itself on success, `{ status: 'failed', ... }` on failure.
+        return outcome;
+      }
 
       if (transformationLanguage === 'python') {
         result = await runPythonTransformation(currentState, data, transformation, query, mode);
@@ -1580,8 +1639,10 @@ export const createQueryPanelSlice = (set, get) => ({
       }
     },
     // Runs a `library` query: SQL/REST kinds on the server, RunJS in the browser (also the fallback when the
-    // server answers LIBRARY_QUERY_IS_CLIENT_SIDE). Inputs are resolved here, against the consumer app's state.
-    runLibraryQuery: async (query, moduleId = 'canvas', { signal } = {}) => {
+    // server answers LIBRARY_QUERY_IS_CLIENT_SIDE). Inputs are resolved here, against the consumer app's state;
+    // `parameters` are this run's runtime values. The library's own transformation (restricted scope) runs here
+    // too, so callers get the data the app's own pipeline should see.
+    runLibraryQuery: async (query, moduleId = 'canvas', { parameters, signal } = {}) => {
       const { appStore, currentVersionId, selectedEnvironment, isPublicAccess } = get();
       const { currentAppEnvironmentId, environmentId } = appStore.modules[moduleId].app;
       const isReleasedApp = appStore.modules.canvas.app?.isReleasedApp;
@@ -1594,36 +1655,90 @@ export const createQueryPanelSlice = (set, get) => ({
       // A blank input box means "use the library default", so it's left out rather than sent as ''.
       const filledInputs = _.omitBy(query.options?.inputs ?? {}, (raw) => raw === '' || raw === undefined);
       const inputs = get().resolveReferences(moduleId, filledInputs, state, {}, {});
+      // Values a run leaves out fall back to the pinned version's defaults on the server.
+      const runtimeParameters = _.isEmpty(parameters) ? undefined : parameters;
       const resolvedState = get().getResolvedState(moduleId);
 
-      const runInBrowser = async (libraryQueryId, params, depth) => {
-        const definition = await dataqueryService.getLibraryDefinition(query.id, libraryQueryId);
-        return executeLibraryJS({
+      const withTransformation = async (result, code, input, params) => {
+        const rest = _.omit(result, ['libraryTransformation', 'libraryScope']);
+        if (typeof code !== 'string' || result?.status === 'failed') return rest;
+        const transformed = await runLibraryTransformation({
+          code,
+          data: result?.data,
+          input,
+          parameters: params,
+          constants: resolvedState?.constants,
+          currentUser: resolvedState?.globals?.currentUser,
+        });
+        return transformed.status === 'failed' ? libraryFailure(transformed.data) : { ...rest, data: transformed.data };
+      };
+
+      // Server runs send back the scope they resolved (declared names, defaults applied), so the transformation
+      // sees what the query itself saw rather than the raw runtime values.
+      const withServerTransformation = (result) =>
+        withTransformation(
+          result,
+          result?.libraryTransformation,
+          result?.libraryScope?.input ?? {},
+          result?.libraryScope?.parameters ?? {}
+        );
+
+      const runSiblingOnServer = async (sibling, siblingParams) => {
+        const result = await dataqueryService.runLibrary(
+          query.id,
+          { parameters: siblingParams },
+          currentVersionId,
+          envId,
+          sibling.id,
+          signal
+        );
+        return withServerTransformation(result);
+      };
+
+      const runInBrowser = async (libraryQueryId, suppliedInputs, params, depth) => {
+        const definition = await dataqueryService.getLibraryDefinition(query.id, libraryQueryId, signal);
+        const input = mergeLibraryParameters(definition.inputs, suppliedInputs, resolveLibraryDefault);
+        const resolvedParameters = mergeLibraryParameters(definition.parameters, params, resolveLibraryDefault);
+        const result = await executeLibraryJS({
           code: definition.code,
-          parameters: mergeLibraryParameters(definition.parameters, params, (v) => resolveReferences(v, undefined)),
+          input,
+          parameters: resolvedParameters,
           siblings: definition.siblings,
           constants: resolvedState?.constants,
           currentUser: resolvedState?.globals?.currentUser,
           depth,
           runSibling: async (sibling, siblingParams, nextDepth) => {
-            const result =
+            if (sibling.released === false) throw new Error(`Library query "${sibling.name}" has no released version`);
+            const siblingResult =
               sibling.kind === 'runjs'
-                ? await runInBrowser(sibling.id, siblingParams, nextDepth)
-                : await dataqueryService.runLibrary(query.id, siblingParams, currentVersionId, envId, sibling.id);
-            if (result?.status === 'failed')
-              throw new Error(result?.data?.message || result?.message || 'Query failed');
-            return result?.data;
+                ? await runInBrowser(sibling.id, {}, siblingParams, nextDepth)
+                : await runSiblingOnServer(sibling, siblingParams);
+            if (siblingResult?.status === 'failed')
+              throw new Error(siblingResult?.data?.message || siblingResult?.message || 'Query failed');
+            return siblingResult?.data;
           },
         });
+        return withTransformation(result, definition.transformation, input, resolvedParameters);
       };
 
-      if (query.options?.libraryKind === 'runjs') return runInBrowser(undefined, inputs, 0);
+      // Cancelling must settle a RunJS run right away, even while the user code is still awaiting.
+      const runInBrowserCancellable = () => raceAbort(runInBrowser(undefined, inputs, runtimeParameters, 0), signal);
+
+      if (query.options?.libraryKind === 'runjs') return runInBrowserCancellable();
       try {
-        return await dataqueryService.runLibrary(query.id, inputs, currentVersionId, envId, undefined, signal);
+        const result = await dataqueryService.runLibrary(
+          query.id,
+          { inputs, parameters: runtimeParameters },
+          currentVersionId,
+          envId,
+          undefined,
+          signal
+        );
+        return await withServerTransformation(result);
       } catch (error) {
         // handleResponse rejects with { error: <message>, data, statusCode }
         if (error?.error === LIBRARY_QUERY_IS_CLIENT_SIDE || error?.data?.message === LIBRARY_QUERY_IS_CLIENT_SIDE) {
-          return runInBrowser(undefined, inputs, 0);
+          return runInBrowserCancellable();
         }
         throw error;
       }
@@ -1634,7 +1749,7 @@ export const createQueryPanelSlice = (set, get) => ({
       const resolvedState = get().getResolvedState(moduleId);
       const allQueries = get().dataQuery.queries.modules?.[moduleId] ?? [];
       const runSibling = async (sibling, params, nextDepth) => {
-        // runjs siblings recurse directly so the depth (D15 nesting cap) carries through; others use the editor runQuery
+        // runjs siblings recurse directly so the depth (for the nesting cap) carries through; others use the editor runQuery
         const result =
           sibling.kind === 'runjs'
             ? await get().queryPanel.runLibraryEditorJS(
@@ -1664,9 +1779,8 @@ export const createQueryPanelSlice = (set, get) => ({
       };
       return executeLibraryJS({
         code: query.options?.code,
-        parameters: mergeLibraryParameters(query.options?.parameters, parameters, (v) =>
-          resolveReferences(v, undefined)
-        ),
+        input: libraryEditorInputDefaults(query),
+        parameters: mergeLibraryParameters(query.options?.parameters, parameters, resolveLibraryDefault),
         siblings: allQueries.filter((q) => q.id !== query.id).map(({ id, name, kind }) => ({ id, name, kind })),
         runSibling,
         constants: resolvedState?.constants,

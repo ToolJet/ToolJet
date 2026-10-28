@@ -1,29 +1,114 @@
 import '@/test/setupMsw';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import config from 'config';
 import LibraryUsagePanel from '../LibraryUsagePanel';
 
-it('lists consumer apps with a count', async () => {
-  server.use(
-    http.get(`${config.apiUrl}/data-queries/v1/library-usage`, () =>
-      HttpResponse.json({
-        apps: [
-          { id: 'a1', name: 'Support portal', queries: [{ id: 'c1', name: 'getCustomer', libraryQueryId: 'q1' }] },
-          { id: 'a2', name: 'Sales dashboard', queries: [{ id: 'c2', name: 'cust', libraryQueryId: 'q1' }] },
-        ],
-      })
-    )
-  );
-  render(<LibraryUsagePanel versionId="v1" />);
-  expect(await screen.findByText('Used by (2)')).toBeInTheDocument();
-  expect(screen.getByText('Support portal')).toBeInTheDocument();
+const usageUrl = `${config.apiUrl}/data-queries/ver1/library-usage`;
+const pin = (overrides) => ({
+  id: 'c1',
+  name: 'getCustomer',
+  appVersionName: 'v1',
+  libraryQueryId: 'q1',
+  versionName: 'v2',
+  ...overrides,
 });
+const rows = (heading) =>
+  within(screen.getByText(heading).closest('section'))
+    .queryAllByRole('listitem')
+    .map((li) => li.textContent);
 
-it('says when nothing uses the library yet', async () => {
-  server.use(http.get(`${config.apiUrl}/data-queries/v1/library-usage`, () => HttpResponse.json({ apps: [] })));
-  render(<LibraryUsagePanel versionId="v1" />);
-  expect(await screen.findByText('No apps use this library yet.')).toBeInTheDocument();
+describe('LibraryUsagePanel', () => {
+  it('splits consumers into apps and modules, one row per consumer query', async () => {
+    server.use(
+      http.get(usageUrl, () =>
+        HttpResponse.json({
+          apps: [{ id: 'a1', name: 'Support portal', queries: [pin()] }],
+          modules: [
+            { id: 'm1', name: 'Customer card', queries: [pin({ id: 'c2', name: 'lookup', appVersionName: 'v3' })] },
+          ],
+        })
+      )
+    );
+    render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+
+    expect(await screen.findByText('Used by apps (1)')).toBeInTheDocument();
+    expect(screen.getByText('Used by modules (1)')).toBeInTheDocument();
+    expect(rows('Used by apps (1)')).toEqual(['Support portal · v1 · getCustomer · v2']);
+    expect(rows('Used by modules (1)')).toEqual(['Customer card · v3 · lookup · v2']);
+    expect(screen.getByRole('link', { name: 'Support portal' })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/\/apps\/a1$/)
+    );
+    expect(screen.getByRole('link', { name: 'Customer card' })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/\/apps\/m1$/)
+    );
+  });
+
+  it('prefixes app links with the deployment sub-path', async () => {
+    window.public_config = { SUB_PATH: '/tooljet/' };
+    window.history.pushState({}, '', '/tooljet/ws1/apps/home');
+    try {
+      server.use(
+        http.get(usageUrl, () =>
+          HttpResponse.json({ apps: [{ id: 'a1', name: 'Support portal', queries: [pin()] }], modules: [] })
+        )
+      );
+      render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+
+      expect(await screen.findByRole('link', { name: 'Support portal' })).toHaveAttribute(
+        'href',
+        '/tooljet/ws1/apps/a1'
+      );
+    } finally {
+      delete window.public_config;
+      window.history.pushState({}, '', '/');
+    }
+  });
+
+  it('shows None for a group with no consumers', async () => {
+    server.use(
+      http.get(usageUrl, () =>
+        HttpResponse.json({ apps: [{ id: 'a1', name: 'Support portal', queries: [pin()] }], modules: [] })
+      )
+    );
+    render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+
+    expect(await screen.findByText('Used by modules (0)')).toBeInTheDocument();
+    expect(within(screen.getByText('Used by modules (0)').closest('section')).getByText('None')).toBeInTheDocument();
+  });
+
+  it('shows only consumers of the selected query and labels draft pins', async () => {
+    server.use(
+      http.get(usageUrl, () =>
+        HttpResponse.json({
+          apps: [
+            {
+              id: 'a1',
+              name: 'Support portal',
+              queries: [pin({ versionName: 'draft' }), pin({ id: 'c9', name: 'otherUse', libraryQueryId: 'q2' })],
+            },
+            { id: 'a2', name: 'Unrelated app', queries: [pin({ id: 'c8', libraryQueryId: 'q2' })] },
+          ],
+          modules: [],
+        })
+      )
+    );
+    render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+
+    expect(await screen.findByText('Used by apps (1)')).toBeInTheDocument();
+    expect(rows('Used by apps (1)')).toEqual(['Support portal · v1 · getCustomer · Draft']);
+    expect(screen.queryByText('Unrelated app')).not.toBeInTheDocument();
+  });
+
+  it('says it could not load usage instead of claiming nothing uses the query', async () => {
+    server.use(http.get(usageUrl, () => HttpResponse.json({ message: 'boom' }, { status: 500 })));
+    render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+
+    expect(await screen.findByText("Couldn't load usage")).toBeInTheDocument();
+    expect(screen.queryByText('None')).not.toBeInTheDocument();
+  });
 });

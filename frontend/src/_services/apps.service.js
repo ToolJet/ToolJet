@@ -31,6 +31,7 @@ export const appsService = {
   getAppsLimit,
   getWorkflowLimit,
   releaseVersion,
+  getLibraryPins,
 };
 
 function getAppAuthenticationConfig(slug) {
@@ -312,4 +313,11 @@ function releaseVersion(appId, versionToBeReleased) {
   };
 
   return fetch(`${config.apiUrl}/apps/${appId}/release`, requestOptions).then(handleResponse);
+}
+
+function getLibraryPins(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}/library-pins`, requestOptions).then(
+    handleResponse
+  );
 }

@@ -35,8 +35,13 @@ export class DataQueryRepository extends Repository<DataQuery> {
     });
   }
 
-  findLibraryConsumers(organizationId: string, libraryAppId: string, libraryQueryId?: string) {
-    return queryLibraryConsumers(this.manager, organizationId, libraryAppId, libraryQueryId);
+  findLibraryConsumers(
+    organizationId: string,
+    libraryAppVersionId: string,
+    libraryQueryId?: string,
+    libraryVersionId?: string
+  ) {
+    return queryLibraryConsumers(this.manager, organizationId, libraryAppVersionId, libraryQueryId, libraryVersionId);
   }
 
   async findPublicParentAppForModuleQuery(moduleAppId: string, dataQueryId: string): Promise<App | null> {

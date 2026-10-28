@@ -24,6 +24,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
+import LibraryVersionBar from '@/AppBuilder/QueryLibrary/LibraryVersionBar';
 
 const ICON_ONLY_BUTTON_BREAKPOINT = 700;
 
@@ -39,6 +40,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   const setShowCreateQuery = useStore((state) => state.queryPanel.setShowCreateQuery);
   const queryName = selectedQuery?.name ?? '';
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isQueryLibrary = useStore((state) => state.getAppType(moduleId) === 'query_library');
+  const currentVersionId = useStore((state) => state.currentVersionId);
 
   const headerRef = useRef(null);
   const headerWidth = useContainerWidth(headerRef);
@@ -112,7 +115,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
       label: 'Transformation',
       condition: !TRANSFORMATION_DISABLED_KINDS.has(selectedQuery?.kind),
     },
-    { id: 3, label: 'Settings' },
+    // Library queries have no triggers, notifications or events of their own.
+    { id: 3, label: 'Settings', condition: !isQueryLibrary },
   ];
 
   const iconOnly = headerWidth > 0 && headerWidth < ICON_ONLY_BUTTON_BREAKPOINT;
@@ -128,6 +132,9 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
             darkMode={darkMode}
             isDiabled={shouldFreeze}
           />
+        )}
+        {selectedQuery && isQueryLibrary && (
+          <LibraryVersionBar queryId={selectedQuery.id} versionId={currentVersionId} darkMode={darkMode} />
         )}
         {selectedQuery && (
           <div className="d-flex" style={{ marginBottom: '-15px', gap: '3px' }}>

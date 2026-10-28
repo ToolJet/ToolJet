@@ -24,7 +24,7 @@ export enum APP_TYPES {
 
 export const APPS_PAGE_SIZE = 9;
 
-// Query libraries ride the Module permission bucket in Phase 1 (spec D9).
+// Query libraries ride the Module permission bucket; they have no permission resource of their own yet.
 export const isModuleLikeAppType = (type?: string): boolean =>
   type === APP_TYPES.MODULE || type === APP_TYPES.QUERY_LIBRARY;
 

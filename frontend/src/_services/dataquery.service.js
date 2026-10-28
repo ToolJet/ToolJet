@@ -9,6 +9,9 @@ export const dataqueryService = {
   runLibrary,
   getLibraryDefinition,
   getLibraryUsage,
+  releaseLibraryQuery,
+  deleteLibraryQueryVersion,
+  getLibraryCatalog,
   update,
   del,
   preview,
@@ -119,7 +122,7 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function runLibrary(queryId, inputs, versionId, environmentId, libraryQueryId, signal) {
+function runLibrary(queryId, { inputs, parameters } = {}, versionId, environmentId, libraryQueryId, signal) {
   const hasEditorContext = versionId && environmentId && environmentId !== 'undefined';
   const url = hasEditorContext
     ? `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run-library/${environmentId}`
@@ -128,18 +131,23 @@ function runLibrary(queryId, inputs, versionId, environmentId, libraryQueryId, s
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ inputs: inputs ?? {}, ...(libraryQueryId && { libraryQueryId }) }),
+    body: JSON.stringify({
+      inputs: inputs ?? {},
+      ...(parameters && { parameters }),
+      ...(libraryQueryId && { libraryQueryId }),
+    }),
     signal,
   };
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function getLibraryDefinition(queryId, libraryQueryId) {
+function getLibraryDefinition(queryId, libraryQueryId, signal) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(libraryQueryId ? { libraryQueryId } : {}),
+    signal,
   };
   return fetch(`${config.apiUrl}/data-queries/${queryId}/library-definition`, requestOptions).then(handleResponse);
 }
@@ -147,6 +155,26 @@ function getLibraryDefinition(queryId, libraryQueryId) {
 function getLibraryUsage(libraryVersionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/data-queries/${libraryVersionId}/library-usage`, requestOptions).then(handleResponse);
+}
+
+function releaseLibraryQuery(queryId, versionId) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/library-release`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function deleteLibraryQueryVersion(queryId, versionId, libraryVersionId) {
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/library-versions/${libraryVersionId}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function getLibraryCatalog(versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/data-queries/${versionId}/library-catalog`, requestOptions).then(handleResponse);
 }
 
 function preview(query, options, versionId, environmentId, signal) {

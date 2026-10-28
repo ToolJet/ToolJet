@@ -21,7 +21,7 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 | `repository.ts` | `VersionRepository`: findVersion, getVersionsInApp (branch-scoped), findLatestVersionForEnvironment, resolveMetadataVersion, updateVersion |
 | `module-ref.util.ts` | Resolves module pins (`resolveModuleRef`, `resolveAllModuleViewersForVersion`, `listModuleVersions`); pin/unpinned/orphan fallback rules documented in header |
 | `helpers/version-copy-parent.helper.ts` | Parent-id remapping during clone (composite ids, ghost parents) |
-| `controller.ts` | `/apps/:id/versions` GET/POST/DELETE, `/apps/:id/draft-versions` POST |
+| `controller.ts` | `/apps/:id/versions` GET/POST/DELETE, `/apps/:id/versions/:versionId/library-pins` GET (read-only, `GET_ONE` ability), `/apps/:id/draft-versions` POST |
 | `controller.v2.ts` | v2: get one, PUT update, PUT global/page settings, PUT promote, GET `module/by-correlation/:coRelationId/version` |
 | `controllers/{components,events,pages}.controller.ts` | Version-scoped component/event/page CRUD (delegates to apps-module services) |
 | `guards/`, `ability/` | `validate-app-version.guard`, `valid-module-by-correlation.guard`; CASL abilities for app + workflow versions |

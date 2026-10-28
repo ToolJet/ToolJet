@@ -91,6 +91,8 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
       <>
         <ReleaseConfirmation
           show={showConfirmation}
+          appId={appId}
+          versionId={versionToBeReleased}
           onClose={() => setShowConfirmation(false)}
           onConfirm={onReleaseConfirm}
         />
@@ -123,6 +125,8 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
     <>
       <ReleaseConfirmation
         show={showConfirmation}
+        appId={appId}
+        versionId={versionToBeReleased}
         onClose={() => setShowConfirmation(false)}
         onConfirm={onReleaseConfirm}
       />

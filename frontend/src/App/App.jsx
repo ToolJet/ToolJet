@@ -7,6 +7,8 @@ import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
 import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
 import { HomePage } from '@/HomePage';
+import QueryLibraryRedirect from '@/AppBuilder/QueryLibrary/QueryLibraryRedirect';
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import './lazyPageStyles';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -408,17 +410,19 @@ class AppComponent extends React.Component {
                     </DesktopOnlyRoute>
                   }
                 />
-                <Route
-                  exact
-                  path="/:workspaceId/query-library"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'query_library'} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
+                {isQueryLibraryEnabled() && (
+                  <Route
+                    exact
+                    path="/:workspaceId/query-library"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <QueryLibraryRedirect />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                )}
 
                 {getDataSourcesRoutes({ ...mergedProps, darkMode })}
                 {/* DUPLICATE VIEWER ROUTES REMOVED - handled by ViewerApp.jsx */}

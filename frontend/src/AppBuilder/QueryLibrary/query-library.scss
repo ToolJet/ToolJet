@@ -21,9 +21,10 @@
   padding: 16px;
   overflow-y: auto;
 
+  &__group + &__group { margin-top: 16px; }
   &__title { font-weight: 500; margin-bottom: 8px; }
   &__empty { color: var(--text-placeholder); }
   ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-  li { display: flex; justify-content: space-between; gap: 8px; }
-  &__count { color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
+  li { overflow-wrap: anywhere; color: var(--text-placeholder); }
+  li a { color: var(--text-default); }
 }

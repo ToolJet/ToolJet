@@ -1,0 +1,74 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { VirtuosoMockContext } from 'react-virtuoso';
+import config from 'config';
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
+import DataSourcePicker from '../Components/DataSourcePicker';
+import DataSourceSelect from '../Components/DataSourceSelect';
+import { isQueryRunnable } from '@/_helpers/utils';
+
+// fetchEdition() reads config.TOOLJET_EDITION on every call, so flipping it flips the edition.
+const originalEdition = config.TOOLJET_EDITION;
+afterAll(() => {
+  config.TOOLJET_EDITION = originalEdition;
+});
+
+// The pickers only read a handful of store fields; a plain state object is enough.
+const mockState = {
+  dataSources: [],
+  globalDataSources: [
+    { id: 's1', kind: 'restapi', name: 'restapidefault', type: 'static' },
+    { id: 's2', kind: 'library', name: 'librarydefault', type: 'static' },
+  ],
+  sampleDataSource: null,
+  currentVersionId: 'v1',
+  getAppType: () => 'front-end',
+  dataQuery: { createDataQuery: jest.fn() },
+  queryPanel: { setPreviewData: jest.fn() },
+};
+jest.mock('@/AppBuilder/_stores/store', () => ({
+  __esModule: true,
+  default: (selector) => selector(mockState),
+}));
+
+const wrap = (ui) =>
+  render(
+    <VirtuosoMockContext.Provider value={{ viewportHeight: 1000, itemHeight: 32 }}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </VirtuosoMockContext.Provider>
+  );
+
+describe.each([
+  ['ce', false],
+  ['ee', true],
+  ['cloud', true],
+])('Query library entry in %s', (edition, shown) => {
+  beforeEach(() => {
+    config.TOOLJET_EDITION = edition;
+  });
+
+  it('isQueryLibraryEnabled', () => {
+    expect(isQueryLibraryEnabled()).toBe(shown);
+  });
+
+  it('data source picker (empty query panel)', () => {
+    wrap(<DataSourcePicker darkMode={false} />);
+    expect(!!document.querySelector('[data-cy="library-add-query-card"]')).toBe(shown);
+    // other static sources are untouched
+    expect(document.querySelector('[data-cy="restapi-add-query-card"]')).toBeInTheDocument();
+  });
+
+  it('data source select popup', () => {
+    wrap(<DataSourceSelect closePopup={jest.fn()} />);
+    expect(!!document.querySelector('[data-cy="ds-librarydefault"]')).toBe(shown);
+    expect(document.querySelector('[data-cy="ds-restapidefault"]')).toBeInTheDocument();
+  });
+});
+
+describe('already-saved library queries in CE', () => {
+  it('still count as runnable (the kind stays declared)', () => {
+    config.TOOLJET_EDITION = 'ce';
+    expect(isQueryRunnable({ kind: 'library' })).toBe(true);
+  });
+});

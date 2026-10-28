@@ -58,7 +58,7 @@ $border-radius: 4px;
             }
           }
 
-          button#runjs-param-add-btn {
+          button[id$='runjs-param-add-btn'] {
             padding: 0;
             height: inherit;
             border: none !important;

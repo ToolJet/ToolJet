@@ -10,9 +10,7 @@ export default function HomeHeader({ onSearchSubmit, darkMode, appType }) {
     page === 'apps'
       ? appType == 'module'
         ? 'Search modules in this workspace'
-        : appType == 'query_library'
-          ? 'Search query libraries in this workspace'
-          : t('globals.searchItem', 'Search apps in this workspace')
+        : t('globals.searchItem', 'Search apps in this workspace')
       : t('globals.workflowsSearchItem', 'Search workflows in this workspace');
 
   return (

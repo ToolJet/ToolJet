@@ -247,6 +247,11 @@ export const createDataQuerySlice = (set, get) => ({
       dataqueryService
         .del(queryId, versionId)
         .then(() => {
+          // Only once the server accepted: a refused delete (409/403) leaves the query in the graph.
+          clearQueryRerunTimer(queryId);
+          get().removeNode(`queries.${queryId}`, moduleId);
+          get().updateDependencyValues(`queries.${queryId}`, moduleId);
+
           const dataQueries = get().dataQuery.queries.modules[moduleId];
           // const deletedQueryName = dataQueries.find((query) => query.id === queryId).name;
           const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
@@ -280,10 +285,6 @@ export const createDataQuerySlice = (set, get) => ({
           });
         })
         .finally(() => setIsAppSaving(false));
-
-      clearQueryRerunTimer(queryId);
-      get().removeNode(`queries.${queryId}`, moduleId);
-      get().updateDependencyValues(`queries.${queryId}`, moduleId);
     },
     duplicateQuery: (id, appId, moduleId = 'canvas') => {
       set((state) => {

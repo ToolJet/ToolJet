@@ -63,6 +63,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isQueryLibrary = useStore((state) => state.getAppType(moduleId) === 'query_library');
 
   useEffect(() => {
     setDataSourceMeta(
@@ -115,33 +116,61 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     updateDataQuery(deepClone(newOptions));
   };
 
-  const handleAddParameter = (newParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
-      const newOptions = {
-        ...prevOptions,
-        parameters: [...(prevOptions?.parameters ?? []), newParameter],
-      };
-      optionsChangedforParams(newOptions);
-    }
-  };
+  // Add/change/remove handlers for one named list in the query options: `parameters` everywhere, plus `inputs`
+  // in the library editor.
+  const listHandlers = (key) => ({
+    handleAdd: (newItem) => {
+      const prevOptions = { ...options };
+      //check if name already used
+      if (!prevOptions[key]?.some((item) => item.name === newItem.name)) {
+        optionsChangedforParams({ ...prevOptions, [key]: [...(prevOptions[key] ?? []), newItem] });
+      }
+    },
+    handleChange: (index, updatedItem) => {
+      const prevOptions = { ...options };
+      //check if name already used
+      if (!prevOptions[key]?.some((item, idx) => item.name === updatedItem.name && index !== idx)) {
+        const updatedItems = [...prevOptions[key]];
+        updatedItems[index] = updatedItem;
+        optionsChangedforParams({ ...prevOptions, [key]: updatedItems });
+      }
+    },
+    handleRemove: (index) => {
+      const prevOptions = { ...options };
+      optionsChangedforParams({ ...prevOptions, [key]: prevOptions[key].filter((item, i) => index !== i) });
+    },
+  });
+  const parameterHandlers = listHandlers('parameters');
+  const inputHandlers = listHandlers('inputs');
 
-  const handleParameterChange = (index, updatedParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
-      const updatedParameters = [...prevOptions.parameters];
-      updatedParameters[index] = updatedParameter;
-      optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
-    }
-  };
-
-  const handleParameterRemove = (index) => {
-    const prevOptions = { ...options };
-    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-    optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
-  };
+  // Inputs (library editor only) sit above the query's parameters.
+  const renderParameterLists = () => (
+    <>
+      {isQueryLibrary && (
+        <div className="tw-mb-2" data-cy="query-inputs-list">
+          <ParameterList
+            label="Inputs"
+            idPrefix="inputs-"
+            noun="input"
+            parameters={options?.inputs}
+            handleAddParameter={inputHandlers.handleAdd}
+            handleParameterChange={inputHandlers.handleChange}
+            handleParameterRemove={inputHandlers.handleRemove}
+            darkMode={darkMode}
+            containerRef={paramListContainerRef}
+          />
+        </div>
+      )}
+      <ParameterList
+        parameters={options.parameters}
+        handleAddParameter={parameterHandlers.handleAdd}
+        handleParameterChange={parameterHandlers.handleChange}
+        handleParameterRemove={parameterHandlers.handleRemove}
+        darkMode={darkMode}
+        containerRef={paramListContainerRef}
+      />
+    </>
+  );
   const [previewHeight, setPreviewHeight] = useState(40);
 
   const calculatePreviewHeight = (height, previewPanelExpanded) => {
@@ -212,32 +241,28 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
             (selectedDataSource?.kind === 'runjs' ||
               selectedDataSource?.kind === 'runpy' ||
               selectedDataSource?.kind === 'tooljetdb' ||
+              selectedDataSource?.kind === 'library' ||
               (selectedDataSource?.kind === 'restapi' && selectedDataSource?.type !== 'default')) && (
               <>
-                <div style={{ marginBottom: '2px' }}>
-                  {`To know more about querying ${selectedDataSource?.kind} data,`}
-                  &nbsp;
-                  <a
-                    href={docLinkStatic}
-                    target="_blank"
-                    style={{
-                      marginLeft: '0px !important',
-                      color: 'hsl(226, 70.0%, 55.5%)',
-                      textDecoration: 'underline',
-                    }}
-                    rel="noreferrer"
-                  >
-                    {t('globals.readDocumentation', 'read documentation').toLowerCase()}
-                  </a>
-                </div>
-                <ParameterList
-                  parameters={options.parameters}
-                  handleAddParameter={handleAddParameter}
-                  handleParameterChange={handleParameterChange}
-                  handleParameterRemove={handleParameterRemove}
-                  darkMode={darkMode}
-                  containerRef={paramListContainerRef}
-                />
+                {docLinkStatic && (
+                  <div style={{ marginBottom: '2px' }}>
+                    {`To know more about querying ${selectedDataSource?.kind} data,`}
+                    &nbsp;
+                    <a
+                      href={docLinkStatic}
+                      target="_blank"
+                      style={{
+                        marginLeft: '0px !important',
+                        color: 'hsl(226, 70.0%, 55.5%)',
+                        textDecoration: 'underline',
+                      }}
+                      rel="noreferrer"
+                    >
+                      {t('globals.readDocumentation', 'read documentation').toLowerCase()}
+                    </a>
+                  </div>
+                )}
+                {renderParameterLists()}
               </>
             )}
         </div>
@@ -478,16 +503,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     return (
       <>
         <div className={cx({ 'disabled ': isFreezed })} ref={paramListContainerRef}>
-          {selectedQuery && !showLocalDataSourceDeprecationBanner && (
-            <ParameterList
-              parameters={options.parameters}
-              handleAddParameter={handleAddParameter}
-              handleParameterChange={handleParameterChange}
-              handleParameterRemove={handleParameterRemove}
-              darkMode={darkMode}
-              containerRef={paramListContainerRef}
-            />
-          )}
+          {selectedQuery && !showLocalDataSourceDeprecationBanner && renderParameterLists()}
         </div>
         <div className="d-flex" style={{ marginBottom: '16px', marginTop: '12px' }}>
           <div
@@ -610,7 +626,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
             renderChangeDataSource()}
           {activeTab === 1 && renderQueryElement()}
           {activeTab === 2 && renderTransformation()}
-          {activeTab === 3 && renderQueryOptions()}
+          {activeTab === 3 && !isQueryLibrary && renderQueryOptions()}
           <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
         </>
       )}

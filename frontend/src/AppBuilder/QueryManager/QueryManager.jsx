@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
+import { isEmpty } from 'lodash';
 import { QueryManagerHeader } from './Components/QueryManagerHeader';
 import QueryManagerBody from './Components/QueryManagerBody';
 import { CodeHinterContext } from '@/AppBuilder/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+
+// name -> resolved default, for a list of { name, defaultValue } (parameters, or a library query's inputs).
+const resolveDefaults = (list) =>
+  list?.reduce((acc, { name, defaultValue }) => ({ ...acc, [name]: resolveReferences(defaultValue, undefined) }), {});
 
 const QueryManager = ({ mode, darkMode }) => {
+  const { moduleId } = useModuleContext();
+  const isQueryLibrary = useStore((state) => state.getAppType(moduleId) === 'query_library');
   // TODO to be moved into queryPanelStore and reimplemented
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const loadingDataSources = useStore((state) => state.loadingDataSources);
@@ -49,6 +57,14 @@ const QueryManager = ({ mode, darkMode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources, globalDataSources, sampleDataSource]);
 
+  // Library templates also read `{{input.x}}`. Empty groups are left out so autocomplete shows no bare `parameters` / `input`.
+  const codeHinterContext = Object.fromEntries(
+    Object.entries({
+      parameters: resolveDefaults(selectedQuery?.options?.parameters),
+      ...(isQueryLibrary && { input: resolveDefaults(selectedQuery?.options?.inputs) }),
+    }).filter(([, value]) => !isEmpty(value))
+  );
+
   return (
     <div
       className={cx(`query-manager ${darkMode ? 'theme-dark' : ''}`, {
@@ -56,17 +72,7 @@ const QueryManager = ({ mode, darkMode }) => {
       })}
     >
       <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} />
-      <CodeHinterContext.Provider
-        value={{
-          parameters: selectedQuery?.options?.parameters?.reduce(
-            (parameters, parameter) => ({
-              ...parameters,
-              [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
-            }),
-            {}
-          ),
-        }}
-      >
+      <CodeHinterContext.Provider value={codeHinterContext}>
         <QueryManagerBody darkMode={darkMode} activeTab={activeTab} />
       </CodeHinterContext.Provider>
     </div>

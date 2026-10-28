@@ -29,7 +29,7 @@ const renderAndOpen = async (type) => {
 // and crashed getPrivateRoute in the App Builder header.
 describe('BaseLogoNavDropdown back link', () => {
   test.each([
-    ['query_library', 'Back to query libraries', '/ws1/query-library'],
+    ['query_library', 'Back to apps', '/ws1'],
     ['front-end', 'Back to apps', '/ws1'],
     ['module', 'Back to modules', '/ws1/modules'],
     ['workflow', 'Back to workflows', '/ws1/workflows'],

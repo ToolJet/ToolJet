@@ -8,6 +8,8 @@ import { OrganizationConstantModule } from '@modules/organization-constants/modu
 import { InternalTableRepository } from '@modules/tooljet-db/repository';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { AppsRepository } from '@modules/apps/repository';
+import { VersionRepository } from '@modules/versions/repository';
+import { OrganizationRepository } from '@modules/organizations/repository';
 import { FeatureAbilityFactory } from './ability/app';
 import { FeatureAbilityFactory as DataSourceFeatureAbility } from './ability/data-source';
 import { SubModule } from '@modules/app/sub-module';
@@ -26,11 +28,11 @@ export class ImportExportResourcesModule extends SubModule {
       ['service', 'controller']
     );
 
-    const { AppImportExportService, ComponentsService, EventsService } = await this.getProviders(configs, 'apps', [
-      'services/app-import-export.service',
-      'services/component.service',
-      'services/event.service',
-    ]);
+    const { AppImportExportService, AppsUtilService, ComponentsService, EventsService } = await this.getProviders(
+      configs,
+      'apps',
+      ['services/app-import-export.service', 'util.service', 'services/component.service', 'services/event.service']
+    );
 
     return this.cacheModule(cacheKey, {
       module: ImportExportResourcesModule,
@@ -47,8 +49,11 @@ export class ImportExportResourcesModule extends SubModule {
       controllers: isMainImport ? [ImportExportResourcesController] : [],
       providers: [
         AppsRepository,
+        VersionRepository,
+        OrganizationRepository,
         ImportExportResourcesService,
         AppImportExportService,
+        AppsUtilService,
         InternalTableRepository,
         DataSourcesRepository,
         FeatureAbilityFactory,

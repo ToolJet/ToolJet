@@ -26,7 +26,6 @@ export const routes = {
   workspace_constants: '/workspace-constants',
   profile_settings: '/profile-settings',
   modules: '/modules',
-  queryLibrary: '/query-library',
   subscription: '/settings/subscription',
   license: '/settings/license',
 };

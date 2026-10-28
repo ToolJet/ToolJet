@@ -4,44 +4,114 @@ import moment from 'moment';
 import axios from 'axios';
 
 export const LIBRARY_KIND = 'library';
+export const LIBRARY_DRAFT = 'draft';
 export const MAX_LIBRARY_DEPTH = 5;
 export const LIBRARY_QUERY_IS_CLIENT_SIDE = 'LIBRARY_QUERY_IS_CLIENT_SIDE';
 
 // Built from a string so Babel's async transform can't rewrite it to a plain Function (same as queryPanelSlice).
 const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
 
+// Rejects with an AbortError as soon as `signal` fires, even if `promise` (e.g. user code) never settles.
+// The promise's later result is ignored.
+export function raceAbort(promise, signal) {
+  if (!signal) return promise;
+  const aborted = () => new DOMException('Query was cancelled', 'AbortError');
+  if (signal.aborted) return Promise.reject(aborted());
+  return new Promise((resolve, reject) => {
+    const onAbort = () => reject(aborted());
+    signal.addEventListener('abort', onAbort, { once: true });
+    promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort));
+  });
+}
+
 const failed = (message) => ({ status: 'failed', data: { message, description: message } });
 
 // Names a library query's {{ }} templates may use. The server resolves the same set for consumers
 // (server/src/modules/data-queries/library/library-query.util.ts), so the library editor matches it.
-export function libraryTemplateState(exposedValues, parameters) {
+export function libraryTemplateState(exposedValues, parameters, input = {}) {
   return {
+    input,
     parameters,
     constants: exposedValues?.constants,
     globals: { currentUser: exposedValues?.globals?.currentUser ?? {} },
   };
 }
 
-export function mergeLibraryParameters(definitions = [], inputs = {}, resolveDefault = (value) => value) {
+const TEMPLATE = /\{\{([\s\S]*?)\}\}/g;
+// Resolved by the server against the consumer's environment (same set as the server's SERVER_RESOLVED).
+const SERVER_RESOLVED = /^\{\{\s*(constants|secrets|globals\.server)\./;
+
+// True when a value has a `{{ }}` the browser can't resolve (constants, secrets): only the server can fill it in.
+export const hasServerReference = (value) =>
+  typeof value === 'string' && (value.match(TEMPLATE) ?? []).some((template) => SERVER_RESOLVED.test(template));
+
+// Same rules as the server's resolveLibraryDefault. `resolveTemplate` resolves one `{{ }}` template.
+// A whole template `{{5}}` keeps its type; mixed text `id-{{1+1}}` becomes text; constants/secrets stay text.
+function resolveDefault(defaultValue, resolveTemplate) {
+  if (typeof defaultValue !== 'string') return defaultValue;
+  const templates = defaultValue.match(TEMPLATE);
+  if (!templates) return defaultValue;
+  if (defaultValue.trim() === templates[0]) {
+    return SERVER_RESOLVED.test(templates[0]) ? defaultValue : resolveTemplate(templates[0]);
+  }
+  return defaultValue.replace(TEMPLATE, (template) => {
+    if (SERVER_RESOLVED.test(template)) return template;
+    const value = resolveTemplate(template);
+    return value !== null && typeof value === 'object' ? JSON.stringify(value) : String(value);
+  });
+}
+
+export function mergeLibraryParameters(definitions = [], inputs = {}, resolveTemplate = (value) => value) {
   const safeInputs = inputs ?? {};
   return (definitions ?? []).reduce((acc, { name, defaultValue } = {}) => {
     if (!name) return acc;
-    acc[name] = safeInputs[name] !== undefined ? safeInputs[name] : resolveDefault(defaultValue);
+    // Own properties only: a declared name like `constructor` must not pick up Object.prototype members.
+    acc[name] =
+      Object.prototype.hasOwnProperty.call(safeInputs, name) && safeInputs[name] !== undefined
+        ? safeInputs[name]
+        : resolveDefault(defaultValue, resolveTemplate);
     return acc;
   }, {});
 }
 
-// Library RunJS gets inputs and utilities only (spec D14). Anything not in this list —
+// Library RunJS and transformations get inputs and utilities only. Anything not in this list —
 // components, variables, page, actions — is simply not defined, so it throws ReferenceError.
+// `extra` adds named values on top (data for transformations, queries for RunJS).
+async function runInLibraryScope({ code, input, parameters, constants, currentUser, timers, extra = {} }) {
+  const scope = {
+    moment,
+    _,
+    axios,
+    constants,
+    globals: { currentUser },
+    input,
+    parameters,
+    ...extra,
+    setTimeout: timers.setTimeout,
+    setInterval: timers.setInterval,
+    clearTimeout: timers.clearTimeout,
+    clearInterval: timers.clearInterval,
+  };
+  try {
+    const fn = new AsyncFunction(...Object.keys(scope), code ?? '');
+    return { status: 'ok', data: await fn(...Object.values(scope)) };
+  } catch (err) {
+    return failed(err?.message || 'JS execution failed');
+  }
+}
+
+const defaultTimers = { setTimeout, setInterval, clearTimeout, clearInterval };
+
 export async function executeLibraryJS({
   code,
+  input = {},
   parameters = {},
   siblings = [],
   runSibling,
   constants = {},
   currentUser = {},
   depth = 0,
-  timers = { setTimeout, setInterval, clearTimeout, clearInterval },
+  timers = defaultTimers,
 }) {
   if (depth > MAX_LIBRARY_DEPTH) return failed('Library query nesting is too deep');
 
@@ -49,36 +119,25 @@ export async function executeLibraryJS({
     siblings.map((sibling) => [sibling.name, { run: (params = {}) => runSibling(sibling, params ?? {}, depth + 1) }])
   );
 
-  try {
-    const fn = new AsyncFunction(
-      'moment',
-      '_',
-      'axios',
-      'constants',
-      'globals',
-      'parameters',
-      'queries',
-      'setTimeout',
-      'setInterval',
-      'clearTimeout',
-      'clearInterval',
-      code ?? ''
-    );
-    const data = await fn(
-      moment,
-      _,
-      axios,
-      constants,
-      { currentUser },
-      parameters,
-      queries,
-      timers.setTimeout,
-      timers.setInterval,
-      timers.clearTimeout,
-      timers.clearInterval
-    );
-    return { status: 'ok', data };
-  } catch (err) {
-    return failed(err?.message || 'JS execution failed');
-  }
+  return runInLibraryScope({ code, input, parameters, constants, currentUser, timers, extra: { queries } });
+}
+
+// Same restricted scope plus `data`, no `queries`.
+export function runLibraryTransformation({
+  code,
+  data,
+  input = {},
+  parameters = {},
+  constants = {},
+  currentUser = {},
+}) {
+  return runInLibraryScope({
+    code,
+    input,
+    parameters,
+    constants,
+    currentUser,
+    timers: defaultTimers,
+    extra: { data },
+  });
 }

@@ -70,6 +70,19 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import {
+  collectLibraryExport,
+  findLibraryExportDataSources,
+  LibraryExportQuery,
+  mapLibrarySnapshot,
+  matchLibraryQuery,
+  matchLibraryVersion,
+  remapLibraryConsumerOptions,
+} from '@modules/data-queries/library/library-export.util';
+import { LIBRARY_KIND } from '@modules/data-queries/library/library-query.util';
+import { LibraryQueryVersion } from '@entities/library_query_version.entity';
+import { AppsUtilService } from '../util.service';
+
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -382,7 +395,8 @@ export class AppImportExportService {
     protected readonly transactionLogger: TransactionLogger,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
     protected readonly abilityService: AbilityService,
-    protected readonly appValidationService: AppValidationService
+    protected readonly appValidationService: AppValidationService,
+    protected readonly appsUtilService: AppsUtilService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -397,7 +411,14 @@ export class AppImportExportService {
     return '';
   }
 
-  async export(user: User, id: string, searchParams: any = {}, branchId?: string): Promise<{ appV2: App }> {
+  async export(
+    user: User,
+    id: string,
+    searchParams: any = {},
+    branchId?: string,
+    // Off for git: the library is not synced to git, so an app pushed to git must not carry its library queries.
+    { withLibraryQueries = true }: { withLibraryQueries?: boolean } = {}
+  ): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
     // filter by search params
@@ -479,7 +500,27 @@ export class AppImportExportService {
         })
         .getMany();
 
-      const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
+      // Library queries this app uses travel with it: front-end apps only, like modules. Their data sources export the
+      // same way the app's own do, so they join the global list before options are collected.
+      const libraryQueries =
+        withLibraryQueries && appToExport.type === APP_TYPES.FRONT_END
+          ? await collectLibraryExport(
+              manager,
+              appToExport.organizationId,
+              globalQueries.filter((gq) => gq.dataSource.kind === LIBRARY_KIND)
+            )
+          : [];
+      const libraryDataSources = await findLibraryExportDataSources(
+        manager,
+        appToExport.organizationId,
+        libraryQueries
+      );
+
+      const globalDataSources = [
+        ...new Map(
+          [...globalQueries.map((gq) => gq.dataSource), ...libraryDataSources].map((ds) => [ds.id, ds])
+        ).values(),
+      ];
 
       const dataSources = [...legacyLocalDataSources, ...globalDataSources];
 
@@ -814,6 +855,7 @@ export class AppImportExportService {
       };
       if (appToExport?.type === APP_TYPES.FRONT_END) {
         appToExport['modules'] = moduleApps; //Sending all app related modules
+        if (libraryQueries.length) appToExport['libraryQueries'] = libraryQueries;
       }
       entitiesToRemoveTimestamps.forEach((entityName) => {
         const entity = appToExport[entityName];
@@ -1466,6 +1508,18 @@ export class AppImportExportService {
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
       await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
+      // Library queries the app uses travel with its export; the app's pins are re-pointed at this workspace's rows.
+      // Never from git: the library is not synced to git, so a git pull leaves the library untouched.
+      if (!isGitApp && Array.isArray(appParams.libraryQueries) && appParams.libraryQueries.length) {
+        await this.importLibraryQueries(
+          manager,
+          appParams.libraryQueries,
+          user,
+          resourceMapping,
+          externalResourceMappings['tooljet_database'] ?? {}
+        );
+      }
+
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
 
@@ -1483,6 +1537,152 @@ export class AppImportExportService {
       });
       return { newApp, resourceMapping };
     }, manager);
+  }
+
+  /**
+   * Brings the library queries bundled in an app export into this workspace's library: a query matches by
+   * co_relation_id then name (its draft is left alone) or is created; each exported version is reused when an
+   * identical one exists, else added as the next number. Then the imported app's library consumers are re-pointed
+   * at the resulting ids. Returns the exported id -> local id maps and the names of queries it had to skip (no data
+   * source to land on). The library is Module-permissioned, so the first write needs module_create unless the
+   * import creates nothing.
+   */
+  protected async importLibraryQueries(
+    manager: EntityManager,
+    exported: LibraryExportQuery[],
+    user: User,
+    resourceMapping: AppResourceMappings,
+    tooljetDatabaseMapping: Record<string, { id: string }> = {}
+  ): Promise<{ queries: Record<string, string>; versions: Record<string, string>; skipped: string[] }> {
+    const organizationId = user.organizationId;
+    let canWrite = false;
+    const requireWrite = async () => {
+      if (canWrite) return;
+      const perms = await this.abilityService.resourceActionsPermission(user, { organizationId });
+      if (!(perms.isSuperAdmin || perms.isAdmin || !!perms.moduleCreate)) {
+        throw new ForbiddenException(
+          "This app requires adding to the query library, but you don't have permission to create modules. Contact admin."
+        );
+      }
+      canWrite = true;
+    };
+    let library = await this.appsUtilService.findWorkspaceQueryLibrary(manager, organizationId);
+    if (!library) {
+      await requireWrite();
+      library = await this.appsUtilService.getOrCreateWorkspaceQueryLibrary(manager, user);
+    }
+    const libraryVersionId = library.versionId;
+    const remapTables = (options: Record<string, unknown>) =>
+      this.replaceTooljetDbTableIds(options, tooljetDatabaseMapping, organizationId);
+    const map = <T extends LibraryExportQuery['draft']>(snapshot: T): T =>
+      mapLibrarySnapshot(snapshot, resourceMapping.dataSourceMapping, remapTables);
+
+    const existing = await manager.find(DataQuery, { where: { appVersionId: libraryVersionId } });
+    const folders = await manager.find(DataQueryFolder, { where: { appVersionId: libraryVersionId } });
+    const staticSources = await manager.find(DataSource, {
+      where: { organizationId, type: DataSourceTypes.STATIC, scope: DataSourceScopes.GLOBAL },
+    });
+    const queries: Record<string, string> = {};
+    const versions: Record<string, string> = {};
+    const skipped: string[] = [];
+    const claimed = new Set<string>();
+
+    for (const incoming of exported) {
+      let target = matchLibraryQuery(existing, incoming, claimed);
+      if (!target) {
+        const draft = map(incoming.draft);
+        // A draft needs a data source; one that wasn't exported falls back to the workspace's static one of its kind.
+        const dataSourceId = draft.dataSourceId ?? staticSources.find((source) => source.kind === draft.kind)?.id;
+        if (!dataSourceId) {
+          skipped.push(incoming.name);
+          this.transactionLogger.warn(
+            `[app-import] Skipped library query "${incoming.name}": no data source of kind "${draft.kind}" in this workspace`
+          );
+          continue;
+        }
+        await requireWrite();
+        target = await manager.save(
+          manager.create(DataQuery, {
+            name: incoming.name,
+            options: draft.options,
+            dataSourceId,
+            appVersionId: libraryVersionId,
+            co_relation_id: incoming.coRelationId ?? incoming.id,
+          })
+        );
+        existing.push(target);
+        if (incoming.folder) {
+          let folder = folders.find((candidate) => candidate.name === incoming.folder);
+          if (!folder) {
+            folder = await manager.save(
+              manager.create(DataQueryFolder, { name: incoming.folder, appVersionId: libraryVersionId })
+            );
+            await manager.save(
+              manager.create(DataQueryFolderMapping, {
+                parentId: null,
+                childId: folder.id,
+                childType: ChildType.FOLDER,
+                index: folders.length,
+              })
+            );
+            folders.push(folder);
+          }
+          await manager.save(
+            manager.create(DataQueryFolderMapping, {
+              parentId: folder.id,
+              childId: target.id,
+              childType: ChildType.QUERY,
+              index: await manager.count(DataQueryFolderMapping, { where: { parentId: folder.id } }),
+            })
+          );
+        }
+      }
+      claimed.add(target.id);
+      queries[incoming.id] = target.id;
+
+      const own = await manager.find(LibraryQueryVersion, { where: { dataQueryId: target.id } });
+      // Soft-deleted rows count, so a number is never reused (same rule as release).
+      const [{ highest }]: { highest: number }[] = await manager.query(
+        'SELECT COALESCE(MAX(version_number), 0)::int AS highest FROM library_query_versions WHERE data_query_id = $1',
+        [target.id]
+      );
+      let nextNumber = highest + 1;
+      for (const version of incoming.versions) {
+        const mapped = map(version);
+        let match = matchLibraryVersion(own, mapped);
+        if (!match) {
+          await requireWrite();
+          match = await manager.save(
+            manager.create(LibraryQueryVersion, {
+              dataQueryId: target.id,
+              versionNumber: nextNumber++,
+              kind: mapped.kind,
+              dataSourceId: mapped.dataSourceId,
+              options: mapped.options,
+              createdBy: user.id,
+            })
+          );
+          own.push(match);
+        }
+        versions[version.id] = match.id;
+      }
+    }
+
+    // The imported app versions' own queries on the library data source keep their pins pointing at the exporter's ids.
+    const consumers: { id: string; options: unknown }[] = await manager.query(
+      `SELECT dq.id, dq.options FROM data_queries dq
+         JOIN data_sources ds ON ds.id = dq.data_source_id
+        WHERE dq.app_version_id = ANY($1::uuid[]) AND ds.kind = $2`,
+      [Object.values(resourceMapping.appVersionMapping), LIBRARY_KIND]
+    );
+    for (const consumer of consumers) {
+      const options = (
+        typeof consumer.options === 'string' ? JSON.parse(consumer.options) : consumer.options
+      ) as Record<string, unknown> | null;
+      const remapped = remapLibraryConsumerOptions(options ?? {}, queries, versions);
+      if (remapped) await manager.update(DataQuery, { id: consumer.id }, { options: remapped as DataQuery['options'] });
+    }
+    return { queries, versions, skipped };
   }
 
   /**

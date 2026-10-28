@@ -61,6 +61,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     setCurrentLayout('desktop');
   }, [appId, setCurrentLayout]);
   const currentVersionId = useStore((state) => state.currentVersionId, shallow);
+  const selectedQueryId = useStore((state) => state.queryPanel.selectedQuery?.id, shallow);
 
   // Tag every Sentry event raised while the editor is open — including handler/async
   // errors that bypass the FallbackBoundaries — with the AppBuilder context.
@@ -119,7 +120,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
             {isQueryLibrary ? (
               <div className="query-library-editor">
                 <QueryPanel darkMode={darkMode} />
-                <LibraryUsagePanel versionId={currentVersionId} />
+                <LibraryUsagePanel versionId={currentVersionId} libraryQueryId={selectedQueryId} />
               </div>
             ) : (
               <>

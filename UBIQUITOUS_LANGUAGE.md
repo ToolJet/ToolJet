@@ -51,8 +51,10 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | — |
 | **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | "module" also means a NestJS backend module — always qualify |
 | **Module Pin** | A ModuleViewer component pinning a specific module version via `moduleReferenceId` (stable UUID per version row, survives git/zip round-trips); publishing blocks on draft/orphan/unpinned modules | — |
-| **Query Library** | An app of type `QUERY_LIBRARY` holding reusable queries with inputs; edited in the App-Builder without a canvas (dashboard tab "Query library") | — |
-| **Library Query** | A query of kind `library` in any app that runs a query from a Query Library (`options.libraryQueryId`, inputs in `options.inputs`) | — |
+| **Query Library** | The single reusable-query container of a workspace (an app of type `QUERY_LIBRARY`, created on first visit); queries are grouped in folders and edited in the App-Builder without a canvas (dashboard tab "Query library") | — |
+| **Library Query** | A query of kind `library` in any app that runs a query from the Query Library, pinned to a version (`options.libraryQueryId`, `options.libraryQueryVersionId`, inputs in `options.inputs`) | — |
+| **Library query version** | An immutable released snapshot (`v1`, `v2`, …) of one library query (`library_query_versions`); numbers are never reused, deleting one is a soft delete and is blocked while an app or module pins it | — |
+| **Draft pin** | A Library Query pinned to `'draft'` instead of a version, for testing only; it blocks releasing the app or module until it is pinned to a released version | — |
 | **Template** | A pre-built app sample that users can clone as a starting point (60+ across 10 categories) | — |
 | **Conditional Styling** | Dynamic styles applied to components based on runtime conditions | — |
 | **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — see Flagged Ambiguities) |

@@ -4,6 +4,7 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { CreateDataQueryDto, IUpdatingReferencesOptions, RunLibraryQueryDto, UpdateDataQueryDto } from '../dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { App } from '@entities/app.entity';
+import { LibraryCatalog } from '../library/library-query.util';
 
 /**
  * Context interfaces for history capture hooks
@@ -37,7 +38,15 @@ export interface IDataQueriesService {
 
   delete(dataQueryId: string, versionId: string): Promise<void>;
 
-  getLibraryUsage(app: App): Promise<object>;
+  getLibraryUsage(app: App, versionId: string): Promise<object>;
+
+  releaseLibraryQuery(
+    user: User,
+    dataQueryId: string,
+    app: App
+  ): Promise<{ id: string; name: string; versionNumber: number; createdAt: Date }>;
+
+  deleteLibraryQueryVersion(dataQueryId: string, libraryVersionId: string, app: App): Promise<void>;
 
   bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]): Promise<object[]>;
 
@@ -58,6 +67,8 @@ export interface IDataQueriesService {
     updateDataQueryDto: UpdateDataQueryDto,
     response: Response
   ): Promise<object>;
+
+  getLibraryCatalog(app: App, versionId: string): Promise<LibraryCatalog>;
 
   getLibraryDefinition(consumerQueryId: string, app: App, libraryQueryId?: string, user?: User): Promise<object>;
 

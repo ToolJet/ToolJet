@@ -121,13 +121,7 @@ export const AppMenu = function AppMenu({
                   <Field
                     text={t(
                       'homePage.appCard.renameApp',
-                      appType === 'workflow'
-                        ? 'Rename workflow'
-                        : appType === 'module'
-                          ? 'Rename module'
-                          : appType === 'query_library'
-                            ? 'Rename query library'
-                            : 'Rename app'
+                      appType === 'workflow' ? 'Rename workflow' : appType === 'module' ? 'Rename module' : 'Rename app'
                     )}
                     onClick={() => openAppActionModal('rename-app')}
                   />
@@ -138,19 +132,19 @@ export const AppMenu = function AppMenu({
                     onClick={() => openAppActionModal('change-icon')}
                   />
                 )}
-                {canAddAppToFolder && appType !== 'query_library' && (
+                {canAddAppToFolder && (
                   <Field
                     text={t('homePage.appCard.addToFolder', 'Add to folder')}
                     onClick={() => openAppActionModal('add-to-folder')}
                   />
                 )}
-                {canRemoveFromFolder && appType !== 'query_library' && (
+                {canRemoveFromFolder && (
                   <Field
                     text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
                     onClick={() => openAppActionModal('remove-app-from-folder')}
                   />
                 )}
-                {canUpdateApp && canCreateApp && !['workflow', 'query_library'].includes(appType) && (
+                {canUpdateApp && canCreateApp && appType !== 'workflow' && (
                   <>
                     <Field
                       text={
@@ -173,9 +167,7 @@ export const AppMenu = function AppMenu({
                         ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
                         : appType === 'front-end'
                           ? t('homePage.appCard.deleteApp', 'Delete app')
-                          : appType === 'query_library'
-                            ? 'Delete query library'
-                            : 'Delete module'
+                          : 'Delete module'
                     }
                     customClass="field__danger"
                     onClick={deleteApp}

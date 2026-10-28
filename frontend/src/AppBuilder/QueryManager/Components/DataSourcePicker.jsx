@@ -14,6 +14,7 @@ import '../queryManager.theme.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { staticDataSources, LIBRARY_UNSUPPORTED_KINDS } from '../constants';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 
 function DataSourcePicker({ darkMode }) {
   const dataSources = useStore((state) => state.dataSources);
@@ -36,6 +37,7 @@ function DataSourcePicker({ darkMode }) {
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   const updatedStaticDataSources = staticDataSources
+    .filter((source) => source.kind !== 'library' || isQueryLibraryEnabled())
     .filter((source) => !isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(source.kind))
     .filter((source) => {
       if (source.kind === 'workflows') {
