@@ -20,6 +20,7 @@ import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/Switch
 import { DataSourceFolders } from '../DataSourceFolders';
 import { FolderFormModal } from '../DataSourceFolders/FolderFormModal';
 import { MoveDataSourceModal } from '../DataSourceFolders/MoveDataSourceModal';
+import { buildVisibleFolders } from '../DataSourceFolders/folderSearch';
 
 export const List = ({ updateSelectedDatasource }) => {
   const {
@@ -80,7 +81,14 @@ export const List = ({ updateSelectedDatasource }) => {
   }, [folders]);
 
   const strayDataSources = filteredData.filter((ds) => !folderedDataSourceIds.has(ds.id));
-  const hasSidebarContent = (folders?.length ?? 0) > 0 || strayDataSources.length > 0;
+
+  // A search hides the folders it leaves empty, so the sidebar can run out of content even while
+  // folders exist — the empty state has to be decided on what is actually visible.
+  const visibleFolders = React.useMemo(
+    () => buildVisibleFolders({ folders, dataSources, visibleDataSources: filteredData, searchValue }),
+    [folders, dataSources, filteredData, searchValue]
+  );
+  const hasSidebarContent = visibleFolders.length > 0 || strayDataSources.length > 0;
 
   const isBranchingEnabled = useWorkspaceBranchesStore((state) => {
     if (!state.isInitialized || !state.orgGitConfig) return false;
@@ -272,7 +280,7 @@ export const List = ({ updateSelectedDatasource }) => {
           <EmptyFoldersIllustration />
         </div>
         <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
-          {filteredData?.length === 0 && dataSources?.length !== 0 ? 'No results found' : 'No datasources added'}
+          {searchActive ? 'No results found' : 'No datasources added'}
         </div>
       </div>
     );
@@ -338,8 +346,9 @@ export const List = ({ updateSelectedDatasource }) => {
                   <div className="list-group">
                     {/* Folders first (alphabetical), each with its data sources nested inside. */}
                     <DataSourceFolders
+                      dataSources={dataSources}
                       visibleDataSources={filteredData}
-                      searchActive={searchActive}
+                      searchValue={searchValue}
                       onDeleteDataSource={deleteDataSource}
                       updateSelectedDatasource={updateSelectedDatasource}
                       onRenameFolder={(folder) => setFolderModal({ show: true, mode: 'rename', folder })}
