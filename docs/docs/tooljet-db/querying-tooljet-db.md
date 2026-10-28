@@ -28,6 +28,7 @@ This operation returns all the records from the table.
 - **Filter**: Add a condition by choosing a column, an operation, and the value for filtering the records.
 - **Sort**: Sort the query response by choosing a column and the order (ascending or descending).
 - **Limit**: Limit the number of records to be returned by entering a number.
+- **Offset**: Skip this number of records before returning results. Use it with **Limit** to page through records. For example, a **Limit** of `25` and an **Offset** of `50` returns records 51 to 75.
 - **Aggregate**: Perform calculations on a set of values and return a single result.
   - Available functions: Count, Sum
   - Limitations:
@@ -39,6 +40,8 @@ This operation returns all the records from the table.
   - Select one or more columns to group by.
   - Results are grouped based on unique combinations of values in selected columns.
     <img style={{ marginTop: '15px' }} className="screenshot-full" src="/img/v2-beta/database/newui/group-by.png" alt="ToolJet Database editor" />
+
+<img className="screenshot-full img-full" src="/img/tooljet-db/query/list-rows-options.png" alt="List rows options with Sort, Limit, and Offset set" />
 
 ### Create row
 
@@ -149,11 +152,30 @@ You can join two or more tables in the ToolJet database by using the **Join** op
 
   <img className="screenshot-full" src="/img/v2-beta/database/newui/join1.png" alt="ToolJet Database editor" />
 
-- **Filter**: Add a condition by choosing a column, an operation, and the value for filtering the records. The operations supported are same as the [filter operations](/docs/tooljet-db/database-editor#available-operations-are) for the **List rows** operation.
+- **Aggregate**: Calculate **Count** or **Sum** over a column from any table in the join. Columns are listed as `table.column`. Click **+ Add Condition** to add more aggregates.
+- **Group by**: Group the results by columns from each table in the join. There's one row for the selected table and one for each joining table. **Group by** is available after you add at least one aggregate with both a function and a column.
+
+  <img className="screenshot-full img-full" src="/img/tooljet-db/query/join-aggregate-group-by.png" alt="Join tables query counting shipments, grouped by carrier name" />
+
+  Each aggregate is returned as `<table>_<column>_<function>`, and each grouped column as `<table>_<column>`. For example, counting `shipments.id` grouped by `carriers.name` returns:
+
+  ```json
+  [
+    { "shipments_id_count": "12", "carriers_name": "Atlas Ocean Lines" },
+    { "shipments_id_count": "19", "carriers_name": "Baltic Rail Partners" }
+  ]
+  ```
+
+- **Filter**: Add a condition by choosing a column, an operation, and the value for filtering the records. Join filters support the [filter operations](/docs/tooljet-db/database-editor#available-operations-are) of the **List rows** operation, plus:
+  - **not like**: The column value doesn't match the pattern. Case-sensitive.
+  - **not ilike**: The column value doesn't match the pattern. Case-insensitive.
+  - **not in**: The column value isn't in the list of values, for example `(1,2,3)`.
+
+  To check for empty values, choose **is**, then **null** or **not null**.
 - **Sort**: Sort the query response by choosing a column and the order (ascending or descending).
 - **Limit**: Limit the number of records to be returned by entering a number.
 - **Offset**: Offset the number of records to be returned by entering a number. This parameter is used for pagination.
-- **Select**: Select the columns that you want to return in the query response. By default, all the columns are selected.
+- **Select**: Select the columns that you want to return in the query response. By default, all the columns are selected. A join query needs at least one selected column or one aggregate.
 
 <img className="screenshot-full" src="/img/v2-beta/database/newui/join2.png" alt="ToolJet Database editor" />
 

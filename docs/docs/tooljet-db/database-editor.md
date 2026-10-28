@@ -106,7 +106,7 @@ Once the CSV file is ready, click on the file picker to select the file or drag 
 
 **Limitations**:
 - There is a limit of 1000 rows per CSV file that can be uploaded to the ToolJet database.
-- The CSV file should not exceed 2MB in size.
+- The CSV file should not exceed 5 MB in size.
 
 :::info
 You can overcome the above limitations in the self-hosted version by adding the following environment variables:
