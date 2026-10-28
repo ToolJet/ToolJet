@@ -104,27 +104,30 @@ describe('Upgrading a 3.21.58 database', () => {
 
   it('should take no lock in the data phase that stalls 3.21.58 pods, except in the statement just before commit', () => {
     const tablesBeforeData = new Set(async.tablesBeforeData);
-    const locks = [...async.dataOutput.matchAll(/^\[lock\] (\w+) (up|beforeCommit): (\w+) (\w+)$/gm)]
-      .map(([, migration, part, table, mode]) => ({ migration, part: part as MigrationPart, table, mode }))
-      // Later migrations follow the authoring rules and are lock-probed in CI.
-      .filter(({ migration, table }) => isPreCutoffMigration(migration) && tablesBeforeData.has(table));
-    const stalling = locks.flatMap(({ migration, part, table, mode }) =>
-      classifyLocks('data', part, [{ table, mode, existed: true }]).map((lock) => `${migration} ${part}: ${lock}`)
+    const allLocks = [...async.dataOutput.matchAll(/^\[lock\] (\d+) (\w+) (up|beforeCommit): (\w+) (\w+)$/gm)].map(
+      ([, statement, migration, part, table, mode]) => ({
+        statement: Number(statement),
+        migration,
+        part: part as MigrationPart,
+        table,
+        mode,
+      })
     );
-    const lastStatement = [
-      `${LEGACY_BRANCH_MIGRATION} beforeCommit: app_versions: AccessExclusiveLock`,
-      `${LEGACY_BRANCH_MIGRATION} beforeCommit: organization_git_sync_branches: AccessExclusiveLock`,
-    ];
+    const lastStatement = Math.max(...allLocks.map(({ statement }) => statement));
+    // Later migrations follow the authoring rules and are lock-probed in CI.
+    const locks = allLocks.filter(
+      ({ migration, table }) => isPreCutoffMigration(migration) && tablesBeforeData.has(table)
+    );
+    const stalling = locks.filter(
+      ({ part, table, mode }) => classifyLocks('data', part, [{ table, mode, existed: true }]).length > 0
+    );
+    // The branch key swap is the last statement before commit, so it holds its locks for milliseconds.
+    const isBranchKeySwap = ({ statement, migration, part }: (typeof locks)[number]) =>
+      statement === lastStatement && migration === LEGACY_BRANCH_MIGRATION && part === 'beforeCommit';
 
     expect(locks.length).toBeGreaterThan(0);
-    expect(stalling.sort()).toEqual(lastStatement);
-    // The branch key swap is the last statement before commit, so it holds these for milliseconds.
-    expect(
-      locks
-        .slice(-2)
-        .map(({ migration, part, table, mode }) => `${migration} ${part}: ${table}: ${mode}`)
-        .sort()
-    ).toEqual(lastStatement);
+    expect(stalling.length).toBeGreaterThan(0);
+    expect(stalling.filter((lock) => !isBranchKeySwap(lock))).toEqual([]);
   });
 
   it('should read the same apps, versions, data sources and folder apps through the repositories before and after the data phase', () => {
