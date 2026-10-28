@@ -404,6 +404,22 @@ export class AppsRepository extends Repository<App> {
     return await qb.orderBy('app.created_at', 'ASC').getRawMany();
   }
 
+  /**
+   * Replaces each workflow's `name` with its canonical name from `findAllOrganizationWorkflows`.
+   * For callers that joined `apps` directly: `apps.name` is NULL for every workflow created
+   * since the name moved onto `app_versions.app_name`, so a raw join shows no name at all.
+   * One query for the whole batch.
+   */
+  async overlayWorkflowNames(organizationId: string, apps: App[]): Promise<void> {
+    const ids = [...new Set(apps.map((app) => app.id))];
+    const names = new Map(
+      (await this.findAllOrganizationWorkflows(organizationId, ids)).map((workflow) => [workflow.id, workflow.name])
+    );
+    for (const app of apps) {
+      if (names.has(app.id)) app.name = names.get(app.id);
+    }
+  }
+
   async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
     const mgr = manager ?? this.manager;
     const app = await mgr.findOne(App, {

@@ -82,3 +82,12 @@ export interface SendWorkspaceBannedEmailPayload {
   adminName: string;
   workspaceName: string;
 }
+
+export interface SendWorkflowApprovalEmailPayload {
+  to: string[];
+  organizationId: string;
+  workflowName: string;
+  nodeName: string;
+  description: string;
+  reminder: boolean;
+}

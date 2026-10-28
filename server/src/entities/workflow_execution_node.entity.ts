@@ -28,6 +28,9 @@ export class WorkflowExecutionNode {
   @Column('simple-json', { name: 'state' })
   state;
 
+  @Column('simple-json', { name: 'input_state', nullable: true })
+  inputState: Record<string, unknown> | null;
+
   @Column({ name: 'id_on_workflow_definition' })
   idOnWorkflowDefinition: string;
 

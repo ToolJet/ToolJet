@@ -29,8 +29,7 @@ describe("Workflows - webhook trigger", () => {
 
     cy.verifyTextInResponseOutput(workflowsText.runjsExpectedValueForWebhooks);
 
-    cy.get(workflowSelector.workflowTriggerIcon).click();
-    cy.get(workflowSelector.workflowWebhookListRow).click();
+    cy.get(workflowSelector.workflowWebhookIcon).click();
     cy.get(workflowSelector.workflowWebhookToggle).click();
 
     cy.get(workflowSelector.workflowEndpointUrl)

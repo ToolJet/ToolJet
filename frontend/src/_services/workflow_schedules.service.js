@@ -10,13 +10,21 @@ export const workflowSchedulesService = {
   activateWorkflowSchedule,
 };
 
-function getAll(appId) {
+function getAll(appId, pagination) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/workflow-schedules?app_id=${appId}`, requestOptions).then(handleResponse);
+  const query = new URLSearchParams({ app_id: appId });
+  if (pagination) {
+    query.set('page', pagination.page);
+    query.set('limit', pagination.limit);
+    if (pagination.search) query.set('search', pagination.search);
+    if (pagination.environmentId) query.set('environment_id', pagination.environmentId);
+    if (pagination.workflowId) query.set('workflow_id', pagination.workflowId);
+  }
+  return fetch(`${config.apiUrl}/workflow-schedules?${query.toString()}`, requestOptions).then(handleResponse);
 }
 
 function getById(id) {
@@ -28,14 +36,16 @@ function getById(id) {
   return fetch(`${config.apiUrl}/workflow-schedules/${id}`, requestOptions).then(handleResponse);
 }
 
-function create(workflowId, active, environmentId, type, timezone, details) {
+function create(workflowId, name, active, environmentId, type, timezone, details, params) {
   const body = {
     workflowId,
+    name,
     active,
     environmentId,
     type,
     timezone,
     details,
+    params,
   };
 
   const requestOptions = {
@@ -50,13 +60,15 @@ function create(workflowId, active, environmentId, type, timezone, details) {
   return fetch(`${config.apiUrl}/workflow-schedules`, requestOptions).then(handleResponse);
 }
 
-function update(id, active, environmentId, type, timezone, details, workflowId) {
+function update(id, name, active, environmentId, type, timezone, details, workflowId, params) {
   const body = {
+    name,
     active,
     environmentId,
     type,
     timezone,
     details,
+    params,
   };
 
   if (workflowId) {

@@ -37,6 +37,33 @@ export class WorkflowExecution {
   @Column('json', { name: 'logs' })
   logs: string[];
 
+  @Column({ name: 'parent_execution_id', type: 'uuid', nullable: true })
+  parentExecutionId: string | null;
+
+  @Column({ name: 'parent_node_id', type: 'uuid', nullable: true })
+  parentNodeId: string | null;
+
+  @Column({ name: 'schedule_id', type: 'uuid', nullable: true })
+  scheduleId: string | null;
+
+  @Column({ name: 'environment_id', type: 'uuid', nullable: true })
+  environmentId: string | null;
+
+  @Column({ name: 'organization_id', type: 'uuid', nullable: true })
+  organizationId: string | null;
+
+  @Column({ name: 'app_id', type: 'uuid', nullable: true })
+  appId: string | null;
+
+  @Column({ name: 'trigger_type', type: 'varchar', nullable: true })
+  triggerType: string | null;
+
+  @Column({ name: 'started_at', type: 'timestamptz', nullable: true })
+  startedAt: Date | null;
+
+  @Column({ name: 'finished_at', type: 'timestamptz', nullable: true })
+  finishedAt: Date | null;
+
   @OneToOne(() => User)
   @JoinColumn({ name: 'executing_user_id' })
   user: User;

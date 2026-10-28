@@ -25,8 +25,8 @@ export const workflowSelector = {
   // `rename-workflow` here and `rename-app` on the apps dashboard.
   renameWorkflowButton: '[data-cy="rename-workflow"]',
   responseNodeOutput: '[data-cy="response1-node-name"]',
-  workflowTriggerIcon: '[data-cy="icon-trigger"]',
-  workflowWebhookListRow: '[data-cy="webhook-list-row"]',
+  workflowWebhookIcon: '[data-cy="icon-webhook"]',
+  workflowScheduleIcon: '[data-cy="icon-schedule"]',
   workflowWebhookToggle: '[data-cy="webhook-toggle"]',
   workflowTokenEyeIcon: '[data-cy="workflow-token-eye-icon"]',
   workflowEndpointUrl: '[data-cy="endpoint-url-field"]',
