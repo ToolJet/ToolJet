@@ -245,6 +245,21 @@ export const List = ({ updateSelectedDatasource }) => {
       });
   };
 
+  const createFolderButton = canCreateDataSourceFolder() && (
+    <ToolTip message="Create folder" placement="top">
+      <Button
+        size="medium"
+        variant="ghost"
+        iconOnly
+        ariaLabel="Create folder"
+        onClick={() => setFolderModal({ show: true, mode: 'create', folder: null })}
+        data-cy="create-datasource-folder-icon"
+      >
+        <SolidIcon name="plus" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
+      </Button>
+    </ToolTip>
+  );
+
   const EmptyState = () => {
     return (
       <div
@@ -281,20 +296,7 @@ export const List = ({ updateSelectedDatasource }) => {
                       {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
                     </div>
                     <div className="d-flex align-items-center" style={{ gap: '4px' }}>
-                      {canCreateDataSourceFolder() && (
-                        <ToolTip message="Create folder" placement="top">
-                          <Button
-                            size="medium"
-                            variant="ghost"
-                            iconOnly
-                            ariaLabel="Create folder"
-                            onClick={() => setFolderModal({ show: true, mode: 'create', folder: null })}
-                            data-cy="create-datasource-folder-icon"
-                          >
-                            <SolidIcon name="plus" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
-                          </Button>
-                        </ToolTip>
-                      )}
+                      {createFolderButton}
                       <Button
                         size="medium"
                         variant="ghost"
@@ -310,15 +312,18 @@ export const List = ({ updateSelectedDatasource }) => {
                     </div>
                   </>
                 ) : (
-                  <SearchBox
-                    width="248px"
-                    callBack={handleSearch}
-                    placeholder={'Search for Data sources'}
-                    customClass="tj-common-search-input"
-                    onClearCallback={handleClose}
-                    autoFocus={true}
-                    dataCy={'added-ds'}
-                  />
+                  <div className="d-flex align-items-center w-100" style={{ gap: '4px' }}>
+                    <SearchBox
+                      width="100%"
+                      callBack={handleSearch}
+                      placeholder={'Search for Data sources'}
+                      customClass="tj-common-search-input datasources-search-input"
+                      onClearCallback={handleClose}
+                      autoFocus={true}
+                      dataCy={'added-ds'}
+                    />
+                    {createFolderButton}
+                  </div>
                 )}
               </div>
 
@@ -431,6 +436,7 @@ export const List = ({ updateSelectedDatasource }) => {
         initialDataSource={movingDataSource}
         dataSources={dataSources}
         folders={folders}
+        darkMode={darkMode}
         onClose={() => setMovingDataSource(null)}
         onSubmit={(dsIds, folderId) => {
           // Open the destination folder so the moved data source(s) show immediately.
