@@ -1,6 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { createUser, initTestApp, closeTestApp, ensureAppEnvironments, getAllEnvironments, login } from 'test-helper';
+import {
+  createUser,
+  initTestApp,
+  closeTestApp,
+  ensureAppEnvironments,
+  getAllEnvironments,
+  getDefaultDataSource,
+  login,
+} from 'test-helper';
 
 /**
  * Case-sensitivity of data source names.
@@ -151,5 +159,52 @@ describe('Data source name casing (case-sensitive coexistence)', () => {
       .send({ name: 'renametarget', options: [] });
 
     expect(rename.statusCode).toBe(200);
+  });
+
+  it('rejects renaming onto the name of a legacy 3.21.58 data source with no branch', async () => {
+    const adminUserData = await createUser(nestApp, {
+      email: 'ds-legacy-rename-admin@tooljet.io',
+      groups: ['all_users', 'admin'],
+    });
+    await ensureAppEnvironments(nestApp, adminUserData.organization.id);
+    const loggedUser = await login(nestApp, adminUserData.user.email);
+    const workspaceId = adminUserData.user.defaultOrganizationId;
+
+    const legacy = await createDataSource(
+      adminUserData.organization.id,
+      workspaceId,
+      loggedUser.tokenCookie,
+      'LegacyTaken'
+    );
+    const mover = await createDataSource(adminUserData.organization.id, workspaceId, loggedUser.tokenCookie, 'Mover');
+    expect(legacy.statusCode).toBe(201);
+    expect(mover.statusCode).toBe(201);
+
+    // Between the data phase and cleanup, a late 3.21.58 write leaves its data source version with no branch.
+    const db = getDefaultDataSource();
+    const [{ branch_id: branchId }] = await db.query(
+      'SELECT branch_id FROM data_source_versions WHERE data_source_id = $1',
+      [legacy.body.id]
+    );
+    await db.query('ALTER TABLE data_source_versions ALTER COLUMN branch_id DROP NOT NULL');
+    try {
+      await db.query('UPDATE data_source_versions SET branch_id = NULL WHERE data_source_id = $1', [legacy.body.id]);
+
+      const environments = await getAllEnvironments(nestApp, adminUserData.organization.id);
+      const defaultEnv = environments.find((e: any) => e.isDefault) || environments[0];
+      const rename = await request(nestApp.getHttpServer())
+        .put(`/api/data-sources/${mover.body.id}?environment_id=${defaultEnv.id}`)
+        .set('tj-workspace-id', workspaceId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'LegacyTaken', options: [] });
+
+      expect(rename.statusCode).toBe(400);
+    } finally {
+      await db.query('UPDATE data_source_versions SET branch_id = $2 WHERE data_source_id = $1', [
+        legacy.body.id,
+        branchId,
+      ]);
+      await db.query('ALTER TABLE data_source_versions ALTER COLUMN branch_id SET NOT NULL');
+    }
   });
 });
