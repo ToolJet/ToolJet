@@ -1,7 +1,7 @@
 import { DataSource, Migration, MigrationExecutor, QueryRunner } from 'typeorm';
-import schemaDataSource from './db-migrations-datasource';
-import dataDataSource from './data-migrations-datasource';
-import contractDataSource from './contract-migrations-datasource';
+import schemaDataSource from './expand-datasource';
+import dataDataSource from './backfill-datasource';
+import contractDataSource from './contract-datasource';
 import { extractEnumValueAdditions, EnumValueAddition } from './enum-value-additions';
 import {
   CONTRACT_ADVISORY_LOCK_KEY,
@@ -19,7 +19,12 @@ import {
   withMigrationAdvisoryLock,
 } from './migration-locks';
 import { retryOnLockTimeout, retryWhen } from './with-short-lock';
-import { legacyUpgradePending, loosenLegacyRules, restoreLegacyRules, useLegacyVariants } from './legacy-upgrade';
+import {
+  legacyUpgradePending,
+  loosenLegacyRules,
+  restoreLegacyRules,
+  useLegacyVariants,
+} from './legacy-3-21-58-upgrade';
 import {
   BackfillMigration,
   blocksAsyncUpgrade,

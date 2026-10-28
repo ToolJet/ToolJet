@@ -7,9 +7,9 @@
  */
 import { resolve } from 'path';
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
-import schemaDataSource from '../src/migration-helpers/db-migrations-datasource';
-import dataDataSource from '../src/migration-helpers/data-migrations-datasource';
-import contractDataSource from '../src/migration-helpers/contract-migrations-datasource';
+import schemaDataSource from '../src/migration-helpers/expand-datasource';
+import dataDataSource from '../src/migration-helpers/backfill-datasource';
+import contractDataSource from '../src/migration-helpers/contract-datasource';
 import { classifyLocks, MigrationPart, phaseOfMigrationFile, ProbedLock } from '../src/migration-helpers/lock-probe';
 import { BackfillMigration, MigrationPhase } from '../src/migration-helpers/migration-mode';
 

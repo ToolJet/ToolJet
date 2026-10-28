@@ -3,14 +3,14 @@ import { spawn } from 'child_process';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
-import { LEGACY_LOOSEN_RULES, LEGACY_UPGRADE_MARKER } from 'src/migration-helpers/legacy-upgrade';
+import { LEGACY_LOOSEN_RULES, LEGACY_UPGRADE_MARKER } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 import { LOCK_SENTINEL_MIGRATION_NAMES } from 'src/migration-helpers/migration-locks';
 import { MigrationPhase } from 'src/migration-helpers/migration-mode';
 import { createScratchDatabase, dropScratchDatabase, postgres, SERVER_ROOT } from '../fixtures/concurrent-pods/harness';
 
 /**
  * Async upgrade of a 3.21.58 database (expand, backfill with the legacy variants, contract) must end where a
- * single-transaction upgrade ends. Delete with legacy-upgrade.ts when 3.21.58 upgrades are no longer supported.
+ * single-transaction upgrade ends. Delete with legacy-3-21-58-upgrade.ts when 3.21.58 upgrades are no longer supported.
  */
 
 const FIXTURE_SQL = join(__dirname, '../fixtures/legacy-3-21-58/database.sql');
