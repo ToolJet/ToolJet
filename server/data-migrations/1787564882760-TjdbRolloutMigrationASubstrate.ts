@@ -1,7 +1,7 @@
-// migration-lint: allow-destructive the co_relation_id unique index is partial, and the default gives the previous release's inserts a fresh UUID
+// migration-lint: allow-destructive the previous release never writes a duplicate co_relation_id in a workspace (import reuses by it), and the default fills the ones it leaves unset
 import { tooljetDbOrmconfig } from 'ormconfig'; // migration-import-allowed: opens the ToolJet Database connection
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid'; // migration-import-allowed: generates relation and migration ids
+import { v4 as uuidv4 } from 'uuid'; // migration-import-allowed: mints uuids for columns missing from configurations
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper'; // migration-import-allowed: required progress logging
 import { findTenantSchema } from '@helpers/tooljet_db.helper'; // migration-import-allowed: resolves the workspace's TJDB schema
 import { synthesizeBaseline } from '@modules/tooljet-db/helpers/baseline-synthesis'; // migration-import-allowed: baseline must match what runtime replay expects
@@ -62,6 +62,11 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    // A database migrated by the earlier destructive revision of this migration has no configurations
+    // column and a NOT NULL co_relation_id. Both statements are no-ops everywhere else.
+    await queryRunner.query(`ALTER TABLE internal_tables ADD COLUMN IF NOT EXISTS configurations jsonb`);
+    await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP NOT NULL`);
+
     // Copy configurations back from the relations, where this release writes them. Prefer this
     // migration's own row (id = internal_table_id) if present, else the development-environment
     // relation, else the earliest — deterministic even when Migration B has created a second
@@ -76,7 +81,7 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
         JOIN app_environments e ON e.id = r.environment_id
         ORDER BY r.internal_table_id, (r.id = r.internal_table_id) DESC, e.priority ASC, r.created_at ASC
       ) pick
-      WHERE pick.internal_table_id = it.id
+      WHERE pick.internal_table_id = it.id AND pick.configurations IS NOT NULL
     `);
 
     await queryRunner.query(`DROP INDEX IF EXISTS organization_id_co_relation_id_unique`);

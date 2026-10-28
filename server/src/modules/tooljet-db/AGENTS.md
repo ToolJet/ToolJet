@@ -46,6 +46,12 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   discriminator. A physical table name always comes from the resolver, never a logical id.
 - `configurations` (column metadata) lives on the relation row, not `internal_tables` — it's per
   (environment, branch).
+- **Transition release:** `internal_tables.configurations` still exists so the previous release can
+  boot, but it is frozen at upgrade time. Never read or write it; a later release drops it.
+  `co_relation_id` is nullable with a `gen_random_uuid()` default instead of NOT NULL. A rollback
+  keeps only tables that existed before the upgrade. Tables created after it are unreadable
+  (physical name = relation id), tables dropped after it reappear (soft delete), and column settings
+  changed after it are lost. A table created on the previous release gets no relation on roll-forward.
 - Both proxy entry points (`PostgrestProxyService.proxy()`/`.perform()`) funnel through
   `resolveAndRewrite()`. Known third path: `server/ee/external-apis/service.ts`'s
   `exportTjdbTableAsCSV` calls PostgREST directly (needs `Accept: text/csv`); it resolves the

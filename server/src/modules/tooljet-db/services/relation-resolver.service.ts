@@ -279,11 +279,9 @@ export class TooljetDbRelationResolverService {
     manager?: EntityManager
   ): Promise<InternalTableRelation> {
     // A falsy coRelationId (undefined/null/'') must fail closed here, not reach the query: TypeORM
-    // drops an undefined property from the WHERE clause entirely rather than filtering on it, and
-    // co_relation_id is still nullable at the DB level, so `null` must not reach the query
-    // either - `findOne` with the predicate silently dropped returns
-    // whatever row comes back first for this organizationId, wiring a foreign key or {{table.x}} raw SQL reference to an arbitrary,
-    // unrelated table instead of failing loudly.
+    // drops an undefined or null property from the WHERE clause instead of filtering on it, so
+    // `findOne` would return whatever row comes first for this organizationId, wiring a foreign key
+    // or {{table.x}} raw SQL reference to an arbitrary, unrelated table instead of failing loudly.
     if (!coRelationId) throw new NotFoundException(`Referenced table not found for reference ${coRelationId}`);
 
     const entityManager = manager || this.manager;
