@@ -1,5 +1,22 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { setNotNull, withShortLock } from '../../src/migration-helpers/with-short-lock'; // migration-import-allowed: contract steps must go through the short-lock helper
+import { branchlessRowFixes } from '../../src/migration-helpers/legacy-upgrade'; // migration-import-allowed: reruns the legacy backfills' own branch fixes
+import { MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000 } from '../backfill/1781740900000-MakeDataSourceVersionBranchIdNotNullAndDropIsDefault'; // migration-import-allowed: source of the branch fixes
+import { MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 } from '../backfill/1781741000000-MakeAppVersionBranchIdNotNullAndGitSyncFlags'; // migration-import-allowed: source of the branch fixes
+import { BackfillWorkflowBranchIdAndEnforceNotNull1782400000000 } from '../backfill/1782400000000-BackfillWorkflowBranchIdAndEnforceNotNull'; // migration-import-allowed: source of the branch fixes
+import { BackfillFolderAppsDefaultBranchIdAndEnforceNotNull1785700000000 } from '../backfill/1785700000000-BackfillFolderAppsDefaultBranchIdAndEnforceNotNull'; // migration-import-allowed: source of the branch fixes
+
+/** Rows 3.21.58 pods wrote without a branch after the backfill; NOT NULL would fail on them. */
+const fixBranchlessRows = async (queryRunner: QueryRunner, table: string) =>
+  withShortLock(
+    queryRunner,
+    await branchlessRowFixes(table, [
+      new MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000(),
+      new MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000(),
+      new BackfillWorkflowBranchIdAndEnforceNotNull1782400000000(),
+      new BackfillFolderAppsDefaultBranchIdAndEnforceNotNull1785700000000(),
+    ])
+  );
 
 /** Recreates a 3.21.58 trigger with its final column list; skipped when it already has it. */
 const finalTrigger = (name: string, columns: string, fn: string) => `DO $$ BEGIN
@@ -26,6 +43,7 @@ export class ContractLegacyBranchModel1793300000000 implements MigrationInterfac
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // data_source_versions: the is_default fallback rows became default-branch rows.
+    await fixBranchlessRows(queryRunner, 'data_source_versions');
     await withShortLock(queryRunner, [
       'DROP TRIGGER IF EXISTS trg_unique_active_default_dsv_name_per_org ON data_source_versions',
       'DROP FUNCTION IF EXISTS enforce_unique_active_default_dsv_name_per_org()',
@@ -43,6 +61,7 @@ export class ContractLegacyBranchModel1793300000000 implements MigrationInterfac
 
     // app_versions: the backfill's beforeCommit() swapped the branch key to CASCADE and added the branch CHECK, both NOT VALID.
     await withShortLock(queryRunner, ['ALTER TABLE app_versions VALIDATE CONSTRAINT fk_app_versions_branch']);
+    await fixBranchlessRows(queryRunner, 'app_versions');
     await setNotNull(queryRunner, 'app_versions', 'branch_id');
     // The backfill emptied these two functions; the default-branch slug function covers both rules now.
     await withShortLock(queryRunner, [
@@ -89,6 +108,7 @@ export class ContractLegacyBranchModel1793300000000 implements MigrationInterfac
     await withShortLock(queryRunner, ['DROP TABLE IF EXISTS organization_git_ssh']);
 
     // folder_apps: every row is on a branch now.
+    await fixBranchlessRows(queryRunner, 'folder_apps');
     await setNotNull(queryRunner, 'folder_apps', 'branch_id');
     await withShortLock(queryRunner, ['DROP INDEX IF EXISTS uniq_folder_apps_app_no_branch']);
 
