@@ -6,7 +6,7 @@ import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixture
 const DEFAULT = '00000000-0000-0000-0000-00000000000d';
 const FEATURE = '00000000-0000-0000-0000-00000000000f';
 
-/** 3.21.58 rows have no branch until the backfill; reads must still find them on the default branch. */
+/** 3.21.58 rows have no branch until the data phase; reads must still find them on the default branch. */
 describe('helpers/branch_scope | 3.21.58 rows with no branch', () => {
   const database = `tooljet_branch_scope_${process.pid}`;
   let db: DataSource;

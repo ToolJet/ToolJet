@@ -46,7 +46,7 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     migrationsRun: false,
     migrationsTransactionMode: 'all',
     logging: data.ORM_LOGGING || false,
-    migrations: [__dirname + '/migrations/backfill/**/*{.ts,.js}'],
+    migrations: [__dirname + '/migrations/data/**/*{.ts,.js}'],
   };
 }
 

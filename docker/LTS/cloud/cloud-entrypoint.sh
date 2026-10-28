@@ -13,7 +13,7 @@ if [ -f "./.env" ]; then
   declare $(grep -v '^#' ./.env | xargs)
 fi
 
-# MIGRATION_MODE=async: the server runs the backfill in the background with this command, so it holds no plugin steps.
+# MIGRATION_MODE=async: the server runs the data phase in the background with this command, so it holds no plugin steps.
 export MIGRATION_SETUP_COMMAND="npm run db:setup$SUFFIX"
 
 if [ -z "$DATABASE_URL" ]; then
@@ -25,9 +25,9 @@ else
   ./server/scripts/wait-for-it.sh "$PG_HOST:$PG_PORT" --strict --timeout=300 -- echo "PostgreSQL is up"
 fi
 
-# Plugin steps write to the database, so its schema comes first. Async mode applies only the expand phase here.
+# Plugin steps write to the database, so its schema comes first. Async mode applies only the schema phase here.
 if [ "$MIGRATION_MODE" = "async" ]; then
-  MIGRATION_PHASE=expand $MIGRATION_SETUP_COMMAND
+  MIGRATION_PHASE=schema $MIGRATION_SETUP_COMMAND
 else
   $MIGRATION_SETUP_COMMAND
 fi

@@ -8,7 +8,7 @@
  * Spawned as a separate OS process (not a thread) so each pod gets its own connection pool,
  * its own exit code — the thing that used to crash-loop.
  *
- * Contract with the spec: everything the runner logs goes to stdout, and the last line is
+ * Cleanup with the spec: everything the runner logs goes to stdout, and the last line is
  * `__POD_RESULT__{json}`. Exit code 0 means the pod booted successfully, 75 that it left the run to another.
  */
 import { join } from 'path';
@@ -40,9 +40,9 @@ function dataSourceFor(migrationsDirectory: string): DataSource {
 }
 
 async function main() {
-  const schemaDS = dataSourceFor('expand');
-  const dataDS = dataSourceFor('backfill');
-  const contractDS = dataSourceFor('contract');
+  const schemaDS = dataSourceFor('schema');
+  const dataDS = dataSourceFor('data');
+  const cleanupDS = dataSourceFor('cleanup');
 
   // Every pod is released at the same wall-clock instant, so ts-node start-up jitter cannot
   // decide who wins the lock and the contention is real rather than incidental.
@@ -54,14 +54,14 @@ async function main() {
   let error: string | null = null;
   let skipped = false;
   try {
-    skipped = !(await run(schemaDS, dataDS, contractDS));
+    skipped = !(await run(schemaDS, dataDS, cleanupDS));
   } catch (caught) {
     error = caught instanceof Error ? caught.message : String(caught);
   }
 
   await schemaDS.destroy().catch(() => undefined);
   await dataDS.destroy().catch(() => undefined);
-  await contractDS.destroy().catch(() => undefined);
+  await cleanupDS.destroy().catch(() => undefined);
 
   console.log(`__POD_RESULT__${JSON.stringify({ podId, error, durationMs: Date.now() - startedAt })}`);
   process.exit(error ? 1 : skipped ? SKIPPED_EXIT_CODE : 0);

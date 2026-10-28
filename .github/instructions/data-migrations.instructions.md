@@ -1,5 +1,5 @@
 ---
-applyTo: "server/migrations/backfill/**/*"
+applyTo: "server/migrations/data/**/*"
 ---
 
 # Data Migration — Logging Guidelines

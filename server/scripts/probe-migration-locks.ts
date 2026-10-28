@@ -3,23 +3,23 @@
  * serving (`classifyLocks`). Applies every other pending migration first, then runs the given ones in phase order,
  * each step in its own transaction. It commits them, so run it on a copy of the database.
  *
- * Usage (CI, on a copy of the snapshot): npm run db:probe-locks -- server/migrations/backfill/<file>.ts …
+ * Usage (CI, on a copy of the snapshot): npm run db:probe-locks -- server/migrations/data/<file>.ts …
  */
 import { resolve } from 'path';
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
-import schemaDataSource from '../src/migration-helpers/expand-datasource';
-import dataDataSource from '../src/migration-helpers/backfill-datasource';
-import contractDataSource from '../src/migration-helpers/contract-datasource';
+import schemaDataSource from '../src/migration-helpers/schema-datasource';
+import dataDataSource from '../src/migration-helpers/data-datasource';
+import cleanupDataSource from '../src/migration-helpers/cleanup-datasource';
 import { classifyLocks, MigrationPart, phaseOfMigrationFile, ProbedLock } from '../src/migration-helpers/lock-probe';
-import { BackfillMigration, MigrationPhase } from '../src/migration-helpers/migration-mode';
+import { DataMigration, MigrationPhase } from '../src/migration-helpers/migration-mode';
 
-const PHASE_ORDER: MigrationPhase[] = ['expand', 'backfill', 'contract'];
+const PHASE_ORDER: MigrationPhase[] = ['schema', 'data', 'cleanup'];
 const REPO_ROOT = resolve(__dirname, '../..');
 
 interface ProbedMigration {
   name: string;
   phase: MigrationPhase;
-  instance: BackfillMigration;
+  instance: DataMigration;
 }
 
 async function load(file: string): Promise<ProbedMigration> {
@@ -72,16 +72,16 @@ async function probe(queryRunner: QueryRunner, migrations: ProbedMigration[]): P
   };
 
   const ordered = PHASE_ORDER.flatMap((phase) => migrations.filter((migration) => migration.phase === phase));
-  for (const migration of ordered.filter(({ phase }) => phase !== 'contract')) {
+  for (const migration of ordered.filter(({ phase }) => phase !== 'cleanup')) {
     await step(migration, 'up', () => migration.instance.up(queryRunner));
   }
   for (const migration of ordered) {
     const beforeCommit = migration.instance.beforeCommit?.bind(migration.instance);
-    // Only the backfill phase runs beforeCommit().
-    if (beforeCommit && migration.phase === 'backfill')
+    // Only the data phase runs beforeCommit().
+    if (beforeCommit && migration.phase === 'data')
       await step(migration, 'beforeCommit', () => beforeCommit(queryRunner));
   }
-  for (const migration of ordered.filter(({ phase }) => phase === 'contract')) {
+  for (const migration of ordered.filter(({ phase }) => phase === 'cleanup')) {
     await step(migration, 'up', () => migration.instance.up(queryRunner));
   }
   return violations;
@@ -90,8 +90,7 @@ async function probe(queryRunner: QueryRunner, migrations: ProbedMigration[]): P
 async function main(files: string[]): Promise<number> {
   const migrations = await Promise.all(files.map(load));
   const probed = new Set(migrations.map(({ name }) => name));
-  for (const dataSource of [schemaDataSource, dataDataSource, contractDataSource])
-    await applyOthers(dataSource, probed);
+  for (const dataSource of [schemaDataSource, dataDataSource, cleanupDataSource]) await applyOthers(dataSource, probed);
 
   const queryRunner = schemaDataSource.createQueryRunner();
   await queryRunner.connect();

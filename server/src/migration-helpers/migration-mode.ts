@@ -39,12 +39,12 @@ export function endUserMessage(state: string, env: Env = process.env): string | 
 }
 
 /**
- * Expand and contract (standard pattern; also "parallel change"):
- * - expand:   adds only; old and new code both run on it. Before boot. Folder `migrations/expand`.
- * - backfill: fills what expand added; reads keep working. After boot, writes paused. Folder `migrations/backfill`.
- * - contract: removes or tightens what no released code uses any more. After writes reopen. Folder `migrations/contract`.
+ * The expand-and-contract pattern, in ToolJet's terms:
+ * - schema:  adds only; old and new code both run on it. Before boot. Folder `migrations/schema`.
+ * - data:    fills what schema added; reads keep working. After boot, writes paused. Folder `migrations/data`.
+ * - cleanup: removes or tightens what no released code uses any more. After writes reopen. Folder `migrations/cleanup`.
  */
-export type MigrationPhase = 'expand' | 'backfill' | 'contract';
+export type MigrationPhase = 'schema' | 'data' | 'cleanup';
 
 /**
  * - single-transaction: every phase in one transaction before boot (blocking mode, fresh install, `db:migrate`).
@@ -53,39 +53,39 @@ export type MigrationPhase = 'expand' | 'backfill' | 'contract';
 export type RunStrategy = 'single-transaction' | 'multi-transaction';
 
 /**
- * `beforeCommit` holds a backfill's lock-taking statements (index builds, triggers, foreign keys NOT VALID, VALIDATE). They run after
- * every backfill up(), just before commit, so their locks last seconds instead of the whole run.
+ * `beforeCommit` holds a data migration's lock-taking statements (index builds, triggers, foreign keys NOT VALID, VALIDATE). They run after
+ * every data migration up(), just before commit, so their locks last seconds instead of the whole run.
  */
-export interface BackfillMigration extends MigrationInterface {
+export interface DataMigration extends MigrationInterface {
   beforeCommit?(queryRunner: QueryRunner): Promise<void>;
 }
 
 /**
- * Removes what an earlier release stopped using. `requires` names a migration of that release: the contract runs
+ * Removes what an earlier release stopped using. `requires` names a migration of that release: the cleanup runs
  * only once an earlier upgrade recorded it, so an instance that skipped that release can still roll back.
  */
-export interface ContractMigration extends MigrationInterface {
+export interface CleanupMigration extends MigrationInterface {
   transaction: false;
   requires: string;
 }
 
-export interface ContractCandidate {
+export interface CleanupCandidate {
   name: string;
   requires?: string;
 }
 
-export interface ContractPlan {
+export interface CleanupPlan {
   run: string[];
   deferred: { name: string; waitingFor: string }[];
 }
 
 /** `baselineId`: last migration id recorded before this code first ran; 0 on a fresh install, where all run. */
-export function planContract(
-  candidates: readonly ContractCandidate[],
+export function planCleanup(
+  candidates: readonly CleanupCandidate[],
   recordedIds: ReadonlyMap<string, number>,
   baselineId: number
-): ContractPlan {
-  const plan: ContractPlan = { run: [], deferred: [] };
+): CleanupPlan {
+  const plan: CleanupPlan = { run: [], deferred: [] };
   for (const { name, requires } of candidates) {
     const recordedAt = requires ? recordedIds.get(requires) : undefined;
     if (baselineId === 0 || (recordedAt !== undefined && recordedAt <= baselineId)) plan.run.push(name);
@@ -97,8 +97,8 @@ export function planContract(
 /** Unset: all phases, single-transaction. */
 export function parseMigrationPhase(raw: string | undefined): MigrationPhase | undefined {
   if (!raw) return undefined;
-  if (raw === 'expand' || raw === 'backfill' || raw === 'contract') return raw;
-  throw new Error(`Unknown MIGRATION_PHASE '${raw}': use 'expand', 'backfill' or 'contract', or leave it unset.`);
+  if (raw === 'schema' || raw === 'data' || raw === 'cleanup') return raw;
+  throw new Error(`Unknown MIGRATION_PHASE '${raw}': use 'schema', 'data' or 'cleanup', or leave it unset.`);
 }
 
 export function runStrategy(phase: MigrationPhase | undefined): RunStrategy {

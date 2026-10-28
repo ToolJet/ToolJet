@@ -29,8 +29,8 @@ export interface AppDataRevisionScope {
 
 // `stamp`: set by database triggers (migration AddViewerCacheStamps) whenever something changes what the
 // released app shows without a new release: its permissions, the theme, an embedded module, a link.
-// `epoch`: the last migration id handed out. In async mode a backfill can rewrite components after the new
-// server version is already serving, so the version alone would keep the pre-backfill copy. Read from the
+// `epoch`: the last migration id handed out. In async mode a data migration can rewrite components after the new
+// server version is already serving, so the version alone would keep the pre-migration copy. Read from the
 // sequence, not the table: an upgrade holds LOCK TABLE migrations until it commits.
 async function getChangeStamps(
   manager: EntityManager,

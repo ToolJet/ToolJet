@@ -9,13 +9,13 @@ import { MigrationPhase } from 'src/migration-helpers/migration-mode';
 import { createScratchDatabase, dropScratchDatabase, postgres, SERVER_ROOT } from '../fixtures/harness';
 
 /**
- * Async upgrade of a 3.21.58 database (expand, backfill with the legacy variants, contract) must end where a
+ * Async upgrade of a 3.21.58 database (schema, data with the legacy variants, cleanup) must end where a
  * single-transaction upgrade ends. Delete with legacy-3-21-58-upgrade.ts when 3.21.58 upgrades are no longer supported.
  */
 
 const FIXTURE_SQL = join(__dirname, '../fixtures/legacy-3-21-58/database.sql');
 const RUNNER = join(SERVER_ROOT, 'src/migration-helpers/run-all-migrations.ts');
-const CONTRACT = 'ContractLegacyBranchModel1793300000000';
+const CLEANUP = 'CleanupLegacyBranchModel1793300000000';
 const RUN_TIMEOUT_MS = 10 * 60_000;
 
 const blockingDatabase = `tooljet_legacy_blocking_${process.pid}`;
@@ -42,7 +42,7 @@ async function restoreFixture(database: string): Promise<void> {
   await withDatabase(database, (db) => db.query(readFileSync(FIXTURE_SQL, 'utf8')));
 }
 
-/** The real runner with the real migrations. NODE_ENV=test would list no expand migrations (ormconfig.ts). */
+/** The real runner with the real migrations. NODE_ENV=test would list no schema migrations (ormconfig.ts). */
 function runRunner(database: string, phase?: MigrationPhase): Promise<RunnerOutcome> {
   const { host, port, username, password } = postgres;
   const env: NodeJS.ProcessEnv = {
@@ -71,7 +71,7 @@ async function runOk(database: string, phase?: MigrationPhase): Promise<string> 
   return output;
 }
 
-/** Contract waits for the next upgrade; dropping the baseline makes this one count as that next upgrade. */
+/** Cleanup waits for the next upgrade; dropping the baseline makes this one count as that next upgrade. */
 const forgetBaseline = (database: string) =>
   withDatabase(database, (db) => db.query('DELETE FROM migration_baselines'));
 
@@ -210,8 +210,8 @@ const loosenedRules = (database: string) =>
   withDatabase(database, (db) => db.query(LOOSENED_RULES_SQL, [LEGACY_LOOSEN_RULES.map(({ name }) => name)]));
 
 describe('Upgrading a 3.21.58 database', () => {
-  let asyncContractOutput: string;
-  let contractRecordedBeforeBaselineReset: boolean;
+  let asyncCleanupOutput: string;
+  let cleanupRecordedBeforeBaselineReset: boolean;
 
   beforeAll(async () => {
     await Promise.all([blockingDatabase, asyncDatabase].map(restoreFixture));
@@ -222,12 +222,12 @@ describe('Upgrading a 3.21.58 database', () => {
         await runOk(blockingDatabase);
       })(),
       (async () => {
-        await runOk(asyncDatabase, 'expand');
-        await runOk(asyncDatabase, 'backfill');
-        asyncContractOutput = await runOk(asyncDatabase, 'contract');
-        contractRecordedBeforeBaselineReset = await recorded(asyncDatabase, CONTRACT);
+        await runOk(asyncDatabase, 'schema');
+        await runOk(asyncDatabase, 'data');
+        asyncCleanupOutput = await runOk(asyncDatabase, 'cleanup');
+        cleanupRecordedBeforeBaselineReset = await recorded(asyncDatabase, CLEANUP);
         await forgetBaseline(asyncDatabase);
-        await runOk(asyncDatabase, 'contract');
+        await runOk(asyncDatabase, 'cleanup');
       })(),
     ]);
   }, RUN_TIMEOUT_MS);
@@ -236,14 +236,14 @@ describe('Upgrading a 3.21.58 database', () => {
     await Promise.all([blockingDatabase, asyncDatabase, failingDatabase, lateWritesDatabase].map(dropScratchDatabase));
   });
 
-  it('should hold the contract back on the upgrade that records the release it depends on', () => {
-    expect(asyncContractOutput).toContain(`Holding back ${CONTRACT}`);
-    expect(contractRecordedBeforeBaselineReset).toBe(false);
+  it('should hold the cleanup back on the upgrade that records the release it depends on', () => {
+    expect(asyncCleanupOutput).toContain(`Holding back ${CLEANUP}`);
+    expect(cleanupRecordedBeforeBaselineReset).toBe(false);
   });
 
-  it('should apply the contract on the next upgrade, on both paths', async () => {
-    expect(await recorded(blockingDatabase, CONTRACT)).toBe(true);
-    expect(await recorded(asyncDatabase, CONTRACT)).toBe(true);
+  it('should apply the cleanup on the next upgrade, on both paths', async () => {
+    expect(await recorded(blockingDatabase, CLEANUP)).toBe(true);
+    expect(await recorded(asyncDatabase, CLEANUP)).toBe(true);
   });
 
   it('should end with the same schema as a single-transaction upgrade', async () => {
@@ -257,27 +257,27 @@ describe('Upgrading a 3.21.58 database', () => {
   });
 
   it(
-    'should put the loosened rules back when the backfill fails',
+    'should put the loosened rules back when the data phase fails',
     async () => {
       await restoreFixture(failingDatabase);
-      await runOk(failingDatabase, 'expand');
+      await runOk(failingDatabase, 'schema');
       const before = await loosenedRules(failingDatabase);
       expect(before).toHaveLength(LEGACY_LOOSEN_RULES.length);
       await withDatabase(failingDatabase, (db) =>
         db.query(`
           CREATE FUNCTION fail_legacy_backfill() RETURNS trigger LANGUAGE plpgsql AS $$
           BEGIN
-            IF NEW.name = '${LEGACY_UPGRADE_MARKER}' THEN RAISE EXCEPTION 'injected backfill failure'; END IF;
+            IF NEW.name = '${LEGACY_UPGRADE_MARKER}' THEN RAISE EXCEPTION 'injected data failure'; END IF;
             RETURN NEW;
           END $$;
           CREATE TRIGGER fail_legacy_backfill BEFORE INSERT ON migrations
             FOR EACH ROW EXECUTE FUNCTION fail_legacy_backfill();`)
       );
 
-      const { exitCode, output } = await runRunner(failingDatabase, 'backfill');
+      const { exitCode, output } = await runRunner(failingDatabase, 'data');
 
       expect(exitCode).not.toBe(0);
-      expect(output).toContain('injected backfill failure');
+      expect(output).toContain('injected data failure');
       expect(output).toContain(`Legacy upgrade: dropped ${LEGACY_LOOSEN_RULES.length} old rules`);
       expect(await loosenedRules(failingDatabase)).toEqual(before);
       expect(await recorded(failingDatabase, LEGACY_UPGRADE_MARKER)).toBe(false);
@@ -290,11 +290,11 @@ describe('Upgrading a 3.21.58 database', () => {
   );
 
   it(
-    'should give rows a 3.21.58 pod writes without a branch after the backfill the default branch at contract',
+    'should give rows a 3.21.58 pod writes without a branch after the data phase the default branch at cleanup',
     async () => {
       await restoreFixture(lateWritesDatabase);
-      await runOk(lateWritesDatabase, 'expand');
-      await runOk(lateWritesDatabase, 'backfill');
+      await runOk(lateWritesDatabase, 'schema');
+      await runOk(lateWritesDatabase, 'data');
       // What a 3.21.58 pod writes: a new data source's is_default row, and an app filed into a folder.
       await withDatabase(lateWritesDatabase, (db) =>
         db.query(`
@@ -318,9 +318,9 @@ describe('Upgrading a 3.21.58 database', () => {
       expect(branchless).toEqual([{ versions: 1, folder_apps: 1 }]);
       await forgetBaseline(lateWritesDatabase);
 
-      await runOk(lateWritesDatabase, 'contract');
+      await runOk(lateWritesDatabase, 'cleanup');
 
-      expect(await recorded(lateWritesDatabase, CONTRACT)).toBe(true);
+      expect(await recorded(lateWritesDatabase, CLEANUP)).toBe(true);
       const onDefaultBranch = await withDatabase(lateWritesDatabase, (db) =>
         db.query(`
           SELECT 'data_source_versions' AS rows, b.is_default AS on_default_branch

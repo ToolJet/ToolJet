@@ -2,8 +2,8 @@
 import { readdirSync } from 'fs';
 import { join } from 'path';
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
-import { BackfillMigration } from 'src/migration-helpers/migration-mode';
-import { ContractLegacyBranchModel1793300000000 } from '../../../../migrations/contract/1793300000000-ContractLegacyBranchModel';
+import { DataMigration } from 'src/migration-helpers/migration-mode';
+import { CleanupLegacyBranchModel1793300000000 } from '../../../../migrations/cleanup/1793300000000-CleanupLegacyBranchModel';
 import {
   LEGACY_VARIANTS,
   useLegacyVariants,
@@ -14,7 +14,7 @@ import {
 } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 
 describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58', () => {
-  it('should run only while the 3.21.58 backfill is pending', () => {
+  it('should run only while the 3.21.58 data is pending', () => {
     expect(legacyUpgradePending(['Other1700000000000', LEGACY_UPGRADE_MARKER])).toBe(true);
     expect(legacyUpgradePending(['Other1700000000000'])).toBe(false);
   });
@@ -51,8 +51,8 @@ describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58'
   });
 
   describe('variants', () => {
-    const BACKFILL = join(__dirname, '../../../../migrations/backfill');
-    const originals: BackfillMigration[] = readdirSync(BACKFILL)
+    const BACKFILL = join(__dirname, '../../../../migrations/data');
+    const originals: DataMigration[] = readdirSync(BACKFILL)
       .filter((file) => LEGACY_VARIANTS.has(file.replace(/^(\d+)-(\w+)\.ts$/, '$2$1')))
       .map((file) => {
         const exports: Record<string, new () => MigrationInterface> = require(join(BACKFILL, file));
@@ -69,7 +69,7 @@ describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58'
       expect(originals).toHaveLength(LEGACY_VARIANTS.size);
     });
 
-    it('should change rows and function bodies only in up(), leaving table locks to beforeCommit() and contract', async () => {
+    it('should change rows and function bodies only in up(), leaving table locks to beforeCommit() and cleanup', async () => {
       useLegacyVariants({ migrations: originals } as unknown as DataSource);
       const ups = (await Promise.all(originals.map((migration) => recorded((qr) => migration.up(qr))))).flat();
       expect(ups.filter((sql) => /\b(DROP|ALTER TABLE|CREATE (UNIQUE )?INDEX|CREATE TRIGGER)\b/i.test(sql))).toEqual(
@@ -87,7 +87,7 @@ describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58'
   });
 
   it.each(['data_source_versions', 'app_versions', 'folder_apps'])(
-    'should give branchless %s rows a branch before contract sets NOT NULL',
+    'should give branchless %s rows a branch before cleanup sets NOT NULL',
     async (table) => {
       const statements: string[] = [];
       const queryRunner = {
@@ -97,7 +97,7 @@ describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58'
           return [{ server_version_num: '160000' }];
         },
       } as unknown as QueryRunner;
-      await new ContractLegacyBranchModel1793300000000().up(queryRunner);
+      await new CleanupLegacyBranchModel1793300000000().up(queryRunner);
 
       const notNull = statements.findIndex((sql) =>
         sql.includes(`ALTER TABLE ${table} ALTER COLUMN branch_id SET NOT NULL`)
