@@ -58,6 +58,8 @@ The phase and run-strategy meanings are defined once, at `MigrationPhase` and `R
 | `expand` | Async boot | Pending expand migrations | One short transaction, with a lock timeout and retries |
 | `backfill` | Async runs | Any expand migration still pending (normally none), then all backfill migrations | One for the leftover expand, one for all backfill |
 
+**Short-lock steps.** A step that changes an existing table outside the expand phase goes through `withShortLock` (`with-short-lock.ts`): one short transaction per step, `lock_timeout` 2000 ms (below the server pool's 5000 ms, so readers queued behind it give up after it does), `statement_timeout` 0, retried on a lock timeout. Inside a transaction the caller opened (a single-transaction run) it runs inline. `setNotNull` sets NOT NULL without a long scan under an exclusive lock: a `NOT VALID` check, `VALIDATE`, `SET NOT NULL`, then drops the check; it needs PostgreSQL 12 or later. The expand phase's lock-timeout retry uses the same `retryOnLockTimeout`.
+
 **Enum exception.** PostgreSQL does not allow using an enum value in the transaction that added it (`55P04`). On an upgrade, `planEnumAdditions` commits new enum values first. On a fresh install it uses two transactions. Details: the migration-writing rules in [`../AGENTS.md`](../AGENTS.md#migrations).
 
 ## Many pods, one migration
@@ -319,6 +321,7 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 | `test/modules/migrations/unit/migration-mode.spec.ts` | Mode selection (Cloud stays blocking), opt-out, end-user banner text, `blocksAsyncUpgrade`, allowlist names exist |
 | `test/modules/app/unit/migration-gate.middleware.spec.ts` | Blocking mode passes everything, gated vs ungated paths, 503 per state, what passes in async mode, opt-out log |
 | `test/modules/migrations/e2e/concurrent-migrations.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, active lock only during work and released on SIGKILL, a `NODE_ENV=production` race. Split phases: schema then data, lock-timeout retry and give-up, enum `ADD VALUE` in both phases, boot during a long backfill phase, exit 75 with skip-if-locked, wait behind a locked `migrations` table, single-transaction run for an old database, `statement_timeout=0` on runner connections |
+| `test/modules/migrations/e2e/with-short-lock.spec.ts` | Short-lock steps against a held reader lock: give up within the timeout, succeed once released, inline inside an open transaction; `setNotNull` sets the column and leaves no check, even when it fails |
 | `test/modules/migrations/unit/migration-authoring-rules.spec.ts` | New migrations: schema only adds, non-empty `down()` |
 | `test/modules/migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output (both progress formats), redaction, failed step |
 | `test/modules/app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races across servers, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, progress counts in the status, status cache, fail-open |
