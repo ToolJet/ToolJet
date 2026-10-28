@@ -18,7 +18,8 @@ describe('migration-helpers/migration-mode', () => {
       [{}, 'blocking'],
       [{ MIGRATION_MODE: 'async' }, 'async'],
       [{ MIGRATION_MODE: 'later' }, 'blocking'],
-      [{ MIGRATION_MODE: 'async', TOOLJET_EDITION: 'cloud' }, 'blocking'],
+      [{ MIGRATION_MODE: 'async', TOOLJET_EDITION: 'cloud' }, 'async'],
+      [{ TOOLJET_EDITION: 'cloud' }, 'blocking'],
     ])('should read %j as %s', (env, mode) => {
       expect(getMigrationMode(env)).toBe(mode);
     });
