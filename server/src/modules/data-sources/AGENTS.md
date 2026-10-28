@@ -9,7 +9,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - **Sample Data Source** — `type = 'sample'` (`DataSourceTypes.SAMPLE`); auto-created Postgres pointing at the shared `sample_db` (`SampleDataSourceService`), refreshed nightly by `SampleDBScheduler`. Cannot be deleted; options hidden from list responses.
 - **Static/default Data Source** — `type = 'static'`, kinds in `DefaultDataSourceKinds` (`restapi`, `runjs`, `runpy`, `tooljetdb`, `workflows`); one `${kind}default` row per workspace, no user-editable options.
 - **Kind vs type** — `kind` = connector identifier (plugin name); `type` = `static | default | sample`.
-- **DSV / DSVO** — `DataSourceVersion` (branch-aware version row, `is_default` / `branch_id` / `is_active`) and `DataSourceVersionOptions` (options per DSV per Environment). Options live here, not on `data_sources`.
+- **DSV / DSVO** — `DataSourceVersion` (branch-aware version row, `branch_id` / `is_active`; there is no `is_default` column — the "default DSV" is the row on the org's default workspace branch, resolved by `DataSourcesRepository.resolveDefaultBranchId` / `findDefaultDsvForDataSource`) and `DataSourceVersionOptions` (options per DSV per Environment). Options live here, not on `data_sources`.
 
 ## Key files
 
@@ -38,7 +38,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - **`getAll` (Data Sources page list) hides manifest-less built-in kinds** (`runjs`, `runpy`, `tooljetdb`, `workflows`) even when a stray `type='default'` row exists — the frontend has no schema to render for them. `restapi` is kept (has a manifest). `getForApp` is unfiltered on purpose (query builder needs the static rows).
 - **Options are per-Environment**: one `DataSourceVersionOptions` row per (DSV, environment). Creating a source writes options to every Environment of the workspace. There is no single "the options" — always resolve with an `environmentId`.
 - Workspace-constant references (`{{constants.x}}` / `{{secrets.x}}`) inside encrypted fields are stored as `workspace_constant` alongside the credential and resolved per-environment at runtime — value follows the environment, not the stored string.
-- Branch-aware behavior (this branch line): delete on a branch soft-deletes (`DataSourceVersion.isActive = false`); released apps read the `is_default` DSV. `branchId` only applies to global-scope sources.
+- Branch-aware behavior (this branch line): delete on a branch soft-deletes (`DataSourceVersion.isActive = false`); released apps read the default-branch DSV. `branchId` only applies to global-scope sources.
 - **`is_synced=false` on create in every mode** (git-off, multi-branch feature, single-branch default) — a brand-new DSV is never-committed, so it stays unsynced until a push (git-sync). There is no single-branch synced-on-create exemption (removed) — mirrors the apps/modules rule. A git-sync pull that finds a synced DSV absent from git **deactivates** it (`isActive=false`), it does not delete the row.
 - Scope change is one-way (local → global); sample sources can't be deleted; delete is blocked while dependent queries exist (`findQueriesLinkedToDatasource`).
 - NEVER abbreviate `data_source` as `ds` in code or docs.
