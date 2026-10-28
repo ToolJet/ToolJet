@@ -9,6 +9,7 @@ import { DefaultDataSourceKind, GetQueryVariables } from './types';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { decode } from 'js-base64';
+import { appVersionOnBranch, nullBranchLast, onBranch } from '@helpers/branch_scope.helper';
 
 @Injectable()
 export class DataSourcesRepository extends Repository<DataSource> {
@@ -61,11 +62,15 @@ export class DataSourcesRepository extends Repository<DataSource> {
     dataSourceId: string,
     opts: { activeOnly?: boolean } = {}
   ): Promise<DataSourceVersion | null> {
+    if (!dataSourceId) return null;
     const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(manager, dataSourceId);
-    if (!defaultBranchId) return null;
-    const where: Record<string, unknown> = { dataSourceId, branchId: defaultBranchId };
-    if (opts.activeOnly) where.isActive = true;
-    return manager.findOne(DataSourceVersion, { where });
+    const qb = manager
+      .createQueryBuilder(DataSourceVersion, 'dsv')
+      .where('dsv.data_source_id = :dataSourceId', { dataSourceId })
+      .andWhere(onBranch('dsv.branch_id', 'defaultBranchId'), { defaultBranchId })
+      .orderBy(nullBranchLast('dsv.branch_id'), 'ASC');
+    if (opts.activeOnly) qb.andWhere('dsv.is_active = true');
+    return qb.getOne();
   }
 
   async allGlobalDS(
@@ -119,7 +124,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
         'data_source_versions',
         'dsv',
         `dsv.data_source_id = data_source.id
-          AND dsv.branch_id = :branchId
+          AND ${onBranch('dsv.branch_id', 'branchId')}
           AND dsv.is_active = true`,
         { branchId }
       );
@@ -137,9 +142,9 @@ export class DataSourcesRepository extends Repository<DataSource> {
         'data_source_versions',
         'dsv',
         `dsv.data_source_id = data_source.id AND (
-            (dsv.branch_id = :branchId AND dsv.is_active = true)
+            (${onBranch('dsv.branch_id', 'branchId')} AND dsv.is_active = true)
             OR (
-              dsv.branch_id = :defaultBranchId
+              ${onBranch('dsv.branch_id', 'defaultBranchId')}
               AND dsv.is_active = true
               AND NOT EXISTS (
                 SELECT 1 FROM data_source_versions dsv2
@@ -158,7 +163,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
       query.leftJoin(
         'data_source_versions',
         'dsv',
-        'dsv.data_source_id = data_source.id AND dsv.branch_id = :defaultBranchId AND dsv.is_active = true',
+        `dsv.data_source_id = data_source.id AND ${onBranch('dsv.branch_id', 'defaultBranchId')} AND dsv.is_active = true`,
         { defaultBranchId }
       );
       query.leftJoin(
@@ -215,6 +220,8 @@ export class DataSourcesRepository extends Repository<DataSource> {
     let rawResults: any[] = [];
 
     if (useBranchPath || branchId || environmentId) {
+      // rawById below keeps the first row per data source.
+      query.addOrderBy(nullBranchLast('dsv.branch_id'), 'ASC');
       // Use getRawAndEntities to get both entity data and raw dsv/dsvo columns
       const rawAndEntities = await query.getRawAndEntities();
       result = rawAndEntities.entities;
@@ -392,7 +399,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
         .leftJoinAndSelect(
           'ds.dataQueries',
           'dq',
-          'dq.app_version_id IN (SELECT av.id FROM app_versions av WHERE av.branch_id = :branchId)',
+          `dq.app_version_id IN (SELECT av.id FROM app_versions av WHERE ${appVersionOnBranch('av', 'branchId')})`,
           { branchId }
         )
         .where('ds.id = :datasourceId', { datasourceId })
