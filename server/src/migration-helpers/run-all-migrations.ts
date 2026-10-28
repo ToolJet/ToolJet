@@ -50,7 +50,7 @@ const DATA_RETRY_DELAY_MS = 2000;
 /** Deadlock, serialization failure, lock timeout: the whole data rolls back, so running it again is safe. */
 const TRANSIENT_ERROR_CODES = new Set(['40P01', '40001', '55P03']);
 
-function isTransientError(error: unknown): boolean {
+export function isTransientError(error: unknown): boolean {
   const { code, driverError } = (error ?? {}) as { code?: string; driverError?: { code?: string } };
   return TRANSIENT_ERROR_CODES.has(driverError?.code ?? code ?? '');
 }
@@ -224,7 +224,7 @@ const BASELINES_DDL = `
   )`;
 
 /** The newest migration this code ships: it changes with every release that adds one. */
-function codeHead(...dataSources: DataSource[]): string {
+export function codeHead(...dataSources: DataSource[]): string {
   const names = dataSources.flatMap(({ migrations }) =>
     migrations.map((migration) => migration.name || migration.constructor.name)
   );
