@@ -16,8 +16,8 @@ import {
   LEGACY_UPGRADE_MARKER,
 } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 
-describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58', () => {
-  it('should run only while the 3.21.58 data is pending', () => {
+describe('migration-helpers/legacy-3-21-58-upgrade', () => {
+  it('should apply only while the 3.21.58 data migration has not run yet', () => {
     expect(legacyUpgradePending(['Other1700000000000', LEGACY_UPGRADE_MARKER])).toBe(true);
     expect(legacyUpgradePending(['Other1700000000000'])).toBe(false);
   });
@@ -25,13 +25,13 @@ describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58'
   it.each([
     ['check', 'ALTER TABLE app_versions DROP CONSTRAINT IF EXISTS chk'],
     ['index', 'DROP INDEX IF EXISTS chk'],
-  ] as const)('should save a %s before dropping it, keeping the first saved copy', (kind, drop) => {
+  ] as const)('should save a copy of a %s before dropping it, and keep the first copy when run again', (kind, drop) => {
     const [save, dropSql] = loosenStep({ name: 'chk', kind, table: 'app_versions' });
     expect(save).toMatch(/^INSERT INTO legacy_upgrade_dropped_rules .* ON CONFLICT \(name\) DO NOTHING$/s);
     expect(dropSql).toBe(drop);
   });
 
-  it('should add a check back NOT VALID first, then validate it', () => {
+  it('should add a dropped check back without checking old rows, then check them in a second step', () => {
     const steps = restoreSteps({
       name: 'chk',
       kind: 'check',
@@ -53,7 +53,7 @@ describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58'
     ]);
   });
 
-  describe('variants', () => {
+  describe('useLegacyVariants(): stand-ins for the data migrations a 3.21.58 database needs', () => {
     const BACKFILL = join(__dirname, '../../../../migrations/data');
     const originals: DataMigration[] = readdirSync(BACKFILL)
       .filter((file) => LEGACY_VARIANTS.has(file.replace(/^(\d+)-(\w+)\.ts$/, '$2$1')))
@@ -62,54 +62,67 @@ describe('migration-helpers/legacy-3-21-58-upgrade | async upgrade from 3.21.58'
         return new (Object.values(exports)[0])();
       });
 
-    const recorded = async (step: (queryRunner: QueryRunner) => Promise<void>): Promise<string[]> => {
+    const statementsRunBy = async (step: (queryRunner: QueryRunner) => Promise<void>): Promise<string[]> => {
       const statements: string[] = [];
       await step({ query: async (sql: string) => void statements.push(sql) } as unknown as QueryRunner);
       return statements;
     };
 
-    it('should cover every variant with its original migration', () => {
+    it('should find the original migration file for every stand-in', () => {
       expect(originals).toHaveLength(LEGACY_VARIANTS.size);
     });
 
-    it('should change rows and function bodies only in up(), leaving table locks to beforeCommit() and cleanup', async () => {
+    it('should only change rows and functions in up(), and leave table locks to beforeCommit() and cleanup', async () => {
       useLegacyVariants({ migrations: originals } as unknown as DataSource);
-      const ups = (await Promise.all(originals.map((migration) => recorded((qr) => migration.up(qr))))).flat();
-      expect(ups.filter((sql) => /\b(DROP|ALTER TABLE|CREATE (UNIQUE )?INDEX|CREATE TRIGGER)\b/i.test(sql))).toEqual(
-        []
-      );
-      const beforeCommitSteps = (
+
+      const upStatements = (
+        await Promise.all(originals.map((migration) => statementsRunBy((qr) => migration.up(qr))))
+      ).flat();
+      const beforeCommitStatements = (
         await Promise.all(
-          originals.filter((m) => m.beforeCommit).map((migration) => recorded((qr) => migration.beforeCommit(qr)))
+          originals
+            .filter((m) => m.beforeCommit)
+            .map((migration) => statementsRunBy((qr) => migration.beforeCommit(qr)))
         )
       ).flat();
-      expect(beforeCommitSteps.slice(-1)[0]).toMatch(
+
+      expect(
+        upStatements.filter((sql) => /\b(DROP|ALTER TABLE|CREATE (UNIQUE )?INDEX|CREATE TRIGGER)\b/i.test(sql))
+      ).toEqual([]);
+      expect(beforeCommitStatements.slice(-1)[0]).toMatch(
         /ALTER TABLE app_versions\s+DROP CONSTRAINT IF EXISTS fk_app_versions_branch/
       );
     });
   });
 
   it.each(['data_source_versions', 'app_versions', 'folder_apps'])(
-    'should give branchless %s rows a branch before cleanup sets NOT NULL',
+    'should give %s rows that have no branch a branch before cleanup makes the column required',
     async (table) => {
-      const statements: string[] = [];
-      const queryRunner = {
-        isTransactionActive: true,
-        query: async (sql: string) => {
-          statements.push(sql.replace(/\s+/g, ' ').replace(/"/g, ''));
-          return [{ server_version_num: '160000' }];
-        },
-      } as unknown as QueryRunner;
-      await new CleanupLegacyBranchModel1793300000000().up(queryRunner);
+      const statements = await cleanupStatements();
 
-      const notNull = statements.findIndex((sql) =>
+      const setNotNullAt = statements.findIndex((sql) =>
         sql.includes(`ALTER TABLE ${table} ALTER COLUMN branch_id SET NOT NULL`)
       );
-      const fixes = statements.filter(
-        (sql, i) => i < notNull && new RegExp(`^ ?(UPDATE|DELETE FROM) ${table}\\b.*branch_id IS NULL`).test(sql)
+      const branchFixesBeforeIt = statements.filter(
+        (sql, i) => i < setNotNullAt && new RegExp(`^ ?(UPDATE|DELETE FROM) ${table}\\b.*branch_id IS NULL`).test(sql)
       );
-      expect(notNull).toBeGreaterThan(-1);
-      expect(fixes).toEqual(expect.arrayContaining([expect.stringMatching(/SET branch_id = wb\.id/)]));
+
+      expect(setNotNullAt).toBeGreaterThan(-1);
+      expect(branchFixesBeforeIt).toEqual(expect.arrayContaining([expect.stringMatching(/SET branch_id = wb\.id/)]));
     }
   );
 });
+
+/** The SQL the real cleanup migration runs, whitespace collapsed and quotes dropped. */
+async function cleanupStatements(): Promise<string[]> {
+  const statements: string[] = [];
+  const queryRunner = {
+    isTransactionActive: true,
+    query: async (sql: string) => {
+      statements.push(sql.replace(/\s+/g, ' ').replace(/"/g, ''));
+      return [{ server_version_num: '160000' }];
+    },
+  } as unknown as QueryRunner;
+  await new CleanupLegacyBranchModel1793300000000().up(queryRunner);
+  return statements;
+}
