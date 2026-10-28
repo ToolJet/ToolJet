@@ -643,6 +643,25 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log('='.repeat(60));
 }
 
+// Inside the Kubernetes default 30s grace period, so we exit before the kubelet's SIGKILL.
+export const SHUTDOWN_TIMEOUT_MS = 20_000;
+
+/** Runs `shutdown` once per process, then exits with its code; exits 1 if it outlasts `timeoutMs`. */
+export function onceWithDeadline(
+  shutdown: (signal: string) => Promise<number>,
+  exit: (code: number) => void,
+  timeoutMs = SHUTDOWN_TIMEOUT_MS
+): (signal: string) => void {
+  let started = false;
+  return (signal) => {
+    // tini -g and each npm in the start chain all deliver the same SIGTERM.
+    if (started) return;
+    started = true;
+    setTimeout(() => exit(1), timeoutMs).unref();
+    shutdown(signal).then(exit, () => exit(1));
+  };
+}
+
 /**
  * Logs shutdown information
  */
