@@ -38,9 +38,17 @@ const Echo = () => {
   );
 };
 
+// A pack component with a drop area (ToolJet.Slot), as a Tabs container or Card has.
+const SlotCard = () => (
+  <div>
+    <ToolJet.Slot name="body" />
+  </div>
+);
+
 const manifest = {
   manifestVersion: 2,
   components: {
+    SlotCard: { displayName: 'Slot card', props: [], slots: [{ name: 'body', kind: 'slot' }] },
     Echo: { displayName: 'Echo', props: [{ name: 'label', type: 'string' }], actions: [{ name: 'ping' }] },
   },
 };
@@ -52,6 +60,8 @@ const widget = createWidgetHarness({
   defaultProperties: { pack: binding('shadcn'), componentName: binding('Echo') },
   defaultStyles: { boxShadow: binding('0px 0px 0px 0px #00000040') },
   capabilities: {
+    // A drop area is a ToolJet canvas, which is a drop target.
+    dnd: true,
     network: [
       {
         url: `${API}/builtin-packs`,
@@ -62,7 +72,7 @@ const widget = createWidgetHarness({
   },
 });
 
-function renderPack({ properties = {}, currentMode = 'edit' } = {}) {
+function renderPack({ properties = {}, currentMode = 'edit', children = {} } = {}) {
   const definition = componentDefinition(ID, 'packcomponent1', 'PackComponent', {
     pack: binding('shadcn'),
     componentName: binding('Echo'),
@@ -74,7 +84,7 @@ function renderPack({ properties = {}, currentMode = 'edit' } = {}) {
   definition.component.definition.styles = { boxShadow: binding('0px 0px 0px 0px #00000040') };
   definition.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
   definition.layouts.mobile = { ...definition.layouts.desktop };
-  seedApp({ [ID]: definition }, { moduleId: MODULE_ID });
+  seedApp({ [ID]: definition, ...children }, { moduleId: MODULE_ID });
   store().setEditorLoading(false, MODULE_ID);
   store().setCurrentMode(currentMode, MODULE_ID);
   return widget.session.render(
@@ -100,7 +110,7 @@ describe('PackComponent integration', () => {
 
   beforeEach(async () => {
     await widget.setup();
-    loadLibraryModule.mockResolvedValue({ Echo });
+    loadLibraryModule.mockResolvedValue({ Echo, SlotCard });
     act(() => useStore.setState({ license: { featureAccess: { customComponentLibraries: false } } }));
   });
   afterEach(() => {
@@ -152,5 +162,19 @@ describe('PackComponent integration', () => {
     await waitFor(() => expect(typeof store().getExposedValueOfComponent(ID, MODULE_ID)?.ping).toBe('function'));
     await waitFor(() => expect(shadowText()).toBe('Hello|'));
     await expect(store().getExposedValueOfComponent(ID, MODULE_ID).ping()).resolves.toBe('pong');
+  });
+
+  test('[PackComponent-SLOT-002] a component dropped into its drop area can be selected again', async () => {
+    // Break this catches: a drop area of a pack (or custom) component drawn as a read-only list-row mirror, so the
+    // component in it gets no selection box and a click selects the pack component around it instead.
+    const clientWidth = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(400);
+    const child = componentDefinition('child1', 'button1', 'Button', { text: binding('Inside') });
+    child.component.parent = `${ID}-body`;
+    child.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
+    renderPack({ properties: { componentName: binding('SlotCard') }, children: { child1: child } });
+
+    await waitFor(() => expect(document.querySelector('.ele-child1')).toBeTruthy());
+    expect(document.querySelector('.ele-child1').classList).toContain('moveable-box');
+    clientWidth.mockRestore();
   });
 });

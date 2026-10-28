@@ -187,8 +187,11 @@ const Container = React.memo(
       setCurrentDragCanvasId,
     ]);
 
+    // Only a row after the first of a row-scoped widget is a read-only mirror (row 0 is the editable one). A canvas
+    // with no row index is not a row at all: a pack or library component's named drop area (ToolJet.Slot).
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
+      const isMirrorRow = index !== null && index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType);
+      return isMirrorRow || currentMode === 'view';
     }, [index, componentType, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
