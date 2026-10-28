@@ -18,8 +18,14 @@ import {
   withMigrationConnectionOptions,
   withMigrationAdvisoryLock,
 } from './migration-locks';
-import { retryOnLockTimeout } from './with-short-lock';
-import { blocksAsyncUpgrade, MigrationPhase, parseMigrationPhase, runStrategy } from './migration-mode';
+import { retryOnLockTimeout, retryWhen } from './with-short-lock';
+import {
+  BackfillMigration,
+  blocksAsyncUpgrade,
+  MigrationPhase,
+  parseMigrationPhase,
+  runStrategy,
+} from './migration-mode';
 import { getEnvVars } from '../../scripts/database-config-utils';
 
 /**
@@ -29,6 +35,45 @@ import { getEnvVars } from '../../scripts/database-config-utils';
  */
 
 const EXPAND_LOCK_RETRY_DELAY_MS = 2000;
+const BACKFILL_ATTEMPTS = 3;
+const BACKFILL_RETRY_DELAY_MS = 2000;
+
+/** Deadlock, serialization failure, lock timeout: the whole backfill rolls back, so running it again is safe. */
+const TRANSIENT_ERROR_CODES = new Set(['40P01', '40001', '55P03']);
+
+function isTransientError(error: unknown): boolean {
+  const { code, driverError } = (error ?? {}) as { code?: string; driverError?: { code?: string } };
+  return TRANSIENT_ERROR_CODES.has(driverError?.code ?? code ?? '');
+}
+
+interface DeferredTails {
+  run(queryRunner: QueryRunner): Promise<void>;
+  clear(): void;
+}
+
+/** Collects the tail of each backfill whose up() ran in this attempt. */
+function deferTails(dataDS: DataSource): DeferredTails {
+  const tails: { name: string; tail: (queryRunner: QueryRunner) => Promise<void> }[] = [];
+  for (const migration of dataDS.migrations as BackfillMigration[]) {
+    if (!migration.tail) continue;
+    const name = migration.name || migration.constructor.name;
+    const tail = migration.tail.bind(migration);
+    const up = migration.up.bind(migration);
+    migration.up = async (queryRunner: QueryRunner) => {
+      await up(queryRunner);
+      tails.push({ name, tail });
+    };
+  }
+  return {
+    clear: () => tails.splice(0),
+    async run(queryRunner) {
+      for (const { name, tail } of tails.splice(0)) {
+        console.log(`[migrations] TAIL ${name}`);
+        await tail(queryRunner);
+      }
+    },
+  };
+}
 
 const ENUM_SEPARATE_TRANSACTIONS_REASON =
   'A pending ALTER TYPE ADD VALUE targets an enum type created in this run; running expand and backfill in ' +
@@ -116,7 +161,8 @@ async function runAtomic(
   precommittable: EnumValueAddition[],
   schemaDS: DataSource,
   dataDS: DataSource,
-  contractDS: DataSource
+  contractDS: DataSource,
+  tails: DeferredTails
 ): Promise<void> {
   await precommitEnumValueAdditions(precommittable, schemaDS);
   await inTransaction(
@@ -124,6 +170,7 @@ async function runAtomic(
     async (queryRunner) => {
       await runPass('expand', schemaDS, queryRunner);
       await runPass('backfill', dataDS, queryRunner);
+      await tails.run(queryRunner);
       // 'all' throws for contract classes (transaction = false); 'none' still runs inside this transaction.
       await runPass('contract', contractDS, queryRunner, 'none');
     },
@@ -135,13 +182,27 @@ async function runAtomic(
 /** `contractDS` only for a single-transaction run; the backfill phase leaves contract to its own run. */
 async function runInSeparateTransactions(
   schemaDS: DataSource,
-  dataDS: DataSource,
+  [dataDS, tails]: [DataSource, DeferredTails],
   reason: string,
   contractDS?: DataSource
 ): Promise<void> {
   console.log(`[migrations] ${reason} Expand commits before backfill runs.`);
   await runPass('expand', schemaDS);
-  await runPass('backfill', dataDS);
+  await retryWhen(
+    isTransientError,
+    () => {
+      tails.clear();
+      return inTransaction(dataDS, async (queryRunner) => {
+        await runPass('backfill', dataDS, queryRunner);
+        await tails.run(queryRunner);
+      });
+    },
+    { attempts: BACKFILL_ATTEMPTS, retryDelayMs: BACKFILL_RETRY_DELAY_MS },
+    (next) =>
+      console.warn(
+        `[migrations] The backfill hit a deadlock or lock timeout and rolled back. Retrying (attempt ${next} of ${BACKFILL_ATTEMPTS}).`
+      )
+  );
   if (contractDS) await runPass('contract', contractDS, undefined, 'each');
   console.log('[migrations] Committed expand and backfill migrations in separate transactions.');
 }
@@ -298,12 +359,13 @@ async function executeMigrations(
   const plan = phase === 'backfill' ? undefined : await planEnumAdditions(schemaDS);
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
-  if (!plan) return runInSeparateTransactions(schemaDS, dataDS, BACKFILL_PHASE_REASON);
+  const backfill: [DataSource, DeferredTails] = [dataDS, deferTails(dataDS)];
+  if (!plan) return runInSeparateTransactions(schemaDS, backfill, BACKFILL_PHASE_REASON);
   announceEachMigration(contractDS);
   if (plan.hasMissingType) {
-    return runInSeparateTransactions(schemaDS, dataDS, ENUM_SEPARATE_TRANSACTIONS_REASON, contractDS);
+    return runInSeparateTransactions(schemaDS, backfill, ENUM_SEPARATE_TRANSACTIONS_REASON, contractDS);
   }
-  await runAtomic(plan.precommittable, schemaDS, dataDS, contractDS);
+  await runAtomic(plan.precommittable, schemaDS, dataDS, contractDS, backfill[1]);
 }
 
 async function migrateAsSolePod(

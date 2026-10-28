@@ -161,6 +161,92 @@ function contractViolations({ file, text }: MigrationSource): string[] {
   return violations;
 }
 
+/** Phase rules below apply from here: the newest migration when they were added. */
+const PHASE_RULES_FROM = 1793100000000;
+
+type Rule = [string, RegExp];
+const EXPAND_DATA_CHANGES: Rule[] = [
+  ['UPDATE … SET', /\bUPDATE\s+\S+\s+SET\b/i],
+  ['DELETE FROM', /\bDELETE\s+FROM\b/i],
+  ['INSERT … SELECT', /\bINSERT\s+INTO\b[^;]*\bSELECT\b/i],
+];
+/** Long or exclusive locks; in a backfill they would block readers for the whole run. */
+const BACKFILL_FORBIDDEN: Rule[] = [
+  ['DROP', /\bDROP\s+(?:TABLE|COLUMN|CONSTRAINT|INDEX|TRIGGER|FUNCTION|TYPE|VIEW|SEQUENCE)\b/i],
+  ['SET NOT NULL', /\bSET\s+NOT\s+NULL\b/i],
+  ['ADD CONSTRAINT without NOT VALID', /\bADD\s+(?:CONSTRAINT|CHECK|UNIQUE|FOREIGN\s+KEY)\b(?![^,;]*\bNOT\s+VALID\b)/i],
+  ['ALTER COLUMN or RENAME', /\bALTER\s+TABLE\b[^;]*\b(?:ALTER\s+COLUMN|RENAME)\b/i],
+  ['LOCK TABLE', /\bLOCK\s+TABLE\b/i],
+  ['TRUNCATE', /\bTRUNCATE\b/i],
+  ['REINDEX', /\bREINDEX\b/i],
+  ['CLUSTER', /\bCLUSTER\b/i],
+  ['VACUUM FULL', /\bVACUUM\s+FULL\b/i],
+  ['ALTER INDEX', /\bALTER\s+INDEX\b/i],
+  ['ALTER TRIGGER', /\bALTER\s+TRIGGER\b/i],
+];
+/** Short locks, so they belong in tail(), which runs just before commit. */
+const TAIL_ONLY: Rule[] = [
+  ['CREATE INDEX', /\bCREATE\s+(?:UNIQUE\s+)?INDEX\b/i],
+  ['CREATE TRIGGER', /\bCREATE\s+(?:OR\s+REPLACE\s+)?TRIGGER\b/i],
+  ['NOT VALID', /\bNOT\s+VALID\b/i],
+  ['VALIDATE CONSTRAINT', /\bVALIDATE\s+CONSTRAINT\b/i],
+];
+const SCHEMA_API = new Set([
+  ...DESTRUCTIVE_API,
+  'createTable',
+  'addColumn',
+  'addColumns',
+  'createIndex',
+  'createIndices',
+  'dropIndex',
+]);
+
+const matching = (rules: Rule[], sql: string) =>
+  rules.filter(([, pattern]) => pattern.test(sql)).map(([label]) => label);
+
+/** Index builds lock writes on the table; fine only on a table the same up() creates. */
+function indexesOnExistingTables(sql: string): string[] {
+  const created = new Set(
+    [...sql.matchAll(/\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?"?(\w+)"?/gi)].map(([, t]) => t)
+  );
+  return [...sql.matchAll(/\bCREATE\s+(?:UNIQUE\s+)?INDEX\b(?!\s+CONCURRENTLY)[^;]*?\bON\s+"?(\w+)"?/gi)]
+    .map(([, table]) => table)
+    .filter((table) => !created.has(table))
+    .map((table) => `CREATE INDEX on existing table ${table}`);
+}
+
+/** Expand adds only and changes no rows; backfill keeps lock-taking statements to tail(). */
+function phaseViolations(phase: 'expand' | 'backfill', { file, text }: MigrationSource): string[] {
+  if (OPT_OUT.test(text)) return [];
+  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+  const cls = migrationClass(source);
+  const up = cls && method(cls, 'up');
+  if (!up?.body) return [];
+  const { sql, identifiers } = codeIn(up.body);
+  if (phase === 'expand') {
+    const found = [...matching(EXPAND_DATA_CHANGES, sql), ...indexesOnExistingTables(sql)];
+    return found.length
+      ? [`${file}: expand changes rows or locks a table (${found.join(', ')}); move it to backfill. ${RULES_DOC}`]
+      : [];
+  }
+  const tail = method(cls, 'tail');
+  const tailCode = tail?.body ? codeIn(tail.body) : { sql: '', identifiers: new Set<string>() };
+  const violations: string[] = [];
+  const forbidden = [
+    ...matching(BACKFILL_FORBIDDEN, `${sql} ${tailCode.sql}`),
+    ...[...identifiers, ...tailCode.identifiers].filter((name) => SCHEMA_API.has(name)),
+  ];
+  if (forbidden.length) {
+    violations.push(`${file}: backfill holds a long lock (${forbidden.join(', ')}); move it to contract. ${RULES_DOC}`);
+  }
+  const tailOnly = matching(TAIL_ONLY, sql);
+  if (tailOnly.length) violations.push(`${file}: ${tailOnly.join(', ')} in up(); move it to tail(). ${RULES_DOC}`);
+  return violations;
+}
+
+const newerThanPhaseRules = (sources: MigrationSource[]) =>
+  sources.filter(({ text }) => Number(text.match(/class\s+\w*?(\d{13})\b/)?.[1]) > PHASE_RULES_FROM);
+
 function migrationsNewerThanCutoff(directory: string): MigrationSource[] {
   return readdirSync(join(SERVER_ROOT, directory))
     .filter((name) => name.endsWith('.ts') && !name.includes('LockMigrationsTable'))
@@ -274,6 +360,65 @@ describe('Migration authoring rules | migrations newer than the cutoff', () => {
       authoringViolations(source)
     );
     expect(violations).toEqual([]);
+  });
+});
+
+describe('Migration authoring rules | expand and backfill placement', () => {
+  const migration = (up: string, tail = '') => ({
+    file: 'migrations/backfill/1799999999999-Sample.ts',
+    text: `
+import { MigrationInterface, QueryRunner } from 'typeorm';
+export class Sample1799999999999 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> { ${up} }
+  ${tail ? `public async tail(queryRunner: QueryRunner): Promise<void> { ${tail} }` : ''}
+  public async down(): Promise<void> { /* rows only */ }
+}`,
+  });
+
+  it.each([
+    ['an UPDATE', 'await queryRunner.query(`UPDATE apps SET slug = name`);', 'UPDATE … SET'],
+    [
+      'an index on an existing table',
+      'await queryRunner.query(`CREATE INDEX apps_slug ON apps (slug)`);',
+      'existing table apps',
+    ],
+  ])('should flag expand that runs %s', (_what, up, label) => {
+    expect(phaseViolations('expand', migration(up))).toEqual([expect.stringContaining(label)]);
+  });
+
+  it('should pass expand that creates a table and indexes it', () => {
+    const up = 'await queryRunner.query(`CREATE TABLE gadgets (id int); CREATE INDEX gadgets_id ON gadgets (id)`);';
+    expect(phaseViolations('expand', migration(up))).toEqual([]);
+  });
+
+  it('should pass a backfill that updates rows and builds its index in tail()', () => {
+    const source = migration(
+      'await queryRunner.query(`UPDATE apps SET slug = name`);',
+      'await queryRunner.query(`CREATE INDEX apps_slug ON apps (slug)`);'
+    );
+    expect(phaseViolations('backfill', source)).toEqual([]);
+  });
+
+  it.each([
+    [
+      'an index build in up()',
+      'await queryRunner.query(`CREATE INDEX apps_slug ON apps (slug)`);',
+      'move it to tail()',
+    ],
+    ['a DROP', 'await queryRunner.query(`ALTER TABLE apps DROP COLUMN slug`);', 'move it to contract'],
+    [
+      'a constraint without NOT VALID',
+      'await queryRunner.query(`ALTER TABLE apps ADD CONSTRAINT c CHECK (true)`);',
+      'ADD CONSTRAINT without NOT VALID',
+    ],
+    ['the TypeORM schema API', "await queryRunner.addColumn('apps', column);", 'addColumn'],
+  ])('should flag a backfill with %s', (_what, up, message) => {
+    expect(phaseViolations('backfill', migration(up))).toEqual([expect.stringContaining(message)]);
+  });
+
+  it.each(['expand', 'backfill'] as const)('should keep new %s migrations in their phase', (phase) => {
+    const sources = newerThanPhaseRules(migrationsNewerThanCutoff(`migrations/${phase}`));
+    expect(sources.flatMap((source) => phaseViolations(phase, source))).toEqual([]);
   });
 });
 
