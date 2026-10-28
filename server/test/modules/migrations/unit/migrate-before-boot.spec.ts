@@ -1,6 +1,6 @@
 /** @group database */
 import { migrateSchemaBeforeBoot } from 'src/migration-helpers/migrate-before-boot';
-import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/concurrent-pods/harness';
+import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/harness';
 
 // The test database is migrated, so it is never a fresh install. The command stands in for setup.
 const exitsZeroOnlyInSchemaPhase = `node -e "process.exit(process.env.MIGRATION_PHASE === 'expand' ? 0 : 7)"`;

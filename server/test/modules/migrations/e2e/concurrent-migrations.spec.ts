@@ -18,7 +18,7 @@ import {
   runPod,
   spawnPod,
   waitFor,
-} from '../fixtures/concurrent-pods/harness';
+} from '../fixtures/harness';
 
 const POD_COUNT = 3;
 const MIGRATION_SLEEP_SECONDS = 6;
@@ -540,7 +540,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       const database = `tooljet_migration_legacy_${process.pid}`;
       await createScratchDatabase(database);
       try {
-        const pod = await phasePod('legacy-1', 'expand', database, {}, { fixtureSet: 'legacy' }).done;
+        const pod = await phasePod('legacy-1', 'expand', database, {}, { fixtureSet: 'pre-cutoff' }).done;
 
         expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
         expect(pod.stdout).toContain('LegacyWitness1700000000004 is pending: this database is older than 3.21.58');

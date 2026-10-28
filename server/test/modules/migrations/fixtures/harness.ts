@@ -9,8 +9,8 @@ import { ChildProcess, spawn } from 'child_process';
 import { join, resolve } from 'path';
 import { DataSource } from 'typeorm';
 
-export const SERVER_ROOT = resolve(__dirname, '../../../../..');
-const POD_SCRIPT = join(SERVER_ROOT, 'test/modules/migrations/fixtures/concurrent-pods/pod.ts');
+export const SERVER_ROOT = resolve(__dirname, '../../../..');
+const POD_SCRIPT = join(SERVER_ROOT, 'test/modules/migrations/fixtures/pod.ts');
 
 export const postgres = {
   host: process.env.PG_HOST || 'localhost',
@@ -39,7 +39,7 @@ export interface PodOptions {
   /** Shared wall-clock release instant, so start-up jitter cannot decide who wins a race. */
   startAt?: number;
   migrationSleepSeconds?: number;
-  /** Fixture directory next to `concurrent-pods/` (default) whose migrations the pod runs. */
+  /** Fixture directory under `fixtures/` (default `concurrent-pods`) whose migrations the pod runs. */
   fixtureSet?: string;
   /** Extra env for the pod. Keys absent from `.env.test` survive `getEnvVars()`. */
   env?: Record<string, string>;

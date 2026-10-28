@@ -1,7 +1,7 @@
 /** @group database */
 import { DataSource, QueryRunner } from 'typeorm';
 import { notNullSteps, setNotNull, SHORT_LOCK_TIMEOUT_MS, withShortLock } from 'src/migration-helpers/with-short-lock';
-import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/concurrent-pods/harness';
+import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/harness';
 
 describe('migration-helpers/with-short-lock', () => {
   const database = `tooljet_short_lock_${process.pid}`;
