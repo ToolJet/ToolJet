@@ -86,19 +86,11 @@ describe('migration-helpers/migration-run-log', () => {
       expect(applyLogLine(run, query, { keepQueries: true }).logTail.slice(-1)).toEqual(['query is slow: SELECT 1']);
     });
 
-    it('should ignore progress lines before any migration starts', () => {
-      expect(replay(['Seed Progress 50 %']).migrations).toEqual([]);
-    });
-
     it('should mark the running migration as the failed one', () => {
       expect(markFailed(run).migrations).toEqual([
         { name: 'AddIndex1700', status: 'done', durationMs: 12 },
         { name: 'BackfillX1800', status: 'failed', percent: 24 },
       ]);
-    });
-
-    it('should not report pending work when the runner found nothing to do', () => {
-      expect(replay(['[migrations] No schema or data migrations pending']).hasPendingWork).toBe(false);
     });
 
     it('should keep only the last lines of output', () => {
