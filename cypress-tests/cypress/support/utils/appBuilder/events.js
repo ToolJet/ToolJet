@@ -345,13 +345,22 @@ export const setCSAParam = (param) => {
   if (type === "toggle") {
     const desired = value !== false;
     const sel = `[data-cy="event-${label}-toggle-button"]`;
-    cy.get(sel)
-      .scrollIntoView()
-      .then(($el) => {
-        if ($el.prop("checked") !== desired) {
-          cy.wrap($el).click({ force: true });
-        }
-      });
+    const applyToggle = () =>
+      cy
+        .get(sel)
+        .scrollIntoView()
+        .then(($el) => {
+          if ($el.prop("checked") !== desired) {
+            cy.wrap($el).click({ force: true });
+          }
+        });
+    // A save still in flight from the action pick can land after the click and
+    // re-render the toggle with the old value; settle around the click and
+    // re-apply once if it was reverted.
+    waitForEventSavesToSettle(500);
+    applyToggle();
+    waitForEventSavesToSettle(800);
+    applyToggle();
     cy.get(sel).should(desired ? "be.checked" : "not.be.checked");
     return;
   }
