@@ -325,7 +325,7 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 | `migrations/unit/migration-mode.spec.ts` | Mode selection, opt-out, end-user banner text, `MIGRATION_PHASE` parsing, cleanup hold-back plan, `blocksAsyncUpgrade` and the allowlist |
 | `migrations/unit/migrate-before-boot.spec.ts` | Cloud entrypoint steps; schema before boot |
 | `migrations/unit/enum-value-additions.spec.ts` | Enum `ADD VALUE` scanning |
-| `migrations/unit/migration-locks.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out |
+| `migrations/unit/migration-locks.spec.ts` | Wait interval and maximum (blank values use the defaults), skip-if-locked, migrations run on the lock's connection before unlock, sentinels left out; data-phase retry codes, `retryWhen` attempts, code head pick |
 | `migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output, redaction, failed step |
 | `migrations/unit/migration-lint.spec.ts` | The rules in `migration-lint.ts`, then every real migration against them; the frozen pre-cutoff list |
 | `migrations/unit/lock-probe.spec.ts` | Which table locks each phase may take (`classifyLocks`). CI also runs `npm run db:probe-locks` on a copy of the migration snapshot and fails on a forbidden lock |
@@ -336,6 +336,7 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 | `migrations/e2e/upgrade-from-3-21-58.spec.ts` | A 3.21.58 database upgraded async ends like a single-transaction upgrade; cleanup held back once; failed data restores loosened rules; branchless rows read on the default branch. Delete with `legacy-3-21-58-upgrade.ts` |
 | `app/unit/migration-gate.middleware.spec.ts` | Blocking passes everything, gated vs ungated paths, 503 per state, async allowlist, opt-out log |
 | `app/e2e/migration-runs.spec.ts` | Auth (401/403), no manual retry route (404), claim races, dead vs live runs, boot reruns a same-version failure, no rerun of a newer release's run, boot start retried, skipped runner records nothing, cleanup run, status cache, fail-open |
+| `apps/e2e/viewer-cache-stamps.spec.ts` | The released-app cache key moves when a migration is recorded, and differs while one runs |
 | `app/unit/graceful-shutdown.spec.ts` | Shutdown runs once per signal burst, exits 1 past the 20s deadline or when it throws |
 
 Fixtures are in `test/modules/migrations/fixtures/`. The e2e specs run the real `run()` against a scratch database.
