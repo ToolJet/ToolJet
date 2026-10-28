@@ -414,6 +414,16 @@ jobs:
             -H "tj-workspace-id: $TJ_ORG_ID" \
             --data-raw '{"region": "us"}'
 
+      - name: Seeding (Disable SSRF protection)
+        run: |
+          curl --fail-with-body \
+            -b /tmp/tj_cookies.txt \
+            -X PUT \
+            'http://localhost:3000/api/instance-settings/ssrf' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data-raw '{"enabled": false, "allowed_addresses": []}'
+
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2

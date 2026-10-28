@@ -1,3 +1,4 @@
+import { validateUrlForSSRF } from '@tooljet-plugins/common';
 import {
   SourceOptions,
   QueryOptions,
@@ -626,6 +627,9 @@ export const extractMethodsFromService = (
 };
 
 export const loadProtoFromRemoteUrl = async (url: string): Promise<protoLoader.PackageDefinition> => {
+  // SSRF Protection: Validate URL before fetching the proto file.
+  await validateUrlForSSRF(url);
+
   try {
     const response = await got(url, {
       timeout: {

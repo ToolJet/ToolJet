@@ -10,6 +10,7 @@ import {
   getAuthUrl,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
+  queryErrorMessage,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -138,7 +139,7 @@ export default class Openapi implements QueryService {
       if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode == 401) {
         throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
       }
-      throw new QueryError('Query could not be completed', error.message, result);
+      throw new QueryError(queryErrorMessage(error), error.message, result);
     }
 
     return {

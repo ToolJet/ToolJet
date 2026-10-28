@@ -22,6 +22,12 @@ import { DataSourcesRepository } from './repository';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { cleanObject, resolveOptionsArrayForOAuth, resolveSourceOptionsForOAuth } from '@helpers/utils.helper';
+import {
+  validateUrlForSSRF,
+  validateHostForSSRF,
+  createSSRFSafeLookup,
+  SSRF_RUNTIME_CONFIG_KEY,
+} from '@helpers/ssrf-protection.helper';
 import { decode } from 'js-base64';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
@@ -1242,6 +1248,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         }
       }
 
+      // SSRF Protection: `kind`, `plugin_id`, and every value in `sourceOptions` above
+      // come straight from the request body — not the data source `:id` in the URL,
+      // which the guard chain only checks belongs to the caller's org. Individual
+      // plugins protect their own run()/testConnection() paths for the fields they
+      // know about; this is a blanket check across every plugin kind reachable here,
+      // covering the ones that haven't had a plugin-level fix applied yet.
+      // GHSA-v64h-hqhj-2h7r.
+      await this.validateTestConnectionOptionsForSSRF(kind, plugin_id, sourceOptions);
+
       const service = await this.pluginsServiceSelector.getService(plugin_id, kind);
       if (!service?.testConnection) {
         throw new NotImplementedException('testConnection method not implemented');
@@ -1427,6 +1442,66 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return params;
   }
 
+  // Field names observed across data-source plugin `sourceOptions` shapes that carry
+  // a raw, user-controlled destination — kept as a flat list rather than a per-kind
+  // map since testConnection() only has `kind` as a string, no compile-time plugin
+  // type to switch on. ponytail: heuristic, not exhaustive — new plugins should also
+  // add their own validateUrlForSSRF() call at the point they build a request, same
+  // as the plugins fixed alongside this change.
+  private static readonly SSRF_SENSITIVE_OPTION_KEYS = [
+    'url',
+    'base_url',
+    'view_url',
+    'access_token_url',
+    'endpoint',
+    'node',
+    'workspaceHost',
+  ];
+
+  // Built-in database drivers: `host` is a socket hostname, not an HTTP endpoint, so on EE (runtime
+  // config present) the host/port/protocol check is skipped for them. CE and Cloud check every kind, as
+  // does any request carrying a marketplace `plugin_id` (which picks the plugin whatever `kind` says).
+  private static readonly SSRF_UNCHECKED_DATABASE_KINDS = new Set([
+    'postgresql',
+    'mysql',
+    'mariadb',
+    'mssql',
+    'oracledb',
+    'mongodb',
+    'ibmdb',
+    'redis',
+    'saphana',
+    'rethinkdb',
+  ]);
+
+  private async validateTestConnectionOptionsForSSRF(
+    kind: string,
+    pluginId: string | null | undefined,
+    sourceOptions: Record<string, any>
+  ): Promise<void> {
+    for (const key of DataSourcesUtilService.SSRF_SENSITIVE_OPTION_KEYS) {
+      const value = sourceOptions?.[key];
+      if (typeof value === 'string' && value.length > 0) {
+        await validateUrlForSSRF(value);
+      }
+    }
+
+    // host/port/protocol travel as separate fields on most plugins rather than one
+    // URL string — validate the same way the fixed connectors do.
+    // The database-kind skip is EE-only (runtime config present); CE and Cloud check the host for every kind.
+    const isUncheckedDatabaseKind =
+      !!(globalThis as Record<string, unknown>)[SSRF_RUNTIME_CONFIG_KEY] &&
+      !pluginId &&
+      DataSourcesUtilService.SSRF_UNCHECKED_DATABASE_KINDS.has(kind);
+    if (!isUncheckedDatabaseKind && typeof sourceOptions?.host === 'string' && sourceOptions.host.length > 0) {
+      // `protocol` is only a scheme when it is http/https; other values (e.g. 'hostname') are not.
+      const rawProtocol = typeof sourceOptions?.protocol === 'string' ? sourceOptions.protocol.replace(/:$/, '') : '';
+      const protocol = rawProtocol === 'http' || rawProtocol === 'https' ? rawProtocol : 'https';
+      const port = sourceOptions?.port ? `:${sourceOptions.port}` : '';
+      await validateHostForSSRF(`${sourceOptions.host}${port}`, protocol);
+    }
+  }
+
   private fetchEnvVariables(pluginKind: string, keyAppend: string): string {
     const dataSourcePrefix = {
       googlecalendar: 'GOOGLE',
@@ -1466,6 +1541,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (!sourceOptions['client_id']) {
       throw new BadRequestException('Missing client_id');
     }
+
+    // Block SSRF before client_id/client_secret ever leave the server: without this,
+    // a malicious access_token_url both exfiltrates the OAuth credentials in the POST
+    // and lets the attacker's response be trusted back as the active access_token.
+    // GHSA-gfwc-3frw-hp8v.
+    await validateUrlForSSRF(accessTokenUrl);
+
     const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
     const customAccessTokenHeaders = this.sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
 
@@ -1496,13 +1578,30 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       };
     }
 
+    let response: { statusCode: number; body: string };
     try {
-      const response = await got(accessTokenUrl, {
+      // Token endpoints answer the POST directly (RFC 6749 §3.2): never follow a redirect, which would
+      // re-send client_secret to an unchecked host, and re-check the dialled IP at connect time.
+      response = await got(accessTokenUrl, {
         method: 'post',
         headers,
         form: bodyData,
+        followRedirect: false,
+        lookup: createSSRFSafeLookup(),
       });
+    } catch (err) {
+      if (err?.code === 'SSRF_BLOCKED') throw new BadRequestException(err.message);
+      throw new BadRequestException(this.parseErrorResponse(err?.response?.body, err?.response?.statusCode));
+    }
 
+    // With followRedirect off, got resolves 3xx instead of throwing.
+    if (response.statusCode >= 300 && response.statusCode < 400) {
+      throw new BadRequestException(
+        `OAuth token endpoint responded with a redirect (${response.statusCode}); redirects are not followed`
+      );
+    }
+
+    try {
       const result = JSON.parse(response.body);
 
       return {
