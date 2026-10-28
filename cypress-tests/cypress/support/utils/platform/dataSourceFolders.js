@@ -210,10 +210,13 @@ export const uiRunQueryInBuilder = (queryName) => {
   return cy.wait("@builderQueryRun").its("response.body");
 };
 
+let releasedAppVisits = 0;
+
 export const visitReleasedAppAndCaptureQueryRun = (slug) => {
-  cy.intercept("POST", "/api/data-queries/*/run").as("releasedQueryRun");
+  const alias = `releasedQueryRun${(releasedAppVisits += 1)}`;
+  cy.intercept("POST", "/api/data-queries/*/run").as(alias);
   cy.visit(`/applications/${slug}`);
-  return cy.wait("@releasedQueryRun").its("response.body");
+  return cy.wait(`@${alias}`).its("response.body");
 };
 
 export const openGroupGranularAccess = (groupName) => {
