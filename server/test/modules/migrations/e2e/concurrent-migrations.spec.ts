@@ -1,6 +1,7 @@
 /** @group database */
 import { DataSource } from 'typeorm';
 import {
+  CONTRACT_ADVISORY_LOCK_KEY,
   HELD_MIGRATION_LOCKS_SQL,
   MIGRATION_ADVISORY_LOCK_KEY,
   SKIPPED_EXIT_CODE,
@@ -545,6 +546,92 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       } finally {
         await dropScratchDatabase(database);
       }
+    }, 120_000);
+  });
+
+  /** Contract runs after writes reopen, in its own process and lock; a single-transaction run includes it. */
+  describe('MIGRATION_PHASE=contract | removals after the backfill', () => {
+    const database = `tooljet_migration_contract_${process.pid}`;
+    const contractPod = (podId: string, phase: string | undefined, env: Record<string, string> = {}) =>
+      spawnPod({
+        podId,
+        database,
+        migrationSleepSeconds: 0,
+        fixtureSet: 'contract-phase',
+        env: phase ? { MIGRATION_PHASE: phase, ...env } : env,
+      }).done;
+    const recorded = () =>
+      withScratchConnection(
+        database,
+        async (db) =>
+          (await db.query(`SELECT 1 FROM migrations WHERE name = 'DropFixtureGadgetsLegacy1790700000011'`)).length > 0
+      );
+    const legacyColumnExists = () =>
+      withScratchConnection(
+        database,
+        async (db) =>
+          (
+            await db.query(
+              `SELECT 1 FROM information_schema.columns WHERE table_name = 'fixture_gadgets' AND column_name = 'legacy'`
+            )
+          ).length > 0
+      );
+    const holdingLock = async <T>(key: number, fn: () => Promise<T>) =>
+      withScratchConnection(database, async (db) => {
+        const holder = db.createQueryRunner();
+        await holder.connect();
+        try {
+          await holder.query('SELECT pg_advisory_lock($1)', [key]);
+          return await fn();
+        } finally {
+          await holder.release();
+        }
+      });
+
+    beforeEach(() => createScratchDatabase(database), 60_000);
+    afterEach(() => dropScratchDatabase(database), 60_000);
+
+    it('should run contract inside a single-transaction run', async () => {
+      expect(await contractPod('contract-joint', undefined)).toMatchObject({ exitCode: 0, result: { error: null } });
+
+      expect(await recorded()).toBe(true);
+      expect(await legacyColumnExists()).toBe(false);
+    }, 120_000);
+
+    it('should leave contract out of the backfill phase, then run it in the contract phase', async () => {
+      expect(await contractPod('contract-expand', 'expand')).toMatchObject({ exitCode: 0 });
+      expect(await contractPod('contract-backfill', 'backfill')).toMatchObject({ exitCode: 0 });
+      expect(await recorded()).toBe(false);
+
+      const pod = await contractPod('contract-1', 'contract');
+
+      expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(await recorded()).toBe(true);
+      expect(await legacyColumnExists()).toBe(false);
+    }, 120_000);
+
+    it('should stop before a step while a migration run holds the migration lock', async () => {
+      expect(await contractPod('yield-expand', 'expand')).toMatchObject({ exitCode: 0 });
+
+      const pod = await holdingLock(MIGRATION_ADVISORY_LOCK_KEY, () => contractPod('yield-1', 'contract'));
+
+      expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(pod.stdout).toContain('the remaining contract migrations run on the next boot');
+      expect(await recorded()).toBe(false);
+    }, 120_000);
+
+    it('should not make a backfill run skip while a contract run holds its lock', async () => {
+      const pod = await holdingLock(CONTRACT_ADVISORY_LOCK_KEY, () =>
+        contractPod('contract-held', 'backfill', { MIGRATION_SKIP_IF_LOCKED: 'true' })
+      );
+
+      expect(pod).toMatchObject({ exitCode: 0, result: { error: null } });
+    }, 120_000);
+
+    it('should leave the contract run to the server already running it', async () => {
+      const pod = await holdingLock(CONTRACT_ADVISORY_LOCK_KEY, () => contractPod('contract-busy', 'contract'));
+
+      expect(pod).toMatchObject({ exitCode: SKIPPED_EXIT_CODE });
     }, 120_000);
   });
 });

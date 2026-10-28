@@ -1,4 +1,7 @@
 import * as request from 'supertest';
+import { existsSync, rmSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { initTestApp, closeTestApp, createSuperAdmin, createAdmin, getDefaultDataSource } from 'test-helper';
@@ -574,6 +577,46 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       await expect(service.log(run.id, 'BackfillThing2')).resolves.toBe(
         '[migrations] START BackfillThing2\nBackfillThing2: [PROGRESS] 5/10 (50%)\n[migrations] DONE BackfillThing2 40ms'
       );
+    });
+
+    describe('contract run | after writes reopen', () => {
+      const marker = join(tmpdir(), `tooljet-contract-${process.pid}`);
+      const contractRan = () => existsSync(marker);
+
+      beforeEach(() => rmSync(marker, { force: true }));
+      afterEach(() => {
+        delete process.env.FAKE_CONTRACT_MARKER;
+        delete process.env.FAKE_CONTRACT_EXIT;
+      });
+
+      async function runAndContractToExit(args = ''): Promise<void> {
+        process.env.FAKE_CONTRACT_MARKER = marker;
+        await runToExit(args);
+        const internals = service as unknown as { contractChild: unknown };
+        while (internals.contractChild) await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+
+      it('should start contract once the run is recorded as succeeded', async () => {
+        await runAndContractToExit();
+
+        expect(contractRan()).toBe(true);
+        await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
+      });
+
+      it('should keep the run succeeded and writes open when a contract step fails', async () => {
+        process.env.FAKE_CONTRACT_EXIT = '1';
+
+        await runAndContractToExit();
+
+        expect(contractRan()).toBe(true);
+        await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
+      });
+
+      it('should not start contract after a failed run', async () => {
+        await runAndContractToExit('fail');
+
+        expect(contractRan()).toBe(false);
+      });
     });
 
     it('should release the boot hold once a runner with nothing pending exits', async () => {

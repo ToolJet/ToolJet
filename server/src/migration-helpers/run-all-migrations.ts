@@ -1,13 +1,17 @@
 import { DataSource, Migration, MigrationExecutor, QueryRunner } from 'typeorm';
 import schemaDataSource from './db-migrations-datasource';
 import dataDataSource from './data-migrations-datasource';
+import contractDataSource from './contract-migrations-datasource';
 import { extractEnumValueAdditions, EnumValueAddition } from './enum-value-additions';
 import {
+  CONTRACT_ADVISORY_LOCK_KEY,
   getLockWaitOptions,
+  HELD_MIGRATION_LOCKS_SQL,
   LOCK_SENTINEL_MIGRATION_NAMES,
   getSchemaPhaseOptions,
   isLockNotAvailableError,
   LockSession,
+  LockWaitOptions,
   MIGRATION_ACTIVE_LOCK_KEY,
   SchemaPhaseOptions,
   SKIPPED_EXIT_CODE,
@@ -19,8 +23,8 @@ import { blocksAsyncUpgrade, MigrationPhase, parseMigrationPhase, runStrategy } 
 import { getEnvVars } from '../../scripts/database-config-utils';
 
 /**
- * Runs expand migrations, then backfill migrations (phases and strategies: `MigrationPhase` in migration-mode.ts).
- * Two executor passes, never one DataSource: TypeORM orders by class-name timestamp, and expand and backfill
+ * Runs expand, backfill, then contract migrations (phases and strategies: `MigrationPhase` in migration-mode.ts).
+ * One executor pass per phase, never one DataSource: TypeORM orders by class-name timestamp, and the phases'
  * timestamps interleave. A single-transaction run is atomic except for enum values (docs/MIGRATION_FLOW.md).
  */
 
@@ -58,9 +62,14 @@ function logExecuted(label: string, executed: { name: string }[]): void {
 }
 
 /** With a transaction already open on `queryRunner`, TypeORM joins it instead of committing its own. */
-async function runPass(label: string, dataSource: DataSource, queryRunner?: QueryRunner): Promise<void> {
+async function runPass(
+  label: string,
+  dataSource: DataSource,
+  queryRunner?: QueryRunner,
+  transaction: MigrationExecutor['transaction'] = 'all'
+): Promise<void> {
   const executor = new MigrationExecutor(dataSource, queryRunner);
-  executor.transaction = 'all';
+  executor.transaction = transaction;
   logExecuted(label, await executor.executePendingMigrations());
 }
 
@@ -103,24 +112,79 @@ async function precommitEnumValueAdditions(additions: EnumValueAddition[], dataS
   }
 }
 
-async function runAtomic(precommittable: EnumValueAddition[], schemaDS: DataSource, dataDS: DataSource): Promise<void> {
+async function runAtomic(
+  precommittable: EnumValueAddition[],
+  schemaDS: DataSource,
+  dataDS: DataSource,
+  contractDS: DataSource
+): Promise<void> {
   await precommitEnumValueAdditions(precommittable, schemaDS);
   await inTransaction(
     schemaDS,
     async (queryRunner) => {
       await runPass('expand', schemaDS, queryRunner);
       await runPass('backfill', dataDS, queryRunner);
+      // 'all' throws for contract classes (transaction = false); 'none' still runs inside this transaction.
+      await runPass('contract', contractDS, queryRunner, 'none');
     },
     () => console.error('[migrations] Migration failed. Rolled back expand AND backfill changes.')
   );
   console.log('[migrations] Committed expand + backfill migrations in a single transaction.');
 }
 
-async function runInSeparateTransactions(schemaDS: DataSource, dataDS: DataSource, reason: string): Promise<void> {
+/** `contractDS` only for a single-transaction run; the backfill phase leaves contract to its own run. */
+async function runInSeparateTransactions(
+  schemaDS: DataSource,
+  dataDS: DataSource,
+  reason: string,
+  contractDS?: DataSource
+): Promise<void> {
   console.log(`[migrations] ${reason} Expand commits before backfill runs.`);
   await runPass('expand', schemaDS);
   await runPass('backfill', dataDS);
+  if (contractDS) await runPass('contract', contractDS, undefined, 'each');
   console.log('[migrations] Committed expand and backfill migrations in separate transactions.');
+}
+
+class YieldToMigrationRun extends Error {}
+
+/** Contract never holds the migration lock, so a run never waits on it; it stops when one starts. */
+function yieldBeforeEachMigration(dataSource: DataSource, session: LockSession): void {
+  for (const migration of dataSource.migrations) {
+    const up = migration.up.bind(migration);
+    migration.up = async (queryRunner: QueryRunner) => {
+      const [{ running }] = (await session.query(HELD_MIGRATION_LOCKS_SQL)) as { running: boolean }[];
+      if (running) throw new YieldToMigrationRun();
+      await up(queryRunner);
+    };
+  }
+}
+
+/** After writes reopen: each step in its own short transaction. A failed step stays pending for the next boot. */
+async function runContractPhase(contractDS: DataSource, lockWait: LockWaitOptions): Promise<boolean> {
+  if (!(await pendingNames(contractDS)).length) {
+    console.log('[migrations] No contract migrations pending.');
+    return true;
+  }
+  const ran = await withMigrationAdvisoryLock(
+    contractDS,
+    lockWait,
+    {},
+    async (session) => {
+      announceEachMigration(contractDS);
+      yieldBeforeEachMigration(contractDS, session);
+      try {
+        await runPass('contract', contractDS, undefined, 'each');
+      } catch (error) {
+        if (!(error instanceof YieldToMigrationRun)) throw error;
+        console.log('[migrations] A migration run started; the remaining contract migrations run on the next boot.');
+      }
+      return true;
+    },
+    { skipIfBusy: true, key: CONTRACT_ADVISORY_LOCK_KEY }
+  );
+  if (!ran) console.log('[migrations] Another server is running the contract migrations.');
+  return !!ran;
 }
 
 async function runExpandPhase(schemaDS: DataSource, options: SchemaPhaseOptions): Promise<boolean> {
@@ -227,6 +291,7 @@ function announceEachMigration(dataSource: DataSource): void {
 async function executeMigrations(
   schemaDS: DataSource,
   dataDS: DataSource,
+  contractDS: DataSource,
   phase: MigrationPhase | undefined
 ): Promise<void> {
   // Plan before announcing: it scans up() source, which the announcing wrapper hides.
@@ -234,33 +299,37 @@ async function executeMigrations(
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
   if (!plan) return runInSeparateTransactions(schemaDS, dataDS, BACKFILL_PHASE_REASON);
-  if (plan.hasMissingType) return runInSeparateTransactions(schemaDS, dataDS, ENUM_SEPARATE_TRANSACTIONS_REASON);
-  await runAtomic(plan.precommittable, schemaDS, dataDS);
+  announceEachMigration(contractDS);
+  if (plan.hasMissingType) {
+    return runInSeparateTransactions(schemaDS, dataDS, ENUM_SEPARATE_TRANSACTIONS_REASON, contractDS);
+  }
+  await runAtomic(plan.precommittable, schemaDS, dataDS, contractDS);
 }
 
 async function migrateAsSolePod(
-  schemaDS: DataSource,
-  dataDS: DataSource,
+  [schemaDS, dataDS, contractDS]: [DataSource, DataSource, DataSource],
   session: LockSession,
   phase: MigrationPhase | undefined
 ): Promise<void> {
-  const pending = await pendingNames(schemaDS, dataDS);
+  const pending = await pendingNames(schemaDS, dataDS, ...(phase ? [] : [contractDS]));
+  const execute = () => executeMigrations(schemaDS, dataDS, contractDS, phase);
   if (!pending.length) {
     console.log('[migrations] No expand or backfill migrations pending — not cutting API traffic for this boot.');
-    return executeMigrations(schemaDS, dataDS, phase);
+    return execute();
   }
   console.log(`[migrations] ${pending.length} migration(s) pending: ${pending.join(', ')}`);
-  await holdingActiveLock(session, () => executeMigrations(schemaDS, dataDS, phase));
+  await holdingActiveLock(session, execute);
 }
 
 /** False when MIGRATION_SKIP_IF_LOCKED found another server migrating and left the run to it. */
 export async function run(
   schemaDS: DataSource = schemaDataSource,
-  dataDS: DataSource = dataDataSource
+  dataDS: DataSource = dataDataSource,
+  contractDS: DataSource = contractDataSource
 ): Promise<boolean> {
   // process.env, not getEnvVars(): the parent sets it per spawn.
   let phase = parseMigrationPhase(process.env.MIGRATION_PHASE);
-  for (const dataSource of [schemaDS, dataDS]) {
+  for (const dataSource of [schemaDS, dataDS, contractDS]) {
     if (dataSource.isInitialized) continue;
     // A lost node would otherwise hold the transaction's row locks for the OS keepalive (~2h).
     withMigrationConnectionOptions(dataSource);
@@ -269,6 +338,7 @@ export async function run(
 
   // getEnvVars(): this process has no ConfigModule, so settings only in the env file would be missed.
   const env = getEnvVars();
+  if (phase === 'contract') return runContractPhase(contractDS, getLockWaitOptions(env));
   const expandOptions = getSchemaPhaseOptions(env);
   if (phase === 'expand') {
     // A single-transaction run holds LOCK TABLE migrations to the end; reading behind it hits statement_timeout.
@@ -297,7 +367,7 @@ export async function run(
     getLockWaitOptions(env),
     {},
     async (session) => {
-      await migrateAsSolePod(schemaDS, dataDS, session, phase);
+      await migrateAsSolePod([schemaDS, dataDS, contractDS], session, phase);
       return true;
     },
     { skipIfBusy: process.env.MIGRATION_SKIP_IF_LOCKED === 'true' }
@@ -309,7 +379,11 @@ export async function run(
 // Runs only when invoked directly, not when a test imports it.
 if (require.main === module) {
   const destroyAll = () =>
-    Promise.all([schemaDataSource, dataDataSource].map((dataSource) => dataSource.destroy().catch(() => undefined)));
+    Promise.all(
+      [schemaDataSource, dataDataSource, contractDataSource].map((dataSource) =>
+        dataSource.destroy().catch(() => undefined)
+      )
+    );
   run()
     .then(async (ran) => {
       await destroyAll();

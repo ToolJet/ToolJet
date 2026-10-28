@@ -108,6 +108,59 @@ function authoringViolations({ file, text }: MigrationSource): string[] {
   return violations;
 }
 
+const DROP_WITHOUT_IF_EXISTS =
+  /\bDROP\s+(?:TABLE|COLUMN|CONSTRAINT|INDEX(?:\s+CONCURRENTLY)?|TRIGGER|FUNCTION|TYPE|VIEW|SEQUENCE)\s+(?!IF\s+EXISTS\b)/i;
+
+/**
+ * Contract runs after writes reopen, one short transaction per step, so up() goes through
+ * withShortLock / setNotNull, never queryRunner directly, and every step is safe to run twice.
+ */
+function contractViolations({ file, text }: MigrationSource): string[] {
+  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+  const cls = migrationClass(source);
+  if (!cls) return [`${file}: no migration class found. ${RULES_DOC}`];
+  const violations: string[] = [];
+
+  const optsOut = cls.members.some(
+    (member) =>
+      ts.isPropertyDeclaration(member) &&
+      member.name.getText() === 'transaction' &&
+      member.initializer?.kind === ts.SyntaxKind.FalseKeyword
+  );
+  if (!optsOut) violations.push(`${file}: declare transaction = false; each step commits on its own. ${RULES_DOC}`);
+
+  const up = method(cls, 'up');
+  const runner = up?.parameters[0]?.name.getText();
+  const direct: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      node.expression.expression.getText() === runner
+    ) {
+      direct.push(node.expression.name.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  if (up?.body) visit(up.body);
+  if (direct.length) {
+    violations.push(
+      `${file}: up() calls ${runner}.${direct.join(`, ${runner}.`)}; use withShortLock or setNotNull. ${RULES_DOC}`
+    );
+  }
+  if (up?.body && DROP_WITHOUT_IF_EXISTS.test(codeIn(up.body).sql)) {
+    violations.push(
+      `${file}: every DROP in up() needs IF EXISTS, so a rerun after a partial run succeeds. ${RULES_DOC}`
+    );
+  }
+
+  const down = method(cls, 'down');
+  if (!down?.body || !down.body.getText().slice(1, -1).trim()) {
+    violations.push(`${file}: down() is missing or empty; undo up() or comment why it cannot be undone. ${RULES_DOC}`);
+  }
+  return violations;
+}
+
 function migrationsNewerThanCutoff(directory: string): MigrationSource[] {
   return readdirSync(join(SERVER_ROOT, directory))
     .filter((name) => name.endsWith('.ts') && !name.includes('LockMigrationsTable'))
@@ -224,6 +277,50 @@ describe('Migration authoring rules | migrations newer than the cutoff', () => {
   });
 });
 
+describe('Migration authoring rules | contract migrations', () => {
+  const contract = (
+    up: string,
+    header = 'transaction = false;',
+    down = '// re-adding the column restores nothing'
+  ) => ({
+    file: 'migrations/contract/1799999999999-Sample.ts',
+    text: `
+import { MigrationInterface, QueryRunner } from 'typeorm';
+export class Sample1799999999999 implements MigrationInterface {
+  ${header}
+  public async up(queryRunner: QueryRunner): Promise<void> { ${up} }
+  public async down(queryRunner: QueryRunner): Promise<void> { ${down} }
+}`,
+  });
+  const shortDrop = "await withShortLock(queryRunner, ['ALTER TABLE apps DROP COLUMN IF EXISTS slug']);";
+
+  it('should pass a step that goes through withShortLock', () => {
+    expect(contractViolations(contract(shortDrop))).toEqual([]);
+  });
+
+  it.each([
+    ['runs inside a transaction', contract(shortDrop, ''), 'declare transaction = false'],
+    [
+      'calls queryRunner directly',
+      contract('await queryRunner.query(`ALTER TABLE apps DROP COLUMN IF EXISTS slug`);'),
+      'up() calls queryRunner.query',
+    ],
+    [
+      'drops without IF EXISTS',
+      contract("await withShortLock(queryRunner, ['ALTER TABLE apps DROP COLUMN slug']);"),
+      'needs IF EXISTS',
+    ],
+    ['has an empty down()', contract(shortDrop, 'transaction = false;', ''), 'down() is missing or empty'],
+  ])('should flag a contract migration that %s', (_how, source, message) => {
+    expect(contractViolations(source)).toEqual([expect.stringContaining(message)]);
+  });
+
+  it('should keep contract migrations to short, rerunnable steps', () => {
+    const violations = migrationsNewerThanCutoff('migrations/contract').flatMap((source) => contractViolations(source));
+    expect(violations).toEqual([]);
+  });
+});
+
 /**
  * Migrations at or before the cutoff skip the rules above, so the list is frozen. A new migration
  * dated before the cutoff would skip them silently. Use a current timestamp instead.
@@ -243,7 +340,7 @@ describe('Migration authoring rules | migrations at or before the cutoff', () =>
 
 /** TypeORM only loads the phase folders, so a file anywhere else would never run. */
 describe('Migration authoring rules | phase folders', () => {
-  const PHASE_FOLDERS = ['expand', 'backfill'];
+  const PHASE_FOLDERS = ['expand', 'backfill', 'contract'];
 
   it('should keep every migration inside a phase folder', () => {
     expect(readdirSync(join(SERVER_ROOT, 'migrations')).sort()).toEqual([...PHASE_FOLDERS].sort());
