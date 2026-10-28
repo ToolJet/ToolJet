@@ -9,18 +9,9 @@ import { join, resolve } from 'path';
 import { migrateSchemaBeforeBoot } from 'src/migration-helpers/migrate-before-boot';
 import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/harness';
 
-// --- Helpers ---
-
 // The test database is migrated, so it is never a fresh install. The command stands in for setup.
 const exitsZeroOnlyInSchemaPhase = `node -e "process.exit(process.env.MIGRATION_PHASE === 'schema' ? 0 : 7)"`;
 const exitsZeroOnlyWithoutPhase = `node -e "process.exit(process.env.MIGRATION_PHASE ? 7 : 0)"`;
-const scratch = (database: string) => ({
-  host: postgres.host,
-  port: postgres.port,
-  user: postgres.username,
-  password: postgres.password,
-  database,
-});
 
 describe('migration-helpers/migrate-before-boot', () => {
   describe('Cloud entrypoint: the commands it runs before the server starts', () => {
@@ -93,13 +84,19 @@ describe('migration-helpers/migrate-before-boot', () => {
 
       it('should run the full setup when the database does not exist', async () => {
         await expect(
-          migrateSchemaBeforeBoot(freshSetup, scratch(`tooljet_async_mode_missing_${process.pid}`))
+          migrateSchemaBeforeBoot(freshSetup, {
+            ...postgres,
+            user: postgres.username,
+            database: `tooljet_async_mode_missing_${process.pid}`,
+          })
         ).resolves.toBeUndefined();
       });
 
       it('should run the full setup when the database has no migrations table', async () => {
         await createScratchDatabase(emptyDatabase);
-        await expect(migrateSchemaBeforeBoot(freshSetup, scratch(emptyDatabase))).resolves.toBeUndefined();
+        await expect(
+          migrateSchemaBeforeBoot(freshSetup, { ...postgres, user: postgres.username, database: emptyDatabase })
+        ).resolves.toBeUndefined();
       }, 60_000);
     });
 

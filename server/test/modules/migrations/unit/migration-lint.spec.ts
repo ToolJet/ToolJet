@@ -2,7 +2,7 @@
  * Covers: migration-helpers/migration-lint.ts
  * @group database
  */
-import { existsSync, readdirSync } from 'fs';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import {
   authoringViolations,
@@ -10,17 +10,12 @@ import {
   droppedSchema,
   entityMappings,
   frozenListDrift,
+  MigrationSource,
   newerThanPhaseRules,
   phaseViolations,
   PHASE_FOLDERS,
 } from 'src/migration-helpers/migration-lint';
-import {
-  entityFiles,
-  migrationClassNames,
-  migrationsNewerThanCutoff,
-  preCutoffMigrations,
-  readMigrations,
-} from '../fixtures/migration-files';
+import { MIGRATION_AUTHORING_RULES_CUTOFF } from 'src/migration-helpers/migration-mode';
 import { SERVER_ROOT } from '../fixtures/harness';
 import * as frozenPreCutoff from './pre-cutoff-migrations.json';
 
@@ -261,7 +256,11 @@ export class App {
     );
 
     it('should find no cleanup migration that holds a long lock or fails when run again', () => {
-      const known = migrationClassNames();
+      const known = new Set(
+        PHASE_FOLDERS.flatMap((phase) => readMigrations(`migrations/${phase}`))
+          .map(({ text }) => text.match(/class\s+(\w+)/)?.[1])
+          .filter((name): name is string => !!name)
+      );
       const violations = readMigrations('migrations/cleanup').flatMap((source) => cleanupViolations(source, known));
       expect(violations).toEqual([]);
     });
@@ -283,7 +282,12 @@ export class App {
     it.each(['migrations/schema', 'migrations/data'] as const)(
       'should find no migration added to or removed from the old %s list',
       (directory) => {
-        expect(frozenListDrift(frozenPreCutoff[directory], preCutoffMigrations(directory))).toEqual({
+        // Class names at or before the cutoff, which TypeORM records in `migrations`.
+        const preCutoff = readMigrations(directory)
+          .map(({ text }) => text.match(/class\s+(\w*?\d{13})\b/)?.[1])
+          .filter((name): name is string => !!name && Number(name.slice(-13)) <= MIGRATION_AUTHORING_RULES_CUTOFF)
+          .sort();
+        expect(frozenListDrift(frozenPreCutoff[directory], preCutoff)).toEqual({
           added: [],
           missing: [],
         });
@@ -351,4 +355,31 @@ export class Sample1799999999999 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> { ${down} }
 }`,
   };
+}
+
+// --- This repo's migrations and entities ---
+
+/** Every migration in a folder under server/, lock sentinels left out. */
+function readMigrations(directory: string): MigrationSource[] {
+  return readdirSync(join(SERVER_ROOT, directory))
+    .filter((name) => name.endsWith('.ts') && !name.includes('LockMigrationsTable'))
+    .map((name) => ({ file: `${directory}/${name}`, text: readFileSync(join(SERVER_ROOT, directory, name), 'utf8') }));
+}
+
+function migrationsNewerThanCutoff(directory: string): MigrationSource[] {
+  return readMigrations(directory).filter(({ text }) => {
+    const [, timestamp] = text.match(/class\s+\w*?(\d{13})\b/) ?? [];
+    return Number(timestamp) > MIGRATION_AUTHORING_RULES_CUTOFF;
+  });
+}
+
+function entityFiles(): MigrationSource[] {
+  return ['src', 'ee']
+    .map((folder) => join(SERVER_ROOT, folder))
+    .filter((directory) => existsSync(directory))
+    .flatMap((directory) =>
+      readdirSync(directory, { recursive: true, encoding: 'utf8' })
+        .filter((name) => name.endsWith('.entity.ts'))
+        .map((name) => ({ file: name, text: readFileSync(join(directory, name), 'utf8') }))
+    );
 }

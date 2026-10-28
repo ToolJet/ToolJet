@@ -55,7 +55,7 @@ export function spawnPod({
   podId,
   database,
   startAt,
-  migrationSleepSeconds = 6,
+  migrationSleepSeconds = 0,
   fixtureSet = 'concurrent-pods',
   env = {},
 }: PodOptions): RunningPod {
@@ -106,10 +106,6 @@ export function spawnPod({
   return { child, done };
 }
 
-export function runPod(options: PodOptions): Promise<PodOutcome> {
-  return spawnPod(options).done;
-}
-
 export async function withScratchConnection<T>(database: string, fn: (db: DataSource) => Promise<T>): Promise<T> {
   const db = await new DataSource({ type: 'postgres', ...postgres, database }).initialize();
   try {
@@ -119,11 +115,8 @@ export async function withScratchConnection<T>(database: string, fn: (db: DataSo
   }
 }
 
-export const withAdminConnection = <T>(fn: (admin: DataSource) => Promise<T>): Promise<T> =>
-  withScratchConnection('postgres', fn);
-
 export async function createScratchDatabase(name: string): Promise<string> {
-  await withAdminConnection(async (admin) => {
+  await withScratchConnection('postgres', async (admin) => {
     await admin.query(`DROP DATABASE IF EXISTS ${name}`);
     await admin.query(`CREATE DATABASE ${name}`);
   });
@@ -131,7 +124,7 @@ export async function createScratchDatabase(name: string): Promise<string> {
 }
 
 export async function dropScratchDatabase(name: string): Promise<void> {
-  await withAdminConnection(async (admin) => {
+  await withScratchConnection('postgres', async (admin) => {
     // Pods that were SIGKILLed can leave a connection behind, which blocks DROP DATABASE.
     await admin.query(`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1`, [name]);
     await admin.query(`DROP DATABASE IF EXISTS ${name}`);
@@ -155,35 +148,11 @@ export async function waitFor<T>(
   throw new Error(`Timed out after ${timeoutMs}ms waiting for ${describeWhat}. Last value: ${JSON.stringify(last)}`);
 }
 
-/**
- * Starts collecting a running pod's output at once; the returned wait resolves when `text` shows up.
- * Call it right after `spawnPod`, before awaiting anything, so no output is missed.
- */
-export function waitForPodOutput(pod: RunningPod, describeWhat: string, text: string): Promise<string> {
-  let output = '';
-  pod.child.stdout.on('data', (chunk) => (output += chunk));
-  pod.child.stderr.on('data', (chunk) => (output += chunk));
-  return waitFor(
-    describeWhat,
-    async () => output,
-    (out) => out.includes(text),
-    { timeoutMs: 60_000 }
-  );
-}
-
-export interface HeldLocks {
-  running: boolean;
-  migrating: boolean;
-}
-
-export const heldLocks = async (connection: DataSource): Promise<HeldLocks> =>
-  (await connection.query(HELD_MIGRATION_LOCKS_SQL))[0];
-
 /** Samples the active lock throughout the run, so the spec can see it taken AND released. */
 export function watchActiveLock(connection: DataSource) {
   const samples: boolean[] = [];
   const timer = setInterval(() => {
-    void heldLocks(connection).then(({ migrating }) => samples.push(migrating));
+    void connection.query(HELD_MIGRATION_LOCKS_SQL).then(([{ migrating }]) => samples.push(migrating));
   }, 100);
   return { samples, stop: () => clearInterval(timer) };
 }
