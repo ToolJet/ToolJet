@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 
 /**
- * Static checks on migration source. test/modules/migrations/unit/writing-a-migration.spec.ts runs them on
+ * Static checks on migration source. test/modules/migrations/unit/migration-lint.spec.ts runs them on
  * every real migration. Async mode applies schema migrations at boot, while the previous release still serves, so a migration
  * may only add schema and every migration needs a way back. Older migrations predate the rules and are
  * not checked; async mode runs them the blocking way.

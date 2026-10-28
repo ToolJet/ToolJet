@@ -68,7 +68,7 @@ modules/{feature}/
 
 ### Migrations
 
-How migrations **run** (phases, locks, upgrade gate, async mode, env vars, runbook): `docs/MIGRATION_FLOW.md`. Read it before you change `src/migration-helpers/`, `src/modules/app/middlewares/migration-gate.middleware.ts`, `src/modules/app/migration-runs/` or the `db:setup` step of an entrypoint, and update it in the same PR. This section has the rules for *writing* a migration. `test/modules/migrations/unit/writing-a-migration.spec.ts` checks most of them (`src/migration-helpers/migration-lint.ts`). CI also runs each new migration on a copy of the snapshot and fails on a table lock its phase may not take (`npm run db:probe-locks`, `src/migration-helpers/lock-probe.ts`).
+How migrations **run** (phases, locks, upgrade gate, async mode, env vars, runbook): `docs/MIGRATION_FLOW.md`. Read it before you change `src/migration-helpers/`, `src/modules/app/middlewares/migration-gate.middleware.ts`, `src/modules/app/migration-runs/` or the `db:setup` step of an entrypoint, and update it in the same PR. This section has the rules for *writing* a migration. `test/modules/migrations/unit/migration-lint.spec.ts` checks most of them (`src/migration-helpers/migration-lint.ts`). CI also runs each new migration on a copy of the snapshot and fails on a table lock its phase may not take (`npm run db:probe-locks`, `src/migration-helpers/lock-probe.ts`).
 
 Async mode applies schema migrations at boot, data migrations later while old and new code serve, and cleanup migrations after writes reopen. Released code must keep working on the new schema. So each migration goes in one folder, named `{timestamp}-{DescriptiveName}.ts` with a current timestamp:
 
