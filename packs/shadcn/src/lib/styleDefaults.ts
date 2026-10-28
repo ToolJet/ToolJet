@@ -51,5 +51,11 @@ export const useDrawnNumber = (name: string, label: string, drawn: number, optio
 export const useBlankNumber = (name: string, label: string, placeholder: string, options: StyleOptions = {}): number | '' =>
   (ToolJet.useStyleNumber({ name, label, placeholder, ...options }) as unknown as number | '' | undefined) ?? '';
 
-/** A radius that follows the theme radius while unset: no fixed number to show, so the field says so. */
-export const useThemeRadius = (name: string, label: string, options: StyleOptions = {}) => useBlankNumber(name, label, 'Theme radius', options);
+/**
+ * A radius that follows the theme radius while unset: no fixed number to show, so the field says so. Drawn as the
+ * inspector's number field (px): the code field judges a blank value against the number type and drew the unset
+ * radius as invalid. The tooltip names what blank draws, since the number field shows no placeholder; the placeholder
+ * stays for the code (fx) view. The value read back is unchanged.
+ */
+export const useThemeRadius = (name: string, label: string, options: StyleOptions = {}) =>
+  useBlankNumber(name, label, 'Theme radius', { inspector: 'numberInput', description: 'Blank follows the theme radius.', ...options });

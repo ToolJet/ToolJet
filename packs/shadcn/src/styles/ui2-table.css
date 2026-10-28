@@ -295,6 +295,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* The capped box sits on the cell's side: in a cell wider than the cap (a lone column) a right-aligned figure ended
+   mid-cell, away from its right-aligned header. */
+.t2-grid td.is-right > .t2-clip {
+  margin-left: auto;
+}
+.t2-grid td.is-center > .t2-clip {
+  margin-inline: auto;
+}
 /* An html cell keeps its blocks (a bold name over a muted line); each line ends in an ellipsis when it is cut. */
 .t2-clip > .t2-html {
   display: block;

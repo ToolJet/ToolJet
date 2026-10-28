@@ -93,7 +93,11 @@ export const Accordion = () => {
     published.current = first?.value ?? '';
     setValue(published.current);
   };
-  useEffect(() => publish(open), [open.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Republished when what is open changes, and when the section at the first open index is replaced by another: new
+  // items under the same open index drew the new section but left the exposed value on the old one (Codex review
+  // RELATED-02, 2026-10-27).
+  const openValue = open.length ? items[Number(open[0])]?.value ?? '' : '';
+  useEffect(() => publish(open), [open.join(','), openValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // onExpand when a section opens, onCollapse when one closes, onChange after: the native Accordion's events.
   const apply = (next: string[], fire = true) => {

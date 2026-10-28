@@ -47,11 +47,13 @@ export const useLooks = (looks: Look[]): CSSProperties => {
   for (const [name, label, cssVar, drawn] of looks) {
     // The list is fixed per component, so the hook order is too. Each declares what it draws unset as its default
     // and reads back '' at that default, so the look is unchanged. A theme radius has no number: no default (a ''
-    // default was saved on drop as {{""}}, code in an invalid field), and the field's placeholder says so.
+    // default was saved on drop as {{""}}, code in an invalid field), and the field's placeholder says so. It is drawn as
+    // the number field, as useThemeRadius's (styleDefaults.ts): the code field drew a blank number as invalid.
     const px = isPx(drawn);
     const initialValue = drawn === undefined || drawn === 'px' ? '' : drawn;
+    const themeRadius = { placeholder: 'Theme radius', inspector: 'numberInput', description: 'Blank follows the theme radius.' };
     const raw = px
-      ? TJ.useStyleNumber({ name, label, ...(drawn === 'px' ? { placeholder: 'Theme radius' } : { initialValue: initialValue as number }) })
+      ? TJ.useStyleNumber({ name, label, ...(drawn === 'px' ? themeRadius : { initialValue: initialValue as number }) })
       : TJ.useStyleString({ name, label, inspector: 'color', initialValue: initialValue as string });
     const value = unlessDefault(raw ?? '', initialValue);
     if (!isSet(value)) continue;

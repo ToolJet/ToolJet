@@ -15,6 +15,7 @@ import {
   pageOf,
   readCell,
   rowKey,
+  rowKeys,
   sortEntries,
   toCsv,
 } from '../lib/ui2/table/model';
@@ -119,15 +120,12 @@ export const DataTable = () => {
     label: 'Columns (empty: from the data)',
     inspector: 'columns',
     description:
-      'Array of { key, name, columnType, horizontalAlignment, columnSize, columnVisibility, sortable, searchable, wrap, decimalPlaces, currency, locale, dateFormat, prefix, suffix, badgeColors, options, buttons, textColor, cellBackgroundColor, fontWeight, conditionalStyles }. columnType: string, number, currency, date, datetime, badge, tags, boolean, link, image, avatar, progress, button, json, html.',
+      'Array of { key, name, columnType, horizontalAlignment, columnSize, columnVisibility, sortable, searchable, wrap, decimalPlaces, currency, locale, dateFormat, prefix, suffix, badgeColors, options, buttons, textColor, cellBackgroundColor, fontWeight, conditionalStyles, transformation }. columnType: string, number, currency, date, datetime, badge, tags, boolean, link, image, avatar, progress, button, json, html. transformation is what the cell shows, a per-row binding such as {{cellValue * 100}} or {{rowData.first_name}}; search, sort and filters keep the data value.',
     placeholder:
       "[{ key: 'name', name: 'Name' }, { key: 'status', name: 'Status', columnType: 'badge' }, { key: 'amount', name: 'Amount', columnType: 'currency' }]",
-    initialValue: [
-      { key: 'name', name: 'Name' },
-      { key: 'status', name: 'Status', columnType: 'badge' },
-      { key: 'date', name: 'Date', columnType: 'date' },
-      { key: 'amount', name: 'Amount', columnType: 'currency' },
-    ],
+    // Empty, so a table bound to its data shows that data's fields: four sample columns stayed on a freshly bound
+    // table and drew blank cells.
+    initialValue: [],
   });
   const [rawIdField] = ToolJet.useStateString({ name: 'idField', label: 'Row id field', initialValue: 'id' });
 
@@ -250,15 +248,35 @@ export const DataTable = () => {
   });
   const [stickyHeader] = ToolJet.useStateBoolean({ name: 'stickyHeader', label: 'Sticky header (scrolls inside)', initialValue: true, section: 'Appearance' });
 
-  const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (currency columns)', initialValue: 'USD', section: 'Formats' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Number locale', initialValue: 'en-US', section: 'Formats' });
-  const [dateFormat] = ToolJet.useStateString({ name: 'dateFormat', label: 'Date format (date columns)', initialValue: 'DD MMM YYYY', section: 'Formats' });
+  // Table-wide defaults: a column's own currency, locale, date format or badge colours win over them.
+  const [currency] = ToolJet.useStateString({
+    name: 'currency',
+    label: 'Currency (currency columns)',
+    description: "The default for currency columns. A column's own currency overrides it.",
+    initialValue: 'USD',
+    section: 'Default formats',
+  });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Number locale',
+    description: "The default for number, currency and percent columns. A column's own locale overrides it.",
+    initialValue: 'en-US',
+    section: 'Default formats',
+  });
+  const [dateFormat] = ToolJet.useStateString({
+    name: 'dateFormat',
+    label: 'Date format (date columns)',
+    description: "The default for date columns. A column's own date format overrides it.",
+    initialValue: 'DD MMM YYYY',
+    section: 'Default formats',
+  });
   const [badgeColors] = ToolJet.useStateObject({
     name: 'badgeColors',
     label: 'Badge colours by value',
+    description: "The default for badge columns. A column's own badge colours override it.",
     initialValue: {},
     placeholder: "{ Paid: '#16a34a', Overdue: '#dc2626' }",
-    section: 'Formats',
+    section: 'Default formats',
   });
 
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No results.', section: 'Empty and loading' });
@@ -343,19 +361,26 @@ export const DataTable = () => {
   const idField = isSet(rawIdField) ? String(rawIdField) : 'id';
   // The data types the columns that set no type (money, shares, dates and statuses read from the values and the
   // field's words) and makes the columns when none are set.
-  const columns = useMemo(() => normalizeColumns(rawColumns, data, idField), [rawColumns, data, idField]);
-  // The columns the viewer turned on or off in the chooser, against each column's default (an id column starts off).
+  // Id fields (order_id, customerId) show like any other: hidden, they were out of the search too, so an order number
+  // found nothing.
+  const columns = useMemo(() => normalizeColumns(rawColumns, data), [rawColumns, data]);
+  // The columns the viewer turned off in the chooser.
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
-  const shownColumns = useMemo(() => columns.filter((c) => c.visible && hiddenIds.has(c.id) === c.hiddenByDefault), [columns, hiddenIds]);
-  const entries = useMemo<Entry[]>(() => data.map((row, index) => ({ row, index, key: rowKey(row, idField, index) })), [data, idField]);
+  const shownColumns = useMemo(() => columns.filter((c) => c.visible && !hiddenIds.has(c.id)), [columns, hiddenIds]);
+  // Keys unique even where the id field repeats (rowKeys).
+  const entries = useMemo<Entry[]>(() => {
+    const keys = rowKeys(data, idField);
+    return data.map((row, index) => ({ row, index, key: keys[index] }));
+  }, [data, idField]);
 
   // ---- search, sort, filters, page --------------------------------------------------------------------------------
   const [searchInput, setSearchInput] = useState('');
-  const [searchText, setSearchText] = useState('');
-  // Live: an action reads the sort and filters as the last one left them, ahead of the next render.
+  // Live: an action reads the search, sort, filters and page as the last one left them, ahead of the next render. A
+  // script running clearFilters, setSort and setFilters in a row read filteredData from the state before all three.
+  const [searchText, setSearchText, searchRef] = useLiveState('');
   const [sort, setSort, sortRef] = useLiveState<Sort | null>(null);
   const [filters, setFilters, filtersRef] = useLiveState<TableFilter[]>([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage, pageRef] = useLiveState(1);
   const serverPaging = serverSidePagination === true && enablePagination !== false;
 
   // The rows for a search, filter list and sort: a pure step, so an action publishes the rows it leads to before its
@@ -431,18 +456,38 @@ export const DataTable = () => {
 
   // The default selected row, and keeping the selection on the same records across a reload. It runs for new rows
   // only, so a re-evaluated default does not reselect a row.
-  const latest = useRef({ defaultSelectedRow, allowSelection, exposeSelection });
-  latest.current = { defaultSelectedRow, allowSelection, exposeSelection };
+  const latest = useRef({ defaultSelectedRow, allowSelection, exposeSelection, idField });
+  latest.current = { defaultSelectedRow, allowSelection, exposeSelection, idField };
+  // The rows the selection was made on, to follow a selected record across a reload.
+  const shownBefore = useRef<Entry[]>(entries);
   useEffect(() => {
-    const { defaultSelectedRow: wanted, allowSelection: selectable, exposeSelection: expose } = latest.current;
+    const { defaultSelectedRow: wanted, allowSelection: selectable, exposeSelection: expose, idField: field } = latest.current;
     if (!entries.length) {
       // Nothing to show yet: the selection is kept for the rows that come back.
       expose(new Set(), null);
       return;
     }
-    const keys = toKeySet(entries);
-    const kept = new Set([...live.current.selected].filter((key) => keys.has(key)));
-    let focus = live.current.focusKey !== null && keys.has(live.current.focusKey) ? live.current.focusKey : null;
+    const before = new Map(shownBefore.current.map((e) => [e.key, e]));
+    shownBefore.current = entries;
+    const byKey = new Map(entries.map((e) => [e.key, e]));
+    // A key is the record its id names, except where rows share an id: there it is only an occurrence (id:7~1), and
+    // reordered data puts another record under it. A selected row with a shared id stays on the row with the same
+    // content, or is dropped; it never moves to another record with that id.
+    const baseOf = (e: Entry) => rowKey(e.row, field, e.index);
+    const count = (list: Entry[]) => list.reduce((m, e) => m.set(baseOf(e), (m.get(baseOf(e)) ?? 0) + 1), new Map<string, number>());
+    const countBefore = count([...before.values()]);
+    const countNow = count(entries);
+    const follow = (key: string): string | null => {
+      const old = before.get(key);
+      const now = byKey.get(key);
+      if (!old) return now ? key : null;
+      const base = baseOf(old);
+      if ((countBefore.get(base) ?? 0) < 2 && (countNow.get(base) ?? 0) < 2) return now ? key : null;
+      if (now && sameValue(now.row, old.row)) return key;
+      return entries.find((e) => baseOf(e) === base && sameValue(e.row, old.row))?.key ?? null;
+    };
+    const kept = new Set([...live.current.selected].map(follow).filter((key): key is string => key !== null));
+    let focus = live.current.focusKey !== null ? follow(live.current.focusKey) : null;
     if (!kept.size && wanted && typeof wanted === 'object' && Object.keys(wanted).length && selectable) {
       const [k, v] = Object.entries(wanted)[0];
       const match = entries.find((e) => readCell(e.row, k) == v); // eslint-disable-line eqeqeq
@@ -503,8 +548,8 @@ export const DataTable = () => {
   const applySort = (next: Sort | null, fire = true) => {
     setSort(next);
     setSortApplied(sortAppliedOf(next));
-    const rows = process(searchText, filters, next);
-    publishRows(rows, pageFor(rows, page));
+    const rows = process(searchRef.current, filtersRef.current, next);
+    publishRows(rows, pageFor(rows, pageRef.current));
     if (fire) onSort();
   };
   const applyFilterList = (list: unknown, fire = true) => {
@@ -513,7 +558,7 @@ export const DataTable = () => {
     setPage(1);
     setFiltersExposed(exposedFilters(clean));
     setPageIndex(1);
-    const rows = process(searchText, clean, sort);
+    const rows = process(searchRef.current, clean, sortRef.current);
     publishRows(rows, pageFor(rows, 1));
     if (fire) onFilterChanged();
   };
@@ -526,7 +571,7 @@ export const DataTable = () => {
     setPage(1);
     setSearchTextExposed(text);
     setPageIndex(1);
-    const rows = process(text, filters, sort);
+    const rows = process(text, filtersRef.current, sortRef.current);
     publishRows(rows, pageFor(rows, 1));
     onSearch();
   };
@@ -541,10 +586,14 @@ export const DataTable = () => {
   const goTo = (target: unknown, fire = true) => {
     const n = Math.floor(Number(target));
     if (!Number.isFinite(n) || n < 1) return;
-    const next = paged.pageCount ? Math.min(n, paged.pageCount) : n;
+    // The rows as the last action left them, not as the last render drew them (the drawn ones when nothing changed).
+    const current = searchRef.current === searchText && filtersRef.current === filters && sortRef.current === sort;
+    const rows = current ? processed : process(searchRef.current, filtersRef.current, sortRef.current);
+    const { pageCount } = pageFor(rows, 1);
+    const next = pageCount ? Math.min(n, pageCount) : n;
     setPage(next);
     setPageIndex(next);
-    setCurrentPageData(pageFor(processed, next).items.map((e) => e.row));
+    setCurrentPageData(pageFor(rows, next).items.map((e) => e.row));
     if (fire) onPageChanged();
   };
 
