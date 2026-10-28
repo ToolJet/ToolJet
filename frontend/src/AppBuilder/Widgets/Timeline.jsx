@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { isArray } from 'lodash';
 import { getSafeRenderableValue } from './utils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -15,9 +15,20 @@ export const Timeline = function Timeline({
   currentMode,
   subContainerIndex,
   componentType,
+  setExposedVariable,
 }) {
   const { boxShadow } = styles;
   const { data, hideDate, visibility } = properties;
+
+  // setValue overrides the rendered items until `data` genuinely changes (D-05).
+  const [valueOverride, setValueOverride] = useState(null);
+  const dataKey = JSON.stringify(data);
+  useEffect(() => setValueOverride(null), [dataKey]);
+  useEffect(() => {
+    setExposedVariable('setValue', async (value) => setValueOverride(isArray(value) ? value : []));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const timelineItems = valueOverride ?? (isArray(data) ? data : []);
 
   const darkModeStyle = darkMode && 'text-white-50';
 
@@ -29,7 +40,7 @@ export const Timeline = function Timeline({
     isDynamicHeightEnabled,
     id,
     height,
-    value: JSON.stringify({ data, hideDate }),
+    value: JSON.stringify({ timelineItems, hideDate }),
     currentLayout,
     width,
     visibility,
@@ -53,7 +64,7 @@ export const Timeline = function Timeline({
     >
       <div className="card-body">
         <ul className={`list list-timeline ${hideDate && 'list-timeline-simple'}`}>
-          {(isArray(data) ? data : []).map((item, index) => (
+          {timelineItems.map((item, index) => (
             <li key={index}>
               <div className="list-timeline-icon" style={{ backgroundColor: item.iconBackgroundColor }}></div>
               <div className="list-timeline-content">

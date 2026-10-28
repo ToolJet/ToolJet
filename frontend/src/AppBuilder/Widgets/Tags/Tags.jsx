@@ -60,6 +60,11 @@ export const Tags = function Tags({
     componentType,
   });
 
+  // setValue overrides the rendered tags until advanced/options/data genuinely change (D-04).
+  const [valueOverride, setValueOverride] = useState(null);
+  const sourceKey = JSON.stringify([advanced, options, data]);
+  useEffect(() => setValueOverride(null), [sourceKey]);
+
   const updateExposedVariablesState = (key, value) => {
     setExposedVariablesTemporaryState((prev) => ({
       ...prev,
@@ -69,7 +74,9 @@ export const Tags = function Tags({
 
   // Follow the exact same pattern as Tabs: use tagItems for static, schema/data for dynamic
   let tagsData;
-  if (!advanced) {
+  if (valueOverride) {
+    tagsData = valueOverride;
+  } else if (!advanced) {
     // In static mode, use tagItems (same as tabs uses tabItems)
     tagsData = options;
   } else {
@@ -86,18 +93,18 @@ export const Tags = function Tags({
     tagsData = resolveWidgetFieldValue(tagsData);
   }
 
-  let parsedTags = tagsData;
-  if (Array.isArray(parsedTags)) {
-    parsedTags = parsedTags
-      ?.filter((tag) => {
-        const isVisible = tag?.visible?.value !== undefined ? tag.visible.value : tag?.visible !== false;
-        return isVisible;
-      })
-      ?.map((tag, index) => ({
-        ...tag,
-        id: tag.id ? tag.id : index,
-      }));
-  }
+  // A non-array source (data or setValue) renders zero tags instead of crashing on `.map`.
+  const parsedTags = Array.isArray(tagsData)
+    ? tagsData
+        .filter((tag) => {
+          const isVisible = tag?.visible?.value !== undefined ? tag.visible.value : tag?.visible !== false;
+          return isVisible;
+        })
+        .map((tag, index) => ({
+          ...tag,
+          id: tag.id ? tag.id : index,
+        }))
+    : [];
 
   useBatchedUpdateEffectArray([
     {
@@ -134,6 +141,9 @@ export const Tags = function Tags({
     const _tags = parsedTags?.map(({ title }) => title) || [];
     const exposedVariables = {
       tags: _tags,
+      setValue: async function (value) {
+        setValueOverride(Array.isArray(value) ? value : []);
+      },
       setVisibility: async function (value) {
         setExposedVariable('isVisible', !!value);
         updateExposedVariablesState('isVisible', !!value);
