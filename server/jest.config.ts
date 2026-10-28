@@ -32,6 +32,7 @@ const shared: Config.InitialProjectOptions = {
   },
   moduleNameMapper: {
     '^ormconfig$': '<rootDir>/ormconfig.ts',
+    '^data-migration-config$': '<rootDir>/data-migration-config.ts',
     '^src/(.*)': '<rootDir>/src/$1',
     '^scripts/(.*)': '<rootDir>/scripts/$1',
     '^lib/(.*)': '<rootDir>/lib/$1',

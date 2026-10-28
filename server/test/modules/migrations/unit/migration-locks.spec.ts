@@ -1,5 +1,5 @@
 /**
- * Covers: migration-helpers/migration-locks.ts
+ * Covers: migration-helpers/migration-locks.ts, the retry helpers in with-short-lock.ts and run-all-migrations.ts
  * @group database
  */
 import { readdirSync, readFileSync } from 'fs';
@@ -15,6 +15,8 @@ import {
   MigrationLockWaitTimeoutError,
   withMigrationAdvisoryLock,
 } from 'src/migration-helpers/migration-locks';
+import { codeHead, isTransientError } from 'src/migration-helpers/run-all-migrations';
+import { retryWhen } from 'src/migration-helpers/with-short-lock';
 
 const lockWaitOptions: LockWaitOptions = {
   retryIntervalMs: 60_000,
@@ -111,6 +113,65 @@ describe('migration-helpers/migration-locks', () => {
       ['something that is not an error', undefined, false],
     ])('should say whether to retry %s: %s', (_shape, error, retryable) => {
       expect(isLockNotAvailableError(error)).toBe(retryable);
+    });
+  });
+
+  describe('isTransientError(): which data-phase failures roll back and run the data phase again', () => {
+    it.each([
+      ['a deadlock', { code: '40P01' }, true],
+      ['a serialization failure', { code: '40001' }, true],
+      ['a lock timeout', { code: '55P03' }, true],
+      ['a lock timeout wrapped by TypeORM', { driverError: { code: '55P03' } }, true],
+      ['any other database error', { code: '23505' }, false],
+      ['something that is not an error', undefined, false],
+    ])('should say whether to retry %s: %s', (_shape, error, retryable) => {
+      expect(isTransientError(error)).toBe(retryable);
+    });
+  });
+
+  describe('retryWhen(): how many times a failing step is tried', () => {
+    const noDelay = { attempts: 3, retryDelayMs: 0 };
+
+    it.each([
+      ['succeed on a retry after one retryable failure', ['retry', 'ok'], 2, 'ok'],
+      ['give up after the configured number of attempts', ['retry', 'retry', 'retry', 'ok'], 3, 'retry'],
+      ['fail at once on an error it should not retry', ['fatal', 'ok'], 1, 'fatal'],
+    ])('should %s', async (_case, outcomes, calls, result) => {
+      const work = jest.fn(async () => {
+        const outcome = outcomes.shift();
+        if (outcome !== 'ok') throw new Error(outcome);
+        return outcome;
+      });
+
+      const settled = await retryWhen((error) => (error as Error).message === 'retry', work, noDelay).catch(
+        (error: Error) => error.message
+      );
+
+      expect(settled).toBe(result);
+      expect(work).toHaveBeenCalledTimes(calls);
+    });
+  });
+
+  describe('codeHead(): the newest migration this code ships, which keys the cleanup baseline', () => {
+    const shipping = (...names: string[]) => ({ migrations: names.map((name) => ({ name })) }) as unknown as DataSource;
+
+    it.each([
+      [
+        'the cleanup folder',
+        ['AddSlug1790000000001'],
+        ['FillSlug1790000000002'],
+        ['DropIcon1790000000003'],
+        'DropIcon1790000000003',
+      ],
+      [
+        'the schema folder, listed before older ones',
+        ['AddSlug1790000000009', 'AddIcon1790000000001'],
+        ['FillSlug1790000000002'],
+        [],
+        'AddSlug1790000000009',
+      ],
+    ])('should pick the newest timestamp when it is in %s', (_where, schema, data, cleanup, head) => {
+      expect(codeHead(shipping(...schema), shipping(...data), shipping(...cleanup))).toBe(head);
     });
   });
 
