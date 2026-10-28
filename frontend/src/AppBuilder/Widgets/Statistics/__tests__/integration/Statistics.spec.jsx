@@ -13,61 +13,78 @@
  */
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { binding } from '@/test/app-builder';
-import { createWidgetHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import {
+  AppBuilderTestSession,
+  binding,
+  componentDefinition,
+  defineAppBuilderScenario,
+  seedApp,
+} from '@/test/app-builder';
+import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
+import {
+  createWidgetHarness,
+  MODULE_ID,
+  store,
+  widgetProps,
+} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { themeColour } from '@/AppBuilder/Widgets/Statistics';
 
 const ID = 'stats1';
 const NAME = 'statistics1';
+
+// Baseline is `statistics.js`'s own `definition.properties`, copied verbatim.
+// `hideSecondary` is deliberately OMITTED: production's own seeding block
+// omits it too (see the contract's research findings), so leaving it out
+// here reproduces the real gap instead of papering over it.
+const DEFAULT_PROPERTIES = {
+  primaryValueLabel: binding('This months earnings'),
+  primaryValue: binding('682.3'),
+  primaryPrefixText: binding(''),
+  primarySuffixText: binding(''),
+  secondaryValueLabel: binding('Last month'),
+  secondaryValue: binding('2.85'),
+  secondaryPrefixText: binding(''),
+  secondarySuffixText: binding(''),
+  secondarySignDisplay: binding('positive'),
+  dataAlignment: binding('left'),
+  secondaryValueAlignment: binding('horizontal'),
+  icon: binding('IconDatabaseDollar'),
+  iconDirection: binding('right'),
+  loadingState: binding('{{false}}'),
+  visibility: binding('{{true}}'),
+  dynamicHeight: binding('{{false}}'),
+  collapseWhenHidden: binding('{{false}}'),
+  tooltip: binding(''),
+  tooltipFormat: binding('plainText'),
+};
+
+const DEFAULT_STYLES = {
+  primaryLabelSize: binding('{{14}}'),
+  primaryLabelColour: binding('var(--cc-placeholder-text)'),
+  primaryValueSize: binding('{{34}}'),
+  primaryTextColour: binding('var(--cc-primary-text)'),
+  iconColor: binding('var(--cc-primary-brand)'),
+  secondaryLabelSize: binding('{{14}}'),
+  secondaryLabelColour: binding('var(--cc-placeholder-text)'),
+  secondaryValueSize: binding('{{14}}'),
+  positiveSecondaryValueColor: binding('var(--cc-success-systemStatus)'),
+  negativeSecondaryValueColor: binding('var(--cc-error-systemStatus)'),
+  backgroundColor: binding('var(--cc-surface1-surface)'),
+  borderColor: binding('var(--cc-default-border)'),
+  borderRadius: binding('{{6}}'),
+  boxShadow: binding('0px 0px 0px 0px #00000040'),
+  padding: binding('default'),
+  // No schema key exists for this style (see the contract's `none:dead-config`
+  // research finding) — production seeds it as a literal `true`, never `{{true}}`.
+  iconVisibility: binding(true),
+};
 
 const widget = createWidgetHarness({
   componentType: 'Statistics',
   handle: NAME,
   id: ID,
-  // Baseline is `statistics.js`'s own `definition.properties`, copied verbatim.
-  // `hideSecondary` is deliberately OMITTED: production's own seeding block
-  // omits it too (see the contract's research findings), so leaving it out
-  // here reproduces the real gap instead of papering over it.
-  defaultProperties: {
-    primaryValueLabel: binding('This months earnings'),
-    primaryValue: binding('682.3'),
-    primaryPrefixText: binding(''),
-    primarySuffixText: binding(''),
-    secondaryValueLabel: binding('Last month'),
-    secondaryValue: binding('2.85'),
-    secondaryPrefixText: binding(''),
-    secondarySuffixText: binding(''),
-    secondarySignDisplay: binding('positive'),
-    dataAlignment: binding('left'),
-    secondaryValueAlignment: binding('horizontal'),
-    icon: binding('IconDatabaseDollar'),
-    iconDirection: binding('right'),
-    loadingState: binding('{{false}}'),
-    visibility: binding('{{true}}'),
-    dynamicHeight: binding('{{false}}'),
-    collapseWhenHidden: binding('{{false}}'),
-    tooltip: binding(''),
-    tooltipFormat: binding('plainText'),
-  },
-  defaultStyles: {
-    primaryLabelSize: binding('{{14}}'),
-    primaryLabelColour: binding('var(--cc-placeholder-text)'),
-    primaryValueSize: binding('{{34}}'),
-    primaryTextColour: binding('var(--cc-primary-text)'),
-    iconColor: binding('var(--cc-primary-brand)'),
-    secondaryLabelSize: binding('{{14}}'),
-    secondaryLabelColour: binding('var(--cc-placeholder-text)'),
-    secondaryValueSize: binding('{{14}}'),
-    positiveSecondaryValueColor: binding('var(--cc-success-systemStatus)'),
-    negativeSecondaryValueColor: binding('var(--cc-error-systemStatus)'),
-    backgroundColor: binding('var(--cc-surface1-surface)'),
-    borderColor: binding('var(--cc-default-border)'),
-    borderRadius: binding('{{6}}'),
-    boxShadow: binding('0px 0px 0px 0px #00000040'),
-    padding: binding('default'),
-    // No schema key exists for this style (see the contract's `none:dead-config`
-    // research finding) — production seeds it as a literal `true`, never `{{true}}`.
-    iconVisibility: binding(true),
-  },
+  defaultProperties: DEFAULT_PROPERTIES,
+  defaultStyles: DEFAULT_STYLES,
 });
 
 const card = () => document.querySelector(`[data-cy="${NAME}"]`);
@@ -298,11 +315,8 @@ describe('Statistics: styles', () => {
     expect(screen.getByText('682.3')).toHaveStyle({ fontSize: '48px', color: '#333333' });
   });
 
-  test('[Statistics-STY-001] the dark-mode sentinel fallback only fires for the literal legacy hex value, not the current default', async () => {
-    widget.render({ styles: { primaryTextColour: binding('#000000') }, darkMode: true });
-
-    await waitFor(() => expect(screen.getByText('682.3')).toHaveStyle({ color: '#FFFFFC' }));
-
+  test('[Statistics-STY-001] a saved colour that is not a legacy default is used as is in dark mode', async () => {
+    // Legacy default hexes map to theme variables: Statistics-BUG-007.
     widget.render({ styles: { primaryTextColour: binding('#ABCDEF') }, darkMode: true });
     await waitFor(() => expect(screen.getByText('682.3')).toHaveStyle({ color: '#ABCDEF' }));
   });
@@ -464,5 +478,359 @@ describe('Statistics: exposed variables', () => {
     await waitFor(() => expect(exposed('primaryLabel')).toBe('new primary label'));
     expect(exposed('secondaryLabel')).toBe('new secondary label');
     expect(exposed('secondarySignDisplay')).toBe('negative');
+  });
+});
+
+const primaryValueEl = () => card().querySelector('h2');
+const secondaryValueEl = () => screen.getByText('Last month').previousElementSibling.querySelector('p');
+
+describe('Statistics: bug fixes', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  // Values the Value property path turns into '' (component-properties-validation.js findDefault).
+  const NON_TEXT = [
+    ['null', null],
+    ['undefined', undefined],
+    ['an object', { a: 1 }],
+    ['an array', [1, 2]],
+    ['a boolean', true],
+    ['NaN', NaN],
+  ];
+
+  test.each(NON_TEXT)(
+    '[Statistics-BUG-001] setPrimaryValue with %s shows blank and exposes ""',
+    async (_label, value) => {
+      // Break this catches: the setter stores the raw value and the card prints "null"/"[object Object]"/"1,2".
+      widget.render();
+      await waitFor(() => expect(screen.getByText('682.3')).toBeInTheDocument());
+
+      await widget.act('setPrimaryValue', value);
+
+      await waitFor(() => expect(primaryValueEl().textContent.trim()).toBe(''));
+      expect(exposed('primaryValue')).toBe('');
+    }
+  );
+
+  test('[Statistics-BUG-001] setPrimaryValue with a number shows it as text, same as the Value property', async () => {
+    widget.render();
+    await waitFor(() => expect(screen.getByText('682.3')).toBeInTheDocument());
+
+    await widget.act('setPrimaryValue', 42);
+
+    await waitFor(() => expect(primaryValueEl().textContent.trim()).toBe('42'));
+    expect(exposed('primaryValue')).toBe('42');
+  });
+
+  test('[Statistics-BUG-001] the Value property {{null}} shows blank (reference path)', async () => {
+    widget.render({ properties: { primaryValue: binding('{{null}}') } });
+
+    await waitFor(() => expect(card()).toBeInTheDocument());
+    expect(primaryValueEl().textContent.trim()).toBe('');
+  });
+
+  test.each(NON_TEXT)(
+    '[Statistics-BUG-002] setSecondaryValue with %s shows blank and exposes ""',
+    async (_label, value) => {
+      // Break this catches: the secondary setter stores the raw value and the card prints it.
+      widget.render();
+      await waitFor(() => expect(screen.getByText('2.85')).toBeInTheDocument());
+
+      await widget.act('setSecondaryValue', value);
+
+      await waitFor(() => expect(secondaryValueEl().textContent.trim()).toBe(''));
+      expect(exposed('secondaryValue')).toBe('');
+    }
+  );
+
+  test('[Statistics-BUG-002] setSecondaryValue with a number shows it as text', async () => {
+    widget.render();
+    await waitFor(() => expect(screen.getByText('2.85')).toBeInTheDocument());
+
+    await widget.act('setSecondaryValue', 7);
+
+    await waitFor(() => expect(secondaryValueEl().textContent.trim()).toBe('7'));
+    expect(exposed('secondaryValue')).toBe('7');
+  });
+
+  test('[Statistics-BUG-003] setSecondaryValue with a Symbol shows blank instead of crashing the card', async () => {
+    // Break this catches: a template literal on a Symbol throws and the card renders "Something went wrong".
+    widget.render();
+    await waitFor(() => expect(screen.getByText('2.85')).toBeInTheDocument());
+
+    await widget.act('setSecondaryValue', Symbol('s'));
+
+    await waitFor(() => expect(secondaryValueEl().textContent.trim()).toBe(''));
+    expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument();
+    expect(screen.getByText('682.3')).toBeInTheDocument();
+  });
+
+  test('[Statistics-BUG-003] setPrimaryValue with a Symbol shows blank instead of "Symbol(s)"', async () => {
+    widget.render();
+    await waitFor(() => expect(screen.getByText('682.3')).toBeInTheDocument());
+
+    await widget.act('setPrimaryValue', Symbol('s'));
+
+    await waitFor(() => expect(primaryValueEl().textContent.trim()).toBe(''));
+    expect(screen.queryByText('Symbol(s)')).not.toBeInTheDocument();
+  });
+
+  test.each([
+    ['#000000', 'var(--cc-primary-text)'],
+    ['#8092AB', 'var(--cc-placeholder-text)'],
+    ['#123456', '#123456'],
+    ['var(--cc-primary-text)', 'var(--cc-primary-text)'],
+  ])('[Statistics-BUG-007] saved colour %s renders as %s', (saved, rendered) => {
+    // Break this catches: an old 2022 default hex is used literally (or dropped) instead of the theme default.
+    // Pure seam: jsdom's cssstyle rejects var() colours, so the rendered style cannot show the mapping.
+    expect(themeColour(saved)).toBe(rendered);
+  });
+
+  test('[Statistics-BUG-007] dark mode no longer forces #FFFFFC on the old default colours', async () => {
+    widget.render({
+      darkMode: true,
+      styles: {
+        primaryTextColour: binding('#000000'),
+        primaryLabelColour: binding('#8092AB'),
+        secondaryLabelColour: binding('#8092AB'),
+      },
+    });
+
+    await waitFor(() => expect(primaryValueEl()).toBeInTheDocument());
+    expect(primaryValueEl()).not.toHaveStyle({ color: '#FFFFFC' });
+    expect(screen.getByText('This months earnings')).not.toHaveStyle({ color: '#FFFFFC' });
+    expect(screen.getByText('Last month')).not.toHaveStyle({ color: '#FFFFFC' });
+  });
+
+  // Mounts the card inside a real Container, the parent from the QA report.
+  const renderInsideContainer = () => {
+    const session = new AppBuilderTestSession({
+      scenario: defineAppBuilderScenario({
+        id: 'statistics-inside-container',
+        name: 'Statistics inside a Container',
+        primarySeam: 'rtl',
+        surface: 'app-editor',
+        edition: 'ce',
+        environment: 'development',
+        layout: 'desktop',
+        version: 'draft',
+        transferPath: 'not-applicable',
+        access: 'authenticated',
+        capabilities: { observers: true, media: { matches: false }, dnd: true },
+      }),
+    });
+    const container = componentDefinition('container1', 'container1', 'Container', {
+      loadingState: binding('{{false}}'),
+      visibility: binding('{{true}}'),
+      disabledState: binding('{{false}}'),
+      showHeader: binding('{{false}}'),
+    });
+    const child = componentDefinition(ID, NAME, 'Statistics', DEFAULT_PROPERTIES);
+    child.component.parent = 'container1';
+    child.component.definition.styles = { ...DEFAULT_STYLES };
+    child.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
+    seedApp({ container1: container, [ID]: child }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('view', MODULE_ID);
+    session.render(<RenderWidget {...widgetProps('container1', 'Container', { currentMode: 'view' })} />);
+    return session;
+  };
+  const setParentLoading = (session, loading, parentId = 'container1') =>
+    session.store.act(() =>
+      store().setComponentProperty(
+        parentId,
+        'loadingState',
+        `{{${loading}}}`,
+        'properties',
+        'value',
+        false,
+        MODULE_ID,
+        { saveAfterAction: false }
+      )
+    );
+
+  test('[Statistics-BUG-004] a value set by setPrimaryValue survives the parent Container showing its loader', async () => {
+    // Break this catches: the card remounts after the loader and re-seeds its value from the property.
+    const session = renderInsideContainer();
+    await waitFor(() => expect(screen.getByText('682.3')).toBeInTheDocument());
+
+    await widget.act('setPrimaryValue', '777');
+    await waitFor(() => expect(screen.getByText('777')).toBeInTheDocument());
+
+    await setParentLoading(session, true);
+    await waitFor(() => expect(screen.queryByText('777')).not.toBeInTheDocument());
+    await setParentLoading(session, false);
+
+    await waitFor(() => expect(screen.getByText('777')).toBeInTheDocument());
+    expect(screen.queryByText('682.3')).not.toBeInTheDocument();
+    expect(exposed('primaryValue')).toBe('777');
+  });
+
+  test('[Statistics-BUG-004] setSecondaryValue and setLoading values also survive the parent Container loader', async () => {
+    const session = renderInsideContainer();
+    await waitFor(() => expect(screen.getByText('2.85')).toBeInTheDocument());
+
+    await widget.act('setSecondaryValue', '42');
+    await widget.act('setLoading', true);
+    await waitFor(() => expect(spinner()).toBeInTheDocument());
+
+    await setParentLoading(session, true);
+    await setParentLoading(session, false);
+
+    await waitFor(() => expect(card()).toBeInTheDocument());
+    expect(spinner()).toBeInTheDocument();
+    expect(exposed('isLoading')).toBe(true);
+    expect(exposed('secondaryValue')).toBe('42');
+  });
+
+  test('[Statistics-BUG-004] a card hidden by setVisibility stays hidden after the parent Container loader', async () => {
+    const session = renderInsideContainer();
+    await waitFor(() => expect(card()).toHaveStyle({ display: 'flex' }));
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(card()).toHaveStyle({ display: 'none' }));
+
+    await setParentLoading(session, true);
+    await setParentLoading(session, false);
+
+    await waitFor(() => expect(card()).toBeInTheDocument());
+    expect(card()).toHaveStyle({ display: 'none' });
+    expect(exposed('isVisible')).toBe(false);
+  });
+
+  test('[Statistics-BUG-004] a value set by setPrimaryValue survives the parent Form loader', async () => {
+    widget.renderInsideForm();
+    await waitFor(() => expect(screen.getByText('682.3')).toBeInTheDocument());
+
+    await widget.act('setPrimaryValue', '777');
+    await waitFor(() => expect(screen.getByText('777')).toBeInTheDocument());
+
+    await setParentLoading(widget.session, true, 'form1');
+    await waitFor(() => expect(screen.queryByText('777')).not.toBeInTheDocument());
+    await setParentLoading(widget.session, false, 'form1');
+
+    await waitFor(() => expect(card()).toBeInTheDocument());
+    expect(screen.getByText('777')).toBeInTheDocument();
+  });
+
+  test('[Statistics-BUG-004] a Value property change while the parent is loading wins over the earlier action value', async () => {
+    // Break this catches: restoring the action value even though the query refreshed the property meanwhile.
+    const session = renderInsideContainer();
+    await waitFor(() => expect(screen.getByText('682.3')).toBeInTheDocument());
+
+    await widget.act('setPrimaryValue', '777');
+    await setParentLoading(session, true);
+    await session.store.act(() =>
+      store().setComponentProperty(ID, 'primaryValue', '999', 'properties', 'value', false, MODULE_ID, {
+        saveAfterAction: false,
+      })
+    );
+    await setParentLoading(session, false);
+
+    await waitFor(() => expect(screen.getByText('999')).toBeInTheDocument());
+    expect(screen.queryByText('777')).not.toBeInTheDocument();
+    expect(exposed('primaryValue')).toBe('999');
+  });
+
+  describe('text that does not fit', () => {
+    const LONG_VALUE = 'LONG-123456789012345678901234567890';
+    const LONG_LABEL = 'LONG label that is wider than the card';
+    let restoreGeometry;
+
+    // jsdom has no layout: any element whose text contains "LONG" is wider than its box.
+    beforeEach(() => {
+      const scrollWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth');
+      const clientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth');
+      Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+        configurable: true,
+        get() {
+          return this.textContent.includes('LONG') ? 500 : 100;
+        },
+      });
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get: () => 100 });
+      // jsdom defines these on Element.prototype, so there is usually nothing to put back here.
+      restoreGeometry = () => {
+        if (scrollWidth) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', scrollWidth);
+        else delete HTMLElement.prototype.scrollWidth;
+        if (clientWidth) Object.defineProperty(HTMLElement.prototype, 'clientWidth', clientWidth);
+        else delete HTMLElement.prototype.clientWidth;
+      };
+    });
+    afterEach(() => restoreGeometry());
+
+    const tooltipsWithText = (text) =>
+      [...document.querySelectorAll('[data-cy="widget-tooltip"]')].filter((el) => el.textContent.includes(text));
+
+    test('[Statistics-BUG-005] labels and values stay on one line and end in an ellipsis', async () => {
+      // Break this catches: text wraps (word-break) and the card cuts the last line with no sign.
+      widget.render();
+      await waitFor(() => expect(primaryValueEl()).toBeInTheDocument());
+
+      for (const el of [
+        screen.getByText('This months earnings'),
+        primaryValueEl(),
+        secondaryValueEl(),
+        screen.getByText('Last month'),
+      ]) {
+        expect(el).toHaveStyle({ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' });
+      }
+    });
+
+    test('[Statistics-BUG-005] hovering a cut-off value shows its full text, prefix and suffix included', async () => {
+      widget.render({
+        properties: {
+          primaryValue: binding(LONG_VALUE),
+          primaryPrefixText: binding('$'),
+          primarySuffixText: binding('/mo'),
+        },
+      });
+      await waitFor(() => expect(primaryValueEl()).toBeInTheDocument());
+
+      await widget.session.user.hover(primaryValueEl());
+
+      await waitFor(() => expect(tooltipsWithText(`$${LONG_VALUE}/mo`).length).toBeGreaterThan(0));
+    });
+
+    test('[Statistics-BUG-005] hovering a cut-off label shows its full text', async () => {
+      widget.render({ properties: { secondaryValueLabel: binding(LONG_LABEL) } });
+      await waitFor(() => expect(screen.getByText(LONG_LABEL)).toBeInTheDocument());
+
+      await widget.session.user.hover(screen.getByText(LONG_LABEL));
+
+      await waitFor(() => expect(tooltipsWithText(LONG_LABEL).length).toBeGreaterThan(0));
+    });
+
+    test('[Statistics-BUG-006] over cut-off text only the text tooltip shows, not the component tooltip', async () => {
+      // Break this catches: the card's own tooltip opens on top of (or instead of) the full-text tooltip.
+      widget.render({ properties: { primaryValue: binding(LONG_VALUE), tooltip: binding('Card hint') } });
+      await waitFor(() => expect(primaryValueEl()).toBeInTheDocument());
+
+      await widget.session.user.hover(primaryValueEl());
+
+      await waitFor(() => expect(tooltipsWithText(LONG_VALUE).length).toBeGreaterThan(0));
+      expect(tooltipsWithText('Card hint')).toHaveLength(0);
+    });
+
+    test('[Statistics-BUG-006] elsewhere on the card, and over text that fits, only the component tooltip shows', async () => {
+      widget.render({ properties: { primaryValue: binding(LONG_VALUE), tooltip: binding('Card hint') } });
+      await waitFor(() => expect(primaryValueEl()).toBeInTheDocument());
+
+      await widget.session.user.hover(screen.getByText('This months earnings'));
+
+      await waitFor(() => expect(tooltipsWithText('Card hint').length).toBeGreaterThan(0));
+      expect(tooltipsWithText(LONG_VALUE)).toHaveLength(0);
+    });
+
+    test('[Statistics-BUG-006] moving from cut-off text back to the card shows the component tooltip again', async () => {
+      widget.render({ properties: { primaryValue: binding(LONG_VALUE), tooltip: binding('Card hint') } });
+      await waitFor(() => expect(primaryValueEl()).toBeInTheDocument());
+
+      await widget.session.user.hover(primaryValueEl());
+      await waitFor(() => expect(tooltipsWithText(LONG_VALUE).length).toBeGreaterThan(0));
+      await widget.session.user.hover(card());
+
+      await waitFor(() => expect(tooltipsWithText('Card hint').length).toBeGreaterThan(0));
+      await waitFor(() => expect(tooltipsWithText(LONG_VALUE)).toHaveLength(0));
+    });
   });
 });
