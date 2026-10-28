@@ -2,6 +2,11 @@
 // second migration; `skip` finds another server holding the lock; `none` finds nothing pending;
 // `slow` keeps running until killed.
 const fail = process.argv[2] === 'fail';
+// The contract run spawned after a success: marks FAKE_CONTRACT_MARKER, exits FAKE_CONTRACT_EXIT.
+if (process.env.MIGRATION_PHASE === 'contract') {
+  if (process.env.FAKE_CONTRACT_MARKER) require('fs').writeFileSync(process.env.FAKE_CONTRACT_MARKER, 'ran');
+  process.exit(Number(process.env.FAKE_CONTRACT_EXIT ?? '0'));
+}
 if (process.argv[2] === 'slow') {
   console.log('[migrations] 1 migration(s) pending: SlowThing1');
   console.log('[migrations] START SlowThing1');

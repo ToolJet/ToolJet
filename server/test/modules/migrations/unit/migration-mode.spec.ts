@@ -61,6 +61,7 @@ describe('migration-helpers/migration-mode', () => {
       ['', undefined, 'single-transaction'],
       ['expand', 'expand', 'multi-transaction'],
       ['backfill', 'backfill', 'multi-transaction'],
+      ['contract', 'contract', 'multi-transaction'],
     ])('should read %j as %s, run %s', (raw, phase, strategy) => {
       expect(parseMigrationPhase(raw)).toBe(phase);
       expect(runStrategy(parseMigrationPhase(raw))).toBe(strategy);
