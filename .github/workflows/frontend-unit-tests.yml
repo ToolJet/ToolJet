@@ -94,20 +94,44 @@ jobs:
       - name: Validate test layout
         if: steps.scope.outputs.frontend == 'true'
         run: npm run test:layout
+      - name: Validate AI placement, discovery and pinned EE revision
+        if: steps.scope.outputs.frontend == 'true'
+        run: TOOLJET_EDITION=ee node ../scripts/check-ai-tests.cjs frontend
 
       # The whole suite runs in seconds, so there is no reason to scope it to
       # changed files — doing that let PRs pass green without running a test.
       - name: Run full test suite with coverage
+        id: tests
         if: steps.scope.outputs.frontend == 'true'
-        run: npm run test:ci
+        run: |
+          mkdir -p coverage-ai/ee
+          TOOLJET_EDITION=ee npm run test:ci -- --json --outputFile=coverage-ai/ee/results.json
+      - name: Verify all AI assertions executed
+        if: ${{ !cancelled() && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure') }}
+        run: node ../scripts/check-ai-test-results.cjs frontend coverage-ai/ee/results.json
+      - name: Extract and check full-scope AI frontend coverage
+        id: ai-coverage
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' }}
+        continue-on-error: true
+        run: node ../scripts/report-ai-coverage.cjs frontend coverage/app-builder/ee/jest/coverage-final.json coverage-ai/ee/report
+      - name: Upload AI frontend coverage
+        if: ${{ !cancelled() && (steps.ai-coverage.outcome == 'success' || steps.ai-coverage.outcome == 'failure') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-ai-frontend
+          path: frontend/coverage-ai/ee/report/
+          if-no-files-found: error
 
       # Fails if an App Builder source file is not assigned to a subsystem in
       # app-builder-coverage-manifest.json. The harness contract spec is NOT run
       # here — testMatch already picks it up in the full suite above, so running
       # `test:app-builder:contracts` would execute it a second time.
       - name: Validate App Builder coverage manifest
-        if: steps.scope.outputs.frontend == 'true'
+        if: ${{ !cancelled() && steps.scope.outputs.frontend == 'true' && steps.tests.outcome == 'success' }}
         run: npm run validate:app-builder-coverage-manifest
+      - name: Enforce AI coverage verdict after publishing reports
+        if: ${{ !cancelled() && steps.ai-coverage.outcome == 'failure' }}
+        run: exit 1
 
   # Separate job, and therefore a SEPARATE STATUS CHECK, on purpose: a contract
   # violation used to abort the job before jest ran, so an unrelated bookkeeping
