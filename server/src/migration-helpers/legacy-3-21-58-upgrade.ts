@@ -175,27 +175,8 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
   [
     'MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000',
     {
-      // The original's row changes, verbatim; its drops and NOT NULL move to cleanup.
-      up: run(
-        'SET LOCAL statement_timeout = 0',
-        'UPDATE data_source_versions SET is_synced = true WHERE branch_id IS NOT NULL',
-        `UPDATE data_source_versions f
-         SET branch_id = wb.id
-         FROM data_sources ds
-         JOIN organization_git_sync_branches wb
-           ON wb.organization_id = ds.organization_id AND wb.is_default = true
-         WHERE f.data_source_id = ds.id
-           AND f.is_active = true
-           AND f.branch_id IS NULL
-           AND (SELECT count(*) FROM data_source_versions d WHERE d.data_source_id = f.data_source_id) = 1`,
-        `DELETE FROM data_source_versions f
-         WHERE f.is_active = true
-           AND f.branch_id IS NULL
-           AND EXISTS (
-             SELECT 1 FROM data_source_versions d
-             WHERE d.data_source_id = f.data_source_id AND d.branch_id IS NOT NULL
-           )`
-      ),
+      // The original's row changes; its drops and NOT NULL move to cleanup.
+      up: inOrder(run('SET LOCAL statement_timeout = 0'), runOriginal(rowChange)),
       // Final shape (MakeDataSourceVersionNameCaseSensitive); loosen dropped the old index of this name.
       beforeCommit: run(
         `CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_active_name_branch

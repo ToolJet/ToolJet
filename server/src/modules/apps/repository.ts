@@ -9,7 +9,7 @@ import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { isUUID } from 'class-validator';
 import { APP_TYPES } from './constants';
-import { appVersionOnBranch, isNotWorkflowVersion, nullBranchLast } from '@helpers/branch_scope.helper';
+import { appVersionOnBranch, appVersionOnDefaultBranch, nullBranchLast } from '@helpers/branch_scope.helper';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -139,8 +139,7 @@ export class AppsRepository extends Repository<App> {
       .innerJoinAndSelect('av.app', 'app')
       .leftJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id')
       .where('av.slug = :slug', { slug })
-      // NULL branch: legacy 3.21.58 row, see onBranch.
-      .andWhere(`(wb.is_default = true OR (av.branch_id IS NULL AND ${isNotWorkflowVersion('av')}))`)
+      .andWhere(appVersionOnDefaultBranch('av', 'wb'))
       .orderBy(nullBranchLast('av.branch_id'), 'ASC')
       .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
@@ -164,8 +163,7 @@ export class AppsRepository extends Repository<App> {
       .innerJoinAndSelect('av.app', 'app')
       .leftJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id')
       .where('av.slug = :slug', { slug })
-      // NULL branch: legacy 3.21.58 row, see onBranch.
-      .andWhere(`(wb.is_default = true OR (av.branch_id IS NULL AND ${isNotWorkflowVersion('av')}))`)
+      .andWhere(appVersionOnDefaultBranch('av', 'wb'))
       .orderBy(nullBranchLast('av.branch_id'), 'ASC')
       .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
@@ -449,8 +447,7 @@ export class AppsRepository extends Repository<App> {
       .leftJoinAndSelect('app.appVersions', 'appVersions')
       .leftJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id')
       .where('av.slug = :slug', { slug: idOrSlug })
-      // NULL branch: legacy 3.21.58 row, see onBranch.
-      .andWhere(`(wb.is_default = true OR (av.branch_id IS NULL AND ${isNotWorkflowVersion('av')}))`)
+      .andWhere(appVersionOnDefaultBranch('av', 'wb'))
       .orderBy(nullBranchLast('av.branch_id'), 'ASC')
       .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
