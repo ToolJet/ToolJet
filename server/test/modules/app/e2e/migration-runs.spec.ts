@@ -587,6 +587,7 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       afterEach(() => {
         delete process.env.FAKE_CONTRACT_MARKER;
         delete process.env.FAKE_CONTRACT_EXIT;
+        jest.restoreAllMocks();
       });
 
       async function runAndContractToExit(args = ''): Promise<void> {
@@ -597,8 +598,15 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       }
 
       it('should start contract once the run is recorded as succeeded', async () => {
+        const internals = service as unknown as { updateRun: jest.Mock; runContractChild: jest.Mock };
+        const recorded = jest.spyOn(internals, 'updateRun');
+        const contract = jest.spyOn(internals, 'runContractChild');
+
         await runAndContractToExit();
 
+        const succeededAt = recorded.mock.calls.findIndex((call) => call[2] === 'succeeded');
+        expect(succeededAt).toBeGreaterThanOrEqual(0);
+        expect(recorded.mock.invocationCallOrder[succeededAt]).toBeLessThan(contract.mock.invocationCallOrder[0]);
         expect(contractRan()).toBe(true);
         await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
       });

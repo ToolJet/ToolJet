@@ -127,7 +127,7 @@ probe catch the mechanical cases; this lens covers what they cannot judge.
 - **Phase placement.** Expand adds only, backfill changes rows, contract drops or tightens. A drop, rename, type
   change or NOT NULL outside contract breaks the release still serving and blocks rollback. So does a contract
   for something the code in this same release still reads: it belongs a release later.
-- **Backfill tail.** Index builds, triggers, `NOT VALID` and `VALIDATE` go in `tail()`, not `up()`.
+- **Backfill tail.** Index builds, triggers, foreign keys `NOT VALID` and `VALIDATE` go in `tail()`, not `up()`. A CHECK takes ACCESS EXCLUSIVE even `NOT VALID`, so it goes to contract.
 - **Rerunnable.** Contract steps and anything that may run twice use `IF EXISTS` / `IF NOT EXISTS` or a guard, and
   go through `withShortLock` / `setNotNull`.
 - **Reads during the backfill.** Code in this PR serves while the backfill runs and after it fails. A new read that
