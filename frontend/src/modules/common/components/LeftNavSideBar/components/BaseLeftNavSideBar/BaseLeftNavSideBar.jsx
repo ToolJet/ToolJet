@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import { NotificationCenter } from '@/_components/NotificationCenter';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { appendBranchName } from '@/_helpers/active-branch';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { SettingsMenu } from '@/modules/dashboard/components';
@@ -20,8 +21,6 @@ const BaseLeftNavSideBar = ({
   showNewHomePage,
   darkMode,
   switchDarkMode,
-  admin,
-  isBuilder,
   isAuthorizedForGDS,
   canCreateVariableOrConstant,
   featureAccess,
@@ -88,7 +87,7 @@ const BaseLeftNavSideBar = ({
             </ToolTip>
           </li>
         )}
-        {(admin || isBuilder) && (
+        {canAccessTooljetDbDashboard() && (
           <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
             <ToolTip message="ToolJet Database" placement="right">
               <Link
