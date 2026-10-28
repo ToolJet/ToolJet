@@ -295,7 +295,8 @@ export const Listview = function Listview({
                 borderColor,
                 margin: '1px',
                 borderTop: 0,
-                ...(isDynamicHeightEnabled ? { marginTop: 'auto' } : { left: '1px', right: '1px' }),
+                // fixed-bottom brings z-index 1030, which paints the pager over the widget's config handle.
+                ...(isDynamicHeightEnabled ? { marginTop: 'auto' } : { left: '1px', right: '1px', zIndex: 1 }),
               }}
             >
               <div style={{ backgroundColor }}>

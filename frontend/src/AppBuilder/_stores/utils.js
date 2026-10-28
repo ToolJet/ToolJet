@@ -365,14 +365,8 @@ export const checkSubstringRegex = (mainString, subString) => {
   // Escape special characters in the subString
   const escapedSubString = subString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  // Matches `subString` used as a standalone reference.
-  // - The trailing set is deliberately narrow —
-  // - a property access (`.`), an index (`[`), optional chaining (`?.`), whitespace, or end of string.
-  //
-  // Whitespace is what a bare identifier is followed by in practice.
-  // Optional chaining is matched as the two-character `?.`.
-  // The cost is the unspaced ternary `listItem?a:b`; the spaced form is covered by whitespace.
-  const regex = new RegExp(`(^|[^a-zA-Z0-9\\].])(${escapedSubString})($|[.\\[\\s]|\\?\\.)`);
+  // Any follower counts (`}`, `)`, `+`, `.`), except a name char, a closing quote or `?` (prose, ternary).
+  const regex = new RegExp(`(^|[^a-zA-Z0-9_$\\].])(${escapedSubString})(?![a-zA-Z0-9_$'"\`?])`);
 
   // Test the mainString against the regex
   return regex.test(normalizedMainString);

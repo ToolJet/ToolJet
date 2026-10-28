@@ -45,7 +45,13 @@ function traverseObjectToHints(data, prefix, maxDepth = 3, _depth = 0) {
   keys.forEach((key) => {
     const value = data[key];
     const _type = Object.prototype.toString.call(value).slice(8, -1);
-    const newPath = prefix ? `${prefix}.${key}` : key;
+    // A hint is inserted as typed, so a key that is not a plain name needs a bracket accessor.
+    const segment = /^[A-Za-z_$][\w$]*$/.test(key)
+      ? `.${key}`
+      : Array.isArray(data)
+        ? `[${key}]`
+        : `[${JSON.stringify(key)}]`;
+    const newPath = prefix ? `${prefix}${segment}` : key;
 
     hints.push({ hint: newPath, type: _type });
 
@@ -76,14 +82,10 @@ function buildComponentHints(storeState, moduleId) {
       return;
     }
 
-    // Handle per-row arrays (ListView/Kanban children) — unwrap and use row 0 as template
-    let dataToTraverse = componentData;
-    if (Array.isArray(componentData)) {
-      dataToTraverse = componentData[0] || {};
-    }
-
     hints.push({ hint: `components.${name}`, type: 'Object' });
-    hints.push(...traverseObjectToHints(dataToTraverse, `components.${name}`, 3));
+    // A row child's fields only resolve inside its row, where getContextHints offers them (D-14).
+    if (Array.isArray(componentData)) return;
+    hints.push(...traverseObjectToHints(componentData, `components.${name}`, 3));
   });
 
   return hints;
@@ -451,6 +453,7 @@ export const createCodeHinterSlice = (set, get) => ({
     // For each one found, extract listItem/cardData from customResolvables.
     let currentParentId = componentDef.component?.parent;
     let nearestListViewOrKanbanId = null;
+    const offeredRowKeys = new Set();
     // Cyclic parent chains lock up the autocomplete code path whenever the user
     // focuses a field inside a cyclic subtree. Break instead of looping forever.
     const visited = new Set();
@@ -464,9 +467,12 @@ export const createCodeHinterSlice = (set, get) => ({
       if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
         const resolvableKey = ROW_SCOPED_RESOLVABLE_KEY_MAP[parentType];
         nearestListViewOrKanbanId = nearestListViewOrKanbanId || baseParentId;
-        const resolvables = customResolvables[baseParentId];
-        if (resolvables && resolvables[0]?.[resolvableKey] !== undefined) {
-          const data = resolvables[0][resolvableKey];
+        // A nested list files its row scopes per outer row; the nearest list's variable shadows outer ones.
+        let rowScope = customResolvables[baseParentId]?.[0];
+        while (Array.isArray(rowScope)) rowScope = rowScope[0];
+        if (rowScope?.[resolvableKey] !== undefined && !offeredRowKeys.has(resolvableKey)) {
+          offeredRowKeys.add(resolvableKey);
+          const data = rowScope[resolvableKey];
           hints.push({ hint: resolvableKey, type: 'Object', isContext: true });
           hints.push(
             ...traverseObjectToHints(data, resolvableKey, 3).map((h) => ({

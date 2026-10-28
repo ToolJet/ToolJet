@@ -795,6 +795,413 @@ describe('Listview: a nested list keeps its rows when something outside changes'
   });
 });
 
+/**
+ * Inside a nested list a sibling is stored per outer row and then per inner row, so reading it
+ * takes both row numbers. Reading it with the inner number alone lands on a whole outer row.
+ */
+describe('Listview: a nested row reads its own siblings', () => {
+  beforeEach(nestedWidget.setup);
+  afterEach(nestedWidget.teardown);
+
+  const innerChild = (id, name, type, properties) => {
+    const definition = componentDefinition(id, name, type, properties);
+    definition.component.parent = 'lv2';
+    definition.component.definition.styles = {};
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+  const INNER_INPUT = () =>
+    innerChild('inp4', 'textinput4', 'TextInput', { label: binding(''), value: binding('{{listItem.name}}') });
+  const INNER_MIRROR = () =>
+    innerChild('txt2', 'text2', 'Text', { text: binding('T={{components.textinput4.value}}') });
+  const INNER_BUTTON = () => innerChild('btn4', 'button4', 'Button', { text: binding('Go') });
+
+  const innerTexts = () => [...document.querySelectorAll('.list-item .list-item')].map((node) => node.textContent);
+
+  test('[Listview-BUG-044] a Text in an inner row mirrors the input in the same inner row', async () => {
+    // Break this catches: the row overlay indexing a nested sibling by the inner row alone, which
+    // returns the whole outer row's array and leaves every mirror blank.
+    nestedWidget.render({ currentMode: 'view', extraComponents: { inp4: INNER_INPUT(), txt2: INNER_MIRROR() } });
+
+    await waitFor(() => expect(innerTexts()).toEqual(['T=a', 'T=b', 'T=c', 'T=d']));
+  });
+
+  test('[Listview-BUG-044] the mirror keeps its own inner row after something outside changes', async () => {
+    // Break this catches: the re-resolution that runs on a variable change indexing by the inner row
+    // alone, so the first render is right and the next outside change blanks every mirror.
+    const mirrorWithSuffix = () =>
+      innerChild('txt2', 'text2', 'Text', {
+        text: binding("T={{components.textinput4.value + (variables.sfx ?? '')}}"),
+      });
+    nestedWidget.render({ currentMode: 'view', extraComponents: { inp4: INNER_INPUT(), txt2: mirrorWithSuffix() } });
+    await waitFor(() => expect(innerTexts()).toEqual(['T=a', 'T=b', 'T=c', 'T=d']));
+
+    await nestedWidget.session.store.act(() => {
+      store().setVariable('sfx', '!', MODULE_ID);
+    });
+
+    await waitFor(() => expect(innerTexts()).toEqual(['T=a!', 'T=b!', 'T=c!', 'T=d!']));
+  });
+
+  test('[Listview-BUG-044] an event in an inner row reads the input in the same inner row', async () => {
+    // Break this catches: the action runner getting the full row path but the overlay using it as
+    // one index, so a button in outer row 2 reads nothing.
+    nestedWidget.render({
+      currentMode: 'view',
+      extraComponents: { inp4: INNER_INPUT(), btn4: INNER_BUTTON() },
+      events: [
+        {
+          id: 'evt-inner',
+          index: 0,
+          sourceId: 'btn4',
+          name: 'evt-inner',
+          target: 'component',
+          event: {
+            eventId: 'onClick',
+            actionId: 'set-custom-variable',
+            key: 'innerRead',
+            value: '{{components.textinput4.value}}',
+          },
+        },
+      ],
+    });
+    const goButtons = () => [...document.querySelectorAll('button')].filter((node) => node.textContent === 'Go');
+    await waitFor(() => expect(goButtons()).toHaveLength(4));
+
+    await nestedWidget.session.user.click(goButtons()[2]);
+
+    await waitFor(() => expect(store().getVariable('innerRead', MODULE_ID)).toBe('c'));
+  });
+
+  test('[Listview-BUG-045] Set visibility from an inner row hides the target in that inner row only', async () => {
+    // Break this catches: the wrapper reading a nested child's state from outer row 0, where the
+    // lookup walks into nothing and the action has no visible effect.
+    nestedWidget.render({
+      currentMode: 'view',
+      extraComponents: {
+        btn4: INNER_BUTTON(),
+        btn5: innerChild('btn5', 'button5', 'Button', { text: binding('Target') }),
+      },
+      events: [hideTargetOnClick('btn4', 'btn5')],
+    });
+    await waitFor(() => expect(buttonsNamed('Target')).toHaveLength(4));
+
+    await nestedWidget.session.user.click(buttonsNamed('Go')[2]);
+
+    await waitFor(() => expect(wrapperShown('btn5')).toEqual([true, true, false, true]));
+  });
+});
+
+describe('Listview: an inner row reads its outer row', () => {
+  beforeEach(nestedWidget.setup);
+  afterEach(nestedWidget.teardown);
+
+  const outerText = () => {
+    const definition = componentDefinition('txt0', 'text0', 'Text', { text: binding('{{listItem.name}}') });
+    definition.component.parent = ID;
+    definition.component.definition.styles = {};
+    definition.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
+    return definition;
+  };
+  const innerChild = (id, name, type, properties) => {
+    const definition = componentDefinition(id, name, type, properties);
+    definition.component.parent = 'lv2';
+    definition.component.definition.styles = {};
+    definition.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
+    return definition;
+  };
+  const innerTexts = () => [...document.querySelectorAll('.ele-txt2')].map((node) => node.textContent.trim());
+
+  test('[Listview-BUG-048] a Text in an inner row reads the outer row s Text', async () => {
+    // Break this catches: the row overlay covering only the inner list, so an outer-row sibling
+    // stays one value per outer row and every inner read is undefined (D-15).
+    nestedWidget.render({
+      currentMode: 'view',
+      extraComponents: {
+        txt0: outerText(),
+        txt2: innerChild('txt2', 'text2', 'Text', { text: binding('B={{components.text0.text}}') }),
+      },
+    });
+
+    await waitFor(() => expect(innerTexts()).toEqual(['B=o1', 'B=o1', 'B=o2', 'B=o2']));
+  });
+
+  test('[Listview-BUG-048] an event in an inner row reads the outer row s Text', async () => {
+    // Break this catches: the action resolver sharing the same inner-only overlay.
+    nestedWidget.render({
+      currentMode: 'view',
+      extraComponents: { txt0: outerText(), btn4: innerChild('btn4', 'button4', 'Button', { text: binding('Go') }) },
+      events: [
+        {
+          id: 'evt-outer',
+          index: 0,
+          sourceId: 'btn4',
+          name: 'evt-outer',
+          target: 'component',
+          event: {
+            eventId: 'onClick',
+            actionId: 'set-custom-variable',
+            key: 'outerRead',
+            value: '{{components.text0.text}}',
+          },
+        },
+      ],
+    });
+    await waitFor(() => expect(buttonsNamed('Go')).toHaveLength(4));
+
+    await nestedWidget.session.user.click(buttonsNamed('Go')[3]);
+
+    await waitFor(() => expect(store().getVariable('outerRead', MODULE_ID)).toBe('o2'));
+  });
+});
+
+describe('Listview: rows added after mount', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BUG-049] a sibling of a toggle shows the toggle s value in a row added later', async () => {
+    // Break this catches: a child's first write into a freshly created row slot being treated as
+    // new and skipping its dependents, so a sibling read earlier stays undefined in that row.
+    const toggle = rowChild('tgl1', 'toggle1', 'ToggleSwitch', { label: binding('t') });
+    const mirror = rowChild('txt5', 'text5', 'Text', { text: binding('{{String(components.toggle1.value)}}') });
+    await mount({
+      properties: { data: binding('{{variables.rows ?? []}}') },
+      extraComponents: { tgl1: toggle, txt5: mirror },
+      defaultExtraComponents: false,
+    });
+
+    await widget.session.store.act(() => {
+      store().setVariable('rows', [{ text: 'a' }, { text: 'b' }], MODULE_ID);
+    });
+
+    const mirrors = () => [...document.querySelectorAll('.ele-txt5')].map((node) => node.textContent.trim());
+    await waitFor(() => expect(mirrors()).toEqual(['false', 'false']));
+  });
+});
+
+describe('Listview: renaming a row child', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BUG-050] data and children follow a renamed row child', async () => {
+    // Break this catches: a rename that changes the definition but never re-derives the published
+    // rows, so `data` keeps the old name and a binding to the new one reads nothing.
+    await mount();
+    await waitFor(() => expect(exposed('data')?.[0]?.text1).toBeDefined());
+
+    await widget.session.store.act(() => {
+      store().setComponentName('txt1', 'caption', MODULE_ID);
+    });
+
+    await waitFor(() => expect(Object.keys(exposed('data')[0])).toContain('caption'));
+    expect(Object.keys(exposed('data')[0])).not.toContain('text1');
+    expect(Object.keys(exposed('children')[2])).toContain('caption');
+  });
+});
+
+describe('Listview: one drop is one undo', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BUG-051] one Undo removes, and one Redo restores, every component a single drop added', async () => {
+    // Break this catches: an undo entry per added component, so one Undo after dropping a widget
+    // with children removes only the last child and leaves the rest on the canvas.
+    await mount();
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    const box = rowChild('cont6', 'container6', 'Container', {});
+    const inside = rowChild('txt6', 'text6', 'Text', { text: binding('in') });
+    inside.component.parent = 'cont6';
+
+    await widget.session.store.act(() => {
+      store().addComponentToCurrentPage([box, inside], MODULE_ID, { saveAfterAction: false });
+    });
+    await waitFor(() => expect(store().getCurrentPageComponents(MODULE_ID).txt6).toBeDefined());
+
+    await widget.session.store.act(() => {
+      store().handleUndo();
+    });
+
+    const remaining = Object.keys(store().getCurrentPageComponents(MODULE_ID));
+    expect(remaining).not.toContain('cont6');
+    expect(remaining).not.toContain('txt6');
+    expect(remaining).toContain('txt1');
+
+    await widget.session.store.act(() => {
+      store().handleRedo();
+    });
+
+    const restored = Object.keys(store().getCurrentPageComponents(MODULE_ID));
+    expect(restored).toEqual(expect.arrayContaining(['cont6', 'txt6']));
+  });
+});
+
+describe('Listview: a list of plain values', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test.each([
+    ['{{"v=" + listItem}}', ['v=x', 'v=y']],
+    ['{{String(listItem)}}', ['x', 'y']],
+  ])('[Listview-BUG-053] %s shows each row s value', async (expression, expected) => {
+    // Break this catches: the listItem dependency check missing a reference followed by `}` or `)`,
+    // so the row never resolves against its record and renders blank.
+    await mount({
+      properties: { data: binding('{{["x", "y"]}}') },
+      extraComponents: { txt1: rowChild('txt1', 'text1', 'Text', { text: binding(expression) }) },
+    });
+
+    await waitFor(() => expect(rowTexts()).toEqual(expected));
+  });
+});
+
+describe('Listview: only the first row of every list is editable', () => {
+  beforeEach(nestedWidget.setup);
+  afterEach(nestedWidget.teardown);
+
+  test('[Listview-BUG-046] an inner list in outer row 2 is not editable in the builder', async () => {
+    // Break this catches: the lock checking the inner row number alone, so the inner list's first
+    // row in every outer row is editable and a child can be dragged out of a copy.
+    nestedWidget.render({ currentMode: 'edit' });
+    await waitFor(() => expect(document.querySelectorAll('.ele-txt2')).toHaveLength(4));
+
+    const editable = [...document.querySelectorAll('.ele-txt2')].map((node) => node.classList.contains('moveable-box'));
+
+    expect(editable).toEqual([true, false, false, false]);
+  });
+});
+
+describe('Listview: a Container in a later row is not editable', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BUG-046] a child of a Container in row 2 or 3 is not editable in the builder', async () => {
+    // Break this catches: the lock applying only to the row canvas, so a Container's canvas inside a
+    // copied row still lets its child be selected and dragged.
+    const contained = rowChild('txt8', 'text8', 'Text', { text: binding('In box') });
+    contained.component.parent = 'cont8';
+    widget.render({
+      currentMode: 'edit',
+      extraComponents: { cont8: rowChild('cont8', 'container8', 'Container', {}), txt8: contained },
+    });
+    await waitFor(() => expect(document.querySelectorAll('.ele-txt8')).toHaveLength(3));
+
+    const editable = [...document.querySelectorAll('.ele-txt8')].map((node) => node.classList.contains('moveable-box'));
+
+    expect(editable).toEqual([true, false, false]);
+  });
+});
+
+describe('Listview: a Container header inside a row', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  // A real id: slot children are filed under `<uuid>-header`, and only a uuid is stripped back to its base.
+  const BOX = '9c9c9c9c-0000-4000-8000-000000000009';
+
+  test('[Listview-BUG-047] the Container body reads the header input of its own row', async () => {
+    // Break this catches: the row overlay collecting a Container's body children OR its header
+    // children, never both, so a header child stays a per-row array and every body read is empty.
+    const box = rowChild(BOX, 'container9', 'Container', { showHeader: binding('{{true}}') });
+    const headerInput = rowChild('inp9', 'textinput9', 'TextInput', {
+      label: binding(''),
+      value: binding('{{listItem.text}}'),
+    });
+    headerInput.component.parent = `${BOX}-header`;
+    const bodyMirror = rowChild('txt9', 'text9', 'Text', { text: binding('H={{components.textinput9.value}}') });
+    bodyMirror.component.parent = BOX;
+    await mount({ extraComponents: { [BOX]: box, inp9: headerInput, txt9: bodyMirror } });
+
+    const mirrors = () => [...document.querySelectorAll('.ele-txt9')].map((node) => node.textContent.trim());
+    await waitFor(() => expect(mirrors()).toEqual(['H=Alpha', 'H=Beta', 'H=Gamma']));
+  });
+
+  test('[Listview-BUG-047] a header input is published in the list s data and children', async () => {
+    // Break this catches: the published rows walking only a Container's body, so a header child is
+    // missing from `data` and `children` and every documented row action on it throws.
+    const box = rowChild(BOX, 'container9', 'Container', { showHeader: binding('{{true}}') });
+    const headerInput = rowChild('inp9', 'textinput9', 'TextInput', {
+      label: binding(''),
+      value: binding('{{listItem.text}}'),
+    });
+    headerInput.component.parent = `${BOX}-header`;
+    await mount({ extraComponents: { [BOX]: box, inp9: headerInput } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    await waitFor(() => expect(exposed('data')?.[1]?.textinput9?.value).toBe('Beta'));
+    expect(typeof exposed('children')[1].textinput9.setText).toBe('function');
+  });
+});
+
+const buttonsNamed = (label) => [...document.querySelectorAll('button')].filter((node) => node.textContent === label);
+// The wrapper, not the widget, is what collapses a hidden child out of the row in the viewer.
+const wrapperShown = (targetId) =>
+  [...document.querySelectorAll(`.ele-${targetId}`)].map((node) => node.style.display !== 'none');
+
+const hideTargetOnClick = (sourceId, targetId) => ({
+  id: 'evt-disable',
+  index: 0,
+  sourceId,
+  name: 'evt-disable',
+  target: 'component',
+  event: {
+    eventId: 'onClick',
+    actionId: 'control-component',
+    componentId: targetId,
+    componentSpecificActionHandle: 'setVisibility',
+    componentSpecificActionParams: [{ handle: 'disable', value: '{{false}}' }],
+  },
+});
+
+/**
+ * A row child behind a Form or a Container is still stored per row. The wrapper that applies
+ * Set visibility, Set disable and Set loading has to read the copy in the child's own row.
+ */
+describe('Listview: Set visibility on a row child behind a wrapper', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const wrapper = (id, name, type, properties) => rowChild(id, name, type, properties);
+  const targetIn = (parentId) => {
+    const definition = rowChild('btn7', 'button7', 'Button', { text: binding('Target') });
+    definition.component.parent = parentId;
+    return definition;
+  };
+  const GO = () => rowChild('btn6', 'button6', 'Button', { text: binding('Go') });
+
+  test('[Listview-BUG-045] a target inside the row s Container is hidden in the clicked row only', async () => {
+    // Break this catches: the wrapper reading the Container child's state from row 0.
+    await mount({
+      extraComponents: { cont7: wrapper('cont7', 'container7', 'Container', {}), btn7: targetIn('cont7'), btn6: GO() },
+      events: [hideTargetOnClick('btn6', 'btn7')],
+    });
+    await waitFor(() => expect(buttonsNamed('Target')).toHaveLength(3));
+
+    await user().click(buttonsNamed('Go')[1]);
+
+    await waitFor(() => expect(wrapperShown('btn7')).toEqual([true, false, true]));
+  });
+
+  test('[Listview-BUG-045] a target inside the row s Form is hidden in the clicked row only', async () => {
+    // Break this catches: the wrapper reading the row 0 Form's copy of its child.
+    await mount({
+      extraComponents: {
+        frm7: wrapper('frm7', 'form7', 'Form', { advanced: binding('{{false}}') }),
+        btn7: targetIn('frm7'),
+        btn6: GO(),
+      },
+      events: [hideTargetOnClick('btn6', 'btn7')],
+    });
+    await waitFor(() => expect(buttonsNamed('Target')).toHaveLength(3));
+
+    await user().click(buttonsNamed('Go')[1]);
+
+    await waitFor(() => expect(wrapperShown('btn7')).toEqual([true, false, true]));
+  });
+});
+
 describe('Listview: rendering records', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
@@ -1328,6 +1735,18 @@ describe('Listview: a Modal opened from a row', () => {
 
     expect(fired('rec')).toBe(afterOpening);
   });
+
+  test('[Listview-BUG-016] clicking the row s Modal open button fires Record clicked once', async () => {
+    // Break this catches: the row hearing clicks only as they bubble, so a child that stops
+    // propagation (the Modal open button does) silently drops the record event (D-13).
+    await mount({ events: [counting('onRecordClicked', 'rec')], extraComponents: { mod1: MODAL_CHILD() } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    await user().click(trigger());
+
+    await waitFor(() => expect(fired('rec')).toBe(1));
+    expect(exposed('selectedRecordId')).toBe(0);
+  });
 });
 
 /**
@@ -1495,6 +1914,69 @@ describe('Listview: Control component from a row event', () => {
     await user().click(rows()[2]);
 
     await waitFor(() => expect(inputValues()).toEqual(['', '', 'picked']));
+  });
+});
+
+/**
+ * An event field such as an alert message or a variable value reads a sibling by name, and that
+ * name is stored once per row. The row the event fired from says which copy it means (D-12).
+ */
+describe('Listview: event fields read the row that fired the event', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const INPUT_CHILD = () => rowChild('inp3', 'textinput3', 'TextInput', { label: binding('') });
+  const BUTTON_CHILD = () => rowChild('btn3', 'button3', 'Button', { text: binding('Go') });
+
+  const onButtonClick = (event) => ({
+    id: `evt-${event.actionId}`,
+    index: 0,
+    sourceId: 'btn3',
+    name: `evt-${event.actionId}`,
+    target: 'component',
+    event: { eventId: 'onClick', ...event },
+  });
+
+  const inputs = () => [...document.querySelectorAll('input[type="text"]')];
+  const buttons = () => [...document.querySelectorAll('button')].filter((node) => node.textContent === 'Go');
+
+  async function typeInRowTwoAndClickItsButton() {
+    await waitFor(() => expect(inputs()).toHaveLength(3));
+    await user().type(inputs()[1], 'abc');
+    await user().click(buttons()[1]);
+  }
+
+  test('[Listview-BUG-043] a variable value reads the sibling input of the clicked row', async () => {
+    // Break this catches: the action resolver reading the per-row array, so `.value` is empty.
+    await mount({
+      extraComponents: { inp3: INPUT_CHILD(), btn3: BUTTON_CHILD() },
+      events: [
+        onButtonClick({ actionId: 'set-custom-variable', key: 'typed', value: '{{components.textinput3.value}}' }),
+      ],
+    });
+
+    await typeInRowTwoAndClickItsButton();
+
+    await waitFor(() => expect(store().getVariable('typed', MODULE_ID)).toBe('abc'));
+  });
+
+  test('[Listview-BUG-043] Run only if reads the sibling input of the clicked row', async () => {
+    // Break this catches: the row reaching the action fields but not the Run only if gate.
+    await mount({
+      extraComponents: { inp3: INPUT_CHILD(), btn3: BUTTON_CHILD() },
+      events: [
+        onButtonClick({
+          actionId: 'set-custom-variable',
+          key: 'gated',
+          value: 'ran',
+          runOnlyIf: "{{components.textinput3.value === 'abc'}}",
+        }),
+      ],
+    });
+
+    await typeInRowTwoAndClickItsButton();
+
+    await waitFor(() => expect(store().getVariable('gated', MODULE_ID)).toBe('ran'));
   });
 });
 

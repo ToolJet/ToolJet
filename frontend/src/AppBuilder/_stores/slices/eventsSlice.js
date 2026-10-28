@@ -570,7 +570,8 @@ export const createEventsSlice = (set, get) => ({
     executeAction: debounce(
       (eventObj, mode, customVariables = {}, moduleId = 'canvas', sourceSubContainerIndex = null) => {
         const { event = eventObj } = eventObj;
-        const { getExposedValueOfComponent, getResolvedValue } = get();
+        const { getExposedValueOfComponent, getRowScopedResolver } = get();
+        const getResolvedValue = getRowScopedResolver(eventObj?.sourceId, sourceSubContainerIndex, moduleId);
 
         if (event?.disabled) {
           return false;

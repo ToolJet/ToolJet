@@ -90,9 +90,10 @@ No change may break existing saved applications. Always ask: would an app saved 
 ### Subcontainers
 
 - `SubcontainerContext` carries a `contextPath` array: `[{ containerId, index }, ...]`
-- Row-scoped resolution uses prototype overlay (`prepareRowScope` / `updateRowScope`)
+- Row-scoped resolution uses prototype overlay (`prepareRowScope` / `updateRowScope`). The overlay covers the outermost list's subtree and `updateRowScope` takes the full row path (`[outer, inner]`); passing only the inner index reads a whole outer row
+- Row events resolve their fields through `getRowScopedResolver` with the firing row; additional actions (`getExposedPropertyForAdditionalActions`) take the row path in every branch
 - Child-to-parent: `setExposedValuesPerRow` → `_deriveListviewChain`, not callback chains
-- ListView nesting is limited to **2 levels**. Only row 0 is editable; the rest are read-only mirrors
+- ListView nesting is limited to **2 levels**. Only a canvas whose every `contextPath` index is 0 is editable; the rest are read-only mirrors
 - `findNearestSubcontainerAncestor` is load-bearing for dependency resolution — verify it is used when walking the component tree
 - `listItem` is ListView, `cardData` is Kanban. Don't mix them up
 

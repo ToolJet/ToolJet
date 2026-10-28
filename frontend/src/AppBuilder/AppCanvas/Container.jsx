@@ -20,6 +20,7 @@ import {
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
 import { findNewParentIdFromMousePosition, isPointerOverCanvasArea } from './Grid/gridUtils';
@@ -158,9 +159,14 @@ const Container = React.memo(
       setCurrentDragCanvasId,
     ]);
 
+    const { contextPath } = useSubcontainerContext();
+    // A canvas inside a later row of any enclosing list is a copy too, not only a later row of this one.
+    const isInsideLaterRow = contextPath.some((segment) => segment.index != null && segment.index !== 0);
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
-    }, [index, componentType, currentMode]);
+      return (
+        (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || isInsideLaterRow || currentMode === 'view'
+      );
+    }, [index, componentType, isInsideLaterRow, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
@@ -296,7 +302,12 @@ const Container = React.memo(
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas' && appType !== 'module',
-          'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
+          'show-grid':
+            isDragging &&
+            (index === 0 || index === null) &&
+            !isInsideLaterRow &&
+            currentMode === 'edit' &&
+            appType !== 'module',
           'module-container': appType === 'module',
           'is-module-editor': isModuleEditor,
           'has-no-scroll': hasNoScroll,

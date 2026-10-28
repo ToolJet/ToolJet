@@ -114,13 +114,12 @@ export const listViewComponentSlice = (set, get) => {
     // After writing, derives the parent ListView's children/data directly in the store.
     setExposedValuePerRow: (componentId, property, value, indices, moduleId = 'canvas') => {
       if (typeof value !== 'function' && get().isExposedValueBatching()) {
-        // Only register a dep path when this is an update to an existing row slot.
-        // Brand-new row slots have no downstream dependents yet, so dep traversal is a no-op.
+        // A row slot created ahead of mount already has dependents, so a first write into it notifies them.
         const existingComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
         const lastIdx = indices[indices.length - 1];
         let existingRow = Array.isArray(existingComponents?.[componentId]) ? existingComponents[componentId] : null;
         for (let i = 0; existingRow && i < indices.length - 1; i++) existingRow = existingRow[indices[i]];
-        const isUpdate = existingRow?.[lastIdx]?.[property] !== undefined;
+        const isUpdate = existingRow?.[lastIdx] !== undefined;
 
         get().bufferExposedValueMutation(
           (state) => {
@@ -371,15 +370,24 @@ export const listViewComponentSlice = (set, get) => {
       const collectDescendants = (containerId) => {
         const children = getContainerChildrenMapping(containerId, moduleId);
         const slotChildren = slotChildrenByBase[containerId] || [];
-        // Combine direct children (base ID) and slot-keyed children (e.g. Tabs).
-        // A child can only have one parent so there is no overlap between the two arrays.
-        const allChildren = children.length > 0 ? children : slotChildren;
+        // A child has one parent, so base and slot children (Container header/footer, Tabs) never overlap.
+        const allChildren = [...children, ...slotChildren];
         for (const childId of allChildren) {
           allDescendants.push(childId);
           collectDescendants(childId);
         }
       };
-      collectDescendants(listviewId);
+      // An inner row also reads its outer rows' components, so start from the outermost list (D-15).
+      const { getComponentDefinition, findNearestSubcontainerAncestor } = get();
+      let outermostId = listviewId;
+      let ancestorParent = getComponentDefinition(listviewId, moduleId)?.component?.parent;
+      while (ancestorParent) {
+        const enclosing = findNearestSubcontainerAncestor(ancestorParent, moduleId);
+        if (!enclosing || enclosing === outermostId) break;
+        outermostId = enclosing;
+        ancestorParent = getComponentDefinition(enclosing, moduleId)?.component?.parent;
+      }
+      collectDescendants(outermostId);
 
       if (allDescendants.length === 0) return null;
 
@@ -419,13 +427,18 @@ export const listViewComponentSlice = (set, get) => {
     //
     // The scoped object is shared across rows — we just overwrite the values each iteration.
     // This works because resolveDynamicValues is synchronous and doesn't hold references.
-    updateRowScope: (scopeCtx, rowIndex) => {
+    updateRowScope: (scopeCtx, rowPath) => {
       const { scoped, descendantIds, components } = scopeCtx;
+      // A nested list stores a sibling per outer row, then per inner row, so one index is not enough.
+      const path = Array.isArray(rowPath) ? rowPath : [rowPath];
       for (const childId of descendantIds) {
-        const val = components[childId];
-        if (Array.isArray(val)) {
-          scoped[childId] = val[rowIndex] ?? {};
+        let val = components[childId];
+        if (!Array.isArray(val)) continue;
+        for (const index of path) {
+          if (!Array.isArray(val)) break;
+          val = val[index];
         }
+        scoped[childId] = val ?? {};
       }
     },
 

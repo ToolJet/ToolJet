@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -55,6 +55,8 @@ export const ListviewSubcontainer = ({
     componentType,
   });
 
+  const pendingClickRef = useRef(false);
+
   return (
     <SubcontainerContext.Provider value={contextValue}>
       <div
@@ -78,14 +80,20 @@ export const ListviewSubcontainer = ({
           event.preventDefault();
           onRecordOrRowClicked(index);
         }}
-        // Bubble, not capture: capture ran before the child's own handler, so Record clicked read a stale value.
-        onClick={(event) => {
+        // Capture, so a child that stops propagation cannot hide the click (D-13); deferred, so the
+        // child's own handler writes first; coalesced, so a label and its synthetic input click count once.
+        onClickCapture={(event) => {
           // A modal this row opened covers the page; clicking it is not clicking the row beneath.
           // It is lifted out of the row in a browser and left inside it under jsdom, so both count.
           if (!event.currentTarget.contains(event.target)) return;
           const dialog = event.target?.closest?.('[role="dialog"]');
           if (dialog && event.currentTarget.contains(dialog)) return;
-          onRecordOrRowClicked(index);
+          if (pendingClickRef.current) return;
+          pendingClickRef.current = true;
+          setTimeout(() => {
+            pendingClickRef.current = false;
+            onRecordOrRowClicked(index);
+          }, 0);
         }}
       >
         <SubContainer
