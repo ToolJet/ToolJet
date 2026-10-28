@@ -33,10 +33,10 @@ test.each(['cloud', 'Cloud', 'CLOUD'])('%s requires the explicit flag and valid 
 });
 
 test.each([
-  { edition: 'ce', enabled: 'true' },
-  { edition: 'ee', enabled: 'true' },
-  { edition: 'cloud', enabled: 'false' },
-])('edition $edition enabled=$enabled exposes no OAuth routes or background work', async ({ edition, enabled }) => {
+  ['ce', 'true'],
+  ['ee', 'true'],
+  ['cloud', 'false'],
+])('edition %s enabled=%s exposes no OAuth routes or background work', async (edition, enabled) => {
   const values = { ...settings, TOOLJET_EDITION: edition, MCP_OAUTH_ENABLED: enabled };
   const db = { query: jest.fn(), transaction: jest.fn(), manager: { query: jest.fn() } };
   const login = { fetchOrganizationDetails: jest.fn() };
