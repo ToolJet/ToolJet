@@ -15,6 +15,6 @@ export default {
   setupFilesAfterEnv: [],
   testPathIgnorePatterns: ['/node_modules/', ...(isCE ? ['<rootDir>/ee/'] : [])],
   collectCoverageFrom: aiCoverageScope.backend(isCE ? 'ce' : 'ee'),
-  coverageDirectory: `<rootDir>/coverage-ai/${isCE ? 'ce' : 'ee'}`,
+  coverageDirectory: `<rootDir>/coverage-ai/${editionFor('server')}`,
   coverageReporters: ['json', 'json-summary', 'lcovonly', 'html'],
 };
