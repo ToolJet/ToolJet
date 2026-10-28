@@ -35,6 +35,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 ## Invariants & gotchas
 
 - **Options are encrypted at rest**: values marked `encrypted` are stored in the `credentials` table via `CredentialsService`; the options JSON keeps only `{ credential_id, encrypted: true }`. Decryption happens in `parseSourceOptions` at query/test time only. Never return decrypted values in list APIs (`getAll` strips sample options and restapi `tokenData`).
+- **`getAll` (Data Sources page list) hides manifest-less built-in kinds** (`runjs`, `runpy`, `tooljetdb`, `workflows`) even when a stray `type='default'` row exists — the frontend has no schema to render for them. `restapi` is kept (has a manifest). `getForApp` is unfiltered on purpose (query builder needs the static rows).
 - **Options are per-Environment**: one `DataSourceVersionOptions` row per (DSV, environment). Creating a source writes options to every Environment of the workspace. There is no single "the options" — always resolve with an `environmentId`.
 - Workspace-constant references (`{{constants.x}}` / `{{secrets.x}}`) inside encrypted fields are stored as `workspace_constant` alongside the credential and resolved per-environment at runtime — value follows the environment, not the stored string.
 - Branch-aware behavior (this branch line): delete on a branch soft-deletes (`DataSourceVersion.isActive = false`); released apps read the `is_default` DSV. `branchId` only applies to global-scope sources.
