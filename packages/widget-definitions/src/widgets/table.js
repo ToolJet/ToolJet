@@ -279,6 +279,26 @@ export const tableConfig = {
         defaultValue: true,
       },
     },
+    addNewRowIn: {
+      type: 'switch',
+      displayName: 'Add new row in',
+      validation: { schema: { type: 'string' }, defaultValue: 'table' },
+      options: [
+        { displayName: 'Table', value: 'table' },
+        { displayName: 'Dialog', value: 'dialog' },
+      ],
+    },
+    allowAddingMultipleRows: {
+      type: 'toggle',
+      displayName: 'Allow adding multiple rows',
+      // no defaultValue: apps saved before this property existed must keep multi-row adding on
+      validation: { schema: { type: 'boolean' } },
+    },
+    addNewRowColumns: {
+      type: 'code',
+      displayName: 'Columns to include',
+      validation: { schema: { type: 'array', element: { type: 'string' } } },
+    },
     showRefreshButton: {
       type: 'toggle',
       displayName: 'Show refresh button',
@@ -366,6 +386,7 @@ export const tableConfig = {
     onCellValueChanged: { displayName: 'Cell value changed' },
     onFilterChanged: { displayName: 'Filter changed' },
     onNewRowsAdded: { displayName: 'Add new rows' },
+    onAddNewRowCancelled: { displayName: 'Add new row cancelled' },
     onTableDataDownload: { displayName: 'Download data' },
     onRefresh: { displayName: 'Refresh' },
     onHeaderClick: { displayName: 'Header clicked' },
@@ -835,6 +856,8 @@ export const tableConfig = {
       hideColumnSelectorButton: { value: '{{false}}' },
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
+      addNewRowIn: { value: 'table' },
+      allowAddingMultipleRows: { value: '{{false}}' },
       showRefreshButton: { value: '{{false}}' },
       allowSelection: { value: '{{true}}' },
       visibility: { value: '{{true}}' },

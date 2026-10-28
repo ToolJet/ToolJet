@@ -23,6 +23,8 @@ import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { getColumnIcon } from './utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useColumnManager, useActionButtonManager, usePopoverState } from './hooks';
+import { AddNewRowConfig } from './AddNewRowConfig/AddNewRowConfig';
+import { resolveAddNewRowIn } from '@/AppBuilder/Widgets/NewTable/_utils/addNewRowConfig';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
@@ -145,8 +147,23 @@ export const Table = (props) => {
 
   // Render helpers
   const renderCustomElement = useCallback(
-    (param, paramType = 'properties') =>
-      renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType),
+    (param, paramType = 'properties', fieldActions = null) =>
+      renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        param,
+        paramType,
+        undefined,
+        {},
+        false,
+        '',
+        undefined,
+        null,
+        null,
+        fieldActions
+      ),
     [component, componentMeta, paramUpdated, dataQueries]
   );
 
@@ -356,6 +373,18 @@ export const Table = (props) => {
   const displayServerSideFilter = useMemo(
     () => resolveReferences(component.component.definition.properties.showFilterButton?.value) ?? false,
     [component.component.definition.properties.showFilterButton?.value]
+  );
+
+  const addNewRowProperties = component.component.definition.properties;
+  const showAddNewRowButton = resolveReferences(addNewRowProperties.showAddNewRowButton?.value ?? '{{true}}');
+  const addNewRowIn = resolveAddNewRowIn(resolveReferences(addNewRowProperties.addNewRowIn?.value));
+  // apps saved before this property existed always allowed several rows
+  const allowAddingMultipleRows = resolveReferences(addNewRowProperties.allowAddingMultipleRows?.value ?? '{{true}}');
+  const addNewRowColumns = addNewRowProperties.addNewRowColumns?.value ?? null;
+
+  const handleAddNewRowConfigChange = useCallback(
+    (name, value) => paramUpdated({ name, ...component.component.properties?.[name] }, 'value', value, 'properties'),
+    [component, paramUpdated]
   );
 
   const displayServerSideSearch = useMemo(
@@ -738,7 +767,22 @@ export const Table = (props) => {
       {
         id: ADDITIONAL_ACTIONS_ACCORDION_ID,
         title: 'Additional actions',
-        children: additionalActions.map((option) => renderCustomElement(option)),
+        children: additionalActions.map((option) =>
+          renderCustomElement(
+            option,
+            'properties',
+            option === 'showAddNewRowButton' && showAddNewRowButton ? (
+              <AddNewRowConfig
+                addNewRowIn={addNewRowIn}
+                allowAddingMultipleRows={allowAddingMultipleRows}
+                columns={columns}
+                selectedColumns={addNewRowColumns}
+                darkMode={darkMode}
+                onChange={handleAddNewRowConfigChange}
+              />
+            ) : null
+          )
+        ),
       },
       // Devices section
       {
@@ -805,6 +849,11 @@ export const Table = (props) => {
       paginationOptions,
       layoutPropertyChanged,
       additionalActions,
+      showAddNewRowButton,
+      addNewRowIn,
+      allowAddingMultipleRows,
+      addNewRowColumns,
+      handleAddNewRowConfigChange,
     ]
   );
 

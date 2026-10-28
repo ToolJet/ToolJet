@@ -441,6 +441,7 @@ export const createEventsSlice = (set, get) => ({
           'onSubmit',
           'onInvalid',
           'onNewRowsAdded',
+          'onAddNewRowCancelled',
           'onTableDataDownload',
           'onMessageSent',
           'onClearHistory',
