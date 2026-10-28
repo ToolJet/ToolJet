@@ -3,6 +3,7 @@ import { readdirSync } from 'fs';
 import { join } from 'path';
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
 import { BackfillMigration } from 'src/migration-helpers/migration-mode';
+import { ContractLegacyBranchModel1793300000000 } from '../../../../migrations/contract/1793300000000-ContractLegacyBranchModel';
 import {
   LEGACY_VARIANTS,
   useLegacyVariants,
@@ -84,4 +85,28 @@ describe('migration-helpers/legacy-upgrade | async upgrade from 3.21.58', () => 
       );
     });
   });
+
+  it.each(['data_source_versions', 'app_versions', 'folder_apps'])(
+    'should give branchless %s rows a branch before contract sets NOT NULL',
+    async (table) => {
+      const statements: string[] = [];
+      const queryRunner = {
+        isTransactionActive: true,
+        query: async (sql: string) => {
+          statements.push(sql.replace(/\s+/g, ' ').replace(/"/g, ''));
+          return [{ server_version_num: '160000' }];
+        },
+      } as unknown as QueryRunner;
+      await new ContractLegacyBranchModel1793300000000().up(queryRunner);
+
+      const notNull = statements.findIndex((sql) =>
+        sql.includes(`ALTER TABLE ${table} ALTER COLUMN branch_id SET NOT NULL`)
+      );
+      const fixes = statements.filter(
+        (sql, i) => i < notNull && new RegExp(`^ ?(UPDATE|DELETE FROM) ${table}\\b.*branch_id IS NULL`).test(sql)
+      );
+      expect(notNull).toBeGreaterThan(-1);
+      expect(fixes).toEqual(expect.arrayContaining([expect.stringMatching(/SET branch_id = wb\.id/)]));
+    }
+  );
 });

@@ -1,4 +1,4 @@
-import { DataSource, QueryRunner } from 'typeorm';
+import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
 import { BackfillMigration } from './migration-mode';
 import { withShortLock } from './with-short-lock';
 
@@ -290,6 +290,18 @@ async function recordStatements(up: (queryRunner: QueryRunner) => Promise<void>)
   const recorder = { query: async (sql: string) => void statements.push(sql) };
   await up(recorder as unknown as QueryRunner);
   return statements;
+}
+
+/**
+ * The originals' statements that give `table`'s branchless rows a branch (or delete them). Contract reruns them before
+ * NOT NULL: 3.21.58 pods without the write gate can add such rows after the backfill.
+ */
+export async function branchlessRowFixes(table: string, originals: MigrationInterface[]): Promise<string[]> {
+  const statements = await Promise.all(originals.map((migration) => recordStatements((qr) => migration.up(qr))));
+  return statements
+    .flat()
+    .filter((sql) => rowChange(sql) && /\bbranch_id IS NULL\b/i.test(sql))
+    .filter((sql) => sql.match(/^\s*(?:UPDATE|DELETE\s+FROM)\s+(\w+)/i)?.[1] === table);
 }
 
 /** Swaps in the variants. Call before announcing or collecting beforeCommit() steps, which wrap up() and read beforeCommit(). */
