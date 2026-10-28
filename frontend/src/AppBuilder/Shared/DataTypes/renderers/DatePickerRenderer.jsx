@@ -256,14 +256,30 @@ export const DatePickerRenderer = ({
 
   const handleInputDateChange = useCallback(
     (value) => {
-      const inputDate = moment(value, parseDateFormat).toDate();
-      if (excludedDates.some((excluded) => moment(excluded).isSame(inputDate, 'day'))) {
-        toast.error(`${moment(inputDate).format(DISABLED_DATE_FORMAT)} is a disabled date. Please enter a valid date`);
+      const typedFormat = getDateTimeFormat(
+        dateDisplayFormat,
+        isTimeChecked,
+        isTwentyFourHrFormatEnabled,
+        isDateSelectionEnabled
+      );
+      const typedMoment =
+        isTimeChecked && timeZoneDisplay ? moment.tz(value, typedFormat, timeZoneDisplay) : moment(value, typedFormat);
+      const typedDay = typedMoment.format('YYYY-MM-DD');
+      if (excludedDates.some((excluded) => moment(excluded).format('YYYY-MM-DD') === typedDay)) {
+        toast.error(`${typedMoment.format(DISABLED_DATE_FORMAT)} is a disabled date. Please enter a valid date`);
         return;
       }
-      handleDateChange(inputDate);
+      handleDateChange(typedMoment.toDate());
     },
-    [parseDateFormat, handleDateChange, excludedDates]
+    [
+      dateDisplayFormat,
+      isTimeChecked,
+      isTwentyFourHrFormatEnabled,
+      isDateSelectionEnabled,
+      timeZoneDisplay,
+      handleDateChange,
+      excludedDates,
+    ]
   );
 
   // Initialize date from value
