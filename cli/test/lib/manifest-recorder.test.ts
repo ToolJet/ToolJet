@@ -61,8 +61,18 @@ const render = (node) => {
 exports.renderToStaticMarkup = (element) => { render(element); return ''; };`,
 };
 
-function writeProject(dir: string, files: Record<string, string>, { react = true } = {}): void {
+// The project opts in to recording a render (recordRender), as the shipped packs do, unless `record` is false.
+function writeProject(
+  dir: string,
+  files: Record<string, string>,
+  { react = true, record = true }: { react?: boolean; record?: boolean } = {}
+): void {
   fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
+  fs.mkdirSync(path.join(dir, '.tooljet'), { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, '.tooljet', 'config.json'),
+    JSON.stringify({ libraryName: 'Library', correlationId: 'c-1', ...(record ? { recordRender: true } : {}) })
+  );
   fs.writeFileSync(path.join(dir, 'package.json'), '{ "name": "library" }');
   fs.writeFileSync(path.join(dir, 'src', 'global.d.ts'), GLOBAL_DTS);
   fs.writeFileSync(path.join(dir, 'tsconfig.json'), TSCONFIG);
@@ -365,6 +375,110 @@ export function Field() {
   }).timeout(30000);
 });
 
+describe('build - recording a render is opt-in', () => {
+  const cwd = withTempCwd();
+
+  const helperProject = {
+    'index.ts': `export { Field } from './Field';\n`,
+    'styles.ts': FIELD_STYLES,
+    'Field.tsx': `${SDK_IMPORT}import { useFieldStyles } from './styles';
+export function Field() {
+  const [label] = ToolJet.useStateString({ name: 'label', initialValue: 'Name' });
+  useFieldStyles();
+  return <div>{label}</div>;
+}
+`,
+  };
+
+  it("without recordRender, runs none of the project's code and names the helpers it can't read", async () => {
+    // Break this catches: a customer's components run during their build without them asking for it, or fields in
+    // helpers going missing with no word about why.
+    writeProject(cwd.get(), helperProject, { record: false });
+    fs.writeFileSync(
+      path.join(cwd.get(), 'node_modules', 'react-dom', 'server.js'),
+      'exports.renderToStaticMarkup = () => { throw new Error("rendered without recordRender"); };'
+    );
+
+    const result = await build(cwd.get());
+
+    const field = readManifest(cwd.get()).components.Field;
+    expect(field.props.map((p: { name: string }) => p.name)).to.deep.equal(['label']);
+    expect(field.styles).to.deep.equal([]);
+    expect(result.warnings).to.include(
+      'Component "Field" declares fields through useFieldStyles: they won\'t show in the Inspector. ' +
+        'Call the ToolJet hooks in the component itself, or set "recordRender": true in .tooljet/config.json.'
+    );
+  }).timeout(30000);
+
+  it("with recordRender, records the helpers' fields and does not warn about them", async () => {
+    writeProject(cwd.get(), helperProject);
+
+    const result = await build(cwd.get());
+
+    expect(readManifest(cwd.get()).components.Field.styles).to.have.length(3);
+    expect(result.warnings.join('\n')).to.not.include('declares fields through');
+  }).timeout(30000);
+
+  it('does not warn about helpers that use no ToolJet hooks', async () => {
+    writeProject(
+      cwd.get(),
+      {
+        'index.ts': `export { Field } from './Field';\n`,
+        'Field.tsx': `${SDK_IMPORT}
+const format = (s: string) => s.trim();
+export function Field() {
+  const [label] = ToolJet.useStateString({ name: 'label', initialValue: 'Name' });
+  return <div>{format(label)}</div>;
+}
+`,
+      },
+      { record: false }
+    );
+
+    const result = await build(cwd.get());
+
+    expect(result.warnings.join('\n')).to.not.include('declares fields through');
+  }).timeout(30000);
+
+  it('names a helper that reaches the hooks through another helper', async () => {
+    writeProject(
+      cwd.get(),
+      {
+        'index.ts': `export { Field } from './Field';\n`,
+        'Field.tsx': `${SDK_IMPORT}
+const useTint = () => ToolJet.useStyleString({ name: 'tint', initialValue: 'red' });
+const useLook = () => useTint();
+export function Field() {
+  useLook();
+  return <div />;
+}
+`,
+      },
+      { record: false }
+    );
+
+    const result = await build(cwd.get());
+
+    expect(result.warnings.join('\n')).to.include('Component "Field" declares fields through useLook');
+  }).timeout(30000);
+
+  it('fails the build on a recordRender that is not true or false', async () => {
+    writeProject(cwd.get(), helperProject);
+    fs.writeFileSync(
+      path.join(cwd.get(), '.tooljet', 'config.json'),
+      JSON.stringify({ libraryName: 'Library', correlationId: 'c-1', recordRender: 'yes' })
+    );
+
+    let error: Error | undefined;
+    try {
+      await build(cwd.get());
+    } catch (err) {
+      error = err as Error;
+    }
+    expect(error?.message).to.include('"recordRender" must be true or false');
+  }).timeout(30000);
+});
+
 describe('build - role mappings and library settings', () => {
   const cwd = withTempCwd();
 
@@ -447,7 +561,13 @@ export function Field() {
     fs.mkdirSync(path.join(cwd.get(), '.tooljet'), { recursive: true });
     fs.writeFileSync(
       path.join(cwd.get(), '.tooljet', 'config.json'),
-      JSON.stringify({ libraryName: 'Ant', correlationId: 'c-1', themeMode: 'own', surface: { page: '#f5f5f5' } })
+      JSON.stringify({
+        libraryName: 'Ant',
+        correlationId: 'c-1',
+        recordRender: true,
+        themeMode: 'own',
+        surface: { page: '#f5f5f5' },
+      })
     );
 
     await build(cwd.get());

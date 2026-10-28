@@ -34,6 +34,15 @@ const tooljetSdkPlugin: esbuild.Plugin = {
   },
 };
 
+const warnHelperDeclared = (helperDeclared: Record<string, string[]>, warnings: string[]) => {
+  for (const [component, helpers] of Object.entries(helperDeclared)) {
+    warnings.push(
+      `Component "${component}" declares fields through ${helpers.join(', ')}: they won't show in the Inspector. ` +
+        'Call the ToolJet hooks in the component itself, or set "recordRender": true in .tooljet/config.json.'
+    );
+  }
+};
+
 export type BuildEnv = 'production' | 'development';
 
 // Extra esbuild options applied only for production builds (build & deploy commands),
@@ -70,8 +79,11 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
   // Manifest generation via TS Compiler API
   const generated = await generateManifest(projectRoot);
   const { tsErrorCount, tsErrorReport, warnings } = generated;
-  // Fields declared through the components' own helper functions, found by rendering each component once.
-  const recorded = await recordManifest(projectRoot, generated.manifest, warnings);
+  // Fields declared through the components' own helper functions: found by rendering each component once when the
+  // project asks for it (recordRender), else named in a warning, since reading alone can't see them.
+  const recorded = ProjectConfig.readRecordRender(projectRoot)
+    ? await recordManifest(projectRoot, generated.manifest, warnings)
+    : (warnHelperDeclared(generated.helperDeclared, warnings), generated.manifest);
   const manifest = { ...ProjectConfig.readLibrarySettings(projectRoot), ...recorded };
   fs.writeFileSync(
     path.join(distDir, 'manifest.json'),

@@ -14,6 +14,9 @@ export interface ProjectConfigFile {
   // app theme only once one is applied), and the page and card look layouts around its components should match.
   themeMode?: 'own';
   surface?: Record<string, unknown>;
+  // Run each component once during the build to record fields it declares through its own helper functions. Off by
+  // default: the build then only reads the code, and runs none of it.
+  recordRender?: boolean;
 }
 
 export class ProjectConfig {
@@ -62,6 +65,16 @@ export class ProjectConfig {
       throw new Error(`.tooljet/config.json: "surface" must be an object.`);
     }
     return { ...(themeMode ? { themeMode } : {}), ...(surface ? { surface } : {}) };
+  }
+
+  /** Whether the build records a render of each component (`recordRender` in .tooljet/config.json); off by default. */
+  static readRecordRender(projectRoot: string = process.cwd()): boolean {
+    if (!fs.existsSync(path.join(projectRoot, '.tooljet', 'config.json'))) return false;
+    const { recordRender } = ProjectConfig.readFile(projectRoot);
+    if (recordRender !== undefined && typeof recordRender !== 'boolean') {
+      throw new Error('.tooljet/config.json: "recordRender" must be true or false.');
+    }
+    return recordRender === true;
   }
 
   private static isValid(data: unknown): data is ProjectConfigFile {
