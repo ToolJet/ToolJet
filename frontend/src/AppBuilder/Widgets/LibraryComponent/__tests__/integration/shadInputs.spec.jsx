@@ -169,7 +169,7 @@ describe('literal bounds known at mount', () => {
   it('Rating: exposes the drawn rating under the untouched default', async () => {
     const { exposed, root } = await mount('Rating', { max: 3 });
     await waitFor(() => expect(exposed.value).toBe(3));
-    expect(root().querySelectorAll('[role="radio"][aria-checked="true"]').length).toBe(1);
+    expect(root().querySelectorAll('[role="radio"][aria-checked="true"]')).toHaveLength(1);
   });
 });
 

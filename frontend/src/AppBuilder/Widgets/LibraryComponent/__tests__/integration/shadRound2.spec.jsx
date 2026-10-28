@@ -110,7 +110,8 @@ manifestOrSkip('style fields default to what they draw', () => {
         const key = `${name}.${s.name}`;
         if (!s.default) {
           if (!BLANK_COLORS.has(key)) blank.push(key);
-        } else if (!/^var\(--cc-[\w-]+\)$|^#[0-9a-f]{3,8}$|^transparent$/i.test(s.default)) bad.push(`${key}=${s.default}`);
+        } else if (!/^var\(--cc-[\w-]+\)$|^#[0-9a-f]{3,8}$|^transparent$/i.test(s.default))
+          bad.push(`${key}=${s.default}`);
       }
     expect(blank).toEqual([]);
     expect(bad).toEqual([]);
@@ -124,7 +125,8 @@ manifestOrSkip('style fields default to what they draw', () => {
     const missing = [];
     for (const name of names)
       for (const s of styles(name))
-        if (s.type === 'number' && (s.default === undefined || s.default === '') && !s.placeholder) missing.push(`${name}.${s.name}`);
+        if (s.type === 'number' && (s.default === undefined || s.default === '') && !s.placeholder)
+          missing.push(`${name}.${s.name}`);
     expect(missing).toEqual([]);
     const radius = styles('Button').find((s) => s.name === 'borderRadius');
     expect(radius.placeholder).toBe('Theme radius');
@@ -144,8 +146,14 @@ manifestOrSkip('style fields default to what they draw', () => {
   // and without an app theme, against the previous bundle: see the round-two report.)
   test.each(names)('%s draws the same unset, at its stamped defaults and cleared', async (name) => {
     const entry = manifest.components[name];
-    const props = Object.fromEntries((entry.props ?? []).filter((p) => p.default !== undefined).map((p) => [p.name, p.default]));
-    const stamped = Object.fromEntries(styles(name).filter((s) => s.default !== undefined && s.default !== '').map((s) => [s.name, s.default]));
+    const props = Object.fromEntries(
+      (entry.props ?? []).filter((p) => p.default !== undefined).map((p) => [p.name, p.default])
+    );
+    const stamped = Object.fromEntries(
+      styles(name)
+        .filter((s) => s.default !== undefined && s.default !== '')
+        .map((s) => [s.name, s.default])
+    );
     const cleared = Object.fromEntries(styles(name).map((s) => [s.name, '']));
     const unset = await settled((await mount(name, props, {})).root);
     cleanup();
@@ -179,7 +187,9 @@ describe('theme radius and the filter select ring', () => {
   test('popup items, the dialog, funnel bars and heatmap cells follow the theme radius', () => {
     expect(rule('ui.css', '.ui-menu-item')).toContain('border-radius: calc(var(--ui-radius) - 2px)');
     expect(rule('ui2-inputs.css', '.ui2-pop-item')).toContain('calc(var(--ui-radius) - 2px)');
-    expect(css('ui.css')).toMatch(/border: 1px solid var\(--ui-border\);\s*\/\*[^*]*\*\/\s*border-radius: calc\(var\(--ui-radius\) \+ 4px\);\s*background: var\(--ui-bg\);\s*box-shadow: var\(--ui-shadow-lg\)/);
+    expect(css('ui.css')).toMatch(
+      /border: 1px solid var\(--ui-border\);\s*\/\*[^*]*\*\/\s*border-radius: calc\(var\(--ui-radius\) \+ 4px\);\s*background: var\(--ui-bg\);\s*box-shadow: var\(--ui-shadow-lg\)/
+    );
     expect(rule('ui2-charts.css', '.ui2-funnel-bar')).toContain('border-radius: var(--ui-radius)');
     expect(rule('ui2-charts.css', '.ui2-heatmap-cell')).toContain('border-radius: calc(var(--ui-radius) - 2px)');
     // The popup layer's radius is the theme's: no fixed fallback beyond the 6px of an unthemed host.
@@ -199,7 +209,9 @@ describe('an explicit number type never becomes money', () => {
   const typeOf = (columns, key) => normalizeColumns(columns, sample).find((c) => c.key === key).type;
 
   test('columnType number stays a number whatever the name', () => {
-    expect(typeOf([{ key: 'total_claims', name: 'Total claims', columnType: 'number' }], 'total_claims')).toBe('number');
+    expect(typeOf([{ key: 'total_claims', name: 'Total claims', columnType: 'number' }], 'total_claims')).toBe(
+      'number'
+    );
     expect(typeOf([{ key: 'amount', name: 'Amount', columnType: 'number' }], 'amount')).toBe('number');
     // A currency set on the column is the author's choice.
     expect(typeOf([{ key: 'amount', columnType: 'number', currency: 'EUR' }], 'amount')).toBe('currency');
@@ -257,15 +269,24 @@ describe('a currency or percent symbol is never written twice', () => {
   test('stats and lists, including a currency written after the figure', () => {
     expect(formatValue(1200, { format: 'currency', prefix: '$' })).toBe('$1,200');
     // German writes the sign after the figure, with a no-break space.
-    expect(formatValue(1200, { format: 'currency', currency: 'EUR', locale: 'de-DE', suffix: ' €' })).toMatch(/^1\.200\s€$/);
-    expect(formatValue(1200, { format: 'currency', currency: 'EUR', locale: 'de-DE', prefix: '€' })).toMatch(/^1\.200\s€$/);
+    expect(formatValue(1200, { format: 'currency', currency: 'EUR', locale: 'de-DE', suffix: ' €' })).toMatch(
+      /^1\.200\s€$/
+    );
+    expect(formatValue(1200, { format: 'currency', currency: 'EUR', locale: 'de-DE', prefix: '€' })).toMatch(
+      /^1\.200\s€$/
+    );
     expect(withAffixes('1,200', 'Approx. ', ' units')).toBe('Approx. 1,200 units');
   });
 });
 
 describe('narrow slots', () => {
   test('Kanban column marks are drawn inset, so the board edge never cuts them', () => {
-    for (const selector of ['.ui2-kb-col.is-over', '.ui2-kb-col.is-collapsed:hover', '.ui2-kb-col.is-collapsed.is-over', '.ui2-kb-col:focus-visible'])
+    for (const selector of [
+      '.ui2-kb-col.is-over',
+      '.ui2-kb-col.is-collapsed:hover',
+      '.ui2-kb-col.is-collapsed.is-over',
+      '.ui2-kb-col:focus-visible',
+    ])
       expect(rule('ui2-display-kanban.css', selector)).toMatch(/box-shadow: inset 0 0 0 [12]px/);
   });
 
@@ -278,8 +299,18 @@ describe('narrow slots', () => {
       // jsdom keeps clientWidth and scrollWidth on Element.prototype: the overrides below shadow them.
       const before = { ro: window.ResizeObserver };
       const board = (el) => el.classList?.contains('ui2-kb');
-      Object.defineProperty(proto, 'clientWidth', { configurable: true, get() { return board(this) ? size.client : 0; } });
-      Object.defineProperty(proto, 'scrollWidth', { configurable: true, get() { return board(this) ? size.scroll : 0; } });
+      Object.defineProperty(proto, 'clientWidth', {
+        configurable: true,
+        get() {
+          return board(this) ? size.client : 0;
+        },
+      });
+      Object.defineProperty(proto, 'scrollWidth', {
+        configurable: true,
+        get() {
+          return board(this) ? size.scroll : 0;
+        },
+      });
       window.ResizeObserver = class {
         constructor(cb) {
           this.cb = cb;
@@ -328,7 +359,9 @@ describe('narrow slots', () => {
 
   test('a narrow ListView row wraps its trailing group instead of squeezing the title to nothing', () => {
     expect(rule('ui2-display-lists.css', '.u2l-list-item.is-fields:not(.is-grid)')).toContain('flex-wrap: wrap');
-    expect(rule('ui2-display-lists.css', '.u2l-list-item.is-fields:not(.is-grid) .u2l-list-text')).toContain('flex: 1 1 80px');
+    expect(rule('ui2-display-lists.css', '.u2l-list-item.is-fields:not(.is-grid) .u2l-list-text')).toContain(
+      'flex: 1 1 80px'
+    );
     const trail = rule('ui2-display-lists.css', '.u2l-list-item.is-fields:not(.is-grid) .u2l-list-trail');
     expect(trail).toContain('flex-wrap: wrap');
     expect(trail).toContain('max-width: 100%');

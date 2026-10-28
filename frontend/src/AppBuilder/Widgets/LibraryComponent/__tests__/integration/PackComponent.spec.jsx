@@ -1,6 +1,5 @@
 import React from 'react';
 import { act, waitFor } from '@testing-library/react';
-import { ToolJet } from '@tooljet/custom-component-sdk';
 import {
   createWidgetHarness,
   binding,
@@ -11,7 +10,7 @@ import { seedApp, componentDefinition } from '@/test/app-builder';
 import WidgetWrapper from '@/AppBuilder/AppCanvas/WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { useBuiltinPacksStore } from '@/_stores/builtinPacksStore';
-import { loadLibraryModule } from '@/AppBuilder/Widgets/LibraryComponent/inlineRuntime';
+import { loadLibraryModule, toolJetSdk as ToolJet } from '@/AppBuilder/Widgets/LibraryComponent/inlineRuntime';
 
 // PackComponent: a component from a pack that ships with ToolJet. It names only its pack and component, always draws
 // the build this release serves (under its content hash), inline, and needs no custom-component licence.

@@ -26,7 +26,20 @@ jest.mock('@/AppBuilder/Widgets/LibraryComponent/inlineRuntime', () => ({
 }));
 
 const HOST = { disabled: false, loading: false };
-const COMPONENTS = { CardGrid, RecordList, ProgressList, AccordionContainer, Stepper, TabsContainer, Carousel, Card, Form, Separator, Image, Kanban };
+const COMPONENTS = {
+  CardGrid,
+  RecordList,
+  ProgressList,
+  AccordionContainer,
+  Stepper,
+  TabsContainer,
+  Carousel,
+  Card,
+  Form,
+  Separator,
+  Image,
+  Kanban,
+};
 let mounts = 0;
 
 // One pack widget on the inline host. `update` re-renders it with new properties (a binding resolving again), a new
@@ -74,7 +87,12 @@ const mount = async (name, props, { host = HOST, wrapper = {} } = {}) => {
 const alpha = { id: 1, name: 'Alpha', label: 'Alpha', status: 'Pending', total: 10, spent: 10, budget: 100 };
 const beta = { id: 2, name: 'Beta', label: 'Beta', status: 'Paid', total: 20, spent: 20, budget: 100 };
 const LISTS = [
-  ['CardGrid', '.u2l-card', 'onCardClicked', { titleField: 'name', metaFields: '', badgeField: 'status', idField: 'id', showImage: false }],
+  [
+    'CardGrid',
+    '.u2l-card',
+    'onCardClicked',
+    { titleField: 'name', metaFields: '', badgeField: 'status', idField: 'id', showImage: false },
+  ],
   ['RecordList', '.u2l-record', 'onItemClicked', { titleField: 'name', metaFields: '', idField: 'id' }],
   ['ProgressList', '.ui2-plist-row', 'onItemClicked', {}],
 ];
@@ -136,7 +154,12 @@ describe.each(LISTS)('%s selection follows the selected record', (name, rowSelec
 });
 
 test('ProgressList keeps a numeric 0 id and a string id as they are', async () => {
-  const t = await mount('ProgressList', { data: [{ ...alpha, id: 0 }, { ...beta, id: 'b-2' }] });
+  const t = await mount('ProgressList', {
+    data: [
+      { ...alpha, id: 0 },
+      { ...beta, id: 'b-2' },
+    ],
+  });
   const rows = () => t.root().querySelectorAll('.ui2-plist-row');
   fireEvent.click(rows()[0]);
   expect(t.exposed.selectedItemId).toBe(0);
@@ -280,7 +303,14 @@ describe('text properties bound to objects or records', () => {
   const RECORDS = [{ name: 'Customer A' }];
   test.each([
     ['Card', { title: RECORDS, description: { note: 'x' } }],
-    ['Form', { title: RECORDS, submitLabel: { text: 'Go' }, fields: [{ name: 'a', label: { text: 'A' }, placeholder: RECORDS }] }],
+    [
+      'Form',
+      {
+        title: RECORDS,
+        submitLabel: { text: 'Go' },
+        fields: [{ name: 'a', label: { text: 'A' }, placeholder: RECORDS }],
+      },
+    ],
     ['Separator', { label: RECORDS }],
   ])('%s draws nothing for them instead of failing', async (name, props) => {
     const t = await mount(name, props);
@@ -312,7 +342,10 @@ describe('a keyboard move into a long Kanban column', () => {
     ];
     // Kanban registers its card rows (custom content) with the host.
     const t = await mount('Kanban', { data, columns }, { host: { ...HOST, setRows: () => {} } });
-    const card = () => [...t.root().querySelectorAll('[aria-roledescription="Draggable card"]')].find((el) => el.textContent.includes('Mover'));
+    const card = () =>
+      [...t.root().querySelectorAll('[aria-roledescription="Draggable card"]')].find((el) =>
+        el.textContent.includes('Mover')
+      );
     act(() => card().focus());
     fireEvent.keyDown(card(), { key: ' ' });
     fireEvent.keyDown(card(), { key: 'ArrowRight' });

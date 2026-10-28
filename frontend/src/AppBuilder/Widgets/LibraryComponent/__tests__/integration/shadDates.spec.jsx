@@ -111,7 +111,9 @@ describe.each([
   });
 
   it('stays on the last enabled day when every day beyond it is out of reach', async () => {
-    const view = render(widget(name, { ...blackout, defaultValue: value.defaultValue.replace('23', '30') }, recorder()));
+    const view = render(
+      widget(name, { ...blackout, defaultValue: value.defaultValue.replace('23', '30') }, recorder())
+    );
     const popup = await openPicker(view, name);
     act(() => day(popup, '2026-10-30').focus());
     expect(focusedDay(popup)).toBe('2026-10-30');
@@ -195,7 +197,12 @@ describe('an emptied bound default (SP-27)', () => {
 });
 
 describe('a Dialog', () => {
-  const DIALOG = { title: 'Synthetic dialog', description: 'No external actions', confirmText: 'Confirm test', showBody: true };
+  const DIALOG = {
+    title: 'Synthetic dialog',
+    description: 'No external actions',
+    confirmText: 'Confirm test',
+    showBody: true,
+  };
   const dialogContent = () => layer()?.querySelector('[role="dialog"]');
   const button = (label) => [...layer().querySelectorAll('button')].find((b) => b.textContent === label);
 
@@ -267,7 +274,9 @@ describe('a Dialog', () => {
 
   it('refuses to confirm once the host disables it, and keeps the dialog open (SP-02)', async () => {
     const { dialog, view } = await openDialog(makeHost('Dialog'));
-    view.rerender(widget('Dialog', { ...DIALOG, showBody: false }, dialog, { host: makeHost('Dialog', { disabled: true }) }));
+    view.rerender(
+      widget('Dialog', { ...DIALOG, showBody: false }, dialog, { host: makeHost('Dialog', { disabled: true }) })
+    );
     await waitFor(() => expect(button('Confirm test').disabled).toBe(true));
     fireEvent.click(button('Confirm test'));
     expect(dialog.events).not.toContain('onConfirm');

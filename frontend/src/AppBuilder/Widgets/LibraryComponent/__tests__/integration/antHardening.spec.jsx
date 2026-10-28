@@ -27,7 +27,11 @@ const mount = async (name, props = {}, { formField = true, disabled = false, use
   const exposed = {};
   const events = [];
   const actions = new Map();
-  const host = { ...makeHost(name, { validation: formField ? 'text' : undefined }), disabled, ...(useValidation ? { useValidation } : {}) };
+  const host = {
+    ...makeHost(name, { validation: formField ? 'text' : undefined }),
+    disabled,
+    ...(useValidation ? { useValidation } : {}),
+  };
   let state = { props, clearCount: 0, host };
   // The exposed values as each event fired, for checks that a handler reads the new state.
   const seen = [];
@@ -78,11 +82,8 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-
-
 const input = (v) => v.root().querySelector('input');
 const settle = () => act(() => new Promise((r) => setTimeout(r, 50)));
-
 
 const OPTIONS = [
   { label: 'One', value: 'one' },
@@ -92,7 +93,8 @@ const TREE = [{ title: 'Parent', value: 'parent', children: [{ title: 'Child', v
 const CASCADE = [{ label: 'Europe', value: 'europe', children: [{ label: 'Lisbon', value: 'lisbon' }] }];
 const text = (v) => v.root().textContent;
 const inputs = (v) => [...v.root().querySelectorAll('input')].map((el) => el.value).join('|');
-const checked = (v) => v.root().querySelectorAll('.ant-radio-wrapper-checked, .ant-checkbox-wrapper-checked, .ant-switch-checked').length;
+const checked = (v) =>
+  v.root().querySelectorAll('.ant-radio-wrapper-checked, .ant-checkbox-wrapper-checked, .ant-switch-checked').length;
 
 // [component, props, what it shows while filled, the exposed values a clear empties]
 const FIELDS = [
@@ -101,8 +103,18 @@ const FIELDS = [
   ['InputNumber', { value: 42 }, (v) => inputs(v).includes('42'), { value: null }],
   ['Select', { options: OPTIONS, value: 'two' }, (v) => text(v).includes('Two'), { value: '', selectedOption: {} }],
   // jsdom has no widths, so a responsive tag row draws no tags (the single Select checks what is drawn).
-  ['Select', { options: OPTIONS, mode: 'multiple', value: ['one'] }, (v) => v.exposed.selectedOptions?.length === 1, { value: [] }],
-  ['Combobox', { options: OPTIONS, value: 'two' }, (v) => text(v).includes('Two'), { value: '', selectedOption: {}, selectedLabel: '' }],
+  [
+    'Select',
+    { options: OPTIONS, mode: 'multiple', value: ['one'] },
+    (v) => v.exposed.selectedOptions?.length === 1,
+    { value: [] },
+  ],
+  [
+    'Combobox',
+    { options: OPTIONS, value: 'two' },
+    (v) => text(v).includes('Two'),
+    { value: '', selectedOption: {}, selectedLabel: '' },
+  ],
   ['DatePicker', { value: '2026-10-23' }, (v) => inputs(v).includes('2026-10-23'), { value: '' }],
   ['TimePicker', { value: '09:30' }, (v) => inputs(v).includes('09:30'), { value: '' }],
   ['RangePicker', { value: ['2026-10-01', '2026-10-09'] }, (v) => inputs(v).includes('2026-10-01'), { value: [] }],
@@ -111,7 +123,12 @@ const FIELDS = [
   ['TreeSelect', { treeData: TREE, multiple: true, value: ['child'] }, (v) => text(v).includes('Child'), { value: [] }],
   ['Cascader', { options: CASCADE, value: ['europe', 'lisbon'] }, (v) => text(v).includes('Lisbon'), { value: [] }],
   ['RadioGroup', { options: OPTIONS, value: 'one' }, (v) => checked(v) > 0, { value: '' }],
-  ['Segmented', { options: OPTIONS, value: 'one' }, (v) => !!v.root().querySelector('.ant-segmented-item-selected'), { value: '' }],
+  [
+    'Segmented',
+    { options: OPTIONS, value: 'one' },
+    (v) => !!v.root().querySelector('.ant-segmented-item-selected'),
+    { value: '' },
+  ],
   ['Rate', { value: 3 }, (v) => v.root().querySelectorAll('.ant-rate-star-full').length === 3, { value: null }],
   ['Checkbox', { checked: true }, (v) => checked(v) > 0, { checked: false }],
   ['Switch', { checked: true }, (v) => checked(v) > 0, { checked: false }],
@@ -119,7 +136,12 @@ const FIELDS = [
   ['CurrencyInput', { value: 1250 }, (v) => inputs(v).includes('1,250'), { value: null, formattedValue: '' }],
   ['PhoneInput', { value: '+14155550123' }, (v) => inputs(v).includes('415'), { value: '', isValidNumber: false }],
   ['Password', { value: 'Secret#123' }, (v) => inputs(v).includes('Secret'), { value: '', strength: '' }],
-  ['Transfer', { targetKeys: ['orders'] }, (v) => v.root().querySelectorAll('.ant-transfer-list')[1].textContent.includes('Orders'), { targetKeys: [] }],
+  [
+    'Transfer',
+    { targetKeys: ['orders'] },
+    (v) => v.root().querySelectorAll('.ant-transfer-list')[1].textContent.includes('Orders'),
+    { targetKeys: [] },
+  ],
 ];
 
 describe('a Form clear (clearForm)', () => {
@@ -139,7 +161,7 @@ describe('a Form clear (clearForm)', () => {
     v.clearForm();
     await settle();
     expect(v.exposed.fileList).toEqual([]);
-    expect(v.root().querySelectorAll('.ant-upload-list-item').length).toBe(0);
+    expect(v.root().querySelectorAll('.ant-upload-list-item')).toHaveLength(0);
   });
 });
 
@@ -160,7 +182,9 @@ describe('an Upload', () => {
 
   it('fires nothing for a read that finishes after it is gone', async () => {
     const v = await mount('Upload', {});
-    fireEvent.change(v.root().querySelector('input[type=file]'), { target: { files: [new File(['x'], 'a.txt', { type: 'text/plain' })] } });
+    fireEvent.change(v.root().querySelector('input[type=file]'), {
+      target: { files: [new File(['x'], 'a.txt', { type: 'text/plain' })] },
+    });
     v.unmount();
     await settle();
     expect(v.events).not.toContain('onChange');
@@ -173,7 +197,12 @@ describe('an emptied bound value', () => {
     ['Combobox', { options: OPTIONS, value: 'two' }, (v) => text(v).includes('Two'), { selectedLabel: '' }],
     ['DatePicker', { value: '2026-10-23' }, (v) => inputs(v).includes('2026-10-23'), {}],
     ['OTP', { value: '123456' }, (v) => inputs(v).includes('1'), { isComplete: false }],
-    ['Calendar', { value: '2026-10-23' }, (v) => !!v.root().querySelector('.ant-picker-cell-selected[title="2026-10-23"]'), {}],
+    [
+      'Calendar',
+      { value: '2026-10-23' },
+      (v) => !!v.root().querySelector('.ant-picker-cell-selected[title="2026-10-23"]'),
+      {},
+    ],
   ])('%s: clears the old selection', async (name, props, shows, cleared) => {
     const v = await mount(name, props, { formField: false });
     await waitFor(() => expect(shows(v)).toBe(true));
@@ -205,7 +234,9 @@ describe('a required choice', () => {
 
 // The list or panel an Ant popup draws in the popup layer, while it is open.
 const openPopup = (selector) =>
-  [...(layer()?.querySelectorAll(selector) ?? [])].find((el) => !/-hidden\b/.test(el.className) && el.style.display !== 'none');
+  [...(layer()?.querySelectorAll(selector) ?? [])].find(
+    (el) => !/-hidden\b/.test(el.className) && el.style.display !== 'none'
+  );
 
 describe('an open popup whose owner stops taking input', () => {
   const blockers = [
@@ -310,7 +341,13 @@ describe('a selection of records', () => {
     v.run('selectRow', 2);
     expect(v.exposed.selectedRowKeys).toEqual([2]);
     expect(v.exposed.selectedRow).toEqual(ROWS[1]);
-    v.setProps({ dataSource: [{ id: 3, name: 'Priya' }, { id: 2, name: 'Owen Hart' }, { id: 1, name: 'Maya' }] });
+    v.setProps({
+      dataSource: [
+        { id: 3, name: 'Priya' },
+        { id: 2, name: 'Owen Hart' },
+        { id: 1, name: 'Maya' },
+      ],
+    });
     await settle();
     expect(v.exposed.selectedRow).toEqual({ id: 2, name: 'Owen Hart' });
     expect(v.exposed.selectedRows).toEqual([{ id: 2, name: 'Owen Hart' }]);
@@ -344,7 +381,10 @@ describe('a selection of records', () => {
   });
 
   it('Tree: a selected node that is gone is no longer selected', async () => {
-    const data = [{ title: 'A', key: 'a' }, { title: 'B', key: 'b' }];
+    const data = [
+      { title: 'A', key: 'a' },
+      { title: 'B', key: 'b' },
+    ];
     const v = await mount('Tree', { treeData: data }, { formField: false });
     fireEvent.click([...v.root().querySelectorAll('.ant-tree-title')].find((el) => el.textContent === 'B'));
     expect(v.exposed.selectedKeys).toEqual(['b']);
@@ -365,7 +405,11 @@ describe('sectioned layouts', () => {
   });
 
   it('Collapse: panels with colliding keys get their own canvases; activeKey drops a removed panel', async () => {
-    const items = [{ key: 'p-1', label: 'One' }, { key: 'p_1', label: 'Two' }, { key: 'p2', label: 'Three' }];
+    const items = [
+      { key: 'p-1', label: 'One' },
+      { key: 'p_1', label: 'Two' },
+      { key: 'p2', label: 'Three' },
+    ];
     const v = await mount('Collapse', { items, activeKey: ['p-1', 'p2'] }, { formField: false });
     const slots = [...v.root().querySelectorAll('[data-tj-slot]')].map((el) => el.getAttribute('data-tj-slot'));
     expect(new Set(slots).size).toBe(3);
@@ -375,12 +419,25 @@ describe('sectioned layouts', () => {
   });
 
   it('Tabs: activeKey exposes the tab shown once its tab is removed, and a numeric key opens its tab', async () => {
-    const items = [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }];
+    const items = [
+      { key: 'a', label: 'A' },
+      { key: 'b', label: 'B' },
+    ];
     const v = await mount('Tabs', { items, activeKey: 'b' }, { formField: false });
     v.setProps({ items: [items[0]] });
     await settle();
     expect(v.exposed.activeKey).toBe('a');
-    const w = await mount('Tabs', { items: [{ key: '1', label: 'One' }, { key: '2', label: 'Two' }], activeKey: 2 }, { formField: false });
+    const w = await mount(
+      'Tabs',
+      {
+        items: [
+          { key: '1', label: 'One' },
+          { key: '2', label: 'Two' },
+        ],
+        activeKey: 2,
+      },
+      { formField: false }
+    );
     expect(w.root().querySelector('.ant-tabs-tab-active').textContent).toBe('Two');
     expect(w.events).not.toContain('onChange');
   });
@@ -407,7 +464,7 @@ describe('a literal value out of range', () => {
     const v = await mount('Rate', { value: 9, count: 5 });
     await settle();
     expect(v.exposed.value).toBe(5);
-    expect(v.root().querySelectorAll('.ant-rate-star-full').length).toBe(5);
+    expect(v.root().querySelectorAll('.ant-rate-star-full')).toHaveLength(5);
   });
 
   it('InputNumber draws what it exposes (Ant shows an out-of-range number as typed, marked)', async () => {
@@ -431,7 +488,6 @@ describe('a hidden Carousel', () => {
   });
 });
 
-
 describe('keyboard inside the shadow root', () => {
   it('Select: the focus action focuses its input (the ref reached Ant)', async () => {
     const v = await mount('Select', { options: OPTIONS });
@@ -447,32 +503,38 @@ describe('selection in the composed lists', () => {
     { id: 3, name: 'Priya', label: 'Priya', value: 30, title: 'Priya' },
   ];
   const clickable = { RecordList: '.ant-list-item', CardGrid: '.ant-card', ProgressList: '.ant-list-item' };
-  test.each(Object.keys(clickable))('%s: follows its record by id, keeps the id a number, and clears once it is gone', async (name) => {
-    const v = await mount(name, { dataSource: ROWS }, { formField: false });
-    fireEvent.click(v.root().querySelectorAll(clickable[name])[1]);
-    expect(v.exposed.selectedItemId).toBe(2);
-    expect(v.exposed.selectedItemIndex).toBe(1);
-    const edited = { ...ROWS[1], name: 'Owen Hart', label: 'Owen Hart', title: 'Owen Hart' };
-    v.setProps({ dataSource: [edited, ROWS[0], ROWS[2]] });
-    await settle();
-    expect(v.exposed.selectedItem).toEqual(edited);
-    expect(v.exposed.selectedItemIndex).toBe(0);
-    expect(v.root().querySelector('.is-selected').textContent).toContain('Owen Hart');
-    v.setProps({ dataSource: [ROWS[0]] });
-    await settle();
-    expect(v.exposed.selectedItem).toEqual({});
-    expect(v.exposed.selectedItemIndex).toBe(-1);
-    expect(v.exposed.selectedItemId).toBe('');
-  });
+  test.each(Object.keys(clickable))(
+    '%s: follows its record by id, keeps the id a number, and clears once it is gone',
+    async (name) => {
+      const v = await mount(name, { dataSource: ROWS }, { formField: false });
+      fireEvent.click(v.root().querySelectorAll(clickable[name])[1]);
+      expect(v.exposed.selectedItemId).toBe(2);
+      expect(v.exposed.selectedItemIndex).toBe(1);
+      const edited = { ...ROWS[1], name: 'Owen Hart', label: 'Owen Hart', title: 'Owen Hart' };
+      v.setProps({ dataSource: [edited, ROWS[0], ROWS[2]] });
+      await settle();
+      expect(v.exposed.selectedItem).toEqual(edited);
+      expect(v.exposed.selectedItemIndex).toBe(0);
+      expect(v.root().querySelector('.is-selected').textContent).toContain('Owen Hart');
+      v.setProps({ dataSource: [ROWS[0]] });
+      await settle();
+      expect(v.exposed.selectedItem).toEqual({});
+      expect(v.exposed.selectedItemIndex).toBe(-1);
+      expect(v.exposed.selectedItemId).toBe('');
+    }
+  );
 
   it('ButtonGroup: keeps its values the type the buttons give them', async () => {
-    const buttons = [{ value: 1, label: 'One' }, { value: 2, label: 'Two' }];
+    const buttons = [
+      { value: 1, label: 'One' },
+      { value: 2, label: 'Two' },
+    ];
     const v = await mount('ButtonGroup', { buttons, mode: 'multiple' }, { formField: false });
     fireEvent.click(v.root().querySelectorAll('button')[1]);
     fireEvent.click(v.root().querySelectorAll('button')[0]);
     expect(v.exposed.value).toEqual([2, 1]);
     expect(v.exposed.lastClicked).toBe(1);
-    expect(v.root().querySelectorAll('.ant-btn-primary').length).toBe(2);
+    expect(v.root().querySelectorAll('.ant-btn-primary')).toHaveLength(2);
   });
 });
 
@@ -496,7 +558,8 @@ describe('a popup of a control that renders its own provider', () => {
     fireEvent.click(el);
     await waitFor(() => expect(openPopup(popup)).toBeTruthy());
     const root = openPopup(popup);
-    const themed = root.closest('[style*="--tj-ant-color-primary"]') ?? root.querySelector('[style*="--tj-ant-color-primary"]');
+    const themed =
+      root.closest('[style*="--tj-ant-color-primary"]') ?? root.querySelector('[style*="--tj-ant-color-primary"]');
     expect(themed).toBeTruthy();
   });
 });
@@ -510,9 +573,13 @@ describe("UI 2.0's column shape", () => {
     { key: 'summary', name: 'summary', columnVisibility: '{{false}}' },
   ];
   it('Table: draws only the visible listed columns, never the hidden fields as raw columns', async () => {
-    const dataSource = [{ id: 1, company: 'Acme', stage: 'New', lead_id: 'L-1', summary: 'x', created_on: '2026-10-01' }];
+    const dataSource = [
+      { id: 1, company: 'Acme', stage: 'New', lead_id: 'L-1', summary: 'x', created_on: '2026-10-01' },
+    ];
     const v = await mount('Table', { dataSource, columns }, { formField: false });
-    const headers = [...v.root().querySelectorAll('.ant-table-thead th')].map((th) => th.textContent.trim()).filter(Boolean);
+    const headers = [...v.root().querySelectorAll('.ant-table-thead th')]
+      .map((th) => th.textContent.trim())
+      .filter(Boolean);
     expect(headers).toEqual(['Company', 'Stage']);
   });
 });
@@ -530,7 +597,10 @@ describe('a keyboard move into a long column', () => {
       { id: 'doing', title: 'Doing' },
     ];
     const v = await mount('Kanban', { dataSource, columns }, { formField: false });
-    const card = () => [...v.root().querySelectorAll('[aria-roledescription="Draggable card"]')].find((el) => el.textContent.includes('Mover'));
+    const card = () =>
+      [...v.root().querySelectorAll('[aria-roledescription="Draggable card"]')].find((el) =>
+        el.textContent.includes('Mover')
+      );
     act(() => card().focus());
     fireEvent.keyDown(card(), { key: ' ' });
     fireEvent.keyDown(card(), { key: 'ArrowRight' });
@@ -627,7 +697,9 @@ describe('controls UI 2.0 has (team review, 2026-10-24)', () => {
     expect(v.exposed.fileList.map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
     await waitFor(() => expect(message(v)).toBe('You can upload up to 2 files'));
     // Full: a further pick is turned away whole, and the files stay.
-    fireEvent.change(v.root().querySelector('input[type=file]'), { target: { files: [new File(['d'], 'd.txt', { type: 'text/plain' })] } });
+    fireEvent.change(v.root().querySelector('input[type=file]'), {
+      target: { files: [new File(['d'], 'd.txt', { type: 'text/plain' })] },
+    });
     await settle();
     expect(v.exposed.fileList.map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
     const clearAll = [...v.root().querySelectorAll('button')].find((b) => b.textContent === 'Clear all');
@@ -643,7 +715,10 @@ describe('controls UI 2.0 has (team review, 2026-10-24)', () => {
 
   it('Upload with maxCount 1 keeps Ant’s rule: a new pick replaces the file', async () => {
     const v = await mount('Upload', { maxCount: 1 });
-    const pick = (n) => fireEvent.change(v.root().querySelector('input[type=file]'), { target: { files: [new File([n], `${n}.txt`, { type: 'text/plain' })] } });
+    const pick = (n) =>
+      fireEvent.change(v.root().querySelector('input[type=file]'), {
+        target: { files: [new File([n], `${n}.txt`, { type: 'text/plain' })] },
+      });
     pick('a');
     await waitFor(() => expect(v.exposed.fileList?.length).toBe(1));
     pick('b');
@@ -656,7 +731,11 @@ describe('controls UI 2.0 has (team review, 2026-10-24)', () => {
     async (name) => {
       // A datum clicked before (hidden state seeded from a saved value) draws highlighted from the first render.
       const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
-      const v = await mount(name, { highlightClicked: true, selectedDatum: { x: 'Jan', y: 42, stage: 'Visited' } }, { formField: false });
+      const v = await mount(
+        name,
+        { highlightClicked: true, selectedDatum: { x: 'Jan', y: 42, stage: 'Visited' } },
+        { formField: false }
+      );
       await settle();
       expect(errors).not.toHaveBeenCalled();
       errors.mockRestore();
@@ -754,6 +833,26 @@ describe('team UI 2.0 report: lists, box-sized layouts and the Statistic trend',
     expect(v.exposed.trend).toBe('up');
     expect(v.exposed.trendValue).toBe('-12%');
   });
+
+  it('Statistic: loading draws a title, figure and trend placeholder inside the card, not one bar', async () => {
+    const v = await mount(
+      'Statistic',
+      { title: 'Revenue', value: '1200', trend: 'up', trendValue: '4%' },
+      { formField: false }
+    );
+    v.setHost({ loading: true });
+    await settle();
+    const card = v.root().querySelector('.tj-ant-stat.tj-ant-stat--card');
+    expect(card.getAttribute('aria-busy')).toBe('true');
+    expect(card.querySelector('.ant-statistic-title .tj-ant-bone.is-title')).toBeTruthy();
+    expect(card.querySelector('.ant-statistic-content .tj-ant-bone.is-figure')).toBeTruthy();
+    expect(card.querySelector('.tj-ant-stat-trend .tj-ant-bone.is-trend')).toBeTruthy();
+    expect(card.textContent).not.toContain('Revenue');
+    v.setHost({ loading: false });
+    await settle();
+    expect(card.querySelector('.tj-ant-bone')).toBeNull();
+    expect(card.textContent).toContain('Revenue');
+  });
 });
 
 describe("T38: Ant Alert takes UI 2.0's action and close", () => {
@@ -768,7 +867,11 @@ describe("T38: Ant Alert takes UI 2.0's action and close", () => {
   });
 
   test('the action button follows the host Disable', async () => {
-    const v = await mount('Alert', { message: 'Update ready', actionText: 'Reload' }, { formField: false, disabled: true });
+    const v = await mount(
+      'Alert',
+      { message: 'Update ready', actionText: 'Reload' },
+      { formField: false, disabled: true }
+    );
     expect(button(v, 'Reload').disabled).toBe(true);
   });
 
@@ -827,25 +930,57 @@ describe('T7/T41: colour styles default to the theme colour they draw, and draw 
   });
 
   test('another theme swatch than the default is kept as a theme value', async () => {
-    const v = await mount('Button', {}, { formField: false, styles: { colorPrimary: 'var(--cc-success-systemStatus)' } });
-    expect(v.root().querySelector('.tj-ant-root').style.getPropertyValue('--tj-ant-color-primary')).toBe('var(--cc-success-systemStatus)');
+    const v = await mount(
+      'Button',
+      {},
+      { formField: false, styles: { colorPrimary: 'var(--cc-success-systemStatus)' } }
+    );
+    expect(v.root().querySelector('.tj-ant-root').style.getPropertyValue('--tj-ant-color-primary')).toBe(
+      'var(--cc-success-systemStatus)'
+    );
   });
 
   test.each([
-    ['Kanban', { columnBackgroundColor: 'var(--cc-surface2-surface)', cardBackgroundColor: 'var(--cc-surface1-surface)', progressColor: 'var(--cc-primary-brand)' }],
-    ['Map', { backgroundColor: 'var(--cc-surface2-surface)', accentColor: 'var(--cc-primary-brand)', clusterColor: 'var(--cc-primary-text)' }],
-    ['Schedule', { backgroundColor: 'var(--cc-surface1-surface)', accentColor: 'var(--cc-primary-brand)', nowColor: 'var(--cc-error-systemStatus)' }],
-  ])('%s: its own colour styles at their defaults set no look variable (the card shadow is an option, set as before)', async (name, defaults) => {
-    for (const styles of [{}, defaults]) {
-      const v = await mount(name, {}, { formField: false, styles });
-      await settle();
-      const set = [...v.root().querySelectorAll('[style]')].flatMap((el) =>
-        [...Array(el.style.length).keys()].map((i) => el.style[i]).filter((p) => /^--(kb|lk|tj-ant)-/.test(p) && p !== '--kb-card-shadow')
-      );
-      expect(set).toEqual([]);
-      v.unmount();
+    [
+      'Kanban',
+      {
+        columnBackgroundColor: 'var(--cc-surface2-surface)',
+        cardBackgroundColor: 'var(--cc-surface1-surface)',
+        progressColor: 'var(--cc-primary-brand)',
+      },
+    ],
+    [
+      'Map',
+      {
+        backgroundColor: 'var(--cc-surface2-surface)',
+        accentColor: 'var(--cc-primary-brand)',
+        clusterColor: 'var(--cc-primary-text)',
+      },
+    ],
+    [
+      'Schedule',
+      {
+        backgroundColor: 'var(--cc-surface1-surface)',
+        accentColor: 'var(--cc-primary-brand)',
+        nowColor: 'var(--cc-error-systemStatus)',
+      },
+    ],
+  ])(
+    '%s: its own colour styles at their defaults set no look variable (the card shadow is an option, set as before)',
+    async (name, defaults) => {
+      for (const styles of [{}, defaults]) {
+        const v = await mount(name, {}, { formField: false, styles });
+        await settle();
+        const set = [...v.root().querySelectorAll('[style]')].flatMap((el) =>
+          [...Array(el.style.length).keys()]
+            .map((i) => el.style[i])
+            .filter((p) => /^--(kb|lk|tj-ant)-/.test(p) && p !== '--kb-card-shadow')
+        );
+        expect(set).toEqual([]);
+        v.unmount();
+      }
     }
-  });
+  );
 });
 
 describe("T40: Ant Alert's Custom type", () => {
@@ -859,7 +994,10 @@ describe("T40: Ant Alert's Custom type", () => {
     const w = await mount(
       'Alert',
       { message: 'Heads up', type: 'custom' },
-      { formField: false, styles: { customBackgroundColor: '#fef3c7', customTextColor: '#78350f', customBorderColor: '#f59e0b' } }
+      {
+        formField: false,
+        styles: { customBackgroundColor: '#fef3c7', customTextColor: '#78350f', customBorderColor: '#f59e0b' },
+      }
     );
     const style = w.root().querySelector('.tj-ant-root').style;
     expect(style.getPropertyValue('--tj-alert-bg')).toBe('#fef3c7');
@@ -868,7 +1006,11 @@ describe("T40: Ant Alert's Custom type", () => {
   });
 
   test('the Custom colours do nothing for the other types', async () => {
-    const v = await mount('Alert', { message: 'Saved', type: 'success' }, { formField: false, styles: { customBackgroundColor: '#fef3c7' } });
+    const v = await mount(
+      'Alert',
+      { message: 'Saved', type: 'success' },
+      { formField: false, styles: { customBackgroundColor: '#fef3c7' } }
+    );
     const root = v.root().querySelector('.tj-ant-root');
     expect(root.classList.contains('tj-ant-alert--custom')).toBe(false);
     expect(root.style.getPropertyValue('--tj-alert-bg')).toBe('');
@@ -947,7 +1089,10 @@ describe('Calendar: each day keeps its number in place and its events inside its
     expect(v.root().querySelector('.ant-picker-calendar-mini')).toBeTruthy();
     const marks = cell(v, '2026-10-15').querySelector('.ant-picker-calendar-date-content .tj-ant-cal-marks');
     expect(marks.getAttribute('title')).toBe('2 tasks due, Review');
-    expect([...marks.querySelectorAll('.tj-ant-cal-dots i')].map((i) => i.className)).toEqual(['is-error', 'is-success']);
+    expect([...marks.querySelectorAll('.tj-ant-cal-dots i')].map((i) => i.className)).toEqual([
+      'is-error',
+      'is-success',
+    ]);
     expect(marks.querySelector('.tj-ant-cal-count').textContent).toBe('2');
     // The number is drawn the same way in a marked and an unmarked day: before the marks, in its own element.
     for (const date of ['2026-10-15', '2026-10-16']) {
@@ -966,15 +1111,18 @@ describe('Calendar: each day keeps its number in place and its events inside its
 });
 
 describe('Charts draw their hover tooltip in the popup layer, not inside the widget box', () => {
-  test.each(['Line', 'Column', 'Pie', 'DualAxes', 'Sparkline'])('%s: a themed tooltip layer while mounted, gone after', async (name) => {
-    const v = await mount(name, {}, { formField: false });
-    await settle();
-    const tips = () => layer()?.querySelectorAll('.tj-ant-chart-tips') ?? [];
-    expect(tips()).toHaveLength(1);
-    expect(tips()[0].classList.contains('tj-ant')).toBe(true);
-    v.unmount();
-    expect(tips()).toHaveLength(0);
-  });
+  test.each(['Line', 'Column', 'Pie', 'DualAxes', 'Sparkline'])(
+    '%s: a themed tooltip layer while mounted, gone after',
+    async (name) => {
+      const v = await mount(name, {}, { formField: false });
+      await settle();
+      const tips = () => layer()?.querySelectorAll('.tj-ant-chart-tips') ?? [];
+      expect(tips()).toHaveLength(1);
+      expect(tips()[0].classList.contains('tj-ant')).toBe(true);
+      v.unmount();
+      expect(tips()).toHaveLength(0);
+    }
+  );
 
   test('the layer carries the component token overrides', async () => {
     await mount('Line', {}, { formField: false, styles: { colorText: '#123456' } });

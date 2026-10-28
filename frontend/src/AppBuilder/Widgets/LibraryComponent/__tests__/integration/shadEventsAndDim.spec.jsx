@@ -303,33 +303,32 @@ describe('Q6: a Dialog handler reads the dialog as closed', () => {
     const t = await mount('Dialog', { title: 'Synthetic dialog', cancelText: 'Cancel', confirmText: 'Continue' });
     await t.run('open');
     await waitFor(() => expect(popupLayer()?.querySelector('[role="dialog"]')).toBeTruthy());
-    expect(t.exposed).toMatchObject({ isOpen: true, show: true });
+    expect(t.exposed).toMatchObject({ show: true });
+    expect(t.exposed).not.toHaveProperty('isOpen');
     return t;
   };
   const button = (label) => [...popupLayer().querySelectorAll('button')].find((b) => b.textContent === label);
   const closedAt = (seen, event) => seen.find((s) => s.event === event)?.exposed;
 
-  it('Cancel: onCancel and onClose see show and isOpen false', async () => {
+  it('Cancel: onCancel and onClose see show false', async () => {
     const t = await openDialog();
     fireEvent.click(button('Cancel'));
     await waitFor(() => expect(t.events).toContain('onClose'));
-    for (const event of ['onCancel', 'onClose'])
-      expect(closedAt(t.seen, event)).toMatchObject({ isOpen: false, show: false });
+    for (const event of ['onCancel', 'onClose']) expect(closedAt(t.seen, event)).toMatchObject({ show: false });
   });
 
-  it('Confirm: onConfirm and onClose see show and isOpen false', async () => {
+  it('Confirm: onConfirm and onClose see show false', async () => {
     const t = await openDialog();
     fireEvent.click(button('Continue'));
     await waitFor(() => expect(t.events).toContain('onClose'));
-    for (const event of ['onConfirm', 'onClose'])
-      expect(closedAt(t.seen, event)).toMatchObject({ isOpen: false, show: false });
+    for (const event of ['onConfirm', 'onClose']) expect(closedAt(t.seen, event)).toMatchObject({ show: false });
   });
 
   it('the close action: onClose sees show false, and open sets show true before onOpen', async () => {
     const t = await openDialog();
-    expect(closedAt(t.seen, 'onOpen')).toMatchObject({ isOpen: true, show: true });
+    expect(closedAt(t.seen, 'onOpen')).toMatchObject({ show: true });
     await t.run('close');
-    expect(closedAt(t.seen, 'onClose')).toMatchObject({ isOpen: false, show: false });
+    expect(closedAt(t.seen, 'onClose')).toMatchObject({ show: false });
   });
 });
 

@@ -56,6 +56,11 @@ export interface PackValidation {
   touch: () => void;
 }
 
+/** How a pack's rows are drawn: `fit` rows grow with their components (a Kanban card), never below the row height. */
+export interface PackRowsOptions {
+  fit?: boolean;
+}
+
 export interface PackHost {
   disabled: boolean;
   loading: boolean;
@@ -63,8 +68,9 @@ export interface PackHost {
   fieldId: string;
   /** Judges a value with the component's own rule, then the widget's Validation section, and publishes isValid / isMandatory. */
   useValidation: (value: unknown, present?: boolean, rule?: string) => PackValidation;
-  /** The items a list draws as rows of ToolJet components ({{listItem}}). */
-  setRows: (items: unknown[], rowHeight?: number) => void;
+  /** The items a list draws as rows of ToolJet components ({{listItem}}). With `fit`, a row grows to fit its
+   *  components, never below `rowHeight`. */
+  setRows: (items: unknown[], rowHeight?: number, options?: PackRowsOptions) => void;
   /** The slot attribute of row `index`'s projected canvas. */
   rowSlotAttr: (index: number) => string;
   /** A drop area drawn inside the popup layer (a dialog's body). */
@@ -107,16 +113,33 @@ const useLibraryInstance = (hookName: string): LibraryInstance => {
 // Same semantics as shell.html's useTjState: an Inspector-set prop overrides local state, and every
 // value change is reported as an exposed variable.
 // What a Form's clearForm sets a field's value to, by the hook's type (the native inputs clear to these).
+const sameContent = (a: unknown, b: unknown): boolean => {
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+};
+
 const makeStateHook = (hookName: string, cleared?: () => unknown) =>
   function useTjState({ name, initialValue }: { name: string; initialValue?: unknown }) {
     const instance = useLibraryInstance(hookName);
     const external = instance.props[name];
-    const [value, setValue] = React.useState(external !== undefined ? external : initialValue);
+    // A property the app sets whose binding resolves to undefined (a query that has not run or failed) starts empty,
+    // as a native widget's does; only a property the app never set falls back to initialValue, so a component's
+    // sample data never stands in for a missing result.
+    const bound = Object.prototype.hasOwnProperty.call(instance.props, name);
+    const [value, setValue] = React.useState(() =>
+      external !== undefined ? external : bound && cleared ? cleared() : initialValue
+    );
     const valueRef = React.useRef(value);
     const lastExternal = React.useRef(external);
     // Object.is, so a NaN binding (e.g. arithmetic on a query that has not loaded) is equal to itself and does not
-    // set state on every render.
-    if (!Object.is(lastExternal.current, external)) {
+    // set state on every render; and by content for objects and arrays, which the host re-resolves to new ones on
+    // every change. Otherwise an app's saved hidden value ({{{"page":0}}}) was adopted again on each change and
+    // overwrote what the component had published.
+    if (!Object.is(lastExternal.current, external) && !sameContent(lastExternal.current, external)) {
       lastExternal.current = external;
       if (external !== undefined && !Object.is(external, value)) {
         valueRef.current = external;
@@ -152,10 +175,24 @@ const makeStateHook = (hookName: string, cleared?: () => unknown) =>
 // Styles are builder-controlled: the hook returns the Inspector value, or initialValue while it is unset.
 // `expose: true` also reports that value as a read-only exposed variable; by default styles stay private.
 const makeStyleHook = (hookName: string) =>
-  function useTjStyle({ name, initialValue, expose }: { name: string; initialValue?: unknown; expose?: boolean }) {
+  function useTjStyle({
+    name,
+    initialValue,
+    expose,
+    enumDefinition,
+  }: {
+    name: string;
+    initialValue?: unknown;
+    expose?: boolean;
+    enumDefinition?: unknown[];
+  }) {
     const instance = useLibraryInstance(hookName);
     const raw = instance.styles[name];
-    const value = raw === undefined || raw === '' ? initialValue : raw;
+    // A style bound to data that has not loaded resolves to null; an enumeration style may resolve to a value it does
+    // not list. Both fall back to initialValue: a vendor component given null or an unknown colour name can throw
+    // (MUI Tabs' textColor took the whole viewer down).
+    const unknownOption = Array.isArray(enumDefinition) && raw != null && raw !== '' && !enumDefinition.includes(raw);
+    const value = raw === undefined || raw === null || raw === '' || unknownOption ? initialValue : raw;
     // The instance object changes with every prop change; report only when the value itself changes.
     const instanceRef = React.useRef(instance);
     instanceRef.current = instance;
@@ -231,12 +268,14 @@ const v2Hooks = {
     return host ? host.useValidation(value, present, rule || undefined) : NO_VALIDATION;
   },
   useFieldId: (): string | undefined => useHost()?.fieldId,
-  /** The items drawn as rows of ToolJet components, read as {{listItem}} by the row's components. */
-  useRows: (items: unknown[], rowHeight?: number) => {
+  /** The items drawn as rows of ToolJet components, read as {{listItem}} by the row's components. With
+   *  `{ fit: true }` each row grows to fit its components (text that wraps in a narrow card), never below `rowHeight`. */
+  useRows: (items: unknown[], rowHeight?: number, options?: PackRowsOptions) => {
     const host = useHost();
+    const fit = options?.fit === true;
     React.useLayoutEffect(() => {
-      host?.setRows(Array.isArray(items) ? items : [], rowHeight);
-    }, [host, items, rowHeight]);
+      host?.setRows(Array.isArray(items) ? items : [], rowHeight, { fit });
+    }, [host, items, rowHeight, fit]);
   },
   /** Where row `index` of useRows sits: its projected ToolJet canvas. */
   RowSlot: ({ index }: { name?: string; index: number; item?: unknown }) => {

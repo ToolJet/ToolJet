@@ -129,7 +129,10 @@ const deepAll = (selector, root = document) => {
   for (const el of root.querySelectorAll('*')) if (el.shadowRoot) found.push(...deepAll(selector, el.shadowRoot));
   return found;
 };
-const popupText = () => deepAll('[role="option"], [role="menuitem"], [role="dialog"]').map((el) => el.textContent).join(' ');
+const popupText = () =>
+  deepAll('[role="option"], [role="menuitem"], [role="dialog"]')
+    .map((el) => el.textContent)
+    .join(' ');
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -379,8 +382,20 @@ describe('Select gives focus back to its trigger across shadow roots (AM-13)', (
 
 describe('required validation sees a picked false or 0', () => {
   test.each([
-    [false, [{ label: 'No', value: false }, { label: 'Yes', value: true }]],
-    [0, [{ label: 'Zero', value: 0 }, { label: 'One', value: 1 }]],
+    [
+      false,
+      [
+        { label: 'No', value: false },
+        { label: 'Yes', value: true },
+      ],
+    ],
+    [
+      0,
+      [
+        { label: 'Zero', value: 0 },
+        { label: 'One', value: 1 },
+      ],
+    ],
   ])('RadioGroup and Select with %p', async (value, options) => {
     for (const name of ['RadioGroup', 'Select']) {
       const seen = [];
@@ -430,13 +445,21 @@ describe('exposed values agree with what is drawn', () => {
 
 describe('sectioned layouts', () => {
   test('Tabs gives distinct values distinct canvases', async () => {
-    const t = await mount('Tabs', { tabs: [{ value: 'a-b', label: 'Dash' }, { value: 'a_b', label: 'Under' }] });
+    const t = await mount('Tabs', {
+      tabs: [
+        { value: 'a-b', label: 'Dash' },
+        { value: 'a_b', label: 'Under' },
+      ],
+    });
     await waitFor(() => expect(new Set(t.slots).size).toBe(2));
     expect(slotNames('tab', ['a-b', 'a_b']).get('a_b')).toBe('tab_a_b');
   });
 
   test('Tabs exposes the tab it shows when the open one is removed', async () => {
-    const tabs = [{ value: 'one', label: 'One' }, { value: 'two', label: 'Two' }];
+    const tabs = [
+      { value: 'one', label: 'One' },
+      { value: 'two', label: 'Two' },
+    ];
     const t = await mount('Tabs', { tabs, value: 'two' });
     t.update({ props: { tabs: [tabs[0]], value: 'two' } });
     await waitFor(() => expect(t.exposed.value).toBe('one'));
@@ -534,7 +557,12 @@ describe("DataGrid's own words follow its locale", () => {
     expect(t.root().textContent).not.toContain('Rows per page');
   });
   test('no locale keeps English, and an author empty label still wins', async () => {
-    const t = await mount('DataGrid', { rows: [], columns: [{ field: 'name' }], locale: 'pt-BR', noRowsLabel: 'Sem pedidos' });
+    const t = await mount('DataGrid', {
+      rows: [],
+      columns: [{ field: 'name' }],
+      locale: 'pt-BR',
+      noRowsLabel: 'Sem pedidos',
+    });
     await waitFor(() => expect(t.root().textContent).toContain('Sem pedidos'));
     const en = await mount('DataGrid', { rows, columns: [{ field: 'name' }] });
     await waitFor(() => expect(en.root().textContent).toContain('Rows per page'));
@@ -554,7 +582,10 @@ describe('a keyboard move into a long column', () => {
       { id: 'doing', title: 'Doing' },
     ];
     const t = await mount('Kanban', { data, columns }, { host: { formField: false } });
-    const card = () => [...t.root().querySelectorAll('[aria-roledescription="Draggable card"]')].find((el) => el.textContent.includes('Mover'));
+    const card = () =>
+      [...t.root().querySelectorAll('[aria-roledescription="Draggable card"]')].find((el) =>
+        el.textContent.includes('Mover')
+      );
     act(() => card().focus());
     fireEvent.keyDown(card(), { key: ' ' });
     fireEvent.keyDown(card(), { key: 'ArrowRight' });
@@ -569,14 +600,28 @@ describe('DataGrid paging in a live app', () => {
   const rows = Array.from({ length: 32 }, (_, i) => ({ id: i + 1, title: `Row ${i + 1}` }));
   const footer = (t) => t.root().querySelector('.MuiTablePagination-displayedRows')?.textContent;
   test('Next advances, and stays there when bindings such as sortModel {{[]}} resolve to new arrays', async () => {
-    const t = await mount('DataGrid', { rows, columns: [{ field: 'title' }], pageSize: 12, sortModel: [], paginationModel: { page: 0, pageSize: 10 } });
+    const t = await mount('DataGrid', {
+      rows,
+      columns: [{ field: 'title' }],
+      pageSize: 12,
+      sortModel: [],
+      paginationModel: { page: 0, pageSize: 10 },
+    });
     await waitFor(() => expect(footer(t)).toBe('1–12 of 32'));
     // The exposed model matches the page drawn from the start.
     await waitFor(() => expect(t.exposed.paginationModel).toEqual({ page: 0, pageSize: 12 }));
     fireEvent.click(t.root().querySelector('button[aria-label="Go to next page"]'));
     await waitFor(() => expect(footer(t)).toBe('13–24 of 32'));
     // The host re-resolves every binding on each change: fresh arrays and objects with the same content.
-    t.update({ props: { rows: rows.map((r) => ({ ...r })), columns: [{ field: 'title' }], pageSize: 12, sortModel: [], paginationModel: { page: 0, pageSize: 10 } } });
+    t.update({
+      props: {
+        rows: rows.map((r) => ({ ...r })),
+        columns: [{ field: 'title' }],
+        pageSize: 12,
+        sortModel: [],
+        paginationModel: { page: 0, pageSize: 10 },
+      },
+    });
     await act(async () => {});
     expect(footer(t)).toBe('13–24 of 32');
     expect(t.exposed.paginationModel).toEqual({ page: 1, pageSize: 12 });
@@ -636,7 +681,11 @@ describe('team UI 2.0 report: List twins, the Alert box and the StatCard trend',
   });
 
   test('StatCard: loading draws title, figure, chip and interval placeholders inside the card, not one block', async () => {
-    const t = await mount('StatCard', { title: 'Users', value: '1200', trendLabel: '+5%', interval: 'Last 30 days' }, { host: { loading: true } });
+    const t = await mount(
+      'StatCard',
+      { title: 'Users', value: '1200', trendLabel: '+5%', interval: 'Last 30 days' },
+      { host: { loading: true } }
+    );
     const card = t.root().querySelector('.MuiCard-root.tj-mui-stat');
     expect(card.getAttribute('aria-busy')).toBe('true');
     expect(card.querySelector('.tj-mui-stat-head h2 .MuiSkeleton-text')).toBeTruthy();
@@ -673,7 +722,12 @@ describe('DataGrid columns typed for values that arrive formatted', () => {
 describe('controls UI 2.0 has (team review, 2026-10-24)', () => {
   const Charts = require('../../../../../../../packs/mui/src/components/Charts');
   const { highlightProps } = require('../../../../../../../packs/mui/src/lib/chartHighlight');
-  Object.assign(COMPONENTS, { BarChart: Charts.BarChart, LineChart: Charts.LineChart, AreaChart: Charts.AreaChart, PieChart: Charts.PieChart });
+  Object.assign(COMPONENTS, {
+    BarChart: Charts.BarChart,
+    LineChart: Charts.LineChart,
+    AreaChart: Charts.AreaChart,
+    PieChart: Charts.PieChart,
+  });
   const helper = (t) => t.root().querySelector('.MuiFormHelperText-root')?.textContent ?? '';
 
   test.each([
@@ -782,7 +836,9 @@ describe('AM-04: Escape from a ToolJet component in the Dialog body', () => {
   const field = (id) => document.querySelector(`.tj-cc-popup-host [data-testid="${id}"]`);
   const escape = async (el, init = {}) => {
     await act(async () => {
-      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true, cancelable: true, ...init }));
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true, cancelable: true, ...init })
+      );
       await new Promise((resolve) => setTimeout(resolve, 10));
     });
   };
@@ -854,7 +910,12 @@ describe('AM-04: Escape from a ToolJet component in the Dialog body', () => {
 
 describe('UI2-12: MUI Tabs link each tab to its panel', () => {
   test('the active tab and its panel point at each other, ids scoped to the widget', async () => {
-    const t = await mount('Tabs', { tabs: [{ value: 'a b', label: 'A' }, { value: 'b', label: 'B' }] });
+    const t = await mount('Tabs', {
+      tabs: [
+        { value: 'a b', label: 'A' },
+        { value: 'b', label: 'B' },
+      ],
+    });
     for (const next of ['a b', 'b']) {
       t.act('setValue', next);
       await waitFor(() => expect(t.exposed.value).toBe(next));
@@ -878,7 +939,12 @@ describe('T33: MUI default heights are whole grid rows', () => {
     const heights = fs
       .readdirSync(dir)
       .filter((f) => f.endsWith('.tsx'))
-      .flatMap((f) => [...fs.readFileSync(path.join(dir, f), 'utf8').matchAll(/defaultHeight:\s*([\d.]+)/g)].map((m) => [f, Number(m[1])]));
+      .flatMap((f) =>
+        [...fs.readFileSync(path.join(dir, f), 'utf8').matchAll(/defaultHeight:\s*([\d.]+)/g)].map((m) => [
+          f,
+          Number(m[1]),
+        ])
+      );
     expect(heights.length).toBeGreaterThan(30);
     expect(heights.filter(([, h]) => !Number.isInteger(h))).toEqual([]);
   });
@@ -893,7 +959,13 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
   const { Button } = require('../../../../../../../packs/mui/src/components/Button');
   const theme = require('../../../../../../../packs/mui/src/lib/theme');
   const { ownColor, THEME_TOKEN } = require('../../../../../../../packs/mui/src/lib/themeStyle');
-  Object.assign(COMPONENTS, { Button, Alert: Display.Alert, StatCard: Display.StatCard, BarChart: Charts.BarChart, PieChart: Charts.PieChart });
+  Object.assign(COMPONENTS, {
+    Button,
+    Alert: Display.Alert,
+    StatCard: Display.StatCard,
+    BarChart: Charts.BarChart,
+    PieChart: Charts.PieChart,
+  });
   const manifest = () => JSON.parse(fs.readFileSync(path.join(PACK, 'dist/manifest.json'), 'utf8')).components;
 
   // A canvas that parses colours as a browser's does for hex and rgb(), so normalizeColor works in jsdom (the shared
@@ -941,22 +1013,29 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
     return { view, root };
   };
   /** Every element's class list under the widget: Emotion's class names hash the styles, so equal lists draw alike. */
-  const classes = (root) => [...root.querySelectorAll('.tj-mui-root *')].map((el) => el.getAttribute('class') ?? '').join('|');
+  const classes = (root) =>
+    [...root.querySelectorAll('.tj-mui-root *')].map((el) => el.getAttribute('class') ?? '').join('|');
   const defaultsOf = (name) =>
-    Object.fromEntries(manifest()[name].styles.filter((s) => s.default !== undefined).map((s) => [s.name, s.default]));
+    Object.fromEntries(
+      manifest()
+        [name].styles.filter((s) => s.default !== undefined)
+        .map((s) => [s.name, s.default])
+    );
 
-  test('every MUI colour style (but the shared Kanban hook\'s) defaults to a theme token; every radius shows a placeholder', () => {
+  test("every MUI colour style (but the shared Kanban hook's) defaults to a theme token; every radius shows a placeholder", () => {
     // The Kanban's board styles come from the hook it shares with the Ant pack (lib/ui2/display/kanban/useKanban.ts).
-    const shared = (s) => s.component === 'Kanban' && !['primary', 'textPrimary', 'backgroundPaper', 'divider', 'borderRadius'].includes(s.name);
+    const shared = (s) =>
+      s.component === 'Kanban' &&
+      !['primary', 'textPrimary', 'backgroundPaper', 'divider', 'borderRadius'].includes(s.name);
     const fields = Object.entries(manifest())
       .flatMap(([name, c]) => c.styles.map((s) => ({ component: name, ...s })))
       .filter((s) => !shared(s));
     const colours = fields.filter((s) => s.inspector === 'color');
     // 42 components (RecordList, ProgressList, Timeline and KeyValue added 2026-10-25), four colours each.
-    expect(colours.length).toBe(42 * 4 + 3);
+    expect(colours).toHaveLength(42 * 4 + 3);
     expect(colours.filter((s) => !/^var\(--cc-[\w-]+\)$/.test(String(s.default)))).toEqual([]);
     const radii = fields.filter((s) => s.name === 'borderRadius');
-    expect(radii.length).toBe(42);
+    expect(radii).toHaveLength(42);
     expect(radii.filter((s) => !s.placeholder)).toEqual([]);
   });
 
@@ -970,17 +1049,20 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
     expect(ownColor('var(--cc-success-systemStatus)', THEME_TOKEN.brand)).toBe('var(--cc-success-systemStatus)');
   });
 
-  test.each(['Button', 'Alert', 'StatCard'])('%s left at its new style defaults draws exactly what blank styles drew', async (name) => {
-    const defaults = defaultsOf(name);
-    expect(defaults.primary).toBe('var(--cc-primary-brand)');
-    const blank = Object.fromEntries(Object.keys(defaults).map((k) => [k, '']));
-    const a = await mountStyled(name, {}, defaults);
-    const b = await mountStyled(name, {}, blank);
-    expect(classes(a.root())).toBe(classes(b.root()));
-    // ... while a style of its own still changes the look (each of these draws on Paper).
-    const c = await mountStyled(name, {}, { ...defaults, primary: '#ff0000', backgroundPaper: '#ff0000' });
-    expect(classes(c.root())).not.toBe(classes(b.root()));
-  });
+  test.each(['Button', 'Alert', 'StatCard'])(
+    '%s left at its new style defaults draws exactly what blank styles drew',
+    async (name) => {
+      const defaults = defaultsOf(name);
+      expect(defaults.primary).toBe('var(--cc-primary-brand)');
+      const blank = Object.fromEntries(Object.keys(defaults).map((k) => [k, '']));
+      const a = await mountStyled(name, {}, defaults);
+      const b = await mountStyled(name, {}, blank);
+      expect(classes(a.root())).toBe(classes(b.root()));
+      // ... while a style of its own still changes the look (each of these draws on Paper).
+      const c = await mountStyled(name, {}, { ...defaults, primary: '#ff0000', backgroundPaper: '#ff0000' });
+      expect(classes(c.root())).not.toBe(classes(b.root()));
+    }
+  );
 
   test('the theme mapping: defaults add nothing over the app theme, with and without one', () => {
     const themed = {
@@ -995,7 +1077,13 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
       radius: 12,
       font: 'Inter',
     };
-    const atDefaults = { primary: undefined, textPrimary: undefined, backgroundPaper: undefined, divider: undefined, borderRadius: undefined };
+    const atDefaults = {
+      primary: undefined,
+      textPrimary: undefined,
+      backgroundPaper: undefined,
+      divider: undefined,
+      borderRadius: undefined,
+    };
     for (const app of [{ mode: 'light' }, { mode: 'dark' }, themed, { ...themed, mode: 'dark', surface: '#111a2e' }]) {
       const a = theme.buildTheme(app, theme.resolveOverrides(atDefaults, null), null);
       const b = theme.buildTheme(app, {}, null);
@@ -1016,7 +1104,14 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
   });
 
   test('with an app theme: info is the brand, pickers and fields take its border, DataGrid its surface, the Slider label its radius', () => {
-    const app = { mode: 'dark', brand: '#818cf8', onBrand: '#0a0a0a', surface: '#111a2e', border: '#334155', radius: 12 };
+    const app = {
+      mode: 'dark',
+      brand: '#818cf8',
+      onBrand: '#0a0a0a',
+      surface: '#111a2e',
+      border: '#334155',
+      radius: 12,
+    };
     const t = theme.buildTheme(app, {}, null);
     expect(t.palette.info.main).toBe('#818cf8');
     expect(t.palette.DataGrid).toEqual({ bg: '#111a2e', headerBg: '#111a2e', pinnedBg: '#111a2e' });
@@ -1040,15 +1135,24 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
     expect(p.every((c) => /^(#|rgb)/.test(c))).toBe(true);
   });
 
-  test.each(['BarChart', 'PieChart'])('%s with no colors list draws the Primary style’s brand first, not MUI X’s palette', async (name) => {
-    const t = await mountStyled(name, {}, { ...defaultsOf(name), primary: '#4f46e5' });
-    const fills = () => [...t.root().querySelectorAll('[fill]')].map((el) => el.getAttribute('fill').toLowerCase());
-    await waitFor(() => expect(fills()).toContain('#4f46e5'));
-    expect(fills()).not.toContain('#4254fb');
-    // An explicit colors list still wins.
-    const own = await mountStyled(name, { colors: ['#ff0000', '#00ff00', '#0000ff'] }, { ...defaultsOf(name), primary: '#4f46e5' });
-    await waitFor(() => expect([...own.root().querySelectorAll('[fill]')].map((el) => el.getAttribute('fill'))).toContain('#ff0000'));
-  });
+  test.each(['BarChart', 'PieChart'])(
+    '%s with no colors list draws the Primary style’s brand first, not MUI X’s palette',
+    async (name) => {
+      const t = await mountStyled(name, {}, { ...defaultsOf(name), primary: '#4f46e5' });
+      const fills = () => [...t.root().querySelectorAll('[fill]')].map((el) => el.getAttribute('fill').toLowerCase());
+      await waitFor(() => expect(fills()).toContain('#4f46e5'));
+      expect(fills()).not.toContain('#4254fb');
+      // An explicit colors list still wins.
+      const own = await mountStyled(
+        name,
+        { colors: ['#ff0000', '#00ff00', '#0000ff'] },
+        { ...defaultsOf(name), primary: '#4f46e5' }
+      );
+      await waitFor(() =>
+        expect([...own.root().querySelectorAll('[fill]')].map((el) => el.getAttribute('fill'))).toContain('#ff0000')
+      );
+    }
+  );
 
   test('Alert severity Custom draws its Custom styles, and they show only for it', async () => {
     const m = manifest().Alert;
@@ -1057,7 +1161,11 @@ describe('round two: theme-backed style defaults, hints and theme gaps (2026-10-
     expect(custom.map((s) => s.name)).toEqual(['customAccent', 'customBackground', 'customText']);
     expect(custom.every((s) => s.visibleWhen?.key === 'severity' && s.visibleWhen?.value === 'custom')).toBe(true);
     const plain = await mountStyled('Alert', { severity: 'custom', title: 'T', children: 'M' }, defaultsOf('Alert'));
-    const styled = await mountStyled('Alert', { severity: 'custom', title: 'T', children: 'M' }, { ...defaultsOf('Alert'), customAccent: '#ff0000', customText: '#00ff00' });
+    const styled = await mountStyled(
+      'Alert',
+      { severity: 'custom', title: 'T', children: 'M' },
+      { ...defaultsOf('Alert'), customAccent: '#ff0000', customText: '#00ff00' }
+    );
     expect(plain.root().querySelector('.MuiAlert-root')).not.toBeNull();
     expect(classes(styled.root())).not.toBe(classes(plain.root()));
   });
@@ -1096,20 +1204,23 @@ describe('MUI Select clear button room', () => {
     ['filled', 'small', 31, 63],
     ['standard', 'medium', 24, 56],
     ['standard', 'small', 24, 56],
-  ])('%s %s: the x sits left of the arrow and the value stops before both', async (variant, size, clearRight, valueRight) => {
-    const t = await mount('Select', { options: LONG, value: 'long', variant, size });
-    const clear = t.root().querySelector('.tj-mui-select-clear');
-    expect(clear).not.toBeNull();
-    const slot = clear.closest('.tj-mui-select-clear-slot');
-    expect(slot.style.position).toBe('absolute');
-    expect(slot.style.right).toBe(`${clearRight}px`);
-    const display = t.root().querySelector('.MuiSelect-select');
-    expect(display.style.paddingRight).toBe(`${valueRight}px`);
-    // The value's padding covers the x (28px) and the arrow, so the label's ellipsis ends before them.
-    expect(valueRight).toBeGreaterThanOrEqual(clearRight + 28);
-    expect(display.closest('.MuiInputBase-root').style.paddingRight).toBe('0px');
-    t.view.unmount();
-  });
+  ])(
+    '%s %s: the x sits left of the arrow and the value stops before both',
+    async (variant, size, clearRight, valueRight) => {
+      const t = await mount('Select', { options: LONG, value: 'long', variant, size });
+      const clear = t.root().querySelector('.tj-mui-select-clear');
+      expect(clear).not.toBeNull();
+      const slot = clear.closest('.tj-mui-select-clear-slot');
+      expect(slot.style.position).toBe('absolute');
+      expect(slot.style.right).toBe(`${clearRight}px`);
+      const display = t.root().querySelector('.MuiSelect-select');
+      expect(display.style.paddingRight).toBe(`${valueRight}px`);
+      // The value's padding covers the x (28px) and the arrow, so the label's ellipsis ends before them.
+      expect(valueRight).toBeGreaterThanOrEqual(clearRight + 28);
+      expect(display.closest('.MuiInputBase-root').style.paddingRight).toBe('0px');
+      t.view.unmount();
+    }
+  );
 
   test('without a clear button the value keeps MUI own arrow padding', async () => {
     const t = await mount('Select', { options: LONG, value: 'long', disableClearable: true });

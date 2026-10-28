@@ -39,6 +39,8 @@ export type ManifestValidationKind = 'text' | 'choice' | 'date';
 export interface ManifestSlot {
   name: string;
   kind?: string;
+  // rows only: what the row's components call their item instead of {{listItem}} (a kanban card's cardData)
+  variable?: string;
 }
 
 export interface ManifestActionParam {

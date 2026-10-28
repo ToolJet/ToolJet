@@ -9,10 +9,17 @@ import useStore from '@/AppBuilder/_stores/store';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { resolveDynamicValues } from '@/AppBuilder/_stores/utils';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { getEffectiveLayout, resolveWidgetVisibility } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { UI2_ROW_CHROME } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { ROW_VARIABLES } from './inlineRuntime';
+import { useMeasuredWidth } from './useMeasuredWidth';
 
 /* Pack contract v2: what the LibraryComponent host gives a pack component beyond the base SDK (inlineRuntime.ts
    PackHost). The validation, rows and popup drop areas live here; the control state is the widget's own. */
+
+// Events one widget may fire before the page runs again (usePackHost's fireHostEvent): above any real burst (the action
+// fuzz fires 50 in one frame, the packs' own self-toggle cap is 100).
+const EVENT_BURST = 200;
 
 const filled = (value) =>
   !(value === undefined || value === null || value === '' || (Array.isArray(value) && !value.length));
@@ -21,7 +28,14 @@ const filled = (value) =>
 // published, and the error shows once the field was touched. 0 and false are values.
 // `rule` is the component's own check (a format or range message, '' when it passes), checked before the section's.
 export const useHostValidation = (latest, value, present, rule) => {
-  const { validate, validation, setExposedVariable } = latest.current;
+  const { validate, validation, setExposedVariable, exposed, judged } = latest.current;
+  // Which exposed variable this is the value of, so an event fired right after the value changes can judge the new
+  // value first (see fireHostEvent).
+  if (exposed && judged) {
+    let key = exposed.has('value') && Object.is(exposed.get('value'), value) ? 'value' : null;
+    if (!key) for (const [k, v] of exposed) if (k !== 'isValid' && k !== 'isMandatory' && Object.is(v, value)) key = k;
+    judged.current = { key: key ?? judged.current.key, value };
+  }
   const status =
     (typeof validate === 'function' ? validate((present ?? filled(value)) ? value : undefined) : null) || {};
   const isValid = status.isValid !== false && !rule;
@@ -217,59 +231,170 @@ const useRowResolve = (moduleId) =>
 
 export const rowSlotAttr = (id, index) => `tj-row-${id}-${index}`;
 
+// The height a fitted row (a Kanban card) is drawn at: the lowest bottom of its components as the reflow placed them in
+// this row (a Text that wraps in a narrow column grows and pushes the ones below it down), plus the space UI 2.0's
+// Kanban keeps under a card's lowest component, and never below the pack's row height. The native List view sizes its
+// rows from the same per-row layouts (dynamicHeightReflow getListviewTemplateHeight). Measured here rather than read
+// from the row's own temporary layout: the reflow sizes a LibraryComponent's row as a plain container, floored at the
+// whole widget's height. A component hidden on this card (a button shown only for some cards) is left out, slot and all,
+// as UI 2.0's Kanban leaves it out: the row canvas does not draw it.
+export const fittedRowHeight = ({
+  childIds,
+  components,
+  temporaryLayouts,
+  currentLayout,
+  rowContext,
+  moduleId,
+  rowHeight,
+  isVisible = () => true,
+}) => {
+  const bottom = (childIds || []).reduce((max, childId) => {
+    if (!isVisible(childId)) return max;
+    const layout = getEffectiveLayout(childId, currentLayout, components, temporaryLayouts, rowContext, moduleId);
+    return layout ? Math.max(max, (Number(layout.top) || 0) + (Number(layout.height) || 0)) : max;
+  }, 0);
+  return bottom > 0 ? Math.max(rowHeight, Math.ceil(bottom + UI2_ROW_CHROME)) : rowHeight;
+};
+
+const useRowHeight = ({ id, index, moduleId, rowHeight, currentLayout, parentIndices, fitRows }) => {
+  const rowContext = useMemo(() => [...parentIndices, index], [parentIndices, index]);
+  return useStore((state) =>
+    fitRows
+      ? fittedRowHeight({
+          childIds: state.containerChildrenMapping?.[id],
+          components: state.getCurrentPageComponents?.(moduleId),
+          temporaryLayouts: state.temporaryLayouts,
+          currentLayout,
+          rowContext,
+          moduleId,
+          rowHeight,
+          isVisible: (childId) =>
+            resolveWidgetVisibility({
+              componentId: childId,
+              contextIndices: rowContext,
+              currentLayout,
+              getResolvedComponent: (cid, ctx) => state.getResolvedComponent?.(cid, ctx, moduleId),
+              getExposedPropertyForAdditionalActions: (cid, ctx, prop) =>
+                state.getExposedPropertyForAdditionalActions?.(cid, ctx, prop, moduleId),
+            }) !== false,
+        })
+      : rowHeight
+  );
+};
+
+// One row's canvas, as wide as the pack lays the row out: a grid cell or a kanban card, not the whole widget (a
+// 4-column list drew each row's components across the full width, clipped by the cell). A fitted row (fitRows: the
+// pack asked for it, a Kanban card) grows with its components and the pack's card, which wraps the row's slot, follows.
+const PackRow = ({
+  slot,
+  id,
+  index,
+  moduleId,
+  rowHeight,
+  darkMode,
+  widgetWidth,
+  fit,
+  fitRows,
+  parentIndices,
+  items,
+  currentLayout,
+  visibility,
+  height,
+}) => {
+  const ref = useRef(null);
+  const measured = useMeasuredWidth(ref);
+  const drawnHeight = useRowHeight({ id, index, moduleId, rowHeight, currentLayout, parentIndices, fitRows });
+  return (
+    <div ref={ref} slot={slot} className="tw-block tw-w-full">
+      <ListviewSubcontainer
+        id={id}
+        index={index}
+        moduleId={moduleId}
+        mode="list"
+        rowHeight={drawnHeight}
+        positiveColumns={1}
+        showBorder={false}
+        onRecordOrRowClicked={() => {}}
+        computeCanvasBackgroundColor={() => 'transparent'}
+        darkMode={darkMode}
+        width={measured ?? widgetWidth}
+        isDynamicHeightEnabled={fit && !fitRows}
+        data={items}
+        currentLayout={currentLayout}
+        visibility={visibility}
+        parentHeight={height}
+        componentType="LibraryComponent"
+      />
+    </div>
+  );
+};
+
 /** The rows a pack list draws as ToolJet canvases ({{listItem}}), with the native List view's row plumbing. */
-const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMode, enabled }) => {
+const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMode, enabled, rowVariable }) => {
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
   const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
   const updateCustomResolvables = useStore((s) => s.updateCustomResolvables);
   const initExposedValueArrayForChildren = useStore((s) => s.initExposedValueArrayForChildren);
-  const [rows, setRowsState] = useState({ items: [], rowHeight: 72 });
+  const updateDependencyValues = useStore((s) => s.updateDependencyValues);
+  const [rows, setRowsState] = useState({ items: [], rowHeight: 72, fit: false });
   const setRows = useCallback(
-    (items, rowHeight) =>
-      setRowsState((prev) =>
-        isEqual(prev.items, items) && (!rowHeight || rowHeight === prev.rowHeight)
+    (items, rowHeight, options) =>
+      setRowsState((prev) => {
+        const fitRows = options?.fit === true;
+        return isEqual(prev.items, items) && (!rowHeight || rowHeight === prev.rowHeight) && fitRows === prev.fit
           ? prev
-          : { items, rowHeight: rowHeight || prev.rowHeight }
-      ),
+          : { items, rowHeight: rowHeight || prev.rowHeight, fit: fitRows };
+      }),
     []
   );
   useLayoutEffect(() => {
     if (!enabled) return;
-    if (rows.items.length)
+    // Each row is {{listItem}}, and also the name the pack's slot gives it ({{cardData}} on a kanban card): a card
+    // template written for UI 2.0's Kanban read cardData and drew blank cards.
+    const alias = rowVariable && rowVariable !== 'listItem' ? rowVariable : undefined;
+    if (rows.items.length) {
       updateCustomResolvables(
         id,
-        rows.items.map((listItem) => ({ listItem })),
+        rows.items.map((listItem) => (alias ? { listItem, [alias]: listItem } : { listItem })),
         'listItem',
         moduleId,
         parentIndices
       );
+      if (alias) updateDependencyValues(`components.${id}.${alias}`, moduleId, parentIndices);
+    }
     initExposedValueArrayForChildren(id, rows.items.length, moduleId, parentIndices);
-  }, [enabled, rows.items, id, moduleId, parentIndices, updateCustomResolvables, initExposedValueArrayForChildren]);
+  }, [
+    enabled,
+    rows.items,
+    rowVariable,
+    id,
+    moduleId,
+    parentIndices,
+    updateCustomResolvables,
+    updateDependencyValues,
+    initExposedValueArrayForChildren,
+  ]);
 
   const light = enabled
     ? rows.items.map((_item, index) => (
-        <div key={index} slot={rowSlotAttr(id, index)} className="tw-block tw-w-full">
-          <ListviewSubcontainer
-            id={id}
-            index={index}
-            moduleId={moduleId}
-            mode="list"
-            rowHeight={rows.rowHeight}
-            positiveColumns={1}
-            showBorder={false}
-            onRecordOrRowClicked={() => {}}
-            computeCanvasBackgroundColor={() => 'transparent'}
-            darkMode={darkMode}
-            width={width}
-            isDynamicHeightEnabled={fit}
-            data={rows.items}
-            currentLayout={currentLayout}
-            visibility={visibility}
-            parentHeight={height}
-            componentType="LibraryComponent"
-          />
-        </div>
+        <PackRow
+          key={index}
+          slot={rowSlotAttr(id, index)}
+          id={id}
+          index={index}
+          moduleId={moduleId}
+          rowHeight={rows.rowHeight}
+          darkMode={darkMode}
+          widgetWidth={width}
+          fit={fit}
+          fitRows={rows.fit}
+          parentIndices={parentIndices}
+          items={rows.items}
+          currentLayout={currentLayout}
+          visibility={visibility}
+          height={height}
+        />
       ))
     : null;
   return { setRows, light };
@@ -277,13 +402,61 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
 
 export const usePackHost = (
   props,
-  { disabled, loading, rowsEnabled, fit, visibility, formField = false, markRowScoped }
+  { disabled, loading, rowsEnabled, rowVariable, fit, visibility, formField = false, markRowScoped }
 ) => {
-  const { id, validate, validation, setExposedVariable, width, height, currentLayout, darkMode } = props;
+  const { id, validate, validation, setExposedVariable, fireEvent, width, height, currentLayout, darkMode } = props;
   const { moduleId } = useModuleContext();
   const resolveRow = useRowResolve(moduleId);
+  // The latest value of each variable the component exposed, and the value its validation last judged.
+  const exposed = useRef(new Map());
+  const judged = useRef({ key: null, value: undefined });
   const latest = useRef({ validate, validation, setExposedVariable });
-  latest.current = { validate, validation, setExposedVariable };
+  latest.current = { validate, validation, setExposedVariable, exposed: exposed.current, judged };
+  const exposeVariable = useCallback((key, value) => {
+    exposed.current.set(key, value);
+    latest.current.setExposedVariable(key, value);
+  }, []);
+  // A component sets its value and fires its event in one go, before it renders again, while isValid follows the
+  // render: an onChange that cleared a required field read isValid true. The new value is judged before the event.
+  // Booleans are left to the render, as their "present" rule is the component's own.
+  // A handler that changes its own widget (onChange running clear or setValue on the field it came from) loops:
+  // the host runs a handler's actions as microtasks, so the page never got a turn (Codex PERF-01: Input clear,
+  // Ant resetFields, MUI TextField clear). No user action fires this many events from one widget before the page
+  // runs again, so past EVENT_BURST the rest of the burst is dropped, once, with a warning naming the loop.
+  const burst = useRef({ count: 0, warned: false });
+  const fireHostEvent = useCallback(
+    (name, options) => {
+      const b = burst.current;
+      if (b.count === 0)
+        setTimeout(() => {
+          burst.current = { count: 0, warned: false };
+        }, 0);
+      b.count += 1;
+      if (b.count > EVENT_BURST) {
+        if (!b.warned) {
+          b.warned = true;
+          console.warn(
+            `[LibraryComponent] ${id}: more than ${EVENT_BURST} "${name}" events without the page running; a handler ` +
+              'probably changes the widget that fired it. The rest of this burst is skipped.'
+          );
+        }
+        return Promise.resolve();
+      }
+      const { key, value } = judged.current;
+      const judge = latest.current.validate;
+      if (typeof judge === 'function' && key && exposed.current.has(key)) {
+        const now = exposed.current.get(key);
+        if (!Object.is(now, value) && typeof now !== 'boolean') {
+          // Only the Validation section can judge the new value here: the component's own rule (useValidation's
+          // `rule`) is worked out as it renders, so it applies once the component draws the new value.
+          const status = judge(filled(now) ? now : undefined) || {};
+          latest.current.setExposedVariable('isValid', status.isValid !== false);
+        }
+      }
+      return fireEvent?.(name, options);
+    },
+    [fireEvent, id]
+  );
 
   const { setRows, light } = usePackRows({
     id,
@@ -294,6 +467,7 @@ export const usePackHost = (
     fit,
     darkMode,
     enabled: rowsEnabled,
+    rowVariable,
   });
 
   const [popupSlotNames, setPopupSlotNames] = useState([]);
@@ -325,5 +499,5 @@ export const usePackHost = (
     }),
     [disabled, loading, id, setRows, registerPopupSlot, formField, markRowScoped, resolveRow, moduleId]
   );
-  return { host, light, popupSlotNames };
+  return { host, light, popupSlotNames, exposeVariable, fireHostEvent };
 };

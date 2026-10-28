@@ -79,7 +79,8 @@ const mount = async (props = {}) => {
     />
   );
   const view = render(make({}));
-  const input = () => view.container.querySelector('[data-cy="pack-file"]').shadowRoot?.querySelector('input[type=file]');
+  const input = () =>
+    view.container.querySelector('[data-cy="pack-file"]').shadowRoot?.querySelector('input[type=file]');
   await waitFor(() => expect(input()).toBeTruthy());
   const pick = (...names) =>
     fireEvent.change(input(), { target: { files: names.map((n) => new File([CSV], n, { type: 'text/csv' })) } });

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import useStore from '@/AppBuilder/_stores/store';
 import LoaderJs from '@/ToolJetUI/Loader/Loader';
@@ -7,10 +7,13 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types';
-import InlineLibraryComponent from './InlineLibraryComponent';
+import InlineLibraryComponent, { holdStoreWrites } from './InlineLibraryComponent';
 import LibrarySlotCanvas from './LibrarySlotCanvas';
 import { usePackHost, useRowTemplates } from './usePackHost';
 import type { LibraryRuntime } from './inlineRuntime';
+import useThemeAccess from '@/AppBuilder/_hooks/useThemeAccess';
+import { baseTheme } from '@/AppBuilder/_stores/utils';
+import { canUseTheme } from '@/AppBuilder/_utils/themeAccess';
 
 const Loader = LoaderJs as React.ComponentType<any>;
 
@@ -279,15 +282,37 @@ const SdkComponentHost = ({
 
   const manifestActions = manifestComponent?.actions;
 
+  // Every widget of a page gets its manifest in the same commit: their action writes are held and go out together
+  // (holdStoreWrites), released by the effect below once the actions are written.
+  const actionsHold = useRef<(() => void) | null>(null);
+  useLayoutEffect(() => {
+    if (!configured || !manifestActions?.length) return undefined;
+    const release = holdStoreWrites();
+    const fallback = setTimeout(release, 0);
+    actionsHold.current = release;
+    return () => {
+      clearTimeout(fallback);
+      release();
+    };
+  }, [configured, manifestActions]);
+
   useEffect(() => {
     if (!configured || !manifestActions?.length) return;
-    manifestActions.forEach((a) =>
-      setExposedVariable(a.name, (...args: unknown[]) =>
-        isInline ? invokeInline(a.name, args) : invokeInShell({ type: 'invokeAction', name: a.name, args })
+    // One store update for all of the component's actions: one per action re-ran every widget's store selectors, and
+    // the manifest arrives after the page's first commit, outside any batch (a page of 100 Ant fields made ~370).
+    setExposedVariables(
+      Object.fromEntries(
+        manifestActions.map((a) => [
+          a.name,
+          (...args: unknown[]) =>
+            isInline ? invokeInline(a.name, args) : invokeInShell({ type: 'invokeAction', name: a.name, args }),
+        ])
       )
     );
+    actionsHold.current?.();
+    actionsHold.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [configured, manifestActions, setExposedVariable]);
+  }, [configured, manifestActions, setExposedVariables]);
 
   useEffect(
     () => () => {
@@ -314,12 +339,14 @@ const SdkComponentHost = ({
   const isDisabled = !!exposedVariablesTemporaryState.isDisabled;
   const fit =
     isInline && manifestComponent?.fit === true && properties.dynamicHeight === true && currentMode === 'view';
-  const { host, light, popupSlotNames } = usePackHost(
-    { id, darkMode, setExposedVariable, height, ...hostProps },
+  const { host, light, popupSlotNames, exposeVariable, fireHostEvent } = usePackHost(
+    { id, darkMode, setExposedVariable, fireEvent, height, ...hostProps },
     {
       disabled: isDisabled || (isLoading && !ownLoading),
       loading: isLoading,
       rowsEnabled: isInline && !!manifestComponent?.slots?.some?.((slot) => slot.kind === 'rows'),
+      // What the row's components call their row besides {{listItem}}: a kanban card's {{cardData}}, as UI 2.0's.
+      rowVariable: manifestComponent?.slots?.find?.((slot) => slot.kind === 'rows')?.variable,
       fit,
       visibility: exposedVariablesTemporaryState.isVisible,
       // A field (a validation section) takes part in a Form's clearForm.
@@ -329,11 +356,16 @@ const SdkComponentHost = ({
   );
   // In an Equal heights row the box is stretched to the tallest sibling; a fitted component fills it.
   const stretch = fit && !!hostProps.boxStretch;
-  // A pack in its own design system (themeMode "own": Ant, MUI) takes the app theme only once one is applied; with
-  // the basic theme it keeps its stock look. Others (shadcn) always follow the app theme.
+  // A pack in its own design system (themeMode "own": Ant, MUI) takes the app theme only once one is chosen; with no
+  // theme (the store fills in baseTheme: no id, no basic flag), the basic theme, or a theme the plan cannot use (the
+  // app then draws the basic colours), it keeps its stock look. Others (shadcn) always follow the app theme.
+  const themeAccess = useThemeAccess();
   const themeApplied = useStore((state: any) => {
     const theme = state.globalSettings?.theme;
-    return !!theme && !(theme.isBasic ?? theme.is_basic);
+    if (!theme || theme === baseTheme || !theme.id || theme.isBasic || theme.is_basic) return false;
+    // Until the license has loaded (access undefined) the chosen theme is trusted: a licensed app flipped from stock to
+    // themed after mount, and its charts swapped palette mid-animation.
+    return canUseTheme(theme, themeAccess === undefined ? true : themeAccess);
   });
   const themed = (manifest as any)?.themeMode !== 'own' || themeApplied;
   const fitRef = useRef(null);
@@ -410,15 +442,17 @@ const SdkComponentHost = ({
           componentProps={componentProps}
           componentStyles={componentStyles}
           renderSlot={renderSlot}
-          setExposedVariable={setExposedVariable}
-          fireEvent={fireEvent}
+          setExposedVariable={exposeVariable}
+          fireEvent={fireHostEvent}
           actions={inlineActions}
           boxShadow={styles.boxShadow}
           dataCy={dataCy}
           host={host}
           fit={fit}
           stretch={stretch}
+          reserveHeight={height}
           themed={themed}
+          darkMode={darkMode}
           hostRef={fitRef}
           light={light}
           popupSlotNames={popupSlotNames}

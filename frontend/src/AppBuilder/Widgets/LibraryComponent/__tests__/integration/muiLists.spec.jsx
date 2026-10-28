@@ -187,12 +187,25 @@ describe('MUI RecordList', () => {
       await c.update({ data });
       expect(c.root().querySelector('.tj-mui-lists__frame')).not.toBeNull();
     }
-    for (const junk of JUNK) await c.update({ data: invoices, titleField: junk, metaFields: junk, valueFormat: junk, currency: junk, locale: junk });
+    for (const junk of JUNK)
+      await c.update({
+        data: invoices,
+        titleField: junk,
+        metaFields: junk,
+        valueFormat: junk,
+        currency: junk,
+        locale: junk,
+      });
     expect(c.root().querySelectorAll('.tj-mui-recordlist__item')).toHaveLength(3);
   });
 
   test('figures follow the currency and locale (BRL writes pt-BR; an author locale wins)', async () => {
-    const c = await mount('RecordList', { data: invoices, valueField: 'total', valueFormat: 'currency', currency: 'BRL' });
+    const c = await mount('RecordList', {
+      data: invoices,
+      valueField: 'total',
+      valueFormat: 'currency',
+      currency: 'BRL',
+    });
     expect(c.root().querySelector('.tj-mui-recordlist__value').textContent.replace(/\s/g, ' ')).toBe('R$ 1.240,00');
     await c.update({ currency: 'EUR', locale: 'en-IE' });
     expect(c.root().querySelector('.tj-mui-recordlist__value').textContent).toBe('€1,240');
@@ -246,7 +259,11 @@ describe('MUI ProgressList', () => {
     const c = await mount('ProgressList', { data: budgets });
     const items = c.root().querySelectorAll('.tj-mui-progresslist__item');
     expect(items).toHaveLength(3);
-    expect(texts(c.root().querySelectorAll('.tj-mui-progresslist__figure'))).toEqual(['18,400 of 25,000', '7,600 of 6,000', '1,200 of 5,000']);
+    expect(texts(c.root().querySelectorAll('.tj-mui-progresslist__figure'))).toEqual([
+      '18,400 of 25,000',
+      '7,600 of 6,000',
+      '1,200 of 5,000',
+    ]);
     expect(texts(c.root().querySelectorAll('.tj-mui-progresslist__pct'))).toEqual(['73.6%', '126.7%', '24%']);
     const bars = c.root().querySelectorAll('.MuiLinearProgress-root');
     expect(bars[0].classList.contains('MuiLinearProgress-colorSuccess')).toBe(true);
@@ -271,8 +288,17 @@ describe('MUI ProgressList', () => {
     });
     expect(texts(c.root().querySelectorAll('.tj-mui-progresslist__figure'))).toEqual(['99.5%', '85']);
     expect(c.root().querySelectorAll('.MuiLinearProgress-colorWarning')).toHaveLength(2);
-    await c.update({ data: budgets, valueField: 'spent', targetField: 'budget', valueFormat: 'currency', currency: 'BRL', autoTone: 'none' });
-    expect(c.root().querySelector('.tj-mui-progresslist__figure').textContent.replace(/\s/g, ' ')).toBe('R$ 18.400,00 of R$ 25.000,00');
+    await c.update({
+      data: budgets,
+      valueField: 'spent',
+      targetField: 'budget',
+      valueFormat: 'currency',
+      currency: 'BRL',
+      autoTone: 'none',
+    });
+    expect(c.root().querySelector('.tj-mui-progresslist__figure').textContent.replace(/\s/g, ' ')).toBe(
+      'R$ 18.400,00 of R$ 25.000,00'
+    );
   });
 
   test('money values without a target draw shares of the largest, never printed as a percentage', async () => {
@@ -288,7 +314,9 @@ describe('MUI ProgressList', () => {
       valueFormat: 'currency',
     });
     expect(c.root().querySelectorAll('.tj-mui-progresslist__pct')).toHaveLength(0);
-    expect([...c.root().querySelectorAll('.MuiLinearProgress-root')].map((b) => b.getAttribute('aria-valuenow'))).toEqual(['100', '50']);
+    expect(
+      [...c.root().querySelectorAll('.MuiLinearProgress-root')].map((b) => b.getAttribute('aria-valuenow'))
+    ).toEqual(['100', '50']);
   });
 
   test('a click exposes the record and fires onItemClicked; empty and junk data never throw', async () => {
@@ -326,7 +354,10 @@ describe('MUI Timeline', () => {
   });
 
   test('strings are titles, times show as given without a format, icons draw in the icon marker', async () => {
-    const c = await mount('Timeline', { items: ['Created', { title: 'Approved', time: 'Yesterday', icon: 'check' }], marker: 'icon' });
+    const c = await mount('Timeline', {
+      items: ['Created', { title: 'Approved', time: 'Yesterday', icon: 'check' }],
+      marker: 'icon',
+    });
     expect(texts(c.root().querySelectorAll('.tj-mui-timeline__item .MuiTypography-body2'))).toContain('Created');
     expect(c.root().querySelector('.tj-mui-timeline__time').textContent).toBe('Yesterday');
     expect(c.root().querySelectorAll('.tj-mui-timeline__dot svg')).toHaveLength(1);
@@ -353,7 +384,9 @@ describe('MUI Timeline', () => {
 
   test('big data draws 48 items, then more as the end scrolls into view', async () => {
     fakeIntersection();
-    const c = await mount('Timeline', { items: Array.from({ length: 120 }, (_, i) => ({ id: i, title: `Step ${i}` })) });
+    const c = await mount('Timeline', {
+      items: Array.from({ length: 120 }, (_, i) => ({ id: i, title: `Step ${i}` })),
+    });
     expect(c.root().querySelectorAll('.tj-mui-timeline__item')).toHaveLength(48);
     await act(async () => sentinel().fire());
     await settle();
@@ -384,7 +417,12 @@ describe('MUI KeyValue', () => {
   test('takes an object, [label, value] pairs and Ant items; percent text keeps its sign', async () => {
     const c = await mount('KeyValue', { data: { Plan: 'Pro', Seats: 12 } });
     expect(values(c)).toEqual(['Pro', '12']);
-    await c.update({ data: [['Region', 'EU'], ['Zone', 'b']] });
+    await c.update({
+      data: [
+        ['Region', 'EU'],
+        ['Zone', 'b'],
+      ],
+    });
     expect(values(c)).toEqual(['EU', 'b']);
     await c.update({
       data: [
