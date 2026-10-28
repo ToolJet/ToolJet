@@ -1,7 +1,7 @@
 {
   "packs": [
-    { "dir": "packs/shadcn", "version": "2.1.32" },
-    { "dir": "packs/antd", "version": "1.4.27" },
-    { "dir": "packs/mui", "version": "1.4.28" }
+    { "dir": "packs/shadcn", "version": "2.1.33" },
+    { "dir": "packs/antd", "version": "1.4.28" },
+    { "dir": "packs/mui", "version": "1.4.29" }
   ]
 }

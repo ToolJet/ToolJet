@@ -14,7 +14,7 @@ export const useFieldStyles = (accentLabel = 'Accent (focus ring, selection)') =
   borderColor: color('borderColor', 'Field border color', T.border),
   accentColor: color('accentColor', accentLabel, T.brand),
   errorColor: color('errorColor', 'Error color (message and border)', T.danger),
-  borderRadius: ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Field radius', placeholder: RADIUS_HINT }),
+  borderRadius: ToolJet.useStyleNumber({ name: 'borderRadius', label: 'Field radius', placeholder: RADIUS_HINT, inspector: 'numberInput' }),
 });
 
 export const useColorStyle = color;
