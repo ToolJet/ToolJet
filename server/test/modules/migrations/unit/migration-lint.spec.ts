@@ -29,6 +29,9 @@ describe('migration-helpers/migration-lint', () => {
 
     it.each([
       ['raw SQL', 'await queryRunner.query(`ALTER TABLE apps DROP COLUMN slug`);', 'DROP COLUMN'],
+      ['a table drop', 'await queryRunner.query(`DROP TABLE apps`);', 'DROP TABLE'],
+      ['a table rename', 'await queryRunner.query(`ALTER TABLE apps RENAME TO applications`);', 'RENAME TO'],
+      ['a type drop', 'await queryRunner.query(`DROP TYPE app_kind`);', 'DROP TYPE'],
       [
         'a type change',
         'await queryRunner.query(\'ALTER TABLE apps ALTER COLUMN "slug" TYPE varchar\');',
@@ -94,6 +97,12 @@ describe('migration-helpers/migration-lint', () => {
   describe('phaseViolations(): schema migrations change no rows, and data migrations lock tables only in beforeCommit()', () => {
     it.each([
       ['an UPDATE', 'await queryRunner.query(`UPDATE apps SET slug = name`);', 'UPDATE … SET'],
+      ['a DELETE', 'await queryRunner.query(`DELETE FROM apps WHERE slug IS NULL`);', 'DELETE FROM'],
+      [
+        'an INSERT that copies rows',
+        'await queryRunner.query(`INSERT INTO app_slugs (app_id) SELECT id FROM apps`);',
+        'INSERT … SELECT',
+      ],
       [
         'an index on an existing table',
         'await queryRunner.query(`CREATE INDEX apps_slug ON apps (slug)`);',
@@ -137,6 +146,30 @@ describe('migration-helpers/migration-lint', () => {
         'ADD CONSTRAINT without NOT VALID',
       ],
       ['the TypeORM schema API', "await queryRunner.addColumn('apps', column);", 'addColumn'],
+      [
+        'a LOCK TABLE',
+        'await queryRunner.query(`LOCK TABLE apps IN ACCESS EXCLUSIVE MODE`);',
+        'long lock (LOCK TABLE)',
+      ],
+      ['a TRUNCATE', 'await queryRunner.query(`TRUNCATE apps`);', 'long lock (TRUNCATE)'],
+      ['a REINDEX', 'await queryRunner.query(`REINDEX TABLE apps`);', 'long lock (REINDEX)'],
+      ['a CLUSTER', 'await queryRunner.query(`CLUSTER apps USING apps_pkey`);', 'long lock (CLUSTER)'],
+      ['a VACUUM FULL', 'await queryRunner.query(`VACUUM FULL apps`);', 'long lock (VACUUM FULL)'],
+      [
+        'an index change',
+        'await queryRunner.query(`ALTER INDEX apps_slug RENAME TO apps_handle`);',
+        'long lock (ALTER INDEX)',
+      ],
+      [
+        'a trigger change',
+        'await queryRunner.query(`ALTER TRIGGER t ON apps RENAME TO t2`);',
+        'long lock (ALTER TRIGGER)',
+      ],
+      [
+        'a column rename',
+        'await queryRunner.query(`ALTER TABLE apps RENAME COLUMN slug TO handle`);',
+        'long lock (ALTER COLUMN or RENAME)',
+      ],
       [
         'a CHECK, even NOT VALID',
         'await queryRunner.query(`ALTER TABLE apps ADD CONSTRAINT c CHECK (slug IS NOT NULL) NOT VALID`);',
@@ -235,17 +268,15 @@ export class App {
   });
 
   describe('Every migration in migrations/ follows the rules', () => {
-    it('should find no schema migration that removes or changes existing schema or has an empty down()', () => {
-      const violations = migrationsNewerThanCutoff('migrations/schema').flatMap((source) =>
-        authoringViolations(source)
-      );
-      expect(violations).toEqual([]);
-    });
-
-    it('should find no data migration that removes or changes existing schema or has an empty down()', () => {
-      const violations = migrationsNewerThanCutoff('migrations/data').flatMap((source) => authoringViolations(source));
-      expect(violations).toEqual([]);
-    });
+    it.each(['schema', 'data'])(
+      'should find no %s migration that removes or changes existing schema or has an empty down()',
+      (phase) => {
+        const violations = migrationsNewerThanCutoff(`migrations/${phase}`).flatMap((source) =>
+          authoringViolations(source)
+        );
+        expect(violations).toEqual([]);
+      }
+    );
 
     it.each(['schema', 'data'] as const)(
       'should find no new %s migration doing work that belongs to another phase',
