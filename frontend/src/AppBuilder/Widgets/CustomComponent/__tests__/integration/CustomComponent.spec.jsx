@@ -2,6 +2,7 @@ import React from 'react';
 import { waitFor, screen } from '@testing-library/react';
 import { Toaster } from 'react-hot-toast';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
+import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import {
   createWidgetHarness,
   binding,
@@ -110,8 +111,11 @@ const runjs = (id, name, code, parameters) => ({
   runOnPageLoad: false,
 });
 
-/** Posts RUN_QUERY as the frame would and waits for the query to settle. */
-async function runQueryFromFrame({ queryName, parameters = {}, requestId, componentId = ID }) {
+/** Posts RUN_QUERY from a frame. Callers wait for the response, never for a fixed time. */
+function postRunQuery(
+  { queryName, parameters = {}, requestId, componentId = ID },
+  source = frameWindowOf(componentId)
+) {
   deliver(
     {
       from: 'customComponent',
@@ -121,10 +125,14 @@ async function runQueryFromFrame({ queryName, parameters = {}, requestId, compon
       parameters: JSON.stringify(parameters),
       requestId,
     },
-    frameWindowOf(componentId)
+    source
   );
-  await settle();
-  await new Promise((resolve) => setTimeout(resolve, 250));
+}
+
+/** Posts RUN_QUERY as the frame would and waits until `seen` holds its response. */
+async function runQueryFromFrame(seen, request) {
+  postRunQuery(request);
+  await waitFor(() => expect(responseFor(seen, request.requestId)).toBeDefined());
 }
 
 /**
@@ -389,14 +397,14 @@ describe('CustomComponent widget', () => {
     ]);
 
     const seen = recordFrameMessages(frame(container));
-    await runQueryFromFrame({ queryName: 'getTodo', parameters: { id: 7 }, requestId: 'rq_1' });
+    await runQueryFromFrame(seen, { queryName: 'getTodo', parameters: { id: 7 }, requestId: 'rq_1' });
 
     const response = responseFor(seen, 'rq_1');
     expect(response).toMatchObject({ componentId: ID, requestId: 'rq_1' });
     expect(response.queryResult).toMatchObject({ status: 'ok', data: { echoed: 7, fixed: 42 } });
 
     // Omitting a declared parameter falls back to its declared default.
-    await runQueryFromFrame({ queryName: 'getTodo', requestId: 'rq_2' });
+    await runQueryFromFrame(seen, { queryName: 'getTodo', requestId: 'rq_2' });
     expect(responseFor(seen, 'rq_2').queryResult).toMatchObject({ status: 'ok', data: { echoed: '1' } });
   });
 
@@ -411,30 +419,10 @@ describe('CustomComponent widget', () => {
     ]);
 
     const seen = recordFrameMessages(frame(container));
-    deliver(
-      {
-        from: 'customComponent',
-        componentId: ID,
-        message: 'RUN_QUERY',
-        queryName: 'first',
-        parameters: '{}',
-        requestId: 'rq_a',
-      },
-      frameWindowOf()
-    );
-    deliver(
-      {
-        from: 'customComponent',
-        componentId: ID,
-        message: 'RUN_QUERY',
-        queryName: 'second',
-        parameters: '{}',
-        requestId: 'rq_b',
-      },
-      frameWindowOf()
-    );
+    postRunQuery({ queryName: 'first', requestId: 'rq_a' });
+    postRunQuery({ queryName: 'second', requestId: 'rq_b' });
+    await waitFor(() => expect(responsesIn(seen)).toHaveLength(2));
     await settle();
-    await new Promise((resolve) => setTimeout(resolve, 300));
 
     expect(responsesIn(seen)).toHaveLength(2);
     expect(responseFor(seen, 'rq_a').queryResult).toMatchObject({ data: { who: 'first' } });
@@ -449,7 +437,7 @@ describe('CustomComponent widget', () => {
     await seedQueries([runjs('qf', 'boom', 'throw new Error("kaboom");')]);
 
     const seen = recordFrameMessages(frame(container));
-    await runQueryFromFrame({ queryName: 'boom', requestId: 'rq_f' });
+    await runQueryFromFrame(seen, { queryName: 'boom', requestId: 'rq_f' });
 
     const response = responseFor(seen, 'rq_f');
     expect(response).toMatchObject({ componentId: ID, requestId: 'rq_f' });
@@ -464,7 +452,7 @@ describe('CustomComponent widget', () => {
     await seedQueries([runjs('q1', 'realQuery', 'return { ok: true };')]);
 
     const seen = recordFrameMessages(frame(container));
-    await runQueryFromFrame({ queryName: 'noSuchQuery', requestId: 'rq_missing' });
+    await runQueryFromFrame(seen, { queryName: 'noSuchQuery', requestId: 'rq_missing' });
 
     const response = responseFor(seen, 'rq_missing');
     expect(response).toMatchObject({ componentId: ID, requestId: 'rq_missing' });
@@ -491,38 +479,46 @@ describe('CustomComponent widget', () => {
     // bridge ran the query under editor-mode semantics in a viewed app.
     await seedQueries([runjs('qp', 'jump', "await actions.switchPage('no-such-handle'); return { done: true };")]);
     const seen = recordFrameMessages(frame(container));
-    await runQueryFromFrame({ queryName: 'jump', requestId: 'rq_mode' });
+    await runQueryFromFrame(seen, { queryName: 'jump', requestId: 'rq_mode' });
 
     expect(responseFor(seen, 'rq_mode')).toBeDefined();
     expect(screen.queryByText('Valid page handle is required')).toBeNull();
 
-    // A component inside a module must resolve THAT module's queries, not the
-    // canvas module's. Same query name in both namespaces, different results.
+    // A component rendered inside a module must resolve THAT module's queries,
+    // not the canvas module's. Same query name in both namespaces, different
+    // results, and the request comes from the module component's own frame.
     await widget.session.store.act(async () => {
       bootModule('mod-1');
+      seedApp({ [ID2]: ccDefinition(ID2, HANDLE2) }, { moduleId: 'mod-1' });
       await drain();
     });
     await seedQueries([runjs('qs', 'shared', 'return { from: "canvas" };')], MODULE_ID);
     await seedQueries([runjs('qm', 'shared', 'return { from: "module" };')], 'mod-1');
 
-    let fromModule;
-    await widget.session.store.act(async (state) => {
-      fromModule = await state.eventsSlice.onEvent(
-        'onTrigger',
-        [],
-        { queryName: 'shared', parameters: {} },
-        'view',
-        'mod-1'
-      );
+    const { container: moduleContainer } = widget.session.render(
+      <>
+        <ModuleProvider moduleId="mod-1" isModuleMode appType="module" isModuleEditor={false}>
+          {/* Production supplies the module twice: as WidgetWrapper's prop and as context. */}
+          <RenderWidget {...widgetProps(ID2, 'CustomComponent', { currentMode: 'view' })} moduleId="mod-1" />
+        </ModuleProvider>
+        <Toaster />
+      </>
+    );
+    await waitFor(() => expect(frame(moduleContainer, HANDLE2)).toBeInTheDocument());
+    const seenInModule = recordFrameMessages(frame(moduleContainer, HANDLE2));
+    await runQueryFromFrame(seenInModule, { queryName: 'shared', requestId: 'rq_module', componentId: ID2 });
+
+    expect(responseFor(seenInModule, 'rq_module').queryResult).toMatchObject({
+      status: 'ok',
+      data: { from: 'module' },
     });
-    expect(fromModule).toMatchObject({ status: 'ok', data: { from: 'module' } });
   });
 
   // -------------------------------------------------------- isolation/lifecycle
 
   test('[CustomComponent-ISO-001] Messages are scoped to their own component id', async () => {
-    // Break this catches: dropping the componentId guard, letting one
-    // component's author code overwrite another component's data.
+    // Break this catches: dropping the componentId guard, so a frame posting
+    // another component's id is still obeyed by its own host.
     const { container } = widget.render({
       extraComponents: { [ID2]: ccDefinition(ID2, HANDLE2) },
       also: [{ id: ID2, componentType: 'CustomComponent' }],
@@ -530,6 +526,12 @@ describe('CustomComponent widget', () => {
     await waitFor(() => expect(exposedData(ID)).toEqual(REGISTERED_DATA));
     await waitFor(() => expect(exposedData(ID2)).toEqual(REGISTERED_DATA));
     expect(frame(container, HANDLE2)).toBeInTheDocument();
+
+    // Sent from the first component's OWN frame, so the sender check passes
+    // and only the id guard can reject it.
+    await fromFrame({ message: 'UPDATE_DATA', updatedObj: { title: 'not mine' } }, ID2, frameWindowOf(ID));
+    expect(exposedData(ID)).toEqual(REGISTERED_DATA);
+    expect(exposedData(ID2)).toEqual(REGISTERED_DATA);
 
     await fromFrame({ message: 'UPDATE_DATA', updatedObj: { title: 'only mine' } }, ID);
 
@@ -614,9 +616,12 @@ describe('CustomComponent widget', () => {
     expect(exposedData()).toEqual(before);
   });
 
-  test('[CustomComponent-LIFE-002] The listener follows a changed component identity', async () => {
-    // Break this catches: pinning the listener to the first id, so a
-    // re-identified component answers the wrong messages or none at all.
+  test('[CustomComponent-LIFE-002] Each mounted instance listens under its own id', async () => {
+    // Break this catches: binding the listener to an id shared across
+    // instances (say, the first one mounted), so a second Custom Component on
+    // the page answers none of its own frame's messages. An id never changes
+    // on a mounted instance: Container keys every widget by its component id,
+    // so a new id is a fresh mount, not a re-identified one.
     widget.render({
       extraComponents: { [ID2]: ccDefinition(ID2, HANDLE2) },
       also: [{ id: ID2, componentType: 'CustomComponent' }],
@@ -626,6 +631,45 @@ describe('CustomComponent widget', () => {
     await fromFrame({ message: 'UPDATE_DATA', updatedObj: { title: 'for two' } }, ID2);
     await waitFor(() => expect(exposedData(ID2).title).toBe('for two'));
     expect(exposedData(ID)).toEqual(REGISTERED_DATA);
+  });
+
+  test('[CustomComponent-LIFE-003] A mode change keeps the live frame running', async () => {
+    // Break this catches: tearing the frame down whenever the host listener is
+    // re-registered, so a mode change on a mounted component sends CLEANUP,
+    // which unmounts the author's component and stops the frame listening; or
+    // keeping the re-registered listener on the old mode.
+    seedApp({ [ID]: ccDefinition(ID, HANDLE) }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('edit', MODULE_ID);
+    const page = (mode) => (
+      <>
+        <RenderWidget {...widgetProps(ID, 'CustomComponent', { currentMode: mode })} />
+        <Toaster />
+      </>
+    );
+
+    const { container } = widget.session.render(page('edit'));
+    await waitFor(() => expect(exposedData()).toEqual(REGISTERED_DATA));
+    const mountedFrame = frame(container);
+    const seen = recordFrameMessages(mountedFrame);
+
+    await widget.session.store.act(async () => {
+      store().setCurrentMode('view', MODULE_ID);
+      await drain();
+    });
+    widget.session.render(page('view'));
+    await settle();
+
+    expect(frame(container)).toBe(mountedFrame);
+    expect(countOfType(seen, 'CLEANUP')).toBe(0);
+
+    // The frame's messages are still handled, now under view-mode semantics:
+    // `switchPage` warns only in the editor.
+    await seedQueries([runjs('qp', 'jump', "await actions.switchPage('no-such-handle'); return { done: true };")]);
+    await runQueryFromFrame(seen, { queryName: 'jump', requestId: 'rq_after_switch' });
+    expect(screen.queryByText('Valid page handle is required')).toBeNull();
+    await fromFrame({ message: 'UPDATE_DATA', updatedObj: { title: 'still live' } });
+    await waitFor(() => expect(exposedData().title).toBe('still live'));
   });
 
   test('[CustomComponent-SEC-001] The embedded frame stays same-origin for author code', async () => {
@@ -659,16 +703,17 @@ describe('CustomComponent widget', () => {
         source
       );
     }
-    await new Promise((resolve) => setTimeout(resolve, 250));
-
     expect(exposedData()).toEqual(REGISTERED_DATA);
     expect(countOfType(seen, 'INIT_RESPONSE')).toBe(0);
-    expect(responsesIn(seen)).toHaveLength(0);
 
     // The same messages from the component's own frame are handled once each.
+    // The genuine query is posted after the forged ones, so once its response
+    // is in and pending work has drained, any forged response would be too.
     await fromFrame({ message: 'UPDATE_DATA', updatedObj: { title: 'genuine' } });
     await waitFor(() => expect(exposedData().title).toBe('genuine'));
-    await runQueryFromFrame({ queryName: 'secretQuery', requestId: 'rq_genuine' });
+    await runQueryFromFrame(seen, { queryName: 'secretQuery', requestId: 'rq_genuine' });
+    await settle();
+    expect(responseFor(seen, 'rq_forged')).toBeUndefined();
     expect(responsesIn(seen)).toHaveLength(1);
     expect(responseFor(seen, 'rq_genuine').queryResult).toMatchObject({ status: 'ok', data: { leaked: true } });
 
@@ -825,23 +870,17 @@ describe('CustomComponent inside a Listview', () => {
     expect(frames).toHaveLength(2);
     const [row0, row1] = frames.map((el) => recordFrameMessages(el));
 
-    deliver(
-      {
-        from: 'customComponent',
-        componentId: ID,
-        message: 'RUN_QUERY',
-        queryName: 'rowQuery',
-        parameters: '{}',
-        requestId: 'rq_row0',
-      },
-      frames[0].contentWindow
-    );
+    // Row 1 asks after row 0 has its answer, so once row 1 has its own answer
+    // and pending work has drained, any response leaked across rows is in too.
+    postRunQuery({ queryName: 'rowQuery', requestId: 'rq_row0' }, frames[0].contentWindow);
+    await waitFor(() => expect(responseFor(row0, 'rq_row0')).toBeDefined());
+    postRunQuery({ queryName: 'rowQuery', requestId: 'rq_row1' }, frames[1].contentWindow);
+    await waitFor(() => expect(responseFor(row1, 'rq_row1')).toBeDefined());
     await settleRows();
-    await new Promise((resolve) => setTimeout(resolve, 250));
 
-    expect(responsesIn(row0)).toHaveLength(1);
+    expect(responsesIn(row0)).toEqual([expect.objectContaining({ requestId: 'rq_row0' })]);
     expect(responseFor(row0, 'rq_row0').queryResult).toMatchObject({ status: 'ok', data: { ran: true } });
-    expect(responsesIn(row1)).toHaveLength(0);
+    expect(responsesIn(row1)).toEqual([expect.objectContaining({ requestId: 'rq_row1' })]);
 
     deliver(
       { from: 'customComponent', componentId: ID, message: 'UPDATE_DATA', updatedObj: { title: 'row 0 only' } },

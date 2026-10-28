@@ -98,13 +98,18 @@ export const CustomComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     window.addEventListener('message', messageEventListenerRef.current);
 
-    // Cleanup function to remove event listener and cleanup iframe
+    // Re-registering for a new mode or module only swaps the listener; the frame keeps running
     return () => {
       if (messageEventListenerRef.current) {
         window.removeEventListener('message', messageEventListenerRef.current);
         messageEventListenerRef.current = null;
       }
+    };
+  }, [id, onEvent, currentMode, moduleId]);
 
+  // Tear the frame down on unmount only
+  useEffect(() => {
+    return () => {
       // Send cleanup message to iframe
       if (iFrameRef.current?.contentWindow) {
         try {
@@ -120,7 +125,7 @@ export const CustomComponent = (props) => {
         }
       }
     };
-  }, [id, onEvent, currentMode, moduleId]);
+  }, [id]);
 
   const sendMessageToIframe = ({ message }) => {
     if (!iFrameRef.current) return;
