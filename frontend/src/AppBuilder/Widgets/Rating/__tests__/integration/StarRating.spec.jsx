@@ -714,6 +714,36 @@ describe('StarRating', () => {
       await waitFor(() => expect(widget.exposed().value).toBe(4));
     });
 
+    test('[StarRating-ACT-004] resetValue clamps against the current star count, not the mounted one', async () => {
+      // Break this catches: registering the exposed action on [defaultSelected] alone, which
+      // freezes its clamp at the star count that was in force at mount.
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{4}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(4));
+
+      // Shrink below the default. BIND-003 pulls the live rating in; reset has to agree with it,
+      // or it restores a rating above the icons actually rendered.
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(SR, 'maxRating', '{{3}}', 'properties');
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(3));
+
+      await widget.act('resetValue');
+      await waitFor(() => expect(widget.exposed().value).toBe(3));
+      expect(icons(container)).toHaveLength(3);
+
+      // Expand again: the clamp stops biting and the configured default comes back. This arm
+      // does not discriminate the bug — it guards the opposite failure, clamping too hard.
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(SR, 'maxRating', '{{5}}', 'properties');
+      });
+
+      await widget.act('resetValue');
+      await waitFor(() => expect(widget.exposed().value).toBe(4));
+      expect(icons(container)).toHaveLength(5);
+    });
+
     test('[StarRating-ACT-005] the state actions update both the flag and the control', async () => {
       const { container } = widget.render({ properties: { maxRating: binding('{{5}}') } });
       await waitFor(() => expect(widget.exposed().value).not.toBeUndefined());
@@ -1012,6 +1042,19 @@ describe('StarRating', () => {
       await waitFor(() => expect(widget.exposed().isMandatory).toBe(true));
 
       expect(within(container.querySelector('label')).getByText('*')).toBeInTheDocument();
+      // The asterisk is only half of it: assistive tech reads the group, not the visible marker.
+      expect(container.querySelector('[role="radiogroup"]')).toHaveAttribute('aria-required', 'true');
+    });
+
+    test('[StarRating-VAL-003] an optional rating reports itself optional', async () => {
+      // Break this catches: aria-required pinned to a constant, in either direction.
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{5}}'), label: binding('Rate us') },
+        validation: { mandatory: binding('{{false}}') },
+      });
+      await waitFor(() => expect(widget.exposed().isMandatory).toBe(false));
+
+      expect(container.querySelector('[role="radiogroup"]')).toHaveAttribute('aria-required', 'false');
     });
   });
 

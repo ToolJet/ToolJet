@@ -157,11 +157,16 @@ export const Rating = ({
   // never restore it once the binding resolved.
   const clampToRange = (v) => (_maxRating > 0 && typeof v === 'number' ? Math.min(Math.max(v, 0), _maxRating) : v);
 
-  const resetValue = () => {
+  // Memoised on the star count as well as the default, so the EXPOSED action never clamps
+  // against a maximum that has since moved. The clamp below is the one ACT-004 already
+  // promises at call time; capturing `_maxRating` at mount would silently restore a rating
+  // above the icons actually rendered.
+  const resetValue = React.useCallback(() => {
     const clamped = clampToRange(defaultSelected);
     setRatingIndex(clamped - 1);
     setExposedVariable('value', clamped);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultSelected, _maxRating, setExposedVariable]);
 
   const setValue = React.useCallback(
     (value) => {
@@ -260,9 +265,16 @@ export const Rating = ({
 
   React.useEffect(() => {
     resetValue();
-    setExposedVariable('resetValue', resetValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultSelected]);
+
+  // Registration is deliberately split from the automatic reset above. The reset must fire
+  // ONLY when the configured default changes — re-running it when the star count moves would
+  // republish the default over a live rating, which is what BIND-003 forbids — but the
+  // exposed action still has to be refreshed whenever the count moves.
+  React.useEffect(() => {
+    setExposedVariable('resetValue', resetValue);
+  }, [resetValue, setExposedVariable]);
 
   useFormClear(() => {
     setRatingIndex(-1);
@@ -282,7 +294,7 @@ export const Rating = ({
           id={`component-${id}`}
           aria-labelledby={hasRenderedLabel ? labelElementId : undefined}
           aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
-          aria-required="false"
+          aria-required={isMandatory}
           aria-disabled={isDisabled}
           aria-hidden={!isVisible}
           className="rating-widget-group"

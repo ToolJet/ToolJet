@@ -1,4 +1,8 @@
-import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
+import {
+  MigrationProgress,
+  deleteAppHistoryForStructuralMigration,
+  processDataInBatches,
+} from '@helpers/migration.helper';
 import { Component } from 'src/entities/component.entity';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
@@ -26,33 +30,50 @@ export class BackfillStripPercentRangeSliderV21792950330429 implements Migration
     }
 
     const migrationProgress = new MigrationProgress('BackfillStripPercentRangeSliderV2', totalComponents);
-    let updated = 0;
+    const updatedComponentIds: string[] = [];
 
     await processDataInBatches(
       entityManager,
       async (entityManager: EntityManager, skip: number, take: number) => {
         return await entityManager.find(Component, {
           where: { type: 'RangeSliderV2' },
-          order: { createdAt: 'ASC' },
+          // `id` breaks ties: created_at defaults to now(), the TRANSACTION timestamp, so every
+          // component inserted by one app create or import shares it. Offset pagination over a
+          // non-unique sort key lets Postgres return a different permutation per batch, which
+          // repeats some rows and skips others — and a skipped slider never gets the flag.
+          order: { createdAt: 'ASC', id: 'ASC' },
           skip,
           take,
         });
       },
       async (entityManager: EntityManager, components: Component[]) => {
-        updated += await this.processUpdates(entityManager, components, migrationProgress);
+        // Spread is safe: `processUpdates` returns at most one batch (100) of ids.
+        updatedComponentIds.push(...(await this.processUpdates(entityManager, components, migrationProgress)));
       },
       batchSize
     );
 
-    console.log(`BackfillStripPercentRangeSliderV2: completed. Updated ${updated} components.`);
+    // A snapshot taken before this ran carries no `stripPercent`, so restoring an app to one
+    // would put the pre-fix mark labels straight back onto components this just corrected.
+    // Same reason BackfillTooltipFormat and BackfillCollapseWhenHiddenForRemainingComponents
+    // clear theirs. The helper resolves the affected app versions from these component ids.
+    if (updatedComponentIds.length > 0) {
+      await deleteAppHistoryForStructuralMigration(
+        entityManager,
+        { componentIds: updatedComponentIds },
+        'BackfillStripPercentRangeSliderV2'
+      );
+    }
+
+    console.log(`BackfillStripPercentRangeSliderV2: completed. Updated ${updatedComponentIds.length} components.`);
   }
 
   private async processUpdates(
     entityManager: EntityManager,
     components: Component[],
     migrationProgress: MigrationProgress
-  ): Promise<number> {
-    let updatedCount = 0;
+  ): Promise<string[]> {
+    const updatedIds: string[] = [];
 
     for (const component of components) {
       const properties = component.properties || {};
@@ -63,13 +84,13 @@ export class BackfillStripPercentRangeSliderV21792950330429 implements Migration
         await entityManager.update(Component, component.id, {
           properties,
         });
-        updatedCount++;
+        updatedIds.push(component.id);
       }
 
       migrationProgress.show();
     }
 
-    return updatedCount;
+    return updatedIds;
   }
 
   /**
@@ -101,7 +122,11 @@ export class BackfillStripPercentRangeSliderV21792950330429 implements Migration
       async (entityManager: EntityManager, skip: number, take: number) => {
         return await entityManager.find(Component, {
           where: { type: 'RangeSliderV2' },
-          order: { createdAt: 'ASC' },
+          // `id` breaks ties: created_at defaults to now(), the TRANSACTION timestamp, so every
+          // component inserted by one app create or import shares it. Offset pagination over a
+          // non-unique sort key lets Postgres return a different permutation per batch, which
+          // repeats some rows and skips others — and a skipped slider never gets the flag.
+          order: { createdAt: 'ASC', id: 'ASC' },
           skip,
           take,
         });
