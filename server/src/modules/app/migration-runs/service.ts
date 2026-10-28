@@ -157,13 +157,6 @@ const currentVersion = (): string => globalThis.TOOLJET_VERSION ?? 'unknown';
 const isNewerRelease = (version: string): boolean =>
   !!semver.valid(version) && !!semver.valid(currentVersion()) && semver.gt(version, currentVersion());
 
-/**
- * MIGRATION_MODE=async: runs the migration runner as a child of the serving process and
- * tracks it in `migration_runs`. `status()` also reports a migration another server runs, from its
- * advisory lock. Blocking mode behaves as before this existed: `status()` is always idle.
- * Own small pg pool: progress stays visible while the migration transaction is open, and
- * heartbeats stay out of TypeORM's query log.
- */
 /** Detached group: kills npm and the runner under it, so its open transaction rolls back. */
 async function stopChild(child: ChildProcess | null, exit: Promise<void> | null): Promise<void> {
   if (!child?.pid) return;
@@ -175,6 +168,13 @@ async function stopChild(child: ChildProcess | null, exit: Promise<void> | null)
   await Promise.race([exit, new Promise((resolve) => setTimeout(resolve, SHUTDOWN_WAIT_MS))]);
 }
 
+/**
+ * MIGRATION_MODE=async: runs the migration runner as a child of the serving process and
+ * tracks it in `migration_runs`. `status()` also reports a migration another server runs, from its
+ * advisory lock. Blocking mode behaves as before this existed: `status()` is always idle.
+ * Own small pg pool: progress stays visible while the migration transaction is open, and
+ * heartbeats stay out of TypeORM's query log.
+ */
 @Injectable()
 export class MigrationRunsService implements OnApplicationShutdown {
   private readonly enabled = isServerManagedMigrationMode(process.env);

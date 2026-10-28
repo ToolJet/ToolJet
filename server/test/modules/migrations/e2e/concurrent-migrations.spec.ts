@@ -18,6 +18,7 @@ import {
   runPod,
   spawnPod,
   waitFor,
+  withScratchConnection,
 } from '../fixtures/harness';
 
 const POD_COUNT = 3;
@@ -28,15 +29,6 @@ const scratchDatabase = `tooljet_migration_gate_${process.pid}`;
 interface HeldLocks {
   running: boolean;
   migrating: boolean;
-}
-
-async function withScratchConnection<T>(database: string, fn: (db: DataSource) => Promise<T>): Promise<T> {
-  const db = await new DataSource({ type: 'postgres', ...postgres, database }).initialize();
-  try {
-    return await fn(db);
-  } finally {
-    await db.destroy().catch(() => undefined);
-  }
 }
 
 const heldLocks = async (connection: DataSource): Promise<HeldLocks> =>
@@ -466,7 +458,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       try {
         expect(await phasePod('held-setup', 'schema', database).done).toMatchObject({ exitCode: 0 });
         await withScratchConnection(database, async (db) => {
-          // A joint run: the advisory lock plus the sentinels' LOCK TABLE, held to the end.
+          // A single-transaction run: the advisory lock plus the sentinels' LOCK TABLE, held to the end.
           const holder = db.createQueryRunner();
           await holder.connect();
           await holder.query('SELECT pg_advisory_lock($1)', [MIGRATION_ADVISORY_LOCK_KEY]);
@@ -595,7 +587,7 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
     afterEach(() => dropScratchDatabase(database), 60_000);
 
     it('should run cleanup inside a single-transaction run', async () => {
-      expect(await cleanupPod('cleanup-joint', undefined)).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(await cleanupPod('cleanup-single', undefined)).toMatchObject({ exitCode: 0, result: { error: null } });
 
       expect(await recorded()).toBe(true);
       expect(await legacyColumnExists()).toBe(false);

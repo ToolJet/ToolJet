@@ -8,7 +8,7 @@ export function onBranch(column: string, param: string, legacyRowFilter?: string
   return `(${column} = :${param} OR (${legacyRow}))`;
 }
 
-// Workflow versions keep a NULL branch after the data phase too, so they are never legacy rows.
+// Workflow versions are never legacy rows: before the data phase they have no name or slug for an app read to match.
 export function isNotWorkflowVersion(appVersionAlias: string): string {
   return `EXISTS (SELECT 1 FROM apps legacy_app WHERE legacy_app.id = ${appVersionAlias}.app_id AND legacy_app.type <> 'workflow')`;
 }
@@ -16,6 +16,11 @@ export function isNotWorkflowVersion(appVersionAlias: string): string {
 // onBranch for app_versions.
 export function appVersionOnBranch(alias: string, param: string): string {
   return onBranch(`${alias}.branch_id`, param, isNotWorkflowVersion(alias));
+}
+
+// app_versions on the default branch, joined to its branch as `branchAlias`.
+export function appVersionOnDefaultBranch(alias: string, branchAlias: string): string {
+  return `(${branchAlias}.is_default = true OR (${alias}.branch_id IS NULL AND ${isNotWorkflowVersion(alias)}))`;
 }
 
 // ORDER BY this ASC: a backfilled row wins over its legacy NULL-branch twin.

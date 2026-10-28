@@ -66,7 +66,7 @@ function method(cls: ts.ClassDeclaration, name: string): ts.MethodDeclaration | 
 }
 
 /** SQL text and identifiers in a body; comments are left out, so prose about a drop does not count. */
-function codeIn(node: ts.Node): { sql: string; identifiers: Set<string> } {
+function codeIn(node: ts.Node): { sql: string; literals: string[]; identifiers: Set<string> } {
   const sql: string[] = [];
   const identifiers = new Set<string>();
   const visit = (child: ts.Node) => {
@@ -75,7 +75,21 @@ function codeIn(node: ts.Node): { sql: string; identifiers: Set<string> } {
     ts.forEachChild(child, visit);
   };
   visit(node);
-  return { sql: sql.join(' '), identifiers };
+  return { sql: sql.join(' '), literals: sql, identifiers };
+}
+
+/** Every migration in a folder under server/, lock sentinels left out. */
+function readMigrations(directory: string): MigrationSource[] {
+  return readdirSync(join(SERVER_ROOT, directory))
+    .filter((name) => name.endsWith('.ts') && !name.includes('LockMigrationsTable'))
+    .map((name) => ({ file: `${directory}/${name}`, text: readFileSync(join(SERVER_ROOT, directory, name), 'utf8') }));
+}
+
+function emptyDown(cls: ts.ClassDeclaration, file: string): string[] {
+  const down = method(cls, 'down');
+  return down?.body?.getText().slice(1, -1).trim()
+    ? []
+    : [`${file}: down() is missing or empty; undo up() or comment why it cannot be undone. ${RULES_DOC}`];
 }
 
 function authoringViolations({ file, text }: MigrationSource): string[] {
@@ -84,10 +98,7 @@ function authoringViolations({ file, text }: MigrationSource): string[] {
   if (!cls) return [`${file}: no migration class found. ${RULES_DOC}`];
   const violations: string[] = [];
 
-  const down = method(cls, 'down');
-  if (!down?.body || !down.body.getText().slice(1, -1).trim()) {
-    violations.push(`${file}: down() is missing or empty; undo up() or comment why it cannot be undone. ${RULES_DOC}`);
-  }
+  violations.push(...emptyDown(cls, file));
 
   const up = method(cls, 'up');
   if (up?.body && !OPT_OUT.test(text)) {
@@ -118,12 +129,10 @@ const DROP_WITHOUT_IF_EXISTS =
 /** Class names in every phase folder. */
 function migrationClassNames(): Set<string> {
   return new Set(
-    ['schema', 'data', 'cleanup'].flatMap((phase) =>
-      readdirSync(join(SERVER_ROOT, 'migrations', phase))
-        .filter((name) => name.endsWith('.ts'))
-        .map((name) => readFileSync(join(SERVER_ROOT, 'migrations', phase, name), 'utf8').match(/class\s+(\w+)/)?.[1])
-        .filter((name): name is string => !!name)
-    )
+    ['schema', 'data', 'cleanup']
+      .flatMap((phase) => readMigrations(`migrations/${phase}`))
+      .map(({ text }) => text.match(/class\s+(\w+)/)?.[1])
+      .filter((name): name is string => !!name)
   );
 }
 
@@ -178,10 +187,7 @@ function cleanupViolations({ file, text }: MigrationSource, knownMigrations: Rea
     );
   }
 
-  const down = method(cls, 'down');
-  if (!down?.body || !down.body.getText().slice(1, -1).trim()) {
-    violations.push(`${file}: down() is missing or empty; undo up() or comment why it cannot be undone. ${RULES_DOC}`);
-  }
+  violations.push(...emptyDown(cls, file));
   return violations;
 }
 
@@ -243,7 +249,10 @@ function droppedSchema({ file, text }: MigrationSource): string[] {
   const up = migrationClass(source) && method(migrationClass(source), 'up');
   if (!up?.body) return [];
   const dropped: string[] = [];
-  const sql = codeIn(up.body).sql.replace(/\bpublic\./gi, '');
+  // One statement per literal: joined with spaces, a later ALTER's drops would land on the first table.
+  const sql = codeIn(up.body)
+    .literals.join(';\n')
+    .replace(/\bpublic\./gi, '');
   for (const [, table] of sql.matchAll(/\bDROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?(\w+)/gi)) dropped.push(table);
   for (const [statement, table] of sql.matchAll(/\bALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(\w+)[^;]*/gi)) {
     for (const [, column] of statement.matchAll(/\bDROP\s+COLUMN\s+(?:IF\s+EXISTS\s+)?(\w+)/gi)) {
@@ -354,20 +363,16 @@ const newerThanPhaseRules = (sources: MigrationSource[]) =>
   sources.filter(({ text }) => Number(text.match(/class\s+\w*?(\d{13})\b/)?.[1]) > PHASE_RULES_FROM);
 
 function migrationsNewerThanCutoff(directory: string): MigrationSource[] {
-  return readdirSync(join(SERVER_ROOT, directory))
-    .filter((name) => name.endsWith('.ts') && !name.includes('LockMigrationsTable'))
-    .map((name) => ({ file: `${directory}/${name}`, text: readFileSync(join(SERVER_ROOT, directory, name), 'utf8') }))
-    .filter(({ text }) => {
-      const [, timestamp] = text.match(/class\s+\w*?(\d{13})\b/) ?? [];
-      return Number(timestamp) > MIGRATION_AUTHORING_RULES_CUTOFF;
-    });
+  return readMigrations(directory).filter(({ text }) => {
+    const [, timestamp] = text.match(/class\s+\w*?(\d{13})\b/) ?? [];
+    return Number(timestamp) > MIGRATION_AUTHORING_RULES_CUTOFF;
+  });
 }
 
 /** Class names at or before the cutoff, which TypeORM records in `migrations`. */
 function preCutoffMigrations(directory: string): string[] {
-  return readdirSync(join(SERVER_ROOT, directory))
-    .filter((name) => name.endsWith('.ts') && !name.includes('LockMigrationsTable'))
-    .map((name) => readFileSync(join(SERVER_ROOT, directory, name), 'utf8').match(/class\s+(\w*?\d{13})\b/)?.[1])
+  return readMigrations(directory)
+    .map(({ text }) => text.match(/class\s+(\w*?\d{13})\b/)?.[1])
     .filter((name): name is string => !!name && Number(name.slice(-13)) <= MIGRATION_AUTHORING_RULES_CUTOFF)
     .sort();
 }
@@ -594,13 +599,7 @@ export class Sample1799999999999 implements MigrationInterface {
 
   it('should keep cleanup migrations to short, rerunnable steps', () => {
     const known = migrationClassNames();
-    const violations = readdirSync(join(SERVER_ROOT, 'migrations/cleanup'))
-      .filter((name) => name.endsWith('.ts'))
-      .map((name) => ({
-        file: `migrations/cleanup/${name}`,
-        text: readFileSync(join(SERVER_ROOT, 'migrations/cleanup', name), 'utf8'),
-      }))
-      .flatMap((source) => cleanupViolations(source, known));
+    const violations = readMigrations('migrations/cleanup').flatMap((source) => cleanupViolations(source, known));
     expect(violations).toEqual([]);
   });
 
@@ -627,6 +626,11 @@ export class App {
         ['apps.slug', 'apps.gone'],
       ],
       ['a table', 'DROP TABLE IF EXISTS public.apps', ['apps']],
+      [
+        'each table in a multi-statement step',
+        'ALTER TABLE apps DROP COLUMN IF EXISTS slug`, `ALTER TABLE users DROP COLUMN IF EXISTS icon',
+        ['apps.slug', 'users.icon'],
+      ],
     ])('should find %s a cleanup drops', (_what, sql, expected) => {
       expect(droppedSchema(cleanup(`await withShortLock(queryRunner, [\`${sql}\`]);`))).toEqual(expected);
     });
@@ -634,13 +638,14 @@ export class App {
     it('should not drop a table or column an entity still maps', () => {
       const mapped = entityMappings(entityFiles());
       expect(mapped.has('app_versions.branch_id')).toBe(true);
-      const stillMapped = readdirSync(join(SERVER_ROOT, 'migrations/cleanup'))
-        .filter((name) => name.endsWith('.ts'))
-        .flatMap((name) =>
-          droppedSchema({ file: name, text: readFileSync(join(SERVER_ROOT, 'migrations/cleanup', name), 'utf8') })
-            .filter((dropped) => mapped.has(dropped))
-            .map((dropped) => `${name}: drops ${dropped}, which an entity still maps; remove it from the entity first.`)
-        );
+      const stillMapped = readMigrations('migrations/cleanup').flatMap((source) =>
+        droppedSchema(source)
+          .filter((dropped) => mapped.has(dropped))
+          .map(
+            (dropped) =>
+              `${source.file}: drops ${dropped}, which an entity still maps; remove it from the entity first.`
+          )
+      );
       expect(stillMapped).toEqual([]);
     });
   });
