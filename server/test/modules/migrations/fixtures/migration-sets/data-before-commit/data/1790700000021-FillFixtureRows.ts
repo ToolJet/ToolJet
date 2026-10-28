@@ -1,7 +1,7 @@
 import { QueryRunner } from 'typeorm';
 import { DataMigration } from '../../../../../../../src/migration-helpers/migration-mode';
 
-/** Fills rows in up(); builds the index in beforeCommit(), after every later data. */
+/** Fills rows in up(); builds the index in beforeCommit(), after every later data migration. */
 export class FillFixtureRows1790700000021 implements DataMigration {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`INSERT INTO fixture_rows SELECT g, 'row ' || g FROM generate_series(1, 10) g`);
