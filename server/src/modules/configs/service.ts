@@ -74,6 +74,7 @@ export class ConfigService implements IConfigService {
       'SSO_HUBSPOT_FORM_ID',
       'ENABLE_OTEL_FRONTEND',
       'OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS',
+      'TOOLJET_DB_DISABLE_BUILDER_EDIT',
     ];
   }
 

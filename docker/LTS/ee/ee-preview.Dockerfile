@@ -1,4 +1,4 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -165,7 +165,7 @@ RUN npm --prefix cli ci && npm --prefix cli run build && node packs/build-builti
 # apt-get update fails with exit 100. Bookworm also matches the builder stage,
 # which fixes the libprotobuf ABI mismatch for the copied nsjail binary.
 # ---------------------------------------------------------------------------
-FROM node:22.15.1-bookworm
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \

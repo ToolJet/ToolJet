@@ -1,4 +1,4 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -156,7 +156,7 @@ COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
 RUN npm --prefix cli ci && npm --prefix cli run build && node packs/build-builtin.mjs --install
 
-FROM node:22.15.1-bookworm
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \

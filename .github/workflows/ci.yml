@@ -52,16 +52,20 @@ jobs:
         id: filter
         with:
           # every: a file counts only if it matches ALL patterns of a filter, so the
-          # '!**/*.md' line drops docs-only edits (AGENTS.md, docs/) from triggering suites
+          # '!**/*.md' line drops docs-only edits (AGENTS.md, docs/) from triggering suites,
+          # and the .version excludes treat a release version bump the same way (the root
+          # .version matches no filter, so it needs no exclude)
           predicate-quantifier: 'every'
           filters: |
             server:
               - 'server/**'
               - '!**/*.md'
+              - '!server/.version'
               - '!server/ee'
             frontend:
               - 'frontend/**'
               - '!**/*.md'
+              - '!frontend/.version'
               - '!frontend/ee'
             # the frontend parity spec (validationCatalogParity.spec.js) reads these server
             # files, so a server-only catalog edit must still run the frontend suite
@@ -384,7 +388,7 @@ jobs:
       # the `|| 'skipped'` turns that into a real word for ci-gate's PR comment.
       unit: ${{ steps.unit.outcome }}
       e2e: ${{ steps.e2e.outcome || 'skipped' }}
-    container: node:22.15.1-bookworm
+    container: node:22.23.4-bookworm
     services: &server-test-services
       postgres:
         image: postgres:16
@@ -575,7 +579,7 @@ jobs:
       && needs.build-server.result == 'success'
       && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
-    container: node:22.15.1-bookworm
+    container: node:22.23.4-bookworm
     services: *server-test-services
     env: *server-test-env
     steps:
@@ -626,7 +630,7 @@ jobs:
     outputs:
       unit: ${{ steps.gitsync-unit.outcome }}
       e2e: ${{ steps.gitsync-e2e.outcome || 'skipped' }}
-    container: node:22.15.1-bookworm
+    container: node:22.23.4-bookworm
     services:
       postgres:
         image: postgres:16
@@ -758,7 +762,7 @@ jobs:
       && needs.build-server.result == 'success'
       && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
-    container: node:22.15.1-bookworm
+    container: node:22.23.4-bookworm
     services:
       postgres:
         image: postgres:16
