@@ -109,14 +109,17 @@ export function runPod(options: PodOptions): Promise<PodOutcome> {
   return spawnPod(options).done;
 }
 
-export async function withAdminConnection<T>(fn: (admin: DataSource) => Promise<T>): Promise<T> {
-  const admin = await new DataSource({ type: 'postgres', ...postgres, database: 'postgres' }).initialize();
+export async function withScratchConnection<T>(database: string, fn: (db: DataSource) => Promise<T>): Promise<T> {
+  const db = await new DataSource({ type: 'postgres', ...postgres, database }).initialize();
   try {
-    return await fn(admin);
+    return await fn(db);
   } finally {
-    await admin.destroy().catch(() => undefined);
+    await db.destroy().catch(() => undefined);
   }
 }
+
+export const withAdminConnection = <T>(fn: (admin: DataSource) => Promise<T>): Promise<T> =>
+  withScratchConnection('postgres', fn);
 
 export async function createScratchDatabase(name: string): Promise<string> {
   await withAdminConnection(async (admin) => {
