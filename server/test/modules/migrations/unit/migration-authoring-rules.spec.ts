@@ -185,6 +185,85 @@ function contractViolations({ file, text }: MigrationSource, knownMigrations: Re
   return violations;
 }
 
+const COLUMN_DECORATORS = new Set([
+  'Column',
+  'PrimaryColumn',
+  'PrimaryGeneratedColumn',
+  'CreateDateColumn',
+  'UpdateDateColumn',
+  'DeleteDateColumn',
+  'VersionColumn',
+  'JoinColumn',
+]);
+
+const stringOption = (args: ts.NodeArray<ts.Expression>, option: string): string | undefined => {
+  for (const arg of args) {
+    if (!ts.isObjectLiteralExpression(arg)) continue;
+    const found = arg.properties.find(
+      (property): property is ts.PropertyAssignment =>
+        ts.isPropertyAssignment(property) && property.name.getText() === option
+    );
+    if (found && ts.isStringLiteralLike(found.initializer)) return found.initializer.text;
+  }
+};
+
+/** `table.column` and `table` for every entity; synchronize is off, so nothing else checks them against the schema. */
+function entityMappings(sources: MigrationSource[]): Set<string> {
+  const mapped = new Set<string>();
+  for (const { file, text } of sources) {
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+    for (const cls of source.statements.filter(ts.isClassDeclaration)) {
+      const entity = ts
+        .getDecorators(cls)
+        ?.map((decorator) => decorator.expression)
+        .find((call): call is ts.CallExpression => ts.isCallExpression(call) && call.expression.getText() === 'Entity');
+      if (!entity) continue;
+      const [first] = entity.arguments;
+      const table = first && ts.isStringLiteralLike(first) ? first.text : stringOption(entity.arguments, 'name');
+      if (!table) continue;
+      mapped.add(table);
+      for (const member of cls.members.filter(ts.isPropertyDeclaration)) {
+        for (const decorator of ts.getDecorators(member) ?? []) {
+          const call = decorator.expression;
+          if (!ts.isCallExpression(call) || !COLUMN_DECORATORS.has(call.expression.getText())) continue;
+          const named = stringOption(call.arguments, 'name');
+          if (named || call.expression.getText() !== 'JoinColumn') {
+            mapped.add(`${table}.${named ?? member.name.getText()}`);
+          }
+        }
+      }
+    }
+  }
+  return mapped;
+}
+
+/** Tables and columns a contract migration's up() drops, as `table` and `table.column`. */
+function droppedSchema({ file, text }: MigrationSource): string[] {
+  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+  const up = migrationClass(source) && method(migrationClass(source), 'up');
+  if (!up?.body) return [];
+  const dropped: string[] = [];
+  const sql = codeIn(up.body).sql.replace(/\bpublic\./gi, '');
+  for (const [, table] of sql.matchAll(/\bDROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?(\w+)/gi)) dropped.push(table);
+  for (const [statement, table] of sql.matchAll(/\bALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(\w+)[^;]*/gi)) {
+    for (const [, column] of statement.matchAll(/\bDROP\s+COLUMN\s+(?:IF\s+EXISTS\s+)?(\w+)/gi)) {
+      dropped.push(`${table}.${column}`);
+    }
+  }
+  return dropped;
+}
+
+function entityFiles(): MigrationSource[] {
+  return ['src', 'ee']
+    .map((folder) => join(SERVER_ROOT, folder))
+    .filter((directory) => existsSync(directory))
+    .flatMap((directory) =>
+      readdirSync(directory, { recursive: true, encoding: 'utf8' })
+        .filter((name) => name.endsWith('.entity.ts'))
+        .map((name) => ({ file: name, text: readFileSync(join(directory, name), 'utf8') }))
+    );
+}
+
 /** Phase rules below apply from here: the newest migration when they were added. */
 const PHASE_RULES_FROM = 1793100000000;
 
@@ -266,7 +345,8 @@ function phaseViolations(phase: 'expand' | 'backfill', { file, text }: Migration
     violations.push(`${file}: backfill holds a long lock (${forbidden.join(', ')}); move it to contract. ${RULES_DOC}`);
   }
   const beforeCommitOnly = matching(BEFORE_COMMIT_ONLY, sql);
-  if (beforeCommitOnly.length) violations.push(`${file}: ${beforeCommitOnly.join(', ')} in up(); move it to beforeCommit(). ${RULES_DOC}`);
+  if (beforeCommitOnly.length)
+    violations.push(`${file}: ${beforeCommitOnly.join(', ')} in up(); move it to beforeCommit(). ${RULES_DOC}`);
   return violations;
 }
 
@@ -524,6 +604,47 @@ export class Sample1799999999999 implements MigrationInterface {
       }))
       .flatMap((source) => contractViolations(source, known));
     expect(violations).toEqual([]);
+  });
+
+  describe('entities', () => {
+    const entity = {
+      file: 'app.entity.ts',
+      text: `
+@Entity({ name: 'apps' })
+export class App {
+  @Column({ name: 'slug' }) slug: string;
+  @Column() icon: string;
+  @ManyToOne(() => Org) @JoinColumn({ name: 'organization_id' }) organization: Org;
+}`,
+    };
+
+    it('should read the tables and columns an entity maps', () => {
+      expect([...entityMappings([entity])].sort()).toEqual(['apps', 'apps.icon', 'apps.organization_id', 'apps.slug']);
+    });
+
+    it.each([
+      [
+        'a column',
+        'ALTER TABLE apps DROP COLUMN IF EXISTS slug, DROP COLUMN IF EXISTS gone',
+        ['apps.slug', 'apps.gone'],
+      ],
+      ['a table', 'DROP TABLE IF EXISTS public.apps', ['apps']],
+    ])('should find %s a contract drops', (_what, sql, expected) => {
+      expect(droppedSchema(contract(`await withShortLock(queryRunner, [\`${sql}\`]);`))).toEqual(expected);
+    });
+
+    it('should not drop a table or column an entity still maps', () => {
+      const mapped = entityMappings(entityFiles());
+      expect(mapped.has('app_versions.branch_id')).toBe(true);
+      const stillMapped = readdirSync(join(SERVER_ROOT, 'migrations/contract'))
+        .filter((name) => name.endsWith('.ts'))
+        .flatMap((name) =>
+          droppedSchema({ file: name, text: readFileSync(join(SERVER_ROOT, 'migrations/contract', name), 'utf8') })
+            .filter((dropped) => mapped.has(dropped))
+            .map((dropped) => `${name}: drops ${dropped}, which an entity still maps; remove it from the entity first.`)
+        );
+      expect(stillMapped).toEqual([]);
+    });
   });
 });
 
