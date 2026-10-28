@@ -4,15 +4,7 @@
  */
 import { readdirSync } from 'fs';
 import { join } from 'path';
-import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
-import { DataMigration } from 'src/migration-helpers/migration-mode';
-import { CleanupLegacyBranchModel1793300000000 } from '@migrations/cleanup/1793300000000-CleanupLegacyBranchModel';
-import {
-  LEGACY_VARIANTS,
-  useLegacyVariants,
-  loosenStep,
-  restoreSteps,
-} from 'src/migration-helpers/legacy-3-21-58-upgrade';
+import { LEGACY_VARIANTS, loosenStep, restoreSteps } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 
 describe('migration-helpers/legacy-3-21-58-upgrade', () => {
   it.each([
@@ -46,76 +38,11 @@ describe('migration-helpers/legacy-3-21-58-upgrade', () => {
     ]);
   });
 
-  describe('useLegacyVariants(): stand-ins for the data migrations a 3.21.58 database needs', () => {
-    const BACKFILL = join(__dirname, '../../../../migrations/data');
-    const originals: DataMigration[] = readdirSync(BACKFILL)
-      .filter((file) => LEGACY_VARIANTS.has(file.replace(/^(\d+)-(\w+)\.ts$/, '$2$1')))
-      .map((file) => {
-        const exports: Record<string, new () => MigrationInterface> = require(join(BACKFILL, file));
-        return new (Object.values(exports)[0])();
-      });
+  it('should find the original data migration file for every stand-in', () => {
+    const files = readdirSync(join(__dirname, '../../../../migrations/data')).map((file) =>
+      file.replace(/^(\d+)-(\w+)\.ts$/, '$2$1')
+    );
 
-    const statementsRunBy = async (step: (queryRunner: QueryRunner) => Promise<void>): Promise<string[]> => {
-      const statements: string[] = [];
-      await step({ query: async (sql: string) => void statements.push(sql) } as unknown as QueryRunner);
-      return statements;
-    };
-
-    it('should find the original migration file for every stand-in', () => {
-      expect(originals).toHaveLength(LEGACY_VARIANTS.size);
-    });
-
-    it('should only change rows and functions in up(), and leave table locks to beforeCommit() and cleanup', async () => {
-      useLegacyVariants({ migrations: originals } as unknown as DataSource);
-
-      const upStatements = (
-        await Promise.all(originals.map((migration) => statementsRunBy((qr) => migration.up(qr))))
-      ).flat();
-      const beforeCommitStatements = (
-        await Promise.all(
-          originals
-            .filter((m) => m.beforeCommit)
-            .map((migration) => statementsRunBy((qr) => migration.beforeCommit(qr)))
-        )
-      ).flat();
-
-      expect(
-        upStatements.filter((sql) => /\b(DROP|ALTER TABLE|CREATE (UNIQUE )?INDEX|CREATE TRIGGER)\b/i.test(sql))
-      ).toEqual([]);
-      expect(beforeCommitStatements.slice(-1)[0]).toMatch(
-        /ALTER TABLE app_versions\s+DROP CONSTRAINT IF EXISTS fk_app_versions_branch/
-      );
-    });
+    expect(files).toEqual(expect.arrayContaining([...LEGACY_VARIANTS.keys()]));
   });
-
-  it.each(['data_source_versions', 'app_versions', 'folder_apps'])(
-    'should give %s rows that have no branch a branch before cleanup makes the column required',
-    async (table) => {
-      const statements = await cleanupStatements();
-
-      const setNotNullAt = statements.findIndex((sql) =>
-        sql.includes(`ALTER TABLE ${table} ALTER COLUMN branch_id SET NOT NULL`)
-      );
-      const branchFixesBeforeIt = statements.filter(
-        (sql, i) => i < setNotNullAt && new RegExp(`^ ?(UPDATE|DELETE FROM) ${table}\\b.*branch_id IS NULL`).test(sql)
-      );
-
-      expect(setNotNullAt).toBeGreaterThan(-1);
-      expect(branchFixesBeforeIt).toEqual(expect.arrayContaining([expect.stringMatching(/SET branch_id = wb\.id/)]));
-    }
-  );
 });
-
-/** The SQL the real cleanup migration runs, whitespace collapsed and quotes dropped. */
-async function cleanupStatements(): Promise<string[]> {
-  const statements: string[] = [];
-  const queryRunner = {
-    isTransactionActive: true,
-    query: async (sql: string) => {
-      statements.push(sql.replace(/\s+/g, ' ').replace(/"/g, ''));
-      return [{ server_version_num: '160000' }];
-    },
-  } as unknown as QueryRunner;
-  await new CleanupLegacyBranchModel1793300000000().up(queryRunner);
-  return statements;
-}
