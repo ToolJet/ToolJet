@@ -109,11 +109,13 @@ describe('Data Source Folders — Default Role Access', () => {
 
   it('sidebar search reaches data sources inside collapsed folders and keeps folder rows in view', () => {
     const folderName = `Searchable Folder ${testId}`;
+    const unmatchedFolderName = `Untouched Folder ${testId}`;
     const folderedDataSource = `ds-inside-${testId}`;
     const strayDataSource = `ds-stray-${testId}`;
 
     cy.apiCreateGlobalDataSource(folderedDataSource).then((folderedId) => {
       cy.apiCreateGlobalDataSource(strayDataSource);
+      cy.apiCreateDataSourceFolder(unmatchedFolderName);
       cy.apiCreateDataSourceFolder(folderName).then((folder) => {
         cy.apiAddDataSourceToFolder(folderedId, folder.id);
 
@@ -126,6 +128,31 @@ describe('Data Source Folders — Default Role Access', () => {
         cy.get(dsFolder.dataSourceRow(folderedDataSource)).should('be.visible');
         cy.get(dsFolder.dataSourceRow(strayDataSource)).should('not.exist');
         uiVerifyDataSourceFolderExists(folderName);
+        // A folder the search leaves with nothing to show is hidden, not rendered empty.
+        uiVerifyDataSourceFolderExists(unmatchedFolderName, false);
+      });
+    });
+  });
+
+  it('sidebar search matches folder names, showing a matched folder with all of its data sources', () => {
+    const folderName = `Ledger Folder ${testId}`;
+    const folderedDataSource = `ds-ledgered-${testId}`;
+    const strayDataSource = `ds-loose-${testId}`;
+
+    cy.apiCreateGlobalDataSource(folderedDataSource).then((folderedId) => {
+      cy.apiCreateGlobalDataSource(strayDataSource);
+      cy.apiCreateDataSourceFolder(folderName).then((folder) => {
+        cy.apiAddDataSourceToFolder(folderedId, folder.id);
+
+        openDataSourcesList();
+
+        cy.get(dsFolder.searchIcon).click();
+        // Matches the folder's name only — no data source name contains "Ledger Folder".
+        cy.get(dsFolder.searchBar).type(folderName);
+
+        uiVerifyDataSourceFolderExists(folderName);
+        cy.get(dsFolder.dataSourceRow(folderedDataSource)).should('be.visible');
+        cy.get(dsFolder.dataSourceRow(strayDataSource)).should('not.exist');
       });
     });
   });
