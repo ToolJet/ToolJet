@@ -19,6 +19,7 @@ import {
   withMigrationAdvisoryLock,
 } from './migration-locks';
 import { retryOnLockTimeout, retryWhen } from './with-short-lock';
+import { legacyUpgradePending, loosenLegacyRules, restoreLegacyRules, useLegacyVariants } from './legacy-upgrade';
 import {
   BackfillMigration,
   blocksAsyncUpgrade,
@@ -415,10 +416,24 @@ async function executeMigrations(
 ): Promise<void> {
   // Plan before announcing: it scans up() source, which the announcing wrapper hides.
   const plan = phase === 'backfill' ? undefined : await planEnumAdditions(schemaDS);
+  // Variants replace up() and tail(), so they go in before the wrappers below.
+  const legacy = phase === 'backfill' && legacyUpgradePending(await pendingNames(dataDS));
+  if (legacy) {
+    await loosenLegacyRules(dataDS);
+    useLegacyVariants(dataDS);
+  }
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
   const backfill: [DataSource, DeferredTails] = [dataDS, deferTails(dataDS)];
-  if (!plan) return runInSeparateTransactions(schemaDS, backfill, BACKFILL_PHASE_REASON);
+  if (!plan) {
+    try {
+      return await runInSeparateTransactions(schemaDS, backfill, BACKFILL_PHASE_REASON);
+    } catch (error) {
+      // Still holding the migration lock, so no other runner sees the loosened rules.
+      if (legacy) await restoreLegacyRules(dataDS);
+      throw error;
+    }
+  }
   announceEachMigration(contractDS);
   if (plan.hasMissingType) {
     return runInSeparateTransactions(schemaDS, backfill, ENUM_SEPARATE_TRANSACTIONS_REASON, contractDS);
