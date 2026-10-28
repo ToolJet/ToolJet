@@ -1,4 +1,18 @@
 {
-  "libraryName": "Ant Design (built-in)",
-  "correlationId": "fc60c1b2-629d-496d-8192-d7523c105def"
+  "libraryName": "Ant Design",
+  "correlationId": "fc60c1b2-629d-496d-8192-d7523c105def",
+  "themeMode": "own",
+  "surface": {
+    "page": "#f5f5f5",
+    "card": {
+      "background": "#ffffff",
+      "border": "#f0f0f0",
+      "radius": 8,
+      "shadow": "none",
+      "titleSize": 16,
+      "titleWeight": 600,
+      "headerDivider": true,
+      "padding": 24
+    }
+  }
 }

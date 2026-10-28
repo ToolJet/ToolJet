@@ -80,10 +80,63 @@ export interface ManifestComponent {
   usage?: string; // when to use the component, for the AI app builder
   controlState?: boolean; // the component calls useControlState, so the Inspector offers Disable
   slots?: ManifestSlot[];
+  // How the component names the props, events and actions of the native widget it stands in for (its `role`), and
+  // the values a role prop takes: the AI app builder plans in native widgets and maps them through these.
+  roleProps?: Record<string, string>;
+  roleValues?: Record<string, Record<string, string | number | boolean>>;
+  roleEvents?: Record<string, string>;
+  roleActions?: Record<string, string>;
+  labelCase?: 'upper'; // the component writes its label in capitals, so a layout sized for its text widens it
 }
 
-export interface Manifest {
+// Library-wide settings, from .tooljet/config.json.
+export interface ManifestLibrarySettings {
+  themeMode?: 'own'; // drawn in its own design system: takes the app theme only once one is applied
+  surface?: Record<string, unknown>; // the page and card look layouts around its components should match
+}
+
+export interface Manifest extends ManifestLibrarySettings {
   components: Record<string, ManifestComponent>;
+}
+
+// The role mappings useComponentSettings takes: a name → name map, and roleValues a map of those per prop.
+const ROLE_MAPS = ['roleProps', 'roleEvents', 'roleActions'] as const;
+export type RoleMap = (typeof ROLE_MAPS)[number];
+
+const isStringMap = (value: unknown): value is Record<string, string> =>
+  isPlainObject(value) && Object.values(value).every((v) => typeof v === 'string');
+
+const isValueMap = (value: unknown): value is Record<string, string | number | boolean> =>
+  isPlainObject(value) && Object.values(value).every((v) => ['string', 'number', 'boolean'].includes(typeof v));
+
+/** Throws unless `settings` holds valid role mappings and labelCase; returns the ones it holds. */
+export function readRoleSettings(
+  settings: Record<string, unknown>,
+  componentName: string
+): Pick<ManifestComponent, RoleMap | 'roleValues' | 'labelCase'> {
+  const out: Pick<ManifestComponent, RoleMap | 'roleValues' | 'labelCase'> = {};
+  for (const key of ROLE_MAPS) {
+    const value = settings[key];
+    if (value === undefined) continue;
+    if (!isStringMap(value)) {
+      throw new Error(`Invalid "${key}" in component "${componentName}": must map names to names.`);
+    }
+    out[key] = value;
+  }
+  if (settings.roleValues !== undefined) {
+    const value = settings.roleValues;
+    if (!isPlainObject(value) || !Object.values(value).every(isValueMap)) {
+      throw new Error(`Invalid "roleValues" in component "${componentName}": must map each prop to a map of values.`);
+    }
+    out.roleValues = value as Record<string, Record<string, string | number | boolean>>;
+  }
+  if (settings.labelCase !== undefined) {
+    if (settings.labelCase !== 'upper') {
+      throw new Error(`Invalid "labelCase" in component "${componentName}": must be 'upper'.`);
+    }
+    out.labelCase = 'upper';
+  }
+  return out;
 }
 
 const TOOLJET_SDK_MODULE = '@tooljet/custom-component-sdk';
@@ -205,8 +258,12 @@ function walkComponentDeclaration(
   // Only treat exports that look like React components as components — anything
   // else (types, constants, plain helper functions) is skipped rather than showing
   // up as a phantom, prop-less component in the manifest.
+  // A hook (useX) is never a component, even when it returns JSX for the components that call it.
+  if (/^use[A-Z]/.test(componentName)) return null;
   const fnNode = getFunctionLikeNode(decl);
-  if (!fnNode || !fnNode.body || !containsJsx(fnNode.body)) {
+  const isComponent =
+    !!fnNode?.body && (containsJsx(fnNode.body) || (isPascalCase(componentName) && callsHook(fnNode.body)));
+  if (!fnNode || !isComponent) {
     return null;
   }
 
@@ -229,6 +286,7 @@ function walkComponentDeclaration(
   let loading: 'own' | undefined;
   let usage: string | undefined;
   let controlState = false;
+  let roleSettings: ReturnType<typeof readRoleSettings> = {};
   const slots: ManifestSlot[] = [];
   const addSlot = (slot: ManifestSlot) => {
     if (!slots.some((s) => s.name === slot.name && s.kind === slot.kind)) slots.push(slot);
@@ -515,6 +573,17 @@ function walkComponentDeclaration(
       }
       (declared as ManifestSlot[]).forEach(addSlot);
     }
+    const roleValuesRead: Record<string, unknown> = {};
+    for (const key of [...ROLE_MAPS, 'roleValues', 'labelCase']) {
+      const node = getPropNode(settings, key, checker);
+      if (!node) continue;
+      const value = evalLiteralNode(node, checker);
+      if (value === NOT_STATIC) {
+        throw new Error(`Invalid "${key}" in component "${componentName}": must be a static literal.`);
+      }
+      roleValuesRead[key] = value;
+    }
+    roleSettings = readRoleSettings(roleValuesRead, componentName);
     const fitNode = getPropNode(settings, 'fit', checker);
     if (fitNode) {
       const val = evalLiteralNode(fitNode, checker);
@@ -628,6 +697,7 @@ function walkComponentDeclaration(
     ...(usage ? { usage } : {}),
     ...(controlState ? { controlState } : {}),
     ...(slots.length ? { slots } : {}),
+    ...roleSettings,
   };
 }
 
@@ -638,6 +708,23 @@ function containsJsx(node: ts.Node): boolean {
   if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node)) return true;
 
   return !!ts.forEachChild(node, (child) => (containsJsx(child) ? true : undefined));
+}
+
+// React's convention: a capitalised function that calls a hook is a component, even when its JSX is drawn by the
+// hook it calls (`export const DatePicker = (props) => usePicker(props, false)`).
+const isPascalCase = (name: string) => /^[A-Z]/.test(name);
+
+function callsHook(node: ts.Node): boolean {
+  if (ts.isCallExpression(node)) {
+    const callee = node.expression;
+    const name = ts.isIdentifier(callee)
+      ? callee.text
+      : ts.isPropertyAccessExpression(callee)
+      ? callee.name.text
+      : undefined;
+    if (name && /^use[A-Z]/.test(name)) return true;
+  }
+  return !!ts.forEachChild(node, (child) => (callsHook(child) ? true : undefined));
 }
 
 function isFunctionLike(node: ts.Node): boolean {

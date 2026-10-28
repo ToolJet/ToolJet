@@ -13,17 +13,40 @@ export const Switch = (props: Record<string, unknown>) => {
   const field = useFieldProps({ layout: 'horizontal', label: 'Enabled' });
   const [checked, setChecked] = ToolJet.useStateBoolean({ name: 'checked', label: 'Checked', initialValue: false });
   const publishValue = useFormValue(checked, 'boolean');
-  const [checkedChildren] = ToolJet.useStateString({ name: 'checkedChildren', label: 'Checked text', initialValue: '' });
-  const [unCheckedChildren] = ToolJet.useStateString({ name: 'unCheckedChildren', label: 'Unchecked text', initialValue: '' });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['default', 'small'], initialValue: 'default' });
+  const [checkedChildren] = ToolJet.useStateString({
+    name: 'checkedChildren',
+    label: 'Checked text',
+    initialValue: '',
+  });
+  const [unCheckedChildren] = ToolJet.useStateString({
+    name: 'unCheckedChildren',
+    label: 'Unchecked text',
+    initialValue: '',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['default', 'small'],
+    initialValue: 'default',
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const guard = useOwnEventGuard();
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked === true });
+  const check = ToolJet.useValidation({ kind: 'choice', value: checked, present: checked === true });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 3 });
+  ToolJet.useComponentSettings({
+    role: 'switch',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Switch with a Form.Item label beside it (layout horizontal): checked, checkedChildren/unCheckedChildren; onChange.",
+    roleProps: { description: 'extra' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 3,
+  });
 
   // checked and the Form's value published together before onChange; a value it already has changes nothing and
   // fires nothing (lib/sameValue).
@@ -37,7 +60,11 @@ export const Switch = (props: Record<string, unknown>) => {
     guard(onChange);
   };
   ToolJet.useAction(
-    { name: 'setFieldValue', displayName: 'Set checked', params: [{ handle: 'checked', displayName: 'Checked', type: 'toggle' }] },
+    {
+      name: 'setFieldValue',
+      displayName: 'Set checked',
+      params: [{ handle: 'checked', displayName: 'Checked', type: 'toggle' }],
+    },
     (next) => change(String(next) === 'true')
   );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(props.checked === true));
@@ -47,7 +74,10 @@ export const Switch = (props: Record<string, unknown>) => {
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => checkedSetter.set(false));
 
   return (
-    <AntProvider tokens={tokens} className={disabled ? 'tj-ant-switch tj-ant-compact tj-ant-host-disabled' : 'tj-ant-switch tj-ant-compact'}>
+    <AntProvider
+      tokens={tokens}
+      className={disabled ? 'tj-ant-switch tj-ant-compact tj-ant-host-disabled' : 'tj-ant-switch tj-ant-compact'}
+    >
       <FormField {...field} check={check} htmlFor={fieldId}>
         <AntSwitch
           id={fieldId}

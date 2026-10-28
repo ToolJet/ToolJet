@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Builds the component packs that ship with ToolJet and puts them where the server serves them from
-// (server/src/modules/custom-component-libraries/builtin-packs.ts). Each pack listed in packs/builtin.json is built
+// (server/src/modules/builtin-packs). Each pack listed in packs/builtin.json is built
 // with the custom component CLI (`tooljet library build`, from cli/), exactly like any custom component library, and
 // its dist/ is copied to server/builtin-packs/<pack>/ with a builtin.json naming it. Run in CI and the Docker build,
 // after `npm --prefix cli run build`.

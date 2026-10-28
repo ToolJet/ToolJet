@@ -312,3 +312,107 @@ export function Field() {
     expect(result.warnings.join('\n')).to.include("react and react-dom aren't installed");
   }).timeout(30000);
 });
+
+describe('build - role mappings and library settings', () => {
+  const cwd = withTempCwd();
+
+  const settingsComponent = (settings: string) => ({
+    'index.ts': `export { Field } from './Field';\n`,
+    'Field.tsx': `${SDK_IMPORT}
+export function Field() {
+  ToolJet.useComponentSettings(${settings});
+  return <div />;
+}
+`,
+  });
+
+  it('carries the role mappings the AI builder maps native widgets through', async () => {
+    writeProject(
+      cwd.get(),
+      settingsComponent(`{
+    role: 'button',
+    roleProps: { text: 'children' },
+    roleValues: { variant: { outline: 'outlined' }, hour12: { '12h': true, size: 2 } },
+    roleEvents: { onClick: 'onPress' },
+    roleActions: { setText: 'setLabel' },
+    labelCase: 'upper',
+  }`)
+    );
+
+    await build(cwd.get());
+
+    expect(readManifest(cwd.get()).components.Field).to.include.keys(
+      'roleProps',
+      'roleValues',
+      'roleEvents',
+      'roleActions',
+      'labelCase'
+    );
+    expect(readManifest(cwd.get()).components.Field).to.deep.include({
+      roleProps: { text: 'children' },
+      roleValues: { variant: { outline: 'outlined' }, hour12: { '12h': true, size: 2 } },
+      roleEvents: { onClick: 'onPress' },
+      roleActions: { setText: 'setLabel' },
+      labelCase: 'upper',
+    });
+  }).timeout(30000);
+
+  it('records role mappings a helper passes to useComponentSettings', async () => {
+    writeProject(cwd.get(), {
+      'index.ts': `export { Field } from './Field';\n`,
+      'Field.tsx': `${SDK_IMPORT}
+const useRole = (prop: string) => ToolJet.useComponentSettings({ role: 'input', roleProps: { description: prop } });
+export function Field() {
+  useRole('extra');
+  return <div />;
+}
+`,
+    });
+
+    await build(cwd.get());
+
+    expect(readManifest(cwd.get()).components.Field.roleProps).to.deep.equal({ description: 'extra' });
+  }).timeout(30000);
+
+  it('fails the build on a role mapping that does not map names to names', async () => {
+    writeProject(cwd.get(), settingsComponent(`{ roleProps: { text: 3 } }`));
+
+    let error: Error | undefined;
+    try {
+      await build(cwd.get());
+    } catch (err) {
+      error = err as Error;
+    }
+    expect(error?.message).to.include('Invalid "roleProps" in component "Field"');
+  }).timeout(30000);
+
+  it("copies the library's theme mode and surface from .tooljet/config.json into the manifest", async () => {
+    writeProject(cwd.get(), settingsComponent(`{ role: 'input' }`));
+    fs.mkdirSync(path.join(cwd.get(), '.tooljet'), { recursive: true });
+    fs.writeFileSync(
+      path.join(cwd.get(), '.tooljet', 'config.json'),
+      JSON.stringify({ libraryName: 'Ant', correlationId: 'c-1', themeMode: 'own', surface: { page: '#f5f5f5' } })
+    );
+
+    await build(cwd.get());
+
+    expect(readManifest(cwd.get())).to.deep.include({ themeMode: 'own', surface: { page: '#f5f5f5' } });
+  }).timeout(30000);
+
+  it('fails the build on an unknown theme mode', async () => {
+    writeProject(cwd.get(), settingsComponent(`{ role: 'input' }`));
+    fs.mkdirSync(path.join(cwd.get(), '.tooljet'), { recursive: true });
+    fs.writeFileSync(
+      path.join(cwd.get(), '.tooljet', 'config.json'),
+      JSON.stringify({ libraryName: 'Ant', correlationId: 'c-1', themeMode: 'dark' })
+    );
+
+    let error: Error | undefined;
+    try {
+      await build(cwd.get());
+    } catch (err) {
+      error = err as Error;
+    }
+    expect(error?.message).to.include(`"themeMode" must be 'own'`);
+  }).timeout(30000);
+});

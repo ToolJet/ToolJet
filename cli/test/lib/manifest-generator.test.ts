@@ -1048,6 +1048,25 @@ export const Widget = () => {
     expect(manifest.components.Widget.props.map((p) => p.name)).to.deep.equal(['title']);
   }).timeout(30000);
 
+  it('recognises a component whose JSX is drawn by the hook it calls', async () => {
+    writeProjectFiles(cwd.get(), {
+      'index.ts': `export { DatePicker, usePicker, toDate } from './Picker';\n`,
+      'Picker.tsx': `${SDK_IMPORT}
+export const usePicker = (withTime: boolean) => {
+  ToolJet.useStateString({ name: 'value', initialValue: '' });
+  return <div>{String(withTime)}</div>;
+};
+export const toDate = (value: string) => new Date(value);
+export const DatePicker = () => usePicker(false);
+`,
+    });
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    // usePicker and toDate are helpers (lower-case), not components.
+    expect(Object.keys(manifest.components)).to.deep.equal(['DatePicker']);
+  });
+
   it('recognises a component written as a function declaration', async () => {
     writeProject(
       cwd.get(),

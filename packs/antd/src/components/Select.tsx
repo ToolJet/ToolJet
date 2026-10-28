@@ -11,7 +11,14 @@ import { useValueSetter } from '../lib/sameValue';
 // Forwards the ref, so the focus and blur actions reach Ant's Select (a plain function component dropped it).
 const Control = React.forwardRef<RefSelectProps, React.ComponentProps<typeof AntSelect>>((p, ref) => {
   const popup = usePopupTheme();
-  return <AntSelect {...p} ref={ref} classNames={{ popup: { root: popup.className } }} styles={{ popup: { root: popup.style } }} />;
+  return (
+    <AntSelect
+      {...p}
+      ref={ref}
+      classNames={{ popup: { root: popup.className } }}
+      styles={{ popup: { root: popup.style } }}
+    />
+  );
 });
 
 // Ant's Select: mode ('' single, multiple, tags), options [{ label, value, disabled }], value (an array in multiple and
@@ -19,13 +26,19 @@ const Control = React.forwardRef<RefSelectProps, React.ComponentProps<typeof Ant
 // notFoundContent; events onChange (also on clear), onSelect, onClear, onSearch, onOpenChange.
 export const Select = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Department' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
-    { label: 'Design', value: 'design' },
-    { label: 'Engineering', value: 'engineering' },
-    { label: 'Marketing', value: 'marketing' },
-    { label: 'Sales', value: 'sales' },
-    { label: 'Support', value: 'support' },
-  ] });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: 'Plain values or [{ label, value, disabled? }].',
+    initialValue: [
+      { label: 'Design', value: 'design' },
+      { label: 'Engineering', value: 'engineering' },
+      { label: 'Marketing', value: 'marketing' },
+      { label: 'Sales', value: 'sales' },
+      { label: 'Support', value: 'support' },
+    ],
+  });
   const [mode] = ToolJet.useStateEnumeration({
     name: 'mode',
     label: 'Mode',
@@ -42,9 +55,21 @@ export const Select = (props: Record<string, unknown>) => {
   const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select' });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: false });
-  const [notFoundContent] = ToolJet.useStateString({ name: 'notFoundContent', label: 'Not found content', initialValue: 'No options' });
-  const [, setSelectedOption] = ToolJet.useStateObject({ name: 'selectedOption', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedOptions] = ToolJet.useStateArray({ name: 'selectedOptions', initialValue: [], inspector: 'hidden' });
+  const [notFoundContent] = ToolJet.useStateString({
+    name: 'notFoundContent',
+    label: 'Not found content',
+    initialValue: 'No options',
+  });
+  const [, setSelectedOption] = ToolJet.useStateObject({
+    name: 'selectedOption',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [, setSelectedOptions] = ToolJet.useStateArray({
+    name: 'selectedOptions',
+    initialValue: [],
+    inspector: 'hidden',
+  });
   const [, setExposedOpen] = ToolJet.useStateBoolean({ name: 'open', initialValue: false, inspector: 'hidden' });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -65,9 +90,24 @@ export const Select = (props: Record<string, unknown>) => {
   const keys = values.map((v) => keyForValue(options, v));
   const key = keyForValue(options, value);
   const known = value !== '' && options.some((o) => o.value === key);
-  const check = ToolJet.useValidation({ section: 'choice', value: many ? values.map(str).join(',') : str(value), present: many ? values.length > 0 : value !== '' });
+  const check = ToolJet.useValidation({
+    kind: 'choice',
+    value: many ? values.map(str).join(',') : str(value),
+    present: many ? values.length > 0 : value !== '',
+  });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'select',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Select: label, options [{label, value}], mode ('' single, 'multiple', 'tags' for free-text tags), value (the picked value; an array in multiple and tags modes, with selectedOptions), placeholder, allowClear, showSearch; selectedOption is exposed in single mode; onChange fires on every change, clearing included.",
+    roleProps: { description: 'extra' },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
 
   const optionsFor = (raw: unknown) => {
     const list = many ? toValues(raw) : [];
@@ -82,7 +122,8 @@ export const Select = (props: Record<string, unknown>) => {
   };
   // A wanted value as stored: the option it names, with that option's own value (the text '1' picks the option 1), else
   // as given; nothing is ''.
-  const toStored = (v: unknown): unknown => (v === undefined || v === null || v === '' ? '' : valueForKey(options, keyForValue(options, v)));
+  const toStored = (v: unknown): unknown =>
+    v === undefined || v === null || v === '' ? '' : valueForKey(options, keyForValue(options, v));
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(many ? values : value, (v) => setValue(v as string));
   // A value given by the app (an action): see toStored. Ant's onChange gives keys instead (pick).
@@ -146,7 +187,15 @@ export const Select = (props: Record<string, unknown>) => {
           maxTagCount={many ? 'responsive' : undefined}
           // Single: a value not (yet) among the options shows as the placeholder, not as a bare value. Multiple keeps
           // only known values; tags keeps every value (a tag is any text).
-          value={many ? (mode === 'tags' ? keys : keys.filter((k) => options.some((o) => o.value === k))) : known ? key : undefined}
+          value={
+            many
+              ? mode === 'tags'
+                ? keys
+                : keys.filter((k) => options.some((o) => o.value === k))
+              : known
+                ? key
+                : undefined
+          }
           placeholder={placeholder || undefined}
           disabled={disabled}
           loading={loading}

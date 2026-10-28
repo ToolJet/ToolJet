@@ -2,6 +2,7 @@ import * as esbuild from 'esbuild';
 import * as path from 'path';
 import { createRequire } from 'module';
 
+import { readRoleSettings } from './manifest-generator';
 import type {
   Manifest,
   ManifestAction,
@@ -336,6 +337,10 @@ function mergeRecorded(componentName: string, found: ManifestComponent, calls: R
   if (component.usage === undefined && typeof settings.usage === 'string') component.usage = settings.usage;
   if (component.validation === undefined && validationKind)
     component.validation = validationKind as ManifestValidationKind;
+  const hasRoleSettings = ['roleProps', 'roleValues', 'roleEvents', 'roleActions', 'labelCase'].some(
+    (key) => key in found
+  );
+  if (!hasRoleSettings) Object.assign(component, readRoleSettings(settings, componentName));
   if (of('controlState').length) component.controlState = true;
   if (slots.length) component.slots = slots;
 
