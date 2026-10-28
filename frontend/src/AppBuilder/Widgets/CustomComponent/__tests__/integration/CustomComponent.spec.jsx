@@ -10,9 +10,12 @@ import {
   drain,
   widgetProps,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { componentDefinition, seedApp } from '@/test/app-builder';
-import { customComponentConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/customComponent';
-import { customComponentConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/customComponent';
+import { AppBuilderTestSession, componentDefinition, defineAppBuilderScenario, seedApp } from '@/test/app-builder';
+import { customComponentConfig as frontendConfig } from '@tooljet/widget-definitions';
+// eslint-disable-next-line import/no-relative-packages
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
+
+const serverConfig = serverWidgets.customComponentConfig;
 
 const ID = 'cc1';
 const HANDLE = 'customComponent1';
@@ -57,9 +60,21 @@ async function settle() {
   });
 }
 
+/** The window of the first frame rendered for a component id. */
+const frameWindowOf = (componentId = ID) => document.querySelector(`iframe[data-id="${componentId}"]`)?.contentWindow;
+
+/**
+ * Delivers a message to the host the way a browser does: on `window`, with
+ * the sending window as `event.source`. jsdom's postMessage never sets
+ * `source`, so the sender has to be supplied explicitly.
+ */
+function deliver(data, source) {
+  window.dispatchEvent(new MessageEvent('message', { data, source }));
+}
+
 /** Posts a message exactly as the embedded frame would post it. */
-async function fromFrame(payload, componentId = ID) {
-  window.postMessage({ from: 'customComponent', componentId, ...payload }, '*');
+async function fromFrame(payload, componentId = ID, source = frameWindowOf(componentId)) {
+  deliver({ from: 'customComponent', componentId, ...payload }, source);
   await settle();
 }
 
@@ -97,7 +112,7 @@ const runjs = (id, name, code, parameters) => ({
 
 /** Posts RUN_QUERY as the frame would and waits for the query to settle. */
 async function runQueryFromFrame({ queryName, parameters = {}, requestId, componentId = ID }) {
-  window.postMessage(
+  deliver(
     {
       from: 'customComponent',
       componentId,
@@ -106,7 +121,7 @@ async function runQueryFromFrame({ queryName, parameters = {}, requestId, compon
       parameters: JSON.stringify(parameters),
       requestId,
     },
-    '*'
+    frameWindowOf(componentId)
   );
   await settle();
   await new Promise((resolve) => setTimeout(resolve, 250));
@@ -396,7 +411,7 @@ describe('CustomComponent widget', () => {
     ]);
 
     const seen = recordFrameMessages(frame(container));
-    window.postMessage(
+    deliver(
       {
         from: 'customComponent',
         componentId: ID,
@@ -405,9 +420,9 @@ describe('CustomComponent widget', () => {
         parameters: '{}',
         requestId: 'rq_a',
       },
-      '*'
+      frameWindowOf()
     );
-    window.postMessage(
+    deliver(
       {
         from: 'customComponent',
         componentId: ID,
@@ -416,7 +431,7 @@ describe('CustomComponent widget', () => {
         parameters: '{}',
         requestId: 'rq_b',
       },
-      '*'
+      frameWindowOf()
     );
     await settle();
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -524,14 +539,15 @@ describe('CustomComponent widget', () => {
 
   test('[CustomComponent-ISO-002] Messages without the customComponent tag are ignored', async () => {
     // Break this catches: widening the inbound filter, which would let any
-    // unrelated page traffic drive the bridge.
+    // unrelated page traffic drive the bridge. Sent from the component's own
+    // frame, so only the tag check can reject them (the sender check is SEC-003).
     widget.render();
     await waitFor(() => expect(exposedData()).toEqual(REGISTERED_DATA));
 
-    window.postMessage({ componentId: ID, message: 'UPDATE_DATA', updatedObj: { title: 'spoofed' } }, '*');
-    window.postMessage(
+    deliver({ componentId: ID, message: 'UPDATE_DATA', updatedObj: { title: 'spoofed' } }, frameWindowOf());
+    deliver(
       { from: 'somethingElse', componentId: ID, message: 'UPDATE_DATA', updatedObj: { title: 'x' } },
-      '*'
+      frameWindowOf()
     );
     await settle();
 
@@ -544,8 +560,9 @@ describe('CustomComponent widget', () => {
     const { container } = widget.render();
     await waitFor(() => expect(exposedData()).toEqual(REGISTERED_DATA));
 
-    window.postMessage(undefined, '*');
-    window.postMessage('a bare string', '*');
+    // From the component's own frame, so they get past the sender check.
+    deliver(undefined, frameWindowOf());
+    deliver('a bare string', frameWindowOf());
     await settle();
     await fromFrame({ message: 'RUN_QUERY', queryName: 'x', parameters: 'not json', requestId: 'rq_bad' });
 
@@ -570,6 +587,7 @@ describe('CustomComponent widget', () => {
     // re-runs and the branch has no reachable caller in either direction.
     const { container, unmount } = widget.render();
     await waitFor(() => expect(exposedData()).toEqual(REGISTERED_DATA));
+    const formerFrame = frameWindowOf();
 
     const removed = [];
     const realRemove = window.removeEventListener.bind(window);
@@ -588,9 +606,9 @@ describe('CustomComponent widget', () => {
     expect(container.querySelector('iframe')).toBeNull();
 
     const before = exposedData();
-    window.postMessage(
+    deliver(
       { from: 'customComponent', componentId: ID, message: 'UPDATE_DATA', updatedObj: { title: 'after' } },
-      '*'
+      formerFrame
     );
     await settle();
     expect(exposedData()).toEqual(before);
@@ -617,6 +635,44 @@ describe('CustomComponent widget', () => {
 
     expect(frame(container)).not.toHaveAttribute('sandbox');
     expect(frame(container)).toHaveAttribute('srcdoc');
+  });
+
+  test('[CustomComponent-SEC-003] The host acts only on messages from its own frame', async () => {
+    // Break this catches: trusting the self-asserted tag and id alone, so a
+    // page embedded in an IFrame widget (or any script) that knows the id can
+    // overwrite the component's data and run queries under the viewer's session.
+    const { container } = widget.render();
+    await waitFor(() => expect(exposedData()).toEqual(REGISTERED_DATA));
+    await seedQueries([runjs('qs', 'secretQuery', 'return { leaked: true };')]);
+    const seen = recordFrameMessages(frame(container));
+
+    const foreignFrame = document.createElement('iframe');
+    document.body.appendChild(foreignFrame);
+    const strangers = [foreignFrame.contentWindow, window, null];
+
+    for (const source of strangers) {
+      await fromFrame({ message: 'UPDATE_DATA', updatedObj: { title: 'forged' } }, ID, source);
+      await fromFrame({ message: 'INIT' }, ID, source);
+      await fromFrame(
+        { message: 'RUN_QUERY', queryName: 'secretQuery', parameters: '{}', requestId: 'rq_forged' },
+        ID,
+        source
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    expect(exposedData()).toEqual(REGISTERED_DATA);
+    expect(countOfType(seen, 'INIT_RESPONSE')).toBe(0);
+    expect(responsesIn(seen)).toHaveLength(0);
+
+    // The same messages from the component's own frame are handled once each.
+    await fromFrame({ message: 'UPDATE_DATA', updatedObj: { title: 'genuine' } });
+    await waitFor(() => expect(exposedData().title).toBe('genuine'));
+    await runQueryFromFrame({ queryName: 'secretQuery', requestId: 'rq_genuine' });
+    expect(responsesIn(seen)).toHaveLength(1);
+    expect(responseFor(seen, 'rq_genuine').queryResult).toMatchObject({ status: 'ok', data: { leaked: true } });
+
+    foreignFrame.remove();
   });
 
   // ------------------------------------------------------------------ styles
@@ -695,5 +751,211 @@ describe('CustomComponent widget', () => {
 
     expect(frame(container)).toHaveAccessibleName(HANDLE);
     expect(frame(container, HANDLE2)).toHaveAccessibleName(HANDLE2);
+  });
+});
+
+// ------------------------------------------------------------- ListView rows
+
+const LISTVIEW_SCENARIO = defineAppBuilderScenario({
+  id: 'custom-component-in-listview',
+  name: 'Custom Component rendered in every row of a Listview',
+  primarySeam: 'rtl',
+  surface: 'app-editor',
+  edition: 'ce',
+  environment: 'development',
+  layout: 'desktop',
+  version: 'draft',
+  transferPath: 'not-applicable',
+  access: 'authenticated',
+  // dnd: Listview rows render through AppCanvas/Container.
+  capabilities: { observers: true, media: { matches: false }, dnd: true },
+});
+
+describe('CustomComponent inside a Listview', () => {
+  let session;
+
+  beforeEach(() => {
+    session = new AppBuilderTestSession({ scenario: LISTVIEW_SCENARIO });
+  });
+
+  async function settleRows() {
+    await session.store.act(async () => {
+      await drain();
+      await drain();
+    });
+  }
+
+  function renderListviewWithCustomComponent() {
+    store().setVariable('rows', [{ name: 'A' }, { name: 'B' }], MODULE_ID);
+    const listview = componentDefinition('lv1', 'listview1', 'Listview', {
+      dataSourceSelector: binding('rawJson'),
+      data: binding('{{variables.rows}}'),
+      mode: binding('list'),
+      rowHeight: binding('150'),
+      visibility: binding('{{true}}'),
+      loadingState: binding('{{false}}'),
+      disabledState: binding('{{false}}'),
+      enablePagination: binding('{{false}}'),
+    });
+    const cc = ccDefinition(ID, HANDLE, { data: binding('{{ { row: listItem.name } }}') });
+    cc.component.parent = 'lv1';
+    cc.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
+
+    seedApp({ lv1: listview, [ID]: cc }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('view', MODULE_ID);
+    return session.render(<RenderWidget {...widgetProps('lv1', 'Listview', { currentMode: 'view' })} />);
+  }
+
+  const rowData = (index) => store().getExposedValueOfComponent('lv1', MODULE_ID)?.children?.[index]?.[HANDLE]?.data;
+
+  test('[CustomComponent-ISO-004] A ListView row frame drives only its own row', async () => {
+    // Break this catches: matching messages by component id alone, which every
+    // row shares, so one row's runQuery runs once per row and one row's
+    // updateData is written into every row.
+    renderListviewWithCustomComponent();
+    await waitFor(() => expect(rowData(0)).toEqual({ row: 'A' }));
+    await waitFor(() => expect(rowData(1)).toEqual({ row: 'B' }));
+    await session.store.act(async () => {
+      store().dataQuery.setQueries([runjs('qr', 'rowQuery', 'return { ran: true };')], MODULE_ID);
+      await drain();
+    });
+
+    const frames = [...document.querySelectorAll(`iframe[data-id="${ID}"]`)];
+    expect(frames).toHaveLength(2);
+    const [row0, row1] = frames.map((el) => recordFrameMessages(el));
+
+    deliver(
+      {
+        from: 'customComponent',
+        componentId: ID,
+        message: 'RUN_QUERY',
+        queryName: 'rowQuery',
+        parameters: '{}',
+        requestId: 'rq_row0',
+      },
+      frames[0].contentWindow
+    );
+    await settleRows();
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    expect(responsesIn(row0)).toHaveLength(1);
+    expect(responseFor(row0, 'rq_row0').queryResult).toMatchObject({ status: 'ok', data: { ran: true } });
+    expect(responsesIn(row1)).toHaveLength(0);
+
+    deliver(
+      { from: 'customComponent', componentId: ID, message: 'UPDATE_DATA', updatedObj: { title: 'row 0 only' } },
+      frames[0].contentWindow
+    );
+    await settleRows();
+
+    await waitFor(() => expect(rowData(0)).toEqual({ row: 'A', title: 'row 0 only' }));
+    expect(rowData(1)).toEqual({ row: 'B' });
+  });
+});
+
+// ------------------------------------------------------- frame-side bridge
+
+/**
+ * The bridge script that runs inside the frame, taken from the real
+ * iframe.html. Jest maps `.html` imports to a stub, so it is read from disk.
+ * It is the first inline `data-required` script; the CDN tags carry a `src`
+ * and the connectComponent tag is `text/babel`, so neither matches.
+ */
+const BRIDGE_SCRIPT = require('fs')
+  .readFileSync(require('path').resolve(__dirname, '../../iframe.html'), 'utf8')
+  .match(/<script data-required="true">([\s\S]*?)<\/script>/)[1];
+
+describe('CustomComponent frame bridge', () => {
+  let mounted = [];
+
+  afterEach(() => {
+    mounted.forEach((el) => el.remove());
+    mounted = [];
+    jest.restoreAllMocks();
+  });
+
+  /** A frame running the real bridge, plus a sibling frame playing a foreign page. */
+  function mountBridge() {
+    const host = document.createElement('iframe');
+    host.setAttribute('data-id', ID);
+    const sibling = document.createElement('iframe');
+    document.body.append(host, sibling);
+    mounted.push(host, sibling);
+
+    const frameWindow = host.contentWindow;
+    frameWindow.eval(BRIDGE_SCRIPT);
+    frameWindow.Tooljet.cleanup();
+    frameWindow.Tooljet.init();
+
+    const props = [];
+    frameWindow.Tooljet.subscribe((value) => props.push(value));
+    return { frameWindow, foreign: sibling.contentWindow, props };
+  }
+
+  const send = (frameWindow, data, source) =>
+    frameWindow.dispatchEvent(new frameWindow.MessageEvent('message', { data, source }));
+
+  const authorScripts = (frameWindow) =>
+    [...frameWindow.document.getElementsByTagName('script')].filter((s) => s.getAttribute('data-required') !== 'true');
+
+  test('[CustomComponent-SEC-002] The frame acts only on messages from its host page', async () => {
+    // Break this catches: trusting every window, so a page in an IFrame widget
+    // reaches the frame through window.parent.frames and replaces the author's
+    // data or loads its own code with the app's origin.
+    const { frameWindow, foreign, props } = mountBridge();
+    const initial = [...props];
+
+    send(frameWindow, { message: 'DATA_UPDATED', data: { title: 'foreign' } }, foreign);
+    send(frameWindow, { message: 'CODE_UPDATED', code: 'foreign code', data: {} }, foreign);
+    send(frameWindow, { message: 'INIT_RESPONSE', code: 'foreign code', data: {} }, foreign);
+    send(frameWindow, { message: 'CLEANUP', componentId: ID }, foreign);
+    expect(props).toEqual(initial);
+    expect(authorScripts(frameWindow)).toHaveLength(0);
+
+    // A pending runQuery is not resolved by a foreign response.
+    const postSpy = jest.spyOn(window, 'postMessage').mockImplementation(() => {});
+    let settled = null;
+    frameWindow.Tooljet.runQuery('getTodo', { id: 1 }).then((result) => {
+      settled = result;
+    });
+    const { requestId } = postSpy.mock.calls.find(([msg]) => msg.message === 'RUN_QUERY')[0];
+    send(
+      frameWindow,
+      { message: 'RUN_QUERY_RESPONSE', componentId: ID, requestId, queryResult: { forged: 1 } },
+      foreign
+    );
+    await Promise.resolve();
+    expect(settled).toBeNull();
+
+    // The same messages from the host page still work; the foreign CLEANUP
+    // above did not tear the listener down.
+    send(frameWindow, { message: 'RUN_QUERY_RESPONSE', componentId: ID, requestId, queryResult: { ok: 1 } }, window);
+    await Promise.resolve();
+    expect(settled).toEqual({ ok: 1 });
+
+    send(frameWindow, { message: 'DATA_UPDATED', data: { title: 'from host' } }, window);
+    expect(props[props.length - 1]).toEqual({ title: 'from host' });
+
+    send(frameWindow, { message: 'INIT_RESPONSE', code: 'const host = 1;', data: { title: 'init' } }, window);
+    expect(authorScripts(frameWindow).map((s) => s.text)).toEqual(['const host = 1;']);
+    expect(props[props.length - 1]).toEqual({ title: 'init' });
+
+    send(frameWindow, { message: 'CLEANUP', componentId: ID }, window);
+    const afterCleanup = props.length;
+    send(frameWindow, { message: 'DATA_UPDATED', data: { title: 'after cleanup' } }, window);
+    expect(props).toHaveLength(afterCleanup);
+  });
+
+  test('[CustomComponent-SEC-004] Loading code leaves author-owned globals alone', () => {
+    // Break this catches: the code loader assigning an undeclared `script`,
+    // which overwrites a window.script the author owns on every code load.
+    const { frameWindow } = mountBridge();
+    frameWindow.script = 'author value';
+
+    send(frameWindow, { message: 'INIT_RESPONSE', code: 'const x = 1;', data: {} }, window);
+
+    expect(authorScripts(frameWindow)).toHaveLength(1);
+    expect(frameWindow.script).toBe('author value');
   });
 });

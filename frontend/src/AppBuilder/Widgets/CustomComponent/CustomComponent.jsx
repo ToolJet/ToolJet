@@ -40,6 +40,10 @@ export const CustomComponent = (props) => {
   useEffect(() => {
     messageEventListenerRef.current = (e) => {
       try {
+        // Only this component's own frame may drive it.
+        // Every ListView row shares the id, and any other window on the page can forge the tag and id.
+        const frameWindow = iFrameRef.current?.contentWindow;
+        if (!frameWindow || e.source !== frameWindow) return;
         if (e.data.from === 'customComponent' && e.data.componentId === id) {
           if (e.data.message === 'UPDATE_DATA') {
             setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
