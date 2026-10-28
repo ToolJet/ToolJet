@@ -183,7 +183,13 @@ To make 3.21.58 splittable, the old schema steps 3.21.58 cannot run on moved to 
 - `GeneralizeUserPersonalAccessTokens` adds its workspace check as `NOT VALID`. `ValidatePatWorkspaceShape1793100000000` deletes the old workspace PATs and validates the check.
 - `ExemptUnsyncedDraftsFromDefaultBranchUniqueIndex` skips while the backfill migration that rebuilds those indexes is pending.
 
-The final schema is the same as after a single-transaction run. Once the backfill phase succeeds, it has dropped columns 3.21.58 needs, so from then on only the pre-upgrade backup brings 3.21.58 back.
+**Legacy upgrade (`legacy-upgrade.ts`).** While `MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000` is pending, the backfill phase:
+
+1. **Loosens** the old rules its backfill breaks (`LEGACY_LOOSEN_RULES`): each is saved to `legacy_upgrade_dropped_rules` and dropped, in its own short transaction (`withShortLock`).
+2. Runs **lock-free variants** (`LEGACY_VARIANTS`) in place of the originals: row changes in `up()`, index builds in `tail()`. Migrations without a variant run as written. Single-transaction runs always use the originals.
+3. **Restores** the saved rules if the backfill fails, still holding the migration lock: CHECKs `NOT VALID`, then `VALIDATE`; indexes rebuilt. A rule that no longer validates stays `NOT VALID` and is logged. `npm run db:legacy-upgrade:restore` does the same after a killed run; it refuses once the backfill committed.
+
+Removals wait for `ContractLegacyBranchModel`, one upgrade later. Reads during the run treat a row with no branch as on the default branch (`branch_scope.helper.ts`). The final schema and rows match a single-transaction run. Once the backfill commits, only the pre-upgrade backup brings 3.21.58 back.
 
 ### Backfill phase
 
@@ -313,6 +319,8 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 3. To stop it for good, ship a fixed image.
 
 **Upgrade without refused traffic:** set `DISABLE_MIGRATION_TRAFFIC_GATE=true`.
+
+**Back to 3.21.58 after a killed upgrade:** run `npm run db:legacy-upgrade:restore` (`:prod` in the image) from the new image, then deploy the 3.21.58 image.
 
 **Known limitation:** the gate works from the *next* async upgrade on. During the deploy that first ships it, the old pods have no gate.
 
