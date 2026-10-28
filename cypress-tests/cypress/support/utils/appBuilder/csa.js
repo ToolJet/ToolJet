@@ -25,6 +25,7 @@ import {
   addSupportCSAData,
   selectCSA,
   selectEvent,
+  waitForEventSavesToSettle,
 } from "Support/utils/appBuilder/events";
 
 /**
@@ -209,5 +210,9 @@ export const addCSA = (componentName, actions) => {
         }
       });
     }
+    // Commit the handler and let its saves land before the next button is dropped —
+    // otherwise a late save can land on a half-configured handler.
+    cy.forceClickOnCanvas();
+    waitForEventSavesToSettle(800);
   });
 };

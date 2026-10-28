@@ -46,10 +46,12 @@ const interceptEvents = () =>
 // Soft wait (never fails): poll until no /events save is in flight, giving up after
 // ~5s. A save that lands mid-type re-renders the popover's CodeHinter and detaches
 // the element being typed into ("page updated as a result of this command").
-const waitForEventSavesToSettle = (attempts = 20) => {
+// `graceMs` covers debounced saves that have not been sent yet when this is called.
+export const waitForEventSavesToSettle = (graceMs = 0, attempts = 20) => {
+  if (graceMs) cy.wait(graceMs);
   cy.wait(250).then(() => {
     if (inFlightEventSaves.size && attempts > 1) {
-      waitForEventSavesToSettle(attempts - 1);
+      waitForEventSavesToSettle(0, attempts - 1);
     } else {
       inFlightEventSaves.clear();
     }
@@ -192,11 +194,27 @@ export const selectCSA = (
     '[data-cy="action-options-component-selection-field"]',
     component
   );
-  selectSearchableOption(
-    '[data-cy="action-options-action-selection-field"]',
-    componentAction
-  );
-  cy.wait("@events");
+  // Let the component pick's save land first: a late response re-renders the popover
+  // and can reset an action picked in the meantime back to "Select...".
+  waitForEventSavesToSettle(500);
+  const actionField = '[data-cy="action-options-action-selection-field"]';
+  const actionLabel = new RegExp(`^\\s*${componentAction}\\s*$`, "i");
+  const actionInputValue = () =>
+    Cypress.$(actionField).first().find("input:visible").first().val() || "";
+  selectSearchableOption(actionField, componentAction);
+  waitForEventSavesToSettle(500);
+  // Re-pick once if a late save still reset it, then require it to stick.
+  cy.then(() => {
+    if (!actionLabel.test(actionInputValue())) {
+      selectSearchableOption(actionField, componentAction);
+      waitForEventSavesToSettle(500);
+    }
+  });
+  cy.get(actionField)
+    .first()
+    .find("input:visible")
+    .first()
+    .should(($input) => expect($input.val()).to.match(actionLabel));
 
   cy.get('[data-cy="debounce-input-field"]')
     .click()
@@ -362,6 +380,9 @@ export const configureCSA = (component, action, params = []) => {
   params.forEach(setCSAParam);
   cy.forceClickOnCanvas();
   cy.waitForAutoSave();
+  // The blur above can send a debounced save; let it land before the caller fires
+  // the handler, or the CSA runs against the previous config.
+  waitForEventSavesToSettle(800);
 };
 
 // Picks the query for a "Run query" event action ("Run query" is the exact label,
