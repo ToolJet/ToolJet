@@ -14,7 +14,8 @@ try {
     [require.resolve('jest/bin/jest', { paths: [cwd] }), '--config', config, '--listTests', '--json', '--runInBand'],
     { cwd, encoding: 'utf8' }
   );
-  if (discovery.status !== 0) throw new Error(discovery.stderr);
+  if (discovery.status !== 0)
+    throw new Error(discovery.error?.message || discovery.stderr || 'AI test discovery failed');
   const expected = JSON.parse(discovery.stdout);
   if (!expected.length) throw new Error('No expected AI tests');
   const results = JSON.parse(fs.readFileSync(resultsFile, 'utf8')).testResults;

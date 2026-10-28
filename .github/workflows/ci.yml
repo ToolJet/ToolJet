@@ -492,6 +492,7 @@ jobs:
           --json --outputFile /tmp/tj-unit-results.json
       - name: Verify all AI assertions executed
         id: ai-results
+        if: ${{ !cancelled() && (steps.unit.outcome == 'success' || steps.unit.outcome == 'failure') }}
         run: node scripts/check-ai-test-results.cjs server /tmp/tj-unit-results.json
       - name: Strip coverage map from results JSON
         # --coverage attaches a full coverageMap to the --json output (~12MB for this
@@ -1479,6 +1480,8 @@ jobs:
           # the job result itself so the comment shows "skipped", not "❓".
           RESULT_UNIT: ${{ needs.test-server.outputs.unit || needs.test-server.result }}
           RESULT_AI_UNIT: ${{ needs.test-server.outputs.ai || needs.test-server.result }}
+          RESULT_CE: ${{ needs.test-server-ce.result }}
+          RESULT_SERVER_COVERAGE: ${{ needs.test-server-coverage.result }}
           RESULT_E2E: ${{ needs.test-server-e2e.result }}
           RESULT_CHANGED: ${{ needs.test-changed.result }}
           RESULT_FRONTEND: ${{ needs.test-frontend.result }}
