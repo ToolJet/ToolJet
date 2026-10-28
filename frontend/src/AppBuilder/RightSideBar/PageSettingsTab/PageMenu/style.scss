@@ -31,7 +31,10 @@
 }
 
 .tooltip.page-limit-tooltip,
-.tooltip.page-group-limit-tooltip {
+.tooltip.page-group-limit-tooltip,
+.tooltip.page-paid-tooltip {
+    opacity: 1 !important;
+
     .tooltip-inner {
         padding: 12px;
         background-color: var(--background-inverse, #1B1F24);

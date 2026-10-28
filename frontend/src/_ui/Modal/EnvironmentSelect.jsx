@@ -3,7 +3,6 @@ import Select, { components } from 'react-select';
 import { OverlayTrigger, Tooltip as BSTooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
-import { useLicenseStore } from '@/_stores/licenseStore';
 import './appSelect.theme.scss';
 
 const ENVIRONMENT_OPTIONS = [
@@ -15,18 +14,12 @@ const ENVIRONMENT_OPTIONS = [
 
 const isMultiEnvironmentOnly = (value) => value === 'canAccessStaging' || value === 'canAccessProduction';
 
+const MULTI_ENVIRONMENT_UPGRADE_MESSAGE =
+  "You don't have access to multi-environments. Upgrade your plan to access this feature.";
+
 export function MultiEnvironmentPaidIcon() {
-  const licenseStatus = useLicenseStore((state) => state.featureAccess?.licenseStatus);
-  const isLicenseValid = !!licenseStatus?.isLicenseValid && !licenseStatus?.isExpired;
   return (
-    <ToolTip
-      message={
-        isLicenseValid
-          ? 'Multi-environments are not included in your current plan'
-          : 'Multi-environments are available only in paid plans'
-      }
-      placement="top"
-    >
+    <ToolTip message={MULTI_ENVIRONMENT_UPGRADE_MESSAGE} placement="top">
       <span className="d-inline-flex" data-cy="multi-environment-upgrade-icon">
         <SolidIcon name="premium-plan" width="16" height="16" />
       </span>
@@ -51,9 +44,9 @@ export function EnvironmentSelect(props) {
       rest.data.value === 'canAccessProduction' ||
       rest.data.value === 'canAccessDevelopment' ||
       rest.data.value === 'canAccessStaging';
+    const isPaidEnvironment = props.isMultiEnvironmentRestricted && isMultiEnvironmentOnly(rest.data.value);
     // Only disable non-released environments for end-users in basic/starter plans (without valid license)
     // In paid plans, end-users can access all environments
-    const isPaidEnvironment = props.isMultiEnvironmentRestricted && isMultiEnvironmentOnly(rest.data.value);
     const shouldDisable =
       isDisabled || (isEndUserGroup && isBuilderOnlyEnvironment && props.isBasicPlan) || isPaidEnvironment;
 

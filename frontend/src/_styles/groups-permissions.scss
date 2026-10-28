@@ -138,6 +138,9 @@
         flex: 1;
         min-width: 0;
     }
+    &.modal-base .modal-footer {
+        z-index: 0;
+    }
 
     .permission-manager-title {
         display: flex;

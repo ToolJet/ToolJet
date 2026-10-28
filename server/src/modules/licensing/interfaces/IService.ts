@@ -84,6 +84,12 @@ export abstract class LicensePageService {
     organizationId: string,
     isPageGroup: boolean
   ): Promise<void>;
+  abstract disablePagesOverLimit(
+    manager: EntityManager,
+    appVersionId: string,
+    organizationId: string,
+    homePageId?: string | null
+  ): Promise<void>;
   abstract getPagesLimit(organizationId: string): Promise<any>;
 }
 

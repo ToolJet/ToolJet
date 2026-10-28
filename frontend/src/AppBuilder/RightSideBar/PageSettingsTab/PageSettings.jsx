@@ -304,6 +304,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
             message={"You don't have access to hide app header. Upgrade your plan to access this feature."}
             placement="bottom"
             show={!hasAppPagesHeaderAndLogoEnabled}
+            tooltipClassName="page-paid-tooltip"
           >
             <div className="d-flex align-items-center">
               {!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}
@@ -329,6 +330,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
             message={"You don't have access to hide logo. Upgrade your plan to access this feature."}
             placement="bottom"
             show={!hasAppPagesHeaderAndLogoEnabled}
+            tooltipClassName="page-paid-tooltip"
           >
             <div className="d-flex align-items-center">
               {!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}

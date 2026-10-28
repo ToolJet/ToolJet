@@ -389,6 +389,16 @@ export class AppImportExportService {
     protected readonly appValidationService: AppValidationService
   ) {}
 
+  // Edition hook, called once per imported app version after its pages are created and the home page is set.
+  protected async enforcePageLimitsOnImport(
+    _manager: EntityManager,
+    _appVersionId: string,
+    _organizationId: string,
+    _homePageId: string | null
+  ): Promise<void> {
+    // CE has no page limits.
+  }
+
   private getEventHandlerName(event: any): string {
     if (typeof event?.name === 'string' && event.name.trim()) {
       return event.name.trim();
@@ -2249,6 +2259,12 @@ export class AppImportExportService {
             homePageId: updateHomepageId,
           }
         );
+        await this.enforcePageLimitsOnImport(
+          manager,
+          appResourceMappings.appVersionMapping[importingAppVersion.id],
+          user.organizationId,
+          updateHomepageId
+        );
       }
     }
 
@@ -2895,6 +2911,12 @@ export class AppImportExportService {
         {
           homePageId: updateHomepageId,
         }
+      );
+      await this.enforcePageLimitsOnImport(
+        manager,
+        appResourceMappings.appVersionMapping[importingAppVersion.id],
+        user.organizationId,
+        updateHomepageId
       );
     }
 
