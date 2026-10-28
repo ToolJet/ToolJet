@@ -14,6 +14,7 @@ import {
   openFolder,
   openList,
   pickItem,
+  stubCardIntersection,
   toggleItemsPicker,
   uiAddItemToFolder,
   uiOpenAddToFolder,
@@ -46,6 +47,7 @@ describe('Workflows — Moving Workflows Between Folders', { retries: 0 }, () =>
     wsSlug = wsName;
     // The workflow card menu only mounts when the whole card is in view, which the default viewport cuts off.
     cy.viewport(1800, 1400);
+    stubCardIntersection();
 
     cy.apiLogin();
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {

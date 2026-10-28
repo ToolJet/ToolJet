@@ -63,3 +63,10 @@ export const scopeVersionsForPicker = (versions, { activeBranchId, isGitSyncEnab
   if (!isGitSyncEnabled || !getIsWorkflowSynced(own)) return own;
   return own.filter((v) => !isDefaultBranchDraft(v));
 };
+
+// The query editor always offers the default-branch draft entry with git on, synced or not, so
+// a draft row would duplicate it — and pin by name, which no other instance can resolve.
+export const scopeVersionsForQueryPicker = (versions, { activeBranchId, isGitSyncEnabled }) => {
+  const rows = scopeVersionsForPicker(versions, { activeBranchId, isGitSyncEnabled });
+  return isGitSyncEnabled ? rows.filter((v) => !isDefaultBranchDraft(v)) : rows;
+};

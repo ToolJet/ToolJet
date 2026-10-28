@@ -19,7 +19,7 @@ import ModuleFolderResourcePermissions from './components/ModuleFolderResourcePe
 import DataSourceFolderResourcePermissions from './components/DataSourceFolderResourcePermission';
 import Spinner from 'react-bootstrap/Spinner';
 import { MultiEnvironmentPaidIcon } from '@/_ui/Modal/EnvironmentSelect';
-import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../..';
+import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../../constants';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGranularAccess extends React.Component {
@@ -927,7 +927,7 @@ class BaseManageGranularAccess extends React.Component {
           <SolidIcon name="informationcircle" fill="var(--slate8)" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/user-management/role-based-access/user-roles#permissions-for-user-roles"
             target="_blank"
             rel="noopener noreferrer"
           >

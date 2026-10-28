@@ -1,15 +1,17 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { isEmpty, cloneDeep } from 'lodash';
+import cx from 'classnames';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import CreateColumnsForm from './ColumnsForm';
-import { tooljetDatabaseService, authenticationService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
-import _, { isEmpty } from 'lodash';
-import { BreadCrumbContext } from '@/App/App';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
-import { serialDataType, ChangesComponent } from '../constants';
-import cx from 'classnames';
+import { serialDataType } from '../constants';
+import ChangesComponent from '../ChangesComponent';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import { CHANGE_TYPE } from '../MigrationConfirmModal';
@@ -45,12 +47,12 @@ const TableForm = ({
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
   const [isCreatingTable, setIsCreatingTable] = useState(false);
-  const { organizationId, foreignKeys, setForeignKeys, configurations } = useContext(TooljetDatabaseContext);
+  const { organizationId, foreignKeys, setForeignKeys, configurations } = useTooljetDatabaseContext();
   const { runMigration, modal: migrationModal } = useMigrationModal();
 
   const [columns, setColumns] = useState(
     (() => {
-      const clonedColumns = _.cloneDeep(selectedTableColumns) || {};
+      const clonedColumns = cloneDeep(selectedTableColumns) || {};
       const transformedColumns = Object.values(clonedColumns).map((column) => {
         const columnUuid = configurations?.columns?.column_names?.[column.column_name];
         const columnConfigurations = configurations?.columns?.configurations?.[columnUuid] || {};

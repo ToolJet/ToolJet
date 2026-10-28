@@ -31,8 +31,13 @@ export class VersionRepository extends Repository<AppVersion> {
     metadata?: { appName?: string | null; slug?: string | null; icon?: string | null; isPublic?: boolean }
   ): Promise<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      // moduleReferenceId is module-only; look up parent app type once and gate.
-      const parentApp = await manager.findOne(App, { where: { id: appId }, select: ['id', 'type', 'organizationId'] });
+      // Read only the type: hydrating a partial App invokes editor-state subscribers
+      // without the workspace context they require.
+      const parentApp = await manager
+        .createQueryBuilder(App, 'app')
+        .select('app.type', 'type')
+        .where('app.id = :appId', { appId })
+        .getRawOne<Pick<App, 'type'>>();
       const isModule = parentApp?.type === APP_TYPES.MODULE;
       return catchDbException(() => {
         return manager.save(

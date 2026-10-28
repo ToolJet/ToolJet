@@ -91,6 +91,8 @@ export const PLAN_DETAILS = {
 
 export const LICENSE_TRIAL_API = process.env.TJ_LICENSE_TRIAL_API || 'https://albecs.tooljet.com/api/license/trial';
 
+// A new field that changes the released app or released version response also goes in
+// VIEWER_LICENSE_FIELDS (apps/app-data-revision.ts), or viewers keep a stale cached app.
 export enum LICENSE_FIELD {
   IS_EXPIRED = 'expired',
   APP_COUNT = 'appCount',

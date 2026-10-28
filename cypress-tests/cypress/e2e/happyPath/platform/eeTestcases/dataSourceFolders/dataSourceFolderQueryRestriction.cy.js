@@ -79,6 +79,7 @@ describe('Data Source Folders — Restrict Query Run', () => {
     setupFolder().then(({ folderId, dataSourceId }) => {
       createFolderGroup(groupName, folderId, { canRunQuery: false });
       cy.apiFullUserOnboarding('QA Restricted', restrictedEmail, 'builder', 'password', wsName, {}, [groupName]);
+      cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
       cy.apiFullUserOnboarding('QA Other', otherEmail, 'builder', 'password', wsName);
 
       cy.apiLogin('dev@tooljet.io', 'password', workspaceId);

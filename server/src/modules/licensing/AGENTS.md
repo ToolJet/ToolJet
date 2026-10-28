@@ -58,6 +58,7 @@ Cloud plan presets: `STARTER/BASIC/PRO/TEAM_PLAN_TERMS_CLOUD` in `ee/licensing/c
 - Expiry: `expiry` is `YYYY-MM-DD`, valid until `23:59:59` that day. Expired or unparseable key ⇒ `IsBasicPlan` ⇒ silent fallback to basic terms — no hard errors. Cloud grace period comes from the `expiry_with_grace_period` column, not `Terms.expiry`.
 - CE `BASIC_PLAN_TERMS` ≠ EE `BASIC_PLAN_TERMS`: CE is UNLIMITED users/apps with features off; EE basic is 2 builders / 50 end users / 2 apps.
 - `NODE_ENV=test` + no license data ⇒ `LicenseBase` fabricates a valid license (30-min expiry, most flags on). Tests exercise licensed paths by default.
+- A new `LICENSE_FIELD` that changes the released app (`getBySlug`) or the released version response must be added to `VIEWER_LICENSE_FIELDS` (`apps/app-data-revision.ts`), or a license change leaves viewers on a stale cached app. See `apps/AGENTS.md` § Released-app viewer cache.
 - Feature denial is HTTP **451**, not 403 — clients key on this for upgrade prompts.
 - Trial keys can't be replaced via `updateLicense()` once a paid key was set (EE util.service throws).
 - `LicenseRepository.getLicense()` memoizes per request; a tx-bound `manager` bypasses the memo.

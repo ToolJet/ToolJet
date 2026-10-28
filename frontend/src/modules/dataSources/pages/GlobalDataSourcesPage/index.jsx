@@ -10,7 +10,7 @@ import {
 } from '@/_services';
 import { GlobalDataSources } from '../../components/GlobalDataSources';
 import { toast } from 'react-hot-toast';
-import { BreadCrumbContext } from '@/App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import { returnDevelopmentEnv, getWorkspaceId } from '@/_helpers/utils';
 import _ from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
@@ -18,6 +18,11 @@ import { appendBranchName } from '@/_helpers/active-branch';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import {
+  canCreateDataSourceFolder as canCreateDataSourceFolderFor,
+  canDeleteDataSourceFolder as canDeleteDataSourceFolderFor,
+  canRenameDataSourceFolder as canRenameDataSourceFolderFor,
+} from '../../helpers/dataSourceFolderPermissions';
 import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 
 export const GlobalDataSourcesContext = createContext({
@@ -59,6 +64,12 @@ export const GlobalDataSourcesPage = (props) => {
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
   const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
   const prevBranchIdRef = useRef(activeBranchId);
+
+  // Multi-branch git sync: the server refuses to rename a folder that spans branches.
+  const isBranchingEnabled = useWorkspaceBranchesStore((state) => {
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    return !!(state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled);
+  });
 
   // Refetch datasources when the active branch changes (without hard reload)
   useEffect(() => {
@@ -207,17 +218,13 @@ export const GlobalDataSourcesPage = (props) => {
     });
   };
 
-  // Coarse folder permissions surface on the session's user_permissions (decamelized from the
-  // ability service's dataSourceFolderCreate/Delete). Admins/super-admins always pass.
-  const canManageDataSourceFolder = (action) => {
-    const { super_admin, admin, user_permissions } = authenticationService.currentSessionValue;
-    return !!(super_admin || admin || user_permissions?.[`data_source_folder_${action}`]);
-  };
-  const canCreateDataSourceFolder = () => canManageDataSourceFolder('create');
-  const canDeleteDataSourceFolder = () => canManageDataSourceFolder('delete');
-  // Rename reuses the create gate (matches the app-folder convention where folderCreate is the
-  // master flag for folder mutations).
-  const canUpdateDataSourceFolder = () => canManageDataSourceFolder('create');
+  // Folder permission gates. Create/delete ride the coarse group flags; rename is decided PER
+  // FOLDER, because a granular "Edit folder" grant can be scoped to specific folders. See
+  // modules/dataSources/helpers/dataSourceFolderPermissions.js for how each mirrors the server.
+  const canCreateDataSourceFolder = () => canCreateDataSourceFolderFor(authenticationService.currentSessionValue);
+  const canDeleteDataSourceFolder = () => canDeleteDataSourceFolderFor(authenticationService.currentSessionValue);
+  const canUpdateDataSourceFolder = (folder) =>
+    canRenameDataSourceFolderFor(authenticationService.currentSessionValue, folder, { isBranchingEnabled });
 
   const fetchFolders = async (searchKey = '') => {
     setFoldersLoading(true);
@@ -483,6 +490,8 @@ export const GlobalDataSourcesPage = (props) => {
       foldersLoading,
       expandedFolderIds,
       selectedDataSourceIds,
+      // canUpdateDataSourceFolder closes over this — a stale value would misgate Rename.
+      isBranchingEnabled,
     ]
   );
 
