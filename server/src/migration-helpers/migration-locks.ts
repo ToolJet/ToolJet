@@ -179,12 +179,13 @@ function defaultSleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Number('') is 0, so a blank value (`KEY=` in compose or Helm) would read as "no limit".
 function positiveNumber(raw: string | undefined, fallback: number): number {
-  const parsed = Number(raw);
+  const parsed = raw?.trim() ? Number(raw) : NaN;
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function nonNegativeNumber(raw: string | undefined, fallback: number): number {
-  const parsed = Number(raw);
+  const parsed = raw?.trim() ? Number(raw) : NaN;
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }

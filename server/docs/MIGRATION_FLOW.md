@@ -257,7 +257,7 @@ All optional. The ROLLING UPGRADE block of `.env.example` lists them too.
 | `MIGRATION_MODE` | `blocking` | `async`: see [Async mode](#async-mode). Any other value means `blocking`. |
 | `DISABLE_MIGRATION_TRAFFIC_GATE` | `false` | Async mode: `true` turns off the 503. Locks and waits still apply. Each serving pod logs this at boot. |
 | `MIGRATION_LOCK_RETRY_INTERVAL_SECONDS` | `60` (schema phase: `5`) | How often a waiting pod tries the migration lock again. |
-| `MIGRATION_LOCK_MAX_WAIT_MINUTES` | `30` | How long a pod waits before it fails its boot. `0` waits with no limit. |
+| `MIGRATION_LOCK_MAX_WAIT_MINUTES` | `30` | How long a pod waits before it fails its boot. `0` waits with no limit; a blank value uses the default. |
 | `MIGRATION_SCHEMA_LOCK_TIMEOUT_MS` | `5000` | Schema phase only: `lock_timeout` for its transaction and its table probe. |
 | `MIGRATION_SCHEMA_LOCK_RETRIES` | `10` | Schema phase only: total tries before a lock timeout fails the boot. `1` means no retry. |
 | `MIGRATION_END_USER_MESSAGE_RUNNING` | unset | Banner text for end users of released apps during a run. Max 200 characters. |
