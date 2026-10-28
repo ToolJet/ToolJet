@@ -9,6 +9,8 @@ import { CreateAiAttachments1789689600000 } from '../../../../migrations/1789689
 import { HardenAiAttachmentLifecycle1790683200000 } from '../../../../migrations/1790683200000-HardenAiAttachmentLifecycle';
 import { IndexAiAttachmentReconciliation1790683260000 } from '../../../../migrations/1790683260000-IndexAiAttachmentReconciliation';
 
+import { assertAiTestDatabase } from '../../../helpers/ai-test-database';
+
 const integration = process.env.ATTACHMENT_TEST_DATABASE_URL ? describe : describe.skip;
 integration('attachment lifecycle with PostgreSQL', () => {
   const schema = `attachment_test_${randomUUID().replace(/-/g, '')}`;
@@ -29,7 +31,7 @@ integration('attachment lifecycle with PostgreSQL', () => {
     };
   };
   beforeAll(async () => {
-    const url = process.env.ATTACHMENT_TEST_DATABASE_URL;
+    const url = assertAiTestDatabase(process.env.ATTACHMENT_TEST_DATABASE_URL);
     admin = await new DataSource({ type: 'postgres', url }).initialize();
     await admin.query(`CREATE SCHEMA "${schema}"`);
     db = await new DataSource({

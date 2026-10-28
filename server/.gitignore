@@ -40,3 +40,4 @@ lerna-debug.log*
 
 # Postgrest configuration
 **/postgrest.confautoresearch-results.tsv
+/coverage-ai

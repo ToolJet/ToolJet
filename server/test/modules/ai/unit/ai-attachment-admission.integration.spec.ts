@@ -3,6 +3,8 @@ import { randomUUID } from 'crypto';
 import { DataSource } from 'typeorm';
 import { reserveAttachmentUpload, MAX_OWNER_UPLOADS } from '@modules/ai/services/ai-attachment-admission';
 
+import { assertAiTestDatabase } from '../../../helpers/ai-test-database';
+
 const integration = process.env.ATTACHMENT_TEST_DATABASE_URL ? describe : describe.skip;
 integration('ToolJet-owned attachment admission with PostgreSQL', () => {
   let db: DataSource;
@@ -11,7 +13,7 @@ integration('ToolJet-owned attachment admission with PostgreSQL', () => {
   const reserve = (owner: string, userId?: string, purpose: 'original' | 'provider' = 'original') =>
     reserveAttachmentUpload((operation) => db.transaction(operation), owner, userId, purpose);
   beforeAll(async () => {
-    db = await new DataSource({ type: 'postgres', url: process.env.ATTACHMENT_TEST_DATABASE_URL,
+    db = await new DataSource({ type: 'postgres', url: assertAiTestDatabase(process.env.ATTACHMENT_TEST_DATABASE_URL),
       extra: { options: `-c search_path=${schema}`, max: 8 } }).initialize();
     await db.query(`CREATE SCHEMA "${schema}"`);
     await db.query(`CREATE TABLE ai_attachment_admissions (id uuid PRIMARY KEY, owner varchar(160) NOT NULL,

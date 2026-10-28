@@ -329,6 +329,7 @@
     "validate:widget-testing-contracts": "node scripts/validate-widget-testing-contracts.js",
     "validate:widget-testing-contracts:pr": "node scripts/validate-widget-testing-contracts.js --pr",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "npx storybook build"
+    "build-storybook": "npx storybook build",
+    "test:ai": "NODE_ENV=test jest --config jest-ai.config.js --runInBand"
   }
 }
