@@ -311,10 +311,14 @@ jobs:
         run: |
           mkdir -p coverage-ai/ee
           TOOLJET_EDITION=ee npm run test:ci -- --json --outputFile=coverage-ai/ee/results.json
-      - name: Verify AI execution and extract full-scope AI coverage
-        run: |
-          node ../scripts/check-ai-test-results.cjs frontend coverage-ai/ee/results.json
-          node ../scripts/report-ai-coverage.cjs frontend coverage/app-builder/ee/jest/coverage-final.json coverage-ai/ee/report
+      - name: Verify AI execution
+        id: ai-results
+        continue-on-error: true
+        run: node ../scripts/check-ai-test-results.cjs frontend coverage-ai/ee/results.json
+      - name: Extract and check full-scope AI coverage
+        id: ai-coverage
+        continue-on-error: true
+        run: node ../scripts/report-ai-coverage.cjs frontend coverage/app-builder/ee/jest/coverage-final.json coverage-ai/ee/report
       - name: Upload AI frontend coverage
         uses: actions/upload-artifact@v7
         with:
@@ -325,7 +329,11 @@ jobs:
       # app-builder-coverage-manifest.json. The harness contract spec already
       # runs in the full suite above via testMatch.
       - name: Validate App Builder coverage manifest
+        if: ${{ !cancelled() && (steps.ai-coverage.outcome == 'success' || steps.ai-coverage.outcome == 'failure') }}
         run: npm run validate:app-builder-coverage-manifest
+      - name: Enforce AI execution and coverage verdicts after publishing reports
+        if: ${{ !cancelled() && (steps.ai-results.outcome == 'failure' || steps.ai-coverage.outcome == 'failure') }}
+        run: exit 1
 
   # Separate job, and therefore a separate status check, so a contract violation can't
   # hide the frontend test result. Ported from lts-3.16 (#18166), where it replaced the
@@ -403,6 +411,7 @@ jobs:
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
     outputs:
       unit: ${{ steps.unit.outcome }}
+      ai: ${{ steps.ai-results.outcome }}
     container: node:22.23.4-bookworm
     services: &server-test-services
       postgres:
@@ -482,6 +491,7 @@ jobs:
           --coverage --coverageReporters=json
           --json --outputFile /tmp/tj-unit-results.json
       - name: Verify all AI assertions executed
+        id: ai-results
         run: node scripts/check-ai-test-results.cjs server /tmp/tj-unit-results.json
       - name: Strip coverage map from results JSON
         # --coverage attaches a full coverageMap to the --json output (~12MB for this
@@ -615,7 +625,9 @@ jobs:
           path: server/coverage-e2e
       - name: Merge coverage
         run: npm run --prefix server test:cov:merge
-      - name: Extract and enforce full-scope AI backend coverage
+      - name: Extract and check full-scope AI backend coverage
+        id: ai-coverage
+        continue-on-error: true
         run: node scripts/report-ai-coverage.cjs server server/coverage-combined/coverage-final.json server/coverage-ai/ee/report
       - name: Upload AI backend coverage
         uses: actions/upload-artifact@v7
@@ -661,6 +673,9 @@ jobs:
           path: /tmp/cov/
           if-no-files-found: ignore
           retention-days: 1
+      - name: Enforce AI coverage verdict after publishing reports
+        if: ${{ !cancelled() && steps.ai-coverage.outcome == 'failure' }}
+        run: exit 1
 
   # ---------------------------------------------------------------------------
   # 3a-bis. git-sync suite — isolated because it depends on an EXTERNAL git simulator
@@ -720,12 +735,14 @@ jobs:
         continue-on-error: true
         run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync --json --outputFile=/tmp/tj-ce-unit-results.json
       - name: Verify CE AI execution without private submodules
+        id: ai
+        continue-on-error: true
         run: TOOLJET_EDITION=ce node scripts/check-ai-test-results.cjs server /tmp/tj-ce-unit-results.json
       - name: E2E tests
         id: e2e
         run: TOOLJET_EDITION=ce npm run --prefix server test:e2e -- --group=-gitsync --testTimeout=60000
-      - name: Fail job if unit or e2e failed
-        if: ${{ steps.unit.outcome == 'failure' || steps.e2e.outcome == 'failure' }}
+      - name: Fail job if unit, AI execution or e2e failed
+        if: ${{ !cancelled() && (steps.unit.outcome == 'failure' || steps.ai.outcome == 'failure' || steps.e2e.outcome == 'failure') }}
         run: exit 1
 
   test-gitsync:
@@ -1461,6 +1478,7 @@ jobs:
           # strings when the whole job is skipped (server=='false') — fall back to
           # the job result itself so the comment shows "skipped", not "❓".
           RESULT_UNIT: ${{ needs.test-server.outputs.unit || needs.test-server.result }}
+          RESULT_AI_UNIT: ${{ needs.test-server.outputs.ai || needs.test-server.result }}
           RESULT_E2E: ${{ needs.test-server-e2e.result }}
           RESULT_CHANGED: ${{ needs.test-changed.result }}
           RESULT_FRONTEND: ${{ needs.test-frontend.result }}
