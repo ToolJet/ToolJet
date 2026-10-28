@@ -72,7 +72,71 @@ export class BackfillStripPercentRangeSliderV21792950330429 implements Migration
     return updatedCount;
   }
 
+  /**
+   * Removes the key again, restoring the pre-migration state: `stripPercent` exists in no
+   * release before this one, so a RangeSliderV2 carrying it got it either from `up()` or
+   * from the matching backfill in `app-import-export.service.ts`. Both exist only to serve
+   * this flag, so clearing every occurrence is the faithful inverse.
+   *
+   * Reverting leaves those sliders rendering the `%` in their mark labels — which is the
+   * point: without the production change this undoes, nothing reads the key at all.
+   */
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // no-op
+    const batchSize = 100;
+    const entityManager = queryRunner.manager;
+    const totalComponents = await entityManager.count(Component, {
+      where: { type: 'RangeSliderV2' },
+    });
+
+    if (totalComponents === 0) {
+      console.log('BackfillStripPercentRangeSliderV2: no RangeSliderV2 components found.');
+      return;
+    }
+
+    const migrationProgress = new MigrationProgress('BackfillStripPercentRangeSliderV2 (down)', totalComponents);
+    let reverted = 0;
+
+    await processDataInBatches(
+      entityManager,
+      async (entityManager: EntityManager, skip: number, take: number) => {
+        return await entityManager.find(Component, {
+          where: { type: 'RangeSliderV2' },
+          order: { createdAt: 'ASC' },
+          skip,
+          take,
+        });
+      },
+      async (entityManager: EntityManager, components: Component[]) => {
+        reverted += await this.revertUpdates(entityManager, components, migrationProgress);
+      },
+      batchSize
+    );
+
+    console.log(`BackfillStripPercentRangeSliderV2: reverted. Cleared ${reverted} components.`);
+  }
+
+  private async revertUpdates(
+    entityManager: EntityManager,
+    components: Component[],
+    migrationProgress: MigrationProgress
+  ): Promise<number> {
+    let revertedCount = 0;
+
+    for (const component of components) {
+      const properties = component.properties || {};
+
+      if (properties.stripPercent !== undefined) {
+        delete properties.stripPercent;
+
+        await entityManager.update(Component, component.id, {
+          properties,
+        });
+        revertedCount++;
+      }
+
+      migrationProgress.show();
+    }
+
+    return revertedCount;
   }
 }
