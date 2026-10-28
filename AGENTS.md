@@ -127,7 +127,7 @@ cd plugins && npm install && npm run build
 ## Key conventions
 
 - Database name convention: `tooljet_{edition}` (see `PG_DB` in `.env`)
-- TypeORM schema migrations in `server/migrations/schema/`; data migrations in `server/migrations/data/`
+- TypeORM migrations in `server/migrations/{schema,data,cleanup}/`. Writing rules: the Migrations section of `server/AGENTS.md`
 - Never import `@ee/` or `@cloud/` from CE code — webpack enforces this at compile time
 - Backend port reads from `PORT` in `.env`; frontend port via `npm start -- --port <port>`
 - Lint before committing. Pre-commit hooks are in the repo (husky + lint-staged, activated by root `npm install`); the hook only lint-fixes frontend files — backend needs `cd server && npm run lint` manually. CI lints all three folders and blocks the PR on failure. Never `--no-verify` unless the user explicitly asks
@@ -161,7 +161,7 @@ Context is layered — the closest file to the code you're changing wins:
 | `.agents/context/architecture-map.md`   | Public system components, data flows, integrations, and failure modes                  |
 | `UBIQUITOUS_LANGUAGE.md`                | Canonical domain glossary                                                              |
 | `server/AGENTS.md`                      | Backend + testing conventions                                                          |
-| `server/docs/MIGRATION_FLOW.md`         | How migrations **run**: boot path, multi-pod coordination, upgrade gate, runbook       |
+| `server/docs/MIGRATION_FLOW.md`         | How migrations **run**: phases, multi-pod locks, upgrade gate, runbook                 |
 | `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants                                              |
 | `server/ee/AGENTS.md`                   | EE-extends-CE rules (in EE submodule)                                                  |
 | `server/ee/ai/AGENTS.md`                | AI app-builder backend context (in EE submodule)                                       |
