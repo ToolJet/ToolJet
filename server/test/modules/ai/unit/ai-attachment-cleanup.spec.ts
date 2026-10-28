@@ -12,6 +12,7 @@ describe('attachment cleanup scheduling', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
+  // Overlapping timers must share one cleanup sweep and release its lock afterward.
   it('coalesces overlapping ticks and allows the next sweep after completion', async () => {
     let finish: () => void;
     attachments.sweep.mockReturnValueOnce(new Promise<void>((resolve) => (finish = resolve)));
@@ -24,6 +25,7 @@ describe('attachment cleanup scheduling', () => {
     expect(attachments.sweep).toHaveBeenCalledTimes(2);
   });
 
+  // A failed sweep must remain retryable without exposing remote error details.
   it('releases the sweep lock after failure without logging remote error details', async () => {
     attachments.sweep.mockRejectedValueOnce(new Error('remote payload: synthetic-private-value'));
     await expect(listener.sweep()).resolves.toBeUndefined();
@@ -33,6 +35,7 @@ describe('attachment cleanup scheduling', () => {
     expect(JSON.stringify((Logger.warn as jest.Mock).mock.calls)).not.toContain('synthetic-private-value');
   });
 
+  // Workspace deletion stays scoped and lets durable cleanup retry failures.
   it('passes the deleted workspace scope through and leaves failures retryable', async () => {
     attachments.cleanupDeletedConversations.mockRejectedValueOnce(new Error('unavailable'));
     await expect(listener.cleanup({ organizationId: 'workspace-orchard' })).resolves.toBeUndefined();

@@ -7,6 +7,7 @@ afterEach(() => {
   else process.env.GITHUB_ACTIONS = actions;
 });
 
+// Unsafe connection targets must be rejected before fixture setup can touch data.
 test.each([
   undefined,
   'postgresql://localhost/tooljet_test',
@@ -19,11 +20,13 @@ test.each([
   expect(() => assertAiTestDatabase(connection)).toThrow();
 });
 
+// Loopback databases are allowed only with the dedicated disposable test name.
 test.each(['localhost', '127.0.0.1', '[::1]'])('allows a dedicated database on %s', (host) => {
   const connection = `postgresql://${host}:5439/tooljet_ai_test_fixture`;
   expect(assertAiTestDatabase(connection)).toBe(connection);
 });
 
+// The container service hostname is trusted only inside GitHub Actions.
 test('allows the postgres service hostname only inside GitHub Actions', () => {
   const connection = 'postgresql://postgres/tooljet_ai_test_ci';
   delete process.env.GITHUB_ACTIONS;

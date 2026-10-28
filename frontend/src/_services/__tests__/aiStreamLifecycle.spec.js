@@ -14,6 +14,7 @@ jest.mock('@microsoft/fetch-event-source', () => ({
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => jest.useRealTimers());
 
+// Only valid events reach subscribers and a closed stream leaves no deadline.
 test('forwards ordered events, ignores malformed data and clears its deadline after closing', async () => {
   const receive = jest.fn();
   fetchEventSource.mockImplementation(async (_url, options) => {
@@ -35,6 +36,7 @@ test('forwards ordered events, ignores malformed data and clears its deadline af
   expect(jest.getTimerCount()).toBe(0);
 });
 
+// HTTP rejection retains its status even when the response body cannot be parsed.
 test.each([true, false])('propagates an HTTP rejection even when its error body is invalid (%s)', async (validJson) => {
   fetchEventSource.mockImplementation(async (_url, options) =>
     options.onopen({
@@ -54,6 +56,7 @@ test.each([true, false])('propagates an HTTP rejection even when its error body 
   expect(jest.getTimerCount()).toBe(0);
 });
 
+// Heartbeats extend the deadline while silence hands control to recovery.
 test('heartbeats renew the deadline and later silence hands recovery to the caller', async () => {
   let options;
   fetchEventSource.mockImplementation((_url, settings) => {
@@ -70,6 +73,7 @@ test('heartbeats renew the deadline and later silence hands recovery to the call
   expect(jest.getTimerCount()).toBe(0);
 });
 
+// A terminal stream error must not retry or leave a background timeout.
 test('does not retry stream errors or leave a live timeout', async () => {
   fetchEventSource.mockImplementation(async (_url, options) => {
     expect(options.retryStrategy.next()).toBeNull();
