@@ -4,7 +4,7 @@ import { screen, waitFor, fireEvent } from '@testing-library/react';
 // @react-google-maps/api has no such exports, so the static import/named rule
 // (which resolves the real package, not the runtime mock) flags them.
 // eslint-disable-next-line import/named
-import { __getMapProps, __resetMapProps } from '@react-google-maps/api';
+import { __getMapProps, __resetMapProps, __setLoaderState } from '@react-google-maps/api';
 import {
   createWidgetHarness,
   binding,
@@ -109,15 +109,18 @@ describe('Map widget', () => {
 
   // --- CSA (setLocation) ------------------------------------------------------
 
-  test('[Map-CSA-001] setLocation recenters the map', async () => {
-    // Break this catches: setLocation not calling setMapCenter (Map.jsx:150-152),
-    // so the CSA cannot move the map.
+  test('[Map-CSA-001] setLocation recenters the map and publishes the exposed center', async () => {
+    // Break this catches: setLocation not calling setMapCenter OR not publishing
+    // the exposed center (bug-fix batch 2026-10-26, bug 5a: the map moved but
+    // {{map1.center}} kept the old value forever).
     widget.render({});
     await waitFor(() => expect(exposed().setLocation).toBeInstanceOf(Function));
 
     await widget.act('setLocation', 12, 34);
 
     await waitFor(() => expect(mapProps().center).toMatchObject({ lat: 12, lng: 34 }));
+    expect(exposed().center).toMatchObject({ lat: 12, lng: 34 });
+    expect(exposed().center.googleMapUrl).toContain('12,34');
   });
 
   test('[Map-CSA-002] setLocation survives an unrelated re-resolve', async () => {
@@ -135,16 +138,21 @@ describe('Map widget', () => {
     await waitFor(() => expect(mapProps().center).toMatchObject({ lat: 12, lng: 34 }));
   });
 
-  test('[Map-CSA-003] setLocation with a falsy coordinate is a no-op', async () => {
-    // Break this catches: dropping the `if (lat && lng)` guard (Map.jsx:151), so a
-    // 0/undefined coordinate would clobber the map center.
+  test('[Map-CSA-003] setLocation accepts 0 coordinates; non-finite input is the no-op', async () => {
+    // Break this catches: reintroducing the `if (lat && lng)` falsy guard that
+    // rejected the equator/prime meridian (bug-fix batch 2026-10-26, bug 5b:
+    // setLocation(0, 10) was silently ignored), or dropping the finite-number
+    // guard so garbage would clobber the center.
     widget.render({});
     await widget.act('setLocation', 12, 34);
     await waitFor(() => expect(mapProps().center).toMatchObject({ lat: 12, lng: 34 }));
 
-    await widget.act('setLocation', 0, 34);
+    await widget.act('setLocation', 0, 10);
+    await waitFor(() => expect(mapProps().center).toMatchObject({ lat: 0, lng: 10 }));
+    expect(exposed().center).toMatchObject({ lat: 0, lng: 10 });
 
-    expect(mapProps().center).toMatchObject({ lat: 12, lng: 34 });
+    await widget.act('setLocation', 'garbage', 10);
+    expect(mapProps().center).toMatchObject({ lat: 0, lng: 10 });
   });
 
   // --- Events -----------------------------------------------------------------
@@ -213,17 +221,25 @@ describe('Map widget', () => {
     expect(widget.variables().onCreateMarkerCount).toBeUndefined();
   });
 
-  test('[Map-BOUNDS-001] drag publishes bounds + center and fires onBoundsChange', async () => {
-    // Break this catches: handleBoundsChange not publishing bounds / not firing
-    // onBoundsChange (Map.jsx:96-105), so a pan never updates the app.
+  test('[Map-BOUNDS-001] a settled viewport change (idle) publishes bounds + center and fires onBoundsChange', async () => {
+    // Break this catches: the viewport listener going back to drag-only (bug-fix
+    // batch 2026-10-26, bug 4: zooming never fired On bounds change and bounds
+    // stayed empty — the real map fires `idle` after EVERY settled change: drag,
+    // zoom, programmatic recenter).
     widget.render({ events: counter('onBoundsChange') });
     await waitFor(() => expect(typeof mapProps().onLoad).toBe('function'));
 
     await widget.session.store.act(async () => {
       mapProps().onLoad(fakeGmap());
     });
+    await waitFor(() => expect(typeof mapProps().onIdle).toBe('function'));
+    // first idle = initial load settle: publishes state, no event (see BOUNDS-002)
     await widget.session.store.act(async () => {
-      mapProps().onDragEnd();
+      mapProps().onIdle();
+    });
+    // second idle = a real viewport change (zoom/drag)
+    await widget.session.store.act(async () => {
+      mapProps().onIdle();
     });
 
     await waitFor(() =>
@@ -231,6 +247,26 @@ describe('Map widget', () => {
     );
     expect(exposed().center).toMatchObject({ lat: 42, lng: -72 });
     expect(widget.variables().onBoundsChangeCount).toBe(1);
+  });
+
+  test('[Map-BOUNDS-002] the initial load settle publishes bounds without firing onBoundsChange', async () => {
+    // Break this catches: either leaving bounds empty until the user drags (the
+    // old behavior — {{map1.bounds}} was undefined at load), or firing a spurious
+    // onBoundsChange on mount that apps would see as a phantom user action.
+    widget.render({ events: counter('onBoundsChange') });
+    await waitFor(() => expect(typeof mapProps().onLoad).toBe('function'));
+
+    await widget.session.store.act(async () => {
+      mapProps().onLoad(fakeGmap());
+    });
+    await widget.session.store.act(async () => {
+      mapProps().onIdle();
+    });
+
+    await waitFor(() =>
+      expect(exposed().bounds).toEqual({ northEast: { lat: 45, lng: -70 }, southWest: { lat: 40, lng: -75 } })
+    );
+    expect(widget.variables().onBoundsChangeCount).toBeUndefined();
   });
 
   // --- Search -----------------------------------------------------------------
@@ -247,14 +283,16 @@ describe('Map widget', () => {
     expect(container().querySelector('.place-search-input')).not.toBeInTheDocument();
   });
 
-  test('[Map-SEARCH-002] a valid searched place fires a bounds change', async () => {
-    // Break this catches: onPlaceChanged not recentering / not calling
-    // handleBoundsChange for a valid place (Map.jsx:147-148), so search does nothing.
+  test('[Map-SEARCH-002] a picked place recenters the map and publishes the new center', async () => {
+    // Break this catches: onPlaceChanged synchronously reading the STALE map
+    // instance (bug-fix batch 2026-10-26, bug 1: the old handleBoundsChange call
+    // read gmap.center — still the old location — and clobbered the just-set new
+    // center, so picking a place never moved the map and exposed the old centre).
     widget.render({ properties: { canSearch: binding('{{true}}') }, events: counter('onBoundsChange') });
     await waitFor(() => expect(typeof mapProps().onLoad).toBe('function'));
 
     await widget.session.store.act(async () => {
-      mapProps().onLoad(fakeGmap());
+      mapProps().onLoad(fakeGmap()); // stale instance still centered at 42/-72
     });
     await waitFor(() => expect(typeof __getMapProps().autocomplete.onLoad).toBe('function'));
     await widget.session.store.act(async () => {
@@ -266,8 +304,10 @@ describe('Map widget', () => {
       __getMapProps().autocomplete.onPlaceChanged();
     });
 
-    await waitFor(() => expect(widget.variables().onBoundsChangeCount).toBe(1));
-    expect(exposed().bounds).toEqual({ northEast: { lat: 45, lng: -70 }, southWest: { lat: 40, lng: -75 } });
+    // The map recenters to the PICKED place and the exposed center is the new
+    // location — not the stale instance's 42/-72.
+    await waitFor(() => expect(mapProps().center).toMatchObject({ lat: 5, lng: 6 }));
+    expect(exposed().center).toMatchObject({ lat: 5, lng: 6 });
   });
 
   test('[Map-SEARCH-003] a searched place with no location is ignored (PR 17594 guard)', async () => {
@@ -382,5 +422,133 @@ describe('Map widget', () => {
     await waitFor(() => expect(container()).toBeInTheDocument());
     expect(document.querySelector(`[data-cy="${ID}"]`)).toBeInTheDocument();
     expect(screen.getByTestId('google-map')).toBeInTheDocument();
+  });
+
+  // --- Bug-fix batch 2026-10-26 -------------------------------------------------
+
+  test('[Map-CRASH-001] an invalid initial location falls back instead of crashing the widget', async () => {
+    // Break this catches: feeding an unsanitized initialLocation straight into
+    // GoogleMap (bug-fix batch 2026-10-26, bug 2: {lat:'not-a-number'} threw
+    // inside the SDK, killed the widget subtree, and — through LoadScript's
+    // unmount cleanup deleting window.google — stopped every other Map on the page).
+    widget.render({
+      properties: { initialLocation: binding(`{{ {"lat": "not-a-number", "lng": null} }}`) },
+    });
+
+    await waitFor(() => expect(container()).toBeInTheDocument());
+    expect(screen.getByTestId('google-map')).toBeInTheDocument();
+    expect(mapProps().center).toMatchObject({ lat: 0, lng: 0 });
+    expect(exposed().center).toMatchObject({ lat: 0, lng: 0 });
+  });
+
+  test('[Map-MARK-003] invalid defaultMarkers entries are skipped, valid ones still render', async () => {
+    // Break this catches: either the per-element validation schema failing the
+    // WHOLE array on one bad entry (the widget then received [] — every marker
+    // vanished, QA's actual repro), or rendering entries unfiltered so a bad one
+    // reaches the Marker SDK (bug-fix batch 2026-10-26, bug 7).
+    widget.render({
+      properties: {
+        defaultMarkers: binding('{{ [{"lat":1,"lng":2}, null, {"lat":"garbage"}, {"lat":3,"lng":4}] }}'),
+      },
+    });
+
+    await waitFor(() => expect(screen.getAllByTestId('map-marker')).toHaveLength(2));
+    const positions = __getMapProps().markers.map((m) => m.position);
+    expect(positions).toEqual([
+      { lat: 1, lng: 2 },
+      { lat: 3, lng: 4 },
+    ]);
+  });
+
+  test('[Map-MARK-004] clicking a surviving marker exposes ITS original entry', async () => {
+    // Break this catches: indexing the click handler over the UNFILTERED array
+    // after the invalid entries are skipped, which would expose the wrong marker
+    // (or the invalid one) for every marker after a skipped entry.
+    widget.render({
+      properties: {
+        defaultMarkers: binding('{{ [{"lat":1,"lng":2}, null, {"lat":3,"lng":4,"label":"B"}] }}'),
+      },
+      events: counter('onMarkerClick'),
+    });
+    await waitFor(() => expect(screen.getAllByTestId('map-marker')).toHaveLength(2));
+
+    await widget.session.store.act(async () => {
+      fireEvent.click(screen.getAllByTestId('map-marker')[1]);
+    });
+
+    await waitFor(() => expect(exposed().selectedMarker).toMatchObject({ lat: 3, lng: 4 }));
+    expect(widget.variables().onMarkerClickCount).toBe(1);
+  });
+
+  test('[Map-DIS-001] a disabled Map blocks marker selection, map clicks, search and place picks', async () => {
+    // Break this catches: disabledState only landing as a data attribute (CSS
+    // pointer-events) while every handler stays live (bug-fix batch 2026-10-26,
+    // bug 6: a disabled Map still selected markers and searched from the keyboard).
+    widget.render({
+      styles: { disabledState: binding('{{true}}') },
+      properties: {
+        canSearch: binding('{{true}}'),
+        addNewMarkers: binding('{{true}}'),
+        defaultMarkers: binding('{{ [{"lat":1,"lng":2}] }}'),
+      },
+      events: counter('onMarkerClick'),
+    });
+    await waitFor(() => expect(screen.getAllByTestId('map-marker')).toHaveLength(1));
+
+    // search input is really disabled (keyboard cannot land in it)
+    expect(container().querySelector('.place-search-input')).toBeDisabled();
+
+    // marker click guarded (selectedMarker stays at its registered seed)
+    const selectedBefore = exposed().selectedMarker;
+    await widget.session.store.act(async () => {
+      fireEvent.click(screen.getAllByTestId('map-marker')[0]);
+    });
+    expect(exposed().selectedMarker).toEqual(selectedBefore);
+    expect(widget.variables().onMarkerClickCount).toBeUndefined();
+
+    // map click guarded (no marker added)
+    await widget.session.store.act(async () => {
+      mapProps().onClick({ latLng: { lat: () => 9, lng: () => 9 } });
+    });
+    expect(screen.getAllByTestId('map-marker')).toHaveLength(1);
+
+    // a place pick is guarded too
+    await widget.session.store.act(async () => {
+      __getMapProps().autocomplete.onLoad({
+        getPlace: () => ({ geometry: { location: { toJSON: () => ({ lat: 5, lng: 6 }) } } }),
+      });
+    });
+    await widget.session.store.act(async () => {
+      __getMapProps().autocomplete.onPlaceChanged();
+    });
+    expect(mapProps().center).toMatchObject({ lat: 40.7128, lng: -73.935242 });
+  });
+
+  test('[Map-LOAD-001] the maps SDK loads through the shared singleton loader', async () => {
+    // Break this catches: going back to a per-widget <LoadScript> mount (bug-fix
+    // batch 2026-10-26, bugs 2+3: the SECOND LoadScript instance — a Map inside a
+    // Modal — stayed on "Loading..." forever, and any instance's unmount cleanup
+    // deleted window.google for every other Map on the page). useJsApiLoader keyed
+    // by a shared id is the lib's own multi-instance mechanism.
+    widget.render({});
+
+    await waitFor(() => expect(screen.getByTestId('google-map')).toBeInTheDocument());
+    const loader = __getMapProps().loader;
+    expect(loader).not.toBeNull();
+    expect(typeof loader.id).toBe('string');
+    expect(loader.id.length).toBeGreaterThan(0);
+    expect(loader.libraries).toContain('places');
+  });
+
+  test('[Map-LOAD-002] the not-yet-loaded SDK shows the loading placeholder, not a broken map', async () => {
+    // Break this catches: rendering GoogleMap before the SDK is ready (window.google
+    // undefined -> SDK throw), instead of the Loading placeholder the old LoadScript
+    // showed while fetching.
+    __setLoaderState({ isLoaded: false });
+    widget.render({});
+
+    await waitFor(() => expect(container()).toBeInTheDocument());
+    expect(screen.queryByTestId('google-map')).not.toBeInTheDocument();
+    expect(container().textContent).toMatch(/loading/i);
   });
 });
