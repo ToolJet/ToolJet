@@ -145,7 +145,7 @@ const renderPinnedEntry = (entry: PinnedEntry) =>
   entry.kind === 'folder' ? renderFolder(entry.folder) : renderApp(entry.app);
 
 // Pinned means a pinned folder, a pinned stray app, or a folder holding a pinned app; each shows only there.
-function GridViewData({ isLoading, appType }: { isLoading: boolean; appType: TAppType }) {
+function GridViewData({ isLoading }: { isLoading: boolean }) {
   // Stays mounted while loading or when nothing matches, because it owns the fetch.
   useRootItemsSync();
   const hasNoMatches = useHasNoMatches();
