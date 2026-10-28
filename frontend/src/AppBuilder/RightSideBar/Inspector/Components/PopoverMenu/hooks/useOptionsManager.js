@@ -56,7 +56,7 @@ export const useOptionsManager = (component, paramUpdated, optionLabelPrefix = '
     while (!found) {
       label = `${optionLabelPrefix}${currentNumber}`;
       value = currentNumber.toString();
-      if (options.find((option) => option.label === label) === undefined) {
+      if (!options.some((option) => option.label === label || String(option.value) === value)) {
         found = true;
       }
       currentNumber += 1;
