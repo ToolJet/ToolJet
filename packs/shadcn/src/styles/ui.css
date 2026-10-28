@@ -28,16 +28,12 @@
      (inkOf in lib/ink.ts for inline styles); the tones have theirs below. A browser without relative colours draws
      the text colour instead. */
   --ui-ink-pole: lch(from var(--ui-fg) clamp(0, (l - 50) * 1000, 100) 0 0 / 1);
-  --ui-ink-lch: calc(
-      clamp(0, (l - 0.5) * 1000, 1) * max(l * 2 - 1, 0.76) + (1 - clamp(0, (l - 0.5) * 1000, 1)) * min(l * 2, 0.46)
-    )
+  --ui-ink-lch: calc(clamp(0, (l - 0.5) * 1000, 1) * max(l * 2 - 1, 0.76) + (1 - clamp(0, (l - 0.5) * 1000, 1)) * min(l * 2, 0.46))
     calc(c * 2) h / 1;
   --ui-primary-ink: oklch(from color-mix(in oklab, var(--ui-primary) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
   --ui-success-ink: oklch(from color-mix(in oklab, var(--ui-success) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
   --ui-warning-ink: oklch(from color-mix(in oklab, var(--ui-warning) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
-  --ui-destructive-ink: oklch(
-    from color-mix(in oklab, var(--ui-destructive) 50%, var(--ui-ink-pole)) var(--ui-ink-lch)
-  );
+  --ui-destructive-ink: oklch(from color-mix(in oklab, var(--ui-destructive) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
   --ui-info-ink: oklch(from color-mix(in oklab, var(--ui-info) 50%, var(--ui-ink-pole)) var(--ui-ink-lch));
   --ui-radius: var(--tj-radius, 6px);
   --ui-shadow: 0 1px 2px rgb(16 24 40 / 0.06);
@@ -241,19 +237,13 @@ body {
    same contrast, so the one chosen is always the stronger of the two (4.6:1 or better). */
 @supports (color: lch(from red l c h)) {
   .ui-btn--destructive {
-    color: var(
-      --ui-btn-text,
-      lch(from var(--ui-btn-color, var(--ui-destructive)) clamp(0, (49.4 - l) * 1000, 100) 0 0)
-    );
+    color: var(--ui-btn-text, lch(from var(--ui-btn-color, var(--ui-destructive)) clamp(0, (49.4 - l) * 1000, 100) 0 0));
   }
   /* The darker hover background picks its own. */
   .ui-btn--destructive:hover:not(:disabled) {
     color: var(
       --ui-btn-text,
-      lch(
-        from color-mix(in srgb, var(--ui-btn-color, var(--ui-destructive)) 88%, black) clamp(0, (49.4 - l) * 1000, 100)
-          0 0
-      )
+      lch(from color-mix(in srgb, var(--ui-btn-color, var(--ui-destructive)) 88%, black) clamp(0, (49.4 - l) * 1000, 100) 0 0)
     );
   }
 }
@@ -1539,9 +1529,7 @@ body {
 
 /* An Equal heights row stretches the box (the host sets tj-cc-stretch): card surfaces fill it, as UI 2.0's do. */
 .tj-cc-stretch .ui-stat.is-card,
-.tj-cc-stretch .ui > .ui-card {
-  height: 100%;
-}
+.tj-cc-stretch .ui > .ui-card { height: 100%; }
 
 /* A disabled component is dimmed once, by the host (RenderWidget's .disabled, half opacity): while the host disables
    it, it marks the component's root (.tj-cc-root[data-tj-host-disabled], InlineLibraryComponent.tsx), and the parts
