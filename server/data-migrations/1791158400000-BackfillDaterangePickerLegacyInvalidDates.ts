@@ -93,7 +93,5 @@ export class BackfillDaterangePickerLegacyInvalidDates1791158400000 implements M
     }
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {
-    // One-way: restoring the old "Invalid date" behaviour would bring back the bug.
-  }
+  public async down(_queryRunner: QueryRunner): Promise<void> {}
 }

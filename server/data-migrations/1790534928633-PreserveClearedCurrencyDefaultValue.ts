@@ -119,7 +119,5 @@ export class PreserveClearedCurrencyDefaultValue1790534928633 implements Migrati
     return updatedCount;
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    // One-way: keeps what apps already rendered; the earlier value cannot be told apart afterwards.
-  }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }

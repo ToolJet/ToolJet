@@ -1,10 +1,10 @@
 // migration-lint: allow-destructive the co_relation_id unique index is partial, and the default gives the previous release's inserts a fresh UUID
-import { tooljetDbOrmconfig } from 'ormconfig';
+import { tooljetDbOrmconfig } from 'ormconfig'; // migration-import-allowed: opens the ToolJet Database connection
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
-import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
-import { findTenantSchema } from '@helpers/tooljet_db.helper';
-import { synthesizeBaseline } from '@modules/tooljet-db/helpers/baseline-synthesis';
+import { v4 as uuidv4 } from 'uuid'; // migration-import-allowed: generates relation and migration ids
+import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper'; // migration-import-allowed: required progress logging
+import { findTenantSchema } from '@helpers/tooljet_db.helper'; // migration-import-allowed: resolves the workspace's TJDB schema
+import { synthesizeBaseline } from '@modules/tooljet-db/helpers/baseline-synthesis'; // migration-import-allowed: baseline must match what runtime replay expects
 
 const MIGRATION_NAME = 'TjdbRolloutMigrationASubstrate1787564882760';
 
