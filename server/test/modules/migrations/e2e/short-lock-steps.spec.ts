@@ -1,4 +1,7 @@
-/** @group database */
+/**
+ * Covers: migration-helpers/with-short-lock.ts
+ * @group database
+ */
 import { DataSource, QueryRunner } from 'typeorm';
 import { notNullSteps, setNotNull, SHORT_LOCK_TIMEOUT_MS, withShortLock } from 'src/migration-helpers/with-short-lock';
 import { createScratchDatabase, dropScratchDatabase, postgres } from '../fixtures/harness';

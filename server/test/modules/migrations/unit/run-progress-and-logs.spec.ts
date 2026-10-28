@@ -1,4 +1,7 @@
-/** @group platform */
+/**
+ * Covers: migration-helpers/migration-run-log.ts
+ * @group platform
+ */
 import {
   applyLogLine,
   emptyRunProgress,

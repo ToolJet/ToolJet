@@ -32,8 +32,8 @@ function dataSourceFor(migrationsDirectory: string): DataSource {
     migrationsRun: false,
     migrationsTransactionMode: 'all',
     migrations: [
-      join(__dirname, 'concurrent-pods', migrationsDirectory, 'LockMigrationsTable*.ts'),
-      join(__dirname, fixtureSet, migrationsDirectory, '1*.ts'),
+      join(__dirname, 'migration-sets/concurrent-pods', migrationsDirectory, 'LockMigrationsTable*.ts'),
+      join(__dirname, 'migration-sets', fixtureSet, migrationsDirectory, '1*.ts'),
     ],
   };
   return new DataSource(options);
