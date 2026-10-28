@@ -1,5 +1,11 @@
 /** @group database */
+import { readdirSync } from 'fs';
+import { join } from 'path';
+import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
+import { BackfillMigration } from 'src/migration-helpers/migration-mode';
 import {
+  LEGACY_VARIANTS,
+  useLegacyVariants,
   legacyUpgradePending,
   loosenStep,
   restoreSteps,
@@ -41,5 +47,37 @@ describe('migration-helpers/legacy-upgrade | async upgrade from 3.21.58', () => 
     expect(restoreSteps({ name: 'idx', kind: 'index', table_name: 'app_versions', definition })).toEqual([
       ['CREATE UNIQUE INDEX IF NOT EXISTS idx ON public.app_versions USING btree (app_id)'],
     ]);
+  });
+
+  describe('variants', () => {
+    const BACKFILL = join(__dirname, '../../../../migrations/backfill');
+    const originals: BackfillMigration[] = readdirSync(BACKFILL)
+      .filter((file) => LEGACY_VARIANTS.has(file.replace(/^(\d+)-(\w+)\.ts$/, '$2$1')))
+      .map((file) => {
+        const exports: Record<string, new () => MigrationInterface> = require(join(BACKFILL, file));
+        return new (Object.values(exports)[0])();
+      });
+
+    const recorded = async (step: (queryRunner: QueryRunner) => Promise<void>): Promise<string[]> => {
+      const statements: string[] = [];
+      await step({ query: async (sql: string) => void statements.push(sql) } as unknown as QueryRunner);
+      return statements;
+    };
+
+    it('should cover every variant with its original migration', () => {
+      expect(originals).toHaveLength(LEGACY_VARIANTS.size);
+    });
+
+    it('should change rows and function bodies only in up(), leaving table locks to tail() and contract', async () => {
+      useLegacyVariants({ migrations: originals } as unknown as DataSource);
+      const ups = (await Promise.all(originals.map((migration) => recorded((qr) => migration.up(qr))))).flat();
+      expect(ups.filter((sql) => /\b(DROP|ALTER TABLE|CREATE (UNIQUE )?INDEX|CREATE TRIGGER)\b/i.test(sql))).toEqual(
+        []
+      );
+      const tails = (
+        await Promise.all(originals.filter((m) => m.tail).map((migration) => recorded((qr) => migration.tail(qr))))
+      ).flat();
+      expect(tails.at(-1)).toMatch(/ALTER TABLE app_versions\s+DROP CONSTRAINT IF EXISTS fk_app_versions_branch/);
+    });
   });
 });
