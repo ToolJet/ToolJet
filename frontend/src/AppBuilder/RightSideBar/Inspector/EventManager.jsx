@@ -822,6 +822,25 @@ export const EventManager = ({
                 {event.actionId === 'run-query' && (
                   <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
                 )}
+                {/* Only queries with response caching on (EE) have a cache to refresh. */}
+                {event.actionId === 'run-query' &&
+                  (event.refreshCache ||
+                    dataQueries.find((query) => query.id === event.queryId)?.options?.responseCache?.enabled ===
+                      true) && (
+                    <FieldRow
+                      label={t('editor.inspector.eventManager.refreshCache', 'Refresh cache')}
+                      dataCy="refresh-cache-label"
+                    >
+                      <div className="tw-flex tw-justify-end">
+                        <Switch
+                          checked={event.refreshCache === true}
+                          onCheckedChange={(checked) => handlerChanged(index, 'refreshCache', checked)}
+                          aria-label={t('editor.inspector.eventManager.refreshCache', 'Refresh cache')}
+                          data-cy="refresh-cache-toggle"
+                        />
+                      </div>
+                    </FieldRow>
+                  )}
               </>
             )}
 

@@ -104,7 +104,16 @@ function getPaginatedNodes(executionId, page = 1, perPage = 20) {
   ).then(handleResponse);
 }
 
-function trigger(workflowAppId, params, environmentId, queryId, syncExecution = true, workflowVersionId = null) {
+// refreshCache (EE response cache): drop every cached response of the query, run, and cache this result.
+function trigger(
+  workflowAppId,
+  params,
+  environmentId,
+  queryId,
+  syncExecution = true,
+  workflowVersionId = null,
+  refreshCache = false
+) {
   const currentSession = authenticationService.currentSessionValue;
   const body = {
     appId: workflowAppId,
@@ -117,6 +126,7 @@ function trigger(workflowAppId, params, environmentId, queryId, syncExecution = 
     queryId,
     syncExecution,
     ...(workflowVersionId ? { appVersionId: workflowVersionId } : {}),
+    ...(refreshCache ? { cacheControl: 'refresh' } : {}),
   };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/${workflowAppId}/trigger`, requestOptions).then(handleResponse);

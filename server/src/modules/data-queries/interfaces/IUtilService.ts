@@ -12,6 +12,9 @@ export interface WorkflowExecutionOptions {
 
 export interface DataQueryExecutionOptions {
   workflow?: WorkflowExecutionOptions;
+  // EE query response cache. refresh: skip lookup and replace this run's entry (editor Preview).
+  // clearAll (with refresh): first invalidate every cached variant of the query (run refresh).
+  responseCache?: { refresh?: boolean; clearAll?: boolean };
 }
 
 export interface IDataQueriesUtilService {

@@ -100,6 +100,7 @@ function buildQueryHints(storeState, moduleId) {
     const queryData = exposedQueries[id];
     hints.push({ hint: `queries.${name}`, type: 'Object' });
     hints.push({ hint: `queries.${name}.run()`, type: 'Function' });
+    hints.push({ hint: `queries.${name}.refresh()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.reset()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.getData()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.getRawData()`, type: 'Function' });
