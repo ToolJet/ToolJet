@@ -41,7 +41,7 @@
     "build:server": "NODE_ENV=production npm --prefix server run build",
     "postbuild:server": "npm --prefix server prune --production",
     "build": "npm run build:plugins:prod && npm run build:frontend && npm run build:server",
-    "start:prod": "npm --prefix server run start:prod",
+    "start:prod": "exec npm --prefix server run start:prod",
     "cloud:setup": "npm run db:setup && npm run plugins:install && npm run plugins:uninstall && npm run plugins:reload",
     "cloud:setup:prod": "npm run db:setup:prod && npm run plugins:install:prod && npm run plugins:uninstall:prod && npm run plugins:reload:prod",
     "db:create": "npm --prefix server run db:create",

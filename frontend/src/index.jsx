@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
-import { appService } from '@/_services';
+import { appService, aiOnboardingService } from '@/_services';
 import { initFrontendMetrics } from '@/_services/frontend-metrics.service';
 import { RootRouter } from './RootRouter';
 // eslint-disable-next-line import/no-unresolved
@@ -11,6 +11,11 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
 import config from 'config';
+import { captureMcpOAuthBootstrap } from './McpOAuth/bootstrap';
+
+// OAuth bootstrap fragments are credentials. Remove them before config,
+// analytics, error reporting, or the router can capture the page URL.
+captureMcpOAuthBootstrap();
 
 // When on a custom domain, use relative API path so requests go through the
 // Cloudflare Worker proxy, making cookies first-party (fixes incognito sign-in).
@@ -18,13 +23,45 @@ import config from 'config';
 try {
   const apiHostname = new URL(config.apiUrl, window.location.origin).hostname;
   if (apiHostname !== window.location.hostname) {
-    config.apiUrl = '/api';
+    const apiPath = new URL(config.apiUrl, window.location.origin).pathname.replace(/\/$/, '');
+    config.apiUrl = apiPath || '/api';
   }
 } catch {
   // apiUrl is already relative — no override needed
 }
 
 const AppWithProfiler = Sentry.withProfiler(RootRouter);
+
+// The website (a different site) cannot set cookies for this app, so it passes the template id
+// in the URL: ?tj_template_id=... on a direct redirect, or inside the OAuth state on SSO.
+// Set it as a first-party cookie before any route mounts, so the session payload carries it
+// through login and HomePage deploys the template.
+const TEMPLATE_ID_PARAM = 'tj_template_id';
+
+const readTemplateIdFromUrl = () => {
+  const query = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.substring(1));
+  const state = hash.get('state') || query.get('state');
+  return query.get(TEMPLATE_ID_PARAM) || (state && new URLSearchParams(state).get(TEMPLATE_ID_PARAM));
+};
+
+const persistTemplateIdFromUrl = async () => {
+  const templateId = readTemplateIdFromUrl();
+  if (!templateId || !/^[a-z0-9-]{1,100}$/.test(templateId)) return;
+
+  // Drop the param so a reload does not deploy the template a second time
+  const url = new URL(window.location.href);
+  if (url.searchParams.has(TEMPLATE_ID_PARAM)) {
+    url.searchParams.delete(TEMPLATE_ID_PARAM);
+    window.history.replaceState(window.history.state, '', url);
+  }
+
+  try {
+    await aiOnboardingService.setAiCookie({ [TEMPLATE_ID_PARAM]: templateId });
+  } catch (error) {
+    console.error('Failed to set template cookie:', error);
+  }
+};
 
 appService
   .getConfig()
@@ -79,6 +116,7 @@ appService
       });
     }
   })
+  .then(persistTemplateIdFromUrl)
   .then(() => {
     createRoot(document.getElementById('app')).render(<AppWithProfiler />);
 
