@@ -10,6 +10,10 @@ import { formatError } from '../log';
 export interface ProjectConfigFile {
   libraryName: string;
   correlationId: string;
+  // Library-wide look, copied into the manifest: 'own' when the library draws in its own design system (it takes the
+  // app theme only once one is applied), and the page and card look layouts around its components should match.
+  themeMode?: 'own';
+  surface?: Record<string, unknown>;
 }
 
 export class ProjectConfig {
@@ -45,6 +49,19 @@ export class ProjectConfig {
       console.log(formatError((err as Error).message));
       process.exit(1);
     }
+  }
+
+  /** The library-wide settings for the manifest; none when the project has no config (a build needs no login). */
+  static readLibrarySettings(projectRoot: string = process.cwd()): Pick<ProjectConfigFile, 'themeMode' | 'surface'> {
+    if (!fs.existsSync(path.join(projectRoot, '.tooljet', 'config.json'))) return {};
+    const { themeMode, surface } = ProjectConfig.readFile(projectRoot);
+    if (themeMode !== undefined && themeMode !== 'own') {
+      throw new Error(`.tooljet/config.json: "themeMode" must be 'own'.`);
+    }
+    if (surface !== undefined && (!surface || typeof surface !== 'object' || Array.isArray(surface))) {
+      throw new Error(`.tooljet/config.json: "surface" must be an object.`);
+    }
+    return { ...(themeMode ? { themeMode } : {}), ...(surface ? { surface } : {}) };
   }
 
   private static isValid(data: unknown): data is ProjectConfigFile {

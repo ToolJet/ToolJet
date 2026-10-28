@@ -3,6 +3,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { generateManifest } from './manifest-generator';
+import { recordManifest } from './manifest-recorder';
+import { ProjectConfig } from './project-config';
 
 export interface BuildResult {
   distDir: string;
@@ -66,7 +68,11 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
   });
 
   // Manifest generation via TS Compiler API
-  const { manifest, tsErrorCount, tsErrorReport, warnings } = await generateManifest(projectRoot);
+  const generated = await generateManifest(projectRoot);
+  const { tsErrorCount, tsErrorReport, warnings } = generated;
+  // Fields declared through the components' own helper functions, found by rendering each component once.
+  const recorded = await recordManifest(projectRoot, generated.manifest, warnings);
+  const manifest = { ...ProjectConfig.readLibrarySettings(projectRoot), ...recorded };
   fs.writeFileSync(
     path.join(distDir, 'manifest.json'),
     isProduction ? JSON.stringify(manifest) : JSON.stringify(manifest, null, 2)

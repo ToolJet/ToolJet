@@ -1048,6 +1048,25 @@ export const Widget = () => {
     expect(manifest.components.Widget.props.map((p) => p.name)).to.deep.equal(['title']);
   }).timeout(30000);
 
+  it('recognises a component whose JSX is drawn by the hook it calls', async () => {
+    writeProjectFiles(cwd.get(), {
+      'index.ts': `export { DatePicker, usePicker, toDate } from './Picker';\n`,
+      'Picker.tsx': `${SDK_IMPORT}
+export const usePicker = (withTime: boolean) => {
+  ToolJet.useStateString({ name: 'value', initialValue: '' });
+  return <div>{String(withTime)}</div>;
+};
+export const toDate = (value: string) => new Date(value);
+export const DatePicker = () => usePicker(false);
+`,
+    });
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    // usePicker and toDate are helpers (lower-case), not components.
+    expect(Object.keys(manifest.components)).to.deep.equal(['DatePicker']);
+  });
+
   it('recognises a component written as a function declaration', async () => {
     writeProject(
       cwd.get(),
@@ -1256,12 +1275,6 @@ const PARAMS = [{ handle: 'v', displayName: 'V' }];
       /action "go": "params" must be an array literal or a const array/,
     ],
     [
-      'a label from a function call',
-      `ToolJet.useStateString({ name: 's', label: t('Title') });`,
-      `const t = (s: string) => s;\n`,
-      /ToolJet\.useStateString in component "Widget", prop "s": "label" must be a string literal or a const string/,
-    ],
-    [
       'an enumDefinition from a function call',
       `ToolJet.useStateEnumeration({ name: 'e', enumDefinition: getVariants() });`,
       `const getVariants = () => ['a'];\n`,
@@ -1299,6 +1312,42 @@ const PARAMS = [{ handle: 'v', displayName: 'V' }];
     expect(warnings[0]).to.include('Prop "createdAt" in component "Widget"');
     expect(warnings[1]).to.include('Prop "n" in component "Widget"');
   }).timeout(30000);
+});
+
+describe('generateManifest - display text built at runtime', () => {
+  const cwd = withTempCwd();
+
+  it('keeps building, without the text, and warns when a label is computed', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}const t = (s: string) => s;
+export const Widget = () => {
+  ToolJet.useStateString({ name: 's', label: t('Title') });
+  return <div />;
+};
+`
+    );
+
+    const { manifest, warnings } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props[0]).to.not.have.property('label');
+    expect(warnings).to.include(
+      `Prop "s" in component "Widget": label isn't a static string, so the builder shows none.`
+    );
+  });
+
+  it('still fails the build on a label that is not text', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}export const Widget = () => {
+  ToolJet.useStateString({ name: 's', label: 3 as any });
+  return <div />;
+};
+`
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/prop "s": "label" must be a string/);
+  });
 });
 
 describe('generateManifest - field settings', () => {
@@ -1384,7 +1433,7 @@ describe('generateManifest - field settings', () => {
     [
       'a placeholder that is not a string',
       `ToolJet.useStateString({ name: 's', placeholder: 3 });`,
-      /prop "s": "placeholder" must be a string literal/,
+      /prop "s": "placeholder" must be a string/,
     ],
     [
       'a visibleWhen that is not an object',
@@ -1518,5 +1567,160 @@ describe('generateManifest - role and fit', () => {
     await expect(generateManifest(cwd.get())).to.be.rejectedWith(
       /Invalid "fit" in component "Widget": must be true or false/
     );
+  }).timeout(30000);
+});
+
+describe('generateManifest - pack contract fields', () => {
+  const cwd = withTempCwd();
+
+  it('passes an event displayName through', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`ToolJet.useEventCallback({ name: 'onRowClick', displayName: 'On row click' });`)
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.events).to.deep.equal([{ name: 'onRowClick', displayName: 'On row click' }]);
+  }).timeout(30000);
+
+  it('passes iconSet through and rejects an unknown one', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`ToolJet.useStateString({ name: 'icon', inspector: 'icon', iconSet: 'lucide' });`)
+    );
+    const { manifest } = await generateManifest(cwd.get());
+    expect(manifest.components.Widget.props[0].iconSet).to.equal('lucide');
+
+    writeProject(cwd.get(), widgetWith(`ToolJet.useStateString({ name: 'icon', inspector: 'icon', iconSet: 'fa' });`));
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/prop "icon": "iconSet" must be 'tabler' or 'lucide'/);
+  }).timeout(30000);
+
+  it('records controlState when the component calls useControlState', async () => {
+    writeProject(cwd.get(), widgetWith(`const { disabled } = ToolJet.useControlState();`));
+    const { manifest } = await generateManifest(cwd.get());
+    expect(manifest.components.Widget.controlState).to.equal(true);
+
+    writeProject(cwd.get(), widgetWith(`ToolJet.useStateString({ name: 'x' });`));
+    const plain = await generateManifest(cwd.get());
+    expect(plain.manifest.components.Widget).to.not.have.property('controlState');
+  }).timeout(30000);
+
+  it('passes loading, usage and slots from useComponentSettings through', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(
+        `ToolJet.useComponentSettings({ loading: 'own', usage: 'A modal.', slots: [{ name: 'body', kind: 'popup' }] });`
+      )
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget).to.include({ loading: 'own', usage: 'A modal.' });
+    expect(manifest.components.Widget.slots).to.deep.equal([{ name: 'body', kind: 'popup' }]);
+  }).timeout(30000);
+
+  it('rejects a loading other than own and a slot kind it does not know', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useComponentSettings({ loading: 'host' });`));
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(
+      /Invalid "loading" in component "Widget": must be 'own'/
+    );
+
+    writeProject(cwd.get(), widgetWith(`ToolJet.useComponentSettings({ slots: [{ name: 'a', kind: 'grid' }] });`));
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(
+      /Invalid "slots" in component "Widget": each needs a "name" and a "kind" of 'slot', 'rows' or 'popup'/
+    );
+  }).timeout(30000);
+
+  it('records Slot, RowSlot and PopupSlot drawn anywhere in the component, once each', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  const items = [1, 2];
+  return (
+    <div>
+      <ToolJet.Slot name="header" />
+      {items.map((item, i) => (
+        <ToolJet.RowSlot key={i} name="card" index={i} variable="cardData" />
+      ))}
+      <ToolJet.PopupSlot name="body" />
+      <ToolJet.Slot name="header" />
+    </div>
+  );
+};
+`
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.slots).to.deep.equal([
+      { name: 'header', kind: 'slot' },
+      { name: 'card', kind: 'rows', variable: 'cardData' },
+      { name: 'body', kind: 'popup' },
+    ]);
+  }).timeout(30000);
+
+  it('omits slots when the component draws none', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useStateString({ name: 'x' });`));
+    const { manifest } = await generateManifest(cwd.get());
+    expect(manifest.components.Widget).to.not.have.property('slots');
+  }).timeout(30000);
+});
+
+describe('generateManifest - static strings built from parts', () => {
+  const cwd = withTempCwd();
+
+  it("reads text joined with +, a template with static parts, and a const object's property", async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(
+        `ToolJet.useStateString({ name: 'items', description: 'Rows as ' + 'objects. ' + \`Up to \${LIMIT}.\` });
+  ToolJet.useStyleString({ name: 'accent', inspector: 'color', initialValue: TOKEN.brand, label: TOKEN.label });`,
+        `const LIMIT = 50;\nconst TOKEN = { brand: 'var(--cc-primary-brand)', label: 'Accent' } as const;\n`
+      )
+    );
+
+    const { manifest, warnings } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props[0].description).to.equal('Rows as objects. Up to 50.');
+    expect(manifest.components.Widget.styles[0]).to.include({ default: 'var(--cc-primary-brand)', label: 'Accent' });
+    expect(warnings).to.deep.equal([]);
+  }).timeout(30000);
+
+  it('leaves a label that needs the component to run to the render, with a warning', async () => {
+    writeProject(cwd.get(), widgetWith(`ToolJet.useStateString({ name: 's', label: 'Hi ' + Date.now() });`));
+
+    const { manifest, warnings } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props[0]).to.not.have.property('label');
+    expect(warnings.join('\n')).to.include(`Prop "s" in component "Widget": label isn't a static string`);
+  }).timeout(30000);
+});
+
+describe('generateManifest - slots named at runtime', () => {
+  const cwd = withTempCwd();
+
+  it('skips a slot whose name is only known at runtime (one per tab), keeping the fixed ones', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  const tabs = [{ id: 'a' }];
+  return (
+    <div>
+      <ToolJet.Slot name="footer" />
+      {tabs.map((tab) => (
+        <ToolJet.Slot key={tab.id} name={\`tab_\${tab.id}\`} />
+      ))}
+    </div>
+  );
+};
+`
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.slots).to.deep.equal([{ name: 'footer', kind: 'slot' }]);
   }).timeout(30000);
 });

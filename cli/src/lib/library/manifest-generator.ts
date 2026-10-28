@@ -16,6 +16,7 @@ export interface ManifestProp {
   min?: number;
   max?: number;
   visibleWhen?: ManifestVisibleWhen; // Inspector shows the field only while prop `key` equals `value`
+  iconSet?: 'tabler' | 'lucide'; // the icon set an `inspector: 'icon'` prop's picker offers
 }
 
 export interface ManifestVisibleWhen {
@@ -30,7 +31,22 @@ export type ManifestValidationKind = (typeof VALIDATION_KINDS)[number];
 
 export interface ManifestEvent {
   name: string;
+  displayName?: string;
 }
+
+// Drop areas: a Slot (a container area), RowSlot (a canvas per useRows item) or PopupSlot (inside a popup).
+const SLOT_KINDS = ['slot', 'rows', 'popup'] as const;
+export interface ManifestSlot {
+  name: string;
+  kind: (typeof SLOT_KINDS)[number];
+  variable?: string; // rows only: what the row's components call their item instead of {{listItem}}
+}
+
+const SLOT_COMPONENT_KINDS: Record<string, ManifestSlot['kind']> = {
+  Slot: 'slot',
+  RowSlot: 'rows',
+  PopupSlot: 'popup',
+};
 
 // Mirrors ActionParamDef.type in @tooljet/custom-component-sdk; each maps to an EventManager param renderer.
 const ACTION_PARAM_TYPES = ['code', 'toggle', 'select', 'switch', 'color'] as const;
@@ -60,10 +76,74 @@ export interface ManifestComponent {
   validation?: ManifestValidationKind; // set when the component calls ToolJet.useValidation
   role?: string; // the native widget this component stands in for (e.g. 'stat'), from useComponentSettings
   fit?: boolean; // grows to its content when the builder turns on dynamic height, from useComponentSettings
+  loading?: 'own'; // the component draws its own loading look, so the host draws no overlay
+  usage?: string; // when to use the component, for the AI app builder
+  controlState?: boolean; // the component calls useControlState, so the Inspector offers Disable
+  slots?: ManifestSlot[];
+  // How the component names the props, events and actions of the native widget it stands in for (its `role`), and
+  // the values a role prop takes: the AI app builder plans in native widgets and maps them through these.
+  roleProps?: Record<string, string>;
+  roleValues?: Record<string, Record<string, RoleValue>>;
+  roleEvents?: Record<string, string>;
+  roleActions?: Record<string, string>;
+  labelCase?: 'upper'; // the component writes its label in capitals, so a layout sized for its text widens it
 }
 
-export interface Manifest {
+// Library-wide settings, from .tooljet/config.json.
+export interface ManifestLibrarySettings {
+  themeMode?: 'own'; // drawn in its own design system: takes the app theme only once one is applied
+  surface?: Record<string, unknown>; // the page and card look layouts around its components should match
+}
+
+export interface Manifest extends ManifestLibrarySettings {
   components: Record<string, ManifestComponent>;
+}
+
+// The role mappings useComponentSettings takes: a name → name map, and roleValues a map of those per prop.
+const ROLE_MAPS = ['roleProps', 'roleEvents', 'roleActions'] as const;
+export type RoleMap = (typeof ROLE_MAPS)[number];
+
+const isStringMap = (value: unknown): value is Record<string, string> =>
+  isPlainObject(value) && Object.values(value).every((v) => typeof v === 'string');
+
+type RoleScalar = string | number | boolean;
+// A role prop's value in this component: one value, or several props set together ({ variant: 'text', color: 'inherit' }).
+export type RoleValue = RoleScalar | Record<string, RoleScalar>;
+
+const isRoleScalar = (value: unknown): value is RoleScalar => ['string', 'number', 'boolean'].includes(typeof value);
+
+const isValueMap = (value: unknown): value is Record<string, RoleValue> =>
+  isPlainObject(value) &&
+  Object.values(value).every((v) => isRoleScalar(v) || (isPlainObject(v) && Object.values(v).every(isRoleScalar)));
+
+/** Throws unless `settings` holds valid role mappings and labelCase; returns the ones it holds. */
+export function readRoleSettings(
+  settings: Record<string, unknown>,
+  componentName: string
+): Pick<ManifestComponent, RoleMap | 'roleValues' | 'labelCase'> {
+  const out: Pick<ManifestComponent, RoleMap | 'roleValues' | 'labelCase'> = {};
+  for (const key of ROLE_MAPS) {
+    const value = settings[key];
+    if (value === undefined) continue;
+    if (!isStringMap(value)) {
+      throw new Error(`Invalid "${key}" in component "${componentName}": must map names to names.`);
+    }
+    out[key] = value;
+  }
+  if (settings.roleValues !== undefined) {
+    const value = settings.roleValues;
+    if (!isPlainObject(value) || !Object.values(value).every(isValueMap)) {
+      throw new Error(`Invalid "roleValues" in component "${componentName}": must map each prop to a map of values.`);
+    }
+    out.roleValues = value as Record<string, Record<string, RoleValue>>;
+  }
+  if (settings.labelCase !== undefined) {
+    if (settings.labelCase !== 'upper') {
+      throw new Error(`Invalid "labelCase" in component "${componentName}": must be 'upper'.`);
+    }
+    out.labelCase = 'upper';
+  }
+  return out;
 }
 
 const TOOLJET_SDK_MODULE = '@tooljet/custom-component-sdk';
@@ -185,8 +265,12 @@ function walkComponentDeclaration(
   // Only treat exports that look like React components as components — anything
   // else (types, constants, plain helper functions) is skipped rather than showing
   // up as a phantom, prop-less component in the manifest.
+  // A hook (useX) is never a component, even when it returns JSX for the components that call it.
+  if (/^use[A-Z]/.test(componentName)) return null;
   const fnNode = getFunctionLikeNode(decl);
-  if (!fnNode || !fnNode.body || !containsJsx(fnNode.body)) {
+  const isComponent =
+    !!fnNode?.body && (containsJsx(fnNode.body) || (isPascalCase(componentName) && callsHook(fnNode.body)));
+  if (!fnNode || !isComponent) {
     return null;
   }
 
@@ -206,6 +290,14 @@ function walkComponentDeclaration(
   let role: string | undefined;
   let fit: boolean | undefined;
   let validation: ManifestValidationKind | undefined;
+  let loading: 'own' | undefined;
+  let usage: string | undefined;
+  let controlState = false;
+  let roleSettings: ReturnType<typeof readRoleSettings> = {};
+  const slots: ManifestSlot[] = [];
+  const addSlot = (slot: ManifestSlot) => {
+    if (!slots.some((s) => s.name === slot.name && s.kind === slot.kind)) slots.push(slot);
+  };
   // visibleWhen keys are checked once every prop is collected, so a field may name a prop declared after it.
   const visibleWhenKeys: { key: string; context: string }[] = [];
 
@@ -275,17 +367,34 @@ function walkComponentDeclaration(
       claimExposedName(name, 'prop');
     }
 
-    const label = readStringProp(options, 'label', checker, propContext);
-    const description = readStringProp(options, 'description', checker, propContext);
+    // Display text built at runtime (a list joined into a description) is read from the render (manifest-recorder.ts).
+    const readText = (key: 'label' | 'description' | 'placeholder') => {
+      const node = getPropNode(options, key, checker);
+      const value = node ? evalLiteralNode(node, checker) : undefined;
+      if (value === undefined || typeof value === 'string') return value;
+      if (value !== NOT_STATIC) throw new Error(`${propContext}: "${key}" must be a string.`);
+      warnings.push(
+        `${
+          kind === 'style' ? 'Style' : 'Prop'
+        } "${name}" in component "${componentName}": ${key} isn't a static string, so the builder shows none.`
+      );
+      return undefined;
+    };
+    const label = readText('label');
+    const description = readText('description');
     const inspector = readStringProp(options, 'inspector', checker, propContext);
     const section = readStringProp(options, 'section', checker, propContext);
-    const placeholder = readStringProp(options, 'placeholder', checker, propContext);
+    const placeholder = readText('placeholder');
     const min = readNumberProp(options, 'min', checker, propContext);
     const max = readNumberProp(options, 'max', checker, propContext);
     if (min !== undefined && max !== undefined && min > max) {
       throw new Error(`${propContext}: "min" is above "max".`);
     }
     const visibleWhen = readVisibleWhen(options, checker, propContext);
+    const iconSet = readStringProp(options, 'iconSet', checker, propContext);
+    if (iconSet !== undefined && iconSet !== 'tabler' && iconSet !== 'lucide') {
+      throw new Error(`${propContext}: "iconSet" must be 'tabler' or 'lucide'.`);
+    }
     if (visibleWhen) visibleWhenKeys.push({ key: visibleWhen.key, context: propContext });
 
     let defaultValue: unknown;
@@ -344,17 +453,20 @@ function walkComponentDeclaration(
       ...(min !== undefined ? { min } : {}),
       ...(max !== undefined ? { max } : {}),
       ...(visibleWhen ? { visibleWhen } : {}),
+      ...(iconSet ? { iconSet: iconSet as 'tabler' | 'lucide' } : {}),
     });
   };
 
   // ToolJet.useEventCallback({ name: 'onClick' })
   const collectEvent = (node: ts.CallExpression, hookContext: string) => {
-    const name = readName(readOptions(node.arguments[0], hookContext), hookContext);
+    const options = readOptions(node.arguments[0], hookContext);
+    const name = readName(options, hookContext);
     if (eventNames.has(name)) {
       throw new Error(`Duplicate event name "${name}" in component "${componentName}".`);
     }
     eventNames.add(name);
-    events.push({ name });
+    const displayName = readStringProp(options, 'displayName', checker, `${hookContext}, event "${name}"`);
+    events.push({ name, ...(displayName ? { displayName } : {}) });
   };
 
   // ToolJet.useAction({ name: 'setValue', params: [{ handle: 'value', type: 'code' }] }, handler)
@@ -456,6 +568,42 @@ function walkComponentDeclaration(
 
     const settings = readOptions(settingsArg, hookContext);
     role = readStringProp(settings, 'role', checker, hookContext);
+    usage = readStringProp(settings, 'usage', checker, hookContext);
+    const loadingValue = readStringProp(settings, 'loading', checker, hookContext);
+    if (loadingValue !== undefined && loadingValue !== 'own') {
+      throw new Error(`Invalid "loading" in component "${componentName}": must be 'own'.`);
+    }
+    loading = loadingValue;
+    const slotsNode = getPropNode(settings, 'slots', checker);
+    if (slotsNode) {
+      const declared = evalLiteralNode(slotsNode, checker);
+      const valid =
+        Array.isArray(declared) &&
+        declared.every(
+          (slot) =>
+            isPlainObject(slot) &&
+            typeof slot.name === 'string' &&
+            (SLOT_KINDS as readonly unknown[]).includes(slot.kind) &&
+            (slot.variable === undefined || typeof slot.variable === 'string')
+        );
+      if (!valid) {
+        throw new Error(
+          `Invalid "slots" in component "${componentName}": each needs a "name" and a "kind" of 'slot', 'rows' or 'popup'.`
+        );
+      }
+      (declared as ManifestSlot[]).forEach(addSlot);
+    }
+    const roleValuesRead: Record<string, unknown> = {};
+    for (const key of [...ROLE_MAPS, 'roleValues', 'labelCase']) {
+      const node = getPropNode(settings, key, checker);
+      if (!node) continue;
+      const value = evalLiteralNode(node, checker);
+      if (value === NOT_STATIC) {
+        throw new Error(`Invalid "${key}" in component "${componentName}": must be a static literal.`);
+      }
+      roleValuesRead[key] = value;
+    }
+    roleSettings = readRoleSettings(roleValuesRead, componentName);
     const fitNode = getPropNode(settings, 'fit', checker);
     if (fitNode) {
       const val = evalLiteralNode(fitNode, checker);
@@ -496,6 +644,7 @@ function walkComponentDeclaration(
           else if (method === 'useAction') collectAction(node, hookContext);
           else if (method === 'useComponentSettings') applySettings(node, hookContext);
           else if (method === 'useValidation') collectValidation(node, hookContext);
+          else if (method === 'useControlState') controlState = true;
         }
       }
     }
@@ -508,6 +657,37 @@ function walkComponentDeclaration(
   };
 
   ts.forEachChild(fnNode.body, visitor);
+
+  // Drop areas are JSX, often drawn inside a .map or a render helper, so the whole body is searched.
+  const slotVisitor = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
+      const tag = node.tagName;
+      const kind = ts.isPropertyAccessExpression(tag) && SLOT_COMPONENT_KINDS[tag.name.getText()];
+      if (kind && isToolJetSdkIdentifier(tag.expression, checker)) {
+        const attr = (key: string) => {
+          const found = node.attributes.properties.find(
+            (a): a is ts.JsxAttribute => ts.isJsxAttribute(a) && a.name.getText() === key
+          );
+          const init = found?.initializer;
+          if (!init) return undefined;
+          if (ts.isStringLiteral(init)) return init.text;
+          const value =
+            ts.isJsxExpression(init) && init.expression ? evalLiteralNode(init.expression, checker) : NOT_STATIC;
+          return typeof value === 'string' ? value : NOT_STATIC;
+        };
+        const name = attr('name') ?? (kind === 'rows' ? 'row' : undefined);
+        if (!name)
+          throw new Error(`<ToolJet.${tag.name.getText()}> in component "${componentName}" is missing a "name".`);
+        // A name only known at runtime (one slot per tab) can't be listed; the host learns it when the slot mounts.
+        if (name !== NOT_STATIC) {
+          const variable = kind === 'rows' ? attr('variable') : undefined;
+          addSlot({ name, kind, ...(typeof variable === 'string' ? { variable } : {}) });
+        }
+      }
+    }
+    ts.forEachChild(node, slotVisitor);
+  };
+  ts.forEachChild(fnNode.body, slotVisitor);
 
   const validationClash = validation && VALIDATION_EXPOSED_NAMES.find((name) => exposedNames.has(name));
   if (validationClash) {
@@ -533,6 +713,11 @@ function walkComponentDeclaration(
     ...(validation ? { validation } : {}),
     ...(role !== undefined ? { role } : {}),
     ...(fit !== undefined ? { fit } : {}),
+    ...(loading ? { loading } : {}),
+    ...(usage ? { usage } : {}),
+    ...(controlState ? { controlState } : {}),
+    ...(slots.length ? { slots } : {}),
+    ...roleSettings,
   };
 }
 
@@ -543,6 +728,23 @@ function containsJsx(node: ts.Node): boolean {
   if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node)) return true;
 
   return !!ts.forEachChild(node, (child) => (containsJsx(child) ? true : undefined));
+}
+
+// React's convention: a capitalised function that calls a hook is a component, even when its JSX is drawn by the
+// hook it calls (`export const DatePicker = (props) => usePicker(props, false)`).
+const isPascalCase = (name: string) => /^[A-Z]/.test(name);
+
+function callsHook(node: ts.Node): boolean {
+  if (ts.isCallExpression(node)) {
+    const callee = node.expression;
+    const name = ts.isIdentifier(callee)
+      ? callee.text
+      : ts.isPropertyAccessExpression(callee)
+      ? callee.name.text
+      : undefined;
+    if (name && /^use[A-Z]/.test(name)) return true;
+  }
+  return !!ts.forEachChild(node, (child) => (callsHook(child) ? true : undefined));
 }
 
 function isFunctionLike(node: ts.Node): boolean {
@@ -676,7 +878,8 @@ function readStringProp(
   const node = getPropNode(obj, key, checker);
   if (!node) return undefined;
 
-  if (ts.isStringLiteralLike(node)) return node.text;
+  const value = evalLiteralNode(node, checker);
+  if (typeof value === 'string') return value;
 
   throw new Error(`${context}: "${key}" must be a string literal or a const string.`);
 }
@@ -791,6 +994,33 @@ function evalLiteralNode(expression: ts.Expression, checker: ts.TypeChecker): un
     return result;
   }
 
-  // Calls, arithmetic, let bindings, parameters, ... — can't be known without running the component.
+  // 'a' + 'b': text joined from parts that are all static.
+  if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+    const left = evalLiteralNode(node.left, checker);
+    const right = evalLiteralNode(node.right, checker);
+    if (left === NOT_STATIC || right === NOT_STATIC) return NOT_STATIC;
+    if (typeof left === 'string' || typeof right === 'string') return `${left}${right}`;
+    return NOT_STATIC;
+  }
+
+  // `Up to ${LIMIT}.`: a template whose every substitution is static.
+  if (ts.isTemplateExpression(node)) {
+    let text = node.head.text;
+    for (const span of node.templateSpans) {
+      const value = evalLiteralNode(span.expression, checker);
+      if (value === NOT_STATIC || (value !== null && typeof value === 'object')) return NOT_STATIC;
+      text += `${value}${span.literal.text}`;
+    }
+    return text;
+  }
+
+  // TOKEN.brand: a property of a const object.
+  if (ts.isPropertyAccessExpression(node)) {
+    const target = evalLiteralNode(node.expression, checker);
+    const key = node.name.getText();
+    return isPlainObject(target) && Object.prototype.hasOwnProperty.call(target, key) ? target[key] : NOT_STATIC;
+  }
+
+  // Calls, other arithmetic, let bindings, parameters, ... — can't be known without running the component.
   return NOT_STATIC;
 }
