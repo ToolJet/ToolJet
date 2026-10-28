@@ -90,5 +90,7 @@ export class MoveSpinnerKeysToProperties1792300000000 implements MigrationInterf
     console.log(`${MIGRATION_NAME}: [SUCCESS] Move Spinner keys to properties finished.`);
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {
+    // One-way: keys are moved to where the widget now reads them (existing properties win) and app history is cleared, so the old layout cannot be rebuilt.
+  }
 }
