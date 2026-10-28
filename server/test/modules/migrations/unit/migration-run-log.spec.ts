@@ -16,7 +16,7 @@ function replay(lines: string[]): RunProgress {
   return lines.reduce((run, line) => applyLogLine(run, line), emptyRunProgress());
 }
 
-describe('migration run log', () => {
+describe('migration-helpers/migration-run-log', () => {
   describe('redactLogLine | log lines leave the pod', () => {
     it.each([
       [

@@ -322,11 +322,14 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 
 | File (under `server/test/modules/`) | Covers |
 |---|---|
-| `migrations/unit/how-a-run-is-chosen.spec.ts` | Mode selection, opt-out, end-user banner text, `MIGRATION_PHASE` parsing, cleanup hold-back plan, `blocksAsyncUpgrade` and the allowlist; Cloud entrypoint steps; schema before boot; enum `ADD VALUE` scanning |
-| `migrations/unit/one-runner-at-a-time.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out |
-| `migrations/unit/run-progress-and-logs.spec.ts` | Run rebuilt from runner output, redaction, failed step |
-| `migrations/unit/writing-a-migration.spec.ts` | The rules in `migration-lint.ts`, then every real migration against them; the frozen pre-cutoff list; which table locks each phase may take (`classifyLocks`). CI also runs `npm run db:probe-locks` on a copy of the migration snapshot and fails on a forbidden lock |
-| `migrations/unit/upgrade-from-3-21-58.spec.ts` | Legacy variants, loosen and restore steps. Delete with `legacy-3-21-58-upgrade.ts` |
+| `migrations/unit/migration-mode.spec.ts` | Mode selection, opt-out, end-user banner text, `MIGRATION_PHASE` parsing, cleanup hold-back plan, `blocksAsyncUpgrade` and the allowlist |
+| `migrations/unit/migrate-before-boot.spec.ts` | Cloud entrypoint steps; schema before boot |
+| `migrations/unit/enum-value-additions.spec.ts` | Enum `ADD VALUE` scanning |
+| `migrations/unit/migration-locks.spec.ts` | Wait interval and maximum, skip-if-locked, lock connection handoff, sentinels left out |
+| `migrations/unit/migration-run-log.spec.ts` | Run rebuilt from runner output, redaction, failed step |
+| `migrations/unit/migration-lint.spec.ts` | The rules in `migration-lint.ts`, then every real migration against them; the frozen pre-cutoff list |
+| `migrations/unit/lock-probe.spec.ts` | Which table locks each phase may take (`classifyLocks`). CI also runs `npm run db:probe-locks` on a copy of the migration snapshot and fails on a forbidden lock |
+| `migrations/unit/legacy-3-21-58-upgrade.spec.ts` | Legacy variants, loosen and restore steps. Delete with `legacy-3-21-58-upgrade.ts` |
 | `migrations/e2e/pods-upgrading-together.spec.ts` | Three real pods on one database: no crash loop, migration body runs once, a `NODE_ENV=production` race, active lock only during work and released on SIGKILL |
 | `migrations/e2e/schema-then-data-then-cleanup.spec.ts` | Split phases, single-transaction run for an old database, lock-timeout retry, enum `ADD VALUE`, boot during a long data phase, skip-if-locked, connection options, cleanup hold-back and stop rules, `beforeCommit()`, deadlock retry |
 | `migrations/e2e/short-lock-steps.spec.ts` | `withShortLock` against a held reader lock; inline inside an open transaction; `setNotNull` |
