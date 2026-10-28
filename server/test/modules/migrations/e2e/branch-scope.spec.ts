@@ -21,9 +21,9 @@ describe('helpers/branch_scope | 3.21.58 rows with no branch', () => {
       INSERT INTO organization_git_sync_branches VALUES ('${DEFAULT}', true), ('${FEATURE}', false);
       INSERT INTO apps VALUES ('app', 'front-end'), ('flow', 'workflow');
       INSERT INTO app_versions VALUES
+        ('legacy', 'app', NULL),
         ('on-default', 'app', '${DEFAULT}'),
         ('on-feature', 'app', '${FEATURE}'),
-        ('legacy', 'app', NULL),
         ('workflow', 'flow', NULL);
     `);
   }, 60_000);
