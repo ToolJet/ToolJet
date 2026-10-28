@@ -613,6 +613,28 @@ describe('Concurrent pod boots | rolling upgrade against one database', () => {
       expect(await legacyColumnExists()).toBe(false);
     }, 120_000);
 
+    it('should hold a contract back until an earlier upgrade recorded the migration it requires', async () => {
+      // An instance already in use: one migration recorded before this upgrade.
+      await withScratchConnection(database, (db) =>
+        db.query(`CREATE TABLE migrations (id SERIAL PRIMARY KEY, timestamp bigint NOT NULL, name varchar NOT NULL);
+                  INSERT INTO migrations (timestamp, name) VALUES (1700000000001, 'EarlierRelease1700000000001')`)
+      );
+      expect(await contractPod('skip-expand', 'expand')).toMatchObject({ exitCode: 0 });
+      expect(await contractPod('skip-backfill', 'backfill')).toMatchObject({ exitCode: 0 });
+
+      const held = await contractPod('skip-contract', 'contract');
+
+      expect(held).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(held.stdout).toContain('Holding back DropFixtureGadgetsLegacy1790700000011');
+      expect(await recorded()).toBe(false);
+      expect(await legacyColumnExists()).toBe(true);
+
+      // The next release ships newer code, so its first runner saves a new baseline.
+      await withScratchConnection(database, (db) => db.query('DELETE FROM migration_baselines'));
+      expect(await contractPod('next-contract', 'contract')).toMatchObject({ exitCode: 0 });
+      expect(await recorded()).toBe(true);
+    }, 180_000);
+
     it('should stop before a step while a migration run holds the migration lock', async () => {
       expect(await contractPod('yield-expand', 'expand')).toMatchObject({ exitCode: 0 });
 
