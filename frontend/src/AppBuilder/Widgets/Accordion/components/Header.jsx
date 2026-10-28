@@ -14,13 +14,13 @@ const Header = (props) => {
     isDynamicHeightEnabled,
     headerBackgroundColor,
     darkMode,
-    borderRadius,
     headerHeight,
     isExpanded,
     setExpanded,
     fireEvent,
     isDisabled,
     chevronIconColor,
+    dataCy,
   } = props;
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
@@ -37,25 +37,19 @@ const Header = (props) => {
   const accordionHeaderStyles = useMemo(() => {
     return {
       maxHeight: `${headerMaxHeight}px`,
-      borderTopLeftRadius: `${borderRadius}px`,
-      borderTopRightRadius: `${borderRadius}px`,
-      ...(!isExpanded && { borderBottomLeftRadius: `${borderRadius}px`, borderBottomRightRadius: `${borderRadius}px` }),
       ...headerBgColor,
     };
-  }, [borderRadius, isExpanded, headerBgColor, headerMaxHeight]);
+  }, [headerBgColor, headerMaxHeight]);
 
   const accordionHeaderContainerStyles = useMemo(() => {
     return {
       flexShrink: 0,
       height: '100%',
       padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
-      borderTopLeftRadius: `${borderRadius}px`,
-      borderTopRightRadius: `${borderRadius}px`,
-      ...(!isExpanded && { borderBottomLeftRadius: `${borderRadius}px` }),
       overflow: 'hidden',
       ...headerBgColor,
     };
-  }, [borderRadius, isExpanded, headerBgColor]);
+  }, [headerBgColor]);
 
   const updateHeaderSizeInStore = ({ newHeight }) => {
     const _height = parseInt(newHeight, 10);
@@ -76,6 +70,7 @@ const Header = (props) => {
           isActive={activeSlot === `${id}-header`}
           onResize={updateHeaderSizeInStore}
           componentType="Container"
+          dataCy={dataCy}
         />
       </div>
       <div className="tj-accordion-close-btn">
@@ -83,7 +78,7 @@ const Header = (props) => {
           type="button"
           disabled={isDisabled}
           aria-label={isExpanded ? 'Collapse accordion' : 'Expand accordion'}
-          data-cy={`accordion-close-button`}
+          data-cy={`${dataCy}-toggle-button`}
           onClick={(e) => {
             if (isDisabled) return;
             e.stopPropagation();

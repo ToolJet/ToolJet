@@ -77,7 +77,7 @@ export const Container = ({
   }, [styles.headerBackgroundColor, darkMode]);
 
   const computedStyles = {
-    backgroundColor: contentBgColor.backgroundColor,
+    backgroundColor: isLoading ? contentBgColor.backgroundColor : 'transparent',
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
@@ -86,6 +86,7 @@ export const Container = ({
     flexDirection: 'column',
     position: 'relative',
     boxShadow,
+    overflow: 'hidden',
     '--cc-container-header-divider-color': headerDividerColor,
   };
 
@@ -93,11 +94,10 @@ export const Container = ({
     flexShrink: 0,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${headerMaxHeight}px`,
-    borderTopLeftRadius: `${borderRadius}px`,
-    borderTopRightRadius: `${borderRadius}px`,
     overflow: 'hidden',
     ...headerBgColor,
   };
+
   const containerContentStyles = {
     display: 'flex',
     height: '100%',
@@ -106,6 +106,7 @@ export const Container = ({
       opacity: 0.5,
       pointerEvents: 'none',
     }),
+    ...contentBgColor,
   };
 
   const updateHeaderSizeInStore = ({ newHeight }) => {
@@ -147,10 +148,6 @@ export const Container = ({
           >
             <ContainerComponent
               id={id}
-              styles={{
-                ...contentBgColor,
-                borderRadius: `${borderRadius}px`,
-              }}
               canvasHeight={isDynamicHeightEnabled ? '100%' : height}
               canvasWidth={width}
               darkMode={darkMode}
