@@ -323,7 +323,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-ai-frontend
-          path: frontend/coverage-ai/ee/report/
+          path: frontend/coverage-ai/ee/report/coverage-summary.json
           if-no-files-found: error
       # Fails if an App Builder source file is not assigned to a subsystem in
       # app-builder-coverage-manifest.json. The harness contract spec already
@@ -634,7 +634,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-ai-backend
-          path: server/coverage-ai/ee/report/
+          path: server/coverage-ai/ee/report/coverage-summary.json
           if-no-files-found: error
       - name: Upload combined coverage report
         uses: actions/upload-artifact@v7
