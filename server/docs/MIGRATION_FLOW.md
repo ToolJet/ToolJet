@@ -195,7 +195,7 @@ Removals wait for `ContractLegacyBranchModel`, one upgrade later. Reads during t
 
 - Runs as a child of the server (`MIGRATION_PHASE=backfill`), started at boot or by the dead-run check.
 - All backfill migrations run in one transaction. A failure undoes the data changes only. The schema additions stay, and the next run does the backfill migrations again.
-- **Tail.** A backfill can put its lock-taking statements (index builds, triggers, `NOT VALID`, `VALIDATE`) in `tail()` (`BackfillMigration`, `migration-mode.ts`). Tails run after every backfill `up()`, just before commit, so the SHARE locks they take last seconds instead of the whole run. Sign-in writes that pass the gate only wait that long. A single-transaction run calls tails at the same point.
+- **Tail.** A backfill can put its lock-taking statements (index builds, triggers, foreign keys `NOT VALID`, `VALIDATE`) in `tail()` (`BackfillMigration`, `migration-mode.ts`). Tails run after every backfill `up()`, just before commit, so the SHARE locks they take last seconds instead of the whole run. Sign-in writes that pass the gate only wait that long. A single-transaction run calls tails at the same point.
 - **Retries.** A deadlock (`40P01`), serialization failure (`40001`) or lock timeout (`55P03`) rolls the backfill back and runs it again, up to 3 attempts, 2s apart. Any other error fails the run at once.
 
 ### Contract phase

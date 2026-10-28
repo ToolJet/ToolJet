@@ -53,7 +53,7 @@ The viewer keeps the released app's `GET apps/slugs/:slug` response in IndexedDB
 - the app's name/public/maintenance values and released version id;
 - the app's change stamp (`app_viewer_cache_stamps`), moved by triggers from migration `AddViewerCacheStamps`: permissions on the released version, the workspace theme (every app in it), a release (the app plus apps embedding it as a module), app/version slugs and first release/unrelease (every app in the workspace, for links);
 - the viewer's id and their groups with access (`findUserGroupsWithAppAccess`, read live);
-- the last recorded migration (`max(migrations.id)`): in async mode a backfill rewrites components after the new version is serving;
+- the last migration id handed out (`migrations_id_seq`, not the table, which an upgrade locks): in async mode a backfill rewrites components after the new version is serving;
 - the server version (covers deploys) and the `VIEWER_LICENSE_FIELDS` license terms, both read live.
 
 Not `apps.updated_at` (every draft edit bumps it) and not released version content (frozen).

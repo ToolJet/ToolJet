@@ -198,6 +198,8 @@ const EXPAND_DATA_CHANGES: Rule[] = [
 const BACKFILL_FORBIDDEN: Rule[] = [
   ['DROP', /\bDROP\s+(?:TABLE|COLUMN|CONSTRAINT|INDEX|TRIGGER|FUNCTION|TYPE|VIEW|SEQUENCE)\b/i],
   ['SET NOT NULL', /\bSET\s+NOT\s+NULL\b/i],
+  // ACCESS EXCLUSIVE even NOT VALID.
+  ['CHECK constraint', /\bADD\s+(?:CONSTRAINT\s+\S+\s+)?CHECK\b/i],
   ['ADD CONSTRAINT without NOT VALID', /\bADD\s+(?:CONSTRAINT|CHECK|UNIQUE|FOREIGN\s+KEY)\b(?![^,;]*\bNOT\s+VALID\b)/i],
   ['ALTER COLUMN or RENAME', /\bALTER\s+TABLE\b[^;]*\b(?:ALTER\s+COLUMN|RENAME)\b/i],
   ['LOCK TABLE', /\bLOCK\s+TABLE\b/i],
@@ -212,7 +214,7 @@ const BACKFILL_FORBIDDEN: Rule[] = [
 const TAIL_ONLY: Rule[] = [
   ['CREATE INDEX', /\bCREATE\s+(?:UNIQUE\s+)?INDEX\b/i],
   ['CREATE TRIGGER', /\bCREATE\s+(?:OR\s+REPLACE\s+)?TRIGGER\b/i],
-  ['NOT VALID', /\bNOT\s+VALID\b/i],
+  ['foreign key NOT VALID', /\bFOREIGN\s+KEY\b[^;]*\bNOT\s+VALID\b/i],
   ['VALIDATE CONSTRAINT', /\bVALIDATE\s+CONSTRAINT\b/i],
 ];
 const SCHEMA_API = new Set([
@@ -415,6 +417,14 @@ export class Sample1799999999999 implements MigrationInterface {
     expect(phaseViolations('expand', migration(up))).toEqual([]);
   });
 
+  it('should pass a backfill that adds a foreign key NOT VALID and validates it in tail()', () => {
+    const source = migration(
+      'await queryRunner.query(`UPDATE apps SET owner_id = created_by`);',
+      'await queryRunner.query(`ALTER TABLE apps ADD CONSTRAINT fk FOREIGN KEY (owner_id) REFERENCES users(id) NOT VALID`); await queryRunner.query(`ALTER TABLE apps VALIDATE CONSTRAINT fk`);'
+    );
+    expect(phaseViolations('backfill', source)).toEqual([]);
+  });
+
   it('should pass a backfill that updates rows and builds its index in tail()', () => {
     const source = migration(
       'await queryRunner.query(`UPDATE apps SET slug = name`);',
@@ -436,6 +446,11 @@ export class Sample1799999999999 implements MigrationInterface {
       'ADD CONSTRAINT without NOT VALID',
     ],
     ['the TypeORM schema API', "await queryRunner.addColumn('apps', column);", 'addColumn'],
+    [
+      'a CHECK, even NOT VALID',
+      'await queryRunner.query(`ALTER TABLE apps ADD CONSTRAINT c CHECK (slug IS NOT NULL) NOT VALID`);',
+      'CHECK constraint',
+    ],
   ])('should flag a backfill with %s', (_what, up, message) => {
     expect(phaseViolations('backfill', migration(up))).toEqual([expect.stringContaining(message)]);
   });
@@ -501,9 +516,13 @@ export class Sample1799999999999 implements MigrationInterface {
 
   it('should keep contract migrations to short, rerunnable steps', () => {
     const known = migrationClassNames();
-    const violations = migrationsNewerThanCutoff('migrations/contract').flatMap((source) =>
-      contractViolations(source, known)
-    );
+    const violations = readdirSync(join(SERVER_ROOT, 'migrations/contract'))
+      .filter((name) => name.endsWith('.ts'))
+      .map((name) => ({
+        file: `migrations/contract/${name}`,
+        text: readFileSync(join(SERVER_ROOT, 'migrations/contract', name), 'utf8'),
+      }))
+      .flatMap((source) => contractViolations(source, known));
     expect(violations).toEqual([]);
   });
 });

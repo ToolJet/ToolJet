@@ -142,7 +142,7 @@ async function inTransaction(
   }
 }
 
-// ponytail: only single-transaction upgrades from before 3.21.58 need this; delete with that upgrade path.
+// Single-transaction runs only: async expand commits before the backfill uses a new value.
 async function planEnumAdditions(schemaDS: DataSource): Promise<EnumAdditionPlan> {
   const additions = extractEnumValueAdditions(await new MigrationExecutor(schemaDS).getPendingMigrations());
   if (!additions.length) return { precommittable: [], hasMissingType: false };

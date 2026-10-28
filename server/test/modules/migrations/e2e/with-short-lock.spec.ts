@@ -72,8 +72,13 @@ describe('migration-helpers/with-short-lock', () => {
 
     it('should run inline, without its own commit, inside a transaction the caller opened', async () => {
       await runner.startTransaction();
+      const [{ lock_timeout: before }] = await runner.query('SHOW lock_timeout');
       await withShortLock(runner, ['ALTER TABLE widgets DROP COLUMN IF EXISTS name']);
+      // Its own transaction would be a savepoint here, and its SET LOCAL would outlive it.
+      const [{ lock_timeout: after }] = await runner.query('SHOW lock_timeout');
       await runner.rollbackTransaction();
+
+      expect(after).toBe(before);
 
       expect(await columnIsNullable()).toBe(true);
     });

@@ -977,8 +977,10 @@ jobs:
       - name: Fail if a new or edited migration imports project code
         shell: bash
         run: |
-          # The old folder stays in the pathspec so moved files pair up as renames and are not checked
-          mapfile -t files < <(git diff -M --name-only --diff-filter=AM HEAD^1 HEAD -- server/migrations server/data-migrations)
+          # The old folder stays in the pathspec so moved files pair up as renames; a move with small
+          # edits (90%+ similar) keeps its old imports, a heavier rewrite is checked
+          mapfile -t files < <(git diff -M --name-status --diff-filter=AMR HEAD^1 HEAD -- server/migrations server/data-migrations \
+            | awk '$1 ~ /^[AM]$/ || ($1 ~ /^R/ && substr($1, 2) + 0 < 90) {print $NF}')
           [ ${#files[@]} -eq 0 ] && exit 0
           node scripts/check-migration-imports.mjs "${files[@]}"
 
