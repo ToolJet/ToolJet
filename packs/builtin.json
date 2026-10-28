@@ -1,5 +1,3 @@
 {
-  "packs": [
-    "packs/shadcn"
-  ]
+  "packs": ["packs/shadcn", "packs/antd"]
 }

@@ -1,0 +1,19 @@
+/* Upload: the dropzone (or button) and its list, then Clear all under them, in the space the box gives. */
+.tj-ant-upload .tj-ant-upload-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.tj-ant-upload.tj-ant--fill .tj-ant-upload-body {
+  height: 100%;
+}
+.tj-ant-upload .tj-ant-upload-body > .ant-upload-wrapper {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+.tj-ant-upload .tj-ant-upload-clear {
+  flex: none;
+  align-self: flex-end;
+  padding-inline: 0;
+}
