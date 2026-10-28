@@ -10,17 +10,17 @@ export interface ProbedLock {
 export type MigrationPart = 'up' | 'beforeCommit';
 
 /**
- * Locks that stall the release still serving, per phase. Expand may take ACCESS EXCLUSIVE briefly (lock_timeout
- * bounds the wait) but not scan under a write-blocking lock. A backfill holds its locks for the whole run, so up()
- * only writes rows; its beforeCommit(), just before commit, may block writes but not reads. Contract steps are short anyway.
+ * Locks that stall the release still serving, per phase. Schema may take ACCESS EXCLUSIVE briefly (lock_timeout
+ * bounds the wait) but not scan under a write-blocking lock. A data migration holds its locks for the whole run, so up()
+ * only writes rows; its beforeCommit(), just before commit, may block writes but not reads. Cleanup steps are short anyway.
  */
 const FORBIDDEN_ON_EXISTING_TABLES: Record<MigrationPhase, Record<MigrationPart, readonly string[]>> = {
-  expand: { up: ['ShareLock', 'ShareRowExclusiveLock', 'ExclusiveLock'], beforeCommit: [] },
-  backfill: {
+  schema: { up: ['ShareLock', 'ShareRowExclusiveLock', 'ExclusiveLock'], beforeCommit: [] },
+  data: {
     up: ['ShareUpdateExclusiveLock', 'ShareLock', 'ShareRowExclusiveLock', 'ExclusiveLock', 'AccessExclusiveLock'],
     beforeCommit: ['ExclusiveLock', 'AccessExclusiveLock'],
   },
-  contract: { up: [], beforeCommit: [] },
+  cleanup: { up: [], beforeCommit: [] },
 };
 
 export function classifyLocks(phase: MigrationPhase, part: MigrationPart, locks: readonly ProbedLock[]): string[] {
@@ -31,7 +31,7 @@ export function classifyLocks(phase: MigrationPhase, part: MigrationPart, locks:
 }
 
 export function phaseOfMigrationFile(file: string): MigrationPhase {
-  if (file.includes('/contract/')) return 'contract';
-  if (file.includes('/backfill/')) return 'backfill';
-  return 'expand';
+  if (file.includes('/cleanup/')) return 'cleanup';
+  if (file.includes('/data/')) return 'data';
+  return 'schema';
 }

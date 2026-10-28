@@ -112,13 +112,13 @@ const DROP_WITHOUT_IF_EXISTS =
   /\bDROP\s+(?:TABLE|COLUMN|CONSTRAINT|INDEX(?:\s+CONCURRENTLY)?|TRIGGER|FUNCTION|TYPE|VIEW|SEQUENCE)\s+(?!IF\s+EXISTS\b)/i;
 
 /**
- * Contract runs after writes reopen, one short transaction per step, so up() goes through
+ * Cleanup runs after writes reopen, one short transaction per step, so up() goes through
  * withShortLock / setNotNull, never queryRunner directly, and every step is safe to run twice.
  */
 /** Class names in every phase folder. */
 function migrationClassNames(): Set<string> {
   return new Set(
-    ['expand', 'backfill', 'contract'].flatMap((phase) =>
+    ['schema', 'data', 'cleanup'].flatMap((phase) =>
       readdirSync(join(SERVER_ROOT, 'migrations', phase))
         .filter((name) => name.endsWith('.ts'))
         .map((name) => readFileSync(join(SERVER_ROOT, 'migrations', phase, name), 'utf8').match(/class\s+(\w+)/)?.[1])
@@ -127,7 +127,7 @@ function migrationClassNames(): Set<string> {
   );
 }
 
-function contractViolations({ file, text }: MigrationSource, knownMigrations: ReadonlySet<string>): string[] {
+function cleanupViolations({ file, text }: MigrationSource, knownMigrations: ReadonlySet<string>): string[] {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const cls = migrationClass(source);
   if (!cls) return [`${file}: no migration class found. ${RULES_DOC}`];
@@ -237,7 +237,7 @@ function entityMappings(sources: MigrationSource[]): Set<string> {
   return mapped;
 }
 
-/** Tables and columns a contract migration's up() drops, as `table` and `table.column`. */
+/** Tables and columns a cleanup migration's up() drops, as `table` and `table.column`. */
 function droppedSchema({ file, text }: MigrationSource): string[] {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const up = migrationClass(source) && method(migrationClass(source), 'up');
@@ -268,13 +268,13 @@ function entityFiles(): MigrationSource[] {
 const PHASE_RULES_FROM = 1793100000000;
 
 type Rule = [string, RegExp];
-const EXPAND_DATA_CHANGES: Rule[] = [
+const SCHEMA_DATA_CHANGES: Rule[] = [
   ['UPDATE … SET', /\bUPDATE\s+\S+\s+SET\b/i],
   ['DELETE FROM', /\bDELETE\s+FROM\b/i],
   ['INSERT … SELECT', /\bINSERT\s+INTO\b[^;]*\bSELECT\b/i],
 ];
-/** Long or exclusive locks; in a backfill they would block readers for the whole run. */
-const BACKFILL_FORBIDDEN: Rule[] = [
+/** Long or exclusive locks; in a data migration they would block readers for the whole run. */
+const DATA_FORBIDDEN: Rule[] = [
   ['DROP', /\bDROP\s+(?:TABLE|COLUMN|CONSTRAINT|INDEX|TRIGGER|FUNCTION|TYPE|VIEW|SEQUENCE)\b/i],
   ['SET NOT NULL', /\bSET\s+NOT\s+NULL\b/i],
   // ACCESS EXCLUSIVE even NOT VALID.
@@ -320,29 +320,29 @@ function indexesOnExistingTables(sql: string): string[] {
     .map((table) => `CREATE INDEX on existing table ${table}`);
 }
 
-/** Expand adds only and changes no rows; backfill keeps lock-taking statements to beforeCommit(). */
-function phaseViolations(phase: 'expand' | 'backfill', { file, text }: MigrationSource): string[] {
+/** Schema adds only and changes no rows; data keeps lock-taking statements to beforeCommit(). */
+function phaseViolations(phase: 'schema' | 'data', { file, text }: MigrationSource): string[] {
   if (OPT_OUT.test(text)) return [];
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const cls = migrationClass(source);
   const up = cls && method(cls, 'up');
   if (!up?.body) return [];
   const { sql, identifiers } = codeIn(up.body);
-  if (phase === 'expand') {
-    const found = [...matching(EXPAND_DATA_CHANGES, sql), ...indexesOnExistingTables(sql)];
+  if (phase === 'schema') {
+    const found = [...matching(SCHEMA_DATA_CHANGES, sql), ...indexesOnExistingTables(sql)];
     return found.length
-      ? [`${file}: expand changes rows or locks a table (${found.join(', ')}); move it to backfill. ${RULES_DOC}`]
+      ? [`${file}: schema changes rows or locks a table (${found.join(', ')}); move it to data. ${RULES_DOC}`]
       : [];
   }
   const beforeCommit = method(cls, 'beforeCommit');
   const beforeCommitCode = beforeCommit?.body ? codeIn(beforeCommit.body) : { sql: '', identifiers: new Set<string>() };
   const violations: string[] = [];
   const forbidden = [
-    ...matching(BACKFILL_FORBIDDEN, `${sql} ${beforeCommitCode.sql}`),
+    ...matching(DATA_FORBIDDEN, `${sql} ${beforeCommitCode.sql}`),
     ...[...identifiers, ...beforeCommitCode.identifiers].filter((name) => SCHEMA_API.has(name)),
   ];
   if (forbidden.length) {
-    violations.push(`${file}: backfill holds a long lock (${forbidden.join(', ')}); move it to contract. ${RULES_DOC}`);
+    violations.push(`${file}: data holds a long lock (${forbidden.join(', ')}); move it to cleanup. ${RULES_DOC}`);
   }
   const beforeCommitOnly = matching(BEFORE_COMMIT_ONLY, sql);
   if (beforeCommitOnly.length)
@@ -381,7 +381,7 @@ function frozenListDrift(frozen: string[], current: string[]): { added: string[]
 }
 
 const sample = (up: string, down = '// irreversible: values only grow', header = '') => ({
-  file: 'migrations/expand/1799999999999-Sample.ts',
+  file: 'migrations/schema/1799999999999-Sample.ts',
   text: `${header}
 import { MigrationInterface, QueryRunner } from 'typeorm';
 export class Sample1799999999999 implements MigrationInterface {
@@ -457,21 +457,19 @@ describe('Migration authoring rules | migrations newer than the cutoff', () => {
   });
 
   it('should keep schema migrations additive and reversible', () => {
-    const violations = migrationsNewerThanCutoff('migrations/expand').flatMap((source) => authoringViolations(source));
+    const violations = migrationsNewerThanCutoff('migrations/schema').flatMap((source) => authoringViolations(source));
     expect(violations).toEqual([]);
   });
 
   it('should keep data migrations additive and reversible', () => {
-    const violations = migrationsNewerThanCutoff('migrations/backfill').flatMap((source) =>
-      authoringViolations(source)
-    );
+    const violations = migrationsNewerThanCutoff('migrations/data').flatMap((source) => authoringViolations(source));
     expect(violations).toEqual([]);
   });
 });
 
-describe('Migration authoring rules | expand and backfill placement', () => {
+describe('Migration authoring rules | schema and data placement', () => {
   const migration = (up: string, beforeCommit = '') => ({
-    file: 'migrations/backfill/1799999999999-Sample.ts',
+    file: 'migrations/data/1799999999999-Sample.ts',
     text: `
 import { MigrationInterface, QueryRunner } from 'typeorm';
 export class Sample1799999999999 implements MigrationInterface {
@@ -488,29 +486,29 @@ export class Sample1799999999999 implements MigrationInterface {
       'await queryRunner.query(`CREATE INDEX apps_slug ON apps (slug)`);',
       'existing table apps',
     ],
-  ])('should flag expand that runs %s', (_what, up, label) => {
-    expect(phaseViolations('expand', migration(up))).toEqual([expect.stringContaining(label)]);
+  ])('should flag schema that runs %s', (_what, up, label) => {
+    expect(phaseViolations('schema', migration(up))).toEqual([expect.stringContaining(label)]);
   });
 
-  it('should pass expand that creates a table and indexes it', () => {
+  it('should pass schema that creates a table and indexes it', () => {
     const up = 'await queryRunner.query(`CREATE TABLE gadgets (id int); CREATE INDEX gadgets_id ON gadgets (id)`);';
-    expect(phaseViolations('expand', migration(up))).toEqual([]);
+    expect(phaseViolations('schema', migration(up))).toEqual([]);
   });
 
-  it('should pass a backfill that adds a foreign key NOT VALID and validates it in beforeCommit()', () => {
+  it('should pass a data migration that adds a foreign key NOT VALID and validates it in beforeCommit()', () => {
     const source = migration(
       'await queryRunner.query(`UPDATE apps SET owner_id = created_by`);',
       'await queryRunner.query(`ALTER TABLE apps ADD CONSTRAINT fk FOREIGN KEY (owner_id) REFERENCES users(id) NOT VALID`); await queryRunner.query(`ALTER TABLE apps VALIDATE CONSTRAINT fk`);'
     );
-    expect(phaseViolations('backfill', source)).toEqual([]);
+    expect(phaseViolations('data', source)).toEqual([]);
   });
 
-  it('should pass a backfill that updates rows and builds its index in beforeCommit()', () => {
+  it('should pass a data migration that updates rows and builds its index in beforeCommit()', () => {
     const source = migration(
       'await queryRunner.query(`UPDATE apps SET slug = name`);',
       'await queryRunner.query(`CREATE INDEX apps_slug ON apps (slug)`);'
     );
-    expect(phaseViolations('backfill', source)).toEqual([]);
+    expect(phaseViolations('data', source)).toEqual([]);
   });
 
   it.each([
@@ -519,7 +517,7 @@ export class Sample1799999999999 implements MigrationInterface {
       'await queryRunner.query(`CREATE INDEX apps_slug ON apps (slug)`);',
       'move it to beforeCommit()',
     ],
-    ['a DROP', 'await queryRunner.query(`ALTER TABLE apps DROP COLUMN slug`);', 'move it to contract'],
+    ['a DROP', 'await queryRunner.query(`ALTER TABLE apps DROP COLUMN slug`);', 'move it to cleanup'],
     [
       'a constraint without NOT VALID',
       'await queryRunner.query(`ALTER TABLE apps ADD CONSTRAINT c CHECK (true)`);',
@@ -531,23 +529,23 @@ export class Sample1799999999999 implements MigrationInterface {
       'await queryRunner.query(`ALTER TABLE apps ADD CONSTRAINT c CHECK (slug IS NOT NULL) NOT VALID`);',
       'CHECK constraint',
     ],
-  ])('should flag a backfill with %s', (_what, up, message) => {
-    expect(phaseViolations('backfill', migration(up))).toEqual([expect.stringContaining(message)]);
+  ])('should flag a data migration with %s', (_what, up, message) => {
+    expect(phaseViolations('data', migration(up))).toEqual([expect.stringContaining(message)]);
   });
 
-  it.each(['expand', 'backfill'] as const)('should keep new %s migrations in their phase', (phase) => {
+  it.each(['schema', 'data'] as const)('should keep new %s migrations in their phase', (phase) => {
     const sources = newerThanPhaseRules(migrationsNewerThanCutoff(`migrations/${phase}`));
     expect(sources.flatMap((source) => phaseViolations(phase, source))).toEqual([]);
   });
 });
 
-describe('Migration authoring rules | contract migrations', () => {
-  const contract = (
+describe('Migration authoring rules | cleanup migrations', () => {
+  const cleanup = (
     up: string,
     header = "transaction = false; requires = 'StopReadingSlug1799999999998';",
     down = '// re-adding the column restores nothing'
   ) => ({
-    file: 'migrations/contract/1799999999999-Sample.ts',
+    file: 'migrations/cleanup/1799999999999-Sample.ts',
     text: `
 import { MigrationInterface, QueryRunner } from 'typeorm';
 export class Sample1799999999999 implements MigrationInterface {
@@ -560,49 +558,49 @@ export class Sample1799999999999 implements MigrationInterface {
   const known = new Set(['StopReadingSlug1799999999998']);
 
   it('should pass a step that goes through withShortLock', () => {
-    expect(contractViolations(contract(shortDrop), known)).toEqual([]);
+    expect(cleanupViolations(cleanup(shortDrop), known)).toEqual([]);
   });
 
   it.each([
     [
       'runs inside a transaction',
-      contract(shortDrop, "requires = 'StopReadingSlug1799999999998';"),
+      cleanup(shortDrop, "requires = 'StopReadingSlug1799999999998';"),
       'declare transaction = false',
     ],
-    ['names no requires', contract(shortDrop, 'transaction = false;'), 'requires must name'],
+    ['names no requires', cleanup(shortDrop, 'transaction = false;'), 'requires must name'],
     [
       'requires an unknown migration',
-      contract(shortDrop, "transaction = false; requires = 'Nope1799999999997';"),
+      cleanup(shortDrop, "transaction = false; requires = 'Nope1799999999997';"),
       'no migration Nope1799999999997',
     ],
     [
       'calls queryRunner directly',
-      contract('await queryRunner.query(`ALTER TABLE apps DROP COLUMN IF EXISTS slug`);'),
+      cleanup('await queryRunner.query(`ALTER TABLE apps DROP COLUMN IF EXISTS slug`);'),
       'up() calls queryRunner.query',
     ],
     [
       'drops without IF EXISTS',
-      contract("await withShortLock(queryRunner, ['ALTER TABLE apps DROP COLUMN slug']);"),
+      cleanup("await withShortLock(queryRunner, ['ALTER TABLE apps DROP COLUMN slug']);"),
       'needs IF EXISTS',
     ],
     [
       'has an empty down()',
-      contract(shortDrop, "transaction = false; requires = 'StopReadingSlug1799999999998';", ''),
+      cleanup(shortDrop, "transaction = false; requires = 'StopReadingSlug1799999999998';", ''),
       'down() is missing or empty',
     ],
-  ])('should flag a contract migration that %s', (_how, source, message) => {
-    expect(contractViolations(source, known)).toEqual([expect.stringContaining(message)]);
+  ])('should flag a cleanup migration that %s', (_how, source, message) => {
+    expect(cleanupViolations(source, known)).toEqual([expect.stringContaining(message)]);
   });
 
-  it('should keep contract migrations to short, rerunnable steps', () => {
+  it('should keep cleanup migrations to short, rerunnable steps', () => {
     const known = migrationClassNames();
-    const violations = readdirSync(join(SERVER_ROOT, 'migrations/contract'))
+    const violations = readdirSync(join(SERVER_ROOT, 'migrations/cleanup'))
       .filter((name) => name.endsWith('.ts'))
       .map((name) => ({
-        file: `migrations/contract/${name}`,
-        text: readFileSync(join(SERVER_ROOT, 'migrations/contract', name), 'utf8'),
+        file: `migrations/cleanup/${name}`,
+        text: readFileSync(join(SERVER_ROOT, 'migrations/cleanup', name), 'utf8'),
       }))
-      .flatMap((source) => contractViolations(source, known));
+      .flatMap((source) => cleanupViolations(source, known));
     expect(violations).toEqual([]);
   });
 
@@ -629,17 +627,17 @@ export class App {
         ['apps.slug', 'apps.gone'],
       ],
       ['a table', 'DROP TABLE IF EXISTS public.apps', ['apps']],
-    ])('should find %s a contract drops', (_what, sql, expected) => {
-      expect(droppedSchema(contract(`await withShortLock(queryRunner, [\`${sql}\`]);`))).toEqual(expected);
+    ])('should find %s a cleanup drops', (_what, sql, expected) => {
+      expect(droppedSchema(cleanup(`await withShortLock(queryRunner, [\`${sql}\`]);`))).toEqual(expected);
     });
 
     it('should not drop a table or column an entity still maps', () => {
       const mapped = entityMappings(entityFiles());
       expect(mapped.has('app_versions.branch_id')).toBe(true);
-      const stillMapped = readdirSync(join(SERVER_ROOT, 'migrations/contract'))
+      const stillMapped = readdirSync(join(SERVER_ROOT, 'migrations/cleanup'))
         .filter((name) => name.endsWith('.ts'))
         .flatMap((name) =>
-          droppedSchema({ file: name, text: readFileSync(join(SERVER_ROOT, 'migrations/contract', name), 'utf8') })
+          droppedSchema({ file: name, text: readFileSync(join(SERVER_ROOT, 'migrations/cleanup', name), 'utf8') })
             .filter((dropped) => mapped.has(dropped))
             .map((dropped) => `${name}: drops ${dropped}, which an entity still maps; remove it from the entity first.`)
         );
@@ -657,7 +655,7 @@ describe('Migration authoring rules | migrations at or before the cutoff', () =>
     expect(frozenListDrift(['A1', 'B2'], ['A1', 'C3'])).toEqual({ added: ['C3'], missing: ['B2'] });
   });
 
-  it.each(['migrations/expand', 'migrations/backfill'] as const)('should keep the %s list frozen', (directory) => {
+  it.each(['migrations/schema', 'migrations/data'] as const)('should keep the %s list frozen', (directory) => {
     expect(frozenListDrift(frozenPreCutoff[directory], preCutoffMigrations(directory))).toEqual({
       added: [],
       missing: [],
@@ -667,7 +665,7 @@ describe('Migration authoring rules | migrations at or before the cutoff', () =>
 
 /** TypeORM only loads the phase folders, so a file anywhere else would never run. */
 describe('Migration authoring rules | phase folders', () => {
-  const PHASE_FOLDERS = ['expand', 'backfill', 'contract'];
+  const PHASE_FOLDERS = ['schema', 'data', 'cleanup'];
 
   it('should keep every migration inside a phase folder', () => {
     expect(readdirSync(join(SERVER_ROOT, 'migrations')).sort()).toEqual([...PHASE_FOLDERS].sort());

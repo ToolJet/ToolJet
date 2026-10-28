@@ -183,9 +183,9 @@ export class MigrationRunsService implements OnApplicationShutdown {
   private statusRead: Promise<MigrationStatus> | null = null;
   private pool: Pool | null = null;
   private childExit: Promise<void> | null = null;
-  /** Separate from `child`: a contract run never blocks a migration run. */
-  private contractChild: ChildProcess | null = null;
-  private contractExit: Promise<void> | null = null;
+  /** Separate from `child`: a cleanup run never blocks a migration run. */
+  private cleanupChild: ChildProcess | null = null;
+  private cleanupExit: Promise<void> | null = null;
   private finalWrite: Promise<void> | null = null;
   private shuttingDown = false;
   private jobsTimer: NodeJS.Timeout | null = null;
@@ -313,7 +313,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
     if (this.jobsTimer) clearInterval(this.jobsTimer);
     if (this.deadRunTimer) clearInterval(this.deadRunTimer);
     // Let the exit handler record "failed" before the pool closes, so the row does not wait out the stale rule.
-    await Promise.all([stopChild(this.child, this.childExit), stopChild(this.contractChild, this.contractExit)]);
+    await Promise.all([stopChild(this.child, this.childExit), stopChild(this.cleanupChild, this.cleanupExit)]);
     await this.finalWrite;
     await this.pool?.end().catch(() => undefined);
   }
@@ -332,7 +332,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
         ...process.env,
         MIGRATION_SKIP_IF_LOCKED: String(!claimedRunId),
         // Schema already applied at boot (migrateSchemaBeforeBoot); data rolls back on its own.
-        MIGRATION_PHASE: 'backfill',
+        MIGRATION_PHASE: 'data',
       },
     });
     this.child = child;
@@ -436,26 +436,26 @@ export class MigrationRunsService implements OnApplicationShutdown {
         }
         if (await this.updateRun(runId, run, 'succeeded')) await this.dropEarlierLogs(runId);
       });
-      // After the status write, so writes have reopened before contract starts.
-      if (succeeded) void this.finalWrite.then(() => this.runContractChild());
+      // After the status write, so writes have reopened before cleanup starts.
+      if (succeeded) void this.finalWrite.then(() => this.runCleanupChild());
     });
   }
 
   /** Output goes to the pod log only. A failed step stays pending for the next boot; the run stays succeeded. */
-  private runContractChild(): void {
-    if (this.shuttingDown || this.contractChild) return;
+  private runCleanupChild(): void {
+    if (this.shuttingDown || this.cleanupChild) return;
     const child = spawn(setupCommand(process.env), {
       shell: true,
       detached: true,
       stdio: ['ignore', 'inherit', 'inherit'],
-      env: { ...process.env, MIGRATION_PHASE: 'contract' },
+      env: { ...process.env, MIGRATION_PHASE: 'cleanup' },
     });
-    this.contractChild = child;
-    this.contractExit = new Promise((resolve) => child.once('close', () => resolve()));
+    this.cleanupChild = child;
+    this.cleanupExit = new Promise((resolve) => child.once('close', () => resolve()));
     child.on('close', (code) => {
-      this.contractChild = null;
+      this.cleanupChild = null;
       if (code && code !== SKIPPED_EXIT_CODE) {
-        console.warn(`[migrations] Contract migrations stopped (exit ${code}); the rest run on the next boot.`);
+        console.warn(`[migrations] Cleanup migrations stopped (exit ${code}); the rest run on the next boot.`);
       }
     });
   }
