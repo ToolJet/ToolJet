@@ -27,7 +27,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, usePopupContainer, useThemeStyles } from '../lib/MuiProvider';
 import { PALETTE_COLORS } from '../lib/field';
-import { readField, rowIdOf, rowKeyOf, sameRecord, slotNames, str, toKeyedItems, toRows, type Row } from '../lib/data';
+import { followSelection, idGroup, readField, repeatedIds, rowIdOf, rowIdText, rowKeyOf, sameRecord, slotNames, str, toKeyedItems, toRows, type Row } from '../lib/data';
 import { formatCell } from '../lib/format';
 import { BlockSkeleton, Loading, Spinner } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
@@ -407,26 +407,53 @@ export const List = () => {
   const field = str(itemKey) || 'id';
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const keys = useMemo(() => occurrenceKeys(items, field), [rawItems, field]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const ids = useMemo(() => items.map((r) => rowIdText(r, field)), [rawItems, field]);
+  // A repeated id is a data problem the selection can only partly work around (lib/data followSelection): reported once.
+  const warned = useRef(false);
+  useEffect(() => {
+    const repeated = repeatedIds(ids);
+    if (warned.current || !repeated.length) return;
+    warned.current = true;
+    console.warn(
+      `[List] Item ids should be unique: ${repeated.slice(0, 5).map((id) => JSON.stringify(id)).join(', ')} ` +
+        `${repeated.length === 1 ? 'is' : 'are'} held by more than one item in the "${field}" field. A selected item whose ` +
+        'id is repeated stays selected only while it is the same record; a change that leaves that unclear clears it.'
+    );
+  }, [ids, field]);
   // The picked item's own key (its occurrence of a repeated id). Without one (nothing picked here yet), the exposed
   // record's id names it.
   const [picked, setPicked] = useState('');
+  // The selected id's items (their content) when picked or last followed (lib/data followSelection).
+  const group = useRef<string[]>([]);
   const exposedKey = selectedItem && Object.keys(selectedItem).length ? rowKeyOf(selectedItem as Row, field, -1) : '';
   const selectedKey = picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(items[i], field, i) === exposedKey) ?? '') : '');
 
   const select = (row: Row | null, index: number) => {
     setPicked(row && index >= 0 ? keys[index] ?? '' : '');
+    group.current = row ? idGroup(items, ids, rowIdText(row, field)) : [];
     setSelectedItem(row ?? {});
     // The item's own key value, as the app wrote it (a number stays a number).
     setSelectedItemKey((row ? rowIdOf(row, field, index) : '') as string);
     if (row) onItemClick();
   };
   // The selection follows its item by key when the items change: a refresh republishes the fresh record, a reorder keeps
-  // it, and a removal clears it (it kept exposing the old record). No onItemClick: the user picked nothing.
+  // it, and a removal clears it (it kept exposing the old record). A repeated id is followed only to the same record by
+  // content, else cleared (lib/data followSelection). No onItemClick: the user picked nothing.
   const latestSelected = useRef(selectedItem);
   latestSelected.current = selectedItem;
   useEffect(() => {
     if (!selectedKey) return;
-    const index = keys.indexOf(selectedKey);
+    const followed = followSelection({
+      rows: items,
+      ids,
+      at: keys.indexOf(selectedKey),
+      id: rowIdText((latestSelected.current ?? {}) as Row, field),
+      record: latestSelected.current,
+      before: group.current,
+    });
+    const index = followed.index;
+    group.current = index >= 0 ? followed.group : [];
     const fresh = items[index];
     if (!fresh) {
       setPicked('');

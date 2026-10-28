@@ -11,10 +11,9 @@ import {
   ToggleButtonGroup as MuiToggleButtonGroup,
 } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { FormControlField, PALETTE_COLORS, useFieldProps } from '../lib/field';
-import { str, toArray, toOptions } from '../lib/data';
+import { keyForValue, str, toArray, toChoiceValue, toOptions, valueForKey, type Option } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { Loading, Spinner } from '../lib/loading';
 import { SAMPLE } from '../lib/samples';
@@ -126,12 +125,19 @@ export const Switch = () => {
   );
 };
 
+// A wanted value as a choice stores it: the option it names, with that option's own value (1 stays a number, and the text
+// '1' picks the option 1 when no option is '1'), else the value as text; nothing is ''. lib/data Option has the keys.
+const storedChoice = (options: Option[], v: unknown): unknown =>
+  v === undefined || v === null || v === '' ? '' : valueForKey(options, keyForValue(options, v));
+
 // MUI's RadioGroup with a FormLabel: label, options [{ label, value, disabled }], value, row (side by side), color,
 // size, helperText, allowDeselect (a second click clears the pick); event onChange; actions setValue, clear.
 export const RadioGroup = () => {
   const field = useFieldProps({ label: 'Plan' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: SAMPLE.plans });
-  const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
+  // The value keeps its type (1 stays a number, so 1 and '1' name two options): not useStateText, which made it text.
+  const [rawValue, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  const value = toChoiceValue(rawValue);
   const [row] = ToolJet.useStateBoolean({ name: 'row', label: 'Row', description: 'Options side by side.', initialValue: false });
   const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
   const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium'], initialValue: 'medium' });
@@ -139,18 +145,20 @@ export const RadioGroup = () => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const options = toOptions(rawOptions);
-  const check = ToolJet.useValidation({ section: 'choice', value, present: options.some((o) => o.value === value) });
+  const options = toOptions(rawOptions, 'RadioGroup');
+  // The radios hold option keys (lib/data Option); the one clicked is the one exposed.
+  const key = value === '' ? '' : keyForValue(options, value);
+  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: options.some((o) => o.value === key) });
   const overrides = useThemeStyles();
   // The label over the three sample options (148px): a 96px box cut the last two.
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 16 });
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
-  const change = (next: string) => {
-    if (!valueSetter.set(next)) return;
+  const change = (wanted: unknown) => {
+    if (!valueSetter.set(storedChoice(options, wanted))) return;
     onChange();
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(str(next)));
+  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(toChoiceValue(next)));
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(''));
   return (
     <MuiProvider overrides={overrides}>
@@ -159,15 +167,15 @@ export const RadioGroup = () => {
           <MuiRadioGroup
             id={fieldId}
             row={row}
-            value={value ?? ''}
+            value={key}
             onChange={(e) => {
-              change(e.target.value);
+              change(valueForKey(options, e.target.value));
               check.touch();
             }}
           >
             {options.map((o) => (
               <FormControlLabel
-                key={o.value}
+                key={o.key}
                 value={o.value}
                 label={o.label}
                 disabled={o.disabled}
@@ -178,7 +186,7 @@ export const RadioGroup = () => {
                     color={color as 'primary'}
                     size={size as 'medium'}
                     onClick={() => {
-                      if (allowDeselect === true && !disabled && !o.disabled && o.value === value) {
+                      if (allowDeselect === true && !disabled && !o.disabled && o.value === key) {
                         change('');
                         check.touch();
                       }
@@ -210,17 +218,21 @@ export const ToggleButtonGroup = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
-  const options = toOptions(rawOptions);
-  const current: string | string[] | null = exclusive ? (Array.isArray(value) ? str(value[0]) : str(value)) || null : toArray(value).map(str);
+  const options = toOptions(rawOptions, 'ToggleButtonGroup');
+  // The buttons hold option keys (lib/data Option); values keep their type, so 1 and '1' are two buttons.
+  const keyOf = (v: unknown) => keyForValue(options, toChoiceValue(v));
+  const current: string | string[] | null = exclusive
+    ? (Array.isArray(value) ? (value.length ? keyOf(value[0]) : '') : value === '' || value === null || value === undefined ? '' : keyOf(value)) || null
+    : toArray(value).map(keyOf);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
-  const change = (next: string | string[] | null) => {
+  const change = (next: unknown) => {
     if (!valueSetter.set(next as string)) return;
     onChange();
   };
   ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) =>
     // Nothing picked is '', the declared text value, as a clear leaves it; null (MUI's own none) flipped its type.
-    change(exclusive ? str(next) : toArray(next).map(str))
+    change(exclusive ? storedChoice(options, toChoiceValue(next)) : toArray(next).map((v) => storedChoice(options, toChoiceValue(v))))
   );
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-center tj-mui-start" style={fullWidth ? undefined : { justifyContent: alignment === 'right' ? 'flex-end' : alignment === 'center' ? 'center' : 'flex-start' }}>
@@ -236,11 +248,12 @@ export const ToggleButtonGroup = () => {
           onChange={(_, next) => {
             // An exclusive group reports null when the picked button is pressed again: keep the value.
             if (exclusive && next === null) return;
-            change(next);
+            // The pressed buttons' keys: their options' own values.
+            change(Array.isArray(next) ? next.map((k) => valueForKey(options, k)) : valueForKey(options, next));
           }}
         >
           {options.map((o) => (
-            <ToggleButton key={o.value} value={o.value} disabled={o.disabled}>
+            <ToggleButton key={o.key} value={o.value} disabled={o.disabled}>
               {o.label}
             </ToggleButton>
           ))}

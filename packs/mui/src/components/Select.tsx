@@ -6,19 +6,24 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { checkProps, fieldClass, useFieldProps, useTextFieldLook } from '../lib/field';
-import { str, toArray, toOptions, type Option } from '../lib/data';
+import { exposedOption, keyForValue, str, toArray, toChoiceValue, toOptions, valueForKey, type Option } from '../lib/data';
 import { SAMPLE } from '../lib/samples';
 import { FieldSkeleton, Loading } from '../lib/loading';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
 
-/** An option given as its value, as an option object, or as a label: the matching option, else null. */
+/** An option given as its value, as an option object, or as a label: the matching option, else null. A value finds
+ *  the option of its own type first (1 and '1' are two options, lib/data Option). */
 const findOption = (options: Option[], given: unknown): Option | null => {
   if (given === undefined || given === null || given === '') return null;
   const raw = given && typeof given === 'object' ? (given as Record<string, unknown>) : null;
-  const key = str(raw ? (raw.value ?? raw.label) : given);
-  return options.find((o) => o.value === key) ?? options.find((o) => o.label === key) ?? null;
+  const wanted = raw ? (raw.value ?? raw.label) : given;
+  const key = keyForValue(options, wanted);
+  return options.find((o) => o.value === key) ?? options.find((o) => o.label === str(wanted)) ?? null;
 };
+
+/** An Autocomplete's value: the picked option as { label, value }, value with the option's own type. */
+const pickedValue = (o: Option) => ({ label: o.label, value: o.data });
 
 /** Options a Select's menu draws: MUI mounts a MenuItem for each when it opens, and 5,000 took ~570 ms to open and
  *  ~470 ms a typed key (type-ahead reads every item). The picked option is always among them. An Autocomplete searches
@@ -73,7 +78,9 @@ const clearRoom = (variant: string) => {
 export const Select = () => {
   const field = useFieldProps({ label: 'Status' });
   const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: SAMPLE.status });
-  const [value, setValue] = useStateText({ name: 'value', label: 'Value', description: 'The picked option value.', initialValue: '' });
+  // The value keeps its type (1 stays a number, so 1 and '1' name two options): not useStateText, which made it text.
+  const [rawValue, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The picked option value.', initialValue: '' });
+  const value = toChoiceValue(rawValue);
   const [displayEmpty] = ToolJet.useStateBoolean({ name: 'displayEmpty', label: 'Display empty', description: 'Show the placeholder while nothing is picked.', initialValue: true });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select', visibleWhen: { key: 'displayEmpty', value: true } });
   const [disableClearable] = ToolJet.useStateBoolean({ name: 'disableClearable', label: 'Disable clearable', description: 'Hide the clear button.', initialValue: false });
@@ -86,27 +93,32 @@ export const Select = () => {
   const ref = useRef<HTMLInputElement>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const options = toOptions(rawOptions);
-  const known = value !== '' && options.some((o) => o.value === value);
-  const check = ToolJet.useValidation({ section: 'choice', value, present: known });
+  const options = toOptions(rawOptions, 'Select');
+  // MUI's Select holds option keys (lib/data Option); the one clicked is the one exposed.
+  const key = value === '' ? '' : keyForValue(options, value);
+  const known = key !== '' && options.some((o) => o.value === key);
+  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: known });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
 
   // selectedOption follows the value however it changes (a pick, a binding, a Form's clearForm, options that load
   // later or drop it): set only on a pick, it kept the old option after a clear or an emptied binding.
-  const selected = known ? options.find((o) => o.value === value) : undefined;
-  const selectedKey = selected ? JSON.stringify(selected) : '';
+  const selected = known ? options.find((o) => o.value === key) : undefined;
+  const selectedKey = selected ? JSON.stringify(exposedOption(selected)) : '';
   useEffect(() => {
-    setSelectedOption(selected ?? {});
+    setSelectedOption(exposedOption(selected));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedKey]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
-  const change = (next: string) => {
+  // A wanted value: the option it names, with that option's own value (the text '1' picks the option 1), else as text.
+  const change = (wanted: unknown) => {
+    const k = wanted === undefined || wanted === null || wanted === '' ? '' : keyForValue(options, wanted);
+    const next = k === '' ? '' : valueForKey(options, k);
     if (!valueSetter.set(next)) return;
     // Set with the value, so an onChange (or onClose) handler reads the new option, not the one the effect would
     // replace a render later (AM-12). The effect above still follows bindings, a Form clear and changed options.
-    setSelectedOption(options.find((o) => o.value === next) ?? {});
+    setSelectedOption(exposedOption(options.find((o) => o.value === k)));
     onChange();
   };
   // MUI's open state, held here so the guard can close the menu: it portals into the popup layer, out of reach of the
@@ -135,7 +147,7 @@ export const Select = () => {
     if (trigger && focusWasLost(deepActiveElement(), trigger, menuRef.current)) trigger.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menuOpen]);
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(str(next)));
+  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(toChoiceValue(next)));
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(''));
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
 
@@ -181,7 +193,7 @@ export const Select = () => {
           fullWidth
           label={field.label || undefined}
           // A value that is not (yet) among the options shows as empty, not as a bare value.
-          value={known ? value : ''}
+          value={known ? key : ''}
           variant={look.variant}
           size={look.size}
           color={look.color}
@@ -209,11 +221,13 @@ export const Select = () => {
             },
           }}
           onChange={(e) => {
-            if (available()) change(String(e.target.value ?? ''));
+            // The picked item's key: its option's own value.
+            const k = String(e.target.value ?? '');
+            if (available()) change(k === '' ? '' : valueForKey(options, k));
           }}
         >
           {shownOptions(options, selected).map((o) => (
-            <MenuItem key={o.value} value={o.value} disabled={o.disabled}>
+            <MenuItem key={o.key} value={o.value} disabled={o.disabled}>
               {o.label}
             </MenuItem>
           ))}
@@ -262,7 +276,7 @@ const useAutocompleteProps = (defaults: { label: string; placeholder: string; op
   // MUI's open state, held here so the guard can close the listbox (it portals out of the widget): see Select.
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
-  return { field, options: toOptions(rawOptions), placeholder, noOptionsText, disableClearable, inputValue, setInputValue, look, rootRef, open, setOpen };
+  return { field, options: toOptions(rawOptions, 'Autocomplete'), placeholder, noOptionsText, disableClearable, inputValue, setInputValue, look, rootRef, open, setOpen };
 };
 
 /** The open, close and guard wiring both Autocomplete variants share. */
@@ -303,24 +317,27 @@ export const Autocomplete = () => {
   const ref = useRef<HTMLInputElement>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const found = findOption(p.options, value) ?? (freeSolo && typeof value === 'string' && value ? { label: value, value } : null);
+  const found = findOption(p.options, value) ?? (freeSolo && typeof value === 'string' && value ? { label: value, value, data: value, key: value } : null);
   // The same object while the pick is the same (options are rebuilt every render): MUI takes a new value object for a
   // change and resets the typed text to its label, so editing the text of a picked city was undone by the next render.
   const pickedKey = JSON.stringify(found);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const picked = useMemo(() => found, [pickedKey]);
-  const check = ToolJet.useValidation({ section: 'choice', value: picked?.value ?? '', present: !!picked });
+  const check = ToolJet.useValidation({ section: 'choice', value: picked ? str(picked.data) : '', present: !!picked });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
-  const change = (next: Option | null) => {
+  const change = (next: { label: string; value: unknown } | null) => {
     if (!valueSetter.set(next as unknown as Record<string, unknown>)) return;
     onChange();
   };
   const popup = usePopupState(p, disabled, check.touch, onOpen, onClose);
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(findOption(p.options, next)));
+  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => {
+    const o = findOption(p.options, next);
+    change(o ? pickedValue(o) : null);
+  });
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(null));
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
 
@@ -339,12 +356,14 @@ export const Autocomplete = () => {
         noOptionsText={p.noOptionsText}
         inputValue={p.inputValue ?? ''}
         getOptionLabel={(o) => (typeof o === 'string' ? o : o.label)}
+        // Its own key per option: MUI keys an option by its label, and two options may share one.
+        getOptionKey={(o) => (typeof o === 'string' ? o : o.key)}
         getOptionDisabled={(o) => !!o.disabled}
         isOptionEqualToValue={(o, v) => o.value === (typeof v === 'string' ? v : v.value)}
         {...popup.props}
         onChange={(_, next) => {
           if (!popup.available()) return;
-          change(typeof next === 'string' ? { label: next, value: next } : next ? { label: next.label, value: next.value } : null);
+          change(typeof next === 'string' ? { label: next, value: next } : next ? pickedValue(next) : null);
         }}
         onInputChange={(_, text) => {
           p.setInputValue(text);
@@ -397,14 +416,14 @@ export const AutocompleteMultiple = () => {
   const pickedKey = JSON.stringify(found);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const picked = useMemo(() => found, [pickedKey]);
-  const check = ToolJet.useValidation({ section: 'choice', value: picked.map((o) => o.value), present: picked.length > 0 });
+  const check = ToolJet.useValidation({ section: 'choice', value: picked.map((o) => o.data), present: picked.length > 0 });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 7 });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: Option[]) => {
-    if (!valueSetter.set(next)) return;
+    if (!valueSetter.set(next.map(pickedValue))) return;
     onChange();
   };
   const popup = usePopupState(p, disabled, check.touch, onOpen, onClose);
@@ -432,12 +451,14 @@ export const AutocompleteMultiple = () => {
         noOptionsText={p.noOptionsText}
         inputValue={p.inputValue ?? ''}
         getOptionLabel={(o) => o.label}
+        // Its own key per option: MUI keys an option by its label, and two options may share one.
+        getOptionKey={(o) => o.key}
         getOptionDisabled={(o) => !!o.disabled}
         isOptionEqualToValue={(o, v) => o.value === v.value}
         {...popup.props}
         onChange={(_, next) => {
           if (!popup.available()) return;
-          change(next.map((o) => ({ label: o.label, value: o.value })));
+          change(next);
         }}
         onInputChange={(_, text) => {
           p.setInputValue(text);
