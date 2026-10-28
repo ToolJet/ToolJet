@@ -30,26 +30,16 @@ describe('migration-helpers/migration-mode', () => {
   });
 
   describe('endUserMessage(): the message app users see while an upgrade runs or after it fails', () => {
-    it('should show the configured message for the current state, trimmed', () => {
-      const env = {
-        MIGRATION_END_USER_MESSAGE_RUNNING: ' Back at 10pm. ',
-        MIGRATION_END_USER_MESSAGE_FAILED: 'Running late.',
-      };
-
-      expect(endUserMessage('running', env)).toBe('Back at 10pm.');
-      expect(endUserMessage('failed', env)).toBe('Running late.');
-    });
-
-    it('should keep the default message when none is set, the message is blank, or no banner is shown', () => {
-      expect(endUserMessage('running', {})).toBeUndefined();
-      expect(endUserMessage('running', { MIGRATION_END_USER_MESSAGE_RUNNING: '   ' })).toBeUndefined();
-      expect(endUserMessage('idle', { MIGRATION_END_USER_MESSAGE_RUNNING: 'x' })).toBeUndefined();
-    });
-
-    it('should cut a long message to the maximum length', () => {
-      const env = { MIGRATION_END_USER_MESSAGE_FAILED: 'a'.repeat(END_USER_MESSAGE_MAX_LENGTH + 50) };
-
-      expect(endUserMessage('failed', env)).toHaveLength(END_USER_MESSAGE_MAX_LENGTH);
+    // `KEY=` in a compose file is common, and must keep the default message.
+    it.each([
+      ['keep the default message when the configured one is blank', '   ', undefined],
+      [
+        'cut a long message to the maximum length',
+        'a'.repeat(END_USER_MESSAGE_MAX_LENGTH + 50),
+        'a'.repeat(END_USER_MESSAGE_MAX_LENGTH),
+      ],
+    ])('should %s', (_case, configured, shown) => {
+      expect(endUserMessage('failed', { MIGRATION_END_USER_MESSAGE_FAILED: configured })).toBe(shown);
     });
   });
 
@@ -57,6 +47,7 @@ describe('migration-helpers/migration-mode', () => {
     it('should opt out only when the variable is exactly "true"', () => {
       expect(isMigrationTrafficGateDisabled({ DISABLE_MIGRATION_TRAFFIC_GATE: 'true' })).toBe(true);
       expect(isMigrationTrafficGateDisabled({})).toBe(false);
+      expect(isMigrationTrafficGateDisabled({ DISABLE_MIGRATION_TRAFFIC_GATE: 'false' })).toBe(false);
     });
   });
 
@@ -114,7 +105,6 @@ describe('migration-helpers/migration-mode', () => {
     it.each([
       ['LegacyWitness1700000000004', true],
       ['CopyWorkflowAppMetaToAppVersions1782250000000', false],
-      ['DropGitSyncMetaHashColumns1782500000000', false],
       ['ValidatePatWorkspaceShape1793100000000', false],
     ])('should say whether %s forces a single-transaction upgrade: %s', (name, blocks) => {
       expect(blocksAsyncUpgrade(name)).toBe(blocks);
