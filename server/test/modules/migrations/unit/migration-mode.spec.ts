@@ -1,9 +1,7 @@
 /** @group database */
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
-import {
-  ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS,
-} from 'src/migration-helpers/pre-cutoff-allowlist';
+import { ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS } from 'src/migration-helpers/pre-cutoff-allowlist';
 import {
   blocksAsyncUpgrade,
   END_USER_MESSAGE_MAX_LENGTH,
@@ -11,6 +9,7 @@ import {
   getMigrationMode,
   isMigrationTrafficGateDisabled,
   parseMigrationPhase,
+  runStrategy,
 } from 'src/migration-helpers/migration-mode';
 
 describe('migration-helpers/migration-mode', () => {
@@ -27,7 +26,10 @@ describe('migration-helpers/migration-mode', () => {
 
   describe('endUserMessage | operator text for released apps', () => {
     it('should read the variable for the state, trimmed', () => {
-      const env = { MIGRATION_END_USER_MESSAGE_RUNNING: ' Back at 10pm. ', MIGRATION_END_USER_MESSAGE_FAILED: 'Running late.' };
+      const env = {
+        MIGRATION_END_USER_MESSAGE_RUNNING: ' Back at 10pm. ',
+        MIGRATION_END_USER_MESSAGE_FAILED: 'Running late.',
+      };
 
       expect(endUserMessage('running', env)).toBe('Back at 10pm.');
       expect(endUserMessage('failed', env)).toBe('Running late.');
@@ -55,17 +57,21 @@ describe('migration-helpers/migration-mode', () => {
 
   describe('parseMigrationPhase | which part a run applies', () => {
     it.each([
-      [undefined, 'joint'],
-      ['', 'joint'],
-      ['schema', 'schema'],
-      ['data', 'data'],
-    ])('should read %j as %s', (raw, phase) => {
+      [undefined, undefined, 'single-transaction'],
+      ['', undefined, 'single-transaction'],
+      ['expand', 'expand', 'multi-transaction'],
+      ['backfill', 'backfill', 'multi-transaction'],
+    ])('should read %j as %s, run %s', (raw, phase, strategy) => {
       expect(parseMigrationPhase(raw)).toBe(phase);
+      expect(runStrategy(parseMigrationPhase(raw))).toBe(strategy);
     });
 
-    it('should refuse anything else rather than fall back to a joint run', () => {
-      expect(() => parseMigrationPhase('Schema')).toThrow("Unknown MIGRATION_PHASE 'Schema'");
-    });
+    it.each(['Expand', 'schema', 'data'])(
+      'should refuse %j rather than fall back to a single-transaction run',
+      (raw) => {
+        expect(() => parseMigrationPhase(raw)).toThrow(`Unknown MIGRATION_PHASE '${raw}'`);
+      }
+    );
   });
   describe('blocksAsyncUpgrade | which pending migrations force the one-transaction upgrade', () => {
     it.each([
@@ -79,7 +85,7 @@ describe('migration-helpers/migration-mode', () => {
 
     it('should list only migrations that exist, so a rename cannot silently send old databases async', () => {
       const root = join(__dirname, '../../../..');
-      const classes = ['migrations', 'data-migrations'].flatMap((dir) =>
+      const classes = ['migrations/expand', 'migrations/backfill'].flatMap((dir) =>
         readdirSync(join(root, dir))
           .filter((file) => file.endsWith('.ts'))
           .map((file) => readFileSync(join(root, dir, file), 'utf8').match(/export class (\w+)/)?.[1])

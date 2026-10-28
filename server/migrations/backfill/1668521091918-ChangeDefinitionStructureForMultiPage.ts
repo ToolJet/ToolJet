@@ -3,7 +3,7 @@ import { AppVersion } from '@entities/app_version.entity';
 import {
   convertAppDefinitionFromSinglePageToMultiPage,
   convertAppDefinitionFromMultiPageToSinglePage,
-} from '../lib/single-page-to-and-from-multipage-definition-conversion';
+} from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 
 export class ChangeDefinitionStructureForMultiPage1668521091918 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

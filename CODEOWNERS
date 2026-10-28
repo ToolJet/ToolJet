@@ -16,5 +16,4 @@
 **/module.ts @gsmithun4
 
 # Code owners for specific directories
-/server/migrations/* @gsmithun4
-/server/data-migrations/* @gsmithun4
+/server/migrations/** @gsmithun4

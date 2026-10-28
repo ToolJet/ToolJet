@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
-import { filePathForEnvVars } from '../scripts/database-config-utils';
+import { filePathForEnvVars } from '../../scripts/database-config-utils';
 
 export class MaybeCreateExtension1625814801415 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

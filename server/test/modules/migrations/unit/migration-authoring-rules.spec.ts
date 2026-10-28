@@ -1,5 +1,5 @@
 /** @group database */
-import { readdirSync, readFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import * as ts from 'typescript';
 import { MIGRATION_AUTHORING_RULES_CUTOFF } from 'src/migration-helpers/migration-mode';
@@ -136,7 +136,7 @@ function frozenListDrift(frozen: string[], current: string[]): { added: string[]
 }
 
 const sample = (up: string, down = '// irreversible: values only grow', header = '') => ({
-  file: 'migrations/1799999999999-Sample.ts',
+  file: 'migrations/expand/1799999999999-Sample.ts',
   text: `${header}
 import { MigrationInterface, QueryRunner } from 'typeorm';
 export class Sample1799999999999 implements MigrationInterface {
@@ -212,12 +212,14 @@ describe('Migration authoring rules | migrations newer than the cutoff', () => {
   });
 
   it('should keep schema migrations additive and reversible', () => {
-    const violations = migrationsNewerThanCutoff('migrations').flatMap((source) => authoringViolations(source));
+    const violations = migrationsNewerThanCutoff('migrations/expand').flatMap((source) => authoringViolations(source));
     expect(violations).toEqual([]);
   });
 
   it('should keep data migrations additive and reversible', () => {
-    const violations = migrationsNewerThanCutoff('data-migrations').flatMap((source) => authoringViolations(source));
+    const violations = migrationsNewerThanCutoff('migrations/backfill').flatMap((source) =>
+      authoringViolations(source)
+    );
     expect(violations).toEqual([]);
   });
 });
@@ -231,10 +233,28 @@ describe('Migration authoring rules | migrations at or before the cutoff', () =>
     expect(frozenListDrift(['A1', 'B2'], ['A1', 'C3'])).toEqual({ added: ['C3'], missing: ['B2'] });
   });
 
-  it.each(['migrations', 'data-migrations'] as const)('should keep the %s list frozen', (directory) => {
+  it.each(['migrations/expand', 'migrations/backfill'] as const)('should keep the %s list frozen', (directory) => {
     expect(frozenListDrift(frozenPreCutoff[directory], preCutoffMigrations(directory))).toEqual({
       added: [],
       missing: [],
     });
+  });
+});
+
+/** TypeORM only loads the phase folders, so a file anywhere else would never run. */
+describe('Migration authoring rules | phase folders', () => {
+  const PHASE_FOLDERS = ['expand', 'backfill'];
+
+  it('should keep every migration inside a phase folder', () => {
+    expect(readdirSync(join(SERVER_ROOT, 'migrations')).sort()).toEqual([...PHASE_FOLDERS].sort());
+    const oldFolder = join(SERVER_ROOT, 'data-migrations');
+    expect(existsSync(oldFolder) ? readdirSync(oldFolder) : []).toEqual([]);
+  });
+
+  it('should give each migration newer than the cutoff one phase', () => {
+    const classes = PHASE_FOLDERS.flatMap((phase) =>
+      migrationsNewerThanCutoff(`migrations/${phase}`).map(({ text }) => text.match(/class\s+(\w+)/)?.[1])
+    );
+    expect(classes.filter((name, index) => classes.indexOf(name) !== index)).toEqual([]);
   });
 });
