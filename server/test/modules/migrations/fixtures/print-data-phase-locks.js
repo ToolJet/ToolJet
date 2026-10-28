@@ -1,5 +1,5 @@
 // Preloaded into the runner (`node -r`) by upgrade-from-3-21-58.spec.ts. After each statement run inside a transaction,
-// prints the table locks the session holds that it has not printed yet, as `[lock] <migration> <up|beforeCommit>: <table> <mode>`.
+// prints the table locks that statement took, as `[lock] <statement #> <migration> <up|beforeCommit>: <table> <mode>`.
 const { PostgresQueryRunner } = require('typeorm/driver/postgres/PostgresQueryRunner');
 
 const LOCKS_HELD = `
@@ -15,17 +15,17 @@ console.log = (...args) => {
   print(...args);
 };
 
-const printed = new Set();
+let statement = 0;
 const query = PostgresQueryRunner.prototype.query;
+const locksHeld = async (runner) =>
+  new Set((await query.call(runner, LOCKS_HELD)).map(({ table, mode }) => `${table} ${mode}`));
 PostgresQueryRunner.prototype.query = async function (...args) {
+  const recording = running && this.isTransactionActive;
+  const before = recording && (await locksHeld(this));
   const result = await query.apply(this, args);
-  if (running && this.isTransactionActive) {
-    for (const { table, mode } of await query.call(this, LOCKS_HELD)) {
-      const lock = `${table} ${mode}`;
-      if (printed.has(lock)) continue;
-      printed.add(lock);
-      print(`[lock] ${running}: ${lock}`);
-    }
+  if (recording) {
+    statement++;
+    for (const lock of await locksHeld(this)) if (!before.has(lock)) print(`[lock] ${statement} ${running}: ${lock}`);
   }
   return result;
 };
