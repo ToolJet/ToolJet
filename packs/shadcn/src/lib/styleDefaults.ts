@@ -46,10 +46,14 @@ export const useDrawnNumber = (name: string, label: string, drawn: number, optio
 /**
  * A number style with no stored default, only a placeholder naming what it draws while unset. A '' default was saved
  * on drop as {{""}}, which the inspector showed as code in an invalid field, with the placeholder hidden. Reads ''
- * while unset, as before.
+ * while unset, as before. Drawn as the inspector's number field (the code field drew the blank as invalid), which shows
+ * no placeholder, so the tooltip names what blank draws unless the caller gives its own.
  */
 export const useBlankNumber = (name: string, label: string, placeholder: string, options: StyleOptions = {}): number | '' =>
-  (ToolJet.useStyleNumber({ name, label, placeholder, ...options }) as unknown as number | '' | undefined) ?? '';
+  (ToolJet.useStyleNumber({ name, label, placeholder, inspector: 'numberInput', description: `Blank: ${placeholder}.`, ...options }) as unknown as
+    | number
+    | ''
+    | undefined) ?? '';
 
 /**
  * A radius that follows the theme radius while unset: no fixed number to show, so the field says so. Drawn as the

@@ -1,7 +1,7 @@
 {
   "name": "tooljet-shadcn-library",
   "private": true,
-  "version": "2.1.31",
+  "version": "2.1.33",
   "type": "module",
   "description": "shadcn/ui-style components for ToolJet, built as a custom component library.",
   "scripts": {

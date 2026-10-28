@@ -31,12 +31,13 @@ export const Card = () => {
   const title = displayText(rawTitle);
   const description = displayText(rawDescription);
 
+  // Blank: the pack's panel radius (the theme radius + 4px), as Stat, record cards, the summary strip and Dialog draw.
   return (
     <div
       className="ui ui-card"
       style={{
         background,
-        borderRadius: radius === '' || radius == null ? 'var(--ui-radius)' : radius,
+        borderRadius: radius === '' || radius == null ? 'calc(var(--ui-radius) + 4px)' : radius,
         padding,
         borderTop: `4px solid ${accent}`,
       }}
