@@ -8,6 +8,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { assertReleaseBaseline } from './release-baseline';
 import { EntityManager, In } from 'typeorm';
 import {
   AppCreateDto,
@@ -640,6 +641,7 @@ export class AppsService implements IAppsService {
         throw new BadRequestException('You can only release when the version is promoted to production');
       }
 
+      await assertReleaseBaseline(manager, appId, versionReleaseDto.expectedReleasedVersionId);
       await this.beforeVersionRelease(manager, appId, versionToBeReleased);
 
       // Get version details for audit log
