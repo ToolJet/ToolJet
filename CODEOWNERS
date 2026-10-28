@@ -17,3 +17,4 @@
 
 # Code owners for specific directories
 /server/migrations/** @gsmithun4
+/server/src/migration-helpers/ @gsmithun4
