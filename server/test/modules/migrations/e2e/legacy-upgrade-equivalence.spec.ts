@@ -88,7 +88,7 @@ const SCHEMA_QUERIES: Record<string, string> = {
     FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace WHERE n.nspname = 'public'`,
   indexes: `SELECT indexdef AS item FROM pg_indexes WHERE schemaname = 'public'`,
   triggers: `
-    SELECT pg_get_triggerdef(t.oid) || ' enabled=' || t.tgenabled AS item
+    SELECT pg_get_triggerdef(t.oid) || ' enabled=' || t.tgenabled::text AS item
     FROM pg_trigger t JOIN pg_class r ON r.oid = t.tgrelid JOIN pg_namespace n ON n.oid = r.relnamespace
     WHERE n.nspname = 'public' AND NOT t.tgisinternal`,
   functions: `
