@@ -45,6 +45,9 @@ export async function resolveLibraryReference(
   if (saved) return { kind: 'saved', snapshot: saved };
   const draft = await manager.findOne(LibraryQueryDraft, { where });
   if (draft) return { kind: 'draft', snapshot: draft };
+  // Saving can commit its same-ID insert/soft-delete between the two reads.
+  const savedDuringLookup = await manager.findOne(LibraryQueryVersion, { where });
+  if (savedDuringLookup) return { kind: 'saved', snapshot: savedDuringLookup };
   throw new NotFoundException('Library query version not found');
 }
 

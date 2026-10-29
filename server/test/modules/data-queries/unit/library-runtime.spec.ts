@@ -85,6 +85,14 @@ describe('explicit library references', () => {
     expect(await util.resolveLibraryReference(queryId, id, manager as never)).toEqual({ kind: 'draft', snapshot });
     expect(manager.findOne).toHaveBeenLastCalledWith(expect.anything(), { where: { id, libraryQueryId: queryId } });
   });
+  it('resolves the same saved UUID when saving commits between the first two reads', async () => {
+    const snapshot = { id, libraryQueryId: queryId, name: 'saved-B', options: { code: 'B' } };
+    const manager = {
+      findOne: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(null).mockResolvedValueOnce(snapshot),
+    };
+    expect(await util.resolveLibraryReference(queryId, id, manager as never)).toEqual({ kind: 'saved', snapshot });
+    expect(manager.findOne).toHaveBeenNthCalledWith(3, expect.anything(), { where: { id, libraryQueryId: queryId } });
+  });
   it('rejects unknown, deleted or cross-query UUIDs', async () => {
     await expect(
       util.resolveLibraryReference(queryId, id, { findOne: jest.fn().mockResolvedValue(null) } as never)
