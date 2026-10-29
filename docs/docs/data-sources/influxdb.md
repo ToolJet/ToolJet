@@ -146,12 +146,10 @@ This operation creates a bucket in database.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/create-bucket.png" alt="create operations"/>
 
-#### Example
-```yaml
-POST http://localhost:8086/api/v2/buckets
-Content-Type: application/json
-Authorization: Token your_auth_token
+Enter the bucket definition as a JSON object in the **Query** field. ToolJet sends it as the request body to the InfluxDB `/api/v2/buckets` endpoint, so don't include the HTTP method, URL, or headers.
 
+#### Example
+```json
 {
   "name": "new_bucket",
   "orgID": "your_org_id",

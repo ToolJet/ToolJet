@@ -10,8 +10,12 @@ ToolJet can connect to CouchDB databases to read and write data.
 To establish a connection with the CouchDB data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your CouchDB.
+- **Host**: Hostname or IP address of the CouchDB server, without the protocol.
+- **Port**: The form pre-fills `5984`.
+- **Protocol**: Select **HTTP** or **HTTPS**.
 - **Username**
 - **Password**
+- **Database name**: The database that queries run against.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/connections.png" alt="CouchDB connection"/>
 
@@ -138,6 +142,9 @@ You get the document as JSON in the response. For each update to the document, t
 #### Required Parameters:
 - **Record ID**
 - **Revision ID**
+- **Body**: The new content for the record.
+
+ToolJet replaces the whole record with `{ "_rev": <Revision ID>, "records": <Body> }`. Fields that aren't in **Body** are removed, and the **Body** value is stored under the `records` field, the same way **Create Record** stores **Records**.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-update.png" alt="Couch update view" />
 

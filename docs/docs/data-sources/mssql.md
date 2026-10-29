@@ -13,18 +13,33 @@ To establish a connection with the MS SQL Server data source, click on the **+ A
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
 :::
 
-ToolJet requires the following to connect to your PostgreSQL database.
+ToolJet requires the following to connect to your MS SQL Server database.
 
+- **Connection type**: Select **Manual connection** to enter each connection detail, or **Connection string** to paste a connection string. See [Connection String](#connection-string).
 - **Host**
 - **Port**
-- **Username**
-- **Password**
+- **Instance**: The name of the SQL Server named instance, if you connect to one.
+- **Database**
+- **Authentication type**: See [Authentication Type](#authentication-type).
 - **Connection Options**
-- **Azure** (Select this option if you are using Azure SQL databases)
+- **SSL/TLS**: See [SSL/TLS](#ssltls).
+- **SSH tunnel**: See [SSH Tunnelling](#ssh-tunnelling).
+- **Allow dynamic connection parameters**: See [Dynamic Connection](#dynamic-connection).
+- **Azure encrypt connection**: Turn this on if you are using Azure SQL databases. It encrypts the connection.
+
+:::caution
+In this release, ToolJet doesn't pass the **Instance** value to SQL Server. To connect to a named instance, enter the instance's port in **Port** instead.
+:::
 
 **Note:** It is recommended to create a new database user so that you can control the access levels of ToolJet.
 
 <img  className="screenshot-full img-full" src="/img/datasource-reference/mssql/connect-v2.png" alt="MSsql data soruce connection"/>
+
+### Connection String
+
+To connect using a connection string, select **Connection string** as the connection type and paste the string in `host;key=value` or `sqlserver://host;key=value` format, for example `sqlserver://db.example.com:1433;database=sales;user=tooljet;password=<password>`. ToolJet fills in **Host**, **Port**, **Instance**, **Database**, **Username**, **Password** and **Azure encrypt connection** from the string. You can still edit these fields, and ToolJet connects using their values.
+
+ToolJet reads these keys: `database` or `initial catalog`, `user id`, `uid` or `user`, `password` or `pwd`, `port`, `instance` or `instance name`, and `encrypt`. You can also add the instance to the host as `host\instance`.
 
 ### Connection Options
 
@@ -50,7 +65,7 @@ Provide the following credentials:
 
 - **Host**
 - **Port**
-- **Database name**
+- **Database**
 - **Username**
 - **Password**
 
@@ -69,6 +84,16 @@ Provide the following details:
 - **Client Secret** – The client secret value generated for the app
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/auth-type-azure.png" alt="MSsql Auth type connection"/>
+
+### SSL/TLS
+
+Turn on **SSL/TLS** to encrypt the connection, then select the **SSL certificate** type:
+
+- **None**: Encrypts the connection and trusts the server certificate without validating it.
+- **CA certificate**: Validates the server certificate against the **CA certificate** you provide.
+- **Self-signed certificate**: Enter the **Client key**, **Client certificate** and **Root certificate**.
+
+When **Authentication type** is **Azure AD – Service Principal**, ToolJet always encrypts the connection and doesn't use these SSL settings.
 
 ### Enabling Encryption with a Self-Signed Certificate
 
@@ -104,13 +129,17 @@ To securely connect to a private MSSQL database using SSH tunnelling:
    - **SSH host** – Server hostname or IP address.
    - **SSH port** – Port number (default: `22`).
    - **SSH username** – Username for the SSH server.
-   - **Authentication method** – Choose either:
-     - **Private key**
-     - **Password**
+   - **Authentication type** – Choose either:
+     - **Private key** – Enter the **SSH private key**, and the **SSH passphrase** if the key is protected by one.
+     - **Password** – Enter the **SSH password** for the SSH user.
 
 Once configured, ToolJet establishes a secure SSH connection. All MSSQL queries are routed through this encrypted tunnel.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/ssh-tunnel.png" alt="MSsql SSH tunnelling connection" />
+
+### Dynamic Connection
+
+ToolJet can override the host and database of an MS SQL Server data source at query runtime, so a single data source can serve multiple servers or databases. To use it, turn on **Allow dynamic connection parameters** in the data source configuration. Each MS SQL Server query then shows **Host** and **Database** fields. Leave a field empty to use the value from the data source configuration.
 
 ## Querying in SQL Mode
 
@@ -220,8 +249,12 @@ In the editor, ensure the **Columns** input is provided in `string` format.
 #### Required Parameter
 - **Columns**: Specify the column names and values to be updated in the selected row(s).
 
-#### Optional Parameter
-- **Filter**: Apply conditions to identify which row(s) should be updated.
+#### Optional Parameters
+- **Filter**: Apply conditions to identify which row(s) should be updated. At least one filter condition is required unless **Allow this query to update multiple rows** is on. With that toggle on and no filter, the query updates every row in the table.
+- **Allow this query to update multiple rows**: When enabled, the query can modify multiple rows at once. When disabled, the query fails if the filter matches more than one row.
+- **Consider query that updates zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails if no row matches the filter.
+
+Both toggles are off by default. When a toggle's condition is violated, the update is rolled back, so no rows are changed.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/updaterows-gui.png" alt="MSsql update row gui mode"/>
 
@@ -229,10 +262,14 @@ In the editor, ensure the **Columns** input is provided in `string` format.
 Remove one or more rows from the selected table that match the given conditions.
 
 #### Required Parameter
-- **Filter**: Apply conditions to specify which row(s) should be deleted.
+- **Filter**: Apply conditions to specify which row(s) should be deleted. Required unless you set a **Limit**.
 
-#### Optional Parameter
+#### Optional Parameters
 - **Limit**: Specify the maximum number of rows to delete.
+- **Allow this query to delete multiple rows**: When enabled, the query can delete multiple rows at once. When disabled, the query fails if more than one row would be deleted.
+- **Consider query that deletes zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails if no row matches the filter.
+
+Both toggles are off by default. When a toggle's condition is violated, the delete is rolled back and no rows are deleted.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/deleterows-gui.png" alt="MSsql delete row gui mode"/>
 
@@ -244,6 +281,12 @@ In the editor, ensure the **Columns** input is provided in `string` format.
 #### Required Parameters
 - **Primary key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
 - **Columns**: Provide the column names and values to be inserted or updated.
+
+#### Optional Parameters
+- **Allow this query to update multiple rows**: When enabled, the query can modify multiple rows at once. When disabled, the query fails if more than one row is affected.
+- **Consider query that updates zero records as success**: When enabled, a query that affects no rows is still treated as successful. When disabled, the query fails if no row is affected.
+
+Both toggles are off by default. When a toggle's condition is violated, the upsert is rolled back.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/upsertrows-gui.png" alt="MSsql upsert row gui mode"/>
 
