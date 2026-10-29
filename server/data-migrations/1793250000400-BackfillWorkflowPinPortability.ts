@@ -1,7 +1,11 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class BackfillWorkflowPinPortability1787600000000 implements MigrationInterface {
+const MIGRATION_NAME = 'BackfillWorkflowPinPortability1793250000400';
+
+export class BackfillWorkflowPinPortability1793250000400 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    console.log(`${MIGRATION_NAME}: [START] Backfilling workflow pins`);
+
     // dq.kind isn't a DB column — runtime-only, mirrors dataSource.kind — so join data_sources instead.
     await queryRunner.query(`
       UPDATE data_queries dq
@@ -27,6 +31,8 @@ export class BackfillWorkflowPinPortability1787600000000 implements MigrationInt
         AND (dq.options::jsonb ->> 'workflowVersionId') = av.id::text
         AND av.name IS NOT NULL;
     `);
+
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Workflow pin backfill finished.`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
