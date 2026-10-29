@@ -9,6 +9,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import AppCanvas from '@/AppBuilder/AppCanvas';
 import RightSideBar from '@/AppBuilder/RightSideBar';
 import QueryPanel from '@/AppBuilder/QueryPanel';
+import QueryCodeEditorTabs from '@/AppBuilder/QueryManager/CodeEditorTab/QueryCodeEditorTabs';
 import RealtimeCursors from '@/AppBuilder/RealtimeCursors';
 import EditorHeader from '@/AppBuilder/Header';
 import LeftSidebar from '@/AppBuilder/LeftSidebar';
@@ -115,6 +116,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
               </Suspense>
               <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
               <QueryPanel darkMode={darkMode} />
+              <QueryCodeEditorTabs />
               <RightSideBar darkMode={darkMode} />
             </DndProvider>
             <Popups darkMode={darkMode} />

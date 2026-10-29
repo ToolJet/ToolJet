@@ -44,11 +44,33 @@ const initialState = {
   renamingQueryId: null,
   deletingQueryId: null,
   asyncQueryRuns: [],
+  // Queries whose code editor is open in a separate browser tab (see QueryManager/CodeEditorTab).
+  codeEditorTabQueryIds: [],
 };
 
 export const createQueryPanelSlice = (set, get) => ({
   queryPanel: {
     ...initialState,
+    openCodeEditorTab: (queryId) =>
+      set(
+        (state) => {
+          if (!state.queryPanel.codeEditorTabQueryIds.includes(queryId)) {
+            state.queryPanel.codeEditorTabQueryIds.push(queryId);
+          }
+        },
+        false,
+        'openCodeEditorTab'
+      ),
+    closeCodeEditorTab: (queryId) =>
+      set(
+        (state) => {
+          state.queryPanel.codeEditorTabQueryIds = state.queryPanel.codeEditorTabQueryIds.filter(
+            (id) => id !== queryId
+          );
+        },
+        false,
+        'closeCodeEditorTab'
+      ),
     setQueryPanelSearchTerm: (searchTerm) =>
       set(
         (state) => {

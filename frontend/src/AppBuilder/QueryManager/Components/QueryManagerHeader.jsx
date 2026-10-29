@@ -28,6 +28,7 @@ import {
 import { DataSourceTypes } from '@/modules/common/components/DataSourceComponents';
 import { getQueryDocumentation } from '@/AppBuilder/QueryManager/utils';
 import { QueryInlineNameEditor } from './QueryInlineNameEditor';
+import OpenCodeEditorTabButton from '@/AppBuilder/QueryManager/CodeEditorTab/OpenCodeEditorTabButton';
 
 const ICON_ONLY_BUTTON_BREAKPOINT = 700;
 
@@ -178,6 +179,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
           <>
             {INLINE_AI_FEATURES_ENABLED && <GenerateQueryButton iconOnly={iconOnly} />}
             <AbortButton />
+            <OpenCodeEditorTabButton />
             <RunButton buttonLoadingState={buttonLoadingState} iconOnly={iconOnly} />
             <PreviewButton
               disabled={shouldFreeze}
