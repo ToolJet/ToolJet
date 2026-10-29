@@ -1,10 +1,4 @@
-
-import {
-  QueryError,
-  QueryResult,
-  QueryService,
-  ConnectionTestResult,
-} from '@tooljet-marketplace/common';
+import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import got from 'got';
 import { SourceOptions, QueryOptions } from './types';
 
