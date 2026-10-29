@@ -546,7 +546,11 @@ class AppComponent extends React.Component {
             <UpgradePlanModal />
           </div>
 
-          <Toast toastOptions={toastOptions} />
+          <Toast
+            toastOptions={toastOptions}
+            groupErrors={!!this.isEditorOrViewerFromPath()}
+            errorPresentation="panel"
+          />
         </div>
       </>
     );
