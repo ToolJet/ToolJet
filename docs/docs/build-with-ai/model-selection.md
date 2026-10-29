@@ -31,14 +31,6 @@ To use a model that isn't in this list, see [Selecting an Exact Model](#selectin
 - You can pick a provider and model freely before sending your first prompt in a chat.
 - You can't change the model while the chat is generating; the picker is disabled until the response finishes. A build running in another chat doesn't block switching in this one.
 
-### Models on the Free Plan
-
-On the Free plan, you can use only the following models: **GPT-6 Luna** (the default), **GPT-5.6 Luna**, **GPT-5.6 Terra**, and **DeepSeek V4.1 Flash**. The other models still appear in the picker, but they're dimmed, marked with a sparkle icon, and can't be selected.
-
-To unlock them, click **Upgrade plan** at the bottom of the picker. If you can't upgrade the plan yourself, the dialog asks you to contact your workspace admin.
-
-If your workspace moves to the Free plan, a chat that was using a locked model won't run until you pick one of the included models.
-
 :::info
 If your admin has configured [BYOK](/docs/setup/tooljet-ai/bring-your-own-key) or [ToolJet Enterprise AI](/docs/setup/tooljet-ai/tj-ai-enterprise) with a provider other than **ToolJet managed**, the admin's provider is used and the model picker is not shown.
 :::
