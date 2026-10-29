@@ -3352,3 +3352,15 @@ $border-radius: 4px;
     min-width: 0 !important;
   }
 }
+
+// Every surface of the right-side query panel is the white surface layer (the dark surface in dark
+// mode). The legacy `.query-manager .header` / `.preview-section` rules paint these with --base and
+// --slate3; this block comes last and is scoped deeper, so it wins over them.
+.right-sidebar-query-configuration .query-manager--right {
+  .query-manager-header--right,
+  .preview-section .preview-toggle,
+  .preview-section .preview-content,
+  .preview-data-container {
+    background: var(--background-surface-layer-01);
+  }
+}
