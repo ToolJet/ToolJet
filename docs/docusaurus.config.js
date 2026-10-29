@@ -322,7 +322,12 @@ module.exports = {
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: true, 
           lastVersion: '3.16.0-LTS',
-          onlyIncludeVersions: process.env.build_lts === 'true' ? ['3.16.0-LTS'] : undefined,
+          // Render PR deploys set build_lts: 'true' (preview label) builds LTS only,
+          // 'false' (prod label) builds beta + LTS. Unset (Netlify, local) builds every version.
+          onlyIncludeVersions:
+            process.env.build_lts === 'true' ? ['3.16.0-LTS']
+            : process.env.build_lts === 'false' ? ['current', '3.16.0-LTS']
+            : undefined,
           versions: {
             current: {
               label: 'beta 🚧',
