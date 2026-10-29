@@ -30,6 +30,7 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
     environments,
     releasedVersionId,
     loading,
+    error,
     capabilities = {},
     notices,
     actions,
@@ -387,6 +388,10 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
               <VersionItemSkeleton />
               <VersionItemSkeleton />
             </>
+          ) : error ? (
+            <div role="alert" className="tw-px-3 tw-py-6 tw-font-body-default tw-text-text-default">
+              {typeof error === 'string' ? error : error?.message || 'Could not load versions'}
+            </div>
           ) : mergedVersions.length === 0 ? (
             <div
               className="d-flex align-items-center justify-content-center tj-text-sm"

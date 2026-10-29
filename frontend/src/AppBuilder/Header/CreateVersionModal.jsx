@@ -22,7 +22,7 @@ const CreateVersionModal = ({
   onVersionCreated,
   getSuccessMessage,
 }) => {
-  const { versions, selectedVersionId, capabilities = {}, actions } = useVersionLifecycle();
+  const { resourceType, versions, selectedVersionId, capabilities = {}, actions } = useVersionLifecycle();
   const developmentVersions = React.useMemo(
     () =>
       capabilities.developmentVersionIds
@@ -186,7 +186,7 @@ const CreateVersionModal = ({
           }}
         >
           <div className="create-version-body mb-3">
-            {isGitSyncEnabled && (
+            {(isGitSyncEnabled || ['module', 'query-library'].includes(resourceType)) && (
               <div
                 className="mb-3 d-flex align-items-start"
                 style={{
@@ -274,7 +274,7 @@ const CreateVersionModal = ({
           </div> */}
 
             {/* Disabling autoCommit */}
-            {/* {isGitSyncEnabled && (
+            {/* {(isGitSyncEnabled || ['module', 'query-library'].includes(resourceType)) && (
               <div className="commit-changes mt-3">
                 <div>
                   <input

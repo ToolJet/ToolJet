@@ -9,10 +9,10 @@ import { toast } from 'react-hot-toast';
 import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
 import '@/_styles/versions.scss';
 
-const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
+const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion, darkMode: suppliedDarkMode }) => {
   const { versions, selectedVersionId, actions } = useVersionLifecycle();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
-  const darkMode = localStorage.getItem('darkMode') === 'true' || false;
+  const darkMode = suppliedDarkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(data);
   const { t } = useTranslation();
   const versionIdToPromote = editingVersion || selectedVersionId;

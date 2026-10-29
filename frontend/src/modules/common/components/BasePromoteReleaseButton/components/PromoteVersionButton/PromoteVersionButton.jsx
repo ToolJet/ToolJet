@@ -62,6 +62,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
         </ToolTip>
         <PromoteConfirmationModal
           data={promoteModalData}
+          darkMode={darkMode}
           editingVersion={editingVersion}
           onClose={() => setPromoteModalData(null)}
           fetchEnvironments={() => {}}
@@ -94,6 +95,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
       </ToolTip>
       <PromoteConfirmationModal
         data={promoteModalData}
+        darkMode={darkMode}
         editingVersion={editingVersion}
         onClose={() => setPromoteModalData(null)}
         fetchEnvironments={() => {}}

@@ -55,7 +55,7 @@ const VersionDropdownItem = ({
   const effectiveDescription = isGitSyncDraft ? 'Latest commit to main will appear here' : version.description;
   // A version is released when it matches the releasedVersionId
   const isReleased = version.id === releasedVersionId;
-  const isEditDisabled = appType === 'module' && !isDraft;
+  const isEditDisabled = ['module', 'query-library'].includes(appType) && !isDraft;
 
   // Get parent version name - search in both current environment versions and development versions
   // This ensures we can find the parent even if it's in a different environment
