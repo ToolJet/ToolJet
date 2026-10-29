@@ -114,6 +114,11 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         'av_search.app_id = app_search.id AND av_search.branch_id = :searchBranchId',
         { searchBranchId: branchId }
       );
+      // Branch creation copies every membership, including apps that never reach the branch;
+      // count only apps on it, as the folder's app list does.
+      query.andWhere(
+        'EXISTS (SELECT 1 FROM app_versions av_on_branch WHERE av_on_branch.app_id = folder_apps.app_id AND av_on_branch.branch_id = :searchBranchId)'
+      );
     } else {
       query.leftJoin(
         'app_versions',

@@ -1,8 +1,9 @@
 import { createContext } from 'react';
 
-// Split out of index.jsx so components outside the TooljetDatabase page (e.g. the shared page
-// Header, which renders the environment switcher next to the breadcrumb) can read this context
-// without pulling in index.jsx's import chain (Layout -> Header -> ...circular back to itself).
+// Split out of index.jsx so components can read this context without pulling in index.jsx's import chain.
+// Only components rendered inside TooljetDatabaseProvider get real values. The shared page Header sits
+// above the provider (it lives in the layout route), so it only gets these defaults - the environment
+// switcher is portaled into the Header from inside the provider (see HeaderSlotPortal).
 export const TooljetDatabaseContext = createContext({
   canEditTjdb: false,
   canEditSchema: false,
@@ -16,6 +17,8 @@ export const TooljetDatabaseContext = createContext({
   setSelectedTableData: () => {},
   tables: [],
   setTables: () => {},
+  tablesLoaded: false,
+  setTablesLoaded: () => {},
   columns: [],
   setColumns: () => {},
   totalRecords: 0,

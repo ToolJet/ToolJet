@@ -17,6 +17,7 @@ const List = () => {
     searchParam,
     selectedTable,
     setTables,
+    setTablesLoaded,
     setSelectedTable,
     loadingState,
     setLoadingState,
@@ -38,6 +39,7 @@ const List = () => {
       return;
     }
 
+    setTablesLoaded(true);
     if (!isEmpty(data?.result)) {
       setTables(data.result || []);
       if (localStorage.getItem('tableDetails')) {

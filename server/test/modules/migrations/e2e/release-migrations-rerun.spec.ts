@@ -26,7 +26,7 @@ import { CreateFolderDataSourcesTable1793250000000 } from '../../../../migration
 import { AddDataSourceFolderGranularPermissions1793250000100 } from '../../../../migrations/1793250000100-AddDataSourceFolderGranularPermissions';
 import { AddWorkflowsGitTreeShaColumn1793250000200 } from '../../../../migrations/1793250000200-AddWorkflowsGitTreeShaColumn';
 import { TjdbRolloutSubstrateSchema1793250000300 } from '../../../../migrations/1793250000300-TjdbRolloutSubstrateSchema';
-import { BackfillWorkflowPinPortability1793250000400 } from '../../../../migrations/1793250000400-BackfillWorkflowPinPortability';
+import { BackfillWorkflowPinPortability1793250000400 } from '../../../../data-migrations/1793250000400-BackfillWorkflowPinPortability';
 import { AddWorkflowEnabledToAppVersions1793250000500 } from '../../../../migrations/1793250000500-AddWorkflowEnabledToAppVersions';
 import { AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1793250000600 } from '../../../../data-migrations/1793250000600-AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups';
 import { SeedMissingAppEnvironments1793250000700 } from '../../../../data-migrations/1793250000700-SeedMissingAppEnvironments';
