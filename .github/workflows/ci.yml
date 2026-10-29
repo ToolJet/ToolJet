@@ -87,7 +87,7 @@ jobs:
               - '!**/*.md'
             # toolchain / workflow changes affect every suite
             root:
-              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**,scripts/ai-*,scripts/check-ai-*,scripts/report-ai-*,scripts/test-ai-*,scripts/normalize-ai-coverage-baseline.*,scripts/render-coverage.mjs,scripts/coverage-gate.sh}'
+              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**,scripts/ai-*,scripts/check-ai-*,scripts/report-ai-*,scripts/test-ai-*,scripts/normalize-ai-coverage-baseline.*,scripts/redact-private-diff.*,scripts/render-coverage.mjs,scripts/coverage-gate.sh}'
       # a submodule bump counts only if the EE diff touches more than docs/skills;
       # any lookup failure counts as changed
       - name: Detect EE submodule changes
@@ -194,7 +194,7 @@ jobs:
           cache-dependency-path: 'server/package-lock.json'
       - run: npm ci --prefix server
       - name: Test AI coverage policy and baseline normalization
-        run: set -o pipefail; mkdir -p /tmp/buildlog; node --test scripts/normalize-ai-coverage-baseline.test.mjs scripts/ai-test-policy.test.mjs 2>&1 | tee -a /tmp/buildlog/server.log
+        run: set -o pipefail; mkdir -p /tmp/buildlog; node --test scripts/normalize-ai-coverage-baseline.test.mjs scripts/ai-test-policy.test.mjs scripts/redact-private-diff.test.mjs 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix server lint 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; npm run --prefix server build 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; bash server/scripts/check-ee-leak.sh 2>&1 | tee -a /tmp/buildlog/server.log
@@ -702,7 +702,7 @@ jobs:
           if [ "$old" != "$new" ]; then
             git -C server/ee cat-file -e "$old" 2>/dev/null || git -C server/ee fetch --no-tags --depth=1 origin "$old"
             # Colocated private specs were moved; their deleted source must not enter public artifacts.
-            git -C server/ee diff --no-color "$old" "$new" --src-prefix=a/server/ee/ --dst-prefix=b/server/ee/ -- . ':(exclude)test/**' ':(exclude)**/*.spec.*' ':(exclude)**/*.test.*' >> /tmp/cov/pr.diff
+            git -C server/ee diff --no-color --no-ext-diff --no-textconv "$old" "$new" --src-prefix=a/server/ee/ --dst-prefix=b/server/ee/ -- . ':(exclude)test/**' ':(exclude)**/*.spec.*' ':(exclude)**/*.test.*' | node scripts/redact-private-diff.cjs >> /tmp/cov/pr.diff
           fi
       - name: Upload coverage gate inputs
         if: github.event_name == 'pull_request'
