@@ -1,4 +1,9 @@
-import { lockLibraryPins, lockLibraryQuery } from '@modules/query-library/locking';
+import {
+  lockLibraryPins,
+  lockLibraryQuery,
+  withLibraryImportLocks,
+  registerImportedLibraryQuery,
+} from '@modules/query-library/locking';
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
@@ -1445,111 +1450,115 @@ export class AppImportExportService {
     branchId?: string,
     isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (typeof appParamsObj !== 'object') {
-        throw new BadRequestException('Invalid params for app import');
-      }
-      let appParams = appParamsObj;
+    return await dbTransactionWrap(
+      (manager: EntityManager) =>
+        withLibraryImportLocks(manager, user.organizationId, appParamsObj, isGitApp, async () => {
+          if (typeof appParamsObj !== 'object') {
+            throw new BadRequestException('Invalid params for app import');
+          }
+          let appParams = appParamsObj;
 
-      if (appParams?.appV2) {
-        appParams = { ...appParams.appV2 };
-      }
+          if (appParams?.appV2) {
+            appParams = { ...appParams.appV2 };
+          }
 
-      // appParams.name can be null when the file was exported from a git-enabled
-      // workspace where the module only exists on a feature branch (no default-branch
-      // DRAFT version → resolveMetadataVersion returns null → app.name stays null).
-      // appName (user-provided) is always used as the final name (line below), so
-      // allow it as a fallback here to avoid a spurious 400 on device imports.
-      if (!appParams?.name && !appName) {
-        throw new BadRequestException('Invalid params for app import');
-      }
+          // appParams.name can be null when the file was exported from a git-enabled
+          // workspace where the module only exists on a feature branch (no default-branch
+          // DRAFT version → resolveMetadataVersion returns null → app.name stays null).
+          // appName (user-provided) is always used as the final name (line below), so
+          // allow it as a fallback here to avoid a spurious 400 on device imports.
+          if (!appParams?.name && !appName) {
+            throw new BadRequestException('Invalid params for app import');
+          }
 
-      const moduleResourceMappings = await this.mapModulesForAppImport(
-        manager,
-        appParams,
-        user,
-        externalResourceMappings,
-        isGitApp,
-        tooljetVersion,
-        branchId
-      );
+          const moduleResourceMappings = await this.mapModulesForAppImport(
+            manager,
+            appParams,
+            user,
+            externalResourceMappings,
+            isGitApp,
+            tooljetVersion,
+            branchId
+          );
 
-      const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
-        ? appParams
-        : convertSinglePageSchemaToMultiPageSchema(appParams);
-      schemaUnifiedAppParams.name = appName;
+          const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
+            ? appParams
+            : convertSinglePageSchemaToMultiPageSchema(appParams);
+          schemaUnifiedAppParams.name = appName;
 
-      const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
-      const isNormalizedAppDefinitionSchema = cloning
-        ? true
-        : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
+          const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
+          const isNormalizedAppDefinitionSchema = cloning
+            ? true
+            : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-      const currentTooljetVersion = !cloning ? tooljetVersion : null;
-      const existingAppId = appParamsObj.existingAppId;
-      const importedApp = await this.createImportedAppForUser(
-        manager,
-        schemaUnifiedAppParams,
-        user,
-        isGitApp,
-        existingAppId,
-        branchId
-      );
+          const currentTooljetVersion = !cloning ? tooljetVersion : null;
+          const existingAppId = appParamsObj.existingAppId;
+          const importedApp = await this.createImportedAppForUser(
+            manager,
+            schemaUnifiedAppParams,
+            user,
+            isGitApp,
+            existingAppId,
+            branchId
+          );
 
-      const resourceMapping = await this.setupImportedAppAssociations(
-        manager,
-        importedApp,
-        schemaUnifiedAppParams,
-        user,
-        externalResourceMappings,
-        isNormalizedAppDefinitionSchema,
-        currentTooljetVersion,
-        moduleResourceMappings,
-        undefined,
-        branchId,
-        cloning,
-        isGitApp,
-        isTemplateApp
-      );
-      await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
-      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
+          const resourceMapping = await this.setupImportedAppAssociations(
+            manager,
+            importedApp,
+            schemaUnifiedAppParams,
+            user,
+            externalResourceMappings,
+            isNormalizedAppDefinitionSchema,
+            currentTooljetVersion,
+            moduleResourceMappings,
+            undefined,
+            branchId,
+            cloning,
+            isGitApp,
+            isTemplateApp
+          );
+          await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+          await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
-      // Library queries the app uses travel with its export; the app's pins are re-pointed at this workspace's rows.
-      // Never from git: the library is not synced to git, so a git pull leaves the library untouched.
-      if (!isGitApp && Array.isArray(appParams.libraryQueries) && appParams.libraryQueries.length) {
-        await this.importLibraryQueries(
-          manager,
-          appParams.libraryQueries,
-          user,
-          resourceMapping,
-          externalResourceMappings['tooljet_database'] ?? {}
-        );
-      }
+          // Library queries the app uses travel with its export; the app's pins are re-pointed at this workspace's rows.
+          // Never from git: the library is not synced to git, so a git pull leaves the library untouched.
+          if (!isGitApp && Array.isArray(appParams.libraryQueries) && appParams.libraryQueries.length) {
+            await this.importLibraryQueries(
+              manager,
+              appParams.libraryQueries,
+              user,
+              resourceMapping,
+              externalResourceMappings['tooljet_database'] ?? {}
+            );
+          }
 
-      // Imported rows are provisional until remapping finishes. Validate/lock the final
-      // pins before this transaction may commit, including Git and clone imports.
-      const importedQueries = await manager.find(DataQuery, {
-        where: { appVersionId: In(Object.values(resourceMapping.appVersionMapping)) },
-        relations: { dataSource: true },
-      });
-      await lockLibraryPins(manager, user.organizationId, importedQueries);
+          // Imported rows are provisional until remapping finishes. Validate/lock the final
+          // pins before this transaction may commit, including Git and clone imports.
+          const importedQueries = await manager.find(DataQuery, {
+            where: { appVersionId: In(Object.values(resourceMapping.appVersionMapping)) },
+            relations: { dataSource: true },
+          });
+          await lockLibraryPins(manager, user.organizationId, importedQueries);
 
-      // Update latest version as editing version
-      const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
+          // Update latest version as editing version
+          const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
 
-      // When multiple versions are imported, branch-type versions are excluded.
-      // Filter here to match so the editing version is set to a version that was actually created.
-      const importedAppVersions =
-        importingAppVersions.length > 1
-          ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
-          : importingAppVersions;
+          // When multiple versions are imported, branch-type versions are excluded.
+          // Filter here to match so the editing version is set to a version that was actually created.
+          const importedAppVersions =
+            importingAppVersions.length > 1
+              ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
+              : importingAppVersions;
 
-      await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importedAppVersions);
+          await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importedAppVersions);
 
-      const newApp = await manager.findOne(App, {
-        where: { id: importedApp.id },
-      });
-      return { newApp, resourceMapping };
-    }, manager);
+          const newApp = await manager.findOne(App, {
+            where: { id: importedApp.id },
+          });
+          return { newApp, resourceMapping };
+        }),
+      manager
+    );
   }
 
   /**
@@ -1653,6 +1662,7 @@ export class AppImportExportService {
             createdBy: user.id,
           })
         );
+        registerImportedLibraryQuery(manager, target.id);
         await manager.save(LibraryQueryState, { libraryQueryId: target.id, hasDraft: true });
         existing.push(target);
       }

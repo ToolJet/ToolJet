@@ -25,7 +25,7 @@ it.each([true, false])(
         )
       )
     );
-    render(<LibraryQueryDependencyWarning darkMode />);
+    const { unmount } = render(<LibraryQueryDependencyWarning darkMode />);
     await act(async () => state().dataQuery.deleteDataQueries('q1'));
     expect(state().queryPanel.selectedQuery.id).toBe('q1');
     expect(state().dataQuery.queries.modules.canvas.map(({ id }) => id)).toEqual(['q1']);
@@ -37,5 +37,6 @@ it.each([true, false])(
       fireEvent.click(screen.getByRole('button', { name: 'I understand' }));
     }
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    unmount();
   }
 );

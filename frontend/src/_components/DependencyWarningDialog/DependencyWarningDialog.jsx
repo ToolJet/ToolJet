@@ -1,9 +1,52 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export default function DependencyWarningDialog({ open, title, message, darkMode, onClose }) {
+  const dialogRef = useRef(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    if (!open) return;
+    const opener = document.activeElement;
+    const dialog = dialogRef.current;
+    const focusable = () => [
+      ...dialog.querySelectorAll(
+        'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]'
+      ),
+    ];
+    const focusInside = () => (focusable()[0] || dialog).focus();
+    focusInside();
+    const containFocus = (event) => {
+      if (!dialog.contains(event.target)) focusInside();
+    };
+    const handleKey = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        closeRef.current();
+      } else if (event.key === 'Tab') {
+        const targets = focusable();
+        const first = targets[0] || dialog;
+        const last = targets[targets.length - 1] || dialog;
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('focusin', containFocus);
+    document.addEventListener('keydown', handleKey, true);
+    return () => {
+      document.removeEventListener('focusin', containFocus);
+      document.removeEventListener('keydown', handleKey, true);
+      if (opener?.isConnected) opener.focus();
+    };
+  }, [open]);
   if (!open) return null;
   return ReactDOM.createPortal(
     <div
@@ -22,6 +65,8 @@ export default function DependencyWarningDialog({ open, title, message, darkMode
       }}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label={title}
