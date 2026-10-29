@@ -27,6 +27,8 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
   const [isClosing, setIsClosing] = useState(false);
   const inputRef = useRef(null);
   const exitTimeoutRef = useRef(null);
+  // Set the moment editing starts to close, so a blur from the same action can't save a second time.
+  const isClosingRef = useRef(false);
 
   useEffect(() => {
     if (!isEditing) setDraftName(value);
@@ -47,20 +49,24 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
     setDraftName(value);
     setErrorText('');
     setIsClosing(false);
+    isClosingRef.current = false;
     onEditingChange(true);
   };
 
   const closeWithAnimation = () => {
-    if (isClosing) return;
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
     setIsClosing(true);
     exitTimeoutRef.current = window.setTimeout(() => {
       setErrorText('');
       setIsClosing(false);
+      isClosingRef.current = false;
       onEditingChange(false);
     }, INLINE_RENAME_TRANSITION_MS);
   };
 
   const handleSave = () => {
+    if (isClosingRef.current) return;
     const nextName = normalizeQueryName(draftName);
     const validation = validateInlineQueryName(nextName);
     setDraftName(nextName);
@@ -75,6 +81,19 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
     }
     closeWithAnimation();
   };
+
+  // Clicking anywhere outside ends editing like Enter, except that a name that can't be saved (empty,
+  // or rejected by onSave) is dropped instead of keeping the editor open.
+  const handleBlur = () => {
+    if (isClosingRef.current) return;
+    const nextName = normalizeQueryName(draftName);
+    const saveError = validateInlineQueryName(nextName).errorMsg || (nextName !== value ? onSave(nextName) : '');
+    if (saveError) setDraftName(value);
+    closeWithAnimation();
+  };
+
+  // Keeps focus in the input, so pressing save or cancel never counts as a click outside.
+  const keepInputFocus = (event) => event.preventDefault();
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
@@ -100,6 +119,7 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
               setErrorText(validateInlineQueryName(nextName).errorMsg);
             }}
             onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
             disabled={isClosing}
             aria-label="Query name"
             aria-invalid={!!errorText}
@@ -111,6 +131,7 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
             <button
               type="button"
               className={`query-inline-name-action ${INLINE_RENAME_ACTION_CLASS} ${INLINE_RENAME_SAVE_COLOR_CLASS}`}
+              onMouseDown={keepInputFocus}
               onClick={handleSave}
               disabled={isClosing || !!errorText}
               aria-label="Save query name"
@@ -120,6 +141,7 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
             <button
               type="button"
               className={`query-inline-name-action ${INLINE_RENAME_ACTION_CLASS} tw-text-[var(--icon-danger)]`}
+              onMouseDown={keepInputFocus}
               onClick={closeWithAnimation}
               disabled={isClosing}
               aria-label="Cancel query rename"
