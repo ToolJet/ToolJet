@@ -56,6 +56,11 @@ export class AppModuleLoader {
       // transaction long enough to be killed. See AppModule.register conditional providers.
       ...(isTest || configs.IS_GET_CONTEXT ? [] : [ScheduleModule.forRoot()]),
       BullModule.forRoot({
+        // Fallback for queues and jobs that set no retention; finished jobs otherwise stay in Redis forever
+        defaultJobOptions: {
+          removeOnComplete: { age: 3600, count: 100 },
+          removeOnFail: { age: 86400, count: 500 },
+        },
         connection: {
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT) || 6379,
