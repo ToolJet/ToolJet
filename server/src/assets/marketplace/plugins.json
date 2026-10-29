@@ -393,11 +393,12 @@
     "tags": ["Collaboration"]
   },
   {
-    "name": "cloudflare_workers_ai",
-    "description": "api plugin from cloudflare_workers_ai",
+    "name": "Cloudflare Workers AI",
+    "description": "Connect to Cloudflare Workers AI and run AI models from ToolJet.",
     "version": "1.0.0",
     "id": "cloudflare_workers_ai",
     "author": "Tooljet",
-    "timestamp": "Wed, 07 Oct 2026 02:46:01 GMT"
+    "timestamp": "Wed, 07 Oct 2026 02:46:01 GMT",
+    "tags": ["AI"]
   }
 ]
