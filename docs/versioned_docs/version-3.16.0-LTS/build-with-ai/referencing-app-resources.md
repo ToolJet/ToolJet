@@ -36,24 +36,3 @@ You can @mention data sources in the AI chat in the App Builder, in the prompt o
 When you mention a data source, the AI uses it for the app instead of asking you which data source to use, and skips exploring data you have already pointed it to. If the AI still needs you to pick the app's main data source, it offers only the data sources you mentioned.
 
 To mention a single table, type `@`, select a database in the list, then select the table. Mentioning a table also brings its data source into scope. You can drill into tables for PostgreSQL, MySQL, MS SQL Server, Snowflake, Databricks, and MongoDB (collections). Other data sources are mentioned as a whole. Hover over a mention in your message to see what it refers to.
-
-### Data Sources You Can Mention
-
-Only data sources of these kinds appear in the list:
-
-- PostgreSQL
-- MySQL
-- MS SQL Server
-- Snowflake
-- Databricks
-- MongoDB
-- BigQuery
-- OpenAPI
-- OpenAI
-- Gmail
-- Google Calendar
-- HubSpot
-- ServiceNow
-- QuickBooks
-
-The list also shows only the data sources you have permission to use or configure. ToolJet checks this permission again when you send the message and ignores any mentioned data source or table you can't access.

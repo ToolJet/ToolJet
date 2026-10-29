@@ -11,7 +11,7 @@ This page covers **Start with a prompt**, the AI built into ToolJet. To build th
 
 ## Creating Application
 
-Enter a prompt on the home page describing the business application you want to build, then click the build button or press **⌘ + Enter** (**Ctrl + Enter** on Windows and Linux). ToolJet creates a new app, opens it in the App Builder, and builds it there from the AI chat.
+Enter a prompt on the home page describing the business application you want to build, then click the build button. ToolJet creates a new app, opens it in the App Builder, and builds it there from the AI chat.
 
 <img className="screenshot-full img-full" src="/img/tooljet-ai/generate-app/prompt-v2.png" alt="tooljet generate apps" />
 
