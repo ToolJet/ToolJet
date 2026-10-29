@@ -35,6 +35,7 @@ import * as cookieParser from 'cookie-parser';
 import { McpOAuthThrottleGuard } from '@modules/mcp-oauth/throttle.guard';
 import { McpOAuthAccountGuard } from '@modules/mcp-oauth/account.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
+import { JwtStrategy } from '@modules/session/jwt/jwt.strategy';
 import { McpOAuthController, McpOAuthMetadataController } from '@modules/mcp-oauth/controller';
 import { AddMcpOAuth1789416000000 } from '../../../migrations/1789416000000-AddMcpOAuth';
 import { AddMcpOAuthRevocationHooks1791290000000 } from '../../../migrations/1791290000000-AddMcpOAuthRevocationHooks';
@@ -230,6 +231,77 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       await expect(exchange(pair.access_token, { resource: resourceBase })).rejects.toMatchObject({ error: 'invalid_target' });
       await expect(refresh(pair.refresh_token, { resource: resourceBase })).rejects.toMatchObject({ error: 'invalid_target' });
       expect(await exchange(pair.access_token)).toMatchObject({ organization_id: organizationId });
+    });
+    test('a slug matching another workspace ID cannot change selection, consent or exchange', async () => {
+      await db.query("INSERT INTO organizations (name,slug,status) VALUES ('Willow operations',$1,'active')", [organizationId]);
+      await db.query("UPDATE organizations SET name='Garden operations' WHERE id=$1", [organizationId]);
+      const { consent } = await choose();
+      expect((await oauth.preview(consent.id, consent.csrf)).organizationId).toBe(organizationId);
+      const approval = await oauth.consent(consent.id, consent.csrf, user, true);
+      const pair = await redeem(new URL(approval.redirectUrl).searchParams.get('code'), { resource: resourceBase });
+      expect(await exchange(pair.access_token, { resource: resourceBase }))
+        .toMatchObject({ organization_id: organizationId, organization_slug: 'garden' });
+      const root = await oauth.start(request({ resource: resourceBase }));
+      await db.query("UPDATE organizations SET status='archived' WHERE id=$1", [organizationId]);
+      await expect(oauth.selectWorkspace(root.id, root.csrf, organizationId, settings.TOOLJET_HOST))
+        .rejects.toMatchObject({ error: 'invalid_target' });
+    });
+    test('a selected workspace ID never falls back to a slug if the workspace disappears', async () => {
+      const { consent } = await choose();
+      await db.query("INSERT INTO organizations (name,slug,status) VALUES ('Willow operations',$1,'active')", [organizationId]);
+      await db.query('DELETE FROM organizations WHERE id=$1', [organizationId]);
+      await expect(oauth.preview(consent.id, consent.csrf)).rejects.toMatchObject({ error: 'invalid_target' });
+    });
+    test.each(['login', 'login/', 'login/sso/openid', 'login/super-admin', 'applications/sample', 'embed-apps/sample', 'sso/google', 'switch-workspace',
+      'settings/profile', 'integrations', 'instance-settings', 'organization-invitations/sample', 'invitations/sample',
+      'mcp/consent', 'oauth2/authorize', 'error/sample', 'app-url-archived', 'switch-workspace-archived',
+      'signup', 'setup', 'forgot-password', 'reset-password/sample', 'password-expired', 'ldap/sample'])
+    ('rejects non-workspace URL /%s even when its route name is a workspace slug', async path => {
+      const slug = path.startsWith('login') ? path.split('/')[1] || 'undefined' : path.split('/')[0];
+      await db.query("INSERT INTO organizations (name,slug,status) VALUES ('Willow operations',$1,'active')", [slug]);
+      const root = await oauth.start(request({ resource: resourceBase }));
+      await expect(oauth.selectWorkspace(root.id, root.csrf, `${settings.TOOLJET_HOST}/${path}`, settings.TOOLJET_HOST))
+        .rejects.toMatchObject({ error: 'invalid_target' });
+      // The explicit slug remains usable without mistaking a platform URL for a workspace URL.
+      const selected = await oauth.selectWorkspace(root.id, root.csrf, slug, settings.TOOLJET_HOST);
+      expect((await oauth.preview(selected.id, selected.csrf)).organizationSlug).toBe(slug);
+    });
+    test('workspace discovery verifies signed browser cookies and live sessions with the real account guard', async () => {
+      const otherId = randomUUID();
+      const otherWorkspace = randomUUID();
+      await db.query("INSERT INTO users (id,email,status) VALUES ($1,'other@synthetic.example','active')", [otherId]);
+      await db.query("INSERT INTO organizations (id,name,slug,status) VALUES ($1,'Willow operations','willow','active')", [otherWorkspace]);
+      await db.query("INSERT INTO organization_users (user_id,organization_id,status,role) VALUES ($1,$2,'active','admin')", [otherId, otherWorkspace]);
+      const config = new ConfigService(settings);
+      const jwt = new JwtService({ secret: signingSecret });
+      const sessions = Object.assign(Object.create(SessionUtilService.prototype), { configService: config });
+      const strategy = new JwtStrategy(config, sessions,
+        { findByEmail: email => db.manager.findOneBy(User, { email }) } as any, {} as any, { log: () => undefined } as any);
+      const module = await Test.createTestingModule({
+        controllers: [McpOAuthController],
+        providers: [{ provide: McpOAuthService, useValue: oauth }, { provide: JwtService, useValue: jwt },
+          { provide: JwtStrategy, useValue: strategy }],
+      }).overrideGuard(McpOAuthThrottleGuard).useValue({ canActivate: () => true }).compile();
+      const app = module.createNestApplication();
+      app.use(cookieParser());
+      app.setGlobalPrefix('api');
+      await app.init();
+      try {
+        const root = await oauth.start(request({ resource: resourceBase }));
+        const path = `/api/mcp-oauth/interactions/${root.id}/workspaces`;
+        const flowCookie = `${oauth.cookieName(root.id)}=${root.csrf}`;
+        const payload = { username: user.id, sub: user.email, sessionId: user.sessionId, isPasswordLogin: true, organizationIds: [organizationId] };
+        const get = (token: string) => supertest(app.getHttpServer()).get(path)
+          .set('Cookie', [flowCookie, `tj_auth_token=${token}`]);
+        const browser = jwt.sign(payload);
+        const result = await get(browser).expect(200);
+        expect(result.body.workspaces).toEqual([{ id: organizationId, name: 'Garden operations', slug: 'garden' }]);
+        await get(jwt.sign({ ...payload, isPasswordLogin: false, isSSOLogin: true })).expect(200);
+        await get(jwt.sign({ ...payload, isPATLogin: true })).expect(401);
+        await get(new JwtService({ secret: 'different-synthetic-signing-key' }).sign(payload)).expect(401);
+        await db.query('DELETE FROM user_sessions WHERE id=$1', [user.sessionId]);
+        await get(browser).expect(401);
+      } finally { await app.close(); }
     });
     test('two shared-URL grants remain bound to their independently selected workspaces', async () => {
       const first = (await choose()).consent;

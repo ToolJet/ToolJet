@@ -244,15 +244,19 @@ export class McpOAuthService implements OnModuleInit {
       response_types: ['code'],
     };
   }
-  async workspace(resource: string, manager = this.dataSource.manager) {
+  async workspace(resource: string, manager = this.dataSource.manager, idOnly = false) {
     const base = this.settings().resource;
     if (!resource.startsWith(`${base}/`)) throw new OAuthFailure('invalid_target', 'Unknown MCP resource');
     const workspace = resource.slice(base.length + 1);
     if (!/^[a-zA-Z0-9_-]{1,128}$/.test(workspace))
       throw new OAuthFailure('invalid_target', 'Use a workspace MCP URL');
+    // An ID wins over a colliding slug even when inactive; stored IDs never fall back to slugs.
     const [org] = await manager.query(
-      "SELECT id,name,slug FROM organizations WHERE (id::text = $1 OR slug = $1) AND status = 'active'",
-      [workspace],
+      `SELECT id,name,slug FROM (
+        SELECT id,name,slug,status FROM organizations WHERE id::text = $1 OR (NOT $2 AND slug = $1)
+        ORDER BY (id::text = $1) DESC LIMIT 1
+      ) selected WHERE status = 'active'`,
+      [workspace, idOnly],
     );
     if (!org) throw new OAuthFailure('invalid_target', 'Workspace is unavailable');
     return org;
@@ -340,36 +344,47 @@ export class McpOAuthService implements OnModuleInit {
        ORDER BY lower(o.name), o.id`, [user.id]);
     return { email: user.email, workspaces };
   }
-  private async workspaceReference(value: unknown) {
+  private async workspaceReference(value: unknown, manager: EntityManager) {
     let reference = stringParam(value, 'workspace').trim();
+    let idOnly = false;
     if (/^https?:\/\//i.test(reference)) {
       let url: URL;
       try { url = new URL(reference); } catch { throw new OAuthFailure('invalid_target', 'Use a workspace URL, ID or slug'); }
       const browser = new URL(this.settings().browser);
       if (url.username || url.password) throw new OAuthFailure('invalid_target', 'Invalid workspace URL');
       if (url.origin !== browser.origin) {
-        const [domain] = await this.dataSource.query(
+        const [domain] = await manager.query(
           "SELECT organization_id FROM custom_domains WHERE domain = $1 AND status = 'active' AND ssl_status = 'active'", [url.hostname]);
-        if (!domain || new URL((await this.browserTarget(domain.organization_id)).url).origin !== url.origin)
+        if (!domain || new URL((await this.browserTarget(domain.organization_id, manager)).url).origin !== url.origin)
           throw new OAuthFailure('invalid_target', 'Unknown workspace URL');
         reference = domain.organization_id;
+        idOnly = true;
       } else {
         const prefix = browser.pathname.replace(/\/$/, '') + '/';
         if (!url.pathname.startsWith(prefix)) throw new OAuthFailure('invalid_target', 'Unknown workspace URL');
         const segments = url.pathname.slice(prefix.length).split('/');
-        reference = segments[0] === 'login' ? segments[1] : segments[0];
+        const route = segments[0].toLowerCase();
+        // Installation routes do not identify a workspace, even if a workspace uses the same slug.
+        const installationRoutes = ['applications', 'embed-apps', 'integrations', 'instance-settings',
+          'organization-invitations', 'invitations', 'sso', 'settings', 'switch-workspace', 'switch-workspace-archived',
+          'error', 'app-url-archived', 'mcp', 'oauth2', 'signup', 'setup', 'forgot-password', 'reset-password', 'password-expired', 'ldap'];
+        if (installationRoutes.includes(route) ||
+            (route === 'login' && (!segments[1] || ['sso', 'super-admin'].includes(segments[1].toLowerCase()))))
+          throw new OAuthFailure('invalid_target', 'Use a workspace URL, ID or slug');
+        reference = route === 'login' ? segments[1] : segments[0];
       }
     }
-    return this.workspace(`${this.settings().resource}/${reference}`);
+    return this.workspace(`${this.settings().resource}/${reference}`, manager, idOnly);
   }
   async selectWorkspace(id: string, csrf: string, reference: unknown, origin: string) {
+    this.assertEnabled();
     return this.dataSource.transaction(async (manager) => {
       await manager.query("SELECT pg_advisory_xact_lock(hashtext('mcp-oauth-registration'))");
       await manager.query('SELECT id FROM mcp_oauth_artifacts WHERE id = $1 FOR UPDATE', [hash(id)]);
       const row = await this.interaction(id, csrf, manager, origin);
       if (row.payload.params.resource !== this.settings().resource || row.payload.organizationId)
         throw new OAuthFailure('invalid_request', 'Workspace already selected');
-      const org = await this.workspaceReference(reference);
+      const org = await this.workspaceReference(reference, manager);
       // Freeze selection by consuming the chooser and creating a separately bound consent request.
       // Reuse the original resource, PKCE, state, redirect and expiry, including for custom-domain SSO.
       await this.store(manager).consume(row.id);
@@ -377,6 +392,7 @@ export class McpOAuthService implements OnModuleInit {
     });
   }
   async cancelSelection(id: string, csrf: string, origin: string) {
+    this.assertEnabled();
     return this.dataSource.transaction(async (manager) => {
       await manager.query('SELECT id FROM mcp_oauth_artifacts WHERE id = $1 FOR UPDATE', [hash(id)]);
       const row = await this.interaction(id, csrf, manager, origin);
@@ -447,7 +463,8 @@ export class McpOAuthService implements OnModuleInit {
     if (!client) throw new OAuthFailure('invalid_client', 'Client is unavailable');
     const org = row.payload.organizationId
       ? await this.workspace(row.payload.params.resource === this.settings().resource
-        ? `${this.settings().resource}/${row.payload.organizationId}` : row.payload.params.resource)
+        ? `${this.settings().resource}/${row.payload.organizationId}` : row.payload.params.resource,
+        this.dataSource.manager, row.payload.params.resource === this.settings().resource)
       : null;
     // A primary-domain SSO callback stays on the primary host with its original
     // transaction cookie. Custom-domain callbacks use the separately bootstrapped cookie.
@@ -715,7 +732,7 @@ export class McpOAuthService implements OnModuleInit {
     const grant = await store.activeGrant(artifact.grant_id);
     if (grant.resource !== resource) throw new OAuthFailure('invalid_target', 'Incorrect MCP resource', 403);
     const org = await this.workspace(resource === this.settings().resource
-      ? `${resource}/${grant.organization_id}` : resource);
+      ? `${resource}/${grant.organization_id}` : resource, this.dataSource.manager, resource === this.settings().resource);
     const seconds = Math.max(
       0,
       Math.min(ACCESS_SECONDS, Math.floor((artifact.expires_at.getTime() - Date.now()) / 1000)),
