@@ -99,7 +99,12 @@ export const BaseLeftSidebar = ({
   const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
-  const { isLeftPanelOpen, shouldMountLeftPanel } = getLeftPanelState(selectedSidebarItem, isSidebarOpen);
+  // Closing clears selectedSidebarItem at once, but the panel keeps showing what it showed until its
+  // exit animation ends (isPanelContentMounted drops PANEL_MOTION.durationMs after it closes).
+  const lastPanelItemRef = useRef(selectedSidebarItem);
+  if (selectedSidebarItem) lastPanelItemRef.current = selectedSidebarItem;
+  const panelItem = selectedSidebarItem ?? (isPanelContentMounted ? lastPanelItemRef.current : null);
+  const { isLeftPanelOpen, shouldMountLeftPanel } = getLeftPanelState(panelItem, isSidebarOpen);
 
   const handleSelectedSidebarItem = (item) => {
     // Only a search result opens Settings with a way back to the search panel.
@@ -168,18 +173,18 @@ export const BaseLeftSidebar = ({
   }, [isSidebarOpen]);
 
   const renderPopoverContent = () => {
-    if (selectedSidebarItem === null) return null;
-    const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[selectedSidebarItem] || 'Left sidebar';
+    if (panelItem === null) return null;
+    const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[panelItem] || 'Left sidebar';
     return (
       // Every sidebar panel gets its own labelled boundary; switching panels auto-recovers.
       <FallbackBoundary
         label={panelLabel}
         location={`LeftSideBar ${panelLabel}`}
         darkMode={darkMode}
-        resetKeys={[selectedSidebarItem]}
+        resetKeys={[panelItem]}
       >
         <div
-          key={selectedSidebarItem}
+          key={panelItem}
           className={cx('left-sidebar-panel-content', {
             'left-sidebar-panel-content--switching': animatePanelSwitch,
           })}
@@ -191,7 +196,7 @@ export const BaseLeftSidebar = ({
   };
 
   const renderSelectedPanel = () => {
-    switch (selectedSidebarItem) {
+    switch (panelItem) {
       case 'tooljetai':
         return renderAIChat({ darkMode });
       case 'pages':
@@ -371,8 +376,8 @@ export const BaseLeftSidebar = ({
             // outside click (canvas, right panel, bottom panel, AI chat).
             onInteractOutside={(e) => e.preventDefault()}
             open={isLeftPanelOpen}
-            popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${selectedSidebarItem} left-sidebar-overflow-${getLeftPanelOverflow(
-              selectedSidebarItem
+            popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${panelItem} left-sidebar-overflow-${getLeftPanelOverflow(
+              panelItem
             )}`}
             side="right"
             popoverContent={isPanelContentMounted ? renderPopoverContent() : null}
