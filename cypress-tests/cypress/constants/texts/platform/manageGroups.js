@@ -134,3 +134,30 @@ export const groupsText = {
   emptyPagePermissionHelperText: "Add assets to configure granular, asset-level permissions for this user group",
 
 };
+
+export const groupAdminText = {
+  groupAdminsTab: "Group admins",
+  assignGroupAdminButton: "Assign group admin",
+  assignPlaceholder: "Select users to assign as group admins",
+  assignedToast: "Group admin(s) assigned",
+  removedToast: "Group admin removed",
+
+  nameHeader: "User name",
+  emailHeader: "Email id",
+
+  emptyStateTitle: "No group admins assigned",
+  emptyStateInfo: "Assign a group admin to delegate",
+  emptyStateInfo2: "membership management for this group.",
+  noResultsTitle: "No results found",
+
+  noGroupAdminOfAnyGroup: "You are not a group admin of any group.",
+  cannotAddEndUserTitle: "Cannot add an end-user to this group",
+  adminOnlyRoleChange: "Only a workspace admin can change user roles.",
+
+  apiErrorDefaultGroup: "Group admins can only be assigned to custom groups",
+  apiErrorInactiveMember: "Only active workspace members can be assigned as group admin",
+  apiRoleChangeType: "USER_ROLE_CHANGE_ADMIN_REQUIRED",
+
+  memberRemovedToast: "User removed from the group",
+  duplicatedToast: "Group duplicated successfully",
+};

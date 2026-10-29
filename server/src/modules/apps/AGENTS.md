@@ -25,7 +25,7 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 | `util.service.ts` | `AppsUtilService`: create internals, name/slug uniqueness handling, `fetchModules`, module in-use/released checks, `overlayAppMetadata` |
 | `repository.ts` | `AppsRepository`: `findBySlug`, `findByAppName`, `findByIdOrSlug`, `findAllOrganizationApps`, `findAllOrganizationModules` |
 | `services/` | `page.service` + `page.util.service` (PageHelperService), `component.service`, `event.service`, `workflow.service`, `app-import-export.service` |
-| `services/widget-config/` | Per-widget default config (`index.js` aggregates); served to the builder |
+| `services/widget-config/` | `index.js` aggregates the per-widget configs from `@tooljet/widget-definitions` (`packages/widget-definitions`) into `componentTypes` |
 | `subscribers/apps.subscriber.ts` | Workflow slug placeholder on insert; bumps `apps.updated_at` when a version row updates (inserts deliberately don't bump) |
 | `ability/` + `guards/` | CASL `FeatureAbilityFactory` (`app.ability.ts`, `workflow.ability.ts`); `ValidAppGuard`, `ValidSlugGuard`, app-auth/public/private guards |
 | `dashboard/` | Dashboard v2 (`GET /api/v2/apps`, `/api/v2/pins`, `POST /api/v2/folder-apps/bulk-move`, `POST /api/v2/apps/bulk-delete`, `POST /api/v2/folders/bulk-delete`): one permission resolve → pure SQL builders (`queries.ts`) + pure row actions (`actions.ts`). Imported statically by `module.ts` (CE-only, no EE override); `DashboardService` is provided via a factory so its deps are the edition-resolved classes |
@@ -37,7 +37,7 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 
 ## Invariants & gotchas
 
-- **Widget config sync (CRITICAL)**: `services/widget-config/` and `frontend/src/AppBuilder/WidgetManager/widgets/` must change together. A config change that moves/renames/removes a key needs a data migration for existing component rows.
+- **Widget config (CRITICAL)**: configs are shared with the frontend via `packages/widget-definitions` — one copy, edited once. A config change that moves/renames/removes a key needs a data migration for existing component rows.
 - App name/slug uniqueness is enforced at the DB level by partial unique indexes on `app_versions` (`app_versions_app_name_branch_id_unique`, `app_versions_slug_branch_id_unique`, `app_versions_slug_default_branch_unique`) plus the `enforce_app_versions_app_name_branch_unique` trigger; `util.service.ts` wraps inserts to surface friendly errors ("This slug is already taken."). Don't add app-level uniqueness checks that race with these.
 - New non-workflow apps get `slug = app.id` as placeholder on the version row; user renames later. Workflow slug placeholder is set by the subscriber on `apps` itself. `apps.slug` stays NULL for non-workflows (multiple NULLs allowed on the unique column).
 - Deleting a MODULE-type app must pass `checkModuleInUseByApps` (called from the EE delete path); releasing a version must pass `checkModulesReleasedInApp` — every module consumed by that version must resolve to the module's released version.
@@ -51,6 +51,29 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 - **Dashboard v2 pins.** Inline in every mode: `PIN_ORDER` first (pins by position), then plain offset paging; pins past `page_size` spill to page 2. `counts.folders` / `counts.apps` are unpinned only; root `total = counts.pinned + counts.folders + counts.apps`. `pinned_items` has `app_id` / `folder_id` FKs with `ON DELETE CASCADE` (exactly one set), so no delete path needs pin cleanup. Reorder is per app type and reuses that type's visible pins' position slots, because pins of every type share one per-branch table; hidden pins (lost access / unreleased) keep their slots so the client never has to send what it can't see.
 - **Dashboard v2 bulk ops.** Always 200 with `BulkResultResponseDto` = `{ blocked_ids }` (`dto/bulk.dto.ts` `bulkResult`). All-or-nothing: any blocked id ⇒ nothing written; the client resends without the blocked ids. A refusal during the write is caught per item and reported in `blocked_ids`. Bulk move's per-app rule `canMoveApp` (`actions.ts`) mirrors v1 single move (`folder-apps/ability`), kept in step by the parity block in `dashboard-v2-bulk-move.e2e-spec.ts`; change both together. Bulk delete runs single delete's checks through AppsService.assertDeletable (CE + EE override) before writing, then AppsService.delete per app; never re-implement a delete refusal in dashboard code. Folder bulk delete runs single folder delete's checks through FoldersService.assertFolderDeletable and reuses bulk app delete's per-app check/delete (BulkDeleteService.canDelete/deleteOne) for folder_and_apps; apps it can't delete go to root via the folder_apps cascade.
 - App rows carry `git` (null when git-sync is off / workflows) from the branch version row + `stampIsAppSynced`; stub apps get `launch: null`.
+
+## Released-app viewer cache
+
+The viewer keeps the released app's `GET apps/slugs/:slug` response in IndexedDB and reuses it while the key matches. `validateReleasedApp` returns the key as `appDataRevision` (`app-data-revision.ts`); the v2 version endpoint uses it in the released version's ETag. The key hashes:
+
+- the app's name/public/maintenance values and released version id;
+- the app's change stamp (`app_viewer_cache_stamps`), moved by triggers from migration `AddViewerCacheStamps`: permissions on the released version, the workspace theme (every app in it), a release (the app plus apps embedding it as a module), app/version slugs and first release/unrelease (every app in the workspace, for links);
+- the viewer's id and their groups with access (`findUserGroupsWithAppAccess`, read live);
+- the server version (covers deploys and their migrations) and the `VIEWER_LICENSE_FIELDS` license terms, both read live.
+
+Not `apps.updated_at` (every draft edit bumps it) and not released version content (frozen).
+
+Stamps are only written by `tj_viewer_cache_stamp`, which locks rows in id order in one statement (migration `AddViewerCacheStamps`). A trigger must collect every app it touches and write them in one call: two writes in one statement deadlock against a concurrent theme change.
+
+**Checklist — anything that changes what a viewer sees in a released app.** A miss here serves a stale app to viewers until the next deploy, and nothing else fails.
+
+| The change | What to do |
+|---|---|
+| Ships only in a new ToolJet version (code, widget defaults, migrations) | Nothing; the server version is in the key. |
+| A new license flag read by `getBySlug` or the version endpoint | Add it to `VIEWER_LICENSE_FIELDS` and to the license-flags test. |
+| New data an admin or builder can change without a release (a permission table, a workspace or app setting) | New migration with a trigger that makes one call to `tj_viewer_cache_touch_apps` / `_versions` / `_workspaces`, plus a case in `test/modules/apps/e2e/viewer-cache-stamps.spec.ts`. |
+| Something that differs per viewer (like group membership) | Add it to the inputs in `getAppDataRevision`. |
+| A new `apps` column the response reads | Add it to the inputs (the app row is already loaded). |
 
 ## Related modules
 
