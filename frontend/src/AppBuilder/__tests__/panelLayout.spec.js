@@ -158,6 +158,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(PANEL_MOTION).toEqual({
       durationMs: 180,
       easing: 'cubic-bezier(0.2, 0, 0, 1)',
+      exitEasing: 'cubic-bezier(0.4, 0, 1, 1)',
       leftOffsetPx: 6,
       rightOffsetPx: 6,
       bottomOffsetPx: 4,

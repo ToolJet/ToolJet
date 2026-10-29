@@ -25,6 +25,8 @@ export const RUNTIME_PANEL_COLLAPSED_HEIGHT = 38;
 export const PANEL_MOTION = {
   durationMs: 180,
   easing: 'cubic-bezier(0.2, 0, 0, 1)',
+  // Exits ease in (slow start, fast finish), so a closing panel stays readable for most of the 180ms.
+  exitEasing: 'cubic-bezier(0.4, 0, 1, 1)',
   leftOffsetPx: 6,
   rightOffsetPx: 6,
   bottomOffsetPx: 4,
