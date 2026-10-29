@@ -3,6 +3,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { getRowCountLabel } from '../../../_utils/addNewRowChips';
+import { THEME_PRIMARY_BUTTON_CLASS } from '../../../_utils/addNewRowTheme';
 import { AddNewRowPicker } from './AddNewRowPicker';
 
 // Sized against the table the popover sits in: 66.6% of its width (at most 500px) and 80% of its height, centred.
@@ -155,7 +156,7 @@ export const AddNewRowForm = ({
         </Button>
         <Button
           variant="primary"
-          className={cn('tw-h-9 tw-text-lg', saving && 'tw-opacity-60')}
+          className={cn('tw-h-9 tw-text-lg', THEME_PRIMARY_BUTTON_CLASS, saving && 'tw-opacity-60')}
           data-cy="save-button"
           disabled={saving}
           onClick={onSubmit}
