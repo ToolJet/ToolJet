@@ -1028,6 +1028,12 @@ $border-radius: 4px;
     min-width: 0;
   }
 
+  // The name column shrinks below its text width so a long name truncates instead of widening the row.
+  .query-row-query-name {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
   .query-row.border {
     border-color: var(--indigo10) !important;
   }
@@ -2987,6 +2993,10 @@ $border-radius: 4px;
       flex: 1 0 0;
       min-width: 0;
     }
+    .query-row-query-name {
+      flex: 1 1 0;
+      min-width: 0;
+    }
   }
 
 }
@@ -3218,6 +3228,12 @@ $border-radius: 4px;
     display: flex;
     flex: 1 0 0;
     align-items: center;
+    min-width: 0;
+  }
+
+  // Shrinks below the name's width so a long query name truncates instead of widening the row.
+  .query-row-query-name {
+    flex: 1 1 0;
     min-width: 0;
   }
 
