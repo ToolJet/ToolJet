@@ -47,7 +47,7 @@ export default class Woocommerce implements QueryService {
       consumerSecret: consumer_secret, // Your consumer secret
       version: 'wc/v3', // WooCommerce WP REST API version
     });
-    const client = await WooCommerce.get('system_status')
+    const client = await WooCommerce.get<any>('system_status')
       .then((response) => {
         return response.data;
       })

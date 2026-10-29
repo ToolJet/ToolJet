@@ -3,8 +3,7 @@ export interface ICacheService {
    * Store a promise value in the cache with the given key
    * @param key - The cache key
    * @param value - The promise to cache
-   * @param ttlMs - Optional expiry in milliseconds. Omit for no expiry (cached until `clear()`),
-   *                matching existing callers' behavior.
+   * @param ttlMs - Optional expiry in milliseconds. Omit for the 5-minute default; nothing is cached forever.
    */
   set(key: string, value: Promise<any>, ttlMs?: number): void;
 
