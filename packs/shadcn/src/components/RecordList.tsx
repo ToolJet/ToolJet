@@ -176,12 +176,16 @@ export const RecordList = () => {
     ]
   );
   // The id field's own value, as UI 2.0 exposes it (a number stays a number).
-  const { selectedKey, pick: click } = useRecordSelection(
+  const { selectedKey, pick, clear } = useRecordSelection(
     rows,
     (row) => row[idField || 'id'],
     { setItem: setSelectedItem, setId: (id) => setSelectedItemId(id as string), setIndex: setSelectedItemIndex },
     onItemClicked
   );
+  // Clicking the selected record again unselects it, with no click event, and clearSelection does the same from an event
+  // (team testing, 2026-10-29: a selection could not be undone).
+  const click = (row: (typeof rows)[number]) => (highlightSelected && selectedKey === row.key ? clear() : pick(row));
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clear());
   const card = listStyle !== 'plain';
   const size = DENSITY[density] ?? DENSITY.default;
   const vars = styleVars([

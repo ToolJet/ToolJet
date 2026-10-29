@@ -520,6 +520,9 @@
 .u2l-list-item.is-framed { border: 1px solid var(--lv-item-border, var(--ui-border)); }
 .u2l-list-item.has-divider { border-bottom: 1px solid var(--lv-divider, var(--ui-border)); }
 .u2l-list-item.has-divider:last-child { border-bottom-width: 0; }
+/* Dividers with a gap: the gap is split above and below the content, so the divider sits in its middle. */
+.u2l-list-item.is-fields.has-divider { padding-block: calc(12px + var(--lv-divider-gap, 0px) / 2); }
+.u2l-list-item.is-canvas.has-divider { padding-block: calc(var(--lv-divider-gap, 0px) / 2); }
 /* The focus and selected marks are outlines drawn inside the item, so a chosen item shadow never hides them. */
 .u2l-list-item:focus-visible { outline: 2px solid var(--ui-ring); outline-offset: -2px; }
 .u2l-list-item.is-selected,

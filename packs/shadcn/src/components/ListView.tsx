@@ -263,8 +263,12 @@ export const ListView = () => {
   ToolJet.useAction(
     { name: 'selectItem', displayName: 'Select item', params: [{ handle: 'id', displayName: 'Item id' }] },
     (id) => {
-      const record = records.find((r) => isSet(r.row[idKey]) && String(r.row[idKey]) === String(id));
-      if (record) selection.pick(record, false);
+      const at = records.findIndex((r) => isSet(r.row[idKey]) && String(r.row[idKey]) === String(id));
+      if (at < 0) return;
+      selection.pick(records[at], false);
+      // Client-side paging: show the page the item is on, or the selection is invisible (team testing, 2026-10-29). As
+      // setPage, this fires no onPageChanged.
+      if (Number.isFinite(pageSize)) setPageIndex(Math.floor(at / pageSize) + 1);
     }
   );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clearSelection());
@@ -279,7 +283,10 @@ export const ListView = () => {
   const space = Math.min(200, Math.max(0, Number(gap) || 0));
   const outline = itemVariant === 'outline';
   const framed = outline || isSet(itemBorderColor);
-  const dividers = !grid && showBorder;
+  // Plain items with dividers stay flush and the gap is split above and below each item's content, so the divider sits
+  // in the middle of it; a bordered card is its own divider and keeps the gap between cards. The gap had no effect once
+  // dividers were on (team testing, 2026-10-29).
+  const dividers = !grid && showBorder && !framed;
   const vars = styleVars([
     [accent, '--ui-primary'],
     [accent, '--ui-ring', (v) => `color-mix(in srgb, ${String(v)} 35%, transparent)`],
@@ -318,7 +325,11 @@ export const ListView = () => {
             <div
               role="list"
               className="u2l-list-items"
-              style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: dividers ? 0 : space }}
+              style={{
+                gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+                gap: dividers ? 0 : space,
+                ...(dividers ? { ['--lv-divider-gap' as string]: `${space}px` } : {}),
+              }}
             >
               {items.map((item, i) => {
                 const row = (item && typeof item === 'object' ? item : {}) as Row;
@@ -337,7 +348,10 @@ export const ListView = () => {
                       role="listitem"
                       tabIndex={0}
                       className={cn(cls, 'is-canvas')}
-                      style={{ ...itemStyle, height: Math.min(1200, Math.max(24, Number(rowHeight) || 72)) }}
+                      style={{
+                        ...itemStyle,
+                        height: Math.min(1200, Math.max(24, Number(rowHeight) || 72)) + (dividers ? space : 0),
+                      }}
                       onClickCapture={() => pick(i)}
                       onKeyDown={(e) => e.target === e.currentTarget && onKeyActivate(() => pick(i))(e)}
                     >
@@ -377,7 +391,9 @@ export const ListView = () => {
                             className="ui-btn ui-btn--outline ui-btn--sm u2l-list-action"
                             onClick={(e) => {
                               e.stopPropagation();
-                              pick(i);
+                              // Selects the item for the action's handler without firing the item's own click: both
+                              // handlers ran (team testing, 2026-10-29).
+                              pick(i, false);
                               onActionClicked();
                             }}
                           >
