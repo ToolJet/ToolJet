@@ -151,20 +151,19 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
       `);
 
       for (const twin of twins) {
-        const schema = findTenantSchema(twin.organization_id);
-        // Physical DROP runs on a separate connection outside this migration's transaction, so it
-        // can't be rolled back. Do the transactional app-DB writes first, drop only once both
-        // succeeded — this iteration alone can't leave a real inconsistency. Across the whole run
-        // (migrationsTransactionMode: 'all') a LATER twin's failure still rolls back every
-        // app-DB write this loop already made, including this iteration's, while this iteration's
-        // physical DROP stays applied. Not a live bug: the app-DB rows are back exactly as they
-        // were pre-run, so a retry re-selects the same twins and re-runs the whole loop from
-        // scratch, and DROP TABLE IF EXISTS makes redoing an already-dropped twin's drop a no-op.
         await queryRunner.query(`DELETE FROM internal_table_relations WHERE id = $1`, [twin.twin_id]);
         await queryRunner.query(`UPDATE internal_table_relations SET environment_id = $1 WHERE id = $2`, [
           twin.dev_env_id,
           twin.a_relation_id,
         ]);
+      }
+
+      // The physical DROPs run on a separate connection and commit at once, outside this migration's
+      // transaction. They go last, so a failed app-DB write rolls back with nothing dropped yet. If
+      // the run fails after some drops, a retry re-selects the same twins and DROP IF EXISTS skips
+      // the ones already gone.
+      for (const twin of twins) {
+        const schema = findTenantSchema(twin.organization_id);
         await tjdbQueryRunner.query(`DROP TABLE IF EXISTS "${schema}"."${twin.twin_id}" CASCADE`);
       }
     } finally {

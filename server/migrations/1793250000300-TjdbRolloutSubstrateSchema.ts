@@ -34,6 +34,10 @@ export class TjdbRolloutSubstrateSchema1793250000300 implements MigrationInterfa
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP DEFAULT`);
+    // drop_table soft-deletes the row and drops its physical tables. Without deleted_at the row
+    // would come back as a table with nothing behind it, and a name reused after the delete would
+    // break the unique constraint restored below. Relations and migrations cascade.
+    await queryRunner.query(`DELETE FROM internal_tables WHERE deleted_at IS NOT NULL`);
     await queryRunner.query(`DROP INDEX IF EXISTS organization_id_table_name_unique`);
     await queryRunner.dropColumn('internal_tables', 'deleted_at');
     await queryRunner.createUniqueConstraint(
@@ -227,10 +231,8 @@ export class TjdbRolloutSubstrateSchema1793250000300 implements MigrationInterfa
       'internal_tables',
       new TableColumn({ name: 'deleted_at', type: 'timestamp', isNullable: true })
     );
-    // Partial unique index instead of the plain constraint: once something starts soft-deleting
-    // tables (setting deleted_at), a deleted table's name must be free for reuse. No read site of
-    // internal_tables changes here — deleted_at is never set today, so every row's predicate is
-    // trivially true and behavior is unchanged.
+    // Partial unique index instead of the plain constraint: drop_table soft-deletes (sets
+    // deleted_at), and a deleted table's name must be free for reuse.
     // No IF EXISTS: migrationsTransactionMode: 'all' rolls back everything above on any failure,
     // so a retry always starts with the original constraint still present.
     await queryRunner.query(`ALTER TABLE internal_tables DROP CONSTRAINT organization_id_table_name_unique`);
