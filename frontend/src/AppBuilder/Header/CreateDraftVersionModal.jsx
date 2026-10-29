@@ -1,50 +1,29 @@
+import { useVersionLifecycle } from './VersionManager/VersionLifecycleContext';
+import { withAppVersionLifecycle } from './VersionManager/AppVersionLifecycleProvider';
+import { validateVersionName } from './VersionManager/versionValidation';
 import React, { useEffect, useState } from 'react';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
-import { shallow } from 'zustand/shallow';
-import useStore from '@/AppBuilder/_stores/store';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
-import { useVersionManagerStore } from '@/_stores/versionManagerStore';
-import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
-  const { moduleId } = useModuleContext();
-  const [isCreatingVersion, setIsCreatingVersion] = useState(false);
-  const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
-  const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
-  const {
-    createNewVersionAction,
-    changeEditorVersionAction,
-    fetchDevelopmentVersions,
-    developmentVersions,
-    appId,
-    selectedVersion,
-    selectedEnvironment,
-    isEditorReadOnly,
-  } = useStore(
-    (state) => ({
-      createNewVersionAction: state.createNewVersionAction,
-      changeEditorVersionAction: state.changeEditorVersionAction,
-      selectedEnvironment: state.selectedEnvironment,
-      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
-      developmentVersions: state.developmentVersions,
-      featureAccess: state.license.featureAccess,
-      editingVersion: state.currentVersionId,
-      appId: state.appStore.modules[moduleId].app.appId,
-      currentVersionId: state.currentVersionId,
-      selectedVersion: state.selectedVersion,
-      isEditorReadOnly: state.isEditorReadOnly,
-    }),
-    shallow
+  const { versions, selectedVersionId, capabilities = {}, actions } = useVersionLifecycle();
+  const developmentVersions = React.useMemo(
+    () =>
+      capabilities.developmentVersionIds
+        ? versions.filter((v) => capabilities.developmentVersionIds.includes(v.id))
+        : versions,
+    [versions, capabilities.developmentVersionIds]
   );
-
-  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
+  const selectedVersion = developmentVersions.find((v) => v.id === selectedVersionId);
+  const isEditorReadOnly = capabilities.readOnly;
+  const { enabled: isGitSyncEnabled = false, defaultBranch, isMultiBranchingEnabled = false } = capabilities.git || {};
+  const [isCreatingVersion, setIsCreatingVersion] = useState(false);
+  fetchingOrgGit = fetchingOrgGit ?? capabilities.git?.fetchingOrgGit;
 
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
@@ -61,7 +40,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
   // atomically via `replace: true`). Unsynced apps (is_synced=false) are exempt from the single-draft
   // rule — they behave like git-off (unlimited drafts) and use the normal create flow below.
   const hasSyncedDraft = developmentVersions.some(
-    (v) => v.versionType === 'version' && v.status === 'DRAFT' && v.isSynced !== false
+    (v) => (v.versionType || 'version') === 'version' && v.status === 'DRAFT' && v.isSynced !== false
   );
   const isReplaceFlow = isGitSyncEnabled && !isMultiBranchingEnabled && hasSyncedDraft;
 
@@ -69,12 +48,6 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
   // resulting draft is git-tracked: either the source version is synced, or this is the single-branch
   // replace flow (the draft is the default-branch working draft regardless of the source's own flag).
   const useGitDraftName = isAppGitTracked || isReplaceFlow;
-
-  useEffect(() => {
-    if (appId) {
-      fetchDevelopmentVersions(appId);
-    }
-  }, [appId, fetchDevelopmentVersions]);
 
   useEffect(() => {
     if (selectedVersionForCreation) {
@@ -127,62 +100,31 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     }
 
     if (!useGitDraftName) {
-      if (!versionName || versionName.trim() === '') {
-        toast.error('Version name should not be empty');
-        return;
-      }
-      if (versionName.trim().length > 25) {
-        toast.error('Version name should not be longer than 25 characters');
-        return;
-      }
-      if (/[\s~^:?*[\]\\@{]/.test(versionName.trim())) {
-        toast.error('Version name cannot contain spaces or special characters (~ ^ : ? * [ \\ @ {).');
+      const nameError = validateVersionName(versionName.trim());
+      if (nameError) {
+        toast.error(
+          nameError === 'Version name cannot exceed 25 characters'
+            ? 'Version name should not be longer than 25 characters'
+            : nameError
+        );
         return;
       }
     }
 
     setIsCreatingVersion(true);
 
-    const draftName = useGitDraftName ? defaultBranch : versionName.trim();
-    const draftDescription = useGitDraftName ? 'Latest commit to main will appear here' : '';
-
-    //TODO: pass environmentId to the func
-    createNewVersionAction(
-      appId,
-      draftName,
-      selectedVersionForCreation.id,
-      draftDescription,
-      (newVersion) => {
+    actions
+      .createDraft({ name: versionName.trim(), fromVersionId: selectedVersionForCreation.id })
+      .then(() => {
         toast.success(isReplaceFlow ? 'Draft replaced' : 'Version Created');
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
-        // Refresh development versions to update the list with the new draft
-        fetchDevelopmentVersions(appId);
-        refreshVersions(appId, selectedEnvironment?.id);
-        // Use changeEditorVersionAction to properly switch to the new draft version
-        // This will update selectedVersion with all fields including status
-        changeEditorVersionAction(
-          appId,
-          newVersion.id,
-          () => {},
-          (error) => {
-            console.error('Error switching to new draft version:', error);
-            toast.error('Draft created but failed to switch to it');
-          },
-          null // Don't pass env - use the draft's own currentEnvironmentId (development)
-        );
-      },
-      (error) => {
-        if (error?.data?.code === '23505') {
-          toast.error('Version name already exists.');
-        } else {
-          toast.error(error?.message || error?.error || 'Error while creating version. Please try again.');
-        }
+      })
+      .catch((error) => {
+        if (error?.data?.code === '23505') toast.error('Version name already exists.');
+        else toast.error(error?.message || error?.error || 'Error while creating version. Please try again.');
         setIsCreatingVersion(false);
-      },
-      'version',
-      isReplaceFlow
-    );
+      });
   };
 
   return (
@@ -313,4 +255,4 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
   );
 };
 
-export default CreateDraftVersionModal;
+export default withAppVersionLifecycle(CreateDraftVersionModal, { loadDevelopment: true });
