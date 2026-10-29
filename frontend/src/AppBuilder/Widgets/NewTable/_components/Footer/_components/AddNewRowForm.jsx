@@ -1,4 +1,5 @@
 import React, { useId } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 
@@ -23,27 +24,36 @@ const FIELD_LAYOUT_CLASS = {
   'label-before': 'tw-flex-row tw-items-center tw-gap-4',
 };
 
-export const AddNewRowForm = ({ fields, onSubmit, onCancel, darkMode, bodyRef }) => {
+// variant "popover": the form sits inside the table, so it draws its own card and handles Escape itself.
+// variant "dialog": a Rocket dialog supplies the card, the overlay and Escape, and labels itself from the title.
+export const AddNewRowForm = ({ fields, onSubmit, onCancel, onEscape, darkMode, bodyRef, variant = 'popover' }) => {
   const titleId = useId();
+  const isDialog = variant === 'dialog';
+  const Heading = isDialog ? DialogPrimitive.Title : 'h2';
 
   return (
     <div
-      role="dialog"
-      aria-labelledby={titleId}
+      {...(!isDialog && { role: 'dialog', 'aria-labelledby': titleId, style: POPOVER_STYLE })}
+      onKeyDown={(event) => {
+        // an open menu or calendar has already used the Escape, and marked it as handled
+        if (!isDialog && event.key === 'Escape' && !event.defaultPrevented) onEscape?.();
+      }}
       className={cn(
-        'table-add-new-row tw-flex tw-flex-col tw-overflow-hidden tw-rounded-lg tw-border tw-border-solid tw-border-border-weak tw-bg-background-surface-layer-01 tw-shadow-elevation-400',
-        darkMode && 'dark-theme'
+        'table-add-new-row tw-flex tw-flex-col tw-overflow-hidden',
+        isDialog
+          ? 'tw-min-h-0 tw-flex-1'
+          : 'tw-rounded-lg tw-border tw-border-solid tw-border-border-weak tw-bg-background-surface-layer-01 tw-shadow-elevation-400',
+        !isDialog && darkMode && 'dark-theme'
       )}
-      style={POPOVER_STYLE}
     >
       <div className="tw-flex tw-h-[70px] tw-shrink-0 tw-items-center tw-border-0 tw-border-b tw-border-solid tw-border-border-default tw-px-4">
-        <h2
-          id={titleId}
+        <Heading
+          {...(!isDialog && { id: titleId })}
           data-cy="add-new-rows-header"
           className="tw-m-0 tw-text-xl tw-font-medium tw-text-text-default"
         >
           Add row
-        </h2>
+        </Heading>
       </div>
 
       <div
