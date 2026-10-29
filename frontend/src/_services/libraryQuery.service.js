@@ -17,7 +17,9 @@ const request = (path, method = 'GET', body, context = {}, signal = context.sign
     credentials: 'include',
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     ...(signal ? { signal } : {}),
-  }).then(handleResponse);
+  })
+    .then(handleResponse)
+    .catch((error) => Promise.reject(error.data?.code ? { ...error, code: error.data.code } : error));
 const explicitId = (id) => {
   if (!id || id === 'draft') throw new Error('An explicit draft or saved version ID is required');
   return id;

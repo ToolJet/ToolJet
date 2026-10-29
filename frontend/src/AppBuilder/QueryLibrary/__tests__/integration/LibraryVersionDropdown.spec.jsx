@@ -282,3 +282,49 @@ it('keeps loading for the current refresh after an older success, then shows the
   expect(result.current.loading).toBe(false);
   expect(result.current.error).toBe('Current failure');
 });
+
+it.each([
+  ['drafts', draft],
+  ['versions', saved],
+])('shows the shared dependency warning for a pinned %s row without changing selection', async (route, row) => {
+  server.use(
+    http.delete(`${base}/${route}/${row.id}`, () =>
+      HttpResponse.json({ statusCode: 409, code: 'LIBRARY_QUERY_IN_USE', message: 'Used by an app.' }, { status: 409 })
+    )
+  );
+  await open();
+  await act(async () => {
+    useStore.getState().queryLibrary.viewLibraryVersion('q1', row.id);
+  });
+  const selection = useStore.getState().queryLibrary.viewedVersionIdByQueryId.q1;
+  expect(selection).toBe(row.id);
+  await userEvent.click(cy(`${row.name}-version-more-menu-button`));
+  await userEvent.click(screen.getByText('Delete version'));
+  await userEvent.click(screen.getByRole('button', { name: 'Delete version' }));
+  const dialog = await screen.findByRole('dialog', { name: 'Dependent apps or modules found!' });
+  expect(dialog).toHaveTextContent('apps or modules');
+  await userEvent.click(screen.getByRole('button', { name: 'I understand' }));
+  expect(screen.queryByRole('dialog', { name: 'Dependent apps or modules found!' })).not.toBeInTheDocument();
+  expect(useStore.getState().queryLibrary.viewedVersionIdByQueryId.q1).toBe(selection);
+});
+
+it.each([
+  { code: 'VERSION_RELEASED', message: 'Released version cannot be deleted' },
+  { message: 'The last version cannot be deleted' },
+  { code: 'OTHER_CONFLICT', message: 'Cannot delete this version.' },
+])('does not show dependency warnings for other lifecycle errors: $message', async (error) => {
+  let attempted = false;
+  server.use(
+    http.delete(`${base}/drafts/${draft.id}`, () => {
+      attempted = true;
+      return HttpResponse.json(error, { status: 409 });
+    })
+  );
+  await open();
+  await userEvent.click(cy(`${draft.name}-version-more-menu-button`));
+  await userEvent.click(screen.getByText('Delete version'));
+  await userEvent.click(screen.getByRole('button', { name: 'Delete version' }));
+  await waitFor(() => expect(attempted).toBe(true));
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Delete version' })).not.toBeInTheDocument());
+  expect(screen.queryByText('I understand')).not.toBeInTheDocument();
+});

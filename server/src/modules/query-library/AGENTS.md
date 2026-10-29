@@ -52,3 +52,7 @@ metadata/run validation: `test/modules/query-library/unit/library-version-valida
   versions; it exposes input definitions only, never snapshot options.
 - Consumer release/promote gates use stored status and version IDs. A saved
   version named `draft` remains a saved version.
+
+## Dependency deletion locks
+
+`locking.ts` is the shared protocol: `lockLibraryQuery` scopes by workspace before usage lookup; `lockLibraryPins` locks distinct parent IDs in sorted order and resolves each exact live draft/saved UUID. Callers keep the same transaction manager through persistence. Draft/version/whole-query deletion holds that parent lock through the authoritative usage check and deletion. `LibraryQueryInUseException` exposes its code both on the exception and body because the HTTP filter reads the former. In-use responses carry `code: LIBRARY_QUERY_IN_USE`; released/sole-version errors remain separate. See lifecycle e2e tests for both real transaction orderings and draft pins.

@@ -1,3 +1,4 @@
+import DependencyWarningDialog from '@/_components/DependencyWarningDialog/DependencyWarningDialog';
 import React from 'react';
 import cx from 'classnames';
 import moment from 'moment';
@@ -42,6 +43,7 @@ import { getFolderGroupPermissions, appTypeToDisplayNameMapping, getFolderPermis
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
+import QueryLibrarySkeleton from '@/AppBuilder/QueryLibrary/QueryLibrarySkeleton';
 import {
   ImportAppMenu,
   AppActionModal,
@@ -67,6 +69,8 @@ import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { TriangleAlert } from 'lucide-react';
+
+const QueryLibraryPage = React.lazy(() => import('@/AppBuilder/QueryLibrary/QueryLibraryPage'));
 
 const MAX_APPS_PER_PAGE = 9; // Keep in sync with server pagination limit
 class HomePageComponent extends React.Component {
@@ -210,6 +214,11 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidMount() {
+    if (this.props.appType === 'query_library') {
+      if (authenticationService.currentSessionValue?.role?.name === 'end-user') this.setState({ shouldRedirect: true });
+      this.props.checkModuleAccess();
+      return;
+    }
     const gitSyncToast = sessionStorage.getItem('git_sync_toast');
     if (gitSyncToast) {
       sessionStorage.removeItem('git_sync_toast');
@@ -311,7 +320,7 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.appType != this.props.appType) {
+    if (prevProps.appType != this.props.appType && this.props.appType !== 'query_library') {
       this.fetchFolders();
       this.fetchApps(1);
     }
@@ -352,6 +361,7 @@ class HomePageComponent extends React.Component {
   }
 
   fetchApps = (page = 1, folder, searchKey) => {
+    if (this.props.appType === 'query_library') return;
     const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
     this.setState({
       apps: [],
@@ -370,6 +380,7 @@ class HomePageComponent extends React.Component {
   };
 
   fetchFolders = (searchKey) => {
+    if (this.props.appType === 'query_library') return;
     const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
     this.setState({
       foldersLoading: true,
@@ -1899,6 +1910,21 @@ class HomePageComponent extends React.Component {
     const threshold = 3;
     const isLong = missingGroups.length > threshold;
     const displayedGroups = missingGroupsExpanded ? missingGroups : missingGroups.slice(0, threshold);
+    if (this.props.appType === 'query_library') {
+      return (
+        <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
+          <div className="wrapper home-page">
+            <div className="home-page-content query-library-home tw-w-full tw-min-w-0">
+              {authenticationService.currentSessionValue?.role?.name !== 'end-user' && (
+                <React.Suspense fallback={<QueryLibrarySkeleton />}>
+                  <QueryLibraryPage darkMode={this.props.darkMode} />
+                </React.Suspense>
+              )}
+            </div>
+          </div>
+        </Layout>
+      );
+    }
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -2133,37 +2159,13 @@ class HomePageComponent extends React.Component {
             cancelButtonText="Cancel"
           />
 
-          <ModalBase
-            show={showDependentAppsModal}
-            handleClose={() => this.setState({ showDependentAppsModal: false })}
-            showHeader={false}
-            showFooter={false}
+          <DependencyWarningDialog
+            open={showDependentAppsModal}
+            title="Dependent apps found!"
+            message="Cannot delete this module as it is being used in one or more apps."
             darkMode={this.props.darkMode}
-            className="dependent-apps-modal"
-          >
-            <div className="tw-flex tw-flex-col tw-gap-6 tw-p-6">
-              <div className="tw-flex tw-flex-col tw-gap-2">
-                <SolidIcon name="warning" width="40" fill="var(--icon-danger)" />
-                <div className="tw-flex tw-flex-col tw-gap-[2px]">
-                  <div className="tw-font-medium tw-text-[16px] tw-leading-6 tw-text-default tw-opacity-80">
-                    Dependent apps found!
-                  </div>
-                  <div className="tw-font-normal tw-text-xs tw-leading-[18px] tw-text-default">
-                    Cannot delete this module as it is being used in one or more apps.
-                  </div>
-                </div>
-              </div>
-              <div className="tw-flex tw-justify-end">
-                <ButtonSolid
-                  variant="tertiary"
-                  onClick={() => this.setState({ showDependentAppsModal: false })}
-                  data-cy="dependent-apps-acknowledge-button"
-                >
-                  I understand
-                </ButtonSolid>
-              </div>
-            </div>
-          </ModalBase>
+            onClose={() => this.setState({ showDependentAppsModal: false })}
+          />
 
           <ConfirmDialog
             show={showRemoveAppFromFolderConfirmation}

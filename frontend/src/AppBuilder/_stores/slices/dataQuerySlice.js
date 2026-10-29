@@ -18,6 +18,7 @@ const initialState = {
   sortBy: 'custom',
   sortOrder: 'desc',
   isDeletingQueryInProcess: false,
+  dependencyWarning: null,
   creatingQueryInProcessId: null,
   queryConfirmationList: [],
   queuedActions: {},
@@ -518,6 +519,10 @@ export const createDataQuerySlice = (set, get) => {
             if (current(target)) setIsAppSaving(false);
           });
       },
+      closeDependencyWarning: () =>
+        set((state) => {
+          state.dataQuery.dependencyWarning = null;
+        }),
       deleteDataQueries: (queryId, moduleId = 'canvas') => {
         set((state) => {
           state.dataQuery.isDeletingQueryInProcess = true;
@@ -561,7 +566,15 @@ export const createDataQuerySlice = (set, get) => {
           })
           .catch((e) => {
             if (!current(target)) return;
-            if (e.statusCode === 403) {
+            if (target.library && e.code === 'LIBRARY_QUERY_IN_USE') {
+              set((state) => {
+                state.dataQuery.dependencyWarning = {
+                  sessionId: target.sessionId,
+                  title: 'Dependent apps or modules found!',
+                  message: 'Cannot delete this query as it is being used in one or more apps or modules.',
+                };
+              });
+            } else if (e.statusCode === 403) {
               toast.error('You do not have permission to delete this query.');
             } else {
               toast.error(`Failed to delete query: ${e.error}`);

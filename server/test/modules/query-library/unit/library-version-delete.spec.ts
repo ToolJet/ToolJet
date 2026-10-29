@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { LibraryQuery } from '@entities/library_query.entity';
 import { LibraryQueryState } from '@entities/library_query_state.entity';
@@ -52,9 +52,13 @@ describe('LibraryLifecycleService.deleteVersion', () => {
         ? [{ appId: 'app', appName: 'Sales CRM', appType: 'front-end', appVersionName: 'v1' }]
         : []
     );
-    await expect(service.deleteVersion(user, query, VERSION_ID)).rejects.toThrow(
-      new ConflictException('Used by 1 app(s): Sales CRM · v1. Remove it from those first.')
-    );
+    await expect(service.deleteVersion(user, query, VERSION_ID)).rejects.toMatchObject({
+      response: {
+        code: 'LIBRARY_QUERY_IN_USE',
+        message: 'Used by 1 app(s): Sales CRM · v1. Remove it from those first.',
+      },
+      status: 409,
+    });
     expect(softDelete).not.toHaveBeenCalled();
   });
   it('should refuse deleting the released version with 400', async () => {
@@ -75,6 +79,12 @@ describe('LibraryLifecycleService.deleteVersion', () => {
     await expect(service.deleteVersion(user, query, VERSION_ID)).rejects.toThrow(
       new NotFoundException('Library query version not found')
     );
+  });
+  it('should reject a foreign workspace query before looking up consumers', async () => {
+    await expect(service.deleteVersion(user, { ...query, organizationId: 'foreign' }, VERSION_ID)).rejects.toThrow(
+      new NotFoundException('Library query not found')
+    );
+    expect(rawQuery).not.toHaveBeenCalled();
   });
   it('should return 404 for a missing workspace query before naming consumers', async () => {
     findOne.mockResolvedValue(null);

@@ -1,3 +1,5 @@
+import { LibraryQueryInUseException } from './errors';
+import { lockLibraryQuery } from './locking';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { cloneDeep } from 'lodash';
@@ -201,6 +203,7 @@ export class LibraryLifecycleService {
   }
 
   async deleteDraft(user: User, query: LibraryQuery, draftId: string): Promise<void> {
+    if (query.organizationId !== user.organizationId) throw new NotFoundException('Library query not found');
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.lockQuery(manager, query);
       const draft = await this.drafts.getDraft(query.id, draftId, manager);
@@ -320,6 +323,7 @@ export class LibraryLifecycleService {
   }
 
   async deleteVersion(user: User, query: LibraryQuery, libraryVersionId: string): Promise<void> {
+    if (query.organizationId !== user.organizationId) throw new NotFoundException('Library query not found');
     await dbTransactionWrap(async (manager: EntityManager) => {
       const locked = await this.lockQuery(manager, query);
       const version = await this.findVersion(manager, query.id, libraryVersionId);
@@ -339,15 +343,7 @@ export class LibraryLifecycleService {
   }
 
   private async lockQuery(manager: EntityManager, query: LibraryQuery): Promise<LibraryQuery> {
-    await manager.query('SELECT id FROM library_queries WHERE id = $1 AND organization_id = $2 FOR UPDATE', [
-      query.id,
-      query.organizationId,
-    ]);
-    const locked = await manager.findOne(LibraryQuery, {
-      where: { id: query.id, organizationId: query.organizationId },
-    });
-    if (!locked) throw new NotFoundException('Library query not found');
-    return locked;
+    return lockLibraryQuery(manager, query.id, query.organizationId);
   }
 
   private async assertNotPinned(
@@ -367,7 +363,7 @@ export class LibraryLifecycleService {
           AND data_source.kind = 'library' AND a.type::text IN ('front-end', 'module')`,
       [query.id, user.organizationId, versionId]
     );
-    if (consumers.length) throw new ConflictException(libraryUsedByMessage(consumers));
+    if (consumers.length) throw new LibraryQueryInUseException(libraryUsedByMessage(consumers));
   }
 
   private async findVersion(

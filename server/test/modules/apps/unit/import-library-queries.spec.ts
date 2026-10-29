@@ -1,28 +1,28 @@
+import { DataQuery } from '@entities/data_query.entity';
 /**
  * AppImportExportService.importLibraryQueries. The manager is an in-memory fake; the real SQL and the
- * DB-backed flows run in the query-library-app e2e spec. Matching/mapping rules have their own unit spec in
+ * DB-backed flows run in the query-library/library-import-export e2e spec. Matching/mapping rules have their own unit spec in
  * data-queries/unit/library-export.util.spec.ts.
  */
 import { ForbiddenException } from '@nestjs/common';
 import { AppImportExportService } from '@modules/apps/services/app-import-export.service';
-import { DataQuery } from '@entities/data_query.entity';
-import { DataQueryFolder } from '@entities/data_query_folder.entity';
-import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
+import { LibraryQuery } from '@entities/library_query.entity';
+import { LibraryQueryState } from '@entities/library_query_state.entity';
+import { LibraryQueryFolder } from '@entities/library_query_folder.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
 import { LibraryExportQuery } from '@modules/data-queries/library/library-export.util';
 
 const id = (n: number): string => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
-const LIB_VERSION = id(900);
 const ORG = id(1);
 const SRC_DS = id(801); // data source id in the export
 const DST_DS = id(811); // the same data source in this workspace
 const restOptions = { method: 'get', url: 'http://a', url_params: [], headers: [], body: [] };
 
 type Store = {
-  queries: DataQuery[];
-  folders: DataQueryFolder[];
-  mappings: DataQueryFolderMapping[];
+  queries: LibraryQuery[];
+  folders: LibraryQueryFolder[];
+  states: LibraryQueryState[];
   versions: LibraryQueryVersion[];
   consumers: { id: string; options: unknown }[];
   updates: { id: string; options: Record<string, unknown> }[];
@@ -30,28 +30,39 @@ type Store = {
 };
 
 function fakeManager(store: Store) {
-  const entities: Record<string, 'queries' | 'folders' | 'mappings' | 'versions'> = {
-    DataQuery: 'queries',
-    DataQueryFolder: 'folders',
-    DataQueryFolderMapping: 'mappings',
+  const entities: Record<string, 'queries' | 'folders' | 'states' | 'versions'> = {
+    LibraryQuery: 'queries',
+    LibraryQueryFolder: 'folders',
+    LibraryQueryState: 'states',
     LibraryQueryVersion: 'versions',
   };
   return {
     find: jest.fn(async (entity: { name: string }, { where }: { where: Record<string, unknown> }) => {
+      if (entity === DataQuery)
+        return store.consumers.map((consumer) => ({ ...consumer, dataSource: { kind: 'library' } }));
       if (entity === DataSource) return [{ id: id(850), kind: 'runjs' }];
       const rows = store[entities[entity.name]] as Record<string, unknown>[];
       return rows.filter((row) => Object.entries(where).every(([key, value]) => row[key] === value));
     }),
+    findOne: jest.fn(async () => ({ id: id(700), priority: 1 })), // development AppEnvironment
     count: jest.fn(
       async (_entity: unknown, { where }: { where: Record<string, unknown> }) =>
-        store.mappings.filter((row) => row.parentId === where.parentId).length
+        store.queries.filter((row) => row.organizationId === where.organizationId).length
     ),
     create: jest.fn((Entity: new () => object, data: object) => Object.assign(new Entity(), data)),
-    save: jest.fn(async (row: { constructor: { name: string }; id?: string }) => {
-      row.id = row.id ?? id(5000 + store.counter++);
-      store[entities[row.constructor.name]].push(row as never);
-      return row;
-    }),
+    save: jest.fn(
+      async (entityOrRow: { constructor: { name: string }; id?: string } | (new () => object), data?: object) => {
+        const row = data
+          ? (Object.assign(new (entityOrRow as new () => object)(), data) as {
+              constructor: { name: string };
+              id?: string;
+            })
+          : (entityOrRow as { constructor: { name: string }; id?: string });
+        row.id = row.id ?? id(5000 + store.counter++);
+        store[entities[row.constructor.name]].push(row as never);
+        return row;
+      }
+    ),
     update: jest.fn(
       async (_entity: unknown, { id: rowId }: { id: string }, { options }: { options: Record<string, unknown> }) => {
         store.updates.push({ id: rowId, options });
@@ -59,7 +70,7 @@ function fakeManager(store: Store) {
     ),
     query: jest.fn(async (sql: string, params: unknown[]) => {
       if (sql.includes('MAX(version_number)')) {
-        const own = store.versions.filter((v) => v.dataQueryId === params[0]);
+        const own = store.versions.filter((v) => v.libraryQueryId === params[0]);
         return [{ highest: Math.max(0, ...own.map((v) => v.versionNumber)) }];
       }
       return store.consumers;
@@ -75,17 +86,14 @@ function setup(overrides: Partial<Store> = {}, { library = true, perms = { isAdm
   const store: Store = {
     queries: [],
     folders: [],
-    mappings: [],
+    states: [],
     versions: [],
     consumers: [],
     updates: [],
     counter: 0,
     ...overrides,
   };
-  const appsUtilService = {
-    findWorkspaceQueryLibrary: jest.fn(async () => (library ? { app: {}, versionId: LIB_VERSION } : null)),
-    getOrCreateWorkspaceQueryLibrary: jest.fn(async () => ({ app: {}, versionId: LIB_VERSION })),
-  };
+  const appsUtilService = {};
   const abilityService = { resourceActionsPermission: jest.fn(async () => perms) };
   const logger = { warn: jest.fn() };
   // Constructor slots: 7 = transactionLogger, 9 = abilityService, 11 = appsUtilService; the rest are unused here.
@@ -131,19 +139,17 @@ describe('AppImportExportService.importLibraryQueries', () => {
     expect(store.queries).toHaveLength(1);
     expect(store.queries[0]).toMatchObject({
       name: 'getInvoices',
-      appVersionId: LIB_VERSION,
+      organizationId: ORG,
       dataSourceId: DST_DS,
       options: restOptions,
-      co_relation_id: id(100),
+      coRelationId: id(100),
     });
     expect(store.versions).toMatchObject([
       { versionNumber: 1, dataSourceId: DST_DS, kind: 'restapi', createdBy: id(2) },
     ]);
-    expect(store.folders).toMatchObject([{ name: 'Billing', appVersionId: LIB_VERSION }]);
-    expect(store.mappings).toMatchObject([
-      { parentId: null, childType: 'folder' },
-      { parentId: store.folders[0].id, childId: store.queries[0].id, childType: 'query', index: 0 },
-    ]);
+    expect(store.folders).toMatchObject([{ name: 'Billing', organizationId: ORG }]);
+    expect(store.queries[0].folderId).toBe(store.folders[0].id);
+    expect(store.states).toMatchObject([{ libraryQueryId: store.queries[0].id, hasDraft: true }]);
     expect(result.queries[id(100)]).toBe(store.queries[0].id);
     expect(result.versions[id(101)]).toBe(store.versions[0].id);
     expect(store.updates).toEqual([
@@ -155,16 +161,16 @@ describe('AppImportExportService.importLibraryQueries', () => {
   });
 
   it('reuses a matching query and version and changes nothing on re-import', async () => {
-    const query = Object.assign(new DataQuery(), {
+    const query = Object.assign(new LibraryQuery(), {
       id: id(100),
       name: 'getInvoices',
-      appVersionId: LIB_VERSION,
+      organizationId: ORG,
       options: { draft: 'untouched' },
-      co_relation_id: null,
+      coRelationId: null,
     });
     const v1 = Object.assign(new LibraryQueryVersion(), {
       id: id(101),
-      dataQueryId: id(100),
+      libraryQueryId: id(100),
       versionNumber: 1,
       kind: 'restapi',
       dataSourceId: DST_DS,
@@ -182,16 +188,16 @@ describe('AppImportExportService.importLibraryQueries', () => {
   });
 
   it('adds the next version number when the exported snapshot differs, leaving the draft alone', async () => {
-    const query = Object.assign(new DataQuery(), {
+    const query = Object.assign(new LibraryQuery(), {
       id: id(200),
       name: 'getInvoices',
-      appVersionId: LIB_VERSION,
+      organizationId: ORG,
       options: { draft: 'mine' },
-      co_relation_id: null,
+      coRelationId: null,
     });
     const own = Object.assign(new LibraryQueryVersion(), {
       id: id(201),
-      dataQueryId: id(200),
+      libraryQueryId: id(200),
       versionNumber: 1,
       kind: 'restapi',
       dataSourceId: DST_DS,
@@ -203,22 +209,22 @@ describe('AppImportExportService.importLibraryQueries', () => {
 
     expect(store.queries[0].options).toEqual({ draft: 'mine' });
     expect(store.versions).toHaveLength(2);
-    expect(store.versions[1]).toMatchObject({ dataQueryId: id(200), versionNumber: 2, options: restOptions });
+    expect(store.versions[1]).toMatchObject({ libraryQueryId: id(200), versionNumber: 2, options: restOptions });
     expect(result.queries[id(100)]).toBe(id(200));
     expect(result.versions[id(101)]).toBe(store.versions[1].id);
   });
 
   it('never reuses a number held by a soft-deleted version, and does not match it', async () => {
-    const query = Object.assign(new DataQuery(), {
+    const query = Object.assign(new LibraryQuery(), {
       id: id(200),
       name: 'getInvoices',
-      appVersionId: LIB_VERSION,
+      organizationId: ORG,
       options: {},
     });
     // The fake find() returns it too, so matchLibraryVersion itself has to skip it.
     const deleted = Object.assign(new LibraryQueryVersion(), {
       id: id(202),
-      dataQueryId: id(200),
+      libraryQueryId: id(200),
       versionNumber: 3,
       kind: 'restapi',
       dataSourceId: DST_DS,
@@ -280,9 +286,8 @@ describe('AppImportExportService.importLibraryQueries', () => {
     const noWrites = (manager: ReturnType<typeof setup>['manager']) => expect(manager.save).not.toHaveBeenCalled();
 
     it('refuses a user without module rights before creating the library', async () => {
-      const { run, manager, appsUtilService } = setup({}, { library: false, perms: nobody });
+      const { run, manager } = setup({}, { library: false, perms: nobody });
       await expect(run([exportedQuery()])).rejects.toThrow(ForbiddenException);
-      expect(appsUtilService.getOrCreateWorkspaceQueryLibrary).not.toHaveBeenCalled();
       noWrites(manager);
     });
 
@@ -294,7 +299,7 @@ describe('AppImportExportService.importLibraryQueries', () => {
     });
 
     it('refuses a user without module rights when only a version would be added', async () => {
-      const query = Object.assign(new DataQuery(), { id: id(100), name: 'getInvoices', appVersionId: LIB_VERSION });
+      const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
       const { run, manager, store } = setup({ queries: [query] }, { perms: nobody });
       await expect(run([exportedQuery()])).rejects.toThrow(ForbiddenException);
       noWrites(manager);
@@ -302,10 +307,10 @@ describe('AppImportExportService.importLibraryQueries', () => {
     });
 
     it('lets a user without module rights re-import what already exists', async () => {
-      const query = Object.assign(new DataQuery(), { id: id(100), name: 'getInvoices', appVersionId: LIB_VERSION });
+      const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
       const v1 = Object.assign(new LibraryQueryVersion(), {
         id: id(101),
-        dataQueryId: id(100),
+        libraryQueryId: id(100),
         versionNumber: 1,
         kind: 'restapi',
         dataSourceId: DST_DS,
@@ -330,7 +335,7 @@ describe('AppImportExportService.importLibraryQueries', () => {
   });
 
   it('does not let two incoming queries claim the same local row', async () => {
-    const query = Object.assign(new DataQuery(), { id: id(100), name: 'getInvoices', appVersionId: LIB_VERSION });
+    const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
     const { store, run } = setup({ queries: [query] });
     const result = await run([
       exportedQuery({ id: id(100), versions: [] }),

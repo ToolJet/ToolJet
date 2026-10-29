@@ -1,3 +1,5 @@
+import { LibraryQueryInUseException } from './errors';
+import { lockLibraryQuery } from './locking';
 import {
   Injectable,
   BadRequestException,
@@ -282,7 +284,7 @@ export class QueryLibraryService {
           AND data_source.kind = 'library' AND a.type::text IN ('front-end', 'module')`,
         [query.id, user.organizationId]
       );
-      if (consumers.length) throw new ConflictException(libraryUsedByMessage(consumers));
+      if (consumers.length) throw new LibraryQueryInUseException(libraryUsedByMessage(consumers));
       await manager.delete(LibraryQuery, { id: query.id, organizationId: user.organizationId });
       this.audit(user, query, LIBRARY_QUERY_AUDIT_KEYS.DELETE, kind);
     });
@@ -327,12 +329,7 @@ export class QueryLibraryService {
     return folder;
   }
   private async lock(user: User, id: string, manager: EntityManager): Promise<LibraryQuery> {
-    const query = await manager.findOne(LibraryQuery, {
-      where: { id, organizationId: user.organizationId },
-      lock: { mode: 'pessimistic_write' },
-    });
-    if (!query) throw new NotFoundException('Library query not found');
-    return query;
+    return lockLibraryQuery(manager, id, user.organizationId);
   }
   private async auditKind(manager: EntityManager, libraryQueryId: string): Promise<string | undefined> {
     const saved = await manager.findOne(LibraryQueryVersion, {

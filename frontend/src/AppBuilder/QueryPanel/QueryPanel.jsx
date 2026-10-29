@@ -1,3 +1,4 @@
+import LibraryQueryDependencyWarning from '@/AppBuilder/QueryLibrary/LibraryQueryDependencyWarning';
 import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
 
@@ -46,31 +47,35 @@ export const QueryPanel = ({ darkMode }) => {
   const [windowSize, isWindowResizing] = useWindowResize();
 
   useEffect(() => {
-    const queryPanelStoreListner = useStore.subscribe(({ queryPanel: { selectedQuery } }, prevState) => {
-      if (isEmpty(prevState?.queryPanel?.selectedQuery) || isEmpty(selectedQuery)) {
-        return;
+    const queryPanelStoreListner = useStore.subscribe(
+      ({ queryPanel: { selectedQuery, queryHydrationRevision } }, prevState) => {
+        // Restoring server content establishes the editor baseline; it is not a user edit.
+        if (queryHydrationRevision !== prevState.queryPanel.queryHydrationRevision) return;
+        if (isEmpty(prevState?.queryPanel?.selectedQuery) || isEmpty(selectedQuery)) {
+          return;
+        }
+
+        if (prevState?.queryPanel?.selectedQuery?.id !== selectedQuery.id) {
+          return;
+        }
+
+        //removing updated_at since this value changes whenever the data is updated in the BE
+        const formattedQuery = deepClone(selectedQuery);
+        delete formattedQuery.updated_at;
+
+        const formattedPrevQuery = deepClone(prevState?.queryPanel?.selectedQuery || {});
+        delete formattedPrevQuery.updated_at;
+
+        const diffResult = diff(formattedPrevQuery, formattedQuery);
+
+        // Skip saveData if only the name changed - renameQuery handles that separately
+        const isOnlyNameChange = Object.keys(diffResult).length === 1 && 'name' in diffResult;
+
+        if (!isEqual(formattedQuery, formattedPrevQuery) && !isOnlyNameChange) {
+          useStore.getState().dataQuery.saveData(selectedQuery);
+        }
       }
-
-      if (prevState?.queryPanel?.selectedQuery?.id !== selectedQuery.id) {
-        return;
-      }
-
-      //removing updated_at since this value changes whenever the data is updated in the BE
-      const formattedQuery = deepClone(selectedQuery);
-      delete formattedQuery.updated_at;
-
-      const formattedPrevQuery = deepClone(prevState?.queryPanel?.selectedQuery || {});
-      delete formattedPrevQuery.updated_at;
-
-      const diffResult = diff(formattedPrevQuery, formattedQuery);
-
-      // Skip saveData if only the name changed - renameQuery handles that separately
-      const isOnlyNameChange = Object.keys(diffResult).length === 1 && 'name' in diffResult;
-
-      if (!isEqual(formattedQuery, formattedPrevQuery) && !isOnlyNameChange) {
-        useStore.getState().dataQuery.saveData(selectedQuery);
-      }
-    });
+    );
 
     return queryPanelStoreListner;
   }, []);
@@ -163,6 +168,7 @@ export const QueryPanel = ({ darkMode }) => {
 
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
+      <LibraryQueryDependencyWarning darkMode={darkMode} />
       <div
         className={cx('query-pane', isQueryPaneExpanded ? 'expanded' : 'collapsed', {
           'query-pane--mobile': isMobileLayout,

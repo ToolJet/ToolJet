@@ -80,3 +80,5 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - `tooljet-db`, `plugins` — ToolJet Database operations service; marketplace plugin loading
 
 - **Add to library** keeps its app-scoped route and stored-options conflict check, but creates a workspace `LibraryQuery`, state and Development v1 through `QueryLibraryService`/`LibraryLifecycleService` using the same transaction as consumer conversion. It creates no backing app. Export reads workspace drafts/folders and `library_query_id` versions; deleted-source drafts still travel.
+
+- **Pin write/delete serialization:** create, update, bulk update, editor run write-back, source conversion and Add to library call `query-library/locking.ts` with their persistence transaction. Updates lock consumer rows before rereading their source/options; bulk updates lock consumer IDs then parent query IDs in sorted order. The parent lock remains held through the write, and the exact live draft/saved reference is revalidated after acquiring it. Ordinary read-only runs do not lock.

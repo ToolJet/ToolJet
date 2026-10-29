@@ -183,3 +183,19 @@ describe('explicit lifecycle provider isolation', () => {
     expect(screen.queryByText(saved.name)).not.toBeInTheDocument();
   });
 });
+
+it('keeps the Modules dependency message and acknowledgement through the shared dialog', async () => {
+  const lifecycle = value({ resourceType: 'module' });
+  lifecycle.actions.deleteVersion.mockRejectedValue({ code: 'VERSION_IN_USE' });
+  mount(lifecycle, <VersionManagerDropdownContent />);
+  await userEvent.click(cy('version-switcher-button'));
+  await waitFor(() => expect(cy(`${draft.name.toLowerCase()}-version-more-menu-button`)).toBeInTheDocument());
+  fireEvent.click(cy(`${draft.name.toLowerCase()}-version-more-menu-button`));
+  await userEvent.click(await screen.findByText('Delete version'));
+  await userEvent.click(screen.getByRole('button', { name: 'Delete version' }));
+  expect(await screen.findByRole('dialog', { name: 'Dependent apps found!' })).toHaveTextContent(
+    `Cannot delete ${draft.name} version of module as it is being used in one or more apps.`
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'I understand' }));
+  expect(screen.queryByRole('dialog', { name: 'Dependent apps found!' })).not.toBeInTheDocument();
+});
