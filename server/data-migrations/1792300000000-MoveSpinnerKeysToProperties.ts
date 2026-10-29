@@ -1,5 +1,4 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { MigrationProgress, deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 
 // Spinner keys moved from styles/general into properties; existing properties win (same move as migrateProperties on import).
 const MIGRATION_NAME = 'MoveSpinnerKeysToProperties1792300000000';
@@ -8,33 +7,34 @@ const STYLE_KEYS = ['visibility'];
 const BATCH_SIZE = 500;
 
 type Bucket = Record<string, unknown> | null;
-export interface SpinnerKeysRow {
+interface SpinnerKeysRow {
   properties: Bucket;
   styles: Bucket;
   general_properties: Bucket;
 }
 
-export function moveSpinnerKeysToProperties(row: SpinnerKeysRow) {
-  const properties = { ...(row.properties ?? {}) };
-  const styles = { ...(row.styles ?? {}) };
-  const general = row.general_properties ? { ...row.general_properties } : row.general_properties;
-
-  for (const key of STYLE_KEYS) {
-    if (styles[key] !== undefined) {
-      if (properties[key] === undefined) properties[key] = styles[key];
-      delete styles[key];
-    }
-  }
-  if (general && general.tooltip !== undefined) {
-    if (properties.tooltip === undefined) properties.tooltip = general.tooltip;
-    delete general.tooltip;
-  }
-  if (properties.tooltipFormat === undefined) properties.tooltipFormat = { value: 'plainText' };
-
-  return { properties, styles, general_properties: general };
-}
-
 export class MoveSpinnerKeysToProperties1792300000000 implements MigrationInterface {
+  // Static, not an exported function: TypeORM runs every exported function in a migration file as a migration.
+  static moveKeys(row: SpinnerKeysRow) {
+    const properties = { ...(row.properties ?? {}) };
+    const styles = { ...(row.styles ?? {}) };
+    const general = row.general_properties ? { ...row.general_properties } : row.general_properties;
+
+    for (const key of STYLE_KEYS) {
+      if (styles[key] !== undefined) {
+        if (properties[key] === undefined) properties[key] = styles[key];
+        delete styles[key];
+      }
+    }
+    if (general && general.tooltip !== undefined) {
+      if (properties.tooltip === undefined) properties.tooltip = general.tooltip;
+      delete general.tooltip;
+    }
+    if (properties.tooltipFormat === undefined) properties.tooltipFormat = { value: 'plainText' };
+
+    return { properties, styles, general_properties: general };
+  }
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE type = $1`, [TYPE]);
     const total = parseInt(count, 10);
@@ -44,7 +44,7 @@ export class MoveSpinnerKeysToProperties1792300000000 implements MigrationInterf
       return;
     }
 
-    const progress = new MigrationProgress(MIGRATION_NAME, total);
+    let done = 0;
     const appVersionIds = new Set<string>();
     let lastId = '00000000-0000-0000-0000-000000000000';
 
@@ -63,7 +63,7 @@ export class MoveSpinnerKeysToProperties1792300000000 implements MigrationInterf
       lastId = rows[rows.length - 1].id;
 
       for (const row of rows) {
-        const moved = moveSpinnerKeysToProperties(row);
+        const moved = MoveSpinnerKeysToProperties1792300000000.moveKeys(row);
         await queryRunner.query(
           `UPDATE components SET properties = $1, styles = $2, general_properties = $3 WHERE id = $4`,
           [
@@ -74,20 +74,34 @@ export class MoveSpinnerKeysToProperties1792300000000 implements MigrationInterf
           ]
         );
         if (row.app_version_id) appVersionIds.add(row.app_version_id);
-        progress.show();
+        console.log(`${MIGRATION_NAME} Progress ${Math.round((++done / total) * 100)} %`);
       }
     }
 
     // App history holds the old key layout; replaying it would undo the move.
-    if (appVersionIds.size > 0) {
-      await deleteAppHistoryForStructuralMigration(
-        queryRunner.manager,
-        { appVersionIds: Array.from(appVersionIds) },
-        MIGRATION_NAME
-      );
-    }
+    if (appVersionIds.size > 0) await this.deleteAppHistory(queryRunner, Array.from(appVersionIds));
 
     console.log(`${MIGRATION_NAME}: [SUCCESS] Move Spinner keys to properties finished.`);
+  }
+
+  // app_history rows point at each other via parent_id, so delete leaves first, one layer per pass.
+  private async deleteAppHistory(queryRunner: QueryRunner, appVersionIds: string[]): Promise<void> {
+    let total = 0;
+    while (true) {
+      const [, deleted] = await queryRunner.query(
+        `DELETE FROM app_history
+          WHERE id IN (
+            SELECT h.id FROM app_history h
+             WHERE h.app_version_id = ANY($1)
+               AND NOT EXISTS (SELECT 1 FROM app_history child WHERE child.parent_id = h.id)
+             LIMIT $2
+          )`,
+        [appVersionIds, 2000]
+      );
+      if (!deleted) break;
+      total += deleted;
+    }
+    console.log(`${MIGRATION_NAME}: Deleted ${total} app history entries for ${appVersionIds.length} app versions`);
   }
 
   public async down(_queryRunner: QueryRunner): Promise<void> {

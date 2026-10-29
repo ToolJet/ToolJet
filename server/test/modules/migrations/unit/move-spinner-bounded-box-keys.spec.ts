@@ -1,11 +1,11 @@
 // Platform readers check properties.visibility first, so an unmoved saved hidden/disabled widget would reappear.
-import { moveSpinnerKeysToProperties } from '../../../../data-migrations/1792300000000-MoveSpinnerKeysToProperties';
-import { moveBoundedBoxKeysToProperties } from '../../../../data-migrations/1792300000001-MoveBoundedBoxKeysToProperties';
+import { MoveSpinnerKeysToProperties1792300000000 } from '../../../../data-migrations/1792300000000-MoveSpinnerKeysToProperties';
+import { MoveBoundedBoxKeysToProperties1792300000001 } from '../../../../data-migrations/1792300000001-MoveBoundedBoxKeysToProperties';
 
 describe('Spinner keys migration', () => {
   it('[Spinner-VIS-002] moves a saved hidden Spinner and its tooltip into properties', () => {
     // Break this catches: dropping the saved `{{false}}`, so a hidden Spinner shows after upgrade.
-    const moved = moveSpinnerKeysToProperties({
+    const moved = MoveSpinnerKeysToProperties1792300000000.moveKeys({
       properties: {},
       styles: { visibility: { value: '{{false}}' }, size: { value: 'lg' }, colour: { value: '#ff0000' } },
       general_properties: { tooltip: { value: 'Loading **rows**' } },
@@ -25,7 +25,7 @@ describe('Spinner keys migration', () => {
   it('[Spinner-VIS-002] keeps values already in properties and tolerates null buckets', () => {
     // Break this catches: an old styles value overwriting a newer properties value, or a crash on null JSON.
     expect(
-      moveSpinnerKeysToProperties({
+      MoveSpinnerKeysToProperties1792300000000.moveKeys({
         properties: { visibility: { value: '{{true}}' }, tooltipFormat: { value: 'html' } },
         styles: { visibility: { value: '{{false}}' } },
         general_properties: null,
@@ -41,7 +41,7 @@ describe('Spinner keys migration', () => {
 describe('BoundedBox keys migration', () => {
   it('[BoundedBox-VIS-002] moves saved hidden, disabled and tooltip values into properties', () => {
     // Break this catches: leaving disabledState in styles, so a saved disabled BoundedBox becomes editable.
-    const moved = moveBoundedBoxKeysToProperties({
+    const moved = MoveBoundedBoxKeysToProperties1792300000001.moveKeys({
       properties: { selector: { value: 'POINT' } },
       styles: { visibility: { value: '{{false}}' }, disabledState: { value: '{{true}}' } },
       general_properties: { tooltip: { value: 'Draw <b>cars</b>' } },
@@ -62,7 +62,7 @@ describe('BoundedBox keys migration', () => {
 
   it('[BoundedBox-VIS-002] existing properties win over the old buckets', () => {
     // Break this catches: a re-run or partially migrated row losing the newer properties values.
-    const moved = moveBoundedBoxKeysToProperties({
+    const moved = MoveBoundedBoxKeysToProperties1792300000001.moveKeys({
       properties: { disabledState: { value: '{{false}}' }, tooltip: { value: 'new' } },
       styles: { disabledState: { value: '{{true}}' } },
       general_properties: { tooltip: { value: 'old' } },
