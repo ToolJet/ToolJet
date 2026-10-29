@@ -24,6 +24,8 @@ import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import { ToolTip } from '@/_components/ToolTip';
 import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import { pluginIconFile } from '@/_helpers/pluginIcon';
+import { resolvePluginKind } from '@/_helpers/pluginKind';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
@@ -451,9 +453,8 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     );
 
     const datasources = source.map((datasource) => {
-      const src = datasource?.iconFile?.data
-        ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
-        : datasource.kind.toLowerCase();
+      const iconFile = pluginIconFile(datasource, darkMode);
+      const src = iconFile ? `data:image/svg+xml;base64,${iconFile}` : datasource.kind.toLowerCase();
 
       return {
         ...datasource,
@@ -487,6 +488,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
                 title={item.title}
                 src={item?.src}
                 usePluginIcon={isEmpty(item?.iconFile?.data)}
+                iconKind={resolvePluginKind(item)}
                 height={'35px'}
                 width={'35px'}
                 actionButton={addDataSourceBtn(item)}

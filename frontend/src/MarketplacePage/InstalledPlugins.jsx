@@ -5,10 +5,12 @@ import { toast } from 'react-hot-toast';
 import { pluginsService } from '@/_services/plugins.service';
 import { marketplaceService } from '@/_services/marketplace.service';
 import { globalDatasourceService } from '@/_services/globalDatasource.service';
+import { pluginIconFile } from '@/_helpers/pluginIcon';
 import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
 
 import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { SearchBox } from '@/_components/SearchBox';
+import { PluginIcon } from '@/_ui/PluginIcon';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import Icon from '@/_ui/Icon/SolidIcons';
@@ -233,7 +235,13 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
             <div className="row align-items-center">
               <div className="col-auto">
                 <span className="text-white avatar">
-                  <img height="32" width="32" src={`data:image/svg+xml;base64,${plugin.iconFile.data}`} />
+                  <PluginIcon
+                    pluginKind={pluginId}
+                    src={`data:image/svg+xml;base64,${pluginIconFile(plugin, darkMode)}`}
+                    alt={name}
+                    height={32}
+                    width={32}
+                  />
                 </span>
               </div>
               <div className="col">
