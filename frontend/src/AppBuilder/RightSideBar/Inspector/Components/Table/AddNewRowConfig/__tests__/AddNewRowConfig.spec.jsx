@@ -185,3 +185,26 @@ describe('Table-ADDROWFORM-029 popover chrome', () => {
     expect(screen.getByRole('dialog')).not.toHaveClass('dark-theme');
   });
 });
+
+describe('Table-ADDROWFORM-035 nested columns in the column list', () => {
+  test('Table-ADDROWFORM-035 keys inside a JSON column are not listed next to it, and Select all counts only what is listed', async () => {
+    // Break this catches: "metadata.team" and "metadata.level" offered as columns to include beside "metadata".
+    const { onChange, user } = setup({
+      columns: [
+        { name: 'Name', columnType: 'string' },
+        { name: 'metadata', columnType: 'json' },
+        { name: 'metadata.team', columnType: 'string' },
+        { name: 'metadata.level', columnType: 'string' },
+      ],
+      selectedColumns: ['Name'],
+    });
+    await openPopover(user);
+
+    expect(screen.getByRole('checkbox', { name: 'metadata' })).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: 'metadata.team' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: 'metadata.level' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('checkbox', { name: 'metadata' }));
+    expect(onChange).toHaveBeenCalledWith('addNewRowColumns', null);
+  });
+});
