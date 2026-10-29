@@ -323,4 +323,98 @@ describe('Modules lifecycle characterization', () => {
       expect(session.store.read((state) => state.currentVersionId)).toBe(saved.id);
     }
   );
+  it('shows draft metadata edits immediately while the dropdown row cache still has the old name', async () => {
+    await setup();
+    render(<VersionManagerDropdown />);
+    await open();
+    await session.user.click(cy('candidate.one-version-more-menu-button'));
+    await session.user.click(screen.getByText('Edit details'));
+    fireEvent.change(cy('edit-version-name-input-field'), { target: { value: 'renamed.candidate' } });
+    fireEvent.change(cy('edit-version-description-input-field'), { target: { value: 'Updated description' } });
+    fireEvent.submit(cy('edit-version-name-input-field').closest('form'));
+    await waitFor(() => expect(cy('version-switcher-button')).toHaveTextContent('renamed.candidate'));
+    expect(session.store.read((state) => state.selectedVersion.description)).toBe('Updated description');
+    expect(versions[0].name).toBe(draft.name);
+    expect(saves[0]).toEqual({
+      id: draft.id,
+      body: { name: 'renamed.candidate', description: 'Updated description', is_user_switched_version: false },
+    });
+  });
+  it('uses refreshed row metadata after each promotion through Staging and Production', async () => {
+    const lifecycleEnvironments = [
+      { id: 'dev', name: 'development', priority: 1, appVersionsCount: 2 },
+      { id: 'stage', name: 'staging', priority: 2, appVersionsCount: 1 },
+      { id: 'prod', name: 'production', priority: 3, appVersionsCount: 1, isDefault: true },
+    ];
+    let promotedEnvironmentIndex = 0;
+    await setup([saved, draft], false, [
+      {
+        url: `${config.apiUrl}/app-environments/init`,
+        json: {
+          environments: lifecycleEnvironments,
+          editorEnvironment: lifecycleEnvironments[0],
+          editorVersion: saved,
+          appVersionEnvironment: lifecycleEnvironments[0],
+        },
+      },
+      {
+        url: `${config.apiUrl}/license/access`,
+        json: { multiEnvironment: true, licenseStatus: { isLicenseValid: true, licenseType: 'enterprise' } },
+      },
+      {
+        method: 'put',
+        url: `${config.apiUrl}/v2/apps/module-1/versions/${saved.id}/promote`,
+        json: () => {
+          const target = lifecycleEnvironments[++promotedEnvironmentIndex];
+          versions = [{ ...saved, currentEnvironmentId: target.id }, draft];
+          return { editorEnvironment: target, promotedToEnvironment: target, environments: lifecycleEnvironments };
+        },
+      },
+      { url: `${config.apiUrl}/organization-constants/environment/:environmentId`, json: { constants: [] } },
+      {
+        url: `${config.apiUrl}/data-sources/org-1/environments/:environmentId/versions/${saved.id}`,
+        json: { data_sources: [] },
+      },
+      { url: `${config.apiUrl}/apps/module-1/versions/${saved.id}/library-pins`, json: { pins: [] } },
+      { method: 'put', url: `${config.apiUrl}/apps/module-1/release`, json: {} },
+    ]);
+    await session.store.act('updateFeatureAccess');
+    await waitFor(() =>
+      expect(session.store.read((state) => state.license.featureAccess?.multiEnvironment)).toBe(true)
+    );
+    render(<VersionManagerDropdown />);
+    await open();
+    await session.user.click(cy('promote-version-button'));
+    expect(cy('current-env-name')).toHaveTextContent('Development');
+    expect(cy('target-env-name')).toHaveTextContent('Staging');
+    await session.user.click(cy('promote-button'));
+    await waitFor(() => expect(session.store.read((state) => state.selectedEnvironment.id)).toBe('stage'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    // The unchanged promotion action intentionally does not rewrite the selected snapshot.
+    expect(session.store.read((state) => state.selectedVersion.currentEnvironmentId)).toBe('dev');
+    await session.user.click(document.body);
+    await waitFor(() => expect(cy('v1-version-name')).not.toBeInTheDocument());
+    await open();
+    await waitFor(() => expect(cy('promote-version-button')).toBeInTheDocument());
+    await session.user.click(cy('promote-version-button'));
+    expect(cy('current-env-name')).toHaveTextContent('Staging');
+    expect(cy('target-env-name')).toHaveTextContent('Production');
+    await session.user.click(cy('promote-button'));
+    await waitFor(() => expect(session.store.read((state) => state.selectedEnvironment.id)).toBe('prod'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await session.user.click(document.body);
+    await waitFor(() => expect(cy('v1-version-name')).not.toBeInTheDocument());
+    await open();
+    await waitFor(() => expect(cy('release-version-button')).toBeInTheDocument());
+    expect(cy('promote-version-button')).not.toBeInTheDocument();
+    await session.user.click(cy('release-version-button'));
+    expect(screen.getByText('Release v1')).toBeInTheDocument();
+    await session.user.click(screen.getByRole('button', { name: 'Yes' }));
+    await waitFor(() => expect(session.store.read((state) => state.releasedVersionId)).toBe(saved.id));
+    expect(saves.filter(({ id }) => id === 'promote').map(({ body }) => body.currentEnvironmentId)).toEqual([
+      'dev',
+      'stage',
+    ]);
+    expect(promotedEnvironmentIndex).toBe(2);
+  });
 });

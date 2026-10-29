@@ -113,6 +113,10 @@ export function useAppVersionLifecycle({
           ...previous,
           ...state.selectedVersion,
           status: state.selectedVersion.status || previous?.status,
+          // Promotion refreshes rows without rewriting the selected snapshot.
+          // Keep selected metadata for immediate edits, but trust the fetched environment.
+          currentEnvironmentId:
+            previous?.currentEnvironmentId ?? normalizeVersion(state.selectedVersion).currentEnvironmentId,
         })
       );
     }
