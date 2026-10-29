@@ -15,7 +15,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(root, 'cli/bin/run');
 const out = path.join(root, 'server/builtin-packs');
 const install = process.argv.includes('--install');
-const { packs } = JSON.parse(fs.readFileSync(path.join(root, 'packs/builtin.json'), 'utf8'));
+// displayNames: the panel name of a pack component whose export name reads wrong there. A component's name is saved in
+// apps, so it cannot be renamed: Rocket 2.0's droppable TabsContainer shows as Tabs, as Ant's and MUI's Tabs do, and its
+// text-only Tabs as Text Tabs (team testing, 2026-10-29: a drop into Rocket's "Tabs" went to the canvas).
+const { packs, displayNames = {} } = JSON.parse(fs.readFileSync(path.join(root, 'packs/builtin.json'), 'utf8'));
 
 fs.rmSync(out, { recursive: true, force: true });
 for (const dir of packs) {
@@ -32,6 +35,16 @@ for (const dir of packs) {
   for (const file of ['index.js', 'index.css', 'manifest.json']) {
     const from = path.join(packDir, 'dist', file);
     if (fs.existsSync(from)) fs.copyFileSync(from, path.join(target, file));
+  }
+  const names = displayNames[pack];
+  if (names) {
+    const manifestPath = path.join(target, 'manifest.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    for (const [component, displayName] of Object.entries(names)) {
+      if (!manifest.components?.[component]) throw new Error(`packs/builtin.json: ${pack} has no component ${component}`);
+      manifest.components[component].displayName = displayName;
+    }
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
   }
   fs.writeFileSync(
     path.join(target, 'builtin.json'),

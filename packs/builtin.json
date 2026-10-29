@@ -1,3 +1,13 @@
 {
-  "packs": ["packs/shadcn", "packs/antd", "packs/mui"]
+  "packs": [
+    "packs/shadcn",
+    "packs/antd",
+    "packs/mui"
+  ],
+  "displayNames": {
+    "shadcn": {
+      "TabsContainer": "Tabs",
+      "Tabs": "Text Tabs"
+    }
+  }
 }
