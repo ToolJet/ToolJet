@@ -188,12 +188,15 @@ export const CardGrid = () => {
       idField,
     ]
   );
-  const { selectedKey, pick: click } = useRecordSelection(
+  const { selectedKey, pick, clear } = useRecordSelection(
     cards,
     (row) => row[idField || 'id'],
     { setItem: setSelectedItem, setId: (id) => setSelectedItemId(id as string), setIndex: setSelectedItemIndex },
     onCardClicked
   );
+  // Clicking the selected card again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
+  const click = (card: (typeof cards)[number]) => (highlightSelected && selectedKey === card.key ? clear() : pick(card));
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clear());
   const count = gridColumns(columns, width || 960, minCardWidth);
   const aspect = ['16/9', '4/3', '1/1'].includes(imageAspect) ? imageAspect.replace('/', ' / ') : '4 / 3';
   // The picture area only when an image field is mapped: without one every card got a large initials panel.

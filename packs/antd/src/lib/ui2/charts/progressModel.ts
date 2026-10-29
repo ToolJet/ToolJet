@@ -1,7 +1,8 @@
 // UI 2.0's progress widgets (Progress, Progress list, Circular progress), ported for the pack: row figures, tones,
 // ring geometry and typefaces. Every function takes whatever the author bound and never throws.
 
-import { localeFor, moneyDigits, numberFormat } from '../../locale';
+import { contentKey } from '../../contentKey';
+import { currencyCode, localeFor, moneyDigits, moneyStyle, numberFormat } from '../../locale';
 
 export type Row = Record<string, unknown>;
 
@@ -106,8 +107,6 @@ export const autoProgressTone = (pct: number | null, mode: unknown): string => {
 
 export const PROGRESS_FORMATS: readonly string[] = ['auto', 'number', 'currency', 'percent', 'compact'];
 
-const currencyCode = (currency: unknown): string =>
-  typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
 
 /** A number or numeric text ("42", "42%"), else null. */
 export const percentOf = (v: unknown): number | null => {
@@ -122,7 +121,7 @@ export const percentOf = (v: unknown): number | null => {
 export const formatFigure = (n: number, format: unknown, currency?: unknown, locale?: unknown): string => {
   const kind = typeof format === 'string' && PROGRESS_FORMATS.includes(format) ? format : 'auto';
   const where = localeFor(currency, locale);
-  if (kind === 'currency') return numberFormat(where, { style: 'currency', currency: currencyCode(currency), ...moneyDigits(n, where) }).format(n);
+  if (kind === 'currency') return numberFormat(where, moneyStyle(currencyCode(currency), moneyDigits(n, where))).format(n);
   if (kind === 'compact') return numberFormat(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
   if (kind === 'percent') return `${numberFormat(where, { maximumFractionDigits: 1 }).format(n)}%`;
   return numberFormat(where, { maximumFractionDigits: 2 }).format(n);
@@ -182,7 +181,9 @@ export const progressEntries = (data: unknown, idField: unknown): ProgressEntry[
     if (!row || typeof row !== 'object' || Array.isArray(row)) return;
     const r = row as Row;
     const id = toText(isText(idField) ? r[idField] : r.id);
-    const base = id || String(index);
+    // A row with no id is keyed by its content, not its position, so a removal leaves the selection on the same row
+    // (team testing, 2026-10-29).
+    const base = id || contentKey(r);
     const n = (seen.get(base) ?? 0) + 1;
     seen.set(base, n);
     out.push({ key: n === 1 ? base : `${base}~${n}`, row: r, index });
@@ -208,7 +209,8 @@ export const progressMax = (entries: ProgressEntry[], f: ProgressFields): number
 export const progressItem = (entry: ProgressEntry, f: ProgressFields): ProgressItem => {
   const { row } = entry;
   const format = typeof f.valueFormat === 'string' && PROGRESS_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
-  const labelKey = isText(f.labelField) && f.labelField in row ? f.labelField : firstTextField(row);
+  // A named field the row lacks shows blank, not another field (team testing, 2026-10-29).
+  const labelKey = isText(f.labelField) ? f.labelField : firstTextField(row);
   const value = isText(f.valueField) ? percentOf(row[f.valueField]) : null;
   const target = isText(f.targetField) ? percentOf(row[f.targetField]) : null;
   let pct = isText(f.percentField) ? percentOf(row[f.percentField]) : null;

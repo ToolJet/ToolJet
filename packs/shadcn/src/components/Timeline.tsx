@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { iconFor } from '../lib/icons';
@@ -119,13 +119,32 @@ export const Timeline = () => {
   const markerTop = Math.max(0, (LINE_HEIGHT - size) / 2);
   const contentTop = Math.max(0, (size - LINE_HEIGHT) / 2);
   const column = Math.max(size, 12);
+  // The selected item's content (without its key and position), to find it again when the items change.
+  const selected = useRef<string | null>(null);
+  const contentOf = ({ key, index, ...rest }: TimelineItem) => JSON.stringify(rest); // eslint-disable-line @typescript-eslint/no-unused-vars
   const click = (item: TimelineItem) => {
     if (disabled) return;
     const { key, ...rest } = item; // eslint-disable-line @typescript-eslint/no-unused-vars
+    selected.current = contentOf(item);
     setLastClickedItem(rest);
     setSelectedItem(rest);
     onItemClicked();
   };
+  const clearSelection = () => {
+    selected.current = null;
+    setSelectedItem({});
+  };
+  // A selected item that leaves the data is no longer selected; one that moved is exposed at its new place (team
+  // testing, 2026-10-29: selectedItem kept a record the data no longer had).
+  useEffect(() => {
+    if (selected.current === null) return;
+    const now = timelineItems(source).find((item) => contentOf(item) === selected.current);
+    if (!now) return clearSelection();
+    const { key, ...rest } = now; // eslint-disable-line @typescript-eslint/no-unused-vars
+    setSelectedItem(rest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source]);
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clearSelection());
   const vars = lookVars([
     [markerColor, '--lk-marker'],
     [lineColor, '--lk-line'],

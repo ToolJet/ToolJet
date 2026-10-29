@@ -206,12 +206,14 @@ export const ProgressList = () => {
   const remaining = entries.length - shown;
 
   // Followed through every entry, not only the rows drawn so far; the id keeps its type (a number stays a number).
-  const { pick: select } = useRecordSelection(
+  const { pick: select, clear } = useRecordSelection(
     entries,
     (row) => row[idField || 'id'],
     { setItem: setSelectedItem, setId: (id) => setSelectedItemId(id as string), setIndex: setSelectedItemIndex },
     onItemClicked
   );
+  // No highlight shows the selection here, so a second click selects again; the action undoes it (team testing, 2026-10-29).
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clear());
 
   const vars = {
     ...themeVars({ primary: css(accent) }),

@@ -2,7 +2,8 @@
 // rows and their tones, popup lines, route lines, areas, the legend, heat points, the tile source and the geocoder
 // URLs. Every function takes whatever the author bound and never throws.
 
-import { localeFor, moneyDigits, numberFormat } from '../../locale';
+import { contentKey } from '../../contentKey';
+import { currencyCode, localeFor, moneyDigits, moneyStyle, numberFormat } from '../../locale';
 
 export type Row = Record<string, unknown>;
 export interface LatLng {
@@ -250,14 +251,17 @@ export const mapPoints = (data: unknown, f: PointFields = {}): { points: MapPoin
       skipped += 1;
       return;
     }
-    const titleKey =
-      isText(f.titleField) && f.titleField in row
-        ? f.titleField
-        : TITLE_KEYS.find((k) => isText(row[k])) || Object.keys(row).find((k) => isText(row[k]) && ![latKey, lngKey, idKey].includes(k));
+    // A named field the row lacks shows blank, not another field (team testing, 2026-10-29).
+    const titleKey = isText(f.titleField)
+      ? f.titleField
+      : TITLE_KEYS.find((k) => isText(row[k])) || Object.keys(row).find((k) => isText(row[k]) && ![latKey, lngKey, idKey].includes(k));
     const id = row[idKey];
     const status = isText(statusKey) ? toText(row[statusKey]) : '';
-    let key = toText(id) || `#${index}`;
-    for (let n = 1; seen.has(key); n++) key = `${toText(id) || `#${index}`}~${n}`;
+    // A point with no id is keyed by its content: a position key moved the selection to another marker when a row was
+    // removed, or skipped for missing coordinates (team testing, 2026-10-29).
+    const own = toText(id) || contentKey(row);
+    let key = own;
+    for (let n = 1; seen.has(key); n++) key = `${own}~${n}`;
     seen.add(key);
     points.push({
       key,
@@ -303,10 +307,10 @@ const formatFigure = (value: unknown, format: string, currency?: unknown, locale
   const numeric = typeof value === 'number' || (typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim()));
   if (!numeric) return String(value);
   const n = Number(value);
-  const code = isText(currency) && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
+  const code = currencyCode(currency);
   const where = localeFor(currency, locale);
   try {
-    if (format === 'currency') return numberFormat(where, { style: 'currency', currency: code, ...moneyDigits(n, where) }).format(n);
+    if (format === 'currency') return numberFormat(where, moneyStyle(code, moneyDigits(n, where))).format(n);
     if (format === 'percent') return `${numberFormat(where, { maximumFractionDigits: 1 }).format(n)}%`;
     if (format === 'compact') return numberFormat(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
     if (format === 'number' || typeof value === 'number') return numberFormat(where, { maximumFractionDigits: 2 }).format(n);
@@ -447,7 +451,7 @@ export const areaShapes = (rows: unknown, f: AreaFields = {}, statusColors?: unk
     const status = toText(row[statusKey]);
     const tone = markerTone(status);
     const color = safeColor(row.color) || statusFill(status, tone, statusColors) || null;
-    const base = { key: `area:${toText(row.id) || index}`, title: toText(row[titleKey]) || rowName(row), status, tone, color, row };
+    const base = { key: `area:${toText(row.id) || index}`, title: isText(f.areaTitleField) ? toText(row[titleKey]) : toText(row[titleKey]) || rowName(row), status, tone, color, row };
     const ring = toPath(row[shapeKey] ?? row.geometry);
     if (ring && ring.length >= 3) return [{ ...base, kind: 'polygon', path: ring }];
     const center = toLatLng(row.lat ?? row.latitude, row.lng ?? row.lon ?? row.longitude);

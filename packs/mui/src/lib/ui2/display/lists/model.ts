@@ -2,7 +2,8 @@
 // _display/displayModel.ts, NewTable chipTone / avatarHue), ported for the List view, Record list, Card grid and
 // Key-value list. Every function takes whatever the author bound and never throws.
 
-import { localeFor, moneyDigits, numberFormat } from '../../../locale';
+import { contentKey } from '../../../contentKey';
+import { currencyCode, localeFor, moneyDigits, moneyStyle, numberFormat } from '../../../locale';
 
 export type Row = Record<string, unknown>;
 
@@ -129,27 +130,12 @@ export const styleVars = (pairs: [unknown, string, ((v: unknown) => string)?][])
 const FORMATS = ['number', 'currency', 'percent', 'compact'];
 export const VALUE_FORMATS = ['auto', ...FORMATS, 'date', 'datetime'];
 const nf = numberFormat;
-// No currency set means USD. A set code that is not three letters (a typo like "US Dollar") formats as a plain amount and
-// warns once, rather than quietly showing dollars (team testing, 2026-10-29).
-const warnedCurrencies = new Set<string>();
-const currencyCode = (c: unknown): string | null => {
-  if (!isSet(c) || (typeof c === 'string' && !c.trim())) return 'USD';
-  const code = String(c).trim();
-  if (/^[A-Za-z]{3}$/.test(code)) return code.toUpperCase();
-  if (!warnedCurrencies.has(code)) {
-    warnedCurrencies.add(code);
-    console.warn(`Currency "${code}" is not a three-letter ISO code such as USD or EUR; showing the amount without a symbol.`);
-  }
-  return null;
-};
-const moneyOptions = (code: string | null, digits: Intl.NumberFormatOptions): Intl.NumberFormatOptions =>
-  code ? { style: 'currency', currency: code, ...digits } : digits;
 const isNumericFigure = (v: unknown): v is number | string =>
   typeof v === 'number' ? Number.isFinite(v) : typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim());
 
 const formatNumber = (n: number, format: string, currency?: unknown, locale?: unknown): string => {
   const where = localeFor(currency, locale);
-  if (format === 'currency') return nf(where, moneyOptions(currencyCode(currency), moneyDigits(n, where))).format(n);
+  if (format === 'currency') return nf(where, moneyStyle(currencyCode(currency), moneyDigits(n, where))).format(n);
   if (format === 'compact') return nf(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
   if (format === 'percent') return `${nf(where, { maximumFractionDigits: 1 }).format(n)}%`;
   return nf(where, { maximumFractionDigits: 2 }).format(n);
@@ -241,23 +227,6 @@ const metaPart = (row: Row, spec: string): string => {
 export const firstTextField = (row: Row): string | undefined => Object.keys(row).find((k) => isNonBlankString(row[k]));
 
 /** Keys of their own for every item: a repeated id gets a suffix by occurrence ("1~2"). */
-/** The key of an item with no id: its content, so a removal or a reorder leaves the selection on the same record (or
- *  clears it), where a position key moved it to whatever record took that place (team testing, 2026-10-29). An edited
- *  record without an id cannot be told from a new one, so its selection clears. Identical items share a key, told apart
- *  by occurrence (uniqueKeys). */
-const contentKey = (item: unknown): string => {
-  let text = '';
-  try {
-    text = JSON.stringify(item) ?? '';
-  } catch {
-    text = String(item);
-  }
-  // FNV-1a: a short stable key, not the whole record.
-  let h = 0x811c9dc5;
-  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
-  return `#${(h >>> 0).toString(36)}`;
-};
-
 const uniqueKeys = <T extends { key: string }>(items: T[], fromId: boolean[]): T[] => {
   const seen = new Set<string>();
   const occurrences = new Map<string, number>();
@@ -525,7 +494,7 @@ export const keyValueText = (row: KeyValueRow, defaults: { currency?: string; lo
       const locale = toText(own.locale) || defaults.locale || 'en-US';
       const options: Intl.NumberFormatOptions =
         type === 'currency'
-          ? moneyOptions(currencyCode(own.currency ?? row.currency ?? defaults.currency), { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 })
+          ? moneyStyle(currencyCode(own.currency ?? row.currency ?? defaults.currency), { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 })
           : { minimumFractionDigits: digits ?? 0, maximumFractionDigits: digits ?? 2 };
       return wrap(nf(locale, options).format(n));
     }

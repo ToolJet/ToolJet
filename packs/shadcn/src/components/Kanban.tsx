@@ -537,6 +537,14 @@ export const Kanban = () => {
   // Selection, open details and expanded cards are kept by card key and read from the current board.
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
+  // A selected card that leaves the data is no longer selected, as in the lists.
+  useEffect(() => {
+    if (selectedKey === null || board.some((column) => column.cards.some((card) => card.__key === selectedKey))) return;
+    setSelectedKey(null);
+    setOpenKey(null);
+    setLastSelectedCard({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board]);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => new Set());
   const toggleExpanded = (key: string) =>
     setExpandedKeys((current) => {
@@ -668,6 +676,7 @@ export const Kanban = () => {
     },
     (id, value) => doUpdate(id, value)
   );
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clearSelection());
 
   // Custom cards: rows of ToolJet components, one per card in board order, each placed in its column by RowSlot. A
   // card grows to fit its components (text that wraps in a narrow column pushes the ones below it down), never below
@@ -776,8 +785,16 @@ export const Kanban = () => {
       endDrag();
     },
   };
+  const clearSelection = () => {
+    setSelectedKey(null);
+    setOpenKey(null);
+    setLastSelectedCard({});
+  };
+  // Clicking the selected card again unselects it (and closes its details), with no event (team testing, 2026-10-29:
+  // a selection could not be undone).
   const select = (card: BoardCard) => {
-    if (fields.details) setOpenKey((current) => (current === card.__key ? null : card.__key));
+    if (card.__key === selectedKey) return clearSelection();
+    if (fields.details) setOpenKey(card.__key);
     setSelectedKey(card.__key);
     setLastSelectedCard(strip(card));
     onCardSelected();

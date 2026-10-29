@@ -12,6 +12,7 @@ import { ClearX, boundsRule, isEnter, useReseed } from '../lib/ui2/inputs/parts'
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
 import { useValueSetter } from '../lib/sameValue';
+import { currencyCode } from '../lib/locale';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
@@ -116,6 +117,9 @@ export const CurrencyInput = () => {
   const [draft, setDraft] = useState<string | null>(null);
   const locale = M.isBlank(localeProp) || typeof localeProp !== 'string' ? 'en-US' : localeProp;
   const options = M.toCurrencyList(currencyOptions);
+  // An amount needs a currency, so a code that is not one still falls back (the first option, else USD), but no longer
+  // silently: currencyCode warns once (team testing, 2026-10-29).
+  if (!M.isBlank(currencyProp) && M.toCurrency(currencyProp, null) === null) currencyCode(currencyProp);
   const currency = M.toCurrency(currencyProp, options[0] ?? 'USD');
   const decimals = M.currencyDecimals(currency, decimalPlaces) ?? 2;
   const value = typeof rawValue === 'number' && Number.isFinite(rawValue) ? rawValue : M.parseNumber(rawValue, locale);

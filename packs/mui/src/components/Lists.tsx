@@ -496,6 +496,7 @@ export const ProgressList = () => {
   const max = useMemo(() => progressMax(entries, fields), [entries, valueField, targetField]); // eslint-disable-line react-hooks/exhaustive-deps
   // The selection follows every entry; only the rows drawn so far are formatted.
   const { selectedItemId, select } = useSelection(entries as Selectable[], idField);
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null));
   const grow = useGrowingCount(entries.length);
   const rows = entries.slice(0, grow.shown).map((entry) => progressItem(entry, { ...fields, max }));
   const height = BAR_HEIGHT[String(barSize)] ?? BAR_HEIGHT.default;
@@ -527,6 +528,8 @@ export const ProgressList = () => {
                     <ListItemButton
                       selected={row.key === selectedItemId}
                       onClick={() => {
+                        // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
+                        if (row.key === selectedItemId) return select(null);
                         select(row as unknown as Selectable);
                         onItemClicked();
                       }}
@@ -705,13 +708,27 @@ export const Timeline = () => {
   // The title's line (body2, 20px) and the marker centre on each other.
   const markerTop = Math.max(0, (20 - size) / 2);
   const column = Math.max(size, 12);
+  // The selected item's content (without its key and position), to find it again when the items change.
+  const selected = useRef<string | null>(null);
+  const contentOf = ({ key, index, ...rest }: TimelineItem) => JSON.stringify(rest); // eslint-disable-line @typescript-eslint/no-unused-vars
   const click = (item: TimelineItem) => {
     if (disabled) return;
     const { key, index, ...rest } = item; // eslint-disable-line @typescript-eslint/no-unused-vars
+    selected.current = contentOf(item);
     setLastClickedItem(rest);
     setSelectedItem(rest);
     onItemClicked();
   };
+  const clearSelection = () => {
+    selected.current = null;
+    setSelectedItem({});
+  };
+  // A selected item that leaves the data is no longer selected, as in the Rocket Timeline (team testing, 2026-10-29).
+  useEffect(() => {
+    if (selected.current !== null && !list.some((item) => contentOf(item) === selected.current)) clearSelection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list]);
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clearSelection());
 
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-lists">

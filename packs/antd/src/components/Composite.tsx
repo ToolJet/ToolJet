@@ -617,6 +617,7 @@ export const CardGrid = () => {
     idField,
   });
   const { selectedItemId, select } = useSelection(items, idField);
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null));
   const cols =
     Number(columns) > 0
       ? `repeat(${Number(columns)}, minmax(0, 1fr))`
@@ -654,6 +655,8 @@ export const CardGrid = () => {
                   ) : undefined
                 }
                 onClick={() => {
+                  // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
+                  if (it.key === selectedItemId) return select(null);
                   select(it as unknown as Selectable);
                   onCardClicked();
                 }}
@@ -773,6 +776,7 @@ export const ProgressList = () => {
   const max = progressMax(entries, fields);
   const items = entries.map((e) => progressItem(e, { ...fields, max }));
   const { selectedItemId, select } = useSelection(items as unknown as Selectable[], idField);
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null));
   const stroke = size === 'small' ? 4 : size === 'large' ? 12 : 8;
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll">
@@ -791,6 +795,8 @@ export const ProgressList = () => {
                   : 'tj-ant-item tj-ant-progress-row'
               }
               onClick={() => {
+                // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
+                if (it.key === selectedItemId) return select(null);
                 select(it as unknown as Selectable);
                 onItemClicked();
               }}

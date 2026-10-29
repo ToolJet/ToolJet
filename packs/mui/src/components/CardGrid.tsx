@@ -299,6 +299,7 @@ export const CardGrid = () => {
     ]
   );
   const { selectedItemId, select } = useSelection(items as Selectable[], idField);
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null));
   const [rootRef, width] = useWidth();
   const count = gridColumns(columns, width || 960, minCardWidth);
   const aspect = ASPECTS.includes(imageAspect) ? imageAspect.replace('/', ' / ') : '16 / 9';
@@ -365,6 +366,8 @@ export const CardGrid = () => {
                         data-active={selected ? '' : undefined}
                         aria-pressed={highlightSelected !== false ? selected : undefined}
                         onClick={() => {
+                          // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
+                          if (selected) return select(null);
                           select(card as unknown as Selectable);
                           onCardClicked();
                         }}

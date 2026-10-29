@@ -146,9 +146,11 @@ export const Navigation = () => {
   const found = findNav(items, value);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const parentKey = found?.parent?.key;
+  // A selected child shows: its group opens on every new selection, also one the builder had closed (team testing,
+  // 2026-10-29: Select item into a closed group left the selection hidden).
   useEffect(() => {
-    if (parentKey) setExpanded((e) => ({ ...e, [parentKey]: true }));
-  }, [parentKey]);
+    if (parentKey) setExpanded((e) => (e[parentKey] ? e : { ...e, [parentKey]: true }));
+  }, [parentKey, found?.item.key]);
 
   const latest = useRef({ items, value });
   latest.current = { items, value };
