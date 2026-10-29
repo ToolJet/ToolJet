@@ -1,0 +1,85 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Mailtrap datasource",
+  "description": "A schema defining Mailtrap datasource",
+  "type": "api",
+  "source": {
+    "name": "Mailtrap",
+    "kind": "mailtrap",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_token": {
+        "type": "string",
+        "encrypted": true
+      },
+      "sending_stream": {
+        "type": "string"
+      },
+      "inbox_id": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "api_token": {
+      "value": ""
+    },
+    "sending_stream": {
+      "value": "transactional"
+    },
+    "inbox_id": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "sending_stream": {
+      "label": "Sending stream",
+      "key": "sending_stream",
+      "type": "dropdown-component-flip",
+      "description": "Select where emails are sent",
+      "helpText": "Transactional and Bulk send real emails from a verified sending domain. Sandbox captures emails in a testing inbox without delivering them.",
+      "list": [
+        {
+          "value": "transactional",
+          "name": "Transactional"
+        },
+        {
+          "value": "bulk",
+          "name": "Bulk"
+        },
+        {
+          "value": "sandbox",
+          "name": "Sandbox (testing)"
+        }
+      ],
+      "commonFields": {
+        "api_token": {
+          "label": "API token",
+          "key": "api_token",
+          "type": "password",
+          "description": "API token for Mailtrap",
+          "helpText": "For generating an API token, visit: <a href='https://mailtrap.io/settings/api-tokens' target='_blank' rel='noreferrer'>Mailtrap API tokens</a>"
+        }
+      }
+    },
+    "transactional": {},
+    "bulk": {},
+    "sandbox": {
+      "inbox_id": {
+        "label": "Sandbox inbox ID",
+        "key": "inbox_id",
+        "type": "text",
+        "description": "Enter sandbox inbox ID",
+        "helpText": "Find it in the inbox URL in your <a href='https://mailtrap.io/sandboxes/projects' target='_blank' rel='noreferrer'>Mailtrap Sandboxes</a>."
+      }
+    }
+  },
+  "required": [
+    "api_token",
+    "sending_stream"
+  ]
+}
